@@ -1,6 +1,8 @@
 
 set_project("MetaDot.Runtime")
 
+add_requires("libsdl", {configs = {shared = false}, verify = true})
+
 add_rules("plugin.vsxmake.autoupdate")
 
 set_languages("clatest", "cxxlatest")
@@ -18,7 +20,6 @@ end
 
 include_dir_list = {
     "Source",
-    "Source/Vendor/SDL2/include",
     "Source/Engine",
     "Source/Vendor",
     "Source/Vendor/imgui",
@@ -27,7 +28,6 @@ include_dir_list = {
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
-
     }
 
 defines_list = {
@@ -76,8 +76,6 @@ link_list = {
     "oleaut32",
 }
 
-add_linkdirs("Source/Vendor/SDL2/lib/x64")
-
 add_cxxflags(
     "/wd4267", "/wd4244", "/wd4305", "/wd4018", 
     "/wd4800", "/wd5030", "/wd5222", "/wd4554",
@@ -89,6 +87,7 @@ add_cxflags("/bigobj")
 
 target("vendor")
     set_kind("static")
+    add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_defines("SPDLOG_COMPILED_LIB")
@@ -100,11 +99,12 @@ target("vendor")
 
 target("CppSource")
     set_kind("shared")
+    add_packages("libsdl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_deps("vendor")
-    add_links("SDL2", link_list)
+    add_links(link_list)
     add_files("Source/CppScript/**.cpp")
 	add_headerfiles("Source/CppScript/**.h")
 	add_headerfiles("Source/CppScript/**.hpp")
@@ -113,11 +113,12 @@ target("CppSource")
 
 target("MetaDot")
     set_kind("binary")
+    add_packages("libsdl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_deps("vendor")
-    add_links("SDL2", link_list)
+    add_links(link_list)
     add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cc")
     add_files("Source/Engine/**.cpp")
