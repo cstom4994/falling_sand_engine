@@ -3208,7 +3208,7 @@ void Game::renderLate() {
         Background *bg = backgrounds->Get("TEST_OVERWORLD");
         if (Settings::draw_background && scale <= bg->layers[0].surface.size() && world->loadZone.y > -5 * CHUNK_H) {
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_SET);
-            SDL_Color col = {(bg->solid >> 16) & 0xff, (bg->solid >> 8) & 0xff, (bg->solid >> 0) & 0xff, 0xff};
+            SDL_Color col = {static_cast<Uint8>((bg->solid >> 16) & 0xff), static_cast<Uint8>((bg->solid >> 8) & 0xff), static_cast<Uint8>((bg->solid >> 0) & 0xff), 0xff};
             METAENGINE_Render_ClearColor(target, col);
 
             METAENGINE_Render_Rect *dst = new METAENGINE_Render_Rect();

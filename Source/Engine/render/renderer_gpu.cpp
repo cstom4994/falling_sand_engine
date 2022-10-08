@@ -1666,7 +1666,7 @@ bool METAENGINE_Render_IntersectClipRect(METAENGINE_Render_Target* target, METAE
 
     if (!target->use_clip_rect)
     {
-        METAENGINE_Render_Rect A = { 0.0f, 0.0f, target->w, target->h };
+        METAENGINE_Render_Rect A = { 0.0f, 0.0f, static_cast<float>(target->w), static_cast<float>(target->h) };
         return METAENGINE_Render_IntersectRect(A, B, result);
     }
 
