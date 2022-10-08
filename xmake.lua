@@ -18,6 +18,34 @@ elseif is_mode("release") then
     set_optimize("fastest")
 end
 
+if (is_os("windows")) then 
+    add_defines("_WINDOWS")
+    add_defines("UNICODE")
+    add_defines("_UNICODE")
+    add_defines("NOMINMAX")
+    add_defines("_CRT_SECURE_NO_DEPRECATE")
+    add_defines("_CRT_SECURE_NO_WARNINGS")
+    add_defines("_CRT_NONSTDC_NO_DEPRECATE")
+    add_defines("_SCL_SECURE_NO_WARNINGS")
+    add_defines("WIN32_LEAN_AND_MEAN")
+    if (is_mode("release")) then
+        set_runtimes("MD")
+    else
+        set_runtimes("MDd")
+    end
+
+    add_cxxflags(
+    "/wd4267", "/wd4244", "/wd4305", "/wd4018", 
+    "/wd4800", "/wd5030", "/wd5222", "/wd4554",
+    "/wd4002",
+    "/utf-8", "/Zc:__cplusplus"
+    )
+
+    add_cxflags("/bigobj")
+elseif (is_os("linux")) then
+
+end
+
 include_dir_list = {
     "Source",
     "Source/Engine",
@@ -31,19 +59,6 @@ include_dir_list = {
     }
 
 defines_list = {
-    "WIN32",
-    "WIN64",
-    "_WIN32",
-    "_WIN64",
-    "_WINDOWS",
-    "NOMINMAX",
-    "UNICODE",
-    "_UNICODE",
-    "_CRT_SECURE_NO_DEPRECATE",
-    "_CRT_SECURE_NO_WARNINGS",
-    "_CRT_NONSTDC_NO_DEPRECATE",
-    "_SCL_SECURE_NO_WARNINGS",
-    "WIN32_LEAN_AND_MEAN",
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
@@ -76,21 +91,11 @@ link_list = {
     "oleaut32",
 }
 
-add_cxxflags(
-    "/wd4267", "/wd4244", "/wd4305", "/wd4018", 
-    "/wd4800", "/wd5030", "/wd5222", "/wd4554",
-    "/wd4002",
-    "/utf-8", "/Zc:__cplusplus"
-    )
-
-add_cxflags("/bigobj")
-
 target("vendor")
     set_kind("static")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_defines("SPDLOG_COMPILED_LIB")
     add_files("Source/Vendor/**.c")
     add_files("Source/Vendor/**.cpp")
 	add_headerfiles("Source/Vendor/**.h")

@@ -730,7 +730,7 @@ void InitiateClass(){};
 // Call this to register class / struct type with reflection / meta data system
 template<typename ClassType>
 void RegisterClass(TypeData class_data) {
-    assert(std::is_standard_layout<ClassType>() && "Class is not standard layout!!");
+    //assert(std::is_standard_layout<ClassType>() && "Class is not standard layout!!");
     g_reflect->AddClass(class_data);
 }
 
