@@ -43,7 +43,7 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 elseif (is_os("linux")) then
-
+    add_cxxflags("-fpermissive")
 end
 
 include_dir_list = {

@@ -2540,22 +2540,22 @@ namespace ImTerm {
 #include <array>
 #include <set>
 
-#if __has_include("spdlog/spdlog.h")
-#include "spdlog/common.h"
-#include "spdlog/details/log_msg.h"
-#include "spdlog/formatter.h"
-#include "spdlog/pattern_formatter.h"
-#include "spdlog/sinks/base_sink.h"
+// #if __has_include("spdlog/spdlog.h")
+// #include "spdlog/common.h"
+// #include "spdlog/details/log_msg.h"
+// #include "spdlog/formatter.h"
+// #include "spdlog/pattern_formatter.h"
+// #include "spdlog/sinks/base_sink.h"
 
-#define IMTERM_SPDLOG_INCLUDED
-// helpers
-namespace ImTerm::details {
-    constexpr message::severity::severity_t to_imterm_severity(spdlog::level::level_enum);
-    constexpr spdlog::level::level_enum to_spdlog_severity(message::severity::severity_t);
-    constexpr spdlog::level::level_enum to_spdlog_severity(message::type);
-    inline ImTerm::message to_imterm_msg(const spdlog::details::log_msg &);
-}// namespace ImTerm::details
-#endif
+// #define IMTERM_SPDLOG_INCLUDED
+// // helpers
+// namespace ImTerm::details {
+//     constexpr message::severity::severity_t to_imterm_severity(spdlog::level::level_enum);
+//     constexpr spdlog::level::level_enum to_spdlog_severity(message::severity::severity_t);
+//     constexpr spdlog::level::level_enum to_spdlog_severity(message::type);
+//     inline ImTerm::message to_imterm_msg(const spdlog::details::log_msg &);
+// }// namespace ImTerm::details
+// #endif
 
 namespace ImTerm {
 

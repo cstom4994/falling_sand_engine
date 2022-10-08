@@ -38,7 +38,7 @@ namespace MetaEngine {
         const std::ifstream input_stream(p, std::ios_base::binary);
 
         if (input_stream.fail()) {
-            METADOT_RESLOC("Failed to open file {}", p);
+            METADOT_ERROR("Failed to open file {}", p);
             return "";
         }
 
@@ -67,12 +67,14 @@ namespace MetaEngine {
 
     const std::string &FUtil::getExecutablePath() {
         static std::string out;
+#if defined(_WIN32)
         if (out.empty()) {
             WCHAR path[260];
             GetModuleFileNameW(NULL, path, 260);
             out = ws2s(std::wstring(path));
             cleanPathString(out);
         }
+#endif
         return out;
     }
 

@@ -27,16 +27,14 @@
 #include "Engine/ImGuiHelper.hpp"
 
 
-#if _MSC_VER == 1900
-#include <tuple>
-#include <typeinfo>
-#include "boost/pfr/flat/core.hpp"
-#define IMGUI_AUTO_STRUCT_TO_TUPLE boost::pfr::flat_structure_tie
-#elif _MSC_VER > 1900
+
 #include <tuple>
 #include <typeinfo>
 #include <boost/pfr/core.hpp>
 #define IMGUI_AUTO_STRUCT_TO_TUPLE boost::pfr::structure_tie
+
+#if __cplusplus <= 201402L
+#error "TODO: fix for this compiler! (at least C++14 is required)"
 #endif
 
 namespace ImGui {

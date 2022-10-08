@@ -20,8 +20,6 @@
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
 
-#include "Engine/lib/flecs/flecs.h"
-
 #include "Engine/FileSystem.hpp"
 
 

@@ -537,11 +537,14 @@ namespace imgex {
 #include <Windows.h>
 #include <commctrl.h>
 #include <tchar.h>
-#endif /* defined( _WIN32 ) */
 
 #if !defined(WM_IMGUI_IMM32_COMMAND_BEGIN)
 #define WM_IMGUI_IMM32_COMMAND_BEGIN (WM_APP + 0x200)
 #endif /* !defined( WM_IMGUI_IMM32_COMMAND_BEGIN ) */
+
+#endif /* defined( _WIN32 ) */
+
+#if defined (_WIN32)
 
 struct ImGUIIMMCommunication
 {
@@ -590,6 +593,7 @@ struct ImGUIIMMCommunication
             list_utf8.clear();
             selection = 0;
         }
+        #
         static IMMCandidateList cocreate(const CANDIDATELIST *const src, const size_t src_size);
     };
 
@@ -637,6 +641,8 @@ public:
         return subclassify_impl(hWnd);
     }
 };
+
+#endif
 
 //#if defined( _WIN32 )
 //

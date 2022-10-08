@@ -11679,8 +11679,8 @@ typedef __int64 Int64;
 typedef unsigned __int64 UInt64;
 #define UINT64_CONST(n) n ## ui64
 #else
-typedef long long int Int64;
-typedef unsigned long long int UInt64;
+// typedef long long int Int64;
+// typedef unsigned long long int UInt64;
 #define UINT64_CONST(n) n ## ULL
 #endif
 
