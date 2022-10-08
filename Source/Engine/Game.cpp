@@ -8,6 +8,7 @@
 #include "DefaultGenerator.cpp"
 #include "MaterialTestGenerator.cpp"
 
+#include "Settings.hpp"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl.h"
 #include "imgui.h"
@@ -1366,11 +1367,12 @@ int Game::run(int argc, char *argv[]) {
                 if (ImGui::BeginMenu(ICON_FA_SYNC " 系统")) {
                     ImGui::EndMenu();
                 }
-                if (ImGui::BeginMenu(ICON_FA_ARCHIVE " 关于")) {
-                    if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-                    if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}// Disabled item
+                if (ImGui::BeginMenu(ICON_FA_ARCHIVE " 工具")) {
+                    if (ImGui::MenuItem("八个雅鹿", "CTRL+A")) {}
                     ImGui::Separator();
-                    if (ImGui::MenuItem("草泥马", "CTRL+A")) {}
+                    ImGui::Checkbox("调整", &Settings::ui_tweak);
+                    ImGui::Checkbox("脚本编辑器", &Settings::ui_code_editor);
+                    ImGui::Checkbox("Inspector", &Settings::ui_inspector);
                     ImGui::EndMenu();
                 }
 

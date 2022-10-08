@@ -9,6 +9,7 @@
 #include "Engine/Core.hpp"
 #include "Engine/Macros.hpp"
 #include "Engine/src/ImGuiPropertyExample.h"
+#include "Settings.hpp"
 #include "imgui_internal.h"
 
 
@@ -113,8 +114,8 @@ void IngameUI::DrawIngame(Game *game) {
     }
 
     //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("Options").x / 2);
-    ImGui::Text("Options");
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
+    ImGui::Text("选项");
     //ImGui::PopFont();
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
@@ -132,8 +133,8 @@ void IngameUI::DrawIngame(Game *game) {
         visible = false;
     }
     ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("Continue").x / 2, selPos.y));
-    ImGui::Text("Continue");
+    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("继续").x / 2, selPos.y));
+    ImGui::Text("继续");
     //ImGui::PopFont();
 
     ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 2));
@@ -144,8 +145,8 @@ void IngameUI::DrawIngame(Game *game) {
         state = 1;
     }
     ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("Options").x / 2, selPos.y));
-    ImGui::Text("Options");
+    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("选项").x / 2, selPos.y));
+    ImGui::Text("选项");
     //ImGui::PopFont();
 
 
@@ -158,8 +159,8 @@ void IngameUI::DrawIngame(Game *game) {
         game->quitToMainMenu();
     }
     ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("Quit to Main Menu").x / 2, selPos.y));
-    ImGui::Text("Quit to Main Menu");
+    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("离开到主菜单").x / 2, selPos.y));
+    ImGui::Text("离开到主菜单");
     //ImGui::PopFont();
 
     ImGui::End();
@@ -192,8 +193,8 @@ void OptionsUI::Draw(Game *game) {
     int createWorldWidth = 350;
 
     //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("Options").x / 2);
-    ImGui::Text("Options");
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
+    ImGui::Text("选项");
     //ImGui::PopFont();
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
@@ -212,7 +213,7 @@ void OptionsUI::Draw(Game *game) {
             ImGui::EndChild();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Video")) {
+        if (ImGui::BeginTabItem("视频")) {
             tab = 1;
             ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
 
@@ -221,7 +222,7 @@ void OptionsUI::Draw(Game *game) {
             ImGui::EndChild();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Audio")) {
+        if (ImGui::BeginTabItem("音频")) {
             tab = 2;
             ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
 
@@ -230,7 +231,7 @@ void OptionsUI::Draw(Game *game) {
             ImGui::EndChild();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Input")) {
+        if (ImGui::BeginTabItem("输入")) {
             tab = 3;
             ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
 
@@ -260,22 +261,22 @@ void OptionsUI::Draw(Game *game) {
         IngameUI::state = 0;
     }
     ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Back").x / 2, selPos.y));
-    ImGui::Text("Back");
+    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
+    ImGui::Text("返回");
     //ImGui::PopFont();
 }
 
 void OptionsUI::DrawGeneral(Game *game) {
-    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Gameplay");
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "游戏内容");
     ImGui::Indent(4);
 
-    ImGui::Checkbox("Material Tooltips", &Settings::draw_material_info);
+    ImGui::Checkbox("材质工具提示", &Settings::draw_material_info);
 
     ImGui::Unindent(4);
 }
 
 void OptionsUI::DrawVideo(Game *game) {
-    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Window");
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "窗口");
     ImGui::Indent(4);
 
     const char *items[] = {"Windowed", "Fullscreen Borderless", "Fullscreen"};
@@ -314,7 +315,7 @@ void OptionsUI::DrawVideo(Game *game) {
         game->setVSync(vsync);
     }
 
-    if (ImGui::Checkbox("Minimize on lost focus", &minimizeOnFocus)) {
+    if (ImGui::Checkbox("失去焦点后最小化", &minimizeOnFocus)) {
         game->setMinimizeOnLostFocus(minimizeOnFocus);
     }
 
@@ -325,7 +326,7 @@ void OptionsUI::DrawVideo(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Rendering");
     ImGui::Indent(4);
 
-    if (ImGui::Checkbox("HD Objects", &Settings::hd_objects)) {
+    if (ImGui::Checkbox("高清贴图", &Settings::hd_objects)) {
         METAENGINE_Render_FreeTarget(game->textureObjects->target);
         METAENGINE_Render_FreeImage(game->textureObjects);
         METAENGINE_Render_FreeTarget(game->textureObjectsBack->target);
@@ -355,15 +356,15 @@ void OptionsUI::DrawVideo(Game *game) {
     }
 
     ImGui::SetNextItemWidth(100);
-    ImGui::SliderFloat("Lighting Quality", &Settings::lightingQuality, 0.0, 1.0, "", 0);
-    ImGui::Checkbox("Simple Lighting", &Settings::simpleLighting);
-    ImGui::Checkbox("Dither Lighting", &Settings::lightingDithering);
+    ImGui::SliderFloat("光照质量", &Settings::lightingQuality, 0.0, 1.0, "", 0);
+    ImGui::Checkbox("简单光照", &Settings::simpleLighting);
+    ImGui::Checkbox("抖动光照", &Settings::lightingDithering);
 
     ImGui::Unindent(4);
 }
 
 void OptionsUI::DrawAudio(Game *game) {
-    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Volume");
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "音量");
     ImGui::Indent(4);
 
     //if(busMap.size() == 0) {
@@ -1313,8 +1314,8 @@ void CreateWorldUI::Draw(Game *game) {
         MainMenuUI::state = 2;
     }
     ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Back").x / 2, selPos.y));
-    ImGui::Text("Back");
+    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
+    ImGui::Text("返回");
     //ImGui::PopFont();
 
     if (!createWorldButtonEnabled) {
@@ -2682,11 +2683,10 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
 #endif
 
-        {
-
+        if (Settings::ui_code_editor) {
 
             auto cpos = editor.GetCursorPosition();
-            ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+            ImGui::Begin("脚本编辑器", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
             ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
@@ -2747,8 +2747,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::End();
         }
 
-
-        {
+        if (Settings::ui_tweak) {
 
             ImGui::Begin("MetaEngine Tweaks");
 
@@ -2803,7 +2802,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
         MetaEngine::GameUI_Draw(game);
 
-        DrawPropertyWindow();
+        if (Settings::ui_inspector) {
+            DrawPropertyWindow();
+        }
 
 
         // auto ct = complex_thing{};

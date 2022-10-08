@@ -2,6 +2,7 @@
 
 #include "Engine/InEngine.h"
 #include "LuaLayer.hpp"
+#include "Settings.hpp"
 #include "imgui.h"
 
 #include "Engine/lib/lua/sol/sol.hpp"
@@ -893,8 +894,7 @@ namespace MetaEngine {
 
     void LuaLayer::onImGuiRender()
     {
-        bool m_show_imgui_console = true;
-        m_console->Draw(&m_show_imgui_console);
+        m_console->Draw(&Settings::ui_code_editor);
     }
 
     sol::state* LuaLayer::getSolState()

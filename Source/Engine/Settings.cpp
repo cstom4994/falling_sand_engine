@@ -19,6 +19,10 @@ bool Settings::draw_material_info = true;
 bool Settings::draw_detailed_material_info = true;
 bool Settings::draw_temperature_map = false;
 
+bool Settings::ui_tweak = false;
+bool Settings::ui_code_editor = false;
+bool Settings::ui_inspector = false;
+
 bool Settings::draw_shaders = true;
 int Settings::water_overlay = 0;
 bool Settings::water_showFlow = true;

@@ -23,6 +23,10 @@ public:
     static bool draw_uinode_bounds;
     static bool draw_temperature_map;
 
+    static bool ui_tweak;
+    static bool ui_code_editor;
+    static bool ui_inspector;
+
     static bool draw_shaders;
     static int water_overlay;
     static bool water_showFlow;
