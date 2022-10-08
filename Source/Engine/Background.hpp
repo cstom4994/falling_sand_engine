@@ -3,19 +3,19 @@
 
 #include "Engine/render/renderer_gpu.h"
 
-#include <vector>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 class BackgroundLayer {
 public:
-    std::vector<SDL_Surface*> surface;
-    std::vector<METAENGINE_Render_Image*> texture;
+    std::vector<SDL_Surface *> surface;
+    std::vector<METAENGINE_Render_Image *> texture;
     float parralaxX;
     float parralaxY;
     float moveX;
     float moveY;
-    BackgroundLayer(SDL_Surface* texture, float parallaxX, float parallaxY, float moveX, float moveY);
+    BackgroundLayer(SDL_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY);
     void init();
 };
 
@@ -29,12 +29,13 @@ public:
 
 class Backgrounds {
 private:
-    std::unordered_map<std::string, Background*> m_backgrounds;
+    std::unordered_map<std::string, Background *> m_backgrounds;
+
 public:
     Backgrounds() = default;
     ~Backgrounds();
 
-    void Push(std::string name, Background* bg);
-    Background* Get(std::string name);
+    void Push(std::string name, Background *bg);
+    Background *Get(std::string name);
     //static Background TEST_OVERWORLD;
 };

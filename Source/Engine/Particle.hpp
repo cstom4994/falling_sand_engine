@@ -6,13 +6,13 @@
 #include <SDL.h>
 #ifndef INC_Tiles
 #include "Materials.hpp"
-#endif // !INC_Tiles
+#endif// !INC_Tiles
 
 #include <functional>
 
 class Particle {
 public:
-    MaterialInstance tile {};
+    MaterialInstance tile{};
     float x = 0;
     float y = 0;
     float vx = 0;

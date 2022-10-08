@@ -23,7 +23,6 @@ include_dir_list = {
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
-    "Source/Vendor/miniz",
     "Source/Vendor/glad/include",
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",

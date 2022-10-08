@@ -20,25 +20,24 @@ bool Networking::init() {
     return true;
 }
 
-Server* Server::start(enet_uint16 port) {
-    Server* server = new Server();
+Server *Server::start(enet_uint16 port) {
+    Server *server = new Server();
     server->address = ENetAddress();
     server->address.host = ENET_HOST_ANY;
     //enet_address_set_host_ip(&server->address, "172.23.16.150");
     server->address.port = port;
 
     server->server = enet_host_create(&server->address,
-        32, // max client count
-        2,  // number of channels
-        0,  // unlimited incoming bandwidth
-        0); // unlimited outgoing bandwidth
+                                      32,// max client count
+                                      2, // number of channels
+                                      0, // unlimited incoming bandwidth
+                                      0);// unlimited outgoing bandwidth
 
     if (server->server == NULL) {
         METADOT_ERROR("An error occurred while trying to create an ENet server host.");
         delete server;
         return NULL;
-    }
-    else {
+    } else {
         char ch[20];
         enet_address_get_host_ip(&server->server->address, ch, 20);
         METADOT_INFO("[SERVER] Started on {}:{}.", ch, server->server->address.port);
@@ -53,32 +52,32 @@ void Server::tick() {
     // poll for events
     while (enet_host_service(server, &event, 0) > 0) {
         switch (event.type) {
-        case ENET_EVENT_TYPE_CONNECT:
-            METADOT_INFO("[SERVER] A new client connected from {}:{}.",
-                event.peer->address.host,
-                event.peer->address.port);
+            case ENET_EVENT_TYPE_CONNECT:
+                METADOT_INFO("[SERVER] A new client connected from {}:{}.",
+                             event.peer->address.host,
+                             event.peer->address.port);
 
-            // arbitrary client data
-            event.peer->data = (void*)"Client data";
-            enet_peer_timeout(event.peer, 16, 3000, 10000);
+                // arbitrary client data
+                event.peer->data = (void *) "Client data";
+                enet_peer_timeout(event.peer, 16, 3000, 10000);
 
-            break;
-        case ENET_EVENT_TYPE_RECEIVE:
-            METADOT_BUG("[SERVER] A packet of length {} containing {} was received from {} on channel {}.",
-                event.packet->dataLength,
-                event.packet->data,
-                event.peer->data,
-                event.channelID);
+                break;
+            case ENET_EVENT_TYPE_RECEIVE:
+                METADOT_BUG("[SERVER] A packet of length {} containing {} was received from {} on channel {}.",
+                            event.packet->dataLength,
+                            event.packet->data,
+                            event.peer->data,
+                            event.channelID);
 
-            // done using packet
-            enet_packet_destroy(event.packet);
+                // done using packet
+                enet_packet_destroy(event.packet);
 
-            break;
-        case ENET_EVENT_TYPE_DISCONNECT:
-            METADOT_BUG("[SERVER] {} disconnected.", event.peer->data);
+                break;
+            case ENET_EVENT_TYPE_DISCONNECT:
+                METADOT_BUG("[SERVER] {} disconnected.", event.peer->data);
 
-            // clear arbitrary data
-            event.peer->data = NULL;
+                // clear arbitrary data
+                event.peer->data = NULL;
         }
     }
     //METADOT_BUG("[SERVER] done tick");
@@ -88,15 +87,15 @@ Server::~Server() {
     if (server != NULL) enet_host_destroy(server);
 }
 
-Client* Client::start() {
+Client *Client::start() {
 
-    Client* client = new Client();
+    Client *client = new Client();
 
-    client->client = enet_host_create(NULL, // NULL means to make a client
-        1,  // number of connections
-        2,  // number of channels
-        0,  // unlimited incoming bandwidth
-        0); // unlimited outgoing bandwidth
+    client->client = enet_host_create(NULL,// NULL means to make a client
+                                      1,   // number of connections
+                                      2,   // number of channels
+                                      0,   // unlimited incoming bandwidth
+                                      0);  // unlimited outgoing bandwidth
 
     if (client->client == NULL) {
         METADOT_ERROR("An error occurred while trying to create an ENet client host.");
@@ -107,7 +106,7 @@ Client* Client::start() {
     return client;
 }
 
-bool Client::connect(const char* ip, enet_uint16 port) {
+bool Client::connect(const char *ip, enet_uint16 port) {
     ENetEvent event;
 
     enet_address_set_host(&address, ip);
@@ -129,8 +128,7 @@ bool Client::connect(const char* ip, enet_uint16 port) {
         METADOT_INFO("[CLIENT] Connection to {}:{} succeeded.", ch, peer->address.port);
 
         return true;
-    }
-    else {
+    } else {
         /* Either the 5 seconds are up or a disconnect event was */
         /* received. Reset the peer in the event the 5 seconds   */
         /* had run out without any significant event.            */
@@ -153,31 +151,31 @@ void Client::tick() {
     // poll for events
     while (enet_host_service(client, &event, 0) > 0) {
         switch (event.type) {
-        case ENET_EVENT_TYPE_CONNECT:
-            METADOT_INFO("[CLIENT] Connected to server at {}:{}.",
-                event.peer->address.host,
-                event.peer->address.port);
+            case ENET_EVENT_TYPE_CONNECT:
+                METADOT_INFO("[CLIENT] Connected to server at {}:{}.",
+                             event.peer->address.host,
+                             event.peer->address.port);
 
-            // arbitrary client data
-            event.peer->data = (void*)"Client information";
+                // arbitrary client data
+                event.peer->data = (void *) "Client information";
 
-            break;
-        case ENET_EVENT_TYPE_RECEIVE:
-            METADOT_BUG("[CLIENT] A packet of length {} containing {} was received from {} on channel {}.",
-                event.packet->dataLength,
-                event.packet->data,
-                event.peer->data,
-                event.channelID);
+                break;
+            case ENET_EVENT_TYPE_RECEIVE:
+                METADOT_BUG("[CLIENT] A packet of length {} containing {} was received from {} on channel {}.",
+                            event.packet->dataLength,
+                            event.packet->data,
+                            event.peer->data,
+                            event.channelID);
 
-            // done with packet
-            enet_packet_destroy(event.packet);
+                // done with packet
+                enet_packet_destroy(event.packet);
 
-            break;
-        case ENET_EVENT_TYPE_DISCONNECT:
-            METADOT_BUG("[CLIENT] {} disconnected.\n", event.peer->data);
+                break;
+            case ENET_EVENT_TYPE_DISCONNECT:
+                METADOT_BUG("[CLIENT] {} disconnected.\n", event.peer->data);
 
-            // clear arbitrary data
-            event.peer->data = NULL;
+                // clear arbitrary data
+                event.peer->data = NULL;
         }
     }
 }

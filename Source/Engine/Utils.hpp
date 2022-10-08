@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "Engine/InEngine.h"
 #include "Engine/Core.hpp"
+#include "Engine/InEngine.h"
+#include <algorithm>
 #include <bitset>
 #include <unordered_map>
-#include <algorithm>
 
 class Time {
 public:
@@ -18,52 +18,43 @@ namespace MetaEngine::SUtil {
     typedef std::string Stringo;
     typedef std::string_view Viewo;
 
-    inline bool equals(const char* a, const char* c)
-    {
+    inline bool equals(const char *a, const char *c) {
         return strcmp(a, c) == 0;
     }
 
-    inline bool startsWith(Viewo s, Viewo prefix)
-    {
+    inline bool startsWith(Viewo s, Viewo prefix) {
         return prefix.size() <= s.size() && (strncmp(prefix.data(), s.data(), prefix.size()) == 0);
     }
 
-    inline bool startsWith(Viewo s, char prefix)
-    {
+    inline bool startsWith(Viewo s, char prefix) {
         return !s.empty() && s[0] == prefix;
     }
 
-    inline bool startsWith(const char* s, const char* prefix)
-    {
+    inline bool startsWith(const char *s, const char *prefix) {
         return strncmp(s, prefix, strlen(prefix)) == 0;
     }
 
 
-    inline bool endsWith(Viewo s, Viewo suffix)
-    {
+    inline bool endsWith(Viewo s, Viewo suffix) {
         return suffix.size() <= s.size() && strncmp(suffix.data(), s.data() + s.size() - suffix.size(), suffix.size()) == 0;
     }
 
-    inline bool endsWith(Viewo s, char suffix)
-    {
+    inline bool endsWith(Viewo s, char suffix) {
         return !s.empty() && s[s.size() - 1] == suffix;
     }
 
-    inline bool endsWith(const char* s, const char* suffix)
-    {
+    inline bool endsWith(const char *s, const char *suffix) {
         auto sizeS = strlen(s);
         auto sizeSuf = strlen(suffix);
 
         return sizeSuf <= sizeS && strncmp(suffix, s + sizeS - sizeSuf, sizeSuf) == 0;
     }
 
-    inline void toLower(char* s)
-    {
+    inline void toLower(char *s) {
         int l = strlen(s);
         int ind = 0;
         // spec of "simd"
-        for (int i = 0; i < l / 4; i++)
-        {
+        for (int i = 0; i < l / 4; i++) {
             s[ind] = std::tolower(s[ind]);
             s[ind + 1] = std::tolower(s[ind + 1]);
             s[ind + 2] = std::tolower(s[ind + 2]);
@@ -71,20 +62,17 @@ namespace MetaEngine::SUtil {
             ind += 4;
         }
         //do the rest linearly
-        for (int i = 0; i < (l & 3); ++i)
-        {
+        for (int i = 0; i < (l & 3); ++i) {
             s[ind++] = std::tolower(s[ind]);
         }
     }
 
-    inline void toLower(Stringo& ss)
-    {
+    inline void toLower(Stringo &ss) {
         int l = ss.size();
         auto s = ss.data();
         int ind = 0;
         // spec of "simd"
-        for (int i = 0; i < l / 4; i++)
-        {
+        for (int i = 0; i < l / 4; i++) {
             s[ind] = std::tolower(s[ind]);
             s[ind + 1] = std::tolower(s[ind + 1]);
             s[ind + 2] = std::tolower(s[ind + 2]);
@@ -96,13 +84,11 @@ namespace MetaEngine::SUtil {
             s[ind++] = std::tolower(s[ind]);
     }
 
-    inline void toUpper(char* s)
-    {
+    inline void toUpper(char *s) {
         int l = strlen(s);
         int ind = 0;
         // spec of "simd"
-        for (int i = 0; i < l / 4; i++)
-        {
+        for (int i = 0; i < l / 4; i++) {
             s[ind] = std::toupper(s[ind]);
             s[ind + 1] = std::toupper(s[ind + 1]);
             s[ind + 2] = std::toupper(s[ind + 2]);
@@ -110,20 +96,17 @@ namespace MetaEngine::SUtil {
             ind += 4;
         }
         //do the rest linearly
-        for (int i = 0; i < (l & 3); ++i)
-        {
+        for (int i = 0; i < (l & 3); ++i) {
             s[ind++] = std::toupper(s[ind]);
         }
     }
 
-    inline void toUpper(Stringo& ss)
-    {
+    inline void toUpper(Stringo &ss) {
         int l = ss.size();
         auto s = ss.data();
         int ind = 0;
         // spec of "simd"
-        for (int i = 0; i < l / 4; i++)
-        {
+        for (int i = 0; i < l / 4; i++) {
             s[ind] = std::toupper(s[ind]);
             s[ind + 1] = std::toupper(s[ind + 1]);
             s[ind + 2] = std::toupper(s[ind + 2]);
@@ -135,40 +118,33 @@ namespace MetaEngine::SUtil {
             s[ind++] = std::toupper(s[ind]);
     }
 
-    inline bool replaceWith(char* src, char what, char with)
-    {
-        for (int i = 0; true; ++i)
-        {
-            auto& id = src[i];
+    inline bool replaceWith(char *src, char what, char with) {
+        for (int i = 0; true; ++i) {
+            auto &id = src[i];
             if (id == '\0') return true;
             bool isWhat = id == what;
             id = isWhat * with + src[i] * (!isWhat);
         }
     }
 
-    inline bool replaceWith(Stringo& src, char what, char with)
-    {
-        for (int i = 0; i < src.size(); ++i)
-        {
-            auto& id = src.data()[i];
+    inline bool replaceWith(Stringo &src, char what, char with) {
+        for (int i = 0; i < src.size(); ++i) {
+            auto &id = src.data()[i];
             bool isWhat = id == what;
             id = isWhat * with + src[i] * (!isWhat);
         }
         return true;
     }
 
-    inline bool replaceWith(Stringo& src, const char* what, const char* with)
-    {
+    inline bool replaceWith(Stringo &src, const char *what, const char *with) {
         Stringo out;
         size_t whatlen = strlen(what);
         out.reserve(src.size());
         size_t ind = 0;
         size_t lastInd = 0;
-        while (true)
-        {
+        while (true) {
             ind = src.find(what, ind);
-            if (ind == Stringo::npos)
-            {
+            if (ind == Stringo::npos) {
                 out += src.substr(lastInd);
                 break;
             }
@@ -181,8 +157,7 @@ namespace MetaEngine::SUtil {
     }
 
 
-    inline bool replaceWith(Stringo& src, const char* what, const char* with, int times)
-    {
+    inline bool replaceWith(Stringo &src, const char *what, const char *with, int times) {
         for (int i = 0; i < times; ++i)
             replaceWith(src, what, with);
         return true;
@@ -211,19 +186,14 @@ namespace MetaEngine::SUtil {
             }
         }
     }*/
-    inline void splitString(const Stringo& line, std::vector<Stringo>& words, const char* divider = " \n\t")
-    {
+    inline void splitString(const Stringo &line, std::vector<Stringo> &words, const char *divider = " \n\t") {
         auto beginIdx = line.find_first_not_of(divider, 0);
-        while (beginIdx != Stringo::npos)
-        {
+        while (beginIdx != Stringo::npos) {
             auto endIdx = line.find_first_of(divider, beginIdx);
-            if (endIdx != Stringo::npos)
-            {
+            if (endIdx != Stringo::npos) {
                 words.emplace_back(line.data() + beginIdx, endIdx - beginIdx);
                 beginIdx = line.find_first_not_of(divider, endIdx);
-            }
-            else
-            {
+            } else {
                 words.emplace_back(line.data() + beginIdx, line.size() - beginIdx);
                 break;
             }
@@ -256,14 +226,14 @@ namespace MetaEngine::SUtil {
     //			"\n\nBoo\n" -> "Boo"
     //
     //
-    //	enable throwException to throw Stringo("No Word Left") 
+    //	enable throwException to throw Stringo("No Word Left")
     //	if(operator bool()==false)
     //		-> on calling operator*() or operator->()
     //
-    template <bool ignoreBlanks = false, typename DividerType = const char*, bool throwException = false>
-    class SplitIterator
-    {
-        static_assert(std::is_same<DividerType, const char*>::value || std::is_same<DividerType, char>::value);
+    template<bool ignoreBlanks = false, typename DividerType = const char *, bool throwException = false>
+    class SplitIterator {
+        static_assert(std::is_same<DividerType, const char *>::value || std::is_same<DividerType, char>::value);
+
     private:
         Viewo m_source;
         Viewo m_pointer;
@@ -272,28 +242,22 @@ namespace MetaEngine::SUtil {
         bool m_ending = false;
 
 
-        void step()
-        {
+        void step() {
             if (!operator bool())
                 return;
 
-            if constexpr (ignoreBlanks)
-            {
+            if constexpr (ignoreBlanks) {
                 bool first = true;
-                while (m_pointer.empty() || first)
-                {
+                while (m_pointer.empty() || first) {
                     first = false;
 
                     if (!operator bool())
                         return;
                     //check if this is ending
                     //the next one will be false
-                    if (m_source.size() == m_pointer.size())
-                    {
+                    if (m_source.size() == m_pointer.size()) {
                         m_source = Viewo(nullptr, 0);
-                    }
-                    else
-                    {
+                    } else {
                         auto viewSize = m_pointer.size();
                         m_source = Viewo(m_source.data() + viewSize + 1, m_source.size() - viewSize - 1);
                         //shift source by viewSize
@@ -305,18 +269,13 @@ namespace MetaEngine::SUtil {
                             m_pointer = Viewo(m_source.data(), m_source.size());
                     }
                 }
-            }
-            else
-            {
+            } else {
                 //check if this is ending
                 //the next one will be false
-                if (m_source.size() == m_pointer.size())
-                {
+                if (m_source.size() == m_pointer.size()) {
                     m_source = Viewo(nullptr, 0);
                     m_ending = false;
-                }
-                else
-                {
+                } else {
                     auto viewSize = m_pointer.size();
                     m_source = Viewo(m_source.data() + viewSize + 1, m_source.size() - viewSize - 1);
                     //shift source by viewSize
@@ -333,59 +292,50 @@ namespace MetaEngine::SUtil {
 
     public:
         SplitIterator(Viewo src, DividerType divider)
-            : m_source(src), m_divider(divider)
-        {
+            : m_source(src), m_divider(divider) {
             auto div = m_source.find_first_of(m_divider, 0);
             m_pointer = Viewo(m_source.data(), div == Stringo::npos ? m_source.size() : div);
-            if constexpr (ignoreBlanks)
-            {
+            if constexpr (ignoreBlanks) {
                 if (m_pointer.empty())
                     step();
             }
         }
 
 
-        SplitIterator(const SplitIterator& s) = default;
+        SplitIterator(const SplitIterator &s) = default;
 
-        operator bool() const
-        {
+        operator bool() const {
             return !m_source.empty() || m_ending;
         }
 
-        SplitIterator& operator+=(size_t delta)
-        {
-            while (this->operator bool() && delta)
-            {
+        SplitIterator &operator+=(size_t delta) {
+            while (this->operator bool() && delta) {
                 delta--;
                 step();
             }
             return (*this);
         }
 
-        SplitIterator& operator++()
-        {
+        SplitIterator &operator++() {
             if (this->operator bool())
                 step();
             return (*this);
         }
 
-        SplitIterator operator++(int)
-        {
+        SplitIterator operator++(int) {
             auto temp(*this);
             step();
             return temp;
         }
 
-        const Viewo& operator*()
-        {
-            if (throwException && !operator bool()) //Attempt to access* it or it->when no word is left in the iterator
+        const Viewo &operator*() {
+            if (throwException && !operator bool())//Attempt to access* it or it->when no word is left in the iterator
                 throw Stringo("No Word Left");
             return m_pointer;
         }
 
-        const Viewo* operator->()
-        {
-            if (throwException && !operator bool()) //Attempt to access *it or it-> when no word is left in the iterator
+        const Viewo *operator->() {
+            if (throwException && !operator bool())//Attempt to access *it or it-> when no word is left in the iterator
                 throw Stringo("No Word Left");
             return &m_pointer;
         }
@@ -394,70 +344,58 @@ namespace MetaEngine::SUtil {
     //removes comments: (replaces with ' ')
     //	1. one liner starting with "//"
     //	2. block comment bounded by "/*" and "*/"
-    inline void removeComments(Stringo& src)
-    {
+    inline void removeComments(Stringo &src) {
         size_t offset = 0;
-        bool opened = false; //multiliner opened
+        bool opened = false;//multiliner opened
         size_t openedStart = 0;
-        while (true)
-        {
+        while (true) {
             auto slash = src.find_first_of('/', offset);
-            if (slash != Stringo::npos)
-            {
+            if (slash != Stringo::npos) {
                 Stringo s = src.substr(slash);
-                if (!opened)
-                {
+                if (!opened) {
                     if (src.size() == slash - 1)
                         return;
 
                     char next = src[slash + 1];
-                    if (next == '/') //one liner
+                    if (next == '/')//one liner
                     {
                         auto end = src.find_first_of('\n', slash + 1);
-                        if (end == Stringo::npos)
-                        {
+                        if (end == Stringo::npos) {
                             memset(src.data() + slash, ' ', src.size() - 1 - slash);
                             return;
                         }
                         memset(src.data() + slash, ' ', end - slash);
                         offset = end;
-                    }
-                    else if (next == '*')
-                    {
+                    } else if (next == '*') {
                         opened = true;
                         offset = slash + 1;
                         openedStart = slash;
-                    }
-                    else offset = slash + 1;
-                }
-                else
-                {
-                    if (src[slash - 1] == '*')
-                    {
+                    } else
+                        offset = slash + 1;
+                } else {
+                    if (src[slash - 1] == '*') {
                         opened = false;
                         memset(src.data() + openedStart, ' ', slash - openedStart);
                         offset = slash + 1;
                     }
                     offset = slash + 1;
                 }
-            }
-            else if (opened)
-            {
+            } else if (opened) {
                 memset(src.data() + openedStart, ' ', src.size() - 1 - openedStart);
                 return;
-            }
-            else return;
+            } else
+                return;
         }
     }
 
     // converts utf8 encoded string to zero terminated int array of codePoints
     // transfers ownership of returned array (don't forget free())
     // length will be set to size returned array (excluding zero terminator)
-    const int* utf8toCodePointsArray(const char* c, int* length = nullptr);
+    const int *utf8toCodePointsArray(const char *c, int *length = nullptr);
 
-    std::u32string utf8toCodePoints(const char* c);
+    std::u32string utf8toCodePoints(const char *c);
 
-    inline std::u32string utf8toCodePoints(const Stringo& c) { return utf8toCodePoints(c.c_str()); }
+    inline std::u32string utf8toCodePoints(const Stringo &c) { return utf8toCodePoints(c.c_str()); }
 
     // converts ascii u32 string to string
     // use only if you know that there are only ascii characters
@@ -465,11 +403,9 @@ namespace MetaEngine::SUtil {
 
 
     // returns first occurrence of digit or nullptr
-    inline const char* skipToNextDigit(const char* c)
-    {
+    inline const char *skipToNextDigit(const char *c) {
         c--;
-        while (*(++c))
-        {
+        while (*(++c)) {
             if (*c >= '0' && *c <= '9')
                 return c;
         }
@@ -478,25 +414,21 @@ namespace MetaEngine::SUtil {
 
     // keeps parsing numbers until size is reached or until there are no numbers
     // actualSize is set to number of numbers actually parsed
-    template <int size, typename numberType>
-    void parseNumbers(const char* c, numberType ray[size], int* actualSize = nullptr)
-    {
+    template<int size, typename numberType>
+    void parseNumbers(const char *c, numberType ray[size], int *actualSize = nullptr) {
         size_t chars = 0;
 
-        for (int i = 0; i < size; ++i)
-        {
-            if ((c = skipToNextDigit(c + chars)) != nullptr)
-            {
+        for (int i = 0; i < size; ++i) {
+            if ((c = skipToNextDigit(c + chars)) != nullptr) {
                 if (std::is_same<numberType, int>::value)
                     ray[i] = std::stoi(c, &chars);
                 else if (std::is_same<numberType, float>::value)
                     ray[i] = std::stof(c, &chars);
                 else if (std::is_same<numberType, double>::value)
                     ray[i] = std::stod(c, &chars);
-                else static_assert("invalid type");
-            }
-            else
-            {
+                else
+                    static_assert("invalid type");
+            } else {
                 if (actualSize) *actualSize = i;
                 return;
             }
@@ -507,97 +439,73 @@ namespace MetaEngine::SUtil {
 
     // keeps parsing numbers until size is reached or until there are no numbers
     // actualSize is set to number of numbers actually parsed
-    template <int size, typename numberType>
-    void parseNumbers(const Stringo& s, numberType ray[size], int* actualSize = nullptr)
-    {
+    template<int size, typename numberType>
+    void parseNumbers(const Stringo &s, numberType ray[size], int *actualSize = nullptr) {
         parseNumbers<size>(s.c_str(), ray, actualSize);
     }
 
-}
+}// namespace MetaEngine::SUtil
 
 
-
-
-
-
-
-
-
-
-
-
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <stdlib.h>
-#include <iostream>
-#include <algorithm>
-#include <sstream>
-#include <iomanip>
 
-namespace MetaEngine
-{
-    namespace Utils
-    {
-        class ArgBase
-        {
+namespace MetaEngine {
+    namespace Utils {
+        class ArgBase {
         public:
             ArgBase() {}
             virtual ~ArgBase() {}
-            virtual void Format(std::ostringstream& ss, const std::string& fmt) = 0;
+            virtual void Format(std::ostringstream &ss, const std::string &fmt) = 0;
         };
 
-        template <class T>
-        class Arg : public ArgBase
-        {
+        template<class T>
+        class Arg : public ArgBase {
         public:
             Arg(T arg) : m_arg(arg) {}
             virtual ~Arg() {}
-            virtual void Format(std::ostringstream& ss, const std::string& fmt)
-            {
+            virtual void Format(std::ostringstream &ss, const std::string &fmt) {
                 ss << m_arg;
             }
+
         private:
             T m_arg;
         };
 
-        class ArgArray : public std::vector < ArgBase* >
-        {
+        class ArgArray : public std::vector<ArgBase *> {
         public:
             ArgArray() {}
-            ~ArgArray()
-            {
-                std::for_each(begin(), end(), [](ArgBase* p) { delete p; });
+            ~ArgArray() {
+                std::for_each(begin(), end(), [](ArgBase *p) { delete p; });
             }
         };
 
-        static void FormatItem(std::ostringstream& ss, const std::string& item, const ArgArray& args)
-        {
+        static void FormatItem(std::ostringstream &ss, const std::string &item, const ArgArray &args) {
             int index = 0;
             int alignment = 0;
             std::string fmt;
 
-            char* endptr = nullptr;
+            char *endptr = nullptr;
             index = strtol(&item[0], &endptr, 10);
-            if (index < 0 || index >= args.size())
-            {
+            if (index < 0 || index >= args.size()) {
                 return;
             }
 
-            if (*endptr == ',')
-            {
+            if (*endptr == ',') {
                 alignment = strtol(endptr + 1, &endptr, 10);
-                if (alignment > 0)
-                {
+                if (alignment > 0) {
                     ss << std::right << std::setw(alignment);
-                }
-                else if (alignment < 0)
-                {
+                } else if (alignment < 0) {
                     ss << std::left << std::setw(-alignment);
                 }
             }
 
-            if (*endptr == ':')
-            {
+            if (*endptr == ':') {
                 fmt = endptr + 1;
             }
 
@@ -606,24 +514,20 @@ namespace MetaEngine
             return;
         }
 
-        template <class T>
-        static void Transfer(ArgArray& argArray, T t)
-        {
+        template<class T>
+        static void Transfer(ArgArray &argArray, T t) {
             argArray.push_back(new Arg<T>(t));
         }
 
-        template <class T, typename... Args>
-        static void Transfer(ArgArray& argArray, T t, Args&&... args)
-        {
+        template<class T, typename... Args>
+        static void Transfer(ArgArray &argArray, T t, Args &&...args) {
             Transfer(argArray, t);
             Transfer(argArray, args...);
         }
 
-        template <typename... Args>
-        std::string Format(const std::string& format, Args&&... args)
-        {
-            if (sizeof...(args) == 0)
-            {
+        template<typename... Args>
+        std::string Format(const std::string &format, Args &&...args) {
+            if (sizeof...(args) == 0) {
                 return format;
             }
 
@@ -632,18 +536,15 @@ namespace MetaEngine
             size_t start = 0;
             size_t pos = 0;
             std::ostringstream ss;
-            while (true)
-            {
+            while (true) {
                 pos = format.find('{', start);
-                if (pos == std::string::npos)
-                {
+                if (pos == std::string::npos) {
                     ss << format.substr(start);
                     break;
                 }
 
                 ss << format.substr(start, pos - start);
-                if (format[pos + 1] == '{')
-                {
+                if (format[pos + 1] == '{') {
                     ss << '{';
                     start = pos + 2;
                     continue;
@@ -651,8 +552,7 @@ namespace MetaEngine
 
                 start = pos + 1;
                 pos = format.find('}', start);
-                if (pos == std::string::npos)
-                {
+                if (pos == std::string::npos) {
                     ss << format.substr(start - 1);
                     break;
                 }
@@ -663,5 +563,5 @@ namespace MetaEngine
 
             return ss.str();
         }
-    }
-}
+    }// namespace Utils
+}// namespace MetaEngine

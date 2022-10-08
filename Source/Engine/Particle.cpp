@@ -4,8 +4,7 @@
 #include "Particle.hpp"
 #include <iostream>
 
-Particle::Particle(MaterialInstance tile, float x, float y, float vx, float vy, float ax, float ay)
-{
+Particle::Particle(MaterialInstance tile, float x, float y, float vx, float vy, float ax, float ay) {
     this->tile = tile;
     this->x = x;
     this->y = y;
@@ -15,8 +14,7 @@ Particle::Particle(MaterialInstance tile, float x, float y, float vx, float vy, 
     this->ay = ay;
 }
 
-Particle::Particle(const Particle &part)
-{
+Particle::Particle(const Particle &part) {
     tile = part.tile;
     x = part.x;
     y = part.y;

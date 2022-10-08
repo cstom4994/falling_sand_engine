@@ -2,8 +2,8 @@
 
 
 #include "Materials.hpp"
-#include "Textures.hpp"
 #include "Macros.hpp"
+#include "Textures.hpp"
 
 Material::Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor, Uint32 color) {
     this->name = name;
@@ -17,7 +17,6 @@ Material::Material(int id, std::string name, int physicsType, int slipperyness, 
     this->emitColor = emitColor;
     this->color = color;
 }
-
 
 
 int Materials::nMaterials = 0;
@@ -64,8 +63,8 @@ Material Materials::FIRE = Material(nMaterials++, "Fire", PhysicsType::PASSABLE,
 Material Materials::FLAT_COBBLE_STONE = Material(nMaterials++, "Flat Cobblestone", PhysicsType::SOLID, 0, 1, 0);
 Material Materials::FLAT_COBBLE_DIRT = Material(nMaterials++, "Flat Hard Ground", PhysicsType::SOLID, 0, 1, 0);
 
-std::vector<Material*> Materials::MATERIALS;
-Material** Materials::MATERIALS_ARRAY;
+std::vector<Material *> Materials::MATERIALS;
+Material **Materials::MATERIALS_ARRAY;
 void Materials::init() {
 
     Materials::GENERIC_AIR.conductionSelf = 0.8;
@@ -120,7 +119,7 @@ void Materials::init() {
     REGISTER(FLAT_COBBLE_STONE);
     REGISTER(FLAT_COBBLE_DIRT);
 
-    Material* randMats = new Material[10];
+    Material *randMats = new Material[10];
     for (int i = 0; i < 10; i++) {
         char buff[10];
         snprintf(buff, sizeof(buff), "Mat_%d", i);
@@ -134,11 +133,9 @@ void Materials::init() {
         float dens = 0;
         if (type == PhysicsType::SAND) {
             dens = 5 + (rand() % 1000) / 1000.0;
-        }
-        else if (type == PhysicsType::SOUP) {
+        } else if (type == PhysicsType::SOUP) {
             dens = 4 + (rand() % 1000) / 1000.0;
-        }
-        else if (type == PhysicsType::GAS) {
+        } else if (type == PhysicsType::GAS) {
             dens = 3 + (rand() % 1000) / 1000.0;
         }
         randMats[i] = Material(nMaterials++, buff, type, 10, type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens, rand() % 4 + 1, 0, 0, rgb);
@@ -161,7 +158,7 @@ void Materials::init() {
     }
 
     for (int i = 0; i < 10; i++) {
-        Material* mat = MATERIALS[randMats[i].id];
+        Material *mat = MATERIALS[randMats[i].id];
         mat->interact = false;
         int interactions = rand() % 3 + 1;
         for (int j = 0; j < interactions; j++) {
@@ -178,8 +175,7 @@ void Materials::init() {
                         inter.data2 = rand() % 4;
                         inter.ofsX = rand() % 5 - 2;
                         inter.ofsY = rand() % 5 - 2;
-                    }
-                    else if (inter.type == INTERACT_SPAWN_MATERIAL) {
+                    } else if (inter.type == INTERACT_SPAWN_MATERIAL) {
                         inter.data1 = randMats[rand() % 10].id;
                         inter.data2 = rand() % 4;
                         inter.ofsX = rand() % 5 - 2;
@@ -201,58 +197,38 @@ void Materials::init() {
 
     MATERIALS[LAVA.id]->react = true;
     MATERIALS[LAVA.id]->nReactions = 1;
-    MATERIALS[LAVA.id]->reactions.push_back({ REACT_TEMPERATURE_BELOW, 512, OBSIDIAN.id });
+    MATERIALS[LAVA.id]->reactions.push_back({REACT_TEMPERATURE_BELOW, 512, OBSIDIAN.id});
 
     MATERIALS[WATER.id]->react = true;
     MATERIALS[WATER.id]->nReactions = 1;
-    MATERIALS[WATER.id]->reactions.push_back({ REACT_TEMPERATURE_ABOVE, 128, STEAM.id });
+    MATERIALS[WATER.id]->reactions.push_back({REACT_TEMPERATURE_ABOVE, 128, STEAM.id});
 
     MATERIALS[GOLD_ORE.id]->react = true;
     MATERIALS[GOLD_ORE.id]->nReactions = 1;
-    MATERIALS[GOLD_ORE.id]->reactions.push_back({ REACT_TEMPERATURE_ABOVE, 512, GOLD_MOLTEN.id });
+    MATERIALS[GOLD_ORE.id]->reactions.push_back({REACT_TEMPERATURE_ABOVE, 512, GOLD_MOLTEN.id});
 
     MATERIALS[GOLD_MOLTEN.id]->react = true;
     MATERIALS[GOLD_MOLTEN.id]->nReactions = 1;
-    MATERIALS[GOLD_MOLTEN.id]->reactions.push_back({ REACT_TEMPERATURE_BELOW, 128, GOLD_SOLID.id });
+    MATERIALS[GOLD_MOLTEN.id]->reactions.push_back({REACT_TEMPERATURE_BELOW, 128, GOLD_SOLID.id});
 
     MATERIALS_ARRAY = MATERIALS.data();
 
 #undef REGISTER
-
 }
-
-
 
 
 int MaterialInstance::_curID = 1;
 
-MaterialInstance::MaterialInstance(Material* mat, Uint32 color, int32_t temperature)
-{
+MaterialInstance::MaterialInstance(Material *mat, Uint32 color, int32_t temperature) {
     this->id = _curID++;
     this->mat = mat;
     this->color = color;
     this->temperature = temperature;
 }
 
-bool MaterialInstance::operator==(const MaterialInstance& other)
-{
+bool MaterialInstance::operator==(const MaterialInstance &other) {
     return this->id == other.id;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 const MaterialInstance Tiles::NOTHING = MaterialInstance(&Materials::GENERIC_AIR, 0x000000);
@@ -270,7 +246,7 @@ MaterialInstance Tiles::createTestSand() {
 }
 
 MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
-    SDL_Surface* tex = Textures::testTexture;
+    SDL_Surface *tex = Textures::testTexture;
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -287,15 +263,15 @@ MaterialInstance Tiles::createTestLiquid() {
 }
 
 MaterialInstance Tiles::createStone(int x, int y) {
-    SDL_Surface* tex = Textures::cobbleStone;
+    SDL_Surface *tex = Textures::cobbleStone;
 
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    Uint8* pixel = (Uint8*)tex->pixels;
+    Uint8 *pixel = (Uint8 *) tex->pixels;
 
-    pixel += ((ty)*tex->pitch) + ((tx) * sizeof(Uint32));
-    Uint32 rgb = *((Uint32*)pixel);
+    pixel += ((ty) *tex->pitch) + ((tx) * sizeof(Uint32));
+    Uint32 rgb = *((Uint32 *) pixel);
 
     return MaterialInstance(&Materials::STONE, rgb);
 }
@@ -315,7 +291,7 @@ MaterialInstance Tiles::createDirt() {
 }
 
 MaterialInstance Tiles::createSmoothStone(int x, int y) {
-    SDL_Surface* tex = Textures::smoothStone;
+    SDL_Surface *tex = Textures::smoothStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -326,7 +302,7 @@ MaterialInstance Tiles::createSmoothStone(int x, int y) {
 }
 
 MaterialInstance Tiles::createCobbleStone(int x, int y) {
-    SDL_Surface* tex = Textures::cobbleStone;
+    SDL_Surface *tex = Textures::cobbleStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -337,7 +313,7 @@ MaterialInstance Tiles::createCobbleStone(int x, int y) {
 }
 
 MaterialInstance Tiles::createSmoothDirt(int x, int y) {
-    SDL_Surface* tex = Textures::smoothDirt;
+    SDL_Surface *tex = Textures::smoothDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -348,7 +324,7 @@ MaterialInstance Tiles::createSmoothDirt(int x, int y) {
 }
 
 MaterialInstance Tiles::createCobbleDirt(int x, int y) {
-    SDL_Surface* tex = Textures::cobbleDirt;
+    SDL_Surface *tex = Textures::cobbleDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -359,7 +335,7 @@ MaterialInstance Tiles::createCobbleDirt(int x, int y) {
 }
 
 MaterialInstance Tiles::createSoftDirt(int x, int y) {
-    SDL_Surface* tex = Textures::softDirt;
+    SDL_Surface *tex = Textures::softDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -382,7 +358,7 @@ MaterialInstance Tiles::createLava() {
 }
 
 MaterialInstance Tiles::createCloud(int x, int y) {
-    SDL_Surface* tex = Textures::cloud;
+    SDL_Surface *tex = Textures::cloud;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -393,7 +369,7 @@ MaterialInstance Tiles::createCloud(int x, int y) {
 }
 
 MaterialInstance Tiles::createGold(int x, int y) {
-    SDL_Surface* tex = Textures::gold;
+    SDL_Surface *tex = Textures::gold;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -404,7 +380,7 @@ MaterialInstance Tiles::createGold(int x, int y) {
 }
 
 MaterialInstance Tiles::createIron(int x, int y) {
-    SDL_Surface* tex = Textures::iron;
+    SDL_Surface *tex = Textures::iron;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -415,7 +391,7 @@ MaterialInstance Tiles::createIron(int x, int y) {
 }
 
 MaterialInstance Tiles::createObsidian(int x, int y) {
-    SDL_Surface* tex = Textures::obsidian;
+    SDL_Surface *tex = Textures::obsidian;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -438,54 +414,39 @@ MaterialInstance Tiles::createFire() {
     return MaterialInstance(&Materials::FIRE, rgb);
 }
 
-MaterialInstance Tiles::create(Material* mat, int x, int y) {
+MaterialInstance Tiles::create(Material *mat, int x, int y) {
     if (mat->id == Materials::TEST_SAND.id) {
         return createTestSand();
-    }
-    else if (mat->id == Materials::TEST_TEXTURED_SAND.id) {
+    } else if (mat->id == Materials::TEST_TEXTURED_SAND.id) {
         return createTestTexturedSand(x, y);
-    }
-    else if (mat->id == Materials::TEST_LIQUID.id) {
+    } else if (mat->id == Materials::TEST_LIQUID.id) {
         return createTestLiquid();
-    }
-    else if (mat->id == Materials::STONE.id) {
+    } else if (mat->id == Materials::STONE.id) {
         return createStone(x, y);
-    }
-    else if (mat->id == Materials::GRASS.id) {
+    } else if (mat->id == Materials::GRASS.id) {
         return createGrass();
-    }
-    else if (mat->id == Materials::DIRT.id) {
+    } else if (mat->id == Materials::DIRT.id) {
         return createDirt();
-    }
-    else if (mat->id == Materials::SMOOTH_STONE.id) {
+    } else if (mat->id == Materials::SMOOTH_STONE.id) {
         return createSmoothStone(x, y);
-    }
-    else if (mat->id == Materials::COBBLE_STONE.id) {
+    } else if (mat->id == Materials::COBBLE_STONE.id) {
         return createCobbleStone(x, y);
-    }
-    else if (mat->id == Materials::SMOOTH_DIRT.id) {
+    } else if (mat->id == Materials::SMOOTH_DIRT.id) {
         return createSmoothDirt(x, y);
-    }
-    else if (mat->id == Materials::COBBLE_DIRT.id) {
+    } else if (mat->id == Materials::COBBLE_DIRT.id) {
         return createCobbleDirt(x, y);
-    }
-    else if (mat->id == Materials::SOFT_DIRT.id) {
+    } else if (mat->id == Materials::SOFT_DIRT.id) {
         return createSoftDirt(x, y);
-    }
-    else if (mat->id == Materials::WATER.id) {
+    } else if (mat->id == Materials::WATER.id) {
         return createWater();
-    }
-    else if (mat->id == Materials::LAVA.id) {
+    } else if (mat->id == Materials::LAVA.id) {
         return createLava();
-    }
-    else if (mat->id == Materials::CLOUD.id) {
+    } else if (mat->id == Materials::CLOUD.id) {
         return createCloud(x, y);
-    }
-    else if (mat->id == Materials::GOLD_ORE.id) {
+    } else if (mat->id == Materials::GOLD_ORE.id) {
         return createGold(x, y);
-    }
-    else if (mat->id == Materials::GOLD_MOLTEN.id) {
-        SDL_Surface* tex = Textures::goldMolten;
+    } else if (mat->id == Materials::GOLD_MOLTEN.id) {
+        SDL_Surface *tex = Textures::goldMolten;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -493,9 +454,8 @@ MaterialInstance Tiles::create(Material* mat, int x, int y) {
         Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::GOLD_MOLTEN, rgb);
-    }
-    else if (mat->id == Materials::GOLD_SOLID.id) {
-        SDL_Surface* tex = Textures::goldSolid;
+    } else if (mat->id == Materials::GOLD_SOLID.id) {
+        SDL_Surface *tex = Textures::goldSolid;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -503,21 +463,16 @@ MaterialInstance Tiles::create(Material* mat, int x, int y) {
         Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::GOLD_SOLID, rgb);
-    }
-    else if (mat->id == Materials::IRON_ORE.id) {
+    } else if (mat->id == Materials::IRON_ORE.id) {
         return createIron(x, y);
-    }
-    else if (mat->id == Materials::OBSIDIAN.id) {
+    } else if (mat->id == Materials::OBSIDIAN.id) {
         return createObsidian(x, y);
-    }
-    else if (mat->id == Materials::STEAM.id) {
+    } else if (mat->id == Materials::STEAM.id) {
         return createSteam();
-    }
-    else if (mat->id == Materials::FIRE.id) {
+    } else if (mat->id == Materials::FIRE.id) {
         return createFire();
-    }
-    else if (mat->id == Materials::FLAT_COBBLE_STONE.id) {
-        SDL_Surface* tex = Textures::flatCobbleStone;
+    } else if (mat->id == Materials::FLAT_COBBLE_STONE.id) {
+        SDL_Surface *tex = Textures::flatCobbleStone;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -525,9 +480,8 @@ MaterialInstance Tiles::create(Material* mat, int x, int y) {
         Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::FLAT_COBBLE_STONE, rgb);
-    }
-    else if (mat->id == Materials::FLAT_COBBLE_DIRT.id) {
-        SDL_Surface* tex = Textures::flatCobbleDirt;
+    } else if (mat->id == Materials::FLAT_COBBLE_DIRT.id) {
+        SDL_Surface *tex = Textures::flatCobbleDirt;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;

@@ -2,19 +2,19 @@
 
 #include "ImGuiLayer.hpp"
 
-#include <glad/glad.h>
 #include "Engine/ImGuiBase.h"
 #include "Engine/ImGuiHelper.hpp"
+#include <glad/glad.h>
 
-#include "imgui_internal.h"
-#include "Engine/Macros.hpp"
 #include "Engine/Core.hpp"
+#include "Engine/Macros.hpp"
 #include "Engine/src/ImGuiPropertyExample.h"
+#include "imgui_internal.h"
 
 
-#include "Textures.hpp"
-#include "InEngine.h"
 #include "Game.hpp"
+#include "InEngine.h"
+#include "Textures.hpp"
 
 #include <map>
 
@@ -25,16 +25,15 @@
 
 #define _METADOT_IMM32
 
-#if defined (_METADOT_IMM32)
+#if defined(_METADOT_IMM32)
 
-#if defined (_WIN32)
-#include <Windows.h>
+#if defined(_WIN32)
 #include <CommCtrl.h>
+#include <Windows.h>
 //#include "Engine/ImGuiHelper.hpp"
 #endif /* defined( _WIN32 ) */
 
-static int common_control_initialize()
-{
+static int common_control_initialize() {
     HMODULE comctl32 = nullptr;
     if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"Comctl32.dll", &comctl32)) {
         return EXIT_FAILURE;
@@ -43,11 +42,11 @@ static int common_control_initialize()
     assert(comctl32 != nullptr);
     if (comctl32) {
         {
-            typename std::add_pointer< decltype(InitCommonControlsEx) >::type lpfnInitCommonControlsEx =
-                reinterpret_cast<typename std::add_pointer< decltype(InitCommonControlsEx) >::type>(GetProcAddress(comctl32, "InitCommonControlsEx"));
+            typename std::add_pointer<decltype(InitCommonControlsEx)>::type lpfnInitCommonControlsEx =
+                    reinterpret_cast<typename std::add_pointer<decltype(InitCommonControlsEx)>::type>(GetProcAddress(comctl32, "InitCommonControlsEx"));
 
             if (lpfnInitCommonControlsEx) {
-                const INITCOMMONCONTROLSEX initcommoncontrolsex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES };
+                const INITCOMMONCONTROLSEX initcommoncontrolsex = {sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES};
                 if (!lpfnInitCommonControlsEx(&initcommoncontrolsex)) {
                     assert(!" InitCommonControlsEx(&initcommoncontrolsex) ");
                     return EXIT_FAILURE;
@@ -68,57 +67,8 @@ static int common_control_initialize()
 #endif
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void MetaEngine::GameUI_Draw(Game* game)
-{
-    for (MetaEngine::Module* l : *game->m_ModuleStack)
+void MetaEngine::GameUI_Draw(Game *game) {
+    for (MetaEngine::Module *l: *game->m_ModuleStack)
         l->onImGuiRender();
 
     DebugDrawUI::Draw(game);
@@ -134,23 +84,21 @@ bool IngameUI::visible = false;
 bool IngameUI::setup = false;
 
 void IngameUI::Setup() {
-
 }
 
-void IngameUI::Draw(Game* game) {
+void IngameUI::Draw(Game *game) {
 
 
     if (!visible) return;
 
     if (state == 0) {
         DrawIngame(game);
-    }
-    else if (state == 1) {
+    } else if (state == 1) {
         DrawOptions(game);
     }
 }
 
-void IngameUI::DrawIngame(Game* game) {
+void IngameUI::DrawIngame(Game *game) {
 
 
     if (!setup) {
@@ -217,7 +165,7 @@ void IngameUI::DrawIngame(Game* game) {
     ImGui::End();
 }
 
-void IngameUI::DrawOptions(Game* game) {
+void IngameUI::DrawOptions(Game *game) {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
     ImGui::SetNextWindowSize(ImVec2(400, 400));
     if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -233,27 +181,12 @@ void IngameUI::DrawOptions(Game* game) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //std::map<std::string, FMOD::Studio::Bus*> OptionsUI::busMap = {};
 int OptionsUI::item_current_idx = 0;
 bool OptionsUI::vsync = false;
 bool OptionsUI::minimizeOnFocus = false;
 
-void OptionsUI::Draw(Game* game) {
+void OptionsUI::Draw(Game *game) {
 
 
     int createWorldWidth = 350;
@@ -330,10 +263,9 @@ void OptionsUI::Draw(Game* game) {
     ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Back").x / 2, selPos.y));
     ImGui::Text("Back");
     //ImGui::PopFont();
-
 }
 
-void OptionsUI::DrawGeneral(Game* game) {
+void OptionsUI::DrawGeneral(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Gameplay");
     ImGui::Indent(4);
 
@@ -342,12 +274,12 @@ void OptionsUI::DrawGeneral(Game* game) {
     ImGui::Unindent(4);
 }
 
-void OptionsUI::DrawVideo(Game* game) {
+void OptionsUI::DrawVideo(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Window");
     ImGui::Indent(4);
 
-    const char* items[] = { "Windowed", "Fullscreen Borderless", "Fullscreen" };
-    const char* combo_label = items[item_current_idx];  // Label to preview before opening the combo (technically it could be anything)
+    const char *items[] = {"Windowed", "Fullscreen Borderless", "Fullscreen"};
+    const char *combo_label = items[item_current_idx];// Label to preview before opening the combo (technically it could be anything)
     ImGui::SetNextItemWidth(190);
     if (ImGui::BeginCombo("Display Mode", combo_label, 0)) {
         for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
@@ -355,15 +287,15 @@ void OptionsUI::DrawVideo(Game* game) {
             if (ImGui::Selectable(items[n], is_selected)) {
 
                 switch (n) {
-                case 0:
-                    game->setDisplayMode(DisplayMode::WINDOWED);
-                    break;
-                case 1:
-                    game->setDisplayMode(DisplayMode::BORDERLESS);
-                    break;
-                case 2:
-                    game->setDisplayMode(DisplayMode::FULLSCREEN);
-                    break;
+                    case 0:
+                        game->setDisplayMode(DisplayMode::WINDOWED);
+                        break;
+                    case 1:
+                        game->setDisplayMode(DisplayMode::BORDERLESS);
+                        break;
+                    case 2:
+                        game->setDisplayMode(DisplayMode::FULLSCREEN);
+                        break;
                 }
 
                 item_current_idx = n;
@@ -402,24 +334,21 @@ void OptionsUI::DrawVideo(Game* game) {
         METAENGINE_Render_FreeImage(game->textureEntities);
 
         game->textureObjects = METAENGINE_Render_CreateImage(
-            game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA
-        );
+                game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
         METAENGINE_Render_SetImageFilter(game->textureObjects, METAENGINE_Render_FILTER_NEAREST);
 
         game->textureObjectsBack = METAENGINE_Render_CreateImage(
-            game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA
-        );
+                game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
         METAENGINE_Render_SetImageFilter(game->textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
 
         METAENGINE_Render_LoadTarget(game->textureObjects);
         METAENGINE_Render_LoadTarget(game->textureObjectsBack);
 
         game->textureEntities = METAENGINE_Render_CreateImage(
-            game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA
-        );
+                game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
         METAENGINE_Render_SetImageFilter(game->textureEntities, METAENGINE_Render_FILTER_NEAREST);
 
         METAENGINE_Render_LoadTarget(game->textureEntities);
@@ -433,7 +362,7 @@ void OptionsUI::DrawVideo(Game* game) {
     ImGui::Unindent(4);
 }
 
-void OptionsUI::DrawAudio(Game* game) {
+void OptionsUI::DrawAudio(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Volume");
     ImGui::Indent(4);
 
@@ -455,14 +384,13 @@ void OptionsUI::DrawAudio(Game* game) {
     //}
 
     std::vector<std::vector<std::string>> disp = {
-        {"bus:/Master", "Master"},
-        {"bus:/Master/Underwater/Music", "Music"},
-        {"bus:/Master/GUI", "GUI"},
-        {"bus:/Master/Underwater/Player", "Player"},
-        {"bus:/Master/Underwater/World", "World"}
-    };
+            {"bus:/Master", "Master"},
+            {"bus:/Master/Underwater/Music", "Music"},
+            {"bus:/Master/GUI", "GUI"},
+            {"bus:/Master/Underwater/Player", "Player"},
+            {"bus:/Master/Underwater/World", "World"}};
 
-    for (auto& v : disp) {
+    for (auto &v: disp) {
         float volume = 0;
         //busMap[v[0]]->getVolume(&volume);
         volume *= 100;
@@ -475,20 +403,8 @@ void OptionsUI::DrawAudio(Game* game) {
     ImGui::Unindent(4);
 }
 
-void OptionsUI::DrawInput(Game* game) {
-
+void OptionsUI::DrawInput(Game *game) {
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 int MainMenuUI::state = 0;
@@ -508,15 +424,15 @@ bool sortWorlds(std::tuple<std::string, WorldMeta> w1, std::tuple<std::string, W
     return (c1 > c2);
 }
 
-void MainMenuUI::RefreshWorlds(Game* game) {
+void MainMenuUI::RefreshWorlds(Game *game) {
 
 
     worlds = {};
 
-    for (auto& p : std::filesystem::directory_iterator(game->gameDir.getPath("worlds/"))) {
+    for (auto &p: std::filesystem::directory_iterator(game->gameDir.getPath("worlds/"))) {
         std::string worldName = p.path().filename().generic_string();
 
-        WorldMeta meta = WorldMeta::loadWorldMeta((char*)game->gameDir.getWorldPath(worldName).c_str());
+        WorldMeta meta = WorldMeta::loadWorldMeta((char *) game->gameDir.getWorldPath(worldName).c_str());
 
         worlds.push_back(std::make_tuple(worldName, meta));
     }
@@ -535,30 +451,25 @@ void MainMenuUI::Setup() {
     setup = true;
 }
 
-void MainMenuUI::Draw(Game* game) {
+void MainMenuUI::Draw(Game *game) {
 
 
     if (!visible) return;
 
     if (state == 0) {
         DrawMainMenu(game);
-    }
-    else if (state == 1) {
+    } else if (state == 1) {
         DrawCreateWorld(game);
-    }
-    else if (state == 2) {
+    } else if (state == 2) {
         DrawSingleplayer(game);
-    }
-    else if (state == 3) {
+    } else if (state == 3) {
         DrawMultiplayer(game);
-    }
-    else if (state == 4) {
+    } else if (state == 4) {
         DrawOptions(game);
     }
-
 }
 
-void MainMenuUI::DrawMainMenu(Game* game) {
+void MainMenuUI::DrawMainMenu(Game *game) {
 
 
     if (!setup) {
@@ -649,7 +560,7 @@ void MainMenuUI::DrawMainMenu(Game* game) {
     ImGui::End();
 }
 
-void MainMenuUI::DrawSingleplayer(Game* game) {
+void MainMenuUI::DrawSingleplayer(Game *game) {
     long long now = Time::millis();
     if (now - lastRefresh > 3000) {
         RefreshWorlds(game);
@@ -692,7 +603,7 @@ void MainMenuUI::DrawSingleplayer(Game* game) {
     ImGui::BeginChild("WorldList", ImVec2(0, 250), false);
 
     int nMainMenuButtons = 0;
-    for (auto& t : worlds) {
+    for (auto &t: worlds) {
         std::string worldName = std::get<0>(t);
 
         WorldMeta meta = std::get<1>(t);
@@ -719,8 +630,8 @@ void MainMenuUI::DrawSingleplayer(Game* game) {
 
                 //std::thread loadWorldThread([&] () {
 
-                World* w = new World();
-                w->init(game->gameDir.getWorldPath(worldName), (int)ceil(Game::MAX_WIDTH / 3 / (double)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(Game::MAX_HEIGHT / 3 / (double)CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode);
+                World *w = new World();
+                w->init(game->gameDir.getWorldPath(worldName), (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode);
                 w->metadata.lastOpenedTime = Time::millis() / 1000;
                 w->metadata.lastOpenedVersion = std::string(VERSION);
                 w->metadata.save(w->worldName);
@@ -734,14 +645,12 @@ void MainMenuUI::DrawSingleplayer(Game* game) {
                 }
 
 
-
                 game->world = w;
                 //});
 
                 game->fadeInStart = game->now;
                 game->fadeInLength = 250;
                 game->fadeInWaitFrames = 4;
-
             };
         }
         ImGui::PopStyleVar();
@@ -749,18 +658,18 @@ void MainMenuUI::DrawSingleplayer(Game* game) {
         ImVec2 prevPos = ImGui::GetCursorScreenPos();
         ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y));
 
-        tm* tm_utc = gmtime(&meta.lastOpenedTime);
+        tm *tm_utc = gmtime(&meta.lastOpenedTime);
 
         // convert to local time
         time_t time_utc = _mkgmtime(tm_utc);
         time_t time_local = mktime(tm_utc);
         time_local += time_utc - time_local;
-        tm* tm_local = localtime(&time_local);
+        tm *tm_local = localtime(&time_local);
 
-        char* formattedTime = new char[100];
+        char *formattedTime = new char[100];
         strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
 
-        char* filenameAndTimestamp = new char[200];
+        char *filenameAndTimestamp = new char[200];
         snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), formattedTime);
 
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
@@ -773,7 +682,6 @@ void MainMenuUI::DrawSingleplayer(Game* game) {
 
         ImGui::SetCursorScreenPos(prevPos);
         ImGui::PopID();
-
     }
     ImGui::EndChild();
 
@@ -794,7 +702,7 @@ void MainMenuUI::DrawSingleplayer(Game* game) {
     ImGui::End();
 }
 
-void MainMenuUI::DrawMultiplayer(Game* game) {
+void MainMenuUI::DrawMultiplayer(Game *game) {
     ImGui::SetNextWindowSize(ImVec2(400, 500));
     ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 200, game->HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -839,7 +747,7 @@ void MainMenuUI::DrawMultiplayer(Game* game) {
     ImGui::End();
 }
 
-void MainMenuUI::DrawCreateWorld(Game* game) {
+void MainMenuUI::DrawCreateWorld(Game *game) {
     ImGui::SetNextWindowSize(ImVec2(400, 360));
     if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
@@ -851,7 +759,7 @@ void MainMenuUI::DrawCreateWorld(Game* game) {
     ImGui::End();
 }
 
-void MainMenuUI::DrawOptions(Game* game) {
+void MainMenuUI::DrawOptions(Game *game) {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
     ImGui::SetNextWindowSize(ImVec2(400, 400));
     if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
@@ -867,14 +775,7 @@ void MainMenuUI::DrawOptions(Game* game) {
 }
 
 
-
-
-
-
-
-
-
-void DebugUI::Draw(Game* game) {
+void DebugUI::Draw(Game *game) {
 
     // ImGui::SetNextWindowSize(ImVec2(250, 0));
     // ImGui::SetNextWindowPos(ImVec2(game->WIDTH - 200 - 15, 25), ImGuiCond_FirstUseEver);
@@ -931,8 +832,8 @@ void DebugUI::Draw(Game* game) {
             }
 
             if (ImGui::TreeNode(U8("水体"))) {
-                const char* items[] = { "off", "flow map", "distortion" };
-                const char* combo_label = items[Settings::water_overlay];
+                const char *items[] = {"off", "flow map", "distortion"};
+                const char *combo_label = items[Settings::water_overlay];
                 ImGui::SetNextItemWidth(80 + 24);
                 if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
                     for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
@@ -990,24 +891,21 @@ void DebugUI::Draw(Game* game) {
                 METAENGINE_Render_FreeImage(game->textureEntities);
 
                 game->textureObjects = METAENGINE_Render_CreateImage(
-                    game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                    METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA
-                );
+                        game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(game->textureObjects, METAENGINE_Render_FILTER_NEAREST);
 
                 game->textureObjectsBack = METAENGINE_Render_CreateImage(
-                    game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                    METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA
-                );
+                        game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(game->textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
 
                 METAENGINE_Render_LoadTarget(game->textureObjects);
                 METAENGINE_Render_LoadTarget(game->textureObjectsBack);
 
                 game->textureEntities = METAENGINE_Render_CreateImage(
-                    game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                    METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA
-                );
+                        game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(game->textureEntities, METAENGINE_Render_FILTER_NEAREST);
 
                 METAENGINE_Render_LoadTarget(game->textureEntities);
@@ -1033,34 +931,19 @@ void DebugUI::Draw(Game* game) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 bool DebugDrawUI::visible = true;
 int DebugDrawUI::selIndex = -1;
-std::vector<METAENGINE_Render_Image*> DebugDrawUI::images = {};
+std::vector<METAENGINE_Render_Image *> DebugDrawUI::images = {};
 uint8 DebugDrawUI::brushSize = 5;
-Material* DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
+Material *DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
 
 void DebugDrawUI::Setup() {
 
 
     images = {};
     for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
-        Material* mat = Materials::MATERIALS[i];
-        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
+        Material *mat = Materials::MATERIALS[i];
+        SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
         for (int x = 0; x < surface->w; x++) {
             for (int y = 0; y < surface->h; y++) {
                 MaterialInstance m = Tiles::create(mat, x, y);
@@ -1073,7 +956,7 @@ void DebugDrawUI::Setup() {
     }
 }
 
-void DebugDrawUI::Draw(Game* game) {
+void DebugDrawUI::Draw(Game *game) {
 
 
     if (images.empty()) Setup();
@@ -1082,7 +965,7 @@ void DebugDrawUI::Draw(Game* game) {
 
     int width = 5;
 
-    int nRows = ceil(Materials::MATERIALS.size() / (float)width);
+    int nRows = ceil(Materials::MATERIALS.size() / (float) width);
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
@@ -1100,17 +983,17 @@ void DebugDrawUI::Draw(Game* game) {
     ImGui::BeginChild("MaterialList", ImVec2(0, 0), false);
     ImGui::Indent(5);
     for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
-        int x = (int)(i % width);
-        int y = (int)(i / width);
+        int x = (int) (i % width);
+        int y = (int) (i / width);
 
         if (x > 0)
             ImGui::SameLine();
-        ImGui::PushID((int)i);
+        ImGui::PushID((int) i);
 
         ImVec2 selPos = ImGui::GetCursorScreenPos();
         ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y + (x != 0 ? -1 : 0)));
         if (ImGui::Selectable("", selIndex == i, 0, ImVec2(32, 36))) {
-            selIndex = (int)i;
+            selIndex = (int) i;
             selectedMaterial = Materials::MATERIALS[i];
         }
 
@@ -1121,16 +1004,16 @@ void DebugDrawUI::Draw(Game* game) {
         }
 
         ImVec2 prevPos = ImGui::GetCursorScreenPos();
-        ImGuiStyle& style = ImGui::GetStyle();
+        ImGuiStyle &style = ImGui::GetStyle();
         ImGui::SetCursorScreenPos(ImVec2(selPos.x - 1, selPos.y + (x == 0 ? 1 : 0)));
 
-        // imgui_impl_opengl3.cpp implements ImTextureID as GLuint 
-        ImTextureID texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(images[i]);
+        // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
+        ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
 
         ImVec2 pos = ImGui::GetCursorScreenPos();
-        ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-        ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-        ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+        ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
+        ImVec2 uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
+        ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
         ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
 
         ImGui::Image(texId, ImVec2(32, 32), uv_min, uv_max, tint_col, border_col);
@@ -1158,24 +1041,14 @@ void DebugDrawUI::Draw(Game* game) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
 bool DebugCheatsUI::visible = true;
-std::vector<METAENGINE_Render_Image*> DebugCheatsUI::images = {};
+std::vector<METAENGINE_Render_Image *> DebugCheatsUI::images = {};
 
 void DebugCheatsUI::Setup() {
 
 
     images = {};
-    SDL_Surface* sfc = Textures::loadTexture("data/assets/objects/testPickaxe.png");
+    SDL_Surface *sfc = Textures::loadTexture("data/assets/objects/testPickaxe.png");
     images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
     METAENGINE_Render_SetImageFilter(images[0], METAENGINE_Render_FILTER_NEAREST);
     SDL_FreeSurface(sfc);
@@ -1193,7 +1066,7 @@ void DebugCheatsUI::Setup() {
     SDL_FreeSurface(sfc);
 }
 
-void DebugCheatsUI::Draw(Game* game) {
+void DebugCheatsUI::Draw(Game *game) {
 
 
     if (images.empty()) Setup();
@@ -1211,20 +1084,19 @@ void DebugCheatsUI::Draw(Game* game) {
         ImGui::Indent();
         if (game->world == nullptr || game->world->player == nullptr) {
             ImGui::Text("No player to give item");
-        }
-        else {
+        } else {
             int i = 0;
             ImGui::PushID(i);
-            int frame_padding = 4;                            // -1 == uses default padding (style.FramePadding)
-            ImVec2 size = ImVec2(48, 48);                     // Size of the image we want to make visible
-            ImVec2 uv0 = ImVec2(0.0f, 0.0f);                  // UV coordinates for lower-left
-            ImVec2 uv1 = ImVec2(1.0f, 1.0f);                  // UV coordinates for (32,32) in our texture
-            ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);   // Black background
-            ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // No tint
+            int frame_padding = 4;                           // -1 == uses default padding (style.FramePadding)
+            ImVec2 size = ImVec2(48, 48);                    // Size of the image we want to make visible
+            ImVec2 uv0 = ImVec2(0.0f, 0.0f);                 // UV coordinates for lower-left
+            ImVec2 uv1 = ImVec2(1.0f, 1.0f);                 // UV coordinates for (32,32) in our texture
+            ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // Black background
+            ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
 
-            ImTextureID texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(images[i]);
+            ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
             if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                Item* i3 = new Item();
+                Item *i3 = new Item();
                 i3->setFlag(ItemFlags::TOOL);
                 i3->surface = Textures::loadTexture("data/assets/objects/testPickaxe.png");
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
@@ -1243,9 +1115,9 @@ void DebugCheatsUI::Draw(Game* game) {
             i++;
 
             ImGui::PushID(i);
-            texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(images[i]);
+            texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
             if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                Item* i3 = new Item();
+                Item *i3 = new Item();
                 i3->setFlag(ItemFlags::HAMMER);
                 i3->surface = Textures::loadTexture("data/assets/objects/testHammer.png");
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
@@ -1263,9 +1135,9 @@ void DebugCheatsUI::Draw(Game* game) {
             i++;
 
             ImGui::PushID(i);
-            texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(images[i]);
+            texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
             if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                Item* i3 = new Item();
+                Item *i3 = new Item();
                 i3->setFlag(ItemFlags::VACUUM);
                 i3->surface = Textures::loadTexture("data/assets/objects/testVacuum.png");
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
@@ -1284,9 +1156,9 @@ void DebugCheatsUI::Draw(Game* game) {
             i++;
 
             ImGui::PushID(i);
-            texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(images[i]);
+            texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
             if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                Item* i3 = new Item();
+                Item *i3 = new Item();
                 i3->setFlag(ItemFlags::FLUID_CONTAINER);
                 i3->surface = Textures::loadTexture("data/assets/objects/testBucket.png");
                 i3->capacity = 100;
@@ -1310,24 +1182,10 @@ void DebugCheatsUI::Draw(Game* game) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 char CreateWorldUI::worldNameBuf[32] = "";
 bool CreateWorldUI::setup = false;
-METAENGINE_Render_Image* CreateWorldUI::materialTestWorld = nullptr;
-METAENGINE_Render_Image* CreateWorldUI::defaultWorld = nullptr;
+METAENGINE_Render_Image *CreateWorldUI::materialTestWorld = nullptr;
+METAENGINE_Render_Image *CreateWorldUI::defaultWorld = nullptr;
 bool CreateWorldUI::createWorldButtonEnabled = false;
 std::string CreateWorldUI::worldFolderLabel = "";
 int CreateWorldUI::selIndex = 0;
@@ -1335,12 +1193,12 @@ int CreateWorldUI::selIndex = 0;
 void CreateWorldUI::Setup() {
 
 
-    SDL_Surface* logoMT = Textures::loadTexture("data/assets/ui/prev_materialtest.png");
+    SDL_Surface *logoMT = Textures::loadTexture("data/assets/ui/prev_materialtest.png");
     materialTestWorld = METAENGINE_Render_CopyImageFromSurface(logoMT);
     METAENGINE_Render_SetImageFilter(materialTestWorld, METAENGINE_Render_FILTER_NEAREST);
     SDL_FreeSurface(logoMT);
 
-    SDL_Surface* logoDef = Textures::loadTexture("data/assets/ui/prev_default.png");
+    SDL_Surface *logoDef = Textures::loadTexture("data/assets/ui/prev_default.png");
     defaultWorld = METAENGINE_Render_CopyImageFromSurface(logoDef);
     METAENGINE_Render_SetImageFilter(defaultWorld, METAENGINE_Render_FILTER_NEAREST);
     SDL_FreeSurface(logoDef);
@@ -1348,7 +1206,7 @@ void CreateWorldUI::Setup() {
     setup = true;
 }
 
-void CreateWorldUI::Draw(Game* game) {
+void CreateWorldUI::Draw(Game *game) {
 
 
     if (!setup) Setup();
@@ -1395,16 +1253,16 @@ void CreateWorldUI::Draw(Game* game) {
     }
 
     ImVec2 prevPos = ImGui::GetCursorPos();
-    ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiStyle &style = ImGui::GetStyle();
     ImGui::SetCursorPos(ImVec2(selPos.x - 1 + 4, selPos.y + 4));
 
-    // imgui_impl_opengl3.cpp implements ImTextureID as GLuint 
-    ImTextureID texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(materialTestWorld);
+    // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
+    ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(materialTestWorld);
 
     ImVec2 pos = ImGui::GetCursorPos();
-    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
+    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
     ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
 
     ImGui::Image(texId, ImVec2(100, 100), uv_min, uv_max, tint_col, border_col);
@@ -1432,13 +1290,13 @@ void CreateWorldUI::Draw(Game* game) {
     style = ImGui::GetStyle();
     ImGui::SetCursorPos(ImVec2(selPos.x - 1 + 4, selPos.y + 4));
 
-    // imgui_impl_opengl3.cpp implements ImTextureID as GLuint 
-    texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(defaultWorld);
+    // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
+    texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(defaultWorld);
 
     pos = ImGui::GetCursorPos();
-    uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-    uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-    tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    uv_min = ImVec2(0.0f, 0.0f);              // Top-left
+    uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
+    tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
     border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
 
     ImGui::Image(texId, ImVec2(100, 100), uv_min, uv_max, tint_col, border_col);
@@ -1472,7 +1330,7 @@ void CreateWorldUI::Draw(Game* game) {
         std::string pref = "Saved in: ";
 
         std::string worldName = worldFolderLabel.substr(pref.length());
-        char* wn = (char*)worldName.c_str();
+        char *wn = (char *) worldName.c_str();
 
         std::string worldTitle = std::string(worldNameBuf);
         std::regex trimWhitespaceRegex("^ *(.+?) *$");
@@ -1488,15 +1346,13 @@ void CreateWorldUI::Draw(Game* game) {
         game->world = nullptr;
 
 
-        WorldGenerator* generator;
+        WorldGenerator *generator;
 
         if (selIndex == 0) {
             generator = new MaterialTestGenerator();
-        }
-        else if (selIndex == 1) {
+        } else if (selIndex == 1) {
             generator = new DefaultGenerator();
-        }
-        else {
+        } else {
             // create world UI is in invalid state
             generator = new MaterialTestGenerator();
         }
@@ -1505,7 +1361,7 @@ void CreateWorldUI::Draw(Game* game) {
 
 
         game->world = new World();
-        game->world->init(wpStr, (int)ceil(Game::MAX_WIDTH / 3 / (double)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(Game::MAX_HEIGHT / 3 / (double)CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode, generator);
+        game->world->init(wpStr, (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode, generator);
         game->world->metadata.worldName = std::string(worldNameBuf);
         game->world->metadata.lastOpenedTime = Time::millis() / 1000;
         game->world->metadata.lastOpenedVersion = std::string(VERSION);
@@ -1518,8 +1374,6 @@ void CreateWorldUI::Draw(Game* game) {
                 game->world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
             }
         }
-
-
     }
     ImGui::PopStyleVar();
     ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Create").x / 2, selPos.y));
@@ -1532,7 +1386,7 @@ void CreateWorldUI::Draw(Game* game) {
     }
 }
 
-void CreateWorldUI::inputChanged(std::string text, Game* game) {
+void CreateWorldUI::inputChanged(std::string text, Game *game) {
 
 
     std::regex trimWhitespaceRegex("^ *(.+?) *$");
@@ -1568,7 +1422,7 @@ void CreateWorldUI::inputChanged(std::string text, Game* game) {
     worldFolderLabel = "Saved in: " + newWorldFolderName;
 }
 
-void CreateWorldUI::Reset(Game* game) {
+void CreateWorldUI::Reset(Game *game) {
 #ifdef _WIN32
     strcpy_s(worldNameBuf, "New World");
 #else
@@ -1578,27 +1432,7 @@ void CreateWorldUI::Reset(Game* game) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const char* data1 = R"imvue(
+const char *data1 = R"imvue(
   
 <style>
   * {
@@ -1665,7 +1499,7 @@ const char* data1 = R"imvue(
   
 )imvue";
 
-const char* data2 = R"imvue(
+const char *data2 = R"imvue(
 <style>
   @font-face {
     font-family: "DroidSans";
@@ -1990,7 +1824,6 @@ const char* data2 = R"imvue(
 )imvue";
 
 
-
 namespace MetaEngine {
 
 
@@ -1999,14 +1832,13 @@ namespace MetaEngine {
         constexpr auto kMargin = 5;
         constexpr auto kPanelSpacing = 10;
         constexpr auto kColorWidgetWidth = 250.0F;
-    }  // namespace layout
+    }// namespace layout
 
     static bool s_is_animaiting = false;
     static const int view_size = 256;
 
 
-    void ImGuiLayer::renderViewWindows()
-    {
+    void ImGuiLayer::renderViewWindows() {
         //for (int i = m_views.size() - 1; i >= 0; --i)
         //{
         //    auto& view = m_views[i];
@@ -2046,8 +1878,7 @@ namespace MetaEngine {
         //}
     }
 
-    ImGuiLayer::ImGuiLayer()
-    {
+    ImGuiLayer::ImGuiLayer() {
         m_L = luaL_newstate();
 
         luaL_openlibs(m_L);
@@ -2065,8 +1896,7 @@ namespace MetaEngine {
 
     class OpenGL3TextureManager {
     public:
-        ~OpenGL3TextureManager()
-        {
+        ~OpenGL3TextureManager() {
             for (int i = 0; i < mTextures.size(); ++i) {
                 GLuint tid = mTextures[i];
                 glDeleteTextures(1, &tid);
@@ -2074,7 +1904,7 @@ namespace MetaEngine {
             mTextures.clear();
         }
 
-        ImTextureID createTexture(void* pixels, int width, int height) {
+        ImTextureID createTexture(void *pixels, int width, int height) {
             // Upload texture to graphics system
             GLuint texture_id = 0;
             GLint last_texture;
@@ -2090,11 +1920,11 @@ namespace MetaEngine {
             glBindTexture(GL_TEXTURE_2D, last_texture);
             mTextures.reserve(mTextures.size() + 1);
             mTextures.push_back(texture_id);
-            return (ImTextureID)(intptr_t)texture_id;
+            return (ImTextureID) (intptr_t) texture_id;
         }
 
         void deleteTexture(ImTextureID id) {
-            GLuint tex = (GLuint)(intptr_t)id;
+            GLuint tex = (GLuint) (intptr_t) id;
             glDeleteTextures(1, &tex);
         }
 
@@ -2106,11 +1936,9 @@ namespace MetaEngine {
 
     static bool firstRun = false;
 
-#if defined (_METADOT_IMM32)
+#if defined(_METADOT_IMM32)
     ImGUIIMMCommunication imguiIMMCommunication{};
 #endif
-
-
 
 
     // void TextFuck(std::string text)
@@ -2124,8 +1952,7 @@ namespace MetaEngine {
     // 	ImGui::End();
     // }
 
-    void ImGuiLayer::Init(SDL_Window* p_window, void* p_gl_context)
-    {
+    void ImGuiLayer::Init(SDL_Window *p_window, void *p_gl_context) {
         window = p_window;
         gl_context = p_gl_context;
 
@@ -2135,11 +1962,11 @@ namespace MetaEngine {
 
         m_imgui = ImGui::CreateContext();
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
 
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;// Enable Keyboard Controls
         //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;// Enable Docking
         //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
         //io.ConfigViewportsNoAutoMerge = true;
         //io.ConfigViewportsNoTaskBarIcon = true;
@@ -2158,15 +1985,14 @@ namespace MetaEngine {
         config.MergeMode = true;
         config.GlyphMinAdvanceX = 10.0f;
 
-        static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+        static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
         io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/engine/fonts/fa-solid-900.ttf").c_str(), 15.0f, &config, icon_ranges);
         io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/engine/fonts/Silver.ttf").c_str(), 26.0f, &config);
 
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-        ImGuiStyle& style = ImGui::GetStyle();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
+        ImGuiStyle &style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
@@ -2174,10 +2000,8 @@ namespace MetaEngine {
 
         ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
-        const char* glsl_version = "#version 400";
+        const char *glsl_version = "#version 400";
         ImGui_ImplOpenGL3_Init(glsl_version);
-
-
 
 
         style.ScaleAllSizes(scale);
@@ -2185,11 +2009,10 @@ namespace MetaEngine {
         ImGuiHelper::init_style(0.5f, 0.5f);
 
 
-#if defined (_METADOT_IMM32)
+#if defined(_METADOT_IMM32)
         common_control_initialize();
         VERIFY(imguiIMMCommunication.subclassify(window));
 #endif
-
 
 
         //registerWindow("NavBar", &dynamic_cast<FakeWindow*>(APwin())->m_enableNavigationBar);
@@ -2197,7 +2020,6 @@ namespace MetaEngine {
         //	static const char* fileToEdit = "test.cpp";
 
         editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-
 
 
 #if 0
@@ -2259,11 +2081,8 @@ namespace MetaEngine {
 #endif
 
 
-
-
         std::ifstream t(fileToEdit);
-        if (t.good())
-        {
+        if (t.good()) {
             std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
             editor.SetText(str);
         }
@@ -2271,24 +2090,22 @@ namespace MetaEngine {
         firstRun = true;
     }
 
-    void ImGuiLayer::onDetach()
-    {
+    void ImGuiLayer::onDetach() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
 
         ImGui::DestroyContext();
     }
 
-    void ImGuiLayer::begin()
-    {
+    void ImGuiLayer::begin() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
     }
 
-    void ImGuiLayer::end()
-    {
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
+    void ImGuiLayer::end() {
+        ImGuiIO &io = ImGui::GetIO();
+        (void) io;
 
         ImGui::Render();
         SDL_GL_MakeCurrent(window, gl_context);
@@ -2297,9 +2114,8 @@ namespace MetaEngine {
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
         //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
             SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
@@ -2307,9 +2123,8 @@ namespace MetaEngine {
         }
     }
 
-    auto myCollapsingHeader = [](const char* name)->bool
-    {
-        ImGuiStyle& style = ImGui::GetStyle();
+    auto myCollapsingHeader = [](const char *name) -> bool {
+        ImGuiStyle &style = ImGui::GetStyle();
         ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.Colors[ImGuiCol_ButtonActive]);
@@ -2321,8 +2136,7 @@ namespace MetaEngine {
     auto ImGuiAutoTest() -> void {
 
 
-        if (myCollapsingHeader("About ImGui::Auto()"))
-        {
+        if (myCollapsingHeader("About ImGui::Auto()")) {
             ImGui::Auto(R"comment(
 ImGui::Auto() is one simple function that can create GUI for almost any data structure using ImGui functions.
 a. Your data is presented in tree-like structure that is defined by your type.
@@ -2403,8 +2217,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
             ImGui::Text(U8("中文测试"));
 
-            if (ImGui::TreeNode("TODO-s"))
-            {
+            if (ImGui::TreeNode("TODO-s")) {
                 ImGui::Auto(R"todos(
 	1	Insert items to (non-const) set, map, list, ect
 	2	Call any function or function object.
@@ -2422,15 +2235,15 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 ImGui::TreePop();
             }
         }
-        if (myCollapsingHeader("1. String"))
-        {
+        if (myCollapsingHeader("1. String")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
 	ImGui::Auto("Hello Imgui::Auto() !"); //This is how this text is written as well.)code");
-            ImGui::Auto("Hello Imgui::Auto() !"); //This is how this text is written as well.
+            ImGui::Auto("Hello Imgui::Auto() !");//This is how this text is written as well.
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::string str = "Hello ImGui::Auto() for strings!";
@@ -2438,7 +2251,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static std::string str = "Hello ImGui::Auto() for strings!";
             ImGui::Auto(str, "str");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::string str2 = "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
@@ -2446,7 +2260,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static std::string str2 = "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
             ImGui::Auto(str2, "str2");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static const std::string conststr = "Const types are not to be changed!";
@@ -2454,18 +2269,18 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static const std::string conststr = "Const types are not to be changed!";
             ImGui::Auto(conststr, "conststr");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	char * buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
 	ImGui::Auto(buffer, "buffer");)code");
-            const char* buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
+            const char *buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
             ImGui::Auto(buffer, "buffer");
 
             ImGui::Unindent();
         }
-        if (myCollapsingHeader("2. Numbers"))
-        {
+        if (myCollapsingHeader("2. Numbers")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
@@ -2474,7 +2289,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static int i = 42;
             ImGui::Auto(i, "i");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static float f = 3.14;
@@ -2482,193 +2298,205 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static float f = 3.14;
             ImGui::Auto(f, "f");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static ImVec4 f4 = {1.5f,2.1f,3.4f,4.3f};
 	ImGui::Auto(f4, "f4");)code");
-            static ImVec4 f4 = { 1.5f,2.1f,3.4f,4.3f };
+            static ImVec4 f4 = {1.5f, 2.1f, 3.4f, 4.3f};
             ImGui::Auto(f4, "f4");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static const ImVec2 f2 = {1.f,2.f};
 	ImGui::Auto(f2, "f2");)code");
-            static const ImVec2 f2 = { 1.f,2.f };
+            static const ImVec2 f2 = {1.f, 2.f};
             ImGui::Auto(f2, "f2");
 
             ImGui::Unindent();
         }
-        if (myCollapsingHeader("3. Containers"))
-        {
+        if (myCollapsingHeader("3. Containers")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
 	static std::vector<std::string> vec = { "First string","Second str",":)" };
 	ImGui::Auto(vec,"vec");)code");
-            static std::vector<std::string> vec = { "First string","Second str",":)" };
+            static std::vector<std::string> vec = {"First string", "Second str", ":)"};
             ImGui::Auto(vec, "vec");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static const std::vector<float> constvec = { 3,1,2.1f,4,3,4,5 };
 	ImGui::Auto(constvec,"constvec");	//Cannot change vector, nor values)code");
-            static const std::vector<float> constvec = { 3,1,2.1f,4,3,4,5 };
-            ImGui::Auto(constvec, "constvec");	//Cannot change vector, nor values
+            static const std::vector<float> constvec = {3, 1, 2.1f, 4, 3, 4, 5};
+            ImGui::Auto(constvec, "constvec");//Cannot change vector, nor values
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::vector<bool> bvec = { false, true, false, false };
 	ImGui::Auto(bvec,"bvec");)code");
-            static std::vector<bool> bvec = { false, true, false, false };
+            static std::vector<bool> bvec = {false, true, false, false};
             ImGui::Auto(bvec, "bvec");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static const std::vector<bool> constbvec = { false, true, false, false };
 	ImGui::Auto(constbvec,"constbvec");
 	)code");
-            static const std::vector<bool> constbvec = { false, true, false, false };
+            static const std::vector<bool> constbvec = {false, true, false, false};
             ImGui::Auto(constbvec, "constbvec");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::map<int, float> map = { {3,2},{1,2} };
 	ImGui::Auto(map, "map");	// insert and other operations)code");
-            static std::map<int, float> map = { {3,2},{1,2} };
-            ImGui::Auto(map, "map");	// insert and other operations
+            static std::map<int, float> map = {{3, 2}, {1, 2}};
+            ImGui::Auto(map, "map");// insert and other operations
 
-            if (ImGui::TreeNode("All cases"))
-            {
+            if (ImGui::TreeNode("All cases")) {
                 ImGui::Auto(R"code(
 	static std::deque<bool> deque = { false, true, false, false };
 	ImGui::Auto(deque,"deque");)code");
-                static std::deque<bool> deque = { false, true, false, false };
+                static std::deque<bool> deque = {false, true, false, false};
                 ImGui::Auto(deque, "deque");
 
-                ImGui::NewLine(); ImGui::Separator();
+                ImGui::NewLine();
+                ImGui::Separator();
 
                 ImGui::Auto(R"code(
 	static std::set<char*> set = { "set","with","char*" };
 	ImGui::Auto(set,"set");)code");
-                static std::set<const char*> set = { "set","with","char*" }; //for some reason, this does not work
-                ImGui::Auto(set, "set");	// the problem is with the const iterator, but
+                static std::set<const char *> set = {"set", "with", "char*"};//for some reason, this does not work
+                ImGui::Auto(set, "set");                                     // the problem is with the const iterator, but
 
-                ImGui::NewLine(); ImGui::Separator();
+                ImGui::NewLine();
+                ImGui::Separator();
 
                 ImGui::Auto(R"code(
 	static std::map<char*, std::string> map = { {"asd","somevalue"},{"bsd","value"} };
 	ImGui::Auto(map, "map");	// insert and other operations)code");
-                static std::map<const char*, std::string> map = { {"asd","somevalue"},{"bsd","value"} };
-                ImGui::Auto(map, "map");	// insert and other operations
+                static std::map<const char *, std::string> map = {{"asd", "somevalue"}, {"bsd", "value"}};
+                ImGui::Auto(map, "map");// insert and other operations
 
                 ImGui::TreePop();
             }
             ImGui::Unindent();
         }
-        if (myCollapsingHeader("4. Pointers and Arrays"))
-        {
+        if (myCollapsingHeader("4. Pointers and Arrays")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
 	static float *pf = nullptr;
 	ImGui::Auto(pf, "pf");)code");
-            static float* pf = nullptr;
+            static float *pf = nullptr;
             ImGui::Auto(pf, "pf");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static int i=10, *pi=&i;
 	ImGui::Auto(pi, "pi");)code");
-            static int i = 10, * pi = &i;
+            static int i = 10, *pi = &i;
             ImGui::Auto(pi, "pi");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static const std::string cs= "I cannot be changed!", * cps=&cs;
 	ImGui::Auto(cps, "cps");)code");
-            static const std::string cs = "I cannot be changed!", * cps = &cs;
+            static const std::string cs = "I cannot be changed!", *cps = &cs;
             ImGui::Auto(cps, "cps");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::string str = "I can be changed! (my pointee cannot)";
 	static std::string *const strpc = &str;)code");
             static std::string str = "I can be changed! (my pointee cannot)";
-            static std::string* const strpc = &str;
+            static std::string *const strpc = &str;
             ImGui::Auto(strpc, "strpc");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
             ImGui::Auto(R"code(
 	static std::array<float,5> farray = { 1.2, 3.4, 5.6, 7.8, 9.0 };
 	ImGui::Auto(farray, "std::array");)code");
-            static std::array<float, 5> farray = { 1.2, 3.4 , 5.6, 7.8, 9.0 };
+            static std::array<float, 5> farray = {1.2, 3.4, 5.6, 7.8, 9.0};
             ImGui::Auto(farray, "std::array");
 
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static float farr[5] = { 1.2, 3.4, 5.6, 7.8, 9.0 };
 	ImGui::Auto(farr, "float[5]");)code");
-            static float farr[5] = { 11.2, 3.4, 5.6, 7.8, 911.0 };
+            static float farr[5] = {11.2, 3.4, 5.6, 7.8, 911.0};
             ImGui::Auto(farr, "float[5]");
 
             ImGui::Unindent();
         }
-        if (myCollapsingHeader("5. Pairs and Tuples"))
-        {
+        if (myCollapsingHeader("5. Pairs and Tuples")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
 	static std::pair<bool, ImVec2> pair = { true,{2.1f,3.2f} };
 	ImGui::Auto(pair, "pair");)code");
-            static std::pair<bool, ImVec2> pair = { true,{2.1f,3.2f} };
+            static std::pair<bool, ImVec2> pair = {true, {2.1f, 3.2f}};
             ImGui::Auto(pair, "pair");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::pair<int, std::string> pair2 = { -3,"simple types appear next to each other in a pair" };
 	ImGui::Auto(pair2, "pair2");)code");
-            static std::pair<int, std::string> pair2 = { -3,"simple types appear next to each other in a pair" };
+            static std::pair<int, std::string> pair2 = {-3, "simple types appear next to each other in a pair"};
             ImGui::Auto(pair2, "pair2");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	ImGui::Auto(ImGui::as_const(pair), "as_const(pair)"); //easy way to view as const)code");
-            ImGui::Auto(ImGui::as_const(pair), "as_const(pair)"); //easy way to view as const
+            ImGui::Auto(ImGui::as_const(pair), "as_const(pair)");//easy way to view as const
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	std::tuple<const int, std::string, ImVec2> tuple = { 42, "string in tuple", {3.1f,3.2f} };
 	ImGui::Auto(tuple, "tuple");)code");
-            std::tuple<const int, std::string, ImVec2> tuple = { 42, "string in tuple", {3.1f,3.2f} };
+            std::tuple<const int, std::string, ImVec2> tuple = {42, "string in tuple", {3.1f, 3.2f}};
             ImGui::Auto(tuple, "tuple");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	const std::tuple<int, const char*, ImVec2> consttuple = { 42, "smaller tuples are inlined", {3.1f,3.2f} };
 	ImGui::Auto(consttuple, "consttuple");)code");
-            const std::tuple<int, const char*, ImVec2> consttuple = { 42, "Smaller tuples are inlined", {3.1f,3.2f} };
+            const std::tuple<int, const char *, ImVec2> consttuple = {42, "Smaller tuples are inlined", {3.1f, 3.2f}};
             ImGui::Auto(consttuple, "consttuple");
 
 
             ImGui::Unindent();
         }
-        if (myCollapsingHeader("6. Structs!!"))
-        {
+        if (myCollapsingHeader("6. Structs!!")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
@@ -2687,13 +2515,15 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static A a;
             ImGui::Auto(a, "a");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	ImGui::Auto(ImGui::as_const(a), "as_const(a)");// const structs are possible)code");
             ImGui::Auto(ImGui::as_const(a), "as_const(a)");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	struct B
@@ -2711,15 +2541,17 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             static B b;
             ImGui::Auto(b, "b");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	static std::vector<B> vec = { {"vector of structs!", A()}, B() };
 	ImGui::Auto(vec, "vec");)code");
-            static std::vector<B> vec = { {"vector of structs!", A()}, B() };
+            static std::vector<B> vec = {{"vector of structs!", A()}, B()};
             ImGui::Auto(vec, "vec");
 
-            ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
             ImGui::Auto(R"code(
 	struct C
@@ -2732,36 +2564,33 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             struct C
             {
                 std::list<B> vec;
-                A* a;
+                A *a;
             };
-            static C c = { {{"Container inside a struct!", A() }}, &a };
+            static C c = {{{"Container inside a struct!", A()}}, &a};
             ImGui::Auto(c, "c");
 
             ImGui::Unindent();
         }
-        if (myCollapsingHeader("Functions"))
-        {
+        if (myCollapsingHeader("Functions")) {
             ImGui::Indent();
 
             ImGui::Auto(R"code(
 	void (*func)() = []() { ImGui::TextColored(ImVec4(0.5, 1, 0.5, 1.0), "Button pressed, function called :)"); };
 	ImGui::Auto(func, "void(void) function");)code");
-            void(*func)() = []() { ImGui::SameLine(); ImGui::TextColored(ImVec4(0.5, 1, 0.5, 1.0), "Button pressed, function called :)"); };
+            void (*func)() = []() { ImGui::SameLine(); ImGui::TextColored(ImVec4(0.5, 1, 0.5, 1.0), "Button pressed, function called :)"); };
             ImGui::Auto(func, "void(void) function");
 
             ImGui::Unindent();
         }
     }
 
-    void ImGuiLayer::Render(Game* game)
+    void ImGuiLayer::Render(Game *game)
 
     {
 
-#if defined (_METADOT_IMM32)
+#if defined(_METADOT_IMM32)
         imguiIMMCommunication();
 #endif
-
-
 
 
         //ImGui::Begin("Progress Indicators");
@@ -2773,9 +2602,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         //ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
 
         //ImGui::End();
-
-
-
 
 
 #if 0
@@ -2865,19 +2691,15 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             auto cpos = editor.GetCursorPosition();
             ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
             ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("File"))
-                {
-                    if (ImGui::MenuItem("Save"))
-                    {
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Save")) {
                         auto textToSave = editor.GetText();
                         /// save text....
                     }
                     ImGui::EndMenu();
                 }
-                if (ImGui::BeginMenu("Edit"))
-                {
+                if (ImGui::BeginMenu("Edit")) {
                     bool ro = editor.IsReadOnly();
                     if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
                         editor.SetReadOnly(ro);
@@ -2907,8 +2729,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("View"))
-                {
+                if (ImGui::BeginMenu("View")) {
                     if (ImGui::MenuItem("Dark palette"))
                         editor.SetPalette(TextEditor::GetDarkPalette());
                     if (ImGui::MenuItem("Light palette"))
@@ -2921,15 +2742,13 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             }
 
             ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-                editor.IsOverwrite() ? "Ovr" : "Ins",
-                editor.CanUndo() ? "*" : " ",
-                editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
+                        editor.IsOverwrite() ? "Ovr" : "Ins",
+                        editor.CanUndo() ? "*" : " ",
+                        editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
 
             editor.Render("TextEditor");
             ImGui::End();
-
         }
-
 
 
         {
@@ -2977,20 +2796,17 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 //    MetaEngine::App::get().getModuleStack().getInstances("WorldLayer")->onImGuiInnerRender();
 
                 ImGui::EndTabItem();
-
             }
 
             ImGui::EndTabBar();
 
             ImGui::End();
-
         }
 
 
         MetaEngine::GameUI_Draw(game);
 
         DrawPropertyWindow();
-
 
 
         // auto ct = complex_thing{};
@@ -3007,24 +2823,19 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         // ui::widget::object_editor(config, cconfig);
 
         renderViewWindows();
-
     }
 
-    void ImGuiLayer::onUpdate()
-    {
-
+    void ImGuiLayer::onUpdate() {
     }
 
-    void ImGuiLayer::registerWindow(std::string_view windowName, bool* opened)
-    {
-        for (auto& m_win : m_wins)
+    void ImGuiLayer::registerWindow(std::string_view windowName, bool *opened) {
+        for (auto &m_win: m_wins)
             if (m_win.name == windowName)
                 return;
-        m_wins.push_back({ std::string(windowName), opened });
+        m_wins.push_back({std::string(windowName), opened});
     }
 
-    static std::string bloatString(const std::string& s, int size)
-    {
+    static std::string bloatString(const std::string &s, int size) {
         std::string out = s;
         out.reserve(size);
         while (out.size() < size)
@@ -3036,16 +2847,13 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
     //opens popup on previous item and sets newName possibly
     //return true if renamed
-    static bool renameName(const char* name)
-    {
+    static bool renameName(const char *name) {
         bool rename = false;
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(1))
-        {
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(1)) {
             ImGui::OpenPopup("my_select_popupo");
         }
 
-        if (ImGui::BeginPopup("my_select_popupo", ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration))
-        {
+        if (ImGui::BeginPopup("my_select_popupo", ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration)) {
             char c[128]{};
             memcpy(c, name, strlen(name));
             //ImGui::IsAnyWindowFocused()
@@ -3053,17 +2861,16 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             //todo imdoc
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
                 ImGui::SetKeyboardFocusHere();
-            if (ImGui::InputText("##heheheehj", c, 127, ImGuiInputTextFlags_EnterReturnsTrue))
-            {
+            if (ImGui::InputText("##heheheehj", c, 127, ImGuiInputTextFlags_EnterReturnsTrue)) {
                 //ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
                 newName = std::string(c);
                 ImGui::CloseCurrentPopup();
                 rename = true;
             }
-            //else 
+            //else
             ImGui::SetItemDefaultFocus();
             ImGui::EndPopup();
         }
         return rename;
     }
-}
+}// namespace MetaEngine

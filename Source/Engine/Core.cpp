@@ -10,9 +10,9 @@ namespace MetaEngine {
 }
 
 // STL
-#include <unordered_map>
-#include <limits>
 #include <cmath>
+#include <limits>
+#include <unordered_map>
 
 #include "Engine/FileSystem.hpp"
 #include "Engine/Utils.hpp"
@@ -21,14 +21,11 @@ namespace MetaEngine {
     std::string ResourceMan::s_resPath;
     std::string ResourceMan::s_resPathFolder;
 
-    void ResourceMan::init()
-    {
+    void ResourceMan::init() {
         auto currentDir = std::filesystem::path(FUtil::getExecutableFolderPath());
-        for (int i = 0; i < 3; ++i)
-        {
+        for (int i = 0; i < 3; ++i) {
             currentDir = currentDir.parent_path();
-            if (std::filesystem::exists(currentDir.string() + "/data"))
-            {
+            if (std::filesystem::exists(currentDir.string() + "/data")) {
                 s_resPath = currentDir.string() + "/";
                 s_resPathFolder = s_resPath + "data";
                 METADOT_TRACE("Res folder found: {}data", s_resPath.c_str());
@@ -38,13 +35,11 @@ namespace MetaEngine {
         METADOT_ERROR("Res folder not found");
     }
 
-    const std::string& ResourceMan::getResPath()
-    {
+    const std::string &ResourceMan::getResPath() {
         return s_resPathFolder;
     }
 
-    std::string ResourceMan::getResourceLoc(std::string_view resPath)
-    {
+    std::string ResourceMan::getResourceLoc(std::string_view resPath) {
         if (s_resPath.empty())
             std::cout << "try to load resource when ResourceMan is unloaded\n        ::" << resPath << std::endl;
         if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
@@ -52,14 +47,12 @@ namespace MetaEngine {
         return std::string(resPath);
     }
 
-    std::string ResourceMan::getLocalPath(std::string_view resPath)
-    {
+    std::string ResourceMan::getLocalPath(std::string_view resPath) {
         auto res = std::string(resPath);
         FUtil::cleanPathString(res);
         size_t offset = 0;
         size_t out = std::string::npos;
-        while (true)
-        {
+        while (true) {
             auto index = res.find("/data/", offset);
             if (index == std::string::npos)
                 break;
@@ -75,8 +68,7 @@ namespace MetaEngine {
     std::stringstream Log::s_stream;
     pprint::PrettyPrinter Log::printer;
 
-    void Log::init()
-    {
+    void Log::init() {
         static bool noInit = true;
         if (!noInit)
             return;
@@ -101,31 +93,21 @@ namespace MetaEngine {
         METADOT_INFO("Logging Start");
     }
 
-    void Log::flush()
-    {
+    void Log::flush() {
         //s_CoreLogger->flush();
     }
-}
+}// namespace MetaEngine
 
 
+namespace MetaEngine {
 
+    static std::unordered_map<std::string, Type *> types;
 
-
-namespace MetaEngine
-{
-
-    static std::unordered_map<std::string, Type*> types;
-
-    Type::Type(const char* name, Type* parent)
-        : name(name)
-        , parent(parent)
-        , id(0)
-        , inited(false)
-    {
+    Type::Type(const char *name, Type *parent)
+        : name(name), parent(parent), id(0), inited(false) {
     }
 
-    void Type::init()
-    {
+    void Type::init() {
         static UInt32 nextId = 1;
 
         // Make sure we don't init twice, that would be bad
@@ -145,20 +127,17 @@ namespace MetaEngine
         bits |= parent->bits;
     }
 
-    UInt32 Type::getId()
-    {
+    UInt32 Type::getId() {
         if (!inited)
             init();
         return id;
     }
 
-    const char* Type::getName() const
-    {
+    const char *Type::getName() const {
         return name;
     }
 
-    Type* Type::byName(const char* name)
-    {
+    Type *Type::byName(const char *name) {
         auto pos = types.find(name);
         if (pos == types.end())
             return nullptr;
@@ -166,5 +145,4 @@ namespace MetaEngine
     }
 
 
-
-}
+}// namespace MetaEngine

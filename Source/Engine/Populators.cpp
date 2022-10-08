@@ -7,14 +7,10 @@
 
 #ifndef INC_Textures
 #include "Textures.hpp"
-#endif // !INC_Textures
+#endif// !INC_Textures
 
 
 #include "InEngine.h"
-
-
-
-
 
 
 // #include "Populator.hpp"
@@ -165,23 +161,15 @@
 // }
 
 
-
-
-
-
-
-
-
-
 class TestPhase1Populator : public Populator {
 public:
     int getPhase() {
         return 1;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 10; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
             }
         }
@@ -196,9 +184,9 @@ public:
         return 2;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 10; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00);
             }
         }
@@ -213,9 +201,9 @@ public:
         return 3;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 10; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0x0000ff);
             }
         }
@@ -230,9 +218,9 @@ public:
         return 4;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 10; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xffff00);
             }
         }
@@ -248,9 +236,9 @@ public:
         return 5;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 10; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xff00ff);
             }
         }
@@ -265,9 +253,9 @@ public:
         return 6;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 0; x < 10; x++) {
-            for(int y = 0; y < 10; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0x00ffff);
             }
         }
@@ -282,9 +270,9 @@ public:
         return 0;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk* area, bool* dirty, int tx, int ty, int tw, int th, Chunk ch, World* world) {
-        for(int x = 10; x < 20; x++) {
-            for(int y = 10; y < 20; y++) {
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+        for (int x = 10; x < 20; x++) {
+            for (int y = 10; y < 20; y++) {
                 chunk[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xffffff);
             }
         }
@@ -299,29 +287,29 @@ public:
         return 0;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk** area, bool* dirty, int tx, int ty, int tw, int th, Chunk* ch, World* world) {
-        
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
 
-        if(ch->y < 0) return {};
-        for(int x = 0; x < CHUNK_W; x++) {
-            for(int y = 0; y < CHUNK_H; y++) {
+
+        if (ch->y < 0) return {};
+        for (int x = 0; x < CHUNK_W; x++) {
+            for (int y = 0; y < CHUNK_H; y++) {
                 int px = x + ch->x * CHUNK_W;
                 int py = y + ch->y * CHUNK_H;
-                if(chunk[x + y * CHUNK_W].mat->physicsType == PhysicsType::SOLID && chunk[x + y * CHUNK_W].mat->id != Materials::CLOUD.id) {
+                if (chunk[x + y * CHUNK_W].mat->physicsType == PhysicsType::SOLID && chunk[x + y * CHUNK_W].mat->id != Materials::CLOUD.id) {
                     double n = (world->noise.GetPerlin(px * 1.5, py * 1.5, 3802) + 1) / 2;
                     double n2 = (world->noise.GetPerlin(px / 3.0, py / 3.0, 6213) + 1) / 2;
                     double ndetail = (world->noise.GetPerlin(px * 8.0, py * 8.0, 5319) + 1) / 2 * 0.08;
 
-                    if(n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
+                    if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
                         double nlav = world->noise.GetPerlin(px / 4.0, py / 4.0, 7018);
-                        if(nlav > 0.45) {
+                        if (nlav > 0.45) {
                             chunk[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch->y > 15 ? Tiles::createLava() : Tiles::createWater()) : Tiles::NOTHING;
                         } else {
                             chunk[x + y * CHUNK_W] = Tiles::NOTHING;
                         }
                     } else {
                         double n3 = world->noise.GetPerlin(px / 64.0, py / 64.0, 9828);
-                        if(n3 - 0.25 > py / 1000.0) {
+                        if (n3 - 0.25 > py / 1000.0) {
                             chunk[x + y * CHUNK_W] = Tiles::NOTHING;
                         }
                     }
@@ -338,17 +326,17 @@ public:
         return 1;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk** area, bool* dirty, int tx, int ty, int tw, int th, Chunk* ch, World* world) {
-        
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
 
-        if(ch->y < 0) return {};
+
+        if (ch->y < 0) return {};
 
         //int dist = 8 + (world->noise.GetNoise(px * 4, py * 4, 3323) + 1) / 2 * 12;
         //int dist2 = dist - 6;
 
-        for(int sy = ty + CHUNK_H - 20; sy < ty + th - CHUNK_H + 20; sy++) {
+        for (int sy = ty + CHUNK_H - 20; sy < ty + th - CHUNK_H + 20; sy++) {
             int gapx = 0;
-            for(int sx = tx + CHUNK_W - 20; sx < tx + tw - CHUNK_W + 20; sx++) {
+            for (int sx = tx + CHUNK_W - 20; sx < tx + tw - CHUNK_W + 20; sx++) {
                 int rx = sx - ch->x * CHUNK_W;
                 int ry = sy - ch->y * CHUNK_H;
 
@@ -356,69 +344,65 @@ public:
                 int chy = 1;
                 int dxx = rx;
                 int dyy = ry;
-                if(dxx < 0) {
+                if (dxx < 0) {
                     chx--;
                     dxx += CHUNK_W;
-                } else if(dxx >= CHUNK_W) {
+                } else if (dxx >= CHUNK_W) {
                     chx++;
                     dxx -= CHUNK_W;
                 }
 
-                if(dyy < 0) {
+                if (dyy < 0) {
                     chy--;
                     dyy += CHUNK_H;
-                } else if(dyy >= CHUNK_H) {
+                } else if (dyy >= CHUNK_H) {
                     chy++;
                     dyy -= CHUNK_H;
                 }
 
-                if(area[chx + chy * 3]->tiles[(dxx) + (dyy) * CHUNK_W].mat->physicsType == PhysicsType::AIR || (area[chx + chy * 3]->tiles[(dxx) + (dyy) * CHUNK_W].mat->physicsType == PhysicsType::SAND && area[chx + chy * 3]->tiles[(dxx) + (dyy) * CHUNK_W].mat->id != Materials::SOFT_DIRT.id)) {
-                    if(gapx > 0) {
+                if (area[chx + chy * 3]->tiles[(dxx) + (dyy) *CHUNK_W].mat->physicsType == PhysicsType::AIR || (area[chx + chy * 3]->tiles[(dxx) + (dyy) *CHUNK_W].mat->physicsType == PhysicsType::SAND && area[chx + chy * 3]->tiles[(dxx) + (dyy) *CHUNK_W].mat->id != Materials::SOFT_DIRT.id)) {
+                    if (gapx > 0) {
                         gapx--;
                         continue;
                     }
                     gapx = 4;
 
-                    
 
                     int dist = 8 + (world->noise.GetNoise(sx * 4, sy * 4, 3323) + 1) / 2 * 12;
                     int dist2 = dist - 6;
 
-                    for(int dx = -dist; dx <= dist; dx++) {
+                    for (int dx = -dist; dx <= dist; dx++) {
                         int sdxx = rx + dx;
-                        if(sdxx < 0) continue;
-                        if(sdxx >= CHUNK_W) break;
-                        for(int dy = -dist; dy <= dist; dy++) {
+                        if (sdxx < 0) continue;
+                        if (sdxx >= CHUNK_W) break;
+                        for (int dy = -dist; dy <= dist; dy++) {
                             int sdyy = ry + dy;
-                            if(sdyy < 0) continue;
-                            if(sdyy >= CHUNK_H) break;
+                            if (sdyy < 0) continue;
+                            if (sdyy >= CHUNK_H) break;
 
-                            if(dx >= -dist2 && dx <= dist2 && dy >= -dist2 && dy <= dist2){
-                                if(area[1 + 1 * 3]->tiles[(sdxx)+(sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_STONE.id || area[1 + 1 * 3]->tiles[(sdxx)+(sdyy)*CHUNK_W].mat->id == Materials::FLAT_COBBLE_STONE.id) {
-                                    
+                            if (dx >= -dist2 && dx <= dist2 && dy >= -dist2 && dy <= dist2) {
+                                if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy) *CHUNK_W].mat->id == Materials::SMOOTH_STONE.id || area[1 + 1 * 3]->tiles[(sdxx) + (sdyy) *CHUNK_W].mat->id == Materials::FLAT_COBBLE_STONE.id) {
+
                                     chunk[sdxx + sdyy * CHUNK_W] = Tiles::createCobbleStone(sx + dx, sy + dy);
-                                    
-                                }else if(area[1 + 1 * 3]->tiles[(sdxx)+(sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_DIRT.id || area[1 + 1 * 3]->tiles[(sdxx)+(sdyy)*CHUNK_W].mat->id == Materials::FLAT_COBBLE_DIRT.id) {
-                                    
+
+                                } else if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy) *CHUNK_W].mat->id == Materials::SMOOTH_DIRT.id || area[1 + 1 * 3]->tiles[(sdxx) + (sdyy) *CHUNK_W].mat->id == Materials::FLAT_COBBLE_DIRT.id) {
+
                                     chunk[sdxx + sdyy * CHUNK_W] = Tiles::createCobbleDirt(sx + dx, sy + dy);
-                                    
                                 }
                             } else {
-                                if(area[1 + 1 * 3]->tiles[(sdxx)+(sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
-                                    
+                                if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy) *CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
+
                                     chunk[sdxx + sdyy * CHUNK_W] = Tiles::create(&Materials::FLAT_COBBLE_STONE, sx + dx, sy + dy);
-                                    
-                                } else if(area[1 + 1 * 3]->tiles[(sdxx)+(sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_DIRT.id) {
-                                    
+
+                                } else if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy) *CHUNK_W].mat->id == Materials::SMOOTH_DIRT.id) {
+
                                     chunk[sdxx + sdyy * CHUNK_W] = Tiles::create(&Materials::FLAT_COBBLE_DIRT, sx + dx, sy + dy);
-                                    
                                 }
                             }
-
                         }
                     }
 
-                    
+
                 } else {
                     gapx = 0;
                 }
@@ -435,26 +419,25 @@ public:
         return 0;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk** area, bool* dirty, int tx, int ty, int tw, int th, Chunk* ch, World* world) {
-        
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
 
-        if(ch->y < 0) return {};
-        for(int x = 0; x < CHUNK_W; x++) {
-            for(int y = 0; y < CHUNK_H; y++) {
+
+        if (ch->y < 0) return {};
+        for (int x = 0; x < CHUNK_W; x++) {
+            for (int y = 0; y < CHUNK_H; y++) {
                 int px = x + ch->x * CHUNK_W;
                 int py = y + ch->y * CHUNK_H;
 
                 MaterialInstance prop = chunk[x + y * CHUNK_W];
-                if(chunk[x + y * CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
+                if (chunk[x + y * CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
                     double n = (world->noise.GetNoise(px * 1.7, py * 1.7, 5124) + 1) / 2;
-                    if(n < 0.25) chunk[x + y * CHUNK_W] = Tiles::createIron(px, py);
+                    if (n < 0.25) chunk[x + y * CHUNK_W] = Tiles::createIron(px, py);
                 }
 
-                if(chunk[x + y * CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
+                if (chunk[x + y * CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
                     double n = (world->noise.GetNoise(px * 2, py * 2, 7513) + 1) / 2;
-                    if(n < 0.20) chunk[x + y * CHUNK_W] = Tiles::createGold(px, py);
+                    if (n < 0.20) chunk[x + y * CHUNK_W] = Tiles::createGold(px, py);
                 }
-
             }
         }
 
@@ -468,13 +451,13 @@ public:
         return 1;
     }
 
-    std::vector<PlacedStructure> apply(MaterialInstance* chunk, MaterialInstance* layer2, Chunk** area, bool* dirty, int tx, int ty, int tw, int th, Chunk* ch, World* world) {
-        if(ch->y < 0 || ch->y > 3) return {};
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+        if (ch->y < 0 || ch->y > 3) return {};
         int x = rand() % (CHUNK_W / 2) + (CHUNK_W / 4);
-        if(area[1 + 2 * 3]->tiles[x + 0 * CHUNK_W].mat->id == Materials::SOFT_DIRT.id) return {};
+        if (area[1 + 2 * 3]->tiles[x + 0 * CHUNK_W].mat->id == Materials::SOFT_DIRT.id) return {};
 
-        for(int y = 0; y < CHUNK_H; y++) {
-            if(area[1 + 2 * 3]->tiles[x + y * CHUNK_W].mat->id == Materials::SOFT_DIRT.id) {
+        for (int y = 0; y < CHUNK_H; y++) {
+            if (area[1 + 2 * 3]->tiles[x + y * CHUNK_W].mat->id == Materials::SOFT_DIRT.id) {
                 int px = x + ch->x * CHUNK_W;
                 int py = y + (ch->y + 1) * CHUNK_W;
                 /*Structure tree = Structures::makeTree1(*world, px, py);
@@ -500,20 +483,20 @@ public:
                 snprintf(buff, sizeof(buff), "data/assets/objects/tree1.png");
                 //snprintf(buff, sizeof(buff), "data/assets/objects/testTree.png");
                 std::string buffAsStdStr = buff;
-                SDL_Surface* tex = Textures::loadTexture(buffAsStdStr.c_str());
+                SDL_Surface *tex = Textures::loadTexture(buffAsStdStr.c_str());
 
                 px -= tex->w / 2;
                 py -= tex->h - 2;
 
                 b2PolygonShape s;
                 s.SetAsBox(1, 1);
-                RigidBody* rb = world->makeRigidBody(b2_dynamicBody, px, py, 0, s, 1, 0.3, tex);
-                for(int texX = 0; texX < tex->w; texX++) {
+                RigidBody *rb = world->makeRigidBody(b2_dynamicBody, px, py, 0, s, 1, 0.3, tex);
+                for (int texX = 0; texX < tex->w; texX++) {
                     b2Filter bf = {};
                     bf.categoryBits = 0x0002;
                     bf.maskBits = 0x0001;
                     rb->body->GetFixtureList()[0].SetFilterData(bf);
-                    if(((METADOT_GET_PIXEL(tex, texX, tex->h - 1) >> 24) & 0xff) != 0x00) {
+                    if (((METADOT_GET_PIXEL(tex, texX, tex->h - 1) >> 24) & 0xff) != 0x00) {
                         rb->weldX = texX;
                         rb->weldY = tex->h - 1;
                         break;

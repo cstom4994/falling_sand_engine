@@ -12,8 +12,8 @@
 #define PATH_MAX 260
 #endif
 #elif defined(LINUX) or defined(APPLE)
-#include <sys/types.h>
 #include <dirent.h>
+#include <sys/types.h>
 #define PATH_SEP '/'
 #endif
 
@@ -39,13 +39,12 @@
 #define buttonResetPathString "Reset to current directory"
 #define buttonCreateDirString "Create Directory"
 
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <utility>
 
-ImMarkdown::ImMarkdown()
-{
+ImMarkdown::ImMarkdown() {
 
     m_table_last_pos = ImVec2(0, 0);
 
@@ -54,97 +53,84 @@ ImMarkdown::ImMarkdown()
     m_md.debug_log = nullptr;
 
     m_md.flags = MD_FLAG_TABLES | MD_FLAG_UNDERLINE | MD_FLAG_STRIKETHROUGH;
-    m_md.enter_block = [](MD_BLOCKTYPE type, void* detail, void* userdata) {
-        return ((ImMarkdown*)userdata)->block(type, detail, true);
+    m_md.enter_block = [](MD_BLOCKTYPE type, void *detail, void *userdata) {
+        return ((ImMarkdown *) userdata)->block(type, detail, true);
     };
 
-    m_md.leave_block = [](MD_BLOCKTYPE type, void* detail, void* userdata) {
-        return ((ImMarkdown*)userdata)->block(type, detail, false);
+    m_md.leave_block = [](MD_BLOCKTYPE type, void *detail, void *userdata) {
+        return ((ImMarkdown *) userdata)->block(type, detail, false);
     };
 
-    m_md.enter_span = [](MD_SPANTYPE type, void* detail, void* userdata) {
-        return ((ImMarkdown*)userdata)->span(type, detail, true);
+    m_md.enter_span = [](MD_SPANTYPE type, void *detail, void *userdata) {
+        return ((ImMarkdown *) userdata)->span(type, detail, true);
     };
 
-    m_md.leave_span = [](MD_SPANTYPE type, void* detail, void* userdata) {
-        return ((ImMarkdown*)userdata)->span(type, detail, false);
+    m_md.leave_span = [](MD_SPANTYPE type, void *detail, void *userdata) {
+        return ((ImMarkdown *) userdata)->span(type, detail, false);
     };
 
-    m_md.text = [](MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* userdata) {
-        return ((ImMarkdown*)userdata)->text(type, text, text + size);
+    m_md.text = [](MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata) {
+        return ((ImMarkdown *) userdata)->text(type, text, text + size);
     };
 }
 
 
-
-void ImMarkdown::BLOCK_UL(const MD_BLOCK_UL_DETAIL* d, bool e)
-{
+void ImMarkdown::BLOCK_UL(const MD_BLOCK_UL_DETAIL *d, bool e) {
     if (e) {
-        m_list_stack.push_back(list_info{ false, d->mark, 0 });
-    }
-    else {
+        m_list_stack.push_back(list_info{false, d->mark, 0});
+    } else {
         m_list_stack.pop_back();
-        if (m_list_stack.empty())ImGui::NewLine();
+        if (m_list_stack.empty()) ImGui::NewLine();
     }
 }
 
-void ImMarkdown::BLOCK_OL(const MD_BLOCK_OL_DETAIL* d, bool e)
-{
+void ImMarkdown::BLOCK_OL(const MD_BLOCK_OL_DETAIL *d, bool e) {
     if (e) {
-        m_list_stack.push_back(list_info{ true, d->mark_delimiter, d->start });
-    }
-    else {
+        m_list_stack.push_back(list_info{true, d->mark_delimiter, d->start});
+    } else {
         m_list_stack.pop_back();
-        if (m_list_stack.empty())ImGui::NewLine();
+        if (m_list_stack.empty()) ImGui::NewLine();
     }
 }
 
-void ImMarkdown::BLOCK_LI(const MD_BLOCK_LI_DETAIL*, bool e)
-{
+void ImMarkdown::BLOCK_LI(const MD_BLOCK_LI_DETAIL *, bool e) {
     if (e) {
         ImGui::NewLine();
 
-        list_info& nfo = m_list_stack.back();
+        list_info &nfo = m_list_stack.back();
         if (nfo.is_ol) {
             ImGui::Text("%d%c", nfo.cur_ol++, nfo.delim);
             ImGui::SameLine();
-        }
-        else {
+        } else {
             if (nfo.delim == '*') {
                 float cx = ImGui::GetCursorPosX();
                 cx -= ImGui::GetStyle().FramePadding.x * 2;
                 ImGui::SetCursorPosX(cx);
                 ImGui::Bullet();
-            }
-            else {
+            } else {
                 ImGui::Text("%c", nfo.delim);
                 ImGui::SameLine();
             }
         }
 
         ImGui::Indent();
-    }
-    else {
+    } else {
         ImGui::Unindent();
     }
 }
 
-void ImMarkdown::BLOCK_HR(bool e)
-{
+void ImMarkdown::BLOCK_HR(bool e) {
     if (!e) {
         ImGui::NewLine();
         ImGui::Separator();
-
     }
 }
 
-void ImMarkdown::BLOCK_H(const MD_BLOCK_H_DETAIL* d, bool e)
-{
+void ImMarkdown::BLOCK_H(const MD_BLOCK_H_DETAIL *d, bool e) {
     if (e) {
         m_hlevel = d->level;
         ImGui::NewLine();
-    }
-    else {
+    } else {
         m_hlevel = 0;
     }
 
@@ -158,40 +144,29 @@ void ImMarkdown::BLOCK_H(const MD_BLOCK_H_DETAIL* d, bool e)
     }
 }
 
-void ImMarkdown::BLOCK_DOC(bool)
-{
-
+void ImMarkdown::BLOCK_DOC(bool) {
 }
 
-void ImMarkdown::BLOCK_QUOTE(bool)
-{
-
+void ImMarkdown::BLOCK_QUOTE(bool) {
 }
-void ImMarkdown::BLOCK_CODE(const MD_BLOCK_CODE_DETAIL*, bool)
-{
-
+void ImMarkdown::BLOCK_CODE(const MD_BLOCK_CODE_DETAIL *, bool) {
 }
 
-void ImMarkdown::BLOCK_HTML(bool)
-{
-
+void ImMarkdown::BLOCK_HTML(bool) {
 }
 
-void ImMarkdown::BLOCK_P(bool)
-{
-    if (!m_list_stack.empty())return;
+void ImMarkdown::BLOCK_P(bool) {
+    if (!m_list_stack.empty()) return;
     ImGui::NewLine();
 }
 
-void ImMarkdown::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL*, bool e)
-{
+void ImMarkdown::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL *, bool e) {
     if (e) {
         m_table_row_pos.clear();
         m_table_col_pos.clear();
 
         m_table_last_pos = ImGui::GetCursorPos();
-    }
-    else {
+    } else {
 
         ImGui::NewLine();
         m_table_last_pos.y = ImGui::GetCursorPos().y;
@@ -215,7 +190,7 @@ void ImMarkdown::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL*, bool e)
         const ImColor c = ImGui::GetStyle().Colors[ImGuiCol_Separator];
         ////////////////////////////////////////////////////////////////////////
 
-        ImDrawList* dl = ImGui::GetWindowDrawList();
+        ImDrawList *dl = ImGui::GetWindowDrawList();
 
         const float xmin = m_table_col_pos.front();
         const float xmax = m_table_col_pos.back();
@@ -231,23 +206,18 @@ void ImMarkdown::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL*, bool e)
             dl->AddLine(ImVec2(p, ymin), ImVec2(p, ymax), c);
         }
     }
-
-
 }
 
-void ImMarkdown::BLOCK_THEAD(bool e)
-{
+void ImMarkdown::BLOCK_THEAD(bool e) {
     m_is_table_header = e;
     set_font(e);
 }
 
-void ImMarkdown::BLOCK_TBODY(bool e)
-{
+void ImMarkdown::BLOCK_TBODY(bool e) {
     m_is_table_body = e;
 }
 
-void ImMarkdown::BLOCK_TR(bool e)
-{
+void ImMarkdown::BLOCK_TR(bool e) {
     ImGui::SetCursorPosY(m_table_last_pos.y);
 
     if (e) {
@@ -257,20 +227,16 @@ void ImMarkdown::BLOCK_TR(bool e)
     }
 }
 
-void ImMarkdown::BLOCK_TH(const MD_BLOCK_TD_DETAIL* d, bool e)
-{
+void ImMarkdown::BLOCK_TH(const MD_BLOCK_TD_DETAIL *d, bool e) {
     BLOCK_TD(d, e);
-
 }
 
-void ImMarkdown::BLOCK_TD(const MD_BLOCK_TD_DETAIL*, bool e)
-{
+void ImMarkdown::BLOCK_TD(const MD_BLOCK_TD_DETAIL *, bool e) {
     if (e) {
 
         if (m_table_next_column < m_table_col_pos.size()) {
             ImGui::SetCursorPosX(m_table_col_pos[m_table_next_column]);
-        }
-        else {
+        } else {
             m_table_col_pos.push_back(m_table_last_pos.x);
         }
 
@@ -278,51 +244,44 @@ void ImMarkdown::BLOCK_TD(const MD_BLOCK_TD_DETAIL*, bool e)
 
         ImGui::Indent(m_table_col_pos[m_table_next_column - 1]);
         ImGui::SetCursorPos(
-            ImVec2(m_table_col_pos[m_table_next_column - 1], m_table_row_pos.back()));
+                ImVec2(m_table_col_pos[m_table_next_column - 1], m_table_row_pos.back()));
 
-    }
-    else {
+    } else {
         const ImVec2 p = ImGui::GetCursorPos();
         ImGui::Unindent(m_table_col_pos[m_table_next_column - 1]);
         ImGui::SetCursorPosX(p.x);
-        if (p.y > m_table_last_pos.y)m_table_last_pos.y = p.y;
+        if (p.y > m_table_last_pos.y) m_table_last_pos.y = p.y;
     }
-    ImGui::TextUnformatted(""); ImGui::SameLine();
+    ImGui::TextUnformatted("");
+    ImGui::SameLine();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ImMarkdown::set_href(bool e, const MD_ATTRIBUTE& src)
-{
+void ImMarkdown::set_href(bool e, const MD_ATTRIBUTE &src) {
     if (e) {
         m_href.assign(src.text, src.size);
-    }
-    else {
+    } else {
         m_href.clear();
     }
 }
 
-void ImMarkdown::set_font(bool e)
-{
+void ImMarkdown::set_font(bool e) {
     if (e) {
         ImGui::PushFont(get_font());
-    }
-    else {
+    } else {
         ImGui::PopFont();
     }
 }
 
-void ImMarkdown::set_color(bool e)
-{
+void ImMarkdown::set_color(bool e) {
     if (e) {
         ImGui::PushStyleColor(ImGuiCol_Text, get_color());
-    }
-    else {
+    } else {
         ImGui::PopStyleColor();
     }
 }
 
-void ImMarkdown::line(ImColor c, bool under)
-{
+void ImMarkdown::line(ImColor c, bool under) {
     ImVec2 mi = ImGui::GetItemRectMin();
     ImVec2 ma = ImGui::GetItemRectMax();
 
@@ -335,28 +294,24 @@ void ImMarkdown::line(ImColor c, bool under)
     ImGui::GetWindowDrawList()->AddLine(mi, ma, c, 1.0f);
 }
 
-void ImMarkdown::SPAN_A(const MD_SPAN_A_DETAIL* d, bool e)
-{
+void ImMarkdown::SPAN_A(const MD_SPAN_A_DETAIL *d, bool e) {
     set_href(e, d->href);
     set_color(e);
 }
 
 
-void ImMarkdown::SPAN_EM(bool e)
-{
+void ImMarkdown::SPAN_EM(bool e) {
     m_is_em = e;
     set_font(e);
 }
 
-void ImMarkdown::SPAN_STRONG(bool e)
-{
+void ImMarkdown::SPAN_STRONG(bool e) {
     m_is_strong = e;
     set_font(e);
 }
 
 
-void ImMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL* d, bool e)
-{
+void ImMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL *d, bool e) {
     m_is_image = e;
 
     set_href(e, d->src);
@@ -394,60 +349,48 @@ void ImMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL* d, bool e)
     }
 }
 
-void ImMarkdown::SPAN_CODE(bool)
-{
-
+void ImMarkdown::SPAN_CODE(bool) {
 }
 
 
-void ImMarkdown::SPAN_LATEXMATH(bool)
-{
-
+void ImMarkdown::SPAN_LATEXMATH(bool) {
 }
 
-void ImMarkdown::SPAN_LATEXMATH_DISPLAY(bool)
-{
-
+void ImMarkdown::SPAN_LATEXMATH_DISPLAY(bool) {
 }
 
-void ImMarkdown::SPAN_WIKILINK(const MD_SPAN_WIKILINK_DETAIL*, bool)
-{
-
+void ImMarkdown::SPAN_WIKILINK(const MD_SPAN_WIKILINK_DETAIL *, bool) {
 }
 
-void ImMarkdown::SPAN_U(bool e)
-{
+void ImMarkdown::SPAN_U(bool e) {
     m_is_underline = e;
 }
 
-void ImMarkdown::SPAN_DEL(bool e)
-{
+void ImMarkdown::SPAN_DEL(bool e) {
     m_is_strikethrough = e;
 }
 
-void ImMarkdown::render_text(const char* str, const char* str_end)
-{
+void ImMarkdown::render_text(const char *str, const char *str_end) {
     const float scale = ImGui::GetIO().FontGlobalScale;
-    const ImGuiStyle& s = ImGui::GetStyle();
+    const ImGuiStyle &s = ImGui::GetStyle();
 
     while (!m_is_image && str < str_end) {
 
-        const char* te = str_end;
+        const char *te = str_end;
 
         if (!m_is_table_header) {
 
             float wl = ImGui::GetContentRegionAvail().x;
 
             if (m_is_table_body) {
-                wl = (m_table_next_column < m_table_col_pos.size() ?
-                    m_table_col_pos[m_table_next_column] : m_table_last_pos.x);
+                wl = (m_table_next_column < m_table_col_pos.size() ? m_table_col_pos[m_table_next_column] : m_table_last_pos.x);
                 wl -= ImGui::GetCursorPosX();
             }
 
             te = ImGui::GetFont()->CalcWordWrapPositionA(
-                scale, str, str_end, wl);
+                    scale, str, str_end, wl);
 
-            if (te == str)++te;
+            if (te == str) ++te;
         }
 
 
@@ -464,8 +407,7 @@ void ImMarkdown::render_text(const char* str, const char* str_end)
                 if (ImGui::IsMouseReleased(0)) {
                     open_url();
                 }
-            }
-            else {
+            } else {
                 c = s.Colors[ImGuiCol_Button];
             }
             line(c, true);
@@ -479,7 +421,7 @@ void ImMarkdown::render_text(const char* str, const char* str_end)
 
         str = te;
 
-        while (str < str_end && *str == ' ')++str;
+        while (str < str_end && * str == ' ') ++str;
     }
 
 
@@ -487,18 +429,17 @@ void ImMarkdown::render_text(const char* str, const char* str_end)
 }
 
 
-bool ImMarkdown::render_entity(const char* str, const char* str_end)
-{
+bool ImMarkdown::render_entity(const char *str, const char *str_end) {
     const size_t sz = str_end - str;
     if (strncmp(str, "&nbsp;", sz) == 0) {
-        ImGui::TextUnformatted(""); ImGui::SameLine();
+        ImGui::TextUnformatted("");
+        ImGui::SameLine();
         return true;
     }
     return false;
 }
 
-bool ImMarkdown::render_html(const char* str, const char* str_end)
-{
+bool ImMarkdown::render_html(const char *str, const char *str_end) {
     const size_t sz = str_end - str;
 
     if (strncmp(str, "<br>", sz) == 0) {
@@ -521,160 +462,152 @@ bool ImMarkdown::render_html(const char* str, const char* str_end)
 }
 
 
-
-int ImMarkdown::text(MD_TEXTTYPE type, const char* str, const char* str_end)
-{
+int ImMarkdown::text(MD_TEXTTYPE type, const char *str, const char *str_end) {
     switch (type) {
-    case MD_TEXT_NORMAL:
-        render_text(str, str_end);
-        break;
-    case MD_TEXT_CODE:
-        render_text(str, str_end);
-        break;
-    case MD_TEXT_NULLCHAR:
-        break;
-    case MD_TEXT_BR:
-        ImGui::NewLine();
-        break;
-    case MD_TEXT_SOFTBR:
-        soft_break();
-        break;
-    case MD_TEXT_ENTITY:
-        if (!render_entity(str, str_end)) {
+        case MD_TEXT_NORMAL:
             render_text(str, str_end);
-        };
-        break;
-    case MD_TEXT_HTML:
-        if (!render_html(str, str_end)) {
+            break;
+        case MD_TEXT_CODE:
             render_text(str, str_end);
-        }
-        break;
-    case MD_TEXT_LATEXMATH:
-        render_text(str, str_end);
-        break;
-    default:
-        break;
+            break;
+        case MD_TEXT_NULLCHAR:
+            break;
+        case MD_TEXT_BR:
+            ImGui::NewLine();
+            break;
+        case MD_TEXT_SOFTBR:
+            soft_break();
+            break;
+        case MD_TEXT_ENTITY:
+            if (!render_entity(str, str_end)) {
+                render_text(str, str_end);
+            };
+            break;
+        case MD_TEXT_HTML:
+            if (!render_html(str, str_end)) {
+                render_text(str, str_end);
+            }
+            break;
+        case MD_TEXT_LATEXMATH:
+            render_text(str, str_end);
+            break;
+        default:
+            break;
     }
 
     if (m_is_table_header) {
         const float x = ImGui::GetCursorPosX();
-        if (x > m_table_last_pos.x)m_table_last_pos.x = x;
+        if (x > m_table_last_pos.x) m_table_last_pos.x = x;
     }
 
     return 0;
 }
 
-int ImMarkdown::block(MD_BLOCKTYPE type, void* d, bool e)
-{
-    switch (type)
-    {
-    case MD_BLOCK_DOC:
-        BLOCK_DOC(e);
-        break;
-    case MD_BLOCK_QUOTE:
-        BLOCK_QUOTE(e);
-        break;
-    case MD_BLOCK_UL:
-        BLOCK_UL((MD_BLOCK_UL_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_OL:
-        BLOCK_OL((MD_BLOCK_OL_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_LI:
-        BLOCK_LI((MD_BLOCK_LI_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_HR:
-        BLOCK_HR(e);
-        break;
-    case MD_BLOCK_H:
-        BLOCK_H((MD_BLOCK_H_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_CODE:
-        BLOCK_CODE((MD_BLOCK_CODE_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_HTML:
-        BLOCK_HTML(e);
-        break;
-    case MD_BLOCK_P:
-        BLOCK_P(e);
-        break;
-    case MD_BLOCK_TABLE:
-        BLOCK_TABLE((MD_BLOCK_TABLE_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_THEAD:
-        BLOCK_THEAD(e);
-        break;
-    case MD_BLOCK_TBODY:
-        BLOCK_TBODY(e);
-        break;
-    case MD_BLOCK_TR:
-        BLOCK_TR(e);
-        break;
-    case MD_BLOCK_TH:
-        BLOCK_TH((MD_BLOCK_TD_DETAIL*)d, e);
-        break;
-    case MD_BLOCK_TD:
-        BLOCK_TD((MD_BLOCK_TD_DETAIL*)d, e);
-        break;
-    default:
-        assert(false);
-        break;
+int ImMarkdown::block(MD_BLOCKTYPE type, void *d, bool e) {
+    switch (type) {
+        case MD_BLOCK_DOC:
+            BLOCK_DOC(e);
+            break;
+        case MD_BLOCK_QUOTE:
+            BLOCK_QUOTE(e);
+            break;
+        case MD_BLOCK_UL:
+            BLOCK_UL((MD_BLOCK_UL_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_OL:
+            BLOCK_OL((MD_BLOCK_OL_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_LI:
+            BLOCK_LI((MD_BLOCK_LI_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_HR:
+            BLOCK_HR(e);
+            break;
+        case MD_BLOCK_H:
+            BLOCK_H((MD_BLOCK_H_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_CODE:
+            BLOCK_CODE((MD_BLOCK_CODE_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_HTML:
+            BLOCK_HTML(e);
+            break;
+        case MD_BLOCK_P:
+            BLOCK_P(e);
+            break;
+        case MD_BLOCK_TABLE:
+            BLOCK_TABLE((MD_BLOCK_TABLE_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_THEAD:
+            BLOCK_THEAD(e);
+            break;
+        case MD_BLOCK_TBODY:
+            BLOCK_TBODY(e);
+            break;
+        case MD_BLOCK_TR:
+            BLOCK_TR(e);
+            break;
+        case MD_BLOCK_TH:
+            BLOCK_TH((MD_BLOCK_TD_DETAIL *) d, e);
+            break;
+        case MD_BLOCK_TD:
+            BLOCK_TD((MD_BLOCK_TD_DETAIL *) d, e);
+            break;
+        default:
+            assert(false);
+            break;
     }
 
     return 0;
 }
 
-int ImMarkdown::span(MD_SPANTYPE type, void* d, bool e)
-{
-    switch (type)
-    {
-    case MD_SPAN_EM:
-        SPAN_EM(e);
-        break;
-    case MD_SPAN_STRONG:
-        SPAN_STRONG(e);
-        break;
-    case MD_SPAN_A:
-        SPAN_A((MD_SPAN_A_DETAIL*)d, e);
-        break;
-    case MD_SPAN_IMG:
-        SPAN_IMG((MD_SPAN_IMG_DETAIL*)d, e);
-        break;
-    case MD_SPAN_CODE:
-        SPAN_CODE(e);
-        break;
-    case MD_SPAN_DEL:
-        SPAN_DEL(e);
-        break;
-    case MD_SPAN_LATEXMATH:
-        SPAN_LATEXMATH(e);
-        break;
-    case MD_SPAN_LATEXMATH_DISPLAY:
-        SPAN_LATEXMATH_DISPLAY(e);
-        break;
-    case MD_SPAN_WIKILINK:
-        SPAN_WIKILINK((MD_SPAN_WIKILINK_DETAIL*)d, e);
-        break;
-    case MD_SPAN_U:
-        SPAN_U(e);
-        break;
-    default:
-        assert(false);
-        break;
+int ImMarkdown::span(MD_SPANTYPE type, void *d, bool e) {
+    switch (type) {
+        case MD_SPAN_EM:
+            SPAN_EM(e);
+            break;
+        case MD_SPAN_STRONG:
+            SPAN_STRONG(e);
+            break;
+        case MD_SPAN_A:
+            SPAN_A((MD_SPAN_A_DETAIL *) d, e);
+            break;
+        case MD_SPAN_IMG:
+            SPAN_IMG((MD_SPAN_IMG_DETAIL *) d, e);
+            break;
+        case MD_SPAN_CODE:
+            SPAN_CODE(e);
+            break;
+        case MD_SPAN_DEL:
+            SPAN_DEL(e);
+            break;
+        case MD_SPAN_LATEXMATH:
+            SPAN_LATEXMATH(e);
+            break;
+        case MD_SPAN_LATEXMATH_DISPLAY:
+            SPAN_LATEXMATH_DISPLAY(e);
+            break;
+        case MD_SPAN_WIKILINK:
+            SPAN_WIKILINK((MD_SPAN_WIKILINK_DETAIL *) d, e);
+            break;
+        case MD_SPAN_U:
+            SPAN_U(e);
+            break;
+        default:
+            assert(false);
+            break;
     }
 
     return 0;
 }
 
-int ImMarkdown::print(const std::string& text)
-{
+int ImMarkdown::print(const std::string &text) {
     return md_parse(text.c_str(), text.size() + 1, &m_md, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ImFont* ImMarkdown::get_font() const
-{
+ImFont *ImMarkdown::get_font() const {
     return nullptr;//default font
 
     //Example:
@@ -693,32 +626,28 @@ ImFont* ImMarkdown::get_font() const
         return g_font_bold;
     }
 #endif
-
 };
 
-ImVec4 ImMarkdown::get_color() const
-{
+ImVec4 ImMarkdown::get_color() const {
     if (!m_href.empty()) {
         return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
     }
-    return  ImGui::GetStyle().Colors[ImGuiCol_Text];
+    return ImGui::GetStyle().Colors[ImGuiCol_Text];
 }
 
 
-bool ImMarkdown::get_image(image_info& nfo) const
-{
+bool ImMarkdown::get_image(image_info &nfo) const {
     nfo.texture_id = ImGui::GetIO().Fonts->TexID;
-    nfo.size = { 100,50 };
-    nfo.uv0 = { 0,0 };
-    nfo.uv1 = { 1,1 };
-    nfo.col_tint = { 1,1,1,1 };
-    nfo.col_border = { 0,0,0,0 };
+    nfo.size = {100, 50};
+    nfo.uv0 = {0, 0};
+    nfo.uv1 = {1, 1};
+    nfo.col_tint = {1, 1, 1, 1};
+    nfo.col_border = {0, 0, 0, 0};
 
     return true;
 };
 
-void ImMarkdown::open_url() const
-{
+void ImMarkdown::open_url() const {
     //Example:
 
 #if 0	
@@ -731,34 +660,12 @@ void ImMarkdown::open_url() const
 #endif
 }
 
-void ImMarkdown::soft_break()
-{
+void ImMarkdown::soft_break() {
     //Example:
 #if 0
     ImGui::NewLine();
 #endif
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 static std::string s_fs_root = std::string(1u, PATH_SEP);
@@ -770,18 +677,15 @@ static int alphaSort(const void *a, const void *b)
     return strcoll(((dirent*)a)->d_name, ((dirent*)b)->d_name);
 }
 #elif defined(LINUX) or defined(APPLE)*/
-inline int alphaSort(const struct dirent** a, const struct dirent** b)
-{
+inline int alphaSort(const struct dirent **a, const struct dirent **b) {
     return strcoll((*a)->d_name, (*b)->d_name);
 }
 //#endif
 
-inline bool replaceString(::std::string& str, const ::std::string& oldStr, const ::std::string& newStr)
-{
+inline bool replaceString(::std::string &str, const ::std::string &oldStr, const ::std::string &newStr) {
     bool found = false;
     size_t pos = 0;
-    while ((pos = str.find(oldStr, pos)) != ::std::string::npos)
-    {
+    while ((pos = str.find(oldStr, pos)) != ::std::string::npos) {
         found = true;
         str.replace(pos, oldStr.length(), newStr);
         pos += newStr.length();
@@ -789,15 +693,12 @@ inline bool replaceString(::std::string& str, const ::std::string& oldStr, const
     return found;
 }
 
-inline std::vector<std::string> splitStringToVector(const ::std::string& text, char delimiter, bool pushEmpty)
-{
+inline std::vector<std::string> splitStringToVector(const ::std::string &text, char delimiter, bool pushEmpty) {
     std::vector<std::string> arr;
-    if (!text.empty())
-    {
+    if (!text.empty()) {
         std::string::size_type start = 0;
         std::string::size_type end = text.find(delimiter, start);
-        while (end != std::string::npos)
-        {
+        while (end != std::string::npos) {
             std::string token = text.substr(start, end - start);
             if (!token.empty() || (token.empty() && pushEmpty))
                 arr.push_back(token);
@@ -809,8 +710,7 @@ inline std::vector<std::string> splitStringToVector(const ::std::string& text, c
     return arr;
 }
 
-inline std::vector<std::string> GetDrivesList()
-{
+inline std::vector<std::string> GetDrivesList() {
     std::vector<std::string> res;
 
 #ifdef WIN32
@@ -819,8 +719,7 @@ inline std::vector<std::string> GetDrivesList()
 
     DWORD countChars = GetLogicalDriveStringsA(mydrives, lpBuffer);
 
-    if (countChars > 0)
-    {
+    if (countChars > 0) {
         std::string var = std::string(lpBuffer, countChars);
         replaceString(var, "\\", "");
         res = splitStringToVector(var, '\0', false);
@@ -830,32 +729,26 @@ inline std::vector<std::string> GetDrivesList()
     return res;
 }
 
-inline bool IsDirectoryExist(const std::string& name)
-{
+inline bool IsDirectoryExist(const std::string &name) {
     bool bExists = false;
 
-    if (!name.empty())
-    {
-        DIR* pDir = nullptr;
+    if (!name.empty()) {
+        DIR *pDir = nullptr;
         pDir = opendir(name.c_str());
-        if (pDir != nullptr)
-        {
+        if (pDir != nullptr) {
             bExists = true;
-            (void)closedir(pDir);
+            (void) closedir(pDir);
         }
     }
 
-    return bExists;    // this is not a directory!
+    return bExists;// this is not a directory!
 }
 
-inline bool CreateDirectoryIfNotExist(const std::string& name)
-{
+inline bool CreateDirectoryIfNotExist(const std::string &name) {
     bool res = false;
 
-    if (!name.empty())
-    {
-        if (!IsDirectoryExist(name))
-        {
+    if (!name.empty()) {
+        if (!IsDirectoryExist(name)) {
             res = true;
 
 #ifdef WIN32
@@ -864,8 +757,7 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
             char buffer[PATH_MAX] = {};
             snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
             const int dir_err = std::system(buffer);
-            if (dir_err == -1)
-            {
+            if (dir_err == -1) {
                 std::cout << "Error creating directory " << name << std::endl;
                 res = false;
             }
@@ -877,12 +769,12 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
 }
 
 inline bool stringComparator(
-    const FileInfoStruct& a,
-    const FileInfoStruct& b)
-{
+        const FileInfoStruct &a,
+        const FileInfoStruct &b) {
     bool res;
     if (a.type != b.type) res = (a.type < b.type);
-    else res = (a.fileName < b.fileName);
+    else
+        res = (a.fileName < b.fileName);
     return res;
 }
 
@@ -894,36 +786,30 @@ struct PathStruct
 
     bool isOk;
 
-    PathStruct()
-    {
+    PathStruct() {
         isOk = false;
     }
 };
 
-inline PathStruct ParsePathFileName(const std::string& vPathFileName)
-{
+inline PathStruct ParsePathFileName(const std::string &vPathFileName) {
     PathStruct res;
 
-    if (!vPathFileName.empty())
-    {
+    if (!vPathFileName.empty()) {
         std::string pfn = vPathFileName;
         std::string separator(1u, PATH_SEP);
         replaceString(pfn, "\\", separator);
         replaceString(pfn, "/", separator);
 
         size_t lastSlash = pfn.find_last_of(separator);
-        if (lastSlash != std::string::npos)
-        {
+        if (lastSlash != std::string::npos) {
             res.name = pfn.substr(lastSlash + 1);
             res.path = pfn.substr(0, lastSlash);
             res.isOk = true;
         }
 
         size_t lastPoint = pfn.find_last_of('.');
-        if (lastPoint != std::string::npos)
-        {
-            if (!res.isOk)
-            {
+        if (lastPoint != std::string::npos) {
+            if (!res.isOk) {
                 res.name = pfn;
                 res.isOk = true;
             }
@@ -935,14 +821,12 @@ inline PathStruct ParsePathFileName(const std::string& vPathFileName)
     return res;
 }
 
-inline void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
-{
+inline void AppendToBuffer(char *vBuffer, size_t vBufferLen, const std::string &vStr) {
     std::string st = vStr;
     size_t len = vBufferLen - 1u;
     size_t slen = strlen(vBuffer);
 
-    if (!st.empty() && st != "\n")
-    {
+    if (!st.empty() && st != "\n") {
         replaceString(st, "\n", "");
         replaceString(st, "\r", "");
     }
@@ -959,8 +843,7 @@ inline void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& 
     vBuffer[len] = '\0';
 }
 
-inline void ResetBuffer(char* vBuffer)
-{
+inline void ResetBuffer(char *vBuffer) {
     vBuffer[0] = '\0';
 }
 
@@ -969,8 +852,7 @@ char ImGuiFileDialog::DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 char ImGuiFileDialog::SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 int ImGuiFileDialog::FilterIndex = 0;
 
-ImGuiFileDialog::ImGuiFileDialog()
-{
+ImGuiFileDialog::ImGuiFileDialog() {
     m_AnyWindowsHovered = false;
     IsOk = false;
     m_ShowDialog = false;
@@ -983,12 +865,11 @@ ImGuiFileDialog::ImGuiFileDialog()
 
 ImGuiFileDialog::~ImGuiFileDialog() = default;
 
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-    const std::string& vPath, const std::string& vDefaultFileName,
-    const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-    const int& vCountSelectionMax, UserDatas vUserDatas)
-{
-    if (m_ShowDialog) // if already opened, quit
+void ImGuiFileDialog::OpenDialog(const std::string &vKey, const char *vName, const char *vFilters,
+                                 const std::string &vPath, const std::string &vDefaultFileName,
+                                 const std::function<void(std::string, UserDatas, bool *)> &vOptionsPane, const size_t &vOptionsPaneWidth,
+                                 const int &vCountSelectionMax, UserDatas vUserDatas) {
+    if (m_ShowDialog)// if already opened, quit
         return;
 
     dlg_key = vKey;
@@ -1009,12 +890,11 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
     m_ShowDialog = true;
 }
 
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-    const std::string& vFilePathName,
-    const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-    const int& vCountSelectionMax, UserDatas vUserDatas)
-{
-    if (m_ShowDialog) // if already opened, quit
+void ImGuiFileDialog::OpenDialog(const std::string &vKey, const char *vName, const char *vFilters,
+                                 const std::string &vFilePathName,
+                                 const std::function<void(std::string, UserDatas, bool *)> &vOptionsPane, const size_t &vOptionsPaneWidth,
+                                 const int &vCountSelectionMax, UserDatas vUserDatas) {
+    if (m_ShowDialog)// if already opened, quit
         return;
 
     dlg_key = vKey;
@@ -1022,14 +902,11 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
     dlg_filters = vFilters;
 
     auto ps = ParsePathFileName(vFilePathName);
-    if (ps.isOk)
-    {
+    if (ps.isOk) {
         dlg_path = ps.path;
         dlg_defaultFileName = vFilePathName;
         dlg_defaultExt = "." + ps.ext;
-    }
-    else
-    {
+    } else {
         dlg_path = ".";
         dlg_defaultFileName = "";
         dlg_defaultExt = "";
@@ -1046,10 +923,9 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
     m_ShowDialog = true;
 }
 
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-    const std::string& vFilePathName, const int& vCountSelectionMax, UserDatas vUserDatas)
-{
-    if (m_ShowDialog) // if already opened, quit
+void ImGuiFileDialog::OpenDialog(const std::string &vKey, const char *vName, const char *vFilters,
+                                 const std::string &vFilePathName, const int &vCountSelectionMax, UserDatas vUserDatas) {
+    if (m_ShowDialog)// if already opened, quit
         return;
 
     dlg_key = vKey;
@@ -1057,14 +933,11 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
     dlg_filters = vFilters;
 
     auto ps = ParsePathFileName(vFilePathName);
-    if (ps.isOk)
-    {
+    if (ps.isOk) {
         dlg_path = ps.path;
         dlg_defaultFileName = vFilePathName;
         dlg_defaultExt = "." + ps.ext;
-    }
-    else
-    {
+    } else {
         dlg_path = ".";
         dlg_defaultFileName = "";
         dlg_defaultExt = "";
@@ -1081,10 +954,9 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
     m_ShowDialog = true;
 }
 
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-    const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, UserDatas vUserDatas)
-{
-    if (m_ShowDialog) // if already opened, quit
+void ImGuiFileDialog::OpenDialog(const std::string &vKey, const char *vName, const char *vFilters,
+                                 const std::string &vPath, const std::string &vDefaultFileName, const int &vCountSelectionMax, UserDatas vUserDatas) {
+    if (m_ShowDialog)// if already opened, quit
         return;
 
     dlg_key = vKey;
@@ -1105,16 +977,13 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
     m_ShowDialog = true;
 }
 
-bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags)
-{
-    if (m_ShowDialog && dlg_key == vKey)
-    {
+bool ImGuiFileDialog::FileDialog(const std::string &vKey, ImGuiWindowFlags vFlags) {
+    if (m_ShowDialog && dlg_key == vKey) {
         bool res = false;
 
         std::string name = dlg_name + "##" + dlg_key;
 
-        if (m_Name != name)
-        {
+        if (m_Name != name) {
             m_FileList.clear();
             m_CurrentPath_Decomposition.clear();
             m_SelectedExt.clear();
@@ -1122,42 +991,35 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
         IsOk = false;
 
-        if (ImGui::Begin(name.c_str(), (bool*)nullptr, vFlags | ImGuiWindowFlags_NoScrollbar))
-        {
+        if (ImGui::Begin(name.c_str(), (bool *) nullptr, vFlags | ImGuiWindowFlags_NoScrollbar)) {
             m_Name = name;
 
             m_AnyWindowsHovered |= ImGui::IsWindowHovered();
 
             if (dlg_path.empty()) dlg_path = ".";
 
-            if (m_FileList.empty() && !m_ShowDrives)
-            {
-                replaceString(dlg_defaultFileName, dlg_path, ""); // local path
+            if (m_FileList.empty() && !m_ShowDrives) {
+                replaceString(dlg_defaultFileName, dlg_path, "");// local path
 
-                if (!dlg_defaultFileName.empty())
-                {
+                if (!dlg_defaultFileName.empty()) {
                     ResetBuffer(FileNameBuffer);
                     AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, dlg_defaultFileName);
                     //m_SelectedFileName = dlg_defaultFileName;
 
-                    if (!dlg_defaultExt.empty())
-                    {
+                    if (!dlg_defaultExt.empty()) {
                         m_SelectedExt = dlg_defaultExt;
 
                         ImGuiFileDialog::FilterIndex = 0;
                         size_t size = 0;
-                        const char* p = dlg_filters;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
-                        while (*p)
-                        {
+                        const char *p = dlg_filters;// FIXME-OPT: Avoid computing this, or at least only when combo is open
+                        while (*p) {
                             size += strlen(p) + 1;
                             p += size;
                         }
                         int idx = 0;
                         auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
-                        for (auto& it : arr)
-                        {
-                            if (m_SelectedExt == it)
-                            {
+                        for (auto &it: arr) {
+                            if (m_SelectedExt == it) {
                                 ImGuiFileDialog::FilterIndex = idx;
                                 break;
                             }
@@ -1169,10 +1031,8 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
                 ScanDir(dlg_path);
             }
 
-            if (IMGUI_BUTTON(createDirButtonString))
-            {
-                if (!m_CreateDirectoryMode)
-                {
+            if (IMGUI_BUTTON(createDirButtonString)) {
+                if (!m_CreateDirectoryMode) {
                     m_CreateDirectoryMode = true;
                     ResetBuffer(DirectoryNameBuffer);
                 }
@@ -1180,8 +1040,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip(buttonCreateDirString);
 
-            if (m_CreateDirectoryMode)
-            {
+            if (m_CreateDirectoryMode) {
                 ImGui::SameLine();
 
                 ImGui::PushItemWidth(100.0f);
@@ -1190,11 +1049,9 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
                 ImGui::SameLine();
 
-                if (IMGUI_BUTTON(okButtonString))
-                {
+                if (IMGUI_BUTTON(okButtonString)) {
                     std::string newDir = std::string(DirectoryNameBuffer);
-                    if (CreateDir(newDir))
-                    {
+                    if (CreateDir(newDir)) {
                         SetPath(m_CurrentPath + PATH_SEP + newDir);
                     }
 
@@ -1203,8 +1060,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
                 ImGui::SameLine();
 
-                if (IMGUI_BUTTON(cancelButtonString))
-                {
+                if (IMGUI_BUTTON(cancelButtonString)) {
                     m_CreateDirectoryMode = false;
                 }
             }
@@ -1214,8 +1070,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
             ImGui::SameLine();
 
-            if (IMGUI_BUTTON(resetButtonString))
-            {
+            if (IMGUI_BUTTON(resetButtonString)) {
                 SetPath(".");
             }
             if (ImGui::IsItemHovered())
@@ -1226,8 +1081,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 #ifdef WIN32
             ImGui::SameLine();
 
-            if (IMGUI_BUTTON(drivesButtonString))
-            {
+            if (IMGUI_BUTTON(drivesButtonString)) {
                 drivesClick = true;
             }
             if (ImGui::IsItemHovered())
@@ -1240,16 +1094,13 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
             // show current path
             bool pathClick = false;
-            if (!m_CurrentPath_Decomposition.empty())
-            {
+            if (!m_CurrentPath_Decomposition.empty()) {
                 ImGui::SameLine();
                 for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
-                    itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
-                {
+                     itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp) {
                     if (itPathDecomp != m_CurrentPath_Decomposition.begin())
                         ImGui::SameLine();
-                    if (IMGUI_PATH_BUTTON((*itPathDecomp).c_str()))
-                    {
+                    if (IMGUI_PATH_BUTTON((*itPathDecomp).c_str())) {
                         ComposeNewPath(itPathDecomp);
                         pathClick = true;
                         break;
@@ -1257,13 +1108,12 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
                 }
             }
 
-            ImGuiContext& g = *GImGui;
+            ImGuiContext &g = *GImGui;
             const float itemsHeight = (g.FontSize + g.Style.FramePadding.y * 2.0f + g.Style.ItemSpacing.y * 2.0f) * 4.0f + g.Style.WindowPadding.y * 2.0f;
-            ImVec2 size = ImGui::GetContentRegionMax() - ImVec2((float)dlg_optionsPaneWidth, itemsHeight);
+            ImVec2 size = ImGui::GetContentRegionMax() - ImVec2((float) dlg_optionsPaneWidth, itemsHeight);
 
             // search field
-            if (IMGUI_BUTTON(resetButtonString "##ImGuiFileDialogSearchFiled"))
-            {
+            if (IMGUI_BUTTON(resetButtonString "##ImGuiFileDialogSearchFiled")) {
                 ResetBuffer(SearchBuffer);
                 searchTag.clear();
             }
@@ -1272,16 +1122,14 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
             ImGui::SameLine();
             ImGui::Text(searchString);
             ImGui::SameLine();
-            if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
-            {
+            if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER)) {
                 searchTag = SearchBuffer;
             }
 
             ImGui::BeginChild("##FileDialog_FileList", size);
 
-            for (auto& it : m_FileList)
-            {
-                const FileInfoStruct& infos = it;
+            for (auto &it: m_FileList) {
+                const FileInfoStruct &infos = it;
 
                 bool show = true;
 
@@ -1289,33 +1137,26 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
                 if (infos.type == 'd') str = dirEntryString + str;
                 if (infos.type == 'l') str = linkEntryString + str;
                 if (infos.type == 'f') str = fileEntryString + str;
-                if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
-                {
+                if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*")) {
                     show = false;
                 }
-                if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
-                {
+                if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos) {
                     show = false;
                 }
-                if (show)
-                {
+                if (show) {
                     ImVec4 c;
                     bool showColor = GetFilterColor(infos.ext, &c);
                     if (showColor)
                         ImGui::PushStyleColor(ImGuiCol_Text, c);
 
                     bool selected = false;
-                    if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
+                    if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end())// found
                         selected = true;
 
-                    if (ImGui::Selectable(str.c_str(), selected))
-                    {
-                        if (infos.type == 'd')
-                        {
+                    if (ImGui::Selectable(str.c_str(), selected)) {
+                        if (infos.type == 'd') {
                             pathClick = SelectDirectory(infos);
-                        }
-                        else
-                        {
+                        } else {
                             SelectFileName(infos);
                         }
                         if (showColor)
@@ -1329,13 +1170,11 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
             }
 
             // changement de repertoire
-            if (pathClick)
-            {
+            if (pathClick) {
                 SetPath(m_CurrentPath);
             }
 
-            if (drivesClick)
-            {
+            if (drivesClick) {
                 GetDrives();
             }
 
@@ -1343,11 +1182,10 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
             bool _CanWeContinue = true;
 
-            if (dlg_optionsPane)
-            {
+            if (dlg_optionsPane) {
                 ImGui::SameLine();
 
-                size.x = (float)dlg_optionsPaneWidth;
+                size.x = (float) dlg_optionsPaneWidth;
 
                 ImGui::BeginChild("##FileTypes", size);
 
@@ -1366,21 +1204,17 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
             ImGui::InputText("##FileName", FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
             ImGui::PopItemWidth();
 
-            if (dlg_filters)
-            {
+            if (dlg_filters) {
                 ImGui::SameLine();
 
                 ImGui::PushItemWidth(100.0f);
                 bool comboClick = ImGui::Combo("##Filters", &FilterIndex, dlg_filters) || m_SelectedExt.empty();
                 ImGui::PopItemWidth();
-                if (comboClick)
-                {
+                if (comboClick) {
                     int itemIdx = 0;
-                    const char* p = dlg_filters;
-                    while (*p)
-                    {
-                        if (FilterIndex == itemIdx)
-                        {
+                    const char *p = dlg_filters;
+                    while (*p) {
+                        if (FilterIndex == itemIdx) {
                             m_SelectedExt = std::string(p);
                             break;
                         }
@@ -1390,12 +1224,9 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
                 }
             }
 
-            if (_CanWeContinue)
-            {
-                if (IMGUI_BUTTON(okButtonString))
-                {
-                    if ('\0' != FileNameBuffer[0])
-                    {
+            if (_CanWeContinue) {
+                if (IMGUI_BUTTON(okButtonString)) {
+                    if ('\0' != FileNameBuffer[0]) {
                         IsOk = true;
                         res = true;
                     }
@@ -1404,8 +1235,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
                 ImGui::SameLine();
             }
 
-            if (IMGUI_BUTTON(cancelButtonString))
-            {
+            if (IMGUI_BUTTON(cancelButtonString)) {
                 IsOk = false;
                 res = true;
             }
@@ -1419,21 +1249,17 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
     return false;
 }
 
-void ImGuiFileDialog::CloseDialog(const std::string& vKey)
-{
-    if (dlg_key == vKey)
-    {
+void ImGuiFileDialog::CloseDialog(const std::string &vKey) {
+    if (dlg_key == vKey) {
         dlg_key.clear();
         m_ShowDialog = false;
     }
 }
 
-std::string ImGuiFileDialog::GetFilepathName()
-{
-    std::string  result = m_CurrentPath;
+std::string ImGuiFileDialog::GetFilepathName() {
+    std::string result = m_CurrentPath;
 
-    if (s_fs_root != result)
-    {
+    if (s_fs_root != result) {
         result += PATH_SEP;
     }
 
@@ -1442,18 +1268,15 @@ std::string ImGuiFileDialog::GetFilepathName()
     return result;
 }
 
-std::string ImGuiFileDialog::GetCurrentPath()
-{
+std::string ImGuiFileDialog::GetCurrentPath() {
     return m_CurrentPath;
 }
 
-std::string ImGuiFileDialog::GetCurrentFileName()
-{
+std::string ImGuiFileDialog::GetCurrentFileName() {
     std::string result = FileNameBuffer;
 
     size_t lastPoint = result.find_last_of('.');
-    if (lastPoint != std::string::npos)
-    {
+    if (lastPoint != std::string::npos) {
         result = result.substr(0, lastPoint);
     }
 
@@ -1462,26 +1285,21 @@ std::string ImGuiFileDialog::GetCurrentFileName()
     return result;
 }
 
-std::string ImGuiFileDialog::GetCurrentFilter()
-{
+std::string ImGuiFileDialog::GetCurrentFilter() {
     return m_SelectedExt;
 }
 
-UserDatas ImGuiFileDialog::GetUserDatas()
-{
+UserDatas ImGuiFileDialog::GetUserDatas() {
     return dlg_userDatas;
 }
 
-std::map<std::string, std::string> ImGuiFileDialog::GetSelection()
-{
+std::map<std::string, std::string> ImGuiFileDialog::GetSelection() {
     std::map<std::string, std::string> res;
 
-    for (auto& it : m_SelectedFileNames)
-    {
-        std::string  result = m_CurrentPath;
+    for (auto &it: m_SelectedFileNames) {
+        std::string result = m_CurrentPath;
 
-        if (s_fs_root != result)
-        {
+        if (s_fs_root != result) {
             result += PATH_SEP;
         }
 
@@ -1493,58 +1311,44 @@ std::map<std::string, std::string> ImGuiFileDialog::GetSelection()
     return res;
 }
 
-void ImGuiFileDialog::SetFilterColor(const std::string& vFilter, ImVec4 vColor)
-{
+void ImGuiFileDialog::SetFilterColor(const std::string &vFilter, ImVec4 vColor) {
     m_FilterColor[vFilter] = vColor;
 }
 
-bool ImGuiFileDialog::GetFilterColor(const std::string& vFilter, ImVec4* vColor)
-{
-    if (vColor)
-    {
-        if (m_FilterColor.find(vFilter) != m_FilterColor.end()) // found
+bool ImGuiFileDialog::GetFilterColor(const std::string &vFilter, ImVec4 *vColor) {
+    if (vColor) {
+        if (m_FilterColor.find(vFilter) != m_FilterColor.end())// found
         {
             *vColor = m_FilterColor[vFilter];
             return true;
         }
     }
-    return false;;
+    return false;
+    ;
 }
 
-void ImGuiFileDialog::ClearFilterColor()
-{
+void ImGuiFileDialog::ClearFilterColor() {
     m_FilterColor.clear();
 }
 
-bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)
-{
+bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct &vInfos) {
     bool pathClick = false;
 
-    if (vInfos.fileName == "..")
-    {
-        if (m_CurrentPath_Decomposition.size() > 1)
-        {
+    if (vInfos.fileName == "..") {
+        if (m_CurrentPath_Decomposition.size() > 1) {
             ComposeNewPath(m_CurrentPath_Decomposition.end() - 2);
             pathClick = true;
         }
-    }
-    else
-    {
+    } else {
         std::string newPath;
 
-        if (m_ShowDrives)
-        {
+        if (m_ShowDrives) {
             newPath = vInfos.fileName + PATH_SEP;
-        }
-        else
-        {
+        } else {
 #ifdef LINUX
-            if (s_fs_root == m_CurrentPath)
-            {
+            if (s_fs_root == m_CurrentPath) {
                 newPath = m_CurrentPath + infos.fileName;
-            }
-            else
-            {
+            } else {
 #endif
                 newPath = m_CurrentPath + PATH_SEP + vInfos.fileName;
 #ifdef LINUX
@@ -1552,15 +1356,11 @@ bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)
 #endif
         }
 
-        if (IsDirectoryExist(newPath))
-        {
-            if (m_ShowDrives)
-            {
+        if (IsDirectoryExist(newPath)) {
+            if (m_ShowDrives) {
                 m_CurrentPath = vInfos.fileName;
                 s_fs_root = m_CurrentPath;
-            }
-            else
-            {
+            } else {
                 m_CurrentPath = newPath;
             }
             pathClick = true;
@@ -1570,73 +1370,56 @@ bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)
     return pathClick;
 }
 
-void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
-{
-    if (ImGui::GetIO().KeyCtrl)
-    {
-        if (dlg_CountSelectionMax == 0) // infinite selection
+void ImGuiFileDialog::SelectFileName(const FileInfoStruct &vInfos) {
+    if (ImGui::GetIO().KeyCtrl) {
+        if (dlg_CountSelectionMax == 0)// infinite selection
         {
-            if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
+            if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end())// not found +> add
             {
                 AddFileNameInSelection(vInfos.fileName, true);
-            }
-            else // found +> remove
+            } else// found +> remove
             {
                 RemoveFileNameInSelection(vInfos.fileName);
             }
-        }
-        else // selection limited by size
+        } else// selection limited by size
         {
-            if (m_SelectedFileNames.size() <= dlg_CountSelectionMax)
-            {
-                if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
+            if (m_SelectedFileNames.size() <= dlg_CountSelectionMax) {
+                if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end())// not found +> add
                 {
                     AddFileNameInSelection(vInfos.fileName, true);
-                }
-                else // found +> remove
+                } else// found +> remove
                 {
                     RemoveFileNameInSelection(vInfos.fileName);
                 }
             }
         }
-    }
-    else if (ImGui::GetIO().KeyShift)
-    {
-        if (dlg_CountSelectionMax != 1)
-        {
+    } else if (ImGui::GetIO().KeyShift) {
+        if (dlg_CountSelectionMax != 1) {
             m_SelectedFileNames.clear();
             // we will iterate filelist and get the last selection after the start selection
             bool startMultiSelection = false;
             std::string fileNameToSelect = vInfos.fileName;
-            std::string savedLastSelectedFileName; // for invert selection mode
-            for (auto& it : m_FileList)
-            {
-                const FileInfoStruct& infos = it;
+            std::string savedLastSelectedFileName;// for invert selection mode
+            for (auto &it: m_FileList) {
+                const FileInfoStruct &infos = it;
 
                 bool canTake = true;
                 if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*")) canTake = false;
                 if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos) canTake = false;
-                if (canTake) // if not filtered, we will take files who are filtered by the dialog
+                if (canTake)// if not filtered, we will take files who are filtered by the dialog
                 {
-                    if (infos.fileName == m_LastSelectedFileName)
-                    {
+                    if (infos.fileName == m_LastSelectedFileName) {
                         startMultiSelection = true;
                         AddFileNameInSelection(m_LastSelectedFileName, false);
-                    }
-                    else if (startMultiSelection)
-                    {
-                        if (dlg_CountSelectionMax == 0) // infinite selection
+                    } else if (startMultiSelection) {
+                        if (dlg_CountSelectionMax == 0)// infinite selection
                         {
                             AddFileNameInSelection(infos.fileName, false);
-                        }
-                        else // selection limited by size
+                        } else// selection limited by size
                         {
-                            if (m_SelectedFileNames.size() < dlg_CountSelectionMax)
-                            {
+                            if (m_SelectedFileNames.size() < dlg_CountSelectionMax) {
                                 AddFileNameInSelection(infos.fileName, false);
-                            }
-                            else
-                            {
+                            } else {
                                 startMultiSelection = false;
                                 if (!savedLastSelectedFileName.empty())
                                     m_LastSelectedFileName = savedLastSelectedFileName;
@@ -1645,18 +1428,15 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
                         }
                     }
 
-                    if (infos.fileName == fileNameToSelect)
-                    {
-                        if (!startMultiSelection) // we are before the last Selected FileName, so we must inverse
+                    if (infos.fileName == fileNameToSelect) {
+                        if (!startMultiSelection)// we are before the last Selected FileName, so we must inverse
                         {
                             savedLastSelectedFileName = m_LastSelectedFileName;
                             m_LastSelectedFileName = fileNameToSelect;
                             fileNameToSelect = savedLastSelectedFileName;
                             startMultiSelection = true;
                             AddFileNameInSelection(m_LastSelectedFileName, false);
-                        }
-                        else
-                        {
+                        } else {
                             startMultiSelection = false;
                             if (!savedLastSelectedFileName.empty())
                                 m_LastSelectedFileName = savedLastSelectedFileName;
@@ -1666,39 +1446,29 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
                 }
             }
         }
-    }
-    else
-    {
+    } else {
         m_SelectedFileNames.clear();
         ResetBuffer(FileNameBuffer);
         AddFileNameInSelection(vInfos.fileName, true);
     }
 }
 
-void ImGuiFileDialog::RemoveFileNameInSelection(const std::string& vFileName)
-{
+void ImGuiFileDialog::RemoveFileNameInSelection(const std::string &vFileName) {
     m_SelectedFileNames.erase(vFileName);
 
-    if (m_SelectedFileNames.size() == 1)
-    {
+    if (m_SelectedFileNames.size() == 1) {
         snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
-    }
-    else
-    {
+    } else {
         snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", m_SelectedFileNames.size());
     }
 }
 
-void ImGuiFileDialog::AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName)
-{
+void ImGuiFileDialog::AddFileNameInSelection(const std::string &vFileName, bool vSetLastSelectionFileName) {
     m_SelectedFileNames[vFileName];
 
-    if (m_SelectedFileNames.size() == 1)
-    {
+    if (m_SelectedFileNames.size() == 1) {
         snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
-    }
-    else
-    {
+    } else {
         snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", m_SelectedFileNames.size());
     }
 
@@ -1706,15 +1476,12 @@ void ImGuiFileDialog::AddFileNameInSelection(const std::string& vFileName, bool 
         m_LastSelectedFileName = vFileName;
 }
 
-void ImGuiFileDialog::CheckFilter()
-{
+void ImGuiFileDialog::CheckFilter() {
     bool found = false;
     int itemIdx = 0;
-    const char* p = dlg_filters;
-    while (*p)
-    {
-        if (m_SelectedExt == std::string(p))
-        {
+    const char *p = dlg_filters;
+    while (*p) {
+        if (m_SelectedExt == std::string(p)) {
             found = true;
             FilterIndex = itemIdx;
             break;
@@ -1722,15 +1489,13 @@ void ImGuiFileDialog::CheckFilter()
         p += strlen(p) + 1;
         itemIdx++;
     }
-    if (!found)
-    {
+    if (!found) {
         m_SelectedExt.clear();
         FilterIndex = 0;
     }
 }
 
-void ImGuiFileDialog::SetPath(const std::string& vPath)
-{
+void ImGuiFileDialog::SetPath(const std::string &vPath) {
     m_ShowDrives = false;
     m_CurrentPath = vPath;
     m_FileList.clear();
@@ -1738,62 +1503,56 @@ void ImGuiFileDialog::SetPath(const std::string& vPath)
     ScanDir(m_CurrentPath);
 }
 
-void ImGuiFileDialog::ScanDir(const std::string& vPath)
-{
-    struct dirent** files = nullptr;
-    int             i = 0;
-    int             n = 0;
-    std::string		path = vPath;
+void ImGuiFileDialog::ScanDir(const std::string &vPath) {
+    struct dirent **files = nullptr;
+    int i = 0;
+    int n = 0;
+    std::string path = vPath;
 
-#if defined(UNIX) // UNIX is LINUX or APPLE
-    if (path.size() > 0)
-    {
-        if (path[0] != PATH_SEP)
-        {
+#if defined(UNIX)// UNIX is LINUX or APPLE
+    if (path.size() > 0) {
+        if (path[0] != PATH_SEP) {
             //path = PATH_SEP + path;
         }
     }
 #endif
 
-    if (m_CurrentPath_Decomposition.empty())
-    {
+    if (m_CurrentPath_Decomposition.empty()) {
         SetCurrentDir(path);
     }
 
-    if (!m_CurrentPath_Decomposition.empty())
-    {
+    if (!m_CurrentPath_Decomposition.empty()) {
 #ifdef WIN32
-        if (path == s_fs_root)
-        {
+        if (path == s_fs_root) {
             path += PATH_SEP;
         }
 #endif
         n = scandir(path.c_str(), &files, nullptr, alphaSort);
-        if (n > 0)
-        {
+        if (n > 0) {
             m_FileList.clear();
 
-            for (i = 0; i < n; i++)
-            {
-                struct dirent* ent = files[i];
+            for (i = 0; i < n; i++) {
+                struct dirent *ent = files[i];
 
                 FileInfoStruct infos;
 
                 infos.fileName = ent->d_name;
-                if (("." != infos.fileName)/* && (".." != infos.fileName)*/)
-                {
-                    switch (ent->d_type)
-                    {
-                    case DT_REG: infos.type = 'f'; break;
-                    case DT_DIR: infos.type = 'd'; break;
-                    case DT_LNK: infos.type = 'l'; break;
+                if (("." != infos.fileName) /* && (".." != infos.fileName)*/) {
+                    switch (ent->d_type) {
+                        case DT_REG:
+                            infos.type = 'f';
+                            break;
+                        case DT_DIR:
+                            infos.type = 'd';
+                            break;
+                        case DT_LNK:
+                            infos.type = 'l';
+                            break;
                     }
 
-                    if (infos.type == 'f')
-                    {
+                    if (infos.type == 'f') {
                         size_t lpt = infos.fileName.find_last_of('.');
-                        if (lpt != std::string::npos)
-                        {
+                        if (lpt != std::string::npos) {
                             infos.ext = infos.fileName.substr(lpt);
                         }
                     }
@@ -1802,8 +1561,7 @@ void ImGuiFileDialog::ScanDir(const std::string& vPath)
                 }
             }
 
-            for (i = 0; i < n; i++)
-            {
+            for (i = 0; i < n; i++) {
                 METAENGINE_FREE(files[i]);
             }
             METAENGINE_FREE(files);
@@ -1813,42 +1571,36 @@ void ImGuiFileDialog::ScanDir(const std::string& vPath)
     }
 }
 
-void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
-{
+void ImGuiFileDialog::SetCurrentDir(const std::string &vPath) {
     std::string path = vPath;
 #ifdef WIN32
     if (s_fs_root == path)
         path += PATH_SEP;
 #endif
-    DIR* dir = opendir(path.c_str());
-    char  real_path[PATH_MAX];
+    DIR *dir = opendir(path.c_str());
+    char real_path[PATH_MAX];
 
-    if (nullptr == dir)
-    {
+    if (nullptr == dir) {
         path = ".";
         dir = opendir(path.c_str());
     }
 
-    if (nullptr != dir)
-    {
+    if (nullptr != dir) {
 #ifdef WIN32
         size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX - 1, real_path, nullptr);
 #elif defined(LINUX) or defined(APPLE)
-        char* numchar = realpath(path.c_str(), real_path);
+        char *numchar = realpath(path.c_str(), real_path);
 #endif
-        if (numchar != 0)
-        {
+        if (numchar != 0) {
             m_CurrentPath = real_path;
-            if (m_CurrentPath[m_CurrentPath.size() - 1] == PATH_SEP)
-            {
+            if (m_CurrentPath[m_CurrentPath.size() - 1] == PATH_SEP) {
                 m_CurrentPath = m_CurrentPath.substr(0, m_CurrentPath.size() - 1);
             }
             m_CurrentPath_Decomposition = splitStringToVector(m_CurrentPath, PATH_SEP, false);
-#if defined(UNIX) // UNIX is LINUX or APPLE
+#if defined(UNIX)// UNIX is LINUX or APPLE
             m_CurrentPath_Decomposition.insert(m_CurrentPath_Decomposition.begin(), std::string(1u, PATH_SEP));
 #endif
-            if (!m_CurrentPath_Decomposition.empty())
-            {
+            if (!m_CurrentPath_Decomposition.empty()) {
 #ifdef WIN32
                 s_fs_root = m_CurrentPath_Decomposition[0];
 #endif
@@ -1859,12 +1611,10 @@ void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
     }
 }
 
-bool ImGuiFileDialog::CreateDir(const std::string& vPath)
-{
+bool ImGuiFileDialog::CreateDir(const std::string &vPath) {
     bool res = false;
 
-    if (!vPath.empty())
-    {
+    if (!vPath.empty()) {
         std::string path = m_CurrentPath + PATH_SEP + vPath;
 
         res = CreateDirectoryIfNotExist(path);
@@ -1873,35 +1623,26 @@ bool ImGuiFileDialog::CreateDir(const std::string& vPath)
     return res;
 }
 
-void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter)
-{
+void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter) {
     m_CurrentPath = "";
 
-    while (true)
-    {
-        if (!m_CurrentPath.empty())
-        {
+    while (true) {
+        if (!m_CurrentPath.empty()) {
 #ifdef WIN32
             m_CurrentPath = *vIter + PATH_SEP + m_CurrentPath;
 #elif defined(LINUX) or defined(APPLE)
-            if (*vIter == s_fs_root)
-            {
+            if (*vIter == s_fs_root) {
                 m_CurrentPath = *vIter + m_CurrentPath;
-            }
-            else
-            {
+            } else {
                 m_CurrentPath = *vIter + PATH_SEP + m_CurrentPath;
             }
 #endif
-        }
-        else
-        {
+        } else {
             m_CurrentPath = *vIter;
         }
 
-        if (vIter == m_CurrentPath_Decomposition.begin())
-        {
-#if defined(UNIX) // UNIX is LINUX or APPLE
+        if (vIter == m_CurrentPath_Decomposition.begin()) {
+#if defined(UNIX)// UNIX is LINUX or APPLE
             if (m_CurrentPath[0] != PATH_SEP)
                 m_CurrentPath = PATH_SEP + m_CurrentPath;
 #endif
@@ -1912,22 +1653,18 @@ void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter)
     }
 }
 
-void ImGuiFileDialog::GetDrives()
-{
+void ImGuiFileDialog::GetDrives() {
     auto res = GetDrivesList();
-    if (!res.empty())
-    {
+    if (!res.empty()) {
         m_CurrentPath = "";
         m_CurrentPath_Decomposition.clear();
         m_FileList.clear();
-        for (auto& re : res)
-        {
+        for (auto &re: res) {
             FileInfoStruct infos;
             infos.fileName = re;
             infos.type = 'd';
 
-            if (!infos.fileName.empty())
-            {
+            if (!infos.fileName.empty()) {
                 m_FileList.push_back(infos);
             }
         }
@@ -1936,73 +1673,27 @@ void ImGuiFileDialog::GetDrives()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
    Dear ImGui with IME on-the-spot translation routines.
    author: TOGURO Mikito , mit@shalab.net
 */
 
+#include <commctrl.h>
 #include <tchar.h>
 #include <windows.h>
-#include <commctrl.h>
 
-#include <algorithm> 
+#include <algorithm>
 #include <cassert>
 
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+#pragma comment(linker, "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#pragma comment(lib, "comctl32.lib" )
+#pragma comment(lib, "comctl32.lib")
 
-void
-ImGUIIMMCommunication::operator()()
-{
-    ImGuiIO& io = ImGui::GetIO();
+void ImGUIIMMCommunication::operator()() {
+    ImGuiIO &io = ImGui::GetIO();
 
     static ImVec2 window_pos = ImVec2();
     static ImVec2 window_pos_pivot = ImVec2();
@@ -2010,18 +1701,18 @@ ImGUIIMMCommunication::operator()()
 
     static ImGuiID candidate_window_root_id = 0;
 
-    static ImGuiWindow* lastTextInputNavWindow = nullptr;
+    static ImGuiWindow *lastTextInputNavWindow = nullptr;
     static ImGuiID lastTextInputActiveId = 0;
     static ImGuiID lastTextInputFocusId = 0;
 
     if (!(candidate_window_root_id &&
-        ((ImGui::GetCurrentContext()->NavWindow ? ImGui::GetCurrentContext()->NavWindow->RootWindow->ID : 0u) == candidate_window_root_id))) {
+          ((ImGui::GetCurrentContext()->NavWindow ? ImGui::GetCurrentContext()->NavWindow->RootWindow->ID : 0u) == candidate_window_root_id))) {
 
         window_pos = ImVec2(ImGui::GetCurrentContext()->PlatformImeData.InputPos.x + 1.0f,
-            ImGui::GetCurrentContext()->PlatformImeData.InputPos.y); // 
+                            ImGui::GetCurrentContext()->PlatformImeData.InputPos.y);//
         window_pos_pivot = ImVec2(0.0f, 0.0f);
 
-        const ImGuiContext* const currentContext = ImGui::GetCurrentContext();
+        const ImGuiContext *const currentContext = ImGui::GetCurrentContext();
         IM_ASSERT(currentContext || !"ImGui::GetCurrentContext() return nullptr.");
         if (currentContext) {
             if (!ImGui::IsMouseClicked(0)) {
@@ -2034,13 +1725,11 @@ ImGUIIMMCommunication::operator()()
                         lastTextInputActiveId = ImGui::GetActiveID();
                         lastTextInputFocusId = ImGui::GetFocusID();
                     }
-                }
-                else {
+                } else {
                     if (lastTextInputActiveId != 0) {
                         if (currentContext->WantTextInputNextFrame) {
                             OutputDebugStringW(L"update lastTextInputActiveId disabled\n");
-                        }
-                        else {
+                        } else {
                             OutputDebugStringW(L"update lastTextInputActiveId disabled update\n");
                         }
                     }
@@ -2052,18 +1741,18 @@ ImGUIIMMCommunication::operator()()
         }
     }
 
-    ImVec2 target_screen_pos = ImVec2(0.0f, 0.0f); // IME Candidate List Window position.
+    ImVec2 target_screen_pos = ImVec2(0.0f, 0.0f);// IME Candidate List Window position.
 
     if (this->is_open) {
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         if (ImGui::Begin("IME Composition Window", nullptr,
-            ImGuiWindowFlags_Tooltip |
-            ImGuiWindowFlags_NoNav |
-            ImGuiWindowFlags_NoDecoration |
-            ImGuiWindowFlags_NoInputs |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoSavedSettings)) {
+                         ImGuiWindowFlags_Tooltip |
+                                 ImGuiWindowFlags_NoNav |
+                                 ImGuiWindowFlags_NoDecoration |
+                                 ImGuiWindowFlags_NoInputs |
+                                 ImGuiWindowFlags_AlwaysAutoResize |
+                                 ImGuiWindowFlags_NoSavedSettings)) {
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.78125f, 1.0f, 0.1875f, 1.0f));
             ImGui::Text(static_cast<bool>(comp_conved_utf8) ? comp_conved_utf8.get() : "");
@@ -2099,11 +1788,11 @@ ImGUIIMMCommunication::operator()()
         /* Draw Candidate List */
         if (show_ime_candidate_list && !candidate_list.list_utf8.empty()) {
 
-            std::vector<const char*> listbox_items = {};
+            std::vector<const char *> listbox_items = {};
 
             IM_ASSERT(candidate_window_num);
-            int candidate_page = ((int)candidate_list.selection) / candidate_window_num;
-            int candidate_selection = ((int)candidate_list.selection) % candidate_window_num;
+            int candidate_page = ((int) candidate_list.selection) / candidate_window_num;
+            int candidate_selection = ((int) candidate_list.selection) % candidate_window_num;
 
             auto begin_ite = std::begin(candidate_list.list_utf8);
             std::advance(begin_ite, candidate_page * candidate_window_num);
@@ -2116,36 +1805,36 @@ ImGUIIMMCommunication::operator()()
             }
 
             std::for_each(begin_ite, end_ite,
-                [&](auto& item) {
-                    listbox_items.push_back(item.c_str());
-                });
+                          [&](auto &item) {
+                              listbox_items.push_back(item.c_str());
+                          });
 
             const float candidate_window_height =
-                ((ImGui::GetStyle().FramePadding.y * 2) +
-                    ((ImGui::GetTextLineHeightWithSpacing()) * ((int)std::size(listbox_items) + 2)));
+                    ((ImGui::GetStyle().FramePadding.y * 2) +
+                     ((ImGui::GetTextLineHeightWithSpacing()) * ((int) std::size(listbox_items) + 2)));
 
             if (io.DisplaySize.y < (target_screen_pos.y + candidate_window_height)) {
                 target_screen_pos.y -=
-                    ImGui::GetTextLineHeightWithSpacing() + candidate_window_height;
+                        ImGui::GetTextLineHeightWithSpacing() + candidate_window_height;
             }
 
             ImGui::SetNextWindowPos(target_screen_pos, ImGuiCond_Always, window_pos_pivot);
 
             if (ImGui::Begin("##Overlay-IME-Candidate-List-Window",
-                &show_ime_candidate_list,
-                ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoDecoration |
-                ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoInputs |
-                ImGuiWindowFlags_NoSavedSettings |
-                ImGuiWindowFlags_NoFocusOnAppearing |
-                ImGuiWindowFlags_NoNav)) {
+                             &show_ime_candidate_list,
+                             ImGuiWindowFlags_NoMove |
+                                     ImGuiWindowFlags_NoDecoration |
+                                     ImGuiWindowFlags_AlwaysAutoResize |
+                                     ImGuiWindowFlags_NoInputs |
+                                     ImGuiWindowFlags_NoSavedSettings |
+                                     ImGuiWindowFlags_NoFocusOnAppearing |
+                                     ImGuiWindowFlags_NoNav)) {
                 if (ImGui::ListBoxHeader("##IMECandidateListWindow",
-                    static_cast<int>(std::size(listbox_items)),
-                    static_cast<int>(std::size(listbox_items)))) {
+                                         static_cast<int>(std::size(listbox_items)),
+                                         static_cast<int>(std::size(listbox_items)))) {
 
                     int i = 0;
-                    for (const char*& listbox_item : listbox_items) {
+                    for (const char *&listbox_item: listbox_items) {
                         if (ImGui::Selectable(listbox_item, (i == candidate_selection))) {
 
                             /* candidate list selection */
@@ -2180,33 +1869,31 @@ ImGUIIMMCommunication::operator()()
                                 if (candidate_selection == i) {
                                     OutputDebugStringW(L"complete\n");
                                     this->request_candidate_list_str_commit = 1;
-                                }
-                                else {
+                                } else {
                                     const BYTE nVirtualKey = (candidate_selection < i) ? VK_DOWN : VK_UP;
                                     const size_t nNumToHit = abs(candidate_selection - i);
                                     for (size_t hit = 0; hit < nNumToHit; ++hit) {
                                         keybd_event(nVirtualKey, 0, 0, 0);
                                         keybd_event(nVirtualKey, 0, KEYEVENTF_KEYUP, 0);
                                     }
-                                    this->request_candidate_list_str_commit = (int)nNumToHit;
+                                    this->request_candidate_list_str_commit = (int) nNumToHit;
                                 }
                             }
-
                         }
                         ++i;
                     }
                     ImGui::ListBoxFooter();
                 }
                 ImGui::Text("%d/%d",
-                    candidate_list.selection + 1, static_cast<int>(std::size(candidate_list.list_utf8)));
-#if defined( _DEBUG )
+                            candidate_list.selection + 1, static_cast<int>(std::size(candidate_list.list_utf8)));
+#if defined(_DEBUG)
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "%s",
-# if defined( UNICODE )
-                    u8"DEBUG (UNICODE)"
-# else 
-                    u8"DEBUG (MBCS)"
-# endif /* defined( UNICODE ) */
+#if defined(UNICODE)
+                                   u8"DEBUG (UNICODE)"
+#else
+                                   u8"DEBUG (MBCS)"
+#endif /* defined( UNICODE ) */
                 );
 #endif /* defined( DEBUG ) */
                 // #1 ここで作るウィンドウがフォーカスを持ったときには、ウィンドウの位置を変更してはいけない。
@@ -2235,7 +1922,7 @@ ImGUIIMMCommunication::operator()()
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
         if (io.ImeWindowHandle) {
             IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-            (void)(ImmAssociateContext(static_cast<HWND>(io.ImeWindowHandle), HIMC(0)));
+            (void) (ImmAssociateContext(static_cast<HWND>(io.ImeWindowHandle), HIMC(0)));
         }
     }
     if (io.WantTextInput) {
@@ -2262,8 +1949,7 @@ ImGUIIMMCommunication::operator()()
 }
 
 ImGUIIMMCommunication::IMMCandidateList
-ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST* const src, const size_t src_size)
-{
+ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST *const src, const size_t src_size) {
     IM_ASSERT(nullptr != src);
     IM_ASSERT(sizeof(CANDIDATELIST) <= src->dwSize);
     IM_ASSERT(src->dwSelection < src->dwCount);
@@ -2275,13 +1961,13 @@ ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST* const src
     if (!(src->dwSelection < src->dwCount)) {
         return dst;
     }
-    const char* const baseaddr = reinterpret_cast<const char*>(src);
+    const char *const baseaddr = reinterpret_cast<const char *>(src);
 
     for (size_t i = 0; i < src->dwCount; ++i) {
-        const wchar_t* const item = reinterpret_cast<const wchar_t*>(baseaddr + src->dwOffset[i]);
+        const wchar_t *const item = reinterpret_cast<const wchar_t *>(baseaddr + src->dwOffset[i]);
         const int require_byte = WideCharToMultiByte(CP_UTF8, 0, item, -1, nullptr, 0, NULL, NULL);
         if (0 < require_byte) {
-            std::unique_ptr<char[]> utf8buf{ new char[require_byte] };
+            std::unique_ptr<char[]> utf8buf{new char[require_byte]};
             if (require_byte == WideCharToMultiByte(CP_UTF8, 0, item, -1, utf8buf.get(), require_byte, NULL, NULL)) {
                 dst.list_utf8.emplace_back(utf8buf.get());
                 continue;
@@ -2293,9 +1979,7 @@ ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST* const src
     return dst;
 }
 
-bool
-ImGUIIMMCommunication::update_candidate_window(HWND hWnd)
-{
+bool ImGUIIMMCommunication::update_candidate_window(HWND hWnd) {
     IM_ASSERT(IsWindow(hWnd));
     bool result = false;
     HIMC const hImc = ImmGetContext(hWnd);
@@ -2306,12 +1990,11 @@ ImGUIIMMCommunication::update_candidate_window(HWND hWnd)
             IM_ASSERT(sizeof(CANDIDATELIST) <= dwSize);
             if (sizeof(CANDIDATELIST) <= dwSize) {
 
-                std::vector<char> candidatelist((size_t)dwSize);
-                if ((DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type))
-                    == ImmGetCandidateListW(hImc, 0,
-                        reinterpret_cast<CANDIDATELIST*>(candidatelist.data()),
-                        (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
-                    const CANDIDATELIST* const cl = reinterpret_cast<CANDIDATELIST*>(candidatelist.data());
+                std::vector<char> candidatelist((size_t) dwSize);
+                if ((DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) == ImmGetCandidateListW(hImc, 0,
+                                                                                                                                      reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
+                                                                                                                                      (DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
+                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
                     candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
                     result = true;
 #if 0  /* for IMM candidate window debug BEGIN*/
@@ -2332,7 +2015,6 @@ ImGUIIMMCommunication::update_candidate_window(HWND hWnd)
                         }
                     }
 #endif /* for IMM candidate window debug END */
-
                 }
             }
         }
@@ -2343,127 +2025,116 @@ ImGUIIMMCommunication::update_candidate_window(HWND hWnd)
 
 LRESULT
 ImGUIIMMCommunication::imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-    UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
+                                                      UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
     switch (uMsg) {
-    case WM_DESTROY:
-    {
-        VERIFY(ImmAssociateContextEx(hWnd, HIMC(0), IACE_DEFAULT));
-        if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass), uIdSubclass)) {
-            IM_ASSERT(!"RemoveWindowSubclass() failed\n");
-        }
-    }
-    break;
-    default:
-        if (dwRefData) {
-            return imm_communication_subClassProc_implement(hWnd, uMsg, wParam, lParam,
-                uIdSubclass, *reinterpret_cast<ImGUIIMMCommunication*>(dwRefData));
-        }
+        case WM_DESTROY: {
+            VERIFY(ImmAssociateContextEx(hWnd, HIMC(0), IACE_DEFAULT));
+            if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass), uIdSubclass)) {
+                IM_ASSERT(!"RemoveWindowSubclass() failed\n");
+            }
+        } break;
+        default:
+            if (dwRefData) {
+                return imm_communication_subClassProc_implement(hWnd, uMsg, wParam, lParam,
+                                                                uIdSubclass, *reinterpret_cast<ImGUIIMMCommunication *>(dwRefData));
+            }
     }
     return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT
 ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-    UINT_PTR uIdSubclass, ImGUIIMMCommunication& comm)
-{
+                                                                UINT_PTR uIdSubclass, ImGUIIMMCommunication &comm) {
     switch (uMsg) {
-    case WM_KEYDOWN:
-    case WM_KEYUP:
-    case WM_SYSKEYDOWN:
-    case WM_SYSKEYUP:
-        if (comm.is_open) {
-            return 0;
-        }
-        break;
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+        case WM_SYSKEYDOWN:
+        case WM_SYSKEYUP:
+            if (comm.is_open) {
+                return 0;
+            }
+            break;
 
-    case WM_IME_SETCONTEXT:
-    { /* 各ビットを落とす */
-        lParam &= ~(ISC_SHOWUICOMPOSITIONWINDOW |
-            (ISC_SHOWUICANDIDATEWINDOW) |
-            (ISC_SHOWUICANDIDATEWINDOW << 1) |
-            (ISC_SHOWUICANDIDATEWINDOW << 2) |
-            (ISC_SHOWUICANDIDATEWINDOW << 3));
-    }
-    return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
-    case WM_IME_STARTCOMPOSITION:
-    {
-        /* 此消息通知应用程序请求“IME”显示转换窗口。
+        case WM_IME_SETCONTEXT: { /* 各ビットを落とす */
+            lParam &= ~(ISC_SHOWUICOMPOSITIONWINDOW |
+                        (ISC_SHOWUICANDIDATEWINDOW) |
+                        (ISC_SHOWUICANDIDATEWINDOW << 1) |
+                        (ISC_SHOWUICANDIDATEWINDOW << 2) |
+                        (ISC_SHOWUICANDIDATEWINDOW << 3));
+        }
+            return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+        case WM_IME_STARTCOMPOSITION: {
+            /* 此消息通知应用程序请求“IME”显示转换窗口。
             应用程序在处理转换字符串的显示时必须处理此消息。
             如果您让 DefWindowProc 函数处理此消息，则该消息将被传递到默认 IME 窗口。
             （即自己绘制转换窗口时，不要传给DefWindowPrc）
         */
-        comm.is_open = true;
-    }
-    return 1;
-    case WM_IME_ENDCOMPOSITION:
-    {
-        comm.is_open = false;
-    }
-    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
-    case WM_IME_COMPOSITION:
-    {
-        HIMC const hImc = ImmGetContext(hWnd);
-        if (hImc) {
-            if (lParam & GCS_RESULTSTR) {
-                comm.comp_conved_utf8 = nullptr;
-                comm.comp_target_utf8 = nullptr;
-                comm.comp_unconv_utf8 = nullptr;
-                comm.show_ime_candidate_list = false;
-            }
-            if (lParam & GCS_COMPSTR) {
+            comm.is_open = true;
+        }
+            return 1;
+        case WM_IME_ENDCOMPOSITION: {
+            comm.is_open = false;
+        }
+            return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        case WM_IME_COMPOSITION: {
+            HIMC const hImc = ImmGetContext(hWnd);
+            if (hImc) {
+                if (lParam & GCS_RESULTSTR) {
+                    comm.comp_conved_utf8 = nullptr;
+                    comm.comp_target_utf8 = nullptr;
+                    comm.comp_unconv_utf8 = nullptr;
+                    comm.show_ime_candidate_list = false;
+                }
+                if (lParam & GCS_COMPSTR) {
 
-                const DWORD compstr_length_in_byte = ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
-                switch (compstr_length_in_byte) {
-                case IMM_ERROR_NODATA:
-                case IMM_ERROR_GENERAL:
-                    break;
-                default:
-                {
-                    size_t const buf_length_in_wchar = (size_t(compstr_length_in_byte) / sizeof(wchar_t)) + 1;
-                    IM_ASSERT(0 < buf_length_in_wchar);
-                    std::unique_ptr<wchar_t[]> buf{ new wchar_t[buf_length_in_wchar] };
-                    if (buf) {
-                        //std::fill( &buf[0] , &buf[buf_length_in_wchar-1] , L'\0' );
-                        const LONG buf_length_in_byte = LONG(buf_length_in_wchar * sizeof(wchar_t));
-                        const DWORD l = ImmGetCompositionStringW(hImc, GCS_COMPSTR,
-                            (LPVOID)(buf.get()), buf_length_in_byte);
+                    const DWORD compstr_length_in_byte = ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
+                    switch (compstr_length_in_byte) {
+                        case IMM_ERROR_NODATA:
+                        case IMM_ERROR_GENERAL:
+                            break;
+                        default: {
+                            size_t const buf_length_in_wchar = (size_t(compstr_length_in_byte) / sizeof(wchar_t)) + 1;
+                            IM_ASSERT(0 < buf_length_in_wchar);
+                            std::unique_ptr<wchar_t[]> buf{new wchar_t[buf_length_in_wchar]};
+                            if (buf) {
+                                //std::fill( &buf[0] , &buf[buf_length_in_wchar-1] , L'\0' );
+                                const LONG buf_length_in_byte = LONG(buf_length_in_wchar * sizeof(wchar_t));
+                                const DWORD l = ImmGetCompositionStringW(hImc, GCS_COMPSTR,
+                                                                         (LPVOID) (buf.get()), buf_length_in_byte);
 
-                        const DWORD attribute_size = ImmGetCompositionStringW(hImc, GCS_COMPATTR, NULL, 0);
-                        std::vector<char> attribute_vec(attribute_size, 0);
-                        const DWORD attribute_end =
-                            ImmGetCompositionStringW(hImc, GCS_COMPATTR, attribute_vec.data(), (DWORD)std::size(attribute_vec));
-                        IM_ASSERT(attribute_end == (DWORD)(std::size(attribute_vec)));
-                        {
-                            std::wstring comp_converted;
-                            std::wstring comp_target;
-                            std::wstring comp_unconveted;
-                            size_t begin = 0;
-                            size_t end = 0;
+                                const DWORD attribute_size = ImmGetCompositionStringW(hImc, GCS_COMPATTR, NULL, 0);
+                                std::vector<char> attribute_vec(attribute_size, 0);
+                                const DWORD attribute_end =
+                                        ImmGetCompositionStringW(hImc, GCS_COMPATTR, attribute_vec.data(), (DWORD) std::size(attribute_vec));
+                                IM_ASSERT(attribute_end == (DWORD) (std::size(attribute_vec)));
+                                {
+                                    std::wstring comp_converted;
+                                    std::wstring comp_target;
+                                    std::wstring comp_unconveted;
+                                    size_t begin = 0;
+                                    size_t end = 0;
 
-                            for (end = begin; end < attribute_end; ++end) {
-                                if ((ATTR_TARGET_CONVERTED == attribute_vec[end] ||
-                                    ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
-                                    break;
-                                }
-                                else {
-                                    comp_converted.push_back(buf[end]);
-                                }
-                            }
+                                    for (end = begin; end < attribute_end; ++end) {
+                                        if ((ATTR_TARGET_CONVERTED == attribute_vec[end] ||
+                                             ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
+                                            break;
+                                        } else {
+                                            comp_converted.push_back(buf[end]);
+                                        }
+                                    }
 
-                            for (begin = end; end < attribute_end; ++end) {
-                                if (!(ATTR_TARGET_CONVERTED == attribute_vec[end] ||
-                                    ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
-                                    break;
-                                }
-                                else {
-                                    comp_target.push_back(buf[end]);
-                                }
-                            }
+                                    for (begin = end; end < attribute_end; ++end) {
+                                        if (!(ATTR_TARGET_CONVERTED == attribute_vec[end] ||
+                                              ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
+                                            break;
+                                        } else {
+                                            comp_target.push_back(buf[end]);
+                                        }
+                                    }
 
-                            for (; end < attribute_end; ++end) {
-                                comp_unconveted.push_back(buf[end]);
-                            }
+                                    for (; end < attribute_end; ++end) {
+                                        comp_unconveted.push_back(buf[end]);
+                                    }
 
 #if 0
                             {
@@ -2477,132 +2148,127 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                                 OutputDebugStringW(dbgbuf);
                             }
 #endif
-                            // 准备一个 lambda 函数以将每个函数转换为 UTF-8
-                            /*
+                                    // 准备一个 lambda 函数以将每个函数转换为 UTF-8
+                                    /*
                                 将 std::wstring 转换为 std::unique_ptr <char[]> 作为 UTF - 8 空终止字符串
                                 如果参数是空字符串，则输入 nullptr
                                 */
-                            auto to_utf8_pointer = [](const std::wstring& arg)->std::unique_ptr<char[]> {
-                                if (arg.empty()) {
-                                    return std::unique_ptr<char[]>(nullptr);
-                                }
-                                const int require_byte = WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, nullptr, 0, NULL, NULL);
-                                if (0 == require_byte) {
-                                    const DWORD lastError = GetLastError();
-                                    (void)(lastError);
-                                    IM_ASSERT(ERROR_INSUFFICIENT_BUFFER != lastError);
-                                    IM_ASSERT(ERROR_INVALID_FLAGS != lastError);
-                                    IM_ASSERT(ERROR_INVALID_PARAMETER != lastError);
-                                    IM_ASSERT(ERROR_NO_UNICODE_TRANSLATION != lastError);
-                                }
-                                IM_ASSERT(0 != require_byte);
-                                if (!(0 < require_byte)) {
-                                    return std::unique_ptr<char[]>(nullptr);
-                                }
+                                    auto to_utf8_pointer = [](const std::wstring &arg) -> std::unique_ptr<char[]> {
+                                        if (arg.empty()) {
+                                            return std::unique_ptr<char[]>(nullptr);
+                                        }
+                                        const int require_byte = WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, nullptr, 0, NULL, NULL);
+                                        if (0 == require_byte) {
+                                            const DWORD lastError = GetLastError();
+                                            (void) (lastError);
+                                            IM_ASSERT(ERROR_INSUFFICIENT_BUFFER != lastError);
+                                            IM_ASSERT(ERROR_INVALID_FLAGS != lastError);
+                                            IM_ASSERT(ERROR_INVALID_PARAMETER != lastError);
+                                            IM_ASSERT(ERROR_NO_UNICODE_TRANSLATION != lastError);
+                                        }
+                                        IM_ASSERT(0 != require_byte);
+                                        if (!(0 < require_byte)) {
+                                            return std::unique_ptr<char[]>(nullptr);
+                                        }
 
-                                std::unique_ptr<char[]> utf8buf{ new char[require_byte] };
+                                        std::unique_ptr<char[]> utf8buf{new char[require_byte]};
 
-                                const int conversion_result =
-                                    WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, utf8buf.get(), require_byte, NULL, NULL);
-                                if (conversion_result == 0) {
-                                    const DWORD lastError = GetLastError();
-                                    (void)(lastError);
-                                    IM_ASSERT(ERROR_INSUFFICIENT_BUFFER != lastError);
-                                    IM_ASSERT(ERROR_INVALID_FLAGS != lastError);
-                                    IM_ASSERT(ERROR_INVALID_PARAMETER != lastError);
-                                    IM_ASSERT(ERROR_NO_UNICODE_TRANSLATION != lastError);
-                                }
+                                        const int conversion_result =
+                                                WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, utf8buf.get(), require_byte, NULL, NULL);
+                                        if (conversion_result == 0) {
+                                            const DWORD lastError = GetLastError();
+                                            (void) (lastError);
+                                            IM_ASSERT(ERROR_INSUFFICIENT_BUFFER != lastError);
+                                            IM_ASSERT(ERROR_INVALID_FLAGS != lastError);
+                                            IM_ASSERT(ERROR_INVALID_PARAMETER != lastError);
+                                            IM_ASSERT(ERROR_NO_UNICODE_TRANSLATION != lastError);
+                                        }
 
-                                IM_ASSERT(require_byte == conversion_result);
-                                if (require_byte != conversion_result) {
-                                    utf8buf.reset(nullptr);
-                                }
-                                return utf8buf;
-                            };
+                                        IM_ASSERT(require_byte == conversion_result);
+                                        if (require_byte != conversion_result) {
+                                            utf8buf.reset(nullptr);
+                                        }
+                                        return utf8buf;
+                                    };
 
-                            comm.comp_conved_utf8 = to_utf8_pointer(comp_converted);
-                            comm.comp_target_utf8 = to_utf8_pointer(comp_target);
-                            comm.comp_unconv_utf8 = to_utf8_pointer(comp_unconveted);
+                                    comm.comp_conved_utf8 = to_utf8_pointer(comp_converted);
+                                    comm.comp_target_utf8 = to_utf8_pointer(comp_target);
+                                    comm.comp_unconv_utf8 = to_utf8_pointer(comp_unconveted);
 
-                            /*当 GCS_COMPSTR 更新时，Google IME 当然会 IMN_CHANGECANDIDATE
+                                    /*当 GCS_COMPSTR 更新时，Google IME 当然会 IMN_CHANGECANDIDATE
                                 不会像完成一样发送。
                                 所以，我请求你在这里更新候选人名单 */
 
-                                // 如果comp_target为空则删除
-                            if (!static_cast<bool>(comm.comp_target_utf8)) {
-                                comm.candidate_list.clear();
-                            }
-                            else {
-                                // candidate_list の取得に失敗したときは消去する
-                                if (!comm.update_candidate_window(hWnd)) {
-                                    comm.candidate_list.clear();
+                                    // 如果comp_target为空则删除
+                                    if (!static_cast<bool>(comm.comp_target_utf8)) {
+                                        comm.candidate_list.clear();
+                                    } else {
+                                        // candidate_list の取得に失敗したときは消去する
+                                        if (!comm.update_candidate_window(hWnd)) {
+                                            comm.candidate_list.clear();
+                                        }
+                                    }
                                 }
                             }
-                        }
+                        } break;
                     }
                 }
-                break;
-                }
+                VERIFY(ImmReleaseContext(hWnd, hImc));
             }
-            VERIFY(ImmReleaseContext(hWnd, hImc));
-        }
 
 
-    } // end of WM_IME_COMPOSITION
+        }// end of WM_IME_COMPOSITION
 
-#if defined( UNICODE )
-    // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
-    return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
-    // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
+#if defined(UNICODE)
+            // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
+            return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+            // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
 #else
-    return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
-#endif 
+            return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+#endif
 
-    case WM_IME_NOTIFY:
-    {
-        switch (wParam) {
+        case WM_IME_NOTIFY: {
+            switch (wParam) {
 
-        case IMN_OPENCANDIDATE:
-            // 通常，在发送 IMN_OPENCANDIDATE 时会设置 show_ime_candidate_list 标志。
-            // Google IME 不发送 IMN_OPENCANDIDATE（IMN_CHANGECANDIDATE 发送）
-            // 为此，在启动 IMN_CHANGECANDIDATE 时进行更改
-            comm.show_ime_candidate_list = true;
+                case IMN_OPENCANDIDATE:
+                    // 通常，在发送 IMN_OPENCANDIDATE 时会设置 show_ime_candidate_list 标志。
+                    // Google IME 不发送 IMN_OPENCANDIDATE（IMN_CHANGECANDIDATE 发送）
+                    // 为此，在启动 IMN_CHANGECANDIDATE 时进行更改
+                    comm.show_ime_candidate_list = true;
 #if 0
             if (IMN_OPENCANDIDATE == wParam) {
                 OutputDebugStringW(L"IMN_OPENCANDIDATE\n");
             }
 #endif
-            ; // tear down;
-        case IMN_CHANGECANDIDATE:
-        {
+                    ;// tear down;
+                case IMN_CHANGECANDIDATE: {
 #if 0
             if (IMN_CHANGECANDIDATE == wParam) {
                 OutputDebugStringW(L"IMN_CHANGECANDIDATE\n");
             }
 #endif
 
-            // Google IME BEGIN 的代码 有关详细信息，请参阅有关 IMN_OPENCANDIDATE 的评论
-            if (!comm.show_ime_candidate_list) {
-                comm.show_ime_candidate_list = true;
-            }
-            // 谷歌输入法结束代码
+                    // Google IME BEGIN 的代码 有关详细信息，请参阅有关 IMN_OPENCANDIDATE 的评论
+                    if (!comm.show_ime_candidate_list) {
+                        comm.show_ime_candidate_list = true;
+                    }
+                    // 谷歌输入法结束代码
 
 
-            HIMC const hImc = ImmGetContext(hWnd);
-            if (hImc) {
-                DWORD dwSize = ImmGetCandidateListW(hImc, 0, NULL, 0);
-                if (dwSize) {
-                    IM_ASSERT(sizeof(CANDIDATELIST) <= dwSize);
-                    if (sizeof(CANDIDATELIST) <= dwSize) { // dwSize は最低でも struct CANDIDATELIST より大きくなければならない
+                    HIMC const hImc = ImmGetContext(hWnd);
+                    if (hImc) {
+                        DWORD dwSize = ImmGetCandidateListW(hImc, 0, NULL, 0);
+                        if (dwSize) {
+                            IM_ASSERT(sizeof(CANDIDATELIST) <= dwSize);
+                            if (sizeof(CANDIDATELIST) <= dwSize) {// dwSize は最低でも struct CANDIDATELIST より大きくなければならない
 
-                        (void)(lParam);
-                        std::vector<char> candidatelist((size_t)dwSize);
-                        if ((DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type))
-                            == ImmGetCandidateListW(hImc, 0,
-                                reinterpret_cast<CANDIDATELIST*>(candidatelist.data()),
-                                (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
-                            const CANDIDATELIST* const cl = reinterpret_cast<CANDIDATELIST*>(candidatelist.data());
-                            comm.candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
+                                (void) (lParam);
+                                std::vector<char> candidatelist((size_t) dwSize);
+                                if ((DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) == ImmGetCandidateListW(hImc, 0,
+                                                                                                                                                      reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
+                                                                                                                                                      (DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
+                                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                                    comm.candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
 
 #if 0  /* for IMM candidate window debug BEGIN*/
                             {
@@ -2623,59 +2289,54 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                                 }
                             }
 #endif /* for IMM candidate window debug END */
-
+                                }
+                            }
                         }
+                        VERIFY(ImmReleaseContext(hWnd, hImc));
                     }
                 }
-                VERIFY(ImmReleaseContext(hWnd, hImc));
+
+                    IM_ASSERT(0 <= comm.request_candidate_list_str_commit);
+                    if (comm.request_candidate_list_str_commit) {
+                        if (comm.request_candidate_list_str_commit == 1) {
+                            VERIFY(PostMessage(hWnd, WM_IMGUI_IMM32_COMMAND, WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, 0));
+                        }
+                        --(comm.request_candidate_list_str_commit);
+                    }
+
+                    break;
+                case IMN_CLOSECANDIDATE: {
+                    //OutputDebugStringW(L"IMN_CLOSECANDIDATE\n");
+                    comm.show_ime_candidate_list = false;
+                } break;
+                default:
+                    break;
             }
         }
+            return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 
-        IM_ASSERT(0 <= comm.request_candidate_list_str_commit);
-        if (comm.request_candidate_list_str_commit) {
-            if (comm.request_candidate_list_str_commit == 1) {
-                VERIFY(PostMessage(hWnd, WM_IMGUI_IMM32_COMMAND, WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, 0));
-            }
-            --(comm.request_candidate_list_str_commit);
-        }
+        case WM_IME_REQUEST:
+            return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 
-        break;
-        case IMN_CLOSECANDIDATE:
-        {
-            //OutputDebugStringW(L"IMN_CLOSECANDIDATE\n");
-            comm.show_ime_candidate_list = false;
-        }
-        break;
-        default:
-            break;
-        }
-    }
-    return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+        case WM_INPUTLANGCHANGE:
+            return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 
-    case WM_IME_REQUEST:
-        return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
-
-    case WM_INPUTLANGCHANGE:
-        return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
-
-    case WM_IMGUI_IMM32_COMMAND:
-    {
-        switch (wParam) {
-        case WM_IMGUI_IMM32_COMMAND_NOP: // NOP
-            return 1;
-        case WM_IMGUI_IMM32_COMMAND_SUBCLASSIFY:
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            if (io.ImeWindowHandle) {
-                IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-                VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
-            }
-        }
-        return 1;
-        case WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE:
-            if (!static_cast<bool>(comm.comp_unconv_utf8) ||
-                '\0' == *(comm.comp_unconv_utf8.get())) {
-                /*
+        case WM_IMGUI_IMM32_COMMAND: {
+            switch (wParam) {
+                case WM_IMGUI_IMM32_COMMAND_NOP:// NOP
+                    return 1;
+                case WM_IMGUI_IMM32_COMMAND_SUBCLASSIFY: {
+                    ImGuiIO &io = ImGui::GetIO();
+                    if (io.ImeWindowHandle) {
+                        IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
+                        VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
+                    }
+                }
+                    return 1;
+                case WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE:
+                    if (!static_cast<bool>(comm.comp_unconv_utf8) ||
+                        '\0' == *(comm.comp_unconv_utf8.get())) {
+                        /*
                    There is probably no unconverted string after the conversion target.
                    However, since there is now a cursor operation in the
                    keyboard buffer, the confirmation operation needs to be performed
@@ -2701,42 +2362,39 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                     VERIFY(ImmReleaseContext(hWnd, hImc));
                 }
 #else
-                keybd_event(VK_RETURN, 0, 0, 0);
-                keybd_event(VK_RETURN, 0, KEYEVENTF_KEYUP, 0);
+                        keybd_event(VK_RETURN, 0, 0, 0);
+                        keybd_event(VK_RETURN, 0, KEYEVENTF_KEYUP, 0);
 #endif
-            }
-            else {
-                /* Do this to close the candidate window without ending composition. */
-                /*
+                    } else {
+                        /* Do this to close the candidate window without ending composition. */
+                        /*
                   keybd_event (VK_RIGHT, 0, 0, 0);
                   keybd_event (VK_RIGHT, 0, KEYEVENTF_KEYUP, 0);
 
                   keybd_event (VK_LEFT, 0, 0, 0);
                   keybd_event (VK_LEFT, 0, KEYEVENTF_KEYUP, 0);
                 */
-                /*
+                        /*
                    Since there is an unconverted string after the conversion
                    target, press the right key of the keyboard to convert the
                    next clause to IME.
                 */
-                keybd_event(VK_RIGHT, 0, 0, 0);
-                keybd_event(VK_RIGHT, 0, KEYEVENTF_KEYUP, 0);
+                        keybd_event(VK_RIGHT, 0, 0, 0);
+                        keybd_event(VK_RIGHT, 0, KEYEVENTF_KEYUP, 0);
+                    }
+                    return 1;
+                default:
+                    break;
             }
+        }
             return 1;
         default:
             break;
-        }
-    }
-    return 1;
-    default:
-        break;
     }
     return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
-BOOL
-ImGUIIMMCommunication::subclassify_impl(HWND hWnd)
-{
+BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
     IM_ASSERT(IsWindow(hWnd));
     if (!IsWindow(hWnd)) {
         return FALSE;
@@ -2752,10 +2410,10 @@ ImGUIIMMCommunication::subclassify_impl(HWND hWnd)
 
             但是，这种方法不好，因为当有多个目标操作系统窗口时它会崩溃。
     */
-    ImGui::GetIO().ImeWindowHandle = static_cast<void*>(hWnd);
+    ImGui::GetIO().ImeWindowHandle = static_cast<void *>(hWnd);
     if (::SetWindowSubclass(hWnd, ImGUIIMMCommunication::imm_communication_subClassProc,
-        reinterpret_cast<UINT_PTR>(ImGUIIMMCommunication::imm_communication_subClassProc),
-        reinterpret_cast<DWORD_PTR>(this))) {
+                            reinterpret_cast<UINT_PTR>(ImGUIIMMCommunication::imm_communication_subClassProc),
+                            reinterpret_cast<DWORD_PTR>(this))) {
         /*
            I want to close IME once by calling imgex::imm_associate_context_disable()
 
@@ -2768,34 +2426,22 @@ ImGUIIMMCommunication::subclassify_impl(HWND hWnd)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ImString::ImString()
-        : mData(0), mRefCount(0) {
+    : mData(0), mRefCount(0) {
 }
 
 ImString::ImString(size_t len)
-        : mData(0), mRefCount(0) {
+    : mData(0), mRefCount(0) {
     reserve(len);
 }
 
 ImString::ImString(char *string)
-        : mData(string), mRefCount(0) {
+    : mData(string), mRefCount(0) {
     ref();
 }
 
 ImString::ImString(const char *string)
-        : mData(0), mRefCount(0) {
+    : mData(0), mRefCount(0) {
     if (string) {
         mData = ImStrdup(string);
         ref();

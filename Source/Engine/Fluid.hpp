@@ -1,98 +1,85 @@
 #pragma once
 
 
-#include <algorithm> // std::clamp
+#include <algorithm>// std::clamp
+#include <array>
 #include <cassert>
 #include <memory>
-#include <utility>
 #include <random>
-#include <array>
+#include <utility>
 
 
-namespace
-{
-	static constexpr const int SCALE = 3;
-	static constexpr const int N = 160;
-	static constexpr const int ITERATIONS = 16;
+namespace {
+    static constexpr const int SCALE = 3;
+    static constexpr const int N = 160;
+    static constexpr const int ITERATIONS = 16;
 
-	static constexpr const float VESCOSITY = 0.0000001f; // thickness of fluid
-	static constexpr const float DIFFUSION = 0.0f;
-	static constexpr const float MOTION_SPEED = 0.2f;
+    static constexpr const float VESCOSITY = 0.0000001f;// thickness of fluid
+    static constexpr const float DIFFUSION = 0.0f;
+    static constexpr const float MOTION_SPEED = 0.2f;
 
-	/**
+    /**
 	* Converts 2D coords into 1D ( x,y into index )
 	*/
-	template<class T>
-	static constexpr T IX(T x, T y) noexcept
-	{
-		x = std::clamp(x, 0, N - 1);
-		y = std::clamp(y, 0, N - 1);
-		return x + (y * N);
-	}
-}
-
-
-
+    template<class T>
+    static constexpr T IX(T x, T y) noexcept {
+        x = std::clamp(x, 0, N - 1);
+        y = std::clamp(y, 0, N - 1);
+        return x + (y * N);
+    }
+}// namespace
 
 
 #include <random>
 
-class Random
-{
+class Random {
 public:
     template<typename T>
-    static T Real(T min, T max)
-    {
+    static T Real(T min, T max) {
         std::uniform_real_distribution<T> dist(min, max);
-        auto& mt = getEngine();
+        auto &mt = getEngine();
         return dist(mt);
     }
 
     template<typename T>
-    static T Int(T min, T max) 
-    {
+    static T Int(T min, T max) {
         std::uniform_int_distribution<T> dist(min, max);
-        auto& mt = getEngine();
+        auto &mt = getEngine();
         return dist(mt);
     }
 
 private:
-    static std::mt19937& getEngine() 
-    {
+    static std::mt19937 &getEngine() {
         static std::random_device seed_gen;
         static std::mt19937 engine(seed_gen());
         return engine;
     }
-
 };
 
 
-
-
-class Fluid
-{
+class Fluid {
 public:
-	Fluid();
-	~Fluid();
+    Fluid();
+    ~Fluid();
 
 public:
-	// Update Fluid each frame
-	void Update() noexcept;
+    // Update Fluid each frame
+    void Update() noexcept;
 
-	// Adds density into a position
-	void AddDensity(int x, int y, float amount) noexcept;
+    // Adds density into a position
+    void AddDensity(int x, int y, float amount) noexcept;
 
-	// Adds velocity into a position
-	void AddVelocity(int x, int y, float amountX, float amountY) noexcept;
+    // Adds velocity into a position
+    void AddVelocity(int x, int y, float amountX, float amountY) noexcept;
 
-	/**
+    /**
 	*	Diffuse is really simple; it just precalculates a value and passes everything off to LinearSolve.
 	*	So that means, while I know what it does, I don't really know how,
 	*	since all the work is in that mysterious function.
 	*/
-	void Diffuse(int b, float* x, float* x0, float diff, float dt) noexcept;
+    void Diffuse(int b, float *x, float *x0, float diff, float dt) noexcept;
 
-	/**
+    /**
 	*	this function is mysterious, but it does some kind of solving.
 	*	this is done by running through the whole array and setting each
 	*	cell to a combination of its neighbors. It does this several times;
@@ -101,9 +88,9 @@ public:
 	*	four iterations are used. After each iteration, it resets the
 	*	boundaries so the calculations don't explode.
 	*/
-	void LinearSolve(int b, float* x, float* x0, float a, float c) noexcept;
+    void LinearSolve(int b, float *x, float *x0, float a, float c) noexcept;
 
-	/**
+    /**
 	*	As noted above, this function sets the boundary cells at the outer edges of the this so they perfectly counteract their neighbors.
 	*	There's a bit of oddness here which is, what is this b pramaeter? It can be 0, 1, 2, or 3, and each value has a special meaning which is not at all obvious. The answer lies is what kind of data can be passed into this function.
 	*	
@@ -129,16 +116,16 @@ public:
 	*	
 	*	This function also sets corners. This is done very simply, by setting each corner cell equal to the average of its three neighbors.
 	*/
-	void SetBoundary(int b, float* x) noexcept;
+    void SetBoundary(int b, float *x) noexcept;
 
-	/**
+    /**
 	*	This function is also somewhat mysterious as to exactly how it works,
 	*	but it does some more running through the dataand setting values,
 	*	with some calls to LinearSolve thrown in for fun.
 	*/
-	void Project(float* velocX, float* velocY, float* p, float* div) noexcept;
+    void Project(float *velocX, float *velocY, float *p, float *div) noexcept;
 
-	/**
+    /**
 	*	This function is responsible for actually moving things around.
 	*	To that end, it looks at each cell in turn.In that cell,
 	*	it grabs the velocity, follows that velocity back in time,
@@ -146,19 +133,18 @@ public:
 	*	of the cells around the spot where it lands, then applies
 	*	that value to the current cell.
 	**/
-	void Advect(int b, float* d, float* d0, float* velocX, float* velocY, float dt) noexcept;
+    void Advect(int b, float *d, float *d0, float *velocX, float *velocY, float dt) noexcept;
 
-private: // No stack over flow please OS!
-	 std::array<float, N * N> s;
-	 std::array<float, N * N> density;
+private:// No stack over flow please OS!
+    std::array<float, N * N> s;
+    std::array<float, N * N> density;
 
-	 std::array<float, N * N> Vx; // velocityX
-	 std::array<float, N * N> Vy; // velocityY
+    std::array<float, N * N> Vx;// velocityX
+    std::array<float, N * N> Vy;// velocityY
 
-	 std::array<float, N * N> Vx0; // previous velocityX
-	 std::array<float, N * N> Vy0; // previous velocityY
+    std::array<float, N * N> Vx0;// previous velocityX
+    std::array<float, N * N> Vy0;// previous velocityY
 
 public:
-	friend class FluidSimulation; // to access private members
+    friend class FluidSimulation;// to access private members
 };
-

@@ -6,42 +6,41 @@
 
 class NetworkMode {
 public:
-	static const char HOST = 0;
-	static const char CLIENT = 1;
-	static const char SERVER = 2;
+    static const char HOST = 0;
+    static const char CLIENT = 1;
+    static const char SERVER = 2;
 };
 
 class Networking {
 public:
-	static bool init();
+    static bool init();
 };
 
 class Client {
 public:
-	ENetHost* client = nullptr;
+    ENetHost *client = nullptr;
 
-	ENetAddress address{};
-	ENetPeer* peer = nullptr;
+    ENetAddress address{};
+    ENetPeer *peer = nullptr;
 
-	~Client();
+    ~Client();
 
-	static Client* start();
+    static Client *start();
 
-	bool connect(const char* ip, enet_uint16 port);
-	void disconnect();
+    bool connect(const char *ip, enet_uint16 port);
+    void disconnect();
 
-	void tick();
+    void tick();
 };
 
 class Server {
 public:
-	ENetAddress address{};
-	ENetHost* server = nullptr;
+    ENetAddress address{};
+    ENetHost *server = nullptr;
 
-	~Server();
+    ~Server();
 
-	static Server* start(enet_uint16 port);
+    static Server *start(enet_uint16 port);
 
-	void tick();
-
+    void tick();
 };

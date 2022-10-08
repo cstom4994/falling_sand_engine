@@ -5,6 +5,9 @@ build/
 .xmake/
 *.gen.*
 
+build.bat
+compile_commands.json
+
 # C/C++ generated
 *.a
 *.ax

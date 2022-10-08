@@ -12,23 +12,23 @@
 
 #include "Engine/render/renderer_gpu.h"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <unordered_map>
 
-#include "Networking.hpp"
 #include "Drawing.hpp"
+#include "Networking.hpp"
 
 #include "lib/sparsehash/sparse_hash_map.h"
 #ifndef INC_World
 #include "world.hpp"
 #endif
-#include "Utils.hpp"
-#include "Textures.hpp"
 #include "Background.hpp"
-#include <box2d/b2_distance_joint.h>
-#include "Settings.hpp"
 #include "Controls.hpp"
+#include "Settings.hpp"
+#include "Textures.hpp"
+#include "Utils.hpp"
+#include <box2d/b2_distance_joint.h>
 #include <chrono>
 #include <thread>
 #ifdef _WIN32
@@ -36,9 +36,9 @@
 #else
 #include <sys/io.h>
 #endif
-#include <codecvt>
 #include "Drawing.hpp"
 #include "Shaders.hpp"
+#include <codecvt>
 
 #include "DebugImpl.hpp"
 
@@ -51,22 +51,19 @@
 #define frameTimeNum 100
 
 
-enum GameState
-{
+enum GameState {
     MAIN_MENU,
     LOADING,
     INGAME
 };
 
-enum DisplayMode
-{
+enum DisplayMode {
     WINDOWED,
     BORDERLESS,
     FULLSCREEN
 };
 
-enum WindowFlashAction
-{
+enum WindowFlashAction {
     START,
     START_COUNT,
     START_UNTIL_FG,
@@ -74,9 +71,7 @@ enum WindowFlashAction
 };
 
 
-
-class Game
-{
+class Game {
 public:
     static const int MAX_WIDTH = 1920;
     static const int MAX_HEIGHT = 1080;
@@ -84,8 +79,8 @@ public:
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
     int networkMode = -1;
-    Client* client = nullptr;
-    Server* server = nullptr;
+    Client *client = nullptr;
+    Server *server = nullptr;
 
     static HostData data;
 
@@ -113,80 +108,80 @@ public:
     float freeCamX = 0;
     float freeCamY = 0;
 
-    uint16_t* frameTime = new uint16_t[frameTimeNum];
+    uint16_t *frameTime = new uint16_t[frameTimeNum];
 
-    STBTTF_Font* font64;
-    STBTTF_Font* font16;
-    STBTTF_Font* font14;
+    STBTTF_Font *font64;
+    STBTTF_Font *font16;
+    STBTTF_Font *font14;
 
-    SDL_Window* window = nullptr;
+    SDL_Window *window = nullptr;
 
-    METAENGINE_Render_Target* realTarget = nullptr;
-    METAENGINE_Render_Target* target = nullptr;
+    METAENGINE_Render_Target *realTarget = nullptr;
+    METAENGINE_Render_Target *target = nullptr;
 
-    METAENGINE_Render_Image* backgroundImage = nullptr;
+    METAENGINE_Render_Image *backgroundImage = nullptr;
 
-    METAENGINE_Render_Image* loadingTexture = nullptr;
+    METAENGINE_Render_Image *loadingTexture = nullptr;
     std::vector<unsigned char> pixelsLoading;
-    unsigned char* pixelsLoading_ar = nullptr;
+    unsigned char *pixelsLoading_ar = nullptr;
     int loadingScreenW = 0;
     int loadingScreenH = 0;
 
-    METAENGINE_Render_Image* worldTexture = nullptr;
-    METAENGINE_Render_Image* lightingTexture = nullptr;
+    METAENGINE_Render_Image *worldTexture = nullptr;
+    METAENGINE_Render_Image *lightingTexture = nullptr;
 
-    METAENGINE_Render_Image* emissionTexture = nullptr;
+    METAENGINE_Render_Image *emissionTexture = nullptr;
     std::vector<unsigned char> pixelsEmission;
-    unsigned char* pixelsEmission_ar = nullptr;
+    unsigned char *pixelsEmission_ar = nullptr;
 
-    METAENGINE_Render_Image* texture = nullptr;
+    METAENGINE_Render_Image *texture = nullptr;
     std::vector<unsigned char> pixels;
-    unsigned char* pixels_ar = nullptr;
-    METAENGINE_Render_Image* textureLayer2 = nullptr;
+    unsigned char *pixels_ar = nullptr;
+    METAENGINE_Render_Image *textureLayer2 = nullptr;
     std::vector<unsigned char> pixelsLayer2;
-    unsigned char* pixelsLayer2_ar = nullptr;
-    METAENGINE_Render_Image* textureBackground = nullptr;
+    unsigned char *pixelsLayer2_ar = nullptr;
+    METAENGINE_Render_Image *textureBackground = nullptr;
     std::vector<unsigned char> pixelsBackground;
-    unsigned char* pixelsBackground_ar = nullptr;
-    METAENGINE_Render_Image* textureObjects = nullptr;
-    METAENGINE_Render_Image* textureObjectsLQ = nullptr;
+    unsigned char *pixelsBackground_ar = nullptr;
+    METAENGINE_Render_Image *textureObjects = nullptr;
+    METAENGINE_Render_Image *textureObjectsLQ = nullptr;
     std::vector<unsigned char> pixelsObjects;
-    unsigned char* pixelsObjects_ar = nullptr;
-    METAENGINE_Render_Image* textureObjectsBack = nullptr;
-    METAENGINE_Render_Image* textureParticles = nullptr;
+    unsigned char *pixelsObjects_ar = nullptr;
+    METAENGINE_Render_Image *textureObjectsBack = nullptr;
+    METAENGINE_Render_Image *textureParticles = nullptr;
     std::vector<unsigned char> pixelsParticles;
-    unsigned char* pixelsParticles_ar = nullptr;
-    METAENGINE_Render_Image* textureEntities = nullptr;
-    METAENGINE_Render_Image* textureEntitiesLQ = nullptr;
+    unsigned char *pixelsParticles_ar = nullptr;
+    METAENGINE_Render_Image *textureEntities = nullptr;
+    METAENGINE_Render_Image *textureEntitiesLQ = nullptr;
 
-    METAENGINE_Render_Image* textureFire = nullptr;
-    METAENGINE_Render_Image* texture2Fire = nullptr;
+    METAENGINE_Render_Image *textureFire = nullptr;
+    METAENGINE_Render_Image *texture2Fire = nullptr;
     std::vector<unsigned char> pixelsFire;
-    unsigned char* pixelsFire_ar = nullptr;
+    unsigned char *pixelsFire_ar = nullptr;
 
-    METAENGINE_Render_Image* textureFlowSpead = nullptr;
-    METAENGINE_Render_Image* textureFlow = nullptr;
+    METAENGINE_Render_Image *textureFlowSpead = nullptr;
+    METAENGINE_Render_Image *textureFlow = nullptr;
     std::vector<unsigned char> pixelsFlow;
-    unsigned char* pixelsFlow_ar = nullptr;
+    unsigned char *pixelsFlow_ar = nullptr;
 
-    METAENGINE_Render_Image* temperatureMap = nullptr;
+    METAENGINE_Render_Image *temperatureMap = nullptr;
     std::vector<unsigned char> pixelsTemp;
-    unsigned char* pixelsTemp_ar = nullptr;
+    unsigned char *pixelsTemp_ar = nullptr;
 
-    b2DebugDraw_impl* b2DebugDraw;
+    b2DebugDraw_impl *b2DebugDraw;
 
     int ent_prevLoadZoneX = 0;
     int ent_prevLoadZoneY = 0;
-    ctpl::thread_pool* updateDirtyPool = nullptr;
-    ctpl::thread_pool* rotateVectorsPool = nullptr;
+    ctpl::thread_pool *updateDirtyPool = nullptr;
+    ctpl::thread_pool *rotateVectorsPool = nullptr;
 
-    uint16_t* movingTiles;
+    uint16_t *movingTiles;
 
     int tickTime = 0;
 
     bool running = true;
 
-    World* world = nullptr;
+    World *world = nullptr;
 
     float accLoadX = 0;
     float accLoadY = 0;
@@ -198,17 +193,17 @@ public:
     int lastEraseMX = 0;
     int lastEraseMY = 0;
 
-    bool* objectDelete = nullptr;
+    bool *objectDelete = nullptr;
 
-    WaterShader* waterShader = nullptr;
-    WaterFlowPassShader* waterFlowPassShader = nullptr;
-    NewLightingShader* newLightingShader = nullptr;
+    WaterShader *waterShader = nullptr;
+    WaterFlowPassShader *waterFlowPassShader = nullptr;
+    NewLightingShader *newLightingShader = nullptr;
     float newLightingShader_insideDes = 0.0f;
     float newLightingShader_insideCur = 0.0f;
-    FireShader* fireShader = nullptr;
-    Fire2Shader* fire2Shader = nullptr;
+    FireShader *fireShader = nullptr;
+    Fire2Shader *fire2Shader = nullptr;
 
-    Backgrounds* backgrounds = nullptr;
+    Backgrounds *backgrounds = nullptr;
 
     int fps = 0;
     int feelsLikeFps = 0;
@@ -242,8 +237,8 @@ public:
     std::function<void()> fadeOutCallback = []() {};
 
     MetaEngine::GameDir gameDir;
-    MetaEngine::ImGuiLayer* m_ImGuiLayer = nullptr;
-    MetaEngine::ModuleStack* m_ModuleStack = nullptr;
+    MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
+    MetaEngine::ModuleStack *m_ModuleStack = nullptr;
 
     void loadShaders();
     void updateMaterialSounds();
@@ -253,9 +248,9 @@ public:
     void setWindowFlash(WindowFlashAction action, int count, int period);
     void handleWindowSizeChange(int newWidth, int newHeight);
 
-    int init(int argc, char* argv[]);
+    int init(int argc, char *argv[]);
 
-    int run(int argc, char* argv[]);
+    int run(int argc, char *argv[]);
 
     void updateFrameEarly();
     void tick();
@@ -267,7 +262,7 @@ public:
     void renderEarly();
     void renderLate();
 
-    void renderTemperatureMap(World* world);
+    void renderTemperatureMap(World *world);
 
     int getAimSolidSurface(int dist);
     int getAimSurface(int dist);

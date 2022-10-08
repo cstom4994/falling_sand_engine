@@ -16,7 +16,6 @@ namespace MetaEngine {
         std::string gameDir;
 
     public:
-
         GameDir(std::string gameDir) {
             this->gameDir = gameDir;
         }
@@ -30,10 +29,6 @@ namespace MetaEngine {
     };
 
 
-
-
-
-
     namespace FUtil {
         inline bool exists(std::string_view path) { return std::filesystem::exists(METADOT_RESLOC(path)); }
 
@@ -41,14 +36,13 @@ namespace MetaEngine {
         //	ASSERT(FUtil::exists(ND_RESLOC(path)), "FILE: {} does not exist", path);
         //}
         // folder path of current executable
-        const std::string& getExecutableFolderPath();
+        const std::string &getExecutableFolderPath();
         // executable path
-        const std::string& getExecutablePath();
+        const std::string &getExecutablePath();
 
         typedef int FileSearchFlags;
 
-        enum FileSearchFlags_
-        {
+        enum FileSearchFlags_ {
             FileSearchFlags_None = 0,
             FileSearchFlags_Recursive = 1 << 0,
             FileSearchFlags_OnlyDirectories = 1 << 1,
@@ -63,33 +57,29 @@ namespace MetaEngine {
 
         // absolute path of fileName in the same folder as executable
         // or "" if filename doesn't exist
-        std::string getAbsolutePath(const char* fileName);
+        std::string getAbsolutePath(const char *fileName);
 
-        void cleanPathString(std::string& s);
+        void cleanPathString(std::string &s);
 
-        inline std::string cleanPathStringConst(std::string_view s)
-        {
+        inline std::string cleanPathStringConst(std::string_view s) {
             auto out = std::string(s);
             cleanPathString(out);
             return out;
         }
 
 
-        inline void removeSuffix(std::string& s)
-        {
+        inline void removeSuffix(std::string &s) {
             if (s.find_last_of('.') != std::string::npos)
                 s = s.substr(0, s.find_last_of('.'));
         }
 
-        inline std::string removeSuffixConst(std::string_view s)
-        {
+        inline std::string removeSuffixConst(std::string_view s) {
             auto out = std::string(s);
             removeSuffix(out);
             return out;
         }
 
-        inline bool copyFile(std::string_view src, std::string_view dest)
-        {
+        inline bool copyFile(std::string_view src, std::string_view dest) {
             std::filesystem::copy(src, dest);
             return true;
         }
@@ -97,53 +87,20 @@ namespace MetaEngine {
         std::string readFileString(std::string_view path);
 
         uint64_t lastWriteTime(std::string_view path);
-    }
-}
+    }// namespace FUtil
+}// namespace MetaEngine
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include "Engine/Macros.hpp"
 #include "Engine/Core.hpp"
+#include "Engine/Macros.hpp"
 #include "Engine/Utils.hpp"
 
 #ifndef INCLUDE_METAENGINE_PHYSFS_H_
 #define INCLUDE_METAENGINE_PHYSFS_H_
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #ifndef METAENGINE_PHYSFS_DEF
@@ -154,31 +111,31 @@ extern "C" {
 #endif
 #endif
 
-    METAENGINE_PHYSFS_DEF bool InitPhysFS();                                              // Initialize the PhysFS file system
-    METAENGINE_PHYSFS_DEF bool ClosePhysFS();                                             // Close the PhysFS file system
-    METAENGINE_PHYSFS_DEF bool IsPhysFSReady();                                           // Check if PhysFS has been initialized successfully
-    METAENGINE_PHYSFS_DEF bool MountPhysFS(const char* newDir, const char* mountPoint);   // Mount the given directory or archive as a mount point
-    METAENGINE_PHYSFS_DEF bool MountPhysFSFromMemory(const unsigned char* fileData, int dataSize, const char* newDir, const char* mountPoint);  // Mount the given file data as a mount point
-    METAENGINE_PHYSFS_DEF bool UnmountPhysFS(const char* oldDir);                         // Unmounts the given directory
-    METAENGINE_PHYSFS_DEF bool FileExistsInPhysFS(const char* fileName);                  // Check if the given file exists in PhysFS
-    METAENGINE_PHYSFS_DEF bool DirectoryExistsInPhysFS(const char* dirPath);              // Check if the given directory exists in PhysFS
-    METAENGINE_PHYSFS_DEF unsigned char* LoadFileDataFromPhysFS(const char* fileName, unsigned int* bytesRead);  // Load a data buffer from PhysFS (memory should be freed)
-    METAENGINE_PHYSFS_DEF char* LoadFileTextFromPhysFS(const char* fileName);             // Load text from a file (memory should be freed)
-    METAENGINE_PHYSFS_DEF bool SetPhysFSWriteDirectory(const char* newDir);               // Set the base directory where PhysFS should write files to (defaults to the current working directory)
-    METAENGINE_PHYSFS_DEF bool SaveFileDataToPhysFS(const char* fileName, void* data, unsigned int bytesToWrite);  // Save the given file data in PhysFS
-    METAENGINE_PHYSFS_DEF bool SaveFileTextToPhysFS(const char* fileName, char* text);    // Save the given file text in PhysFS
-    METAENGINE_PHYSFS_DEF char** GetDirectoryFilesFromPhysFS(const char* dirPath, int* count);  // Get filenames in a directory path (memory should be freed)
-    METAENGINE_PHYSFS_DEF void ClearDirectoryFilesFromPhysFS(char** filesList);           // Clear directory files paths buffers (free memory)
-    METAENGINE_PHYSFS_DEF long GetFileModTimeFromPhysFS(const char* fileName);            // Get file modification time (last write time) from PhysFS
+    METAENGINE_PHYSFS_DEF bool InitPhysFS();                                                                                                  // Initialize the PhysFS file system
+    METAENGINE_PHYSFS_DEF bool ClosePhysFS();                                                                                                 // Close the PhysFS file system
+    METAENGINE_PHYSFS_DEF bool IsPhysFSReady();                                                                                               // Check if PhysFS has been initialized successfully
+    METAENGINE_PHYSFS_DEF bool MountPhysFS(const char *newDir, const char *mountPoint);                                                       // Mount the given directory or archive as a mount point
+    METAENGINE_PHYSFS_DEF bool MountPhysFSFromMemory(const unsigned char *fileData, int dataSize, const char *newDir, const char *mountPoint);// Mount the given file data as a mount point
+    METAENGINE_PHYSFS_DEF bool UnmountPhysFS(const char *oldDir);                                                                             // Unmounts the given directory
+    METAENGINE_PHYSFS_DEF bool FileExistsInPhysFS(const char *fileName);                                                                      // Check if the given file exists in PhysFS
+    METAENGINE_PHYSFS_DEF bool DirectoryExistsInPhysFS(const char *dirPath);                                                                  // Check if the given directory exists in PhysFS
+    METAENGINE_PHYSFS_DEF unsigned char *LoadFileDataFromPhysFS(const char *fileName, unsigned int *bytesRead);                               // Load a data buffer from PhysFS (memory should be freed)
+    METAENGINE_PHYSFS_DEF char *LoadFileTextFromPhysFS(const char *fileName);                                                                 // Load text from a file (memory should be freed)
+    METAENGINE_PHYSFS_DEF bool SetPhysFSWriteDirectory(const char *newDir);                                                                   // Set the base directory where PhysFS should write files to (defaults to the current working directory)
+    METAENGINE_PHYSFS_DEF bool SaveFileDataToPhysFS(const char *fileName, void *data, unsigned int bytesToWrite);                             // Save the given file data in PhysFS
+    METAENGINE_PHYSFS_DEF bool SaveFileTextToPhysFS(const char *fileName, char *text);                                                        // Save the given file text in PhysFS
+    METAENGINE_PHYSFS_DEF char **GetDirectoryFilesFromPhysFS(const char *dirPath, int *count);                                                // Get filenames in a directory path (memory should be freed)
+    METAENGINE_PHYSFS_DEF void ClearDirectoryFilesFromPhysFS(char **filesList);                                                               // Clear directory files paths buffers (free memory)
+    METAENGINE_PHYSFS_DEF long GetFileModTimeFromPhysFS(const char *fileName);                                                                // Get file modification time (last write time) from PhysFS
 
-    METAENGINE_PHYSFS_DEF void SetPhysFSCallbacks();                                      // Set the raylib file loader/saver callbacks to use PhysFS
-    METAENGINE_PHYSFS_DEF const char* GetPerfDirectory(const char* organization, const char* application); // Get the user's current config directory for the application.
+    METAENGINE_PHYSFS_DEF void SetPhysFSCallbacks();                                                      // Set the raylib file loader/saver callbacks to use PhysFS
+    METAENGINE_PHYSFS_DEF const char *GetPerfDirectory(const char *organization, const char *application);// Get the user's current config directory for the application.
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // INCLUDE_METAENGINE_PHYSFS_H_
+#endif// INCLUDE_METAENGINE_PHYSFS_H_
 
 #ifdef METAENGINE_PHYSFS_IMPLEMENTATION
 #ifndef METAENGINE_PHYSFS_IMPLEMENTATION_ONCE
@@ -188,10 +145,11 @@ extern "C" {
 #define PHYSFS_IMPL
 #define PHYSFS_PLATFORM_IMPL
 #define PHYSFS_DECL METAENGINE_PHYSFS_DEF
-#include "Engine/lib/miniphysfs.h" // NOLINT
+#include "Engine/lib/miniphysfs.h"// NOLINT
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
     /**
@@ -203,13 +161,12 @@ extern "C" {
      *
      * @internal
      */
-    void TracePhysFSError(const char* detail) {
+    void TracePhysFSError(const char *detail) {
         PHYSFS_ErrorCode errorCode = PHYSFS_getLastErrorCode();
         if (errorCode == PHYSFS_ERR_OK) {
             METADOT_WARN("PHYSFS: {}", detail);
-        }
-        else {
-            const char* errorMessage = PHYSFS_getErrorByCode(errorCode);
+        } else {
+            const char *errorMessage = PHYSFS_getErrorByCode(errorCode);
             METADOT_WARN("PHYSFS: {0} ({1})", errorMessage, detail);
         }
     }
@@ -224,7 +181,7 @@ extern "C" {
      *
      * @see UnloadFileData()
      */
-    unsigned char* LoadFileDataFromPhysFS(const char* fileName, unsigned int* bytesRead) {
+    unsigned char *LoadFileDataFromPhysFS(const char *fileName, unsigned int *bytesRead) {
         if (!FileExistsInPhysFS(fileName)) {
             METADOT_WARN("PHYSFS: Tried to load unexisting file {}", fileName);
             *bytesRead = 0;
@@ -232,7 +189,7 @@ extern "C" {
         }
 
         // Open up the file.
-        PHYSFS_File* handle = PHYSFS_openRead(fileName);
+        PHYSFS_File *handle = PHYSFS_openRead(fileName);
         if (handle == 0) {
             TracePhysFSError(fileName);
             *bytesRead = 0;
@@ -256,7 +213,7 @@ extern "C" {
         }
 
         // Read the file, return if it's empty.
-        void* buffer = METAENGINE_MALLOC(size);
+        void *buffer = METAENGINE_MALLOC(size);
         int read = PHYSFS_readBytes(handle, buffer, size);
         if (read < 0) {
             *bytesRead = 0;
@@ -269,7 +226,7 @@ extern "C" {
         // Close the file handle, and return the bytes read and the buffer.
         PHYSFS_close(handle);
         *bytesRead = read;
-        return (unsigned char*)buffer;
+        return (unsigned char *) buffer;
     }
 
     /**
@@ -313,7 +270,7 @@ extern "C" {
      *
      * @see UnmountPhysFS()
      */
-    bool MountPhysFS(const char* newDir, const char* mountPoint) {
+    bool MountPhysFS(const char *newDir, const char *mountPoint) {
         if (PHYSFS_mount(newDir, mountPoint, 1) == 0) {
             TracePhysFSError(mountPoint);
             return false;
@@ -335,7 +292,7 @@ extern "C" {
      *
      * @see MountPhysFS()
      */
-    bool MountPhysFSFromMemory(const unsigned char* fileData, int dataSize, const char* newDir, const char* mountPoint) {
+    bool MountPhysFSFromMemory(const unsigned char *fileData, int dataSize, const char *newDir, const char *mountPoint) {
         if (dataSize <= 0) {
             METADOT_WARN("PHYSFS: Cannot mount a data size of 0");
             return false;
@@ -359,7 +316,7 @@ extern "C" {
      *
      * @see MountPhysFS()
      */
-    bool UnmountPhysFS(const char* oldDir) {
+    bool UnmountPhysFS(const char *oldDir) {
         if (PHYSFS_unmount(oldDir) == 0) {
             METADOT_WARN("PHYSFS: Failed to unmount directory {}", oldDir);
             return false;
@@ -378,7 +335,7 @@ extern "C" {
      *
      * @see DirectoryExistsInPhysFS()
      */
-    bool FileExistsInPhysFS(const char* fileName) {
+    bool FileExistsInPhysFS(const char *fileName) {
         PHYSFS_Stat stat;
         if (PHYSFS_stat(fileName, &stat) == 0) {
             return false;
@@ -395,7 +352,7 @@ extern "C" {
      *
      * @see FileExistsInPhysFS()
      */
-    bool DirectoryExistsInPhysFS(const char* dirPath) {
+    bool DirectoryExistsInPhysFS(const char *dirPath) {
         PHYSFS_Stat stat;
         if (PHYSFS_stat(dirPath, &stat) == 0) {
             return false;
@@ -413,9 +370,9 @@ extern "C" {
      *
      * @see UnloadFileText()
      */
-    char* LoadFileTextFromPhysFS(const char* fileName) {
+    char *LoadFileTextFromPhysFS(const char *fileName) {
         unsigned int bytesRead;
-        return (char*)LoadFileDataFromPhysFS(fileName, &bytesRead);
+        return (char *) LoadFileDataFromPhysFS(fileName, &bytesRead);
     }
 
     /**
@@ -425,7 +382,7 @@ extern "C" {
      *
      * @return True on success, false on failure.
      */
-    bool SetPhysFSWriteDirectory(const char* newDir) {
+    bool SetPhysFSWriteDirectory(const char *newDir) {
         if (PHYSFS_setWriteDir(newDir) == 0) {
             TracePhysFSError(newDir);
             return false;
@@ -443,14 +400,14 @@ extern "C" {
      *
      * @return True on success, false on failure.
      */
-    bool SaveFileDataToPhysFS(const char* fileName, void* data, unsigned int bytesToWrite) {
+    bool SaveFileDataToPhysFS(const char *fileName, void *data, unsigned int bytesToWrite) {
         // Protect against empty writes.
         if (bytesToWrite == 0) {
             return true;
         }
 
         // Open the file.
-        PHYSFS_File* handle = PHYSFS_openWrite(fileName);
+        PHYSFS_File *handle = PHYSFS_openWrite(fileName);
         if (handle == 0) {
             TracePhysFSError(fileName);
             return false;
@@ -475,7 +432,7 @@ extern "C" {
      *
      * @return True on success, false on failure.
      */
-    bool SaveFileTextToPhysFS(const char* fileName, char* text) {
+    bool SaveFileTextToPhysFS(const char *fileName, char *text) {
         return SaveFileDataToPhysFS(fileName, text, std::strlen(text));
     }
 
@@ -486,7 +443,7 @@ extern "C" {
      *
      * @see ClearDirectoryFilesFromPhysFS()
      */
-    char** GetDirectoryFilesFromPhysFS(const char* dirPath, int* count) {
+    char **GetDirectoryFilesFromPhysFS(const char *dirPath, int *count) {
         // Make sure the directory exists.
         if (!DirectoryExistsInPhysFS(dirPath)) {
             METADOT_WARN("PHYSFS: Can't get files from non-existant directory ({})", dirPath);
@@ -494,11 +451,11 @@ extern "C" {
         }
 
         // Load the list of files from PhysFS.
-        char** list = PHYSFS_enumerateFiles(dirPath);
+        char **list = PHYSFS_enumerateFiles(dirPath);
 
         // Find out how many files there were.
         int number = 0;
-        for (char** i = list; *i != 0; i++) {
+        for (char **i = list; *i != 0; i++) {
             number++;
         }
 
@@ -514,7 +471,7 @@ extern "C" {
      *
      * @see GetDirectoryFilesFromPhysFS()
      */
-    void ClearDirectoryFilesFromPhysFS(char** filesList) {
+    void ClearDirectoryFilesFromPhysFS(char **filesList) {
         PHYSFS_freeList(filesList);
     }
 
@@ -527,7 +484,7 @@ extern "C" {
      *
      * @see GetFileModTime()
      */
-    long GetFileModTimeFromPhysFS(const char* fileName) {
+    long GetFileModTimeFromPhysFS(const char *fileName) {
         PHYSFS_Stat stat;
         if (PHYSFS_stat(fileName, &stat) == 0) {
             METADOT_WARN("PHYSFS: Cannot get mod time of file ({})", fileName);
@@ -560,8 +517,8 @@ extern "C" {
      * @return string of user directory in platform-dependent notation.
      *         NULL if there's a problem (creating directory failed, etc)
      */
-    const char* GetPerfDirectory(const char* organization, const char* application) {
-        const char* output = PHYSFS_getPrefDir(organization, application);
+    const char *GetPerfDirectory(const char *organization, const char *application) {
+        const char *output = PHYSFS_getPrefDir(organization, application);
         if (output == 0) {
             TracePhysFSError("Failed to get perf directory");
             return 0;
@@ -574,5 +531,5 @@ extern "C" {
 }
 #endif
 
-#endif  // METAENGINE_PHYSFS_IMPLEMENTATION_ONCE
-#endif  // METAENGINE_PHYSFS_IMPLEMENTATION
+#endif// METAENGINE_PHYSFS_IMPLEMENTATION_ONCE
+#endif// METAENGINE_PHYSFS_IMPLEMENTATION

@@ -4,7 +4,7 @@
 #include "RigidBody.hpp"
 #include <iostream>
 
-RigidBody::RigidBody(b2Body* body) {
+RigidBody::RigidBody(b2Body *body) {
     this->body = body;
 }
 

@@ -3,7 +3,7 @@
 
 #ifndef INC_Item
 #include "Item.hpp"
-#endif // !INC_Item
+#endif// !INC_Item
 
 #include "Macros.hpp"
 
@@ -14,15 +14,14 @@ Item::~Item() {
     SDL_FreeSurface(surface);
 }
 
-Item* Item::makeItem(uint8_t flags, RigidBody* rb) {
-    Item* i;
+Item *Item::makeItem(uint8_t flags, RigidBody *rb) {
+    Item *i;
 
     if (rb->item != NULL) {
         i = rb->item;
         i->surface = rb->surface;
         i->texture = rb->texture;
-    }
-    else {
+    } else {
         i = new Item();
         i->flags = flags;
         i->surface = rb->surface;
@@ -32,42 +31,38 @@ Item* Item::makeItem(uint8_t flags, RigidBody* rb) {
     return i;
 }
 
-Uint32 getpixel(SDL_Surface* surface, int x, int y)
-{
+Uint32 getpixel(SDL_Surface *surface, int x, int y) {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
+    Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
 
-    switch (bpp)
-    {
-    case 1:
-        return *p;
-        break;
+    switch (bpp) {
+        case 1:
+            return *p;
+            break;
 
-    case 2:
-        return *(Uint16*)p;
-        break;
+        case 2:
+            return *(Uint16 *) p;
+            break;
 
-    case 3:
-        if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-            return p[0] << 16 | p[1] << 8 | p[2];
-        else
-            return p[0] | p[1] << 8 | p[2] << 16;
-        break;
+        case 3:
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+                return p[0] << 16 | p[1] << 8 | p[2];
+            else
+                return p[0] | p[1] << 8 | p[2] << 16;
+            break;
 
-    case 4:
-        return *(Uint32*)p;
-        break;
+        case 4:
+            return *(Uint32 *) p;
+            break;
 
-    default:
-        return 0;       /* shouldn't happen, but avoids warnings */
+        default:
+            return 0; /* shouldn't happen, but avoids warnings */
     }
 }
 
 
-
-
-void Item::loadFillTexture(SDL_Surface* tex) {
+void Item::loadFillTexture(SDL_Surface *tex) {
     fill.resize(capacity);
     uint32_t maxN = 0;
     for (uint16_t x = 0; x < tex->w; x++) {
@@ -94,7 +89,7 @@ void Item::loadFillTexture(SDL_Surface* tex) {
                 //uint32_t t = (n * 100) / col;
                 uint32_t t = n;
 
-                fill[t - 1] = { x, y };
+                fill[t - 1] = {x, y};
                 if (t - 1 > maxN) maxN = t - 1;
             }
         }

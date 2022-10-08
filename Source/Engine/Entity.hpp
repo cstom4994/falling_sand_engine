@@ -17,9 +17,9 @@ public:
     int hw = 14;
     int hh = 26;
     bool ground = false;
-    RigidBody* rb = nullptr;
+    RigidBody *rb = nullptr;
 
-    virtual void render(METAENGINE_Render_Target* target, int ofsX, int ofsY);
-    virtual void renderLQ(METAENGINE_Render_Target* target, int ofsX, int ofsY);
+    virtual void render(METAENGINE_Render_Target *target, int ofsX, int ofsY);
+    virtual void renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY);
     ~Entity();
 };

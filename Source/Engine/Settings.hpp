@@ -6,7 +6,6 @@
 
 class Settings {
 public:
-
     static bool draw_frame_graph;
     static bool draw_background;
     static bool draw_background_grid;

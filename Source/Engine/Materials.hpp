@@ -5,10 +5,10 @@
 
 #include <SDL.h>
 
-#include <unordered_map>
-#include <vector>
 #include <iostream>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 enum PhysicsType {
     AIR = 0,
@@ -22,14 +22,15 @@ enum PhysicsType {
 
 
 #define INTERACT_NONE 0
-#define INTERACT_TRANSFORM_MATERIAL 1 // id, radius
-#define INTERACT_SPAWN_MATERIAL 2 // id, radius
-#define EXPLODE 3 // radius
+#define INTERACT_TRANSFORM_MATERIAL 1// id, radius
+#define INTERACT_SPAWN_MATERIAL 2    // id, radius
+#define EXPLODE 3                    // radius
 
-#define REACT_TEMPERATURE_BELOW 4 // temperature, id
-#define REACT_TEMPERATURE_ABOVE 5 // temperature, id
+#define REACT_TEMPERATURE_BELOW 4// temperature, id
+#define REACT_TEMPERATURE_ABOVE 5// temperature, id
 
-struct MaterialInteraction {
+struct MaterialInteraction
+{
     int type = INTERACT_NONE;
     int data1 = 0;
     int data2 = 0;
@@ -53,8 +54,8 @@ public:
     float conductionOther = 1.0;
 
     bool interact = false;
-    int* nInteractions = nullptr;
-    std::vector<MaterialInteraction>* interactions = nullptr;
+    int *nInteractions = nullptr;
+    std::vector<MaterialInteraction> *interactions = nullptr;
     bool react = false;
     int nReactions = 0;
     std::vector<MaterialInteraction> reactions;
@@ -62,14 +63,11 @@ public:
     int slipperyness = 1;
 
     Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor, Uint32 color);
-    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff) {};
-    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0) {};
-    Material(int id, std::string name, int physicsType, int slipperyness, float density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations) {};
-    Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0) {};
-
+    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
+    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
+    Material(int id, std::string name, int physicsType, int slipperyness, float density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
+    Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
 };
-
-
 
 
 #define INC_Materials
@@ -77,8 +75,8 @@ public:
 class Materials {
 public:
     static int nMaterials;
-    static std::vector<Material*> MATERIALS;
-    static Material** MATERIALS_ARRAY;
+    static std::vector<Material *> MATERIALS;
+    static Material **MATERIALS_ARRAY;
 
     static Material GENERIC_AIR;
     static Material GENERIC_SOLID;
@@ -113,11 +111,7 @@ public:
     static Material FLAT_COBBLE_DIRT;
 
     static void init();
-
 };
-
-
-
 
 
 #define INC_MaterialInstance
@@ -126,7 +120,7 @@ class MaterialInstance {
 public:
     static int _curID;
 
-    Material* mat;
+    Material *mat;
     Uint32 color;
     int32_t temperature;
     uint32_t id = 0;
@@ -135,12 +129,11 @@ public:
     float fluidAmountDiff = 0.0f;
     uint8_t settleCount = 0;
 
-    MaterialInstance(Material* mat, Uint32 color, int32_t temperature);
-    MaterialInstance(Material* mat, Uint32 color) : MaterialInstance(mat, color, 0) {};
-    MaterialInstance() : MaterialInstance(&Materials::GENERIC_AIR, 0x000000, 0) {};
-    bool operator==(const MaterialInstance& other);
+    MaterialInstance(Material *mat, Uint32 color, int32_t temperature);
+    MaterialInstance(Material *mat, Uint32 color) : MaterialInstance(mat, color, 0){};
+    MaterialInstance() : MaterialInstance(&Materials::GENERIC_AIR, 0x000000, 0){};
+    bool operator==(const MaterialInstance &other);
 };
-
 
 
 #define INC_Tiles
@@ -183,6 +176,5 @@ public:
 
     static MaterialInstance createFire();
 
-    static MaterialInstance create(Material* mat, int x, int y);
-
+    static MaterialInstance create(Material *mat, int x, int y);
 };
