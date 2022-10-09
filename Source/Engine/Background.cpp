@@ -27,10 +27,7 @@ void BackgroundLayer::init() {
     METAENGINE_Render_SetImageFilter(this->texture[2], METAENGINE_Render_FILTER_NEAREST);
 }
 
-Background::Background(Uint32 solid, std::vector<BackgroundLayer> layers) {
-    this->solid = solid;
-    this->layers = layers;
-}
+
 
 void Background::init() {
     for (size_t i = 0; i < layers.size(); i++) {

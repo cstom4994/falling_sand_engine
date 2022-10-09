@@ -17,13 +17,6 @@ std::vector<std::string> string_split(std::string s, const char delimiter);
 std::vector<std::string>
 split2(std::string const &original, char separator);
 
-Chunk::Chunk(int x, int y, char *worldName) {
-    this->x = x;
-    this->y = y;
-
-    this->fname = std::string(worldName) + "/chunks/chunk_" + std::to_string(x) + "_" + std::to_string(y);
-}
-
 Chunk::~Chunk() {
     if (tiles)
         delete[] tiles;

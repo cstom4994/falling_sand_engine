@@ -1,12 +1,13 @@
 // Copyright(c) 2019 - 2022, KaoruXun All rights reserved.
 
 
+#include <utility>
 #define INC_Biome
 
 class Biome {
 public:
     int id;
-    Biome(int id);
+    explicit Biome(int id) : id(std::move(id)){};
 };
 
 class Biomes {

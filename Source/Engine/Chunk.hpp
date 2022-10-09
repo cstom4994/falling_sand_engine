@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <utility>
 #ifndef INC_Tiles
 #include "Materials.hpp"
 #endif// !INC_Tiles
@@ -43,7 +44,9 @@ public:
     int8_t generationPhase = 0;
     bool pleaseDelete = false;
 
-    Chunk(int x, int y, char *worldName);
+    explicit Chunk(int x, int y, char *worldName) : x(std::move(x)),
+                                                    y(std::move(y)),
+                                                    fname(std::move(std::string(worldName) + "/chunks/chunk_" + std::to_string(x) + "_" + std::to_string(y))){};
     Chunk() : Chunk(0, 0, (char *) "chunks"){};
     ~Chunk();
 

@@ -5,6 +5,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 class BackgroundLayer {
@@ -23,7 +24,7 @@ class Background {
 public:
     Uint32 solid;
     std::vector<BackgroundLayer> layers;
-    Background(Uint32 solid, std::vector<BackgroundLayer> layers);
+    explicit Background(Uint32 solid, std::vector<BackgroundLayer> layers) : solid(std::move(solid)), layers(std::move(layers)){};
     void init();
 };
 

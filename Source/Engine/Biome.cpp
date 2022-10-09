@@ -4,10 +4,6 @@
 #include "Biome.hpp"
 #include "InEngine.h"
 
-Biome::Biome(int id) {
-    this->id = id;
-}
-
 Biome Biomes::DEFAULT = Biome(0);
 
 Biome Biomes::TEST_1 = Biome(1);
