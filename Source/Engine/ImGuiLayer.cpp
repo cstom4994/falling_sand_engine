@@ -970,18 +970,18 @@ void DebugDrawUI::Draw(Game *game) {
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Debug Draw", NULL, ImGuiWindowFlags_NoResize)) {
+    if (!ImGui::Begin("材料放置测试", NULL, ImGuiWindowFlags_NoResize)) {
         ImGui::End();
         return;
     }
 
     auto a = selIndex == -1 ? "None" : selectedMaterial->name;
-    ImGui::Text("Selected: %s", a.c_str());
-    ImGui::Text("Brush Size: %d", brushSize);
+    ImGui::Text("选择: %s", a.c_str());
+    ImGui::Text("放置大小: %d", brushSize);
 
     ImGui::Separator();
 
-    ImGui::BeginChild("MaterialList", ImVec2(0, 0), false);
+    ImGui::BeginChild("材料列表", ImVec2(0, 0), false);
     ImGui::Indent(5);
     for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
         int x = (int) (i % width);
@@ -1076,15 +1076,15 @@ void DebugCheatsUI::Draw(Game *game) {
 
     ImGui::SetNextWindowSize(ImVec2(40 * 5 + 16 - 4, 0));
     ImGui::SetNextWindowPos(ImVec2(15, 450), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Cheats", NULL, 0)) {
+    if (!ImGui::Begin("上帝箱", NULL, 0)) {
         ImGui::End();
         return;
     }
 
-    if (ImGui::CollapsingHeader("Give Item")) {
+    if (ImGui::CollapsingHeader("获得物品")) {
         ImGui::Indent();
         if (game->world == nullptr || game->world->player == nullptr) {
-            ImGui::Text("No player to give item");
+            ImGui::Text("世界中没有玩家");
         } else {
             int i = 0;
             ImGui::PushID(i);

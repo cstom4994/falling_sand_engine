@@ -9,6 +9,7 @@
 #include "MaterialTestGenerator.cpp"
 
 #include "Settings.hpp"
+#include "Utils.hpp"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl.h"
 #include "imgui.h"
@@ -169,7 +170,7 @@ int Game::init(int argc, char *argv[]) {
 
             auto fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
 
-            METADOT_INFO("i'm {}", fu);
+            METADOT_INFO(MetaEngine::Utils::Format("i'm {}", fu));
 
             audioEngine.LoadEvent("event:/Music/Title");
 

@@ -3,9 +3,7 @@
 
 #define METAENGINE_PHYSFS_IMPLEMENTATION
 #include "FileSystem.hpp"
-
-#include <codecvt>
-//current implementation works only on windows
+#include "Utils.hpp"
 
 namespace MetaEngine {
 
@@ -16,14 +14,6 @@ namespace MetaEngine {
 
     std::string GameDir::getWorldPath(std::string worldName) {
         return this->getPath("worlds/" + worldName);
-    }
-
-
-    static std::string ws2s(const std::wstring &wstr) {
-        using convert_typeX = std::codecvt_utf8<wchar_t>;
-        std::wstring_convert<convert_typeX, wchar_t> converterX;
-
-        return converterX.to_bytes(wstr);
     }
 
     void FUtil::cleanPathString(std::string &s) {
@@ -71,7 +61,7 @@ namespace MetaEngine {
         if (out.empty()) {
             WCHAR path[260];
             GetModuleFileNameW(NULL, path, 260);
-            out = ws2s(std::wstring(path));
+            out = SUtil::ws2s(std::wstring(path));
             cleanPathString(out);
         }
 #endif
@@ -87,7 +77,7 @@ namespace MetaEngine {
 
         if (!(flags & FileSearchFlags_Recursive)) {
             for (const auto &entry: std::filesystem::directory_iterator(folder_path)) {
-                std::string s = ws2s(std::wstring(entry.path().c_str()));
+                std::string s = SUtil::ws2s(std::wstring(entry.path().c_str()));
                 if (entry.is_directory() && flags & FileSearchFlags_OnlyFiles) {
                 } else if (entry.is_regular_file() && flags & FileSearchFlags_OnlyDirectories) {
                 } else {
@@ -109,7 +99,7 @@ namespace MetaEngine {
             }
         } else {
             for (const auto &entry: std::filesystem::recursive_directory_iterator(folder_path)) {
-                std::string s = ws2s(std::wstring(entry.path().c_str()));
+                std::string s = SUtil::ws2s(std::wstring(entry.path().c_str()));
                 if (entry.is_directory() && flags & FileSearchFlags_OnlyFiles) {
                 } else if (entry.is_regular_file() && flags & FileSearchFlags_OnlyDirectories) {
                 } else {

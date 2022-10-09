@@ -6,7 +6,9 @@
 #include "Engine/InEngine.h"
 #include <algorithm>
 #include <bitset>
+#include <codecvt>
 #include <unordered_map>
+
 
 class Time {
 public:
@@ -17,6 +19,13 @@ public:
 namespace MetaEngine::SUtil {
     typedef std::string Stringo;
     typedef std::string_view Viewo;
+
+    inline std::string ws2s(const std::wstring &wstr) {
+        using convert_typeX = std::codecvt_utf8<wchar_t>;
+        std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+        return converterX.to_bytes(wstr);
+    }
 
     inline bool equals(const char *a, const char *c) {
         return strcmp(a, c) == 0;
