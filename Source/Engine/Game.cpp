@@ -49,7 +49,8 @@ const char *logo = R"(
                                              
 )";
 
-std::string win_title = U8("MetaDot 少女祈祷中");
+const std::string win_title_client = U8("MetaDot 少女祈祷中");
+const std::string win_title_server = U8("MetaDot Server");
 
 const char *plugin = CR_PLUGIN("CppSource");
 
@@ -186,8 +187,10 @@ void Game::updateMaterialSounds() {
 
 int Game::init(int argc, char *argv[]) {
 
-    if (!strcmp(argv[1], "test_mu")) {
-        return interp.evaluateFile(std::string(argv[2]));
+    if (argc >= 2) {
+        if (!strcmp(argv[1], "test_mu")) {
+            return interp.evaluateFile(std::string(argv[2]));
+        }
     }
 
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
@@ -229,7 +232,7 @@ int Game::init(int argc, char *argv[]) {
             port = atoi(argv[2]);
         }
         server = Server::start(port);
-        //SDL_SetWindowTitle(window, "Falling Sand Survival (Server)");
+        SDL_SetWindowTitle(window, win_title_server.c_str());
 
         /*while (true) {
             METADOT_BUG("[SERVER] tick {0:d}", server->server->connectedPeers);
@@ -260,7 +263,7 @@ int Game::init(int argc, char *argv[]) {
         //}
         //return 0;
 
-        //SDL_SetWindowTitle(window, "Falling Sand Survival (Client)");
+        SDL_SetWindowTitle(window, win_title_client.c_str());
     }
 
     ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(3);
@@ -330,7 +333,7 @@ int Game::init(int argc, char *argv[]) {
         // create the window
         METADOT_INFO("Creating game window...");
 
-        window = SDL_CreateWindow(win_title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+        window = SDL_CreateWindow(win_title_client.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
         if (window == nullptr) {
             METADOT_ERROR("Could not create SDL_Window: {}", SDL_GetError());
