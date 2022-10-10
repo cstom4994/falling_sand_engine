@@ -238,6 +238,8 @@ void ImGui::detail::AutoMapKeyValue(Key &key, Value &value) {
     }
 }
 
+#if defined(_MSC_VER)
+
 template<std::size_t I, typename... Args>
 void ImGui::detail::AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<0 != I> *) {
     ImGui::detail::AutoTupleRecurse<I - 1, Args...>(tpl);// first draw smaller indeces
@@ -285,6 +287,8 @@ void ImGui::detail::AutoTuple(const std::string &name, const std::tuple<Args...>
         ImGui::TreePop();
     }
 }
+
+#endif
 
 #pragma endregion
 

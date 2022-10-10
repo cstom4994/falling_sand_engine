@@ -77,10 +77,10 @@ namespace MetaEngine {
 
         if (!(flags & FileSearchFlags_Recursive)) {
             for (const auto &entry: std::filesystem::directory_iterator(folder_path)) {
-#if defined(_WIN32)
+#if defined(_MSC_VER)
                 std::string s = SUtil::ws2s(std::wstring(entry.path().c_str()));
 #else
-                std::string s = entry.path().c_str();
+                std::string s = SUtil::ws2s(std::wstring(entry.path().wstring()));
 #endif
                 if (entry.is_directory() && flags & FileSearchFlags_OnlyFiles) {
                 } else if (entry.is_regular_file() && flags & FileSearchFlags_OnlyDirectories) {
@@ -103,7 +103,11 @@ namespace MetaEngine {
             }
         } else {
             for (const auto &entry: std::filesystem::recursive_directory_iterator(folder_path)) {
+#if defined(_MSC_VER)
                 std::string s = SUtil::ws2s(std::wstring(entry.path().c_str()));
+#else
+                std::string s = SUtil::ws2s(std::wstring(entry.path().wstring()));
+#endif
                 if (entry.is_directory() && flags & FileSearchFlags_OnlyFiles) {
                 } else if (entry.is_regular_file() && flags & FileSearchFlags_OnlyDirectories) {
                 } else {
