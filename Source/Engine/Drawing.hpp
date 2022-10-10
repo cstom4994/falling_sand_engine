@@ -42,7 +42,7 @@ typedef struct
     int l_h;
 } STBTTF_Font;
 
-struct DrawTextParams
+struct DrawTextParams_t
 {
     const char *string;
     STBTTF_Font *font;
@@ -63,11 +63,11 @@ public:
 
     static STBTTF_Font *LoadFont(const char *path, Uint16 size);
 
-    static DrawTextParams drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
+    static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
                                          STBTTF_Font *font, int x, int y,
                                          uint8_t fR, uint8_t fG, uint8_t fB, int align);
 
-    static DrawTextParams drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
+    static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
                                          STBTTF_Font *font, int x, int y,
                                          uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align);
 
@@ -87,9 +87,9 @@ public:
                            STBTTF_Font *font, int x, int y,
                            uint8_t fR, uint8_t fG, uint8_t fB, SDL_Color bgCol, bool shadow, int align);
 
-    static void drawText(METAENGINE_Render_Target *renderer, DrawTextParams pm, int x, int y, int align);
+    static void drawText(METAENGINE_Render_Target *renderer, DrawTextParams_t pm, int x, int y, int align);
 
-    static void drawText(METAENGINE_Render_Target *renderer, DrawTextParams pm, int x, int y, bool shadow, int align);
+    static void drawText(METAENGINE_Render_Target *renderer, DrawTextParams_t pm, int x, int y, bool shadow, int align);
 
     static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
 

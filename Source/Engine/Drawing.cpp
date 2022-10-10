@@ -96,30 +96,31 @@ void Drawing::drawTextBG(METAENGINE_Render_Target *target, const char *string,
     //TTF_CloseFont(font);
 }
 
-DrawTextParams Drawing::drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
-                                       STBTTF_Font *font, int x, int y,
-                                       uint8_t fR, uint8_t fG, uint8_t fB, int align) {
+DrawTextParams_t Drawing::drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
+                                         STBTTF_Font *font, int x, int y,
+                                         uint8_t fR, uint8_t fG, uint8_t fB, int align) {
     return drawTextParams(renderer, string, font, x, y, fR, fG, fB, true, align);
 }
 
-DrawTextParams Drawing::drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
-                                       STBTTF_Font *font, int x, int y,
-                                       uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align) {
+DrawTextParams_t Drawing::drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
+                                         STBTTF_Font *font, int x, int y,
+                                         uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align) {
     //SDL_SetRenderDrawColor(NULL, fR, fG, fB, 255);
     //STBTTF_RenderText(NULL, font, x, y, string);
 
     //return DrawTextParams{ .string = string, .font = font, .x = x, .y = y, .fR = fR, .fG = fG, .fB = fB, .w = 64,.h = 64 };
 
-    return DrawTextParams(string, font, x, y, fR, fG, fB, 64, 64);
+    DrawTextParams_t dtp{.string = string, .font = font, .x = x, .y = y, .fR = fR, .fG = fG, .fB = fB, .w = 64, .h = 64};
 
+    return dtp;
     //TTF_CloseFont(font);
 }
 
-void Drawing::drawText(METAENGINE_Render_Target *target, DrawTextParams pm, int x, int y, int align) {
+void Drawing::drawText(METAENGINE_Render_Target *target, DrawTextParams_t pm, int x, int y, int align) {
     drawText(target, pm, x, y, true, align);
 }
 
-void Drawing::drawText(METAENGINE_Render_Target *target, DrawTextParams pm, int x, int y, bool shadow, int align) {
+void Drawing::drawText(METAENGINE_Render_Target *target, DrawTextParams_t pm, int x, int y, bool shadow, int align) {
     //if (shadow) {
     //
     //    METAENGINE_Render_Blit(pm.t1, NULL, target, x + 1 - align * pm.w / 2.0f + pm.w / 2.0f, y + 1 + pm.h / 2.0f);
