@@ -217,21 +217,21 @@ public:
     uint32 loadingOnColor = 0;
     uint32 loadingOffColor = 0;
 
-    DrawTextParams dt_versionInfo1;
-    DrawTextParams dt_versionInfo2;
-    DrawTextParams dt_versionInfo3;
+    DrawTextParams_t dt_versionInfo1;
+    DrawTextParams_t dt_versionInfo2;
+    DrawTextParams_t dt_versionInfo3;
 
-    DrawTextParams dt_fps;
-    DrawTextParams dt_feelsLikeFps;
+    DrawTextParams_t dt_fps;
+    DrawTextParams_t dt_feelsLikeFps;
 
-    DrawTextParams dt_frameGraph[5];
-    DrawTextParams dt_loading;
+    DrawTextParams_t dt_frameGraph[5];
+    DrawTextParams_t dt_loading;
 
     long long fadeInStart = 0;
     long long fadeInLength = 0;
     int fadeInWaitFrames = 0;
 
-    long long fadeOutStart = 0;
+    long long fadeOutStart = 0;`
     long long fadeOutLength = 0;
     int fadeOutWaitFrames = 0;
     std::function<void()> fadeOutCallback = []() {};

@@ -27,10 +27,9 @@
 #include "Engine/ImGuiHelper.hpp"
 
 
-
+#include <boost/pfr/core.hpp>
 #include <tuple>
 #include <typeinfo>
-#include <boost/pfr/core.hpp>
 #define IMGUI_AUTO_STRUCT_TO_TUPLE boost::pfr::structure_tie
 
 #if __cplusplus <= 201402L
