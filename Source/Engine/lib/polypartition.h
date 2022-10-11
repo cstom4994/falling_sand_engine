@@ -250,7 +250,7 @@ class TPPLPartition {
         void TypeB(long i, long j, long k, PartitionVertex *vertices, DPState2 **dpstates);
         
         //helper functions for MonotonePartition
-        bool Below(TPPLPoint &p1, TPPLPoint &p2);
+        bool PBelow(TPPLPoint &p1, TPPLPoint &p2);
         void AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
             char *vertextypes, std::set<ScanLineEdge>::iterator *edgeTreeIterators,
             std::set<ScanLineEdge> *edgeTree, long *helpers);

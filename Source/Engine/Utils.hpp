@@ -5,14 +5,17 @@
 #include "Engine/Core.hpp"
 #include "Engine/InEngine.h"
 #include <algorithm>
+#include <bits/types/struct_tm.h>
+#include <bits/types/time_t.h>
 #include <bitset>
 #include <codecvt>
 #include <unordered_map>
 
 
-class Time {
+class UTime {
 public:
     static long long millis();
+    static time_t mkgmtime(struct tm* unixdate);
 };
 
 

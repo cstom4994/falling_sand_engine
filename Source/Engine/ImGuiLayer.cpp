@@ -8,8 +8,8 @@
 
 #include "Engine/Core.hpp"
 #include "Engine/Macros.hpp"
-#include "Engine/src/ImGuiPropertyExample.h"
 #include "Settings.hpp"
+#include "Utils.hpp"
 #include "imgui_internal.h"
 
 
@@ -24,7 +24,11 @@
 
 #include <imgui/IconsFontAwesome5.h>
 
+#if defined (_WIN32)
 #define _METADOT_IMM32
+#else
+#include <sys/stat.h>
+#endif
 
 #if defined(_METADOT_IMM32)
 
@@ -476,7 +480,7 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     if (!setup) {
         Setup();
     }
-    long long now = Time::millis();
+    long long now = UTime::millis();
     if (now - lastRefresh > 3000) {
         RefreshWorlds(game);
         lastRefresh = now;
@@ -562,7 +566,7 @@ void MainMenuUI::DrawMainMenu(Game *game) {
 }
 
 void MainMenuUI::DrawSingleplayer(Game *game) {
-    long long now = Time::millis();
+    long long now = UTime::millis();
     if (now - lastRefresh > 3000) {
         RefreshWorlds(game);
         lastRefresh = now;
@@ -633,7 +637,7 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
 
                 World *w = new World();
                 w->init(game->gameDir.getWorldPath(worldName), (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode);
-                w->metadata.lastOpenedTime = Time::millis() / 1000;
+                w->metadata.lastOpenedTime = UTime::millis() / 1000;
                 w->metadata.lastOpenedVersion = std::string(VERSION);
                 w->metadata.save(w->worldName);
 
@@ -662,7 +666,7 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
         tm *tm_utc = gmtime(&meta.lastOpenedTime);
 
         // convert to local time
-        time_t time_utc = _mkgmtime(tm_utc);
+        time_t time_utc = UTime::mkgmtime(tm_utc);
         time_t time_local = mktime(tm_utc);
         time_local += time_utc - time_local;
         tm *tm_local = localtime(&time_local);
@@ -1364,7 +1368,7 @@ void CreateWorldUI::Draw(Game *game) {
         game->world = new World();
         game->world->init(wpStr, (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode, generator);
         game->world->metadata.worldName = std::string(worldNameBuf);
-        game->world->metadata.lastOpenedTime = Time::millis() / 1000;
+        game->world->metadata.lastOpenedTime = UTime::millis() / 1000;
         game->world->metadata.lastOpenedVersion = std::string(VERSION);
         game->world->metadata.save(wpStr);
 
@@ -2803,7 +2807,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         MetaEngine::GameUI_Draw(game);
 
         if (Settings::ui_inspector) {
-            DrawPropertyWindow();
+            //DrawPropertyWindow();
         }
 
 

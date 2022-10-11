@@ -98,7 +98,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     loadZone = {0, 0, w, h};
 
 
-    noise.SetSeed((unsigned int) Time::millis());
+    noise.SetSeed((unsigned int) UTime::millis());
     noise.SetNoiseType(FastNoise::Perlin);
 
     auto ha = google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>>();
@@ -2771,7 +2771,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
 Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 
 
-    long long st = Time::millis();
+    long long st = UTime::millis();
 
     ch->pleaseDelete = false;
 
@@ -3016,7 +3016,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
     bool has = hasPopulator[phase];
     if (!hasPopulator[phase]) return;
 
-    long long start = Time::millis();
+    long long start = UTime::millis();
 
     int ax = (ch->x - phase);
     int ay = (ch->y - phase);
