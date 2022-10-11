@@ -15,7 +15,7 @@
 #include "imgui.h"
 
 #include "Engine/Core.hpp"
-#include "Engine/ImGuiHelper.hpp"
+#include "Engine/ImGuiBase.h"
 #include "Engine/ImGuiTerminal.hpp"
 #include "Engine/Macros.hpp"
 #include "Engine/ModuleStack.h"
@@ -518,7 +518,7 @@ int Game::init(int argc, char *argv[]) {
     // init the rng
 
     METADOT_INFO("Seeding RNG...");
-    unsigned int seed = (unsigned int) Time::millis();
+    unsigned int seed = (unsigned int) UTime::millis();
     srand(seed);
 
     // register & set up materials
@@ -905,7 +905,7 @@ void Game::setMinimizeOnLostFocus(bool minimize) {
 }
 
 int Game::run(int argc, char *argv[]) {
-    startTime = Time::millis();
+    startTime = UTime::millis();
 
     // start loading chunks
 
@@ -935,11 +935,11 @@ int Game::run(int argc, char *argv[]) {
 
     SDL_Event windowEvent;
 
-    long long lastFPS = Time::millis();
+    long long lastFPS = UTime::millis();
     int frames = 0;
     fps = 0;
 
-    lastTime = Time::millis();
+    lastTime = UTime::millis();
     lastTick = lastTime;
     long long lastTickPhysics = lastTime;
 
@@ -959,7 +959,7 @@ int Game::run(int argc, char *argv[]) {
     objectDelete = new bool[world->width * world->height];
 
 
-    fadeInStart = Time::millis();
+    fadeInStart = UTime::millis();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
 
@@ -967,7 +967,7 @@ int Game::run(int argc, char *argv[]) {
 
     while (this->running) {
 
-        now = Time::millis();
+        now = UTime::millis();
         deltaTime = now - lastTime;
 
         if (networkMode != NetworkMode::SERVER) {
@@ -1266,7 +1266,7 @@ int Game::run(int argc, char *argv[]) {
 
                     } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
                         Controls::rmouse = true;
-                        if (world->player) world->player->startThrow = Time::millis();
+                        if (world->player) world->player->startThrow = UTime::millis();
                     } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
                         Controls::mmouse = true;
                     }
@@ -1684,7 +1684,7 @@ int Game::run(int argc, char *argv[]) {
         for (int i = 1; i < frameTimeNum; i++) {
             frameTime[i - 1] = frameTime[i];
         }
-        frameTime[frameTimeNum - 1] = (uint16_t) (Time::millis() - now);
+        frameTime[frameTimeNum - 1] = (uint16_t) (UTime::millis() - now);
 
 
         lastTime = now;
@@ -3341,7 +3341,7 @@ void Game::renderLate() {
             float arX = (float) WIDTH / (bg->layers[0].surface[0]->w);
             float arY = (float) HEIGHT / (bg->layers[0].surface[0]->h);
 
-            double time = Time::millis() / 1000.0;
+            double time = UTime::millis() / 1000.0;
 
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
@@ -3478,7 +3478,7 @@ void Game::renderLate() {
         bool needToRerenderLighting = false;
 
         static long long lastLightingForceRefresh = 0;
-        long long now = Time::millis();
+        long long now = UTime::millis();
         if (now - lastLightingForceRefresh > 100) {
             lastLightingForceRefresh = now;
             needToRerenderLighting = true;

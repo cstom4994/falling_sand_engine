@@ -5,12 +5,6 @@
 #include <utility>
 #include <vector>
 
-#include "imgui.h"
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#endif
-#include "imgui_internal.h"
-
 #include "Engine/lib/md4c.h"
 
 #include <map>
@@ -332,7 +326,6 @@ namespace ImGuiHelper {
 struct test_markdown : public ImMarkdown
 {
     void open_url() const override {
-        //HyperlinkHelper::OpenUrl(m_href.c_str());
         system(std::string("start msedge " + m_href).c_str());
     }
 

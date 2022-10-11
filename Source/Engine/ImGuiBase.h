@@ -3,8 +3,17 @@
 
 #pragma once
 
-#include <imgui.h>
-#include <imgui_internal.h>
+#include "imgui.h"
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+#include "imgui_internal.h"
+
+#if defined (_WIN32)
+#define _METADOT_IMM32
+#else
+#include <sys/stat.h>
+#endif
 
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl.h"
@@ -24,7 +33,7 @@
 
 #include "Engine/Core.hpp"
 
-#include "Engine/ImGuiHelper.hpp"
+#include "Engine/ImGuiHelper.inc"
 
 
 #include <boost/pfr/core.hpp>
