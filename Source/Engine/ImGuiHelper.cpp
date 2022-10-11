@@ -1084,7 +1084,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                 }
                 if (lParam & GCS_COMPSTR) {
 
-                    const DWORD compstr_length_in_byte = ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
+                    const LONG compstr_length_in_byte = ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
                     switch (compstr_length_in_byte) {
                         case IMM_ERROR_NODATA:
                         case IMM_ERROR_GENERAL:

@@ -40,12 +40,12 @@ if (is_os("windows")) then
     "/wd4267", "/wd4244", "/wd4305", "/wd4018", 
     "/wd4800", "/wd5030", "/wd5222", "/wd4554",
     "/wd4002",
-    "/utf-8", "/Zc:__cplusplus"
+    "/utf-8", "/Zc:__cplusplus", "/EHa"
     )
 
     add_cxflags("/bigobj")
 elseif (is_os("linux")) then
-    add_cxxflags("-fpermissive", "-Wc++11-narrowing")
+    add_cxxflags("-fpermissive", "-fexceptions", "-fms-compatibility-version")
 end
 
 include_dir_list = {

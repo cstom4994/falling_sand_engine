@@ -37,17 +37,10 @@
 #include <ostream>
 #include <stdexcept>
 
-
 #include <exception>
 #include <string>
 
-
-#define METADOT_BUG(...) std::cout << __VA_ARGS__
-#define METADOT_TRACE(...) std::cout << __VA_ARGS__
-#define METADOT_INFO(...) std::cout << __VA_ARGS__
-#define METADOT_WARN(...) std::cout << __VA_ARGS__
-#define METADOT_ERROR(...) std::cout << __VA_ARGS__
-#define METADOT_PPRINT(...) std::cout << __VA_ARGS__
+#include "Engine/Core.hpp"
 
 class static_string {
     const char *const p_;
