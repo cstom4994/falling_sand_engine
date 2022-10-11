@@ -231,7 +231,7 @@ public:
     long long fadeInLength = 0;
     int fadeInWaitFrames = 0;
 
-    long long fadeOutStart = 0;`
+    long long fadeOutStart = 0;
     long long fadeOutLength = 0;
     int fadeOutWaitFrames = 0;
     std::function<void()> fadeOutCallback = []() {};
