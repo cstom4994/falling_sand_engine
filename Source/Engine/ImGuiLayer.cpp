@@ -3,7 +3,6 @@
 #include "ImGuiLayer.hpp"
 
 #include "Engine/ImGuiBase.h"
-#include "Engine/ImGuiHelper.hpp"
 #include <glad/glad.h>
 
 #include "Engine/Core.hpp"
@@ -24,11 +23,6 @@
 
 #include <imgui/IconsFontAwesome5.h>
 
-#if defined (_WIN32)
-#define _METADOT_IMM32
-#else
-#include <sys/stat.h>
-#endif
 
 #if defined(_METADOT_IMM32)
 
