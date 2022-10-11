@@ -8,7 +8,6 @@
 
 #include "Engine/Core.hpp"
 #include "Engine/Macros.hpp"
-#include "Engine/src/ImGuiPropertyExample.h"
 #include "Settings.hpp"
 #include "imgui_internal.h"
 
@@ -24,7 +23,9 @@
 
 #include <imgui/IconsFontAwesome5.h>
 
+#if defined (_WIN32)
 #define _METADOT_IMM32
+#endif
 
 #if defined(_METADOT_IMM32)
 

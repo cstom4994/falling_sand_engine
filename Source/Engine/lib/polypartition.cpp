@@ -1114,13 +1114,13 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
 		vprev = &(vertices[v->previous]);
 		vnext = &(vertices[v->next]);
 
-		if(Below(vprev->p,v->p)&&Below(vnext->p,v->p)) {
+		if(PBelow(vprev->p,v->p)&&PBelow(vnext->p,v->p)) {
 			if(IsConvex(vnext->p,vprev->p,v->p)) {
 				vertextypes[i] = TPPL_VERTEXTYPE_START;
 			} else {
 				vertextypes[i] = TPPL_VERTEXTYPE_SPLIT;
 			}
-		} else if(Below(v->p,vprev->p)&&Below(v->p,vnext->p)) {
+		} else if(PBelow(v->p,vprev->p)&&PBelow(v->p,vnext->p)) {
 			if(IsConvex(vnext->p,vprev->p,v->p))
 			{
 				vertextypes[i] = TPPL_VERTEXTYPE_END;
@@ -1378,7 +1378,7 @@ void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, lon
 		edgeTreeIterators[newindex2]->index = newindex2;
 }
 
-bool TPPLPartition::Below(TPPLPoint &p1, TPPLPoint &p2) {
+bool TPPLPartition::PBelow(TPPLPoint &p1, TPPLPoint &p2) {
 	if(p1.y < p2.y) return true;
 	else if(p1.y == p2.y) {
 		if(p1.x < p2.x) return true;
