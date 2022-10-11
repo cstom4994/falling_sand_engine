@@ -6,7 +6,7 @@
 #include <chrono>
 
 
-long long Time::millis() {
+long long UTime::millis() {
     long long ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();

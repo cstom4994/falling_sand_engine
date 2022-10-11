@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-class Time {
+class UTime {
 public:
     static long long millis();
 };
