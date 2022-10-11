@@ -12,6 +12,11 @@
 
 #include <lz4/lz4.h>
 
+#if defined(_WIN32)
+#else
+#include <sys/stat.h>
+#endif
+
 std::vector<std::string> split(std::string strToSplit, char delimeter);
 std::vector<std::string> string_split(std::string s, const char delimiter);
 std::vector<std::string>

@@ -2,8 +2,12 @@
 
 
 #include "Utils.hpp"
+#include "Refl.hpp"
 
+#include <bits/types/time_t.h>
 #include <chrono>
+#include <cstdint>
+#include <ctime>
 
 
 long long UTime::millis() {
@@ -11,6 +15,18 @@ long long UTime::millis() {
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();
     return ms;
+}
+
+time_t UTime::mkgmtime(struct tm *unixdate) {
+    assert(unixdate != nullptr);
+    time_t fakeUnixtime = mktime(unixdate);
+    struct tm *fakeDate = gmtime(&fakeUnixtime);
+
+    int32_t nOffSet = fakeDate->tm_hour - unixdate->tm_hour;
+    if (nOffSet > 12) {
+        nOffSet = 24 - nOffSet;
+    }
+    return fakeUnixtime - nOffSet * 3600;
 }
 
 
