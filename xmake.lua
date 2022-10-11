@@ -5,6 +5,8 @@ add_requires("libsdl", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
 
+set_policy("check.auto_ignore_flags", true)
+
 set_languages("clatest", "cxxlatest")
 set_arch("x64")
 
@@ -43,7 +45,7 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 elseif (is_os("linux")) then
-    add_cxxflags("-fpermissive")
+    add_cxxflags("-fpermissive", "-Wc++11-narrowing")
 end
 
 include_dir_list = {
