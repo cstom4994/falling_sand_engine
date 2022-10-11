@@ -1243,7 +1243,7 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
 
 			case TPPL_VERTEXTYPE_REGULAR:
 				//if the interior of P lies to the right of vi
-				if(Below(v->p,vertices[v->previous].p)) {
+				if(PBelow(v->p,vertices[v->previous].p)) {
 					if (edgeTreeIterators[v->previous] == edgeTree.end()) {
 						error = true;
 						break;
@@ -1443,21 +1443,21 @@ int TPPLPartition::TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles
 
 	topindex = 0; bottomindex=0;
 	for(i=1;i<numpoints;i++) {
-		if(Below(points[i],points[bottomindex])) bottomindex = i;
-		if(Below(points[topindex],points[i])) topindex = i;
+		if(PBelow(points[i],points[bottomindex])) bottomindex = i;
+		if(PBelow(points[topindex],points[i])) topindex = i;
 	}
 
 	//check if the poly is really monotone
 	i = topindex;
 	while(i!=bottomindex) {
 		i2 = i+1; if(i2>=numpoints) i2 = 0;
-		if(!Below(points[i2],points[i])) return 0;
+		if(!PBelow(points[i2],points[i])) return 0;
 		i = i2;
 	}
 	i = bottomindex;
 	while(i!=topindex) {
 		i2 = i+1; if(i2>=numpoints) i2 = 0;
-		if(!Below(points[i],points[i2])) return 0;
+		if(!PBelow(points[i],points[i2])) return 0;
 		i = i2;
 	}
 
@@ -1479,7 +1479,7 @@ int TPPLPartition::TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles
 			leftindex++;  if(leftindex>=numpoints) leftindex = 0;
 			vertextypes[priority[i]] = 1;
 		} else {
-			if(Below(points[leftindex],points[rightindex])) {
+			if(PBelow(points[leftindex],points[rightindex])) {
 				priority[i] = rightindex;
 				rightindex--; if(rightindex<0) rightindex = numpoints-1;
 				vertextypes[priority[i]] = -1;

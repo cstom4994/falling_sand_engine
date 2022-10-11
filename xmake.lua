@@ -5,7 +5,7 @@ add_requires("libsdl", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
 
-set_languages("clatest", "cxxlatest")
+set_languages("clatest", "c++20")
 set_arch("x64")
 
 add_rules("mode.debug", "mode.release")
