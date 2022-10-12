@@ -51,6 +51,7 @@ end
 include_dir_list = {
     "Source",
     "Source/Engine",
+    "Source/CppFront",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -134,4 +135,7 @@ target("MetaDot")
 	add_headerfiles("Source/Engine/**.inl")
 	add_headerfiles("Source/Engine/**.inc")
     add_headerfiles("Source/Shared/**.hpp")
+    add_rules("utils.bin2c", {extensions = {".ttf"}})
+    add_files("Resources/**.ttf")
+	add_headerfiles("Resources/**.h")
     set_symbols("debug")

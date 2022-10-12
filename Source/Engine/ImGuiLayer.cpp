@@ -16,8 +16,6 @@
 #include "InEngine.h"
 #include "Textures.hpp"
 
-#include "../Resources/FZXIANGSU12.h"
-
 #include <map>
 
 #include "DefaultGenerator.cpp"
@@ -68,6 +66,13 @@ static int common_control_initialize() {
 
 #endif
 
+static unsigned char font_fz[] = {
+    #include "FZXIANGSU12.ttf.h"
+};
+
+static unsigned char font_silver[] = {
+    #include "Silver.ttf.h"
+};
 
 void MetaEngine::GameUI_Draw(Game *game) {
     for (MetaEngine::Module *l: *game->m_ModuleStack)
@@ -1979,18 +1984,20 @@ namespace MetaEngine {
 
         float scale = 1.0f;
 
-        void* fonts = METAENGINE_MALLOC(sizeof(Resource_FZXIANGSU12));
+        void* fonts_1 = METAENGINE_MALLOC(sizeof(font_fz));
+        void* fonts_2 = METAENGINE_MALLOC(sizeof(font_silver));
 
-        memcpy(fonts, (void *)Resource_FZXIANGSU12, sizeof(Resource_FZXIANGSU12));
+        memcpy(fonts_1, (void *)font_fz, sizeof(font_fz));
+        memcpy(fonts_2, (void *)font_silver, sizeof(font_silver));
 
-        io.Fonts->AddFontFromMemoryTTF(fonts, sizeof(Resource_FZXIANGSU12), 14.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+        io.Fonts->AddFontFromMemoryTTF(fonts_1, sizeof(font_fz), 16.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
         config.MergeMode = true;
         config.GlyphMinAdvanceX = 10.0f;
 
         static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
         io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/engine/fonts/fa-solid-900.ttf").c_str(), 15.0f, &config, icon_ranges);
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/engine/fonts/Silver.ttf").c_str(), 26.0f, &config);
+        io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
 
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
