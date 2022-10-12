@@ -10,7 +10,7 @@
 #include "Settings.hpp"
 #include "Utils.hpp"
 #include "imgui_internal.h"
-
+#include "Engine/properties/ImGuiPropertyExample.h"
 
 #include "Game.hpp"
 #include "InEngine.h"
@@ -2821,7 +2821,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         MetaEngine::GameUI_Draw(game);
 
         if (Settings::ui_inspector) {
-            //DrawPropertyWindow();
+            DrawPropertyWindow();
         }
 
 
