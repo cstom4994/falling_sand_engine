@@ -74,6 +74,10 @@ static unsigned char font_silver[] = {
     #include "Silver.ttf.h"
 };
 
+static unsigned char font_fa[] = {
+    #include "fa_solid_900.ttf.h"
+};
+
 void MetaEngine::GameUI_Draw(Game *game) {
     for (MetaEngine::Module *l: *game->m_ModuleStack)
         l->onImGuiRender();
@@ -1986,9 +1990,11 @@ namespace MetaEngine {
 
         void* fonts_1 = METAENGINE_MALLOC(sizeof(font_fz));
         void* fonts_2 = METAENGINE_MALLOC(sizeof(font_silver));
+        void* fonts_3 = METAENGINE_MALLOC(sizeof(font_fa));
 
         memcpy(fonts_1, (void *)font_fz, sizeof(font_fz));
         memcpy(fonts_2, (void *)font_silver, sizeof(font_silver));
+        memcpy(fonts_3, (void *)font_fa, sizeof(font_fa));
 
         io.Fonts->AddFontFromMemoryTTF(fonts_1, sizeof(font_fz), 16.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
@@ -1996,7 +2002,7 @@ namespace MetaEngine {
         config.GlyphMinAdvanceX = 10.0f;
 
         static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/engine/fonts/fa-solid-900.ttf").c_str(), 15.0f, &config, icon_ranges);
+        io.Fonts->AddFontFromMemoryTTF(fonts_3, sizeof(font_fa), 15.0f, &config, icon_ranges);
         io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
 
 
