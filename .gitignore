@@ -5,6 +5,8 @@ build/
 .xmake/
 *.gen.*
 
+Resources/
+
 build.bat
 compile_commands.json
 

@@ -16,12 +16,15 @@
 #include "InEngine.h"
 #include "Textures.hpp"
 
+#include "../Resources/FZXIANGSU12.h"
+
 #include <map>
 
 #include "DefaultGenerator.cpp"
 #include "MaterialTestGenerator.cpp"
 
 #include <imgui/IconsFontAwesome5.h>
+#include <vcruntime_string.h>
 
 
 #if defined(_METADOT_IMM32)
@@ -1976,7 +1979,11 @@ namespace MetaEngine {
 
         float scale = 1.0f;
 
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/engine/fonts/FZXIANGSU12.ttf").c_str(), 12.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+        void* fonts = METAENGINE_MALLOC(sizeof(Resource_FZXIANGSU12));
+
+        memcpy(fonts, (void *)Resource_FZXIANGSU12, sizeof(Resource_FZXIANGSU12));
+
+        io.Fonts->AddFontFromMemoryTTF(fonts, sizeof(Resource_FZXIANGSU12), 14.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
         config.MergeMode = true;
         config.GlyphMinAdvanceX = 10.0f;
