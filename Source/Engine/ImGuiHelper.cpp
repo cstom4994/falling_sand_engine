@@ -12,7 +12,7 @@
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif
-#elif defined(LINUX) or defined(APPLE)
+#elif defined(LINUX)
 #include <dirent.h>
 #include <sys/types.h>
 #define PATH_SEP '/'

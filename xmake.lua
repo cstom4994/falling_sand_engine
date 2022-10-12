@@ -45,7 +45,7 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 elseif (is_os("linux")) then
-    add_cxxflags("-fpermissive", "-fexceptions", "-fms-compatibility-version")
+    error("No more linux for now")
 end
 
 include_dir_list = {
