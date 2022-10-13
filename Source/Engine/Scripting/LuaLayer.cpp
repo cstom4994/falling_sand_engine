@@ -151,10 +151,7 @@ namespace MetaEngine {
                 ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
                 if (ImGui::Begin("Script Editor", &show_script_editor)) {
                     ImGui::TextColored({0, 1, 0, 1},
-                                       (s_files[s_currentFileIndex].filePath + (s_files[s_currentFileIndex].saved
-                                                                                        ? ""
-                                                                                        : " *"))
-                                               .c_str());
+                                       "%s", (s_files[s_currentFileIndex].filePath + (s_files[s_currentFileIndex].saved ? "" : " *")).c_str());
 
                     // Note: we are using a fixed-sized buffer for simplicity here. See ImGuiInputTextFlags_CallbackResize
                     // and the code in misc/cpp/imgui_stdlib.h for how to setup InputText() for dynamically resizing strings.

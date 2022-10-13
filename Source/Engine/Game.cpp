@@ -328,8 +328,6 @@ int Game::init(int argc, char *argv[]) {
 
     SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", SDL_HINT_OVERRIDE);
 
-    METADOT_INFO("Initializing SDL_IMG...");
-
     if (networkMode != NetworkMode::SERVER) {
         // create the window
         METADOT_INFO("Creating game window...");
