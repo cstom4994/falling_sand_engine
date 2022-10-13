@@ -334,7 +334,9 @@ int Game::init(int argc, char *argv[]) {
         // create the window
         METADOT_INFO("Creating game window...");
 
-        window = SDL_CreateWindow(win_title_client.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+        auto title = MetaEngine::Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
+
+        window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
         if (window == nullptr) {
             METADOT_ERROR("Could not create SDL_Window: {}", SDL_GetError());
