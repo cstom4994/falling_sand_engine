@@ -5,6 +5,7 @@
 #include <iterator>
 #include <regex>
 
+#include "DebugImpl.hpp"
 #include "DefaultGenerator.cpp"
 #include "MaterialTestGenerator.cpp"
 

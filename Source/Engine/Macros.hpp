@@ -18,13 +18,6 @@ static const int VERSION_REV = METADOT_VERSION_BUILD;
 static const char *VERSION = METADOT_VERSION_TEXT;
 static const char *VERSION_COMPATIBILITY[] = {VERSION, "0.0.1", 0};
 
-namespace MetaEngine {
-    int meko_buildnum(void);
-    const char *meko_buildos(void);
-    const char *meko_buildarch(void);
-    const char *meko_buildcommit(void);
-}// namespace MetaEngine
-
 #define BUILD_SERIES_NAME "local build"
 #define BUILD_ID "buildid"
 #define BUILD_COMMIT_ID "Unknown"

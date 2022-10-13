@@ -966,6 +966,14 @@ namespace MuScript {
                                                   return make_shared<Value>(args[0]);
                                               }},
 
+                                             // duktape inject
+                                             {"duk", [](List args) {
+                                                  if (args.size() == 0) {
+                                                      return make_shared<Value>();
+                                                  }
+                                                  return make_shared<Value>(args[0]);
+                                              }},
+
                                              // overal stdlib
                                              {"typeof", [](List args) {
                                                   if (args.size() == 0) {
