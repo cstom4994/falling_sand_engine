@@ -6,8 +6,8 @@
 
 #include "Engine/Properties/Internal/Properties.hpp"
 
-struct Settings : MetaEngine::properties::properties {
-public:
+struct SettingsBase
+{
     static bool draw_frame_graph;
     static bool draw_background;
     static bool draw_background_grid;
@@ -25,9 +25,9 @@ public:
     static bool draw_uinode_bounds;
     static bool draw_temperature_map;
 
-    MAKE_PROPERTY(ui_tweak, bool);
-    MAKE_PROPERTY(ui_code_editor, bool);
-    MAKE_PROPERTY(ui_inspector, bool);
+    static bool ui_tweak;
+    static bool ui_code_editor;
+    static bool ui_inspector;
 
     static bool draw_shaders;
     static int water_overlay;
@@ -48,4 +48,14 @@ public:
 
     static std::string server_ip;
     static int server_port;
+};
+
+struct Settings : SettingsBase, MetaEngine::properties::properties
+{
+    Settings()
+    {
+        LINK_PROPERTY(ui_tweak, &ui_tweak);
+        LINK_PROPERTY(ui_code_editor, &ui_code_editor);
+        LINK_PROPERTY(ui_inspector, &ui_inspector);
+    }
 };
