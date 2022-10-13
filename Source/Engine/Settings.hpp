@@ -4,7 +4,9 @@
 
 #include <string>
 
-class Settings {
+#include "Engine/Properties/Internal/Properties.hpp"
+
+class Settings : MetaEngine::properties::properties {
 public:
     static bool draw_frame_graph;
     static bool draw_background;
