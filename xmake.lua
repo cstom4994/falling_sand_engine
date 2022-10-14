@@ -51,7 +51,6 @@ end
 include_dir_list = {
     "Source",
     "Source/Engine",
-    "Source/CppFront",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -59,6 +58,7 @@ include_dir_list = {
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
+    "Source/Vendor/coreclr"
     }
 
 defines_list = {
@@ -105,6 +105,16 @@ target("vendor")
 	add_headerfiles("Source/Vendor/**.hpp")
     set_symbols("debug")
 
+target("CoreCLREmbed")
+    set_kind("static")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_files("Source/CoreCLREmbed/**.cpp")
+	add_headerfiles("Source/CoreCLREmbed/**.h")
+	add_headerfiles("Source/CoreCLREmbed/**.hpp")
+	add_headerfiles("Source/Vendor/coreclr/**.h")
+    set_symbols("debug")
+
 target("CppSource")
     set_kind("shared")
     add_packages("libsdl")
@@ -125,7 +135,8 @@ target("MetaDot")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor")
+    add_deps("vendor", "CoreCLREmbed")
+    add_links("nethost")
     add_links(link_list)
     add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cc")
@@ -138,4 +149,5 @@ target("MetaDot")
     add_rules("utils.bin2c", {extensions = {".ttf"}})
     add_files("Resources/**.ttf")
 	add_headerfiles("Resources/**.h")
+    add_linkdirs("Source/Vendor/coreclr")
     set_symbols("debug")

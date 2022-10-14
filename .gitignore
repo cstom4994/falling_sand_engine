@@ -10,19 +10,6 @@ Resources/
 build.bat
 compile_commands.json
 
-# C/C++ generated
-*.a
-*.ax
-*.d
-*.dll
-*.lib
-*.lo
-*.o
-*.os
-*.ox
-*.Plo
-*.so
-
 # clangd
 .clangd/
 .cache/
