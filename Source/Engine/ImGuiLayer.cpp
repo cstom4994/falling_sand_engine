@@ -422,7 +422,7 @@ int MainMenuUI::state = 0;
 
 bool MainMenuUI::visible = true;
 bool MainMenuUI::setup = false;
-//METAENGINE_Render_Image* MainMenuUI::title = nullptr;
+METAENGINE_Render_Image* MainMenuUI::title = nullptr;
 bool MainMenuUI::connectButtonEnabled = false;
 ImVec2 MainMenuUI::pos = ImVec2(0, 0);
 std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI::worlds = {};
@@ -454,10 +454,10 @@ void MainMenuUI::RefreshWorlds(Game *game) {
 void MainMenuUI::Setup() {
 
 
-    //SDL_Surface* logoSfc = Textures::loadTexture("data/assets/ui/temp_logo.png");
-    //title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
-    //METAENGINE_Render_SetImageFilter(title, METAENGINE_Render_FILTER_NEAREST);
-    //SDL_FreeSurface(logoSfc);
+    SDL_Surface* logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
+    title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
+    METAENGINE_Render_SetImageFilter(title, METAENGINE_Render_FILTER_NEAREST);
+    SDL_FreeSurface(logoSfc);
 
     setup = true;
 }
@@ -500,20 +500,20 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     }
     pos = ImGui::GetWindowPos();
 
-    //ImTextureID texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(title);
+    ImTextureID texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(title);
 
-    //ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-    //ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-    //ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-    //ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
 
-    //ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
-    //ImGui::Image(texId, ImVec2(title->w / 2, title->h / 2), uv_min, uv_max, tint_col, border_col);
+    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
+    ImGui::Image(texId, ImVec2(title->w / 2, title->h / 2), uv_min, uv_max, tint_col, border_col);
     ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), U8("大摆钟送快递"));
 
     int mainMenuButtonsWidth = 250;
-    int mainMenuButtonsYOffset = 50;
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset));
+    int mainMenuButtonsYOffset = 55;
+    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset));
     ImVec2 selPos = ImGui::GetCursorPos();
     //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -528,7 +528,7 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 2));
+    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 2));
     selPos = ImGui::GetCursorPos();
     //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -543,7 +543,7 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     ImGui::PopItemFlag();
     ImGui::PopStyleVar();
 
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 3));
+    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 3));
     selPos = ImGui::GetCursorPos();
     //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -556,7 +556,7 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     //ImGui::PopFont();
 
 
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 4));
+    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 4));
     selPos = ImGui::GetCursorPos();
     //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -1441,399 +1441,6 @@ void CreateWorldUI::Reset(Game *game) {
 #endif
     inputChanged(std::string(worldNameBuf), game);
 }
-
-
-const char *data1 = R"imvue(
-  
-<style>
-  * {
-    padding: 3px;
-  }
-
-  menu {
-    display: inline;
-  }
-
-</style>
-
-<template>
-  <window name="demo">
-    <button v-on:mouseover="self.showTooltip = true" v-on:mouseout="self.showTooltip = false">right click</button>
-    <tooltip v-if="self.showTooltip">
-      <text-unformatted>information for you</text-unformatted>
-    </tooltip>
-    <!-- various types parsing -->
-    <color-button desc-id="strings" size="20,20" col="0.6,0.9,0.6,1.0"/>
-    <!-- reading from Lua -->
-    <color-button desc-id="lua" :size="{20,20}" :col="{0.6,0.9,0.6,1.0}"/>
-    <!-- template engine {{}} -->
-    <text-unformatted>Button was clicked {{self.counter}} times.</text-unformatted>
-    <progress-bar :fraction="self.progress"/>
-    <!-- click handler -->
-    <button v-on:click="self:testing()">add more elements</button>
-    <button v-on:click="self.values = {}">clear list</button>
-    <text-unformatted>Dynamic list</text-unformatted>
-    <!-- loops -->
-    <selectable v-for="(value, index) in self.values" v-on:click="self.selected = index" :selected="index == self.selected">{{value}}</selectable>
-    <!-- define references, similar to Vue.js $refs -->
-    <input-text buf-size="512" ref="input" v-on:keypress.enter="self:runScript()">console</input-text>
-    <button v-on:click="self:runScript()">run script</button>
-    <text-unformatted>submitted input: {{ if self.inputText then return self.inputText else return 'none' end}}</text-unformatted>
-    <h4>Tab bar</h4>
-    <tab-bar str-id="test" :flags="ImGuiTabBarFlags_Reorderable">
-      <tab-item label="tab 1" p-open="true">
-        <button>it works</button>
-      </tab-item>
-      <tab-item label="tab 2" p-open="true"/>
-      <tab-item label="tab 3" p-open="true"/>
-      <tab-item label="tab 4" p-open="true"/>
-    </tab-bar>
-  </window>
-
-  <main-menu-bar>
-    <!-- nested loops also supported -->
-    <menu v-for="menu in self.menu" :label="menu.label">
-      <menu-item v-for="item in menu.items" v-on:click="item.handler()">{{item.label}}</menu-item>
-    </menu>
-    <menu v-if="self.mode" :label="self.mode"/>
-  </main-menu-bar>
-
-  <!-- conditional rendering -->
-  <window name="another window" v-if="self.counter >= 5">
-    <text-unformatted>Yamete kudasai senpai!</text-unformatted>
-  </window>
-</template>
-
-<script src="simple.lua"/>
-
-
-  
-)imvue";
-
-const char *data2 = R"imvue(
-<style>
-  @font-face {
-    font-family: "DroidSans";
-    src: local("DroidSans.ttf");
-  }
-
-  @font-face {
-    font-family: "Roboto";
-    src: local("Roboto-Medium.ttf") format(opentype);
-  }
-  
-  @font-face {
-    font-family: "FZXIANGSU12";
-    src: local("FZXIANGSU12.ttf") format(opentype);
-  }
-
-  @font-face {
-    font-family: "Times New Roman";
-    src: local("times new roman.ttf") format(opentype);
-  }
-
-  @font-face {
-    font-family: "MaterialIcons";
-    src: local("MaterialIcons-Regular.ttf");
-    unicode-range: U+E000-EB60;
-  }
-
-  template {
-    font-family: DroidSans;
-    padding: 2px;
-  }
-
-  span {
-    margin-right: 0.2rem;
-  }
-
-  div:not(:last-of-type) {
-    margin-bottom: 0.5rem;
-  }
-
-  .icon {
-    font-family: MaterialIcons;
-    display: inline-block;
-  }
-
-  #alt {
-    color: #FFCC00;
-    font-family: Times New Roman;
-  }
-
-  window {
-    padding: 3px;
-    font-size: 15px;
-  }
-
-  .btn {
-    padding: 0.2rem 0.5rem;
-    display: inline-block;
-    background-color: #327ba8;
-    color: #FFFFFF;
-    border-radius: 3px;
-    border: 1px solid rgba(0, 0, 0, 0);
-    margin-right: 0.2rem;
-  }
-
-  .btn:hover {
-    background-color: rgba(60, 146, 199, 1.0);
-    border: 1px solid #FFFFFF;
-  }
-
-  .btn:active {
-    background-color: rgba(60, 146, 199, 0.9);
-    border: 1px solid #FFFFFF;
-  }
-
-  .icon-btn .icon {
-    display: none;
-  }
-
-  .icon-btn .icon.normal {
-    display: inline-block;
-    }
-
-  .icon-btn:hover .icon {
-    display: none;
-  }
-
-  .icon-btn:hover .icon.over {
-    display: inline-block;
-  }
-
-  .icon-btn:active .icon {
-    display: none;
-  }
-
-  .icon-btn:active .icon.active {
-    display: inline-block;
-  }
-
-  .heart {
-    padding-top: 2px;
-    display: inline-block;
-    margin-right: 0.2rem;
-  }
-
-  .heart:hover {
-    color: #52b7ff;
-  }
-
-  .heart:active {
-    color: #52b7ff;
-  }
-
-  .selector .btn {
-    font-size: 20px;
-    margin: 0 1px 0 0;
-    padding-left: 0.6em;
-    padding-right: 0.6em;
-    border: 0;
-    border-radius: 0;
-  }
-
-  .selector > .btn:first-child {
-    border-radius: 3px 0 0 3px;
-  }
-
-  .selector > .btn:last-child {
-    margin: 0;
-    border-radius: 0 3px 3px 0;
-  }
-
-  .separator {
-    border-top: 1px solid #000000;
-    border-bottom: 1px solid #444444;
-    width: 100%;
-    height: 0;
-  }
-
-  input {
-    margin-right: 2px;
-    margin-bottom: 2px;
-  }
-
-  input[type="text"], input[type="password"], input[type="number"] {
-    display: block;
-    padding: 0.2em 0.5em;
-    margin: 2px 2px 10px 2px;
-    border: 1px solid #AAAAAA;
-    border-radius: 6px;
-    background-color: #222222;
-  }
-
-  input[type="text"]:active, input[type="password"]:active, input[type="number"]:active {
-    margin-top: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-bottom: 8px;
-    border: 3px solid rgba(126, 198, 242, 1.0);
-    border-radius: 9px;
-  }
-
-  input.error {
-    margin-top: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-bottom: 8px;
-    border: 3px solid rgba(255, 0, 0, 1.0);
-    border-radius: 9px;
-  }
-
-  label {
-    display: block;
-    margin-left: 2px;
-    margin-bottom: 2px;
-    font-size: 0.8em;
-    color: #AAAAAA;
-  }
-
-  input[type="checkbox"] {
-    display: inline-block !important;
-  }
-
-  input[type="range"] {
-    background-color: #222222;
-    padding: 3px;
-    border-radius: 3px;
-  }
-
-  .radio input {
-    margin-top: 3px;
-    display: block;
-  }
-
-  .form {
-    border: 1px solid #AAAAAA;
-    padding: 6px;
-    background-color: #333333;
-    border-radius: 3px;
-  }
-</style>
-
-<template>
-  <window name="Styled Elements Demo">
-    <html>
-      <body>
-        <div>区块元素 (div)</div>
-        <span>内联元素 (span)</span>
-        <span id="alt">一个尝试使用其他字体的span</span>
-
-        <h3>中文测试</h3>
-
-        <div>
-          <div class="selector" style="background-color: #FFFFFF; padding: 2px; border-radius: 8px; display: inline-block">
-            <div class="btn icon"></div>
-            <div v-for="key in self.choices" class="btn">{{ key }}</btn>
-            <div class="btn icon"></div>
-          </div>
-        </div>
-
-        <h3>风格化按钮</h3>
-        <div class="btn">BUTTON</div>
-        <div class="btn icon-btn">
-          <span class="icon normal"></span>
-          <span class="icon over"></span>
-          <span class="icon active"></span>
-        </div>
-        <div class="icon heart" v-on:click="self.toggle = not self.toggle">{{if self.toggle then return self.heartActive else return self.heartInactive end}}</div>
-        <div class="btn">APPROVED<span class="icon"></span></div>
-        <h3>Forms</h3>
-        <div class="form">
-          <label>风格化输入框</label>
-          <input type="text" placeholder="hello there..."/>
-          <label>Username:</label>
-          <input type="text" :class="self.usernameClasses" placeholder="username" v-model="user"/>
-          <label>Password:</label>
-          <input type="password" :class="self.passwordClasses" placeholder="password" v-model="password"/>
-          <label style="font-size: 0.9em">Other kinds of inputs:</label>
-          <input class="btn" type="button" value="submit" v-on:click="self:submit()"/>
-          <input class="btn" type="color" placeholder="pick you color" v-model="color"/>
-          <input style="margin-right: 0.2rem; margin-top: 0.2rem; display: block" type="checkbox" placeholder="check" v-model="checked"/>
-          <label>Radio buttons:</label>
-          <div class="radio">
-            <input type="radio" placeholder="Easy" value="easy" v-model="mode"/>
-            <input type="radio" placeholder="Normal" value="normal" v-model="mode"/>
-            <input type="radio" placeholder="Hard" value="hard" v-model="mode"/>
-            <input type="radio" placeholder="Nightmare" value="nightmare" v-model="mode"/>
-          </div>
-          <label>Range input:</label>
-          <span>
-            <input type="range" style="display: inline-block; width: 50%" min="0" max="20" step="0.1" v-model="slide"/>
-          </span>
-          <label>Number input:</label>
-          <span>
-            <input type="number" style="display: inline-block; width: 50%" min="0" max="20" step="0.1" v-model="slide"/>
-          </span>
-          <label>Checkboxes sharing the same model:</label>
-          <input style="margin-right: 0.2rem; margin-top: 0.2rem; display: block" type="checkbox" value="first checkbox" v-model="arr"/>
-          <input style="margin-right: 0.2rem; margin-top: 0.2rem; display: block" type="checkbox" value="second checkbox" v-model="arr"/>
-          <input style="margin-right: 0.2rem; margin-top: 0.2rem; display: block" type="checkbox" value="third checkbox" v-model="arr"/>
-
-          <label>Choices:</label>
-          <span style="display: inline-block; padding: 3px; background-color: #FFCC00; color: black; border-radius: 3px" v-for="c in self.arr">{{c}}</span>
-          <span v-if="#self.arr == 0">No choices yet</span>
-        </div>
-        <span class="icon" v-if="self.checked" style="position: absolute; right: 0px; bottom: 0px; color: #000000; background-color: #FFCC00; display: inline; padding: 0.3em; border-radius: 0.2em"></span>
-      </body>
-    </html>
-  </window>
-  <custom-window name="自定义窗口渲染" collapsible="true" closable="true">
-    <label>这个输入框应当有特殊风格</label>
-    <input type="text" class="test"/>
-    <div class="btn">第一个按钮</div>
-    <div class="btn">自动布局算法</div>
-  </custom-window>
-
-</template>
-
-<script>
-  local CustomWindow = require "components.window"
-
-  return ImVue.new({
-    components = {
-      ['custom-window'] = CustomWindow
-    },
-    data = function()
-      return {
-        toggle = false,
-        heartActive = '',
-        heartInactive = '',
-        choices = {
-          '1',
-          '2',
-          '3'
-        },
-        user = '',
-        password = '',
-        usernameClasses = {},
-        passwordClasses = {},
-        color = 0xFF444444,
-        slide = 10,
-        mode = "easy",
-        checked = false,
-        arr = {}
-      }
-    end,
-    submit = function(self)
-      if self.user == '' then
-        self.usernameClasses[1] = 'error'
-      else
-        self.usernameClasses = {}
-      end
-      if self.password == '' then
-        self.passwordClasses[1] = 'error'
-      else
-        self.passwordClasses = {}
-      end
-    end
-  })
-</script>
-
-
-)imvue";
-
 
 namespace MetaEngine {
 

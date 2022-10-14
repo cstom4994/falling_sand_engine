@@ -15,6 +15,7 @@
 #include "backends/imgui_impl_sdl.h"
 #include "imgui.h"
 
+#include "CoreCLREmbed/CoreCLREmbed.hpp"
 #include "Engine/Core.hpp"
 #include "Engine/ImGuiBase.h"
 #include "Engine/ImGuiTerminal.hpp"
@@ -22,7 +23,7 @@
 #include "Engine/ModuleStack.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
-#include "CoreCLREmbed/CoreCLREmbed.hpp"
+
 
 #include "Engine/FileSystem.hpp"
 
