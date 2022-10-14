@@ -22,6 +22,7 @@
 #include "Engine/ModuleStack.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
+#include "CoreCLREmbed/CoreCLREmbed.hpp"
 
 #include "Engine/FileSystem.hpp"
 
@@ -191,6 +192,10 @@ int Game::init(int argc, char *argv[]) {
     if (argc >= 2) {
         if (!strcmp(argv[1], "test_mu")) {
             return interp.evaluateFile(std::string(argv[2]));
+        }
+        if (!strcmp(argv[1], "test_clr")) {
+            test();
+            return 0;
         }
     }
 

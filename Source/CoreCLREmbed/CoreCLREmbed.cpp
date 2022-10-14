@@ -1,6 +1,8 @@
 // Copyright(c) 2019 - 2022, KaoruXun All rights reserved.
 
-// See https://zhuanlan.zhihu.com/p/415875455
+// See  https://zhuanlan.zhihu.com/p/415875455
+//      https://devblogs.microsoft.com/dotnet/improvements-in-native-code-interop-in-net-5-0/#suppressgctransition
+//      https://github.com/dotnet/csharplang/blob/main/proposals/csharp-9.0/function-pointers.md
 
 #include "CoreCLREmbed.hpp"
 
