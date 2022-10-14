@@ -1,5 +1,7 @@
 // Copyright(c) 2019 - 2022, KaoruXun All rights reserved.
 
+// See https://zhuanlan.zhihu.com/p/415875455
+
 #include "CoreCLREmbed.hpp"
 
 #include <iostream>
@@ -159,7 +161,6 @@ void test()
     if (!load_hostfxr())
     {
         assert(false && "Failure: load_hostfxr()");
-        return EXIT_FAILURE;
     }
 
     const string_t root_path(L".\\");
