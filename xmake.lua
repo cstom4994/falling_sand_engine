@@ -12,6 +12,17 @@ set_arch("x64")
 
 add_rules("mode.debug", "mode.release")
 
+rule("csharp")
+	set_extensions(".csproj")
+	on_build_file(function (target, sourcefile)
+		os.execv("dotnet", {"build", sourcefile, "-o", target:targetdir()})
+	end)
+	on_clean(function (target, sourcefile)
+		os.execv("dotnet", {"clean", sourcefile, "-o", target:targetdir()})
+	end)
+	on_link(function () end)
+rule_end()
+
 if is_mode("debug") then
     add_defines("CET_DEBUG")
     set_optimize("none")
@@ -151,3 +162,9 @@ target("MetaDot")
 	add_headerfiles("Resources/**.h")
     add_linkdirs("Source/Vendor/coreclr")
     set_symbols("debug")
+
+target("ManagedLib")
+	set_kind("binary")
+	add_rules("csharp")
+    set_targetdir("./output")
+	add_files("Source/ManagedLib/**.csproj")
