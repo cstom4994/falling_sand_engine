@@ -7,6 +7,7 @@
 
 #include "DebugImpl.hpp"
 #include "DefaultGenerator.cpp"
+#include "GCManager.hpp"
 #include "MaterialTestGenerator.cpp"
 
 #include "Settings.hpp"
@@ -17,12 +18,14 @@
 
 #include "CoreCLREmbed/CoreCLREmbed.hpp"
 #include "Engine/Core.hpp"
+#include "Engine/GCManager.hpp"
 #include "Engine/ImGuiBase.h"
 #include "Engine/ImGuiTerminal.hpp"
 #include "Engine/Macros.hpp"
 #include "Engine/ModuleStack.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
+
 
 
 #include "Engine/FileSystem.hpp"
@@ -186,6 +189,14 @@ void Game::updateMaterialSounds() {
     float water = (float) waterCt / 3000;
     //METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
     audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
+}
+
+Game::Game() {
+    METADOT_GC_INIT();
+}
+
+Game::~Game() {
+    METADOT_GC_EXIT();
 }
 
 int Game::init(int argc, char *argv[]) {
@@ -1504,6 +1515,7 @@ int Game::run(int argc, char *argv[]) {
                     ImGui::Checkbox("调整", &Settings::ui_tweak);
                     ImGui::Checkbox("脚本编辑器", &Settings::ui_code_editor);
                     ImGui::Checkbox("Inspector", &Settings::ui_inspector);
+                    ImGui::Checkbox("内存监测", &Settings::ui_gcmanager);
                     ImGui::EndMenu();
                 }
 

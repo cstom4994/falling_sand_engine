@@ -248,6 +248,9 @@ public:
     void setWindowFlash(WindowFlashAction action, int count, int period);
     void handleWindowSizeChange(int newWidth, int newHeight);
 
+    Game();
+    ~Game();
+
     int init(int argc, char *argv[]);
 
     int run(int argc, char *argv[]);

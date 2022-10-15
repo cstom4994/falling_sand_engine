@@ -1,8 +1,8 @@
 
 
 
-
 #include "GCManager.hpp"
+#include "imgui.h"
 
 #ifdef METADOT_GC_IMPLEMENTED
 
@@ -988,7 +988,6 @@ METADOT_GC_INLINE MetaEngine::GCManager::Hash MetaEngine::GCManager::combineHash
     return hash;
 }
 
-#if METADOT_GC_IMGUI
 #include "ImGuiBase.h"
 
 namespace MetaEngine::GCManager {
@@ -1187,7 +1186,7 @@ namespace MetaEngine::GCManager {
                     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.4f, 0.57f, 0.78f, 0.65f));
                     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.4f, 0.57f, 0.78f, 0.85f));
                 }
-                bool opened = ImGui::CollapsingHeader("##dummy", "NoName", true, false);
+                bool opened = ImGui::CollapsingHeader("##dummy", ImGuiTreeNodeFlags_None);
                 if (ImGui::BeginPopupContextItem("Options")) {
                     if (ImGui::Selectable("Watch function")) {
                         createHistogram(callee);
@@ -1652,8 +1651,5 @@ void MetaEngine::GCManager::display(float dt) {
     INTERNAL_SCOPE;
     Renderer::render(dt);
 }
-#else
-void MetaEngine::GCManager::display(float dt) {}
-#endif
 
 #endif// METADOT_GC_IMPL

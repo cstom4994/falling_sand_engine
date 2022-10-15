@@ -7,10 +7,10 @@
 
 #include "Engine/Core.hpp"
 #include "Engine/Macros.hpp"
+#include "Engine/properties/ImGuiPropertyExample.h"
 #include "Settings.hpp"
 #include "Utils.hpp"
-#include "imgui_internal.h"
-#include "Engine/properties/ImGuiPropertyExample.h"
+#include "Engine/GCManager.hpp"
 
 #include "Game.hpp"
 #include "InEngine.h"
@@ -67,15 +67,15 @@ static int common_control_initialize() {
 #endif
 
 static unsigned char font_fz[] = {
-    #include "FZXIANGSU12.ttf.h"
+#include "FZXIANGSU12.ttf.h"
 };
 
 static unsigned char font_silver[] = {
-    #include "Silver.ttf.h"
+#include "Silver.ttf.h"
 };
 
 static unsigned char font_fa[] = {
-    #include "fa_solid_900.ttf.h"
+#include "fa_solid_900.ttf.h"
 };
 
 void MetaEngine::GameUI_Draw(Game *game) {
@@ -422,7 +422,7 @@ int MainMenuUI::state = 0;
 
 bool MainMenuUI::visible = true;
 bool MainMenuUI::setup = false;
-METAENGINE_Render_Image* MainMenuUI::title = nullptr;
+METAENGINE_Render_Image *MainMenuUI::title = nullptr;
 bool MainMenuUI::connectButtonEnabled = false;
 ImVec2 MainMenuUI::pos = ImVec2(0, 0);
 std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI::worlds = {};
@@ -454,7 +454,7 @@ void MainMenuUI::RefreshWorlds(Game *game) {
 void MainMenuUI::Setup() {
 
 
-    SDL_Surface* logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
+    SDL_Surface *logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
     title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
     METAENGINE_Render_SetImageFilter(title, METAENGINE_Render_FILTER_NEAREST);
     SDL_FreeSurface(logoSfc);
@@ -500,11 +500,11 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     }
     pos = ImGui::GetWindowPos();
 
-    ImTextureID texId = (ImTextureID)METAENGINE_Render_GetTextureHandle(title);
+    ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(title);
 
-    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
+    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
     ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
 
     ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
@@ -1595,13 +1595,13 @@ namespace MetaEngine {
 
         float scale = 1.0f;
 
-        void* fonts_1 = METAENGINE_MALLOC(sizeof(font_fz));
-        void* fonts_2 = METAENGINE_MALLOC(sizeof(font_silver));
-        void* fonts_3 = METAENGINE_MALLOC(sizeof(font_fa));
+        void *fonts_1 = METAENGINE_MALLOC(sizeof(font_fz));
+        void *fonts_2 = METAENGINE_MALLOC(sizeof(font_silver));
+        void *fonts_3 = METAENGINE_MALLOC(sizeof(font_fa));
 
-        memcpy(fonts_1, (void *)font_fz, sizeof(font_fz));
-        memcpy(fonts_2, (void *)font_silver, sizeof(font_silver));
-        memcpy(fonts_3, (void *)font_fa, sizeof(font_fa));
+        memcpy(fonts_1, (void *) font_fz, sizeof(font_fz));
+        memcpy(fonts_2, (void *) font_silver, sizeof(font_silver));
+        memcpy(fonts_3, (void *) font_fa, sizeof(font_fa));
 
         io.Fonts->AddFontFromMemoryTTF(fonts_1, sizeof(font_fz), 16.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
@@ -2429,6 +2429,10 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
         if (Settings::ui_inspector) {
             DrawPropertyWindow();
+        }
+
+        if (Settings::ui_gcmanager) {
+            METADOT_GC_DISPLAY(0.3f);
         }
 
 

@@ -45,7 +45,7 @@ Code and documentation https://github.com/cesarl/LiveMemTracer
 #define METADOT_GC_DEBUG_DEV 1
 
 // Disable imgui
-#define METADOT_GC_IMGUI 0
+#define METADOT_GC_IMGUI 1
 
 // Allocation dictionnary max entry
 // ( default : 1024 * 16 )
@@ -76,40 +76,49 @@ Code and documentation https://github.com/cesarl/LiveMemTracer
 
 #if METADOT_GC_ENABLED == 0
 
-#define METADOT_GC_ALLOC(size)::malloc(size)
-#define METADOT_GC_ALLOC_ALIGNED(size, alignment)::malloc(size)
-#define METADOT_GC_DEALLOC(ptr)::free(ptr)
-#define METADOT_GC_DEALLOC_ALIGNED(ptr)::free(ptr)
-#define METADOT_GC_REALLOC(ptr, size)::realloc(ptr, size)
-#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment)::realloc(ptr, size, alignment)
-#define METADOT_GC_DISPLAY(dt)do{}while(0)
-#define METADOT_GC_EXIT()do{}while(0)
-#define METADOT_GC_INIT()do{}while(0)
-#define METADOT_GC_FLUSH()do{}while(0)
+#define METADOT_GC_ALLOC(size) ::malloc(size)
+#define METADOT_GC_ALLOC_ALIGNED(size, alignment) ::malloc(size)
+#define METADOT_GC_DEALLOC(ptr) ::free(ptr)
+#define METADOT_GC_DEALLOC_ALIGNED(ptr) ::free(ptr)
+#define METADOT_GC_REALLOC(ptr, size) ::realloc(ptr, size)
+#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) ::realloc(ptr, size, alignment)
+#define METADOT_GC_DISPLAY(dt) \
+    do {                       \
+    } while (0)
+#define METADOT_GC_EXIT() \
+    do {                  \
+    } while (0)
+#define METADOT_GC_INIT() \
+    do {                  \
+    } while (0)
+#define METADOT_GC_FLUSH() \
+    do {                   \
+    } while (0)
 
-#else //METADOT_GC_ENABLED
+#else//METADOT_GC_ENABLED
 
-#define METADOT_GC_ALLOC(size)::MetaEngine::GCManager::alloc(size)
-#define METADOT_GC_ALLOC_ALIGNED(size, alignment)::MetaEngine::GCManager::allocAligned(size, alignment)
-#define METADOT_GC_DEALLOC(ptr)::MetaEngine::GCManager::dealloc(ptr)
-#define METADOT_GC_DEALLOC_ALIGNED(ptr)::MetaEngine::GCManager::deallocAligned(ptr)
-#define METADOT_GC_REALLOC(ptr, size)::MetaEngine::GCManager::realloc(ptr, size)
-#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment)::MetaEngine::GCManager::reallocAligned(ptr, size, alignment)
-#define METADOT_GC_DISPLAY(dt)::MetaEngine::GCManager::display(dt)
-#define METADOT_GC_EXIT()::MetaEngine::GCManager::exit()
+#define METADOT_GC_ALLOC(size) ::MetaEngine::GCManager::alloc(size)
+#define METADOT_GC_ALLOC_ALIGNED(size, alignment) ::MetaEngine::GCManager::allocAligned(size, alignment)
+#define METADOT_GC_DEALLOC(ptr) ::MetaEngine::GCManager::dealloc(ptr)
+#define METADOT_GC_DEALLOC_ALIGNED(ptr) ::MetaEngine::GCManager::deallocAligned(ptr)
+#define METADOT_GC_REALLOC(ptr, size) ::MetaEngine::GCManager::realloc(ptr, size)
+#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) ::MetaEngine::GCManager::reallocAligned(ptr, size, alignment)
+#define METADOT_GC_DISPLAY(dt) ::MetaEngine::GCManager::display(dt)
+#define METADOT_GC_EXIT() ::MetaEngine::GCManager::exit()
 #define METADOT_GC_INIT() ::MetaEngine::GCManager::init()
-#define METADOT_GC_FLUSH()::MetaEngine::GCManager::getChunk(true)
+#define METADOT_GC_FLUSH() ::MetaEngine::GCManager::getChunk(true)
 
 #ifdef METADOT_GC_IMPL
 
-#include <atomic>
-#include <cstdlib>
 #include <algorithm>
+#include <atomic>
 #include <cassert>
+#include <cstdlib>
+
 
 #ifdef METADOT_GC_PLATFORM_WINDOWS
 #pragma warning(push)
-#pragma warning(disable:4265)
+#pragma warning(disable : 4265)
 #endif
 #include <mutex>
 #ifdef METADOT_GC_PLATFORM_WINDOWS
@@ -144,10 +153,6 @@ Code and documentation https://github.com/cesarl/LiveMemTracer
 #define METADOT_GC_TREE_DICTIONARY_SIZE 1024 * 16 * 16
 #endif
 
-#ifndef METADOT_GC_IMGUI
-#define METADOT_GC_IMGUI 1
-#endif
-
 #ifndef METADOT_GC_ASSERT
 #define METADOT_GC_ASSERT(condition, message, ...) assert(condition)
 #endif
@@ -157,7 +162,9 @@ Code and documentation https://github.com/cesarl/LiveMemTracer
 #endif
 
 #ifndef METADOT_GC_DEBUG_DEV
-#define METADOT_GC_DEBUG_ASSERT(condition, message, ...) do{}while(0)
+#define METADOT_GC_DEBUG_ASSERT(condition, message, ...) \
+    do {                                                 \
+    } while (0)
 #else
 #define METADOT_GC_DEBUG_ASSERT(condition, message, ...) METADOT_GC_ASSERT(condition, message, ##__VA_ARGS__)
 #endif
@@ -170,7 +177,7 @@ static_assert(false, "GCManager is already implemented, do not define METADOT_GC
 
 #endif
 
-#if defined(METADOT_GC_PLATFORM_WINDOWS) 
+#if defined(METADOT_GC_PLATFORM_WINDOWS)
 #undef METADOT_GC_TLS
 #undef METADOT_GC_INLINE
 #define METADOT_GC_TLS __declspec(thread)
@@ -180,35 +187,34 @@ static_assert(false, "GCManager is already implemented, do not define METADOT_GC
 
 #include <cstdint>
 
-namespace MetaEngine::GCManager
-{
-	typedef uint32_t Hash;
+namespace MetaEngine::GCManager {
+    typedef uint32_t Hash;
 
-	METADOT_GC_INLINE void *alloc(size_t size);
-	METADOT_GC_INLINE void *allocAligned(size_t size, size_t alignment);
-	METADOT_GC_INLINE void dealloc(void *ptr);
-	METADOT_GC_INLINE void deallocAligned(void *ptr);
-	METADOT_GC_INLINE void *realloc(void *ptr, size_t size);
-	METADOT_GC_INLINE void *reallocAligned(void *ptr, size_t size, size_t alignment);
-	void exit();
-	void init();
-	void display(float dt);
-	struct Chunk;
-	METADOT_GC_INLINE Chunk *getChunk(bool forceFlush = false);
+    METADOT_GC_INLINE void *alloc(size_t size);
+    METADOT_GC_INLINE void *allocAligned(size_t size, size_t alignment);
+    METADOT_GC_INLINE void dealloc(void *ptr);
+    METADOT_GC_INLINE void deallocAligned(void *ptr);
+    METADOT_GC_INLINE void *realloc(void *ptr, size_t size);
+    METADOT_GC_INLINE void *reallocAligned(void *ptr, size_t size, size_t alignment);
+    void exit();
+    void init();
+    void display(float dt);
+    struct Chunk;
+    METADOT_GC_INLINE Chunk *getChunk(bool forceFlush = false);
 
-	namespace SymbolGetter
-	{
-		void init();
-	}
+    namespace SymbolGetter {
+        void init();
+    }
 #ifdef METADOT_GC_IMPL
-	static const size_t INTERNAL_MAX_STACK_DEPTH = 255;
-	static const size_t INTERNAL_FRAME_TO_SKIP = 2;
-	static const char  *TRUNCATED_STACK_NAME = "Truncated\0";
-	static const char  *UNKNOWN_STACK_NAME = "Unknown\0";
-	static const size_t HISTORY_FRAME_NUMBER = 120;
-	template <class T> METADOT_GC_INLINE Hash combineHash(const T& val, const Hash baseHash = 2166136261U);
-	static uint32_t getCallstack(uint32_t maxStackSize, void **stack, Hash *hash);
+    static const size_t INTERNAL_MAX_STACK_DEPTH = 255;
+    static const size_t INTERNAL_FRAME_TO_SKIP = 2;
+    static const char *TRUNCATED_STACK_NAME = "Truncated\0";
+    static const char *UNKNOWN_STACK_NAME = "Unknown\0";
+    static const size_t HISTORY_FRAME_NUMBER = 120;
+    template<class T>
+    METADOT_GC_INLINE Hash combineHash(const T &val, const Hash baseHash = 2166136261U);
+    static uint32_t getCallstack(uint32_t maxStackSize, void **stack, Hash *hash);
 #endif
-}
+}// namespace MetaEngine::GCManager
 
-#endif // METADOT_GC_ENABLED
+#endif// METADOT_GC_ENABLED

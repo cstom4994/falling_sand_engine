@@ -28,6 +28,7 @@ struct SettingsBase
     static bool ui_tweak;
     static bool ui_code_editor;
     static bool ui_inspector;
+    static bool ui_gcmanager;
 
     static bool draw_shaders;
     static int water_overlay;
@@ -57,5 +58,6 @@ struct Settings : SettingsBase, MetaEngine::properties::properties
         LINK_PROPERTY(ui_tweak, &ui_tweak);
         LINK_PROPERTY(ui_code_editor, &ui_code_editor);
         LINK_PROPERTY(ui_inspector, &ui_inspector);
+        LINK_PROPERTY(ui_gcmanager, &ui_gcmanager);
     }
 };
