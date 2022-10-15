@@ -179,21 +179,19 @@ static_assert(false, "GCManager is already implemented, do not define METADOT_GC
 #undef METADOT_GC_TLS
 #undef METADOT_GC_INLINE
 #define METADOT_GC_TLS __declspec(thread)
-#define METADOT_GC_INLINE __forceinline
+#define METADOT_GC_INLINE inline
 #define METADOT_GC_ATOMIC_INITIALIZER(value) value
 #endif
-
-#include <cstdint>
 
 namespace MetaEngine::GCManager {
     typedef uint32_t Hash;
 
-    METADOT_GC_INLINE void *alloc(size_t size);
-    METADOT_GC_INLINE void *allocAligned(size_t size, size_t alignment);
-    METADOT_GC_INLINE void dealloc(void *ptr);
-    METADOT_GC_INLINE void deallocAligned(void *ptr);
-    METADOT_GC_INLINE void *realloc(void *ptr, size_t size);
-    METADOT_GC_INLINE void *reallocAligned(void *ptr, size_t size, size_t alignment);
+    void *alloc(size_t size);
+    void *allocAligned(size_t size, size_t alignment);
+    void dealloc(void *ptr);
+    void deallocAligned(void *ptr);
+    void *realloc(void *ptr, size_t size);
+    void *reallocAligned(void *ptr, size_t size, size_t alignment);
     void exit();
     void init();
     void display(float dt);

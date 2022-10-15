@@ -206,7 +206,7 @@ METADOT_STRUCT(MarkdownData, data);
 #endif
 
 #ifndef METAENGINE_REALLOC
-#define METAENGINE_REALLOC(p, s) METADOT_GC_REALLOC((void *) (p), (size_t) (s))
+#define METAENGINE_REALLOC(p, s) METADOT_GC_REALLOC(p, s)
 #endif
 
 
