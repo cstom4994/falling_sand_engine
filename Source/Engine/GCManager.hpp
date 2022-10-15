@@ -1,10 +1,8 @@
-/*
-LiveMemTracer
-Code and documentation https://github.com/cesarl/LiveMemTracer
-*/
+// Copyright(c) 2019 - 2022, KaoruXun All rights reserved.
+
+// Hack from https://github.com/cesarl/LiveMemTracer
 
 #pragma once
-
 
 #define METADOT_GC_IMPL 1
 

@@ -224,7 +224,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
 		METADOT_BUG("Compression ratio: {}", (float)compressed_data_size / src_size * 100);
 	}*/
 
-    char *n_compressed_data = (char *) METAENGINE_REALLOC(compressed_data, (size_t) compressed_data_size);
+    char *n_compressed_data = (char *) METAENGINE_REALLOC(compressed_data, compressed_data_size);
     if (n_compressed_data == NULL)
         throw std::runtime_error("Failed to realloc memory for Chunk::write compressed_data.");
     compressed_data = n_compressed_data;

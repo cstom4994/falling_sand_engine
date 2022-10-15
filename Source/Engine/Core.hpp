@@ -34,6 +34,7 @@
 #include <typeinfo>
 #include <vector>
 
+#include "Engine/GCManager.hpp"
 #include "Engine/lib/VisitStruct.hpp"
 
 #include "pprint.hpp"
@@ -193,23 +194,19 @@ METADOT_STRUCT(MarkdownData, data);
 
 #define _METADOT_OVERRIDE_ override
 
-
-#include <cstdio>
-#include <malloc.h>
-
 //--------------------------------------------------------------------------------------------------------------------------------//
 //MEMORY FUNCTIONS USED BY LIBRARY:
 
 #ifndef METAENGINE_MALLOC
-#define METAENGINE_MALLOC(s) malloc((s))
+#define METAENGINE_MALLOC(s) METADOT_GC_ALLOC((s))
 #endif
 
 #ifndef METAENGINE_FREE
-#define METAENGINE_FREE(p) free((p))
+#define METAENGINE_FREE(p) METADOT_GC_DEALLOC((p))
 #endif
 
 #ifndef METAENGINE_REALLOC
-#define METAENGINE_REALLOC(p, s) realloc((p), (s))
+#define METAENGINE_REALLOC(p, s) METADOT_GC_REALLOC((void *) (p), (size_t) (s))
 #endif
 
 
