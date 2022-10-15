@@ -9,7 +9,7 @@
 
 namespace MetaEngine {
 
-#define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(FUtil::exists(stringPath), MetaEngine::Utils::Format("FILE: {} does not exist", stringPath))
+#define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(FUtil::exists(stringPath), MetaEngine::Utils::Format("FILE: {0} does not exist", stringPath))
 
 
     class GameDir {
@@ -33,7 +33,7 @@ namespace MetaEngine {
         inline bool exists(std::string_view path) { return std::filesystem::exists(METADOT_RESLOC(path)); }
 
         //inline void assertFileExists(std::string_view path) {
-        //	ASSERT(FUtil::exists(ND_RESLOC(path)), "FILE: {} does not exist", path);
+        //	ASSERT(FUtil::exists(ND_RESLOC(path)), "FILE: {0} does not exist", path);
         //}
         // folder path of current executable
         const std::string &getExecutableFolderPath();
@@ -164,7 +164,7 @@ extern "C"
     void TracePhysFSError(const char *detail) {
         PHYSFS_ErrorCode errorCode = PHYSFS_getLastErrorCode();
         if (errorCode == PHYSFS_ERR_OK) {
-            METADOT_WARN("PHYSFS: {}", detail);
+            METADOT_WARN("PHYSFS: {0}", detail);
         } else {
             const char *errorMessage = PHYSFS_getErrorByCode(errorCode);
             METADOT_WARN("PHYSFS: {0} ({1})", errorMessage, detail);
@@ -183,7 +183,7 @@ extern "C"
      */
     unsigned char *LoadFileDataFromPhysFS(const char *fileName, unsigned int *bytesRead) {
         if (!FileExistsInPhysFS(fileName)) {
-            METADOT_WARN("PHYSFS: Tried to load unexisting file {}", fileName);
+            METADOT_WARN("PHYSFS: Tried to load unexisting file {0}", fileName);
             *bytesRead = 0;
             return 0;
         }
@@ -201,7 +201,7 @@ extern "C"
         if (size == -1) {
             *bytesRead = 0;
             PHYSFS_close(handle);
-            METADOT_WARN("PHYSFS: Cannot determine size of file {}", fileName);
+            METADOT_WARN("PHYSFS: Cannot determine size of file {0}", fileName);
             return 0;
         }
 
@@ -276,7 +276,7 @@ extern "C"
             return false;
         }
 
-        METADOT_TRACE("PHYSFS: Mounted {} at {}", newDir, mountPoint);
+        METADOT_TRACE("PHYSFS: Mounted {0} at {1}", newDir, mountPoint);
         return true;
     }
 
@@ -303,7 +303,7 @@ extern "C"
             return false;
         }
 
-        METADOT_TRACE("PHYSFS: Mounted memory {} at {}", newDir, mountPoint);
+        METADOT_TRACE("PHYSFS: Mounted memory {0} at {1}", newDir, mountPoint);
         return true;
     }
 
@@ -318,11 +318,11 @@ extern "C"
      */
     bool UnmountPhysFS(const char *oldDir) {
         if (PHYSFS_unmount(oldDir) == 0) {
-            METADOT_WARN("PHYSFS: Failed to unmount directory {}", oldDir);
+            METADOT_WARN("PHYSFS: Failed to unmount directory {0}", oldDir);
             return false;
         }
 
-        METADOT_TRACE("PHYSFS: Unmounted {}", oldDir);
+        METADOT_TRACE("PHYSFS: Unmounted {0}", oldDir);
         return true;
     }
 
@@ -446,7 +446,7 @@ extern "C"
     char **GetDirectoryFilesFromPhysFS(const char *dirPath, int *count) {
         // Make sure the directory exists.
         if (!DirectoryExistsInPhysFS(dirPath)) {
-            METADOT_WARN("PHYSFS: Can't get files from non-existant directory ({})", dirPath);
+            METADOT_WARN("PHYSFS: Can't get files from non-existant directory ({0})", dirPath);
             return 0;
         }
 
@@ -487,7 +487,7 @@ extern "C"
     long GetFileModTimeFromPhysFS(const char *fileName) {
         PHYSFS_Stat stat;
         if (PHYSFS_stat(fileName, &stat) == 0) {
-            METADOT_WARN("PHYSFS: Cannot get mod time of file ({})", fileName);
+            METADOT_WARN("PHYSFS: Cannot get mod time of file ({0})", fileName);
             return -1;
         }
 
@@ -523,7 +523,7 @@ extern "C"
             TracePhysFSError("Failed to get perf directory");
             return 0;
         }
-        METADOT_TRACE("PHYSFS: Perf Directory: {}", output);
+        METADOT_TRACE("PHYSFS: Perf Directory: {0}", output);
         return output;
     }
 

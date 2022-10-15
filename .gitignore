@@ -93,6 +93,7 @@ ipch/
 *.VC.VC.opendb
 obj/
 bin/
+vsxmake*/
 
 # Visual Studio profiler
 *.psess
