@@ -1520,6 +1520,7 @@ int Game::run(int argc, char *argv[]) {
                     ImGui::Checkbox("脚本编辑器", &Settings::ui_code_editor);
                     ImGui::Checkbox("Inspector", &Settings::ui_inspector);
                     ImGui::Checkbox("内存监测", &Settings::ui_gcmanager);
+                    ImGui::Checkbox("控制台", &Settings::ui_console);
                     ImGui::EndMenu();
                 }
 
@@ -1543,7 +1544,10 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::Text("  Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
 
                 ImGui::End();
+            }
 
+            if (Settings::ui_console)
+            {
                 MetaEngine::terminal_log.show();
             }
 

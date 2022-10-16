@@ -23,6 +23,7 @@ bool SettingsBase::ui_tweak = false;
 bool SettingsBase::ui_code_editor = false;
 bool SettingsBase::ui_inspector = false;
 bool SettingsBase::ui_gcmanager = false;
+bool SettingsBase::ui_console = false;
 
 bool SettingsBase::draw_shaders = true;
 int SettingsBase::water_overlay = 0;
