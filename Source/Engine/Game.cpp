@@ -21,11 +21,11 @@
 #include "Engine/GCManager.hpp"
 #include "Engine/ImGuiBase.h"
 #include "Engine/ImGuiTerminal.hpp"
+#include "Engine/Console.hpp"
 #include "Engine/Macros.hpp"
 #include "Engine/ModuleStack.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
-
 
 
 #include "Engine/FileSystem.hpp"
@@ -65,6 +65,10 @@ extern void testDukpp();
 
 namespace MetaEngine {
     cr_plugin ctx;
+
+    custom_command_struct cmd_struct;// terminal commands can interact with this structure
+    ImTerm::terminal<terminal_commands> terminal_log(cmd_struct);
+    //terminal_log.set_min_log_level(ImTerm::message::severity::info);
 }
 
 HostData Game::data;
@@ -1540,7 +1544,7 @@ int Game::run(int argc, char *argv[]) {
 
                 ImGui::End();
 
-                //MetaEngine::terminal_log.show();
+                MetaEngine::terminal_log.show();
             }
 
             if (Settings::draw_material_info && !ImGui::GetIO().WantCaptureMouse) {

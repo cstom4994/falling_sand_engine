@@ -492,8 +492,8 @@ void MainMenuUI::DrawMainMenu(Game *game) {
         lastRefresh = now;
     }
 
-    ImGui::SetNextWindowSize(ImVec2(400, 300));
-    ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 400 / 2, game->HEIGHT / 2 - 300 / 2), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(400, 350));
+    ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 400 / 2, game->HEIGHT / 2 - 350 / 2), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
@@ -1595,9 +1595,10 @@ namespace MetaEngine {
 
         float scale = 1.0f;
 
-        void *fonts_1 = METAENGINE_MALLOC(sizeof(font_fz));
-        void *fonts_2 = METAENGINE_MALLOC(sizeof(font_silver));
-        void *fonts_3 = METAENGINE_MALLOC(sizeof(font_fa));
+        // Using cstd malloc because imgui will use default delete to destruct fonts' data
+        void *fonts_1 = malloc(sizeof(font_fz));
+        void *fonts_2 = malloc(sizeof(font_silver));
+        void *fonts_3 = malloc(sizeof(font_fa));
 
         memcpy(fonts_1, (void *) font_fz, sizeof(font_fz));
         memcpy(fonts_2, (void *) font_silver, sizeof(font_silver));

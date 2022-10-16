@@ -44,6 +44,7 @@
 
 #include "Engine/FileSystem.hpp"
 #include "Engine/ImGuiLayer.hpp"
+#include "Engine/ImGuiTerminal.hpp"
 
 #include "Shared/Interface.hpp"
 
@@ -69,7 +70,6 @@ enum WindowFlashAction {
     START_UNTIL_FG,
     STOP
 };
-
 
 class Game {
 public:

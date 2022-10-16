@@ -25,6 +25,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <algorithm>
 
 namespace misc {
 
@@ -698,7 +699,7 @@ namespace ImTerm {
         void clear();
 
         message::severity::severity_t log_level() noexcept {
-            return (message::severity::severity_t)m_level + m_lowest_log_level_val;
+            return (message::severity::severity_t) m_level + m_lowest_log_level_val;
         }
 
         void log_level(message::severity::severity_t new_level) noexcept {
