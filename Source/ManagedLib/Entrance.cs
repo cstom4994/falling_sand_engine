@@ -17,6 +17,7 @@ namespace ManagedLib
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("----- Entrance Method Called! -----");
+            Console.WriteLine($"Using MetaDot native {payload.nativeGetVersion()}");
             Console.ForegroundColor = ConsoleColor.White;
 
             Component.InitDelegates(payload);
@@ -49,5 +50,6 @@ namespace ManagedLib
         public delegate* unmanaged<IntPtr, int> nativeComponentGetId;
         public delegate* unmanaged<IntPtr, IntPtr, void> nativeComponentSetTag;
         public delegate* unmanaged<IntPtr, IntPtr> nativeComponentGetTag;
+        public delegate* unmanaged<int> nativeGetVersion;
     }
 }

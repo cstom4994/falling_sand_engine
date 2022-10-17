@@ -134,6 +134,11 @@ const wchar_t* nativeComponentGetTag(Component* component)
     return component->tag;
 }
 
+int nativeGetVersion()
+{
+    return 1001;
+}
+
 struct InitPayload
 {
     Component* (*nativeComponentNew)(int id, const wchar_t* tag);
@@ -142,6 +147,8 @@ struct InitPayload
     int (*nativeComponentGetId)(Component* component);
     void (*nativeComponentSetTag)(Component* component, const wchar_t* tag);
     const wchar_t* (*nativeComponentGetTag)(Component* component);
+
+    int (*nativeGetVersion)(void);
 };
 
 void cleanUp()
@@ -192,7 +199,8 @@ void test()
         nativeComponentSetId,
         nativeComponentGetId,
         nativeComponentSetTag,
-        nativeComponentGetTag
+        nativeComponentGetTag,
+        nativeGetVersion
     };
 
     Init(payload);

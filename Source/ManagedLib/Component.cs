@@ -18,6 +18,7 @@ namespace ManagedLib
         private static delegate* unmanaged<IntPtr, int> nativeComponentGetId;
         private static delegate* unmanaged<IntPtr, IntPtr, void> nativeComponentSetTag;
         private static delegate* unmanaged<IntPtr, IntPtr> nativeComponentGetTag;
+        private static delegate* unmanaged<int> nativeGetVersion;
 
         private bool disposedValue;
 
@@ -50,6 +51,7 @@ namespace ManagedLib
             nativeComponentGetId = payload.nativeComponentGetId;
             nativeComponentSetTag = payload.nativeComponentSetTag;
             nativeComponentGetTag = payload.nativeComponentGetTag;
+            nativeGetVersion = payload.nativeGetVersion;
         }
 
         protected virtual void Dispose(bool disposing)
