@@ -42,9 +42,11 @@
 
 #include "DebugImpl.hpp"
 
+#include "Engine/Console.hpp"
 #include "Engine/FileSystem.hpp"
 #include "Engine/ImGuiLayer.hpp"
 #include "Engine/ImGuiTerminal.hpp"
+
 
 #include "Shared/Interface.hpp"
 
@@ -82,6 +84,8 @@ public:
     Client *client = nullptr;
     Server *server = nullptr;
 
+    custom_command_struct cmd_struct;
+    ImTerm::terminal<terminal_commands> *terminal_log;
     static HostData data;
 
     bool steamAPI = false;

@@ -248,8 +248,6 @@ namespace MetaEngine {
 #define METADOT_WARN(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
 #define METADOT_ERROR(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
 #define METADOT_PPRINT(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-#define METADOT_WAIT_FOR_INPUT std::cin.get()
-
 
     template<class T>
     using Ref = std::shared_ptr<T>;

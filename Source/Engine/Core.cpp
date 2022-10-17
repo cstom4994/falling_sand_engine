@@ -74,22 +74,6 @@ namespace MetaEngine {
             return;
         noInit = false;
 
-        //s_CoreLoggerSinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-        //s_CoreLoggerSinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>("log.txt", 1048576 * 1, 1, true));
-        //s_CoreLoggerSinks[1]->set_level(spdlog::level::trace);
-
-        // pattern formatting https://github.com/gabime/spdlog/wiki/3.-Custom-formatting
-
-        //s_CoreLoggerSinks[0]->set_pattern("[%-20s] %^[%T] %l: %v%$");
-        //s_CoreLoggerSinks[1]->set_pattern("[%-20s] %^[%T] %l: %v%$");
-
-        //s_CoreLogger = std::make_shared<spdlog::logger>("MetaDot", begin(s_CoreLoggerSinks), end(s_CoreLoggerSinks));
-        //s_CoreLogger->set_level(spdlog::level::trace);
-        //s_CoreLogger->flush_on(spdlog::level::trace);
-
-        //register it if you need to access it globally
-        //spdlog::register_logger(s_CoreLogger);
-
         METADOT_INFO("Logging Start");
     }
 
