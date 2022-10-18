@@ -42,7 +42,7 @@ namespace MetaEngine {
     {
         bindBasic(state);
 
-        sol_ImGui::Init(state);
+        MetaEngine::LuaBinder::ImGuiWarp::Init(state);
 
     }
 
