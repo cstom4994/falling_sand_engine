@@ -69,7 +69,8 @@ include_dir_list = {
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
-    "Source/Vendor/coreclr"
+    "Source/Vendor/coreclr",
+    "Source/Vendor/fmt/include"
     }
 
 defines_list = {
@@ -111,7 +112,9 @@ target("vendor")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Vendor/**.c")
+    add_files("Source/Vendor/**.cc")
     add_files("Source/Vendor/**.cpp")
+    remove_files("Source/Vendor/fmt/src/fmt.cc")
 	add_headerfiles("Source/Vendor/**.h")
 	add_headerfiles("Source/Vendor/**.hpp")
     set_symbols("debug")
