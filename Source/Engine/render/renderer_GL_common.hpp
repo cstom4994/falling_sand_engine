@@ -1386,7 +1386,7 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     cdata->last_depth_write = true;
 
 #ifdef RENDERER_RHI_USE_OPENGL
-    if (!gladLoadGL()) {
+    if (!fglLoadOpenGL(true)) {
         // Probably don't have the right GL version for this renderer
         METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to initialize extensions for renderer %s.", renderer->id.name);
         target->context->failed = true;

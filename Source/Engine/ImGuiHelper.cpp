@@ -673,7 +673,7 @@ void ImMarkdown::soft_break() {
    author: TOGURO Mikito , mit@shalab.net
 */
 
-#if defined (_METADOT_IMM32)
+#if defined(_METADOT_IMM32)
 
 #include <commctrl.h>
 #include <tchar.h>
@@ -1217,7 +1217,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
         }// end of WM_IME_COMPOSITION
 
 #if defined(UNICODE)
-        // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
+            // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
             // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
 #else

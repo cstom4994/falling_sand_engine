@@ -429,7 +429,7 @@ namespace imgex {
 
 #endif /* defined( _WIN32 ) */
 
-#if defined (_WIN32)
+#if defined(_WIN32)
 
 struct ImGUIIMMCommunication
 {
@@ -478,7 +478,7 @@ struct ImGUIIMMCommunication
             list_utf8.clear();
             selection = 0;
         }
-        #
+#
         static IMMCandidateList cocreate(const CANDIDATELIST *const src, const size_t src_size);
     };
 

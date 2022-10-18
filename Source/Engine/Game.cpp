@@ -27,9 +27,9 @@
 
 
 #include "Engine/FileSystem.hpp"
+#include "Engine/lib/final_dynamic_opengl.h"
 
 
-#include <glad/glad.h>
 #include <imgui/IconsFontAwesome5.h>
 #include <string.h>
 
@@ -383,7 +383,7 @@ int Game::init(int argc, char *argv[]) {
 
         SDL_GL_MakeCurrent(window, gl_context);
 
-        if (!gladLoadGL()) {
+        if (!fglLoadOpenGL(true)) {
             std::cout << "Failed to initialize OpenGL loader!" << std::endl;
             return EXIT_FAILURE;
         }
@@ -458,7 +458,7 @@ int Game::init(int argc, char *argv[]) {
 
         MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
         MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
-        
+
         this->data.Functions.insert(std::make_pair("func1", func1));
         this->data.Functions.insert(std::make_pair("func2", func2));
 
@@ -1755,6 +1755,8 @@ exit:
     delete terminal_log;
 
     running = false;
+
+    fglUnloadOpenGL();
 
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);

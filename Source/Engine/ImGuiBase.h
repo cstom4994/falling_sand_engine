@@ -9,7 +9,7 @@
 #endif
 #include "imgui_internal.h"
 
-#if defined (_WIN32)
+#if defined(_WIN32)
 #define _METADOT_IMM32
 #else
 #include <sys/stat.h>
