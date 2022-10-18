@@ -7,8 +7,8 @@
 #include <cmath>// Must be included before SDL.h, otherwise both try to define M_PI and we get a warning
 
 #include <SDL.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 
 
 #include "Engine/Core.hpp"

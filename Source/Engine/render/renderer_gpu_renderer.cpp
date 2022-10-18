@@ -9,9 +9,9 @@
 #else
 #define __func__ __FUNCTION__
 // Disable warning: selection for inlining
-#pragma warning(disable: 4514 4711)
+#pragma warning(disable : 4514 4711)
 // Disable warning: Spectre mitigation
-#pragma warning(disable: 5045)
+#pragma warning(disable : 5045)
 #endif
 
 #define METAENGINE_Render_MAX_ACTIVE_RENDERERS 2
@@ -23,57 +23,47 @@ void gpu_free_renderer_register(void);
 typedef struct METAENGINE_Render_RendererRegistration
 {
     METAENGINE_Render_RendererID id;
-    METAENGINE_Render_Renderer* (*createFn)(METAENGINE_Render_RendererID request);
-    void (*freeFn)(METAENGINE_Render_Renderer*);
+    METAENGINE_Render_Renderer *(*createFn)(METAENGINE_Render_RendererID request);
+    void (*freeFn)(METAENGINE_Render_Renderer *);
 } METAENGINE_Render_RendererRegistration;
 
 static bool _gpu_renderer_register_is_initialized = false;
 
-static METAENGINE_Render_Renderer* _gpu_renderer_map[METAENGINE_Render_MAX_ACTIVE_RENDERERS];
+static METAENGINE_Render_Renderer *_gpu_renderer_map[METAENGINE_Render_MAX_ACTIVE_RENDERERS];
 static METAENGINE_Render_RendererRegistration _gpu_renderer_register[METAENGINE_Render_MAX_REGISTERED_RENDERERS];
 
 static int _gpu_renderer_order_size = 0;
 static METAENGINE_Render_RendererID _gpu_renderer_order[METAENGINE_Render_RENDERER_ORDER_MAX];
 
 
-
-
-
-
-METAENGINE_Render_RendererEnum METAENGINE_Render_ReserveNextRendererEnum(void)
-{
+METAENGINE_Render_RendererEnum METAENGINE_Render_ReserveNextRendererEnum(void) {
     static METAENGINE_Render_RendererEnum last_enum = METAENGINE_Render_RENDERER_CUSTOM_0;
     return last_enum++;
 }
 
-int METAENGINE_Render_GetNumActiveRenderers(void)
-{
+int METAENGINE_Render_GetNumActiveRenderers(void) {
     int count;
     int i;
 
     gpu_init_renderer_register();
 
     count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
         if (_gpu_renderer_map[i] != NULL)
             count++;
     }
     return count;
 }
 
-void METAENGINE_Render_GetActiveRendererList(METAENGINE_Render_RendererID* renderers_array)
-{
+void METAENGINE_Render_GetActiveRendererList(METAENGINE_Render_RendererID *renderers_array) {
     int count;
     int i;
 
     gpu_init_renderer_register();
 
     count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
-        if (_gpu_renderer_map[i] != NULL)
-        {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
+        if (_gpu_renderer_map[i] != NULL) {
             renderers_array[count] = _gpu_renderer_map[i]->id;
             count++;
         }
@@ -81,34 +71,29 @@ void METAENGINE_Render_GetActiveRendererList(METAENGINE_Render_RendererID* rende
 }
 
 
-int METAENGINE_Render_GetNumRegisteredRenderers(void)
-{
+int METAENGINE_Render_GetNumRegisteredRenderers(void) {
     int count;
     int i;
 
     gpu_init_renderer_register();
 
     count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
         if (_gpu_renderer_register[i].id.renderer != METAENGINE_Render_RENDERER_UNKNOWN)
             count++;
     }
     return count;
 }
 
-void METAENGINE_Render_GetRegisteredRendererList(METAENGINE_Render_RendererID* renderers_array)
-{
+void METAENGINE_Render_GetRegisteredRendererList(METAENGINE_Render_RendererID *renderers_array) {
     int count;
     int i;
 
     gpu_init_renderer_register();
 
     count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
-        if (_gpu_renderer_register[i].id.renderer != METAENGINE_Render_RENDERER_UNKNOWN)
-        {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
+        if (_gpu_renderer_register[i].id.renderer != METAENGINE_Render_RENDERER_UNKNOWN) {
             renderers_array[count] = _gpu_renderer_register[i].id;
             count++;
         }
@@ -116,14 +101,12 @@ void METAENGINE_Render_GetRegisteredRendererList(METAENGINE_Render_RendererID* r
 }
 
 
-METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(METAENGINE_Render_RendererEnum renderer)
-{
+METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(METAENGINE_Render_RendererEnum renderer) {
     int i;
 
     gpu_init_renderer_register();
 
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
         if (_gpu_renderer_register[i].id.renderer == renderer)
             return _gpu_renderer_register[i].id;
     }
@@ -131,28 +114,24 @@ METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(METAENGINE_Render_R
     return METAENGINE_Render_MakeRendererID("Unknown", METAENGINE_Render_RENDERER_UNKNOWN, 0, 0);
 }
 
-METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer_OpenGL_4(METAENGINE_Render_RendererID request);
-void METAENGINE_Render_FreeRenderer_OpenGL_4(METAENGINE_Render_Renderer* renderer);
+METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_4(METAENGINE_Render_RendererID request);
+void METAENGINE_Render_FreeRenderer_OpenGL_4(METAENGINE_Render_Renderer *renderer);
 
-void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENGINE_Render_Renderer* (*create_renderer)(METAENGINE_Render_RendererID request), void (*free_renderer)(METAENGINE_Render_Renderer* renderer))
-{
+void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENGINE_Render_Renderer *(*create_renderer)(METAENGINE_Render_RendererID request), void (*free_renderer)(METAENGINE_Render_Renderer *renderer)) {
     int i = METAENGINE_Render_GetNumRegisteredRenderers();
 
     if (i >= METAENGINE_Render_MAX_REGISTERED_RENDERERS)
         return;
 
-    if (id.renderer == METAENGINE_Render_RENDERER_UNKNOWN)
-    {
+    if (id.renderer == METAENGINE_Render_RENDERER_UNKNOWN) {
         METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_USER_ERROR, "Invalid renderer ID");
         return;
     }
-    if (create_renderer == NULL)
-    {
+    if (create_renderer == NULL) {
         METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_USER_ERROR, "NULL renderer create callback");
         return;
     }
-    if (free_renderer == NULL)
-    {
+    if (free_renderer == NULL) {
         METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_USER_ERROR, "NULL renderer free callback");
         return;
     }
@@ -162,30 +141,25 @@ void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENG
     _gpu_renderer_register[i].freeFn = free_renderer;
 }
 
-void gpu_register_built_in_renderers(void)
-{
+void gpu_register_built_in_renderers(void) {
     METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 4", METAENGINE_Render_RENDERER_OPENGL_4, 4, 0),
-        &METAENGINE_Render_CreateRenderer_OpenGL_4,
-        &METAENGINE_Render_FreeRenderer_OpenGL_4);
-
+                                       &METAENGINE_Render_CreateRenderer_OpenGL_4,
+                                       &METAENGINE_Render_FreeRenderer_OpenGL_4);
 }
 
-void gpu_init_renderer_register(void)
-{
+void gpu_init_renderer_register(void) {
     int i;
 
     if (_gpu_renderer_register_is_initialized)
         return;
 
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
         _gpu_renderer_register[i].id.name = "Unknown";
         _gpu_renderer_register[i].id.renderer = METAENGINE_Render_RENDERER_UNKNOWN;
         _gpu_renderer_register[i].createFn = NULL;
         _gpu_renderer_register[i].freeFn = NULL;
     }
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
         _gpu_renderer_map[i] = NULL;
     }
 
@@ -196,19 +170,16 @@ void gpu_init_renderer_register(void)
     gpu_register_built_in_renderers();
 }
 
-void gpu_free_renderer_register(void)
-{
+void gpu_free_renderer_register(void) {
     int i;
 
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
         _gpu_renderer_register[i].id.name = "Unknown";
         _gpu_renderer_register[i].id.renderer = METAENGINE_Render_RENDERER_UNKNOWN;
         _gpu_renderer_register[i].createFn = NULL;
         _gpu_renderer_register[i].freeFn = NULL;
     }
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
         _gpu_renderer_map[i] = NULL;
     }
 
@@ -217,8 +188,7 @@ void gpu_free_renderer_register(void)
 }
 
 
-void METAENGINE_Render_GetRendererOrder(int* order_size, METAENGINE_Render_RendererID* order)
-{
+void METAENGINE_Render_GetRendererOrder(int *order_size, METAENGINE_Render_RendererID *order) {
     if (order_size != NULL)
         *order_size = _gpu_renderer_order_size;
 
@@ -226,23 +196,20 @@ void METAENGINE_Render_GetRendererOrder(int* order_size, METAENGINE_Render_Rende
         memcpy(order, _gpu_renderer_order, _gpu_renderer_order_size * sizeof(METAENGINE_Render_RendererID));
 }
 
-void METAENGINE_Render_SetRendererOrder(int order_size, METAENGINE_Render_RendererID* order)
-{
-    if (order == NULL)
-    {
+void METAENGINE_Render_SetRendererOrder(int order_size, METAENGINE_Render_RendererID *order) {
+    if (order == NULL) {
         // Restore the default order
         int count = 0;
         METAENGINE_Render_RendererID default_order[METAENGINE_Render_RENDERER_ORDER_MAX];
         METAENGINE_Render_GetDefaultRendererOrder(&count, default_order);
-        METAENGINE_Render_SetRendererOrder(count, default_order);  // Call us again with the default order
+        METAENGINE_Render_SetRendererOrder(count, default_order);// Call us again with the default order
         return;
     }
 
     if (order_size <= 0)
         return;
 
-    if (order_size > METAENGINE_Render_RENDERER_ORDER_MAX)
-    {
+    if (order_size > METAENGINE_Render_RENDERER_ORDER_MAX) {
         METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_USER_ERROR, "Given order_size (%d) is greater than METAENGINE_Render_RENDERER_ORDER_MAX (%d)", order_size, METAENGINE_Render_RENDERER_ORDER_MAX);
         order_size = METAENGINE_Render_RENDERER_ORDER_MAX;
     }
@@ -252,9 +219,7 @@ void METAENGINE_Render_SetRendererOrder(int order_size, METAENGINE_Render_Render
 }
 
 
-
-void METAENGINE_Render_GetDefaultRendererOrder(int* order_size, METAENGINE_Render_RendererID* order)
-{
+void METAENGINE_Render_GetDefaultRendererOrder(int *order_size, METAENGINE_Render_RendererID *order) {
     int count = 0;
     METAENGINE_Render_RendererID default_order[METAENGINE_Render_RENDERER_ORDER_MAX];
 
@@ -274,19 +239,15 @@ void METAENGINE_Render_GetDefaultRendererOrder(int* order_size, METAENGINE_Rende
 }
 
 
-METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer(METAENGINE_Render_RendererID id)
-{
-    METAENGINE_Render_Renderer* result = NULL;
+METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer(METAENGINE_Render_RendererID id) {
+    METAENGINE_Render_Renderer *result = NULL;
     int i;
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
         if (_gpu_renderer_register[i].id.renderer == METAENGINE_Render_RENDERER_UNKNOWN)
             continue;
 
-        if (id.renderer == _gpu_renderer_register[i].id.renderer)
-        {
-            if (_gpu_renderer_register[i].createFn != NULL)
-            {
+        if (id.renderer == _gpu_renderer_register[i].id.renderer) {
+            if (_gpu_renderer_register[i].createFn != NULL) {
                 // Use the registered name
                 id.name = _gpu_renderer_register[i].id.name;
                 result = _gpu_renderer_register[i].createFn(id);
@@ -295,16 +256,14 @@ METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer(METAENGINE_Render_R
         }
     }
 
-    if (result == NULL)
-    {
+    if (result == NULL) {
         METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR, "Renderer was not found in the renderer registry.");
     }
     return result;
 }
 
 // Get a renderer from the map.
-METAENGINE_Render_Renderer* METAENGINE_Render_GetRenderer(METAENGINE_Render_RendererID id)
-{
+METAENGINE_Render_Renderer *METAENGINE_Render_GetRenderer(METAENGINE_Render_RendererID id) {
     int i;
     gpu_init_renderer_register();
 
@@ -312,8 +271,7 @@ METAENGINE_Render_Renderer* METAENGINE_Render_GetRenderer(METAENGINE_Render_Rend
     if (id.renderer == METAENGINE_Render_RENDERER_UNKNOWN)
         return NULL;
 
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
         if (_gpu_renderer_map[i] == NULL)
             continue;
 
@@ -325,17 +283,13 @@ METAENGINE_Render_Renderer* METAENGINE_Render_GetRenderer(METAENGINE_Render_Rend
 }
 
 // Create a new renderer based on a registered id and store it in the map.
-METAENGINE_Render_Renderer* gpu_create_and_add_renderer(METAENGINE_Render_RendererID id)
-{
+METAENGINE_Render_Renderer *gpu_create_and_add_renderer(METAENGINE_Render_RendererID id) {
     int i;
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
-        if (_gpu_renderer_map[i] == NULL)
-        {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
+        if (_gpu_renderer_map[i] == NULL) {
             // Create
-            METAENGINE_Render_Renderer* renderer = METAENGINE_Render_CreateRenderer(id);
-            if (renderer == NULL)
-            {
+            METAENGINE_Render_Renderer *renderer = METAENGINE_Render_CreateRenderer(id);
+            if (renderer == NULL) {
                 METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create new renderer.");
                 return NULL;
             }
@@ -352,19 +306,16 @@ METAENGINE_Render_Renderer* gpu_create_and_add_renderer(METAENGINE_Render_Render
 }
 
 // Free renderer memory according to how the registry instructs
-void gpu_free_renderer_memory(METAENGINE_Render_Renderer* renderer)
-{
+void gpu_free_renderer_memory(METAENGINE_Render_Renderer *renderer) {
     int i;
     if (renderer == NULL)
         return;
 
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++)
-    {
+    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
         if (_gpu_renderer_register[i].id.renderer == METAENGINE_Render_RENDERER_UNKNOWN)
             continue;
 
-        if (renderer->id.renderer == _gpu_renderer_register[i].id.renderer)
-        {
+        if (renderer->id.renderer == _gpu_renderer_register[i].id.renderer) {
             _gpu_renderer_register[i].freeFn(renderer);
             return;
         }
@@ -372,10 +323,9 @@ void gpu_free_renderer_memory(METAENGINE_Render_Renderer* renderer)
 }
 
 // Remove a renderer from the active map and free it.
-void METAENGINE_Render_FreeRenderer(METAENGINE_Render_Renderer* renderer)
-{
+void METAENGINE_Render_FreeRenderer(METAENGINE_Render_Renderer *renderer) {
     int i;
-    METAENGINE_Render_Renderer* current_renderer;
+    METAENGINE_Render_Renderer *current_renderer;
 
     if (renderer == NULL)
         return;
@@ -384,10 +334,8 @@ void METAENGINE_Render_FreeRenderer(METAENGINE_Render_Renderer* renderer)
     if (current_renderer == renderer)
         METAENGINE_Render_SetCurrentRenderer(METAENGINE_Render_MakeRendererID("Unknown", METAENGINE_Render_RENDERER_UNKNOWN, 0, 0));
 
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++)
-    {
-        if (renderer == _gpu_renderer_map[i])
-        {
+    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
+        if (renderer == _gpu_renderer_map[i]) {
             gpu_free_renderer_memory(renderer);
             _gpu_renderer_map[i] = NULL;
             return;

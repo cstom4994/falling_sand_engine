@@ -2,7 +2,6 @@
 #include "renderer_gpu_RendererImpl.h"
 
 
-
 // Most of the code pulled in from here...
 #define RENDERER_RHI_USE_OPENGL
 #define RENDERER_RHI_USE_BUFFER_PIPELINE
@@ -16,113 +15,84 @@
 #include "renderer_GL_common.hpp"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // All shapes start this way for setup and so they can access the blit buffer properly
-#define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices) \
-	METAENGINE_Render_CONTEXT_DATA* cdata; \
-	float* blit_buffer; \
-	unsigned short* index_buffer; \
-	int vert_index; \
-	int color_index; \
-	float r, g, b, a; \
-	unsigned short blit_buffer_starting_index; \
-    if(target == NULL) \
-    { \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_NULL_ARGUMENT, "target"); \
-        return; \
-    } \
-    if(renderer != target->renderer) \
-    { \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer"); \
-        return; \
-    } \
-     \
-    makeContextCurrent(renderer, target); \
-    if(renderer->current_context_target == NULL) \
-    { \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR, "NULL context"); \
-        return; \
-    } \
-     \
-    if(!SetActiveTarget(renderer, target)) \
-    { \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind framebuffer."); \
-        return; \
-    } \
-     \
-    prepareToRenderToTarget(renderer, target); \
-    prepareToRenderShapes(renderer, shape); \
-     \
-    cdata = (METAENGINE_Render_CONTEXT_DATA*)renderer->current_context_target->context->data; \
-     \
-    if(cdata->blit_buffer_num_vertices + (num_additional_vertices) >= cdata->blit_buffer_max_num_vertices) \
-    { \
-        if(!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + (num_additional_vertices))) \
-            renderer->impl->FlushBlitBuffer(renderer); \
-    } \
-    if(cdata->index_buffer_num_vertices + (num_additional_indices) >= cdata->index_buffer_max_num_vertices) \
-    { \
-        if(!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + (num_additional_indices))) \
-            renderer->impl->FlushBlitBuffer(renderer); \
-    } \
-     \
-    blit_buffer = cdata->blit_buffer; \
-    index_buffer = cdata->index_buffer; \
-     \
-    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices*METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
-    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices*METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
-     \
-    if(target->use_color) \
-    { \
-        r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, color.r); \
-        g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, color.g); \
-        b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, color.b); \
-        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(color)); \
-    } \
-    else \
-    { \
-        r = color.r/255.0f; \
-        g = color.g/255.0f; \
-        b = color.b/255.0f; \
-        a = GET_ALPHA(color)/255.0f; \
-    } \
-    blit_buffer_starting_index = cdata->blit_buffer_num_vertices; \
-    (void)blit_buffer_starting_index;
-
+#define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices)                                                   \
+    METAENGINE_Render_CONTEXT_DATA *cdata;                                                                                                        \
+    float *blit_buffer;                                                                                                                           \
+    unsigned short *index_buffer;                                                                                                                 \
+    int vert_index;                                                                                                                               \
+    int color_index;                                                                                                                              \
+    float r, g, b, a;                                                                                                                             \
+    unsigned short blit_buffer_starting_index;                                                                                                    \
+    if (target == NULL) {                                                                                                                         \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");                                          \
+        return;                                                                                                                                   \
+    }                                                                                                                                             \
+    if (renderer != target->renderer) {                                                                                                           \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");                                \
+        return;                                                                                                                                   \
+    }                                                                                                                                             \
+                                                                                                                                                  \
+    makeContextCurrent(renderer, target);                                                                                                         \
+    if (renderer->current_context_target == NULL) {                                                                                               \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR, "NULL context");                                       \
+        return;                                                                                                                                   \
+    }                                                                                                                                             \
+                                                                                                                                                  \
+    if (!SetActiveTarget(renderer, target)) {                                                                                                     \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");                     \
+        return;                                                                                                                                   \
+    }                                                                                                                                             \
+                                                                                                                                                  \
+    prepareToRenderToTarget(renderer, target);                                                                                                    \
+    prepareToRenderShapes(renderer, shape);                                                                                                       \
+                                                                                                                                                  \
+    cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;                                                   \
+                                                                                                                                                  \
+    if (cdata->blit_buffer_num_vertices + (num_additional_vertices) >= cdata->blit_buffer_max_num_vertices) {                                     \
+        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + (num_additional_vertices)))                                                  \
+            renderer->impl->FlushBlitBuffer(renderer);                                                                                            \
+    }                                                                                                                                             \
+    if (cdata->index_buffer_num_vertices + (num_additional_indices) >= cdata->index_buffer_max_num_vertices) {                                    \
+        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + (num_additional_indices)))                                                 \
+            renderer->impl->FlushBlitBuffer(renderer);                                                                                            \
+    }                                                                                                                                             \
+                                                                                                                                                  \
+    blit_buffer = cdata->blit_buffer;                                                                                                             \
+    index_buffer = cdata->index_buffer;                                                                                                           \
+                                                                                                                                                  \
+    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
+    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
+                                                                                                                                                  \
+    if (target->use_color) {                                                                                                                      \
+        r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, color.r);                                                                      \
+        g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, color.g);                                                                      \
+        b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, color.b);                                                                      \
+        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(color));                                                    \
+    } else {                                                                                                                                      \
+        r = color.r / 255.0f;                                                                                                                     \
+        g = color.g / 255.0f;                                                                                                                     \
+        b = color.b / 255.0f;                                                                                                                     \
+        a = GET_ALPHA(color) / 255.0f;                                                                                                            \
+    }                                                                                                                                             \
+    blit_buffer_starting_index = cdata->blit_buffer_num_vertices;                                                                                 \
+    (void) blit_buffer_starting_index;
 
 
 #define RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR 0.625f
 
 
-#define CALCULATE_CIRCLE_DT_AND_SEGMENTS(radius) \
-	dt = RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR/sqrtf(radius);  /* s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good */ \
-	numSegments = (int)(2*PI/dt) + 1; \
-	\
-	if(numSegments < 16) \
-	{ \
-		numSegments = 16; \
-		dt = 2*PI/(numSegments-1); \
-	}
+#define CALCULATE_CIRCLE_DT_AND_SEGMENTS(radius)                                                                                \
+    dt = RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(radius); /* s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good */ \
+    numSegments = (int) (2 * PI / dt) + 1;                                                                                      \
+                                                                                                                                \
+    if (numSegments < 16) {                                                                                                     \
+        numSegments = 16;                                                                                                       \
+        dt = 2 * PI / (numSegments - 1);                                                                                        \
+    }
 
 
-static float SetLineThickness(METAENGINE_Render_Renderer* renderer, float thickness)
-{
+static float SetLineThickness(METAENGINE_Render_Renderer *renderer, float thickness) {
     float old;
 
     if (renderer->current_context_target == NULL)
@@ -139,20 +109,17 @@ static float SetLineThickness(METAENGINE_Render_Renderer* renderer, float thickn
     return old;
 }
 
-static float GetLineThickness(METAENGINE_Render_Renderer* renderer)
-{
+static float GetLineThickness(METAENGINE_Render_Renderer *renderer) {
     return renderer->current_context_target->context->line_thickness;
 }
 
-static void Pixel(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, SDL_Color color)
-{
+static void Pixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_Pixel", GL_POINTS, 1, 1);
 
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
 }
 
-static void Line(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, SDL_Color color)
-{
+static void Line(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color) {
     float thickness = GetLineThickness(renderer);
 
     float t = thickness / 2;
@@ -172,10 +139,9 @@ static void Line(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target*
 }
 
 // Arc() might call Circle()
-static void Circle(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float radius, SDL_Color color);
+static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color);
 
-static void Arc(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color)
-{
+static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color) {
     float dx, dy;
     int i;
 
@@ -192,8 +158,7 @@ static void Arc(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* 
     if (inner_radius < 0.0f)
         inner_radius = 0.0f;
 
-    if (start_angle > end_angle)
-    {
+    if (start_angle > end_angle) {
         float swapa = end_angle;
         end_angle = start_angle;
         start_angle = swapa;
@@ -202,28 +167,25 @@ static void Arc(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* 
         return;
 
     // Big angle
-    if (end_angle - start_angle >= 360)
-    {
+    if (end_angle - start_angle >= 360) {
         Circle(renderer, target, x, y, radius, color);
         return;
     }
 
     // Shift together
-    while (start_angle < 0 && end_angle < 0)
-    {
+    while (start_angle < 0 && end_angle < 0) {
         start_angle += 360;
         end_angle += 360;
     }
-    while (start_angle > 360 && end_angle > 360)
-    {
+    while (start_angle > 360 && end_angle > 360) {
         start_angle -= 360;
         end_angle -= 360;
     }
 
 
-    dt = ((end_angle - start_angle) / 360) * (RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius));  // s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
+    dt = ((end_angle - start_angle) / 360) * (RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius));// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
 
-    numSegments = (int)((fabs(end_angle - start_angle) * PI / 180) / dt);
+    numSegments = (int) ((fabs(end_angle - start_angle) * PI / 180) / dt);
     if (numSegments == 0)
         return;
 
@@ -240,8 +202,7 @@ static void Arc(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* 
 
         BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
 
-        for (i = 1; i < numSegments; i++)
-        {
+        for (i = 1; i < numSegments; i++) {
             tempx = c * dx - s * dy;
             dy = s * dx + c * dy;
             dx = tempx;
@@ -257,10 +218,9 @@ static void Arc(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* 
 }
 
 // ArcFilled() might call CircleFilled()
-static void CircleFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float radius, SDL_Color color);
+static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color);
 
-static void ArcFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color)
-{
+static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color) {
     float dx, dy;
     int i;
 
@@ -270,8 +230,7 @@ static void ArcFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Ta
     float tempx;
     float c, s;
 
-    if (start_angle > end_angle)
-    {
+    if (start_angle > end_angle) {
         float swapa = end_angle;
         end_angle = start_angle;
         start_angle = swapa;
@@ -280,27 +239,24 @@ static void ArcFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Ta
         return;
 
     // Big angle
-    if (end_angle - start_angle >= 360)
-    {
+    if (end_angle - start_angle >= 360) {
         CircleFilled(renderer, target, x, y, radius, color);
         return;
     }
 
     // Shift together
-    while (start_angle < 0 && end_angle < 0)
-    {
+    while (start_angle < 0 && end_angle < 0) {
         start_angle += 360;
         end_angle += 360;
     }
-    while (start_angle > 360 && end_angle > 360)
-    {
+    while (start_angle > 360 && end_angle > 360) {
         start_angle -= 360;
         end_angle -= 360;
     }
 
-    dt = ((end_angle - start_angle) / 360) * (RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(radius));  // s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
+    dt = ((end_angle - start_angle) / 360) * (RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(radius));// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
 
-    numSegments = (int)((fabs(end_angle - start_angle) * RAD_PER_DEG) / dt);
+    numSegments = (int) ((fabs(end_angle - start_angle) * RAD_PER_DEG) / dt);
     if (numSegments == 0)
         return;
 
@@ -317,30 +273,29 @@ static void ArcFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Ta
 
         // First triangle
         SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
-        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // first point
+        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// first point
 
         tempx = c * dx - s * dy;
         dy = s * dx + c * dy;
         dx = tempx;
-        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // new point
+        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// new point
 
-        for (i = 2; i < numSegments + 1; i++)
-        {
+        for (i = 2; i < numSegments + 1; i++) {
             tempx = c * dx - s * dy;
             dy = s * dx + c * dy;
             dx = tempx;
-            SET_INDEXED_VERTEX(0);  // center
-            SET_INDEXED_VERTEX(i);  // last point
-            SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // new point
+            SET_INDEXED_VERTEX(0);                                              // center
+            SET_INDEXED_VERTEX(i);                                              // last point
+            SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// new point
         }
 
         // Last triangle
         end_angle *= RAD_PER_DEG;
         dx = cosf(end_angle);
         dy = sinf(end_angle);
-        SET_INDEXED_VERTEX(0);  // center
-        SET_INDEXED_VERTEX(i);  // last point
-        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // new point
+        SET_INDEXED_VERTEX(0);                                              // center
+        SET_INDEXED_VERTEX(i);                                              // last point
+        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// new point
     }
 }
 
@@ -349,8 +304,7 @@ static void ArcFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Ta
 Incremental rotation circle algorithm
 */
 
-static void Circle(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float radius, SDL_Color color)
-{
+static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -376,8 +330,7 @@ static void Circle(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
 
     BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
 
-    for (i = 1; i < numSegments; i++)
-    {
+    for (i = 1; i < numSegments; i++) {
         tempx = c * dx - s * dy;
         dy = s * dx + c * dy;
         dx = tempx;
@@ -385,11 +338,10 @@ static void Circle(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
         SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
     }
 
-    LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
+    LOOP_UNTEXTURED_SEGMENTS();// back to the beginning
 }
 
-static void CircleFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float radius, SDL_Color color)
-{
+static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color) {
     float dt;
     float dx, dy;
     int numSegments;
@@ -404,34 +356,32 @@ static void CircleFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render
     BEGIN_UNTEXTURED("METAENGINE_Render_CircleFilled", GL_TRIANGLES, 3 + (numSegments - 2), 3 + (numSegments - 2) * 3 + 3);
 
     // First triangle
-    SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);  // Center
+    SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);// Center
 
     dx = 1.0f;
     dy = 0.0f;
-    SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // first point
+    SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// first point
 
     tempx = c * dx - s * dy;
     dy = s * dx + c * dy;
     dx = tempx;
-    SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // new point
+    SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// new point
 
-    for (i = 2; i < numSegments; i++)
-    {
+    for (i = 2; i < numSegments; i++) {
         tempx = c * dx - s * dy;
         dy = s * dx + c * dy;
         dx = tempx;
-        SET_INDEXED_VERTEX(0);  // center
-        SET_INDEXED_VERTEX(i);  // last point
-        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a); // new point
+        SET_INDEXED_VERTEX(0);                                              // center
+        SET_INDEXED_VERTEX(i);                                              // last point
+        SET_UNTEXTURED_VERTEX(x + radius * dx, y + radius * dy, r, g, b, a);// new point
     }
 
-    SET_INDEXED_VERTEX(0);  // center
-    SET_INDEXED_VERTEX(i);  // last point
-    SET_INDEXED_VERTEX(1);  // first point
+    SET_INDEXED_VERTEX(0);// center
+    SET_INDEXED_VERTEX(i);// last point
+    SET_INDEXED_VERTEX(1);// first point
 }
 
-static void Ellipse(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float rx, float ry, float degrees, SDL_Color color)
-{
+static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float rx, float ry, float degrees, SDL_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -469,8 +419,7 @@ static void Ellipse(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targ
     outer_trans_y = rot_y * outer_radius_x * dx + rot_x * outer_radius_y * dy;
     BEGIN_UNTEXTURED_SEGMENTS(x + inner_trans_x, y + inner_trans_y, x + outer_trans_x, y + outer_trans_y, r, g, b, a);
 
-    for (i = 1; i < numSegments; i++)
-    {
+    for (i = 1; i < numSegments; i++) {
         tempx = c * dx - s * dy;
         dy = (s * dx + c * dy);
         dx = tempx;
@@ -482,11 +431,10 @@ static void Ellipse(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targ
         SET_UNTEXTURED_SEGMENTS(x + inner_trans_x, y + inner_trans_y, x + outer_trans_x, y + outer_trans_y, r, g, b, a);
     }
 
-    LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
+    LOOP_UNTEXTURED_SEGMENTS();// back to the beginning
 }
 
-static void EllipseFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float rx, float ry, float degrees, SDL_Color color)
-{
+static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float rx, float ry, float degrees, SDL_Color color) {
     float dx, dy;
     int i;
     float rot_x = cosf(degrees * RAD_PER_DEG);
@@ -503,13 +451,13 @@ static void EllipseFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Rende
     BEGIN_UNTEXTURED("METAENGINE_Render_EllipseFilled", GL_TRIANGLES, 3 + (numSegments - 2), 3 + (numSegments - 2) * 3 + 3);
 
     // First triangle
-    SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);  // Center
+    SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);// Center
 
     dx = 1.0f;
     dy = 0.0f;
     trans_x = rot_x * rx * dx - rot_y * ry * dy;
     trans_y = rot_y * rx * dx + rot_x * ry * dy;
-    SET_UNTEXTURED_VERTEX(x + trans_x, y + trans_y, r, g, b, a); // first point
+    SET_UNTEXTURED_VERTEX(x + trans_x, y + trans_y, r, g, b, a);// first point
 
     tempx = c * dx - s * dy;
     dy = s * dx + c * dy;
@@ -517,10 +465,9 @@ static void EllipseFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Rende
 
     trans_x = rot_x * rx * dx - rot_y * ry * dy;
     trans_y = rot_y * rx * dx + rot_x * ry * dy;
-    SET_UNTEXTURED_VERTEX(x + trans_x, y + trans_y, r, g, b, a); // new point
+    SET_UNTEXTURED_VERTEX(x + trans_x, y + trans_y, r, g, b, a);// new point
 
-    for (i = 2; i < numSegments; i++)
-    {
+    for (i = 2; i < numSegments; i++) {
         tempx = c * dx - s * dy;
         dy = (s * dx + c * dy);
         dx = tempx;
@@ -528,18 +475,17 @@ static void EllipseFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Rende
         trans_x = rot_x * rx * dx - rot_y * ry * dy;
         trans_y = rot_y * rx * dx + rot_x * ry * dy;
 
-        SET_INDEXED_VERTEX(0);  // center
-        SET_INDEXED_VERTEX(i);  // last point
-        SET_UNTEXTURED_VERTEX(x + trans_x, y + trans_y, r, g, b, a); // new point
+        SET_INDEXED_VERTEX(0);                                      // center
+        SET_INDEXED_VERTEX(i);                                      // last point
+        SET_UNTEXTURED_VERTEX(x + trans_x, y + trans_y, r, g, b, a);// new point
     }
 
-    SET_INDEXED_VERTEX(0);  // center
-    SET_INDEXED_VERTEX(i);  // last point
-    SET_INDEXED_VERTEX(1);  // first point
+    SET_INDEXED_VERTEX(0);// center
+    SET_INDEXED_VERTEX(i);// last point
+    SET_INDEXED_VERTEX(1);// first point
 }
 
-static void Sector(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color)
-{
+static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color) {
     bool circled;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
 
@@ -548,15 +494,13 @@ static void Sector(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
     if (outer_radius < 0.0f)
         outer_radius = 0.0f;
 
-    if (inner_radius > outer_radius)
-    {
+    if (inner_radius > outer_radius) {
         float s = inner_radius;
         inner_radius = outer_radius;
         outer_radius = s;
     }
 
-    if (start_angle > end_angle)
-    {
+    if (start_angle > end_angle) {
         float swapa = end_angle;
         end_angle = start_angle;
         start_angle = swapa;
@@ -564,8 +508,7 @@ static void Sector(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
     if (start_angle == end_angle)
         return;
 
-    if (inner_radius == outer_radius)
-    {
+    if (inner_radius == outer_radius) {
         Arc(renderer, target, x, y, inner_radius, start_angle, end_angle, color);
         return;
     }
@@ -574,8 +517,7 @@ static void Sector(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
     // Composited shape...  But that means error codes may be confusing. :-/
     Arc(renderer, target, x, y, inner_radius, start_angle, end_angle, color);
 
-    if (!circled)
-    {
+    if (!circled) {
         dx1 = inner_radius * cosf(end_angle * RAD_PER_DEG);
         dy1 = inner_radius * sinf(end_angle * RAD_PER_DEG);
         dx2 = outer_radius * cosf(end_angle * RAD_PER_DEG);
@@ -585,8 +527,7 @@ static void Sector(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
 
     Arc(renderer, target, x, y, outer_radius, start_angle, end_angle, color);
 
-    if (!circled)
-    {
+    if (!circled) {
         dx3 = inner_radius * cosf(start_angle * RAD_PER_DEG);
         dy3 = inner_radius * sinf(start_angle * RAD_PER_DEG);
         dx4 = outer_radius * cosf(start_angle * RAD_PER_DEG);
@@ -595,8 +536,7 @@ static void Sector(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targe
     }
 }
 
-static void SectorFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color)
-{
+static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color) {
     float t;
     float dt;
     float dx, dy;
@@ -608,22 +548,19 @@ static void SectorFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render
     if (outer_radius < 0.0f)
         outer_radius = 0.0f;
 
-    if (inner_radius > outer_radius)
-    {
+    if (inner_radius > outer_radius) {
         float s = inner_radius;
         inner_radius = outer_radius;
         outer_radius = s;
     }
 
-    if (inner_radius == outer_radius)
-    {
+    if (inner_radius == outer_radius) {
         Arc(renderer, target, x, y, inner_radius, start_angle, end_angle, color);
         return;
     }
 
 
-    if (start_angle > end_angle)
-    {
+    if (start_angle > end_angle) {
         float swapa = end_angle;
         end_angle = start_angle;
         start_angle = swapa;
@@ -636,9 +573,9 @@ static void SectorFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render
 
 
     t = start_angle;
-    dt = ((end_angle - start_angle) / 360) * (RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius)) * DEG_PER_RAD;  // s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
+    dt = ((end_angle - start_angle) / 360) * (RENDERER_RHI_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius)) * DEG_PER_RAD;// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
 
-    numSegments = (int)(fabs(end_angle - start_angle) / dt);
+    numSegments = (int) (fabs(end_angle - start_angle) / dt);
     if (numSegments == 0)
         return;
 
@@ -647,7 +584,7 @@ static void SectorFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render
         bool use_inner;
         BEGIN_UNTEXTURED("METAENGINE_Render_SectorFilled", GL_TRIANGLES, 3 + (numSegments - 1) + 1, 3 + (numSegments - 1) * 3 + 3);
 
-        use_inner = false;  // Switches between the radii for the next point
+        use_inner = false;// Switches between the radii for the next point
 
         // First triangle
         dx = inner_radius * cosf(t * RAD_PER_DEG);
@@ -663,61 +600,50 @@ static void SectorFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render
         SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a);
         t += dt;
 
-        for (i = 2; i < numSegments + 1; i++)
-        {
+        for (i = 2; i < numSegments + 1; i++) {
             SET_INDEXED_VERTEX(i - 1);
             SET_INDEXED_VERTEX(i);
-            if (use_inner)
-            {
+            if (use_inner) {
                 dx = inner_radius * cosf(t * RAD_PER_DEG);
                 dy = inner_radius * sinf(t * RAD_PER_DEG);
-            }
-            else
-            {
+            } else {
                 dx = outer_radius * cosf(t * RAD_PER_DEG);
                 dy = outer_radius * sinf(t * RAD_PER_DEG);
             }
-            SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a); // new point
+            SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a);// new point
             t += dt;
             use_inner = !use_inner;
         }
 
         // Last quad
         t = end_angle;
-        if (use_inner)
-        {
+        if (use_inner) {
             dx = inner_radius * cosf(t * RAD_PER_DEG);
             dy = inner_radius * sinf(t * RAD_PER_DEG);
-        }
-        else
-        {
+        } else {
             dx = outer_radius * cosf(t * RAD_PER_DEG);
             dy = outer_radius * sinf(t * RAD_PER_DEG);
         }
         SET_INDEXED_VERTEX(i - 1);
         SET_INDEXED_VERTEX(i);
-        SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a); // new point
+        SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a);// new point
         use_inner = !use_inner;
         i++;
 
-        if (use_inner)
-        {
+        if (use_inner) {
             dx = inner_radius * cosf(t * RAD_PER_DEG);
             dy = inner_radius * sinf(t * RAD_PER_DEG);
-        }
-        else
-        {
+        } else {
             dx = outer_radius * cosf(t * RAD_PER_DEG);
             dy = outer_radius * sinf(t * RAD_PER_DEG);
         }
         SET_INDEXED_VERTEX(i - 1);
         SET_INDEXED_VERTEX(i);
-        SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a); // new point
+        SET_UNTEXTURED_VERTEX(x + dx, y + dy, r, g, b, a);// new point
     }
 }
 
-static void Tri(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color)
-{
+static void Tri(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_Tri", GL_LINES, 3, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -730,8 +656,7 @@ static void Tri(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* 
     SET_INDEXED_VERTEX(0);
 }
 
-static void TriFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color)
-{
+static void TriFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_TriFilled", GL_TRIANGLES, 3, 3);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -739,16 +664,13 @@ static void TriFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Ta
     SET_UNTEXTURED_VERTEX(x3, y3, r, g, b, a);
 }
 
-static void Rectangle(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, SDL_Color color)
-{
-    if (y2 < y1)
-    {
+static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color) {
+    if (y2 < y1) {
         float y = y1;
         y1 = y2;
         y2 = y;
     }
-    if (x2 < x1)
-    {
+    if (x2 < x1) {
         float x = x1;
         x1 = x2;
         x2 = x;
@@ -773,42 +695,41 @@ static void Rectangle(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Ta
             inner_y = (y2 - y1) / 2;
 
         // First triangle
-        SET_UNTEXTURED_VERTEX(x1 - outer, y1 - outer, r, g, b, a); // 0
-        SET_UNTEXTURED_VERTEX(x1 - outer, y1 + inner_y, r, g, b, a); // 1
-        SET_UNTEXTURED_VERTEX(x2 + outer, y1 - outer, r, g, b, a); // 2
+        SET_UNTEXTURED_VERTEX(x1 - outer, y1 - outer, r, g, b, a);  // 0
+        SET_UNTEXTURED_VERTEX(x1 - outer, y1 + inner_y, r, g, b, a);// 1
+        SET_UNTEXTURED_VERTEX(x2 + outer, y1 - outer, r, g, b, a);  // 2
 
         SET_INDEXED_VERTEX(2);
         SET_INDEXED_VERTEX(1);
-        SET_UNTEXTURED_VERTEX(x2 + outer, y1 + inner_y, r, g, b, a); // 3
+        SET_UNTEXTURED_VERTEX(x2 + outer, y1 + inner_y, r, g, b, a);// 3
 
         SET_INDEXED_VERTEX(3);
-        SET_UNTEXTURED_VERTEX(x2 - inner_x, y1 + inner_y, r, g, b, a); // 4
-        SET_UNTEXTURED_VERTEX(x2 - inner_x, y2 - inner_y, r, g, b, a); // 5
+        SET_UNTEXTURED_VERTEX(x2 - inner_x, y1 + inner_y, r, g, b, a);// 4
+        SET_UNTEXTURED_VERTEX(x2 - inner_x, y2 - inner_y, r, g, b, a);// 5
 
         SET_INDEXED_VERTEX(3);
         SET_INDEXED_VERTEX(5);
-        SET_UNTEXTURED_VERTEX(x2 + outer, y2 - inner_y, r, g, b, a); // 6
+        SET_UNTEXTURED_VERTEX(x2 + outer, y2 - inner_y, r, g, b, a);// 6
 
         SET_INDEXED_VERTEX(6);
-        SET_UNTEXTURED_VERTEX(x1 - outer, y2 - inner_y, r, g, b, a); // 7
-        SET_UNTEXTURED_VERTEX(x2 + outer, y2 + outer, r, g, b, a); // 8
+        SET_UNTEXTURED_VERTEX(x1 - outer, y2 - inner_y, r, g, b, a);// 7
+        SET_UNTEXTURED_VERTEX(x2 + outer, y2 + outer, r, g, b, a);  // 8
 
         SET_INDEXED_VERTEX(7);
-        SET_UNTEXTURED_VERTEX(x1 - outer, y2 + outer, r, g, b, a); // 9
+        SET_UNTEXTURED_VERTEX(x1 - outer, y2 + outer, r, g, b, a);// 9
         SET_INDEXED_VERTEX(8);
 
         SET_INDEXED_VERTEX(7);
-        SET_UNTEXTURED_VERTEX(x1 + inner_x, y2 - inner_y, r, g, b, a); // 10
+        SET_UNTEXTURED_VERTEX(x1 + inner_x, y2 - inner_y, r, g, b, a);// 10
         SET_INDEXED_VERTEX(1);
 
         SET_INDEXED_VERTEX(1);
         SET_INDEXED_VERTEX(10);
-        SET_UNTEXTURED_VERTEX(x1 + inner_x, y1 + inner_y, r, g, b, a); // 11
+        SET_UNTEXTURED_VERTEX(x1 + inner_x, y1 + inner_y, r, g, b, a);// 11
     }
 }
 
-static void RectangleFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, SDL_Color color)
-{
+static void RectangleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_RectangleFilled", GL_TRIANGLES, 4, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -820,22 +741,19 @@ static void RectangleFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Ren
     SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);
 }
 
-#define INCREMENT_CIRCLE \
+#define INCREMENT_CIRCLE     \
     tempx = c * dx - s * dy; \
-    dy = s * dx + c * dy; \
-    dx = tempx; \
+    dy = s * dx + c * dy;    \
+    dx = tempx;              \
     ++i;
 
-static void RectangleRound(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, float radius, SDL_Color color)
-{
-    if (y2 < y1)
-    {
+static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float radius, SDL_Color color) {
+    if (y2 < y1) {
         float temp = y2;
         y2 = y1;
         y1 = temp;
     }
-    if (x2 < x1)
-    {
+    if (x2 < x1) {
         float temp = x2;
         x2 = x1;
         x1 = temp;
@@ -889,8 +807,7 @@ static void RectangleRound(METAENGINE_Render_Renderer* renderer, METAENGINE_Rend
             x = x2;
             y = y2;
             BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius, y, x + outer_radius, y, r, g, b, a);
-            while (i < go_to_second - 1)
-            {
+            while (i < go_to_second - 1) {
                 INCREMENT_CIRCLE;
 
                 SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
@@ -901,8 +818,7 @@ static void RectangleRound(METAENGINE_Render_Renderer* renderer, METAENGINE_Rend
             x = x1;
             y = y2;
             SET_UNTEXTURED_SEGMENTS(x, y + inner_radius, x, y + outer_radius, r, g, b, a);
-            while (i < go_to_third - 1)
-            {
+            while (i < go_to_third - 1) {
                 INCREMENT_CIRCLE;
 
                 SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
@@ -913,8 +829,7 @@ static void RectangleRound(METAENGINE_Render_Renderer* renderer, METAENGINE_Rend
             x = x1;
             y = y1;
             SET_UNTEXTURED_SEGMENTS(x - inner_radius, y, x - outer_radius, y, r, g, b, a);
-            while (i < go_to_fourth - 1)
-            {
+            while (i < go_to_fourth - 1) {
                 INCREMENT_CIRCLE;
 
                 SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
@@ -925,29 +840,25 @@ static void RectangleRound(METAENGINE_Render_Renderer* renderer, METAENGINE_Rend
             x = x2;
             y = y1;
             SET_UNTEXTURED_SEGMENTS(x, y - inner_radius, x, y - outer_radius, r, g, b, a);
-            while (i < numSegments - 1)
-            {
+            while (i < numSegments - 1) {
                 INCREMENT_CIRCLE;
 
                 SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
             }
             SET_UNTEXTURED_SEGMENTS(x + inner_radius, y, x + outer_radius, y, r, g, b, a);
 
-            LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
+            LOOP_UNTEXTURED_SEGMENTS();// back to the beginning
         }
     }
 }
 
-static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, float x1, float y1, float x2, float y2, float radius, SDL_Color color)
-{
-    if (y2 < y1)
-    {
+static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float radius, SDL_Color color) {
+    if (y2 < y1) {
         float temp = y2;
         y2 = y1;
         y1 = temp;
     }
-    if (x2 < x1)
-    {
+    if (x2 < x1) {
         float temp = x2;
         x2 = x1;
         x1 = temp;
@@ -962,7 +873,7 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGIN
         float tau = 2 * PI;
 
         int verts_per_corner = 7;
-        float corner_angle_increment = (tau / 4) / (verts_per_corner - 1);  // 0, 15, 30, 45, 60, 75, 90
+        float corner_angle_increment = (tau / 4) / (verts_per_corner - 1);// 0, 15, 30, 45, 60, 75, 90
 
         // Starting angle
         float angle = tau * 0.75f;
@@ -973,14 +884,13 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGIN
 
 
         // First triangle
-        SET_UNTEXTURED_VERTEX((x2 + x1) / 2, (y2 + y1) / 2, r, g, b, a);  // Center
+        SET_UNTEXTURED_VERTEX((x2 + x1) / 2, (y2 + y1) / 2, r, g, b, a);// Center
         SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
         angle += corner_angle_increment;
         SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
         angle += corner_angle_increment;
 
-        for (i = 2; i < verts_per_corner; i++)
-        {
+        for (i = 2; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
             SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
@@ -990,8 +900,7 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGIN
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(last_index++);
         SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
-        for (i = 1; i < verts_per_corner; i++)
-        {
+        for (i = 1; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
             SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
@@ -1001,8 +910,7 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGIN
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(last_index++);
         SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
-        for (i = 1; i < verts_per_corner; i++)
-        {
+        for (i = 1; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
             SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
@@ -1012,8 +920,7 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGIN
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(last_index++);
         SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
-        for (i = 1; i < verts_per_corner; i++)
-        {
+        for (i = 1; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
             SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
@@ -1027,8 +934,7 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer* renderer, METAENGIN
     }
 }
 
-static void Polygon(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, unsigned int num_vertices, float* vertices, SDL_Color color)
-{
+static void Polygon(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color) {
     if (num_vertices < 3)
         return;
 
@@ -1040,18 +946,16 @@ static void Polygon(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Targ
         BEGIN_UNTEXTURED("METAENGINE_Render_Polygon", GL_LINES, num_vertices, numSegments);
 
         SET_UNTEXTURED_VERTEX(vertices[0], vertices[1], r, g, b, a);
-        for (i = 2; i < numSegments; i += 2)
-        {
+        for (i = 2; i < numSegments; i += 2) {
             SET_UNTEXTURED_VERTEX(vertices[i], vertices[i + 1], r, g, b, a);
             last_index++;
-            SET_INDEXED_VERTEX(last_index);  // Double the last one for the next line
+            SET_INDEXED_VERTEX(last_index);// Double the last one for the next line
         }
         SET_INDEXED_VERTEX(0);
     }
 }
 
-static void Polyline(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, unsigned int num_vertices, float* vertices, SDL_Color color, bool close_loop)
-{
+static void Polyline(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color, bool close_loop) {
     if (num_vertices < 2) return;
 
     float t = GetLineThickness(renderer) * 0.5f;
@@ -1061,8 +965,7 @@ static void Polyline(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Tar
     int num_i = num_v + 2;
     int last_vert = num_vertices;
 
-    if (!close_loop)
-    {
+    if (!close_loop) {
         num_v -= 4;
         num_i = num_v;
         last_vert--;
@@ -1071,18 +974,14 @@ static void Polyline(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Tar
     BEGIN_UNTEXTURED("METAENGINE_Render_Polygon", GL_TRIANGLE_STRIP, num_v, num_i);
 
     int i = 0;
-    do
-    {
+    do {
         x1 = vertices[i * 2];
         y1 = vertices[i * 2 + 1];
         i++;
-        if (i == (int)num_vertices)
-        {
+        if (i == (int) num_vertices) {
             x2 = vertices[0];
             y2 = vertices[1];
-        }
-        else
-        {
+        } else {
             x2 = vertices[i * 2];
             y2 = vertices[i * 2 + 1];
         }
@@ -1098,16 +997,14 @@ static void Polyline(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Tar
 
     } while (i < last_vert);
 
-    if (close_loop) // end cap for closed
+    if (close_loop)// end cap for closed
     {
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(1)
     }
-
 }
 
-static void PolygonFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target* target, unsigned int num_vertices, float* vertices, SDL_Color color)
-{
+static void PolygonFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color) {
     if (num_vertices < 3)
         return;
 
@@ -1122,15 +1019,13 @@ static void PolygonFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Rende
         SET_UNTEXTURED_VERTEX(vertices[2], vertices[3], r, g, b, a);
         SET_UNTEXTURED_VERTEX(vertices[4], vertices[5], r, g, b, a);
 
-        if (num_vertices > 3)
-        {
+        if (num_vertices > 3) {
             int last_index = 2;
 
             int i;
-            for (i = 6; i < numSegments; i += 2)
-            {
-                SET_INDEXED_VERTEX(0);  // Start from the first vertex
-                SET_INDEXED_VERTEX(last_index);  // Double the last one
+            for (i = 6; i < numSegments; i += 2) {
+                SET_INDEXED_VERTEX(0);         // Start from the first vertex
+                SET_INDEXED_VERTEX(last_index);// Double the last one
                 SET_UNTEXTURED_VERTEX(vertices[i], vertices[i + 1], r, g, b, a);
                 last_index++;
             }
@@ -1139,48 +1034,8 @@ static void PolygonFilled(METAENGINE_Render_Renderer* renderer, METAENGINE_Rende
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer_OpenGL_4(METAENGINE_Render_RendererID request)
-{
-    METAENGINE_Render_Renderer* renderer = (METAENGINE_Render_Renderer*)METAENGINE_MALLOC(sizeof(METAENGINE_Render_Renderer));
+METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_4(METAENGINE_Render_RendererID request) {
+    METAENGINE_Render_Renderer *renderer = (METAENGINE_Render_Renderer *) METAENGINE_MALLOC(sizeof(METAENGINE_Render_Renderer));
     if (renderer == NULL)
         return NULL;
 
@@ -1197,15 +1052,14 @@ METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer_OpenGL_4(METAENGINE
 
     renderer->current_context_target = NULL;
 
-    renderer->impl = (METAENGINE_Render_RendererImpl*)METAENGINE_MALLOC(sizeof(METAENGINE_Render_RendererImpl));
+    renderer->impl = (METAENGINE_Render_RendererImpl *) METAENGINE_MALLOC(sizeof(METAENGINE_Render_RendererImpl));
     memset(renderer->impl, 0, sizeof(METAENGINE_Render_RendererImpl));
     SET_COMMON_FUNCTIONS(renderer->impl);
 
     return renderer;
 }
 
-void METAENGINE_Render_FreeRenderer_OpenGL_4(METAENGINE_Render_Renderer* renderer)
-{
+void METAENGINE_Render_FreeRenderer_OpenGL_4(METAENGINE_Render_Renderer *renderer) {
     if (renderer == NULL)
         return;
 
