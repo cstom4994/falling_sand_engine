@@ -216,7 +216,7 @@ int Game::init(int argc, char *argv[]) {
 
     std::cout << logo << std::endl;
 
-    MetaEngine::Log::init();
+    loguru::init(argc, argv);
 
     terminal_log = new ImTerm::terminal<terminal_commands>(cmd_struct);
 
@@ -311,7 +311,7 @@ int Game::init(int argc, char *argv[]) {
 
             auto fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
 
-            METADOT_INFO(MetaEngine::Utils::Format("i'm {}", fu));
+            METADOT_INFO("i'm {}", fu);
 
             audioEngine.LoadEvent("event:/Music/Title");
 

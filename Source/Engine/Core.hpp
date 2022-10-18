@@ -36,6 +36,8 @@
 
 #include "Engine/GCManager.hpp"
 #include "Engine/lib/VisitStruct.hpp"
+#include "Engine/lib/loguru.hpp"
+
 
 #include "pprint.hpp"
 
@@ -224,30 +226,17 @@ namespace MetaEngine {
         static const std::string &getResPath();
     };
 
-
-    class Log {
-    public:
-        static void init();
-        static void flush();
-
-        inline static pprint::PrettyPrinter &GetCoreLogger() {
-            return printer;
-        }
-
-    private:
-        //static std::shared_ptr<spdlog::logger> s_CoreLogger;
-        //static std::vector<spdlog::sink_ptr> s_CoreLoggerSinks;
-
-        static std::stringstream s_stream;
-        static pprint::PrettyPrinter printer;
-    };
-
-#define METADOT_BUG(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-#define METADOT_TRACE(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-#define METADOT_INFO(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-#define METADOT_WARN(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-#define METADOT_ERROR(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-#define METADOT_PPRINT(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+// #define METADOT_BUG(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+// #define METADOT_TRACE(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+// #define METADOT_INFO(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+// #define METADOT_WARN(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+// #define METADOT_ERROR(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+// #define METADOT_PPRINT(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
+#define METADOT_BUG(...) LOG_F(1, __VA_ARGS__);
+#define METADOT_TRACE(...) LOG_F(2, __VA_ARGS__);
+#define METADOT_INFO(...) LOG_F(INFO, __VA_ARGS__);
+#define METADOT_WARN(...) LOG_F(WARNING, __VA_ARGS__);
+#define METADOT_ERROR(...) LOG_F(ERROR, __VA_ARGS__);
 
     template<class T>
     using Ref = std::shared_ptr<T>;

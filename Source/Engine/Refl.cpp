@@ -269,7 +269,7 @@ namespace IamAfuckingNamespace {
     }
 
     void func_log_info(std::string info) {
-        METADOT_INFO(info);
+        METADOT_INFO(info.c_str());
     }
 }// namespace IamAfuckingNamespace
 

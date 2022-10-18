@@ -435,7 +435,7 @@ bool MuScript::Inspect::shell::eval(const char *line) {
     std::string result = execute(cmd_name, args, code);
 
     if (!result.empty())
-        METADOT_INFO(result);
+        METADOT_INFO(result.c_str());
 
     if (code == exec_exit)
         return true;

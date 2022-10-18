@@ -53,9 +53,8 @@ void Server::tick() {
     while (enet_host_service(server, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_CONNECT:
-                METADOT_INFO("[SERVER] A new client connected from {}:{}.",
-                             event.peer->address.host,
-                             event.peer->address.port);
+                METADOT_INFO("[SERVER] A new client connected from {1}.",
+                             (int)event.peer->address.port);
 
                 // arbitrary client data
                 event.peer->data = (void *) "Client data";
@@ -63,11 +62,12 @@ void Server::tick() {
 
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
-                METADOT_BUG("[SERVER] A packet of length {} containing {} was received from {} on channel {}.",
-                            event.packet->dataLength,
-                            event.packet->data,
-                            event.peer->data,
-                            event.channelID);
+                METADOT_BUG(fmt::format("[SERVER] A packet of length {0} containing {1} was received from {2} on channel {3}.",
+                                        (int) event.packet->dataLength,
+                                        (int) event.packet->data,
+                                        (int) event.peer->data,
+                                        (int) event.channelID)
+                                    .c_str());
 
                 // done using packet
                 enet_packet_destroy(event.packet);
@@ -152,20 +152,20 @@ void Client::tick() {
     while (enet_host_service(client, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_CONNECT:
-                METADOT_INFO("[CLIENT] Connected to server at {}:{}.",
-                             event.peer->address.host,
-                             event.peer->address.port);
+                METADOT_INFO("[CLIENT] Connected to server at {}.",
+                             (int)event.peer->address.port);
 
                 // arbitrary client data
                 event.peer->data = (void *) "Client information";
 
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
-                METADOT_BUG("[CLIENT] A packet of length {} containing {} was received from {} on channel {}.",
-                            event.packet->dataLength,
-                            event.packet->data,
-                            event.peer->data,
-                            event.channelID);
+                METADOT_BUG(fmt::format("[CLIENT] A packet of length {0} containing {1} was received from {2} on channel {3}.",
+                                        (int) event.packet->dataLength,
+                                        (int) event.packet->data,
+                                        (int) event.peer->data,
+                                        (int) event.channelID)
+                                    .c_str());
 
                 // done with packet
                 enet_packet_destroy(event.packet);

@@ -63,25 +63,7 @@ namespace MetaEngine {
             return "";
         return res.substr(out + 1);
     }
-
-
-    std::stringstream Log::s_stream;
-    pprint::PrettyPrinter Log::printer;
-
-    void Log::init() {
-        static bool noInit = true;
-        if (!noInit)
-            return;
-        noInit = false;
-
-        METADOT_INFO("Logging Start");
-    }
-
-    void Log::flush() {
-        //s_CoreLogger->flush();
-    }
 }// namespace MetaEngine
-
 
 namespace MetaEngine {
 

@@ -33,7 +33,7 @@
 
 
 static void native_print(dukpp::duk_value const& arg) {
-    METADOT_INFO(arg);
+    METADOT_INFO(arg.as_c_string());
 }
 
 static bool native_call_method(std::string method, dukpp::this_context tctx) {

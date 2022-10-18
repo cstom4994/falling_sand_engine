@@ -652,22 +652,22 @@ namespace MetaEngine {
     }
 
     static int metadot_info(lua_State *L) {
-        METADOT_INFO(nd_print(L, LUACON_INFO_PREF));
+        METADOT_INFO(nd_print(L, LUACON_INFO_PREF).c_str());
         return 0;
     }
 
     static int metadot_trace(lua_State *L) {
-        METADOT_TRACE(nd_print(L, LUACON_TRACE_PREF));
+        METADOT_TRACE(nd_print(L, LUACON_TRACE_PREF).c_str());
         return 0;
     }
 
     static int metadot_error(lua_State *L) {
-        METADOT_ERROR(nd_print(L, LUACON_ERROR_PREF));
+        METADOT_ERROR(nd_print(L, LUACON_ERROR_PREF).c_str());
         return 0;
     }
 
     static int metadot_warn(lua_State *L) {
-        METADOT_WARN(nd_print(L, LUACON_WARN_PREF));
+        METADOT_WARN(nd_print(L, LUACON_WARN_PREF).c_str());
         return 0;
     }
 
@@ -787,7 +787,7 @@ namespace MetaEngine {
 
         std::string a = lang("welcome");
 
-        METADOT_INFO(a);
+        METADOT_INFO(a.c_str());
 
         s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/engine/lua/coroutines.lua"));
 
