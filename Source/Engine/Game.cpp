@@ -431,11 +431,6 @@ int Game::init(int argc, char *argv[]) {
 
         METAENGINE_Render_Flip(target);
 
-
-        //MetaEngine::terminal_log.set_min_log_level(ImTerm::message::severity::info);
-
-        //MetaEngine::Log::GetCoreLogger()->sinks().push_back(MetaEngine::terminal_log.get_terminal_helper());
-
         m_ModuleStack = new MetaEngine::ModuleStack();
 
         auto m_LuaLayer = new MetaEngine::LuaLayer();
@@ -463,9 +458,7 @@ int Game::init(int argc, char *argv[]) {
 
         MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
         MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
-        //MetaEngine::any_function func_log_info{ &IamAfuckingNamespace::func_log_info };
-
-        //this->data.Functions.insert(std::make_pair("func_log_info", func_log_info));
+        
         this->data.Functions.insert(std::make_pair("func1", func1));
         this->data.Functions.insert(std::make_pair("func2", func2));
 
@@ -1542,8 +1535,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::End();
             }
 
-            if (Settings::ui_console)
-            {
+            if (Settings::ui_console) {
                 terminal_log->show();
             }
 

@@ -41,7 +41,7 @@ namespace MetaEngine {
 
     std::string ResourceMan::getResourceLoc(std::string_view resPath) {
         if (s_resPath.empty())
-            std::cout << "try to load resource when ResourceMan is unloaded\n        ::" << resPath << std::endl;
+            std::cout << "try to load resource when ResourceMan is unloaded (" << resPath << ")" << std::endl;
         if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
             return s_resPath + std::string(resPath);
         return std::string(resPath);

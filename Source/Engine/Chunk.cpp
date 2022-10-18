@@ -45,14 +45,14 @@ void Chunk::loadMeta() {
     }
 }
 
-//MaterialInstanceData* Chunk::readBuf = (MaterialInstanceData*)METAENGINE_MALLOC(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
+//MaterialInstanceData* Chunk::readBuf = (MaterialInstanceData*)malloc(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
 
 void Chunk::read() {
     // use malloc here instead of new so it doesn't call the constructor
-    MaterialInstance *tiles = (MaterialInstance *) METAENGINE_MALLOC(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
+    MaterialInstance *tiles = (MaterialInstance *) malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
     if (tiles == NULL)
         throw std::runtime_error("Failed to allocate memory for Chunk tiles array.");
-    MaterialInstance *layer2 = (MaterialInstance *) METAENGINE_MALLOC(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
+    MaterialInstance *layer2 = (MaterialInstance *) malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
     if (layer2 == NULL)
         throw std::runtime_error("Failed to allocate memory for Chunk layer2 array.");
     //MaterialInstance* tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
@@ -70,25 +70,25 @@ void Chunk::read() {
         hasMeta = true;
         state = 1;
 
-        /*unsigned int content;
-		for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-			myfile.read((char*)&content, sizeof(unsigned int));
-			int id = content;
-			myfile.read((char*)&content, sizeof(unsigned int));
-			Uint32 color = content;
-			tiles[i] = MaterialInstance(Materials::MATERIALS[id], color);
-		}
-		for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-			myfile.read((char*)&content, sizeof(unsigned int));
-			int id = content;
-			myfile.read((char*)&content, sizeof(unsigned int));
-			Uint32 color = content;
-			layer2[i] = MaterialInstance(Materials::MATERIALS[id], color);
-		}*/
-        /*for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-			myfile.read((char*)&content, sizeof(unsigned int));
-			background[i] = content;
-		}*/
+        // unsigned int content;
+		// for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
+		// 	myfile.read((char*)&content, sizeof(unsigned int));
+		// 	int id = content;
+		// 	myfile.read((char*)&content, sizeof(unsigned int));
+		// 	Uint32 color = content;
+		// 	tiles[i] = MaterialInstance(Materials::MATERIALS[id], color);
+		// }
+		// for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
+		// 	myfile.read((char*)&content, sizeof(unsigned int));
+		// 	int id = content;
+		// 	myfile.read((char*)&content, sizeof(unsigned int));
+		// 	Uint32 color = content;
+		// 	layer2[i] = MaterialInstance(Materials::MATERIALS[id], color);
+		// }
+        // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
+		// 	myfile.read((char*)&content, sizeof(unsigned int));
+		// 	background[i] = content;
+		// }
 
         int src_size;
         myfile.read((char *) &src_size, sizeof(int));
@@ -109,18 +109,18 @@ void Chunk::read() {
         int compressed_size2;
         myfile.read((char *) &compressed_size2, sizeof(int));
 
-        MaterialInstanceData *readBuf = (MaterialInstanceData *) METAENGINE_MALLOC(src_size);
+        MaterialInstanceData *readBuf = (MaterialInstanceData *) malloc(src_size);
 
         if (readBuf == NULL)
             throw std::runtime_error("Failed to allocate memory for Chunk readBuf.");
 
-        char *compressed_data = (char *) METAENGINE_MALLOC(compressed_size);
+        char *compressed_data = (char *) malloc(compressed_size);
 
         myfile.read((char *) compressed_data, compressed_size);
 
         const int decompressed_size = LZ4_decompress_safe(compressed_data, (char *) readBuf, compressed_size, src_size);
 
-        METAENGINE_FREE(compressed_data);
+        free(compressed_data);
 
         // basically, if either of these checks trigger, the chunk is unreadable, either due to miswriting it or corruption
         // TODO: have the chunk regenerate on corruption (maybe save copies of corrupt chunks as well?)
@@ -156,13 +156,13 @@ void Chunk::read() {
 
         //delete readBuf;
 
-        char *compressed_data2 = (char *) METAENGINE_MALLOC(compressed_size2);
+        char *compressed_data2 = (char *) malloc(compressed_size2);
 
         myfile.read((char *) compressed_data2, compressed_size2);
 
         const int decompressed_size2 = LZ4_decompress_safe(compressed_data2, (char *) background, compressed_size2, src_size2);
 
-        METAENGINE_FREE(compressed_data2);
+        free(compressed_data2);
 
         if (decompressed_size2 < 0) {
             METADOT_ERROR("Error decompressing chunk background data @ {},{} (err {}).", this->x, this->y, decompressed_size2);
@@ -170,7 +170,7 @@ void Chunk::read() {
             METADOT_ERROR("Decompressed chunk background data is corrupt! @ {},{} (was {}, expected {}).", this->x, this->y, decompressed_size2, src_size2);
         }
 
-        METAENGINE_FREE(readBuf);
+        free(readBuf);
 
         myfile.close();
     }
@@ -212,7 +212,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
     const int src_size = (int) (CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
     const int max_dst_size = LZ4_compressBound(src_size);
 
-    char *compressed_data = (char *) METAENGINE_MALLOC((size_t) max_dst_size);
+    char *compressed_data = (char *) malloc((size_t) max_dst_size);
 
     const int compressed_data_size = LZ4_compress_fast(src, compressed_data, src_size, max_dst_size, 10);
 
@@ -224,7 +224,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
 		METADOT_BUG("Compression ratio: {}", (float)compressed_data_size / src_size * 100);
 	}*/
 
-    char *n_compressed_data = (char *) METAENGINE_REALLOC(compressed_data, compressed_data_size);
+    char *n_compressed_data = (char *) realloc(compressed_data, compressed_data_size);
     if (n_compressed_data == NULL)
         throw std::runtime_error("Failed to realloc memory for Chunk::write compressed_data.");
     compressed_data = n_compressed_data;
@@ -235,7 +235,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
     const int src_size2 = (int) (CHUNK_W * CHUNK_H * sizeof(unsigned int));
     const int max_dst_size2 = LZ4_compressBound(src_size2);
 
-    char *compressed_data2 = (char *) METAENGINE_MALLOC((size_t) max_dst_size2);
+    char *compressed_data2 = (char *) malloc((size_t) max_dst_size2);
 
     const int compressed_data_size2 = LZ4_compress_fast(src2, compressed_data2, src_size2, max_dst_size2, 10);
 
@@ -247,7 +247,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
 		METADOT_BUG("Compression ratio: {}", (float)compressed_data_size2 / src_size2 * 100);
 	}*/
 
-    char *n_compressed_data2 = (char *) METAENGINE_REALLOC(compressed_data2, (size_t) compressed_data_size2);
+    char *n_compressed_data2 = (char *) realloc(compressed_data2, (size_t) compressed_data_size2);
     if (n_compressed_data2 == NULL)
         throw std::runtime_error("Failed to realloc memory for Chunk::write compressed_data2.");
     compressed_data2 = n_compressed_data2;
@@ -265,8 +265,8 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
     delete[] buf;
     myfile.write((char *) compressed_data2, compressed_data_size2);
 
-    METAENGINE_FREE(compressed_data);
-    METAENGINE_FREE(compressed_data2);
+    free(compressed_data);
+    free(compressed_data2);
 
     myfile.close();
 }
