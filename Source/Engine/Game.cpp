@@ -216,7 +216,7 @@ int Game::init(int argc, char *argv[]) {
             }
             if (options.test == "test_mu") {
                 for (auto t: options.files) {
-                    if (interp.evaluateFile(std::string(t))) return 1;
+                    METADOT_UNIT(!interp.evaluateFile(std::string(t)));
                 }
                 return 0;
             }

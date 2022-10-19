@@ -165,7 +165,7 @@ void cleanUp()
     }
 }
 
-void testclr()
+int testclr()
 {
     if (!load_hostfxr())
     {
@@ -207,4 +207,6 @@ void testclr()
     std::cout << "----- Entrance Method Exited! -----" << std::endl;
 
     cleanUp();
+
+    return 0;
 }
