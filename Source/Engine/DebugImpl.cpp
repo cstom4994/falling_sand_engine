@@ -1,4 +1,4 @@
-// Copyright(c) 2019 - 2022, KaoruXun All rights reserved.
+// Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "DebugImpl.hpp"
 
@@ -39,7 +39,7 @@ namespace MetaEngine {
     const std::string metadata() {
         std::string result;
 
-        result += "Copyright(c) 2019 - 2022, KaoruXun All rights reserved.\n";
+        result += "Copyright(c) 2022, KaoruXun All rights reserved.\n";
         result += "MetaDot\n";
 
 #ifdef _WIN32

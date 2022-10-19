@@ -1,7 +1,7 @@
 
 // Properties module fork from https://gitlab.com/LIONant/properties
 // Copyright (c) 2019 LIONant
-// Copyright (c) 2019 - 2022, KaoruXun All rights reserved.
+// Copyright (c) 2022, KaoruXun All rights reserved.
 // MIT License
 
 /*

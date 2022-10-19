@@ -1,4 +1,4 @@
-// Copyright(c) 2019 - 2022, KaoruXun All rights reserved.
+// Copyright(c) 2022, KaoruXun All rights reserved.
 
 // See  https://zhuanlan.zhihu.com/p/415875455
 //      https://devblogs.microsoft.com/dotnet/improvements-in-native-code-interop-in-net-5-0/#suppressgctransition
