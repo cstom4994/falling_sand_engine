@@ -165,7 +165,7 @@ void cleanUp()
     }
 }
 
-void test()
+void testclr()
 {
     if (!load_hostfxr())
     {

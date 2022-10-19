@@ -28,7 +28,7 @@
 
 #include "Engine/FileSystem.hpp"
 #include "Engine/lib/final_dynamic_opengl.h"
-
+#include "Engine/lib/structopt.hpp"
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string.h>
@@ -64,6 +64,13 @@ extern void testDukpp();
 namespace MetaEngine {
     cr_plugin ctx;
 }
+
+struct Options
+{
+    std::optional<std::string> test;
+    std::vector<std::string> files;
+};
+STRUCTOPT(Options, test, files);
 
 HostData Game::data;
 
@@ -199,15 +206,24 @@ Game::~Game() {
 
 int Game::init(int argc, char *argv[]) {
 
-    if (argc >= 2) {
-        if (!strcmp(argv[1], "test_mu")) {
-            return interp.evaluateFile(std::string(argv[2]));
+    try {
+        auto options = structopt::app("my_app").parse<Options>(argc, argv);
+
+        if (!options.test->empty()) {
+            if (options.test == "test_clr") {
+                testclr();
+                return 0;
+            }
+            if (options.test == "test_mu") {
+                return interp.evaluateFile(std::string(options.files));
+            }
         }
-        if (!strcmp(argv[1], "test_clr")) {
-            test();
-            return 0;
-        }
+
+    } catch (structopt::exception &e) {
+        std::cout << e.what() << "\n";
+        std::cout << e.help();
     }
+
 
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
     networkMode = NetworkMode::HOST;
