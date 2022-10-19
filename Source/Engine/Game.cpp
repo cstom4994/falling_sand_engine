@@ -209,13 +209,16 @@ int Game::init(int argc, char *argv[]) {
     try {
         auto options = structopt::app("my_app").parse<Options>(argc, argv);
 
-        if (!options.test->empty()) {
+        if (!options.test.value_or("").empty()) {
             if (options.test == "test_clr") {
                 testclr();
                 return 0;
             }
             if (options.test == "test_mu") {
-                return interp.evaluateFile(std::string(options.files));
+                for (auto t: options.files) {
+                    if (interp.evaluateFile(std::string(t))) return 1;
+                }
+                return 0;
             }
         }
 
