@@ -5,6 +5,7 @@
 //  file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // Hack by KaoruXun for MetaDot
+// Fork from https://github.com/p-ranav/structopt
 
 #ifndef VISIT_STRUCT_HPP_INCLUDED
 #define VISIT_STRUCT_HPP_INCLUDED
