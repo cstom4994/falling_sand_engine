@@ -39,9 +39,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ref: Laird Shaw, http://creativeandcritical.net/str-replace-c/
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <string>
 
 
 char *replace_str(const char *str, const char *old, const char *recent) {

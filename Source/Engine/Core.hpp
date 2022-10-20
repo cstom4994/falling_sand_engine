@@ -132,43 +132,6 @@ namespace MetaEngine {
     using VoidFunction = std::function<void(void)>;
     using AnyEventCallback = std::function<bool(void *backendEvent)>;
 
-
-    // TypeClass
-    class Type {
-    public:
-        static const UInt32 MAX_TYPES = 128;
-
-        Type(const char *name, Type *parent);
-        Type(const Type &) = delete;
-
-        static Type *byName(const char *name);
-
-        void init();
-        UInt32 getId();
-        const char *getName() const;
-
-        bool isa(const UInt32 &other) {
-            if (!inited)
-                init();
-            return bits[other];
-        }
-
-        bool isa(const Type &other) {
-            if (!inited)
-                init();
-            // Note that if this type implements the other
-            // calling init above will also have inited
-            // the other.
-            return bits[other.id];
-        }
-
-    private:
-        const char *const name;
-        Type *const parent;
-        UInt32 id;
-        bool inited;
-        std::bitset<MAX_TYPES> bits;
-    };
 }// namespace MetaEngine
 
 

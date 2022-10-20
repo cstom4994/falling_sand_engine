@@ -33,7 +33,7 @@
 #include "Engine/lib/structopt.hpp"
 
 #include <imgui/IconsFontAwesome5.h>
-#include <string.h>
+#include <string>
 
 #include "InEngine.h"
 

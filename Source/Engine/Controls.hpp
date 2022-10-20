@@ -2,7 +2,7 @@
 
 
 #include <SDL.h>
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 enum ControlMode {

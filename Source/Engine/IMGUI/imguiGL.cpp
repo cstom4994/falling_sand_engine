@@ -41,8 +41,8 @@ void *imguimalloc(size_t size, void *userptr);
 
 #if 1
 #include "fontstash.h"
-#include <stdio.h> // malloc, free, fopen, fclose, ftell, fseek, fread
-#include <string.h>// memset
+#include <cstdio> // malloc, free, fopen, fclose, ftell, fseek, fread
+#include <string>// memset
 
 //#include <GLFW/glfw3.h>             // Or any other GL header of your choice.
 #include "fontstashGL.h"

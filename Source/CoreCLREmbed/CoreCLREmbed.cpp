@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 #include <set>
-#include <assert.h>
+#include <cassert>
 #include <Windows.h>
 
 #include <nethost.h>
