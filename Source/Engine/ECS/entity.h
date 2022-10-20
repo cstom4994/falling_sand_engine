@@ -409,7 +409,7 @@ namespace MetaEngine::ECS {
     }// namespace detail
 
 #define ENTITY_MANAGER_TEMPS template<typename... CTs, typename... TTs>
-#define ENTITY_MANAGER_SPEC entity_manager<component_list<CTs...>, tag_list<TTs...>>
+#define ENTITY_MANAGER_SPEC MetaEngine::ECS::entity_manager<MetaEngine::ECS::component_list<CTs...>, MetaEngine::ECS::tag_list<TTs...>>
 
     ENTITY_MANAGER_TEMPS void ENTITY_MANAGER_SPEC::report_error(error_code errCode,
                                                                 const char *msg) const {
@@ -911,12 +911,11 @@ namespace MetaEngine::ECS {
         }
     }
 
-    ENTITY_MANAGER_TEMPS
-    template<typename... Events>
-    void ENTITY_MANAGER_SPEC::set_event_manager(
-            const event_manager<component_list_t, tag_list_t, Events...> &em) {
-        eventManager = &em.get_entity_event_manager();
-    }
+    // ENTITY_MANAGER_TEMPS
+    // template<typename... Events>
+    // void ENTITY_MANAGER_SPEC::set_event_manager(const MetaEngine::ECS::event_manager<component_list_t, tag_list_t, Events...> &em) {
+    //     eventManager = &em.get_entity_event_manager();
+    // }
 
     ENTITY_MANAGER_TEMPS
     void ENTITY_MANAGER_SPEC::clear_event_manager() {

@@ -18,12 +18,14 @@
 
 #include "CoreCLREmbed/CoreCLREmbed.hpp"
 #include "Engine/Core.hpp"
+#include "Engine/ECS/entity.h"
 #include "Engine/GCManager.hpp"
 #include "Engine/ImGuiBase.h"
 #include "Engine/Macros.hpp"
 #include "Engine/ModuleStack.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
+
 
 
 #include "Engine/FileSystem.hpp"
@@ -218,6 +220,20 @@ int Game::init(int argc, char *argv[]) {
                 for (auto t: options.files) {
                     METADOT_UNIT(!interp.evaluateFile(std::string(t)));
                 }
+                return 0;
+            }
+            if (options.test == "test_ecs") {
+                using entity_manager_t = MetaEngine::ECS::entity_manager<MetaEngine::ECS::component_list<int>, MetaEngine::ECS::tag_list<>>;
+                using entity_t = entity_manager_t::entity_t;
+
+                entity_manager_t entityManager;
+                for (int i = 0; i < 50; ++i) {
+                    entityManager.create_entity(i);
+                }
+
+                auto sum = 0;
+                entityManager.for_each<int>([&](entity_t ent, int i) { sum += i; });
+                std::cout << sum << "\n";
                 return 0;
             }
         }
