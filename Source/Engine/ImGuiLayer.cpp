@@ -6,11 +6,14 @@
 #include "Engine/lib/final_dynamic_opengl.h"
 
 #include "Engine/Core.hpp"
+#include "Engine/GCManager.hpp"
+#include "Engine/IMGUI/imgui.hpp"
+#include "Engine/IMGUI/imguiGL.hpp"
 #include "Engine/Macros.hpp"
 #include "Engine/properties/ImGuiPropertyExample.h"
 #include "Settings.hpp"
 #include "Utils.hpp"
-#include "Engine/GCManager.hpp"
+
 
 #include "Game.hpp"
 #include "InEngine.h"
@@ -66,6 +69,9 @@ static int common_control_initialize() {
 
 #endif
 
+
+#if defined(METADOT_EMBEDRES)
+
 static unsigned char font_fz[] = {
 #include "FZXIANGSU12.ttf.h"
 };
@@ -77,6 +83,8 @@ static unsigned char font_silver[] = {
 static unsigned char font_fa[] = {
 #include "fa_solid_900.ttf.h"
 };
+
+#endif
 
 void MetaEngine::GameUI_Draw(Game *game) {
     for (MetaEngine::Module *l: *game->m_ModuleStack)
@@ -1579,6 +1587,7 @@ namespace MetaEngine {
         //ImGui::SetAllocatorFunctions(myMalloc, myFree);
 
         m_imgui = ImGui::CreateContext();
+        METADOT_ASSERT(imguiRenderGLInit(), "Init MetaDotImGui failed");
 
         ImGuiIO &io = ImGui::GetIO();
 
@@ -1596,6 +1605,8 @@ namespace MetaEngine {
         float scale = 1.0f;
 
         // Using cstd malloc because imgui will use default delete to destruct fonts' data
+
+#if defined(METADOT_EMBEDRES)
         void *fonts_1 = malloc(sizeof(font_fz));
         void *fonts_2 = malloc(sizeof(font_silver));
         void *fonts_3 = malloc(sizeof(font_fa));
@@ -1612,6 +1623,7 @@ namespace MetaEngine {
         static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
         io.Fonts->AddFontFromMemoryTTF(fonts_3, sizeof(font_fa), 15.0f, &config, icon_ranges);
         io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
+#endif
 
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
@@ -1718,6 +1730,7 @@ namespace MetaEngine {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
 
+        imguiRenderGLDestroy();
         ImGui::DestroyContext();
     }
 
@@ -1734,6 +1747,8 @@ namespace MetaEngine {
         ImGui::Render();
         SDL_GL_MakeCurrent(window, gl_context);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        imguiRenderGLDraw(1360, 870);   // haha
 
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
