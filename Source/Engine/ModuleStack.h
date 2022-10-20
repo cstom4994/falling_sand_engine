@@ -41,9 +41,7 @@ namespace MetaEngine {
         ~ModuleStack();
 
         void pushLayer(Module *layer);
-        void pushOverlay(Module *overlay);
         void popLayer(Module *layer);
-        void popOverlay(Module *overlay);
 
         std::vector<Module *>::iterator begin() { return m_Layers.begin(); }
         std::vector<Module *>::iterator end() { return m_Layers.end(); }

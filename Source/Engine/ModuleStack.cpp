@@ -30,12 +30,6 @@ namespace MetaEngine {
         layer->onAttach();
     }
 
-    void ModuleStack::pushOverlay(Module *overlay) {
-        m_Layers.emplace_back(overlay);
-        m_instances.insert(std::make_pair(overlay->getName(), overlay));
-        overlay->onAttach();
-    }
-
     void ModuleStack::popLayer(Module *layer) {
         auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
         if (it != m_Layers.end()) {
@@ -45,14 +39,4 @@ namespace MetaEngine {
         }
         layer->onDetach();
     }
-
-    void ModuleStack::popOverlay(Module *overlay) {
-        auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
-        if (it != m_Layers.end()) {
-            m_instances.erase(overlay->getName());
-            m_Layers.erase(it);
-        }
-        overlay->onDetach();
-    }
-
 }// namespace MetaEngine
