@@ -4,9 +4,9 @@
 #include "LuaBinder.hpp"
 #include "Engine/FileSystem.hpp"
 
-#include "Engine/lib/lua/sol/sol.hpp"
+#include "Libs/lua/sol/sol.hpp"
 
-#include "Engine/lib/lua/lua.hpp"
+#include "Libs/lua/lua.hpp"
 
 #include "LuaBinder_ImGui.hpp"
 

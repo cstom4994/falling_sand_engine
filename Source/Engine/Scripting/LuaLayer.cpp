@@ -5,7 +5,7 @@
 #include "Settings.hpp"
 #include "imgui.h"
 
-#include "Engine/lib/lua/sol/sol.hpp"
+#include "Libs/lua/sol/sol.hpp"
 
 #include "Engine/FileSystem.hpp"
 #include "Engine/ImGuiBase.h"

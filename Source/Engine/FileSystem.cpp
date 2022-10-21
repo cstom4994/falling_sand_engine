@@ -4,7 +4,7 @@
 #include "Utils.hpp"
 
 #define PHYSFS_DECL METAENGINE_PHYSFS_DEF
-#include "Engine/lib/physfs/physfs.h"
+#include "Libs/physfs/physfs.h"
 
 #if defined(_WIN32)
 #include <Windows.h>

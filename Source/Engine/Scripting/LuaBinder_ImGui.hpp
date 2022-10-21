@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "Engine/lib/lua/sol/sol.hpp"
+#include "Libs/lua/sol/sol.hpp"
 
 namespace MetaEngine::LuaBinder::ImGuiWarp {
     // Windows

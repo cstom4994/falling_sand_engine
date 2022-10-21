@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Engine/lib/lua/sol/sol.hpp"
+#include "Libs/lua/sol/sol.hpp"
 
 #include "Engine/Refl.hpp"
 

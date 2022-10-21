@@ -35,8 +35,8 @@
 #include <vector>
 
 #include "Engine/GCManager.hpp"
-#include "Engine/lib/VisitStruct.hpp"
-#include "Engine/lib/loguru.hpp"
+#include "Libs/VisitStruct.hpp"
+#include "Libs/loguru.hpp"
 
 #include <nlohmann/json.hpp>
 

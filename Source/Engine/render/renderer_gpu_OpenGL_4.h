@@ -3,7 +3,7 @@
 
 #include "renderer_gpu.h"
 
-#include "Engine/lib/final_dynamic_opengl.h"
+#include "Libs/final_dynamic_opengl.h"
 
 #define METAENGINE_Render_CONTEXT_DATA ContextData_OpenGL_4
 #define METAENGINE_Render_IMAGE_DATA ImageData_OpenGL_4

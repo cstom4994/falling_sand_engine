@@ -3,7 +3,7 @@
 #include "ImGuiLayer.hpp"
 
 #include "Engine/ImGuiBase.h"
-#include "Engine/lib/final_dynamic_opengl.h"
+#include "Libs/final_dynamic_opengl.h"
 
 #include "Engine/Core.hpp"
 #include "Engine/GCManager.hpp"

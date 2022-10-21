@@ -4,7 +4,7 @@
 
 #include "Engine/ModuleStack.h"
 
-#include "Engine/lib/lua/sol/sol.hpp"
+#include "Libs/lua/sol/sol.hpp"
 
 struct lua_State;
 

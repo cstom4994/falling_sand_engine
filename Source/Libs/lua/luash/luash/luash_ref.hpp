@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Engine/lib/lua/lua.hpp"
-#include "Engine/lib/lua/luash/meta/nameof.hpp"
+#include "Libs/lua/lua.hpp"
+#include "Libs/lua/luash/meta/nameof.hpp"
 #include <typeindex>
 #include <tuple>
 #include <unordered_map>

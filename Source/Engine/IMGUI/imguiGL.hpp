@@ -39,7 +39,7 @@
 #define $GL3 $no
 #endif
 
-#include "Engine/lib/final_dynamic_opengl.h"
+#include "Libs/final_dynamic_opengl.h"
 
 bool imguiRenderGLInit();
 void imguiRenderGLDestroy();

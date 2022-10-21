@@ -4,7 +4,7 @@
 
 #include "Engine/Core.hpp"
 
-#include "Engine/lib/lua/luash/meta/nameof.hpp"
+#include "Libs/lua/luash/meta/nameof.hpp"
 
 #include <algorithm>
 #include <functional>

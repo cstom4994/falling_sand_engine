@@ -29,8 +29,8 @@
 
 
 #include "Engine/FileSystem.hpp"
-#include "Engine/lib/final_dynamic_opengl.h"
-#include "Engine/lib/structopt.hpp"
+#include "Libs/final_dynamic_opengl.h"
+#include "Libs/structopt.hpp"
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
@@ -38,7 +38,7 @@
 #include "InEngine.h"
 
 #define CR_HOST CR_UNSAFE
-#include "Engine/lib/cr.h"
+#include "Libs/cr.h"
 
 #ifdef _WIN32
 #include <SDL_syswm.h>
