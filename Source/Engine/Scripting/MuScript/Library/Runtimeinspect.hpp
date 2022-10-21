@@ -40,7 +40,7 @@
 #include <exception>
 #include <string>
 
-#include "Engine/Core.hpp"
+#include "Game/Core.hpp"
 
 class static_string {
     const char *const p_;

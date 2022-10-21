@@ -98,8 +98,8 @@
 #include <utility>    // for pair
 #include <stdexcept>  // For length_error
 #include <type_traits>
-#include "lib/sparsehash/internal/hashtable-common.h"
-#include "lib/sparsehash/internal/libc_allocator_with_realloc.h"
+#include "Libs/sparsehash/internal/hashtable-common.h"
+#include "Libs/sparsehash/internal/libc_allocator_with_realloc.h"
 
 namespace google {
 

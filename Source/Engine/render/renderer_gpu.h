@@ -11,7 +11,7 @@
 #include <cstdio>
 
 
-#include "Engine/Core.hpp"
+#include "Game/Core.hpp"
 
 // Use SDL's DLL defines
 #include "begin_code.h"

@@ -27,7 +27,7 @@
 
 #include "dukpp.hpp"
 
-#include "Engine/Core.hpp"
+#include "Game/Core.hpp"
 
 
 

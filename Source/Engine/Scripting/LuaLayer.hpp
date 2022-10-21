@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Engine/ModuleStack.h"
+#include "Game/ModuleStack.h"
 
 #include "Libs/lua/sol/sol.hpp"
 

@@ -102,8 +102,8 @@
 #include <utility>     // for pair<>
 #include <tuple>       // forward_as_tuple
 #include <type_traits> // for enable_if, is_constructible, etc
-#include "lib/sparsehash/internal/densehashtable.h"  // IWYU pragma: export
-#include "lib/sparsehash/internal/libc_allocator_with_realloc.h"
+#include "Libs/sparsehash/internal/densehashtable.h"  // IWYU pragma: export
+#include "Libs/sparsehash/internal/libc_allocator_with_realloc.h"
 
 namespace google {
 

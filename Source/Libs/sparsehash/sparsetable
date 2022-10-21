@@ -233,9 +233,9 @@
 #include <memory>     // uninitialized_copy, uninitialized_fill
 #include <vector>     // a sparsetable is a vector of groups
 #include <type_traits>
-#include "lib/sparsehash/internal/hashtable-common.h"
-#include "lib/sparsehash/internal/libc_allocator_with_realloc.h"
-#include "lib/sparsehash/traits"
+#include "Libs/sparsehash/internal/hashtable-common.h"
+#include "Libs/sparsehash/internal/libc_allocator_with_realloc.h"
+#include "Libs/sparsehash/traits"
 
 namespace google {
 // The smaller this is, the faster lookup is (because the group bitmap is

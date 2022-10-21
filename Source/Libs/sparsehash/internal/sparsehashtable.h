@@ -101,8 +101,8 @@
 #include <limits>       // for numeric_limits
 #include <utility>      // for pair
 #include <type_traits>  // for remove_const
-#include "lib/sparsehash/internal/hashtable-common.h"
-#include "lib/sparsehash/sparsetable"  // IWYU pragma: export
+#include "Libs/sparsehash/internal/hashtable-common.h"
+#include "Libs/sparsehash/sparsetable"  // IWYU pragma: export
 #include <stdexcept>               // For length_error
 
 namespace google {

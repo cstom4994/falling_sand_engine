@@ -1,16 +1,16 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "LuaLayer.hpp"
-#include "Engine/InEngine.h"
-#include "Settings.hpp"
+#include "Game/InEngine.h"
+#include "Game/Settings.hpp"
 #include "imgui.h"
 
 #include "Libs/lua/sol/sol.hpp"
 
-#include "Engine/FileSystem.hpp"
-#include "Engine/ImGuiBase.h"
-#include "Engine/ImGuiLayer.hpp"
-#include "Engine/Utils.hpp"
+#include "Game/FileSystem.hpp"
+#include "Game/ImGuiBase.h"
+#include "Game/ImGuiLayer.hpp"
+#include "Game/Utils.hpp"
 #include "LuaBinder.hpp"
 #include <cstring>
 

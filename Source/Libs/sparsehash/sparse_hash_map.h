@@ -87,8 +87,8 @@
 #include <functional>  // for equal_to<>, select1st<>, etc
 #include <memory>      // for alloc
 #include <utility>     // for pair<>
-#include "lib/sparsehash/internal/libc_allocator_with_realloc.h"
-#include "lib/sparsehash/internal/sparsehashtable.h"  // IWYU pragma: export
+#include "Libs/sparsehash/internal/libc_allocator_with_realloc.h"
+#include "Libs/sparsehash/internal/sparsehashtable.h"  // IWYU pragma: export
 
 namespace google {
 
