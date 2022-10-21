@@ -62,6 +62,7 @@ end
 include_dir_list = {
     "Source",
     "Source/Engine",
+    "Source/Engine/lib/lua/lua",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -118,6 +119,20 @@ target("vendor")
 	add_headerfiles("Source/Vendor/**.hpp")
     set_symbols("debug")
 
+target("lua")
+    set_kind("static")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_files("Source/Engine/lib/lua/lua/*.c|lua.c|luac.c|onelua.c")
+
+target("luaexe")
+    set_basename("lua54")
+    set_kind("binary")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_files("Source/Engine/lib/lua/lua/lua.c")
+    add_deps("lua")
+
 target("CoreCLREmbed")
     set_kind("static")
     add_includedirs(include_dir_list)
@@ -148,7 +163,6 @@ target("MetaDot")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor", "CoreCLREmbed")
     add_links("nethost")
     add_links(link_list)
     add_files("Source/Engine/**.c")
@@ -162,6 +176,7 @@ target("MetaDot")
     add_rules("utils.bin2c", {extensions = {".ttf"}})
     add_files("Resources/**.ttf")
 	add_headerfiles("Resources/**.h")
+    remove_files("Source/Engine/lib/lua/lua/**")
     add_linkdirs("Source/Vendor/coreclr")
     set_symbols("debug")
 
