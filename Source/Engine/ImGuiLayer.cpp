@@ -69,7 +69,6 @@ static int common_control_initialize() {
 
 #endif
 
-
 #if defined(METADOT_EMBEDRES)
 
 static unsigned char font_fz[] = {
@@ -1623,6 +1622,17 @@ namespace MetaEngine {
         static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
         io.Fonts->AddFontFromMemoryTTF(fonts_3, sizeof(font_fa), 15.0f, &config, icon_ranges);
         io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
+#else
+
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/FZXIANGSU12.ttf").c_str(), 22.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+
+        config.MergeMode = true;
+        config.GlyphMinAdvanceX = 10.0f;
+
+        static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/fa_solid_900.ttf").c_str(), 15.0f, &config, icon_ranges);
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/Silver.ttf").c_str(), 26.0f, &config);
+
 #endif
 
 
