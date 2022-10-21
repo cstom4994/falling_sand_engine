@@ -1,4 +1,6 @@
 
 extern "C" {
-#include "minilua.h"
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 }
