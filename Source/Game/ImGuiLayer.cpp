@@ -1628,9 +1628,6 @@ namespace MetaEngine {
     }
 
     ImGuiLayer::ImGuiLayer() {
-        m_L = luaL_newstate();
-
-        luaL_openlibs(m_L);
     }
 
     class OpenGL3TextureManager {
