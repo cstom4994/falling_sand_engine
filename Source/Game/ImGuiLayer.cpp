@@ -5,9 +5,9 @@
 #include "Game/ImGuiBase.h"
 #include "Libs/final_dynamic_opengl.h"
 
+#include "Engine/IMGUI/ImGuiDSL.hpp"
 #include "Engine/IMGUI/imgui.hpp"
 #include "Engine/IMGUI/imguiGL.hpp"
-#include "Engine/IMGUI/ImGuiDSL.hpp"
 #include "Engine/Properties/ImGuiPropertyExample.h"
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
@@ -15,9 +15,7 @@
 #include "Settings.hpp"
 #include "Utils.hpp"
 
-
 #include "uidsl/hello.h"
-
 
 #include "Game.hpp"
 #include "InEngine.h"
@@ -2552,8 +2550,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGuiAutoTest();
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem(U8("其他测试"))) {
-
+                if (ImGui::BeginTabItem(U8("ImGuiDsl测试"))) {
+                    static bool ui_imguidsl_test = true;
+                    ImGui::ShowDSLDemoWindow(&ui_imguidsl_test);
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
@@ -2588,10 +2587,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         if (Settings::ui_gcmanager) {
             METADOT_GC_DISPLAY(0.3f);
         }
-
-
-        bool b = true;
-        ImGui::ShowDSLDemoWindow(&b);
 
         // auto ct = complex_thing{};
 

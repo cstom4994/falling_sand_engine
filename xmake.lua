@@ -158,6 +158,7 @@ target("vendor")
 
 target("lua")
     set_kind("static")
+    add_rules("c.unity_build")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Libs/lua/lua/*.c|lua.c|luac.c|onelua.c")
