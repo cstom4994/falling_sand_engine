@@ -505,27 +505,6 @@ int Game::init(int argc, char *argv[]) {
 
         initThread.get();
 
-        //SoLoud::Soloud soloud;
-        //int mp3Handle, oggHandle;
-        //SoLoud::WavStream ogg, mp3;
-        //soloud.init();
-
-        //mp3.load(METADOT_RESLOC_STR("data/assets/music/ee.mp3"));
-        //ogg.load(METADOT_RESLOC_STR("data/assets/music/background.ogg"));
-
-        //mp3.setLooping(1);
-        //ogg.setLooping(1);
-
-        //mp3Handle = soloud.play(mp3, 1, 0, 1);
-        //oggHandle = soloud.play(ogg, 0, 0, 1);
-
-        //SoLoud::handle groupHandle = soloud.createVoiceGroup();
-        //soloud.addVoiceToGroup(groupHandle, mp3Handle);
-        //soloud.addVoiceToGroup(groupHandle, oggHandle);
-
-        //soloud.setProtectVoice(groupHandle, 1);
-        //soloud.setPause(groupHandle, 0);
-
         audioEngine.PlayEvent("event:/Music/Title");
         audioEngine.Update();
     }

@@ -134,7 +134,8 @@ include_dir_list = {
     "Source/Vendor/json/include",
     "Source/Vendor/coreclr",
     "Source/Vendor/fmt/include",
-    "Source/Vendor/cppfront/include"
+    "Source/Vendor/cppfront/include",
+    "Source/Vendor/fmod/inc"
     }
 
 defines_list = {
@@ -275,7 +276,7 @@ target("MetaDot")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_deps("vendor", "Libs", "lua", "Engine", "CoreCLREmbed", "Embed")
-    add_links("nethost")
+    add_links("nethost", "fmodstudioL_vc", "fmodL_vc")
     add_links(link_list)
     add_files("Source/Game/**.cpp")
 	add_headerfiles("Source/Game/**.h")
@@ -287,6 +288,7 @@ target("MetaDot")
     add_files("Resources/**.ttf")
 	add_headerfiles("Resources/**.h")
     add_linkdirs("Source/Vendor/coreclr")
+    add_linkdirs("Source/Vendor/fmod/lib")
     set_symbols("debug")
 
 target("ManagedLib")
