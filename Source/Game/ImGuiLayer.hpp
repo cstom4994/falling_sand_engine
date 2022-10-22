@@ -4,8 +4,9 @@
 
 #include "ImGuiBase.h"
 
-#include "Game/ModuleStack.h"
 #include "Engine/Scripting/LuaBinder.hpp"
+#include "Game/ModuleStack.h"
+
 
 #include "Libs/ImGui/TextEditor.h"
 
@@ -36,6 +37,18 @@ namespace MetaEngine {
         TextEditor editor;
         const char *fileToEdit = "data/engine/lua/vec.lua";
 
+        // imgui states
+        bool checked1 = false;
+        bool checked2 = false;
+        bool checked3 = true;
+        bool checked4 = false;
+        float value1 = 50.f;
+        float value2 = 30.f;
+        float value3A = 33.f, value3B = 66.f;
+        float value4A = 33.f, value4B = 66.f;
+        int scrollarea1 = 0;
+        int scrollarea2 = 0;
+        int scrollarea3 = 0;
 
     public:
         ImGuiLayer();

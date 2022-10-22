@@ -6,8 +6,6 @@
 #include "Libs/final_dynamic_opengl.h"
 
 #include "Engine/IMGUI/ImGuiDSL.hpp"
-#include "Engine/IMGUI/imgui.hpp"
-#include "Engine/IMGUI/imguiGL.hpp"
 #include "Engine/Properties/ImGuiPropertyExample.h"
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
@@ -1635,16 +1633,6 @@ namespace MetaEngine {
         luaL_openlibs(m_L);
     }
 
-    //inline void* myMalloc(size_t size, void* user_data)
-    //{
-    //    return METADOT_MEMORY_ALLOC(size);
-    //}
-
-    //inline void myFree(void* ptr, void* user_data)
-    //{
-    //    METADOT_MEMORY_DEALLOC(ptr);
-    //}
-
     class OpenGL3TextureManager {
     public:
         ~OpenGL3TextureManager() {
@@ -1712,7 +1700,6 @@ namespace MetaEngine {
         //ImGui::SetAllocatorFunctions(myMalloc, myFree);
 
         m_imgui = ImGui::CreateContext();
-        METADOT_ASSERT(imguiRenderGLInit(), "Init MetaDotImGui failed");
 
         ImGuiIO &io = ImGui::GetIO();
 
@@ -1865,8 +1852,6 @@ namespace MetaEngine {
     void ImGuiLayer::onDetach() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
-
-        imguiRenderGLDestroy();
         ImGui::DestroyContext();
     }
 
@@ -1883,8 +1868,6 @@ namespace MetaEngine {
         ImGui::Render();
         SDL_GL_MakeCurrent(window, gl_context);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        imguiRenderGLDraw(1360, 870);// haha
 
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
