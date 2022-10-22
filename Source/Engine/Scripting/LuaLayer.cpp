@@ -652,22 +652,22 @@ namespace MetaEngine {
     }
 
     static int metadot_info(lua_State *L) {
-        METADOT_INFO(nd_print(L, LUACON_INFO_PREF).c_str());
+        METADOT_INFO("[LUA] {0}", nd_print(L, LUACON_INFO_PREF).c_str());
         return 0;
     }
 
     static int metadot_trace(lua_State *L) {
-        METADOT_TRACE(nd_print(L, LUACON_TRACE_PREF).c_str());
+        METADOT_TRACE("[LUA] {0}", nd_print(L, LUACON_TRACE_PREF).c_str());
         return 0;
     }
 
     static int metadot_error(lua_State *L) {
-        METADOT_ERROR(nd_print(L, LUACON_ERROR_PREF).c_str());
+        METADOT_ERROR("[LUA] {0}", nd_print(L, LUACON_ERROR_PREF).c_str());
         return 0;
     }
 
     static int metadot_warn(lua_State *L) {
-        METADOT_WARN(nd_print(L, LUACON_WARN_PREF).c_str());
+        METADOT_WARN("[LUA] {0}", nd_print(L, LUACON_WARN_PREF).c_str());
         return 0;
     }
 
@@ -771,8 +771,8 @@ namespace MetaEngine {
 
         s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-        s_lua.do_string(MetaEngine::Utils::Format("package.path = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/engine/lua")));
-        s_lua.do_string(MetaEngine::Utils::Format("package.searchpath = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/engine/lua")));
+        s_lua.do_string(MetaEngine::Utils::Format("package.path = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/lua")));
+        s_lua.do_string(MetaEngine::Utils::Format("package.searchpath = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/lua")));
 
         LuaBinder::bindEverything(s_lua);
 
@@ -781,7 +781,7 @@ namespace MetaEngine {
         //namespac.set_function("openWindow", [](GUIWindow& window) {GUIContext::get().openWindow(&window); });
 
 
-        runScriptFromFile(m_L, "data/engine/lua/lang.lua");
+        runScriptFromFile(m_L, "data/lua/lang.lua");
 
         sol::function lang = s_lua["translate"];
 
@@ -789,9 +789,9 @@ namespace MetaEngine {
 
         METADOT_INFO(a.c_str());
 
-        s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/engine/lua/coroutines.lua"));
+        s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
 
-        runScriptFromFile(m_L, "data/engine/lua/startup.lua");
+        runScriptFromFile(m_L, "data/lua/startup.lua");
     }
 
     static void saveConsoleState() {

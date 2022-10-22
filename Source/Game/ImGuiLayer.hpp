@@ -34,7 +34,7 @@ namespace MetaEngine {
         ImGuiContext *m_imgui = nullptr;
 
         TextEditor editor;
-        const char *fileToEdit = "data/engine/lua/vec.lua";
+        const char *fileToEdit = "data/lua/vec.lua";
 
     public:
         ImGuiLayer();
