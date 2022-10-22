@@ -222,7 +222,7 @@ end):gsub('!=', '~='):gsub('||', ' or '):gsub('&&', ' and '):gsub('!', 'not ')
                 break;
             }
             default:
-                METADOT_WARN("unknown field %s of type %d\n", name_.c_str(), static_cast<int>(expected_value_type_));
+                METADOT_WARN("unknown field {0} of type {1}", name_.c_str(), static_cast<int>(expected_value_type_));
                 break;
         }
     } else if (ui_type_ == ui_type_enum::MENU) {
@@ -234,7 +234,7 @@ end):gsub('!=', '~='):gsub('||', ' or '):gsub('&&', ' and '):gsub('!', 'not ')
         if (ImGui::Combo(label_.c_str(), std::get_if<int>(&value_), labels.data(), labels.size()))
             imdirty = true;
     } else {
-        METADOT_WARN("unknown ui %s of type %d\n", name_.c_str(), static_cast<int>(ui_type_));
+        METADOT_WARN("unknown ui {0} of type {1}", name_.c_str(), static_cast<int>(ui_type_));
     }
 
     if (displayChildren && !fields_.empty()) {
@@ -302,7 +302,7 @@ int UIDSLfSet::processLuaParm(lua_State *lua) {
     auto parentid = sol::stack::get<int>(lua, 2);
     auto field = sol::stack::get<sol::table>(L, 3);
     if (parentid < 0 || !field) {
-        METADOT_WARN("bad argument passed to processLuaParm()\n");
+        METADOT_WARN("bad argument passed to processLuaParm()");
         return 0;
     }
     string ui = field["ui"];
@@ -466,7 +466,7 @@ int UIDSLfSet::pushParmValueToLuaStack(lua_State *L, ParmPtr parm) {
                 break;
             }
             default:
-                METADOT_WARN("evalParm: type not supported\n");
+                METADOT_WARN("evalParm: type not supported");
                 return 0;
         }
         return 1;
@@ -489,7 +489,7 @@ int UIDSLfSet::pushParmValueToLuaStack(lua_State *L, ParmPtr parm) {
         }
         return 1;
     } else {
-        METADOT_WARN("don\'t known how to handle parm \"{0}\" of type {1}\n", parm->name().c_str(), static_cast<int>(parm->ui()));
+        METADOT_WARN("don\'t known how to handle parm \"{0}\" of type {1}", parm->name().c_str(), static_cast<int>(parm->ui()));
     }
     return 0;
 }
@@ -534,7 +534,7 @@ int UIDSLfSet::evalParm(lua_State *L) {
     if (auto parm = self->get(expr)) {
         return pushParmValueToLuaStack(L, parm);
     }
-    METADOT_WARN("evalParm: \"%s\" cannot be evaluated\n", expr.c_str());
+    METADOT_WARN("evalParm: \"{0}\" cannot be evaluated", expr.c_str());
     return 0;
 }
 
@@ -543,16 +543,16 @@ bool UIDSLfSet::loadScript(std::string const &s, lua_State *L) {
     if (L == nullptr)
         L = defaultLuaRuntime();
     if (LUA_OK != luaL_loadbufferx(L, uidslexpr_src, sizeof(uidslexpr_src) - 1, "uidslexpr", "t")) {
-        METADOT_WARN("failed to load uidslexpr\n");
+        METADOT_WARN("failed to load uidslexpr");
         return false;
     }
     if (LUA_OK != lua_pcall(L, 0, 1, 0)) {
-        METADOT_WARN("failed to call uidslexpr\n");
+        METADOT_WARN("failed to call uidslexpr");
         return false;
     }
     lua_pushlstring(L, s.c_str(), s.size());
     if (LUA_OK != lua_pcall(L, 1, 1, 0)) {
-        METADOT_WARN("failed to parse uidsl, error: %s\n", luaL_optstring(L, -1, "unknown"));
+        METADOT_WARN("failed to parse uidsl, error: {0}", luaL_optstring(L, -1, "unknown"));
         return false;
     }
     root_ = std::make_shared<ImGuiDSL>(nullptr);
@@ -581,16 +581,16 @@ end
             sol::stack::push(L, this);
             lua_pushcfunction(L, processLuaParm);
             if (LUA_OK != lua_pcall(L, 3, 0, 0)) {
-                METADOT_WARN("failed to feed parsed uidsl into C++\n");
+                METADOT_WARN("failed to feed parsed uidsl into C++");
             } else {
                 // done. pop the uidsl object from stack
                 lua_pop(L, 1);
             }
         } else {
-            METADOT_WARN("failed to load finalizing script\n");
+            METADOT_WARN("failed to load finalizing script");
         }
     } catch (std::exception const &e) {
-        METADOT_WARN("exception: %s\n", e.what());
+        METADOT_WARN("exception: {0}", e.what());
     }
     loaded_ = true;
     return true;
@@ -618,7 +618,7 @@ void UIDSLfSet::exposeToLua(lua_State *L) {
                 return luaL_error(L, "wrong arguments passed to UIDSLfSet:loadScript, expected (UIDSLfSet, string)");
             }
             if (lua_gettop(L) > 2) {
-                METADOT_WARN("extra arguments passed to UIDSLfSet:loadScript are discarded\n");
+                METADOT_WARN("extra arguments passed to UIDSLfSet:loadScript are discarded");
             }
             sol::stack::push(L, optself.value()->loadScript(optsrc.value(), L));
             return 1;
@@ -629,7 +629,7 @@ void UIDSLfSet::exposeToLua(lua_State *L) {
                 return luaL_error(L, "wrong arguments passed to UIDSLfSet:loadScript, expected (UIDSLfSet)");
             }
             if (lua_gettop(L) > 1) {
-                METADOT_WARN("extra arguments passed to UIDSLfSet:updateInspector are discarded\n");
+                METADOT_WARN("extra arguments passed to UIDSLfSet:updateInspector are discarded");
             }
             sol::stack::push(L, optself.value()->updateInspector(L));
             return 1;

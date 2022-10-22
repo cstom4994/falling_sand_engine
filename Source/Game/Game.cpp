@@ -473,7 +473,7 @@ int Game::init(int argc, char *argv[]) {
 
         METADOT_MODULE_GET("LuaLayer", MetaEngine::LuaLayer, mm_LuaLayer);
 
-        mm_LuaLayer->getSolState()->script("print(\'haha\')");
+        mm_LuaLayer->getSolState()->script("METADOT_INFO(\'haha\')");
 
 
 #ifdef _WIN32
