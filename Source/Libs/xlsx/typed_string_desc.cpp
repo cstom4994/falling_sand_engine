@@ -1,7 +1,7 @@
 #include "typed_string_desc.h"
 
 namespace {
-    using namespace spiritsaway::container;
+    using namespace MetaEngine::container;
     std::string value_type_to_str(basic_value_type in_type) {
         switch (in_type) {
             case basic_value_type::str:
@@ -68,7 +68,7 @@ namespace {
 
 
 }// namespace
-namespace spiritsaway::container {
+namespace MetaEngine::container {
     typed_string_desc::typed_string_desc(basic_value_type in_type, const std::vector<json> &in_choice_values)
         : m_type(in_type), m_choice_values(in_choice_values), m_list_sz(0) {
     }
@@ -232,4 +232,4 @@ namespace spiritsaway::container {
     typed_string_desc::~typed_string_desc() {
         return;
     }
-}// namespace spiritsaway::container
+}// namespace MetaEngine::container

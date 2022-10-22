@@ -30,6 +30,9 @@
 #include "Game/FileSystem.hpp"
 #include "Libs/final_dynamic_opengl.h"
 #include "Libs/structopt.hpp"
+#include "Libs/xlsx/xlsx_typed_worksheet.h"
+#include "Libs/xlsx/xlsx_workbook.h"
+
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
@@ -235,6 +238,27 @@ int Game::init(int argc, char *argv[]) {
                 std::cout << sum << "\n";
                 return 0;
             }
+            if (options.test == "test_xlsx") {
+                std::string file_name = "data/pi100000.xlsx";
+                int wait = 0;
+                auto archive_content = make_shared<MetaEngine::xlsx_reader::archive>(file_name);
+                std::cout << "press any key to load the xlsx file" << std::endl;
+                std::cin >> wait;
+                MetaEngine::xlsx_reader::workbook<MetaEngine::xlsx_reader::typed_worksheet> current_workbook(archive_content);
+                std::cout << "press any key to read memory consumption" << std::endl;
+                std::cin >> wait;
+
+                auto sheet_idx_opt = current_workbook.get_sheet_index_by_name("tile_1");
+                const MetaEngine::xlsx_reader::typed_worksheet &cur_worksheet = current_workbook.get_worksheet(sheet_idx_opt.value());
+                std::vector<std::string_view> header_names = {"tile_id", "circle_id", "width", "sequence", "ref_color", "opacity", "filled"};
+                std::vector<uint32_t> header_indexes = cur_worksheet.get_header_index_vector(header_names);
+                for (std::uint32_t i = 0; i < header_names.size(); i++) {
+                    std::cout << "head " << header_names[i] << " at " << header_indexes[i] << std::endl;
+                }
+                auto row_convert_result = cur_worksheet.try_convert_row<std::string, std::string, int, int, std::string, float, bool>(1, header_indexes);
+                auto [opt_tile_id, opt_circle_id, opt_width, opt_seq, opt_ref_color, opt_opacity, opt_filled] = row_convert_result;
+                return 0;
+            }
         }
 
     } catch (structopt::exception &e) {
@@ -332,6 +356,7 @@ int Game::init(int argc, char *argv[]) {
 
             audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
             audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+
             audioEngine.LoadEvent("event:/Music/Title");
 
             audioEngine.LoadEvent("event:/Player/Jump");
@@ -365,13 +390,13 @@ int Game::init(int argc, char *argv[]) {
 
     auto fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
 
-    METADOT_INFO("i'm {}", fu);
+    METADOT_INFO("i'm {0}", fu);
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
     uint32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
     if (SDL_Init(sdl_init_flags) < 0) {
-        METADOT_ERROR("SDL_Init failed: {}", SDL_GetError());
+        METADOT_ERROR("SDL_Init failed: {0}", SDL_GetError());
         return EXIT_FAILURE;
     }
 
@@ -386,11 +411,11 @@ int Game::init(int argc, char *argv[]) {
         window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
         if (window == nullptr) {
-            METADOT_ERROR("Could not create SDL_Window: {}", SDL_GetError());
+            METADOT_ERROR("Could not create SDL_Window: {0}", SDL_GetError());
             return EXIT_FAILURE;
         }
 
-        SDL_SetWindowIcon(window, Textures::loadTexture("data/assets/Icon_32x.png"));
+        // SDL_SetWindowIcon(window, Textures::loadTexture("data/assets/Icon_32x.png"));
 
         // create gpu target
         METADOT_INFO("Creating gpu target...");
@@ -406,7 +431,7 @@ int Game::init(int argc, char *argv[]) {
 
 
         if (target == NULL) {
-            METADOT_ERROR("Could not create METAENGINE_Render_Target: {}", SDL_GetError());
+            METADOT_ERROR("Could not create METAENGINE_Render_Target: {0}", SDL_GetError());
             return EXIT_FAILURE;
         }
         realTarget = target;
@@ -4105,7 +4130,7 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ {}", gameDir.getWorldPath(wn));
+    METADOT_INFO("Loading main menu @ {0}", gameDir.getWorldPath(wn));
     MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;

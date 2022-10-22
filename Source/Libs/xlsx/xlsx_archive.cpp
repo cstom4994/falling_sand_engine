@@ -15,7 +15,7 @@ extern "C"
 }
 
 
-namespace spiritsaway::xlsx_reader {
+namespace MetaEngine::xlsx_reader {
     using namespace std;
     using namespace tinyxml2;
     using namespace std::filesystem;
@@ -130,7 +130,7 @@ namespace spiritsaway::xlsx_reader {
         }
         return all_share_strings;
     }
-    void archive::get_shared_string_view(spiritsaway::memory::arena &string_arena, std::vector<std::string_view> &view_vec) {
+    void archive::get_shared_string_view(MetaEngine::memory::arena &string_arena, std::vector<std::string_view> &view_vec) {
         auto shared_string_table_path = "xl/sharedStrings.xml";
         auto cur_shared_doc = get_xml_document(shared_string_table_path);
 
@@ -183,4 +183,4 @@ namespace spiritsaway::xlsx_reader {
     archive::~archive() {
         clear_resource();
     }
-}// namespace spiritsaway::xlsx_reader
+}// namespace MetaEngine::xlsx_reader

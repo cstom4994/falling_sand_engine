@@ -5,11 +5,11 @@
 #include <sstream>
 
 namespace {
-    using namespace spiritsaway::xlsx_reader;
+    using namespace MetaEngine::xlsx_reader;
     using namespace std;
 
 }// namespace
-namespace spiritsaway::xlsx_reader {
+namespace MetaEngine::xlsx_reader {
     using namespace std;
     typed_header::typed_header(std::shared_ptr<const typed_string_desc> in_type_desc, string_view in_header_name, string_view in_header_comment)
         : type_desc(in_type_desc), header_name(in_header_name), header_comment(in_header_comment) {
@@ -252,4 +252,4 @@ namespace spiritsaway::xlsx_reader {
     std::uint32_t typed_worksheet::get_cell_value_index_pos(std::uint32_t row_idx, std::uint32_t column_idx) const {
         return (row_idx - value_begin_row()) * max_columns + column_idx;
     }
-}// namespace spiritsaway::xlsx_reader
+}// namespace MetaEngine::xlsx_reader

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace spiritsaway::memory {
+namespace MetaEngine::memory {
 
     constexpr std::uint32_t align_to(std::uint32_t pre_size, std::uint32_t align_size) {
         if ((pre_size & (align_size - 1)) != 0) {
@@ -81,4 +81,4 @@ namespace spiritsaway::memory {
             return;
         }
     };
-}// namespace spiritsaway::memory
+}// namespace MetaEngine::memory

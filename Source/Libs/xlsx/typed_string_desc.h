@@ -9,7 +9,7 @@
 #include <vector>
 
 using json = nlohmann::json;
-namespace spiritsaway::container {
+namespace MetaEngine::container {
 
     enum class basic_value_type {
         str,
@@ -51,4 +51,4 @@ namespace spiritsaway::container {
         typed_string_desc &operator=(const typed_string_desc &other) = delete;
         ~typed_string_desc();
     };
-}// namespace spiritsaway::container
+}// namespace MetaEngine::container

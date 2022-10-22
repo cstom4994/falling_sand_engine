@@ -6,7 +6,7 @@
 #include <optional>
 
 
-namespace spiritsaway::xlsx_reader {
+namespace MetaEngine::xlsx_reader {
     template<typename worksheet_t>
     class workbook {
     public:
@@ -15,7 +15,7 @@ namespace spiritsaway::xlsx_reader {
 
     private:
         std::vector<std::string_view> shared_string;
-        spiritsaway::memory::arena string_arena;
+        MetaEngine::memory::arena string_arena;
         std::unordered_map<std::string_view, std::uint32_t> shared_string_indexes;
         std::unordered_map<std::string_view, std::uint32_t> sheets_name_map;
         std::uint32_t get_index_for_string(std::string_view in_str) {
@@ -156,4 +156,4 @@ namespace spiritsaway::xlsx_reader {
             return result;
         }
     };
-}// namespace spiritsaway::xlsx_reader
+}// namespace MetaEngine::xlsx_reader

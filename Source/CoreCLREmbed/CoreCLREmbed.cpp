@@ -173,13 +173,13 @@ int testclr()
     }
 
     const string_t root_path(L".\\");
-    const string_t config_path = root_path + L"ManagedLib.runtimeconfig.json";
+    const string_t config_path = root_path + L"MetaDotManaged.runtimeconfig.json";
     load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer = nullptr;
     load_assembly_and_get_function_pointer = get_dotnet_load_assembly(config_path.c_str());
     assert(load_assembly_and_get_function_pointer != nullptr && "Failure: get_dotnet_load_assembly()");
 
-    const string_t dotnetlib_path = root_path + L"ManagedLib.dll";
-    const char_t* dotnet_type = L"ManagedLib.Entrance, ManagedLib";
+    const string_t dotnetlib_path = root_path + L"MetaDotManaged.dll";
+    const char_t* dotnet_type = L"MetaDotManaged.Entrance, MetaDotManaged";
     const char_t* dotnet_type_method = L"Init";
 
     typedef void (CORECLR_DELEGATE_CALLTYPE* entry_point_fn)(InitPayload payload);

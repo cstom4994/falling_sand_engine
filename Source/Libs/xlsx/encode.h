@@ -19,7 +19,7 @@
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-namespace spiritsaway::serialize {
+namespace MetaEngine::serialize {
     template<typename T1, typename T2 = void>
     struct encodable : std::false_type
     {
@@ -400,4 +400,4 @@ namespace spiritsaway::serialize {
         (cur_array.push_back(encode(args)), ...);
         return cur_array;
     }
-}// namespace spiritsaway::serialize
+}// namespace MetaEngine::serialize

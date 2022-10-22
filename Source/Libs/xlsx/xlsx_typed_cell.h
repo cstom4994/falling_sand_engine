@@ -14,8 +14,8 @@
 
 #include "xlsx_types_forward.h"
 
-namespace spiritsaway::xlsx_reader {
-    using spiritsaway::container::typed_string_desc;
+namespace MetaEngine::xlsx_reader {
+    using MetaEngine::container::typed_string_desc;
     class typed_cell {
     public:
         static const int row_begin = 1;
@@ -37,7 +37,7 @@ namespace spiritsaway::xlsx_reader {
             return std::nullopt;
         } else {
             T result;
-            if (!spiritsaway::serialize::decode(cur_arena_typed_value, result)) {
+            if (!MetaEngine::serialize::decode(cur_arena_typed_value, result)) {
                 return std::nullopt;
             } else {
                 return std::move(result);
@@ -46,4 +46,4 @@ namespace spiritsaway::xlsx_reader {
     }
 
 
-}// namespace spiritsaway::xlsx_reader
+}// namespace MetaEngine::xlsx_reader

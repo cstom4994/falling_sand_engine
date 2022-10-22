@@ -20,7 +20,7 @@
 
 using json = nlohmann::json;
 
-namespace spiritsaway::serialize {
+namespace MetaEngine::serialize {
 
     static bool decode(const json &data, float &dst) {
         if (!data.is_number()) {
@@ -419,4 +419,4 @@ namespace spiritsaway::serialize {
     static bool decode_multi(const json &data) {
         return true;
     }
-}// namespace spiritsaway::serialize
+}// namespace MetaEngine::serialize
