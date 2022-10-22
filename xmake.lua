@@ -23,6 +23,43 @@ rule("csharp")
 	on_link(function () end)
 rule_end()
 
+rule("uidsl")
+    set_extensions('.lua')
+    on_load(function(target)
+        local outdir = path.join(target:autogendir(), "uidsl")
+        if not os.isdir(outdir) then
+            os.mkdir(outdir)
+        end
+        target:set('policy', 'build.across_targets_in_parallel', false)
+        target:add('deps', 'luaexe')
+        target:add("includedirs", target:autogendir())
+    end)
+    before_buildcmd_file(function(target, batchcmds, srcfile, opt)
+        import('core.project.project')
+        local outdir = path.join(target:autogendir(), "uidsl")
+        target:add("includedirs", target:autogendir())
+
+        batchcmds:show_progress(opt.progress, "${color.build.object}processing \"%s\"", srcfile)
+        local name=srcfile:match('[\\/]?(%w+)%.%w+$')
+        local headerpath=path.join(outdir, name:lower()..'.h')
+        local implpath=path.join(outdir, name:lower()..'_imgui_inspector.cpp')
+
+        local args = {'-e', 'package.path="'..path.join(os.scriptdir(), "Source/Engine/IMGUI"):gsub('\\','/')..'/?.lua"',
+                        path.join(path.join(os.scriptdir(), "Source/Engine/IMGUI"), 'uidslparser.lua'),
+                        '-H', path(headerpath), '-I', path(implpath), '--cpp',
+                        os.projectdir()..'/'..path(srcfile)}
+        batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
+
+        local objfile=target:objectfile(implpath)
+        table.insert(target:objectfiles(), objfile)
+        batchcmds:compile(implpath, objfile)
+
+        batchcmds:add_depfiles(srcfile,headerpath,implpath)
+        batchcmds:set_depmtime(os.mtime(objfile))
+        batchcmds:set_depcache(target:dependfile(objfile))
+    end)
+rule_end()
+
 if is_mode("debug") then
     add_defines("CET_DEBUG")
     set_optimize("none")
@@ -179,10 +216,12 @@ target("Engine")
     add_headerfiles("Source/Engine/**.hpp")
     add_headerfiles("Source/Engine/**.inl")
 	add_headerfiles("Source/Engine/**.inc")
+    add_files('Source/Engine/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
     set_symbols("debug")
 
 target("MetaDot")
     set_kind("binary")
+    add_rules("uidsl")
     add_packages("libsdl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
@@ -195,6 +234,7 @@ target("MetaDot")
 	add_headerfiles("Source/Game/**.hpp")
 	add_headerfiles("Source/Game/**.inl")
 	add_headerfiles("Source/Game/**.inc")
+    add_files('Source/Game/uidsl/*.lua')
     add_headerfiles("Source/Shared/**.hpp")
     add_rules("utils.bin2c", {extensions = {".ttf"}})
     add_files("Resources/**.ttf")
