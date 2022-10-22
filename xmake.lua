@@ -23,29 +23,29 @@ rule("csharp")
 	on_link(function () end)
 rule_end()
 
-rule("uidsl")
+rule("metadot.uidsl")
     set_extensions('.lua')
     on_load(function(target)
-        local outdir = path.join(path.join(os.scriptdir(), "Source/Generated"), "uidsl")
+        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "uidsl")
         if not os.isdir(outdir) then
             os.mkdir(outdir)
         end
         target:set('policy', 'build.across_targets_in_parallel', false)
         target:add('deps', 'luaexe')
-        --target:add("includedirs", path.join(os.scriptdir(), "Source/Generated"))
+        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
     end)
     before_buildcmd_file(function(target, batchcmds, srcfile, opt)
         import('core.project.project')
-        local outdir = path.join(path.join(os.scriptdir(), "Source/Generated"), "uidsl")
-        --target:add("includedirs", path.join(os.scriptdir(), "Source/Generated"))
+        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "uidsl")
+        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
 
         batchcmds:show_progress(opt.progress, "${color.build.object}processing %s", srcfile)
         local name=srcfile:match('[\\/]?(%w+)%.%w+$')
         local headerpath=path.join(outdir, name:lower()..'.h')
         local implpath=path.join(outdir, name:lower()..'_imgui_inspector.cpp')
 
-        local args = {'-e', 'package.path="'..path.join(os.scriptdir(), "Source/Engine/IMGUI"):gsub('\\','/')..'/?.lua"',
-                        path.join(path.join(os.scriptdir(), "Source/Engine/IMGUI"), 'uidslparser.lua'),
+        local args = {'-e', 'package.path="'..path.join(os.projectdir(), "Source/Engine/IMGUI"):gsub('\\','/')..'/?.lua"',
+                        path.join(path.join(os.projectdir(), "Source/Engine/IMGUI"), 'uidslparser.lua'),
                         '-H', path(headerpath), '-I', path(implpath), '--cpp',
                         os.projectdir()..'/'..path(srcfile)}
         batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
@@ -57,6 +57,31 @@ rule("uidsl")
         -- batchcmds:add_depfiles(srcfile,headerpath,implpath)
         -- batchcmds:set_depmtime(os.mtime(objfile))
         -- batchcmds:set_depcache(target:dependfile(objfile))
+    end)
+rule_end()
+
+rule("metadot.cppfront")
+    set_extensions('.cpp2')
+    on_load(function(target)
+        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "cppfront")
+        if not os.isdir(outdir) then
+            os.mkdir(outdir)
+        end
+        target:set('policy', 'build.across_targets_in_parallel', false)
+        target:add('deps', 'cppfront')
+        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
+    end)
+    before_buildcmd_file(function(target, batchcmds, srcfile, opt)
+        import('core.project.project')
+        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "cppfront")
+        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
+
+        batchcmds:show_progress(opt.progress, "${color.build.object}processing %s", srcfile)
+        local name=srcfile:match('[\\/]?(%w+)%.%w+$')
+        local outpath=path.join(outdir, name:lower()..'.cpp')
+
+        local args = {os.projectdir()..'/'..path(srcfile), '-o', path(outpath)}
+        batchcmds:vrunv(project.target('cppfront'):targetfile(), args)
     end)
 rule_end()
 
@@ -233,10 +258,12 @@ target("Engine")
 
 target("Embed")
     set_kind("static")
-    add_rules("uidsl")
+    add_rules("metadot.uidsl")
+    add_rules("metadot.cppfront")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Game/uidsl/*.lua")
+    add_files("Source/Game/**.cpp2")
     add_files("Source/Generated/**.cpp")
     add_headerfiles("Source/Generated/**.h")
     set_symbols("debug")
