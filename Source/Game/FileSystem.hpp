@@ -13,6 +13,23 @@ namespace MetaEngine {
 
 #define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(FUtil::exists(stringPath), MetaEngine::Utils::Format("FILE: {0} does not exist", stringPath))
 
+    class ResourceMan {
+    private:
+        static std::string s_ProjectRootPath;
+        static std::string s_ExeRootPath;
+        static std::string s_DataPath;
+        static std::string s_ScriptPath;
+
+    public:
+        static std::string getResourceLoc(std::string_view resPath);
+        static std::string getLocalPath(std::string_view resPath);
+        static void init();
+        static const std::string &getDataPath();
+    };
+
+#define METADOT_RESLOC(x) MetaEngine::ResourceMan::getResourceLoc(x)
+
+#define METADOT_RESLOC_STR(x) METADOT_RESLOC(x).c_str()
 
     class GameDir {
         std::string gameDir;

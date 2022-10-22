@@ -5,7 +5,7 @@
 
 #include "Textures.hpp"
 
-#include "Game/Core.hpp"
+#include "Game/FileSystem.hpp"
 #include "Game/DebugImpl.hpp"
 
 #include <stb_image.h>

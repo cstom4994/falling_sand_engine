@@ -12,6 +12,57 @@
 
 namespace MetaEngine {
 
+    std::string ResourceMan::s_ProjectRootPath;
+    std::string ResourceMan::s_ExeRootPath;
+    std::string ResourceMan::s_DataPath;
+    std::string ResourceMan::s_ScriptPath;
+
+    void ResourceMan::init() {
+        auto currentDir = std::filesystem::path(FUtil::getExecutableFolderPath());
+        for (int i = 0; i < 3; ++i) {
+            currentDir = currentDir.parent_path();
+            if (std::filesystem::exists(currentDir.string() + "/output/data") && std::filesystem::exists(currentDir.string() + "/Source/Scripts")) {
+                s_ProjectRootPath = currentDir.string() + "/";
+                s_ExeRootPath = currentDir.string() + "/output";
+                s_DataPath = s_ProjectRootPath + "output/data";
+                s_ScriptPath = s_ProjectRootPath + "Source/Scripts";
+                METADOT_TRACE("Runtime folder detected: {0}", s_ProjectRootPath.c_str());
+                return;
+            }
+        }
+        METADOT_ERROR("Runtime folder detect failed");
+    }
+
+    const std::string &ResourceMan::getDataPath() {
+        return s_DataPath;
+    }
+
+    std::string ResourceMan::getResourceLoc(std::string_view resPath) {
+        if (s_ExeRootPath.empty()) {
+            std::cout << "try to load resource when ResourceMan is unloaded (" << resPath << ")" << std::endl;
+        }
+        if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
+            return s_ExeRootPath + (s_ExeRootPath.empty() ? "" : "/") + std::string(resPath);
+        return std::string(resPath);
+    }
+
+    std::string ResourceMan::getLocalPath(std::string_view resPath) {
+        auto res = std::string(resPath);
+        FUtil::cleanPathString(res);
+        size_t offset = 0;
+        size_t out = std::string::npos;
+        while (true) {
+            auto index = res.find("/data/", offset);
+            if (index == std::string::npos)
+                break;
+            offset = index + 1;
+            out = index;
+        }
+        if (out == std::string::npos)
+            return "";
+        return res.substr(out + 1);
+    }
+
 
     std::string GameDir::getPath(std::string filePathRel) {
         return this->gameDir + filePathRel;

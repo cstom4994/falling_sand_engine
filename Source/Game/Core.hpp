@@ -157,7 +157,7 @@ METADOT_STRUCT(MarkdownData, data);
 #define _METADOT_OVERRIDE_ override
 
 //--------------------------------------------------------------------------------------------------------------------------------//
-//MEMORY FUNCTIONS USED BY LIBRARY:
+// MEMORY FUNCTIONS USED BY LIBRARY
 
 #ifndef METAENGINE_MALLOC
 #define METAENGINE_MALLOC(s) METADOT_GC_ALLOC((s))
@@ -171,32 +171,16 @@ METADOT_STRUCT(MarkdownData, data);
 #define METAENGINE_REALLOC(p, s) METADOT_GC_REALLOC(p, s)
 #endif
 
+//--------------------------------------------------------------------------------------------------------------------------------//
+// LOGGING FUNCTIONS
 
-namespace MetaEngine {
-    class ResourceMan {
-        // folder where /res is located
-        static std::string s_resPath;
-        // res folder
-        static std::string s_resPathFolder;
-
-    public:
-        static std::string getResourceLoc(std::string_view resPath);
-        static std::string getLocalPath(std::string_view resPath);
-        static void init();
-        static const std::string &getResPath();
-    };
-
-// #define METADOT_BUG(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-// #define METADOT_TRACE(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-// #define METADOT_INFO(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-// #define METADOT_WARN(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-// #define METADOT_ERROR(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
-// #define METADOT_PPRINT(...) ::MetaEngine::Log::GetCoreLogger().print(__VA_ARGS__)
 #define METADOT_BUG(...) LOG_F(1, __VA_ARGS__);
 #define METADOT_TRACE(...) LOG_F(2, __VA_ARGS__);
 #define METADOT_INFO(...) LOG_F(INFO, __VA_ARGS__);
 #define METADOT_WARN(...) LOG_F(WARNING, __VA_ARGS__);
 #define METADOT_ERROR(...) LOG_F(ERROR, __VA_ARGS__);
+
+namespace MetaEngine {
 
     template<class T>
     using Ref = std::shared_ptr<T>;
@@ -206,10 +190,6 @@ namespace MetaEngine {
         // make a shared_ptr
         return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
     }
-
-#define METADOT_RESLOC(x) MetaEngine::ResourceMan::getResourceLoc(x)
-
-#define METADOT_RESLOC_STR(x) METADOT_RESLOC(x).c_str()
 
 #define METADOT_HAS_MEMBER_METHOD_PREPARE(methName)                                                                        \
     template<typename T, typename U = void>                                                                                \
