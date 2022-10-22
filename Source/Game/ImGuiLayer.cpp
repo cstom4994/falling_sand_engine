@@ -1630,8 +1630,8 @@ namespace MetaEngine {
         config.GlyphMinAdvanceX = 10.0f;
 
         static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/fa_solid_900.ttf").c_str(), 15.0f, &config, icon_ranges);
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/Silver.ttf").c_str(), 26.0f, &config);
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/fa_solid_900.ttf").c_str(), 18.0f, &config, icon_ranges);
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/../../Resources/Silver.ttf").c_str(), 32.0f, &config);
 
 #endif
 
