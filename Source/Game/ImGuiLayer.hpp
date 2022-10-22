@@ -6,7 +6,7 @@
 
 #include "Engine/Scripting/LuaBinder.hpp"
 #include "Game/ModuleStack.h"
-
+#include "Engine/AudioEngine/AudioEngine.h"
 
 #include "Libs/ImGui/TextEditor.h"
 
@@ -162,6 +162,7 @@ public:
 };
 
 class OptionsUI {
+    static std::map<std::string, FMOD::Studio::Bus *> busMap;
 
 public:
     static int item_current_idx;

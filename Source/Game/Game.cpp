@@ -17,15 +17,14 @@
 #include "imgui.h"
 
 #include "CoreCLREmbed/CoreCLREmbed.hpp"
-#include "Game/Core.hpp"
 #include "Engine/ECS/entity.h"
+#include "Engine/Scripting/LuaLayer.hpp"
+#include "Engine/Scripting/Scripting.hpp"
+#include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/ImGuiBase.h"
 #include "Game/Macros.hpp"
 #include "Game/ModuleStack.h"
-#include "Engine/Scripting/LuaLayer.hpp"
-#include "Engine/Scripting/Scripting.hpp"
-
 
 
 #include "Game/FileSystem.hpp"
@@ -319,35 +318,20 @@ int Game::init(int argc, char *argv[]) {
         SDL_SetWindowTitle(window, win_title_client.c_str());
     }
 
-    ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(3);
+    ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(1);
     std::future<void> initThread;
-    ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(3);
+    ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(1);
     std::future<void> worldInitThread;
     if (networkMode != NetworkMode::SERVER) {
 
         // init fmod
-
-
         initThread = initThreadPool->push([&](int id) {
             METADOT_INFO("Initializing audio engine...");
 
             audioEngine.Init();
 
-            std::vector<std::future<void>> results = {};
-            auto updateDirtyPool = new ctpl::thread_pool(1);
-
-            results.push_back(updateDirtyPool->push([](int id) {
-                MountPhysFS(METADOT_RESLOC_STR("data/fuckme.zip"), "fuckme");
-            }));
-
-            for (auto &v: results) {
-                v.get();
-            }
-
-            auto fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
-
-            METADOT_INFO("i'm {}", fu);
-
+            audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+            audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
             audioEngine.LoadEvent("event:/Music/Title");
 
             audioEngine.LoadEvent("event:/Player/Jump");
@@ -368,9 +352,22 @@ int Game::init(int argc, char *argv[]) {
         });
     }
 
+    std::vector<std::future<void>> results = {};
+    auto testpool = new ctpl::thread_pool(1);
+
+    results.push_back(testpool->push([](int id) {
+        MountPhysFS(METADOT_RESLOC_STR("data/fuckme.zip"), "fuckme");
+    }));
+
+    for (auto &v: results) {
+        v.get();
+    }
+
+    auto fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
+
+    METADOT_INFO("i'm {}", fu);
+
     // init sdl
-
-
     METADOT_INFO("Initializing SDL...");
     uint32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
     if (SDL_Init(sdl_init_flags) < 0) {
@@ -1744,25 +1741,16 @@ exit:
     }
 
 
-    audioEngine.Shutdown();
-
     m_ImGuiLayer->onDetach();
-
-
-    //soloud.destroyVoiceGroup(groupHandle);
-
-    //soloud.deinit();
 
     for (MetaEngine::Module *l: *m_ModuleStack)
         l->onDetach();
 
     cr_plugin_close(MetaEngine::ctx);
 
-
     ClosePhysFS();
 
     // release resources & shutdown
-
     delete m_ImGuiLayer;
     delete objectDelete;
     delete backgrounds;
@@ -1775,6 +1763,7 @@ exit:
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);
         SDL_Quit();
+        audioEngine.Shutdown();
     }
 
     METADOT_INFO("EXIT_SUCCESS");
