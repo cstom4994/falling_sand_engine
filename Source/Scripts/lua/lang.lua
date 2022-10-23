@@ -1,4 +1,4 @@
-﻿local i18n = require("i18n")
+local i18n = require("i18n")
 
 i18n.set('en.welcome', 'welcome to this program')
 i18n.set('zh.welcome', '你好八嘎')

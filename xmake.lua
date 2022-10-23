@@ -167,7 +167,6 @@ defines_list = {
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
-    "SDL_GPU_DISABLE_GLES",
 }
 
 link_list = {
@@ -198,6 +197,8 @@ link_list = {
 
 target("vendor")
     set_kind("static")
+    add_rules("c.unity_build")
+    add_rules("c++.unity_build")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
@@ -268,7 +269,7 @@ target("CppSource")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor")
+    add_deps("vendor", "Libs")
     add_links(link_list)
     add_files("Source/CppScript/**.cpp")
 	add_headerfiles("Source/CppScript/**.h")
@@ -313,6 +314,7 @@ target("MetaDot")
     add_links("nethost", "fmodstudioL_vc", "fmodL_vc")
     add_links(link_list)
     add_files("Source/Scripts/lua/**.lua")
+    add_files("Source/Scripts/mu/**.mu")
     add_files("Source/Game/**.cpp")
 	add_headerfiles("Source/Game/**.h")
 	add_headerfiles("Source/Game/**.hpp")
