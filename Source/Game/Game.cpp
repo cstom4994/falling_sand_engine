@@ -12,9 +12,6 @@
 
 #include "Settings.hpp"
 #include "Utils.hpp"
-#include "backends/imgui_impl_opengl3.h"
-#include "backends/imgui_impl_sdl.h"
-#include "imgui.h"
 
 #include "CoreCLREmbed/CoreCLREmbed.hpp"
 #include "Engine/ECS/entity.h"

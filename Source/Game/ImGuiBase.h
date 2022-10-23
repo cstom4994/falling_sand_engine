@@ -15,8 +15,8 @@
 #include <sys/stat.h>
 #endif
 
-#include "backends/imgui_impl_opengl3.h"
-#include "backends/imgui_impl_sdl.h"
+#include "Engine/IMGUI/ImGuiImplGL3.h"
+#include "Engine/IMGUI/ImGuiImplSDL.h"
 
 #ifndef IMGUI_AUTO_TREE_MAX_ELEMENT_SIZE
 #define IMGUI_AUTO_TREE_MAX_ELEMENT_SIZE sizeof(std::string)//larger values generate less tree nodes

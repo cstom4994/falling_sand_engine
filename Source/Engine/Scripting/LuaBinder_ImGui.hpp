@@ -1684,11 +1684,11 @@ namespace MetaEngine::LuaBinder::ImGuiWarp {
 
     // Inputs Utilities: Keyboard
     inline int GetKeyIndex(int imgui_key) { return ImGui::GetKeyIndex(static_cast<ImGuiKey>(imgui_key)); }
-    inline bool IsKeyDown(int user_key_index) { return ImGui::IsKeyDown(user_key_index); }
-    inline bool IsKeyPressed(int user_key_index) { return ImGui::IsKeyPressed(user_key_index); }
-    inline bool IsKeyPressed(int user_key_index, bool repeat) { return ImGui::IsKeyPressed(user_key_index, repeat); }
-    inline bool IsKeyReleased(int user_key_index) { return ImGui::IsKeyReleased(user_key_index); }
-    inline int GetKeyPressedAmount(int key_index, float repeat_delay, float rate) { return ImGui::GetKeyPressedAmount(key_index, repeat_delay, rate); }
+    inline bool IsKeyDown(int user_key_index) { return ImGui::IsKeyDown((ImGuiKey)user_key_index); }
+    inline bool IsKeyPressed(int user_key_index) { return ImGui::IsKeyPressed((ImGuiKey)user_key_index); }
+    inline bool IsKeyPressed(int user_key_index, bool repeat) { return ImGui::IsKeyPressed((ImGuiKey)user_key_index, repeat); }
+    inline bool IsKeyReleased(int user_key_index) { return ImGui::IsKeyReleased((ImGuiKey)user_key_index); }
+    inline int GetKeyPressedAmount(int key_index, float repeat_delay, float rate) { return ImGui::GetKeyPressedAmount((ImGuiKey)key_index, repeat_delay, rate); }
     inline void CaptureKeyboardFromApp() { ImGui::CaptureKeyboardFromApp(); }
     inline void CaptureKeyboardFromApp(bool want_capture_keyboard_value) { ImGui::CaptureKeyboardFromApp(want_capture_keyboard_value); }
 
