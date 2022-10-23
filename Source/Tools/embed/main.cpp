@@ -5,7 +5,7 @@
 
 namespace {
 
-    auto ParseCommandLine(tcb::span<char *> arguments) {
+    auto ParseCommandLine(std::span<char *> arguments) {
         auto dst = std::pair(std::string(), std::vector<std::string>());
         auto find_output_flag = [](auto &val) {
             return std::string(val) == "-o";
@@ -42,7 +42,7 @@ namespace {
 
 int main(int argc, char *argv[]) {
     try {
-        auto [root, entries] = ParseCommandLine(tcb::span(argv + 1, argc - 1));
+        auto [root, entries] = ParseCommandLine(std::span(argv + 1, argc - 1));
 
         Embed e(root);
 

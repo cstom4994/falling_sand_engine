@@ -31,7 +31,7 @@ public:
     Embed() noexcept : Embed(".") {}
     Embed(fs::path call_folder) noexcept : saver(fs::is_regular_file(call_folder) ? call_folder.parent_path() : call_folder) {}
 
-    void SaveAll(tcb::span<std::string> entries) {
+    void SaveAll(std::span<std::string> entries) {
         for (auto &entry: entries)
             Save(entry);
     }

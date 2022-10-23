@@ -19,8 +19,6 @@ private:
     fs::path root{};
     std::vector<std::string> filenames;
     std::ofstream resource_holder_hpp;
-    std::ofstream resource_hpp;
-    std::ofstream span_hpp;
     bool verbose = true;
 
     const std::string subfolder_name = "embedded_resources";
