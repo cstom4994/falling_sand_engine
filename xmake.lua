@@ -85,6 +85,30 @@ rule("metadot.cppfront")
     end)
 rule_end()
 
+rule("metadot.embed")
+    set_extensions('.lua')
+    on_load(function(target)
+        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "embed")
+        if not os.isdir(outdir) then
+            os.mkdir(outdir)
+        end
+        target:set('policy', 'build.across_targets_in_parallel', false)
+        target:add('deps', 'embed')
+    end)
+    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
+        import('core.project.project')
+        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "embed")
+        local outpath=path.join(outdir)
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            batchcmds:show_progress(opt.progress, "${color.build.object}processing %s", sourcefile)
+        end
+        local args = sourcebatch.sourcefiles
+        table.insert(args, "-o")
+        table.insert(args, path(outpath))
+        batchcmds:vrunv(project.target('embed'):targetfile(), args)
+    end)
+rule_end()
+
 if is_mode("debug") then
     add_defines("DEBUG", "_DEBUG")
     set_optimize("none")
@@ -127,6 +151,7 @@ include_dir_list = {
     "Source/Engine",
     "Source/Libs/lua/lua",
     "Source/Tools/cppfront",
+    "Source/Tools/embed",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -182,7 +207,6 @@ target("vendor")
 	add_headerfiles("Source/Vendor/**.h")
 	add_headerfiles("Source/Vendor/**.hpp")
     remove_files("Source/Vendor/fmt/src/fmt.cc")
-    remove_files("Source/Vendor/cppfront/**")
     set_symbols("debug")
 
 target("lua")
@@ -207,6 +231,14 @@ target("cppfront")
     add_defines(defines_list)
     add_files("Source/Tools/cppfront/**.cpp")
     add_headerfiles("Source/Tools/cppfront/**.h")
+
+target("embed")
+    set_basename("embed")
+    set_kind("binary")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_files("Source/Tools/embed/**.cpp")
+    add_headerfiles("Source/Tools/embed/**.h")
 
 target("CoreCLREmbed")
     set_kind("static")
@@ -257,13 +289,13 @@ target("Engine")
     add_files('Source/Engine/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
     set_symbols("debug")
 
-target("Embed")
+target("EmbedBuild")
     set_kind("static")
     add_rules("metadot.uidsl")
     add_rules("metadot.cppfront")
-    add_rules("c++.unity_build")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
+    -- add_files("Source/Scripts/lua/**.lua", {rule="metadot.embed"})
     add_files("Source/Game/uidsl/*.lua")
     add_files("Source/Game/**.cpp2")
     add_files("Source/Generated/**.cpp")
@@ -272,13 +304,15 @@ target("Embed")
 
 target("MetaDot")
     set_kind("binary")
+    add_rules("metadot.embed")
     add_packages("libsdl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor", "Libs", "lua", "Engine", "CoreCLREmbed", "Embed")
+    add_deps("vendor", "Libs", "lua", "Engine", "CoreCLREmbed", "EmbedBuild")
     add_links("nethost", "fmodstudioL_vc", "fmodL_vc")
     add_links(link_list)
+    add_files("Source/Scripts/lua/**.lua")
     add_files("Source/Game/**.cpp")
 	add_headerfiles("Source/Game/**.h")
 	add_headerfiles("Source/Game/**.hpp")
