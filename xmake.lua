@@ -126,6 +126,7 @@ include_dir_list = {
     "Source/Generated",
     "Source/Engine",
     "Source/Libs/lua/lua",
+    "Source/Tools/cppfront",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -134,7 +135,6 @@ include_dir_list = {
     "Source/Vendor/json/include",
     "Source/Vendor/coreclr",
     "Source/Vendor/fmt/include",
-    "Source/Vendor/cppfront/include",
     "Source/Vendor/fmod/inc"
     }
 
@@ -205,8 +205,8 @@ target("cppfront")
     set_kind("binary")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_files("Source/Vendor/cppfront/**.cpp")
-    add_headerfiles("Source/Vendor/cppfront/**.h")
+    add_files("Source/Tools/cppfront/**.cpp")
+    add_headerfiles("Source/Tools/cppfront/**.h")
 
 target("CoreCLREmbed")
     set_kind("static")
@@ -261,6 +261,7 @@ target("Embed")
     set_kind("static")
     add_rules("metadot.uidsl")
     add_rules("metadot.cppfront")
+    add_rules("c++.unity_build")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Game/uidsl/*.lua")
