@@ -3,6 +3,8 @@
 #include "ImGuiLayer.hpp"
 
 #include "Game/ImGuiBase.h"
+#include "Libs/ImGui/implot.h"
+
 #include "Libs/final_dynamic_opengl.h"
 
 #include "Engine/IMGUI/ImGuiDSL.hpp"
@@ -1697,6 +1699,7 @@ namespace MetaEngine {
         //ImGui::SetAllocatorFunctions(myMalloc, myFree);
 
         m_imgui = ImGui::CreateContext();
+        ImPlot::CreateContext();
 
         ImGuiIO &io = ImGui::GetIO();
 
@@ -1849,6 +1852,7 @@ namespace MetaEngine {
     void ImGuiLayer::onDetach() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
+        ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
 
@@ -2533,6 +2537,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 if (ImGui::BeginTabItem(U8("ImGuiDsl测试"))) {
                     static bool ui_imguidsl_test = true;
                     ImGui::ShowDSLDemoWindow(&ui_imguidsl_test);
+                    ImGui::EndTabItem();
+                }
+                if (ImGui::BeginTabItem(U8("ImPlot测试"))) {
+                    static bool ui_implot_test = true;
+                    ImPlot::ShowDemoWindow(&ui_implot_test);
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
