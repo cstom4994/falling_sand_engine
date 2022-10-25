@@ -56,7 +56,6 @@ const std::string win_title_server = U8("MetaDot Server");
 const char *plugin = CR_PLUGIN("CppSource");
 
 extern void fuckme();
-extern void testDukpp();
 
 namespace MetaEngine {
     cr_plugin ctx;
@@ -510,7 +509,6 @@ int Game::init(int argc, char *argv[]) {
 
     worldInitThread = worldInitThreadPool->push([&](int id) {
         fuckme();
-        testDukpp();
     });
 
     if (networkMode != NetworkMode::SERVER) {
