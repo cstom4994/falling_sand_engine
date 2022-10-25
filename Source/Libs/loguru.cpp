@@ -801,7 +801,7 @@ namespace loguru
 		const char* mode_str = (mode == FileMode::Truncate ? "w" : "a");
 		FILE* file;
 	#ifdef _WIN32
-		file = _fsopen(path, mode_str, _SH_DENYNO);
+		file = fopen(path, mode_str);
 	#else
 		file = fopen(path, mode_str);
 	#endif

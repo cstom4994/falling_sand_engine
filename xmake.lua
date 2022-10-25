@@ -119,7 +119,7 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 
-    add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer")
+    add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive")
 
     link_list = {
         "DbgHelp",
@@ -147,7 +147,7 @@ if (is_os("windows")) then
         "oleaut32",
     }
 elseif (is_os("linux")) then
-    --error("No more linux for now")
+    add_defines("__linux")
     link_list = {}
 end
 
