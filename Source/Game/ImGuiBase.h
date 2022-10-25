@@ -258,7 +258,7 @@ void ImGui::detail::AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<
 }
 template<std::size_t I, typename... Args>
 void ImGui::detail::AutoTupleRecurse(const std::tuple<Args...> &tpl, std::enable_if_t<0 != I> *) {
-    ImGui::detail::AutoTupleRecurse<I - 1, const Args...>(tpl);// first draw smaller indeces
+    ImGui::detail::AutoTupleRecurse<I - 1, Args...>(tpl);// first draw smaller indeces
     using type = decltype(std::get<I - 1>(tpl));
     std::string str = '<' + std::to_string(I) + ">: " + "const " + typeid(type).name();
     ImGui::detail::AutoExpand(str, ImGui::as_const(std::get<I - 1>(tpl)));

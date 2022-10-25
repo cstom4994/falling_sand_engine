@@ -7,7 +7,7 @@ add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
 
-set_languages("clatest", "c++20")
+set_languages("c17", "c++20")
 set_arch("x64")
 
 add_rules("mode.debug", "mode.release")
@@ -60,31 +60,6 @@ rule("metadot.uidsl")
     end)
 rule_end()
 
-rule("metadot.cppfront")
-    set_extensions('.cpp2')
-    on_load(function(target)
-        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "cppfront")
-        if not os.isdir(outdir) then
-            os.mkdir(outdir)
-        end
-        target:set('policy', 'build.across_targets_in_parallel', false)
-        target:add('deps', 'cppfront')
-        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
-    end)
-    before_buildcmd_file(function(target, batchcmds, srcfile, opt)
-        import('core.project.project')
-        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "cppfront")
-        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
-
-        batchcmds:show_progress(opt.progress, "${color.build.object}processing %s", srcfile)
-        local name=srcfile:match('[\\/]?(%w+)%.%w+$')
-        local outpath=path.join(outdir, name:lower()..'.cpp')
-
-        local args = {os.projectdir()..'/'..path(srcfile), '-o', path(outpath)}
-        batchcmds:vrunv(project.target('cppfront'):targetfile(), args)
-    end)
-rule_end()
-
 rule("metadot.embed")
     set_extensions('.lua', '.frag', '.vert')
     on_load(function(target)
@@ -114,8 +89,10 @@ if is_mode("debug") then
     set_optimize("none")
 elseif is_mode("release") then
     add_defines("NDEBUG")
-    set_optimize("fastest")
+    set_optimize("faster")
 end
+
+set_fpmodels("strict")
 
 if (is_os("windows")) then 
     add_defines("_WINDOWS")
@@ -141,6 +118,8 @@ if (is_os("windows")) then
     )
 
     add_cxflags("/bigobj")
+
+    add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer")
 elseif (is_os("linux")) then
     error("No more linux for now")
 end
@@ -150,7 +129,6 @@ include_dir_list = {
     "Source/Generated",
     "Source/Engine",
     "Source/Libs/lua/lua",
-    "Source/Tools/cppfront",
     "Source/Tools/embed",
     "Source/Vendor",
     "Source/Vendor/imgui",
@@ -225,14 +203,6 @@ target("luaexe")
     add_files("Source/Libs/lua/lua/lua.c")
     add_deps("lua")
 
-target("cppfront")
-    set_basename("cppfront")
-    set_kind("binary")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/Tools/cppfront/**.cpp")
-    add_headerfiles("Source/Tools/cppfront/**.h")
-
 target("embed")
     set_basename("embed")
     set_kind("binary")
@@ -293,12 +263,9 @@ target("Engine")
 target("EmbedBuild")
     set_kind("static")
     add_rules("metadot.uidsl")
-    add_rules("metadot.cppfront")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    -- add_files("Source/Scripts/lua/**.lua", {rule="metadot.embed"})
     add_files("Source/Game/uidsl/*.lua")
-    add_files("Source/Game/**.cpp2")
     add_files("Source/Generated/**.cpp")
     add_headerfiles("Source/Generated/**.h")
     set_symbols("debug")
