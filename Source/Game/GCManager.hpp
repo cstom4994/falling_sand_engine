@@ -69,7 +69,7 @@
 #define METADOT_GC_PLATFORM_WINDOWS
 #define METADOT_GC_ENABLED 1
 #else
-#error "TODO: fix for this compiler!"
+#define METADOT_GC_ENABLED 0
 #endif
 
 #if METADOT_GC_ENABLED == 0

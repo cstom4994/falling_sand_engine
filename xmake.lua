@@ -120,8 +120,35 @@ if (is_os("windows")) then
     add_cxflags("/bigobj")
 
     add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer")
+
+    link_list = {
+        "DbgHelp",
+        "winmm",
+        "opengl32",
+        "kernel32",
+        "user32",
+        "gdi32",
+        "iphlpapi",
+        "Shlwapi",
+        "wsock32",
+        "ws2_32",
+        "shell32",
+        "advapi32",
+        "imm32",
+        "bcrypt",
+        "Avrt",
+        "dwmapi",
+        "Version",
+        "Usp10",
+        "userenv",
+        "psapi",
+        "setupapi",
+        "ole32",
+        "oleaut32",
+    }
 elseif (is_os("linux")) then
-    error("No more linux for now")
+    --error("No more linux for now")
+    link_list = {}
 end
 
 include_dir_list = {
@@ -145,32 +172,6 @@ defines_list = {
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
-}
-
-link_list = {
-    "DbgHelp",
-    "winmm",
-    "opengl32",
-    "kernel32",
-    "user32",
-    "gdi32",
-    "iphlpapi",
-    "Shlwapi",
-    "wsock32",
-    "ws2_32",
-    "shell32",
-    "advapi32",
-    "imm32",
-    "bcrypt",
-    "Avrt",
-    "dwmapi",
-    "Version",
-    "Usp10",
-    "userenv",
-    "psapi",
-    "setupapi",
-    "ole32",
-    "oleaut32",
 }
 
 target("vendor")

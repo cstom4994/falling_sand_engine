@@ -1,7 +1,7 @@
 #include "json/include/nlohmann/json.hpp"
 
 #include "ArchiverJson.hpp"
-#include "properties.hpp"
+#include "Properties.hpp"
 
 using namespace MetaEngine::properties;
 

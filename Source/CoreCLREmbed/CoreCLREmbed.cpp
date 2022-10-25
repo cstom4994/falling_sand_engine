@@ -5,12 +5,18 @@
 //      https://github.com/dotnet/csharplang/blob/main/proposals/csharp-9.0/function-pointers.md
 
 #include "CoreCLREmbed.hpp"
+#include "Game/Core.hpp"
 
+#include <dlfcn.h>
 #include <iostream>
+#include <linux/limits.h>
 #include <string>
 #include <set>
 #include <cassert>
+
+#if defined (_WIN32)
 #include <Windows.h>
+#endif
 
 #include <nethost.h>
 #include <coreclr_delegates.h>
@@ -24,13 +30,21 @@ hostfxr_close_fn close_fptr;
 
 void* load_library(const char_t* path)
 {
+#if defined (_WIN32)
     HMODULE h = ::LoadLibraryW(path);
+#else
+    void* h = dlopen(path, RTLD_LAZY);
+#endif
     assert(h != nullptr);
     return (void*)h;
 }
 void* get_export(void* h, const char* name)
 {
+#if defined (_WIN32)
     void* f = ::GetProcAddress((HMODULE)h, name);
+#else
+    void* f = dlsym(h, name);
+#endif
     assert(f != nullptr);
     return f;
 }
@@ -38,7 +52,11 @@ void* get_export(void* h, const char* name)
 bool load_hostfxr()
 {
     // Pre-allocate a large buffer for the path to hostfxr
+#if defined (_WIN32)
     char_t buffer[MAX_PATH];
+#else
+    char_t buffer[PATH_MAX];
+#endif
     size_t buffer_size = sizeof(buffer) / sizeof(char_t);
     int rc = get_hostfxr_path(buffer, &buffer_size, nullptr);
     if (rc != 0)
@@ -172,22 +190,22 @@ int testclr()
         assert(false && "Failure: load_hostfxr()");
     }
 
-    const string_t root_path(L".\\");
-    const string_t config_path = root_path + L"MetaDotManaged.runtimeconfig.json";
+    const string_t root_path(U8(".\\"));
+    const string_t config_path = root_path + "MetaDotManaged.runtimeconfig.json";
     load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer = nullptr;
     load_assembly_and_get_function_pointer = get_dotnet_load_assembly(config_path.c_str());
     assert(load_assembly_and_get_function_pointer != nullptr && "Failure: get_dotnet_load_assembly()");
 
-    const string_t dotnetlib_path = root_path + L"MetaDotManaged.dll";
-    const char_t* dotnet_type = L"MetaDotManaged.Entrance, MetaDotManaged";
-    const char_t* dotnet_type_method = L"Init";
+    const string_t dotnetlib_path = root_path + "MetaDotManaged.dll";
+    const char_t* dotnet_type = "MetaDotManaged.Entrance, MetaDotManaged";
+    const char_t* dotnet_type_method = "Init";
 
     typedef void (CORECLR_DELEGATE_CALLTYPE* entry_point_fn)(InitPayload payload);
     entry_point_fn Init = nullptr;
     int rc = load_assembly_and_get_function_pointer(
         dotnetlib_path.c_str(),
         dotnet_type,
-        L"Init" /*method_name*/,
+        "Init" /*method_name*/,
         UNMANAGEDCALLERSONLY_METHOD,
         nullptr,
         (void**)&Init);
