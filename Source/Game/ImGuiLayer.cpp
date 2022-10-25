@@ -8,7 +8,6 @@
 #include "Libs/final_dynamic_opengl.h"
 
 #include "Engine/IMGUI/ImGuiDSL.hpp"
-#include "Engine/Properties/ImGuiPropertyExample.h"
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/Macros.hpp"
@@ -2570,7 +2569,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         MetaEngine::GameUI_Draw(game);
 
         if (Settings::ui_inspector) {
-            DrawPropertyWindow();
+            //DrawPropertyWindow();
         }
 
         if (Settings::ui_gcmanager) {
