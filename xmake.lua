@@ -125,6 +125,9 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 
+    add_linkdirs("Source/Vendor/coreclr/win64", {public=true})
+    add_includedirs("Source/Vendor/coreclr/win64", {public=true})
+
     link_list = {
         "DbgHelp",
         "winmm",
@@ -153,12 +156,13 @@ if (is_os("windows")) then
 elseif (is_os("linux")) then
     add_defines("__linux")
     add_cxflags("-fPIC")
+    add_linkdirs("Source/Vendor/coreclr/linux", {public=true})
+    add_includedirs("Source/Vendor/coreclr/linux", {public=true})
     link_list = {}
 end
 
 add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive")
 
-add_linkdirs("Source/Vendor/coreclr", {public=true})
 add_linkdirs("Source/Vendor/fmod/lib", {public=true})
 
 include_dir_list = {
@@ -173,7 +177,6 @@ include_dir_list = {
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
-    "Source/Vendor/coreclr",
     "Source/Vendor/fmt/include",
     "Source/Vendor/fmod/inc"
     }
