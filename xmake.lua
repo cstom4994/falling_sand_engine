@@ -18,17 +18,6 @@ option("build_embed")
     set_description("Toggle to build embed script")
 option_end()
 
-rule("csharp")
-	set_extensions(".csproj")
-	on_build_file(function (target, sourcefile)
-		os.execv("dotnet", {"build", sourcefile, "-o", target:targetdir()})
-	end)
-	on_clean(function (target, sourcefile)
-		os.execv("dotnet", {"clean", sourcefile, "-o", target:targetdir()})
-	end)
-	on_link(function () end)
-rule_end()
-
 rule("metadot.uidsl")
     set_extensions('.uidsl')
     on_load(function(target)
@@ -125,9 +114,6 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 
-    add_linkdirs("Source/Vendor/coreclr/win64", {public=true})
-    add_includedirs("Source/Vendor/coreclr/win64", {public=true})
-
     link_list = {
         "DbgHelp",
         "winmm",
@@ -156,8 +142,9 @@ if (is_os("windows")) then
 elseif (is_os("linux")) then
     add_defines("__linux")
     add_cxflags("-fPIC")
-    add_linkdirs("Source/Vendor/coreclr/linux", {public=true})
-    add_includedirs("Source/Vendor/coreclr/linux", {public=true})
+
+    add_rpathdirs("./output", {public=true})
+
     link_list = {}
 end
 
@@ -225,16 +212,6 @@ target("embed")
     add_files("Source/Tools/embed/**.cpp")
     add_headerfiles("Source/Tools/embed/**.h")
 
-target("CoreCLREmbed")
-    set_kind("static")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/CoreCLREmbed/**.cpp")
-	add_headerfiles("Source/CoreCLREmbed/**.h")
-	add_headerfiles("Source/CoreCLREmbed/**.hpp")
-	add_headerfiles("Source/Vendor/coreclr/**.h")
-    set_symbols("debug")
-
 target("Libs")
     set_kind("static")
     add_includedirs(include_dir_list)
@@ -296,12 +273,7 @@ target("MetaDot")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor", "Libs", "lua", "Engine", "CoreCLREmbed", "EmbedBuild")
-    if (is_os("windws")) then
-        add_links("nethost", "fmodstudioL_vc", "fmodL_vc")
-    elseif (is_os("linux")) then
-        add_links("nethost", "fmodstudioL", "fmodL")
-    end
+    add_deps("vendor", "Libs", "lua", "Engine", "EmbedBuild")
     add_links(link_list)
     add_files("Source/Generated/**.cpp")
     add_files("Source/Game/**.cpp")
@@ -311,9 +283,3 @@ target("MetaDot")
 	add_headerfiles("Source/Game/**.inc")
     add_headerfiles("Source/Shared/**.hpp")
     set_symbols("debug")
-
-target("MetaDotManaged")
-	set_kind("binary")
-	add_rules("csharp")
-    set_targetdir("./output")
-	add_files("Source/CSharpManaged/MetaDotManaged.csproj")
