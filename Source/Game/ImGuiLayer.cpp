@@ -199,7 +199,7 @@ void IngameUI::DrawOptions(Game *game) {
 }
 
 
-std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
+// std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
 int OptionsUI::item_current_idx = 0;
 bool OptionsUI::vsync = false;
 bool OptionsUI::minimizeOnFocus = false;
@@ -384,22 +384,22 @@ void OptionsUI::DrawAudio(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Volume");
     ImGui::Indent(4);
 
-    if (busMap.size() == 0) {
-        FMOD::Studio::Bus *busses[20];
-        int busCt = 0;
-        game->audioEngine.GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))->getBusList(busses, 20, &busCt);
+    // if (busMap.size() == 0) {
+    //     FMOD::Studio::Bus *busses[20];
+    //     int busCt = 0;
+    //     game->audioEngine.GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))->getBusList(busses, 20, &busCt);
 
-        busMap = {};
+    //     busMap = {};
 
-        for (int i = 0; i < busCt; i++) {
-            FMOD::Studio::Bus *b = busses[i];
-            char path[100];
-            int ctPath = 0;
-            b->getPath(path, 100, &ctPath);
+    //     for (int i = 0; i < busCt; i++) {
+    //         FMOD::Studio::Bus *b = busses[i];
+    //         char path[100];
+    //         int ctPath = 0;
+    //         b->getPath(path, 100, &ctPath);
 
-            busMap[std::string(path)] = b;
-        }
-    }
+    //         busMap[std::string(path)] = b;
+    //     }
+    // }
 
     std::vector<std::vector<std::string>> disp = {
             {"bus:/Master", "Master"},
@@ -408,15 +408,15 @@ void OptionsUI::DrawAudio(Game *game) {
             {"bus:/Master/Underwater/Player", "Player"},
             {"bus:/Master/Underwater/World", "World"}};
 
-    for (auto &v: disp) {
-        float volume = 0;
-        busMap[v[0]]->getVolume(&volume);
-        volume *= 100;
-        if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
-            volume = std::max(0.0f, std::min(volume, 100.0f));
-            busMap[v[0]]->setVolume(volume / 100.0f);
-        }
-    }
+    // for (auto &v: disp) {
+    //     float volume = 0;
+    //     busMap[v[0]]->getVolume(&volume);
+    //     volume *= 100;
+    //     if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
+    //         volume = std::max(0.0f, std::min(volume, 100.0f));
+    //         busMap[v[0]]->setVolume(volume / 100.0f);
+    //     }
+    // }
 
     ImGui::Unindent(4);
 }

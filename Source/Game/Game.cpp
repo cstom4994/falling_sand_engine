@@ -206,10 +206,10 @@ int Game::init(int argc, char *argv[]) {
         auto options = structopt::app("my_app").parse<Options>(argc, argv);
 
         if (!options.test.value_or("").empty()) {
-            if (options.test == "test_clr") {
-                testclr();
-                return 0;
-            }
+            // if (options.test == "test_clr") {
+            //     testclr();
+            //     return 0;
+            // }
             if (options.test == "test_mu") {
                 for (auto t: options.files) {
                     METADOT_UNIT(!interp.evaluateFile(std::string(t)));
@@ -328,8 +328,8 @@ int Game::init(int argc, char *argv[]) {
 
             audioEngine.Init();
 
-            audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
-            audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+            // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+            // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
 
             audioEngine.LoadEvent("event:/Music/Title");
 
