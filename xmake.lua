@@ -150,8 +150,6 @@ end
 
 add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive")
 
-add_linkdirs("Source/Vendor/fmod/lib", {public=true})
-
 include_dir_list = {
     "Source",
     "Source/Generated",
@@ -164,8 +162,7 @@ include_dir_list = {
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
-    "Source/Vendor/fmt/include",
-    "Source/Vendor/fmod/inc"
+    "Source/Vendor/fmt/include"
     }
 
 defines_list = {
@@ -177,7 +174,7 @@ defines_list = {
 target("vendor")
     set_kind("static")
     --add_rules("c.unity_build")
-    --add_rules("c++.unity_build")
+    add_rules("c++.unity_build")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
@@ -191,7 +188,7 @@ target("vendor")
 
 target("lua")
     set_kind("static")
-    --add_rules("c.unity_build")
+    add_rules("c.unity_build")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Libs/lua/lua/*.c|lua.c|luac.c|onelua.c")

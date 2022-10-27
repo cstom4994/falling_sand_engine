@@ -13,7 +13,6 @@
 #include "Settings.hpp"
 #include "Utils.hpp"
 
-#include "CoreCLREmbed/CoreCLREmbed.hpp"
 #include "Engine/ECS/entity.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
