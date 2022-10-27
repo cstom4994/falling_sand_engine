@@ -125,8 +125,6 @@ if (is_os("windows")) then
 
     add_cxflags("/bigobj")
 
-    add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive")
-
     link_list = {
         "DbgHelp",
         "winmm",
@@ -154,8 +152,14 @@ if (is_os("windows")) then
     }
 elseif (is_os("linux")) then
     add_defines("__linux")
+    add_cxflags("-fPIC")
     link_list = {}
 end
+
+add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive")
+
+add_linkdirs("Source/Vendor/coreclr", {public=true})
+add_linkdirs("Source/Vendor/fmod/lib", {public=true})
 
 include_dir_list = {
     "Source",
@@ -182,8 +186,8 @@ defines_list = {
 
 target("vendor")
     set_kind("static")
-    add_rules("c.unity_build")
-    add_rules("c++.unity_build")
+    --add_rules("c.unity_build")
+    --add_rules("c++.unity_build")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
@@ -197,7 +201,7 @@ target("vendor")
 
 target("lua")
     set_kind("static")
-    add_rules("c.unity_build")
+    --add_rules("c.unity_build")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Libs/lua/lua/*.c|lua.c|luac.c|onelua.c")
@@ -267,8 +271,8 @@ target("Engine")
     add_files('Source/Engine/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
     set_symbols("debug")
 
-if (is_config("build_embed")) then
-    target("EmbedBuild")
+
+target("EmbedBuild")
     set_kind("static")
     add_rules("metadot.uidsl")
     add_rules("metadot.embed")
@@ -282,7 +286,6 @@ if (is_config("build_embed")) then
     -- add_rules("utils.bin2c", {extensions = {".ttf"}})
     -- add_files("Resources/**.ttf")
     set_symbols("debug")
-end
 
 target("MetaDot")
     set_kind("binary")
@@ -290,8 +293,12 @@ target("MetaDot")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor", "Libs", "lua", "Engine", "CoreCLREmbed")
-    add_links("nethost", "fmodstudioL_vc", "fmodL_vc")
+    add_deps("vendor", "Libs", "lua", "Engine", "CoreCLREmbed", "EmbedBuild")
+    if (is_os("windws")) then
+        add_links("nethost", "fmodstudioL_vc", "fmodL_vc")
+    elseif (is_os("linux")) then
+        add_links("nethost", "fmodstudioL", "fmodL")
+    end
     add_links(link_list)
     add_files("Source/Generated/**.cpp")
     add_files("Source/Game/**.cpp")
@@ -300,8 +307,6 @@ target("MetaDot")
 	add_headerfiles("Source/Game/**.inl")
 	add_headerfiles("Source/Game/**.inc")
     add_headerfiles("Source/Shared/**.hpp")
-    add_linkdirs("Source/Vendor/coreclr")
-    add_linkdirs("Source/Vendor/fmod/lib")
     set_symbols("debug")
 
 target("MetaDotManaged")
