@@ -109,7 +109,9 @@ if (is_os("windows")) then
     "/wd4267", "/wd4244", "/wd4305", "/wd4018", 
     "/wd4800", "/wd5030", "/wd5222", "/wd4554",
     "/wd4002",
-    "/utf-8", "/Zc:__cplusplus", "/EHa"
+    "/utf-8", "/Zc:__cplusplus", "/EHa",
+    "/Za", "/Ze",
+    "/fp:precise"
     )
 
     add_cxflags("/bigobj")
@@ -148,7 +150,7 @@ elseif (is_os("linux")) then
     link_list = {}
 end
 
-add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive")
+add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
     "Source",

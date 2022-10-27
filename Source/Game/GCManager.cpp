@@ -5,6 +5,8 @@
 
 #ifdef METADOT_GC_IMPLEMENTED
 
+#include "ImGuiBase.h"
+
 #include "Shlwapi.h"//StrStrI
 #include "imagehlp.h"
 #include <Windows.h>
@@ -67,7 +69,7 @@ void MetaEngine::GCManager::SymbolGetter::init() {
 
 #ifdef METADOT_GC_IMPL
 
-#if defined (METADOT_GC_PLATFORM_WINDOWS)
+#if defined(METADOT_GC_PLATFORM_WINDOWS)
 
 namespace MetaEngine::GCManager {
 #define METADOT_GC_IS_ALPHA(c) (((c) >= 'A' && (c) <= 'Z') || ((c) >= 'a' && (c) <= 'z'))
@@ -514,95 +516,95 @@ namespace MetaEngine::GCManager {
 #define INTERNAL_SCOPE ;
 #endif
 
-void *MetaEngine::GCManager::alloc(size_t size) {
-    void *ptr = METADOT_GC_USE_MALLOC(size + HEADER_SIZE);
-    void *userPtr = (void *) (size_t(ptr) + HEADER_SIZE);
-    METADOT_GC_ASSERT(ptr != nullptr, "Out of memory");
-    if (!ptr)
-        return nullptr;
-    Header *header = (Header *) (ptr);
-    logAllocInChunk(header, size);
-    LOG_REAL_SIZE_ALLOC(header, userPtr);
-    header->aligned = 0;
-    return userPtr;
-}
-
-void *MetaEngine::GCManager::allocAligned(size_t size, size_t alignment) {
-    if (alignment < 8) {
-        alignment = 8;
+    void *MetaEngine::GCManager::alloc(size_t size) {
+        void *ptr = METADOT_GC_USE_MALLOC(size + HEADER_SIZE);
+        void *userPtr = (void *) (size_t(ptr) + HEADER_SIZE);
+        METADOT_GC_ASSERT(ptr != nullptr, "Out of memory");
+        if (!ptr)
+            return nullptr;
+        Header *header = (Header *) (ptr);
+        logAllocInChunk(header, size);
+        LOG_REAL_SIZE_ALLOC(header, userPtr);
+        header->aligned = 0;
+        return userPtr;
     }
 
-    size_t allocatedSize = GET_ALIGNED_SIZE(size, alignment);
-    void *r = METADOT_GC_USE_MALLOC(allocatedSize);
-    METADOT_GC_ASSERT(r != nullptr, "Out of memory");
-    if (!r)
-        return nullptr;
-    void *o = REGISTER_ALIGNED_PTR(r, alignment);
+    void *MetaEngine::GCManager::allocAligned(size_t size, size_t alignment) {
+        if (alignment < 8) {
+            alignment = 8;
+        }
 
-    Header *header = GET_HEADER(o);
-    logAllocInChunk(header, size);
-    LOG_REAL_SIZE_ALLOC(header, o);
-    header->aligned = 1;
-    METADOT_GC_ASSERT(IS_ALIGNED(o, alignment + 1), "Not aligned");
-    METADOT_GC_ASSERT(o != nullptr, "");
-    return (void *) o;
-}
+        size_t allocatedSize = GET_ALIGNED_SIZE(size, alignment);
+        void *r = METADOT_GC_USE_MALLOC(allocatedSize);
+        METADOT_GC_ASSERT(r != nullptr, "Out of memory");
+        if (!r)
+            return nullptr;
+        void *o = REGISTER_ALIGNED_PTR(r, alignment);
 
-void *MetaEngine::GCManager::realloc(void *ptr, size_t size) {
-    if (ptr == nullptr) {
-        return alloc(size);
+        Header *header = GET_HEADER(o);
+        logAllocInChunk(header, size);
+        LOG_REAL_SIZE_ALLOC(header, o);
+        header->aligned = 1;
+        METADOT_GC_ASSERT(IS_ALIGNED(o, alignment + 1), "Not aligned");
+        METADOT_GC_ASSERT(o != nullptr, "");
+        return (void *) o;
     }
 
-    Header *header = GET_HEADER(ptr);
+    void *MetaEngine::GCManager::realloc(void *ptr, size_t size) {
+        if (ptr == nullptr) {
+            return alloc(size);
+        }
 
-    if (size == 0) {
-        dealloc(ptr);
-        return alloc(0);
+        Header *header = GET_HEADER(ptr);
+
+        if (size == 0) {
+            dealloc(ptr);
+            return alloc(0);
+        }
+
+        if (size == header->size) {
+            return ptr;
+        }
+        logFreeInChunk(header);
+        LOG_REAL_SIZE_FREE(header, ptr);
+        void *newPtr = METADOT_GC_USE_REALLOC((void *) header, size + HEADER_SIZE);
+        METADOT_GC_ASSERT(newPtr != nullptr, "Out of memory");
+        if (!newPtr)
+            return newPtr;
+        header = (Header *) (newPtr);
+        logAllocInChunk(header, size);
+        void *userPtr = (void *) (size_t(newPtr) + HEADER_SIZE);
+        LOG_REAL_SIZE_ALLOC(header, userPtr);
+        header->aligned = 0;
+        return userPtr;
     }
 
-    if (size == header->size) {
-        return ptr;
-    }
-    logFreeInChunk(header);
-    LOG_REAL_SIZE_FREE(header, ptr);
-    void *newPtr = METADOT_GC_USE_REALLOC((void *) header, size + HEADER_SIZE);
-    METADOT_GC_ASSERT(newPtr != nullptr, "Out of memory");
-    if (!newPtr)
-        return newPtr;
-    header = (Header *) (newPtr);
-    logAllocInChunk(header, size);
-    void *userPtr = (void *) (size_t(newPtr) + HEADER_SIZE);
-    LOG_REAL_SIZE_ALLOC(header, userPtr);
-    header->aligned = 0;
-    return userPtr;
-}
+    void *MetaEngine::GCManager::reallocAligned(void *ptr, size_t size, size_t alignment) {
+        if (ptr == nullptr) {
+            return allocAligned(size, alignment);
+        }
 
-void *MetaEngine::GCManager::reallocAligned(void *ptr, size_t size, size_t alignment) {
-    if (ptr == nullptr) {
-        return allocAligned(size, alignment);
-    }
+        Header oldHeader = *GET_HEADER(ptr);
 
-    Header oldHeader = *GET_HEADER(ptr);
+        if (size == 0) {
+            deallocAligned(ptr);
+            return allocAligned(0, alignment);
+        }
 
-    if (size == 0) {
+        if (size == oldHeader.size) {
+            return ptr;
+        }
+        METADOT_GC_ASSERT(oldHeader.aligned == 1, "");
+        METADOT_GC_ASSERT(IS_ALIGNED(ptr, alignment), "");
+        void *newPtr = allocAligned(size, alignment);
+        if (!newPtr)
+            return nullptr;
+        memcpy(newPtr, ptr, size_t(oldHeader.size < size ? oldHeader.size : size));
         deallocAligned(ptr);
-        return allocAligned(0, alignment);
-    }
-
-    if (size == oldHeader.size) {
-        return ptr;
-    }
-    METADOT_GC_ASSERT(oldHeader.aligned == 1, "");
-    METADOT_GC_ASSERT(IS_ALIGNED(ptr, alignment), "");
-    void *newPtr = allocAligned(size, alignment);
-    if (!newPtr)
-        return nullptr;
-    memcpy(newPtr, ptr, size_t(oldHeader.size < size ? oldHeader.size : size));
-    deallocAligned(ptr);
-    METADOT_GC_ASSERT(IS_ALIGNED(newPtr, alignment), "");
-    METADOT_GC_ASSERT(newPtr != nullptr, "");
-    return newPtr;
-    /*size_t reallocSize = GET_ALIGNED_SIZE(size, alignment);
+        METADOT_GC_ASSERT(IS_ALIGNED(newPtr, alignment), "");
+        METADOT_GC_ASSERT(newPtr != nullptr, "");
+        return newPtr;
+        /*size_t reallocSize = GET_ALIGNED_SIZE(size, alignment);
 	void *alignedPtr = GET_ALIGNED_PTR(ptr);
 	void* r = METADOT_GC_USE_REALLOC(alignedPtr, reallocSize);
 	if (!r) return NULL;
@@ -614,240 +616,240 @@ void *MetaEngine::GCManager::reallocAligned(void *ptr, size_t size, size_t align
 	newHeader->size = size;
 	logFreeInChunk(&oldHeader);
 	return o;*/
-}
+    }
 
-void MetaEngine::GCManager::dealloc(void *ptr) {
-    if (ptr == nullptr)
-        return;
-    Header *header = GET_HEADER(ptr);
-    METADOT_GC_DEBUG_ASSERT(header->aligned == 0, "Trying to free an aligned ptr with a non-aligned free");
-    logFreeInChunk(header);
-    LOG_REAL_SIZE_FREE(header, ptr);
-    METADOT_GC_USE_FREE((void *) header);
-}
+    void MetaEngine::GCManager::dealloc(void *ptr) {
+        if (ptr == nullptr)
+            return;
+        Header *header = GET_HEADER(ptr);
+        METADOT_GC_DEBUG_ASSERT(header->aligned == 0, "Trying to free an aligned ptr with a non-aligned free");
+        logFreeInChunk(header);
+        LOG_REAL_SIZE_FREE(header, ptr);
+        METADOT_GC_USE_FREE((void *) header);
+    }
 
-void MetaEngine::GCManager::deallocAligned(void *ptr) {
-    if (ptr == nullptr)
-        return;
-    Header *header = GET_HEADER(ptr);
-    METADOT_GC_DEBUG_ASSERT(header->aligned == 1, "Trying to free an non-aligned ptr with an aligned free");
-    logFreeInChunk(header);
-    LOG_REAL_SIZE_FREE(header, ptr);
-    METADOT_GC_USE_FREE(GET_ALIGNED_PTR(ptr));
-}
+    void MetaEngine::GCManager::deallocAligned(void *ptr) {
+        if (ptr == nullptr)
+            return;
+        Header *header = GET_HEADER(ptr);
+        METADOT_GC_DEBUG_ASSERT(header->aligned == 1, "Trying to free an non-aligned ptr with an aligned free");
+        logFreeInChunk(header);
+        LOG_REAL_SIZE_FREE(header, ptr);
+        METADOT_GC_USE_FREE(GET_ALIGNED_PTR(ptr));
+    }
 
-void MetaEngine::GCManager::exit() {
-    g_runningStatus = EXIT;
-}
+    void MetaEngine::GCManager::exit() {
+        g_runningStatus = EXIT;
+    }
 
-void MetaEngine::GCManager::init() {
-    INTERNAL_SCOPE;
-    g_runningStatus = RUNNING;
-    SymbolGetter::init();
-}
+    void MetaEngine::GCManager::init() {
+        INTERNAL_SCOPE;
+        g_runningStatus = RUNNING;
+        SymbolGetter::init();
+    }
 
 
-//////////////////////////////////////////////////////////////////////////
-// IMPL ONLY :
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // IMPL ONLY :
+    //////////////////////////////////////////////////////////////////////////
 
 #define METADOT_GC_HASH_FROM_PTR(ptr) combineHash(ptr)
 
-bool MetaEngine::GCManager::chunkIsNotFull(const Chunk *chunk) {
-    return (chunk && chunk->allocIndex < METADOT_GC_ALLOC_NUMBER_PER_CHUNK && chunk->stackIndex < METADOT_GC_ALLOC_NUMBER_PER_CHUNK * METADOT_GC_STACK_SIZE_PER_ALLOC);
-}
+    bool MetaEngine::GCManager::chunkIsNotFull(const Chunk *chunk) {
+        return (chunk && chunk->allocIndex < METADOT_GC_ALLOC_NUMBER_PER_CHUNK && chunk->stackIndex < METADOT_GC_ALLOC_NUMBER_PER_CHUNK * METADOT_GC_STACK_SIZE_PER_ALLOC);
+    }
 
-MetaEngine::GCManager::Chunk *MetaEngine::GCManager::createTemporaryChunk() {
-    void *ptr = METADOT_GC_USE_MALLOC(sizeof(Chunk));
-    METADOT_GC_ASSERT(ptr != nullptr, "Out of memory");
-    if (ptr == nullptr)
-        return nullptr;
+    MetaEngine::GCManager::Chunk *MetaEngine::GCManager::createTemporaryChunk() {
+        void *ptr = METADOT_GC_USE_MALLOC(sizeof(Chunk));
+        METADOT_GC_ASSERT(ptr != nullptr, "Out of memory");
+        if (ptr == nullptr)
+            return nullptr;
 #ifdef METADOT_GC_STATS
-    g_internalAllocations.fetch_add(sizeof(Chunk));
+        g_internalAllocations.fetch_add(sizeof(Chunk));
 #endif
-    memset(ptr, 0, sizeof(Chunk));
-    Chunk *tmpChunk = new (ptr) Chunk;
-    memset(g_th_cache, 0, sizeof(g_th_cache));
-    g_th_cacheIndex = 0;
-    tmpChunk->allocIndex = 0;
-    tmpChunk->stackIndex = 0;
-    tmpChunk->status = ChunkStatus::TEMPORARY;
-    g_temporaryChunkCounter.fetch_add(1);
-    return tmpChunk;
-}
-
-MetaEngine::GCManager::Chunk *MetaEngine::GCManager::createPreallocatedChunk(const RunningStatus status) {
-    // If it's not running we do not cycle around pre-allocated
-    // chunks, we just use them once.
-    if (status != RunningStatus::RUNNING && g_th_chunkIndex + 1 >= METADOT_GC_CHUNK_NUMBER_PER_THREAD) {
-        return nullptr;
-    }
-
-    // We get the next preallocated chunk
-    g_th_chunkIndex = (g_th_chunkIndex + 1) % METADOT_GC_CHUNK_NUMBER_PER_THREAD;
-    Chunk *chunk = &g_th_chunks[g_th_chunkIndex];
-
-    // If new chunk is pending for treatment we return nullptr
-    if (chunk->status.load() == ChunkStatus::PENDING) {
-        return nullptr;
-    }
-
-    // Else we init chunk and return it
-    g_th_cacheIndex = 0;
-    memset(g_th_cache, 0, sizeof(g_th_cache));
-    chunk->allocIndex = 0;
-    chunk->stackIndex = 0;
-    return chunk;
-}
-
-MetaEngine::GCManager::Chunk *MetaEngine::GCManager::getChunk(bool forceFlush /*= false*/) {
-    const RunningStatus status = g_runningStatus;
-
-    // We initialized TLS values
-    if (!g_th_initialized) {
-        memset(g_th_chunks, 0, sizeof(g_th_chunks));
+        memset(ptr, 0, sizeof(Chunk));
+        Chunk *tmpChunk = new (ptr) Chunk;
         memset(g_th_cache, 0, sizeof(g_th_cache));
-        g_internalAllThreadsMemoryUsed.fetch_add(g_internalPerThreadMemoryUsed);
-        g_th_initialized = true;
+        g_th_cacheIndex = 0;
+        tmpChunk->allocIndex = 0;
+        tmpChunk->stackIndex = 0;
+        tmpChunk->status = ChunkStatus::TEMPORARY;
+        g_temporaryChunkCounter.fetch_add(1);
+        return tmpChunk;
     }
 
-    // If GCManager is not initialized
-    if (status != RunningStatus::RUNNING) {
-        // If current chunk is not full we use it
-        if (chunkIsNotFull(g_th_currentChunk)) {
-            return g_th_currentChunk;
+    MetaEngine::GCManager::Chunk *MetaEngine::GCManager::createPreallocatedChunk(const RunningStatus status) {
+        // If it's not running we do not cycle around pre-allocated
+        // chunks, we just use them once.
+        if (status != RunningStatus::RUNNING && g_th_chunkIndex + 1 >= METADOT_GC_CHUNK_NUMBER_PER_THREAD) {
+            return nullptr;
         }
-        // Else we try to use TLS preallocated chunk
-        g_th_currentChunk = createPreallocatedChunk(status);
-        if (g_th_currentChunk != nullptr) {
-            return g_th_currentChunk;
+
+        // We get the next preallocated chunk
+        g_th_chunkIndex = (g_th_chunkIndex + 1) % METADOT_GC_CHUNK_NUMBER_PER_THREAD;
+        Chunk *chunk = &g_th_chunks[g_th_chunkIndex];
+
+        // If new chunk is pending for treatment we return nullptr
+        if (chunk->status.load() == ChunkStatus::PENDING) {
+            return nullptr;
         }
-        // Else we return a temporary chunk
-        g_th_currentChunk = createTemporaryChunk();
-        return g_th_currentChunk;
+
+        // Else we init chunk and return it
+        g_th_cacheIndex = 0;
+        memset(g_th_cache, 0, sizeof(g_th_cache));
+        chunk->allocIndex = 0;
+        chunk->stackIndex = 0;
+        return chunk;
     }
-    // Else if GCManager is running
-    else {
-        // If current chunk is not full and treat current chunk time is not came
-        if (forceFlush == false && chunkIsNotFull(g_th_currentChunk)) {
-            return g_th_currentChunk;
-        }
-        // Else we search for a new one
-        // and set old chunk status as pending
-        Chunk *oldChunk = g_th_currentChunk;
-        if (oldChunk && oldChunk->status != ChunkStatus::TEMPORARY) {
-            oldChunk->status = ChunkStatus::PENDING;
-        }
-        g_th_currentChunk = createPreallocatedChunk(status);
-        // And treat old chunk
-        if (g_th_currentChunk && oldChunk) {
-            METADOT_GC_TREAT_CHUNK(oldChunk);
-        }
-        // If there were a free preallocated chunk we return it
-        if (g_th_currentChunk) {
-            return g_th_currentChunk;
-        }
-        // Else we create a temporary one
-        g_th_currentChunk = createTemporaryChunk();
 
-        if (g_th_currentChunk && oldChunk) {
-            METADOT_GC_TREAT_CHUNK(oldChunk);
+    MetaEngine::GCManager::Chunk *MetaEngine::GCManager::getChunk(bool forceFlush /*= false*/) {
+        const RunningStatus status = g_runningStatus;
+
+        // We initialized TLS values
+        if (!g_th_initialized) {
+            memset(g_th_chunks, 0, sizeof(g_th_chunks));
+            memset(g_th_cache, 0, sizeof(g_th_cache));
+            g_internalAllThreadsMemoryUsed.fetch_add(g_internalPerThreadMemoryUsed);
+            g_th_initialized = true;
         }
 
-        return g_th_currentChunk;
+        // If GCManager is not initialized
+        if (status != RunningStatus::RUNNING) {
+            // If current chunk is not full we use it
+            if (chunkIsNotFull(g_th_currentChunk)) {
+                return g_th_currentChunk;
+            }
+            // Else we try to use TLS preallocated chunk
+            g_th_currentChunk = createPreallocatedChunk(status);
+            if (g_th_currentChunk != nullptr) {
+                return g_th_currentChunk;
+            }
+            // Else we return a temporary chunk
+            g_th_currentChunk = createTemporaryChunk();
+            return g_th_currentChunk;
+        }
+        // Else if GCManager is running
+        else {
+            // If current chunk is not full and treat current chunk time is not came
+            if (forceFlush == false && chunkIsNotFull(g_th_currentChunk)) {
+                return g_th_currentChunk;
+            }
+            // Else we search for a new one
+            // and set old chunk status as pending
+            Chunk *oldChunk = g_th_currentChunk;
+            if (oldChunk && oldChunk->status != ChunkStatus::TEMPORARY) {
+                oldChunk->status = ChunkStatus::PENDING;
+            }
+            g_th_currentChunk = createPreallocatedChunk(status);
+            // And treat old chunk
+            if (g_th_currentChunk && oldChunk) {
+                METADOT_GC_TREAT_CHUNK(oldChunk);
+            }
+            // If there were a free preallocated chunk we return it
+            if (g_th_currentChunk) {
+                return g_th_currentChunk;
+            }
+            // Else we create a temporary one
+            g_th_currentChunk = createTemporaryChunk();
+
+            if (g_th_currentChunk && oldChunk) {
+                METADOT_GC_TREAT_CHUNK(oldChunk);
+            }
+
+            return g_th_currentChunk;
+        }
+        return nullptr;
     }
-    return nullptr;
-}
 
-uint8_t MetaEngine::GCManager::findInCache(MetaEngine::GCManager::Hash hash) {
-    int i = int(g_th_cacheIndex - 1);
-    if (i < 0)
-        i = METADOT_GC_CACHE_SIZE - 1;
-    uint8_t res = 1;
-    while (true) {
-        if (g_th_cache[i] == hash) {
-            return res - 1;
-        }
-        i -= 1;
+    uint8_t MetaEngine::GCManager::findInCache(MetaEngine::GCManager::Hash hash) {
+        int i = int(g_th_cacheIndex - 1);
         if (i < 0)
             i = METADOT_GC_CACHE_SIZE - 1;
-        if (++res == METADOT_GC_CACHE_SIZE)
-            break;
+        uint8_t res = 1;
+        while (true) {
+            if (g_th_cache[i] == hash) {
+                return res - 1;
+            }
+            i -= 1;
+            if (i < 0)
+                i = METADOT_GC_CACHE_SIZE - 1;
+            if (++res == METADOT_GC_CACHE_SIZE)
+                break;
+        }
+        return uint8_t(-1);
     }
-    return uint8_t(-1);
-}
 
-void MetaEngine::GCManager::logAllocInChunk(MetaEngine::GCManager::Header *header, size_t size) {
+    void MetaEngine::GCManager::logAllocInChunk(MetaEngine::GCManager::Header *header, size_t size) {
 #ifdef METADOT_GC_STATS
-    if (IS_IN_INTERNAL_SCOPE()) {
-        g_internalAllocations.fetch_add(size);
-    }
+        if (IS_IN_INTERNAL_SCOPE()) {
+            g_internalAllocations.fetch_add(size);
+        }
 #endif
-    INTERNAL_SCOPE;
-    Chunk *chunk = getChunk();
+        INTERNAL_SCOPE;
+        Chunk *chunk = getChunk();
 
-    header->hash = 0;
-    void **stack = &chunk->stackBuffer[chunk->stackIndex];
-    uint32_t count = getCallstack(METADOT_GC_STACK_SIZE_PER_ALLOC, stack, &header->hash);
+        header->hash = 0;
+        void **stack = &chunk->stackBuffer[chunk->stackIndex];
+        uint32_t count = getCallstack(METADOT_GC_STACK_SIZE_PER_ALLOC, stack, &header->hash);
 
-    header->size = size;
+        header->size = size;
 
-    size_t index = chunk->allocIndex;
-    uint8_t found = findInCache(header->hash);
-    if (found != uint8_t(-1)) {
+        size_t index = chunk->allocIndex;
+        uint8_t found = findInCache(header->hash);
+        if (found != uint8_t(-1)) {
 #ifndef METADOT_GC_INSTANCE_COUNT_ACTIVATED
-        index = chunk->allocIndex - found - 1;
-        chunk->allocSize[index] += size;
-        return;
+            index = chunk->allocIndex - found - 1;
+            chunk->allocSize[index] += size;
+            return;
 #else
-        chunk->allocStackIndex[index] = chunk->allocStackIndex[chunk->allocIndex - found - 1];
+            chunk->allocStackIndex[index] = chunk->allocStackIndex[chunk->allocIndex - found - 1];
+            chunk->allocSize[index] = size;
+            chunk->allocHash[index] = chunk->allocHash[chunk->allocIndex - found - 1];
+            chunk->allocStackSize[index] = chunk->allocStackSize[chunk->allocIndex - found - 1];
+            chunk->allocIndex += 1;
+            g_th_cache[g_th_cacheIndex] = header->hash;
+            g_th_cacheIndex = (g_th_cacheIndex + 1) % METADOT_GC_CACHE_SIZE;
+            return;
+#endif
+        }
+
+        chunk->allocStackIndex[index] = chunk->stackIndex;
         chunk->allocSize[index] = size;
-        chunk->allocHash[index] = chunk->allocHash[chunk->allocIndex - found - 1];
-        chunk->allocStackSize[index] = chunk->allocStackSize[chunk->allocIndex - found - 1];
-        chunk->allocIndex += 1;
+        chunk->allocHash[index] = header->hash;
+        chunk->allocStackSize[index] = count;
         g_th_cache[g_th_cacheIndex] = header->hash;
         g_th_cacheIndex = (g_th_cacheIndex + 1) % METADOT_GC_CACHE_SIZE;
-        return;
-#endif
+        chunk->allocIndex += 1;
+        chunk->stackIndex += count;
     }
 
-    chunk->allocStackIndex[index] = chunk->stackIndex;
-    chunk->allocSize[index] = size;
-    chunk->allocHash[index] = header->hash;
-    chunk->allocStackSize[index] = count;
-    g_th_cache[g_th_cacheIndex] = header->hash;
-    g_th_cacheIndex = (g_th_cacheIndex + 1) % METADOT_GC_CACHE_SIZE;
-    chunk->allocIndex += 1;
-    chunk->stackIndex += count;
-}
-
-void MetaEngine::GCManager::logFreeInChunk(MetaEngine::GCManager::Header *header) {
+    void MetaEngine::GCManager::logFreeInChunk(MetaEngine::GCManager::Header *header) {
 #ifdef METADOT_GC_STATS
-    if (IS_IN_INTERNAL_SCOPE()) {
-        g_internalAllocations.fetch_sub(header->size);
-    }
+        if (IS_IN_INTERNAL_SCOPE()) {
+            g_internalAllocations.fetch_sub(header->size);
+        }
 #endif
-    INTERNAL_SCOPE;
-    Chunk *chunk = getChunk();
+        INTERNAL_SCOPE;
+        Chunk *chunk = getChunk();
 
-    size_t index = chunk->allocIndex;
-    uint8_t found = findInCache(header->hash);
-    if (found != uint8_t(-1)) {
+        size_t index = chunk->allocIndex;
+        uint8_t found = findInCache(header->hash);
+        if (found != uint8_t(-1)) {
 #ifndef METADOT_GC_INSTANCE_COUNT_ACTIVATED
-        index = chunk->allocIndex - found - 1;
-        chunk->allocSize[index] -= ptrdiff_t(header->size);
-        return;
+            index = chunk->allocIndex - found - 1;
+            chunk->allocSize[index] -= ptrdiff_t(header->size);
+            return;
 #endif
-    }
+        }
 
-    g_th_cache[g_th_cacheIndex] = header->hash;
-    g_th_cacheIndex = (g_th_cacheIndex + 1) % METADOT_GC_CACHE_SIZE;
-    chunk->allocStackIndex[index] = size_t(-1);
-    chunk->allocSize[index] = -ptrdiff_t(header->size);
-    chunk->allocHash[index] = header->hash;
-    chunk->allocStackSize[index] = 0;
-    chunk->allocIndex += 1;
-}
+        g_th_cache[g_th_cacheIndex] = header->hash;
+        g_th_cacheIndex = (g_th_cacheIndex + 1) % METADOT_GC_CACHE_SIZE;
+        chunk->allocStackIndex[index] = size_t(-1);
+        chunk->allocSize[index] = -ptrdiff_t(header->size);
+        chunk->allocHash[index] = header->hash;
+        chunk->allocStackSize[index] = 0;
+        chunk->allocIndex += 1;
+    }
 
 #ifdef METADOT_GC_INSTANCE_COUNT_ACTIVATED
 #define METADOT_GC_INC_INSTANCE(instance, size) instance += size > 0 ? 1 : -1
@@ -855,148 +857,145 @@ void MetaEngine::GCManager::logFreeInChunk(MetaEngine::GCManager::Header *header
 #define METADOT_GC_INC_INSTANCE(instance, size)
 #endif
 
-void MetaEngine::GCManager::treatChunk(Chunk *chunk) {
-    INTERNAL_SCOPE;
-    std::lock_guard<std::mutex> lock(g_mutex);
-    for (size_t i = 0, iend = chunk->allocIndex; i < iend; ++i) {
-        auto size = chunk->allocSize[i];
-        if (size == 0)
-            continue;
-        auto it = g_stackDictionary.update(chunk->allocHash[i]);
-        auto &allocStack = it->getValue();
-        allocStack.allocSize += size;
-        if (allocStack.stackSize != 0) {
-            updateTree(allocStack, size, false);
-            for (size_t j = 0; j < allocStack.stackSize; ++j) {
-                allocStack.stackAllocs[j]->allocSize += size;
-            }
-            continue;
-        }
-        allocStack.hash = chunk->allocHash[i];
-        allocStack.stackAllocs.resize(chunk->allocStackSize[i]);
-        for (size_t j = 0, jend = chunk->allocStackSize[i]; j < jend; ++j) {
-            void *addr = chunk->stackBuffer[chunk->allocStackIndex[i] + j];
-            auto found = g_allocDictionary.update(METADOT_GC_HASH_FROM_PTR(addr));
-            if (found->getValue().shared != nullptr) {
-                auto shared = found->getValue().shared;
-                shared->allocSize += size;
-                allocStack.stackAllocs[j] = shared;
+    void MetaEngine::GCManager::treatChunk(Chunk *chunk) {
+        INTERNAL_SCOPE;
+        std::lock_guard<std::mutex> lock(g_mutex);
+        for (size_t i = 0, iend = chunk->allocIndex; i < iend; ++i) {
+            auto size = chunk->allocSize[i];
+            if (size == 0)
                 continue;
-            }
-            if (found->getValue().str != nullptr) {
-                allocStack.stackAllocs[j] = &found->getValue();
-                found->getValue().allocSize += size;
-                continue;
-            }
-            void *absoluteAddress = nullptr;
-            const char *name = SymbolGetter::getSymbol(addr, absoluteAddress);
-
-            auto shared = g_allocDictionary.update(METADOT_GC_HASH_FROM_PTR(absoluteAddress));
-            if (shared->getValue().str != nullptr) {
-                found->getValue().shared = &shared->getValue();
-                allocStack.stackAllocs[j] = &shared->getValue();
-                shared->getValue().allocSize += size;
-#ifdef METADOT_GC_PLATFORM_WINDOWS
-                if (name != TRUNCATED_STACK_NAME)
-                    METADOT_GC_USE_FREE((void *) name);
-#endif
-                continue;
-            }
-
-            found->getValue().shared = &shared->getValue();
-            shared->getValue().str = name;
-            shared->getValue().allocSize = size;
-
-            allocStack.stackAllocs[j] = &shared->getValue();
-            shared->getValue().next = g_allocList;
-            g_allocList = &shared->getValue();
-        }
-        allocStack.stackSize = chunk->allocStackSize[i];
-        updateTree(allocStack, size, true);
-    }
-    if (chunk->status == ChunkStatus::TEMPORARY) {
-        chunk->~Chunk();
-        METADOT_GC_USE_FREE(chunk);
-#ifdef METADOT_GC_STATS
-        g_internalAllocations.fetch_sub(sizeof(Chunk));
-#endif
-        g_temporaryChunkCounter.fetch_sub(1);
-    } else {
-        chunk->status.store(ChunkStatus::TREATED);
-    }
-}
-
-void MetaEngine::GCManager::updateTree(AllocStack &allocStack, ptrdiff_t size, bool checkTree) {
-    int stackSize = allocStack.stackSize;
-    stackSize -= INTERNAL_FRAME_TO_SKIP;
-    uint8_t depth = 0;
-    Edge *previousPtr = nullptr;
-    while (stackSize >= 0) {
-        Hash currentHash = METADOT_GC_HASH_FROM_PTR(allocStack.stackAllocs[stackSize]);
-        currentHash = combineHash((size_t(previousPtr)), currentHash);
-        currentHash = combineHash(depth * depth, currentHash);
-
-        TreeKey key(currentHash, METADOT_GC_HASH_FROM_PTR(allocStack.stackAllocs[stackSize]->str));
-
-        auto pair = g_treeDictionary.update(key);
-        Edge *currentPtr = &pair->getValue();
-        currentPtr->allocSize += size;
-        METADOT_GC_INC_INSTANCE(currentPtr->instanceCount, size);
-        if (checkTree) {
-            if (!currentPtr->alloc) {
-                METADOT_GC_DEBUG_ASSERT(currentPtr->same == nullptr, "Edge already have a same pointer defined.");
-                currentPtr->alloc = allocStack.stackAllocs[stackSize];
-                currentPtr->same = allocStack.stackAllocs[stackSize]->edges;
-                allocStack.stackAllocs[stackSize]->edges = currentPtr;
-            }
-
-            if (previousPtr != nullptr) {
-                auto it = std::find(previousPtr->to.begin(), previousPtr->to.end(), currentPtr);
-                if (it == previousPtr->to.end()) {
-                    previousPtr->to.push_back(currentPtr);
+            auto it = g_stackDictionary.update(chunk->allocHash[i]);
+            auto &allocStack = it->getValue();
+            allocStack.allocSize += size;
+            if (allocStack.stackSize != 0) {
+                updateTree(allocStack, size, false);
+                for (size_t j = 0; j < allocStack.stackSize; ++j) {
+                    allocStack.stackAllocs[j]->allocSize += size;
                 }
-                currentPtr->from = previousPtr;
-            } else {
-                auto it = std::find(g_allocStackRoots.begin(), g_allocStackRoots.end(), currentPtr);
-                if (it == g_allocStackRoots.end())
-                    g_allocStackRoots.push_back(currentPtr);
+                continue;
             }
+            allocStack.hash = chunk->allocHash[i];
+            allocStack.stackAllocs.resize(chunk->allocStackSize[i]);
+            for (size_t j = 0, jend = chunk->allocStackSize[i]; j < jend; ++j) {
+                void *addr = chunk->stackBuffer[chunk->allocStackIndex[i] + j];
+                auto found = g_allocDictionary.update(METADOT_GC_HASH_FROM_PTR(addr));
+                if (found->getValue().shared != nullptr) {
+                    auto shared = found->getValue().shared;
+                    shared->allocSize += size;
+                    allocStack.stackAllocs[j] = shared;
+                    continue;
+                }
+                if (found->getValue().str != nullptr) {
+                    allocStack.stackAllocs[j] = &found->getValue();
+                    found->getValue().allocSize += size;
+                    continue;
+                }
+                void *absoluteAddress = nullptr;
+                const char *name = SymbolGetter::getSymbol(addr, absoluteAddress);
 
-            currentPtr->depth = depth;
+                auto shared = g_allocDictionary.update(METADOT_GC_HASH_FROM_PTR(absoluteAddress));
+                if (shared->getValue().str != nullptr) {
+                    found->getValue().shared = &shared->getValue();
+                    allocStack.stackAllocs[j] = &shared->getValue();
+                    shared->getValue().allocSize += size;
+#ifdef METADOT_GC_PLATFORM_WINDOWS
+                    if (name != TRUNCATED_STACK_NAME)
+                        METADOT_GC_USE_FREE((void *) name);
+#endif
+                    continue;
+                }
+
+                found->getValue().shared = &shared->getValue();
+                shared->getValue().str = name;
+                shared->getValue().allocSize = size;
+
+                allocStack.stackAllocs[j] = &shared->getValue();
+                shared->getValue().next = g_allocList;
+                g_allocList = &shared->getValue();
+            }
+            allocStack.stackSize = chunk->allocStackSize[i];
+            updateTree(allocStack, size, true);
         }
-        METADOT_GC_DEBUG_ASSERT(strcmp(currentPtr->alloc->str, allocStack.stackAllocs[stackSize]->str) == 0, "Name collision.");
-
-        previousPtr = currentPtr;
-        ++depth;
-        --stackSize;
-    }
-}
-
-template<class T>
-METADOT_GC_INLINE MetaEngine::GCManager::Hash MetaEngine::GCManager::combineHash(const T &val, const MetaEngine::GCManager::Hash baseHash) {
-    const uint8_t *bytes = (uint8_t *) &val;
-    const size_t count = sizeof(val);
-    const Hash FNV_offset_basis = baseHash;
-    const Hash FNV_prime = 16777619U;
-
-    Hash hash = FNV_offset_basis;
-    for (size_t i = 0; i < count; ++i) {
-        hash ^= (Hash) bytes[i];
-        hash *= FNV_prime;
+        if (chunk->status == ChunkStatus::TEMPORARY) {
+            chunk->~Chunk();
+            METADOT_GC_USE_FREE(chunk);
+#ifdef METADOT_GC_STATS
+            g_internalAllocations.fetch_sub(sizeof(Chunk));
+#endif
+            g_temporaryChunkCounter.fetch_sub(1);
+        } else {
+            chunk->status.store(ChunkStatus::TREATED);
+        }
     }
 
-    return hash;
-}
+    void MetaEngine::GCManager::updateTree(AllocStack &allocStack, ptrdiff_t size, bool checkTree) {
+        int stackSize = allocStack.stackSize;
+        stackSize -= INTERNAL_FRAME_TO_SKIP;
+        uint8_t depth = 0;
+        Edge *previousPtr = nullptr;
+        while (stackSize >= 0) {
+            Hash currentHash = METADOT_GC_HASH_FROM_PTR(allocStack.stackAllocs[stackSize]);
+            currentHash = combineHash((size_t(previousPtr)), currentHash);
+            currentHash = combineHash(depth * depth, currentHash);
 
-#include "ImGuiBase.h"
+            TreeKey key(currentHash, METADOT_GC_HASH_FROM_PTR(allocStack.stackAllocs[stackSize]->str));
 
-namespace MetaEngine::GCManager {
+            auto pair = g_treeDictionary.update(key);
+            Edge *currentPtr = &pair->getValue();
+            currentPtr->allocSize += size;
+            METADOT_GC_INC_INSTANCE(currentPtr->instanceCount, size);
+            if (checkTree) {
+                if (!currentPtr->alloc) {
+                    METADOT_GC_DEBUG_ASSERT(currentPtr->same == nullptr, "Edge already have a same pointer defined.");
+                    currentPtr->alloc = allocStack.stackAllocs[stackSize];
+                    currentPtr->same = allocStack.stackAllocs[stackSize]->edges;
+                    allocStack.stackAllocs[stackSize]->edges = currentPtr;
+                }
+
+                if (previousPtr != nullptr) {
+                    auto it = std::find(previousPtr->to.begin(), previousPtr->to.end(), currentPtr);
+                    if (it == previousPtr->to.end()) {
+                        previousPtr->to.push_back(currentPtr);
+                    }
+                    currentPtr->from = previousPtr;
+                } else {
+                    auto it = std::find(g_allocStackRoots.begin(), g_allocStackRoots.end(), currentPtr);
+                    if (it == g_allocStackRoots.end())
+                        g_allocStackRoots.push_back(currentPtr);
+                }
+
+                currentPtr->depth = depth;
+            }
+            METADOT_GC_DEBUG_ASSERT(strcmp(currentPtr->alloc->str, allocStack.stackAllocs[stackSize]->str) == 0, "Name collision.");
+
+            previousPtr = currentPtr;
+            ++depth;
+            --stackSize;
+        }
+    }
+
+    template<class T>
+    METADOT_GC_INLINE MetaEngine::GCManager::Hash MetaEngine::GCManager::combineHash(const T &val, const MetaEngine::GCManager::Hash baseHash) {
+        const uint8_t *bytes = (uint8_t *) &val;
+        const size_t count = sizeof(val);
+        const Hash FNV_offset_basis = baseHash;
+        const Hash FNV_prime = 16777619U;
+
+        Hash hash = FNV_offset_basis;
+        for (size_t i = 0; i < count; ++i) {
+            hash ^= (Hash) bytes[i];
+            hash *= FNV_prime;
+        }
+
+        return hash;
+    }
+
     namespace Renderer {
-        static bool SortGroupedEdge(const GroupedEdge &a, const GroupedEdge &b) {
+        static bool SortGroupedEdge(const ::MetaEngine::GCManager::Renderer::GroupedEdge &a, const ::MetaEngine::GCManager::Renderer::GroupedEdge &b) {
             return a.allocSize > b.allocSize;
         }
 
-        static bool InsertSortedEdge(const GroupedEdge &a, const GroupedEdge &b) {
+        static bool InsertSortedEdge(const ::MetaEngine::GCManager::Renderer::GroupedEdge &a, const ::MetaEngine::GCManager::Renderer::GroupedEdge &b) {
             return a.alloc < b.alloc;
         }
 
@@ -1652,8 +1651,8 @@ void MetaEngine::GCManager::display(float dt) {
     Renderer::render(dt);
 }
 
-#else
+#elif defined(METADOT_GC_PLATFORM_LINUX)
 
-#endif // METADOT_GC_PLATFORM_WINDOWS
+#endif// METADOT_GC_PLATFORM_WINDOWS
 
 #endif

@@ -71,6 +71,7 @@
 #define METADOT_GC_PLATFORM_WINDOWS
 #define METADOT_GC_ENABLED 1
 #else
+#define METADOT_GC_PLATFORM_LINUX
 #define METADOT_GC_ENABLED 0
 #endif
 
@@ -80,7 +81,7 @@
 #define METADOT_GC_TLS __declspec(thread)
 #define METADOT_GC_INLINE inline
 #define METADOT_GC_ATOMIC_INITIALIZER(value) value
-#else
+#elif defined(METADOT_GC_PLATFORM_LINUX)
 #undef METADOT_GC_TLS
 #undef METADOT_GC_INLINE
 #define METADOT_GC_TLS __declspec(thread)
