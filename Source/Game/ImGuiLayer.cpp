@@ -26,7 +26,6 @@
 #include "MaterialTestGenerator.cpp"
 
 #include <imgui/IconsFontAwesome5.h>
-#include <vcruntime_string.h>
 
 
 #if defined(_METADOT_IMM32)
@@ -34,7 +33,7 @@
 #if defined(_WIN32)
 #include <CommCtrl.h>
 #include <Windows.h>
-//#include "Game/ImGuiHelper.hpp"
+#include <vcruntime_string.h>
 #endif /* defined( _WIN32 ) */
 
 static int common_control_initialize() {

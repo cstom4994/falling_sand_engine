@@ -66,6 +66,9 @@ void MetaEngine::GCManager::SymbolGetter::init() {
 
 
 #ifdef METADOT_GC_IMPL
+
+#if defined (METADOT_GC_PLATFORM_WINDOWS)
+
 namespace MetaEngine::GCManager {
 #define METADOT_GC_IS_ALPHA(c) (((c) >= 'A' && (c) <= 'Z') || ((c) >= 'a' && (c) <= 'z'))
 #define METADOT_GC_TO_UPPER(c) ((c) &0xDF)
@@ -472,9 +475,8 @@ namespace MetaEngine::GCManager {
     static void treatChunk(Chunk *chunk);
     static void updateTree(AllocStack &alloc, ptrdiff_t size, bool checkTree);
 }// namespace MetaEngine::GCManager
-#endif
 
-#ifdef METADOT_GC_IMPL
+
 namespace MetaEngine::GCManager {
 #define GET_HEADER(ptr) (Header *) ((void *) ((size_t) ptr - HEADER_SIZE))
 #define GET_ALIGNED_PTR(ptr) (void *) (*(size_t *) ((void *) (size_t(ptr) - ALIGNED_HEADER_SIZE)))
@@ -511,7 +513,6 @@ namespace MetaEngine::GCManager {
 #else
 #define INTERNAL_SCOPE ;
 #endif
-}// namespace MetaEngine::GCManager
 
 void *MetaEngine::GCManager::alloc(size_t size) {
     void *ptr = METADOT_GC_USE_MALLOC(size + HEADER_SIZE);
@@ -1651,4 +1652,8 @@ void MetaEngine::GCManager::display(float dt) {
     Renderer::render(dt);
 }
 
-#endif// METADOT_GC_IMPL
+#else
+
+#endif // METADOT_GC_PLATFORM_WINDOWS
+
+#endif

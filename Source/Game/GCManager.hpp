@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #define METADOT_GC_IMPL 1
 
 // Will enable "capture" feature :
@@ -72,6 +74,20 @@
 #define METADOT_GC_ENABLED 0
 #endif
 
+#if defined(METADOT_GC_PLATFORM_WINDOWS)
+#undef METADOT_GC_TLS
+#undef METADOT_GC_INLINE
+#define METADOT_GC_TLS __declspec(thread)
+#define METADOT_GC_INLINE inline
+#define METADOT_GC_ATOMIC_INITIALIZER(value) value
+#else
+#undef METADOT_GC_TLS
+#undef METADOT_GC_INLINE
+#define METADOT_GC_TLS __declspec(thread)
+#define METADOT_GC_INLINE inline
+#define METADOT_GC_ATOMIC_INITIALIZER(value) value
+#endif
+
 #if METADOT_GC_ENABLED == 0
 
 #define METADOT_GC_ALLOC(size) ::malloc(size)
@@ -92,6 +108,7 @@
 #define METADOT_GC_FLUSH() \
     do {                   \
     } while (0)
+
 
 #else//METADOT_GC_ENABLED
 
@@ -173,14 +190,6 @@
 static_assert(false, "GCManager is already implemented, do not define METADOT_GC_IMPL more than once.");
 #endif
 
-#endif
-
-#if defined(METADOT_GC_PLATFORM_WINDOWS)
-#undef METADOT_GC_TLS
-#undef METADOT_GC_INLINE
-#define METADOT_GC_TLS __declspec(thread)
-#define METADOT_GC_INLINE inline
-#define METADOT_GC_ATOMIC_INITIALIZER(value) value
 #endif
 
 namespace MetaEngine::GCManager {

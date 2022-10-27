@@ -64,8 +64,8 @@ void Server::tick() {
             case ENET_EVENT_TYPE_RECEIVE:
                 METADOT_BUG(fmt::format("[SERVER] A packet of length {0} containing {1} was received from {2} on channel {3}.",
                                         (int) event.packet->dataLength,
-                                        (int) event.packet->data,
-                                        (int) event.peer->data,
+                                        (long) event.packet->data,
+                                        (long) event.peer->data,
                                         (int) event.channelID)
                                     .c_str());
 
@@ -162,8 +162,8 @@ void Client::tick() {
             case ENET_EVENT_TYPE_RECEIVE:
                 METADOT_BUG(fmt::format("[CLIENT] A packet of length {0} containing {1} was received from {2} on channel {3}.",
                                         (int) event.packet->dataLength,
-                                        (int) event.packet->data,
-                                        (int) event.peer->data,
+                                        (long) event.packet->data,
+                                        (long) event.peer->data,
                                         (int) event.channelID)
                                     .c_str());
 
