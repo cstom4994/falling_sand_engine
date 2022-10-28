@@ -205,10 +205,6 @@ int Game::init(int argc, char *argv[]) {
         auto options = structopt::app("my_app").parse<Options>(argc, argv);
 
         if (!options.test.value_or("").empty()) {
-            // if (options.test == "test_clr") {
-            //     testclr();
-            //     return 0;
-            // }
             if (options.test == "test_mu") {
                 for (auto t: options.files) {
                     METADOT_UNIT(!interp.evaluateFile(std::string(t)));

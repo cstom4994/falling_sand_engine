@@ -144,9 +144,6 @@ if (is_os("windows")) then
 elseif (is_os("linux")) then
     add_defines("__linux")
     add_cxflags("-fPIC")
-
-    add_rpathdirs("./output", {public=true})
-
     link_list = {}
 end
 
