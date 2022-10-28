@@ -38,20 +38,21 @@ rule("metadot.uidsl")
         local name=srcfile:match('[\\/]?(%w+)%.%w+$')
         local headerpath=path.join(outdir, name:lower()..'.h')
         local implpath=path.join(outdir, name:lower()..'_imgui_inspector.cpp')
+        local outfile=os.projectdir()..'/'..path(srcfile)
 
         local args = {'-e', 'package.path="'..path.join(os.projectdir(), "Source/Engine/IMGUI"):gsub('\\','/')..'/?.lua"',
                         path.join(path.join(os.projectdir(), "Source/Engine/IMGUI"), 'uidslparser.lua'),
-                        '-H', path(headerpath), '-I', path(implpath), '--cpp',
-                        os.projectdir()..'/'..path(srcfile)}
+                        '-H', path(headerpath), '-I', path(implpath), '--cpp', outfile}
         batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
 
         -- local objfile=target:objectfile(implpath)
         -- table.insert(target:objectfiles(), objfile)
         -- batchcmds:compile(implpath, objfile)
 
-        -- batchcmds:add_depfiles(srcfile,headerpath,implpath)
-        -- batchcmds:set_depmtime(os.mtime(objfile))
-        -- batchcmds:set_depcache(target:dependfile(objfile))
+        batchcmds:add_depfiles(srcfile)
+        local dependfile = target:dependfile(implpath)
+        batchcmds:set_depmtime(os.mtime(dependfile))
+        batchcmds:set_depcache(dependfile)
     end)
 rule_end()
 
@@ -71,6 +72,11 @@ rule("metadot.embed")
         local outpath=path.join(outdir)
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
             batchcmds:show_progress(opt.progress, "${color.build.object}Generateing EmbedRes %s", sourcefile)
+
+            batchcmds:add_depfiles(sourcefile)
+            local dependfile = target:dependfile(sourcefile)
+            batchcmds:set_depmtime(os.mtime(dependfile))
+            batchcmds:set_depcache(dependfile)
         end
         local args = sourcebatch.sourcefiles
         table.insert(args, "-o")

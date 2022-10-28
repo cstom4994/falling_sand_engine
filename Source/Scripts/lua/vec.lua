@@ -5,10 +5,10 @@ local rawget = rawget
 
 -- Vector2====================================================================
 vec2 = {
-    --[[	x = 0,
+	x = 0,
 	y = 0,		
 	
-	class = "vec2",--]]
+	class = "vec2"
 }
 
 setmetatable(vec2, vec2)
