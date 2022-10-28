@@ -172,7 +172,7 @@ defines_list = {
 
 target("vendor")
     set_kind("static")
-    --add_rules("c.unity_build")
+    add_rules("c.unity_build")
     add_rules("c++.unity_build")
     add_packages("libsdl")
     add_includedirs(include_dir_list)

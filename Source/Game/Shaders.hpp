@@ -12,21 +12,6 @@
 
 // Based on https://github.com/grimfang4/sdl-gpu/blob/master/demos/simple-shader/main.c (MIT License)
 
-namespace {
-    auto ReadFile(const std::string &filename) {
-        auto file = std::ifstream(filename, std::ios::binary | std::ios::ate);
-        if (!file)
-            throw std::runtime_error("Unable to open file");
-        std::size_t bytes = file.tellg();
-        file.seekg(0);
-
-        auto vec = std::vector<std::uint8_t>(bytes);
-        file.read(reinterpret_cast<char *>(vec.data()), vec.size());
-
-        return vec;
-    }
-}// namespace
-
 namespace rh {
 	ResourceHolder embed;
 }
