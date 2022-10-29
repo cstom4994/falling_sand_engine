@@ -500,22 +500,6 @@ namespace MuScript {
     void MuScriptInterpreter::createStandardLibrary() {
 
 
-        inspect.provide_command("exception_test", exception_test);
-        inspect.provide_command("types_test", types_test);
-
-        //sample_struct sum;
-        //svc.provide_command("vec_sum", &sample_struct::vec_sum, &sum);
-
-        // svc.provide_command("count", [](int from, int to) -> std::vector<int> {
-        //     std::vector<int> v;
-        //     for (; from <= to; ++from)
-        //         v.push_back(from);
-
-        //     return v;
-        //     });
-
-        inspect.provide_value("some_var", some_variable);
-
 
         // register compiled functions and standard library:
         newModule("StandardLib"s, 0, {
@@ -960,14 +944,6 @@ namespace MuScript {
 
                                              // runtime inspect
                                              {"inspect", [](List args) {
-                                                  if (args.size() == 0) {
-                                                      return make_shared<Value>();
-                                                  }
-                                                  return make_shared<Value>(args[0]);
-                                              }},
-
-                                             // duktape inject
-                                             {"duk", [](List args) {
                                                   if (args.size() == 0) {
                                                       return make_shared<Value>();
                                                   }

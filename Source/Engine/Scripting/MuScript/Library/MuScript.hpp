@@ -15,8 +15,7 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include "Runtimeinspect.hpp"
+#include <algorithm>
 
 
 namespace MuScript {
@@ -1510,7 +1509,6 @@ namespace MuScript {
         friend Expression;
         vector<Module> modules;
         vector<Module> optionalModules;
-        Inspect::Instance inspect;
         ScopeRef globalScope = make_shared<Scope>(this);
         ScopeRef parseScope = globalScope;
         ExpressionRef currentExpression;

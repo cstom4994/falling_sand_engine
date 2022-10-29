@@ -7,8 +7,10 @@ add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
 
-set_languages("clatest", "c++20")
+set_languages("clatest", "c++latest")
 set_arch("x64")
+
+set_toolchains("clang")
 
 add_rules("mode.debug", "mode.release")
 

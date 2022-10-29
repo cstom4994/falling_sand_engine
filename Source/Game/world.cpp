@@ -5,24 +5,27 @@
 #include "world.hpp"
 #endif
 #include "DefaultGenerator.cpp"
-#include "Game/Core.hpp"
 #include "FileSystem.hpp"
+#include "Game/Core.hpp"
+#include "Libs/MarchingSquares/MarchingSquares.h"
+#include "Libs/polygon-simplify.hh"
+#include "Libs/polypartition.h"
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
 #include "Textures.hpp"
 #include "Utils.hpp"
-#include "Libs/MarchingSquares/MarchingSquares.h"
-#include "Libs/polygon-simplify.hh"
-#include "Libs/polypartition.h"
 #include "nlohmann/json.hpp"
-#include <algorithm>
+
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
 #include <box2d/b2_shape.h>
 #include <box2d/b2_weld_joint.h>
+
+#include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <string>
 #include <thread>
 
 #undef min
@@ -3502,9 +3505,9 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
     if (!j.empty()) {
 
 
-        meta.worldName = j["name"];
-        meta.lastOpenedVersion = j["lastOpenedVersion"];
-        meta.lastOpenedTime = j["lastOpenedTime"];
+        meta.worldName = j["name"].get<std::string>();
+        meta.lastOpenedVersion = j["lastOpenedVersion"].get<std::string>();
+        meta.lastOpenedTime = j["lastOpenedTime"].get<int64_t>();
 
     } else {
         METADOT_BUG("FP WAS NULL");
