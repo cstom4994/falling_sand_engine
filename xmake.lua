@@ -10,8 +10,6 @@ set_policy("check.auto_ignore_flags", true)
 set_languages("clatest", "c++latest")
 set_arch("x64")
 
-set_toolchains("clang")
-
 add_rules("mode.debug", "mode.release")
 
 option("build_embed")
@@ -98,6 +96,9 @@ end
 set_fpmodels("strict")
 
 if (is_os("windows")) then 
+
+    set_toolchains("clang-cl")
+
     add_defines("_WINDOWS")
     add_defines("UNICODE")
     add_defines("_UNICODE")
@@ -150,6 +151,9 @@ if (is_os("windows")) then
         "oleaut32",
     }
 elseif (is_os("linux")) then
+
+    set_toolchains("clang")
+
     add_defines("__linux")
     add_cxflags("-fPIC")
     link_list = {}
