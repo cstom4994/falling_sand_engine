@@ -8,6 +8,8 @@
 
 #if defined(_WIN32)
 #include <Windows.h>
+#elif defined(__linux)
+#include <limits.h>
 #endif
 
 namespace MetaEngine {
@@ -26,7 +28,7 @@ namespace MetaEngine {
                 s_ExeRootPath = currentDir.string() + "/output";
                 s_DataPath = s_ProjectRootPath + "output/data";
                 s_ScriptPath = s_ProjectRootPath + "Source/Scripts";
-                METADOT_TRACE("Runtime folder detected: {0}", s_ProjectRootPath.c_str());
+                METADOT_INFO("Runtime folder detected: {0}", s_ProjectRootPath.c_str());
                 return;
             }
         }
@@ -133,6 +135,13 @@ namespace MetaEngine {
             out = SUtil::ws2s(std::wstring(path));
             cleanPathString(out);
         }
+#elif defined(__linux)
+        char result[PATH_MAX];
+        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        std::string appPath = std::string(result, (count > 0) ? count : 0);
+
+        std::size_t found = appPath.find_last_of("/\\");
+        out = appPath.substr(0, found);
 #endif
         return out;
     }
