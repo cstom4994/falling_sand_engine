@@ -8,6 +8,7 @@
 #include "DebugImpl.hpp"
 #include "DefaultGenerator.cpp"
 #include "GCManager.hpp"
+#include "Libs/libxlsxwriter/xlsxwriter/workbook.h"
 #include "MaterialTestGenerator.cpp"
 
 #include "Settings.hpp"
@@ -25,7 +26,9 @@
 
 #include "Game/FileSystem.hpp"
 #include "Libs/final_dynamic_opengl.h"
+#include "Libs/libxlsxwriter/xlsxwriter.h"
 #include "Libs/structopt.hpp"
+
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
@@ -259,6 +262,13 @@ print(b);
                 return 0;
             }
             if (options.test == "test_xlsx") {
+                lxw_workbook *workbook = workbook_new("./data/test.xlsx");
+                lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
+
+                worksheet_write_string(worksheet, 0, 0, "Hello", NULL);
+                worksheet_write_number(worksheet, 1, 0, 123, NULL);
+
+                workbook_close(workbook);
                 return 0;
             }
         }
