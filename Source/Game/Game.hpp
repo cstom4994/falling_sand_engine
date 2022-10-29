@@ -6,20 +6,19 @@
 //#define b2_maxTranslation 10.0f
 //#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
 
-#include "Macros.hpp"
-
-#include <SDL.h>
-
-#include "Engine/Render/renderer_gpu.h"
-
-#include <algorithm>
-#include <iostream>
-#include <unordered_map>
-
+#include "DebugImpl.hpp"
 #include "Drawing.hpp"
-#include "Networking.hpp"
-
+#include "Engine/AudioEngine/AudioEngine.h"
+#include "Engine/Render/renderer_gpu.h"
+#include "Game/Console.hpp"
+#include "Game/FileSystem.hpp"
+#include "Game/ImGuiLayer.hpp"
+#include "Game/ImGuiTerminal.hpp"
+#include "Game/ModuleStack.h"
 #include "Libs/sparsehash/sparse_hash_map.h"
+#include "Macros.hpp"
+#include "Networking.hpp"
+#include "Shared/Interface.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
@@ -28,30 +27,24 @@
 #include "Settings.hpp"
 #include "Textures.hpp"
 #include "Utils.hpp"
+
+#include <SDL.h>
+
+#include <algorithm>
 #include <box2d/b2_distance_joint.h>
 #include <chrono>
+#include <codecvt>
+#include <iostream>
 #include <thread>
+#include <unordered_map>
+
 #ifdef _WIN32
 #include <io.h>
 #else
 #include <sys/io.h>
 #endif
-#include "Drawing.hpp"
-#include <codecvt>
-
-#include "DebugImpl.hpp"
-
-#include "Game/Console.hpp"
-#include "Game/FileSystem.hpp"
-#include "Game/ImGuiLayer.hpp"
-#include "Game/ImGuiTerminal.hpp"
-
-
-#include "Shared/Interface.hpp"
-
 
 #define frameTimeNum 100
-
 
 enum GameState {
     MAIN_MENU,
@@ -72,27 +65,32 @@ enum WindowFlashAction {
     STOP
 };
 
-class Game {
-public:
-    static const int MAX_WIDTH = 1920;
-    static const int MAX_HEIGHT = 1080;
+struct GameTimeState
+{
+    int fps = 0;
+    int feelsLikeFps = 0;
+    long long lastTime = 0;
+    long long lastTick = 0;
+    long long lastLoadingTick = 0;
+    long long now = 0;
+    long long startTime = 0;
+    long long deltaTime;
+    long mspt = 0;
+};
 
+class Game {
+private:
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
+
     int networkMode = -1;
     Client *client = nullptr;
     Server *server = nullptr;
 
     custom_command_struct cmd_struct;
     ImTerm::terminal<terminal_commands> *terminal_log;
-    static HostData data;
-
-    bool steamAPI = false;
 
     CAudioEngine audioEngine;
-
-    int WIDTH = 1360;
-    int HEIGHT = 870;
 
     int scale = 4;
 
@@ -118,6 +116,71 @@ public:
     STBTTF_Font *font14;
 
     SDL_Window *window = nullptr;
+
+    b2DebugDraw_impl *b2DebugDraw;
+
+    int ent_prevLoadZoneX = 0;
+    int ent_prevLoadZoneY = 0;
+    ctpl::thread_pool *updateDirtyPool = nullptr;
+    ctpl::thread_pool *rotateVectorsPool = nullptr;
+
+    uint16_t *movingTiles;
+
+    int tickTime = 0;
+
+    World *world = nullptr;
+
+    float accLoadX = 0;
+    float accLoadY = 0;
+
+    int mx = 0;
+    int my = 0;
+    int lastDrawMX = 0;
+    int lastDrawMY = 0;
+    int lastEraseMX = 0;
+    int lastEraseMY = 0;
+
+    bool *objectDelete = nullptr;
+
+    Backgrounds *backgrounds = nullptr;
+
+    GameTimeState game_timestate;
+
+    uint32 loadingOnColor = 0;
+    uint32 loadingOffColor = 0;
+
+    DrawTextParams_t dt_versionInfo1;
+    DrawTextParams_t dt_versionInfo2;
+    DrawTextParams_t dt_versionInfo3;
+
+    DrawTextParams_t dt_fps;
+    DrawTextParams_t dt_feelsLikeFps;
+
+    DrawTextParams_t dt_frameGraph[5];
+    DrawTextParams_t dt_loading;
+
+    MetaEngine::GameDir m_GameDir;
+    MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
+    MetaEngine::ModuleStack *m_ModuleStack = nullptr;
+
+public:
+    static const int MAX_WIDTH = 1920;
+    static const int MAX_HEIGHT = 1080;
+    int WIDTH = 1360;
+    int HEIGHT = 870;
+
+    bool running = true;
+
+    static HostData data;
+
+    long long fadeInStart = 0;
+    long long fadeInLength = 0;
+    int fadeInWaitFrames = 0;
+    int fadeOutWaitFrames = 0;
+    long long fadeOutStart = 0;
+    long long fadeOutLength = 0;
+    std::function<void()> fadeOutCallback = []() {};
+
 
     METAENGINE_Render_Target *realTarget = nullptr;
     METAENGINE_Render_Target *target = nullptr;
@@ -171,69 +234,22 @@ public:
     std::vector<unsigned char> pixelsTemp;
     unsigned char *pixelsTemp_ar = nullptr;
 
-    b2DebugDraw_impl *b2DebugDraw;
-
-    int ent_prevLoadZoneX = 0;
-    int ent_prevLoadZoneY = 0;
-    ctpl::thread_pool *updateDirtyPool = nullptr;
-    ctpl::thread_pool *rotateVectorsPool = nullptr;
-
-    uint16_t *movingTiles;
-
-    int tickTime = 0;
-
-    bool running = true;
-
-    World *world = nullptr;
-
-    float accLoadX = 0;
-    float accLoadY = 0;
-
-    int mx = 0;
-    int my = 0;
-    int lastDrawMX = 0;
-    int lastDrawMY = 0;
-    int lastEraseMX = 0;
-    int lastEraseMY = 0;
-
-    bool *objectDelete = nullptr;
-
-    Backgrounds *backgrounds = nullptr;
-
-    int fps = 0;
-    int feelsLikeFps = 0;
-    long long lastTime = 0;
-    long long lastTick = 0;
-    long long lastLoadingTick = 0;
-    long long now = 0;
-    long long startTime = 0;
-    long long deltaTime;
-    long mspt = 0;
-    uint32 loadingOnColor = 0;
-    uint32 loadingOffColor = 0;
-
-    DrawTextParams_t dt_versionInfo1;
-    DrawTextParams_t dt_versionInfo2;
-    DrawTextParams_t dt_versionInfo3;
-
-    DrawTextParams_t dt_fps;
-    DrawTextParams_t dt_feelsLikeFps;
-
-    DrawTextParams_t dt_frameGraph[5];
-    DrawTextParams_t dt_loading;
-
-    long long fadeInStart = 0;
-    long long fadeInLength = 0;
-    int fadeInWaitFrames = 0;
-
-    long long fadeOutStart = 0;
-    long long fadeOutLength = 0;
-    int fadeOutWaitFrames = 0;
-    std::function<void()> fadeOutCallback = []() {};
-
-    MetaEngine::GameDir gameDir;
-    MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
-    MetaEngine::ModuleStack *m_ModuleStack = nullptr;
+public:
+    MetaEngine::ModuleStack *getModuleStack() const { return m_ModuleStack; }
+    CAudioEngine *getCAudioEngine() { return &audioEngine; }
+    World *getWorld() { return world; }
+    void setWorld(World *ptr) { world = ptr; }
+    MetaEngine::GameDir *getGameDir() { return &m_GameDir; }
+    GameTimeState &getGameTimeState() { return game_timestate; }
+    GameState getGameState() const { return state; }
+    void setGameState(GameState state, std::optional<GameState> stateal) {
+        this->state = state;
+        if (stateal.has_value()) { this->stateAfterLoad = stateal.value(); }
+    }
+    int getNetworkMode() const { return networkMode; }
+    void setNetworkMode(NetworkMode networkMode) { this->networkMode = networkMode; }
+    Client *getClient() { return client; }
+    Server *getServer() { return server; }
 
     void loadShaders();
     void updateMaterialSounds();

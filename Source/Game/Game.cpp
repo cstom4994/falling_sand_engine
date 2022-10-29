@@ -277,7 +277,7 @@ int Game::init(int argc, char *argv[]) {
         Settings::draw_temperature_map = false;
     }
 
-    this->gameDir = MetaEngine::GameDir(METADOT_RESLOC("gamedir/"));
+    this->m_GameDir = MetaEngine::GameDir(METADOT_RESLOC("gamedir/"));
 
     Networking::init();
     if (networkMode == NetworkMode::SERVER) {
@@ -562,7 +562,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Initializing world...");
     world = new World();
     world->noSaveLoad = true;
-    world->init(gameDir.getWorldPath("mainMenu"), (int) ceil(MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode);
+    world->init(m_GameDir.getWorldPath("mainMenu"), (int) ceil(MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode);
 
 
     if (networkMode != NetworkMode::SERVER) {
@@ -929,7 +929,7 @@ void Game::setMinimizeOnLostFocus(bool minimize) {
 }
 
 int Game::run(int argc, char *argv[]) {
-    startTime = UTime::millis();
+    game_timestate.startTime = UTime::millis();
 
     // start loading chunks
 
@@ -961,13 +961,13 @@ int Game::run(int argc, char *argv[]) {
 
     long long lastFPS = UTime::millis();
     int frames = 0;
-    fps = 0;
+    game_timestate.fps = 0;
 
-    lastTime = UTime::millis();
-    lastTick = lastTime;
-    long long lastTickPhysics = lastTime;
+    game_timestate.lastTime = UTime::millis();
+    game_timestate.lastTick = game_timestate.lastTime;
+    long long lastTickPhysics = game_timestate.lastTime;
 
-    mspt = 33;
+    game_timestate.mspt = 33;
     long msptPhysics = 16;
 
     scale = 3;
@@ -991,8 +991,8 @@ int Game::run(int argc, char *argv[]) {
 
     while (this->running) {
 
-        now = UTime::millis();
-        deltaTime = now - lastTime;
+        game_timestate.now = UTime::millis();
+        game_timestate.deltaTime = game_timestate.now - game_timestate.lastTime;
 
         if (networkMode != NetworkMode::SERVER) {
 
@@ -1465,11 +1465,11 @@ int Game::run(int argc, char *argv[]) {
             }
         }
 
-        while (now - lastTick > mspt) {
+        while (game_timestate.now - game_timestate.lastTick > game_timestate.mspt) {
             if (Settings::tick_world && networkMode != NetworkMode::CLIENT)
                 tick();
             target = realTarget;
-            lastTick = now;
+            game_timestate.lastTick = game_timestate.now;
             tickTime++;
         }
 
@@ -1529,7 +1529,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::SameLine(ImGui::GetWindowWidth() - 310);
 
                 ImGui::Separator();
-                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, feelsLikeFps);
+                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps);
 
                 ImGui::EndMainMenuBar();
             }
@@ -1637,11 +1637,11 @@ int Game::run(int argc, char *argv[]) {
             // render fade in/out
             if (fadeInWaitFrames > 0) {
                 fadeInWaitFrames--;
-                fadeInStart = now;
+                fadeInStart = game_timestate.now;
                 METAENGINE_Render_RectangleFilled(target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, 255});
             } else if (fadeInStart > 0 && fadeInLength > 0) {
 
-                float thru = 1 - (float) (now - fadeInStart) / fadeInLength;
+                float thru = 1 - (float) (game_timestate.now - fadeInStart) / fadeInLength;
 
                 if (thru >= 0 && thru <= 1) {
                     METAENGINE_Render_RectangleFilled(target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
@@ -1654,10 +1654,10 @@ int Game::run(int argc, char *argv[]) {
 
             if (fadeOutWaitFrames > 0) {
                 fadeOutWaitFrames--;
-                fadeOutStart = now;
+                fadeOutStart = game_timestate.now;
             } else if (fadeOutStart > 0 && fadeOutLength > 0) {
 
-                float thru = (float) (now - fadeOutStart) / fadeOutLength;
+                float thru = (float) (game_timestate.now - fadeOutStart) / fadeOutLength;
 
                 if (thru >= 0 && thru <= 1) {
                     METAENGINE_Render_RectangleFilled(target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
@@ -1683,13 +1683,13 @@ int Game::run(int argc, char *argv[]) {
 
 
         frames++;
-        if (now - lastFPS >= 1000) {
-            lastFPS = now;
+        if (game_timestate.now - lastFPS >= 1000) {
+            lastFPS = game_timestate.now;
             //METADOT_INFO("{0:d} FPS", frames);
             if (networkMode == NetworkMode::SERVER) {
                 METADOT_BUG("{0:d} peers connected.", server->server->connectedPeers);
             }
-            fps = frames;
+            game_timestate.fps = frames;
             dt_fps.w = -1;
             frames = 0;
 
@@ -1704,7 +1704,7 @@ int Game::run(int argc, char *argv[]) {
                 num += weight;
             }
 
-            feelsLikeFps = 1000 / (sum / num);
+            game_timestate.feelsLikeFps = 1000 / (sum / num);
 
             dt_feelsLikeFps.w = -1;
         }
@@ -1712,10 +1712,9 @@ int Game::run(int argc, char *argv[]) {
         for (int i = 1; i < frameTimeNum; i++) {
             frameTime[i - 1] = frameTime[i];
         }
-        frameTime[frameTimeNum - 1] = (uint16_t) (UTime::millis() - now);
+        frameTime[frameTimeNum - 1] = (uint16_t) (UTime::millis() - game_timestate.now);
 
-
-        lastTime = now;
+        game_timestate.lastTime = game_timestate.now;
     }
 
 exit:
@@ -2050,7 +2049,7 @@ void Game::updateFrameEarly() {
         int y = (int) ((my - ofsY - camY) / scale);
 
         bool swapped = false;
-        float hoverDelta = 10.0 * deltaTime / 1000.0;
+        float hoverDelta = 10.0 * game_timestate.deltaTime / 1000.0;
 
         // this copies the vector
         std::vector<RigidBody *> rbs = world->rigidBodies;
@@ -2122,10 +2121,10 @@ void Game::tick() {
             // tick chunkloading
             world->frame();
             if (world->readyToMerge.size() == 0 && fadeOutStart == 0) {
-                fadeOutStart = now;
+                fadeOutStart = game_timestate.now;
                 fadeOutLength = 250;
                 fadeOutCallback = [&]() {
-                    fadeInStart = now;
+                    fadeInStart = game_timestate.now;
                     fadeInLength = 500;
                     fadeInWaitFrames = 4;
                     state = stateAfterLoad;
@@ -3158,8 +3157,8 @@ void Game::updateFrameLate() {
 
         if (world->player) {
 
-            if (now - lastTick <= mspt) {
-                float thruTick = (float) ((now - lastTick) / (double) mspt);
+            if (game_timestate.now - game_timestate.lastTick <= game_timestate.mspt) {
+                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) / (double) game_timestate.mspt);
 
                 plPosX = world->player->x + (int) (world->player->vx * thruTick);
                 plPosY = world->player->y + (int) (world->player->vy * thruTick);
@@ -3190,15 +3189,15 @@ void Game::updateFrameLate() {
         ofsY += (nofsY - ofsY);
 
 
-        camX = (float) (camX + (desCamX - camX) * (now - lastTime) / 250.0f);
-        camY = (float) (camY + (desCamY - camY) * (now - lastTime) / 250.0f);
+        camX = (float) (camX + (desCamX - camX) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
+        camY = (float) (camY + (desCamY - camY) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
     }
 }
 
 void Game::renderEarly() {
 
     if (state == LOADING) {
-        if (now - lastLoadingTick > 20) {
+        if (game_timestate.now - game_timestate.lastLoadingTick > 20) {
             // render loading screen
 
 
@@ -3262,7 +3261,7 @@ void Game::renderEarly() {
                     loadingScreenW * 4);
 
 
-            lastLoadingTick = now;
+            game_timestate.lastLoadingTick = game_timestate.now;
         } else {
             //#ifdef _WIN32
             //            Sleep(5);
@@ -3279,11 +3278,11 @@ void Game::renderEarly() {
     } else {
         // render entities with LERP
 
-        if (now - lastTick <= mspt) {
+        if (game_timestate.now - game_timestate.lastTick <= game_timestate.mspt) {
             METAENGINE_Render_Clear(textureEntities->target);
             METAENGINE_Render_Clear(textureEntitiesLQ->target);
             if (world->player) {
-                float thruTick = (float) ((now - lastTick) / (double) mspt);
+                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) / (double) game_timestate.mspt);
 
                 METAENGINE_Render_SetBlendMode(textureEntities, METAENGINE_Render_BLEND_ADD);
                 METAENGINE_Render_SetBlendMode(textureEntitiesLQ, METAENGINE_Render_BLEND_ADD);
@@ -3458,7 +3457,7 @@ void Game::renderLate() {
             }
 
             waterShader->activate();
-            float t = (now - startTime) / 1000.0;
+            float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
             waterShader->update(t, target->w * scale, target->h * scale, texture, r1.x, r1.y, r1.w, r1.h, scale, textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
         }
 
@@ -3537,7 +3536,7 @@ void Game::renderLate() {
             }
 
             newLightingShader_insideDes = std::min(std::max(0.0f, (float) nBg / ((range * 2) * (range * 2))), 1.0f);
-            newLightingShader_insideCur += (newLightingShader_insideDes - newLightingShader_insideCur) / 2.0f * (deltaTime / 1000.0f);
+            newLightingShader_insideCur += (newLightingShader_insideDes - newLightingShader_insideCur) / 2.0f * (game_timestate.deltaTime / 1000.0f);
 
             float ins = newLightingShader_insideCur < 0.05 ? 0.0 : newLightingShader_insideCur;
             if (newLightingShader->lastInside != ins) needToRerenderLighting = true;
@@ -3774,7 +3773,7 @@ void Game::renderOverlays() {
 
     if (dt_fps.w == -1) {
         char buffFps[20];
-        snprintf(buffFps, sizeof(buffFps), "%d FPS", fps);
+        snprintf(buffFps, sizeof(buffFps), "%d FPS", game_timestate.fps);
         //if (dt_fps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t1);
         //if (dt_fps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t2);
         dt_fps = Drawing::drawTextParams(target, buffFps, font16, WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
@@ -3785,7 +3784,7 @@ void Game::renderOverlays() {
 
     if (dt_feelsLikeFps.w == -1) {
         char buffFps[22];
-        snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS", feelsLikeFps);
+        snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS", game_timestate.feelsLikeFps);
         //if (dt_feelsLikeFps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t1);
         //if (dt_feelsLikeFps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t2);
         dt_feelsLikeFps = Drawing::drawTextParams(target, buffFps, font16, WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
@@ -4004,8 +4003,8 @@ void Game::renderOverlays() {
             //SDL_RenderDrawLine(renderer, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        METAENGINE_Render_Line(target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (int) (1000.0 / fps), WIDTH - 25, HEIGHT - 10 - (int) (1000.0 / fps), {0x00, 0xff, 0xff, 0xff});
-        METAENGINE_Render_Line(target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (int) (1000.0 / feelsLikeFps), WIDTH - 25, HEIGHT - 10 - (int) (1000.0 / feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
+        METAENGINE_Render_Line(target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), WIDTH - 25, HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), {0x00, 0xff, 0xff, 0xff});
+        METAENGINE_Render_Line(target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), WIDTH - 25, HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
     }
 
     METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
@@ -4107,7 +4106,7 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ {0}", gameDir.getWorldPath(wn));
+    METADOT_INFO("Loading main menu @ {0}", m_GameDir.getWorldPath(wn));
     MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -4119,7 +4118,7 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = gameDir.getWorldPath(wn);
+    std::string wpStr = m_GameDir.getWorldPath(wn);
 
 
     world = new World();

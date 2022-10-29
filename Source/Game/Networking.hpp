@@ -4,11 +4,10 @@
 #include <enet/enet.h>
 #include <functional>
 
-class NetworkMode {
-public:
-    static const char HOST = 0;
-    static const char CLIENT = 1;
-    static const char SERVER = 2;
+enum NetworkMode {
+    HOST = 0,
+    CLIENT = 1,
+    SERVER = 2
 };
 
 class Networking {

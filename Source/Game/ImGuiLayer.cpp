@@ -86,7 +86,7 @@ static unsigned char font_fa[] = {
 #endif
 
 void MetaEngine::GameUI_Draw(Game *game) {
-    for (MetaEngine::Module *l: *game->m_ModuleStack)
+    for (MetaEngine::Module *l: *game->getModuleStack())
         l->onImGuiRender();
 
     DebugDrawUI::Draw(game);
@@ -263,7 +263,7 @@ void OptionsUI::Draw(Game *game) {
     }
 
     if (tab != prevTab) {
-        game->audioEngine.PlayEvent("event:/GUI/GUI_Tab");
+        game->getCAudioEngine()->PlayEvent("event:/GUI/GUI_Tab");
         prevTab = tab;
     }
 
@@ -352,12 +352,12 @@ void OptionsUI::DrawVideo(Game *game) {
         METAENGINE_Render_FreeImage(game->textureEntities);
 
         game->textureObjects = METAENGINE_Render_CreateImage(
-                game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                 METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
         METAENGINE_Render_SetImageFilter(game->textureObjects, METAENGINE_Render_FILTER_NEAREST);
 
         game->textureObjectsBack = METAENGINE_Render_CreateImage(
-                game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                 METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
         METAENGINE_Render_SetImageFilter(game->textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
 
@@ -365,7 +365,7 @@ void OptionsUI::DrawVideo(Game *game) {
         METAENGINE_Render_LoadTarget(game->textureObjectsBack);
 
         game->textureEntities = METAENGINE_Render_CreateImage(
-                game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                 METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
         METAENGINE_Render_SetImageFilter(game->textureEntities, METAENGINE_Render_FILTER_NEAREST);
 
@@ -447,10 +447,10 @@ void MainMenuUI::RefreshWorlds(Game *game) {
 
     worlds = {};
 
-    for (auto &p: std::filesystem::directory_iterator(game->gameDir.getPath("worlds/"))) {
+    for (auto &p: std::filesystem::directory_iterator(game->getGameDir()->getPath("worlds/"))) {
         std::string worldName = p.path().filename().generic_string();
 
-        WorldMeta meta = WorldMeta::loadWorldMeta((char *) game->gameDir.getWorldPath(worldName).c_str());
+        WorldMeta meta = WorldMeta::loadWorldMeta((char *) game->getGameDir()->getWorldPath(worldName).c_str());
 
         worlds.push_back(std::make_tuple(worldName, meta));
     }
@@ -635,21 +635,18 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
             METADOT_INFO("Selected world: {}", worldName.c_str());
             visible = false;
 
-            game->fadeOutStart = game->now;
+            game->fadeOutStart = game->getGameTimeState().now;
             game->fadeOutLength = 250;
             game->fadeOutCallback = [&, game, worldName]() {
-                game->state = LOADING;
-                game->stateAfterLoad = INGAME;
+                game->setGameState(LOADING, INGAME);
 
-
-                delete game->world;
-                game->world = nullptr;
-
+                delete game->getWorld();
+                game->setWorld(nullptr);
 
                 //std::thread loadWorldThread([&] () {
 
                 World *w = new World();
-                w->init(game->gameDir.getWorldPath(worldName), (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode);
+                w->init(game->getGameDir()->getWorldPath(worldName), (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, game->getCAudioEngine(), game->getNetworkMode());
                 w->metadata.lastOpenedTime = UTime::millis() / 1000;
                 w->metadata.lastOpenedVersion = std::string(VERSION);
                 w->metadata.save(w->worldName);
@@ -663,10 +660,10 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
                 }
 
 
-                game->world = w;
+                game->setWorld(w);
                 //});
 
-                game->fadeInStart = game->now;
+                game->fadeInStart = game->getGameTimeState().now;
                 game->fadeInLength = 250;
                 game->fadeInWaitFrames = 4;
             };
@@ -749,11 +746,10 @@ void MainMenuUI::DrawMultiplayer(Game *game) {
 
     if (ImGui::Button("连接")) {
         METADOT_INFO("connectButton select");
-        if (game->client->connect(Settings::server_ip.c_str(), Settings::server_port)) {
-            game->networkMode = NetworkMode::CLIENT;
+        if (game->getClient()->connect(Settings::server_ip.c_str(), Settings::server_port)) {
+            game->setNetworkMode(NetworkMode::CLIENT);
             visible = false;
-            game->state = LOADING;
-            game->stateAfterLoad = INGAME;
+            game->setGameState(LOADING, INGAME);
         }
     }
 
@@ -883,19 +879,19 @@ void DebugUI::Draw(Game *game) {
             ImGui::Checkbox("Draw Temperature Map", &Settings::draw_temperature_map);
 
             if (ImGui::Checkbox("Draw Background", &Settings::draw_background)) {
-                for (int x = 0; x < game->world->width; x++) {
-                    for (int y = 0; y < game->world->height; y++) {
-                        game->world->dirty[x + y * game->world->width] = true;
-                        game->world->layer2Dirty[x + y * game->world->width] = true;
+                for (int x = 0; x < game->getWorld()->width; x++) {
+                    for (int y = 0; y < game->getWorld()->height; y++) {
+                        game->getWorld()->dirty[x + y * game->getWorld()->width] = true;
+                        game->getWorld()->layer2Dirty[x + y * game->getWorld()->width] = true;
                     }
                 }
             }
 
             if (ImGui::Checkbox("Draw Background Grid", &Settings::draw_background_grid)) {
-                for (int x = 0; x < game->world->width; x++) {
-                    for (int y = 0; y < game->world->height; y++) {
-                        game->world->dirty[x + y * game->world->width] = true;
-                        game->world->layer2Dirty[x + y * game->world->width] = true;
+                for (int x = 0; x < game->getWorld()->width; x++) {
+                    for (int y = 0; y < game->getWorld()->height; y++) {
+                        game->getWorld()->dirty[x + y * game->getWorld()->width] = true;
+                        game->getWorld()->layer2Dirty[x + y * game->getWorld()->width] = true;
                     }
                 }
             }
@@ -909,12 +905,12 @@ void DebugUI::Draw(Game *game) {
                 METAENGINE_Render_FreeImage(game->textureEntities);
 
                 game->textureObjects = METAENGINE_Render_CreateImage(
-                        game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(game->textureObjects, METAENGINE_Render_FILTER_NEAREST);
 
                 game->textureObjectsBack = METAENGINE_Render_CreateImage(
-                        game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(game->textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
 
@@ -922,7 +918,7 @@ void DebugUI::Draw(Game *game) {
                 METAENGINE_Render_LoadTarget(game->textureObjectsBack);
 
                 game->textureEntities = METAENGINE_Render_CreateImage(
-                        game->world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(game->textureEntities, METAENGINE_Render_FILTER_NEAREST);
 
@@ -1100,7 +1096,7 @@ void DebugCheatsUI::Draw(Game *game) {
 
     if (ImGui::CollapsingHeader("获得物品")) {
         ImGui::Indent();
-        if (game->world == nullptr || game->world->player == nullptr) {
+        if (game->getWorld() == nullptr || game->getWorld()->player == nullptr) {
             ImGui::Text("世界中没有玩家");
         } else {
             int i = 0;
@@ -1120,7 +1116,7 @@ void DebugCheatsUI::Draw(Game *game) {
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                 METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                 i3->pivotX = 2;
-                game->world->player->setItemInHand(i3, game->world);
+                game->getWorld()->player->setItemInHand(i3, game->getWorld());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1141,7 +1137,7 @@ void DebugCheatsUI::Draw(Game *game) {
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                 METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                 i3->pivotX = 2;
-                game->world->player->setItemInHand(i3, game->world);
+                game->getWorld()->player->setItemInHand(i3, game->getWorld());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1161,7 +1157,7 @@ void DebugCheatsUI::Draw(Game *game) {
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                 METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                 i3->pivotX = 6;
-                game->world->player->setItemInHand(i3, game->world);
+                game->getWorld()->player->setItemInHand(i3, game->getWorld());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1184,7 +1180,7 @@ void DebugCheatsUI::Draw(Game *game) {
                 i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                 METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                 i3->pivotX = 0;
-                game->world->player->setItemInHand(i3, game->world);
+                game->getWorld()->player->setItemInHand(i3, game->getWorld());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1354,15 +1350,12 @@ void CreateWorldUI::Draw(Game *game) {
         std::regex trimWhitespaceRegex("^ *(.+?) *$");
         worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
-        METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle, game->gameDir.getWorldPath(wn));
+        METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle, game->getGameDir()->getWorldPath(wn));
         MainMenuUI::visible = false;
-        game->state = LOADING;
-        game->stateAfterLoad = INGAME;
+        game->setGameState(LOADING, INGAME);
 
-
-        delete game->world;
-        game->world = nullptr;
-
+        delete game->getWorld();
+        game->setWorld(nullptr);
 
         WorldGenerator *generator;
 
@@ -1375,21 +1368,21 @@ void CreateWorldUI::Draw(Game *game) {
             generator = new MaterialTestGenerator();
         }
 
-        std::string wpStr = game->gameDir.getWorldPath(wn);
+        std::string wpStr = game->getGameDir()->getWorldPath(wn);
 
 
-        game->world = new World();
-        game->world->init(wpStr, (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, &game->audioEngine, game->networkMode, generator);
-        game->world->metadata.worldName = std::string(worldNameBuf);
-        game->world->metadata.lastOpenedTime = UTime::millis() / 1000;
-        game->world->metadata.lastOpenedVersion = std::string(VERSION);
-        game->world->metadata.save(wpStr);
+        game->setWorld(new World());
+        game->getWorld()->init(wpStr, (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, game->getCAudioEngine(), game->getNetworkMode(), generator);
+        game->getWorld()->metadata.worldName = std::string(worldNameBuf);
+        game->getWorld()->metadata.lastOpenedTime = UTime::millis() / 1000;
+        game->getWorld()->metadata.lastOpenedVersion = std::string(VERSION);
+        game->getWorld()->metadata.save(wpStr);
 
 
         METADOT_INFO("Queueing chunk loading...");
-        for (int x = -CHUNK_W * 4; x < game->world->width + CHUNK_W * 4; x += CHUNK_W) {
-            for (int y = -CHUNK_H * 3; y < game->world->height + CHUNK_H * 8; y += CHUNK_H) {
-                game->world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
+        for (int x = -CHUNK_W * 4; x < game->getWorld()->width + CHUNK_W * 4; x += CHUNK_W) {
+            for (int y = -CHUNK_H * 3; y < game->getWorld()->height + CHUNK_H * 8; y += CHUNK_H) {
+                game->getWorld()->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
             }
         }
     }
@@ -1421,7 +1414,7 @@ void CreateWorldUI::inputChanged(std::string text, Game *game) {
     std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
 
     std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
-    std::string folder = game->gameDir.getWorldPath(worldFolderName);
+    std::string folder = game->getGameDir()->getWorldPath(worldFolderName);
     struct stat buffer;
     bool exists = (stat(folder.c_str(), &buffer) == 0);
 
@@ -1429,7 +1422,7 @@ void CreateWorldUI::inputChanged(std::string text, Game *game) {
     int i = 2;
     while (exists) {
         newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
-        folder = game->gameDir.getWorldPath(newWorldFolderName);
+        folder = game->getGameDir()->getWorldPath(newWorldFolderName);
 
         exists = (stat(folder.c_str(), &buffer) == 0);
 
