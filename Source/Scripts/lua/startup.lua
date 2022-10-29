@@ -1,3 +1,5 @@
+-- Copyright(c) 2022, KaoruXun All rights reserved.
+
 -- runs on start of the engine
 -- used to load scripts
 local tl = require("tl")

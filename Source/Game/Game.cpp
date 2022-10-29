@@ -21,6 +21,7 @@
 #include "Game/ImGuiBase.h"
 #include "Game/Macros.hpp"
 #include "Game/ModuleStack.h"
+#include "Game/Shaders.hpp"
 
 #include "Game/FileSystem.hpp"
 #include "Libs/final_dynamic_opengl.h"
@@ -51,6 +52,14 @@ const char *logo = R"(
 
 const std::string win_title_client = U8("MetaDot 少女祈祷中");
 const std::string win_title_server = U8("MetaDot Server");
+
+WaterShader *waterShader = nullptr;
+WaterFlowPassShader *waterFlowPassShader = nullptr;
+NewLightingShader *newLightingShader = nullptr;
+float newLightingShader_insideDes = 0.0f;
+float newLightingShader_insideCur = 0.0f;
+FireShader *fireShader = nullptr;
+Fire2Shader *fire2Shader = nullptr;
 
 const char *plugin = CR_PLUGIN("CppSource");
 

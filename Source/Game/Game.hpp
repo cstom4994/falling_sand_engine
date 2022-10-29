@@ -37,7 +37,6 @@
 #include <sys/io.h>
 #endif
 #include "Drawing.hpp"
-#include "Shaders.hpp"
 #include <codecvt>
 
 #include "DebugImpl.hpp"
@@ -198,14 +197,6 @@ public:
     int lastEraseMY = 0;
 
     bool *objectDelete = nullptr;
-
-    WaterShader *waterShader = nullptr;
-    WaterFlowPassShader *waterFlowPassShader = nullptr;
-    NewLightingShader *newLightingShader = nullptr;
-    float newLightingShader_insideDes = 0.0f;
-    float newLightingShader_insideCur = 0.0f;
-    FireShader *fireShader = nullptr;
-    Fire2Shader *fire2Shader = nullptr;
 
     Backgrounds *backgrounds = nullptr;
 

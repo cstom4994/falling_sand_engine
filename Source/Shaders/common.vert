@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#version 120
+#version 150
 
 attribute vec3 gpu_Vertex;
 attribute vec2 gpu_TexCoord;

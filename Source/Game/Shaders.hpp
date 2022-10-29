@@ -13,7 +13,7 @@
 // Based on https://github.com/grimfang4/sdl-gpu/blob/master/demos/simple-shader/main.c (MIT License)
 
 namespace rh {
-	ResourceHolder embed;
+    ResourceHolder embed;
 }
 
 class Shaders {

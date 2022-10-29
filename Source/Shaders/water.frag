@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun
 
-#version 120
+#version 150
 
 #ifdef GL_ES
 precision mediump float;

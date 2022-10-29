@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#version 120
+#version 150
 
 in vec4 color;
 in vec2 texCoord;
