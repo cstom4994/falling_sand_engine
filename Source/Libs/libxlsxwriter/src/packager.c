@@ -82,11 +82,7 @@ STATIC lxw_error _write_vml_drawing_rels_file(lxw_packager *self,
 
 #include <windows.h>
 
-#ifdef USE_SYSTEM_MINIZIP
 #include "minizip/iowin32.h"
-#else
-#include "minizip/iowin32.h"
-#endif
 
 zipFile
 _open_zipfile_win32(const char *filename)

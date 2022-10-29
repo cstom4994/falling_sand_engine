@@ -196,6 +196,9 @@ target("vendor")
     add_files("Source/Vendor/**.cpp")
 	add_headerfiles("Source/Vendor/**.h")
 	add_headerfiles("Source/Vendor/**.hpp")
+    if (is_os("linux")) then
+        remove_files("Source/Vendor/minizip/iowin32.c")
+    end
     remove_files("Source/Vendor/fmt/src/fmt.cc")
     set_symbols("debug")
 
