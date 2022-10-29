@@ -2,6 +2,7 @@
 set_project("MetaDot.Runtime")
 
 add_requires("libsdl", {configs = {shared = false}, verify = true})
+add_requires("zlib", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
 
@@ -180,13 +181,14 @@ defines_list = {
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
+    "MINIZ_NO_ZLIB_COMPATIBLE_NAMES"
 }
 
 target("vendor")
     set_kind("static")
     add_rules("c.unity_build")
     add_rules("c++.unity_build")
-    add_packages("libsdl")
+    add_packages("libsdl", "zlib")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Vendor/**.c")
@@ -224,6 +226,7 @@ target("Libs")
     set_kind("static")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
+    add_packages("libsdl", "zlib")
     add_files("Source/Libs/**.cpp")
     add_files("Source/Libs/**.cc")
     add_files("Source/Libs/**.c")
