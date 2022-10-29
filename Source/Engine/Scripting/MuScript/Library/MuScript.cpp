@@ -500,7 +500,6 @@ namespace MuScript {
     void MuScriptInterpreter::createStandardLibrary() {
 
 
-
         // register compiled functions and standard library:
         newModule("StandardLib"s, 0, {
                                              // math operators
@@ -2137,8 +2136,9 @@ namespace MuScript {
                     if (root) {
                         if (root->type == ExpressionType::ResolveVar || root->type == ExpressionType::MemberVariable) {
                             throw Exception("Syntax Error: unexpected series of values at "s + string(strings[i]) + ", possible missing `,`");
+                        } else {
+                            get<FunctionExpression>(root->expression).subexpressions.push_back(newExpr);
                         }
-                        get<FunctionExpression>(root->expression).subexpressions.push_back(newExpr);
                     } else {
                         root = newExpr;
                     }
@@ -2394,7 +2394,7 @@ namespace MuScript {
                 break;
             case ParseState::readLine:
                 if (token == ";") {
-                    auto line = move(parseStrings);
+                    auto line = std::move(parseStrings);
                     clearParseStacks();
                     // we clear before evaluating lines so any exceptions can clear the offending code
                     if (!currentExpression) {

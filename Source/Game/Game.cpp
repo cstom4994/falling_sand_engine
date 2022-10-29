@@ -216,8 +216,32 @@ int Game::init(int argc, char *argv[]) {
         if (!options.test.value_or("").empty()) {
             if (options.test == "test_mu") {
                 for (auto t: options.files) {
-                    METADOT_UNIT(!interp.evaluateFile(std::string(t)));
+                    //METADOT_UNIT(!interp.evaluateFile(std::string(t)));
                 }
+
+                std::string test = R"(
+
+class test {
+	var x = 1;
+	var y = "MuScript 宽字符测试";
+	func test() {
+		x = 2;
+	}
+}
+
+a = test();
+
+if (a.x == 2) {
+	print(a.y);
+}
+
+b = inspect(a.x);
+
+print(b);
+                )";
+
+                interp.evaluate(test);
+
                 return 0;
             }
             if (options.test == "test_ecs") {
