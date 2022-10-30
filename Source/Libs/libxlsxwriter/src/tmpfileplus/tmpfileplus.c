@@ -156,7 +156,7 @@ static char *set_randpart(char *s)
 static int is_valid_dir(const char *path)
 {
 	struct stat st;
-	if ((stat(path, &st) == 0) && (st.st_mode & S_IFDIR))
+	if ((stat(path, &st) == 0) && (st.st_mode & __S_IFDIR))
 		return 1;
 
 	return 0;
@@ -287,7 +287,7 @@ FILE *tmpfileplus(const char *dir, const char *prefix, char **pathname, int keep
 	tempdirs[i++] = getenv_save("TEMP", env2, sizeof(env2));
 #else
 	tempdirs[i++] = getenv_save("TMPDIR", env3, sizeof(env3));
-	tempdirs[i++] = P_tmpdir;
+	tempdirs[i++] = "/tmp";
 #endif
 	tempdirs[i++] = ".";
 	ntempdirs = i;
