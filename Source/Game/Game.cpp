@@ -311,7 +311,7 @@ print(b);
         Settings::draw_temperature_map = false;
     }
 
-    this->m_GameDir = MetaEngine::GameDir(METADOT_RESLOC("gamedir/"));
+    this->m_GameDir = MetaEngine::GameDir(METADOT_RESLOC("saves/"));
 
     Networking::init();
     if (networkMode == NetworkMode::SERVER) {

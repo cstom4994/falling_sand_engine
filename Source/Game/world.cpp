@@ -333,11 +333,12 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     }
     maxX++;
     maxY++;
+
+    // FIX ME
     SDL_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
     SDL_Rect src = {minX, minY, maxX - minX, maxY - minY};
     SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
     SDL_BlitSurface(texture, &src, sf, NULL);
-
     SDL_FreeSurface(texture);
 
     rb->surface = sf;
@@ -2292,7 +2293,7 @@ void World::tickObjectsMesh() {
     std::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
-        if (cur->needsUpdate && cur->body->IsEnabled()) {
+        if (cur->needsUpdate && cur->body->IsEnabled() && nullptr != cur->surface) {
             updateRigidBodyHitbox(cur);
         }
     }
