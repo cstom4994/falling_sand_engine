@@ -2,6 +2,19 @@
 
 #pragma once
 
+#include <string>
+
+#if defined(__cpp_char8_t)
+template<typename T>
+const char *u8Cpp20(T &&t) noexcept {
+#pragma warning(disable : 26490)
+    return reinterpret_cast<const char *>(t);
+#pragma warning(default : 26490)
+}
+#define U8(x) u8Cpp20(u8##x)
+#else
+#define U8(x) u8##x
+#endif
 
 #define METADOT_NAME "MetaDot"
 #define METADOT_VERSION_TEXT "0.0.2"
@@ -10,7 +23,11 @@
 #define METADOT_VERSION_BUILD 2
 #define METADOT_VERSION Version(METADOT_VERSION_MAJOR, METADOT_VERSION_MINOR, METADOT_VERSION_BUILD)
 #define METADOT_COMPANY "MetaDot"
-#define METADOT_COPYRIGHT "Copyright (c) 2019-2022 KaoruXun. All rights reserved."
+#define METADOT_COPYRIGHT "Copyright (c) 2022 KaoruXun. All rights reserved."
+
+const std::string win_title_client = U8("MetaDot 少女祈祷中");
+const std::string win_title_server = U8("MetaDot Server");
+const std::string win_game = U8("MetaDot");
 
 static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
 static const int VERSION_MINOR = METADOT_VERSION_MINOR;

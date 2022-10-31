@@ -53,9 +53,6 @@ const char *logo = R"(
                                              
 )";
 
-const std::string win_title_client = U8("MetaDot 少女祈祷中");
-const std::string win_title_server = U8("MetaDot Server");
-
 WaterShader *waterShader = nullptr;
 WaterFlowPassShader *waterFlowPassShader = nullptr;
 NewLightingShader *newLightingShader = nullptr;
