@@ -33,7 +33,7 @@
 
 #include "Game/Core.hpp"
 
-#include "Game/ImGuiHelper.inc"
+#include "Game/ImGuiHelper.hpp"
 
 
 #include <boost/pfr/core.hpp>
