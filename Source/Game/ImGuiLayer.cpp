@@ -11,6 +11,7 @@
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/Macros.hpp"
+#include "Game/Const.hpp"
 #include "Settings.hpp"
 #include "Utils.hpp"
 
@@ -648,7 +649,7 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
                 //std::thread loadWorldThread([&] () {
 
                 World *w = new World();
-                w->init(game->getGameDir()->getWorldPath(worldName), (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, game->getCAudioEngine(), game->getNetworkMode());
+                w->init(game->getGameDir()->getWorldPath(worldName), (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, game->getCAudioEngine(), game->getNetworkMode());
                 w->metadata.lastOpenedTime = UTime::millis() / 1000;
                 w->metadata.lastOpenedVersion = std::string(VERSION);
                 w->metadata.save(w->worldName);
@@ -1374,7 +1375,7 @@ void CreateWorldUI::Draw(Game *game) {
 
 
         game->setWorld(new World());
-        game->getWorld()->init(wpStr, (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, game->getCAudioEngine(), game->getNetworkMode(), generator);
+        game->getWorld()->init(wpStr, (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, game->target, game->getCAudioEngine(), game->getNetworkMode(), generator);
         game->getWorld()->metadata.worldName = std::string(worldNameBuf);
         game->getWorld()->metadata.lastOpenedTime = UTime::millis() / 1000;
         game->getWorld()->metadata.lastOpenedVersion = std::string(VERSION);

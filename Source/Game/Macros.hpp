@@ -25,16 +25,6 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_COMPANY "MetaDot"
 #define METADOT_COPYRIGHT "Copyright (c) 2022 KaoruXun. All rights reserved."
 
-const std::string win_title_client = U8("MetaDot 少女祈祷中");
-const std::string win_title_server = U8("MetaDot Server");
-const std::string win_game = U8("MetaDot");
-
-static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
-static const int VERSION_MINOR = METADOT_VERSION_MINOR;
-static const int VERSION_REV = METADOT_VERSION_BUILD;
-static const char *VERSION = METADOT_VERSION_TEXT;
-static const char *VERSION_COMPATIBILITY[] = {VERSION, "0.0.1", 0};
-
 #define BUILD_SERIES_NAME "local build"
 #define BUILD_ID "buildid"
 #define BUILD_COMMIT_ID "Unknown"

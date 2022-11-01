@@ -76,8 +76,6 @@ struct Options
 };
 STRUCTOPT(Options, test, files);
 
-HostData Game::data;
-
 #include "Scripting/MuScript/Library/MuScript.hpp"
 
 MuScript::MuScriptInterpreter interp(MuScript::ModulePrivilege::allPrivilege);

@@ -164,14 +164,13 @@ private:
     MetaEngine::ModuleStack *m_ModuleStack = nullptr;
 
 public:
-    static const int MAX_WIDTH = 1920;
-    static const int MAX_HEIGHT = 1080;
+
     int WIDTH = 1360;
     int HEIGHT = 870;
 
     bool running = true;
 
-    static HostData data;
+    HostData data;
 
     long long fadeInStart = 0;
     long long fadeInLength = 0;
