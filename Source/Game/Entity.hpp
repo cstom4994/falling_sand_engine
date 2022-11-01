@@ -1,5 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#include "box2d/b2_body.h"
 #define INC_Entity
 
 
@@ -18,8 +19,10 @@ public:
     int hh = 26;
     bool ground = false;
     RigidBody *rb = nullptr;
+    b2Body *body = nullptr;
 
     virtual void render(METAENGINE_Render_Target *target, int ofsX, int ofsY);
     virtual void renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY);
+    Entity();
     ~Entity();
 };
