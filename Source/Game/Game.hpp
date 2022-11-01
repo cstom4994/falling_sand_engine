@@ -11,9 +11,9 @@
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Render/renderer_gpu.h"
 #include "Engine/Scripting/LuaLayer.hpp"
-#include "Game/ImGuiLayer.hpp"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/ImGuiLayer.hpp"
 #include "Game/ImGuiTerminal.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Networking.hpp"
@@ -160,6 +160,7 @@ private:
     DrawTextParams_t dt_frameGraph[5];
     DrawTextParams_t dt_loading;
 
+private:
     MetaEngine::GameDir m_GameDir;
     MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
     MetaEngine::LuaLayer *m_LuaLayer = nullptr;

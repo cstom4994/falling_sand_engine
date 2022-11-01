@@ -14,14 +14,13 @@
 #include "Settings.hpp"
 #include "Utils.hpp"
 
-#include "Engine/ECS/entity.h"
 #include "Engine/Scripting/Scripting.hpp"
+#include "Game/Const.hpp"
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/ImGuiBase.h"
 #include "Game/Macros.hpp"
 #include "Game/Shaders.hpp"
-#include "Game/Const.hpp"
 
 #include "Game/FileSystem.hpp"
 #include "Libs/final_dynamic_opengl.h"
@@ -245,20 +244,6 @@ print(b);
 
                 return 0;
             }
-            if (options.test == "test_ecs") {
-                using entity_manager_t = MetaEngine::ECS::entity_manager<MetaEngine::ECS::component_list<int>, MetaEngine::ECS::tag_list<>>;
-                using entity_t = entity_manager_t::entity_t;
-
-                entity_manager_t entityManager;
-                for (int i = 0; i < 50; ++i) {
-                    entityManager.create_entity(i);
-                }
-
-                auto sum = 0;
-                entityManager.for_each<int>([&](entity_t ent, int i) { sum += i; });
-                std::cout << sum << "\n";
-                return 0;
-            }
             if (options.test == "test_xlsx") {
                 lxw_workbook *workbook = workbook_new("./data/test.xlsx");
                 lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
@@ -470,42 +455,25 @@ print(b);
             font14 = Drawing::LoadFont("data/assets/fonts/pixel_operator/PixelOperator.ttf", 14);
         }
 
-        m_ImGuiLayer = new MetaEngine::ImGuiLayer();
-
-        m_ImGuiLayer->Init(window, gl_context);
-
         // load splash screen
-
-
         METADOT_INFO("Loading splash screen...");
 
         METAENGINE_Render_Clear(target);
-
         METAENGINE_Render_Flip(target);
-
-
         SDL_Surface *splashSurf = Textures::loadTexture("data/assets/title/splash.png");
-
         METAENGINE_Render_Image *splashImg = METAENGINE_Render_CopyImageFromSurface(splashSurf);
-
         METAENGINE_Render_SetImageFilter(splashImg, METAENGINE_Render_FILTER_NEAREST);
-
         METAENGINE_Render_BlitRect(splashImg, NULL, target, NULL);
-
         METAENGINE_Render_FreeImage(splashImg);
-
         SDL_FreeSurface(splashSurf);
-
         METAENGINE_Render_Flip(target);
 
 
-        m_LuaLayer = new MetaEngine::LuaLayer();
-        
-        // METADOT_MODULE_GET("LuaLayer", MetaEngine::LuaLayer, mm_LuaLayer);
-        // mm_LuaLayer->getSolState()->script("METADOT_INFO(\'haha\')");
+        METADOT_INFO("Loading ImGUI");
+        m_ImGuiLayer = new MetaEngine::ImGuiLayer();
+        m_ImGuiLayer->Init(window, gl_context);
 
-
-#ifdef _WIN32
+#if defined(_WIN32)
         SDL_SysWMinfo info{};
         SDL_VERSION(&info.version);
         if (SDL_GetWindowWMInfo(window, &info)) {
@@ -514,8 +482,10 @@ print(b);
         } else {
             this->data->wndh = NULL;
         }
-#else
+#elif defined(__linux)
         this->data->wndh = 0;
+#else
+#error "GetWindowWMInfo Error"
 #endif
         this->data->window = window;
         this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
@@ -538,8 +508,12 @@ print(b);
         audioEngine.Update();
     }
 
-    // init the world
 
+    METADOT_INFO("Loading Lua Script...");
+    m_LuaLayer = new MetaEngine::LuaLayer();
+    m_LuaLayer->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
+
+    // init the world
     worldInitThread = worldInitThreadPool->push([&](int id) {
         fuckme();
     });
