@@ -236,6 +236,7 @@ public:
 
 public:
     MetaEngine::ModuleStack *getModuleStack() const { return m_ModuleStack; }
+    MetaEngine::ImGuiLayer *getImGuiLayer() const { return m_ImGuiLayer; }
     CAudioEngine *getCAudioEngine() { return &audioEngine; }
     World *getWorld() { return world; }
     void setWorld(World *ptr) { world = ptr; }

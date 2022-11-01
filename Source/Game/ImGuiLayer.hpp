@@ -9,12 +9,20 @@
 #include "Engine/AudioEngine/AudioEngine.h"
 
 #include "Libs/ImGui/TextEditor.h"
+#include "imgui.h"
 
 class Game;
 class Material;
 class WorldMeta;
 
 namespace MetaEngine {
+
+    enum ImGuiWindowTags {
+
+        UI_None = 0,
+        UI_MainMenu = 1,
+        UI_GCManager = 2,
+    };
 
     class ImGuiLayer {
     private:
@@ -46,11 +54,13 @@ namespace MetaEngine {
         void Render(Game *game);
         void onUpdate();
         void registerWindow(std::string_view windowName, bool *opened);
+        ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
         ImGuiContext *getImGuiCtx() {
             METADOT_ASSERT(m_imgui, "Miss Fucking ImGuiContext");
             return m_imgui;
         }
+
     };
 }// namespace MetaEngine
 

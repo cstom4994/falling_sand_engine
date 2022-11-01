@@ -14,12 +14,14 @@
 #include "Settings.hpp"
 #include "Utils.hpp"
 
+#include "imgui.h"
 #include "uidsl/hello.h"
 
 #include "Game.hpp"
 #include "InEngine.h"
 #include "Textures.hpp"
 
+#include <cstdio>
 #include <map>
 
 #include "DefaultGenerator.cpp"
@@ -124,7 +126,7 @@ void IngameUI::DrawIngame(Game *game) {
     }
 
     ImGui::SetNextWindowSize(ImVec2(400, 300));
-    ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 200, game->HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(game->getImGuiLayer()->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(game->WIDTH / 2 - 200, game->HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
@@ -500,7 +502,7 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     }
 
     ImGui::SetNextWindowSize(ImVec2(400, 350));
-    ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 400 / 2, game->HEIGHT / 2 - 350 / 2), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(game->getImGuiLayer()->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(game->WIDTH / 2 - 400 / 2, game->HEIGHT / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
@@ -1579,6 +1581,16 @@ namespace MetaEngine {
     static bool s_is_animaiting = false;
     static const int view_size = 256;
 
+
+    ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
+
+        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowSize(ImGui::GetMainViewport());
+            pos += windowspos;
+        }
+
+        return pos;
+    }
 
     void ImGuiLayer::renderViewWindows() {
         //for (int i = m_views.size() - 1; i >= 0; --i)
