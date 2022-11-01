@@ -10,14 +10,13 @@
 #include "Drawing.hpp"
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Render/renderer_gpu.h"
+#include "Engine/Scripting/LuaLayer.hpp"
+#include "Game/ImGuiLayer.hpp"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
-#include "Game/ImGuiLayer.hpp"
 #include "Game/ImGuiTerminal.hpp"
-#include "Game/ModuleStack.h"
-#include "Libs/sparsehash/sparse_hash_map.h"
-#include "Macros.hpp"
-#include "Networking.hpp"
+#include "Game/Macros.hpp"
+#include "Game/Networking.hpp"
 #include "Shared/Interface.hpp"
 #ifndef INC_World
 #include "world.hpp"
@@ -27,6 +26,8 @@
 #include "Settings.hpp"
 #include "Textures.hpp"
 #include "Utils.hpp"
+
+#include "Libs/sparsehash/sparse_hash_map.h"
 
 #include <SDL.h>
 
@@ -161,10 +162,9 @@ private:
 
     MetaEngine::GameDir m_GameDir;
     MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
-    MetaEngine::ModuleStack *m_ModuleStack = nullptr;
+    MetaEngine::LuaLayer *m_LuaLayer = nullptr;
 
 public:
-
     int WIDTH = 1360;
     int HEIGHT = 870;
 
@@ -234,7 +234,6 @@ public:
     unsigned char *pixelsTemp_ar = nullptr;
 
 public:
-    MetaEngine::ModuleStack *getModuleStack() const { return m_ModuleStack; }
     MetaEngine::ImGuiLayer *getImGuiLayer() const { return m_ImGuiLayer; }
     CAudioEngine *getCAudioEngine() { return &audioEngine; }
     World *getWorld() { return world; }

@@ -2,19 +2,17 @@
 
 #pragma once
 
-#include "Game/ModuleStack.h"
-
 namespace MetaEngine {
 
-    class EditorLayer : public Module {
+    class EditorLayer {
     private:
     public:
-        EditorLayer() : Module("EditorLayer"){};
-        ~EditorLayer() override = default;
+        EditorLayer(){};
+        ~EditorLayer() = default;
 
-        void onUpdate() override;
-        void onAttach() override;
-        void onDetach() override;
-        void onImGuiRender() override;
+        void onUpdate();
+        void onAttach();
+        void onDetach();
+        void onImGuiRender();
     };
 }// namespace MetaEngine

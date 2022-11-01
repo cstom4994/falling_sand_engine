@@ -15,13 +15,11 @@
 #include "Utils.hpp"
 
 #include "Engine/ECS/entity.h"
-#include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/Scripting.hpp"
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/ImGuiBase.h"
 #include "Game/Macros.hpp"
-#include "Game/ModuleStack.h"
 #include "Game/Shaders.hpp"
 #include "Game/Const.hpp"
 
@@ -500,14 +498,11 @@ print(b);
 
         METAENGINE_Render_Flip(target);
 
-        m_ModuleStack = new MetaEngine::ModuleStack();
 
-        auto m_LuaLayer = new MetaEngine::LuaLayer();
-        m_ModuleStack->pushLayer(m_LuaLayer);
-
-        METADOT_MODULE_GET("LuaLayer", MetaEngine::LuaLayer, mm_LuaLayer);
-
-        mm_LuaLayer->getSolState()->script("METADOT_INFO(\'haha\')");
+        m_LuaLayer = new MetaEngine::LuaLayer();
+        
+        // METADOT_MODULE_GET("LuaLayer", MetaEngine::LuaLayer, mm_LuaLayer);
+        // mm_LuaLayer->getSolState()->script("METADOT_INFO(\'haha\')");
 
 
 #ifdef _WIN32
@@ -1494,9 +1489,10 @@ int Game::run(int argc, char *argv[]) {
         if (networkMode != NetworkMode::SERVER) {
             //if(Settings::tick_world)
             updateFrameEarly();
-            for (MetaEngine::Module *l: *m_ModuleStack) {
-                l->onUpdate();
-            }
+            // for (MetaEngine::Module *l: *m_ModuleStack) {
+            //     l->onUpdate();
+            // }
+            m_LuaLayer->onUpdate();
         }
 
         while (game_timestate.now - game_timestate.lastTick > game_timestate.mspt) {
@@ -1537,11 +1533,7 @@ int Game::run(int argc, char *argv[]) {
 
             m_ImGuiLayer->Render(this);
 
-
-            for (MetaEngine::Module *l: *m_ModuleStack) {
-                l->onRender();
-            }
-
+            m_LuaLayer->onImGuiRender();
             cr_plugin_update(MetaEngine::ctx);
 
 
@@ -1776,11 +1768,9 @@ exit:
     }
 
 
+    m_LuaLayer->onDetach();
+
     m_ImGuiLayer->onDetach();
-
-    for (MetaEngine::Module *l: *m_ModuleStack)
-        l->onDetach();
-
     cr_plugin_close(MetaEngine::ctx);
 
     ClosePhysFS();

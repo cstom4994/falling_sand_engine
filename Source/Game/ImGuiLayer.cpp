@@ -89,8 +89,8 @@ static unsigned char font_fa[] = {
 #endif
 
 void MetaEngine::GameUI_Draw(Game *game) {
-    for (MetaEngine::Module *l: *game->getModuleStack())
-        l->onImGuiRender();
+    // for (MetaEngine::Module *l: *game->getModuleStack())
+    //     l->onImGuiRender();
 
     DebugDrawUI::Draw(game);
     DebugCheatsUI::Draw(game);

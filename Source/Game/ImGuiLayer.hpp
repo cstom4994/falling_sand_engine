@@ -4,9 +4,9 @@
 
 #include "ImGuiBase.h"
 
-#include "Engine/Scripting/LuaBinder.hpp"
-#include "Game/ModuleStack.h"
 #include "Engine/AudioEngine/AudioEngine.h"
+#include "Engine/Scripting/LuaBinder.hpp"
+#include "Game/DebugImpl.hpp"
 
 #include "Libs/ImGui/TextEditor.h"
 #include "imgui.h"
@@ -60,7 +60,6 @@ namespace MetaEngine {
             METADOT_ASSERT(m_imgui, "Miss Fucking ImGuiContext");
             return m_imgui;
         }
-
     };
 }// namespace MetaEngine
 
