@@ -23,6 +23,7 @@
 #include "Game/Macros.hpp"
 #include "Game/ModuleStack.h"
 #include "Game/Shaders.hpp"
+#include "Game/Const.hpp"
 
 #include "Game/FileSystem.hpp"
 #include "Libs/final_dynamic_opengl.h"
@@ -200,10 +201,14 @@ void Game::updateMaterialSounds() {
 
 Game::Game() {
     METADOT_GC_INIT();
+
+    data = new HostData;
 }
 
 Game::~Game() {
     METADOT_GC_EXIT();
+
+    delete data;
 }
 
 int Game::init(int argc, char *argv[]) {
@@ -510,21 +515,21 @@ print(b);
         SDL_VERSION(&info.version);
         if (SDL_GetWindowWMInfo(window, &info)) {
             METADOT_ASSERT_E(IsWindow(info.info.win.window));
-            this->data.wndh = info.info.win.window;
+            this->data->wndh = info.info.win.window;
         } else {
-            this->data.wndh = NULL;
+            this->data->wndh = NULL;
         }
 #else
-        this->data.wndh = 0;
+        this->data->wndh = 0;
 #endif
-        this->data.window = window;
-        this->data.imgui_context = m_ImGuiLayer->getImGuiCtx();
+        this->data->window = window;
+        this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
 
         MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
         MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
 
-        this->data.Functions.insert(std::make_pair("func1", func1));
-        this->data.Functions.insert(std::make_pair("func2", func2));
+        this->data->Functions.insert(std::make_pair("func1", func1));
+        this->data->Functions.insert(std::make_pair("func2", func2));
 
         RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
 
@@ -591,7 +596,7 @@ print(b);
     METADOT_INFO("Initializing world...");
     world = new World();
     world->noSaveLoad = true;
-    world->init(m_GameDir.getWorldPath("mainMenu"), (int) ceil(MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode);
+    world->init(m_GameDir.getWorldPath("mainMenu"), (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode);
 
 
     if (networkMode != NetworkMode::SERVER) {
@@ -4152,7 +4157,7 @@ void Game::quitToMainMenu() {
 
     world = new World();
     world->noSaveLoad = true;
-    world->init(wpStr, (int) ceil(Game::MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(Game::MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode, generator);
+    world->init(wpStr, (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode, generator);
 
 
     METADOT_INFO("Queueing chunk loading...");

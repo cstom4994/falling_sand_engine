@@ -11,7 +11,7 @@
 
 #define RegisterFunctions(name, func) \
     MetaEngine::any_function func_log_info{ &func };\
-    this->data.Functions.insert(std::make_pair(#name, name));
+    this->data->Functions.insert(std::make_pair(#name, name));
 
 
 struct HostData {

@@ -170,7 +170,7 @@ public:
 
     bool running = true;
 
-    HostData data;
+    HostData *data;
 
     long long fadeInStart = 0;
     long long fadeInLength = 0;
