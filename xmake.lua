@@ -158,6 +158,11 @@ elseif (is_os("linux")) then
     add_defines("__linux")
     add_cxflags("-fPIC")
     link_list = {}
+elseif (is_os("macosx")) then
+    set_toolchains("clang")
+
+    add_cxflags("-fPIC")
+    link_list = {}
 end
 
 add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")

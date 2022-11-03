@@ -228,7 +228,11 @@ SOFTWARE.
 #define FMEM_MEMSET(dst, val, size) memset(dst, val, size)
 #endif
 #ifndef FMEM_MALLOC
+#if defined(__APPLE__)
+#include <sys/malloc.h>
+#else
 #include <malloc.h>
+#endif
 #define FMEM_MALLOC(size) malloc(size)
 #define FMEM_FREE(ptr) free(ptr)
 #endif
