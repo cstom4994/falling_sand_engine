@@ -1,31 +1,12 @@
 #include "Shaders.hpp"
+#include <cstring>
 
-Uint32 Shaders::load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *filename) {
+Uint32 Shaders::load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *data) {
     Uint32 shader;
-    int file_size;
     METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
 
-    // Open file
-    // auto file = ReadFile(filename);
-    // std::string data(file.begin(), file.end());
-    // file_size = file.size();
-
-    auto data_vec = rh::embed.FindByFilename(filename);
-    auto data = data_vec[0].GetArray();
-    std::string source(data.begin(), data.end());
-    file_size = data.size();
-
-    // Get size from header
-    // if (renderer->shader_language == METAENGINE_Render_LANGUAGE_GLSL) {
-    //     if (renderer->max_shader_version >= 120)
-    //         header = "#version 120\n";
-    //     else
-    //         header = "#version 110\n";// Maybe this is good enough?
-    // } else if (renderer->shader_language == METAENGINE_Render_LANGUAGE_GLSLES)
-    //     header = "#version 100\nprecision mediump int;\nprecision mediump float;\n";
-
-    if (data.empty() || file_size == 0) throw std::runtime_error("Failed to load shader");
-    shader = METAENGINE_Render_CompileShader(shader_type, source.c_str());
+    if (strlen(data) == 0) throw std::runtime_error("Failed to load shader");
+    shader = METAENGINE_Render_CompileShader(shader_type, data);
     return shader;
 }
 

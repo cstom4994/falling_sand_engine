@@ -5,16 +5,13 @@
 
 #include "Engine/Render/renderer_gpu.h"
 
-#include "embed/resource_holder.hpp"
+#include "Game/ShadersGLSL.h"
+#include "ShadersGLSL.h"
 
 #include <cstdlib>
 #include <string>
 
 // Based on https://github.com/grimfang4/sdl-gpu/blob/master/demos/simple-shader/main.c (MIT License)
-
-namespace rh {
-    ResourceHolder embed;
-}
 
 class Shaders {
 public:
@@ -25,13 +22,17 @@ public:
 };
 
 class Shader {
+private:
+    const char *glsl_frag;
+    const char *glsl_vert;
+
 public:
     Uint32 shader;
     METAENGINE_Render_ShaderBlock block;
 
-    Shader(const char *vertex_shader_file, const char *fragment_shader_file) {
+    Shader(const char *vertex_shader_code, const char *fragment_shader_code) : glsl_vert(vertex_shader_code), glsl_frag(fragment_shader_code) {
         shader = 0;
-        block = Shaders::load_shader_program(&shader, vertex_shader_file, fragment_shader_file);
+        block = Shaders::load_shader_program(&shader, glsl_vert, glsl_frag);
     }
 
     ~Shader() {
@@ -49,7 +50,7 @@ class WaterFlowPassShader : public Shader {
 public:
     bool dirty = false;
 
-    WaterFlowPassShader() : Shader("common.vert", "waterFlow.frag"){};
+    WaterFlowPassShader() : Shader(glsl_vert_common, glsl_frag_waterFlow){};
 
     void prepare() {}
 
@@ -63,7 +64,7 @@ public:
 
 class WaterShader : public Shader {
 public:
-    WaterShader() : Shader("common.vert", "water.frag"){};
+    WaterShader() : Shader(glsl_vert_common, glsl_frag_water){};
 
     void prepare() {}
 
@@ -111,7 +112,7 @@ public:
     bool lastEmissionEnabled = false;
     bool lastDitheringEnabled = false;
 
-    NewLightingShader() : Shader("common.vert", "newLighting.frag"){};
+    NewLightingShader() : Shader(glsl_vert_common, glsl_frag_newLighting){};
 
     void prepare() {}
 
@@ -184,7 +185,7 @@ public:
 
 class FireShader : public Shader {
 public:
-    FireShader() : Shader("common.vert", "fire.frag"){};
+    FireShader() : Shader(glsl_vert_common, glsl_frag_fire){};
 
     void prepare() {}
 
@@ -201,7 +202,7 @@ public:
 
 class Fire2Shader : public Shader {
 public:
-    Fire2Shader() : Shader("common.vert", "fire2.frag"){};
+    Fire2Shader() : Shader(glsl_vert_common, glsl_frag_fire2){};
 
     void prepare() {}
 
