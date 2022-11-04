@@ -41,8 +41,12 @@
 
 #ifdef _WIN32
 #include <io.h>
-#else
+#elifdef __linux
 #include <sys/io.h>
+#elifdef __APPLE__
+#include <sys/ioctl.h>
+#else
+#error
 #endif
 
 #define frameTimeNum 100

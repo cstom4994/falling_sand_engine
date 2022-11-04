@@ -8,16 +8,10 @@ add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
 
-set_languages("clatest", "c++latest")
+set_languages("c17", "c++20")
 set_arch("x64")
 
 add_rules("mode.debug", "mode.release")
-
-option("build_embed")
-    set_default(false)
-    set_showmenu(true)
-    set_description("Toggle to build embed script")
-option_end()
 
 rule("metadot.uidsl")
     set_extensions('.uidsl')
@@ -54,35 +48,6 @@ rule("metadot.uidsl")
         local dependfile = target:dependfile(implpath)
         batchcmds:set_depmtime(os.mtime(dependfile))
         batchcmds:set_depcache(dependfile)
-    end)
-rule_end()
-
-rule("metadot.embed")
-    set_extensions('.lua', '.frag', '.vert')
-    on_load(function(target)
-        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "embed")
-        if not os.isdir(outdir) then
-            os.mkdir(outdir)
-        end
-        target:set('policy', 'build.across_targets_in_parallel', false)
-        target:add('deps', 'embed')
-    end)
-    before_buildcmd_files(function(target, batchcmds, sourcebatch, opt)
-        import('core.project.project')
-        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "embed")
-        local outpath=path.join(outdir)
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            batchcmds:show_progress(opt.progress, "${color.build.object}Generateing EmbedRes %s", sourcefile)
-
-            batchcmds:add_depfiles(sourcefile)
-            local dependfile = target:dependfile(sourcefile)
-            batchcmds:set_depmtime(os.mtime(dependfile))
-            batchcmds:set_depcache(dependfile)
-        end
-        local args = sourcebatch.sourcefiles
-        table.insert(args, "-o")
-        table.insert(args, path(outpath))
-        batchcmds:vrunv(project.target('embed'):targetfile(), args)
     end)
 rule_end()
 
@@ -172,7 +137,6 @@ include_dir_list = {
     "Source/Generated",
     "Source/Engine",
     "Source/Libs/lua/lua",
-    "Source/Tools/embed",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -191,8 +155,10 @@ defines_list = {
 
 target("vendor")
     set_kind("static")
-    add_rules("c.unity_build")
-    add_rules("c++.unity_build")
+    if (not is_os("macosx")) then
+        add_rules("c.unity_build")
+        add_rules("c++.unity_build")    
+    end
     add_packages("libsdl", "zlib")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
@@ -201,7 +167,7 @@ target("vendor")
     add_files("Source/Vendor/**.cpp")
 	add_headerfiles("Source/Vendor/**.h")
 	add_headerfiles("Source/Vendor/**.hpp")
-    if (is_os("linux")) then
+    if (is_os("linux") or is_os("macosx")) then
         remove_files("Source/Vendor/minizip/iowin32.c")
     end
     remove_files("Source/Vendor/fmt/src/fmt.cc")
@@ -221,14 +187,6 @@ target("luaexe")
     add_defines(defines_list)
     add_files("Source/Libs/lua/lua/lua.c")
     add_deps("lua")
-
-target("embed")
-    set_basename("embed")
-    set_kind("binary")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/Tools/embed/**.cpp")
-    add_headerfiles("Source/Tools/embed/**.h")
 
 target("Libs")
     set_kind("static")
@@ -272,32 +230,18 @@ target("Engine")
     add_files('Source/Engine/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
     set_symbols("debug")
 
-
-target("EmbedBuild")
-    set_kind("static")
-    add_rules("metadot.uidsl")
-    add_rules("metadot.embed")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/Game/uidsl/*.uidsl")
-    add_headerfiles("Source/Generated/**.h")
-    add_files("Source/Scripts/lua/**.lua")
-    add_files("Source/Shaders/**.frag")
-    add_files("Source/Shaders/**.vert") 
-    -- add_rules("utils.bin2c", {extensions = {".ttf"}})
-    -- add_files("Resources/**.ttf")
-    set_symbols("debug")
-
 target("MetaDot")
     set_kind("binary")
+    add_rules("metadot.uidsl")
     add_packages("libsdl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor", "Libs", "lua", "Engine", "EmbedBuild")
+    add_deps("vendor", "Libs", "lua", "Engine")
     add_links(link_list)
     add_files("Source/Generated/**.cpp")
     add_files("Source/Game/**.cpp")
+    add_files("Source/Game/uidsl/*.uidsl")
 	add_headerfiles("Source/Game/**.h")
 	add_headerfiles("Source/Game/**.hpp")
 	add_headerfiles("Source/Game/**.inl")

@@ -4,24 +4,29 @@
 
 #include "Game/Core.hpp"
 #include "Game/InEngine.h"
-#include <algorithm>
 
+#include <algorithm>
 #include <bitset>
 #include <codecvt>
+#include <locale>
 #include <unordered_map>
 
-#if defined (_WIN32)
+#if defined(_WIN32)
 
-#else
+#elif defined(__linux)
 #include <bits/types/struct_tm.h>
 #include <bits/types/time_t.h>
+#elif defined(__APPLE__)
+#include <sys/time.h>
+#else
+#error
 #endif
 
 
 class UTime {
 public:
     static long long millis();
-    static time_t mkgmtime(struct tm* unixdate);
+    static time_t mkgmtime(struct tm *unixdate);
 };
 
 
@@ -466,10 +471,10 @@ namespace MetaEngine::SUtil {
 
 
 #include <algorithm>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <cstdlib>
 #include <string>
 #include <vector>
 

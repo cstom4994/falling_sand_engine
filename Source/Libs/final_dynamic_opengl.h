@@ -229,6 +229,8 @@ SOFTWARE.
 #elif defined(__unix__) || defined(_POSIX_VERSION)
 #	define FGL_PLATFORM_UNIX
 #	define FGL_PLATFORM_POSIX
+#elif defined(__APPLE__)
+#	define FGL_PLATFORM_MACOSX
 #else
 #	error "This platform/compiler is not supported!"
 #endif
