@@ -676,7 +676,10 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
         ImVec2 prevPos = ImGui::GetCursorScreenPos();
         ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y));
 
-        tm *tm_utc = gmtime(&meta.lastOpenedTime);
+
+        time_t t_times;
+        tm *tm_utc = gmtime(&t_times);
+        meta.lastOpenedTime = t_times;
 
         // convert to local time
         time_t time_utc = UTime::mkgmtime(tm_utc);

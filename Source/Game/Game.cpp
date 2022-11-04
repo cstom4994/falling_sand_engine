@@ -484,6 +484,8 @@ print(b);
         }
 #elif defined(__linux)
         this->data->wndh = 0;
+#elif defined(__APPLE__)
+        this->data->wndh = 0;
 #else
 #error "GetWindowWMInfo Error"
 #endif
