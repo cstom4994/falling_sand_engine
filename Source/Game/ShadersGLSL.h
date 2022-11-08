@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _SHADERGLSL_H_
+#define _SHADERGLSL_H_
 
 const char* glsl_frag_common = R"(
 #version 150
@@ -595,3 +596,5 @@ void main(){
     gl_FragColor.a = 1.0;
 }
 )";
+
+#endif
