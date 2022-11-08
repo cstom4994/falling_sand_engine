@@ -3,11 +3,6 @@
 
 #pragma once
 
-#if __cplusplus <= 201703
-#pragma message("When building projects with support for C++14 or lower, please fuck me")
-#endif
-
-
 #ifndef _CORE_H
 #define _CORE_H
 
@@ -17,6 +12,7 @@
 #include <utility>
 
 #include "Game/Macros.hpp"
+#include "Engine/Platforms/PlatformDef.hpp"
 
 
 #include <bitset>
