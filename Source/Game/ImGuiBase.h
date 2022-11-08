@@ -41,10 +41,6 @@
 #include <typeinfo>
 #define IMGUI_AUTO_STRUCT_TO_TUPLE boost::pfr::structure_tie
 
-#if __cplusplus <= 201402L
-#error "TODO: fix for this compiler! (at least C++14 is required)"
-#endif
-
 namespace ImGui {
     //		IMGUI::AUTO()
     //		=============

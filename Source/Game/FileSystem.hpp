@@ -56,8 +56,6 @@ namespace MetaEngine {
         //}
         // folder path of current executable
         const std::string &getExecutableFolderPath();
-        // executable path
-        const std::string &getExecutablePath();
 
         typedef int FileSearchFlags;
 

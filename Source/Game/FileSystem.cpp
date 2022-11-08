@@ -3,14 +3,10 @@
 #include "FileSystem.hpp"
 #include "Utils.hpp"
 
+#include "Engine/Platforms/PlatformDef.hpp"
+
 #define PHYSFS_DECL METAENGINE_PHYSFS_DEF
 #include "Libs/physfs/physfs.h"
-
-#if defined(_WIN32)
-#include <Windows.h>
-#elif defined(__linux)
-#include <limits.h>
-#endif
 
 namespace MetaEngine {
 
@@ -121,28 +117,8 @@ namespace MetaEngine {
     const std::string &FUtil::getExecutableFolderPath() {
         static std::string out;
         if (out.empty()) {
-            out = getExecutablePath().substr(0, getExecutablePath().find_last_of('/') + 1);
+            out = MetaEngine::Platforms::GetExecutablePath().substr(0, MetaEngine::Platforms::GetExecutablePath().find_last_of('/') + 1);
         }
-        return out;
-    }
-
-    const std::string &FUtil::getExecutablePath() {
-        static std::string out;
-#if defined(_WIN32)
-        if (out.empty()) {
-            WCHAR path[260];
-            GetModuleFileNameW(NULL, path, 260);
-            out = SUtil::ws2s(std::wstring(path));
-            cleanPathString(out);
-        }
-#elif defined(__linux)
-        char result[PATH_MAX];
-        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-        std::string appPath = std::string(result, (count > 0) ? count : 0);
-
-        std::size_t found = appPath.find_last_of("/\\");
-        out = appPath.substr(0, found);
-#endif
         return out;
     }
 

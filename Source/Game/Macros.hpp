@@ -93,3 +93,12 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_OPTMIZE_OFF __pragma(optimize("", off))
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))
 #define METADOT_DEBUGBREAK __debugbreak()
+
+// Platforms Macros
+#if defined (_WIN32) || defined (_WINDOWS)
+#define METADOT_PLATFORM_WINDOWS
+#elif defined (__linux)
+#define METADOT_PLATFORM_LINUX
+#elif defined (__APPLE__)
+#define METADOT_PLATFORM_APPLE
+#endif

@@ -43,7 +43,6 @@ SDL_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
     unsigned char *data = stbi_load(METADOT_RESLOC_STR(path), &width, &height, &orig_format, req_format);
     if (data == NULL) {
         std::cout << "Loading image failed: " << stbi_failure_reason() << " ::" << METADOT_RESLOC_STR(path) << std::endl;
-        exit(1);
     }
 
     // Set up the pixel format color masks for RGB(A) byte arrays.
