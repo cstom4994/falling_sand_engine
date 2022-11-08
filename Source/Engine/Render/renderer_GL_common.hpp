@@ -10,10 +10,10 @@ See a particular renderer's *.c file for specifics. */
 #pragma warning(disable : 4312)
 #endif
 
-#include "SDL_platform.h"
 #include <cstdint>
 #include <cstdlib>
 
+#include "MRender.hpp"
 
 #include "renderer_gpu.h"// For poor, dumb Intellisense
 
@@ -67,7 +67,7 @@ int gpu_strcasecmp(const char *s1, const char *s2);
 // SDL 1.2 / SDL 2.0 translation layer
 
 
-#define GET_ALPHA(sdl_color) ((sdl_color).a)
+#define GET_ALPHA(metadot_color) ((metadot_color).a)
 
 static SDL_Window *get_window(Uint32 windowID) {
     return SDL_GetWindowFromID(windowID);
@@ -729,7 +729,7 @@ static void prepareToRenderToTarget(METAENGINE_Render_Renderer *renderer, METAEN
 }
 
 
-static void changeColor(METAENGINE_Render_Renderer *renderer, SDL_Color color) {
+static void changeColor(METAENGINE_Render_Renderer *renderer, MetaEngine::Color color) {
 #ifdef RENDERER_RHI_USE_BUFFER_PIPELINE
     (void) renderer;
     (void) color;
@@ -854,9 +854,9 @@ static void disableTexturing(METAENGINE_Render_Renderer *renderer) {
 #define MIX_COLOR_COMPONENT_NORMALIZED_RESULT(a, b) ((a) / 255.0f * (b) / 255.0f)
 #define MIX_COLOR_COMPONENT(a, b) ((Uint8) (((a) / 255.0f * (b) / 255.0f) * 255))
 
-static SDL_Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, METAENGINE_Render_Image *image) {
+static MetaEngine::Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, METAENGINE_Render_Image *image) {
     (void) renderer;
-    SDL_Color color = {255, 255, 255, 255};
+    MetaEngine::Color color(255, 255, 255, 255);
     if (target->use_color) {
         if (image != NULL) {
             color.r = MIX_COLOR_COMPONENT(target->color.r, image->color.r);
@@ -1242,7 +1242,7 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     SDL_Window *window;
 
     int framebuffer_handle;
-    SDL_Color white = {255, 255, 255, 255};
+    MetaEngine::Color white(255, 255, 255, 255);
 #ifdef RENDERER_RHI_USE_OPENGL
     //GLenum err;
 #endif
@@ -1370,7 +1370,7 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     target->context->shapes_use_blending = true;
     target->context->shapes_blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
 
-    cdata->last_color = white;
+    cdata->last_color = white.toSDLColor();
 
     cdata->last_use_texturing = true;
     cdata->last_shape = GL_TRIANGLES;
@@ -2005,7 +2005,7 @@ static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Rende
     GLenum gl_format;
     METAENGINE_Render_Image *result;
     METAENGINE_Render_IMAGE_DATA *data;
-    SDL_Color white = {255, 255, 255, 255};
+    MetaEngine::Color white(255, 255, 255, 255);
 
     switch (format) {
         case METAENGINE_Render_FORMAT_LUMINANCE:
@@ -2102,7 +2102,7 @@ static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Rende
     result->anchor_x = renderer->default_image_anchor_x;
     result->anchor_y = renderer->default_image_anchor_y;
 
-    result->color = white;
+    result->color = white.toSDLColor();
     result->use_blending = true;
     result->blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
     result->filter_mode = METAENGINE_Render_FILTER_LINEAR;
@@ -2196,7 +2196,7 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
     METAENGINE_Render_FormatEnum format;
     METAENGINE_Render_WrapEnum wrap_x, wrap_y;
     METAENGINE_Render_FilterEnum filter_mode;
-    SDL_Color white = {255, 255, 255, 255};
+    MetaEngine::Color white (255, 255, 255, 255);
 
     METAENGINE_Render_Image *result;
     METAENGINE_Render_IMAGE_DATA *data;
@@ -2346,7 +2346,7 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
     result->anchor_x = renderer->default_image_anchor_x;
     result->anchor_y = renderer->default_image_anchor_y;
 
-    result->color = white;
+    result->color = white.toSDLColor();
     result->use_blending = true;
     result->blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
     result->snap_mode = METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS;
@@ -4499,7 +4499,7 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
                     glVertexAttribPointer(context->current_shader_block.color_loc, size_colors, GL_FLOAT, GL_FALSE, stride, (void *) (offset_colors));
                 }
             } else {
-                SDL_Color color = get_complete_mod_color(renderer, target, image);
+                SDL_Color color = get_complete_mod_color(renderer, target, image).toSDLColor();
                 float default_color[4] = {color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, GET_ALPHA(color) / 255.0f};
                 SetAttributefv(renderer, context->current_shader_block.color_loc, 4, default_color);
             }
