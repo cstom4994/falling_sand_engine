@@ -2,7 +2,7 @@
 
 
 #include "Materials.hpp"
-#include "Macros.hpp"
+#include "Game/Macros.hpp"
 #include "Textures.hpp"
 
 Material::Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor, Uint32 color) {

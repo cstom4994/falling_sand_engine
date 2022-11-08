@@ -3,7 +3,7 @@
 #include "Console.hpp"
 
 #include "Game/Utils.hpp"
-#include "Utils.hpp"
+#include "Game/Utils.hpp"
 
 #include <array>
 #include <charconv>

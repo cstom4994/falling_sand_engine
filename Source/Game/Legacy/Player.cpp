@@ -2,8 +2,8 @@
 
 
 #include "Player.hpp"
-#include "Settings.hpp"
-#include "Utils.hpp"
+#include "Game/Settings.hpp"
+#include "Game/Utils.hpp"
 
 void Player::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
     Entity::render(target, ofsX, ofsY);

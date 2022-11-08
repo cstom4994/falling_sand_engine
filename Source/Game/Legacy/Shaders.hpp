@@ -6,7 +6,7 @@
 
 #include "Engine/Render/renderer_gpu.h"
 
-#include "Game/ShadersGLSL.h"
+#include "Game/Legacy/ShadersGLSL.h"
 
 #include <cstdlib>
 #include <string>

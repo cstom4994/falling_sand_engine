@@ -6,7 +6,7 @@
 //#define b2_maxTranslation 10.0f
 //#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
 
-#include "DebugImpl.hpp"
+#include "Game/DebugImpl.hpp"
 #include "Drawing.hpp"
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Render/renderer_gpu.h"
@@ -16,16 +16,16 @@
 #include "Game/ImGuiLayer.hpp"
 #include "Game/ImGuiTerminal.hpp"
 #include "Game/Macros.hpp"
-#include "Game/Networking.hpp"
+#include "Game/Legacy/Networking.hpp"
 #include "Shared/Interface.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
 #include "Background.hpp"
 #include "Controls.hpp"
-#include "Settings.hpp"
+#include "Game/Settings.hpp"
 #include "Textures.hpp"
-#include "Utils.hpp"
+#include "Game/Utils.hpp"
 
 #include "Libs/sparsehash/sparse_hash_map.h"
 

@@ -13,20 +13,20 @@
 #include "Game/Macros.hpp"
 #include "Game/Const.hpp"
 #include "Settings.hpp"
-#include "Utils.hpp"
+#include "Game/Utils.hpp"
 
 #include "imgui.h"
 #include "uidsl/hello.h"
 
-#include "Game.hpp"
-#include "InEngine.h"
-#include "Textures.hpp"
+#include "Game/Legacy/Game.hpp"
+#include "Game/InEngine.h"
+#include "Game/Legacy/Textures.hpp"
 
 #include <cstdio>
 #include <map>
 
-#include "DefaultGenerator.cpp"
-#include "MaterialTestGenerator.cpp"
+#include "Game/Legacy/DefaultGenerator.cpp"
+#include "Game/Legacy/MaterialTestGenerator.cpp"
 
 #include <imgui/IconsFontAwesome5.h>
 

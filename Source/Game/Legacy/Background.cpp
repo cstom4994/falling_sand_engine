@@ -1,12 +1,12 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "InEngine.h"
+#include "Game/InEngine.h"
 
 #include "Background.hpp"
 #include "Textures.hpp"
 #include <algorithm>
 
-#include "InEngine.h"
+#include "Game/InEngine.h"
 
 BackgroundLayer::BackgroundLayer(SDL_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
     this->surface = {Textures::scaleTexture(texture, 1, 1), Textures::scaleTexture(texture, 2, 2), Textures::scaleTexture(texture, 3, 3)};

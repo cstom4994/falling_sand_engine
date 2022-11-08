@@ -2,13 +2,13 @@
 
 #include "Chunk.hpp"
 #include "Game/Core.hpp"
-#include "InEngine.h"
-#include "Utils.hpp"
+#include "Game/InEngine.h"
+#include "Game/Utils.hpp"
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "InEngine.h"
+#include "Game/InEngine.h"
 
 #include <lz4/lz4.h>
 

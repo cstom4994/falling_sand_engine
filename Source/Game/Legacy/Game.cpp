@@ -5,14 +5,14 @@
 #include <iterator>
 #include <regex>
 
-#include "DebugImpl.hpp"
+#include "Game/DebugImpl.hpp"
 #include "DefaultGenerator.cpp"
-#include "GCManager.hpp"
+#include "Game/GCManager.hpp"
 #include "Libs/libxlsxwriter/xlsxwriter/workbook.h"
 #include "MaterialTestGenerator.cpp"
 
-#include "Settings.hpp"
-#include "Utils.hpp"
+#include "Game/Settings.hpp"
+#include "Game/Utils.hpp"
 
 #include "Engine/Scripting/Scripting.hpp"
 #include "Game/Const.hpp"
@@ -20,7 +20,7 @@
 #include "Game/GCManager.hpp"
 #include "Game/ImGuiBase.h"
 #include "Game/Macros.hpp"
-#include "Game/Shaders.hpp"
+#include "Game/Legacy/Shaders.hpp"
 
 #include "Game/FileSystem.hpp"
 #include "Libs/final_dynamic_opengl.h"
@@ -31,7 +31,7 @@
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
 
-#include "InEngine.h"
+#include "Game/InEngine.h"
 
 #define CR_HOST CR_UNSAFE
 #include "Libs/cr.h"

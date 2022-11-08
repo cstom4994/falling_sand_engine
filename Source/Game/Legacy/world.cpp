@@ -5,7 +5,7 @@
 #include "world.hpp"
 #endif
 #include "DefaultGenerator.cpp"
-#include "FileSystem.hpp"
+#include "Game/FileSystem.hpp"
 #include "Game/Core.hpp"
 #include "Libs/MarchingSquares/MarchingSquares.h"
 #include "Libs/polygon-simplify.hh"
@@ -13,7 +13,7 @@
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
 #include "Textures.hpp"
-#include "Utils.hpp"
+#include "Game/Utils.hpp"
 #include "nlohmann/json.hpp"
 
 #include <box2d/b2_body.h>
