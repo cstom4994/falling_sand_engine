@@ -1,45 +1,50 @@
-#ifndef _SDL_METAENGINE_Render_OPENGL_4_H__
-#define _SDL_METAENGINE_Render_OPENGL_4_H__
+#ifndef _SDL_METAENGINE_Render_GLES_3_H__
+#define _SDL_METAENGINE_Render_GLES_3_H__
 
 #include "renderer_gpu.h"
+#include "SDL_platform.h"
 
-#if !defined(SDL_METAENGINE_Render_DISABLE_OPENGL) && !defined(SDL_METAENGINE_Render_DISABLE_OPENGL_4)
+#if !defined(SDL_METAENGINE_Render_DISABLE_GLES) && !defined(SDL_METAENGINE_Render_DISABLE_GLES_3)
 
-    // Hacks to fix compile errors due to polluted namespace
-    #ifdef _WIN32
-    #define _WINUSER_H
-    #define _WINGDI_H
-    #endif
-    
-#include "glad/glad.h"
-	
-	#if defined(GL_EXT_bgr) && !defined(GL_BGR)
-		#define GL_BGR GL_BGR_EXT
-	#endif
-	#if defined(GL_EXT_bgra) && !defined(GL_BGRA)
-		#define GL_BGRA GL_BGRA_EXT
-	#endif
-	#if defined(GL_EXT_abgr) && !defined(GL_ABGR)
-		#define GL_ABGR GL_ABGR_EXT
-	#endif
+#ifdef __IPHONEOS__
+    #include <OpenGLES/ES3/gl.h>
+    #include <OpenGLES/ES3/glext.h>
+#elif defined(SDL_METAENGINE_Render_DYNAMIC_GLES_3)
+    #include "gl3stub.h"
+#else
+    #include "GLES3/gl3.h"
+    #include "GLES2/gl2ext.h"
+#endif
+
+	#define glVertexAttribI1i glVertexAttrib1f
+	#define glVertexAttribI2i glVertexAttrib2f
+	#define glVertexAttribI3i glVertexAttrib3f
+	#define glVertexAttribI1ui glVertexAttrib1f
+	#define glVertexAttribI2ui glVertexAttrib2f
+	#define glVertexAttribI3ui glVertexAttrib3f
+    #define glMapBuffer glMapBufferOES
+    #define glUnmapBuffer glUnmapBufferOES
+    #define GL_WRITE_ONLY GL_WRITE_ONLY_OES
 #endif
 
 
-#define METAENGINE_Render_CONTEXT_DATA ContextData_OpenGL_4
-#define METAENGINE_Render_IMAGE_DATA ImageData_OpenGL_4
-#define METAENGINE_Render_TARGET_DATA TargetData_OpenGL_4
 
+#define METAENGINE_Render_CONTEXT_DATA ContextData_GLES_3
+#define METAENGINE_Render_IMAGE_DATA ImageData_GLES_3
+#define METAENGINE_Render_TARGET_DATA TargetData_GLES_3
 
 
 #define METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE \
-"#version 400\n\
+"#version 300 es\n\
+precision highp float;\n\
+precision mediump int;\n\
 \
 in vec2 gpu_Vertex;\n\
 in vec2 gpu_TexCoord;\n\
-in vec4 gpu_Color;\n\
+in mediump vec4 gpu_Color;\n\
 uniform mat4 gpu_ModelViewProjectionMatrix;\n\
 \
-out vec4 color;\n\
+out mediump vec4 color;\n\
 out vec2 texCoord;\n\
 \
 void main(void)\n\
@@ -49,14 +54,17 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
+// Tier 3 uses shader attributes to send position, texcoord, and color data for each vertex.
 #define METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE \
-"#version 400\n\
+"#version 300 es\n\
+precision highp float;\n\
+precision mediump int;\n\
 \
 in vec2 gpu_Vertex;\n\
-in vec4 gpu_Color;\n\
+in mediump vec4 gpu_Color;\n\
 uniform mat4 gpu_ModelViewProjectionMatrix;\n\
 \
-out vec4 color;\n\
+out mediump vec4 color;\n\
 \
 void main(void)\n\
 {\n\
@@ -66,9 +74,15 @@ void main(void)\n\
 
 
 #define METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE \
-"#version 400\n\
+"#version 300 es\n\
+#ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+precision highp float;\n\
+#else\n\
+precision mediump float;\n\
+#endif\n\
+precision mediump int;\n\
 \
-in vec4 color;\n\
+in mediump vec4 color;\n\
 in vec2 texCoord;\n\
 \
 uniform sampler2D tex;\n\
@@ -81,9 +95,15 @@ void main(void)\n\
 }"
 
 #define METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE \
-"#version 400\n\
+"#version 300 es\n\
+#ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+precision highp float;\n\
+#else\n\
+precision mediump float;\n\
+#endif\n\
+precision mediump int;\n\
 \
-in vec4 color;\n\
+in mediump vec4 color;\n\
 \
 out vec4 fragColor;\n\
 \
@@ -93,7 +113,9 @@ void main(void)\n\
 }"
 
 
-typedef struct ContextData_OpenGL_4
+
+
+typedef struct ContextData_GLES_3
 {
 	SDL_Color last_color;
 	METAENGINE_Render_bool last_use_texturing;
@@ -115,7 +137,7 @@ typedef struct ContextData_OpenGL_4
 	unsigned short* index_buffer;  // Indexes into the blit buffer so we can use 4 vertices for every 2 triangles (1 quad)
 	unsigned int index_buffer_num_vertices;
 	unsigned int index_buffer_max_num_vertices;
-	
+    
     // Tier 3 rendering
     unsigned int blit_VAO;
     unsigned int blit_VBO[2];  // For double-buffering
@@ -124,22 +146,22 @@ typedef struct ContextData_OpenGL_4
     
 	METAENGINE_Render_AttributeSource shader_attributes[16];
 	unsigned int attribute_VBO[16];
-} ContextData_OpenGL_4;
+} ContextData_GLES_3;
 
-typedef struct ImageData_OpenGL_4
+typedef struct ImageData_GLES_3
 {
     int refcount;
     METAENGINE_Render_bool owns_handle;
 	Uint32 handle;
 	Uint32 format;
-} ImageData_OpenGL_4;
+} ImageData_GLES_3;
 
-typedef struct TargetData_OpenGL_4
+typedef struct TargetData_GLES_3
 {
     int refcount;
 	Uint32 handle;
 	Uint32 format;
-} TargetData_OpenGL_4;
+} TargetData_GLES_3;
 
 
 

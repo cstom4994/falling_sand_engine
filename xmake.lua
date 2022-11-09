@@ -143,14 +143,18 @@ include_dir_list = {
     "Source/Vendor/enet",
     "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
-    "Source/Vendor/fmt/include"
+    "Source/Vendor/fmt/include",
+    "Source/Vendor/glad/include"
     }
 
 defines_list = {
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
-    "MINIZ_NO_ZLIB_COMPATIBLE_NAMES"
+    "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
+    "SDL_METAENGINE_Render_DISABLE_GLES",
+    "SDL_METAENGINE_Render_DISABLE_GLES_2",
+    "SDL_METAENGINE_Render_DISABLE_OPENGL_4"
 }
 
 target("vendor")
@@ -223,6 +227,7 @@ target("Engine")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
+    add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cpp")
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")

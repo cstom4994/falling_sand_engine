@@ -5,7 +5,7 @@
 #include "Game/ImGuiBase.h"
 #include "Libs/ImGui/implot.h"
 
-#include "Libs/final_dynamic_opengl.h"
+#include "glad/glad.h"
 
 #include "Engine/IMGUI/ImGuiDSL.hpp"
 #include "Game/Core.hpp"

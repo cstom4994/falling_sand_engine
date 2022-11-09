@@ -94,7 +94,7 @@
 #endif
 
 #include "ImGuiImplGL3.h"
-#include "Libs/final_dynamic_opengl.h"
+#include "glad/glad.h"
 #include "imgui.h"
 #include <stdio.h>
 

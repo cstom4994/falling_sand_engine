@@ -23,7 +23,7 @@
 #include "Game/Legacy/Shaders.hpp"
 
 #include "Game/FileSystem.hpp"
-#include "Libs/final_dynamic_opengl.h"
+#include "glad/glad.h"
 #include "Libs/libxlsxwriter/xlsxwriter.h"
 #include "Libs/structopt.hpp"
 
@@ -59,7 +59,7 @@ float newLightingShader_insideCur = 0.0f;
 FireShader *fireShader = nullptr;
 Fire2Shader *fire2Shader = nullptr;
 
-const char *plugin = CR_PLUGIN("CppSource");
+const char *plugin = CR_PLUGIN("libCppSource");
 
 extern void fuckme();
 
@@ -435,7 +435,7 @@ print(b);
 
         SDL_GL_MakeCurrent(window, gl_context);
 
-        if (!fglLoadOpenGL(true)) {
+        if (!gladLoadGL()) {
             std::cout << "Failed to initialize OpenGL loader!" << std::endl;
             return EXIT_FAILURE;
         }
@@ -1758,8 +1758,6 @@ exit:
     delete terminal_log;
 
     running = false;
-
-    fglUnloadOpenGL();
 
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);
