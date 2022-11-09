@@ -6,8 +6,8 @@
 const char* glsl_frag_common = R"(
 #version 410
 
-in vec4 color;
-in vec2 texCoord;
+layout(location = 0) in vec4 color;
+layout(location = 1) in vec2 texCoord;
 out vec4 fragColor;
 
 uniform sampler2D tex;
@@ -21,9 +21,9 @@ void main(void)
 const char* glsl_vert_common = R"(
 #version 410
 
-in vec3 gpu_Vertex;
-in vec2 gpu_TexCoord;
-in vec4 gpu_Color;
+layout(location = 0) in vec3 gpu_Vertex;
+layout(location = 1) in vec2 gpu_TexCoord;
+layout(location = 2) in vec4 gpu_Color;
 uniform mat4 gpu_ModelViewProjectionMatrix;
 
 out vec4 color;
