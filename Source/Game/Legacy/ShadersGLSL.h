@@ -4,7 +4,7 @@
 #define _SHADERGLSL_H_
 
 const char* glsl_frag_common = R"(
-#version 150
+#version 410
 
 in vec4 color;
 in vec2 texCoord;
@@ -14,20 +14,20 @@ uniform sampler2D tex;
 
 void main(void)
 {
-	fragColor = texture2D(tex, texCoord) * color;
+	fragColor = texture(tex, texCoord) * color;
 }
 )";
 
 const char* glsl_vert_common = R"(
-#version 150
+#version 410
 
-attribute vec3 gpu_Vertex;
-attribute vec2 gpu_TexCoord;
-attribute vec4 gpu_Color;
+in vec3 gpu_Vertex;
+in vec2 gpu_TexCoord;
+in vec4 gpu_Color;
 uniform mat4 gpu_ModelViewProjectionMatrix;
 
-varying vec4 color;
-varying vec2 texCoord;
+out vec4 color;
+out vec2 texCoord;
 
 void main(void)
 {
@@ -40,7 +40,7 @@ void main(void)
 const char* glsl_frag_water = R"(
 // Copyright(c) 2022, KaoruXun
 
-#version 150
+#version 410
 
 #ifdef GL_ES
 precision mediump float;
@@ -49,7 +49,8 @@ precision mediump float;
 #extension GL_OES_standard_derivatives : enable
 
 uniform sampler2D tex;
-varying vec2 texCoord;
+out vec2 texCoord;
+out vec4 fragColor;
 
 uniform float time;
 uniform vec2 resolution;
@@ -153,15 +154,17 @@ void main( void ) {
     
     // early exit if not in world
     if(worldPos.x < 0.0 || worldPos.y < 0.0 || worldPos.x >= 1.0 || worldPos.y >= 1.0){
-        gl_FragColor = texture2D(tex, texCoord);
+        //gl_FragColor = texture(tex, texCoord);
+        fragColor = texture(tex, texCoord);
         return;
     }
     
-    vec4 worldCol = texture2D(mask, vec2(worldPos.x, worldPos.y));
+    vec4 worldCol = texture(mask, vec2(worldPos.x, worldPos.y));
     
     // early exit if air
     if(worldCol.a == 0.0){
-        gl_FragColor = texture2D(tex, texCoord);
+        //gl_FragColor = texture(tex, texCoord);
+        fragColor = texture(tex, texCoord);
         return;
     }
     
@@ -181,7 +184,7 @@ void main( void ) {
     
     // calculate flow
     
-    vec4 flowCol = texture2D(flowTex, worldPos);
+    vec4 flowCol = texture(flowTex, worldPos);
     
     float angle = 0;
     float speed = 0.0;
@@ -232,19 +235,22 @@ void main( void ) {
 
     if(overlay == 1) {
         // flow map
-        gl_FragColor = vec4(flowCol.rgb, 1.0);
+        //gl_FragColor = vec4(flowCol.rgb, 1.0);
+        fragColor = vec4(flowCol.rgb, 1.0);
     }else if(overlay == 2){
         // distortion
-        gl_FragColor = vec4(length(distort_sum) * 150.0);
+        //gl_FragColor = vec4(length(distort_sum) * 150.0);
+        fragColor = vec4(length(distort_sum) * 150.0);
     }else{
         // normal output
-        gl_FragColor = texture2D(tex, dp) * (1.0 + length(distort_sum) * (10.0 + speed * 15.0));
+        //gl_FragColor = texture(tex, dp) * (1.0 + length(distort_sum) * (10.0 + speed * 15.0));
+        fragColor = texture(tex, dp) * (1.0 + length(distort_sum) * (10.0 + speed * 15.0));
     }
 }
 )";
 
 const char* glsl_frag_waterFlow = R"(
-#version 150
+#version 410
 
 #ifdef GL_ES
 precision mediump float;
@@ -253,7 +259,8 @@ precision mediump float;
 #extension GL_OES_standard_derivatives : enable
 
 uniform sampler2D tex;
-varying vec2 texCoord;
+out vec2 texCoord;
+out vec4 fragColor;
 
 uniform vec2 resolution;
 
@@ -262,16 +269,16 @@ void main( void ) {
 
     vec2 worldPos = gl_FragCoord.xy / resolution;
     
-    vec4 worldCol = texture2D(tex, vec2(worldPos.x, worldPos.y));
+    vec4 worldCol = texture(tex, vec2(worldPos.x, worldPos.y));
     if(worldCol.a > 0){
         
-        vec4 flowCol = texture2D(tex, worldPos);
+        vec4 flowCol = texture(tex, worldPos);
         
         float range = 16.0;
         float numSamples = 1.0;
         for(float xx = -range/2; xx <= range/2; xx += 1.0){
             for(float yy = -range/2; yy <= range/2; yy += 1.0){
-                vec4 flowColScan = texture2D(tex, vec2(worldPos.x + xx/resolution.x, worldPos.y + yy/resolution.y));
+                vec4 flowColScan = texture(tex, vec2(worldPos.x + xx/resolution.x, worldPos.y + yy/resolution.y));
                 
                 // invalid
                 if(flowColScan.r == 0.0 && flowColScan.g == 0.0) continue;
@@ -304,10 +311,12 @@ void main( void ) {
         flowCol.r = flow.r + 0.5;
         flowCol.g = flow.g + 0.5;
         
-        gl_FragColor = flowCol;
+        //gl_FragColor = flowCol;
+        fragColor = flowCol;
         
     }else{
-        gl_FragColor = vec4(0.0);
+        //gl_FragColor = vec4(0.0);
+        fragColor = vec4(0.0);
     }
 
     //gl_FragColor = vec4(1, 0, 0, 1);
@@ -316,7 +325,7 @@ void main( void ) {
 )";
 
 const char* glsl_frag_fire = R"(
-#version 150
+#version 410
 
 // Fragment
 #ifdef GL_ES
@@ -327,7 +336,8 @@ float intensity=0.7;// light transmition coeficient <0,1>
 const int txrsiz=1200;     // max texture size [pixels]
 uniform sampler2D firemap;   // texture unit for light map
 uniform vec2 texSize;
-varying vec2 texCoord;
+out vec2 texCoord;
+out vec4 fragColor;
 
 vec3 rgb2hsv(vec3 c){
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -340,7 +350,7 @@ vec3 rgb2hsv(vec3 c){
 }
 
 void main(){
-    vec4 col = texture2D(firemap, vec2(texCoord.x, texCoord.y));
+    vec4 col = texture(firemap, vec2(texCoord.x, texCoord.y));
     
     vec4 sum = vec4(0.1);
     vec4 c = vec4(0);
@@ -352,25 +362,25 @@ void main(){
         num += 4.0;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x + 1.0/texSize.x, texCoord.y));
+    c = texture(firemap, vec2(texCoord.x + 1.0/texSize.x, texCoord.y));
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x - 1.0/texSize.x, texCoord.y));
+    c = texture(firemap, vec2(texCoord.x - 1.0/texSize.x, texCoord.y));
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x, texCoord.y + 1.0/texSize.y));
+    c = texture(firemap, vec2(texCoord.x, texCoord.y + 1.0/texSize.y));
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x, texCoord.y - 1.0/texSize.y));
+    c = texture(firemap, vec2(texCoord.x, texCoord.y - 1.0/texSize.y));
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
@@ -381,12 +391,13 @@ void main(){
     sum.b /= num;
     sum.a /= num + 0.5;
     
-    gl_FragColor = sum;
+    //gl_FragColor = sum;
+    fragColor = sum;
 }
 
 )";
 const char* glsl_frag_fire2 = R"(
-#version 150
+#version 410
 
 // Fragment
 #ifdef GL_ES
@@ -397,17 +408,18 @@ float intensity=1.0;// light transmition coeficient <0,1>
 const int txrsiz=1200;     // max texture size [pixels]
 uniform sampler2D firemap;   // texture unit for light map
 uniform vec2 texSize;
-varying vec2 texCoord;
+out vec2 texCoord;
+out vec4 fragColor;
 
 void main(){
-    vec4 col = texture2D(firemap, vec2(texCoord.x, texCoord.y));
+    vec4 col = texture(firemap, vec2(texCoord.x, texCoord.y));
     vec4 sum = vec4(0);
     
     float num = 0.1;
     
     for(int xx = -3; xx <= 3; xx++){
         for(int yy = -3; yy <= 3; yy++){
-            vec4 c = texture2D(firemap, vec2(texCoord.x + xx/texSize.x, texCoord.y + yy/texSize.y));
+            vec4 c = texture(firemap, vec2(texCoord.x + xx/texSize.x, texCoord.y + yy/texSize.y));
             float dist = (abs(float(xx)) + abs(float(yy))) / 2.0 + 1;
             dist = 1.0;
             
@@ -443,7 +455,8 @@ void main(){
     
     vec4 col1 = col * 0.25 + sum;
     
-    gl_FragColor = col1;
+    //gl_FragColor = col1;
+    fragColor = col1;
     
 }
 
@@ -453,7 +466,7 @@ void main(){
 const char* glsl_frag_newLighting = R"(
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#version 150
+#version 410
 
 // Fragment
 #ifdef GL_ES
@@ -475,21 +488,22 @@ uniform float maxY = 0.0;
 uniform sampler2D txrmap;   // texture unit for light map
 uniform sampler2D emitmap;
 uniform vec2 texSize;
-varying vec2 texCoord;
+out vec2 texCoord;
 uniform vec2 t0;
+out vec4 fragColor;
 
 float light(vec4 col){
     return 1.0 - col.a;
 }
 
 vec4 light2(vec2 coord){
-    vec4 col = texture2D(txrmap, coord);
+    vec4 col = texture(txrmap, coord);
     return vec4(1.0 - vec3(col.a), 1.0);
 }
 
 vec4 lightEmit(vec2 coord){
     if(!emission) return vec4(0.0);
-    vec4 emit = texture2D(emitmap, coord);
+    vec4 emit = texture(emitmap, coord);
     return emit * emit.a;
 }
 
@@ -515,15 +529,17 @@ void main(){
         
         float dark = clamp(1.0 - dst2 * 3.5 * inside, 0.0, 1.0);
         // gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0 - dark);
-        gl_FragColor = vec4(vec3(dark), 1.0);
+        //gl_FragColor = vec4(vec3(dark), 1.0);
+        fragColor = vec4(vec3(dark), 1.0);
     }else{
         float dst = distance(texCoord * texSize * vec2(0.75, 1.0), t0 * texSize * vec2(0.75, 1.0)) / 3000.0;
         float distBr = 1.0 - dst * 3.5 * inside;
         if(distBr <= -1.0){
-            gl_FragColor = vec4(0.5, 0.0, 0.0, 1.0);
+            //gl_FragColor = vec4(0.5, 0.0, 0.0, 1.0);
+            fragColor = vec4(0.5, 0.0, 0.0, 1.0);
         }else{
             distBr = clamp(distBr, 0.0, 1.0);
-            vec4 olcol = texture2D(txrmap, texCoord);
+            vec4 olcol = texture(txrmap, texCoord);
             float distNr = 1.0 - clamp(dst * 10.0, 0.0, 1.0);
             distNr *= 1.0;
             if(!simpleOnly && olcol.a > 0){
@@ -556,7 +572,8 @@ void main(){
                 
                 if(emission) brr += pow(ecol, vec4(0.6));
                 //gl_FragColor = mix(vec4(vec3(0.0), 1.0), olcol, brr); // mix orig color
-                gl_FragColor = brr; // b/w
+                //gl_FragColor = brr; // b/w
+                fragColor = brr; // b/w
                 //gl_FragColor = vec4(vec3(0.0), 1.0 - brr); // transparent black
             }else{
                 // no tile (background)
@@ -588,12 +605,14 @@ void main(){
                 }
             
                 //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0 - clamp(mix(distBr, 1.0, distNr), 0.0, 1.0));
-                gl_FragColor = col;
+                //gl_FragColor = col;
+                fragColor = col;
                 //gl_FragColor = vec4(vec3(0.0), 1.0 - clamp(mix(distBr, 1.0, distNr), 0.0, 1.0));
             }
         }
     }
-    gl_FragColor.a = 1.0;
+    //gl_FragColor.a = 1.0;
+    fragColor.a = 1.0;
 }
 )";
 
