@@ -5,8 +5,8 @@
 #include <iterator>
 #include <regex>
 
-#include "Game/DebugImpl.hpp"
 #include "DefaultGenerator.cpp"
+#include "Game/DebugImpl.hpp"
 #include "Game/GCManager.hpp"
 #include "Libs/libxlsxwriter/xlsxwriter/workbook.h"
 #include "MaterialTestGenerator.cpp"
@@ -19,22 +19,19 @@
 #include "Game/Core.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/ImGuiBase.h"
-#include "Game/Macros.hpp"
 #include "Game/Legacy/Shaders.hpp"
+#include "Game/Macros.hpp"
 
 #include "Game/FileSystem.hpp"
-#include "glad/glad.h"
 #include "Libs/libxlsxwriter/xlsxwriter.h"
 #include "Libs/structopt.hpp"
+#include "glad/glad.h"
 
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
 
 #include "Game/InEngine.h"
-
-#define CR_HOST CR_UNSAFE
-#include "Libs/cr.h"
 
 #ifdef _WIN32
 #include <SDL_syswm.h>
@@ -59,13 +56,7 @@ float newLightingShader_insideCur = 0.0f;
 FireShader *fireShader = nullptr;
 Fire2Shader *fire2Shader = nullptr;
 
-const char *plugin = CR_PLUGIN("libCppSource");
-
 extern void fuckme();
-
-namespace MetaEngine {
-    cr_plugin ctx;
-}
 
 struct Options
 {
@@ -500,9 +491,7 @@ print(b);
 
         RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
 
-
-        MetaEngine::ctx.userdata = &this->data;
-        cr_plugin_open(MetaEngine::ctx, plugin);
+        // TODO CppScript
 
         initThread.get();
 
@@ -1510,7 +1499,9 @@ int Game::run(int argc, char *argv[]) {
             m_ImGuiLayer->Render(this);
 
             m_LuaLayer->onImGuiRender();
-            cr_plugin_update(MetaEngine::ctx);
+            //cr_plugin_update(MetaEngine::ctx);
+
+            // TODO CppScript
 
 
             if (ImGui::BeginMainMenuBar()) {
@@ -1747,7 +1738,8 @@ exit:
     m_LuaLayer->onDetach();
 
     m_ImGuiLayer->onDetach();
-    cr_plugin_close(MetaEngine::ctx);
+    // TODO CppScript
+
 
     ClosePhysFS();
 
