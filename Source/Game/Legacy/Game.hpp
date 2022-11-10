@@ -9,7 +9,6 @@
 #include "Game/DebugImpl.hpp"
 #include "Drawing.hpp"
 #include "Engine/AudioEngine/AudioEngine.h"
-#include "Engine/Render/renderer_gpu.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"

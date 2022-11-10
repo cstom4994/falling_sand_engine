@@ -1,5 +1,4 @@
 
-#include <SDL.h>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -17,10 +16,6 @@
 struct HostData {
     ImGuiContext* imgui_context = nullptr;
     void* wndh = nullptr;
-
-    // glfw functions that imgui calls on guest side
-    SDL_Window* window = nullptr;
-
 
     std::map<std::string, MetaEngine::any_function> Functions;
 

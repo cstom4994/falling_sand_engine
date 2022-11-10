@@ -44,10 +44,6 @@ namespace MetaEngine {}
 #include <unordered_map>
 #include <vector>
 
-#include "SDL.h"
-
-#include "Engine/Render/renderer_gpu.h"
-
 #include "Libs/FastNoise/FastNoise.h"
 #include "Libs/polypartition.h"
 #include "Libs/sparsehash/dense_hash_map.h"

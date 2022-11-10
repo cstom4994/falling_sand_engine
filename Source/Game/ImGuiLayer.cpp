@@ -14,19 +14,18 @@
 #include "Game/Const.hpp"
 #include "Settings.hpp"
 #include "Game/Utils.hpp"
+#include "Game/FileSystem.hpp"
 
 #include "imgui.h"
 #include "uidsl/hello.h"
 
-#include "Game/Legacy/Game.hpp"
 #include "Game/InEngine.h"
-#include "Game/Legacy/Textures.hpp"
 
 #include <cstdio>
 #include <map>
 
-#include "Game/Legacy/DefaultGenerator.cpp"
-#include "Game/Legacy/MaterialTestGenerator.cpp"
+// #include "Game/Legacy/DefaultGenerator.cpp"
+// #include "Game/Legacy/MaterialTestGenerator.cpp"
 
 #include <imgui/IconsFontAwesome5.h>
 
@@ -92,13 +91,13 @@ void MetaEngine::GameUI_Draw(Game *game) {
     // for (MetaEngine::Module *l: *game->getModuleStack())
     //     l->onImGuiRender();
 
-    DebugDrawUI::Draw(game);
-    DebugCheatsUI::Draw(game);
-    MainMenuUI::Draw(game);
-    IngameUI::Draw(game);
+    // DebugDrawUI::Draw(game);
+    // DebugCheatsUI::Draw(game);
+    // MainMenuUI::Draw(game);
+    // IngameUI::Draw(game);
 }
 
-
+#if 0
 int IngameUI::state = 0;
 
 bool IngameUI::visible = false;
@@ -1448,6 +1447,7 @@ void CreateWorldUI::Reset(Game *game) {
     inputChanged(std::string(worldNameBuf), game);
 }
 
+#endif
 
 static std::string const testscript = R"(
 label 'A Little Test:'
@@ -1697,8 +1697,7 @@ namespace MetaEngine {
     // 	ImGui::End();
     // }
 
-    void ImGuiLayer::Init(SDL_Window *p_window, void *p_gl_context) {
-        window = p_window;
+    void ImGuiLayer::Init(void *p_gl_context) {
         gl_context = p_gl_context;
 
         IMGUI_CHECKVERSION();
@@ -1764,7 +1763,7 @@ namespace MetaEngine {
         }
 
 
-        ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+        //ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
         const char *glsl_version = "#version 400";
         ImGui_ImplOpenGL3_Init(glsl_version);
@@ -1858,14 +1857,14 @@ namespace MetaEngine {
 
     void ImGuiLayer::onDetach() {
         ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
+        //ImGui_ImplSDL2_Shutdown();
         ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
 
     void ImGuiLayer::begin() {
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame(window);
+        //ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
     }
 
@@ -1874,19 +1873,19 @@ namespace MetaEngine {
         (void) io;
 
         ImGui::Render();
-        SDL_GL_MakeCurrent(window, gl_context);
+        //SDL_GL_MakeCurrent(window, gl_context);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
         //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
-            SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-        }
+        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        //     SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
+        //     SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+        //     ImGui::UpdatePlatformWindows();
+        //     ImGui::RenderPlatformWindowsDefault();
+        //     SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+        // }
     }
 
     auto myCollapsingHeader = [](const char *name) -> bool {
@@ -2529,7 +2528,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                 //game->data.Functions["func_drawInTweak"].invoke({});
 
-                game->data->draw();
+                //game->data->draw();
 
                 ImGui::EndTabItem();
             }
@@ -2556,7 +2555,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             }
             if (ImGui::BeginTabItem(U8("调整"))) {
                 if (myCollapsingHeader(U8("遥测"))) {
-                    DebugUI::Draw(game);
+                    //DebugUI::Draw(game);
                 }
                 // Call the function in our RCC++ class
                 //if (myCollapsingHeader("RCCpp"))

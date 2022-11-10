@@ -20,6 +20,7 @@ void TextFuck(std::string text, uint8_t x, uint8_t y) {
     ImGui::End();
 }
 
+#if 0
 bool Drawing::InitFont(SDL_GLContext *SDLContext) {
     static SDL_GLContext *m_SDLContext;
     m_SDLContext = SDLContext;
@@ -175,3 +176,4 @@ uint32 Drawing::darkenColor(uint32 color, float brightness) {
 
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
+#endif

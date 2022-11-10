@@ -86,7 +86,7 @@ namespace MetaEngine {
     }
 }// namespace MetaEngine
 
-
+#if 0
 b2DebugDraw_impl::b2DebugDraw_impl(METAENGINE_Render_Target *target) {
     this->target = target;
 }
@@ -183,3 +183,4 @@ void b2DebugDraw_impl::DrawAABB(b2AABB *aabb, const b2Color &color) {
     METAENGINE_Render_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, convertColor(color));
     METAENGINE_Render_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, convertColor(color));
 }
+#endif

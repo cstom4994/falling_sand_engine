@@ -594,9 +594,10 @@ public:
 //}
 //#endif
 
-
+#if METADOT_USINGSDL
 #include <SDL.h>
 #include <SDL_syswm.h>
+#endif
 
 #if defined(__cplusplus)
 

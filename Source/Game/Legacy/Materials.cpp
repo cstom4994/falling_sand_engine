@@ -5,7 +5,7 @@
 #include "Game/Macros.hpp"
 #include "Textures.hpp"
 
-Material::Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor, Uint32 color) {
+Material::Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor, UInt32 color) {
     this->name = name;
     this->id = id;
     this->physicsType = physicsType;
@@ -125,7 +125,7 @@ void Materials::init() {
         snprintf(buff, sizeof(buff), "Mat_%d", i);
         std::string buffAsStdStr = buff;
 
-        Uint32 rgb = rand() % 255;
+        UInt32 rgb = rand() % 255;
         rgb = (rgb << 8) + rand() % 255;
         rgb = (rgb << 8) + rand() % 255;
 
@@ -219,7 +219,7 @@ void Materials::init() {
 
 int MaterialInstance::_curID = 1;
 
-MaterialInstance::MaterialInstance(Material *mat, Uint32 color, int32_t temperature) {
+MaterialInstance::MaterialInstance(Material *mat, UInt32 color, int32_t temperature) {
     this->id = _curID++;
     this->mat = mat;
     this->color = color;
@@ -239,7 +239,7 @@ const MaterialInstance Tiles::TEST_GAS = MaterialInstance(&Materials::GENERIC_GA
 const MaterialInstance Tiles::OBJECT = MaterialInstance(&Materials::GENERIC_OBJECT, 0x00ff00);
 
 MaterialInstance Tiles::createTestSand() {
-    Uint32 rgb = 220;
+    UInt32 rgb = 220;
     rgb = (rgb << 8) + 155 + rand() % 30;
     rgb = (rgb << 8) + 100;
     return MaterialInstance(&Materials::TEST_SAND, rgb);
@@ -251,12 +251,12 @@ MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
     return MaterialInstance(&Materials::TEST_TEXTURED_SAND, rgb);
 }
 
 MaterialInstance Tiles::createTestLiquid() {
-    Uint32 rgb = 0;
+    UInt32 rgb = 0;
     rgb = (rgb << 8) + 0;
     rgb = (rgb << 8) + 255;
     return MaterialInstance(&Materials::TEST_LIQUID, rgb);
@@ -268,23 +268,23 @@ MaterialInstance Tiles::createStone(int x, int y) {
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    Uint8 *pixel = (Uint8 *) tex->pixels;
+    UInt8 *pixel = (UInt8 *) tex->pixels;
 
-    pixel += ((ty) *tex->pitch) + ((tx) * sizeof(Uint32));
-    Uint32 rgb = *((Uint32 *) pixel);
+    pixel += ((ty) *tex->pitch) + ((tx) * sizeof(UInt32));
+    UInt32 rgb = *((UInt32 *) pixel);
 
     return MaterialInstance(&Materials::STONE, rgb);
 }
 
 MaterialInstance Tiles::createGrass() {
-    Uint32 rgb = 40;
+    UInt32 rgb = 40;
     rgb = (rgb << 8) + 120 + rand() % 20;
     rgb = (rgb << 8) + 20;
     return MaterialInstance(&Materials::GRASS, rgb);
 }
 
 MaterialInstance Tiles::createDirt() {
-    Uint32 rgb = 60 + rand() % 10;
+    UInt32 rgb = 60 + rand() % 10;
     rgb = (rgb << 8) + 40;
     rgb = (rgb << 8) + 20;
     return MaterialInstance(&Materials::DIRT, rgb);
@@ -296,7 +296,7 @@ MaterialInstance Tiles::createSmoothStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::SMOOTH_STONE, rgb);
 }
@@ -307,7 +307,7 @@ MaterialInstance Tiles::createCobbleStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::COBBLE_STONE, rgb);
 }
@@ -318,7 +318,7 @@ MaterialInstance Tiles::createSmoothDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::SMOOTH_DIRT, rgb);
 }
@@ -329,7 +329,7 @@ MaterialInstance Tiles::createCobbleDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::COBBLE_DIRT, rgb);
 }
@@ -340,19 +340,19 @@ MaterialInstance Tiles::createSoftDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::SOFT_DIRT, rgb);
 }
 
 MaterialInstance Tiles::createWater() {
-    Uint32 rgb = 0x00B69F;
+    UInt32 rgb = 0x00B69F;
 
     return MaterialInstance(&Materials::WATER, rgb, -1023);
 }
 
 MaterialInstance Tiles::createLava() {
-    Uint32 rgb = 0xFF7C00;
+    UInt32 rgb = 0xFF7C00;
 
     return MaterialInstance(&Materials::LAVA, rgb, 1024);
 }
@@ -363,7 +363,7 @@ MaterialInstance Tiles::createCloud(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::CLOUD, rgb);
 }
@@ -374,7 +374,7 @@ MaterialInstance Tiles::createGold(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::GOLD_ORE, rgb);
 }
@@ -385,7 +385,7 @@ MaterialInstance Tiles::createIron(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::IRON_ORE, rgb);
 }
@@ -396,7 +396,7 @@ MaterialInstance Tiles::createObsidian(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::OBSIDIAN, rgb);
 }
@@ -407,7 +407,7 @@ MaterialInstance Tiles::createSteam() {
 
 MaterialInstance Tiles::createFire() {
 
-    Uint32 rgb = 255;
+    UInt32 rgb = 255;
     rgb = (rgb << 8) + 100 + rand() % 50;
     rgb = (rgb << 8) + 50;
 
@@ -451,7 +451,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::GOLD_MOLTEN, rgb);
     } else if (mat->id == Materials::GOLD_SOLID.id) {
@@ -460,7 +460,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::GOLD_SOLID, rgb);
     } else if (mat->id == Materials::IRON_ORE.id) {
@@ -477,7 +477,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::FLAT_COBBLE_STONE, rgb);
     } else if (mat->id == Materials::FLAT_COBBLE_DIRT.id) {
@@ -486,7 +486,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        Uint32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::FLAT_COBBLE_DIRT, rgb);
     }

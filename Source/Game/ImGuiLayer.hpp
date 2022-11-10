@@ -34,7 +34,9 @@ namespace MetaEngine {
 
         std::vector<ImGuiWin> m_wins;
 
+#if defined(METADOT_USINGSDL)
         SDL_Window *window;
+#endif
         void *gl_context;
 
         void renderViewWindows();
@@ -47,7 +49,7 @@ namespace MetaEngine {
     public:
         ImGuiLayer();
         ~ImGuiLayer() = default;
-        void Init(SDL_Window *window, void *gl_context);
+        void Init(void *gl_context);
         void onDetach();
         void begin();
         void end();
@@ -68,6 +70,7 @@ namespace MetaEngine {
     void GameUI_Draw(Game *game);
 }
 
+#if 0
 class DebugUI {
 public:
     static void Draw(Game *game);
@@ -184,3 +187,4 @@ public:
     static void DrawAudio(Game *game);
     static void DrawInput(Game *game);
 };
+#endif
