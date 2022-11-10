@@ -126,6 +126,10 @@ elseif (is_os("macosx")) then
     set_toolchains("clang")
 
     add_cxflags("-fPIC")
+
+    add_mxflags("-fno-objc-arc", {force = true})
+    add_frameworks("CoreFoundation", "Cocoa", "IOKit", {public = true})
+
     link_list = {}
 end
 
