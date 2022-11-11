@@ -128,7 +128,7 @@ elseif (is_os("macosx")) then
     add_cxflags("-fPIC")
 
     add_mxflags("-fno-objc-arc", {force = true})
-    add_frameworks("CoreFoundation", "Cocoa", "IOKit", {public = true})
+    add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
     link_list = {}
 end
@@ -155,9 +155,7 @@ defines_list = {
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
     "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
-    "SDL_METAENGINE_Render_DISABLE_GLES",
-    "SDL_METAENGINE_Render_DISABLE_GLES_2",
-    "SDL_METAENGINE_Render_DISABLE_OPENGL_4"
+    "SOKOL_METAL"
 }
 
 target("vendor")
@@ -205,6 +203,7 @@ target("Libs")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
     add_files("Source/Libs/libxlsxwriter/**.c", {unity_group = "libxlsxwriter"})
+    add_files("Source/Libs/sokol/**.m", {unity_group = "sokol"})
     add_files("Source/Libs/physfs/**.c", "Source/Libs/physfs/**.m")
 	add_headerfiles("Source/Libs/**.h")
 	add_headerfiles("Source/Libs/**.hpp")
