@@ -2,6 +2,7 @@
 set_project("MetaDot.Runtime")
 
 add_requires("zlib", {configs = {shared = false}, verify = true})
+add_requires("glfw", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
 
@@ -140,6 +141,7 @@ include_dir_list = {
     "Source/Generated",
     "Source/Engine",
     "Source/Libs/lua/lua",
+    "Source/Libs/raylib/external/glfw/include",
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
@@ -155,7 +157,8 @@ defines_list = {
     "IMGUI_IMPL_OPENGL_LOADER_GLAD",
     "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
     "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
-    "SOKOL_METAL"
+    "SOKOL_METAL",
+    "PLATFORM_DESKTOP"
 }
 
 target("vendor")
@@ -195,6 +198,7 @@ target("luaexe")
 
 target("Libs")
     set_kind("static")
+    add_packages("glfw")
     add_rules("c.unity_build", {batchsize = 0})
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
@@ -203,6 +207,7 @@ target("Libs")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
     add_files("Source/Libs/libxlsxwriter/**.c", {unity_group = "libxlsxwriter"})
+    add_files("Source/Libs/raylib/**.c")
     if (is_os("macosx")) then
         add_files("Source/Libs/sokol/**.m")
     else
