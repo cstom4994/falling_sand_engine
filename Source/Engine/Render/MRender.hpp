@@ -2,6 +2,16 @@
 
 #include "Game/Core.hpp"
 
+// Includes Sokol GFX, Sokol GP and Sokol APP, doing all implementations.
+#include "Libs/sokol/sokol_app.h"
+#include "Libs/sokol/sokol_gfx.h"
+#include "Libs/sokol/sokol_glue.h"
+#include "Libs/sokol/sokol_gp.h"
+//#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#define SOKOL_IMGUI_IMPL
+#include "Libs/ImGui/cimgui.h"
+#include "Libs/sokol/sokol_imgui.h"
+
 namespace MetaEngine {
     typedef class Color {
     public:

@@ -203,7 +203,11 @@ target("Libs")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
     add_files("Source/Libs/libxlsxwriter/**.c", {unity_group = "libxlsxwriter"})
-    add_files("Source/Libs/sokol/**.m", {unity_group = "sokol"})
+    if (is_os("macosx")) then
+        add_files("Source/Libs/sokol/**.m")
+    else
+        add_files("Source/Libs/sokol/**.c")
+    end
     add_files("Source/Libs/physfs/**.c", "Source/Libs/physfs/**.m")
 	add_headerfiles("Source/Libs/**.h")
 	add_headerfiles("Source/Libs/**.hpp")

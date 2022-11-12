@@ -5,16 +5,7 @@
 Game::Game() {}
 Game::~Game() {}
 
-// Includes Sokol GFX, Sokol GP and Sokol APP, doing all implementations.
-// #define SOKOL_IMPL
-#include "Libs/sokol/sokol_app.h"
-#include "Libs/sokol/sokol_gfx.h"
-#include "Libs/sokol/sokol_glue.h"
-#include "Libs/sokol/sokol_gp.h"
-//#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#define SOKOL_IMGUI_IMPL
-#include "Libs/ImGui/cimgui.h"
-#include "Libs/sokol/sokol_imgui.h"
+#include "Engine/Render/MRender.hpp"
 
 #include <cmath>
 #include <cstdlib>

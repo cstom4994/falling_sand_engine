@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ImGuiBase.h"
+#include "ImGuiBase.hpp"
 
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Scripting/LuaBinder.hpp"
@@ -26,13 +26,6 @@ namespace MetaEngine {
 
     class ImGuiLayer {
     private:
-        struct ImGuiWin
-        {
-            std::string name;
-            bool *opened;
-        };
-
-        std::vector<ImGuiWin> m_wins;
 
 #if defined(METADOT_USINGSDL)
         SDL_Window *window;
@@ -55,7 +48,6 @@ namespace MetaEngine {
         void end();
         void Render(Game *game);
         void onUpdate();
-        void registerWindow(std::string_view windowName, bool *opened);
         ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
         ImGuiContext *getImGuiCtx() {

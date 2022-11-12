@@ -2,7 +2,7 @@
 
 #include "ImGuiLayer.hpp"
 
-#include "Game/ImGuiBase.h"
+#include "Game/ImGuiBase.hpp"
 #include "Libs/ImGui/implot.h"
 
 #include "glad/glad.h"
@@ -2602,49 +2602,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     void ImGuiLayer::onUpdate() {
     }
 
-    void ImGuiLayer::registerWindow(std::string_view windowName, bool *opened) {
-        for (auto &m_win: m_wins)
-            if (m_win.name == windowName)
-                return;
-        m_wins.push_back({std::string(windowName), opened});
-    }
-
     static std::string bloatString(const std::string &s, int size) {
         std::string out = s;
         out.reserve(size);
         while (out.size() < size)
             out += " ";
         return out;
-    }
-
-    static std::string newName;
-
-    //opens popup on previous item and sets newName possibly
-    //return true if renamed
-    static bool renameName(const char *name) {
-        bool rename = false;
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(1)) {
-            ImGui::OpenPopup("my_select_popupo");
-        }
-
-        if (ImGui::BeginPopup("my_select_popupo", ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration)) {
-            char c[128]{};
-            memcpy(c, name, strlen(name));
-            //ImGui::IsAnyWindowFocused()
-            //if (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
-            //todo imdoc
-            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
-                ImGui::SetKeyboardFocusHere();
-            if (ImGui::InputText("##heheheehj", c, 127, ImGuiInputTextFlags_EnterReturnsTrue)) {
-                //ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
-                newName = std::string(c);
-                ImGui::CloseCurrentPopup();
-                rename = true;
-            }
-            //else
-            ImGui::SetItemDefaultFocus();
-            ImGui::EndPopup();
-        }
-        return rename;
     }
 }// namespace MetaEngine

@@ -8,7 +8,7 @@
 #include "Libs/lua/sol/sol.hpp"
 
 #include "Game/FileSystem.hpp"
-#include "Game/ImGuiBase.h"
+#include "Game/ImGuiBase.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Utils.hpp"
 #include "LuaBinder.hpp"
