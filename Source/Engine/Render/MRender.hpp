@@ -2,6 +2,10 @@
 
 #include "Game/Core.hpp"
 
+#include "Libs/raylib/raylib.h"
+#include "imgui.h"
+
+
 namespace MetaEngine {
     typedef class Color {
     public:
@@ -18,5 +22,11 @@ namespace MetaEngine {
 
         // SDL_Color toSDLColor() { return SDL_Color{.r = r, .g = g, .b = b, .a = a}; }
     } Color;
+
+    namespace ImGuiColors {
+        inline ImVec4 Convert(::Color color) {
+            return ImVec4(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+        }
+    }
 
 }// namespace MetaEngine

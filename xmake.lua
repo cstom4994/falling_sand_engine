@@ -216,6 +216,7 @@ target("Libs")
 
 target("Engine")
     set_kind("static")
+    add_packages("glfw")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Engine/**.c")
