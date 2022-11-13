@@ -131,6 +131,12 @@ elseif (is_os("macosx")) then
     add_mxflags("-fno-objc-arc", {force = true})
     add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
+    if (is_arch("arm.*")) then
+        add_defines("__METADOT_ARCH_ARM")
+    elseif (is_arch("x86_64", "i386")) then
+        add_defines("__METADOT_ARCH_X86")
+    end
+
     link_list = {}
 end
 

@@ -95,10 +95,23 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_DEBUGBREAK __debugbreak()
 
 // Platforms Macros
-#if defined (_WIN32) || defined (_WINDOWS)
+#if defined(_WIN32) || defined(_WINDOWS)
 #define METADOT_PLATFORM_WINDOWS
-#elif defined (__linux)
+#elif defined(__linux)
 #define METADOT_PLATFORM_LINUX
-#elif defined (__APPLE__)
+#elif defined(__APPLE__)
 #define METADOT_PLATFORM_APPLE
+#if defined(__METADOT_ARCH_ARM)
+#define METADOT_PLATFORM_APPLE_ARM
+#elif defined(__METADOT_ARCH_x86)
+#define METADOT_PLATFORM_APPLE_64
+#endif
+#endif
+
+#if defined(_MSC_VER)
+#define METADOT_COMPILER_MSVC
+#elif defined(__clang__)
+#define METADOT_COMPILER_CLANG
+#elif defined(__GNUC__)
+#define METADOT_COMPILER_GCC
 #endif

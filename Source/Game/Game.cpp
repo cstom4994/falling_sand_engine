@@ -498,8 +498,8 @@ print(b);
     loguru::init(argc, argv);
     METADOT_INFO("Starting game...");
 
-    int screenWidth = 1900;
-    int screenHeight = 900;
+    int screenWidth = 1080;
+    int screenHeight = 720;
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Test");
