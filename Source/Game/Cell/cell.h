@@ -19,7 +19,7 @@ public:
     {
     };
 
-    static const int SIZE = 5;
+    static const int SIZE = 4;
 
     static int RoundToNearestSize(int pos)
     {

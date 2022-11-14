@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "cell.h"
+#include "stone.h"
 
 Cell CreateLava()
 {
