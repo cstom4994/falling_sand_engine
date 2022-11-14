@@ -2,19 +2,16 @@
 
 #include "ImGuiLayer.hpp"
 
-#include "Game/ImGuiBase.hpp"
-#include "Libs/ImGui/implot.h"
-
-#include "glad/glad.h"
-
 #include "Engine/IMGUI/ImGuiDSL.hpp"
-#include "Game/Core.hpp"
-#include "Game/GCManager.hpp"
-#include "Game/Macros.hpp"
 #include "Game/Const.hpp"
-#include "Settings.hpp"
-#include "Game/Utils.hpp"
+#include "Game/Core.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/GCManager.hpp"
+#include "Game/ImGuiBase.hpp"
+#include "Game/Macros.hpp"
+#include "Game/Utils.hpp"
+#include "Libs/ImGui/implot.h"
+#include "Settings.hpp"
 
 #include "imgui.h"
 #include "uidsl/hello.h"
@@ -1639,6 +1636,8 @@ namespace MetaEngine {
     ImGuiLayer::ImGuiLayer() {
     }
 
+#if 0
+
     class OpenGL3TextureManager {
     public:
         ~OpenGL3TextureManager() {
@@ -1678,6 +1677,8 @@ namespace MetaEngine {
 
         Textures mTextures;
     };
+
+#endif
 
     static bool firstRun = false;
 
@@ -1766,7 +1767,7 @@ namespace MetaEngine {
         //ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
         const char *glsl_version = "#version 400";
-        ImGui_ImplOpenGL3_Init(glsl_version);
+        //ImGui_ImplOpenGL3_Init(glsl_version);
 
 
         style.ScaleAllSizes(scale);
@@ -1856,14 +1857,14 @@ namespace MetaEngine {
     }
 
     void ImGuiLayer::onDetach() {
-        ImGui_ImplOpenGL3_Shutdown();
+        //ImGui_ImplOpenGL3_Shutdown();
         //ImGui_ImplSDL2_Shutdown();
         ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
 
     void ImGuiLayer::begin() {
-        ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplOpenGL3_NewFrame();
         //ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
     }
@@ -1874,7 +1875,7 @@ namespace MetaEngine {
 
         ImGui::Render();
         //SDL_GL_MakeCurrent(window, gl_context);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
