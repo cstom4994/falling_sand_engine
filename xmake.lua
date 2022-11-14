@@ -35,8 +35,8 @@ rule("metadot.uidsl")
         local implpath=path.join(outdir, name:lower()..'_imgui_inspector.cpp')
         local outfile=os.projectdir()..'/'..path(srcfile)
 
-        local args = {'-e', 'package.path="'..path.join(os.projectdir(), "Source/Engine/IMGUI"):gsub('\\','/')..'/?.lua"',
-                        path.join(path.join(os.projectdir(), "Source/Engine/IMGUI"), 'uidslparser.lua'),
+        local args = {'-e', 'package.path="'..path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"):gsub('\\','/')..'/?.lua"',
+                        path.join(path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"), 'uidslparser.lua'),
                         '-H', path(headerpath), '-I', path(implpath), '--cpp', outfile}
         batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
 
@@ -160,10 +160,7 @@ include_dir_list = {
 
 defines_list = {
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
-    "IMGUI_IMPL_OPENGL_LOADER_GLAD",
-    "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
     "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
-    "SOKOL_METAL",
     "PLATFORM_DESKTOP"
 }
 
@@ -230,7 +227,7 @@ target("Engine")
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")
     add_headerfiles("Source/Engine/**.inl")
-    add_files('Source/Engine/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
+    add_files('Source/Engine/UserInterface/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
     set_symbols("debug")
 
 target("MetaDot")

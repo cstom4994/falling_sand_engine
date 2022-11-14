@@ -2,7 +2,7 @@
 
 #include "ImGuiLayer.hpp"
 
-#include "Engine/IMGUI/ImGuiDSL.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiDSL.hpp"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
 #include "Game/FileSystem.hpp"
