@@ -5,6 +5,7 @@ build/
 .xmake/
 *.gen.*
 makefile
+CMakeLists.txt
 
 Resources/
 Source/Generated

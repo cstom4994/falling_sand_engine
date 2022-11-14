@@ -1,7 +1,6 @@
 
 set_project("MetaDot.Runtime")
 
-add_requires("zlib", {configs = {shared = false}, verify = true})
 add_requires("glfw", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
@@ -151,11 +150,8 @@ include_dir_list = {
     "Source/Vendor",
     "Source/Vendor/imgui",
     "Source/Vendor/stb",
-    "Source/Vendor/enet",
-    "Source/Vendor/box2d/include",
     "Source/Vendor/json/include",
-    "Source/Vendor/fmt/include",
-    "Source/Vendor/glad/include"
+    "Source/Vendor/fmt/include"
     }
 
 defines_list = {
@@ -170,7 +166,6 @@ target("vendor")
         add_rules("c.unity_build")
         add_rules("c++.unity_build")    
     end
-    add_packages("zlib")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Vendor/**.c")
@@ -206,10 +201,8 @@ target("Libs")
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_packages("zlib")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
-    add_files("Source/Libs/libxlsxwriter/**.c", {unity_group = "libxlsxwriter"})
     add_files("Source/Libs/raylib/**.c")
     add_files("Source/Libs/physfs/**.c", "Source/Libs/physfs/**.m")
 	add_headerfiles("Source/Libs/**.h")

@@ -17,18 +17,23 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 #include <assert.h>
 #include <vector>
-#include <box2d/b2_math.h>
 
 /* std::vector<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
+
+struct Vec2
+{
+	int x;
+	int y;
+};
 
 /* Polyline Simplification Algorithm */
 class DouglasPeucker {
 public:
-	static void simplify_section(const std::vector<b2Vec2>& pts,
+	static void simplify_section(const std::vector<Vec2>& pts,
 		float tolerance,
 		size_t i, size_t j,
 		std::vector<bool>* mark_map,
 		size_t omitted = 0);
-	static std::vector<b2Vec2> simplify(const std::vector<b2Vec2>& vertices, float tolerance);
+	static std::vector<Vec2> simplify(const std::vector<Vec2>& vertices, float tolerance);
 	static float pDistance(float x, float y, float x1, float y1, float x2, float y2);
 };

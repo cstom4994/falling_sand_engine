@@ -11,8 +11,6 @@
 
 #include "Game/Macros.hpp"
 
-#include <box2d/box2d.h>
-
 namespace MetaEngine {
     int meko_buildnum(void);
     const char *meko_buildos(void);

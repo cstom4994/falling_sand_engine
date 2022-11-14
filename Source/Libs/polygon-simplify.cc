@@ -16,12 +16,13 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 */
 
 #include "polygon-simplify.hh"
+#include <cmath>
 
 /* std::vector<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
 
 /* Polyline Simplification Algorithm */
 
-void DouglasPeucker::simplify_section(const std::vector<b2Vec2>& pts,
+void DouglasPeucker::simplify_section(const std::vector<Vec2>& pts,
 	float tolerance,
 	size_t i, size_t j,
 	std::vector<bool>* mark_map,
@@ -61,13 +62,13 @@ void DouglasPeucker::simplify_section(const std::vector<b2Vec2>& pts,
 }
 
 
-std::vector<b2Vec2> DouglasPeucker::simplify(const std::vector<b2Vec2>& vertices, float tolerance)
+std::vector<Vec2> DouglasPeucker::simplify(const std::vector<Vec2>& vertices, float tolerance)
 {
 	std::vector<bool> mark_map(vertices.size(), true);
 
 	simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
 
-	std::vector<b2Vec2> result;
+	std::vector<Vec2> result;
 	for (size_t i = 0; i != vertices.size(); ++i) {
 		if (mark_map[i]) {
 			result.push_back(vertices[i]);
@@ -107,5 +108,5 @@ float DouglasPeucker::pDistance(float x, float y, float x1, float y1, float x2, 
 
 	float dx = x - xx;
 	float dy = y - yy;
-	return sqrt(dx * dx + dy * dy);
+	return std::sqrt(dx * dx + dy * dy);
 }
