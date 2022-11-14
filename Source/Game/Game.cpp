@@ -14,12 +14,13 @@ Game::~Game() {}
 #define RAYGUI_IMPLEMENTATION
 #include "Libs/raylib/raygui.h"
 
-#include "Engine/IMGUI/ImGuiImpl.h"
+#include "Engine/UserInterface/NuklearImpl.h"
+#include "Engine/UserInterface/IMGUI/ImGuiImpl.h"
 #include "imgui.h"
 
-#include <string>
 #include <cmath>
 #include <cstdlib>
+#include <string>
 
 const char *logo = R"(
       __  __      _        _____        _   
@@ -154,102 +155,95 @@ void integrationExample() {
 }
 
 
-
-
 #include "Game/Cell/types.h"
 
 #include "Game/Cell/cell.h"
-#include "Game/Cell/stone.h"
 #include "Game/Cell/lava.h"
-#include "Game/Cell/sand.h"
-#include "Game/Cell/static.h"
-#include "Game/Cell/spray.h"
 #include "Game/Cell/moose.h"
+#include "Game/Cell/sand.h"
+#include "Game/Cell/spray.h"
+#include "Game/Cell/static.h"
+#include "Game/Cell/stone.h"
 #include "Game/Cell/water.h"
 
 const int screenWidth = mapSize * Cell::SIZE;
 const int screenHeight = screenWidth + 60;
 
 const std::vector<std::string> adjectives = {
-    "untidy",
-    "damaging",
-    "disgusting",
-    "nonstop",
-    "panoramic",
-    "fretful",
-    "left",
-    "ablaze",
-    "educated",
-    "animated",
-    "jittery",
-    "serious",
-    "elite",
-    "actually",
-    "soft",
-    "neat",
-    "tested",
-    "aboriginal",
-    "splendid",
-    "little"
-};
+        "untidy",
+        "damaging",
+        "disgusting",
+        "nonstop",
+        "panoramic",
+        "fretful",
+        "left",
+        "ablaze",
+        "educated",
+        "animated",
+        "jittery",
+        "serious",
+        "elite",
+        "actually",
+        "soft",
+        "neat",
+        "tested",
+        "aboriginal",
+        "splendid",
+        "little"};
 
-typedef struct OperationPair {
-    Cell(*Create)();
-    void (*Process)(CellularData&, CellMap&);
+typedef struct OperationPair
+{
+    Cell (*Create)();
+    void (*Process)(CellularData &, CellMap &);
 } OperationPair;
 
 struct OperationPair Operations[] = {
-    OperationPair {CreateAir, ProcessAir}, // Air
-    OperationPair {CreateSand, ProcessSand}, // Sand
-    OperationPair {CreateStatic, ProcessStatic}, // Static
-    OperationPair {CreateSpray, ProcessSpray}, // Spray
-    OperationPair {CreateMoose, ProcessMoose}, // Moose
-    OperationPair {CreateWater, ProcessWater}, // Water
-    OperationPair {CreateLava, ProcessLava},
-    OperationPair {CreateStone, ProcessStone}
-};
+        OperationPair{CreateAir, ProcessAir},      // Air
+        OperationPair{CreateSand, ProcessSand},    // Sand
+        OperationPair{CreateStatic, ProcessStatic},// Static
+        OperationPair{CreateSpray, ProcessSpray},  // Spray
+        OperationPair{CreateMoose, ProcessMoose},  // Moose
+        OperationPair{CreateWater, ProcessWater},  // Water
+        OperationPair{CreateLava, ProcessLava},
+        OperationPair{CreateStone, ProcessStone}};
 
-Cell MakeCell(CellType type)
-{
-    if (type >= CellType::END_TYPE) return Operations[(int)CellType::Air].Create();
-    return Operations[(int)type].Create();
+Cell MakeCell(CellType type) {
+    if (type >= CellType::END_TYPE) return Operations[(int) CellType::Air].Create();
+    return Operations[(int) type].Create();
 }
 
-CellType QuerySelectedType(int key)
-{
+CellType QuerySelectedType(int key) {
     switch (key) {
-    case 0:
-        break;
-    case KEY_ZERO:
-        return CellType::Air;
-    case KEY_ONE:
-        return CellType::Sand;
-    case KEY_TWO:
-        return CellType::Static;
-    case KEY_THREE:
-        return CellType::Spray;
-    case KEY_FOUR:
-        return CellType::Moose;
-    case KEY_FIVE:
-        return CellType::Water;
+        case 0:
+            break;
+        case KEY_ZERO:
+            return CellType::Air;
+        case KEY_ONE:
+            return CellType::Sand;
+        case KEY_TWO:
+            return CellType::Static;
+        case KEY_THREE:
+            return CellType::Spray;
+        case KEY_FOUR:
+            return CellType::Moose;
+        case KEY_FIVE:
+            return CellType::Water;
     }
     return CellType::Air;
 }
 
-void ProcessCell(const Cell& cell, CellularData& data, CellMap& map)
-{
+void ProcessCell(const Cell &cell, CellularData &data, CellMap &map) {
     CellType type = cell._id;
-    if (type >= CellType::END_TYPE) return Operations[(int)CellType::Air].Process(data, map);
-    Operations[(int)type].Process(data, map);
+    if (type >= CellType::END_TYPE) return Operations[(int) CellType::Air].Process(data, map);
+    Operations[(int) type].Process(data, map);
 }
 
-void ProcessMap(CellMap& map, unsigned worldClock)
-{
+void ProcessMap(CellMap &map, unsigned worldClock) {
     int mapSize = map.size();
     for (int i = 0; i < mapSize; i++) {
         for (int j = 0; j < mapSize; j++) {
-            const Cell& cell = map[i][j];
-            CellularData data = { i, j, worldClock };
+            const Cell &cell = map[i][j];
+            CellularData data = {i, j, worldClock};
             // this is stupid
             if (cell.clock < worldClock)
                 ProcessCell(cell, data, map);
@@ -257,22 +251,18 @@ void ProcessMap(CellMap& map, unsigned worldClock)
     }
 };
 
-void DrawUI(CellType& selectedType)
-{
+void DrawUI(CellType &selectedType) {
     int height = 40;
     int width = 90;
-    for (int i = (int)CellType::Air; i < (int)CellType::END_TYPE; i++) {
+    for (int i = (int) CellType::Air; i < (int) CellType::END_TYPE; i++) {
         CellType type = static_cast<CellType>(i);
-        Rectangle pos{ (float)height / 2 + (width)*i, screenHeight - 50, (float)width, (float)height };
+        Rectangle pos{(float) height / 2 + (width) *i, screenHeight - 50, (float) width, (float) height};
         bool clicked = GuiButton(pos, (std::string("Particle\n") + std::string(Cellnames[i])).c_str());
         if (clicked) {
-            selectedType = type; // It just works
+            selectedType = type;// It just works
         }
     }
 }
-
-
-
 
 
 bool Quit = false;
@@ -629,8 +619,8 @@ print(b);
     CellMap workMap;
     workMap.resize(mapSize, std::vector<Cell>(mapSize, Cell()));
 
-    // int screenWidth = 1080;
-    // int screenHeight = 720;
+    int screenWidth = 1080;
+    int screenHeight = 720;
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Test");
@@ -644,6 +634,9 @@ print(b);
     SceneView.Setup();
     SceneView.Open = true;
 
+    struct nk_colorf bg = ColorToNuklearF(SKYBLUE);
+    struct nk_context *ctx = InitNuklear(10);
+
     // Main game loop
     while (!WindowShouldClose() && !Quit) {
         ImageViewer.Update();
@@ -652,8 +645,51 @@ print(b);
         worldClock += 1;
         ProcessMap(workMap, worldClock);
 
+        // Update
+        UpdateNuklear(ctx);
+
+        // GUI
+        if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 250),
+                     NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+                             NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
+            enum {
+                EASY,
+                HARD
+            };
+            static int op = EASY;
+            static int property = 20;
+            nk_layout_row_static(ctx, 30, 80, 1);
+            if (nk_button_label(ctx, "button"))
+                TraceLog(LOG_INFO, "button pressed");
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+            if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
+
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
+
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "background:", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            if (nk_combo_begin_color(ctx, nk_rgb_cf(bg), nk_vec2(nk_widget_width(ctx), 400))) {
+                nk_layout_row_dynamic(ctx, 120, 1);
+                bg = nk_color_picker(ctx, bg, NK_RGBA);
+                nk_layout_row_dynamic(ctx, 25, 1);
+                bg.r = nk_propertyf(ctx, "#R:", 0, bg.r, 1.0f, 0.01f, 0.005f);
+                bg.g = nk_propertyf(ctx, "#G:", 0, bg.g, 1.0f, 0.01f, 0.005f);
+                bg.b = nk_propertyf(ctx, "#B:", 0, bg.b, 1.0f, 0.01f, 0.005f);
+                bg.a = nk_propertyf(ctx, "#A:", 0, bg.a, 1.0f, 0.01f, 0.005f);
+                nk_combo_end(ctx);
+            }
+        }
+
+        nk_end(ctx);
+
+
         BeginDrawing();
         ClearBackground(DARKGRAY);
+
 
 
         Vector2 mousepos = GetMousePosition();
@@ -699,6 +735,9 @@ print(b);
             SceneView.Show();
 
         Mtd_ImGuiEnd();
+
+        DrawNuklear(ctx);
+
 
         EndDrawing();
 
