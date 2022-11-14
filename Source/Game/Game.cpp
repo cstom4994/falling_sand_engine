@@ -11,11 +11,13 @@ Game::~Game() {}
 #include "Libs/structopt.hpp"
 
 #include "Libs/raylib/raymath.h"
+#define RAYGUI_IMPLEMENTATION
+#include "Libs/raylib/raygui.h"
 
 #include "Engine/IMGUI/ImGuiImpl.h"
 #include "imgui.h"
 
-
+#include <string>
 #include <cmath>
 #include <cstdlib>
 
@@ -150,6 +152,127 @@ void integrationExample() {
         }
     }
 }
+
+
+
+
+#include "Game/Cell/types.h"
+
+#include "Game/Cell/cell.h"
+#include "Game/Cell/stone.h"
+#include "Game/Cell/lava.h"
+#include "Game/Cell/sand.h"
+#include "Game/Cell/static.h"
+#include "Game/Cell/spray.h"
+#include "Game/Cell/moose.h"
+#include "Game/Cell/water.h"
+
+const int screenWidth = mapSize * Cell::SIZE;
+const int screenHeight = screenWidth + 60;
+
+const std::vector<std::string> adjectives = {
+    "untidy",
+    "damaging",
+    "disgusting",
+    "nonstop",
+    "panoramic",
+    "fretful",
+    "left",
+    "ablaze",
+    "educated",
+    "animated",
+    "jittery",
+    "serious",
+    "elite",
+    "actually",
+    "soft",
+    "neat",
+    "tested",
+    "aboriginal",
+    "splendid",
+    "little"
+};
+
+typedef struct OperationPair {
+    Cell(*Create)();
+    void (*Process)(CellularData&, CellMap&);
+} OperationPair;
+
+struct OperationPair Operations[] = {
+    OperationPair {CreateAir, ProcessAir}, // Air
+    OperationPair {CreateSand, ProcessSand}, // Sand
+    OperationPair {CreateStatic, ProcessStatic}, // Static
+    OperationPair {CreateSpray, ProcessSpray}, // Spray
+    OperationPair {CreateMoose, ProcessMoose}, // Moose
+    OperationPair {CreateWater, ProcessWater}, // Water
+    OperationPair {CreateLava, ProcessLava},
+    OperationPair {CreateStone, ProcessStone}
+};
+
+Cell MakeCell(CellType type)
+{
+    if (type >= CellType::END_TYPE) return Operations[(int)CellType::Air].Create();
+    return Operations[(int)type].Create();
+}
+
+CellType QuerySelectedType(int key)
+{
+    switch (key) {
+    case 0:
+        break;
+    case KEY_ZERO:
+        return CellType::Air;
+    case KEY_ONE:
+        return CellType::Sand;
+    case KEY_TWO:
+        return CellType::Static;
+    case KEY_THREE:
+        return CellType::Spray;
+    case KEY_FOUR:
+        return CellType::Moose;
+    case KEY_FIVE:
+        return CellType::Water;
+    }
+    return CellType::Air;
+}
+
+void ProcessCell(const Cell& cell, CellularData& data, CellMap& map)
+{
+    CellType type = cell._id;
+    if (type >= CellType::END_TYPE) return Operations[(int)CellType::Air].Process(data, map);
+    Operations[(int)type].Process(data, map);
+}
+
+void ProcessMap(CellMap& map, unsigned worldClock)
+{
+    int mapSize = map.size();
+    for (int i = 0; i < mapSize; i++) {
+        for (int j = 0; j < mapSize; j++) {
+            const Cell& cell = map[i][j];
+            CellularData data = { i, j, worldClock };
+            // this is stupid
+            if (cell.clock < worldClock)
+                ProcessCell(cell, data, map);
+        }
+    }
+};
+
+void DrawUI(CellType& selectedType)
+{
+    int height = 40;
+    int width = 90;
+    for (int i = (int)CellType::Air; i < (int)CellType::END_TYPE; i++) {
+        CellType type = static_cast<CellType>(i);
+        Rectangle pos{ (float)height / 2 + (width)*i, screenHeight - 50, (float)width, (float)height };
+        bool clicked = GuiButton(pos, (std::string("Particle\n") + std::string(Cellnames[i])).c_str());
+        if (clicked) {
+            selectedType = type; // It just works
+        }
+    }
+}
+
+
+
 
 
 bool Quit = false;
@@ -498,8 +621,16 @@ print(b);
     loguru::init(argc, argv);
     METADOT_INFO("Starting game...");
 
-    int screenWidth = 1080;
-    int screenHeight = 720;
+    CellType selectedType = CellType::Sand;
+    int worldClock = 0;
+
+    static_assert(mapSize % 2 == 0);
+
+    CellMap workMap;
+    workMap.resize(mapSize, std::vector<Cell>(mapSize, Cell()));
+
+    // int screenWidth = 1080;
+    // int screenHeight = 720;
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     InitWindow(screenWidth, screenHeight, "Test");
@@ -514,13 +645,46 @@ print(b);
     SceneView.Open = true;
 
     // Main game loop
-    while (!WindowShouldClose() && !Quit)
-    {
+    while (!WindowShouldClose() && !Quit) {
         ImageViewer.Update();
         SceneView.Update();
 
+        worldClock += 1;
+        ProcessMap(workMap, worldClock);
+
         BeginDrawing();
         ClearBackground(DARKGRAY);
+
+
+        Vector2 mousepos = GetMousePosition();
+
+        // TODO: Replace with texture drawing
+        for (int i = 0; i < mapSize; i++) {
+            for (int j = 0; j < mapSize; j++) {
+                Cell &cell = workMap[i][j];
+                int x = (i * Cell::SIZE);
+                int y = (j * Cell::SIZE);
+                Color col = cell._col;
+                //if (selected.x == x && selected.y == y)
+                //col = GOLD;
+                DrawRectangle(x + padding * i, y + padding * j, Cell::SIZE, Cell::SIZE, col);
+            }
+        }
+
+        std::string debug("Mouse location at: ");
+        debug += std::to_string(mousepos.x);
+        debug += ' ';
+        debug += std::to_string(mousepos.y);
+        DrawText(debug.c_str(), 10, 10, 12, BLACK);
+
+        debug = "Rounded to: ";
+        debug += std::to_string(Cell::RoundToNearestSize(mousepos).x);
+        debug += ' ';
+        debug += std::to_string(Cell::RoundToNearestSize(mousepos).y);
+        DrawText(debug.c_str(), 10, 30, 12, BLACK);
+
+        DrawUI(selectedType);
+
 
         Mtd_ImGuiBegin();
         DoMainMenu();
@@ -537,6 +701,22 @@ print(b);
         Mtd_ImGuiEnd();
 
         EndDrawing();
+
+
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+            Vector2 selected = Cell::RoundToNearestSize(mousepos, padding);
+            selected.x = fmaxf(0, selected.x);
+            selected.y = fmaxf(0, selected.y);
+            if (selected.x < mapSize * Cell::SIZE && selected.y < mapSize * Cell::SIZE) {
+                Cell &cell = workMap[(int) selected.x / Cell::SIZE][(int) selected.y / Cell::SIZE];
+                cell = MakeCell(selectedType);
+            }
+        }
+
+        int key = GetKeyPressed();
+        if (key != 0) {
+            selectedType = QuerySelectedType(key);
+        }
     }
     Mtd_ImGuiShutdown();
 
