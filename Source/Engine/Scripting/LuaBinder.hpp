@@ -2,7 +2,7 @@
 
 #include "Libs/lua/sol/sol.hpp"
 
-#include "Engine/Reflecting/Refl.hpp"
+#include "Engine/Meta/Refl.hpp"
 
 namespace MetaEngine::LuaBinder {
     void bindEverything(sol::state& state);
