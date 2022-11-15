@@ -3,26 +3,30 @@
 #include "ImGuiLayer.hpp"
 
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Libs/ImGui/implot.h"
+
+#include "glew.h"
+
 #include "Engine/UserInterface/IMGUI/ImGuiDSL.hpp"
-#include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Game/FileSystem.hpp"
 #include "Game/GCManager.hpp"
 #include "Game/Macros.hpp"
-#include "Game/Utils.hpp"
-#include "Libs/ImGui/implot.h"
+#include "Game/Const.hpp"
 #include "Settings.hpp"
+#include "Game/Utils.hpp"
 
 #include "imgui.h"
 #include "uidsl/hello.h"
 
+#include "Game/Legacy/Game.hpp"
 #include "Game/InEngine.h"
+#include "Game/Textures.hpp"
 
 #include <cstdio>
 #include <map>
 
-// #include "Game/Legacy/DefaultGenerator.cpp"
-// #include "Game/Legacy/MaterialTestGenerator.cpp"
+#include "Game/Legacy/DefaultGenerator.cpp"
+#include "Game/Legacy/MaterialTestGenerator.cpp"
 
 #include <imgui/IconsFontAwesome5.h>
 
@@ -88,13 +92,13 @@ void MetaEngine::GameUI_Draw(Game *game) {
     // for (MetaEngine::Module *l: *game->getModuleStack())
     //     l->onImGuiRender();
 
-    // DebugDrawUI::Draw(game);
-    // DebugCheatsUI::Draw(game);
-    // MainMenuUI::Draw(game);
-    // IngameUI::Draw(game);
+    DebugDrawUI::Draw(game);
+    DebugCheatsUI::Draw(game);
+    MainMenuUI::Draw(game);
+    IngameUI::Draw(game);
 }
 
-#if 0
+
 int IngameUI::state = 0;
 
 bool IngameUI::visible = false;
@@ -1444,7 +1448,6 @@ void CreateWorldUI::Reset(Game *game) {
     inputChanged(std::string(worldNameBuf), game);
 }
 
-#endif
 
 static std::string const testscript = R"(
 label 'A Little Test:'
@@ -1636,8 +1639,6 @@ namespace MetaEngine {
     ImGuiLayer::ImGuiLayer() {
     }
 
-#if 0
-
     class OpenGL3TextureManager {
     public:
         ~OpenGL3TextureManager() {
@@ -1678,8 +1679,6 @@ namespace MetaEngine {
         Textures mTextures;
     };
 
-#endif
-
     static bool firstRun = false;
 
 #if defined(_METADOT_IMM32)
@@ -1698,7 +1697,8 @@ namespace MetaEngine {
     // 	ImGui::End();
     // }
 
-    void ImGuiLayer::Init(void *p_gl_context) {
+    void ImGuiLayer::Init(SDL_Window *p_window, void *p_gl_context) {
+        window = p_window;
         gl_context = p_gl_context;
 
         IMGUI_CHECKVERSION();
@@ -1764,10 +1764,10 @@ namespace MetaEngine {
         }
 
 
-        //ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+        ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
         const char *glsl_version = "#version 400";
-        //ImGui_ImplOpenGL3_Init(glsl_version);
+        ImGui_ImplOpenGL3_Init(glsl_version);
 
 
         style.ScaleAllSizes(scale);
@@ -1857,15 +1857,15 @@ namespace MetaEngine {
     }
 
     void ImGuiLayer::onDetach() {
-        //ImGui_ImplOpenGL3_Shutdown();
-        //ImGui_ImplSDL2_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
         ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
 
     void ImGuiLayer::begin() {
-        //ImGui_ImplOpenGL3_NewFrame();
-        //ImGui_ImplSDL2_NewFrame(window);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
     }
 
@@ -1874,19 +1874,19 @@ namespace MetaEngine {
         (void) io;
 
         ImGui::Render();
-        //SDL_GL_MakeCurrent(window, gl_context);
-        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_MakeCurrent(window, gl_context);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
         //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
-        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        //     SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
-        //     SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-        //     ImGui::UpdatePlatformWindows();
-        //     ImGui::RenderPlatformWindowsDefault();
-        //     SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-        // }
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
+            SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+        }
     }
 
     auto myCollapsingHeader = [](const char *name) -> bool {
@@ -2529,7 +2529,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                 //game->data.Functions["func_drawInTweak"].invoke({});
 
-                //game->data->draw();
+                game->data->draw();
 
                 ImGui::EndTabItem();
             }
@@ -2556,7 +2556,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             }
             if (ImGui::BeginTabItem(U8("调整"))) {
                 if (myCollapsingHeader(U8("遥测"))) {
-                    //DebugUI::Draw(game);
+                    DebugUI::Draw(game);
                 }
                 // Call the function in our RCC++ class
                 //if (myCollapsingHeader("RCCpp"))
@@ -2603,11 +2603,49 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     void ImGuiLayer::onUpdate() {
     }
 
+    void ImGuiLayer::registerWindow(std::string_view windowName, bool *opened) {
+        for (auto &m_win: m_wins)
+            if (m_win.name == windowName)
+                return;
+        m_wins.push_back({std::string(windowName), opened});
+    }
+
     static std::string bloatString(const std::string &s, int size) {
         std::string out = s;
         out.reserve(size);
         while (out.size() < size)
             out += " ";
         return out;
+    }
+
+    static std::string newName;
+
+    //opens popup on previous item and sets newName possibly
+    //return true if renamed
+    static bool renameName(const char *name) {
+        bool rename = false;
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(1)) {
+            ImGui::OpenPopup("my_select_popupo");
+        }
+
+        if (ImGui::BeginPopup("my_select_popupo", ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration)) {
+            char c[128]{};
+            memcpy(c, name, strlen(name));
+            //ImGui::IsAnyWindowFocused()
+            //if (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+            //todo imdoc
+            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+                ImGui::SetKeyboardFocusHere();
+            if (ImGui::InputText("##heheheehj", c, 127, ImGuiInputTextFlags_EnterReturnsTrue)) {
+                //ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+                newName = std::string(c);
+                ImGui::CloseCurrentPopup();
+                rename = true;
+            }
+            //else
+            ImGui::SetItemDefaultFocus();
+            ImGui::EndPopup();
+        }
+        return rename;
     }
 }// namespace MetaEngine

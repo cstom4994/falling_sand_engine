@@ -26,10 +26,15 @@ namespace MetaEngine {
 
     class ImGuiLayer {
     private:
+        struct ImGuiWin
+        {
+            std::string name;
+            bool *opened;
+        };
 
-#if defined(METADOT_USINGSDL)
+        std::vector<ImGuiWin> m_wins;
+
         SDL_Window *window;
-#endif
         void *gl_context;
 
         void renderViewWindows();
@@ -42,12 +47,13 @@ namespace MetaEngine {
     public:
         ImGuiLayer();
         ~ImGuiLayer() = default;
-        void Init(void *gl_context);
+        void Init(SDL_Window *window, void *gl_context);
         void onDetach();
         void begin();
         void end();
         void Render(Game *game);
         void onUpdate();
+        void registerWindow(std::string_view windowName, bool *opened);
         ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
         ImGuiContext *getImGuiCtx() {
@@ -62,7 +68,6 @@ namespace MetaEngine {
     void GameUI_Draw(Game *game);
 }
 
-#if 0
 class DebugUI {
 public:
     static void Draw(Game *game);
@@ -179,4 +184,3 @@ public:
     static void DrawAudio(Game *game);
     static void DrawInput(Game *game);
 };
-#endif

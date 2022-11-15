@@ -30,6 +30,9 @@
 
 #include "Game/Core.hpp"
 
+#include "ImGuiImplGL3.h"
+#include "ImGuiImplSDL.h"
+
 #include "Engine/UserInterface/IMGUI/ImGuiHelper.hpp"
 
 
