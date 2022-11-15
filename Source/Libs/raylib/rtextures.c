@@ -141,8 +141,7 @@
     #define STBI_FREE RL_FREE
     #define STBI_REALLOC RL_REALLOC
 
-    #define STB_IMAGE_IMPLEMENTATION
-    #include "external/stb_image.h"         // Required for: stbi_load_from_file()
+    #include "stb_image.h"         // Required for: stbi_load_from_file()
                                             // NOTE: Used to read image data (multiple formats support)
 #endif
 
@@ -170,21 +169,18 @@
     #define STBIW_FREE RL_FREE
     #define STBIW_REALLOC RL_REALLOC
 
-    #define STB_IMAGE_WRITE_IMPLEMENTATION
-    #include "external/stb_image_write.h"   // Required for: stbi_write_*()
+    #include "stb_image_write.h"   // Required for: stbi_write_*()
 #endif
 
 #if defined(SUPPORT_IMAGE_GENERATION)
-    #define STB_PERLIN_IMPLEMENTATION
-    #include "external/stb_perlin.h"        // Required for: stb_perlin_fbm_noise3
+    #include "stb_perlin.h"        // Required for: stb_perlin_fbm_noise3
 #endif
 
 #if defined(SUPPORT_IMAGE_MANIPULATION)
     #define STBIR_MALLOC(size,c) ((void)(c), RL_MALLOC(size))
     #define STBIR_FREE(ptr,c) ((void)(c), RL_FREE(ptr))
 
-    #define STB_IMAGE_RESIZE_IMPLEMENTATION
-    #include "external/stb_image_resize.h"  // Required for: stbir_resize_uint8() [ImageResize()]
+    #include "stb_image_resize.h"  // Required for: stbir_resize_uint8() [ImageResize()]
 #endif
 
 //----------------------------------------------------------------------------------

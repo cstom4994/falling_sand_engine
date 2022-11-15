@@ -147,11 +147,11 @@ include_dir_list = {
     "Source/Engine",
     "Source/Libs/lua/lua",
     "Source/Libs/raylib/external/glfw/include",
-    "Source/Vendor",
-    "Source/Vendor/imgui",
-    "Source/Vendor/stb",
-    "Source/Vendor/json/include",
-    "Source/Vendor/fmt/include"
+    "Source/Libs",
+    "Source/Libs/imgui",
+    "Source/Libs/stb",
+    "Source/Libs/json/include",
+    "Source/Libs/fmt/include"
     }
 
 defines_list = {
@@ -159,25 +159,6 @@ defines_list = {
     "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
     "PLATFORM_DESKTOP"
 }
-
-target("vendor")
-    set_kind("static")
-    if (not is_os("macosx")) then
-        add_rules("c.unity_build")
-        add_rules("c++.unity_build")    
-    end
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/Vendor/**.c")
-    add_files("Source/Vendor/**.cc")
-    add_files("Source/Vendor/**.cpp")
-	add_headerfiles("Source/Vendor/**.h")
-	add_headerfiles("Source/Vendor/**.hpp")
-    if (is_os("linux") or is_os("macosx")) then
-        remove_files("Source/Vendor/minizip/iowin32.c")
-    end
-    remove_files("Source/Vendor/fmt/src/fmt.cc")
-    set_symbols("debug")
 
 target("lua")
     set_kind("static")
@@ -203,6 +184,8 @@ target("Libs")
     add_defines(defines_list)
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
+    add_files("Source/Libs/stb/**.c")
+    add_files("Source/Libs/fmt/**.cc")
     add_files("Source/Libs/raylib/**.c")
     add_files("Source/Libs/physfs/**.c", "Source/Libs/physfs/**.m")
 	add_headerfiles("Source/Libs/**.h")
@@ -229,7 +212,7 @@ target("MetaDot")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("vendor", "Libs", "lua", "Engine")
+    add_deps("Libs", "lua", "Engine")
     add_links(link_list)
     add_files("Source/Generated/**.cpp")
     add_files("Source/Game/**.cpp")
