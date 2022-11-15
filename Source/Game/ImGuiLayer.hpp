@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ImGuiBase.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Scripting/LuaBinder.hpp"

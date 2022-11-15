@@ -30,7 +30,7 @@
 
 #include "Game/Core.hpp"
 
-#include "Game/ImGuiHelper.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiHelper.hpp"
 
 
 #include <boost/pfr/core.hpp>
