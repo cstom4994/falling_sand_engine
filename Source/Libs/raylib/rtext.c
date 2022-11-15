@@ -66,11 +66,14 @@
 #include <string.h>         // Required for: strcmp(), strstr(), strcpy(), strncpy() [Used in TextReplace()], sscanf() [Used in LoadBMFont()]
 #include <stdarg.h>         // Required for: va_list, va_start(), vsprintf(), va_end() [Used in TextFormat()]
 #include <ctype.h>          // Requried for: toupper(), tolower() [Used in TextToUpper(), TextToLower()]
-#include <math.h>
 
 #if defined(SUPPORT_FILEFORMAT_TTF)
-    #include "stb_rect_pack.h"     // Required for: ttf font rectangles packaging
-    #include "stb_truetype.h"      // Required for: ttf font data reading
+    #define STB_RECT_PACK_IMPLEMENTATION
+    #include "external/stb_rect_pack.h"     // Required for: ttf font rectangles packaging
+
+    #define STBTT_STATIC
+    #define STB_TRUETYPE_IMPLEMENTATION
+    #include "external/stb_truetype.h"      // Required for: ttf font data reading
 #endif
 
 //----------------------------------------------------------------------------------
