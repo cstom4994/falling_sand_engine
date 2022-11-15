@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "Engine/Render/MRender.hpp"
+#include <SDL.h>
+
+#include "Engine/Render/renderer_gpu.h"
 
 #include <box2d/b2_distance_joint.h>
 
@@ -12,8 +14,8 @@
 #define ALIGN_CENTER 1
 #define ALIGN_RIGHT 2
 
-#include "stb_rect_pack.h"
-#include "stb_truetype.h"
+#include "external/stb_rect_pack.h"
+#include "external/stb_truetype.h"
 
 class METAENGINE_Color {
 public:
@@ -25,8 +27,8 @@ public:
 public:
     METAENGINE_Color(uint8_t fr, uint8_t fg, uint8_t fb, uint8_t fa) : r(fr), g(fg), b(fb), a(fa) {}
 
-    MetaEngine::Color convertColor() {
-        return MetaEngine::Color(this->r, this->g, this->b, this->a);
+    SDL_Color convertColor() {
+        return {this->r, this->g, this->b, this->a};
     }
 };
 
@@ -55,7 +57,6 @@ struct DrawTextParams_t
     int h = -1;
 };
 
-#if 0
 class Drawing {
 public:
     static bool InitFont(SDL_GLContext *SDLContext);
@@ -63,12 +64,12 @@ public:
     static STBTTF_Font *LoadFont(const char *path, Uint16 size);
 
     static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
-                                           STBTTF_Font *font, int x, int y,
-                                           uint8_t fR, uint8_t fG, uint8_t fB, int align);
+                                         STBTTF_Font *font, int x, int y,
+                                         uint8_t fR, uint8_t fG, uint8_t fB, int align);
 
     static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
-                                           STBTTF_Font *font, int x, int y,
-                                           uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align);
+                                         STBTTF_Font *font, int x, int y,
+                                         uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align);
 
     static void drawText(METAENGINE_Render_Target *renderer, const char *string,
                          STBTTF_Font *font, int x, int y,
@@ -96,4 +97,3 @@ public:
 
     static uint32 darkenColor(uint32 col, float brightness);
 };
-#endif

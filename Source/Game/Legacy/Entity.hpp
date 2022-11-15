@@ -7,6 +7,7 @@
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
 #endif
+#include "Engine/Render/renderer_gpu.h"
 
 class Entity {
 public:
@@ -20,8 +21,8 @@ public:
     RigidBody *rb = nullptr;
     b2Body *body = nullptr;
 
-    virtual void render(void *target, int ofsX, int ofsY);
-    virtual void renderLQ(void *target, int ofsX, int ofsY);
+    virtual void render(METAENGINE_Render_Target *target, int ofsX, int ofsY);
+    virtual void renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY);
     Entity();
     ~Entity();
 };

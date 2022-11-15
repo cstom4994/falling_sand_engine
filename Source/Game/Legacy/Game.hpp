@@ -9,6 +9,7 @@
 #include "Game/DebugImpl.hpp"
 #include "Drawing.hpp"
 #include "Engine/AudioEngine/AudioEngine.h"
+#include "Engine/Render/renderer_gpu.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
@@ -16,7 +17,7 @@
 #include "Game/ImGuiTerminal.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Legacy/Networking.hpp"
-#include "Shared/Interface.hpp"
+#include "Engine/Interface.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif

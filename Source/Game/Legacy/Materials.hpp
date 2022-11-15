@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "Game/Core.hpp"
+
+#include <SDL.h>
 
 #include <iostream>
 #include <string>
@@ -42,13 +43,13 @@ public:
     std::string name;
     int id = 0;
     int physicsType = 0;
-    UInt8 alpha = 0;
+    Uint8 alpha = 0;
     float density = 0;
     int iterations = 0;
     int emit = 0;
-    UInt32 emitColor = 0;
-    UInt32 color = 0;
-    UInt32 addTemp = 0;
+    Uint32 emitColor = 0;
+    Uint32 color = 0;
+    Uint32 addTemp = 0;
     float conductionSelf = 1.0;
     float conductionOther = 1.0;
 
@@ -61,9 +62,9 @@ public:
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor, UInt32 color);
-    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
-    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
+    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor, Uint32 color);
+    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations, int emit, Uint32 emitColor) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
+    Material(int id, std::string name, int physicsType, int slipperyness, Uint8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
     Material(int id, std::string name, int physicsType, int slipperyness, float density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
     Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
 };
@@ -120,7 +121,7 @@ public:
     static int _curID;
 
     Material *mat;
-    UInt32 color;
+    Uint32 color;
     int32_t temperature;
     uint32_t id = 0;
     bool moved = false;
@@ -128,8 +129,8 @@ public:
     float fluidAmountDiff = 0.0f;
     uint8_t settleCount = 0;
 
-    MaterialInstance(Material *mat, UInt32 color, int32_t temperature);
-    MaterialInstance(Material *mat, UInt32 color) : MaterialInstance(mat, color, 0){};
+    MaterialInstance(Material *mat, Uint32 color, int32_t temperature);
+    MaterialInstance(Material *mat, Uint32 color) : MaterialInstance(mat, color, 0){};
     MaterialInstance() : MaterialInstance(&Materials::GENERIC_AIR, 0x000000, 0){};
     bool operator==(const MaterialInstance &other);
 };

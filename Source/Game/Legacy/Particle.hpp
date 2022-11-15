@@ -2,6 +2,8 @@
 
 #pragma once
 
+
+#include <SDL.h>
 #ifndef INC_Tiles
 #include "Materials.hpp"
 #endif// !INC_Tiles

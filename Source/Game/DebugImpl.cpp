@@ -86,7 +86,7 @@ namespace MetaEngine {
     }
 }// namespace MetaEngine
 
-#if 0
+#if 1
 b2DebugDraw_impl::b2DebugDraw_impl(METAENGINE_Render_Target *target) {
     this->target = target;
 }

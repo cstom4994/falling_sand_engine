@@ -1,38 +1,37 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #pragma once
+#include <SDL.h>
 #include <iostream>
 
-#include "Game/Core.hpp"
-#include "Libs/raylib/raylib.h"
 
 #define INC_Textures
 
 class Textures {
 
 public:
-    static Texture testTexture;
-    static Texture dirt1Texture;
-    static Texture stone1Texture;
+    static SDL_Surface *testTexture;
+    static SDL_Surface *dirt1Texture;
+    static SDL_Surface *stone1Texture;
 
-    static Texture smoothStone;
-    static Texture cobbleStone;
-    static Texture flatCobbleStone;
-    static Texture smoothDirt;
-    static Texture cobbleDirt;
-    static Texture flatCobbleDirt;
-    static Texture softDirt;
-    static Texture cloud;
-    static Texture gold;
-    static Texture goldMolten;
-    static Texture goldSolid;
-    static Texture iron;
-    static Texture obsidian;
+    static SDL_Surface *smoothStone;
+    static SDL_Surface *cobbleStone;
+    static SDL_Surface *flatCobbleStone;
+    static SDL_Surface *smoothDirt;
+    static SDL_Surface *cobbleDirt;
+    static SDL_Surface *flatCobbleDirt;
+    static SDL_Surface *softDirt;
+    static SDL_Surface *cloud;
+    static SDL_Surface *gold;
+    static SDL_Surface *goldMolten;
+    static SDL_Surface *goldSolid;
+    static SDL_Surface *iron;
+    static SDL_Surface *obsidian;
 
-    static Texture caveBG;
+    static SDL_Surface *caveBG;
 
-    static Texture loadTexture(std::string path);
-    static Texture loadTexture(std::string path, UInt32 pixelFormat);
+    static SDL_Surface *loadTexture(std::string path);
+    static SDL_Surface *loadTexture(std::string path, Uint32 pixelFormat);
 
-    static Texture scaleTexture(Texture , float x, float y);
+    static SDL_Surface *scaleTexture(SDL_Surface *, float x, float y);
 };

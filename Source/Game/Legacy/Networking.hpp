@@ -1,7 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #pragma once
-#include <enet/enet.h>
+
+#include "Game/Core.hpp"
+
 #include <functional>
 
 enum NetworkMode {
@@ -17,16 +19,12 @@ public:
 
 class Client {
 public:
-    ENetHost *client = nullptr;
-
-    ENetAddress address{};
-    ENetPeer *peer = nullptr;
 
     ~Client();
 
     static Client *start();
 
-    bool connect(const char *ip, enet_uint16 port);
+    bool connect(const char *ip, UInt16 port);
     void disconnect();
 
     void tick();
@@ -34,12 +32,10 @@ public:
 
 class Server {
 public:
-    ENetAddress address{};
-    ENetHost *server = nullptr;
 
     ~Server();
 
-    static Server *start(enet_uint16 port);
+    static Server *start(UInt16 port);
 
     void tick();
 };

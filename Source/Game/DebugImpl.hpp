@@ -11,6 +11,9 @@
 
 #include "Game/Macros.hpp"
 
+#include "Engine/Render/renderer_gpu.h"
+#include <box2d/box2d.h>
+
 namespace MetaEngine {
     int meko_buildnum(void);
     const char *meko_buildos(void);
@@ -1031,12 +1034,13 @@ namespace METADOT_UNIT {
                    ok;
         }
         METADOT_UNIT$(<)
-        METADOT_UNIT$(<=) METADOT_UNIT$(>) METADOT_UNIT$(>=) METADOT_UNIT$(!=) METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
+        METADOT_UNIT$(<=)
+        METADOT_UNIT$(>) METADOT_UNIT$(>=) METADOT_UNIT$(!=) METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
     };
 }// namespace METADOT_UNIT
 #endif
 
-#if 0
+#if 1
 class b2DebugDraw_impl : public b2Draw {
 public:
     METAENGINE_Render_Target *target;

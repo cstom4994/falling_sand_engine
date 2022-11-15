@@ -4,9 +4,9 @@
 
 #include "Game/InEngine.h"
 
-#include "stb_image.h"
-#include "stb_truetype.h"
-#include "stb_rect_pack.h"
+#include "external/stb_image.h"
+#include "external/stb_truetype.h"
+#include "external/stb_rect_pack.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -20,7 +20,6 @@ void TextFuck(std::string text, uint8_t x, uint8_t y) {
     ImGui::End();
 }
 
-#if 0
 bool Drawing::InitFont(SDL_GLContext *SDLContext) {
     static SDL_GLContext *m_SDLContext;
     m_SDLContext = SDLContext;
@@ -176,4 +175,3 @@ uint32 Drawing::darkenColor(uint32 color, float brightness) {
 
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
-#endif
