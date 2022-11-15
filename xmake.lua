@@ -1,6 +1,7 @@
 
 set_project("MetaDot.Runtime")
 
+add_requires("libsdl", {configs = {shared = false}, verify = true})
 add_requires("glfw", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
@@ -151,12 +152,15 @@ include_dir_list = {
     "Source/Libs/imgui",
     "Source/Libs/stb",
     "Source/Libs/json/include",
-    "Source/Libs/fmt/include"
+    "Source/Libs/fmt/include",
+    "Source/Libs/box2d/include",
+    "Source/Libs/glew"
     }
 
 defines_list = {
     "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
     "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
+    "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
     "PLATFORM_DESKTOP"
 }
 
@@ -186,7 +190,11 @@ target("Libs")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
     add_files("Source/Libs/stb/**.c")
     add_files("Source/Libs/fmt/**.cc")
-    add_files("Source/Libs/raylib/**.c")
+    add_files("Source/Libs/glew/**.c")
+    add_files("Source/Libs/lz4/**.c")
+    add_files("Source/Libs/miniz/**.c")
+    add_files("Source/Libs/external/**.c")
+    add_files("Source/Libs/box2d/**.cpp")
     add_files("Source/Libs/physfs/**.c", "Source/Libs/physfs/**.m")
 	add_headerfiles("Source/Libs/**.h")
 	add_headerfiles("Source/Libs/**.hpp")
@@ -195,6 +203,7 @@ target("Libs")
 
 target("Engine")
     set_kind("static")
+    add_packages("libsdl")
     add_packages("glfw")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
@@ -208,6 +217,7 @@ target("Engine")
 
 target("MetaDot")
     set_kind("binary")
+    add_packages("libsdl")
     add_rules("metadot.uidsl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
@@ -221,5 +231,5 @@ target("MetaDot")
 	add_headerfiles("Source/Game/**.hpp")
 	add_headerfiles("Source/Game/**.inl")
     add_headerfiles("Source/Shared/**.hpp")
-    remove_files("Source/Game/Legacy/**.**")
+    remove_files("Source/Game/Game.**")
     set_symbols("debug")
