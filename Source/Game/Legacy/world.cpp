@@ -5,15 +5,15 @@
 #include "world.hpp"
 #endif
 #include "DefaultGenerator.cpp"
-#include "Game/FileSystem.hpp"
 #include "Game/Core.hpp"
+#include "Game/FileSystem.hpp"
+#include "Game/Textures.hpp"
+#include "Game/Utils.hpp"
 #include "Libs/MarchingSquares/MarchingSquares.h"
 #include "Libs/polygon-simplify.hh"
 #include "Libs/polypartition.h"
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
-#include "Textures.hpp"
-#include "Game/Utils.hpp"
 #include "nlohmann/json.hpp"
 
 #include <box2d/b2_body.h>

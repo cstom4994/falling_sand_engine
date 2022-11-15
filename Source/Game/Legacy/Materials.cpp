@@ -3,7 +3,7 @@
 
 #include "Materials.hpp"
 #include "Game/Macros.hpp"
-#include "Textures.hpp"
+#include "Game/Textures.hpp"
 
 Material::Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor, UInt32 color) {
     this->name = name;

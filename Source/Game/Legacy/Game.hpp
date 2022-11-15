@@ -23,7 +23,7 @@
 #include "Background.hpp"
 #include "Controls.hpp"
 #include "Game/Settings.hpp"
-#include "Textures.hpp"
+#include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
 
 #include "Libs/sparsehash/sparse_hash_map.h"

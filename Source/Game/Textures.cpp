@@ -8,28 +8,27 @@
 #include "Game/FileSystem.hpp"
 #include "Game/DebugImpl.hpp"
 
-#include <stb_image.h>
+Texture Textures::testTexture = Textures::loadTexture("data/assets/textures/test.png");
+Texture Textures::dirt1Texture = Textures::loadTexture("data/assets/textures/testDirt.png");
+Texture Textures::stone1Texture = Textures::loadTexture("data/assets/textures/testStone.png");
+Texture Textures::smoothStone = Textures::loadTexture("data/assets/textures/smooth_stone_128x.png");
+Texture Textures::cobbleStone = Textures::loadTexture("data/assets/textures/cobble_stone_128x.png");
+Texture Textures::flatCobbleStone = Textures::loadTexture("data/assets/textures/flat_cobble_stone_128x.png");
+Texture Textures::smoothDirt = Textures::loadTexture("data/assets/textures/smooth_dirt_128x.png");
+Texture Textures::cobbleDirt = Textures::loadTexture("data/assets/textures/cobble_dirt_128x.png");
+Texture Textures::flatCobbleDirt = Textures::loadTexture("data/assets/textures/flat_cobble_dirt_128x.png");
+Texture Textures::softDirt = Textures::loadTexture("data/assets/textures/soft_dirt.png");
+Texture Textures::cloud = Textures::loadTexture("data/assets/textures/cloud.png");
+Texture Textures::gold = Textures::loadTexture("data/assets/textures/gold.png");
+Texture Textures::goldMolten = Textures::loadTexture("data/assets/textures/moltenGold.png");
+Texture Textures::goldSolid = Textures::loadTexture("data/assets/textures/solidGold.png");
+Texture Textures::iron = Textures::loadTexture("data/assets/textures/iron.png");
+Texture Textures::obsidian = Textures::loadTexture("data/assets/textures/obsidian.png");
+Texture Textures::caveBG = Textures::loadTexture("data/assets/backgrounds/testCave.png");
 
-SDL_Surface *Textures::testTexture = Textures::loadTexture("data/assets/textures/test.png");
-SDL_Surface *Textures::dirt1Texture = Textures::loadTexture("data/assets/textures/testDirt.png");
-SDL_Surface *Textures::stone1Texture = Textures::loadTexture("data/assets/textures/testStone.png");
-SDL_Surface *Textures::smoothStone = Textures::loadTexture("data/assets/textures/smooth_stone_128x.png");
-SDL_Surface *Textures::cobbleStone = Textures::loadTexture("data/assets/textures/cobble_stone_128x.png");
-SDL_Surface *Textures::flatCobbleStone = Textures::loadTexture("data/assets/textures/flat_cobble_stone_128x.png");
-SDL_Surface *Textures::smoothDirt = Textures::loadTexture("data/assets/textures/smooth_dirt_128x.png");
-SDL_Surface *Textures::cobbleDirt = Textures::loadTexture("data/assets/textures/cobble_dirt_128x.png");
-SDL_Surface *Textures::flatCobbleDirt = Textures::loadTexture("data/assets/textures/flat_cobble_dirt_128x.png");
-SDL_Surface *Textures::softDirt = Textures::loadTexture("data/assets/textures/soft_dirt.png");
-SDL_Surface *Textures::cloud = Textures::loadTexture("data/assets/textures/cloud.png");
-SDL_Surface *Textures::gold = Textures::loadTexture("data/assets/textures/gold.png");
-SDL_Surface *Textures::goldMolten = Textures::loadTexture("data/assets/textures/moltenGold.png");
-SDL_Surface *Textures::goldSolid = Textures::loadTexture("data/assets/textures/solidGold.png");
-SDL_Surface *Textures::iron = Textures::loadTexture("data/assets/textures/iron.png");
-SDL_Surface *Textures::obsidian = Textures::loadTexture("data/assets/textures/obsidian.png");
-SDL_Surface *Textures::caveBG = Textures::loadTexture("data/assets/backgrounds/testCave.png");
-
-SDL_Surface *Textures::loadTexture(std::string path) {
-    return loadTexture(path, SDL_PIXELFORMAT_ARGB8888);
+Texture Textures::loadTexture(std::string path) {
+    Image t = LoadImage(path.c_str());
+    return LoadTextureFromImage(t);
 }
 
 SDL_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {

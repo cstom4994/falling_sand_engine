@@ -6,7 +6,7 @@
 #include "world.hpp"
 
 #ifndef INC_Textures
-#include "Textures.hpp"
+#include "Game/Textures.hpp"
 #endif
 
 #undef min
