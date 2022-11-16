@@ -59,6 +59,7 @@ elseif is_mode("release") then
 end
 
 set_fpmodels("strict")
+set_exceptions("cxx", "objc")
 
 if (is_os("windows")) then 
 

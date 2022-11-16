@@ -550,7 +550,7 @@ print(b);
     METADOT_INFO("Initializing world...");
     world = new World();
     world->noSaveLoad = true;
-    world->init(m_GameDir.getWorldPath("mainMenu"), (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode);
+    world->init(m_GameDir.getWorldPath("mainMenu"), (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST, (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, target, &audioEngine, networkMode);
 
 
     if (networkMode != NetworkMode::SERVER) {
@@ -4119,7 +4119,7 @@ void Game::quitToMainMenu() {
 
     world = new World();
     world->noSaveLoad = true;
-    world->init(wpStr, (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3, target, &audioEngine, networkMode, generator);
+    world->init(wpStr, (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST, (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, target, &audioEngine, networkMode, generator);
 
 
     METADOT_INFO("Queueing chunk loading...");
