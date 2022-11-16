@@ -677,21 +677,21 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
         ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y));
 
 
-        time_t t_times;
-        tm *tm_utc = gmtime(&t_times);
-        meta.lastOpenedTime = t_times;
+        // time_t t_times;
+        // tm *tm_utc = gmtime(&t_times);
+        // meta.lastOpenedTime = t_times;
 
-        // convert to local time
-        time_t time_utc = UTime::mkgmtime(tm_utc);
-        time_t time_local = mktime(tm_utc);
-        time_local += time_utc - time_local;
-        tm *tm_local = localtime(&time_local);
+        // // convert to local time
+        // time_t time_utc = UTime::mkgmtime(tm_utc);
+        // time_t time_local = mktime(tm_utc);
+        // time_local += time_utc - time_local;
+        // tm *tm_local = localtime(&time_local);
 
-        char *formattedTime = new char[100];
-        strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
+        // char *formattedTime = new char[100];
+        // strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
 
         char *filenameAndTimestamp = new char[200];
-        snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), formattedTime);
+        snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), "formattedTime");
 
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::SetCursorScreenPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize(meta.worldName.c_str()).x / 2, selPos.y));
