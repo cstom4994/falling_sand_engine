@@ -5,8 +5,8 @@
 #if defined(METAENGINE_Render_DISABLE_OPENGL) || defined(METAENGINE_Render_DISABLE_OPENGL_3)
 
 // Dummy implementations
-METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE_Render_RendererID request) {return NULL;}
-void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer* renderer) {}
+METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE_Render_RendererID request) { return NULL; }
+void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer *renderer) {}
 
 #else
 
@@ -27,10 +27,9 @@ void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer* rendere
 #include "renderer_shapes_GL_common.inl"
 
 
-METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE_Render_RendererID request)
-{
-    METAENGINE_Render_Renderer* renderer = (METAENGINE_Render_Renderer*)SDL_malloc(sizeof(METAENGINE_Render_Renderer));
-    if(renderer == NULL)
+METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE_Render_RendererID request) {
+    METAENGINE_Render_Renderer *renderer = (METAENGINE_Render_Renderer *) SDL_malloc(sizeof(METAENGINE_Render_Renderer));
+    if (renderer == NULL)
         return NULL;
 
     memset(renderer, 0, sizeof(METAENGINE_Render_Renderer));
@@ -40,22 +39,21 @@ METAENGINE_Render_Renderer* METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE
     renderer->shader_language = METAENGINE_Render_LANGUAGE_GLSL;
     renderer->min_shader_version = 110;
     renderer->max_shader_version = METAENGINE_Render_GLSL_VERSION;
-    
+
     renderer->default_image_anchor_x = 0.5f;
     renderer->default_image_anchor_y = 0.5f;
-    
+
     renderer->current_context_target = NULL;
-    
-    renderer->impl = (METAENGINE_Render_RendererImpl*)SDL_malloc(sizeof(METAENGINE_Render_RendererImpl));
+
+    renderer->impl = (METAENGINE_Render_RendererImpl *) SDL_malloc(sizeof(METAENGINE_Render_RendererImpl));
     memset(renderer->impl, 0, sizeof(METAENGINE_Render_RendererImpl));
     SET_COMMON_FUNCTIONS(renderer->impl);
 
     return renderer;
 }
 
-void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer* renderer)
-{
-    if(renderer == NULL)
+void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer *renderer) {
+    if (renderer == NULL)
         return;
 
     SDL_free(renderer->impl);
