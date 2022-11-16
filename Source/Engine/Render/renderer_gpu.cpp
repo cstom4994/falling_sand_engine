@@ -1,3 +1,6 @@
+
+#include "Game/Core.hpp"
+
 #include "renderer_gpu.h"
 #include "renderer_RendererImpl.h"
 #include "SDL_platform.h"
@@ -6,9 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __ANDROID__
-#include <android/log.h>
-#endif
 
 #ifdef _MSC_VER
 	#define __func__ __FUNCTION__
@@ -24,11 +24,7 @@
 
 #include "external/stb_image.h"
 
-#ifdef METAENGINE_Render_USE_SDL2
-    #define GET_ALPHA(sdl_color) ((sdl_color).a)
-#else
-    #define GET_ALPHA(sdl_color) ((sdl_color).unused)
-#endif
+#define GET_ALPHA(sdl_color) ((sdl_color).a)
 
 #define CHECK_RENDERER (_gpu_current_renderer != NULL)
 #define MAKE_CURRENT_IF_NONE(target) do{ if(_gpu_current_renderer->current_context_target == NULL && target != NULL && target->context != NULL) METAENGINE_Render_MakeCurrent(target, target->context->windowID); } while(0)
@@ -133,24 +129,16 @@ int gpu_default_print(METAENGINE_Render_LogLevelEnum log_level, const char* form
 {
     switch(log_level)
     {
-#ifdef __ANDROID__
     case METAENGINE_Render_LOG_INFO:
-        return __android_log_vprint((METAENGINE_Render_GetDebugLevel() >= METAENGINE_Render_DEBUG_LEVEL_3? ANDROID_LOG_ERROR : ANDROID_LOG_INFO), "APPLICATION", format, args);
+        METADOT_INFO(format, args);
     case METAENGINE_Render_LOG_WARNING:
-        return __android_log_vprint((METAENGINE_Render_GetDebugLevel() >= METAENGINE_Render_DEBUG_LEVEL_2? ANDROID_LOG_ERROR : ANDROID_LOG_WARN), "APPLICATION", format, args);
+        METADOT_WARN(format, args);
     case METAENGINE_Render_LOG_ERROR:
-        return __android_log_vprint(ANDROID_LOG_ERROR, "APPLICATION", format, args);
-#else
-    case METAENGINE_Render_LOG_INFO:
-        return vfprintf((METAENGINE_Render_GetDebugLevel() >= METAENGINE_Render_DEBUG_LEVEL_3? stderr : stdout), format, args);
-    case METAENGINE_Render_LOG_WARNING:
-        return vfprintf((METAENGINE_Render_GetDebugLevel() >= METAENGINE_Render_DEBUG_LEVEL_2? stderr : stdout), format, args);
-    case METAENGINE_Render_LOG_ERROR:
-        return vfprintf(stderr, format, args);
-#endif
+        METADOT_WARN(format, args);
     default:
         return 0;
     }
+    return 0;
 }
 
 void METAENGINE_Render_SetLogCallback(int (*callback)(METAENGINE_Render_LogLevelEnum log_level, const char* format, va_list args))
@@ -519,18 +507,11 @@ METAENGINE_Render_bool METAENGINE_Render_SetFullscreen(METAENGINE_Render_bool en
 
 METAENGINE_Render_bool METAENGINE_Render_GetFullscreen(void)
 {
-#ifdef METAENGINE_Render_USE_SDL2
     METAENGINE_Render_Target* target = METAENGINE_Render_GetContextTarget();
     if(target == NULL)
         return METAENGINE_Render_FALSE;
     return (SDL_GetWindowFlags(SDL_GetWindowFromID(target->context->windowID))
                    & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
-#else
-    SDL_Surface* surf = SDL_GetVideoSurface();
-    if(surf == NULL)
-        return METAENGINE_Render_FALSE;
-    return (surf->flags & SDL_FULLSCREEN) != 0;
-#endif
 }
 
 METAENGINE_Render_Target* METAENGINE_Render_GetActiveTarget(void)
@@ -756,10 +737,10 @@ void METAENGINE_Render_PushErrorCode(const char* function, METAENGINE_Render_Err
             vsnprintf(buf, METAENGINE_Render_ERROR_DETAILS_STRING_MAX, details, lst);
             va_end(lst);
 
-            METAENGINE_Render_LogError("%s: %s - %s\n", (function == NULL? "NULL" : function), METAENGINE_Render_GetErrorString(error), buf);
+            METAENGINE_Render_LogError("{0}: {1} - {2}", (function == NULL? "NULL" : function), METAENGINE_Render_GetErrorString(error), buf);
         }
         else
-            METAENGINE_Render_LogError("%s: %s\n", (function == NULL? "NULL" : function), METAENGINE_Render_GetErrorString(error));
+            METAENGINE_Render_LogError("{0}: {1}", (function == NULL? "NULL" : function), METAENGINE_Render_GetErrorString(error));
     }
 
     if(_gpu_num_error_codes < _gpu_error_code_queue_size)
@@ -1135,11 +1116,7 @@ static SDL_Surface* gpu_copy_raw_surface_data(unsigned char* data, int width, in
         }
 
         /* Set palette */
-#ifdef METAENGINE_Render_USE_SDL2
         SDL_SetPaletteColors(result->format->palette, colors, 0, 256);
-#else
-        SDL_SetPalette(result, SDL_LOGPAL, colors, 0, 256);
-#endif
     }
     
     return result;

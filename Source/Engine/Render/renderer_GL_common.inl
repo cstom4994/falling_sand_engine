@@ -116,10 +116,7 @@ int gpu_strcasecmp(const char* s1, const char* s2);
 
 
 
-// SDL 1.2 / SDL 2.0 translation layer
-
-
-#ifdef METAENGINE_Render_USE_SDL2
+// SDL 2.0 translation layer
 
 #define GET_ALPHA(sdl_color) ((sdl_color).a)
 
@@ -162,62 +159,6 @@ static_inline METAENGINE_Render_bool is_alpha_format(SDL_PixelFormat* format)
 {
     return SDL_ISPIXELFORMAT_ALPHA(format->format);
 }
-
-#else
-
-#define SDL_Window SDL_Surface
-#define GET_ALPHA(sdl_color) ((sdl_color).unused)
-
-static_inline SDL_Window* get_window(Uint32 windowID)
-{
-    return (windowID == 1? SDL_GetVideoSurface() : NULL);
-}
-
-static_inline Uint32 get_window_id(SDL_Surface* window)
-{
-    return (SDL_GetVideoSurface() == window? 1 : 0);
-}
-
-static_inline void get_window_dimensions(SDL_Window* window, int* w, int* h)
-{
-    if(window == NULL)
-        return;
-    *w = window->w;
-    *h = window->h;
-}
-
-static_inline void get_drawable_dimensions(SDL_Window* window, int* w, int* h)
-{
-    get_window_dimensions(window, w, h);
-}
-
-static_inline void resize_window(METAENGINE_Render_Target* target, int w, int h)
-{
-    SDL_Surface* screen = SDL_GetVideoSurface();
-    Uint32 flags = screen->flags;
-    
-    screen = SDL_SetVideoMode(w, h, 0, flags);
-    // NOTE: There's a bug in SDL 1.2.  This is a workaround.  Let's resize again:
-    screen = SDL_SetVideoMode(w, h, 0, flags);
-}
-
-static_inline METAENGINE_Render_bool get_fullscreen_state(SDL_Window* window)
-{
-    return (window->flags & SDL_FULLSCREEN);
-}
-
-static_inline METAENGINE_Render_bool has_colorkey(SDL_Surface* surface)
-{
-    return (surface->flags & SDL_SRCCOLORKEY);
-}
-
-static_inline METAENGINE_Render_bool is_alpha_format(SDL_PixelFormat* format)
-{
-    return (format->BitsPerPixel == 32);  // Not great, as it misses many packed formats.  Might be the best we can do.
-}
-
-#endif
-
 
 
 static_inline void get_target_window_dimensions(METAENGINE_Render_Target* target, int* w, int* h)
@@ -669,9 +610,8 @@ static void makeContextCurrent(METAENGINE_Render_Renderer* renderer, METAENGINE_
 
     renderer->impl->FlushBlitBuffer(renderer);
 
-#ifdef METAENGINE_Render_USE_SDL2
     SDL_GL_MakeCurrent(SDL_GetWindowFromID(target->context->windowID), target->context->context);
-#endif
+
     renderer->current_context_target = target;
 }
 
@@ -1266,7 +1206,6 @@ static METAENGINE_Render_Target* Init(METAENGINE_Render_Renderer* renderer, META
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
     else
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#ifdef METAENGINE_Render_USE_SDL2
 
     // GL profile
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);  // Disable in case this is a fallback renderer
@@ -1295,11 +1234,6 @@ static METAENGINE_Render_Target* Init(METAENGINE_Render_Renderer* renderer, META
     // GL version
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, renderer_request.major_version);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, renderer_request.minor_version);
-#else
-    // vsync for SDL 1.2
-    if(!(METAENGINE_Render_flags & METAENGINE_Render_INIT_DISABLE_VSYNC))
-        SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-#endif
 
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
@@ -1309,8 +1243,6 @@ static METAENGINE_Render_Target* Init(METAENGINE_Render_Renderer* renderer, META
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
 	renderer->requested_id = renderer_request;
-
-#ifdef METAENGINE_Render_USE_SDL2
 
 	window = NULL;
     // Is there a window already set up that we are supposed to use?
@@ -1322,12 +1254,8 @@ static METAENGINE_Render_Target* Init(METAENGINE_Render_Renderer* renderer, META
     if(window == NULL)
     {
         int win_w, win_h;
-        #ifdef __ANDROID__
-        win_w = win_h = 0;  // Force Android to create full screen window
-        #else
         win_w = w;
         win_h = h;
-        #endif
 
         // Set up window flags
         SDL_flags |= SDL_WINDOW_OPENGL;
@@ -1351,17 +1279,6 @@ static METAENGINE_Render_Target* Init(METAENGINE_Render_Renderer* renderer, META
     else
         renderer->SDL_init_flags = SDL_flags;
 
-#else
-    SDL_flags |= SDL_OPENGL;
-    renderer->SDL_init_flags = SDL_flags;
-    window = SDL_SetVideoMode(w, h, 0, SDL_flags);
-
-    if(window == NULL)
-    {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Init", METAENGINE_Render_ERROR_BACKEND_ERROR, "Screen surface creation failed.");
-        return NULL;
-    }
-#endif
 
     renderer->enabled_features = 0xFFFFFFFF;  // Pretend to support them all if using incompatible headers
 
@@ -1575,7 +1492,6 @@ static METAENGINE_Render_Target* CreateTargetFromWindow(METAENGINE_Render_Render
     // Store the window info
     target->context->windowID = get_window_id(window);
 
-    #ifdef METAENGINE_Render_USE_SDL2
     // Make a new context if needed and make it current
     if(created || target->context->context == NULL)
     {
@@ -1596,13 +1512,6 @@ static METAENGINE_Render_Target* CreateTargetFromWindow(METAENGINE_Render_Render
     
     // We need a GL context before we can get the drawable size.
     SDL_GL_GetDrawableSize(window, &target->context->drawable_w, &target->context->drawable_h);
-
-    #else
-
-    target->context->drawable_w = window->w;
-    target->context->drawable_h = window->h;
-
-    #endif
     
     update_stored_dimensions(target);
 
@@ -1700,7 +1609,6 @@ static METAENGINE_Render_Target* CreateTargetFromWindow(METAENGINE_Render_Render
         return NULL;
     }
 
-    #ifdef METAENGINE_Render_USE_SDL2
     // No preference for vsync?
     if(!(renderer->METAENGINE_Render_init_flags & (METAENGINE_Render_INIT_DISABLE_VSYNC | METAENGINE_Render_INIT_ENABLE_VSYNC)))
     {
@@ -1712,7 +1620,6 @@ static METAENGINE_Render_Target* CreateTargetFromWindow(METAENGINE_Render_Render
         SDL_GL_SetSwapInterval(1);
     else if(renderer->METAENGINE_Render_init_flags & METAENGINE_Render_INIT_DISABLE_VSYNC)
         SDL_GL_SetSwapInterval(0);
-    #endif
     
     // Set fallback texture upload method
     if(renderer->METAENGINE_Render_init_flags & METAENGINE_Render_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK)
@@ -1945,15 +1852,12 @@ static void MakeCurrent(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_
         return;
     
 
-    #ifdef METAENGINE_Render_USE_SDL2
     if(target->context->context != NULL)
-    #endif
     {
         renderer->current_context_target = target;
-        #ifdef METAENGINE_Render_USE_SDL2
+
         SDL_GL_MakeCurrent(SDL_GetWindowFromID(windowID), target->context->context);
-        #endif
-        
+
         // Reset window mapping, base size, and camera if the target's window was changed
         if(target->context->windowID != windowID)
         {
@@ -2007,10 +1911,7 @@ static void ResetRendererState(METAENGINE_Render_Renderer* renderer)
         glUseProgram(target->context->current_shader_program);
     #endif
 
-    #ifdef METAENGINE_Render_USE_SDL2
     SDL_GL_MakeCurrent(SDL_GetWindowFromID(target->context->windowID), target->context->context);
-    #endif
-
 
     #ifndef METAENGINE_Render_USE_BUFFER_PIPELINE
     glColor4f(cdata->last_color.r/255.01f, cdata->last_color.g/255.01f, cdata->last_color.b/255.01f, GET_ALPHA(cdata->last_color)/255.01f);
@@ -2212,7 +2113,6 @@ static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer* renderer
 {
     METAENGINE_Render_Target* target = renderer->current_context_target;
 
-#ifdef METAENGINE_Render_USE_SDL2
     SDL_Window* window = SDL_GetWindowFromID(target->context->windowID);
     Uint32 old_flags = SDL_GetWindowFlags(window);
     METAENGINE_Render_bool was_fullscreen = (old_flags & SDL_WINDOW_FULLSCREEN);
@@ -2246,19 +2146,6 @@ static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer* renderer
         if(was_fullscreen && !is_fullscreen && (target->context->stored_window_w != 0 && target->context->stored_window_h != 0))
             SDL_SetWindowSize(window, target->context->stored_window_w, target->context->stored_window_h);
     }
-
-#else
-    SDL_Surface* surf = SDL_GetVideoSurface();
-	METAENGINE_Render_bool was_fullscreen = (surf->flags & SDL_FULLSCREEN);
-	METAENGINE_Render_bool is_fullscreen = was_fullscreen;
-
-    if(was_fullscreen ^ enable_fullscreen)
-    {
-        SDL_WM_ToggleFullScreen(surf);
-        is_fullscreen = (surf->flags & SDL_FULLSCREEN);
-    }
-
-#endif
 
     if(is_fullscreen != was_fullscreen)
     {
@@ -4113,11 +4000,8 @@ static void FreeContext(METAENGINE_Render_Context* context)
         #endif
     }
 
-    #ifdef METAENGINE_Render_USE_SDL2
     if(context->context != 0)
         SDL_GL_DeleteContext(context->context);
-    #endif
-    
 
     SDL_free(cdata);
     SDL_free(context);
@@ -5816,11 +5700,7 @@ static void Flip(METAENGINE_Render_Renderer* renderer, METAENGINE_Render_Target*
     {
         makeContextCurrent(renderer, target);
 
-    #ifdef METAENGINE_Render_USE_SDL2
         SDL_GL_SwapWindow(SDL_GetWindowFromID(renderer->current_context_target->context->windowID));
-    #else
-        SDL_GL_SwapBuffers();
-    #endif
     }
 
     #ifdef METAENGINE_Render_USE_OPENGL

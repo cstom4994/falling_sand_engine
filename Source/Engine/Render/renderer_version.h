@@ -1,8 +1,0 @@
-#ifndef _METAENGINE_Render_VERSION_H__
-#define _METAENGINE_Render_VERSION_H__
-
-#define METAENGINE_Render_VERSION_MAJOR 0
-#define METAENGINE_Render_VERSION_MINOR 12
-#define METAENGINE_Render_VERSION_PATCH 0
-
-#endif

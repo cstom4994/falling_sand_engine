@@ -8,9 +8,9 @@ extern "C" {
 #endif
 
 // Internal API for managing window mappings
-DECLSPEC void SDLCALL METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target* target);
-DECLSPEC void SDLCALL METAENGINE_Render_RemoveWindowMapping(Uint32 windowID);
-DECLSPEC void SDLCALL METAENGINE_Render_RemoveWindowMappingByTarget(METAENGINE_Render_Target* target);
+ void METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target* target);
+ void METAENGINE_Render_RemoveWindowMapping(Uint32 windowID);
+ void METAENGINE_Render_RemoveWindowMappingByTarget(METAENGINE_Render_Target* target);
 
 /*! Private implementation of renderer members. */
 typedef struct METAENGINE_Render_RendererImpl
