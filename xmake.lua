@@ -2,13 +2,12 @@
 set_project("MetaDot.Runtime")
 
 add_requires("libsdl", {configs = {shared = false}, verify = true})
-add_requires("glfw", {configs = {shared = false}, verify = true})
 
 add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
 
-set_languages("c17", "c++20")
+set_languages("clatest", "c++latest")
 set_arch("x64")
 
 add_rules("mode.debug", "mode.release")
@@ -147,7 +146,6 @@ include_dir_list = {
     "Source/Generated",
     "Source/Engine",
     "Source/Libs/lua/lua",
-    "Source/Libs/raylib/external/glfw/include",
     "Source/Libs",
     "Source/Libs/imgui",
     "Source/Libs/stb",
@@ -181,7 +179,6 @@ target("luaexe")
 
 target("Libs")
     set_kind("static")
-    add_packages("glfw")
     add_rules("c.unity_build", {batchsize = 0})
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
@@ -204,7 +201,6 @@ target("Libs")
 target("Engine")
     set_kind("static")
     add_packages("libsdl")
-    add_packages("glfw")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Engine/**.c")
