@@ -1,12 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
 
 #include <SDL.h>
 
 #include "Engine/Render/renderer_gpu.h"
-
-#include "Game/Legacy/ShadersGLSL.h"
 
 #include <cstdlib>
 #include <string>
@@ -16,66 +13,101 @@
 class Shaders {
 public:
     // Loads a shader and prepends version/compatibility info before compiling it.
-    static Uint32 load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *filename);
-    static METAENGINE_Render_ShaderBlock load_shader_program(Uint32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
-    static void free_shader(Uint32 p);
+    static Uint32 load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *filename) {
+        SDL_RWops *rwops;
+        Uint32 shader;
+        char *source;
+        int header_size, file_size;
+        const char *header = "";
+        METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
+
+        // Open file
+        rwops = SDL_RWFromFile(filename, "rb");
+        if (rwops == NULL) {
+            METAENGINE_Render_PushErrorCode("load_shader", METAENGINE_Render_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found", filename);
+            return 0;
+        }
+
+        // Get file size
+        file_size = SDL_RWseek(rwops, 0, SEEK_END);
+        SDL_RWseek(rwops, 0, SEEK_SET);
+
+        // Get size from header
+        if (renderer->shader_language == METAENGINE_Render_LANGUAGE_GLSL) {
+            if (renderer->max_shader_version >= 120)
+                header = "#version 330 core\n";
+            else
+                header = "#version 110\n";// Maybe this is good enough?
+        } else if (renderer->shader_language == METAENGINE_Render_LANGUAGE_GLSLES)
+            header = "#version 100\nprecision mediump int;\nprecision mediump float;\n";
+
+        header_size = (int) strlen(header);
+
+        // Allocate source buffer
+        source = (char *) METAENGINE_MALLOC(sizeof(char) * (header_size + file_size + 1));
+        if (source == NULL) throw std::runtime_error("Failed to allocate memory for shader");
+
+            // Prepend header
+#pragma warning(push)
+#pragma warning(disable : 6386)
+        strcpy(source, header);
+#pragma warning(pop)
+
+        // Read in source code
+        SDL_RWread(rwops, source + strlen(source), 1, file_size);
+        source[header_size + file_size] = '\0';
+
+        // Compile the shader
+        shader = METAENGINE_Render_CompileShader(shader_type, source);
+
+        // Clean up
+        METAENGINE_FREE(source);
+        SDL_RWclose(rwops);
+
+        return shader;
+    }
+
+    static METAENGINE_Render_ShaderBlock load_shader_program(Uint32 *p, const char *vertex_shader_file, const char *fragment_shader_file) {
+        Uint32 v, f;
+        v = load_shader(METAENGINE_Render_VERTEX_SHADER, vertex_shader_file);
+
+        if (!v)
+            METAENGINE_Render_LogError("Failed to load vertex shader (%s): %s\n", vertex_shader_file, METAENGINE_Render_GetShaderMessage());
+
+        f = load_shader(METAENGINE_Render_FRAGMENT_SHADER, fragment_shader_file);
+
+        if (!f)
+            METAENGINE_Render_LogError("Failed to load fragment shader (%s): %s\n", fragment_shader_file, METAENGINE_Render_GetShaderMessage());
+
+        *p = METAENGINE_Render_LinkShaders(v, f);
+
+        if (!*p) {
+            METAENGINE_Render_ShaderBlock b = {-1, -1, -1, -1};
+            METAENGINE_Render_LogError("Failed to link shader program (%s + %s): %s\n", vertex_shader_file, fragment_shader_file, METAENGINE_Render_GetShaderMessage());
+            return b;
+        }
+
+        {
+            METAENGINE_Render_ShaderBlock block = METAENGINE_Render_LoadShaderBlock(*p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
+            METAENGINE_Render_ActivateShaderProgram(*p, &block);
+
+            return block;
+        }
+    }
+
+    static void free_shader(Uint32 p) {
+        METAENGINE_Render_FreeShaderProgram(p);
+    }
 };
 
-
-Uint32 Shaders::load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *data) {
-    Uint32 shader;
-    METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
-
-    if (strlen(data) == 0) throw std::runtime_error("Failed to load shader");
-    shader = METAENGINE_Render_CompileShader(shader_type, data);
-    return shader;
-}
-
-METAENGINE_Render_ShaderBlock Shaders::load_shader_program(Uint32 *p, const char *vertex_shader_file, const char *fragment_shader_file) {
-    Uint32 v, f;
-    v = load_shader(METAENGINE_Render_VERTEX_SHADER, vertex_shader_file);
-
-    if (!v)
-        METAENGINE_Render_LogError("Failed to load vertex shader (%s): %s\n", vertex_shader_file, METAENGINE_Render_GetShaderMessage());
-
-    f = load_shader(METAENGINE_Render_FRAGMENT_SHADER, fragment_shader_file);
-
-    if (!f)
-        METAENGINE_Render_LogError("Failed to load fragment shader (%s): %s\n", fragment_shader_file, METAENGINE_Render_GetShaderMessage());
-
-    *p = METAENGINE_Render_LinkShaders(v, f);
-
-    if (!*p) {
-        METAENGINE_Render_ShaderBlock b = {-1, -1, -1, -1};
-        METAENGINE_Render_LogError("Failed to link shader program (%s + %s): %s\n", vertex_shader_file, fragment_shader_file, METAENGINE_Render_GetShaderMessage());
-        return b;
-    }
-
-    {
-        METAENGINE_Render_ShaderBlock block = METAENGINE_Render_LoadShaderBlock(*p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
-        METAENGINE_Render_ActivateShaderProgram(*p, &block);
-
-        return block;
-    }
-}
-
-void Shaders::free_shader(Uint32 p) {
-    METAENGINE_Render_FreeShaderProgram(p);
-}
-
-
 class Shader {
-private:
-    const char *glsl_frag;
-    const char *glsl_vert;
-
 public:
     Uint32 shader;
     METAENGINE_Render_ShaderBlock block;
 
-    Shader(const char *vertex_shader_code, const char *fragment_shader_code) : glsl_vert(vertex_shader_code), glsl_frag(fragment_shader_code) {
+    Shader(const char *vertex_shader_file, const char *fragment_shader_file) {
         shader = 0;
-        block = Shaders::load_shader_program(&shader, glsl_vert, glsl_frag);
+        block = Shaders::load_shader_program(&shader, vertex_shader_file, fragment_shader_file);
     }
 
     ~Shader() {
@@ -93,7 +125,7 @@ class WaterFlowPassShader : public Shader {
 public:
     bool dirty = false;
 
-    WaterFlowPassShader() : Shader(glsl_vert_common, glsl_frag_waterFlow){};
+    WaterFlowPassShader() : Shader("data/shaders/common.vert", "data/shaders/waterFlow.frag"){};
 
     void prepare() {}
 
@@ -107,7 +139,7 @@ public:
 
 class WaterShader : public Shader {
 public:
-    WaterShader() : Shader(glsl_vert_common, glsl_frag_water){};
+    WaterShader() : Shader("data/shaders/common.vert", "data/shaders/water.frag"){};
 
     void prepare() {}
 
@@ -155,7 +187,7 @@ public:
     bool lastEmissionEnabled = false;
     bool lastDitheringEnabled = false;
 
-    NewLightingShader() : Shader(glsl_vert_common, glsl_frag_newLighting){};
+    NewLightingShader() : Shader("data/shaders/common.vert", "data/shaders/newLighting.frag"){};
 
     void prepare() {}
 
@@ -228,7 +260,7 @@ public:
 
 class FireShader : public Shader {
 public:
-    FireShader() : Shader(glsl_vert_common, glsl_frag_fire){};
+    FireShader() : Shader("data/shaders/common.vert", "data/shaders/fire.frag"){};
 
     void prepare() {}
 
@@ -245,7 +277,7 @@ public:
 
 class Fire2Shader : public Shader {
 public:
-    Fire2Shader() : Shader(glsl_vert_common, glsl_frag_fire2){};
+    Fire2Shader() : Shader("data/shaders/common.vert", "data/shaders/fire2.frag"){};
 
     void prepare() {}
 
