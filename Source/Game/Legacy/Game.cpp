@@ -63,6 +63,8 @@ struct Options
 };
 STRUCTOPT(Options, test, files);
 
+#if 1
+
 #include "Scripting/MuScript/Library/MuScript.hpp"
 
 MuScript::MuScriptInterpreter interp(MuScript::ModulePrivilege::allPrivilege);
@@ -177,6 +179,7 @@ void integrationExample() {
     }
 }
 
+#endif
 
 void Game::updateMaterialSounds() {
     uint16_t waterCt = std::min(movingTiles[Materials::WATER.id], (uint16_t) 5000);
@@ -372,7 +375,7 @@ print(b);
         v.get();
     }
 
-    auto fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
+    char* fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
 
     METADOT_INFO("i'm {0}", fu);
 
@@ -508,14 +511,7 @@ print(b);
     // });
 
     if (networkMode != NetworkMode::SERVER) {
-        // init steam and discord
-
-        initThread = initThreadPool->push([&](int id) {
-
-        });
-
         // init the background
-
 
         METADOT_INFO("Loading backgrounds...");
 
@@ -594,9 +590,6 @@ print(b);
     if (networkMode != NetworkMode::SERVER) {
         // load shaders
         loadShaders();
-
-
-        initThread.get();// steam & discord
     }
 
 

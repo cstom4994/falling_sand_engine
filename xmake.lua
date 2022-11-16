@@ -73,6 +73,8 @@ if (is_os("windows")) then
     add_defines("_CRT_NONSTDC_NO_DEPRECATE")
     add_defines("_SCL_SECURE_NO_WARNINGS")
     add_defines("WIN32_LEAN_AND_MEAN")
+    add_defines("_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING")
+
     if (is_mode("release")) then
         set_runtimes("MD")
     else
@@ -156,28 +158,27 @@ include_dir_list = {
     }
 
 defines_list = {
-    "_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING",
-    "MINIZ_NO_ZLIB_COMPATIBLE_NAMES",
-    "IMGUI_IMPL_OPENGL_LOADER_CUSTOM",
-    "PLATFORM_DESKTOP"
+
 }
 
-target("lua")
+target("lua") do
     set_kind("static")
     add_rules("c.unity_build")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Libs/lua/lua/*.c|lua.c|luac.c|onelua.c")
+end
 
-target("luaexe")
+target("luaexe") do
     set_basename("lua54")
     set_kind("binary")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Libs/lua/lua/lua.c")
     add_deps("lua")
+end
 
-target("Libs")
+target("Libs") do
     set_kind("static")
     add_rules("c.unity_build", {batchsize = 0})
     add_rules("c++.unity_build", {batchsize = 0})
@@ -185,7 +186,6 @@ target("Libs")
     add_defines(defines_list)
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
-    add_files("Source/Libs/stb/**.c")
     add_files("Source/Libs/fmt/**.cc")
     add_files("Source/Libs/glew/**.c")
     add_files("Source/Libs/lz4/**.c")
@@ -197,8 +197,9 @@ target("Libs")
 	add_headerfiles("Source/Libs/**.hpp")
     remove_files("Source/Libs/lua/lua/**")
     set_symbols("debug")
+end
 
-target("Engine")
+target("Engine") do
     set_kind("static")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
@@ -210,8 +211,9 @@ target("Engine")
     add_headerfiles("Source/Engine/**.inl")
     add_files('Source/Engine/UserInterface/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
     set_symbols("debug")
+end
 
-target("MetaDot")
+target("MetaDot") do
     set_kind("binary")
     add_packages("libsdl")
     add_rules("metadot.uidsl")
@@ -229,3 +231,4 @@ target("MetaDot")
     add_headerfiles("Source/Shared/**.hpp")
     remove_files("Source/Game/Game.**")
     set_symbols("debug")
+end
