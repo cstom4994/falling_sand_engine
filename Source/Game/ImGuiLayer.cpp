@@ -1766,7 +1766,7 @@ namespace MetaEngine {
 
         ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
-        const char *glsl_version = "#version 400";
+        const char *glsl_version = "#version 330 core";
         ImGui_ImplOpenGL3_Init(glsl_version);
 
 
