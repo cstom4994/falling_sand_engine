@@ -170,8 +170,8 @@ private:
     MetaEngine::LuaLayer *m_LuaLayer = nullptr;
 
 public:
-    int WIDTH = 1360;
-    int HEIGHT = 870;
+    int WIDTH = 800;
+    int HEIGHT = 600;
 
     bool running = true;
 

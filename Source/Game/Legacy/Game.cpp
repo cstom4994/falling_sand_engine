@@ -481,13 +481,13 @@ print(b);
         //this->data->window = window;
         this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
 
-        MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
-        MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
+        // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
+        // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
 
-        this->data->Functions.insert(std::make_pair("func1", func1));
-        this->data->Functions.insert(std::make_pair("func2", func2));
+        // this->data->Functions.insert(std::make_pair("func1", func1));
+        // this->data->Functions.insert(std::make_pair("func2", func2));
 
-        RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
+        // RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
 
         // TODO CppScript
 
@@ -503,9 +503,9 @@ print(b);
     m_LuaLayer->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
 
     // init the world
-    worldInitThread = worldInitThreadPool->push([&](int id) {
-        fuckme();
-    });
+    // worldInitThread = worldInitThreadPool->push([&](int id) {
+    //     fuckme();
+    // });
 
     if (networkMode != NetworkMode::SERVER) {
         // init steam and discord
@@ -548,7 +548,7 @@ print(b);
     b2DebugDraw = new b2DebugDraw_impl(target);
 
 
-    worldInitThread.get();
+    //worldInitThread.get();
 
 
     METADOT_INFO("Initializing world...");
