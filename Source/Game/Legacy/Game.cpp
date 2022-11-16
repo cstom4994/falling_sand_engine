@@ -827,7 +827,9 @@ void Game::handleWindowSizeChange(int newWidth, int newHeight) {
     accLoadX -= (newWidth - prevWidth) / 2.0f / scale;
     accLoadY -= (newHeight - prevHeight) / 2.0f / scale;
 
+    METADOT_INFO("Ticking chunk...");
     tickChunkLoading();
+    METADOT_INFO("Ticking chunk done");
 
     for (int x = 0; x < world->width; x++) {
         for (int y = 0; y < world->height; y++) {
@@ -836,6 +838,9 @@ void Game::handleWindowSizeChange(int newWidth, int newHeight) {
             world->backgroundDirty[x + y * world->width] = true;
         }
     }
+
+    METADOT_INFO("Creating world textures done");
+
 }
 
 void Game::setWindowFlash(WindowFlashAction action, int count, int period) {
@@ -1023,15 +1028,7 @@ int Game::run(int argc, char *argv[]) {
                 }
 
                 if (windowEvent.type == SDL_MOUSEWHEEL) {
-                    // zoom in/out
 
-                    int deltaScale = windowEvent.wheel.y;
-                    int oldScale = scale;
-                    scale += deltaScale;
-                    if (scale < 1) scale = 1;
-
-                    ofsX = (ofsX - WIDTH / 2) / oldScale * scale + WIDTH / 2;
-                    ofsY = (ofsY - HEIGHT / 2) / oldScale * scale + HEIGHT / 2;
 
                 } else if (windowEvent.type == SDL_MOUSEMOTION) {
                     if (Controls::DEBUG_DRAW->get()) {
@@ -2300,6 +2297,24 @@ void Game::tick() {
             world->tick();
         }
 
+
+        // Tick Cam zoom
+
+        if (state == INGAME && (Controls::ZOOM_IN->get() || Controls::ZOOM_OUT->get())) {
+            float CamZoomIn = (float) (Controls::ZOOM_IN->get());
+            float CamZoomOut = (float) (Controls::ZOOM_OUT->get());
+
+            float deltaScale = CamZoomIn - CamZoomOut;
+            int oldScale = scale;
+            scale += deltaScale;
+            if (scale < 1) scale = 1;
+
+            ofsX = (ofsX - WIDTH / 2) / oldScale * scale + WIDTH / 2;
+            ofsY = (ofsY - HEIGHT / 2) / oldScale * scale + HEIGHT / 2;
+        } else {
+        }
+
+
         // player movement
         tickPlayer();
 
@@ -3445,8 +3460,8 @@ void Game::renderLate() {
             }
 
             waterShader->activate();
-            float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
-            waterShader->update(t, target->w * scale, target->h * scale, texture, r1.x, r1.y, r1.w, r1.h, scale, textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
+            //float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
+            //waterShader->update(t, target->w * scale, target->h * scale, texture, r1.x, r1.y, r1.w, r1.h, scale, textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
         }
 
         target = realTarget;

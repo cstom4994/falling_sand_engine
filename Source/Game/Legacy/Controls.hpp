@@ -90,6 +90,9 @@ public:
     static Control *PLAYER_LEFT;
     static Control *PLAYER_RIGHT;
 
+    static Control *ZOOM_IN;
+    static Control *ZOOM_OUT;
+
     static Control *PAUSE;
 
     static std::vector<KeyControl *> keyControls;

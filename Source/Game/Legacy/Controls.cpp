@@ -4,6 +4,7 @@
 #include "Game/InEngine.h"
 
 #include "Controls.hpp"
+#include "SDL_keycode.h"
 
 std::vector<KeyControl *> Controls::keyControls = {};
 //KeyControl** Controls::keyControls = new KeyControl*[NUM_CONTROLS];
@@ -30,6 +31,9 @@ Control *Controls::PLAYER_UP = new MultiControl(ControlCombine::OR, {add(new Key
 Control *Controls::PLAYER_LEFT = add(new KeyControl(SDLK_a, MOMENTARY));
 Control *Controls::PLAYER_DOWN = add(new KeyControl(SDLK_s, MOMENTARY));
 Control *Controls::PLAYER_RIGHT = add(new KeyControl(SDLK_d, MOMENTARY));
+
+Control *Controls::ZOOM_IN = add(new KeyControl(SDLK_PAGEUP, MOMENTARY));
+Control *Controls::ZOOM_OUT = add(new KeyControl(SDLK_PAGEDOWN, MOMENTARY));
 
 Control *Controls::PAUSE = add(new KeyControl(SDLK_ESCAPE, RISING));
 
