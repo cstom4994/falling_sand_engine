@@ -270,18 +270,6 @@ void METAENGINE_Render_GetDefaultRendererOrder(int *order_size, METAENGINE_Rende
     int count = 0;
     METAENGINE_Render_RendererID default_order[METAENGINE_Render_RENDERER_ORDER_MAX];
 
-#ifndef METAENGINE_Render_DISABLE_GLES
-#ifndef METAENGINE_Render_DISABLE_GLES_3
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGLES 3", METAENGINE_Render_RENDERER_GLES_3, 3, 0);
-#endif
-#ifndef METAENGINE_Render_DISABLE_GLES_2
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGLES 2", METAENGINE_Render_RENDERER_GLES_2, 2, 0);
-#endif
-#ifndef METAENGINE_Render_DISABLE_GLES_1
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGLES 1", METAENGINE_Render_RENDERER_GLES_1, 1, 1);
-#endif
-#endif
-
 #ifndef METAENGINE_Render_DISABLE_OPENGL
 #ifdef __MACOSX__
 

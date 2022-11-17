@@ -157,7 +157,6 @@ include_dir_list = {
     "Source/Libs/lua/lua",
     "Source/Libs",
     "Source/Libs/imgui",
-    "Source/Libs/stb",
     "Source/Libs/json/include",
     "Source/Libs/fmt/include",
     "Source/Libs/box2d/include",
