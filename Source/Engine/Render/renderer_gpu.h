@@ -949,7 +949,7 @@ static inline SDL_version METAENGINE_Render_GetCompiledVersion(void)
     void METAENGINE_Render_GetRegisteredRendererList(METAENGINE_Render_RendererID *renderers_array);
 
     /*! Prepares a renderer for use by SDL_gpu. */
-    void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENGINE_Render_Renderer *(SDLCALL *create_renderer)(METAENGINE_Render_RendererID request), void(SDLCALL *free_renderer)(METAENGINE_Render_Renderer *renderer));
+    void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENGINE_Render_Renderer *( *create_renderer)(METAENGINE_Render_RendererID request), void( *free_renderer)(METAENGINE_Render_Renderer *renderer));
 
     // End of RendererSetup
     /*! @} */
