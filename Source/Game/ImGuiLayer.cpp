@@ -2529,7 +2529,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                 //game->data.Functions["func_drawInTweak"].invoke({});
 
-                game->data->draw();
+                //game->data->draw();
 
                 ImGui::EndTabItem();
             }

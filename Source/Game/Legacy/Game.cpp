@@ -191,13 +191,13 @@ void Game::updateMaterialSounds() {
 Game::Game() {
     METADOT_GC_INIT();
 
-    data = new HostData;
+    //data = new HostData;
 }
 
 Game::~Game() {
     METADOT_GC_EXIT();
 
-    delete data;
+    //delete data;
 }
 
 int Game::init(int argc, char *argv[]) {
@@ -477,12 +477,12 @@ print(b);
 #elif defined(__linux)
         this->data->wndh = 0;
 #elif defined(__APPLE__)
-        this->data->wndh = 0;
+        //this->data->wndh = 0;
 #else
 #error "GetWindowWMInfo Error"
 #endif
         //this->data->window = window;
-        this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
+        //this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
 
         // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
         // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
@@ -3441,18 +3441,18 @@ void Game::renderLate() {
 
         if (Settings::draw_shaders) {
 
-            if (waterFlowPassShader->dirty && Settings::water_showFlow) {
+            // if (waterFlowPassShader->dirty && Settings::water_showFlow) {
 
-                waterFlowPassShader->activate();
-                waterFlowPassShader->update(world->width, world->height);
-                METAENGINE_Render_SetBlendMode(textureFlow, METAENGINE_Render_BLEND_SET);
-                METAENGINE_Render_BlitRect(textureFlow, NULL, textureFlowSpead->target, NULL);
+            //     waterFlowPassShader->activate();
+            //     waterFlowPassShader->update(world->width, world->height);
+            //     METAENGINE_Render_SetBlendMode(textureFlow, METAENGINE_Render_BLEND_SET);
+            //     METAENGINE_Render_BlitRect(textureFlow, NULL, textureFlowSpead->target, NULL);
 
 
-                waterFlowPassShader->dirty = false;
-            }
+            //     waterFlowPassShader->dirty = false;
+            // }
 
-            waterShader->activate();
+            //waterShader->activate();
             //float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
             //waterShader->update(t, target->w * scale, target->h * scale, texture, r1.x, r1.y, r1.w, r1.h, scale, textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
         }
