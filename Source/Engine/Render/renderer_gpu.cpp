@@ -128,11 +128,11 @@ Uint32 METAENGINE_Render_GetCurrentShaderProgram(void) {
 int gpu_default_print(METAENGINE_Render_LogLevelEnum log_level, const char *format, va_list args) {
     switch (log_level) {
         case METAENGINE_Render_LOG_INFO:
-            METADOT_INFO(format, args);
+            //METADOT_INFO(format, args);
         case METAENGINE_Render_LOG_WARNING:
-            METADOT_WARN(format, args);
+            //METADOT_WARN(format, args);
         case METAENGINE_Render_LOG_ERROR:
-            METADOT_WARN(format, args);
+            //METADOT_WARN(format, args);
         default:
             return 0;
     }

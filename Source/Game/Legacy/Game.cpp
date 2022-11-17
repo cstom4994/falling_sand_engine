@@ -203,7 +203,7 @@ Game::~Game() {
 int Game::init(int argc, char *argv[]) {
 
     try {
-        auto options = structopt::app("my_app").parse<Options>(argc, argv);
+        auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
 
         if (!options.test.value_or("").empty()) {
             if (options.test == "test_mu") {

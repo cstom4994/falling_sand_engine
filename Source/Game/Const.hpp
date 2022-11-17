@@ -13,6 +13,20 @@ static const std::string win_title_client = U8("MetaDot 少女祈祷中");
 static const std::string win_title_server = U8("MetaDot Server");
 static const std::string win_game = U8("MetaDot");
 
+#define METADOT_NAME "MetaDot"
+#define METADOT_VERSION_TEXT "0.0.2"
+#define METADOT_VERSION_MAJOR 0
+#define METADOT_VERSION_MINOR 0
+#define METADOT_VERSION_BUILD 2
+#define METADOT_VERSION Version(METADOT_VERSION_MAJOR, METADOT_VERSION_MINOR, METADOT_VERSION_BUILD)
+#define METADOT_COMPANY "MetaDot"
+#define METADOT_COPYRIGHT "Copyright (c) 2022 KaoruXun. All rights reserved."
+
+#define BUILD_SERIES_NAME "local build"
+#define BUILD_ID "buildid"
+#define BUILD_COMMIT_ID "Unknown"
+#define BUILD_DATETIME "Unknown"
+
 static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
 static const int VERSION_MINOR = METADOT_VERSION_MINOR;
 static const int VERSION_REV = METADOT_VERSION_BUILD;
