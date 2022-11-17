@@ -5,15 +5,15 @@
 #include "world.hpp"
 #endif
 #include "DefaultGenerator.cpp"
-#include "Game/FileSystem.hpp"
 #include "Game/Core.hpp"
+#include "Game/FileSystem.hpp"
+#include "Game/Textures.hpp"
+#include "Game/Utils.hpp"
 #include "Libs/MarchingSquares/MarchingSquares.h"
 #include "Libs/polygon-simplify.hh"
 #include "Libs/polypartition.h"
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
-#include "Game/Textures.hpp"
-#include "Game/Utils.hpp"
 #include "nlohmann/json.hpp"
 
 #include <box2d/b2_body.h>
@@ -2293,7 +2293,7 @@ void World::tickObjectsMesh() {
     std::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
-        if (cur->needsUpdate && cur->body->IsEnabled() && nullptr != cur->surface) {
+        if (cur->needsUpdate && cur->body->IsEnabled() && NULL != cur->surface->pixels) {
             updateRigidBodyHitbox(cur);
         }
     }
