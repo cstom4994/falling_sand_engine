@@ -679,154 +679,177 @@ void Game::createTexture() {
     loadingOnColor = 0xFFFFFFFF;
     loadingOffColor = 0x000000FF;
 
-    {
-        METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
-        TexturePack_.loadingTexture = METAENGINE_Render_CreateImage(
-                TexturePack_.loadingScreenW = (WIDTH / 20), TexturePack_.loadingScreenH = (HEIGHT / 20),
-                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+    std::vector<std::function<void(void)>> Funcs = {
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
+                TexturePack_.loadingTexture = METAENGINE_Render_CreateImage(
+                        TexturePack_.loadingScreenW = (WIDTH / 20), TexturePack_.loadingScreenH = (HEIGHT / 20),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-        METAENGINE_Render_SetImageFilter(TexturePack_.loadingTexture, METAENGINE_Render_FILTER_NEAREST);
-    }
-    {
-        METADOT_LOG_SCOPE_F(INFO, "texture");
-        TexturePack_.texture = METAENGINE_Render_CreateImage(
-                world->width, world->height,
-                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.loadingTexture, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "texture");
+                TexturePack_.texture = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-        METAENGINE_Render_SetImageFilter(TexturePack_.texture, METAENGINE_Render_FILTER_NEAREST);
-    }
-    {
-        METADOT_LOG_SCOPE_F(INFO, "worldTexture");
-        TexturePack_.worldTexture = METAENGINE_Render_CreateImage(
-                world->width * Settings::hd_objects_size, world->height * Settings::hd_objects_size,
-                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.texture, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "worldTexture");
+                TexturePack_.worldTexture = METAENGINE_Render_CreateImage(
+                        world->width * Settings::hd_objects_size, world->height * Settings::hd_objects_size,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-        METAENGINE_Render_SetImageFilter(TexturePack_.worldTexture, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.worldTexture, METAENGINE_Render_FILTER_NEAREST);
 
 
-        METAENGINE_Render_LoadTarget(TexturePack_.worldTexture);
-    }
-    {
-        METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
-        TexturePack_.lightingTexture = METAENGINE_Render_CreateImage(
-                world->width, world->height,
-                METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-        METAENGINE_Render_SetImageFilter(TexturePack_.lightingTexture, METAENGINE_Render_FILTER_NEAREST);
-        METAENGINE_Render_LoadTarget(TexturePack_.lightingTexture);
-    }
-
-    TexturePack_.emissionTexture = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.emissionTexture, METAENGINE_Render_FILTER_NEAREST);
-
-
-    TexturePack_.textureFlow = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureFlow, METAENGINE_Render_FILTER_NEAREST);
-
-
-    TexturePack_.textureFlowSpead = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureFlowSpead, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_LoadTarget(TexturePack_.textureFlowSpead);
-
-    TexturePack_.textureFire = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureFire, METAENGINE_Render_FILTER_NEAREST);
-
-    TexturePack_.texture2Fire = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.texture2Fire, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_LoadTarget(TexturePack_.texture2Fire);
-
-    TexturePack_.textureLayer2 = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureLayer2, METAENGINE_Render_FILTER_NEAREST);
-
-
-    TexturePack_.textureBackground = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureBackground, METAENGINE_Render_FILTER_NEAREST);
-
-    TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-            world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_LoadTarget(TexturePack_.textureObjects);
-
-
-    TexturePack_.textureObjectsLQ = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsLQ, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_LoadTarget(TexturePack_.textureObjectsLQ);
-
-
-    TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-            world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_LoadTarget(TexturePack_.textureObjectsBack);
-
-
-    TexturePack_.textureParticles = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-
-
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureParticles, METAENGINE_Render_FILTER_NEAREST);
-
-
-    TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-            world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-
-
-    METAENGINE_Render_LoadTarget(TexturePack_.textureEntities);
-
-
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
-
-
-    TexturePack_.textureEntitiesLQ = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_LoadTarget(TexturePack_.worldTexture);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
+                TexturePack_.lightingTexture = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.lightingTexture, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.lightingTexture);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
+                TexturePack_.emissionTexture = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.emissionTexture, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureFlow");
+                TexturePack_.textureFlow = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureFlow, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
+                TexturePack_.textureFlowSpead = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureFlowSpead, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.textureFlowSpead);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureFire");
+                TexturePack_.textureFire = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureFire, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
+                TexturePack_.texture2Fire = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.texture2Fire, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.texture2Fire);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
+                TexturePack_.textureLayer2 = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureLayer2, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureBackground");
+                TexturePack_.textureBackground = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureBackground, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureObjects");
+                TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
+                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.textureObjects);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
+                TexturePack_.textureObjectsLQ = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsLQ, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.textureObjectsLQ);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
+                TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
+                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.textureObjectsBack);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureParticles");
+                TexturePack_.textureParticles = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-    METAENGINE_Render_LoadTarget(TexturePack_.textureEntitiesLQ);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureParticles, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureEntities");
+                TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
+                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-    METAENGINE_Render_SetImageFilter(TexturePack_.textureEntitiesLQ, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.textureEntities);
 
 
-    TexturePack_.temperatureMap = METAENGINE_Render_CreateImage(
-            world->width, world->height,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
+                TexturePack_.textureEntitiesLQ = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-    METAENGINE_Render_SetImageFilter(TexturePack_.temperatureMap, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_LoadTarget(TexturePack_.textureEntitiesLQ);
 
 
-    TexturePack_.backgroundImage = METAENGINE_Render_CreateImage(
-            WIDTH, HEIGHT,
-            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureEntitiesLQ, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
+                TexturePack_.temperatureMap = METAENGINE_Render_CreateImage(
+                        world->width, world->height,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-    METAENGINE_Render_SetImageFilter(TexturePack_.backgroundImage, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.temperatureMap, METAENGINE_Render_FILTER_NEAREST);
+            },
+            [&]() {
+                METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
+                TexturePack_.backgroundImage = METAENGINE_Render_CreateImage(
+                        WIDTH, HEIGHT,
+                        METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
-    METAENGINE_Render_LoadTarget(TexturePack_.backgroundImage);
+                METAENGINE_Render_SetImageFilter(TexturePack_.backgroundImage, METAENGINE_Render_FILTER_NEAREST);
 
+
+                METAENGINE_Render_LoadTarget(TexturePack_.backgroundImage);
+            }};
+
+    for(auto f : Funcs)
+        f();
 
     // create texture pixel buffers
 

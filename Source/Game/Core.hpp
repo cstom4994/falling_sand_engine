@@ -158,7 +158,7 @@ METADOT_STRUCT(MarkdownData, data);
 //--------------------------------------------------------------------------------------------------------------------------------//
 // LOGGING FUNCTIONS
 
-#define METADOT_BUG(...) LOG_F(1, __VA_ARGS__)
+#define METADOT_BUG(...) DLOG_F(1, __VA_ARGS__)
 #define METADOT_TRACE(...) LOG_F(2, __VA_ARGS__)
 #define METADOT_INFO(...) LOG_F(INFO, __VA_ARGS__)
 #define METADOT_WARN(...) LOG_F(WARNING, __VA_ARGS__)

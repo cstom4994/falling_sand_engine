@@ -15,10 +15,7 @@
 #include <box2d/box2d.h>
 
 namespace MetaEngine {
-    int meko_buildnum(void);
-    const char *meko_buildos(void);
-    const char *meko_buildarch(void);
-    const char *meko_buildcommit(void);
+    int MetaDot_buildnum(void);
     const std::string metadata(void);
 }// namespace MetaEngine
 
