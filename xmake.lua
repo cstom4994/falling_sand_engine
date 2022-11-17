@@ -134,10 +134,10 @@ elseif (is_os("macosx")) then
 
     set_toolchains("clang")
 
-    add_cxflags("-fPIC")
+    --add_cxflags("-fPIC")
 
-    add_mxflags("-fno-objc-arc", {force = true})
-    add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
+    --add_mxflags("-fno-objc-arc", {force = true})
+    -- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
     if (is_arch("arm.*")) then
         add_defines("__METADOT_ARCH_ARM")
@@ -148,7 +148,7 @@ elseif (is_os("macosx")) then
     link_list = {}
 end
 
-add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
+--add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
     "Source",
@@ -199,7 +199,6 @@ target("Libs") do
     add_files("Source/Libs/miniz/**.c")
     add_files("Source/Libs/external/**.c")
     add_files("Source/Libs/box2d/**.cpp")
-    add_files("Source/Libs/physfs/**.c", "Source/Libs/physfs/**.m")
 	add_headerfiles("Source/Libs/**.h")
 	add_headerfiles("Source/Libs/**.hpp")
     remove_files("Source/Libs/lua/lua/**")
@@ -211,7 +210,6 @@ target("Engine") do
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cpp")
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")
