@@ -347,32 +347,32 @@ void OptionsUI::DrawVideo(Game *game) {
     ImGui::Indent(4);
 
     if (ImGui::Checkbox("高清贴图", &Settings::hd_objects)) {
-        METAENGINE_Render_FreeTarget(game->textureObjects->target);
-        METAENGINE_Render_FreeImage(game->textureObjects);
-        METAENGINE_Render_FreeTarget(game->textureObjectsBack->target);
-        METAENGINE_Render_FreeImage(game->textureObjectsBack);
-        METAENGINE_Render_FreeTarget(game->textureEntities->target);
-        METAENGINE_Render_FreeImage(game->textureEntities);
+        METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjects->target);
+        METAENGINE_Render_FreeImage(game->TexturePack_.textureObjects);
+        METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjectsBack->target);
+        METAENGINE_Render_FreeImage(game->TexturePack_.textureObjectsBack);
+        METAENGINE_Render_FreeTarget(game->TexturePack_.textureEntities->target);
+        METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
 
-        game->textureObjects = METAENGINE_Render_CreateImage(
+        game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
                 game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                 METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-        METAENGINE_Render_SetImageFilter(game->textureObjects, METAENGINE_Render_FILTER_NEAREST);
+        METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
 
-        game->textureObjectsBack = METAENGINE_Render_CreateImage(
+        game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
                 game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                 METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-        METAENGINE_Render_SetImageFilter(game->textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
+        METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
 
-        METAENGINE_Render_LoadTarget(game->textureObjects);
-        METAENGINE_Render_LoadTarget(game->textureObjectsBack);
+        METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjects);
+        METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-        game->textureEntities = METAENGINE_Render_CreateImage(
+        game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
                 game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                 METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-        METAENGINE_Render_SetImageFilter(game->textureEntities, METAENGINE_Render_FILTER_NEAREST);
+        METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
 
-        METAENGINE_Render_LoadTarget(game->textureEntities);
+        METAENGINE_Render_LoadTarget(game->TexturePack_.textureEntities);
     }
 
     ImGui::SetNextItemWidth(100);
@@ -903,32 +903,32 @@ void DebugUI::Draw(Game *game) {
             }
 
             if (ImGui::Checkbox("HD Objects", &Settings::hd_objects)) {
-                METAENGINE_Render_FreeTarget(game->textureObjects->target);
-                METAENGINE_Render_FreeImage(game->textureObjects);
-                METAENGINE_Render_FreeTarget(game->textureObjectsBack->target);
-                METAENGINE_Render_FreeImage(game->textureObjectsBack);
-                METAENGINE_Render_FreeTarget(game->textureEntities->target);
-                METAENGINE_Render_FreeImage(game->textureEntities);
+                METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjects->target);
+                METAENGINE_Render_FreeImage(game->TexturePack_.textureObjects);
+                METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjectsBack->target);
+                METAENGINE_Render_FreeImage(game->TexturePack_.textureObjectsBack);
+                METAENGINE_Render_FreeTarget(game->TexturePack_.textureEntities->target);
+                METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
 
-                game->textureObjects = METAENGINE_Render_CreateImage(
+                game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
                         game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(game->textureObjects, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
 
-                game->textureObjectsBack = METAENGINE_Render_CreateImage(
+                game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
                         game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(game->textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
 
-                METAENGINE_Render_LoadTarget(game->textureObjects);
-                METAENGINE_Render_LoadTarget(game->textureObjectsBack);
+                METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjects);
+                METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-                game->textureEntities = METAENGINE_Render_CreateImage(
+                game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
                         game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(game->textureEntities, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
 
-                METAENGINE_Render_LoadTarget(game->textureEntities);
+                METAENGINE_Render_LoadTarget(game->TexturePack_.textureEntities);
             }
 
             ImGui::TreePop();

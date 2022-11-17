@@ -158,11 +158,13 @@ METADOT_STRUCT(MarkdownData, data);
 //--------------------------------------------------------------------------------------------------------------------------------//
 // LOGGING FUNCTIONS
 
-#define METADOT_BUG(...) LOG_F(1, __VA_ARGS__);
-#define METADOT_TRACE(...) LOG_F(2, __VA_ARGS__);
-#define METADOT_INFO(...) LOG_F(INFO, __VA_ARGS__);
-#define METADOT_WARN(...) LOG_F(WARNING, __VA_ARGS__);
-#define METADOT_ERROR(...) LOG_F(ERROR, __VA_ARGS__);
+#define METADOT_BUG(...) LOG_F(1, __VA_ARGS__)
+#define METADOT_TRACE(...) LOG_F(2, __VA_ARGS__)
+#define METADOT_INFO(...) LOG_F(INFO, __VA_ARGS__)
+#define METADOT_WARN(...) LOG_F(WARNING, __VA_ARGS__)
+#define METADOT_ERROR(...) LOG_F(ERROR, __VA_ARGS__)
+#define METADOT_LOG_SCOPE_FUNCTION(_c) LOG_SCOPE_FUNCTION(_c)
+#define METADOT_LOG_SCOPE_F(...) LOG_SCOPE_F(__VA_ARGS__)
 
 namespace MetaEngine {
 

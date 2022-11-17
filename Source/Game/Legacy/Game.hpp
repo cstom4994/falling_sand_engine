@@ -6,18 +6,18 @@
 //#define b2_maxTranslation 10.0f
 //#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
 
-#include "Game/DebugImpl.hpp"
 #include "Drawing.hpp"
 #include "Engine/AudioEngine/AudioEngine.h"
+#include "Engine/Interface.hpp"
 #include "Engine/Render/renderer_gpu.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Game/Console.hpp"
+#include "Game/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/ImGuiTerminal.hpp"
-#include "Game/Macros.hpp"
 #include "Game/Legacy/Networking.hpp"
-#include "Engine/Interface.hpp"
+#include "Game/Macros.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
@@ -189,57 +189,62 @@ public:
     METAENGINE_Render_Target *realTarget = nullptr;
     METAENGINE_Render_Target *target = nullptr;
 
-    METAENGINE_Render_Image *backgroundImage = nullptr;
 
-    METAENGINE_Render_Image *loadingTexture = nullptr;
-    std::vector<unsigned char> pixelsLoading;
-    unsigned char *pixelsLoading_ar = nullptr;
-    int loadingScreenW = 0;
-    int loadingScreenH = 0;
+    struct
+    {
+        METAENGINE_Render_Image *backgroundImage = nullptr;
 
-    METAENGINE_Render_Image *worldTexture = nullptr;
-    METAENGINE_Render_Image *lightingTexture = nullptr;
+        METAENGINE_Render_Image *loadingTexture = nullptr;
+        std::vector<unsigned char> pixelsLoading;
+        unsigned char *pixelsLoading_ar = nullptr;
+        int loadingScreenW = 0;
+        int loadingScreenH = 0;
 
-    METAENGINE_Render_Image *emissionTexture = nullptr;
-    std::vector<unsigned char> pixelsEmission;
-    unsigned char *pixelsEmission_ar = nullptr;
+        METAENGINE_Render_Image *worldTexture = nullptr;
+        METAENGINE_Render_Image *lightingTexture = nullptr;
 
-    METAENGINE_Render_Image *texture = nullptr;
-    std::vector<unsigned char> pixels;
-    unsigned char *pixels_ar = nullptr;
-    METAENGINE_Render_Image *textureLayer2 = nullptr;
-    std::vector<unsigned char> pixelsLayer2;
-    unsigned char *pixelsLayer2_ar = nullptr;
-    METAENGINE_Render_Image *textureBackground = nullptr;
-    std::vector<unsigned char> pixelsBackground;
-    unsigned char *pixelsBackground_ar = nullptr;
-    METAENGINE_Render_Image *textureObjects = nullptr;
-    METAENGINE_Render_Image *textureObjectsLQ = nullptr;
-    std::vector<unsigned char> pixelsObjects;
-    unsigned char *pixelsObjects_ar = nullptr;
-    METAENGINE_Render_Image *textureObjectsBack = nullptr;
-    METAENGINE_Render_Image *textureParticles = nullptr;
-    std::vector<unsigned char> pixelsParticles;
-    unsigned char *pixelsParticles_ar = nullptr;
-    METAENGINE_Render_Image *textureEntities = nullptr;
-    METAENGINE_Render_Image *textureEntitiesLQ = nullptr;
+        METAENGINE_Render_Image *emissionTexture = nullptr;
+        std::vector<unsigned char> pixelsEmission;
+        unsigned char *pixelsEmission_ar = nullptr;
 
-    METAENGINE_Render_Image *textureFire = nullptr;
-    METAENGINE_Render_Image *texture2Fire = nullptr;
-    std::vector<unsigned char> pixelsFire;
-    unsigned char *pixelsFire_ar = nullptr;
+        METAENGINE_Render_Image *texture = nullptr;
+        std::vector<unsigned char> pixels;
+        unsigned char *pixels_ar = nullptr;
+        METAENGINE_Render_Image *textureLayer2 = nullptr;
+        std::vector<unsigned char> pixelsLayer2;
+        unsigned char *pixelsLayer2_ar = nullptr;
+        METAENGINE_Render_Image *textureBackground = nullptr;
+        std::vector<unsigned char> pixelsBackground;
+        unsigned char *pixelsBackground_ar = nullptr;
+        METAENGINE_Render_Image *textureObjects = nullptr;
+        METAENGINE_Render_Image *textureObjectsLQ = nullptr;
+        std::vector<unsigned char> pixelsObjects;
+        unsigned char *pixelsObjects_ar = nullptr;
+        METAENGINE_Render_Image *textureObjectsBack = nullptr;
+        METAENGINE_Render_Image *textureParticles = nullptr;
+        std::vector<unsigned char> pixelsParticles;
+        unsigned char *pixelsParticles_ar = nullptr;
+        METAENGINE_Render_Image *textureEntities = nullptr;
+        METAENGINE_Render_Image *textureEntitiesLQ = nullptr;
 
-    METAENGINE_Render_Image *textureFlowSpead = nullptr;
-    METAENGINE_Render_Image *textureFlow = nullptr;
-    std::vector<unsigned char> pixelsFlow;
-    unsigned char *pixelsFlow_ar = nullptr;
+        METAENGINE_Render_Image *textureFire = nullptr;
+        METAENGINE_Render_Image *texture2Fire = nullptr;
+        std::vector<unsigned char> pixelsFire;
+        unsigned char *pixelsFire_ar = nullptr;
 
-    METAENGINE_Render_Image *temperatureMap = nullptr;
-    std::vector<unsigned char> pixelsTemp;
-    unsigned char *pixelsTemp_ar = nullptr;
+        METAENGINE_Render_Image *textureFlowSpead = nullptr;
+        METAENGINE_Render_Image *textureFlow = nullptr;
+        std::vector<unsigned char> pixelsFlow;
+        unsigned char *pixelsFlow_ar = nullptr;
+
+        METAENGINE_Render_Image *temperatureMap = nullptr;
+        std::vector<unsigned char> pixelsTemp;
+        unsigned char *pixelsTemp_ar = nullptr;
+    } TexturePack_;
 
 public:
-    MetaEngine::ImGuiLayer *getImGuiLayer() const { return m_ImGuiLayer; }
+    MetaEngine::ImGuiLayer *
+    getImGuiLayer() const { return m_ImGuiLayer; }
     CAudioEngine *getCAudioEngine() { return &audioEngine; }
     World *getWorld() { return world; }
     void setWorld(World *ptr) { world = ptr; }
@@ -262,6 +267,7 @@ public:
     void setMinimizeOnLostFocus(bool minimize);
     void setWindowFlash(WindowFlashAction action, int count, int period);
     void handleWindowSizeChange(int newWidth, int newHeight);
+    void createTexture();
 
     Game();
     ~Game();
