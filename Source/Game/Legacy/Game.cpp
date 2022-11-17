@@ -393,7 +393,7 @@ print(b);
 
         auto title = MetaEngine::Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
 
-        window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+        window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
         if (window == nullptr) {
             METADOT_ERROR("Could not create SDL_Window: {0}", SDL_GetError());
@@ -407,12 +407,9 @@ print(b);
 
         METAENGINE_Render_SetDebugLevel(METAENGINE_Render_DEBUG_LEVEL_MAX);
         METAENGINE_Render_SetPreInitFlags(METAENGINE_Render_INIT_DISABLE_VSYNC);
-
-
         METAENGINE_Render_SetInitWindow(SDL_GetWindowID(window));
 
-
-        target = METAENGINE_Render_Init(WIDTH, HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
+        target = METAENGINE_Render_Init(WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
 
         if (target == NULL) {
@@ -422,6 +419,7 @@ print(b);
         realTarget = target;
 
         SDL_GLContext &gl_context = target->context->context;
+
 
         SDL_GL_MakeCurrent(window, gl_context);
 
@@ -831,7 +829,6 @@ void Game::handleWindowSizeChange(int newWidth, int newHeight) {
     }
 
     METADOT_INFO("Creating world textures done");
-
 }
 
 void Game::setWindowFlash(WindowFlashAction action, int count, int period) {
