@@ -185,11 +185,12 @@ public:
     long long fadeOutLength = 0;
     std::function<void()> fadeOutCallback = []() {};
 
-
-    METAENGINE_Render_Target *realTarget = nullptr;
-    METAENGINE_Render_Target *target = nullptr;
-
-
+    struct
+    {
+        METAENGINE_Render_Target *realTarget = nullptr;
+        METAENGINE_Render_Target *target = nullptr;
+    }RenderTarget_;
+    
     struct
     {
         METAENGINE_Render_Image *backgroundImage = nullptr;
