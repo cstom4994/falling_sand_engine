@@ -7,8 +7,7 @@ add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
 
-set_languages("clatest", "c++latest")
-set_arch("x64")
+set_languages("c17", "c++20")
 
 add_rules("mode.debug", "mode.release")
 
@@ -62,6 +61,8 @@ set_fpmodels("strict")
 set_exceptions("cxx", "objc")
 
 if (is_os("windows")) then 
+
+    set_arch("x86_64")
 
     set_toolchains("clang-cl")
 
@@ -120,12 +121,17 @@ if (is_os("windows")) then
     }
 elseif (is_os("linux")) then
 
+    set_arch("x86_64")
+
     set_toolchains("clang")
 
     add_defines("__linux")
     add_cxflags("-fPIC")
     link_list = {}
 elseif (is_os("macosx")) then
+
+    set_arch("aarch64")
+
     set_toolchains("clang")
 
     add_cxflags("-fPIC")

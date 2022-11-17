@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include <cstdint>
+// #include <cstdint>
+#include <sys/malloc.h>
 
 #define METADOT_GC_IMPL 1
 
@@ -91,12 +92,12 @@
 
 #if METADOT_GC_ENABLED == 0
 
-#define METADOT_GC_ALLOC(size) ::malloc(size)
-#define METADOT_GC_ALLOC_ALIGNED(size, alignment) ::malloc(size)
-#define METADOT_GC_DEALLOC(ptr) ::free(ptr)
-#define METADOT_GC_DEALLOC_ALIGNED(ptr) ::free(ptr)
-#define METADOT_GC_REALLOC(ptr, size) ::realloc(ptr, size)
-#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) ::realloc(ptr, size, alignment)
+#define METADOT_GC_ALLOC(size) malloc(size)
+#define METADOT_GC_ALLOC_ALIGNED(size, alignment) malloc(size)
+#define METADOT_GC_DEALLOC(ptr) free(ptr)
+#define METADOT_GC_DEALLOC_ALIGNED(ptr) free(ptr)
+#define METADOT_GC_REALLOC(ptr, size) realloc(ptr, size)
+#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) realloc(ptr, size, alignment)
 #define METADOT_GC_DISPLAY(dt) \
     do {                       \
     } while (0)
