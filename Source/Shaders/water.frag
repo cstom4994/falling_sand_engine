@@ -1,15 +1,14 @@
 // Copyright(c) 2022, KaoruXun
 
-#version 150
 
 #ifdef GL_ES
 precision mediump float;
 #endif
 
-#extension GL_OES_standard_derivatives : enable
+//#extension GL_OES_standard_derivatives : enable
 
 uniform sampler2D tex;
-varying vec2 texCoord;
+in vec2 texCoord;   // GLSL 330
 
 uniform float time;
 uniform vec2 resolution;
@@ -25,6 +24,9 @@ uniform sampler2D flowTex;
 uniform int overlay = 0;
 uniform bool showFlow = true;
 uniform bool pixelated = false;
+
+// GLSL 330
+out vec4 fragColor;
 
 //==================================================================
 //https://github.com/stegu/webgl-noise/blob/master/src/classicnoise2D.glsl
@@ -113,15 +115,15 @@ void main( void ) {
     
     // early exit if not in world
     if(worldPos.x < 0.0 || worldPos.y < 0.0 || worldPos.x >= 1.0 || worldPos.y >= 1.0){
-        gl_FragColor = texture2D(tex, texCoord);
+        fragColor = texture(tex, texCoord); // GLSL 330
         return;
     }
     
-    vec4 worldCol = texture2D(mask, vec2(worldPos.x, worldPos.y));
+    vec4 worldCol = texture(mask, vec2(worldPos.x, worldPos.y)); // GLSL 330
     
     // early exit if air
     if(worldCol.a == 0.0){
-        gl_FragColor = texture2D(tex, texCoord);
+        fragColor = texture(tex, texCoord); // GLSL 330
         return;
     }
     
@@ -141,7 +143,7 @@ void main( void ) {
     
     // calculate flow
     
-    vec4 flowCol = texture2D(flowTex, worldPos);
+    vec4 flowCol = texture(flowTex, worldPos); // GLSL 330
     
     float angle = 0;
     float speed = 0.0;
@@ -192,12 +194,12 @@ void main( void ) {
 
     if(overlay == 1) {
         // flow map
-        gl_FragColor = vec4(flowCol.rgb, 1.0);
+        fragColor = vec4(flowCol.rgb, 1.0);
     }else if(overlay == 2){
         // distortion
-        gl_FragColor = vec4(length(distort_sum) * 150.0);
+        fragColor = vec4(length(distort_sum) * 150.0);
     }else{
         // normal output
-        gl_FragColor = texture2D(tex, dp) * (1.0 + length(distort_sum) * (10.0 + speed * 15.0));
+        fragColor = texture(tex, dp) * (1.0 + length(distort_sum) * (10.0 + speed * 15.0)); // GLSL 330
     }
 }

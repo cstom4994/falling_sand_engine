@@ -3456,20 +3456,20 @@ void Game::renderLate() {
 
         if (Settings::draw_shaders) {
 
-            // if (waterFlowPassShader->dirty && Settings::water_showFlow) {
+            if (waterFlowPassShader->dirty && Settings::water_showFlow) {
 
-            //     waterFlowPassShader->activate();
-            //     waterFlowPassShader->update(world->width, world->height);
-            //     METAENGINE_Render_SetBlendMode(textureFlow, METAENGINE_Render_BLEND_SET);
-            //     METAENGINE_Render_BlitRect(textureFlow, NULL, textureFlowSpead->target, NULL);
+                waterFlowPassShader->activate();
+                waterFlowPassShader->update(world->width, world->height);
+                METAENGINE_Render_SetBlendMode(TexturePack_.textureFlow, METAENGINE_Render_BLEND_SET);
+                METAENGINE_Render_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target, NULL);
 
 
-            //     waterFlowPassShader->dirty = false;
-            // }
+                waterFlowPassShader->dirty = false;
+            }
 
-            //waterShader->activate();
-            //float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
-            //waterShader->update(t, target->w * scale, target->h * scale, texture, r1.x, r1.y, r1.w, r1.h, scale, textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
+            waterShader->activate();
+            float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
+            waterShader->update(t, target->w * scale, target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
         }
 
         target = realTarget;

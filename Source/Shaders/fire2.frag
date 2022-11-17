@@ -1,27 +1,29 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#version 150
-
 // Fragment
 #ifdef GL_ES
 precision mediump float;
 #endif
 
+// GLSL 330
+out vec4 fragColor;
+#define gl_FragColor fragColor
+
 float intensity=1.0;// light transmition coeficient <0,1>
 const int txrsiz=1200;     // max texture size [pixels]
 uniform sampler2D firemap;   // texture unit for light map
 uniform vec2 texSize;
-varying vec2 texCoord;
+in vec2 texCoord;
 
 void main(){
-    vec4 col = texture2D(firemap, vec2(texCoord.x, texCoord.y));
+    vec4 col = texture(firemap, vec2(texCoord.x, texCoord.y)); // GLSL 330
     vec4 sum = vec4(0);
     
     float num = 0.1;
     
     for(int xx = -3; xx <= 3; xx++){
         for(int yy = -3; yy <= 3; yy++){
-            vec4 c = texture2D(firemap, vec2(texCoord.x + xx/texSize.x, texCoord.y + yy/texSize.y));
+            vec4 c = texture(firemap, vec2(texCoord.x + xx/texSize.x, texCoord.y + yy/texSize.y)); // GLSL 330
             float dist = (abs(float(xx)) + abs(float(yy))) / 2.0 + 1;
             dist = 1.0;
             

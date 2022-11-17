@@ -1,17 +1,19 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#version 150
-
 // Fragment
 #ifdef GL_ES
 precision mediump float;
 #endif
 
+// GLSL 330
+out vec4 fragColor;
+#define gl_FragColor fragColor
+
 float intensity=0.7;// light transmition coeficient <0,1>
 const int txrsiz=1200;     // max texture size [pixels]
 uniform sampler2D firemap;   // texture unit for light map
 uniform vec2 texSize;
-varying vec2 texCoord;
+in vec2 texCoord;
 
 vec3 rgb2hsv(vec3 c){
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -24,7 +26,7 @@ vec3 rgb2hsv(vec3 c){
 }
 
 void main(){
-    vec4 col = texture2D(firemap, vec2(texCoord.x, texCoord.y));
+    vec4 col = texture(firemap, vec2(texCoord.x, texCoord.y)); // GLSL 330
     
     vec4 sum = vec4(0.1);
     vec4 c = vec4(0);
@@ -36,25 +38,25 @@ void main(){
         num += 4.0;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x + 1.0/texSize.x, texCoord.y));
+    c = texture(firemap, vec2(texCoord.x + 1.0/texSize.x, texCoord.y)); // GLSL 330
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x - 1.0/texSize.x, texCoord.y));
+    c = texture(firemap, vec2(texCoord.x - 1.0/texSize.x, texCoord.y)); // GLSL 330
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x, texCoord.y + 1.0/texSize.y));
+    c = texture(firemap, vec2(texCoord.x, texCoord.y + 1.0/texSize.y)); // GLSL 330
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;
     }
     
-    c = texture2D(firemap, vec2(texCoord.x, texCoord.y - 1.0/texSize.y));
+    c = texture(firemap, vec2(texCoord.x, texCoord.y - 1.0/texSize.y)); // GLSL 330
     if(c.a > 0) {
         sum += c * intensity;
         num += intensity;

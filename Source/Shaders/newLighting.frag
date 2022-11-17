@@ -1,11 +1,12 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#version 150
-
 // Fragment
 #ifdef GL_ES
 precision mediump float;
 #endif
+
+// GLSL 330
+out vec4 fragColor;
 
 uniform bool simpleOnly = false;
 uniform bool emission = true;
@@ -22,7 +23,7 @@ uniform float maxY = 0.0;
 uniform sampler2D txrmap;   // texture unit for light map
 uniform sampler2D emitmap;
 uniform vec2 texSize;
-varying vec2 texCoord;
+in vec2 texCoord;      // GLSL 330
 uniform vec2 t0;
 
 float light(vec4 col){
@@ -30,13 +31,13 @@ float light(vec4 col){
 }
 
 vec4 light2(vec2 coord){
-    vec4 col = texture2D(txrmap, coord);
+    vec4 col = texture(txrmap, coord);// GLSL 330
     return vec4(1.0 - vec3(col.a), 1.0);
 }
 
 vec4 lightEmit(vec2 coord){
     if(!emission) return vec4(0.0);
-    vec4 emit = texture2D(emitmap, coord);
+    vec4 emit = texture(emitmap, coord);// GLSL 330
     return emit * emit.a;
 }
 
@@ -62,15 +63,15 @@ void main(){
         
         float dark = clamp(1.0 - dst2 * 3.5 * inside, 0.0, 1.0);
         // gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0 - dark);
-        gl_FragColor = vec4(vec3(dark), 1.0);
+        fragColor = vec4(vec3(dark), 1.0);
     }else{
         float dst = distance(texCoord * texSize * vec2(0.75, 1.0), t0 * texSize * vec2(0.75, 1.0)) / 3000.0;
         float distBr = 1.0 - dst * 3.5 * inside;
         if(distBr <= -1.0){
-            gl_FragColor = vec4(0.5, 0.0, 0.0, 1.0);
+            fragColor = vec4(0.5, 0.0, 0.0, 1.0);
         }else{
             distBr = clamp(distBr, 0.0, 1.0);
-            vec4 olcol = texture2D(txrmap, texCoord);
+            vec4 olcol = texture(txrmap, texCoord);// GLSL 330
             float distNr = 1.0 - clamp(dst * 10.0, 0.0, 1.0);
             distNr *= 1.0;
             if(!simpleOnly && olcol.a > 0){
@@ -103,7 +104,7 @@ void main(){
                 
                 if(emission) brr += pow(ecol, vec4(0.6));
                 //gl_FragColor = mix(vec4(vec3(0.0), 1.0), olcol, brr); // mix orig color
-                gl_FragColor = brr; // b/w
+                fragColor = brr; // b/w
                 //gl_FragColor = vec4(vec3(0.0), 1.0 - brr); // transparent black
             }else{
                 // no tile (background)
@@ -135,11 +136,11 @@ void main(){
                 }
             
                 //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0 - clamp(mix(distBr, 1.0, distNr), 0.0, 1.0));
-                gl_FragColor = col;
+                fragColor = col;
                 //gl_FragColor = vec4(vec3(0.0), 1.0 - clamp(mix(distBr, 1.0, distNr), 0.0, 1.0));
             }
         }
     }
-    gl_FragColor.a = 1.0;
+    fragColor.a = 1.0;
 }
 
