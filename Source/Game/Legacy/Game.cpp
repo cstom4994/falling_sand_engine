@@ -267,8 +267,6 @@ print(b);
 
     MetaEngine::ResourceMan::init();//init location of /res
 
-    InitPhysFS();
-
     METADOT_INFO("Starting game...");
 
     bool openDebugUIs = false;
@@ -364,20 +362,20 @@ print(b);
         });
     }
 
-    std::vector<std::future<void>> results = {};
-    auto testpool = new ctpl::thread_pool(1);
+    // std::vector<std::future<void>> results = {};
+    // auto testpool = new ctpl::thread_pool(1);
 
-    results.push_back(testpool->push([](int id) {
-        MountPhysFS(METADOT_RESLOC_STR("data/fuckme.zip"), "fuckme");
-    }));
+    // results.push_back(testpool->push([](int id) {
+    //     MountPhysFS(METADOT_RESLOC_STR("data/fuckme.zip"), "fuckme");
+    // }));
 
-    for (auto &v: results) {
-        v.get();
-    }
+    // for (auto &v: results) {
+    //     v.get();
+    // }
 
-    char* fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
+    // char* fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
 
-    METADOT_INFO("i'm {0}", fu);
+    // METADOT_INFO("i'm {0}", fu);
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
@@ -1729,7 +1727,7 @@ exit:
     // TODO CppScript
 
 
-    ClosePhysFS();
+    // ClosePhysFS();
 
     // release resources & shutdown
     delete m_ImGuiLayer;
