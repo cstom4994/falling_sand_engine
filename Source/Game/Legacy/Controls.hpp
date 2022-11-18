@@ -101,6 +101,7 @@ public:
     static bool initted;
 
     static void keyEvent(SDL_KeyboardEvent event);
+    static void initKey();
 
     static KeyControl *add(KeyControl *c);
 };

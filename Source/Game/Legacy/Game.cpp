@@ -472,6 +472,8 @@ print(b);
         SDL_FreeSurface(splashSurf);
         METAENGINE_Render_Flip(RenderTarget_.target);
 
+        // load key bind
+        Controls::initKey();
 
         METADOT_INFO("Loading ImGUI");
         m_ImGuiLayer = new MetaEngine::ImGuiLayer();
