@@ -66,11 +66,10 @@ struct Options
 };
 STRUCTOPT(Options, test, files);
 
-#if 1
 
 #include "Scripting/MuScript/Library/MuScript.hpp"
 
-MuScript::MuScriptInterpreter interp(MuScript::ModulePrivilege::allPrivilege);
+#if 0
 
 MuScript::Int integrationExample(MuScript::Int a, MuScript::Int b) {
     return (a * b) + b;
@@ -235,7 +234,9 @@ b = inspect(a.x);
 print(b);
                 )";
 
-                interp.evaluate(test);
+                auto interp = new MuScript::MuScriptInterpreter(MuScript::ModulePrivilege::allPrivilege);
+                interp->evaluate(test);
+                delete interp;
 
                 return 0;
             }

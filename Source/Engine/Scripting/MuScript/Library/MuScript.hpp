@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <charconv>
 #include <chrono>
 #include <cmath>
@@ -15,7 +16,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include <algorithm>
 
 
 namespace MuScript {
@@ -1482,7 +1482,6 @@ namespace MuScript {
 #pragma endregion PreSetting
 
 
-
 namespace MuScript {
     // describes an expression tree with a function at the root
     struct FunctionExpression
@@ -1802,7 +1801,6 @@ namespace MuScript {
 }// namespace MuScript
 
 
-
 namespace MuScript {
     using ModulePrivilegeFlags = uint8_t;
 
@@ -1856,15 +1854,15 @@ namespace MuScript {
 }// namespace MuScript
 
 
-
 #include <mutex>
 
 namespace MuScript {
-    struct Scope {
+    struct Scope
+    {
         // this is the main storage object for all functions and variables
         string name;
         ScopeRef parent;
-        MuScriptInterpreter* host;
+        MuScriptInterpreter *host;
 #ifndef MUSCRIPT_THREAD_UNSAFE
         std::mutex varInsert;
         std::mutex scopeInsert;
@@ -1875,11 +1873,11 @@ namespace MuScript {
         unordered_map<string, FunctionRef> functions;
         bool isClassScope = false;
 
-        ValueRef& insertVar(const string& n, ValueRef val) {
+        ValueRef &insertVar(const string &n, ValueRef val) {
 #ifndef MUSCRIPT_THREAD_UNSAFE
             auto l = std::unique_lock(varInsert);
 #endif
-            auto& ref = variables[n];
+            auto &ref = variables[n];
             ref = val;
 
             return ref;
@@ -1893,18 +1891,18 @@ namespace MuScript {
             return val;
         }
 
-        Scope(MuScriptInterpreter* interpereter) : name("global"), parent(nullptr), host(interpereter) {}
-        Scope(const string& name_, MuScriptInterpreter* interpereter) : name(name_), parent(nullptr), host(interpereter) {}
-        Scope(const string& name_, ScopeRef scope) : name(name_), parent(scope), host(scope->host) {}
-        Scope(const Scope& o) : name(o.name), parent(o.parent), scopes(o.scopes), functions(o.functions), host(o.host) {
+        Scope(MuScriptInterpreter *interpereter) : name("global"), parent(nullptr), host(interpereter) {}
+        Scope(const string &name_, MuScriptInterpreter *interpereter) : name(name_), parent(nullptr), host(interpereter) {}
+        Scope(const string &name_, ScopeRef scope) : name(name_), parent(scope), host(scope->host) {}
+        Scope(const Scope &o) : name(o.name), parent(o.parent), scopes(o.scopes), functions(o.functions), host(o.host) {
             // copy vars by value when cloning a scope
-            for (auto&& v : o.variables) {
+            for (auto &&v: o.variables) {
                 variables[v.first] = make_shared<Value>(v.second->value);
             }
         }
-        Scope(const string& name_, const unordered_map<string, ValueRef>& variables_) : name(name_), variables(variables_) {}
+        Scope(const string &name_, const unordered_map<string, ValueRef> &variables_) : name(name_), variables(variables_) {}
     };
-}
+}// namespace MuScript
 
 
 namespace MuScript {
