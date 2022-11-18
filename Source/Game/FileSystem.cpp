@@ -85,19 +85,6 @@ namespace MetaEngine {
         return buffer.str();
     }
 
-    auto FUtil::ReadFile(const std::string &filename) {
-        auto file = std::ifstream(filename, std::ios::binary | std::ios::ate);
-        if (!file)
-            throw std::runtime_error("Unable to open file");
-        std::size_t bytes = file.tellg();
-        file.seekg(0);
-
-        auto vec = std::vector<std::uint8_t>(bytes);
-        file.read(reinterpret_cast<char *>(vec.data()), vec.size());
-
-        return vec;
-    }
-
     uint64_t FUtil::lastWriteTime(std::string_view path) {
         return std::filesystem::last_write_time(path).time_since_epoch().count();
     }

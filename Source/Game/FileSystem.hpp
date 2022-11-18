@@ -101,8 +101,6 @@ namespace MetaEngine {
 
         std::string readFileString(std::string_view path);
 
-        auto ReadFile(const std::string &filename);
-
         uint64_t lastWriteTime(std::string_view path);
     }// namespace FUtil
 }// namespace MetaEngine

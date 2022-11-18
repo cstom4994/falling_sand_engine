@@ -1,13 +1,14 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
 
 #include "Engine/Render/renderer_gpu.h"
 #include "Game/FileSystem.hpp"
 
 #include <cstdlib>
 #include <string>
+#include <vector>
 
 // Based on https://github.com/grimfang4/sdl-gpu/blob/master/demos/simple-shader/main.c (MIT License)
 
@@ -15,55 +16,19 @@ class Shaders {
 public:
     // Loads a shader and prepends version/compatibility info before compiling it.
     static Uint32 load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *filename) {
-        SDL_RWops *rwops;
+
         Uint32 shader;
-        char *source;
-        int header_size, file_size;
-        const char *header = "";
         METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
 
-        // Open file
-        rwops = SDL_RWFromFile(filename, "rb");
-        if (rwops == NULL) {
+        std::string source = MetaEngine::FUtil::readFileString(filename);
+
+        if (source.empty()) {
             METAENGINE_Render_PushErrorCode("load_shader", METAENGINE_Render_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found", filename);
             return 0;
         }
 
-        // Get file size
-        file_size = SDL_RWseek(rwops, 0, SEEK_END);
-        SDL_RWseek(rwops, 0, SEEK_SET);
-
-        // Get size from header
-        if (renderer->shader_language == METAENGINE_Render_LANGUAGE_GLSL) {
-            if (renderer->max_shader_version >= 120)
-                header = "#version 330 core\n";
-            else
-                header = "#version 110\n";// Maybe this is good enough?
-        } else if (renderer->shader_language == METAENGINE_Render_LANGUAGE_GLSLES)
-            header = "#version 100\nprecision mediump int;\nprecision mediump float;\n";
-
-        header_size = (int) strlen(header);
-
-        // Allocate source buffer
-        source = (char *) METAENGINE_MALLOC(sizeof(char) * (header_size + file_size + 1));
-        if (source == NULL) throw std::runtime_error("Failed to allocate memory for shader");
-
-            // Prepend header
-#pragma warning(push)
-#pragma warning(disable : 6386)
-        strcpy(source, header);
-#pragma warning(pop)
-
-        // Read in source code
-        SDL_RWread(rwops, source + strlen(source), 1, file_size);
-        source[header_size + file_size] = '\0';
-
         // Compile the shader
-        shader = METAENGINE_Render_CompileShader(shader_type, source);
-
-        // Clean up
-        METAENGINE_FREE(source);
-        SDL_RWclose(rwops);
+        shader = METAENGINE_Render_CompileShader(shader_type, source.c_str());
 
         return shader;
     }
