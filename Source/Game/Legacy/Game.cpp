@@ -184,7 +184,7 @@ void integrationExample() {
 #endif
 
 void Game::updateMaterialSounds() {
-    uint16_t waterCt = std::min(movingTiles[Materials::WATER.id], (uint16_t) 5000);
+    UInt16 waterCt = std::min(movingTiles[Materials::WATER.id], (uint16_t) 5000);
     float water = (float) waterCt / 3000;
     //METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
     audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
@@ -549,7 +549,7 @@ print(b);
     Materials::init();
 
 
-    movingTiles = new uint16_t[Materials::nMaterials];
+    movingTiles = new UInt16[Materials::nMaterials];
 
     b2DebugDraw = new b2DebugDraw_impl(RenderTarget_.target);
 
@@ -1774,9 +1774,6 @@ exit:
     m_ImGuiLayer->onDetach();
     // TODO CppScript
 
-
-    // ClosePhysFS();
-
     // release resources & shutdown
     delete m_ImGuiLayer;
     delete objectDelete;
@@ -1784,6 +1781,12 @@ exit:
     delete terminal_log;
 
     running = false;
+
+    delete b2DebugDraw;
+    delete movingTiles;
+
+    delete updateDirtyPool;
+    delete rotateVectorsPool;
 
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);

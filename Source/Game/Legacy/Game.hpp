@@ -129,7 +129,7 @@ private:
     ctpl::thread_pool *updateDirtyPool = nullptr;
     ctpl::thread_pool *rotateVectorsPool = nullptr;
 
-    uint16_t *movingTiles;
+    UInt16 *movingTiles;
 
     int tickTime = 0;
 
