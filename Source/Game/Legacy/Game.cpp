@@ -8,6 +8,7 @@
 #include "DefaultGenerator.cpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/GCManager.hpp"
+#include "Game/Textures.hpp"
 #include "MaterialTestGenerator.cpp"
 
 #include "Game/Settings.hpp"
@@ -452,9 +453,9 @@ print(b);
 
         if (networkMode != NetworkMode::SERVER) {
 
-            font64 = Drawing::LoadFont("data/assets/fonts/pixel_operator/PixelOperator.ttf", 64);
-            font16 = Drawing::LoadFont("data/assets/fonts/pixel_operator/PixelOperator.ttf", 16);
-            font14 = Drawing::LoadFont("data/assets/fonts/pixel_operator/PixelOperator.ttf", 14);
+            font64 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 64);
+            font16 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
+            font14 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 14);
         }
 
         // load splash screen
@@ -546,6 +547,9 @@ print(b);
     // register & set up materials
 
     METADOT_INFO("Setting up materials...");
+
+    Textures::initTexture();
+
     Materials::init();
 
 
@@ -574,8 +578,8 @@ print(b);
 
 
         METADOT_INFO("Setting up main menu...");
-        STBTTF_Font *labelFont = Drawing::LoadFont("data/assets/fonts/pixel_operator/PixelOperator.ttf", 32);
-        STBTTF_Font *uiFont = Drawing::LoadFont("data/assets/fonts/pixel_operator/PixelOperator.ttf", 16);
+        STBTTF_Font *labelFont = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 32);
+        STBTTF_Font *uiFont = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
 
 
         std::string displayMode = "windowed";

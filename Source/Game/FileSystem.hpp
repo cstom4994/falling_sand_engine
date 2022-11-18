@@ -16,9 +16,7 @@ namespace MetaEngine {
     class ResourceMan {
     private:
         static std::string s_ProjectRootPath;
-        static std::string s_ExeRootPath;
         static std::string s_DataPath;
-        static std::string s_ScriptPath;
 
     public:
         static std::string getResourceLoc(std::string_view resPath);

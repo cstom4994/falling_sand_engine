@@ -9,19 +9,15 @@
 namespace MetaEngine {
 
     std::string ResourceMan::s_ProjectRootPath;
-    std::string ResourceMan::s_ExeRootPath;
     std::string ResourceMan::s_DataPath;
-    std::string ResourceMan::s_ScriptPath;
 
     void ResourceMan::init() {
         auto currentDir = std::filesystem::path(FUtil::getExecutableFolderPath());
         for (int i = 0; i < 3; ++i) {
             currentDir = currentDir.parent_path();
-            if (std::filesystem::exists(currentDir.string() + "/output/data") && std::filesystem::exists(currentDir.string() + "/Source/Scripts")) {
+            if (std::filesystem::exists(currentDir.string() + "/data")) {
                 s_ProjectRootPath = currentDir.string() + "/";
-                s_ExeRootPath = currentDir.string() + "/output";
-                s_DataPath = s_ProjectRootPath + "output/data";
-                s_ScriptPath = s_ProjectRootPath + "Source/Scripts";
+                s_DataPath = s_ProjectRootPath + "data";
                 METADOT_INFO("Runtime folder detected: {0}", s_ProjectRootPath.c_str());
                 return;
             }
@@ -34,11 +30,11 @@ namespace MetaEngine {
     }
 
     std::string ResourceMan::getResourceLoc(std::string_view resPath) {
-        if (s_ExeRootPath.empty()) {
+        if (s_ProjectRootPath.empty()) {
             std::cout << "try to load resource when ResourceMan is unloaded (" << resPath << ")" << std::endl;
         }
         if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
-            return s_ExeRootPath + (s_ExeRootPath.empty() ? "" : "/") + std::string(resPath);
+            return s_ProjectRootPath + (s_ProjectRootPath.empty() ? "" : "/") + std::string(resPath);
         return std::string(resPath);
     }
 

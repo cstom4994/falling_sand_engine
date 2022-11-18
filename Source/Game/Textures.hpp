@@ -30,6 +30,8 @@ public:
 
     static SDL_Surface *caveBG;
 
+    static void initTexture();
+
     static SDL_Surface *loadTexture(std::string path);
     static SDL_Surface *loadTexture(std::string path, Uint32 pixelFormat);
 

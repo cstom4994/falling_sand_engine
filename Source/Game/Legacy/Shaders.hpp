@@ -4,6 +4,7 @@
 #include <SDL.h>
 
 #include "Engine/Render/renderer_gpu.h"
+#include "Game/FileSystem.hpp"
 
 #include <cstdlib>
 #include <string>
@@ -125,7 +126,7 @@ class WaterFlowPassShader : public Shader {
 public:
     bool dirty = false;
 
-    WaterFlowPassShader() : Shader("data/shaders/common.vert", "data/shaders/waterFlow.frag"){};
+    WaterFlowPassShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/waterFlow.frag")){};
 
     void prepare() {}
 
@@ -139,7 +140,7 @@ public:
 
 class WaterShader : public Shader {
 public:
-    WaterShader() : Shader("data/shaders/common.vert", "data/shaders/water.frag"){};
+    WaterShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/water.frag")){};
 
     void prepare() {}
 
@@ -187,7 +188,7 @@ public:
     bool lastEmissionEnabled = false;
     bool lastDitheringEnabled = false;
 
-    NewLightingShader() : Shader("data/shaders/common.vert", "data/shaders/newLighting.frag"){};
+    NewLightingShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/newLighting.frag")){};
 
     void prepare() {}
 
@@ -260,7 +261,7 @@ public:
 
 class FireShader : public Shader {
 public:
-    FireShader() : Shader("data/shaders/common.vert", "data/shaders/fire.frag"){};
+    FireShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/fire.frag")){};
 
     void prepare() {}
 
@@ -277,7 +278,7 @@ public:
 
 class Fire2Shader : public Shader {
 public:
-    Fire2Shader() : Shader("data/shaders/common.vert", "data/shaders/fire2.frag"){};
+    Fire2Shader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/fire2.frag")){};
 
     void prepare() {}
 
