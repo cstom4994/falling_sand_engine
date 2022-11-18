@@ -20,7 +20,7 @@ public:
     int h;
 
     Structure(int w, int h, MaterialInstance *tiles);
-    Structure(SDL_Surface *texture, Material templ);
+    Structure(C_Surface *texture, Material templ);
     Structure() = default;
 };
 

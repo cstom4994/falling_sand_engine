@@ -2,7 +2,8 @@
 
 #include "Game/Core.hpp"
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
+#include "SDL_rect.h"
 
 namespace MetaEngine {
     typedef class Color {
@@ -20,5 +21,22 @@ namespace MetaEngine {
 
         SDL_Color toSDLColor() { return SDL_Color{.r = r, .g = g, .b = b, .a = a}; }
     } Color;
+
+    typedef class Rect {
+    public:
+        int x, y;
+        int w, h;
+
+    public:
+        Rect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
+        Rect(SDL_Rect rect) {
+            x = rect.x;
+            y = rect.y;
+            w = rect.w;
+            h = rect.h;
+        }
+
+        SDL_Rect toSDLRect() { return SDL_Rect{.x = x, .y = y, .w = w, .h = h}; }
+    } Rect;
 
 }// namespace MetaEngine

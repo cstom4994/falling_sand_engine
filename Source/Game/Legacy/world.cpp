@@ -192,7 +192,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     updateRigidBodyHitbox(rb);
 }
 
-RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, SDL_Surface *texture) {
+RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, C_Surface *texture) {
 
     b2BodyDef bodyDef;
     bodyDef.type = type;
@@ -245,7 +245,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle, 
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, SDL_Surface *texture) {
+RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, C_Surface *texture) {
 
 
     b2BodyDef bodyDef;
@@ -304,7 +304,7 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float an
 void World::updateRigidBodyHitbox(RigidBody *rb) {
 
 
-    SDL_Surface *texture = rb->surface;
+    C_Surface *texture = rb->surface;
 
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
@@ -335,7 +335,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     maxY++;
 
     // FIX ME
-    SDL_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
+    C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
     SDL_Rect src = {minX, minY, maxX - minX, maxY - minY};
     SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
     SDL_BlitSurface(texture, &src, sf, NULL);
@@ -523,7 +523,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     part.RemoveHoles(&shapes, &result2);
 
     std::vector<std::vector<b2PolygonShape>> polys2s = {};
-    std::vector<SDL_Surface *> polys2sSfcs = {};
+    std::vector<C_Surface *> polys2sSfcs = {};
     std::vector<bool> polys2sWeld = {};
     for (auto it = result2.begin(); it != result2.end(); it++) {
         std::list<TPPLPoly> result;
@@ -653,7 +653,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         for (int b = 0; b < polys2s.size(); b++) {
             std::vector<b2PolygonShape> polys2 = polys2s[b];
 
-            SDL_Surface *sfc = polys2sSfcs[b];
+            C_Surface *sfc = polys2sSfcs[b];
 
 
             RigidBody *rbn = makeRigidBodyMulti(b2_dynamicBody, 0, 0, rb->body->GetAngle(), polys2, rb->body->GetFixtureList()[0].GetDensity(), rb->body->GetFixtureList()[0].GetFriction(), sfc);
@@ -957,7 +957,7 @@ found : {};
 #pragma endregion
 
 
-    SDL_Surface *texture = Textures::loadTexture("data/assets/objects/testObject3.png");
+    C_Surface *texture = Textures::loadTexture("data/assets/objects/testObject3.png");
 
 
     if (chunk->rb) {
@@ -3406,7 +3406,7 @@ RigidBody *World::physicsCheck(int x, int y) {
     if (count > 0 && count <= 1000) {
         if (count > 10) {
 
-            SDL_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, maxX - minX + 1, maxY - minY + 1, 32, SDL_PIXELFORMAT_ARGB8888);
+            C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, maxX - minX + 1, maxY - minY + 1, 32, SDL_PIXELFORMAT_ARGB8888);
 
 
             for (int yy = minY; yy <= maxY; yy++) {

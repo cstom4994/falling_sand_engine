@@ -246,7 +246,7 @@ MaterialInstance Tiles::createTestSand() {
 }
 
 MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
-    SDL_Surface *tex = Textures::testTexture;
+    C_Surface *tex = Textures::testTexture;
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -263,7 +263,7 @@ MaterialInstance Tiles::createTestLiquid() {
 }
 
 MaterialInstance Tiles::createStone(int x, int y) {
-    SDL_Surface *tex = Textures::cobbleStone;
+    C_Surface *tex = Textures::cobbleStone;
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -291,7 +291,7 @@ MaterialInstance Tiles::createDirt() {
 }
 
 MaterialInstance Tiles::createSmoothStone(int x, int y) {
-    SDL_Surface *tex = Textures::smoothStone;
+    C_Surface *tex = Textures::smoothStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -302,7 +302,7 @@ MaterialInstance Tiles::createSmoothStone(int x, int y) {
 }
 
 MaterialInstance Tiles::createCobbleStone(int x, int y) {
-    SDL_Surface *tex = Textures::cobbleStone;
+    C_Surface *tex = Textures::cobbleStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -313,7 +313,7 @@ MaterialInstance Tiles::createCobbleStone(int x, int y) {
 }
 
 MaterialInstance Tiles::createSmoothDirt(int x, int y) {
-    SDL_Surface *tex = Textures::smoothDirt;
+    C_Surface *tex = Textures::smoothDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -324,7 +324,7 @@ MaterialInstance Tiles::createSmoothDirt(int x, int y) {
 }
 
 MaterialInstance Tiles::createCobbleDirt(int x, int y) {
-    SDL_Surface *tex = Textures::cobbleDirt;
+    C_Surface *tex = Textures::cobbleDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -335,7 +335,7 @@ MaterialInstance Tiles::createCobbleDirt(int x, int y) {
 }
 
 MaterialInstance Tiles::createSoftDirt(int x, int y) {
-    SDL_Surface *tex = Textures::softDirt;
+    C_Surface *tex = Textures::softDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -358,7 +358,7 @@ MaterialInstance Tiles::createLava() {
 }
 
 MaterialInstance Tiles::createCloud(int x, int y) {
-    SDL_Surface *tex = Textures::cloud;
+    C_Surface *tex = Textures::cloud;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -369,7 +369,7 @@ MaterialInstance Tiles::createCloud(int x, int y) {
 }
 
 MaterialInstance Tiles::createGold(int x, int y) {
-    SDL_Surface *tex = Textures::gold;
+    C_Surface *tex = Textures::gold;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -380,7 +380,7 @@ MaterialInstance Tiles::createGold(int x, int y) {
 }
 
 MaterialInstance Tiles::createIron(int x, int y) {
-    SDL_Surface *tex = Textures::iron;
+    C_Surface *tex = Textures::iron;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -391,7 +391,7 @@ MaterialInstance Tiles::createIron(int x, int y) {
 }
 
 MaterialInstance Tiles::createObsidian(int x, int y) {
-    SDL_Surface *tex = Textures::obsidian;
+    C_Surface *tex = Textures::obsidian;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -446,7 +446,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
     } else if (mat->id == Materials::GOLD_ORE.id) {
         return createGold(x, y);
     } else if (mat->id == Materials::GOLD_MOLTEN.id) {
-        SDL_Surface *tex = Textures::goldMolten;
+        C_Surface *tex = Textures::goldMolten;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -455,7 +455,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
 
         return MaterialInstance(&Materials::GOLD_MOLTEN, rgb);
     } else if (mat->id == Materials::GOLD_SOLID.id) {
-        SDL_Surface *tex = Textures::goldSolid;
+        C_Surface *tex = Textures::goldSolid;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -472,7 +472,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
     } else if (mat->id == Materials::FIRE.id) {
         return createFire();
     } else if (mat->id == Materials::FLAT_COBBLE_STONE.id) {
-        SDL_Surface *tex = Textures::flatCobbleStone;
+        C_Surface *tex = Textures::flatCobbleStone;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -481,7 +481,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
 
         return MaterialInstance(&Materials::FLAT_COBBLE_STONE, rgb);
     } else if (mat->id == Materials::FLAT_COBBLE_DIRT.id) {
-        SDL_Surface *tex = Textures::flatCobbleDirt;
+        C_Surface *tex = Textures::flatCobbleDirt;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;

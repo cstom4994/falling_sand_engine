@@ -29,7 +29,7 @@
 
 #include "Libs/sparsehash/sparse_hash_map.h"
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
 
 #include <algorithm>
 #include <box2d/b2_distance_joint.h>
@@ -120,7 +120,7 @@ private:
     STBTTF_Font *font16;
     STBTTF_Font *font14;
 
-    SDL_Window *window = nullptr;
+    C_Window *window = nullptr;
 
     b2DebugDraw_impl *b2DebugDraw;
 
@@ -189,8 +189,8 @@ public:
     {
         METAENGINE_Render_Target *realTarget = nullptr;
         METAENGINE_Render_Target *target = nullptr;
-    }RenderTarget_;
-    
+    } RenderTarget_;
+
     struct
     {
         METAENGINE_Render_Image *backgroundImage = nullptr;

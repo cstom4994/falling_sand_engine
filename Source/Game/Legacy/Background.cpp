@@ -8,7 +8,7 @@
 
 #include "Game/InEngine.h"
 
-BackgroundLayer::BackgroundLayer(SDL_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
+BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
     this->surface = {Textures::scaleTexture(texture, 1, 1), Textures::scaleTexture(texture, 2, 2), Textures::scaleTexture(texture, 3, 3)};
     this->parralaxX = parallaxX;
     this->parralaxY = parallaxY;

@@ -31,7 +31,7 @@ Item *Item::makeItem(uint8_t flags, RigidBody *rb) {
     return i;
 }
 
-Uint32 getpixel(SDL_Surface *surface, int x, int y) {
+Uint32 getpixel(C_Surface *surface, int x, int y) {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
     Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
@@ -62,7 +62,7 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y) {
 }
 
 
-void Item::loadFillTexture(SDL_Surface *tex) {
+void Item::loadFillTexture(C_Surface *tex) {
     fill.resize(capacity);
     uint32_t maxN = 0;
     for (uint16_t x = 0; x < tex->w; x++) {

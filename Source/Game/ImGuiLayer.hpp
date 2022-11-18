@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Engine/Render/SDLWrapper.hpp"
 
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Scripting/LuaBinder.hpp"
@@ -34,7 +35,7 @@ namespace MetaEngine {
 
         std::vector<ImGuiWin> m_wins;
 
-        SDL_Window *window;
+        C_Window *window;
         void *gl_context;
 
         void renderViewWindows();
@@ -47,7 +48,7 @@ namespace MetaEngine {
     public:
         ImGuiLayer();
         ~ImGuiLayer() = default;
-        void Init(SDL_Window *window, void *gl_context);
+        void Init(C_Window *window, void *gl_context);
         void onDetach();
         void begin();
         void end();

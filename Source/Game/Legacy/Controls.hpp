@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
+
 #include <cstdio>
 #include <vector>
 

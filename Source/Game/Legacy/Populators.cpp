@@ -483,7 +483,7 @@ public:
                 snprintf(buff, sizeof(buff), "data/assets/objects/tree1.png");
                 //snprintf(buff, sizeof(buff), "data/assets/objects/testTree.png");
                 std::string buffAsStdStr = buff;
-                SDL_Surface *tex = Textures::loadTexture(buffAsStdStr.c_str());
+                C_Surface *tex = Textures::loadTexture(buffAsStdStr.c_str());
 
                 px -= tex->w / 2;
                 py -= tex->h - 2;

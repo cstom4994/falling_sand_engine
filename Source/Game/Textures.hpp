@@ -1,7 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #pragma once
-#include <SDL.h>
+
+#include "Engine/Render/SDLWrapper.hpp"
+
 #include <iostream>
 
 
@@ -10,30 +12,30 @@
 class Textures {
 
 public:
-    static SDL_Surface *testTexture;
-    static SDL_Surface *dirt1Texture;
-    static SDL_Surface *stone1Texture;
+    static C_Surface *testTexture;
+    static C_Surface *dirt1Texture;
+    static C_Surface *stone1Texture;
 
-    static SDL_Surface *smoothStone;
-    static SDL_Surface *cobbleStone;
-    static SDL_Surface *flatCobbleStone;
-    static SDL_Surface *smoothDirt;
-    static SDL_Surface *cobbleDirt;
-    static SDL_Surface *flatCobbleDirt;
-    static SDL_Surface *softDirt;
-    static SDL_Surface *cloud;
-    static SDL_Surface *gold;
-    static SDL_Surface *goldMolten;
-    static SDL_Surface *goldSolid;
-    static SDL_Surface *iron;
-    static SDL_Surface *obsidian;
+    static C_Surface *smoothStone;
+    static C_Surface *cobbleStone;
+    static C_Surface *flatCobbleStone;
+    static C_Surface *smoothDirt;
+    static C_Surface *cobbleDirt;
+    static C_Surface *flatCobbleDirt;
+    static C_Surface *softDirt;
+    static C_Surface *cloud;
+    static C_Surface *gold;
+    static C_Surface *goldMolten;
+    static C_Surface *goldSolid;
+    static C_Surface *iron;
+    static C_Surface *obsidian;
 
-    static SDL_Surface *caveBG;
+    static C_Surface *caveBG;
 
     static void initTexture();
 
-    static SDL_Surface *loadTexture(std::string path);
-    static SDL_Surface *loadTexture(std::string path, Uint32 pixelFormat);
+    static C_Surface *loadTexture(std::string path);
+    static C_Surface *loadTexture(std::string path, Uint32 pixelFormat);
 
-    static SDL_Surface *scaleTexture(SDL_Surface *, float x, float y);
+    static C_Surface *scaleTexture(C_Surface *, float x, float y);
 };

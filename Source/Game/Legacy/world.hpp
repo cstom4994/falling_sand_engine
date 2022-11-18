@@ -151,8 +151,8 @@ public:
     std::vector<RigidBody *> rigidBodies;
     RigidBody *staticBody = nullptr;
 
-    RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, SDL_Surface *texture);
-    RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, SDL_Surface *texture);
+    RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, C_Surface *texture);
+    RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
 
     std::vector<std::vector<b2Vec2>> worldMeshes;

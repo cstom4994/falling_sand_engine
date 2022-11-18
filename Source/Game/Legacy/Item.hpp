@@ -41,7 +41,7 @@ public:
         return flags & f;
     }
 
-    SDL_Surface *surface = nullptr;
+    C_Surface *surface = nullptr;
     METAENGINE_Render_Image *texture = nullptr;
     int pivotX = 0;
     int pivotY = 0;
@@ -56,5 +56,5 @@ public:
     ~Item();
 
     static Item *makeItem(uint8_t flags, RigidBody *rb);
-    void loadFillTexture(SDL_Surface *tex);
+    void loadFillTexture(C_Surface *tex);
 };

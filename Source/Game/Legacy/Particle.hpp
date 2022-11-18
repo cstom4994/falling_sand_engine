@@ -3,7 +3,8 @@
 #pragma once
 
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
+
 #ifndef INC_Tiles
 #include "Materials.hpp"
 #endif// !INC_Tiles

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
 
 #include "Engine/Render/renderer_gpu.h"
 

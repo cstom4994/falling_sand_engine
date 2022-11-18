@@ -464,7 +464,7 @@ print(b);
 
         METAENGINE_Render_Clear(RenderTarget_.target);
         METAENGINE_Render_Flip(RenderTarget_.target);
-        SDL_Surface *splashSurf = Textures::loadTexture("data/assets/title/splash.png");
+        C_Surface *splashSurf = Textures::loadTexture("data/assets/title/splash.png");
         METAENGINE_Render_Image *splashImg = METAENGINE_Render_CopyImageFromSurface(splashSurf);
         METAENGINE_Render_SetImageFilter(splashImg, METAENGINE_Render_FILTER_NEAREST);
         METAENGINE_Render_BlitRect(splashImg, NULL, RenderTarget_.target, NULL);
@@ -1279,7 +1279,7 @@ int Game::run(int argc, char *argv[]) {
                                 int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x + 10 * (float) cos((world->player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
                                 int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y + 10 * (float) sin((world->player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
 
-                                SDL_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int) breakSize, (int) breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
+                                C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int) breakSize, (int) breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
 
                                 int n = 0;
                                 for (int xx = 0; xx < breakSize; xx++) {
@@ -1912,7 +1912,7 @@ void Game::updateFrameEarly() {
         int x = (int) ((mx - ofsX - camX) / scale - 16);
         int y = (int) ((my - ofsY - camY) / scale - 16);
 
-        SDL_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
+        C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
 
         int n = 0;
         for (int xx = 0; xx < 32; xx++) {
@@ -3441,7 +3441,7 @@ void Game::renderLate() {
             for (size_t i = 0; i < bg->layers.size(); i++) {
                 BackgroundLayer cur = bg->layers[i];
 
-                SDL_Surface *texture = cur.surface[(size_t) scale - 1];
+                C_Surface *texture = cur.surface[(size_t) scale - 1];
 
                 METAENGINE_Render_Image *tex = cur.texture[(size_t) scale - 1];
                 METAENGINE_Render_SetBlendMode(tex, METAENGINE_Render_BLEND_NORMAL);

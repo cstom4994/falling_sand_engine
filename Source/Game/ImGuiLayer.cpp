@@ -465,7 +465,7 @@ namespace MetaEngine::InternalGUI {
     void MainMenuUI::Setup() {
 
 
-        SDL_Surface *logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
+        C_Surface *logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
         title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
         METAENGINE_Render_SetImageFilter(title, METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(logoSfc);
@@ -970,7 +970,7 @@ namespace MetaEngine::InternalGUI {
         images = {};
         for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
             Material *mat = Materials::MATERIALS[i];
-            SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
+            C_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
             for (int x = 0; x < surface->w; x++) {
                 for (int y = 0; y < surface->h; y++) {
                     MaterialInstance m = Tiles::create(mat, x, y);
@@ -1075,7 +1075,7 @@ namespace MetaEngine::InternalGUI {
 
 
         images = {};
-        SDL_Surface *sfc = Textures::loadTexture("data/assets/objects/testPickaxe.png");
+        C_Surface *sfc = Textures::loadTexture("data/assets/objects/testPickaxe.png");
         images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
         METAENGINE_Render_SetImageFilter(images[0], METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
@@ -1220,12 +1220,12 @@ namespace MetaEngine::InternalGUI {
     void CreateWorldUI::Setup() {
 
 
-        SDL_Surface *logoMT = Textures::loadTexture("data/assets/ui/prev_materialtest.png");
+        C_Surface *logoMT = Textures::loadTexture("data/assets/ui/prev_materialtest.png");
         materialTestWorld = METAENGINE_Render_CopyImageFromSurface(logoMT);
         METAENGINE_Render_SetImageFilter(materialTestWorld, METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(logoMT);
 
-        SDL_Surface *logoDef = Textures::loadTexture("data/assets/ui/prev_default.png");
+        C_Surface *logoDef = Textures::loadTexture("data/assets/ui/prev_default.png");
         defaultWorld = METAENGINE_Render_CopyImageFromSurface(logoDef);
         METAENGINE_Render_SetImageFilter(defaultWorld, METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(logoDef);
@@ -1712,7 +1712,7 @@ namespace MetaEngine {
     // 	ImGui::End();
     // }
 
-    void ImGuiLayer::Init(SDL_Window *p_window, void *p_gl_context) {
+    void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
         window = p_window;
         gl_context = p_gl_context;
 
@@ -1896,7 +1896,7 @@ namespace MetaEngine {
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
         //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            SDL_Window *backup_current_window = SDL_GL_GetCurrentWindow();
+            C_Window *backup_current_window = SDL_GL_GetCurrentWindow();
             SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();

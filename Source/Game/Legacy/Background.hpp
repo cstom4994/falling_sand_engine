@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
+#include "Engine/Render/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
 
 #include <string>
@@ -10,13 +10,13 @@
 
 class BackgroundLayer {
 public:
-    std::vector<SDL_Surface *> surface;
+    std::vector<C_Surface *> surface;
     std::vector<METAENGINE_Render_Image *> texture;
     float parralaxX;
     float parralaxY;
     float moveX;
     float moveY;
-    BackgroundLayer(SDL_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY);
+    BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY);
     void init();
 };
 

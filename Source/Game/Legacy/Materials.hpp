@@ -3,7 +3,7 @@
 #pragma once
 
 
-#include <SDL.h>
+#include "Engine/Render/SDLWrapper.hpp"
 
 #include <iostream>
 #include <string>

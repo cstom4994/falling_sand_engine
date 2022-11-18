@@ -10,23 +10,23 @@
 
 #include "external/stb_image.h"
 
-SDL_Surface *Textures::testTexture = nullptr;
-SDL_Surface *Textures::dirt1Texture = nullptr;
-SDL_Surface *Textures::stone1Texture = nullptr;
-SDL_Surface *Textures::smoothStone = nullptr;
-SDL_Surface *Textures::cobbleStone = nullptr;
-SDL_Surface *Textures::flatCobbleStone = nullptr;
-SDL_Surface *Textures::smoothDirt = nullptr;
-SDL_Surface *Textures::cobbleDirt = nullptr;
-SDL_Surface *Textures::flatCobbleDirt = nullptr;
-SDL_Surface *Textures::softDirt = nullptr;
-SDL_Surface *Textures::cloud = nullptr;
-SDL_Surface *Textures::gold = nullptr;
-SDL_Surface *Textures::goldMolten = nullptr;
-SDL_Surface *Textures::goldSolid = nullptr;
-SDL_Surface *Textures::iron = nullptr;
-SDL_Surface *Textures::obsidian = nullptr;
-SDL_Surface *Textures::caveBG = nullptr;
+C_Surface *Textures::testTexture = nullptr;
+C_Surface *Textures::dirt1Texture = nullptr;
+C_Surface *Textures::stone1Texture = nullptr;
+C_Surface *Textures::smoothStone = nullptr;
+C_Surface *Textures::cobbleStone = nullptr;
+C_Surface *Textures::flatCobbleStone = nullptr;
+C_Surface *Textures::smoothDirt = nullptr;
+C_Surface *Textures::cobbleDirt = nullptr;
+C_Surface *Textures::flatCobbleDirt = nullptr;
+C_Surface *Textures::softDirt = nullptr;
+C_Surface *Textures::cloud = nullptr;
+C_Surface *Textures::gold = nullptr;
+C_Surface *Textures::goldMolten = nullptr;
+C_Surface *Textures::goldSolid = nullptr;
+C_Surface *Textures::iron = nullptr;
+C_Surface *Textures::obsidian = nullptr;
+C_Surface *Textures::caveBG = nullptr;
 
 void Textures::initTexture() {
     testTexture = Textures::loadTexture("data/assets/textures/test.png");
@@ -48,11 +48,11 @@ void Textures::initTexture() {
     caveBG = Textures::loadTexture("data/assets/backgrounds/testCave.png");
 }
 
-SDL_Surface *Textures::loadTexture(std::string path) {
+C_Surface *Textures::loadTexture(std::string path) {
     return loadTexture(path, SDL_PIXELFORMAT_ARGB8888);
 }
 
-SDL_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
+C_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
 
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
 
@@ -91,7 +91,7 @@ SDL_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
     }
 
 
-    SDL_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *) data, width, height, depth, pitch,
+    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *) data, width, height, depth, pitch,
                                                           rmask, gmask, bmask, amask);
 
     //stbi_image_free(data);
@@ -101,8 +101,8 @@ SDL_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
     return loadedSurface;
 }
 
-SDL_Surface *Textures::scaleTexture(SDL_Surface *src, float x, float y) {
-    SDL_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
+C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
+    C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
     SDL_Rect *srcR = new SDL_Rect();
     srcR->w = src->w;
