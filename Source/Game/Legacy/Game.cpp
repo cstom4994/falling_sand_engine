@@ -273,8 +273,8 @@ print(b);
     METADOT_INFO("Starting game...");
 
     bool openDebugUIs = false;
-    DebugCheatsUI::visible = openDebugUIs;
-    DebugDrawUI::visible = openDebugUIs;
+    MetaEngine::InternalGUI::DebugCheatsUI::visible = openDebugUIs;
+    MetaEngine::InternalGUI::DebugDrawUI::visible = openDebugUIs;
     Settings::draw_frame_graph = openDebugUIs;
     if (!openDebugUIs) {
         Settings::draw_background = true;
@@ -922,12 +922,12 @@ void Game::setDisplayMode(DisplayMode mode) {
         case DisplayMode::WINDOWED:
             SDL_SetWindowDisplayMode(window, NULL);
             SDL_SetWindowFullscreen(window, 0);
-            OptionsUI::item_current_idx = 0;
+            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 0;
             break;
         case DisplayMode::BORDERLESS:
             SDL_SetWindowDisplayMode(window, NULL);
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-            OptionsUI::item_current_idx = 1;
+            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 1;
             break;
         case DisplayMode::FULLSCREEN:
             SDL_MaximizeWindow(window);
@@ -944,7 +944,7 @@ void Game::setDisplayMode(DisplayMode mode) {
 
             SDL_SetWindowDisplayMode(window, &disp);
             SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-            OptionsUI::item_current_idx = 2;
+            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 2;
             break;
     }
 
@@ -960,12 +960,12 @@ void Game::setDisplayMode(DisplayMode mode) {
 
 void Game::setVSync(bool vsync) {
     SDL_GL_SetSwapInterval(vsync ? 1 : 0);
-    OptionsUI::vsync = vsync;
+    MetaEngine::InternalGUI::OptionsUI::vsync = vsync;
 }
 
 void Game::setMinimizeOnLostFocus(bool minimize) {
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
-    OptionsUI::minimizeOnFocus = minimize;
+    MetaEngine::InternalGUI::OptionsUI::minimizeOnFocus = minimize;
 }
 
 int Game::run(int argc, char *argv[]) {
@@ -1089,10 +1089,10 @@ int Game::run(int argc, char *argv[]) {
                             int lineX = index % world->width;
                             int lineY = index / world->width;
 
-                            for (int xx = -DebugDrawUI::brushSize / 2; xx < (int) (ceil(DebugDrawUI::brushSize / 2.0)); xx++) {
-                                for (int yy = -DebugDrawUI::brushSize / 2; yy < (int) (ceil(DebugDrawUI::brushSize / 2.0)); yy++) {
+                            for (int xx = -MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2; xx < (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)); xx++) {
+                                for (int yy = -MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2; yy < (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)); yy++) {
                                     if (lineX + xx < 0 || lineY + yy < 0 || lineX + xx >= world->width || lineY + yy >= world->height) continue;
-                                    MaterialInstance tp = Tiles::create(DebugDrawUI::selectedMaterial, lineX + xx, lineY + yy);
+                                    MaterialInstance tp = Tiles::create(MetaEngine::InternalGUI::DebugDrawUI::selectedMaterial, lineX + xx, lineY + yy);
                                     world->tiles[(lineX + xx) + (lineY + yy) * world->width] = tp;
                                     world->dirty[(lineX + xx) + (lineY + yy) * world->width] = true;
                                 }
@@ -1125,10 +1125,10 @@ int Game::run(int argc, char *argv[]) {
                             int lineX = index % world->width;
                             int lineY = index / world->width;
 
-                            for (int xx = -DebugDrawUI::brushSize / 2; xx < (int) (ceil(DebugDrawUI::brushSize / 2.0)); xx++) {
-                                for (int yy = -DebugDrawUI::brushSize / 2; yy < (int) (ceil(DebugDrawUI::brushSize / 2.0)); yy++) {
+                            for (int xx = -MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2; xx < (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)); xx++) {
+                                for (int yy = -MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2; yy < (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)); yy++) {
 
-                                    if (abs(xx) + abs(yy) == DebugDrawUI::brushSize) continue;
+                                    if (abs(xx) + abs(yy) == MetaEngine::InternalGUI::DebugDrawUI::brushSize) continue;
                                     if (world->getTile(lineX + xx, lineY + yy).mat->physicsType != PhysicsType::AIR) {
                                         world->setTile(lineX + xx, lineY + yy, Tiles::NOTHING);
                                         world->lastMeshZone.x--;
@@ -1566,7 +1566,7 @@ int Game::run(int argc, char *argv[]) {
             }
 
 
-            if (DebugDrawUI::visible) {
+            if (MetaEngine::InternalGUI::DebugDrawUI::visible) {
                 ImGui::Begin("Debug Info");
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
@@ -1810,8 +1810,8 @@ void Game::updateFrameEarly() {
 
 
     if (Controls::DEBUG_UI->get()) {
-        DebugDrawUI::visible ^= true;
-        DebugCheatsUI::visible ^= true;
+        MetaEngine::InternalGUI::DebugDrawUI::visible ^= true;
+        MetaEngine::InternalGUI::DebugCheatsUI::visible ^= true;
     }
 
     if (Settings::draw_frame_graph) {
@@ -1943,11 +1943,11 @@ void Game::updateFrameEarly() {
     }
 
     if (Controls::DEBUG_BRUSHSIZE_INC->get()) {
-        DebugDrawUI::brushSize = DebugDrawUI::brushSize < 50 ? DebugDrawUI::brushSize + 1 : DebugDrawUI::brushSize;
+        MetaEngine::InternalGUI::DebugDrawUI::brushSize = MetaEngine::InternalGUI::DebugDrawUI::brushSize < 50 ? MetaEngine::InternalGUI::DebugDrawUI::brushSize + 1 : MetaEngine::InternalGUI::DebugDrawUI::brushSize;
     }
 
     if (Controls::DEBUG_BRUSHSIZE_DEC->get()) {
-        DebugDrawUI::brushSize = DebugDrawUI::brushSize > 1 ? DebugDrawUI::brushSize - 1 : DebugDrawUI::brushSize;
+        MetaEngine::InternalGUI::DebugDrawUI::brushSize = MetaEngine::InternalGUI::DebugDrawUI::brushSize > 1 ? MetaEngine::InternalGUI::DebugDrawUI::brushSize - 1 : MetaEngine::InternalGUI::DebugDrawUI::brushSize;
     }
 
     if (Controls::DEBUG_TOGGLE_PLAYER->get()) {
@@ -1997,7 +1997,7 @@ void Game::updateFrameEarly() {
 
     if (Controls::PAUSE->get()) {
         if (this->state == GameState::INGAME) {
-            IngameUI::visible = !IngameUI::visible;
+            MetaEngine::InternalGUI::IngameUI::visible = !MetaEngine::InternalGUI::IngameUI::visible;
         }
     }
 
@@ -3374,13 +3374,37 @@ void Game::renderEarly() {
         if (Controls::mmouse) {
             int x = (int) ((mx - ofsX - camX) / scale);
             int y = (int) ((my - ofsY - camY) / scale);
-            METAENGINE_Render_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - DebugDrawUI::brushSize / 2.0f, y - DebugDrawUI::brushSize / 2.0f, x + (int) (ceil(DebugDrawUI::brushSize / 2.0)), y + (int) (ceil(DebugDrawUI::brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
-            METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target, x - DebugDrawUI::brushSize / 2.0f, y - DebugDrawUI::brushSize / 2.0f, x + (int) (ceil(DebugDrawUI::brushSize / 2.0)) + 1, y + (int) (ceil(DebugDrawUI::brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
+            METAENGINE_Render_RectangleFilled(
+                    TexturePack_.textureEntitiesLQ->target,
+                    x - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    y - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    x + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)),
+                    y + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)),
+                    {0xff, 0x40, 0x40, 0x90});
+            METAENGINE_Render_Rectangle(
+                    TexturePack_.textureEntitiesLQ->target,
+                    x - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    y - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    x + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                    y + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                    {0xff, 0x40, 0x40, 0xE0});
         } else if (Controls::DEBUG_DRAW->get()) {
             int x = (int) ((mx - ofsX - camX) / scale);
             int y = (int) ((my - ofsY - camY) / scale);
-            METAENGINE_Render_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - DebugDrawUI::brushSize / 2.0f, y - DebugDrawUI::brushSize / 2.0f, x + (int) (ceil(DebugDrawUI::brushSize / 2.0)), y + (int) (ceil(DebugDrawUI::brushSize / 2.0)), {0x00, 0xff, 0xB0, 0x80});
-            METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target, x - DebugDrawUI::brushSize / 2.0f, y - DebugDrawUI::brushSize / 2.0f, x + (int) (ceil(DebugDrawUI::brushSize / 2.0)) + 1, y + (int) (ceil(DebugDrawUI::brushSize / 2.0)) + 1, {0x00, 0xff, 0xB0, 0xE0});
+            METAENGINE_Render_RectangleFilled(
+                    TexturePack_.textureEntitiesLQ->target,
+                    x - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    y - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    x + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)),
+                    y + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)),
+                    {0x00, 0xff, 0xB0, 0x80});
+            METAENGINE_Render_Rectangle(
+                    TexturePack_.textureEntitiesLQ->target,
+                    x - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    y - MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0f,
+                    x + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                    y + (int) (ceil(MetaEngine::InternalGUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                    {0x00, 0xff, 0xB0, 0xE0});
         }
     }
 }
@@ -4153,7 +4177,7 @@ void Game::quitToMainMenu() {
     char *wn = (char *) worldName.c_str();
 
     METADOT_INFO("Loading main menu @ {0}", m_GameDir.getWorldPath(wn));
-    MainMenuUI::visible = false;
+    MetaEngine::InternalGUI::MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
 
@@ -4236,7 +4260,7 @@ void Game::quitToMainMenu() {
             world->width * 4);
 
 
-    MainMenuUI::visible = true;
+    MetaEngine::InternalGUI::MainMenuUI::visible = true;
 }
 
 int Game::getAimSolidSurface(int dist) {

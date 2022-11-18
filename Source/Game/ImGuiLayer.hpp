@@ -66,121 +66,125 @@ namespace MetaEngine {
 
 namespace MetaEngine {
     void GameUI_Draw(Game *game);
-}
 
-class DebugUI {
-public:
-    static void Draw(Game *game);
-};
+    namespace InternalGUI {
 
-class DebugCheatsUI {
-public:
-    static bool visible;
-    static std::vector<METAENGINE_Render_Image *> images;
+        class DebugUI {
+        public:
+            static void Draw(Game *game);
+        };
 
-    static void Setup();
+        class DebugCheatsUI {
+        public:
+            static bool visible;
+            static std::vector<METAENGINE_Render_Image *> images;
 
-    static void Draw(Game *game);
-};
+            static void Setup();
 
-class DebugDrawUI {
-public:
-    static bool visible;
-    static int selIndex;
-    static std::vector<METAENGINE_Render_Image *> images;
+            static void Draw(Game *game);
+        };
 
-    static Material *selectedMaterial;
-    static uint8 brushSize;
+        class DebugDrawUI {
+        public:
+            static bool visible;
+            static int selIndex;
+            static std::vector<METAENGINE_Render_Image *> images;
 
-    static void Setup();
+            static Material *selectedMaterial;
+            static uint8 brushSize;
 
-    static void Draw(Game *game);
-};
+            static void Setup();
 
-class MainMenuUI {
-public:
-    static bool visible;
+            static void Draw(Game *game);
+        };
 
-    static int state;
+        class MainMenuUI {
+        public:
+            static bool visible;
 
-    static bool setup;
+            static int state;
 
-    static METAENGINE_Render_Image *title;
+            static bool setup;
 
-    static bool connectButtonEnabled;
+            static METAENGINE_Render_Image *title;
 
-    static ImVec2 pos;
+            static bool connectButtonEnabled;
 
-    static std::vector<std::tuple<std::string, WorldMeta>> worlds;
+            static ImVec2 pos;
 
-    static long long lastRefresh;
+            static std::vector<std::tuple<std::string, WorldMeta>> worlds;
 
-    static void RefreshWorlds(Game *game);
+            static long long lastRefresh;
 
-    static void Setup();
+            static void RefreshWorlds(Game *game);
 
-    static void Draw(Game *game);
+            static void Setup();
 
-    static void DrawMainMenu(Game *game);
+            static void Draw(Game *game);
 
-    static void DrawSingleplayer(Game *game);
-    static void DrawMultiplayer(Game *game);
+            static void DrawMainMenu(Game *game);
 
-    static void DrawCreateWorld(Game *game);
+            static void DrawSingleplayer(Game *game);
+            static void DrawMultiplayer(Game *game);
 
-    static void DrawOptions(Game *game);
-};
+            static void DrawCreateWorld(Game *game);
 
-class IngameUI {
-public:
-    static bool visible;
+            static void DrawOptions(Game *game);
+        };
 
-    static int state;
+        class IngameUI {
+        public:
+            static bool visible;
 
-    static bool setup;
+            static int state;
 
-    static void Setup();
+            static bool setup;
 
-    static void Draw(Game *game);
+            static void Setup();
 
-    static void DrawIngame(Game *game);
+            static void Draw(Game *game);
 
-    static void DrawOptions(Game *game);
-};
+            static void DrawIngame(Game *game);
 
-class CreateWorldUI {
-public:
-    static bool setup;
-    static char worldNameBuf[32];
+            static void DrawOptions(Game *game);
+        };
 
-    static METAENGINE_Render_Image *materialTestWorld;
-    static METAENGINE_Render_Image *defaultWorld;
+        class CreateWorldUI {
+        public:
+            static bool setup;
+            static char worldNameBuf[32];
 
-    static bool createWorldButtonEnabled;
+            static METAENGINE_Render_Image *materialTestWorld;
+            static METAENGINE_Render_Image *defaultWorld;
 
-    static std::string worldFolderLabel;
+            static bool createWorldButtonEnabled;
 
-    static int selIndex;
+            static std::string worldFolderLabel;
 
-    static void Setup();
-    static void Reset(Game *game);
+            static int selIndex;
 
-    static void Draw(Game *game);
+            static void Setup();
+            static void Reset(Game *game);
 
-    static void inputChanged(std::string text, Game *game);
-};
+            static void Draw(Game *game);
 
-class OptionsUI {
-    // static std::map<std::string, FMOD::Studio::Bus *> busMap;
+            static void inputChanged(std::string text, Game *game);
+        };
 
-public:
-    static int item_current_idx;
-    static bool vsync;
-    static bool minimizeOnFocus;
+        class OptionsUI {
+            // static std::map<std::string, FMOD::Studio::Bus *> busMap;
 
-    static void Draw(Game *game);
-    static void DrawGeneral(Game *game);
-    static void DrawVideo(Game *game);
-    static void DrawAudio(Game *game);
-    static void DrawInput(Game *game);
-};
+        public:
+            static int item_current_idx;
+            static bool vsync;
+            static bool minimizeOnFocus;
+
+            static void Draw(Game *game);
+            static void DrawGeneral(Game *game);
+            static void DrawVideo(Game *game);
+            static void DrawAudio(Game *game);
+            static void DrawInput(Game *game);
+        };
+
+    }// namespace InternalGUI
+}// namespace MetaEngine
