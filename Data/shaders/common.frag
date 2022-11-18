@@ -1,5 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#version 330
+
 in vec4 color;
 in vec2 texCoord;
 out vec4 fragColor;

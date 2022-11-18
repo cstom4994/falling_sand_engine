@@ -1,5 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#version 330
+
 // Fragment
 #ifdef GL_ES
 precision mediump float;

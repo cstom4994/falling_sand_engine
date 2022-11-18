@@ -1,5 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#version 330
+
 in vec2 gpu_Vertex;
 in vec2 gpu_TexCoord;
 in vec4 gpu_Color;
