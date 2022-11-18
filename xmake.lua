@@ -1,4 +1,3 @@
-
 set_project("MetaDot.Runtime")
 
 add_requires("libsdl", {configs = {shared = false}, verify = true})
@@ -11,43 +10,50 @@ set_languages("c17", "c++20")
 
 add_rules("mode.debug", "mode.release")
 
-rule("metadot.uidsl")
-    set_extensions('.uidsl')
-    on_load(function(target)
-        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "uidsl")
-        if not os.isdir(outdir) then
-            os.mkdir(outdir)
-        end
-        target:set('policy', 'build.across_targets_in_parallel', false)
-        target:add('deps', 'luaexe')
-        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
-    end)
-    before_buildcmd_file(function(target, batchcmds, srcfile, opt)
-        import('core.project.project')
-        local outdir = path.join(path.join(os.projectdir(), "Source/Generated"), "uidsl")
-        --target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
+-- rule("metadot.uidsl")
+-- set_extensions('.uidsl')
+-- on_load(function(target)
+--     local outdir = path.join(path.join(os.projectdir(), "Source/Generated"),
+--                              "uidsl")
+--     if not os.isdir(outdir) then os.mkdir(outdir) end
+--     target:set('policy', 'build.across_targets_in_parallel', false)
+--     target:add('deps', 'luaexe')
+--     -- target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
+-- end)
+-- before_buildcmd_file(function(target, batchcmds, srcfile, opt)
+--     import('core.project.project')
+--     local outdir = path.join(path.join(os.projectdir(), "Source/Generated"),
+--                              "uidsl")
+--     -- target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
 
-        batchcmds:show_progress(opt.progress, "${color.build.object}Generating UIDSL %s", srcfile)
-        local name=srcfile:match('[\\/]?(%w+)%.%w+$')
-        local headerpath=path.join(outdir, name:lower()..'.h')
-        local implpath=path.join(outdir, name:lower()..'_imgui_inspector.cpp')
-        local outfile=os.projectdir()..'/'..path(srcfile)
+--     batchcmds:show_progress(opt.progress,
+--                             "${color.build.object}Generating UIDSL %s", srcfile)
+--     local name = srcfile:match('[\\/]?(%w+)%.%w+$')
+--     local headerpath = path.join(outdir, name:lower() .. '.h')
+--     local implpath = path.join(outdir, name:lower() .. '_imgui_inspector.cpp')
+--     local outfile = os.projectdir() .. '/' .. path(srcfile)
 
-        local args = {'-e', 'package.path="'..path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"):gsub('\\','/')..'/?.lua"',
-                        path.join(path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"), 'uidslparser.lua'),
-                        '-H', path(headerpath), '-I', path(implpath), '--cpp', outfile}
-        batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
+--     local args = {
+--         '-e', 'package.path="' ..
+--             path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"):gsub(
+--                 '\\', '/') .. '/?.lua"',
+--         path.join(
+--             path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"),
+--             'uidslparser.lua'), '-H', path(headerpath), '-I', path(implpath),
+--         '--cpp', outfile
+--     }
+--     batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
 
-        -- local objfile=target:objectfile(implpath)
-        -- table.insert(target:objectfiles(), objfile)
-        -- batchcmds:compile(implpath, objfile)
+--     -- local objfile=target:objectfile(implpath)
+--     -- table.insert(target:objectfiles(), objfile)
+--     -- batchcmds:compile(implpath, objfile)
 
-        batchcmds:add_depfiles(srcfile)
-        local dependfile = target:dependfile(implpath)
-        batchcmds:set_depmtime(os.mtime(dependfile))
-        batchcmds:set_depcache(dependfile)
-    end)
-rule_end()
+--     batchcmds:add_depfiles(srcfile)
+--     local dependfile = target:dependfile(implpath)
+--     batchcmds:set_depmtime(os.mtime(dependfile))
+--     batchcmds:set_depcache(dependfile)
+-- end)
+-- rule_end()
 
 if is_mode("debug") then
     add_defines("DEBUG", "_DEBUG")
@@ -60,7 +66,7 @@ end
 set_fpmodels("strict")
 set_exceptions("cxx", "objc")
 
-if (is_os("windows")) then 
+if (is_os("windows")) then
 
     set_arch("x86_64")
 
@@ -83,41 +89,17 @@ if (is_os("windows")) then
         set_runtimes("MDd")
     end
 
-    add_cxxflags(
-    "/wd4267", "/wd4244", "/wd4305", "/wd4018", 
-    "/wd4800", "/wd5030", "/wd5222", "/wd4554",
-    "/wd4002",
-    "/utf-8", "/Zc:__cplusplus", "/EHa",
-    "/Za", "/Ze",
-    "/fp:precise"
-    )
+    add_cxxflags("/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800",
+                 "/wd5030", "/wd5222", "/wd4554", "/wd4002", "/utf-8",
+                 "/Zc:__cplusplus", "/EHa", "/Za", "/Ze", "/fp:precise")
 
     add_cxflags("/bigobj")
 
     link_list = {
-        "DbgHelp",
-        "winmm",
-        "opengl32",
-        "kernel32",
-        "user32",
-        "gdi32",
-        "iphlpapi",
-        "Shlwapi",
-        "wsock32",
-        "ws2_32",
-        "shell32",
-        "advapi32",
-        "imm32",
-        "bcrypt",
-        "Avrt",
-        "dwmapi",
-        "Version",
-        "Usp10",
-        "userenv",
-        "psapi",
-        "setupapi",
-        "ole32",
-        "oleaut32",
+        "DbgHelp", "winmm", "opengl32", "kernel32", "user32", "gdi32",
+        "iphlpapi", "Shlwapi", "wsock32", "ws2_32", "shell32", "advapi32",
+        "imm32", "bcrypt", "Avrt", "dwmapi", "Version", "Usp10", "userenv",
+        "psapi", "setupapi", "ole32", "oleaut32"
     }
 elseif (is_os("linux")) then
 
@@ -134,9 +116,9 @@ elseif (is_os("macosx")) then
 
     set_toolchains("clang")
 
-    --add_cxflags("-fPIC")
+    -- add_cxflags("-fPIC")
 
-    --add_mxflags("-fno-objc-arc", {force = true})
+    -- add_mxflags("-fno-objc-arc", {force = true})
     -- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
     if (is_arch("arm.*")) then
@@ -148,26 +130,18 @@ elseif (is_os("macosx")) then
     link_list = {}
 end
 
---add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
+-- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
-    "Source",
-    "Source/Generated",
-    "Source/Engine",
-    "Source/Libs/lua/lua",
-    "Source/Libs",
-    "Source/Libs/imgui",
-    "Source/Libs/json/include",
-    "Source/Libs/fmt/include",
-    "Source/Libs/box2d/include",
-    "Source/Libs/glew"
-    }
-
-defines_list = {
-
+    "Source", "Source/Generated", "Source/Engine", "Source/Libs/lua/lua",
+    "Source/Libs", "Source/Libs/imgui", "Source/Libs/json/include",
+    "Source/Libs/fmt/include", "Source/Libs/box2d/include", "Source/Libs/glew"
 }
 
-target("lua") do
+defines_list = {}
+
+target("lua")
+do
     set_kind("static")
     add_rules("c.unity_build")
     add_includedirs(include_dir_list)
@@ -175,7 +149,8 @@ target("lua") do
     add_files("Source/Libs/lua/lua/*.c|lua.c|luac.c|onelua.c")
 end
 
-target("luaexe") do
+target("luaexe")
+do
     set_basename("lua54")
     set_kind("binary")
     add_includedirs(include_dir_list)
@@ -184,27 +159,31 @@ target("luaexe") do
     add_deps("lua")
 end
 
-target("Libs") do
+target("Libs")
+do
     set_kind("static")
     add_rules("c.unity_build", {batchsize = 0})
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
-    add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp", "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp", {unity_group = "libone"})
+    add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
+              "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp",
+              {unity_group = "libone"})
     add_files("Source/Libs/fmt/**.cc")
     add_files("Source/Libs/glew/**.c")
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
     add_files("Source/Libs/external/**.c")
     add_files("Source/Libs/box2d/**.cpp")
-	add_headerfiles("Source/Libs/**.h")
-	add_headerfiles("Source/Libs/**.hpp")
+    add_headerfiles("Source/Libs/**.h")
+    add_headerfiles("Source/Libs/**.hpp")
     remove_files("Source/Libs/lua/lua/**")
     set_symbols("debug")
 end
 
-target("Engine") do
+target("Engine")
+do
     set_kind("static")
     add_packages("libsdl")
     add_includedirs(include_dir_list)
@@ -213,25 +192,24 @@ target("Engine") do
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")
     add_headerfiles("Source/Engine/**.inl")
-    add_files('Source/Engine/UserInterface/IMGUI/uidslexpr.lua', {rule='utils.bin2c'})
+    -- add_files('Source/Engine/UserInterface/IMGUI/uidslexpr.lua',
+    --           {rule = 'utils.bin2c'})
     set_symbols("debug")
 end
 
-target("MetaDot") do
+target("MetaDot")
+do
     set_kind("binary")
     add_packages("libsdl")
-    add_rules("metadot.uidsl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_deps("Libs", "lua", "Engine")
     add_links(link_list)
-    add_files("Source/Generated/**.cpp")
     add_files("Source/Game/**.cpp")
-    add_files("Source/Game/uidsl/*.uidsl")
-	add_headerfiles("Source/Game/**.h")
-	add_headerfiles("Source/Game/**.hpp")
-	add_headerfiles("Source/Game/**.inl")
+    add_headerfiles("Source/Game/**.h")
+    add_headerfiles("Source/Game/**.hpp")
+    add_headerfiles("Source/Game/**.inl")
     add_headerfiles("Source/Shared/**.hpp")
     remove_files("Source/Game/Game.**")
     set_symbols("debug")

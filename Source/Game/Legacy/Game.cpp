@@ -204,58 +204,58 @@ Game::~Game() {
 
 int Game::init(int argc, char *argv[]) {
 
-    try {
-        auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
+//     try {
+//         auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
 
-        if (!options.test.value_or("").empty()) {
-            if (options.test == "test_mu") {
-                for (auto t: options.files) {
-                    //METADOT_UNIT(!interp.evaluateFile(std::string(t)));
-                }
+//         if (!options.test.value_or("").empty()) {
+//             if (options.test == "test_mu") {
+//                 for (auto t: options.files) {
+//                     //METADOT_UNIT(!interp.evaluateFile(std::string(t)));
+//                 }
 
-                std::string test = R"(
+//                 std::string test = R"(
 
-class test {
-	var x = 1;
-	var y = "MuScript 宽字符测试";
-	func test() {
-		x = 2;
-	}
-}
+// class test {
+// 	var x = 1;
+// 	var y = "MuScript 宽字符测试";
+// 	func test() {
+// 		x = 2;
+// 	}
+// }
 
-a = test();
+// a = test();
 
-if (a.x == 2) {
-	print(a.y);
-}
+// if (a.x == 2) {
+// 	print(a.y);
+// }
 
-b = inspect(a.x);
+// b = inspect(a.x);
 
-print(b);
-                )";
+// print(b);
+//                 )";
 
-                auto interp = new MuScript::MuScriptInterpreter(MuScript::ModulePrivilege::allPrivilege);
-                interp->evaluate(test);
-                delete interp;
+//                 auto interp = new MuScript::MuScriptInterpreter(MuScript::ModulePrivilege::allPrivilege);
+//                 interp->evaluate(test);
+//                 delete interp;
 
-                return 0;
-            }
-            if (options.test == "test_xlsx") {
-                // lxw_workbook *workbook = workbook_new("./data/test.xlsx");
-                // lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
+//                 return 0;
+//             }
+//             if (options.test == "test_xlsx") {
+//                 // lxw_workbook *workbook = workbook_new("./data/test.xlsx");
+//                 // lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
 
-                // worksheet_write_string(worksheet, 0, 0, "Hello", NULL);
-                // worksheet_write_number(worksheet, 1, 0, 123, NULL);
+//                 // worksheet_write_string(worksheet, 0, 0, "Hello", NULL);
+//                 // worksheet_write_number(worksheet, 1, 0, 123, NULL);
 
-                // workbook_close(workbook);
-                return 0;
-            }
-        }
+//                 // workbook_close(workbook);
+//                 return 0;
+//             }
+//         }
 
-    } catch (structopt::exception &e) {
-        std::cout << e.what() << "\n";
-        std::cout << e.help();
-    }
+//     } catch (structopt::exception &e) {
+//         std::cout << e.what() << "\n";
+//         std::cout << e.help();
+//     }
 
 
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
@@ -383,7 +383,7 @@ print(b);
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
-    uint32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
+    uint32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO;
     if (SDL_Init(sdl_init_flags) < 0) {
         METADOT_ERROR("SDL_Init failed: {0}", SDL_GetError());
         return EXIT_FAILURE;

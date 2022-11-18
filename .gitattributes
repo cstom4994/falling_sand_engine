@@ -1,7 +1,6 @@
 # Properly detect languages on Github
 *.h linguist-language=cpp
 *.inc linguist-language=cpp
-*.uidsl linguist-language=lua
 
 # And some test files where the EOL matters
 *.test.txt -text
