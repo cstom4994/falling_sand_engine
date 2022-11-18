@@ -1,9 +1,11 @@
 # Properly detect languages on Github
 *.h linguist-language=cpp
 *.inc linguist-language=cpp
+*.uidsl linguist-language=lua
 
 # And some test files where the EOL matters
 *.test.txt -text
+*.mu text
 
 # The above only works properly for Git 2.10+, so for older versions
 # we need to manually list the binary files we don't want modified.
