@@ -27,7 +27,7 @@ bool Drawing::InitFont(SDL_GLContext *SDLContext) {
     return true;
 }
 
-STBTTF_Font *Drawing::LoadFont(const char *path, Uint16 ss) {
+STBTTF_Font *Drawing::LoadFont(const char *path, UInt16 ss) {
     /* load font file */
     long size;
     unsigned char *fontBuffer;

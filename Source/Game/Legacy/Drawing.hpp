@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Engine/Render/SDLWrapper.hpp"
-
 #include "Engine/Render/renderer_gpu.h"
+#include "Game/Core.hpp"
 
 #include <box2d/b2_distance_joint.h>
 
@@ -61,7 +61,7 @@ class Drawing {
 public:
     static bool InitFont(SDL_GLContext *SDLContext);
 
-    static STBTTF_Font *LoadFont(const char *path, Uint16 size);
+    static STBTTF_Font *LoadFont(const char *path, UInt16 size);
 
     static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
                                          STBTTF_Font *font, int x, int y,

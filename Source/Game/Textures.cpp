@@ -52,7 +52,7 @@ C_Surface *Textures::loadTexture(std::string path) {
     return loadTexture(path, SDL_PIXELFORMAT_ARGB8888);
 }
 
-C_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
+C_Surface *Textures::loadTexture(std::string path, UInt32 pixelFormat) {
 
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
 
@@ -67,7 +67,7 @@ C_Surface *Textures::loadTexture(std::string path, Uint32 pixelFormat) {
 
     // Set up the pixel format color masks for RGB(A) byte arrays.
     // Only STBI_rgb (3) and STBI_rgb_alpha (4) are supported here!
-    Uint32 rmask, gmask, bmask, amask;
+    UInt32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     int shift = (req_format == STBI_rgb) ? 8 : 0;
     rmask = 0xff000000 >> shift;

@@ -15,9 +15,9 @@
 class Shaders {
 public:
     // Loads a shader and prepends version/compatibility info before compiling it.
-    static Uint32 load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *filename) {
+    static UInt32 load_shader(METAENGINE_Render_ShaderEnum shader_type, const char *filename) {
 
-        Uint32 shader;
+        UInt32 shader;
         METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
 
         std::string source = MetaEngine::FUtil::readFileString(filename);
@@ -33,8 +33,8 @@ public:
         return shader;
     }
 
-    static METAENGINE_Render_ShaderBlock load_shader_program(Uint32 *p, const char *vertex_shader_file, const char *fragment_shader_file) {
-        Uint32 v, f;
+    static METAENGINE_Render_ShaderBlock load_shader_program(UInt32 *p, const char *vertex_shader_file, const char *fragment_shader_file) {
+        UInt32 v, f;
         v = load_shader(METAENGINE_Render_VERTEX_SHADER, vertex_shader_file);
 
         if (!v)
@@ -61,14 +61,14 @@ public:
         }
     }
 
-    static void free_shader(Uint32 p) {
+    static void free_shader(UInt32 p) {
         METAENGINE_Render_FreeShaderProgram(p);
     }
 };
 
 class Shader {
 public:
-    Uint32 shader;
+    UInt32 shader;
     METAENGINE_Render_ShaderBlock block;
 
     Shader(const char *vertex_shader_file, const char *fragment_shader_file) {

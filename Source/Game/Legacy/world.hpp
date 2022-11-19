@@ -99,7 +99,7 @@ public:
     float *prevFlowX = nullptr;
     float *prevFlowY = nullptr;
     MaterialInstance *layer2 = nullptr;
-    Uint32 *background = nullptr;
+    UInt32 *background = nullptr;
     std::vector<Particle *> particles;
     uint16_t width = 0;
     uint16_t height = 0;

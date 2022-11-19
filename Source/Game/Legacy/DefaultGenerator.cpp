@@ -61,7 +61,7 @@ class DefaultGenerator : public WorldGenerator {
     void generateChunk(World *world, Chunk *ch) override {
         MaterialInstance *prop = new MaterialInstance[CHUNK_W * CHUNK_H];
         MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
-        Uint32 *background = new Uint32[CHUNK_W * CHUNK_H];
+        UInt32 *background = new UInt32[CHUNK_W * CHUNK_H];
         //std::cout << "generate " << cx << " " << cy << std::endl;
         /*for (int x = 0; x < CHUNK_W; x++) {
             for (int y = 0; y < CHUNK_H; y++) {
@@ -136,9 +136,9 @@ class DefaultGenerator : public WorldGenerator {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
                         int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        Uint8 *pixel = (Uint8 *) Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(Uint32));
-                        background[x + y * CHUNK_W] = *((Uint32 *) pixel);
+                        UInt8 *pixel = (UInt8 *) Textures::caveBG->pixels;
+                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(UInt32));
+                        background[x + y * CHUNK_W] = *((UInt32 *) pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
@@ -159,9 +159,9 @@ class DefaultGenerator : public WorldGenerator {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
                         int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        Uint8 *pixel = (Uint8 *) Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(Uint32));
-                        background[x + y * CHUNK_W] = *((Uint32 *) pixel);
+                        UInt8 *pixel = (UInt8 *) Textures::caveBG->pixels;
+                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(UInt32));
+                        background[x + y * CHUNK_W] = *((UInt32 *) pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
@@ -182,9 +182,9 @@ class DefaultGenerator : public WorldGenerator {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
                         int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        Uint8 *pixel = (Uint8 *) Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(Uint32));
-                        background[x + y * CHUNK_W] = *((Uint32 *) pixel);
+                        UInt8 *pixel = (UInt8 *) Textures::caveBG->pixels;
+                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(UInt32));
+                        background[x + y * CHUNK_W] = *((UInt32 *) pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;

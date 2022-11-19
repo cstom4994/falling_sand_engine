@@ -2,6 +2,7 @@
 
 #include "Engine/Render/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
+#include "Game/Core.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -22,9 +23,9 @@ public:
 
 class Background {
 public:
-    Uint32 solid;
+    UInt32 solid;
     std::vector<BackgroundLayer> layers;
-    explicit Background(Uint32 solid, std::vector<BackgroundLayer> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    explicit Background(UInt32 solid, std::vector<BackgroundLayer> layers) : solid(std::move(solid)), layers(std::move(layers)){};
     void init();
 };
 

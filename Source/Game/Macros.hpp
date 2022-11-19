@@ -74,7 +74,7 @@ const char *u8Cpp20(T &&t) noexcept {
 
 #define METADOT_NODISCARD [[nodiscard]]
 
-#define METADOT_GET_PIXEL(surface, x, y) *((Uint32 *) ((Uint8 *) surface->pixels + ((y) *surface->pitch) + ((x) * sizeof(Uint32))))
+#define METADOT_GET_PIXEL(surface, x, y) *((UInt32 *) ((UInt8 *) surface->pixels + ((y) *surface->pitch) + ((x) * sizeof(UInt32))))
 
 #define METADOT_OPTMIZE_OFF __pragma(optimize("", off))
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))

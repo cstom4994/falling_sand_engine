@@ -155,7 +155,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     prevFlowX = new float[w * h];
     prevFlowY = new float[w * h];
     layer2 = new MaterialInstance[w * h];
-    background = new Uint32[w * h];
+    background = new UInt32[w * h];
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
             setTile(x, y, Tiles::NOTHING);
@@ -380,7 +380,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     }
 
 
-    unsigned char *data = new unsigned char[texture->w * texture->h];
+    UInt8 *data = new UInt8[texture->w * texture->h];
 
 
     bool *edgeSeen = new bool[texture->w * texture->h];
@@ -1129,7 +1129,7 @@ void World::tick() {
 
                                 if (tile.mat->id == Materials::FIRE.id) {
                                     if (rand() % 10 == 0) {
-                                        Uint32 rgb = 255;
+                                        UInt32 rgb = 255;
                                         rgb = (rgb << 8) + 100 + rand() % 50;
                                         rgb = (rgb << 8) + 50;
                                         tile.color = rgb;
@@ -2109,12 +2109,12 @@ void World::renderParticles(unsigned char **texture) {
         //float alphaMod = 1;
 
         const unsigned int offset = (width * 4 * (int) cur->y) + (int) cur->x * 4;
-        Uint32 color = cur->tile.color;
+        UInt32 color = cur->tile.color;
         (*texture)[offset + 2] = (color >> 0) & 0xff;                      // b
         (*texture)[offset + 1] = (color >> 8) & 0xff;                      // g
         (*texture)[offset + 0] = (color >> 16) & 0xff;                     // r
-        (*texture)[offset + 3] = (Uint8) (cur->tile.mat->alpha * alphaMod);// a
-        //SDL_SetRenderDrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (Uint8)(cur->tile.mat->alpha * alphaMod));
+        (*texture)[offset + 3] = (UInt8) (cur->tile.mat->alpha * alphaMod);// a
+        //SDL_SetRenderDrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (UInt8)(cur->tile.mat->alpha * alphaMod));
         //SDL_RenderDrawPoint(renderer, (int)cur->x, (int)cur->y);
     }
 }
@@ -2396,7 +2396,7 @@ void World::explosion(int cx, int cy, int radius) {
                     int g = (tile.color >> 8) & 0xFF;
                     int b = (tile.color >> 0) & 0xFF;
 
-                    Uint32 rgb = r / 4;
+                    UInt32 rgb = r / 4;
                     rgb = (rgb << 8) + g / 4;
                     rgb = (rgb << 8) + b / 4;
 

@@ -28,8 +28,8 @@
 
 typedef struct
 {
-    Uint16 index;
-    Uint32 color;
+    UInt16 index;
+    UInt32 color;
     int32_t temperature;
 } MaterialInstanceData;
 
@@ -54,13 +54,13 @@ public:
 
     //static MaterialInstanceData* readBuf;
     void read();
-    void write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *background);
+    void write(MaterialInstance *tiles, MaterialInstance *layer2, UInt32 *background);
     bool hasFile();
 
     bool hasTileCache = false;
     MaterialInstance *tiles = nullptr;
     MaterialInstance *layer2 = nullptr;
-    Uint32 *background = nullptr;
+    UInt32 *background = nullptr;
     Biome **biomes = nullptr;
 
     std::vector<b2PolygonShape> polys = {};

@@ -331,40 +331,40 @@ int Game::init(int argc, char *argv[]) {
         SDL_SetWindowTitle(window, win_title_client.c_str());
     }
 
-    ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(1);
-    std::future<void> initThread;
+    // ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(1);
+    // std::future<void> initThread;
     ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(1);
     std::future<void> worldInitThread;
-    if (networkMode != NetworkMode::SERVER) {
+    // if (networkMode != NetworkMode::SERVER) {
 
-        // init fmod
-        initThread = initThreadPool->push([&](int id) {
-            METADOT_INFO("Initializing audio engine...");
+    //     // init fmod
+    //     initThread = initThreadPool->push([&](int id) {
+    //         METADOT_INFO("Initializing audio engine...");
 
-            audioEngine.Init();
+    //         audioEngine.Init();
 
-            // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
-            // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+    //         // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+    //         // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
 
-            audioEngine.LoadEvent("event:/Music/Title");
+    //         audioEngine.LoadEvent("event:/Music/Title");
 
-            audioEngine.LoadEvent("event:/Player/Jump");
-            audioEngine.LoadEvent("event:/Player/Fly");
-            audioEngine.LoadEvent("event:/Player/Wind");
-            audioEngine.LoadEvent("event:/Player/Impact");
+    //         audioEngine.LoadEvent("event:/Player/Jump");
+    //         audioEngine.LoadEvent("event:/Player/Fly");
+    //         audioEngine.LoadEvent("event:/Player/Wind");
+    //         audioEngine.LoadEvent("event:/Player/Impact");
 
-            audioEngine.LoadEvent("event:/World/Sand");
-            audioEngine.LoadEvent("event:/World/WaterFlow");
+    //         audioEngine.LoadEvent("event:/World/Sand");
+    //         audioEngine.LoadEvent("event:/World/WaterFlow");
 
-            audioEngine.LoadEvent("event:/GUI/GUI_Hover");
-            audioEngine.LoadEvent("event:/GUI/GUI_Slider");
+    //         audioEngine.LoadEvent("event:/GUI/GUI_Hover");
+    //         audioEngine.LoadEvent("event:/GUI/GUI_Slider");
 
-            audioEngine.PlayEvent("event:/Player/Fly");
-            audioEngine.PlayEvent("event:/Player/Wind");
-            audioEngine.PlayEvent("event:/World/Sand");
-            audioEngine.PlayEvent("event:/World/WaterFlow");
-        });
-    }
+    //         audioEngine.PlayEvent("event:/Player/Fly");
+    //         audioEngine.PlayEvent("event:/Player/Wind");
+    //         audioEngine.PlayEvent("event:/World/Sand");
+    //         audioEngine.PlayEvent("event:/World/WaterFlow");
+    //     });
+    // }
 
     // std::vector<std::future<void>> results = {};
     // auto testpool = new ctpl::thread_pool(1);
@@ -383,7 +383,7 @@ int Game::init(int argc, char *argv[]) {
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
-    uint32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO;
+    UInt32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO;
     if (SDL_Init(sdl_init_flags) < 0) {
         METADOT_ERROR("SDL_Init failed: {0}", SDL_GetError());
         return EXIT_FAILURE;
@@ -508,7 +508,7 @@ int Game::init(int argc, char *argv[]) {
 
         // TODO CppScript
 
-        initThread.get();
+        //initThread.get();
 
         audioEngine.PlayEvent("event:/Music/Title");
         audioEngine.Update();
@@ -1178,7 +1178,7 @@ int Game::run(int argc, char *argv[]) {
                                         int nty = (int) (tx * s + ty * c);
 
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            Uint32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                            UInt32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
                                                 METADOT_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
@@ -1265,7 +1265,7 @@ int Game::run(int argc, char *argv[]) {
                                                 int nty = (int) (tx * s + ty * c);
 
                                                 if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                                    Uint32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                                    UInt32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
                                                     }
@@ -2065,7 +2065,7 @@ void Game::updateFrameEarly() {
                                 int i = (int) world->player->heldItem->carry.size() - 1;
                                 i = (int) ((i / (float) world->player->heldItem->capacity) * world->player->heldItem->fill.size());
                                 UInt16Point pt = world->player->heldItem->fill[i];
-                                Uint32 c = world->tiles[(x + xx) + (y + yy) * world->width].color;
+                                UInt32 c = world->tiles[(x + xx) + (y + yy) * world->width].color;
                                 METADOT_GET_PIXEL(world->player->heldItem->surface, pt.x, pt.y) = (world->tiles[(x + xx) + (y + yy) * world->width].mat->alpha << 24) + c;
 
                                 world->player->heldItem->texture = METAENGINE_Render_CopyImageFromSurface(world->player->heldItem->surface);
@@ -2240,7 +2240,7 @@ void Game::tick() {
 
             // draw outline
 
-            Uint8 outlineAlpha = (Uint8) (cur->hover * 255);
+            UInt8 outlineAlpha = (UInt8) (cur->hover * 255);
             if (outlineAlpha > 0) {
                 SDL_Color col = {0xff, 0xff, 0x80, outlineAlpha};
                 METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL_FACTOR_ALPHA);// SDL_BLENDMODE_BLEND
@@ -2388,11 +2388,11 @@ void Game::tick() {
 
         //int pitch;
         //void* vdpixels_ar = texture->data;
-        //unsigned char* dpixels_ar = (unsigned char*)vdpixels_ar;
-        unsigned char *dpixels_ar = TexturePack_.pixels_ar;
-        unsigned char *dpixelsFire_ar = TexturePack_.pixelsFire_ar;
-        unsigned char *dpixelsFlow_ar = TexturePack_.pixelsFlow_ar;
-        unsigned char *dpixelsEmission_ar = TexturePack_.pixelsEmission_ar;
+        //UInt8* dpixels_ar = (UInt8*)vdpixels_ar;
+        UInt8 *dpixels_ar = TexturePack_.pixels_ar;
+        UInt8 *dpixelsFire_ar = TexturePack_.pixelsFire_ar;
+        UInt8 *dpixelsFlow_ar = TexturePack_.pixelsFlow_ar;
+        UInt8 *dpixelsEmission_ar = TexturePack_.pixelsEmission_ar;
 
         std::vector<std::future<void>> results = {};
 
@@ -2402,7 +2402,7 @@ void Game::tick() {
 
             memset(particlePixels, 0, (size_t) world->width * world->height * 4);
 
-            world->renderParticles((unsigned char **) &particlePixels);
+            world->renderParticles((UInt8 **) &particlePixels);
             world->tickParticles();
 
             //SDL_SetRenderTarget(renderer, NULL);
@@ -2543,8 +2543,8 @@ void Game::tick() {
                         world->flowY[i] = 0;
                         world->flowX[i] = 0;
                     } else {
-                        Uint32 color = world->tiles[i].color;
-                        Uint32 emit = world->tiles[i].mat->emitColor;
+                        UInt32 color = world->tiles[i].color;
+                        UInt32 emit = world->tiles[i].mat->emitColor;
                         //float br = world->light[i];
                         dpixels_ar[offset + 2] = ((color >> 0) & 0xff);     // b
                         dpixels_ar[offset + 1] = ((color >> 8) & 0xff);     // g
@@ -2588,8 +2588,8 @@ void Game::tick() {
         }));
 
         //void* vdpixelsLayer2_ar = textureLayer2->data;
-        //unsigned char* dpixelsLayer2_ar = (unsigned char*)vdpixelsLayer2_ar;
-        unsigned char *dpixelsLayer2_ar = TexturePack_.pixelsLayer2_ar;
+        //UInt8* dpixelsLayer2_ar = (UInt8*)vdpixelsLayer2_ar;
+        UInt8 *dpixelsLayer2_ar = TexturePack_.pixelsLayer2_ar;
         results.push_back(updateDirtyPool->push([&](int id) {
             for (int i = 0; i < world->width * world->height; i++) {
                 /*for (int x = 0; x < world->width; x++) {
@@ -2600,7 +2600,7 @@ void Game::tick() {
                     hadLayer2Dirty = true;
                     if (world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                         if (Settings::draw_background_grid) {
-                            Uint32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
+                            UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                             dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff; // b
                             dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff; // g
                             dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;// r
@@ -2614,7 +2614,7 @@ void Game::tick() {
                             continue;
                         }
                     }
-                    Uint32 color = world->layer2[i].color;
+                    UInt32 color = world->layer2[i].color;
                     dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;        // b
                     dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;        // g
                     dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;       // r
@@ -2624,8 +2624,8 @@ void Game::tick() {
         }));
 
         //void* vdpixelsBackground_ar = textureBackground->data;
-        //unsigned char* dpixelsBackground_ar = (unsigned char*)vdpixelsBackground_ar;
-        unsigned char *dpixelsBackground_ar = TexturePack_.pixelsBackground_ar;
+        //UInt8* dpixelsBackground_ar = (UInt8*)vdpixelsBackground_ar;
+        UInt8 *dpixelsBackground_ar = TexturePack_.pixelsBackground_ar;
         results.push_back(updateDirtyPool->push([&](int id) {
             for (int i = 0; i < world->width * world->height; i++) {
                 /*for (int x = 0; x < world->width; x++) {
@@ -2635,7 +2635,7 @@ void Game::tick() {
 
                 if (world->backgroundDirty[i]) {
                     hadBackgroundDirty = true;
-                    Uint32 color = world->background[i];
+                    UInt32 color = world->background[i];
                     dpixelsBackground_ar[offset + 2] = (color >> 0) & 0xff; // b
                     dpixelsBackground_ar[offset + 1] = (color >> 8) & 0xff; // g
                     dpixelsBackground_ar[offset + 0] = (color >> 16) & 0xff;// r
@@ -2785,8 +2785,8 @@ void Game::tickChunkLoading() {
                 if (world->tiles[i].mat->physicsType == PhysicsType::AIR) {
                     UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
                 } else {
-                    Uint32 color = world->tiles[i].color;
-                    Uint32 emit = world->tiles[i].mat->emitColor;
+                    UInt32 color = world->tiles[i].color;
+                    UInt32 emit = world->tiles[i].mat->emitColor;
                     UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, world->tiles[i].mat->alpha);
                     UCH_SET_PIXEL(TexturePack_.pixelsEmission_ar, offset, (emit >> 0) & 0xff, (emit >> 8) & 0xff, (emit >> 16) & 0xff, (emit >> 24) & 0xff);
                 }
@@ -2795,19 +2795,19 @@ void Game::tickChunkLoading() {
             if (world->layer2Dirty[i]) {
                 if (world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                     if (Settings::draw_background_grid) {
-                        Uint32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
+                        UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
                     } else {
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
                     }
                     continue;
                 }
-                Uint32 color = world->layer2[i].color;
+                UInt32 color = world->layer2[i].color;
                 UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, world->layer2[i].mat->alpha);
             }
 
             if (world->backgroundDirty[i]) {
-                Uint32 color = world->background[i];
+                UInt32 color = world->background[i];
                 UCH_SET_PIXEL(TexturePack_.pixelsBackground_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, (color >> 24) & 0xff);
             }
 #undef UCH_SET_PIXEL
@@ -3150,7 +3150,7 @@ void Game::tickPlayer() {
                                         int nty = (int) (tx * s + ty * c);
 
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            Uint32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                            UInt32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
                                                 METADOT_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
@@ -3436,7 +3436,7 @@ void Game::renderLate() {
         Background *bg = backgrounds->Get("TEST_OVERWORLD");
         if (Settings::draw_background && scale <= bg->layers[0].surface.size() && world->loadZone.y > -5 * CHUNK_H) {
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_SET);
-            SDL_Color col = {static_cast<Uint8>((bg->solid >> 16) & 0xff), static_cast<Uint8>((bg->solid >> 8) & 0xff), static_cast<Uint8>((bg->solid >> 0) & 0xff), 0xff};
+            SDL_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff), static_cast<UInt8>((bg->solid >> 8) & 0xff), static_cast<UInt8>((bg->solid >> 0) & 0xff), 0xff};
             METAENGINE_Render_ClearColor(RenderTarget_.target, col);
 
             METAENGINE_Render_Rect *dst = new METAENGINE_Render_Rect();
@@ -3729,7 +3729,7 @@ void Game::renderOverlays() {
         //    SDL_RenderCopyEx(renderer, cur.texture, NULL, r, cur.body->GetAngle() * 180 / M_PI, new SDL_Point{ 0, 0 }, SDL_RendererFlip::SDL_FLIP_NONE);
         //    delete r;*/
 
-        //    Uint32 color = 0x0000ff;
+        //    UInt32 color = 0x0000ff;
 
         //    SDL_Color col = {(color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff};
 
@@ -3759,7 +3759,7 @@ void Game::renderOverlays() {
         //    x = ((x)*scale + ofsX + camX);
         //    y = ((y)*scale + ofsY + camY);
 
-        //    Uint32 color = 0x0000ff;
+        //    UInt32 color = 0x0000ff;
 
         //    SDL_Color col = {(color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff};
 
@@ -3788,7 +3788,7 @@ void Game::renderOverlays() {
         //    x = ((x)*scale + ofsX + camX);
         //    y = ((y)*scale + ofsY + camY);
 
-        //    Uint32 color = 0x00ff00;
+        //    UInt32 color = 0x00ff00;
 
         //    SDL_Color col = {(color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff};
 
@@ -4138,7 +4138,7 @@ void Game::renderTemperatureMap(World *world) {
         for (int y = 0; y < world->height; y++) {
             auto t = world->tiles[x + y * world->width];
             int32_t temp = t.temperature;
-            Uint32 color = (Uint8) ((temp + 1024) / 2048.0f * 255);
+            UInt32 color = (UInt8) ((temp + 1024) / 2048.0f * 255);
 
             const unsigned int offset = (world->width * 4 * y) + x * 4;
             TexturePack_.pixelsTemp_ar[offset + 0] = color;// b

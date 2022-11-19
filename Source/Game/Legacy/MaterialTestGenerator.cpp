@@ -16,7 +16,7 @@ class MaterialTestGenerator : public WorldGenerator {
     void generateChunk(World *world, Chunk *ch) override {
         MaterialInstance *prop = new MaterialInstance[CHUNK_W * CHUNK_H];
         MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
-        Uint32 *background = new Uint32[CHUNK_W * CHUNK_H];
+        UInt32 *background = new UInt32[CHUNK_W * CHUNK_H];
         Material *mat;
 
         while (true) {

@@ -57,7 +57,7 @@ void Chunk::read() {
         throw std::runtime_error("Failed to allocate memory for Chunk layer2 array.");
     //MaterialInstance* tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
     //MaterialInstance* layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
-    Uint32 *background = new Uint32[CHUNK_W * CHUNK_H];
+    UInt32 *background = new UInt32[CHUNK_W * CHUNK_H];
 
     std::string line;
     std::ifstream myfile(fname, std::ios::binary);
@@ -75,14 +75,14 @@ void Chunk::read() {
 		// 	myfile.read((char*)&content, sizeof(unsigned int));
 		// 	int id = content;
 		// 	myfile.read((char*)&content, sizeof(unsigned int));
-		// 	Uint32 color = content;
+		// 	UInt32 color = content;
 		// 	tiles[i] = MaterialInstance(Materials::MATERIALS[id], color);
 		// }
 		// for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
 		// 	myfile.read((char*)&content, sizeof(unsigned int));
 		// 	int id = content;
 		// 	myfile.read((char*)&content, sizeof(unsigned int));
-		// 	Uint32 color = content;
+		// 	UInt32 color = content;
 		// 	layer2[i] = MaterialInstance(Materials::MATERIALS[id], color);
 		// }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
@@ -181,7 +181,7 @@ void Chunk::read() {
     hasTileCache = true;
 }
 
-void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *background) {
+void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, UInt32 *background) {
     this->tiles = tiles;
     this->layer2 = layer2;
     this->background = background;
@@ -204,8 +204,8 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, Uint32 *bac
 
     MaterialInstanceData *buf = new MaterialInstanceData[CHUNK_W * CHUNK_H * 2];
     for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        buf[i] = {(Uint16) tiles[i].mat->id, tiles[i].color, tiles[i].temperature};
-        buf[CHUNK_W * CHUNK_H + i] = {(Uint16) layer2[i].mat->id, layer2[i].color, layer2[i].temperature};
+        buf[i] = {(UInt16) tiles[i].mat->id, tiles[i].color, tiles[i].temperature};
+        buf[CHUNK_W * CHUNK_H + i] = {(UInt16) layer2[i].mat->id, layer2[i].color, layer2[i].temperature};
     }
 
     const char *const src = (char *) buf;

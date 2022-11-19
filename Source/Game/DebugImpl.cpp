@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "DebugImpl.hpp"
+#include "Game/Core.hpp"
 
 #include <cstddef>
 #include <exception>
@@ -104,7 +105,7 @@ b2Vec2 b2DebugDraw_impl::transform(const b2Vec2 &pt) {
 }
 
 SDL_Color b2DebugDraw_impl::convertColor(const b2Color &color) {
-    return {(Uint8) (color.r * 255), (Uint8) (color.g * 255), (Uint8) (color.b * 255), (Uint8) (color.a * 255)};
+    return {(UInt8) (color.r * 255), (UInt8) (color.g * 255), (UInt8) (color.b * 255), (UInt8) (color.a * 255)};
 }
 
 void b2DebugDraw_impl::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {

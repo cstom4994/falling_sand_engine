@@ -31,10 +31,10 @@ Item *Item::makeItem(uint8_t flags, RigidBody *rb) {
     return i;
 }
 
-Uint32 getpixel(C_Surface *surface, int x, int y) {
+UInt32 getpixel(C_Surface *surface, int x, int y) {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
+    UInt8 *p = (UInt8 *) surface->pixels + y * surface->pitch + x * bpp;
 
     switch (bpp) {
         case 1:
@@ -42,7 +42,7 @@ Uint32 getpixel(C_Surface *surface, int x, int y) {
             break;
 
         case 2:
-            return *(Uint16 *) p;
+            return *(UInt16 *) p;
             break;
 
         case 3:
@@ -53,7 +53,7 @@ Uint32 getpixel(C_Surface *surface, int x, int y) {
             break;
 
         case 4:
-            return *(Uint32 *) p;
+            return *(UInt32 *) p;
             break;
 
         default:
@@ -71,12 +71,12 @@ void Item::loadFillTexture(C_Surface *tex) {
             uint32_t color = METADOT_GET_PIXEL(tex, x, y);
 
             // SDL_Color rgb;
-            // Uint32 data = getpixel(tex, x, y);
+            // UInt32 data = getpixel(tex, x, y);
             // SDL_GetRGB(data, tex->format, &rgb.r, &rgb.g, &rgb.b);
 
             // uint32_t j = data;
 
-            // if (rgb.a > (Uint8)0)
+            // if (rgb.a > (UInt8)0)
             // {
             //     if (j - 1 > maxN) maxN = j - 1;
             //     fill.resize(maxN);

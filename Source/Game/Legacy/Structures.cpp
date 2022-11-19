@@ -25,7 +25,7 @@ Structure::Structure(C_Surface *texture, Material mat) {
     MaterialInstance *tiles = new MaterialInstance[texture->w * texture->h];
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
-            Uint32 color = METADOT_GET_PIXEL(texture, x, y);
+            UInt32 color = METADOT_GET_PIXEL(texture, x, y);
             int alpha = 255;
             if (texture->format->format == SDL_PIXELFORMAT_ARGB8888) {
                 alpha = (color >> 24) & 0xff;

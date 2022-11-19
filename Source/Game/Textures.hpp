@@ -35,7 +35,7 @@ public:
     static void initTexture();
 
     static C_Surface *loadTexture(std::string path);
-    static C_Surface *loadTexture(std::string path, Uint32 pixelFormat);
+    static C_Surface *loadTexture(std::string path, UInt32 pixelFormat);
 
     static C_Surface *scaleTexture(C_Surface *, float x, float y);
 };
