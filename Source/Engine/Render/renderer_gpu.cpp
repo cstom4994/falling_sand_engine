@@ -1,13 +1,13 @@
 
 #include "Game/Core.hpp"
 
-#include "SDL_platform.h"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "renderer_RendererImpl.h"
 #include "renderer_gpu.h"
-#include <stdlib.h>
-#include <string.h>
+
+#include <cstdlib>
+#include <string>
 
 
 #ifdef _MSC_VER

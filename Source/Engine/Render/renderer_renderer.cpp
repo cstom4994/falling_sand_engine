@@ -1,6 +1,7 @@
 #include "SDL_platform.h"
 #include "renderer_gpu.h"
-#include <string.h>
+
+#include <string>
 
 #ifndef _MSC_VER
 #include <strings.h>

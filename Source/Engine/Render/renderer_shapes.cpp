@@ -1,6 +1,7 @@
 #include "renderer_RendererImpl.h"
 #include "renderer_gpu.h"
-#include <string.h>
+
+#include <string>
 
 #ifdef _MSC_VER
 // Disable warning: selection for inlining

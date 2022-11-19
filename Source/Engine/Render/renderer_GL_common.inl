@@ -18,12 +18,12 @@ See a particular renderer's *.c file for specifics. */
 #endif
 #endif
 
-#include "SDL_platform.h"
 #include "renderer_gpu.h"// For poor, dumb Intellisense
-#include <math.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <string>
 
 // Check for C99 support
 // We'll use it for intptr_t which is used to suppress warnings about converting an int to a ptr for GL calls.

@@ -1,6 +1,7 @@
 #include "renderer_gpu.h"
-#include <math.h>
-#include <string.h>
+
+#include <cmath>
+#include <string>
 
 #ifdef _MSC_VER
 #define __func__ __FUNCTION__
