@@ -7,7 +7,7 @@
 
 #include "DefaultGenerator.cpp"
 #include "Game/DebugImpl.hpp"
-#include "Game/GCManager.hpp"
+#include "Game/Memory.hpp"
 #include "Game/Textures.hpp"
 #include "MaterialTestGenerator.cpp"
 
@@ -16,9 +16,10 @@
 
 #include "Engine/Scripting/Scripting.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Engine/Memory/gc.h"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Game/GCManager.hpp"
+#include "Game/Memory.hpp"
 #include "Game/Legacy/Shaders.hpp"
 #include "Game/Macros.hpp"
 
@@ -190,14 +191,14 @@ void Game::updateMaterialSounds() {
     audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
 }
 
-Game::Game() {
-    METADOT_GC_INIT();
+Game::Game(int argc, char *argv[]) {
+    gc_start(&gc, &argc);
 
     //data = new HostData;
 }
 
 Game::~Game() {
-    METADOT_GC_EXIT();
+    gc_stop(&gc);
 
     //delete data;
 }

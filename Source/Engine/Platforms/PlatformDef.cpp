@@ -2,13 +2,7 @@
 
 #include "PlatformDef.hpp"
 
-#if defined(METADOT_PLATFORM_WINDOWS)
-#include <Windows.h>
-#elif defined(METADOT_PLATFORM_LINUX)
-#include <limits.h>
-#elif defined(METADOT_PLATFORM_APPLE)
-#include <mach-o/dyld.h>
-#endif
+
 
 namespace MetaEngine::Platforms {
 

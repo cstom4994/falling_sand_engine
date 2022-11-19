@@ -6,7 +6,7 @@
 #include "Libs/ImGui/implot.h"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Game/GCManager.hpp"
+#include "Game/Memory.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Utils.hpp"
 #include "Settings.hpp"
@@ -2462,7 +2462,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         }
 
         if (Settings::ui_gcmanager) {
-            METADOT_GC_DISPLAY(0.3f);
+            //METADOT_GC_DISPLAY(0.3f);
         }
 
         // auto ct = complex_thing{};

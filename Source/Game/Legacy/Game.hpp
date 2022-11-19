@@ -39,16 +39,6 @@
 #include <thread>
 #include <unordered_map>
 
-#ifdef _WIN32
-#include <io.h>
-#elifdef __linux
-#include <sys/io.h>
-#elifdef __APPLE__
-#include <sys/ioctl.h>
-#else
-#error
-#endif
-
 #define frameTimeNum 100
 
 enum GameState {
@@ -85,6 +75,9 @@ struct GameTimeState
 
 class Game {
 private:
+
+    int argc;
+
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
 
@@ -270,7 +263,7 @@ public:
     void handleWindowSizeChange(int newWidth, int newHeight);
     void createTexture();
 
-    Game();
+    Game(int argc, char *argv[]);
     ~Game();
 
     int init(int argc, char *argv[]);
