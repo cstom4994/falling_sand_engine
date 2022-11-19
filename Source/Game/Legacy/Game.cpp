@@ -9,6 +9,7 @@
 #include "Engine/Memory/Memory.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/Textures.hpp"
+#include "ImGui/imgui.h"
 #include "MaterialTestGenerator.cpp"
 
 #include "Game/Settings.hpp"
@@ -607,9 +608,9 @@ int Game::init(int argc, char *argv[]) {
     // init threadpools
 
 
-    updateDirtyPool = (ctpl::thread_pool*)GC::C->Allocate(sizeof(ctpl::thread_pool));
+    updateDirtyPool = (ctpl::thread_pool *) GC::C->Allocate(sizeof(ctpl::thread_pool));
     new (updateDirtyPool) ctpl::thread_pool(6);
-    rotateVectorsPool = (ctpl::thread_pool*)GC::C->Allocate(sizeof(ctpl::thread_pool));
+    rotateVectorsPool = (ctpl::thread_pool *) GC::C->Allocate(sizeof(ctpl::thread_pool));
     new (rotateVectorsPool) ctpl::thread_pool(3);
 
 
@@ -641,6 +642,7 @@ void Game::loadShaders() {
 void Game::handleWindowSizeChange(int newWidth, int newHeight) {
 
     SDL_ShowCursor(Settings::draw_cursor ? SDL_ENABLE : SDL_DISABLE);
+    //ImGui::SetMouseCursor(Settings::draw_cursor ? ImGuiMouseCursor_Arrow : ImGuiMouseCursor_None);
 
     int prevWidth = WIDTH;
     int prevHeight = HEIGHT;

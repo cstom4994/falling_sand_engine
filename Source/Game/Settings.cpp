@@ -18,7 +18,7 @@ bool SettingsBase::draw_debug_stats = false;
 bool SettingsBase::draw_material_info = true;
 bool SettingsBase::draw_detailed_material_info = true;
 bool SettingsBase::draw_temperature_map = false;
-bool SettingsBase::draw_cursor = false;
+bool SettingsBase::draw_cursor = true;
 
 bool SettingsBase::ui_tweak = false;
 bool SettingsBase::ui_code_editor = false;
