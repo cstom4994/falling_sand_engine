@@ -30,7 +30,7 @@
 #include <typeinfo>
 #include <vector>
 
-#include "Game/GCManager.hpp"
+#include "Game/Memory.hpp"
 #include "Libs/VisitStruct.hpp"
 #include "Libs/loguru.hpp"
 

@@ -119,6 +119,8 @@ elseif (is_os("macosx")) then
 
     add_cxflags("-fPIC")
 
+    add_cxflags("-lpthread")
+
     -- add_mxflags("-fno-objc-arc", {force = true})
     -- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
@@ -189,6 +191,7 @@ do
     add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
+    add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cpp")
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")

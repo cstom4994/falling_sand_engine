@@ -2,6 +2,17 @@
 
 #include "Game/Macros.hpp"
 
+#if defined(METADOT_PLATFORM_WINDOWS)
+#include <Windows.h>
+#include <io.h>
+#elif defined(METADOT_PLATFORM_LINUX)
+#include <limits.h>
+#include <sys/io.h>
+#elif defined(METADOT_PLATFORM_APPLE)
+#include <sys/ioctl.h>
+#include <mach-o/dyld.h>
+#endif
+
 #include <string>
 
 #if __cplusplus <= 201402L
