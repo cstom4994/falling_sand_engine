@@ -27,6 +27,7 @@
 
 #include "Render/renderer_gpu.h"
 #include "SDL_video.h"
+#include "ctpl_stl.h"
 #include "glew.h"
 
 #include <imgui/IconsFontAwesome5.h>
@@ -193,6 +194,10 @@ void Game::updateMaterialSounds() {
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
 
+    // init console & print title
+    std::cout << logo << std::endl;
+    loguru::init(argc, argv);
+
     //data = new HostData;
 }
 
@@ -261,12 +266,6 @@ int Game::init(int argc, char *argv[]) {
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
     networkMode = NetworkMode::HOST;
 
-    // init console & print title
-
-    std::cout << logo << std::endl;
-
-    loguru::init(argc, argv);
-
     terminal_log = new ImTerm::terminal<terminal_commands>(cmd_struct);
 
     MetaEngine::ResourceMan::init();//init location of /res
@@ -333,8 +332,8 @@ int Game::init(int argc, char *argv[]) {
 
     // ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(1);
     // std::future<void> initThread;
-    ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(1);
-    std::future<void> worldInitThread;
+    // ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(1);
+    // std::future<void> worldInitThread;
     // if (networkMode != NetworkMode::SERVER) {
 
     //     // init fmod
@@ -606,8 +605,10 @@ int Game::init(int argc, char *argv[]) {
     // init threadpools
 
 
-    updateDirtyPool = new ctpl::thread_pool(6);
-    rotateVectorsPool = new ctpl::thread_pool(3);
+    updateDirtyPool = (ctpl::thread_pool*)GC::C->Allocate(sizeof(ctpl::thread_pool));
+    new (updateDirtyPool) ctpl::thread_pool(6);
+    rotateVectorsPool = (ctpl::thread_pool*)GC::C->Allocate(sizeof(ctpl::thread_pool));
+    new (rotateVectorsPool) ctpl::thread_pool(3);
 
 
     if (networkMode != NetworkMode::SERVER) {
@@ -1801,8 +1802,10 @@ exit:
     delete b2DebugDraw;
     delete movingTiles;
 
-    delete updateDirtyPool;
-    delete rotateVectorsPool;
+    updateDirtyPool->~thread_pool();
+    GC::C->Free(updateDirtyPool);
+    rotateVectorsPool->~thread_pool();
+    GC::C->Free(rotateVectorsPool);
 
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);

@@ -3554,17 +3554,14 @@ World::~World() {
     tickVisitedPool->clear_queue();
     updateRigidBodyHitboxPool->clear_queue();
 
-    /*tickPool->stop(false);
-    delete tickPool;
-
-    loadChunkPool->stop(false);
-    delete loadChunkPool;
-
-    tickVisitedPool->stop(false);
-    delete tickVisitedPool;
-
-    updateRigidBodyHitboxPool->stop(false);
-    delete updateRigidBodyHitboxPool;*/
+    // tickPool->stop(false);
+    // delete tickPool;
+    // loadChunkPool->stop(false);
+    // delete loadChunkPool;
+    // tickVisitedPool->stop(false);
+    // delete tickVisitedPool;
+    // updateRigidBodyHitboxPool->stop(false);
+    // delete updateRigidBodyHitboxPool;
 
     delete[] newTemps;
 
