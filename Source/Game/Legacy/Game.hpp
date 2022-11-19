@@ -196,8 +196,8 @@ public:
         METAENGINE_Render_Image *backgroundImage = nullptr;
 
         METAENGINE_Render_Image *loadingTexture = nullptr;
-        std::vector<unsigned char> pixelsLoading;
-        unsigned char *pixelsLoading_ar = nullptr;
+        std::vector<UInt8> pixelsLoading;
+        UInt8 *pixelsLoading_ar = nullptr;
         int loadingScreenW = 0;
         int loadingScreenH = 0;
 
@@ -205,42 +205,42 @@ public:
         METAENGINE_Render_Image *lightingTexture = nullptr;
 
         METAENGINE_Render_Image *emissionTexture = nullptr;
-        std::vector<unsigned char> pixelsEmission;
-        unsigned char *pixelsEmission_ar = nullptr;
+        std::vector<UInt8> pixelsEmission;
+        UInt8 *pixelsEmission_ar = nullptr;
 
         METAENGINE_Render_Image *texture = nullptr;
-        std::vector<unsigned char> pixels;
-        unsigned char *pixels_ar = nullptr;
+        std::vector<UInt8> pixels;
+        UInt8 *pixels_ar = nullptr;
         METAENGINE_Render_Image *textureLayer2 = nullptr;
-        std::vector<unsigned char> pixelsLayer2;
-        unsigned char *pixelsLayer2_ar = nullptr;
+        std::vector<UInt8> pixelsLayer2;
+        UInt8 *pixelsLayer2_ar = nullptr;
         METAENGINE_Render_Image *textureBackground = nullptr;
-        std::vector<unsigned char> pixelsBackground;
-        unsigned char *pixelsBackground_ar = nullptr;
+        std::vector<UInt8> pixelsBackground;
+        UInt8 *pixelsBackground_ar = nullptr;
         METAENGINE_Render_Image *textureObjects = nullptr;
         METAENGINE_Render_Image *textureObjectsLQ = nullptr;
-        std::vector<unsigned char> pixelsObjects;
-        unsigned char *pixelsObjects_ar = nullptr;
+        std::vector<UInt8> pixelsObjects;
+        UInt8 *pixelsObjects_ar = nullptr;
         METAENGINE_Render_Image *textureObjectsBack = nullptr;
         METAENGINE_Render_Image *textureParticles = nullptr;
-        std::vector<unsigned char> pixelsParticles;
-        unsigned char *pixelsParticles_ar = nullptr;
+        std::vector<UInt8> pixelsParticles;
+        UInt8 *pixelsParticles_ar = nullptr;
         METAENGINE_Render_Image *textureEntities = nullptr;
         METAENGINE_Render_Image *textureEntitiesLQ = nullptr;
 
         METAENGINE_Render_Image *textureFire = nullptr;
         METAENGINE_Render_Image *texture2Fire = nullptr;
-        std::vector<unsigned char> pixelsFire;
-        unsigned char *pixelsFire_ar = nullptr;
+        std::vector<UInt8> pixelsFire;
+        UInt8 *pixelsFire_ar = nullptr;
 
         METAENGINE_Render_Image *textureFlowSpead = nullptr;
         METAENGINE_Render_Image *textureFlow = nullptr;
-        std::vector<unsigned char> pixelsFlow;
-        unsigned char *pixelsFlow_ar = nullptr;
+        std::vector<UInt8> pixelsFlow;
+        UInt8 *pixelsFlow_ar = nullptr;
 
         METAENGINE_Render_Image *temperatureMap = nullptr;
-        std::vector<unsigned char> pixelsTemp;
-        unsigned char *pixelsTemp_ar = nullptr;
+        std::vector<UInt8> pixelsTemp;
+        UInt8 *pixelsTemp_ar = nullptr;
     } TexturePack_;
 
 public:

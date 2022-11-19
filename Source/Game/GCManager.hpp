@@ -2,10 +2,12 @@
 
 // Hack from https://github.com/cesarl/LiveMemTracer
 
-#pragma once
+#ifndef _METADOT_GCMANAGER_HPP_
+#define _METADOT_GCMANAGER_HPP_
 
-// #include <cstdint>
-#include <sys/malloc.h>
+#include <cstdint>
+
+#include "Engine/Render/SDLWrapper.hpp"
 
 #define METADOT_GC_IMPL 1
 
@@ -92,12 +94,12 @@
 
 #if METADOT_GC_ENABLED == 0
 
-#define METADOT_GC_ALLOC(size) malloc(size)
-#define METADOT_GC_ALLOC_ALIGNED(size, alignment) malloc(size)
-#define METADOT_GC_DEALLOC(ptr) free(ptr)
-#define METADOT_GC_DEALLOC_ALIGNED(ptr) free(ptr)
-#define METADOT_GC_REALLOC(ptr, size) realloc(ptr, size)
-#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) realloc(ptr, size, alignment)
+#define METADOT_GC_ALLOC(size) SDL_malloc(size)
+#define METADOT_GC_ALLOC_ALIGNED(size, alignment) SDL_malloc(size)
+#define METADOT_GC_DEALLOC(ptr) SDL_free(ptr)
+#define METADOT_GC_DEALLOC_ALIGNED(ptr) SDL_free(ptr)
+#define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
+#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
 #define METADOT_GC_DISPLAY(dt) \
     do {                       \
     } while (0)
@@ -225,3 +227,18 @@ namespace MetaEngine::GCManager {
 }// namespace MetaEngine::GCManager
 
 #endif// METADOT_GC_ENABLED
+
+#include <algorithm>
+#include <cstdlib>
+#include <iostream>
+#include <new>
+#include <string>
+#include <array>
+
+void* operator new(std::size_t sz);
+void operator delete(void* ptr) noexcept;
+
+void getInfo();
+
+
+#endif

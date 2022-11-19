@@ -865,25 +865,34 @@ void Game::createTexture() {
 
     // create texture pixel buffers
 
-    TexturePack_.pixels = std::vector<unsigned char>(world->width * world->height * 4, 0);
+    TexturePack_.pixels = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixels_ar = &TexturePack_.pixels[0];
-    TexturePack_.pixelsLayer2 = std::vector<unsigned char>(world->width * world->height * 4, 0);
+
+    TexturePack_.pixelsLayer2 = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
-    TexturePack_.pixelsBackground = std::vector<unsigned char>(world->width * world->height * 4, 0);
+
+    TexturePack_.pixelsBackground = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
-    TexturePack_.pixelsObjects = std::vector<unsigned char>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+
+    TexturePack_.pixelsObjects = std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
-    TexturePack_.pixelsTemp = std::vector<unsigned char>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+
+    TexturePack_.pixelsTemp = std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
-    TexturePack_.pixelsParticles = std::vector<unsigned char>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+
+    TexturePack_.pixelsParticles = std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
-    TexturePack_.pixelsLoading = std::vector<unsigned char>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, SDL_ALPHA_TRANSPARENT);
+
+    TexturePack_.pixelsLoading = std::vector<UInt8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
-    TexturePack_.pixelsFire = std::vector<unsigned char>(world->width * world->height * 4, 0);
+
+    TexturePack_.pixelsFire = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
-    TexturePack_.pixelsFlow = std::vector<unsigned char>(world->width * world->height * 4, 0);
+
+    TexturePack_.pixelsFlow = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
-    TexturePack_.pixelsEmission = std::vector<unsigned char>(world->width * world->height * 4, 0);
+    
+    TexturePack_.pixelsEmission = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
 
     METADOT_INFO("Creating world textures done");

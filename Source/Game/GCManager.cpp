@@ -3,6 +3,39 @@
 #include "GCManager.hpp"
 #include "imgui.h"
 
+int const MY_SIZE = 2048;
+
+static std::array<void *, MY_SIZE> myAlloc{
+        nullptr,
+};
+
+void *operator new(std::size_t sz) {
+    static int counter{};
+    void *ptr = std::malloc(sz);
+    myAlloc.at(counter++) = ptr;
+    std::cerr << "Addr.: " << ptr << " size: " << sz << std::endl;
+    return ptr;
+}
+
+void operator delete(void *ptr) noexcept {
+    auto ind = std::distance(myAlloc.begin(), std::find(myAlloc.begin(), myAlloc.end(), ptr));
+    myAlloc[ind] = nullptr;
+    std::free(ptr);
+}
+
+void getInfo() {
+
+    std::cout << std::endl;
+
+    std::cout << "Not deallocated: " << std::endl;
+    for (auto i: myAlloc) {
+        if (i != nullptr) std::cout << " " << i << std::endl;
+    }
+
+    std::cout << std::endl;
+}
+
+
 #ifdef METADOT_GC_IMPLEMENTED
 
 #include "ImGuiBase.h"
