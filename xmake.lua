@@ -1,4 +1,4 @@
-set_project("MetaDot.Runtime")
+set_project("MetaDot")
 
 add_requires("libsdl", {configs = {shared = false}, verify = true})
 
@@ -58,6 +58,7 @@ add_rules("mode.debug", "mode.release")
 if is_mode("debug") then
     add_defines("DEBUG", "_DEBUG")
     set_optimize("none")
+    set_symbols("debug")
 elseif is_mode("release") then
     add_defines("NDEBUG")
     set_optimize("faster")
@@ -116,7 +117,7 @@ elseif (is_os("macosx")) then
 
     set_toolchains("clang")
 
-    -- add_cxflags("-fPIC")
+    add_cxflags("-fPIC")
 
     -- add_mxflags("-fno-objc-arc", {force = true})
     -- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
@@ -133,9 +134,9 @@ end
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
-    "Source", "Source/Generated", "Source/Engine", "Source/Libs/lua/lua",
-    "Source/Libs", "Source/Libs/imgui", "Source/Libs/json/include",
-    "Source/Libs/fmt/include", "Source/Libs/box2d/include", "Source/Libs/glew"
+    "Source", "Source/Engine", "Source/Libs/lua/lua", "Source/Libs",
+    "Source/Libs/imgui", "Source/Libs/json/include", "Source/Libs/fmt/include",
+    "Source/Libs/box2d/include", "Source/Libs/glew"
 }
 
 defines_list = {}
@@ -162,6 +163,7 @@ end
 target("Libs")
 do
     set_kind("static")
+    add_packages("libsdl")
     add_rules("c.unity_build", {batchsize = 0})
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
@@ -179,7 +181,6 @@ do
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
     remove_files("Source/Libs/lua/lua/**")
-    set_symbols("debug")
 end
 
 target("Engine")
@@ -194,7 +195,6 @@ do
     add_headerfiles("Source/Engine/**.inl")
     -- add_files('Source/Engine/UserInterface/IMGUI/uidslexpr.lua',
     --           {rule = 'utils.bin2c'})
-    set_symbols("debug")
 end
 
 target("MetaDot")
@@ -212,5 +212,4 @@ do
     add_headerfiles("Source/Game/**.inl")
     add_headerfiles("Source/Shared/**.hpp")
     remove_files("Source/Game/Game.**")
-    set_symbols("debug")
 end
