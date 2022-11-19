@@ -228,17 +228,13 @@ namespace MetaEngine::GCManager {
 
 #endif// METADOT_GC_ENABLED
 
-#include <algorithm>
-#include <cstdlib>
-#include <iostream>
-#include <new>
-#include <string>
-#include <array>
+#if defined (METADOT_LEAK_TEST)
 
 void* operator new(std::size_t sz);
 void operator delete(void* ptr) noexcept;
 
 void getInfo();
 
+#endif
 
 #endif

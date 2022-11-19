@@ -3,7 +3,12 @@
 #include "GCManager.hpp"
 #include "imgui.h"
 
-int const MY_SIZE = 2048;
+#include <array>
+#include <iostream>
+
+#if defined(METADOT_LEAK_TEST)
+
+int const MY_SIZE = 1024 * 512;
 
 static std::array<void *, MY_SIZE> myAlloc{
         nullptr,
@@ -13,7 +18,7 @@ void *operator new(std::size_t sz) {
     static int counter{};
     void *ptr = std::malloc(sz);
     myAlloc.at(counter++) = ptr;
-    std::cerr << "Addr.: " << ptr << " size: " << sz << std::endl;
+    //std::cerr << "new." << counter << ".addr.: " << ptr << " size: " << sz << std::endl;
     return ptr;
 }
 
@@ -34,6 +39,8 @@ void getInfo() {
 
     std::cout << std::endl;
 }
+
+#endif
 
 
 #ifdef METADOT_GC_IMPLEMENTED
