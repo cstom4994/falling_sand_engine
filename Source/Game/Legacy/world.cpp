@@ -336,7 +336,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     // FIX ME
     C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
-    SDL_Rect src = {minX, minY, maxX - minX, maxY - minY};
+    C_Rect src = {minX, minY, maxX - minX, maxY - minY};
     SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
     SDL_BlitSurface(texture, &src, sf, NULL);
     SDL_FreeSurface(texture);
@@ -2122,7 +2122,7 @@ void World::renderParticles(unsigned char **texture) {
 void World::tickParticles() {
 
 
-    /*SDL_Rect* fr = new SDL_Rect{ 0, 0, width, height };
+    /*C_Rect* fr = new C_Rect{ 0, 0, width, height };
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     delete fr;*/
@@ -3095,7 +3095,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
 void World::tickEntities(METAENGINE_Render_Target *t) {
 
 
-    SDL_Rect fr = {0, 0, width, height};
+    C_Rect fr = {0, 0, width, height};
 
     entities.erase(std::remove_if(entities.begin(), entities.end(), [&](Entity *cur) {
                        int nIntersect = 0;

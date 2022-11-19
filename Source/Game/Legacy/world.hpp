@@ -139,12 +139,12 @@ public:
     bool *lastActive = nullptr;
     bool *layer2Dirty = nullptr;
     bool *backgroundDirty = nullptr;
-    SDL_Rect loadZone{};
-    SDL_Rect lastLoadZone{};
-    SDL_Rect tickZone{};
-    SDL_Rect meshZone{};
-    SDL_Rect lastMeshZone{};
-    SDL_Rect lastMeshLoadZone{};
+    C_Rect loadZone{};
+    C_Rect lastLoadZone{};
+    C_Rect tickZone{};
+    C_Rect meshZone{};
+    C_Rect lastMeshZone{};
+    C_Rect lastMeshLoadZone{};
 
     b2Vec2 gravity{};
     b2World *b2world = nullptr;
