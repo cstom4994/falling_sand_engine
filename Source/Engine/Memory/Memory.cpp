@@ -1,6 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Memory.hpp"
+#include "Memory/Allocator.h"
+#include "Memory/gc.h"
 
 #include <array>
 #include <iostream>
@@ -41,11 +43,16 @@ void getInfo() {
 
 #endif
 
+CAllocator *GC::C = nullptr;
+
 void METAENGINE_Memory_Init(int argc, char *argv[]) {
     gc_start(&gc, &argc);
+    GC::C = (CAllocator *) gc_malloc(&gc, sizeof(CAllocator));
+    new(GC::C) CAllocator();
 }
 
 void METAENGINE_Memory_End() {
+    GC::C->~CAllocator();
+    gc_free(&gc, GC::C);
     gc_stop(&gc);
 }
-

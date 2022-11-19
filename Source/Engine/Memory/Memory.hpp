@@ -7,8 +7,8 @@
 
 #include <cstdint>
 
-#include "Engine/Render/SDLWrapper.hpp"
 #include "Engine/Memory/Allocator.h"
+#include "Engine/Render/SDLWrapper.hpp"
 
 
 #define METADOT_GC_USE_MALLOC SDL_malloc
@@ -22,6 +22,11 @@
 #define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
 
+struct GC
+{
+    static CAllocator* C;
+};
+
 void METAENGINE_Memory_Init(int argc, char *argv[]);
 void METAENGINE_Memory_End();
 
@@ -34,4 +39,4 @@ void getInfo();
 
 #endif
 
-#endif // _METADOT_GCMANAGER_HPP_
+#endif// _METADOT_GCMANAGER_HPP_
