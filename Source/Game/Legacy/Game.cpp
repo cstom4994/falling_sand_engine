@@ -6,20 +6,19 @@
 #include <regex>
 
 #include "DefaultGenerator.cpp"
+#include "Engine/Memory/Memory.hpp"
 #include "Game/DebugImpl.hpp"
-#include "Game/Memory.hpp"
 #include "Game/Textures.hpp"
 #include "MaterialTestGenerator.cpp"
 
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 
+#include "Engine/Memory/gc.h"
 #include "Engine/Scripting/Scripting.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
-#include "Engine/Memory/gc.h"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Game/Memory.hpp"
 #include "Game/Legacy/Shaders.hpp"
 #include "Game/Macros.hpp"
 
@@ -192,71 +191,71 @@ void Game::updateMaterialSounds() {
 }
 
 Game::Game(int argc, char *argv[]) {
-    gc_start(&gc, &argc);
+    METAENGINE_Memory_Init(argc, argv);
 
     //data = new HostData;
 }
 
 Game::~Game() {
-    gc_stop(&gc);
+    METAENGINE_Memory_End();
 
     //delete data;
 }
 
 int Game::init(int argc, char *argv[]) {
 
-//     try {
-//         auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
+    //     try {
+    //         auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
 
-//         if (!options.test.value_or("").empty()) {
-//             if (options.test == "test_mu") {
-//                 for (auto t: options.files) {
-//                     //METADOT_UNIT(!interp.evaluateFile(std::string(t)));
-//                 }
+    //         if (!options.test.value_or("").empty()) {
+    //             if (options.test == "test_mu") {
+    //                 for (auto t: options.files) {
+    //                     //METADOT_UNIT(!interp.evaluateFile(std::string(t)));
+    //                 }
 
-//                 std::string test = R"(
+    //                 std::string test = R"(
 
-// class test {
-// 	var x = 1;
-// 	var y = "MuScript 宽字符测试";
-// 	func test() {
-// 		x = 2;
-// 	}
-// }
+    // class test {
+    // 	var x = 1;
+    // 	var y = "MuScript 宽字符测试";
+    // 	func test() {
+    // 		x = 2;
+    // 	}
+    // }
 
-// a = test();
+    // a = test();
 
-// if (a.x == 2) {
-// 	print(a.y);
-// }
+    // if (a.x == 2) {
+    // 	print(a.y);
+    // }
 
-// b = inspect(a.x);
+    // b = inspect(a.x);
 
-// print(b);
-//                 )";
+    // print(b);
+    //                 )";
 
-//                 auto interp = new MuScript::MuScriptInterpreter(MuScript::ModulePrivilege::allPrivilege);
-//                 interp->evaluate(test);
-//                 delete interp;
+    //                 auto interp = new MuScript::MuScriptInterpreter(MuScript::ModulePrivilege::allPrivilege);
+    //                 interp->evaluate(test);
+    //                 delete interp;
 
-//                 return 0;
-//             }
-//             if (options.test == "test_xlsx") {
-//                 // lxw_workbook *workbook = workbook_new("./data/test.xlsx");
-//                 // lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
+    //                 return 0;
+    //             }
+    //             if (options.test == "test_xlsx") {
+    //                 // lxw_workbook *workbook = workbook_new("./data/test.xlsx");
+    //                 // lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
 
-//                 // worksheet_write_string(worksheet, 0, 0, "Hello", NULL);
-//                 // worksheet_write_number(worksheet, 1, 0, 123, NULL);
+    //                 // worksheet_write_string(worksheet, 0, 0, "Hello", NULL);
+    //                 // worksheet_write_number(worksheet, 1, 0, 123, NULL);
 
-//                 // workbook_close(workbook);
-//                 return 0;
-//             }
-//         }
+    //                 // workbook_close(workbook);
+    //                 return 0;
+    //             }
+    //         }
 
-//     } catch (structopt::exception &e) {
-//         std::cout << e.what() << "\n";
-//         std::cout << e.help();
-//     }
+    //     } catch (structopt::exception &e) {
+    //         std::cout << e.what() << "\n";
+    //         std::cout << e.help();
+    //     }
 
 
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
@@ -892,7 +891,7 @@ void Game::createTexture() {
 
     TexturePack_.pixelsFlow = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
-    
+
     TexturePack_.pixelsEmission = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
 

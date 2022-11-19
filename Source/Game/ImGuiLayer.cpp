@@ -6,7 +6,7 @@
 #include "Libs/ImGui/implot.h"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Game/Memory.hpp"
+#include "Engine/Memory/Memory.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Utils.hpp"
 #include "Settings.hpp"

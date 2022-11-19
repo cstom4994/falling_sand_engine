@@ -8,11 +8,12 @@
 #include <cstdint>
 
 #include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Memory/Allocator.h"
 
 
-#define METADOT_GC_USE_MALLOC ::malloc
-#define METADOT_GC_USE_REALLOC ::realloc
-#define METADOT_GC_USE_FREE ::free
+#define METADOT_GC_USE_MALLOC SDL_malloc
+#define METADOT_GC_USE_REALLOC SDL_realloc
+#define METADOT_GC_USE_FREE SDL_free
 
 #define METADOT_GC_ALLOC(size) SDL_malloc(size)
 #define METADOT_GC_ALLOC_ALIGNED(size, alignment) SDL_malloc(size)
@@ -21,6 +22,8 @@
 #define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
 
+void METAENGINE_Memory_Init(int argc, char *argv[]);
+void METAENGINE_Memory_End();
 
 #if defined(METADOT_LEAK_TEST)
 

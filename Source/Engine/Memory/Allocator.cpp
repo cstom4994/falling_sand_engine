@@ -2,6 +2,7 @@
 // Hack from https://github.com/mtrebi/memory-allocators
 
 #include "Allocator.h"
+
 #include <cassert>//assert
 
 #include <algorithm>
@@ -23,11 +24,11 @@ CAllocator::~CAllocator() {
 }
 
 void *CAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
-    return malloc(size);
+    return gc_malloc(&gc, size);
 }
 
 void CAllocator::Free(void *ptr) {
-    free(ptr);
+    gc_free(&gc, ptr);
 }
 
 
@@ -38,16 +39,16 @@ FreeListAllocator::FreeListAllocator(const std::size_t totalSize, const Placemen
 
 void FreeListAllocator::Init() {
     if (m_start_ptr != nullptr) {
-        free(m_start_ptr);
+        gc_free(&gc, m_start_ptr);
         m_start_ptr = nullptr;
     }
-    m_start_ptr = malloc(m_totalSize);
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
 
     this->Reset();
 }
 
 FreeListAllocator::~FreeListAllocator() {
-    free(m_start_ptr);
+    gc_free(&gc, m_start_ptr);
     m_start_ptr = nullptr;
 }
 
@@ -212,14 +213,14 @@ LinearAllocator::LinearAllocator(const std::size_t totalSize)
 
 void LinearAllocator::Init() {
     if (m_start_ptr != nullptr) {
-        free(m_start_ptr);
+        gc_free(&gc, m_start_ptr);
     }
-    m_start_ptr = malloc(m_totalSize);
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
     m_offset = 0;
 }
 
 LinearAllocator::~LinearAllocator() {
-    free(m_start_ptr);
+    gc_free(&gc, m_start_ptr);
     m_start_ptr = nullptr;
 }
 
@@ -271,12 +272,12 @@ PoolAllocator::PoolAllocator(const std::size_t totalSize, const std::size_t chun
 }
 
 void PoolAllocator::Init() {
-    m_start_ptr = malloc(m_totalSize);
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
     this->Reset();
 }
 
 PoolAllocator::~PoolAllocator() {
-    free(m_start_ptr);
+    gc_free(&gc, m_start_ptr);
 }
 
 void *PoolAllocator::Allocate(const std::size_t allocationSize, const std::size_t alignment) {
@@ -325,14 +326,14 @@ StackAllocator::StackAllocator(const std::size_t totalSize)
 
 void StackAllocator::Init() {
     if (m_start_ptr != nullptr) {
-        free(m_start_ptr);
+        gc_free(&gc, m_start_ptr);
     }
-    m_start_ptr = malloc(m_totalSize);
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
     m_offset = 0;
 }
 
 StackAllocator::~StackAllocator() {
-    free(m_start_ptr);
+    gc_free(&gc, m_start_ptr);
     m_start_ptr = nullptr;
 }
 

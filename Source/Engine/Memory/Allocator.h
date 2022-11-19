@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "gc.h"
+
 #include <cstddef> // size_t
 #include <algorithm>
 
