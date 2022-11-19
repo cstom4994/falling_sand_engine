@@ -26,6 +26,8 @@
 #include "Libs/structopt.hpp"
 
 #include "Render/renderer_gpu.h"
+#include "SDL_events.h"
+#include "SDL_mouse.h"
 #include "SDL_video.h"
 #include "ctpl_stl.h"
 #include "glew.h"
@@ -637,6 +639,8 @@ void Game::loadShaders() {
 }
 
 void Game::handleWindowSizeChange(int newWidth, int newHeight) {
+
+    SDL_ShowCursor(Settings::draw_cursor ? SDL_ENABLE : SDL_DISABLE);
 
     int prevWidth = WIDTH;
     int prevHeight = HEIGHT;
@@ -1562,6 +1566,7 @@ int Game::run(int argc, char *argv[]) {
                 if (ImGui::BeginMenu(ICON_FA_ARCHIVE " 工具")) {
                     if (ImGui::MenuItem("八个雅鹿", "CTRL+A")) {}
                     ImGui::Separator();
+                    ImGui::Checkbox("鼠标", &Settings::draw_cursor);
                     ImGui::Checkbox("调整", &Settings::ui_tweak);
                     ImGui::Checkbox("脚本编辑器", &Settings::ui_code_editor);
                     ImGui::Checkbox("Inspector", &Settings::ui_inspector);

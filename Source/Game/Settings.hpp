@@ -24,6 +24,7 @@ struct SettingsBase
     static bool draw_detailed_material_info;
     static bool draw_uinode_bounds;
     static bool draw_temperature_map;
+    static bool draw_cursor;
 
     static bool ui_tweak;
     static bool ui_code_editor;

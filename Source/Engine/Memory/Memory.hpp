@@ -1,6 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-// Hack from https://github.com/cesarl/LiveMemTracer
+// Now I'm using gc(https://github.com/mkirchner/gc) 
+// and allocator(https://github.com/mtrebi/memory-allocators)
+// also the memory allocator of SDL
+// which are both licensed under the MIT License
 
 #ifndef _METADOT_GCMANAGER_HPP_
 #define _METADOT_GCMANAGER_HPP_
@@ -24,7 +27,7 @@
 
 struct GC
 {
-    static CAllocator* C;
+    static CAllocator *C;
 };
 
 void METAENGINE_Memory_Init(int argc, char *argv[]);

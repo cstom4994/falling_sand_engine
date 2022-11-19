@@ -1598,6 +1598,7 @@ namespace MetaEngine {
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
         // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         io.IniFilename = "imgui.ini";
