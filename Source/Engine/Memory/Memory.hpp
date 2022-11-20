@@ -8,8 +8,8 @@
 #ifndef _METADOT_GCMANAGER_HPP_
 #define _METADOT_GCMANAGER_HPP_
 
-#include <cstdint>
 #include <atomic>
+#include <cstdint>
 
 #include "Game/Core.hpp"
 
@@ -36,6 +36,12 @@
         new (_ptr) _class(__VA_ARGS__);                                 \
         GC::_field##_Count++;                                           \
     }
+
+#define METADOT_CREATE(_field, _ptr, _class, ...) \
+                                                  \
+    _class *_ptr = nullptr;                       \
+    METADOT_NEW(_field, _ptr, _class, __VA_ARGS__)
+
 
 #define METADOT_DELETE(_field, _ptr, _class_name) \
     {                                             \
