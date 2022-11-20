@@ -3516,6 +3516,8 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
         METADOT_BUG("FP WAS NULL");
     }
 
+    delete[] metaFile;
+
     return meta;
 }
 
@@ -3533,6 +3535,8 @@ bool WorldMeta::save(std::string worldFileName) {
     std::ofstream o(metaFile);
 
     o << j;
+
+    delete[] metaFile;
 
     return true;
 }

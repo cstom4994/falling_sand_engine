@@ -3142,10 +3142,7 @@ void Game::tickPlayer() {
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
-                            if (cur->surface == nullptr) {
-                                METADOT_ERROR("cur->surface == nullptr");
-                                continue;
-                            }
+                            METADOT_ASSERT(cur->surface, "cur->surface == nullptr");
                             if (cur->body->IsEnabled()) {
                                 float s = sin(-cur->body->GetAngle());
                                 float c = cos(-cur->body->GetAngle());
