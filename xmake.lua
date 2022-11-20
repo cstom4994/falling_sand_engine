@@ -172,9 +172,8 @@ do
     add_defines(defines_list)
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
-              "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp",
-              "Source/Libs/fmt/**.cc", "Source/Libs/glew/**.c",
-              {unity_group = "libone"})
+              "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
+              "Source/Libs/glew/**.c", {unity_group = "libone"})
 
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
