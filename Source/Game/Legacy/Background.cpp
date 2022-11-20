@@ -45,5 +45,5 @@ Background *Backgrounds::Get(std::string name) {
 }
 
 Backgrounds::~Backgrounds() {
-    for (auto &[name, bg]: m_backgrounds) METADOT_DELETE(bg, Background);
+    for (auto &[name, bg]: m_backgrounds) METADOT_DELETE(C, bg, Background);
 }

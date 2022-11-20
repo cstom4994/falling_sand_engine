@@ -43,21 +43,23 @@ void getInfo() {
 
 #endif
 
-CAllocator *GC::C = nullptr;
-UInt32 GC::Count = 0;
+// Static GC Field
+GCField_S(C);
+
+GarbageCollector gc;
 
 void METAENGINE_Memory_Init(int argc, char *argv[]) {
     gc_start(&gc, &argc);
     GC::C = (CAllocator *) gc_malloc(&gc, sizeof(CAllocator));
     new (GC::C) CAllocator();
-    GC::Count++;
+    GC::C_Count++;
 }
 
 void METAENGINE_Memory_End() {
     if (GC::C) {
         GC::C->~CAllocator();
         gc_free(&gc, GC::C);
-        GC::Count--;
+        GC::C_Count--;
     }
     gc_stop(&gc);
 }

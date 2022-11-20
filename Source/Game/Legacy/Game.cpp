@@ -272,7 +272,7 @@ int Game::init(int argc, char *argv[]) {
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
     networkMode = NetworkMode::HOST;
 
-    METADOT_NEW(terminal_log, ImTerm::terminal<terminal_commands>, cmd_struct);
+    METADOT_NEW(C, terminal_log, ImTerm::terminal<terminal_commands>, cmd_struct);
 
     MetaEngine::ResourceMan::init();//init location of /res
 
@@ -481,7 +481,7 @@ int Game::init(int argc, char *argv[]) {
         Controls::initKey();
 
         METADOT_INFO("Loading ImGUI");
-        METADOT_NEW(m_ImGuiLayer, MetaEngine::ImGuiLayer);
+        METADOT_NEW(C, m_ImGuiLayer, MetaEngine::ImGuiLayer);
         m_ImGuiLayer->Init(window, gl_context);
 
 #if defined(_WIN32)
@@ -521,7 +521,7 @@ int Game::init(int argc, char *argv[]) {
 
 
     METADOT_INFO("Loading Lua Script...");
-    METADOT_NEW(m_LuaLayer, MetaEngine::LuaLayer);
+    METADOT_NEW(C, m_LuaLayer, MetaEngine::LuaLayer);
     m_LuaLayer->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
 
     // init the world
@@ -540,9 +540,9 @@ int Game::init(int argc, char *argv[]) {
                 BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer4.png", SDL_PIXELFORMAT_ARGB8888), 0.375, 0.375, 4, 0),
                 BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer5.png", SDL_PIXELFORMAT_ARGB8888), 0.5, 0.5, 0, 0)};
 
-        METADOT_NEW(backgrounds, Backgrounds);
+        METADOT_NEW(C, backgrounds, Backgrounds);
         Background *bg = nullptr;
-        METADOT_NEW(bg, Background, 0x7EAFCB, testOverworldLayers);
+        METADOT_NEW(C, bg, Background, 0x7EAFCB, testOverworldLayers);
         backgrounds->Push("TEST_OVERWORLD", bg);
         backgrounds->Get("TEST_OVERWORLD")->init();
     }
@@ -562,15 +562,15 @@ int Game::init(int argc, char *argv[]) {
     Materials::init();
 
 
-    METADOT_NEW_ARRAY(movingTiles, UInt16, Materials::nMaterials);
-    METADOT_NEW(b2DebugDraw, b2DebugDraw_impl, RenderTarget_.target);
+    METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
+    METADOT_NEW(C, b2DebugDraw, b2DebugDraw_impl, RenderTarget_.target);
 
 
     //worldInitThread.get();
 
 
     METADOT_INFO("Initializing world...");
-    METADOT_NEW(world, World);
+    METADOT_NEW(C, world, World);
     world->noSaveLoad = true;
     world->init(
             m_GameDir.getWorldPath("mainMenu"),
@@ -611,8 +611,8 @@ int Game::init(int argc, char *argv[]) {
     // init threadpools
 
 
-    METADOT_NEW(updateDirtyPool, ctpl::thread_pool, 6);
-    METADOT_NEW(rotateVectorsPool, ctpl::thread_pool, 3);
+    METADOT_NEW(C, updateDirtyPool, ctpl::thread_pool, 6);
+    METADOT_NEW(C, rotateVectorsPool, ctpl::thread_pool, 3);
 
 
     if (networkMode != NetworkMode::SERVER) {
@@ -625,17 +625,17 @@ int Game::init(int argc, char *argv[]) {
 }
 
 void Game::loadShaders() {
-    if (waterShader) METADOT_DELETE(waterShader, WaterShader);
-    if (waterFlowPassShader) METADOT_DELETE(waterFlowPassShader, WaterFlowPassShader);
-    if (newLightingShader) METADOT_DELETE(newLightingShader, NewLightingShader);
-    if (fireShader) METADOT_DELETE(fireShader, FireShader);
-    if (fire2Shader) METADOT_DELETE(fire2Shader, Fire2Shader);
+    if (waterShader) METADOT_DELETE(C, waterShader, WaterShader);
+    if (waterFlowPassShader) METADOT_DELETE(C, waterFlowPassShader, WaterFlowPassShader);
+    if (newLightingShader) METADOT_DELETE(C, newLightingShader, NewLightingShader);
+    if (fireShader) METADOT_DELETE(C, fireShader, FireShader);
+    if (fire2Shader) METADOT_DELETE(C, fire2Shader, Fire2Shader);
 
-    METADOT_NEW(waterShader, WaterShader);
-    METADOT_NEW(waterFlowPassShader, WaterFlowPassShader);
-    METADOT_NEW(newLightingShader, NewLightingShader);
-    METADOT_NEW(fireShader, FireShader);
-    METADOT_NEW(fire2Shader, Fire2Shader);
+    METADOT_NEW(C, waterShader, WaterShader);
+    METADOT_NEW(C, waterFlowPassShader, WaterFlowPassShader);
+    METADOT_NEW(C, newLightingShader, NewLightingShader);
+    METADOT_NEW(C, fireShader, FireShader);
+    METADOT_NEW(C, fire2Shader, Fire2Shader);
 }
 
 void Game::handleWindowSizeChange(int newWidth, int newHeight) {
@@ -1038,7 +1038,7 @@ int Game::run(int argc, char *argv[]) {
     for (int i = 0; i < frameTimeNum; i++) {
         frameTime[i] = 0;
     }
-    METADOT_NEW_ARRAY(objectDelete, UInt8, world->width * world->height);
+    METADOT_NEW_ARRAY(C, objectDelete, UInt8, world->width * world->height);
 
 
     fadeInStart = UTime::millis();
@@ -1579,7 +1579,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::SameLine(ImGui::GetWindowWidth() - 390);
 
                 ImGui::Separator();
-                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, GC::Count);
+                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, GC::C_Count);
 
                 ImGui::EndMainMenuBar();
             }
@@ -1796,25 +1796,25 @@ exit:
 
     // release resources & shutdown
     m_LuaLayer->onDetach();
-    METADOT_DELETE(m_LuaLayer, LuaLayer);
+    METADOT_DELETE(C, m_LuaLayer, LuaLayer);
     m_ImGuiLayer->onDetach();
-    METADOT_DELETE(m_ImGuiLayer, ImGuiLayer);
+    METADOT_DELETE(C, m_ImGuiLayer, ImGuiLayer);
 
-    METADOT_DELETE(objectDelete, UInt8);
-    METADOT_DELETE(backgrounds, Backgrounds);
+    METADOT_DELETE(C, objectDelete, UInt8);
+    METADOT_DELETE(C, backgrounds, Backgrounds);
 
-    METADOT_DELETE(terminal_log, terminal);
+    METADOT_DELETE(C, terminal_log, terminal);
 
     running = false;
 
-    METADOT_DELETE(b2DebugDraw, b2DebugDraw_impl);
-    METADOT_DELETE(movingTiles, UInt16);
+    METADOT_DELETE(C, b2DebugDraw, b2DebugDraw_impl);
+    METADOT_DELETE(C, movingTiles, UInt16);
 
-    METADOT_DELETE(updateDirtyPool, thread_pool);
-    METADOT_DELETE(rotateVectorsPool, thread_pool);
+    METADOT_DELETE(C, updateDirtyPool, thread_pool);
+    METADOT_DELETE(C, rotateVectorsPool, thread_pool);
 
     if (world) {
-        METADOT_DELETE(world, World);
+        METADOT_DELETE(C, world, World);
         world = nullptr;
     }
 
@@ -3450,8 +3450,8 @@ void Game::renderLate() {
 
             METAENGINE_Render_Rect *dst = nullptr;
             METAENGINE_Render_Rect *src = nullptr;
-            METADOT_NEW(dst, METAENGINE_Render_Rect);
-            METADOT_NEW(src, METAENGINE_Render_Rect);
+            METADOT_NEW(C, dst, METAENGINE_Render_Rect);
+            METADOT_NEW(C, src, METAENGINE_Render_Rect);
 
             float arX = (float) WIDTH / (bg->layers[0].surface[0]->w);
             float arY = (float) HEIGHT / (bg->layers[0].surface[0]->h);
@@ -3519,8 +3519,8 @@ void Game::renderLate() {
                 }
             }
 
-            METADOT_DELETE(dst, METAENGINE_Render_Rect);
-            METADOT_DELETE(src, METAENGINE_Render_Rect);
+            METADOT_DELETE(C, dst, METAENGINE_Render_Rect);
+            METADOT_DELETE(C, src, METAENGINE_Render_Rect);
         }
 
 
@@ -4204,14 +4204,14 @@ void Game::quitToMainMenu() {
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
 
-    METADOT_DELETE(world, World);
+    METADOT_DELETE(C, world, World);
     world = nullptr;
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
     std::string wpStr = m_GameDir.getWorldPath(wn);
 
-    METADOT_NEW(world, World);
+    METADOT_NEW(C, world, World);
     world->noSaveLoad = true;
     world->init(
             wpStr,

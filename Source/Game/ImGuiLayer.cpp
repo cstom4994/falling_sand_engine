@@ -640,13 +640,13 @@ namespace MetaEngine::InternalGUI {
                 game->fadeOutCallback = [&, game, worldName]() {
                     game->setGameState(LOADING, INGAME);
 
-                    METADOT_DELETE(game->getWorld(), World);
+                    METADOT_DELETE(C, game->getWorld(), World);
                     game->setWorld(nullptr);
 
                     //std::thread loadWorldThread([&] () {
 
                     World *w = nullptr;
-                    METADOT_NEW(w, World);
+                    METADOT_NEW(C, w, World);
                     w->init(
                             game->getGameDir()->getWorldPath(worldName),
                             (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
@@ -1364,7 +1364,7 @@ namespace MetaEngine::InternalGUI {
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
-            METADOT_DELETE(game->getWorld(), World);
+            METADOT_DELETE(C, game->getWorld(), World);
             game->setWorld(nullptr);
 
             WorldGenerator *generator;
@@ -1381,7 +1381,7 @@ namespace MetaEngine::InternalGUI {
             std::string wpStr = game->getGameDir()->getWorldPath(wn);
 
             World *w = nullptr;
-            METADOT_NEW(w, World);
+            METADOT_NEW(C, w, World);
             game->setWorld(w);
             game->getWorld()->init(
                     wpStr,

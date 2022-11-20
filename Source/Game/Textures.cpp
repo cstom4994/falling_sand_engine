@@ -107,12 +107,12 @@ C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
     C_Rect *srcR = nullptr;
-    METADOT_NEW(srcR, C_Rect);
+    METADOT_NEW(C, srcR, C_Rect);
     srcR->w = src->w;
     srcR->h = src->h;
 
     C_Rect *dstR = nullptr;
-    METADOT_NEW(dstR, C_Rect);
+    METADOT_NEW(C, dstR, C_Rect);
     dstR->w = dest->w;
     dstR->h = dest->h;
 
@@ -122,8 +122,8 @@ C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
 
     SDL_BlitScaled(src, srcR, dest, dstR);
 
-    METADOT_DELETE(srcR, C_Rect);
-    METADOT_DELETE(dstR, C_Rect);
+    METADOT_DELETE(C, srcR, C_Rect);
+    METADOT_DELETE(C, dstR, C_Rect);
 
     return dest;
 }

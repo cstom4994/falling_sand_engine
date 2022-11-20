@@ -36,17 +36,6 @@
 #define __builtin_frame_address(x) ((void) (x), _AddressOfReturnAddress())
 #endif
 
-/*
- * Define a globally available GC object; this allows all code that
- * includes the gc.h header to access a global static garbage collector.
- * Convenient for single-threaded code, insufficient for multi-threaded
- * use cases. Use the GC_NO_GLOBAL_GC flag to toggle.
- */
-#ifndef GC_NO_GLOBAL_GC
-GarbageCollector gc;// global GC object
-#endif
-
-
 static bool is_prime(size_t n) {
     /* https://stackoverflow.com/questions/1538644/c-determine-if-a-number-is-prime */
     if (n <= 3)

@@ -2,8 +2,8 @@
 
 // Now I'm using gc(https://github.com/mkirchner/gc)
 // and allocator(https://github.com/mtrebi/memory-allocators)
-// also the memory allocator of SDL
 // which are both licensed under the MIT License
+// and also the memory allocator of SDL
 
 #ifndef _METADOT_GCMANAGER_HPP_
 #define _METADOT_GCMANAGER_HPP_
@@ -22,31 +22,38 @@
 #define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
 
-#define METADOT_NEW(_ptr, _class, ...)                     \
-    {                                                      \
-        _ptr = (_class *) GC::C->Allocate(sizeof(_class)); \
-        new (_ptr) _class(__VA_ARGS__);                    \
-        GC::Count++;                                       \
+#define METADOT_NEW(_field, _ptr, _class, ...)                  \
+    {                                                           \
+        _ptr = (_class *) GC::_field->Allocate(sizeof(_class)); \
+        new (_ptr) _class(__VA_ARGS__);                         \
+        GC::_field##_Count++;                                   \
     }
 
-#define METADOT_NEW_ARRAY(_ptr, _class, _count, ...)               \
-    {                                                              \
-        _ptr = (_class *) GC::C->Allocate(sizeof(_class[_count])); \
-        new (_ptr) _class(__VA_ARGS__);                            \
-        GC::Count++;                                               \
+#define METADOT_NEW_ARRAY(_field, _ptr, _class, _count, ...)            \
+    {                                                                   \
+        _ptr = (_class *) GC::_field->Allocate(sizeof(_class[_count])); \
+        new (_ptr) _class(__VA_ARGS__);                                 \
+        GC::_field##_Count++;                                           \
     }
 
-#define METADOT_DELETE(_ptr, _class_name) \
-    {                                     \
-        _ptr->~_class_name();             \
-        GC::C->Free(_ptr);                \
-        GC::Count--;                      \
+#define METADOT_DELETE(_field, _ptr, _class_name) \
+    {                                             \
+        _ptr->~_class_name();                     \
+        GC::_field->Free(_ptr);                   \
+        GC::_field##_Count--;                     \
     }
+
+#define GCField_R(_n)      \
+    static CAllocator *_n; \
+    static UInt32 _n##_Count
+
+#define GCField_S(_n)             \
+    CAllocator *GC::_n = nullptr; \
+    UInt32 GC::_n##_Count = 0
 
 struct GC
 {
-    static CAllocator *C;
-    static UInt32 Count;
+    GCField_R(C);
 };
 
 void METAENGINE_Memory_Init(int argc, char *argv[]);
