@@ -1,6 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
+#include "Memory/Memory.hpp"
+#include "ctpl_stl.h"
 #ifndef INC_World
 #include "world.hpp"
 #endif
@@ -61,16 +63,16 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     height = h;
 
 
-    if (tickPool == nullptr) tickPool = new ctpl::thread_pool(6);
+    if (tickPool == nullptr) METADOT_NEW(tickPool, ctpl::thread_pool, 6);
 
 
-    if (loadChunkPool == nullptr) loadChunkPool = new ctpl::thread_pool(8);
+    if (loadChunkPool == nullptr) METADOT_NEW(loadChunkPool, ctpl::thread_pool, 8);
 
 
-    if (tickVisitedPool == nullptr) tickVisitedPool = new ctpl::thread_pool(1);
+    if (tickVisitedPool == nullptr) METADOT_NEW(tickVisitedPool, ctpl::thread_pool, 1);
 
 
-    if (updateRigidBodyHitboxPool == nullptr) updateRigidBodyHitboxPool = new ctpl::thread_pool(8);
+    if (updateRigidBodyHitboxPool == nullptr) METADOT_NEW(updateRigidBodyHitboxPool, ctpl::thread_pool, 8);
 
 
     if (netMode != NetworkMode::SERVER) {

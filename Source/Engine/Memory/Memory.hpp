@@ -25,13 +25,17 @@
 #define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
 
-#define METADOT_NEW(_ptr, _class, ...)                 \
-    _ptr = (_class *) GC::C->Allocate(sizeof(_class)); \
-    new (_ptr) _class(__VA_ARGS__)
+#define METADOT_NEW(_ptr, _class, ...)                     \
+    {                                                      \
+        _ptr = (_class *) GC::C->Allocate(sizeof(_class)); \
+        new (_ptr) _class(__VA_ARGS__);                    \
+    }
 
 #define METADOT_DELETE(_ptr, _class_name) \
-    _ptr->~_class_name();                 \
-    GC::C->Free(_ptr)
+    {                                     \
+        _ptr->~_class_name();             \
+        GC::C->Free(_ptr);                \
+    }
 
 struct GC
 {
