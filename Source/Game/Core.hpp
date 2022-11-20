@@ -14,7 +14,6 @@
 #include "Game/Macros.hpp"
 #include "Engine/Platforms/PlatformDef.hpp"
 
-
 #include <bitset>
 #include <cstdint>
 #include <cstdlib>
@@ -30,7 +29,6 @@
 #include <typeinfo>
 #include <vector>
 
-#include "Engine/Memory/Memory.hpp"
 #include "Libs/VisitStruct.hpp"
 #include "Libs/loguru.hpp"
 

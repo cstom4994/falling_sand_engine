@@ -9,6 +9,7 @@
 
 #include "Game/FileSystem.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Engine/Memory/Memory.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Utils.hpp"
 #include "LuaBinder.hpp"

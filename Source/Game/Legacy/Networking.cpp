@@ -5,6 +5,7 @@
 
 #include "Game/Core.hpp"
 
+#include "Memory/Memory.hpp"
 #include "Networking.hpp"
 
 
@@ -18,7 +19,8 @@ bool Networking::init() {
 }
 
 Server *Server::start(UInt16 port) {
-    Server *server = new Server();
+    Server *server = nullptr;
+    METADOT_NEW(server, Server);
     // server->address = ENetAddress();
     // server->address.host = ENET_HOST_ANY;
     // //enet_address_set_host_ip(&server->address, "172.23.16.150");
@@ -86,8 +88,8 @@ Server::~Server() {
 
 Client *Client::start() {
 
-    Client *client = new Client();
-
+    Client *client = nullptr;
+    METADOT_NEW(client, Client);
     // client->client = enet_host_create(NULL,// NULL means to make a client
     //                                   1,   // number of connections
     //                                   2,   // number of channels

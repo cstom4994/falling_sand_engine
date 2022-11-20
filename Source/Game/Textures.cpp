@@ -5,9 +5,11 @@
 
 #include "Game/Textures.hpp"
 
-#include "Game/FileSystem.hpp"
 #include "Game/DebugImpl.hpp"
+#include "Game/FileSystem.hpp"
 
+#include "Memory/Memory.hpp"
+#include "Render/SDLWrapper.hpp"
 #include "external/stb_image.h"
 
 C_Surface *Textures::testTexture = nullptr;
@@ -92,7 +94,7 @@ C_Surface *Textures::loadTexture(std::string path, UInt32 pixelFormat) {
 
 
     C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *) data, width, height, depth, pitch,
-                                                          rmask, gmask, bmask, amask);
+                                                        rmask, gmask, bmask, amask);
 
     //stbi_image_free(data);
 
@@ -104,11 +106,13 @@ C_Surface *Textures::loadTexture(std::string path, UInt32 pixelFormat) {
 C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
-    C_Rect *srcR = new C_Rect();
+    C_Rect *srcR = nullptr;
+    METADOT_NEW(srcR, C_Rect);
     srcR->w = src->w;
     srcR->h = src->h;
 
-    C_Rect *dstR = new C_Rect();
+    C_Rect *dstR = nullptr;
+    METADOT_NEW(dstR, C_Rect);
     dstR->w = dest->w;
     dstR->h = dest->h;
 
@@ -118,8 +122,8 @@ C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
 
     SDL_BlitScaled(src, srcR, dest, dstR);
 
-    delete srcR;
-    delete dstR;
+    METADOT_DELETE(srcR, C_Rect);
+    METADOT_DELETE(dstR, C_Rect);
 
     return dest;
 }

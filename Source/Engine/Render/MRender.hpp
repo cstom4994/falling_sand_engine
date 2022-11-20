@@ -3,7 +3,6 @@
 #include "Game/Core.hpp"
 
 #include "Engine/Render/SDLWrapper.hpp"
-#include "SDL_rect.h"
 
 namespace MetaEngine {
     typedef class Color {

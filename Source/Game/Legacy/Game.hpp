@@ -138,7 +138,7 @@ private:
     int lastEraseMX = 0;
     int lastEraseMY = 0;
 
-    bool *objectDelete = nullptr;
+    UInt8 *objectDelete = nullptr;
 
     Backgrounds *backgrounds = nullptr;
 

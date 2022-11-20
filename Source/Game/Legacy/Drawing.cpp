@@ -3,6 +3,7 @@
 #include "Drawing.hpp"
 
 #include "Game/InEngine.h"
+#include "Engine/Memory/Memory.hpp"
 
 #include "external/stb_image.h"
 #include "external/stb_truetype.h"

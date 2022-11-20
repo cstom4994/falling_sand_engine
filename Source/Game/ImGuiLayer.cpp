@@ -17,6 +17,7 @@
 
 #include "glew.h"
 
+#include <cstddef>
 #include <cstdio>
 #include <map>
 
@@ -639,12 +640,13 @@ namespace MetaEngine::InternalGUI {
                 game->fadeOutCallback = [&, game, worldName]() {
                     game->setGameState(LOADING, INGAME);
 
-                    delete game->getWorld();
+                    METADOT_DELETE(game->getWorld(), World);
                     game->setWorld(nullptr);
 
                     //std::thread loadWorldThread([&] () {
 
-                    World *w = new World();
+                    World *w = nullptr;
+                    METADOT_NEW(w, World);
                     w->init(
                             game->getGameDir()->getWorldPath(worldName),
                             (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
@@ -1362,7 +1364,7 @@ namespace MetaEngine::InternalGUI {
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
-            delete game->getWorld();
+            METADOT_DELETE(game->getWorld(), World);
             game->setWorld(nullptr);
 
             WorldGenerator *generator;
@@ -1378,8 +1380,9 @@ namespace MetaEngine::InternalGUI {
 
             std::string wpStr = game->getGameDir()->getWorldPath(wn);
 
-
-            game->setWorld(new World());
+            World *w = nullptr;
+            METADOT_NEW(w, World);
+            game->setWorld(w);
             game->getWorld()->init(
                     wpStr,
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
@@ -1476,7 +1479,7 @@ namespace MetaEngine {
 
         if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowSize(ImGui::GetMainViewport());
-#if defined(METADOT_PLATFORM_APPLE) // macOS retina
+#if defined(METADOT_PLATFORM_APPLE)// macOS retina
             windowspos /= 4;
 #endif
             pos += windowspos;

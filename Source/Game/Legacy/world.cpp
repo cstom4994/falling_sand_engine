@@ -3539,7 +3539,6 @@ bool WorldMeta::save(std::string worldFileName) {
 
 World::~World() {
 
-    //delete worldName;
     delete[] tiles;
     delete[] flowX;
     delete[] flowY;

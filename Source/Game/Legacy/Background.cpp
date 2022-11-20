@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "Game/InEngine.h"
+#include "Memory/Memory.hpp"
 
 BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
     this->surface = {Textures::scaleTexture(texture, 1, 1), Textures::scaleTexture(texture, 2, 2), Textures::scaleTexture(texture, 3, 3)};
@@ -28,7 +29,6 @@ void BackgroundLayer::init() {
 }
 
 
-
 void Background::init() {
     for (size_t i = 0; i < layers.size(); i++) {
         layers[i].init();
@@ -45,6 +45,5 @@ Background *Backgrounds::Get(std::string name) {
 }
 
 Backgrounds::~Backgrounds() {
-    for (auto &[name, bg]: m_backgrounds)
-        delete bg;
+    for (auto &[name, bg]: m_backgrounds) METADOT_DELETE(bg, Background);
 }
