@@ -1,6 +1,8 @@
 /* This is an implementation file to be included after certain #defines have been set.
 See a particular renderer's *.c file for specifics. */
 
+#pragma once
+
 #ifdef _MSC_VER
 // Disable warning: selection for inlining
 #pragma warning(disable : 4514 4711 4710)

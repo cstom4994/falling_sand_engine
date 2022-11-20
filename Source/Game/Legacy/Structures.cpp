@@ -9,9 +9,6 @@
 #include "Game/Textures.hpp"
 #endif
 
-#undef min
-#undef max
-
 #include <algorithm>
 
 

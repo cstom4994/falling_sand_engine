@@ -42,8 +42,7 @@
 #include "WorldGenerator.hpp"
 #endif
 
-
-#define CHUNK_UNLOAD_DIST 16
+#include "Game/Const.hpp"
 
 class Populator;
 class WorldGenerator;
@@ -73,18 +72,7 @@ public:
     bool save(std::string worldFileName);
 };
 
-#define FLUID_MaxValue 0.5f
-#define FLUID_MinValue 0.0005f
 
-// Extra liquid a cell can store than the cell above it
-#define FLUID_MaxCompression 0.1f
-
-// Lowest and highest amount of liquids allowed to flow per iteration
-#define FLUID_MinFlow 0.05f
-#define FLUID_MaxFlow 8.0f
-
-// Adjusts flow speed (0.0f - 1.0f)
-#define FLUID_FlowSpeed 1.0f
 
 class World {
 public:

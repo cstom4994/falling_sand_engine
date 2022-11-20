@@ -173,13 +173,13 @@ do
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
               "Source/Libs/lua/**.c", "Source/Libs/lua/**.cpp",
+              "Source/Libs/fmt/**.cc", "Source/Libs/glew/**.c",
               {unity_group = "libone"})
-    add_files("Source/Libs/fmt/**.cc")
-    add_files("Source/Libs/glew/**.c")
+
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
     add_files("Source/Libs/external/**.c")
-    add_files("Source/Libs/box2d/**.cpp")
+    add_files("Source/Libs/box2d/**.cpp", {unity_group = "libbox2d"})
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
     remove_files("Source/Libs/lua/lua/**")

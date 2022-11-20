@@ -1,6 +1,7 @@
 /* This is an implementation file to be included after certain #defines have been set.
 See a particular renderer's *.c file for specifics. */
 
+#pragma once
 
 // All shapes start this way for setup and so they can access the blit buffer properly
 #define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices)                                                   \

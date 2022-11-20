@@ -14,11 +14,9 @@
 #include <fstream>
 #include <iostream>
 
+#include "Game/Const.hpp"
 
 #define INC_Chunk
-
-#define CHUNK_W 128
-#define CHUNK_H 128
 
 #ifndef INC_Biome
 #include "Biome.hpp"
