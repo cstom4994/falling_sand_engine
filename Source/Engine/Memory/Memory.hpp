@@ -10,13 +10,10 @@
 
 #include <cstdint>
 
+#include "Game/Core.hpp"
+
 #include "Engine/Memory/Allocator.h"
 #include "Engine/Render/SDLWrapper.hpp"
-
-
-#define METADOT_GC_USE_MALLOC SDL_malloc
-#define METADOT_GC_USE_REALLOC SDL_realloc
-#define METADOT_GC_USE_FREE SDL_free
 
 #define METADOT_GC_ALLOC(size) SDL_malloc(size)
 #define METADOT_GC_ALLOC_ALIGNED(size, alignment) SDL_malloc(size)
@@ -29,21 +26,32 @@
     {                                                      \
         _ptr = (_class *) GC::C->Allocate(sizeof(_class)); \
         new (_ptr) _class(__VA_ARGS__);                    \
+        GC::Count++;                                       \
+    }
+
+#define METADOT_NEW_ARRAY(_ptr, _class, _count, ...)               \
+    {                                                              \
+        _ptr = (_class *) GC::C->Allocate(sizeof(_class[_count])); \
+        new (_ptr) _class(__VA_ARGS__);                            \
+        GC::Count++;                                               \
     }
 
 #define METADOT_DELETE(_ptr, _class_name) \
     {                                     \
         _ptr->~_class_name();             \
         GC::C->Free(_ptr);                \
+        GC::Count--;                      \
     }
 
 struct GC
 {
     static CAllocator *C;
+    static UInt32 Count;
 };
 
 void METAENGINE_Memory_Init(int argc, char *argv[]);
 void METAENGINE_Memory_End();
+void METAENGINE_Memory_RunGC();
 
 #if defined(METADOT_LEAK_TEST)
 

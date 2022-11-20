@@ -44,15 +44,24 @@ void getInfo() {
 #endif
 
 CAllocator *GC::C = nullptr;
+UInt32 GC::Count = 0;
 
 void METAENGINE_Memory_Init(int argc, char *argv[]) {
     gc_start(&gc, &argc);
     GC::C = (CAllocator *) gc_malloc(&gc, sizeof(CAllocator));
-    new(GC::C) CAllocator();
+    new (GC::C) CAllocator();
+    GC::Count++;
 }
 
 void METAENGINE_Memory_End() {
-    GC::C->~CAllocator();
-    gc_free(&gc, GC::C);
+    if (GC::C) {
+        GC::C->~CAllocator();
+        gc_free(&gc, GC::C);
+        GC::Count--;
+    }
     gc_stop(&gc);
+}
+
+void METAENGINE_Memory_RunGC() {
+    gc_run(&gc);
 }
