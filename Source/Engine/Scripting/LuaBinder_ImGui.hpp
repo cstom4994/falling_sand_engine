@@ -1511,9 +1511,9 @@ namespace MetaEngine::LuaBinder::ImGuiWarp {
     inline void EndPopup() { ImGui::EndPopup(); }
     inline void OpenPopup(const std::string &str_id) { ImGui::OpenPopup(str_id.c_str()); }
     inline void OpenPopup(const std::string &str_id, int popup_flags) { ImGui::OpenPopup(str_id.c_str(), static_cast<ImGuiPopupFlags>(popup_flags)); }
-    inline void OpenPopupContextItem() { return ImGui::OpenPopupContextItem(); }
-    inline void OpenPopupContextItem(const std::string &str_id) { return ImGui::OpenPopupContextItem(str_id.c_str()); }
-    inline void OpenPopupContextItem(const std::string &str_id, int popup_flags) { return ImGui::OpenPopupContextItem(str_id.c_str(), static_cast<ImGuiPopupFlags>(popup_flags)); }
+    inline void OpenPopupContextItem() { return OpenPopupContextItem(); }
+    inline void OpenPopupContextItem(const std::string &str_id) { return OpenPopupContextItem(str_id.c_str()); }
+    inline void OpenPopupContextItem(const std::string &str_id, int popup_flags) { return OpenPopupContextItem(str_id.c_str(), static_cast<ImGuiPopupFlags>(popup_flags)); }
     inline void CloseCurrentPopup() { ImGui::CloseCurrentPopup(); }
     inline bool BeginPopupContextItem() { return ImGui::BeginPopupContextItem(); }
     inline bool BeginPopupContextItem(const std::string &str_id) { return ImGui::BeginPopupContextItem(str_id.c_str()); }

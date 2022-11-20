@@ -2,13 +2,13 @@
 
 #include "ImGuiLayer.hpp"
 
+#include "Engine/Memory/Memory.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
-#include "Libs/ImGui/implot.h"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Engine/Memory/Memory.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Utils.hpp"
+#include "Libs/ImGui/implot.h"
 #include "Settings.hpp"
 
 #include "Game/InEngine.h"
@@ -1476,6 +1476,9 @@ namespace MetaEngine {
 
         if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowSize(ImGui::GetMainViewport());
+#if defined(METADOT_PLATFORM_APPLE) // macOS retina
+            windowspos /= 4;
+#endif
             pos += windowspos;
         }
 
@@ -1599,7 +1602,7 @@ namespace MetaEngine {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         io.IniFilename = "imgui.ini";
 

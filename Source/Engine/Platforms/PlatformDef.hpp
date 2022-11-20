@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <sys/io.h>
 #elif defined(METADOT_PLATFORM_APPLE)
+#include <TargetConditionals.h>
 #include <sys/ioctl.h>
 #include <mach-o/dyld.h>
 #endif

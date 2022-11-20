@@ -1,21 +1,8 @@
 
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
 
 #include "ImGuiImplGL3.h"
-#include "glew.h"
 #include "imgui.h"
 #include <stdio.h>
-
-#if defined(_MSC_VER) && _MSC_VER <= 1500// MSVC 2008 or earlier
-#include <stddef.h>                      // intptr_t
-#else
-#include <stdint.h>// intptr_t
-#endif
-#if defined(__APPLE__)
-#include <TargetConditionals.h>
-#endif
 
 // Clang warnings with -Weverything
 #if defined(__clang__)
@@ -24,16 +11,9 @@
 #pragma clang diagnostic ignored "-Wsign-conversion"// warning: implicit conversion changes signedness
 #endif
 
-// Vertex arrays are not supported on ES2/WebGL1 unless Emscripten which uses an extension
-#ifndef IMGUI_IMPL_OPENGL_ES2
+#include "glew.h"
+
 #define IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-#elif defined(__EMSCRIPTEN__)
-#define IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-#define glBindVertexArray glBindVertexArrayOES
-#define glGenVertexArrays glGenVertexArraysOES
-#define glDeleteVertexArrays glDeleteVertexArraysOES
-#define GL_VERTEX_ARRAY_BINDING GL_VERTEX_ARRAY_BINDING_OES
-#endif
 
 // Desktop GL 2.0+ has glPolygonMode() which GL ES and WebGL don't have.
 #ifdef GL_POLYGON_MODE
@@ -134,6 +114,14 @@ bool ImGui_ImplOpenGL3_Init(const char *glsl_version) {
     ImGuiIO &io = ImGui::GetIO();
     IM_ASSERT(io.BackendRendererUserData == nullptr && "Already initialized a renderer backend!");
 
+    // Initialize our loader
+#if !defined(IMGUI_IMPL_OPENGL_ES2) && !defined(IMGUI_IMPL_OPENGL_ES3) && !defined(IMGUI_IMPL_OPENGL_LOADER_CUSTOM)
+    if (glewInit() != 0) {
+        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+        return false;
+    }
+#endif
+
     // Setup backend capabilities flags
     ImGui_ImplOpenGL3_Data *bd = IM_NEW(ImGui_ImplOpenGL3_Data)();
     io.BackendRendererUserData = (void *) bd;
@@ -152,12 +140,15 @@ bool ImGui_ImplOpenGL3_Init(const char *glsl_version) {
     }
     bd->GlVersion = (GLuint) (major * 100 + minor * 10);
 
+    bd->UseBufferSubData = false;
+    /*
     // Query vendor to enable glBufferSubData kludge
 #ifdef _WIN32
-    if (const char *vendor = (const char *) glGetString(GL_VENDOR))
+    if (const char* vendor = (const char*)glGetString(GL_VENDOR))
         if (strncmp(vendor, "Intel", 5) == 0)
             bd->UseBufferSubData = true;
 #endif
+    */
 #else
     bd->GlVersion = 200;// GLES 2
 #endif
@@ -400,9 +391,13 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
         const ImDrawList *cmd_list = draw_data->CmdLists[n];
 
         // Upload vertex/index buffers
-        // - On Intel windows drivers we got reports that regular glBufferData() led to accumulating leaks when using multi-viewports, so we started using orphaning + glBufferSubData(). (See https://github.com/ocornut/imgui/issues/4468)
-        // - On NVIDIA drivers we got reports that using orphaning + glBufferSubData() led to glitches when using multi-viewports.
-        // - OpenGL drivers are in a very sorry state in 2022, for now we are switching code path based on vendors.
+        // - OpenGL drivers are in a very sorry state nowadays....
+        //   During 2021 we attempted to switch from glBufferData() to orphaning+glBufferSubData() following reports
+        //   of leaks on Intel GPU when using multi-viewports on Windows.
+        // - After this we kept hearing of various display corruptions issues. We started disabling on non-Intel GPU, but issues still got reported on Intel.
+        // - We are now back to using exclusively glBufferData(). So bd->UseBufferSubData IS ALWAYS FALSE in this code.
+        //   We are keeping the old code path for a while in case people finding new issues may want to test the bd->UseBufferSubData path.
+        // - See https://github.com/ocornut/imgui/issues/4468 and please report any corruption issues.
         const GLsizeiptr vtx_buffer_size = (GLsizeiptr) cmd_list->VtxBuffer.Size * (int) sizeof(ImDrawVert);
         const GLsizeiptr idx_buffer_size = (GLsizeiptr) cmd_list->IdxBuffer.Size * (int) sizeof(ImDrawIdx);
         if (bd->UseBufferSubData) {
