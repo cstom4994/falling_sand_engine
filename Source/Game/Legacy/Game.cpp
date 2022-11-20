@@ -7,6 +7,7 @@
 
 #include "DefaultGenerator.cpp"
 #include "Engine/Memory/Memory.hpp"
+#include "Game/Console.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/Textures.hpp"
 #include "ImGui/imgui.h"
@@ -269,7 +270,7 @@ int Game::init(int argc, char *argv[]) {
     //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
     networkMode = NetworkMode::HOST;
 
-    terminal_log = new ImTerm::terminal<terminal_commands>(cmd_struct);
+    METADOT_NEW(terminal_log, ImTerm::terminal<terminal_commands>, cmd_struct);
 
     MetaEngine::ResourceMan::init();//init location of /res
 
@@ -608,10 +609,8 @@ int Game::init(int argc, char *argv[]) {
     // init threadpools
 
 
-    updateDirtyPool = (ctpl::thread_pool *) GC::C->Allocate(sizeof(ctpl::thread_pool));
-    new (updateDirtyPool) ctpl::thread_pool(6);
-    rotateVectorsPool = (ctpl::thread_pool *) GC::C->Allocate(sizeof(ctpl::thread_pool));
-    new (rotateVectorsPool) ctpl::thread_pool(3);
+    METADOT_NEW(updateDirtyPool, ctpl::thread_pool, 6);
+    METADOT_NEW(rotateVectorsPool, ctpl::thread_pool, 3);
 
 
     if (networkMode != NetworkMode::SERVER) {
@@ -1802,17 +1801,16 @@ exit:
     delete m_ImGuiLayer;
     delete objectDelete;
     delete backgrounds;
-    delete terminal_log;
+
+    METADOT_DELETE(terminal_log, terminal);
 
     running = false;
 
     delete b2DebugDraw;
     delete movingTiles;
 
-    updateDirtyPool->~thread_pool();
-    GC::C->Free(updateDirtyPool);
-    rotateVectorsPool->~thread_pool();
-    GC::C->Free(rotateVectorsPool);
+    METADOT_DELETE(updateDirtyPool, thread_pool);
+    METADOT_DELETE(rotateVectorsPool, thread_pool);
 
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);

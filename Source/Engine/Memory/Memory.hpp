@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-// Now I'm using gc(https://github.com/mkirchner/gc) 
+// Now I'm using gc(https://github.com/mkirchner/gc)
 // and allocator(https://github.com/mtrebi/memory-allocators)
 // also the memory allocator of SDL
 // which are both licensed under the MIT License
@@ -24,6 +24,14 @@
 #define METADOT_GC_DEALLOC_ALIGNED(ptr) SDL_free(ptr)
 #define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
+
+#define METADOT_NEW(_ptr, _class, ...)                 \
+    _ptr = (_class *) GC::C->Allocate(sizeof(_class)); \
+    new (_ptr) _class(__VA_ARGS__)
+
+#define METADOT_DELETE(_ptr, _class_name) \
+    _ptr->~_class_name();                 \
+    GC::C->Free(_ptr)
 
 struct GC
 {
