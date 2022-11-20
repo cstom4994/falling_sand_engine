@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Scripting/LuaBinder.hpp"
@@ -21,8 +21,8 @@ namespace MetaEngine {
     enum ImGuiWindowTags {
 
         UI_None = 0,
-        UI_MainMenu = 1,
-        UI_GCManager = 2,
+        UI_MainMenu = 1 << 0,
+        UI_GCManager = 1 << 1,
     };
 
     class ImGuiLayer {

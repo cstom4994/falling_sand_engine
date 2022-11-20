@@ -1477,6 +1477,9 @@ namespace MetaEngine {
 
     ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
 
+        if (tag & UI_MainMenu)
+            ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+
         if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowSize(ImGui::GetMainViewport());
 #if defined(METADOT_PLATFORM_APPLE)// macOS retina

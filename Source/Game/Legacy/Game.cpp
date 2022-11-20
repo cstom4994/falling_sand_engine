@@ -1640,6 +1640,7 @@ int Game::run(int argc, char *argv[]) {
 
                         ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.11f, 0.11f, 0.11f, 0.4f));
                         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.00f, 1.00f, 1.00f, 0.2f));
+                        ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
                         ImGui::BeginTooltip();
                         ImGui::Text("%s", tile.mat->name.c_str());
 
