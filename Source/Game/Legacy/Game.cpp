@@ -403,9 +403,12 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // scripting system
-    METADOT_INFO("Loading Script...");
-    METAENGINE_Scripting_Init();
-
+    auto loadscript = [&]() {
+        METADOT_LOG_SCOPE_FUNCTION(INFO);
+        METADOT_INFO("Loading Script...");
+        METAENGINE_Scripting_Init();
+    };
+    loadscript();
 
     // init the world
     // worldInitThread = worldInitThreadPool->push([&](int id) {
@@ -424,8 +427,7 @@ int Game::init(int argc, char *argv[]) {
                 BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer5.png", SDL_PIXELFORMAT_ARGB8888), 0.5, 0.5, 0, 0)};
 
         METADOT_NEW(C, backgrounds, Backgrounds);
-        Background *bg = nullptr;
-        METADOT_NEW(C, bg, Background, 0x7EAFCB, testOverworldLayers);
+        METADOT_CREATE(C, bg, Background, 0x7EAFCB, testOverworldLayers);
         backgrounds->Push("TEST_OVERWORLD", bg);
         backgrounds->Get("TEST_OVERWORLD")->init();
     }
@@ -1461,7 +1463,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::SameLine(ImGui::GetWindowWidth() - 390);
 
                 ImGui::Separator();
-                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, (int)GC::C_Count);
+                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, (int) GC::C_Count);
 
                 ImGui::EndMainMenuBar();
             }
@@ -1707,6 +1709,8 @@ exit:
         SDL_Quit();
         audioEngine.Shutdown();
     }
+
+    METADOT_INFO("Clean done...");
 
     return EXIT_SUCCESS;
 }

@@ -23,8 +23,17 @@ void METAENGINE_Scripting_Init() {
         return std::make_shared<MuScript::Value>();
     });
 
+    auto endLua = MuCore->newFunction("endLua", [](const MuScript::List &args) {
+        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
+        METADOT_DELETE(C, LuaCore, LuaLayer);
+        return std::make_shared<MuScript::Value>();
+    });
+
     std::string init_src = MetaEngine::FUtil::readFileString("data/init.mu");
     MuCore->evaluate(init_src);
+
+    auto end = MuCore->callFunction("init", MuScript::List());
+
 }
 
 void METAENGINE_Scripting_End() {
