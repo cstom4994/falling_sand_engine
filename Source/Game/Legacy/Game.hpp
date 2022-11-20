@@ -160,7 +160,6 @@ private:
 private:
     MetaEngine::GameDir m_GameDir;
     MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
-    MetaEngine::LuaLayer *m_LuaLayer = nullptr;
 
 public:
     int WIDTH = 1024;

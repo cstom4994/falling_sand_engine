@@ -6,7 +6,6 @@
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 
 #include "Engine/AudioEngine/AudioEngine.h"
-#include "Engine/Scripting/LuaBinder.hpp"
 #include "Game/DebugImpl.hpp"
 
 #include "Libs/ImGui/TextEditor.h"

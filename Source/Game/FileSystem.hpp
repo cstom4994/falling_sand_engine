@@ -11,7 +11,7 @@
 
 namespace MetaEngine {
 
-#define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(FUtil::exists(stringPath), MetaEngine::Utils::Format("FILE: {0} does not exist", stringPath))
+#define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(MetaEngine::FUtil::exists(stringPath), MetaEngine::Utils::Format("FILE: {0} does not exist", stringPath))
 
     class ResourceMan {
     private:

@@ -3,8 +3,7 @@
 #pragma once
 
 #include "Game/Core.hpp"
-
-#include "Libs/lua/luash/meta/nameof.hpp"
+#include "Libs/nameof.hpp"
 
 #include <algorithm>
 #include <functional>
