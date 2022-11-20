@@ -396,7 +396,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     }
 
 
-    std::vector<std::vector<b2Vec2>> meshes = {};
+    std::vector<veque::veque<b2Vec2>> meshes = {};
 
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
@@ -460,7 +460,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         MarchingSquares::Result r = MarchingSquares::FindPerimeter(lookX, lookY, texture->w, texture->h, data);
         results.push_back(r);
 
-        std::vector<b2Vec2> worldMesh;
+        veque::veque<b2Vec2> worldMesh;
 
         float lastX = (float) r.initialX;
         float lastY = (float) r.initialY;
@@ -769,7 +769,7 @@ found : {};
     }
 
 
-    std::vector<std::vector<b2Vec2>> worldMeshes = {};
+    std::vector<veque::veque<b2Vec2>> worldMeshes = {};
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
     int inn = 0;
@@ -840,7 +840,7 @@ found : {};
 
         results.push_back(r);
 
-        std::vector<b2Vec2> worldMesh;
+        veque::veque<b2Vec2> worldMesh;
 
         float lastX = (float) r.initialX;
         float lastY = (float) r.initialY;
@@ -945,7 +945,7 @@ found : {};
             cur[0].y += 0.01f;
         }
 
-        std::vector<b2Vec2> vec = {
+        veque::veque<b2Vec2> vec = {
                 {(float) cur[0].x, (float) cur[0].y},
                 {(float) cur[1].x, (float) cur[1].y},
                 {(float) cur[2].x, (float) cur[2].y}};
@@ -1085,7 +1085,7 @@ void World::tick() {
             int chOfsY = 1 - ((tk % 4) / 2);// 1 1 0 0
 
 #ifdef DO_MULTITHREADING
-            std::vector<std::future<std::vector<Particle *>>> results = {};
+            std::vector<std::future<veque::veque<Particle *>>> results = {};
 #endif
 #ifdef DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
@@ -1105,7 +1105,7 @@ void World::tick() {
 
 #ifdef DO_MULTITHREADING
                     results.push_back(tickPool->push([&, cx, cy](int id) {
-                        std::vector<Particle *> parts = {};
+                        veque::veque<Particle *> parts = {};
 
 #else
 
@@ -1944,7 +1944,7 @@ void World::tick() {
 
             for (int i = 0; i < results.size(); i++) {
 
-                std::vector<Particle *> pts = results[i].get();
+                veque::veque<Particle *> pts = results[i].get();
 
 
                 particles.insert(particles.end(), pts.begin(), pts.end());
@@ -2978,11 +2978,11 @@ b2Vec2 World::getNearestPoint(float x, float y) {
     return {closest.x + (x - xm), closest.y + (y - ym)};
 }
 
-std::vector<b2Vec2> World::getPointsWithin(float x, float y, float w, float h) {
+veque::veque<b2Vec2> World::getPointsWithin(float x, float y, float w, float h) {
     float xm = fmod(1 + fmod(x, 1), 1);
     float ym = fmod(1 + fmod(y, 1), 1);
 
-    std::vector<b2Vec2> pts;
+    veque::veque<b2Vec2> pts;
     for (float xo = floor(x) - 1; xo < ceil(x + w); xo++) {
         for (float yo = floor(y) - 1; yo < ceil(y + h); yo++) {
             for (int i = 0; i < distributedPoints.size(); i++) {

@@ -18,9 +18,9 @@
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
 #endif
-#include "Structures.hpp"
 #include "Libs/FastNoise/FastNoise.h"
 #include "Libs/sparsehash/dense_hash_map.h"
+#include "Structures.hpp"
 #include <future>
 #include <unordered_map>
 #ifndef INC_Player
@@ -29,6 +29,7 @@
 #include "Engine/AudioEngine/AudioEngine.h"
 
 #include "Libs/ctpl_stl.h"
+#include "Libs/veque.hpp"
 
 #include "Engine/Render/renderer_gpu.h"
 
@@ -100,7 +101,7 @@ public:
     float *prevFlowY = nullptr;
     MaterialInstance *layer2 = nullptr;
     UInt32 *background = nullptr;
-    std::vector<Particle *> particles;
+    veque::veque<Particle *> particles;
     uint16_t width = 0;
     uint16_t height = 0;
     void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer, CAudioEngine *audioEngine, int netMode, WorldGenerator *generator);
@@ -155,8 +156,8 @@ public:
     RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
 
-    std::vector<std::vector<b2Vec2>> worldMeshes;
-    std::vector<std::vector<b2Vec2>> worldTris;
+    std::vector<veque::veque<b2Vec2>> worldMeshes;
+    std::vector<veque::veque<b2Vec2>> worldTris;
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
     std::vector<RigidBody *> worldRigidBodies;
@@ -179,9 +180,9 @@ public:
     std::vector<PlacedStructure> structures;
     void addStructure(PlacedStructure str);
 
-    std::vector<b2Vec2> distributedPoints;
+    veque::veque<b2Vec2> distributedPoints;
     b2Vec2 getNearestPoint(float x, float y);
-    std::vector<b2Vec2> getPointsWithin(float x, float y, float w, float h);
+    veque::veque<b2Vec2> getPointsWithin(float x, float y, float w, float h);
 
     Chunk *getChunk(int cx, int cy);
     google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;

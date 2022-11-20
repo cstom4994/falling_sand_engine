@@ -16,97 +16,94 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 */
 
 #include "polygon-simplify.hh"
+#include "veque.hpp"
 #include <cmath>
 
-/* std::vector<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
+/* veque::veque<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
 
 /* Polyline Simplification Algorithm */
 
-void DouglasPeucker::simplify_section(const std::vector<b2Vec2>& pts,
-	float tolerance,
-	size_t i, size_t j,
-	std::vector<bool>* mark_map,
-	size_t omitted){
-	/* make sure we always return 2 points. */
-	if (pts.size() - omitted <= 2)
-		return;
+void DouglasPeucker::simplify_section(const veque::veque<b2Vec2> &pts,
+                                      float tolerance,
+                                      size_t i, size_t j,
+                                      veque::veque<bool> *mark_map,
+                                      size_t omitted) {
+    /* make sure we always return 2 points. */
+    if (pts.size() - omitted <= 2)
+        return;
 
-	assert(mark_map && mark_map->size() == pts.size());
+    assert(mark_map && mark_map->size() == pts.size());
 
-	if ((i + 1) == j) {
-		return;
-	}
+    if ((i + 1) == j) {
+        return;
+    }
 
-	float max_distance = -1.0f;
-	size_t max_index = i;
+    float max_distance = -1.0f;
+    size_t max_index = i;
 
-	for (size_t k = i + 1; k < j; k++) {
-		float distance = pDistance(pts[k].x, pts[k].y, pts[i].x, pts[i].y, pts[j].x, pts[j].y);
+    for (size_t k = i + 1; k < j; k++) {
+        float distance = pDistance(pts[k].x, pts[k].y, pts[i].x, pts[i].y, pts[j].x, pts[j].y);
 
-		if (distance > max_distance) {
-			max_distance = distance;
-			max_index = k;
-		}
-	}
+        if (distance > max_distance) {
+            max_distance = distance;
+            max_index = k;
+        }
+    }
 
-	if (max_distance <= tolerance) {
-		for (size_t k = i + 1; k < j; k++) {
-			(*mark_map)[k] = false;
-			++omitted;
-		}
-	}
-	else {
-		simplify_section(pts, tolerance, i, max_index, mark_map, omitted);
-		simplify_section(pts, tolerance, max_index, j, mark_map, omitted);
-	}
+    if (max_distance <= tolerance) {
+        for (size_t k = i + 1; k < j; k++) {
+            (*mark_map)[k] = false;
+            ++omitted;
+        }
+    } else {
+        simplify_section(pts, tolerance, i, max_index, mark_map, omitted);
+        simplify_section(pts, tolerance, max_index, j, mark_map, omitted);
+    }
 }
 
 
-std::vector<b2Vec2> DouglasPeucker::simplify(const std::vector<b2Vec2>& vertices, float tolerance)
-{
-	std::vector<bool> mark_map(vertices.size(), true);
+veque::veque<b2Vec2> DouglasPeucker::simplify(const veque::veque<b2Vec2> &vertices, float tolerance) {
+    veque::veque<bool> mark_map(vertices.size(), true);
 
-	simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
+    simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
 
-	std::vector<b2Vec2> result;
-	for (size_t i = 0; i != vertices.size(); ++i) {
-		if (mark_map[i]) {
-			result.push_back(vertices[i]);
-		}
-	}
+    veque::veque<b2Vec2> result;
+    for (size_t i = 0; i != vertices.size(); ++i) {
+        if (mark_map[i]) {
+            result.push_back(vertices[i]);
+        }
+    }
 
-	return result;
+    return result;
 }
 
 float DouglasPeucker::pDistance(float x, float y, float x1, float y1, float x2, float y2) {
 
-	float A = x - x1;
-	float B = y - y1;
-	float C = x2 - x1;
-	float D = y2 - y1;
+    float A = x - x1;
+    float B = y - y1;
+    float C = x2 - x1;
+    float D = y2 - y1;
 
-	float dot = A * C + B * D;
-	float len_sq = C * C + D * D;
-	float param = -1;
-	if (len_sq != 0) //in case of 0 length line
-		param = dot / len_sq;
+    float dot = A * C + B * D;
+    float len_sq = C * C + D * D;
+    float param = -1;
+    if (len_sq != 0)//in case of 0 length line
+        param = dot / len_sq;
 
-	float xx, yy;
+    float xx, yy;
 
-	if (param < 0) {
-		xx = x1;
-		yy = y1;
-	}
-	else if (param > 1) {
-		xx = x2;
-		yy = y2;
-	}
-	else {
-		xx = x1 + param * C;
-		yy = y1 + param * D;
-	}
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
 
-	float dx = x - xx;
-	float dy = y - yy;
-	return std::sqrt(dx * dx + dy * dy);
+    float dx = x - xx;
+    float dy = y - yy;
+    return std::sqrt(dx * dx + dy * dy);
 }

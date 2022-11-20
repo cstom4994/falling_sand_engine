@@ -15,21 +15,21 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <assert.h>
-#include <vector>
+#include <cassert>
 
+#include "Libs/veque.hpp"
 #include "box2d/box2d.h"
 
-/* std::vector<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
+/* veque::veque<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
 
 /* Polyline Simplification Algorithm */
 class DouglasPeucker {
 public:
-	static void simplify_section(const std::vector<b2Vec2>& pts,
+	static void simplify_section(const veque::veque<b2Vec2>& pts,
 		float tolerance,
 		size_t i, size_t j,
-		std::vector<bool>* mark_map,
+		veque::veque<bool>* mark_map,
 		size_t omitted = 0);
-	static std::vector<b2Vec2> simplify(const std::vector<b2Vec2>& vertices, float tolerance);
+	static veque::veque<b2Vec2> simplify(const veque::veque<b2Vec2>& vertices, float tolerance);
 	static float pDistance(float x, float y, float x1, float y1, float x2, float y2);
 };
