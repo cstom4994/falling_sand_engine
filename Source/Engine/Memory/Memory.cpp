@@ -44,7 +44,8 @@ void getInfo() {
 #endif
 
 // Static GC Field
-GCField_S(C);
+GCField_S(CAllocator, C);
+GCField_S(LinearAllocator, S);
 
 GarbageCollector gc;
 

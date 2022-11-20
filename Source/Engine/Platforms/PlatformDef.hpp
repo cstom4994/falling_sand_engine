@@ -5,6 +5,10 @@
 #if defined(METADOT_PLATFORM_WINDOWS)
 #include <Windows.h>
 #include <io.h>
+
+#undef min
+#undef max
+
 #elif defined(METADOT_PLATFORM_LINUX)
 #include <limits.h>
 #include <sys/io.h>

@@ -1579,7 +1579,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::SameLine(ImGui::GetWindowWidth() - 390);
 
                 ImGui::Separator();
-                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, GC::C_Count);
+                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, (int)GC::C_Count);
 
                 ImGui::EndMainMenuBar();
             }

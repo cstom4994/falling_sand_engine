@@ -9,6 +9,7 @@
 #define _METADOT_GCMANAGER_HPP_
 
 #include <cstdint>
+#include <atomic>
 
 #include "Game/Core.hpp"
 
@@ -43,17 +44,18 @@
         GC::_field##_Count--;                     \
     }
 
-#define GCField_R(_n)      \
-    static CAllocator *_n; \
-    static UInt32 _n##_Count
+#define GCField_R(_c, _n) \
+    static _c *_n;        \
+    static std::atomic<int> _n##_Count
 
-#define GCField_S(_n)             \
-    CAllocator *GC::_n = nullptr; \
-    UInt32 GC::_n##_Count = 0
+#define GCField_S(_c, _n) \
+    _c *GC::_n = nullptr; \
+    std::atomic<int> GC::_n##_Count = 0
 
 struct GC
 {
-    GCField_R(C);
+    GCField_R(CAllocator, C);
+    GCField_R(LinearAllocator, S);
 };
 
 void METAENGINE_Memory_Init(int argc, char *argv[]);
