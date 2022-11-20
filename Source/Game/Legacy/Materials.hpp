@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Engine/Render/SDLWrapper.hpp"
+
+#include "Libs/veque.hpp"
 #include "Game/Core.hpp"
 
 #include <iostream>
@@ -55,10 +57,10 @@ public:
 
     bool interact = false;
     int *nInteractions = nullptr;
-    std::vector<MaterialInteraction> *interactions = nullptr;
+    veque::veque<MaterialInteraction> *interactions = nullptr;
     bool react = false;
     int nReactions = 0;
-    std::vector<MaterialInteraction> reactions;
+    veque::veque<MaterialInteraction> reactions;
 
     int slipperyness = 1;
 
@@ -75,7 +77,7 @@ public:
 class Materials {
 public:
     static int nMaterials;
-    static std::vector<Material *> MATERIALS;
+    static veque::veque<Material *> MATERIALS;
     static Material **MATERIALS_ARRAY;
 
     static Material GENERIC_AIR;
