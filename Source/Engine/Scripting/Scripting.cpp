@@ -32,13 +32,13 @@ void METAENGINE_Scripting_Init() {
     std::string init_src = MetaEngine::FUtil::readFileString("data/init.mu");
     MuCore->evaluate(init_src);
 
-    auto end = MuCore->callFunction("init", MuScript::List());
+    auto end = MuCore->callFunction("init");
 
 }
 
 void METAENGINE_Scripting_End() {
 
-    auto end = MuCore->callFunction("end", MuScript::List());
+    auto end = MuCore->callFunction("end");
 
     METADOT_DELETE(C, MuCore, MuScriptInterpreter);
 }

@@ -7,7 +7,12 @@
 struct Global
 {
     Game *game;
+    
     CAudioEngine audioEngine;
+    MetaEngine::GameDir GameDir;
+
+    Client *client = nullptr;
+    Server *server = nullptr;
 
     Global() {}
 

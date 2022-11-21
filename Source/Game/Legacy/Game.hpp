@@ -81,8 +81,7 @@ private:
     GameState stateAfterLoad = MAIN_MENU;
 
     int networkMode = -1;
-    Client *client = nullptr;
-    Server *server = nullptr;
+
 
     custom_command_struct cmd_struct;
     ImTerm::terminal<terminal_commands> *terminal_log;
@@ -155,7 +154,6 @@ private:
     DrawTextParams_t dt_loading;
 
 private:
-    MetaEngine::GameDir m_GameDir;
     MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
 
 public:
@@ -236,7 +234,6 @@ public:
     MetaEngine::ImGuiLayer *getImGuiLayer() const { return m_ImGuiLayer; }
     World *getWorld() { return world; }
     void setWorld(World *ptr) { world = ptr; }
-    MetaEngine::GameDir *getGameDir() { return &m_GameDir; }
     GameTimeState &getGameTimeState() { return game_timestate; }
     GameState getGameState() const { return state; }
     void setGameState(GameState state, std::optional<GameState> stateal) {
@@ -245,8 +242,6 @@ public:
     }
     int getNetworkMode() const { return networkMode; }
     void setNetworkMode(NetworkMode networkMode) { this->networkMode = networkMode; }
-    Client *getClient() { return client; }
-    Server *getServer() { return server; }
 
     void loadShaders();
     void updateMaterialSounds();

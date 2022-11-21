@@ -448,10 +448,10 @@ namespace MetaEngine::InternalGUI {
 
         worlds = {};
 
-        for (auto &p: std::filesystem::directory_iterator(game->getGameDir()->getPath("worlds/"))) {
+        for (auto &p: std::filesystem::directory_iterator(global.GameDir.getPath("worlds/"))) {
             std::string worldName = p.path().filename().generic_string();
 
-            WorldMeta meta = WorldMeta::loadWorldMeta((char *) game->getGameDir()->getWorldPath(worldName).c_str());
+            WorldMeta meta = WorldMeta::loadWorldMeta((char *) global.GameDir.getWorldPath(worldName).c_str());
 
             worlds.push_back(std::make_tuple(worldName, meta));
         }
@@ -649,7 +649,7 @@ namespace MetaEngine::InternalGUI {
                     World *w = nullptr;
                     METADOT_NEW(C, w, World);
                     w->init(
-                            game->getGameDir()->getWorldPath(worldName),
+                            global.GameDir.getWorldPath(worldName),
                             (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                             game->RenderTarget_.target,
@@ -757,7 +757,7 @@ namespace MetaEngine::InternalGUI {
 
         if (ImGui::Button("连接")) {
             METADOT_INFO("connectButton select");
-            if (game->getClient()->connect(Settings::server_ip.c_str(), Settings::server_port)) {
+            if (global.client->connect(Settings::server_ip.c_str(), Settings::server_port)) {
                 game->setNetworkMode(NetworkMode::CLIENT);
                 visible = false;
                 game->setGameState(LOADING, INGAME);
@@ -1361,7 +1361,7 @@ namespace MetaEngine::InternalGUI {
             std::regex trimWhitespaceRegex("^ *(.+?) *$");
             worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
-            METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle, game->getGameDir()->getWorldPath(wn));
+            METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle, global.GameDir.getWorldPath(wn));
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
@@ -1379,7 +1379,7 @@ namespace MetaEngine::InternalGUI {
                 generator = new MaterialTestGenerator();
             }
 
-            std::string wpStr = game->getGameDir()->getWorldPath(wn);
+            std::string wpStr = global.GameDir.getWorldPath(wn);
 
             World *w = nullptr;
             METADOT_NEW(C, w, World);
@@ -1433,7 +1433,7 @@ namespace MetaEngine::InternalGUI {
         std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
 
         std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
-        std::string folder = game->getGameDir()->getWorldPath(worldFolderName);
+        std::string folder = global.GameDir.getWorldPath(worldFolderName);
         struct stat buffer;
         bool exists = (stat(folder.c_str(), &buffer) == 0);
 
@@ -1441,7 +1441,7 @@ namespace MetaEngine::InternalGUI {
         int i = 2;
         while (exists) {
             newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
-            folder = game->getGameDir()->getWorldPath(newWorldFolderName);
+            folder = global.GameDir.getWorldPath(newWorldFolderName);
 
             exists = (stat(folder.c_str(), &buffer) == 0);
 

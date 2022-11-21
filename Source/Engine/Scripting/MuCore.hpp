@@ -1984,7 +1984,7 @@ namespace MuScript {
         ValueRef callFunction(const string &name, ScopeRef scope, const List &args);
         ValueRef callFunction(FunctionRef fnc, ScopeRef scope, const List &args, Class *classs = nullptr);
         ValueRef callFunction(FunctionRef fnc, ScopeRef scope, const List &args, ClassRef classs) { return callFunction(fnc, scope, args, classs.get()); }
-        ValueRef callFunction(const string &name, const List &args) { return callFunction(name, globalScope, args); }
+        ValueRef callFunction(const string &name, const List &args = List()) { return callFunction(name, globalScope, args); }
         ValueRef callFunction(FunctionRef fnc, const List &args) { return callFunction(fnc, globalScope, args); }
         template<typename... Ts>
         ValueRef callFunctionWithArgs(FunctionRef fnc, ScopeRef scope, Ts... args) {

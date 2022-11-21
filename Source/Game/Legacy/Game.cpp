@@ -177,7 +177,7 @@ int Game::init(int argc, char *argv[]) {
         Settings::draw_temperature_map = false;
     }
 
-    this->m_GameDir = MetaEngine::GameDir(METADOT_RESLOC("saves/"));
+    global.GameDir = MetaEngine::GameDir(METADOT_RESLOC("saves/"));
 
     Networking::init();
     if (networkMode == NetworkMode::SERVER) {
@@ -185,7 +185,7 @@ int Game::init(int argc, char *argv[]) {
         if (argc >= 3) {
             port = atoi(argv[2]);
         }
-        server = Server::start(port);
+        global.server = Server::start(port);
         SDL_SetWindowTitle(window, win_title_server.c_str());
 
         /*while (true) {
@@ -196,7 +196,7 @@ int Game::init(int argc, char *argv[]) {
         return 0;*/
 
     } else {
-        client = Client::start();
+        global.client = Client::start();
         //client->connect(Settings::server_ip.c_str(), Settings::server_port);
 
         //while (true) {
@@ -459,7 +459,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW(C, world, World);
     world->noSaveLoad = true;
     world->init(
-            m_GameDir.getWorldPath("mainMenu"),
+            global.GameDir.getWorldPath("mainMenu"),
             (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
             RenderTarget_.target,
@@ -1388,9 +1388,9 @@ int Game::run(int argc, char *argv[]) {
 
 
         if (networkMode == NetworkMode::SERVER) {
-            server->tick();
+            global.server->tick();
         } else if (networkMode == NetworkMode::CLIENT) {
-            client->tick();
+            global.client->tick();
         }
 
         if (networkMode != NetworkMode::SERVER) {
@@ -4088,7 +4088,7 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ {0}", m_GameDir.getWorldPath(wn));
+    METADOT_INFO("Loading main menu @ {0}", global.GameDir.getWorldPath(wn));
     MetaEngine::InternalGUI::MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -4098,7 +4098,7 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = m_GameDir.getWorldPath(wn);
+    std::string wpStr = global.GameDir.getWorldPath(wn);
 
     METADOT_NEW(C, world, World);
     world->noSaveLoad = true;
