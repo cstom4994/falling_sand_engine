@@ -138,7 +138,7 @@ end
 include_dir_list = {
     "Source", "Source/Engine", "Source/Libs/lua/lua", "Source/Libs",
     "Source/Libs/imgui", "Source/Libs/json/include", "Source/Libs/fmt/include",
-    "Source/Libs/box2d/include", "Source/Libs/glew"
+    "Source/Libs/box2d/inc", "Source/Libs/glew"
 }
 
 defines_list = {}
