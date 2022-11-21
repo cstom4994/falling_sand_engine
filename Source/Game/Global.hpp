@@ -6,7 +6,7 @@
 
 struct Global
 {
-    Game *game;
+    Game *game = nullptr;
     
     CAudioEngine audioEngine;
     MetaEngine::GameDir GameDir;

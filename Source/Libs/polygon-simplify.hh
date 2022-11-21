@@ -25,11 +25,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 /* Polyline Simplification Algorithm */
 class DouglasPeucker {
 public:
-	static void simplify_section(const veque::veque<b2Vec2>& pts,
-		float tolerance,
-		size_t i, size_t j,
-		veque::veque<bool>* mark_map,
-		size_t omitted = 0);
-	static veque::veque<b2Vec2> simplify(const veque::veque<b2Vec2>& vertices, float tolerance);
-	static float pDistance(float x, float y, float x1, float y1, float x2, float y2);
+    static void simplify_section(const veque::veque<b2Vec2> &pts,
+                                 float tolerance,
+                                 size_t i, size_t j,
+                                 veque::veque<bool> *mark_map,
+                                 size_t omitted = 0);
+    static veque::veque<b2Vec2> simplify(const veque::veque<b2Vec2> &vertices, float tolerance);
+    static float pDistance(float x, float y, float x1, float y1, float x2, float y2);
 };
