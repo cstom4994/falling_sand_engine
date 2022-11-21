@@ -75,7 +75,6 @@ struct GameTimeState
 
 class Game {
 private:
-
     int argc;
 
     GameState state = LOADING;
@@ -87,8 +86,6 @@ private:
 
     custom_command_struct cmd_struct;
     ImTerm::terminal<terminal_commands> *terminal_log;
-
-    CAudioEngine audioEngine;
 
     int scale = 4;
 
@@ -236,9 +233,7 @@ public:
     } TexturePack_;
 
 public:
-    MetaEngine::ImGuiLayer *
-    getImGuiLayer() const { return m_ImGuiLayer; }
-    CAudioEngine *getCAudioEngine() { return &audioEngine; }
+    MetaEngine::ImGuiLayer *getImGuiLayer() const { return m_ImGuiLayer; }
     World *getWorld() { return world; }
     void setWorld(World *ptr) { world = ptr; }
     MetaEngine::GameDir *getGameDir() { return &m_GameDir; }

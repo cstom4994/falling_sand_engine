@@ -11,6 +11,7 @@
 #include "Game/DebugImpl.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Textures.hpp"
+#include "Game/Global.hpp"
 #include "ImGui/imgui.h"
 #include "MaterialTestGenerator.cpp"
 
@@ -77,7 +78,7 @@ void Game::updateMaterialSounds() {
     UInt16 waterCt = std::min(movingTiles[Materials::WATER.id], (UInt16) 5000);
     float water = (float) waterCt / 3000;
     //METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
-    audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
+    global.audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
 }
 
 Game::Game(int argc, char *argv[]) {
@@ -398,8 +399,8 @@ int Game::init(int argc, char *argv[]) {
 
         //initThread.get();
 
-        audioEngine.PlayEvent("event:/Music/Title");
-        audioEngine.Update();
+        global.audioEngine.PlayEvent("event:/Music/Title");
+        global.audioEngine.Update();
     }
 
     // scripting system
@@ -462,7 +463,7 @@ int Game::init(int argc, char *argv[]) {
             (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
             RenderTarget_.target,
-            &audioEngine,
+            &global.audioEngine,
             networkMode);
 
 
@@ -1202,7 +1203,7 @@ int Game::run(int argc, char *argv[]) {
                                 }
 
                                 if (n > 0) {
-                                    audioEngine.PlayEvent("event:/Player/Impact");
+                                    global.audioEngine.PlayEvent("event:/Player/Impact");
                                     b2PolygonShape s;
                                     s.SetAsBox(1, 1);
                                     RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x, (float) y, 0, s, 1, (float) 0.3, tex);
@@ -1308,7 +1309,7 @@ int Game::run(int argc, char *argv[]) {
                                         }
 
                                         if (nTilesChanged > 0) {
-                                            audioEngine.PlayEvent("event:/Player/Impact");
+                                            global.audioEngine.PlayEvent("event:/Player/Impact");
                                         }
 
                                         //world->setTile((int)(hx), (int)(hy), MaterialInstance(&Materials::GENERIC_SOLID, 0xffffffff));
@@ -1707,7 +1708,7 @@ exit:
     if (networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);
         SDL_Quit();
-        audioEngine.Shutdown();
+        global.audioEngine.Shutdown();
     }
 
     METADOT_INFO("Clean done...");
@@ -1914,13 +1915,13 @@ void Game::updateFrameEarly() {
     }
 
 
-    audioEngine.Update();
+    global.audioEngine.Update();
 
 
     if (state == LOADING) {
 
     } else {
-        audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
+        global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
         if (world->player && world->player->heldItem != NULL && world->player->heldItem->getFlag(ItemFlags::FLUID_CONTAINER)) {
             if (Controls::lmouse && world->player->heldItem->carry.size() > 0) {
                 // shoot fluid from container
@@ -1940,7 +1941,7 @@ void Game::updateFrameEarly() {
                 world->player->heldItem->texture = METAENGINE_Render_CopyImageFromSurface(world->player->heldItem->surface);
                 METAENGINE_Render_SetImageFilter(world->player->heldItem->texture, METAENGINE_Render_FILTER_NEAREST);
 
-                audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
+                global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
 
             } else {
                 // pick up fluid into container
@@ -1980,7 +1981,7 @@ void Game::updateFrameEarly() {
                 }
 
                 if (n > 0) {
-                    audioEngine.PlayEvent("event:/Player/Impact");
+                    global.audioEngine.PlayEvent("event:/Player/Impact");
                 }
             }
         }
@@ -2850,13 +2851,13 @@ void Game::tickPlayer() {
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
             if (world->player->ground) {
                 world->player->vy = -4;
-                audioEngine.PlayEvent("event:/Player/Jump");
+                global.audioEngine.PlayEvent("event:/Player/Jump");
             }
         }
 
         world->player->vy += (float) (((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) ? (world->player->vy > -1 ? -0.8 : -0.35) : 0) + (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
-            audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
+            global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 Particle *p = new Particle(Tiles::createLava(), (float) (world->player->x + world->loadZone.x + world->player->hw / 2 + rand() % 5 - 2 + world->player->vx), (float) (world->player->y + world->loadZone.y + world->player->hh + world->player->vy), (float) ((rand() % 10 - 5) / 10.0f + world->player->vx / 2.0f), (float) ((rand() % 10) / 10.0f + 1 + world->player->vy / 2.0f), 0, (float) 0.025);
                 p->temporary = true;
@@ -2864,13 +2865,13 @@ void Game::tickPlayer() {
                 world->addParticle(p);
             }
         } else {
-            audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 0);
+            global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 0);
         }
 
         if (world->player->vy > 0) {
-            audioEngine.SetEventParameter("event:/Player/Wind", "Wind", (float) (world->player->vy / 12.0));
+            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", (float) (world->player->vy / 12.0));
         } else {
-            audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
+            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
         world->player->vx += (float) ((Controls::PLAYER_LEFT->get() ? (world->player->vx > 0 ? -0.4 : -0.2) : 0) + (Controls::PLAYER_RIGHT->get() ? (world->player->vx < 0 ? 0.4 : 0.2) : 0));
@@ -4106,7 +4107,7 @@ void Game::quitToMainMenu() {
             (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
             RenderTarget_.target,
-            &audioEngine,
+            &global.audioEngine,
             networkMode, generator);
 
 

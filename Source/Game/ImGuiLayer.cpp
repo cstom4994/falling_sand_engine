@@ -6,6 +6,7 @@
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
+#include "Game/Global.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/ImGui/implot.h"
@@ -263,7 +264,7 @@ namespace MetaEngine::InternalGUI {
         }
 
         if (tab != prevTab) {
-            game->getCAudioEngine()->PlayEvent("event:/GUI/GUI_Tab");
+            global.audioEngine.PlayEvent("event:/GUI/GUI_Tab");
             prevTab = tab;
         }
 
@@ -652,7 +653,7 @@ namespace MetaEngine::InternalGUI {
                             (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                             game->RenderTarget_.target,
-                            game->getCAudioEngine(),
+                            &global.audioEngine,
                             game->getNetworkMode());
                     w->metadata.lastOpenedTime = UTime::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::string(VERSION);
@@ -1388,7 +1389,7 @@ namespace MetaEngine::InternalGUI {
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                     game->RenderTarget_.target,
-                    game->getCAudioEngine(),
+                    &global.audioEngine,
                     game->getNetworkMode(),
                     generator);
             game->getWorld()->metadata.worldName = std::string(worldNameBuf);
