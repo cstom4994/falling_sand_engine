@@ -6,6 +6,7 @@
 
 #include <array>
 #include <iostream>
+#include <utility>
 
 #if defined(METADOT_LEAK_TEST)
 
@@ -41,6 +42,10 @@ void getInfo() {
     std::cout << std::endl;
 }
 
+#endif
+
+#if defined(METADOT_DEBUG)
+std::map<std::string_view, std::size_t> GC::MemoryDebugMap = {};
 #endif
 
 // Static GC Field

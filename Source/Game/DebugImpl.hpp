@@ -31,7 +31,7 @@ namespace Meko {
 }// namespace Meko
 
 inline void _better_assert(const char *condition, const char *message, const char *fileline) {
-    std::cout << "[" << fileline << "] "
+    std::cout << "\n\n[" << fileline << "] "
               << "Assertion `" << condition << "` failed.\n"
               << message << std::endl;
     std::abort();

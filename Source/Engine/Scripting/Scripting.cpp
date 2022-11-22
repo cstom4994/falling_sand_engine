@@ -5,6 +5,7 @@
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/MuCore.hpp"
 #include "Game/Core.hpp"
+#include "Game/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include <iostream>
 #include <memory>
@@ -13,27 +14,34 @@
 MuScript::MuScriptInterpreter *MuCore = nullptr;
 LuaLayer *LuaCore = nullptr;
 
+void LoadMuFuncs() {
+
+    METADOT_ASSERT_E(MuCore);
+
+    auto loadFunc = [](const MuScript::List &args) {
+        METADOT_NEW(C, LuaCore, LuaLayer);
+        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
+        return std::make_shared<MuScript::Value>();
+    };
+    auto loadLua = MuCore->newFunction("loadLua", loadFunc);
+
+    auto endFunc = [](const MuScript::List &args) {
+        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
+        METADOT_DELETE(C, LuaCore, LuaLayer);
+        return std::make_shared<MuScript::Value>();
+    };
+    auto endLua = MuCore->newFunction("endLua", endFunc);
+}
 
 void METAENGINE_Scripting_Init() {
     METADOT_NEW(C, MuCore, MuScript::MuScriptInterpreter, MuScript::ModulePrivilege::allPrivilege);
 
-    auto loadLua = MuCore->newFunction("loadLua", [](const MuScript::List &args) {
-        METADOT_NEW(C, LuaCore, LuaLayer);
-        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
-        return std::make_shared<MuScript::Value>();
-    });
-
-    auto endLua = MuCore->newFunction("endLua", [](const MuScript::List &args) {
-        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
-        METADOT_DELETE(C, LuaCore, LuaLayer);
-        return std::make_shared<MuScript::Value>();
-    });
+    LoadMuFuncs();
 
     std::string init_src = MetaEngine::FUtil::readFileString("data/init.mu");
     MuCore->evaluate(init_src);
 
     auto end = MuCore->callFunction("init");
-
 }
 
 void METAENGINE_Scripting_End() {

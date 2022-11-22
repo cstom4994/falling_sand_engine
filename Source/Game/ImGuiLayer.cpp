@@ -12,6 +12,7 @@
 #include "Game/Macros.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
+#include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
 #include "Settings.hpp"
 
@@ -2432,7 +2433,13 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         }
 
         if (Settings::ui_gcmanager) {
-            //METADOT_GC_DISPLAY(0.3f);
+            ImGui::Begin("GC");
+#if defined(METADOT_DEBUG)
+            for (auto [name, size]: GC::MemoryDebugMap) {
+                ImGui::Text(MetaEngine::Utils::Format("{0} {1}", name, size).c_str());
+            }
+#endif
+            ImGui::End();
         }
     }
 

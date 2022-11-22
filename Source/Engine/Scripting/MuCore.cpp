@@ -1,5 +1,7 @@
 
 #include "MuCore.hpp"
+#include "Game/Core.hpp"
+#include <string>
 
 
 // --------------------------------------- expressionImplementation
@@ -1061,10 +1063,11 @@ namespace MuScript {
                          }},
 
                         {"print", [](const List &args) {
+                             auto s = std::string{"[MU] "};
                              for (auto &&arg: args) {
-                                 printf("%s", arg->getPrintString().c_str());
+                                 s += arg->getPrintString();
                              }
-                             printf("\n");
+                             METADOT_INFO("{0}", s);
                              return make_shared<Value>();
                          }},
 
