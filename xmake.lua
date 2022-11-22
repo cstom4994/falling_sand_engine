@@ -143,25 +143,6 @@ include_dir_list = {
 
 defines_list = {}
 
-target("lua")
-do
-    set_kind("static")
-    add_rules("c.unity_build")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/Libs/lua/lua/*.c|lua.c|luac.c|onelua.c")
-end
-
-target("luaexe")
-do
-    set_basename("lua54")
-    set_kind("binary")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/Libs/lua/lua/lua.c")
-    add_deps("lua")
-end
-
 target("Libs")
 do
     set_kind("static")
@@ -181,7 +162,6 @@ do
     add_files("Source/Libs/box2d/**.cpp", {unity_group = "libbox2d"})
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
-    remove_files("Source/Libs/lua/lua/**")
 end
 
 target("Engine")
@@ -206,7 +186,7 @@ do
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("Libs", "lua", "Engine")
+    add_deps("Libs", "Engine")
     add_links(link_list)
     add_files("Source/Game/**.cpp")
     add_headerfiles("Source/Game/**.h")
