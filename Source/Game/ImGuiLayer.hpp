@@ -2,14 +2,11 @@
 
 #pragma once
 
+#include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Render/SDLWrapper.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
-
-#include "Engine/AudioEngine/AudioEngine.h"
 #include "Game/DebugImpl.hpp"
-
 #include "Libs/ImGui/TextEditor.h"
-#include "imgui.h"
 
 class Game;
 class Material;
@@ -37,8 +34,6 @@ namespace MetaEngine {
         C_Window *window;
         void *gl_context;
 
-        void renderViewWindows();
-
         ImGuiContext *m_imgui = nullptr;
 
         TextEditor editor;
@@ -52,7 +47,6 @@ namespace MetaEngine {
         void begin();
         void end();
         void Render(Game *game);
-        void onUpdate();
         void registerWindow(std::string_view windowName, bool *opened);
         ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 

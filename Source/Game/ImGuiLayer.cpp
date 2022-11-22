@@ -1,20 +1,18 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "ImGuiLayer.hpp"
-
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
 #include "Game/Global.hpp"
+#include "Game/InEngine.h"
+#include "Game/Legacy/Game.hpp"
 #include "Game/Macros.hpp"
+#include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/ImGui/implot.h"
 #include "Settings.hpp"
-
-#include "Game/InEngine.h"
-#include "Game/Legacy/Game.hpp"
-#include "Game/Textures.hpp"
 
 #include "glew.h"
 
@@ -1492,46 +1490,6 @@ namespace MetaEngine {
         return pos;
     }
 
-    void ImGuiLayer::renderViewWindows() {
-        //for (int i = m_views.size() - 1; i >= 0; --i)
-        //{
-        //    auto& view = m_views[i];
-        //    if (!view.refreshed)
-        //    {
-        //        //remove those which have not been submitted this frame
-
-        //        if (view.owner)
-        //            delete view.texture;
-        //        m_views.erase(m_views.begin() + i);
-        //        continue;
-        //    }
-        //    view.refreshed = false;
-
-        //    if (!view.opened)
-        //        continue;
-
-        //    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-        //    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        //    //ImGui::SetNextWindowDockID(dock_left_id, ImGuiCond_Once);
-        //    if (s_is_animaiting)
-        //    {
-        //        auto& box = s_boxes[i];
-        //        ImGui::SetNextWindowPos(ImVec2(box.srcPos.x, box.srcPos.y), ImGuiCond_Always);
-        //        ImGui::SetNextWindowSize(ImVec2(box.scale * view_size, box.scale * view_size), ImGuiCond_Always);
-        //    }
-        //    else
-        //    {
-        //        ImGui::SetNextWindowSize({ (float)view_size, (float)view_size }, ImGuiCond_Once);
-        //    }
-        //    ImGui::Begin(view.name.c_str(), &view.opened, ImGuiWindowFlags_NoDecoration);
-        //    ImGui::PopStyleVar(2);
-        //    auto size = ImGui::GetWindowSize();
-
-        //    ImGui::Image((void*)view.texture->getID(), size, { 0, 1 }, { 1, 0 });
-        //    ImGui::End();
-        //}
-    }
-
     ImGuiLayer::ImGuiLayer() {
     }
 
@@ -2475,24 +2433,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         if (Settings::ui_gcmanager) {
             //METADOT_GC_DISPLAY(0.3f);
         }
-
-        // auto ct = complex_thing{};
-
-        // auto config = EditorConfig{ "object" };
-        // config.filter.pattern.reserve(50);
-        // config.filter.show_parents = true;
-
-        // auto cconfig = EditorConfig{ "config instance" };
-        // cconfig.filter.pattern.reserve(50);
-        // config.filter.show_parents = true;
-
-        // ui::widget::object_editor(ct, config);
-        // ui::widget::object_editor(config, cconfig);
-
-        renderViewWindows();
-    }
-
-    void ImGuiLayer::onUpdate() {
     }
 
     void ImGuiLayer::registerWindow(std::string_view windowName, bool *opened) {
@@ -2500,44 +2440,5 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             if (m_win.name == windowName)
                 return;
         m_wins.push_back({std::string(windowName), opened});
-    }
-
-    static std::string bloatString(const std::string &s, int size) {
-        std::string out = s;
-        out.reserve(size);
-        while (out.size() < size)
-            out += " ";
-        return out;
-    }
-
-    static std::string newName;
-
-    //opens popup on previous item and sets newName possibly
-    //return true if renamed
-    static bool renameName(const char *name) {
-        bool rename = false;
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(1)) {
-            ImGui::OpenPopup("my_select_popupo");
-        }
-
-        if (ImGui::BeginPopup("my_select_popupo", ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration)) {
-            char c[128]{};
-            memcpy(c, name, strlen(name));
-            //ImGui::IsAnyWindowFocused()
-            //if (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
-            //todo imdoc
-            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
-                ImGui::SetKeyboardFocusHere();
-            if (ImGui::InputText("##heheheehj", c, 127, ImGuiInputTextFlags_EnterReturnsTrue)) {
-                //ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
-                newName = std::string(c);
-                ImGui::CloseCurrentPopup();
-                rename = true;
-            }
-            //else
-            ImGui::SetItemDefaultFocus();
-            ImGui::EndPopup();
-        }
-        return rename;
     }
 }// namespace MetaEngine

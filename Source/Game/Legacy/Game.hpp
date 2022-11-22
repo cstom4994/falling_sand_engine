@@ -11,11 +11,11 @@
 #include "Engine/Interface.hpp"
 #include "Engine/Render/renderer_gpu.h"
 #include "Engine/Scripting/LuaLayer.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiTerminal.hpp"
 #include "Game/Console.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/ImGuiLayer.hpp"
-#include "Game/ImGuiTerminal.hpp"
 #include "Game/Legacy/Networking.hpp"
 #include "Game/Macros.hpp"
 #ifndef INC_World
