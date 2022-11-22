@@ -8,6 +8,7 @@
 #include "Game/Global.hpp"
 #include "Game/InEngine.h"
 #include "Game/Legacy/Game.hpp"
+#include "Game/Legacy/Networking.hpp"
 #include "Game/Macros.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
@@ -652,7 +653,7 @@ namespace MetaEngine::InternalGUI {
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                             game->RenderTarget_.target,
                             &global.audioEngine,
-                            game->getNetworkMode());
+                            Settings::networkMode);
                     w->metadata.lastOpenedTime = UTime::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::string(VERSION);
                     w->metadata.save(w->worldName);
@@ -756,7 +757,7 @@ namespace MetaEngine::InternalGUI {
         if (ImGui::Button("连接")) {
             METADOT_INFO("connectButton select");
             if (global.client->connect(Settings::server_ip.c_str(), Settings::server_port)) {
-                game->setNetworkMode(NetworkMode::CLIENT);
+                Settings::networkMode = NetworkMode::CLIENT;
                 visible = false;
                 game->setGameState(LOADING, INGAME);
             }
@@ -1388,7 +1389,7 @@ namespace MetaEngine::InternalGUI {
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                     game->RenderTarget_.target,
                     &global.audioEngine,
-                    game->getNetworkMode(),
+                    Settings::networkMode,
                     generator);
             game->getWorld()->metadata.worldName = std::string(worldNameBuf);
             game->getWorld()->metadata.lastOpenedTime = UTime::millis() / 1000;

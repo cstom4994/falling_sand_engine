@@ -8,7 +8,6 @@
 
 #include "Drawing.hpp"
 #include "Engine/AudioEngine/AudioEngine.h"
-#include "Engine/Interface.hpp"
 #include "Engine/Render/renderer_gpu.h"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiTerminal.hpp"
@@ -79,8 +78,6 @@ private:
 
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
-
-    int networkMode = -1;
 
 
     custom_command_struct cmd_struct;
@@ -240,8 +237,6 @@ public:
         this->state = state;
         if (stateal.has_value()) { this->stateAfterLoad = stateal.value(); }
     }
-    int getNetworkMode() const { return networkMode; }
-    void setNetworkMode(NetworkMode networkMode) { this->networkMode = networkMode; }
 
     void loadShaders();
     void updateMaterialSounds();

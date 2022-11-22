@@ -49,6 +49,7 @@ struct SettingsBase
 
     static int hd_objects_size;
 
+    static int networkMode;
     static std::string server_ip;
     static int server_port;
 };

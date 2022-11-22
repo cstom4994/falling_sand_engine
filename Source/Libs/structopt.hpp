@@ -16,6 +16,7 @@
  * run-time overhead.
  */
 
+#include <ios>
 #include <type_traits>
 #include <utility>
 
@@ -2325,7 +2326,7 @@ namespace magic_enum {
             if (const auto v = enum_cast<D>(s)) {
                 value = *v;
             } else {
-                is.setstate(std::ios::failbit);
+                is.setstate(std::ios_base::failbit);
             }
             return is;
         }

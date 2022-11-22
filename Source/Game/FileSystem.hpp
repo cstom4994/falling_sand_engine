@@ -13,7 +13,7 @@ namespace MetaEngine {
 
 #define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(MetaEngine::FUtil::exists(stringPath), MetaEngine::Utils::Format("FILE: {0} does not exist", stringPath))
 
-    class ResourceMan {
+    class Resource {
     private:
         static std::string s_ProjectRootPath;
         static std::string s_DataPath;
@@ -25,7 +25,7 @@ namespace MetaEngine {
         static const std::string &getDataPath();
     };
 
-#define METADOT_RESLOC(x) MetaEngine::ResourceMan::getResourceLoc(x)
+#define METADOT_RESLOC(x) MetaEngine::Resource::getResourceLoc(x)
 
 #define METADOT_RESLOC_STR(x) METADOT_RESLOC(x).c_str()
 

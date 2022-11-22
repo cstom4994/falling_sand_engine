@@ -9,9 +9,9 @@
 #include "Engine/Memory/Memory.hpp"
 #include "Game/Console.hpp"
 #include "Game/DebugImpl.hpp"
+#include "Game/Global.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Textures.hpp"
-#include "Game/Global.hpp"
 #include "ImGui/imgui.h"
 #include "MaterialTestGenerator.cpp"
 
@@ -27,7 +27,6 @@
 #include "Game/Macros.hpp"
 
 #include "Game/FileSystem.hpp"
-#include "Libs/structopt.hpp"
 
 #include "Render/renderer_gpu.h"
 #include "SDL_events.h"
@@ -67,22 +66,11 @@ Fire2Shader *fire2Shader = nullptr;
 
 extern void fuckme();
 
-struct Options
-{
-    std::optional<std::string> test;
-    std::vector<std::string> files;
-};
-STRUCTOPT(Options, test, files);
-
-void Game::updateMaterialSounds() {
-    UInt16 waterCt = std::min(movingTiles[Materials::WATER.id], (UInt16) 5000);
-    float water = (float) waterCt / 3000;
-    //METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
-    global.audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
-}
 
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
+
+    global.game = this;
 
     // init console & print title
     std::cout << logo << std::endl;
@@ -92,6 +80,9 @@ Game::Game(int argc, char *argv[]) {
 }
 
 Game::~Game() {
+
+    global.game = nullptr;
+
     METAENGINE_Memory_End();
 
     //delete data;
@@ -99,66 +90,11 @@ Game::~Game() {
 
 int Game::init(int argc, char *argv[]) {
 
-    //     try {
-    //         auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
-
-    //         if (!options.test.value_or("").empty()) {
-    //             if (options.test == "test_mu") {
-    //                 for (auto t: options.files) {
-    //                     //METADOT_UNIT(!interp.evaluateFile(std::string(t)));
-    //                 }
-
-    //                 std::string test = R"(
-
-    // class test {
-    // 	var x = 1;
-    // 	var y = "MuScript 宽字符测试";
-    // 	func test() {
-    // 		x = 2;
-    // 	}
-    // }
-
-    // a = test();
-
-    // if (a.x == 2) {
-    // 	print(a.y);
-    // }
-
-    // b = inspect(a.x);
-
-    // print(b);
-    //                 )";
-
-    //                 auto interp = new MuScript::MuScriptInterpreter(MuScript::ModulePrivilege::allPrivilege);
-    //                 interp->evaluate(test);
-    //                 delete interp;
-
-    //                 return 0;
-    //             }
-    //             if (options.test == "test_xlsx") {
-    //                 // lxw_workbook *workbook = workbook_new("./data/test.xlsx");
-    //                 // lxw_worksheet *worksheet = workbook_add_worksheet(workbook, NULL);
-
-    //                 // worksheet_write_string(worksheet, 0, 0, "Hello", NULL);
-    //                 // worksheet_write_number(worksheet, 1, 0, 123, NULL);
-
-    //                 // workbook_close(workbook);
-    //                 return 0;
-    //             }
-    //         }
-
-    //     } catch (structopt::exception &e) {
-    //         std::cout << e.what() << "\n";
-    //         std::cout << e.help();
-    //     }
-
-
-    //networkMode = clArgs->getBool("server") ? NetworkMode::SERVER : NetworkMode::HOST;
-    networkMode = NetworkMode::HOST;
+    global.platform.ParseRunArgs(argc, argv);
 
     METADOT_NEW(C, terminal_log, ImTerm::terminal<terminal_commands>, cmd_struct);
 
-    MetaEngine::ResourceMan::init();//init location of /res
+    MetaEngine::Resource::init();
 
     METADOT_INFO("Starting game...");
 
@@ -180,7 +116,7 @@ int Game::init(int argc, char *argv[]) {
     global.GameDir = MetaEngine::GameDir(METADOT_RESLOC("saves/"));
 
     Networking::init();
-    if (networkMode == NetworkMode::SERVER) {
+    if (Settings::networkMode == NetworkMode::SERVER) {
         int port = Settings::server_port;
         if (argc >= 3) {
             port = atoi(argv[2]);
@@ -224,7 +160,7 @@ int Game::init(int argc, char *argv[]) {
     // std::future<void> initThread;
     // ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(1);
     // std::future<void> worldInitThread;
-    // if (networkMode != NetworkMode::SERVER) {
+    // if (Settings::networkMode != NetworkMode::SERVER) {
 
     //     // init fmod
     //     initThread = initThreadPool->push([&](int id) {
@@ -288,7 +224,7 @@ int Game::init(int argc, char *argv[]) {
     METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 #endif
 
-    if (networkMode != NetworkMode::SERVER) {
+    if (Settings::networkMode != NetworkMode::SERVER) {
         // create the window
         METADOT_INFO("Creating game window...");
 
@@ -341,7 +277,7 @@ int Game::init(int argc, char *argv[]) {
         }
 
 
-        if (networkMode != NetworkMode::SERVER) {
+        if (Settings::networkMode != NetworkMode::SERVER) {
 
             font64 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 64);
             font16 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
@@ -416,7 +352,7 @@ int Game::init(int argc, char *argv[]) {
     //     fuckme();
     // });
 
-    if (networkMode != NetworkMode::SERVER) {
+    if (Settings::networkMode != NetworkMode::SERVER) {
         // init the background
 
         METADOT_INFO("Loading backgrounds...");
@@ -464,10 +400,10 @@ int Game::init(int argc, char *argv[]) {
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
             RenderTarget_.target,
             &global.audioEngine,
-            networkMode);
+            Settings::networkMode);
 
 
-    if (networkMode != NetworkMode::SERVER) {
+    if (Settings::networkMode != NetworkMode::SERVER) {
         // set up main menu ui
 
 
@@ -501,7 +437,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW(C, rotateVectorsPool, ctpl::thread_pool, 3);
 
 
-    if (networkMode != NetworkMode::SERVER) {
+    if (Settings::networkMode != NetworkMode::SERVER) {
         // load shaders
         loadShaders();
     }
@@ -938,7 +874,7 @@ int Game::run(int argc, char *argv[]) {
         game_timestate.now = UTime::millis();
         game_timestate.deltaTime = game_timestate.now - game_timestate.lastTime;
 
-        if (networkMode != NetworkMode::SERVER) {
+        if (Settings::networkMode != NetworkMode::SERVER) {
 
             // handle window events
 
@@ -1387,13 +1323,13 @@ int Game::run(int argc, char *argv[]) {
         }
 
 
-        if (networkMode == NetworkMode::SERVER) {
+        if (Settings::networkMode == NetworkMode::SERVER) {
             global.server->tick();
-        } else if (networkMode == NetworkMode::CLIENT) {
+        } else if (Settings::networkMode == NetworkMode::CLIENT) {
             global.client->tick();
         }
 
-        if (networkMode != NetworkMode::SERVER) {
+        if (Settings::networkMode != NetworkMode::SERVER) {
             //if(Settings::tick_world)
             updateFrameEarly();
             // for (MetaEngine::Module *l: *m_ModuleStack) {
@@ -1403,20 +1339,20 @@ int Game::run(int argc, char *argv[]) {
         }
 
         while (game_timestate.now - game_timestate.lastTick > game_timestate.mspt) {
-            if (Settings::tick_world && networkMode != NetworkMode::CLIENT)
+            if (Settings::tick_world && Settings::networkMode != NetworkMode::CLIENT)
                 tick();
             RenderTarget_.target = RenderTarget_.realTarget;
             game_timestate.lastTick = game_timestate.now;
             tickTime++;
         }
 
-        if (networkMode != NetworkMode::SERVER) {
+        if (Settings::networkMode != NetworkMode::SERVER) {
             if (Settings::tick_world)
                 updateFrameLate();
         }
 
 
-        if (networkMode != NetworkMode::SERVER) {
+        if (Settings::networkMode != NetworkMode::SERVER) {
             // render
 
 
@@ -1622,7 +1558,7 @@ int Game::run(int argc, char *argv[]) {
         if (game_timestate.now - lastFPS >= 1000) {
             lastFPS = game_timestate.now;
             //METADOT_INFO("{0:d} FPS", frames);
-            if (networkMode == NetworkMode::SERVER) {
+            if (Settings::networkMode == NetworkMode::SERVER) {
                 //METADOT_BUG("{0:d} peers connected.", server->server->connectedPeers);
             }
             game_timestate.fps = frames;
@@ -1705,7 +1641,7 @@ exit:
         world = nullptr;
     }
 
-    if (networkMode != NetworkMode::SERVER) {
+    if (Settings::networkMode != NetworkMode::SERVER) {
         SDL_DestroyWindow(window);
         SDL_Quit();
         global.audioEngine.Shutdown();
@@ -4108,7 +4044,7 @@ void Game::quitToMainMenu() {
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
             RenderTarget_.target,
             &global.audioEngine,
-            networkMode, generator);
+            Settings::networkMode, generator);
 
 
     METADOT_INFO("Queueing chunk loading...");
@@ -4200,4 +4136,11 @@ int Game::getAimSolidSurface(int dist) {
     });
 
     return startInd;
+}
+
+void Game::updateMaterialSounds() {
+    UInt16 waterCt = std::min(movingTiles[Materials::WATER.id], (UInt16) 5000);
+    float water = (float) waterCt / 3000;
+    //METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
+    global.audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
 }

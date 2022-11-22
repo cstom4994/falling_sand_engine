@@ -136,8 +136,8 @@ end
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
-    "Source", "Source/Engine", "Source/Libs/lua/lua", "Source/Libs",
-    "Source/Libs/imgui", "Source/Libs/json/include", "Source/Libs/fmt/include",
+    "Source", "Source/Engine", "Source/Libs", "Source/Libs/imgui",
+    "Source/Libs/json/include", "Source/Libs/fmt/include",
     "Source/Libs/box2d/inc", "Source/Libs/glew"
 }
 

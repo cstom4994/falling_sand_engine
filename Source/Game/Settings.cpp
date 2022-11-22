@@ -43,5 +43,6 @@ bool SettingsBase::hd_objects = false;
 
 int SettingsBase::hd_objects_size = 3;
 
+int SettingsBase::networkMode = -1;
 std::string SettingsBase::server_ip = "127.0.0.1";
 int SettingsBase::server_port = 25555;

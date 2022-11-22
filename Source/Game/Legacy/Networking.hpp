@@ -7,6 +7,7 @@
 #include <functional>
 
 enum NetworkMode {
+    ERROR = -1,
     HOST = 0,
     CLIENT = 1,
     SERVER = 2

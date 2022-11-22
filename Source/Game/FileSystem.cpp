@@ -8,10 +8,10 @@
 
 namespace MetaEngine {
 
-    std::string ResourceMan::s_ProjectRootPath;
-    std::string ResourceMan::s_DataPath;
+    std::string Resource::s_ProjectRootPath;
+    std::string Resource::s_DataPath;
 
-    void ResourceMan::init() {
+    void Resource::init() {
         auto currentDir = std::filesystem::path(FUtil::getExecutableFolderPath());
         for (int i = 0; i < 3; ++i) {
             currentDir = currentDir.parent_path();
@@ -25,20 +25,20 @@ namespace MetaEngine {
         METADOT_ERROR("Runtime folder detect failed");
     }
 
-    const std::string &ResourceMan::getDataPath() {
+    const std::string &Resource::getDataPath() {
         return s_DataPath;
     }
 
-    std::string ResourceMan::getResourceLoc(std::string_view resPath) {
+    std::string Resource::getResourceLoc(std::string_view resPath) {
         if (s_ProjectRootPath.empty()) {
-            std::cout << "try to load resource when ResourceMan is unloaded (" << resPath << ")" << std::endl;
+            std::cout << "Try to load resource when ResourceLoc is unloaded (" << resPath << ")" << std::endl;
         }
         if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
             return s_ProjectRootPath + (s_ProjectRootPath.empty() ? "" : "/") + std::string(resPath);
         return std::string(resPath);
     }
 
-    std::string ResourceMan::getLocalPath(std::string_view resPath) {
+    std::string Resource::getLocalPath(std::string_view resPath) {
         auto res = std::string(resPath);
         FUtil::cleanPathString(res);
         size_t offset = 0;
