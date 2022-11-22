@@ -4,6 +4,12 @@
 
 #include "SDLWrapper.hpp"
 
+enum DisplayMode {
+    WINDOWED,
+    BORDERLESS,
+    FULLSCREEN
+};
+
 struct Platform
 {
     C_Window *window = nullptr;
@@ -13,4 +19,6 @@ struct Platform
 
     int ParseRunArgs(int argc, char *argv[]);
     int InitWindow();
+    void SetDisplayMode(DisplayMode mode);
+    void HandleWindowSizeChange(int newWidth, int newHeight);
 };

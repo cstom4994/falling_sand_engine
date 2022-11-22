@@ -179,3 +179,72 @@ int Platform::InitWindow() {
 
     return 0;
 }
+
+void Platform::SetDisplayMode(DisplayMode mode) {
+    switch (mode) {
+        case DisplayMode::WINDOWED:
+            SDL_SetWindowDisplayMode(global.platform.window, NULL);
+            SDL_SetWindowFullscreen(global.platform.window, 0);
+            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 0;
+            break;
+        case DisplayMode::BORDERLESS:
+            SDL_SetWindowDisplayMode(global.platform.window, NULL);
+            SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 1;
+            break;
+        case DisplayMode::FULLSCREEN:
+            SDL_MaximizeWindow(global.platform.window);
+
+            int w;
+            int h;
+            SDL_GetWindowSize(global.platform.window, &w, &h);
+
+            SDL_DisplayMode disp;
+            SDL_GetWindowDisplayMode(global.platform.window, &disp);
+
+            disp.w = w;
+            disp.h = h;
+
+            SDL_SetWindowDisplayMode(global.platform.window, &disp);
+            SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN);
+            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 2;
+            break;
+    }
+
+    int w;
+    int h;
+    SDL_GetWindowSize(global.platform.window, &w, &h);
+
+    METAENGINE_Render_SetWindowResolution(w, h);
+    METAENGINE_Render_ResetProjection(global.game->RenderTarget_.realTarget);
+
+    HandleWindowSizeChange(w, h);
+}
+
+void Platform::HandleWindowSizeChange(int newWidth, int newHeight) {
+    SDL_ShowCursor(Settings::draw_cursor ? SDL_ENABLE : SDL_DISABLE);
+    //ImGui::SetMouseCursor(Settings::draw_cursor ? ImGuiMouseCursor_Arrow : ImGuiMouseCursor_None);
+
+    int prevWidth = global.platform.WIDTH;
+    int prevHeight = global.platform.HEIGHT;
+
+    global.platform.WIDTH = newWidth;
+    global.platform.HEIGHT = newHeight;
+
+    global.game->createTexture();
+
+    global.game->accLoadX -= (newWidth - prevWidth) / 2.0f / global.game->scale;
+    global.game->accLoadY -= (newHeight - prevHeight) / 2.0f / global.game->scale;
+
+    METADOT_INFO("Ticking chunk...");
+    global.game->tickChunkLoading();
+    METADOT_INFO("Ticking chunk done");
+
+    for (int x = 0; x < global.game->getWorld()->width; x++) {
+        for (int y = 0; y < global.game->getWorld()->height; y++) {
+            global.game->getWorld()->dirty[x + y * global.game->getWorld()->width] = true;
+            global.game->getWorld()->layer2Dirty[x + y * global.game->getWorld()->width] = true;
+            global.game->getWorld()->backgroundDirty[x + y * global.game->getWorld()->width] = true;
+        }
+    }
+}

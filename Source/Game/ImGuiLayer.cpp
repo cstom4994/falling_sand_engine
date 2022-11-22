@@ -306,13 +306,13 @@ namespace MetaEngine::InternalGUI {
 
                     switch (n) {
                         case 0:
-                            game->setDisplayMode(DisplayMode::WINDOWED);
+                            global.platform.SetDisplayMode(DisplayMode::WINDOWED);
                             break;
                         case 1:
-                            game->setDisplayMode(DisplayMode::BORDERLESS);
+                            global.platform.SetDisplayMode(DisplayMode::BORDERLESS);
                             break;
                         case 2:
-                            game->setDisplayMode(DisplayMode::FULLSCREEN);
+                            global.platform.SetDisplayMode(DisplayMode::FULLSCREEN);
                             break;
                     }
 

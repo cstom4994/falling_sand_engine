@@ -45,12 +45,6 @@ enum GameState {
     INGAME
 };
 
-enum DisplayMode {
-    WINDOWED,
-    BORDERLESS,
-    FULLSCREEN
-};
-
 enum WindowFlashAction {
     START,
     START_COUNT,
@@ -82,7 +76,6 @@ private:
     custom_command_struct cmd_struct;
     ImTerm::terminal<terminal_commands> *terminal_log;
 
-    int scale = 4;
 
     int ofsX = 0;
     int ofsY = 0;
@@ -118,8 +111,6 @@ private:
 
     World *world = nullptr;
 
-    float accLoadX = 0;
-    float accLoadY = 0;
 
     int mx = 0;
     int my = 0;
@@ -151,6 +142,10 @@ public:
     bool running = true;
 
     //HostData *data;
+
+    int scale = 4;
+    float accLoadX = 0;
+    float accLoadY = 0;
 
     long long fadeInStart = 0;
     long long fadeInLength = 0;
@@ -229,11 +224,10 @@ public:
     }
 
     void updateMaterialSounds();
-    void setDisplayMode(DisplayMode mode);
     void setVSync(bool vsync);
     void setMinimizeOnLostFocus(bool minimize);
     void setWindowFlash(WindowFlashAction action, int count, int period);
-    void handleWindowSizeChange(int newWidth, int newHeight);
+
     void createTexture();
 
     Game(int argc, char *argv[]);

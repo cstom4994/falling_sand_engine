@@ -255,11 +255,11 @@ int Game::init(int argc, char *argv[]) {
         std::string displayMode = "windowed";
 
         if (displayMode == "windowed") {
-            setDisplayMode(DisplayMode::WINDOWED);
+            global.platform.SetDisplayMode(DisplayMode::WINDOWED);
         } else if (displayMode == "borderless") {
-            setDisplayMode(DisplayMode::BORDERLESS);
+            global.platform.SetDisplayMode(DisplayMode::BORDERLESS);
         } else if (displayMode == "fullscreen") {
-            setDisplayMode(DisplayMode::FULLSCREEN);
+            global.platform.SetDisplayMode(DisplayMode::FULLSCREEN);
         }
 
         setVSync(true);
@@ -286,34 +286,6 @@ int Game::init(int argc, char *argv[]) {
     return this->run(argc, argv);
 }
 
-void Game::handleWindowSizeChange(int newWidth, int newHeight) {
-
-    SDL_ShowCursor(Settings::draw_cursor ? SDL_ENABLE : SDL_DISABLE);
-    //ImGui::SetMouseCursor(Settings::draw_cursor ? ImGuiMouseCursor_Arrow : ImGuiMouseCursor_None);
-
-    int prevWidth = global.platform.WIDTH;
-    int prevHeight = global.platform.HEIGHT;
-
-    global.platform.WIDTH = newWidth;
-    global.platform.HEIGHT = newHeight;
-
-    createTexture();
-
-    accLoadX -= (newWidth - prevWidth) / 2.0f / scale;
-    accLoadY -= (newHeight - prevHeight) / 2.0f / scale;
-
-    METADOT_INFO("Ticking chunk...");
-    tickChunkLoading();
-    METADOT_INFO("Ticking chunk done");
-
-    for (int x = 0; x < world->width; x++) {
-        for (int y = 0; y < world->height; y++) {
-            world->dirty[x + y * world->width] = true;
-            world->layer2Dirty[x + y * world->width] = true;
-            world->backgroundDirty[x + y * world->width] = true;
-        }
-    }
-}
 
 void Game::createTexture() {
 
@@ -583,47 +555,6 @@ void Game::setWindowFlash(WindowFlashAction action, int count, int period) {
 #endif
 }
 
-void Game::setDisplayMode(DisplayMode mode) {
-    switch (mode) {
-        case DisplayMode::WINDOWED:
-            SDL_SetWindowDisplayMode(global.platform.window, NULL);
-            SDL_SetWindowFullscreen(global.platform.window, 0);
-            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 0;
-            break;
-        case DisplayMode::BORDERLESS:
-            SDL_SetWindowDisplayMode(global.platform.window, NULL);
-            SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 1;
-            break;
-        case DisplayMode::FULLSCREEN:
-            SDL_MaximizeWindow(global.platform.window);
-
-            int w;
-            int h;
-            SDL_GetWindowSize(global.platform.window, &w, &h);
-
-            SDL_DisplayMode disp;
-            SDL_GetWindowDisplayMode(global.platform.window, &disp);
-
-            disp.w = w;
-            disp.h = h;
-
-            SDL_SetWindowDisplayMode(global.platform.window, &disp);
-            SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN);
-            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 2;
-            break;
-    }
-
-    int w;
-    int h;
-    SDL_GetWindowSize(global.platform.window, &w, &h);
-
-    METAENGINE_Render_SetWindowResolution(w, h);
-    METAENGINE_Render_ResetProjection(RenderTarget_.realTarget);
-
-    handleWindowSizeChange(w, h);
-}
-
 void Game::setVSync(bool vsync) {
     SDL_GL_SetSwapInterval(vsync ? 1 : 0);
     MetaEngine::InternalGUI::OptionsUI::vsync = vsync;
@@ -712,7 +643,7 @@ int Game::run(int argc, char *argv[]) {
                         //METADOT_INFO("Resizing window...");
                         METAENGINE_Render_SetWindowResolution(windowEvent.window.data1, windowEvent.window.data2);
                         METAENGINE_Render_ResetProjection(RenderTarget_.realTarget);
-                        handleWindowSizeChange(windowEvent.window.data1, windowEvent.window.data2);
+                        global.platform.HandleWindowSizeChange(windowEvent.window.data1, windowEvent.window.data2);
                     }
                 }
 
