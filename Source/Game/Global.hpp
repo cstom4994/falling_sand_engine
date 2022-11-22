@@ -7,6 +7,7 @@
 #include "Engine/Platforms/Platform.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/Legacy/Shaders.hpp"
 
 #include <map>
 
@@ -28,6 +29,7 @@ struct Global
 
     MetaEngine::ImGuiLayer *ImGuiLayer = nullptr;
 
+    ShaderWorker shaderworker;
     CAudioEngine audioEngine;
     MetaEngine::GameDir GameDir;
     Platform platform;

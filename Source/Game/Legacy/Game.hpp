@@ -228,7 +228,6 @@ public:
         if (stateal.has_value()) { this->stateAfterLoad = stateal.value(); }
     }
 
-    void loadShaders();
     void updateMaterialSounds();
     void setDisplayMode(DisplayMode mode);
     void setVSync(bool vsync);

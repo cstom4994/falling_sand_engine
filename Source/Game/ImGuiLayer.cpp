@@ -840,7 +840,7 @@ namespace MetaEngine::InternalGUI {
 
             if (ImGui::TreeNode(U8("GLSL方法"))) {
                 if (ImGui::Button(U8("重新加载GLSL"))) {
-                    game->loadShaders();
+                    global.shaderworker.LoadShaders();
                 }
                 ImGui::Checkbox(U8("绘制GLSL"), &Settings::draw_shaders);
 

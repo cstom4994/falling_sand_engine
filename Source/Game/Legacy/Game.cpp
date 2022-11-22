@@ -23,7 +23,6 @@
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/Const.hpp"
 #include "Game/Core.hpp"
-#include "Game/Legacy/Shaders.hpp"
 #include "Game/Macros.hpp"
 
 #include "Game/FileSystem.hpp"
@@ -52,13 +51,6 @@ const char *logo = R"(
                                              
 )";
 
-WaterShader *waterShader = nullptr;
-WaterFlowPassShader *waterFlowPassShader = nullptr;
-NewLightingShader *newLightingShader = nullptr;
-float newLightingShader_insideDes = 0.0f;
-float newLightingShader_insideCur = 0.0f;
-FireShader *fireShader = nullptr;
-Fire2Shader *fire2Shader = nullptr;
 
 extern void fuckme();
 
@@ -287,25 +279,11 @@ int Game::init(int argc, char *argv[]) {
 
     if (Settings::networkMode != NetworkMode::SERVER) {
         // load shaders
-        loadShaders();
+        global.shaderworker.LoadShaders();
     }
 
 
     return this->run(argc, argv);
-}
-
-void Game::loadShaders() {
-    if (waterShader) METADOT_DELETE(C, waterShader, WaterShader);
-    if (waterFlowPassShader) METADOT_DELETE(C, waterFlowPassShader, WaterFlowPassShader);
-    if (newLightingShader) METADOT_DELETE(C, newLightingShader, NewLightingShader);
-    if (fireShader) METADOT_DELETE(C, fireShader, FireShader);
-    if (fire2Shader) METADOT_DELETE(C, fire2Shader, Fire2Shader);
-
-    METADOT_NEW(C, waterShader, WaterShader);
-    METADOT_NEW(C, waterFlowPassShader, WaterFlowPassShader);
-    METADOT_NEW(C, newLightingShader, NewLightingShader);
-    METADOT_NEW(C, fireShader, FireShader);
-    METADOT_NEW(C, fire2Shader, Fire2Shader);
 }
 
 void Game::handleWindowSizeChange(int newWidth, int newHeight) {
@@ -2413,7 +2391,7 @@ void Game::tick() {
                     &TexturePack_.pixelsFlow[0],
                     world->width * 4);
 
-            waterFlowPassShader->dirty = true;
+            global.shaderworker.waterFlowPassShader->dirty = true;
         }
 
         if (hadFire) {
@@ -3211,20 +3189,20 @@ void Game::renderLate() {
 
         if (Settings::draw_shaders) {
 
-            if (waterFlowPassShader->dirty && Settings::water_showFlow) {
+            if (global.shaderworker.waterFlowPassShader->dirty && Settings::water_showFlow) {
 
-                waterFlowPassShader->activate();
-                waterFlowPassShader->update(world->width, world->height);
+                global.shaderworker.waterFlowPassShader->activate();
+                global.shaderworker.waterFlowPassShader->update(world->width, world->height);
                 METAENGINE_Render_SetBlendMode(TexturePack_.textureFlow, METAENGINE_Render_BLEND_SET);
                 METAENGINE_Render_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target, NULL);
 
 
-                waterFlowPassShader->dirty = false;
+                global.shaderworker.waterFlowPassShader->dirty = false;
             }
 
-            waterShader->activate();
+            global.shaderworker.waterShader->activate();
             float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
-            waterShader->update(t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
+            global.shaderworker.waterShader->update(t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
         }
 
         RenderTarget_.target = RenderTarget_.realTarget;
@@ -3259,7 +3237,7 @@ void Game::renderLate() {
         METAENGINE_Render_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
 
-        if (Settings::draw_shaders) newLightingShader->activate();
+        if (Settings::draw_shaders) global.shaderworker.newLightingShader->activate();
 
         // I use this to only rerender the lighting when a parameter changes or N times per second anyway
         // Doing this massively reduces the GPU load of the shader
@@ -3284,12 +3262,12 @@ void Game::renderLate() {
                 lightTy = lmsy / (float) world->height;
             }
 
-            if (newLightingShader->lastLx != lightTx || newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
-            newLightingShader->update(TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
-            if (newLightingShader->lastQuality != Settings::lightingQuality) {
+            if (global.shaderworker.newLightingShader->lastLx != lightTx || global.shaderworker.newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
+            global.shaderworker.newLightingShader->update(TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
+            if (global.shaderworker.newLightingShader->lastQuality != Settings::lightingQuality) {
                 needToRerenderLighting = true;
             }
-            newLightingShader->setQuality(Settings::lightingQuality);
+            global.shaderworker.newLightingShader->setQuality(Settings::lightingQuality);
 
             int nBg = 0;
             int range = 64;
@@ -3301,22 +3279,22 @@ void Game::renderLate() {
                 }
             }
 
-            newLightingShader_insideDes = std::min(std::max(0.0f, (float) nBg / ((range * 2) * (range * 2))), 1.0f);
-            newLightingShader_insideCur += (newLightingShader_insideDes - newLightingShader_insideCur) / 2.0f * (game_timestate.deltaTime / 1000.0f);
+            global.shaderworker.newLightingShader_insideDes = std::min(std::max(0.0f, (float) nBg / ((range * 2) * (range * 2))), 1.0f);
+            global.shaderworker.newLightingShader_insideCur += (global.shaderworker.newLightingShader_insideDes - global.shaderworker.newLightingShader_insideCur) / 2.0f * (game_timestate.deltaTime / 1000.0f);
 
-            float ins = newLightingShader_insideCur < 0.05 ? 0.0 : newLightingShader_insideCur;
-            if (newLightingShader->lastInside != ins) needToRerenderLighting = true;
-            newLightingShader->setInside(ins);
-            newLightingShader->setBounds(world->tickZone.x * Settings::hd_objects_size, world->tickZone.y * Settings::hd_objects_size, (world->tickZone.x + world->tickZone.w) * Settings::hd_objects_size, (world->tickZone.y + world->tickZone.h) * Settings::hd_objects_size);
+            float ins = global.shaderworker.newLightingShader_insideCur < 0.05 ? 0.0 : global.shaderworker.newLightingShader_insideCur;
+            if (global.shaderworker.newLightingShader->lastInside != ins) needToRerenderLighting = true;
+            global.shaderworker.newLightingShader->setInside(ins);
+            global.shaderworker.newLightingShader->setBounds(world->tickZone.x * Settings::hd_objects_size, world->tickZone.y * Settings::hd_objects_size, (world->tickZone.x + world->tickZone.w) * Settings::hd_objects_size, (world->tickZone.y + world->tickZone.h) * Settings::hd_objects_size);
 
-            if (newLightingShader->lastSimpleMode != Settings::simpleLighting) needToRerenderLighting = true;
-            newLightingShader->setSimpleMode(Settings::simpleLighting);
+            if (global.shaderworker.newLightingShader->lastSimpleMode != Settings::simpleLighting) needToRerenderLighting = true;
+            global.shaderworker.newLightingShader->setSimpleMode(Settings::simpleLighting);
 
-            if (newLightingShader->lastEmissionEnabled != Settings::lightingEmission) needToRerenderLighting = true;
-            newLightingShader->setEmissionEnabled(Settings::lightingEmission);
+            if (global.shaderworker.newLightingShader->lastEmissionEnabled != Settings::lightingEmission) needToRerenderLighting = true;
+            global.shaderworker.newLightingShader->setEmissionEnabled(Settings::lightingEmission);
 
-            if (newLightingShader->lastDitheringEnabled != Settings::lightingDithering) needToRerenderLighting = true;
-            newLightingShader->setDitheringEnabled(Settings::lightingDithering);
+            if (global.shaderworker.newLightingShader->lastDitheringEnabled != Settings::lightingDithering) needToRerenderLighting = true;
+            global.shaderworker.newLightingShader->setDitheringEnabled(Settings::lightingDithering);
         }
 
         if (Settings::draw_shaders && needToRerenderLighting) {
@@ -3337,14 +3315,14 @@ void Game::renderLate() {
         if (Settings::draw_shaders) {
             METAENGINE_Render_Clear(TexturePack_.texture2Fire->target);
 
-            fireShader->activate();
-            fireShader->update(TexturePack_.textureFire);
+            global.shaderworker.fireShader->activate();
+            global.shaderworker.fireShader->update(TexturePack_.textureFire);
             METAENGINE_Render_BlitRect(TexturePack_.textureFire, NULL, TexturePack_.texture2Fire->target, NULL);
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
 
 
-            fire2Shader->activate();
-            fire2Shader->update(TexturePack_.texture2Fire);
+            global.shaderworker.fire2Shader->activate();
+            global.shaderworker.fire2Shader->update(TexturePack_.texture2Fire);
             METAENGINE_Render_BlitRect(TexturePack_.texture2Fire, NULL, RenderTarget_.target, &r1);
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
         }

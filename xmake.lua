@@ -119,8 +119,6 @@ elseif (is_os("macosx")) then
 
     add_cxflags("-fPIC")
 
-    add_cxflags("-lpthread")
-
     -- add_mxflags("-fno-objc-arc", {force = true})
     -- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
