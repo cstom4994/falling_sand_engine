@@ -9,7 +9,7 @@
 #include "Game/FileSystem.hpp"
 
 #include "Memory/Memory.hpp"
-#include "Render/SDLWrapper.hpp"
+#include "Platforms/SDLWrapper.hpp"
 #include "external/stb_image.h"
 
 C_Surface *Textures::testTexture = nullptr;

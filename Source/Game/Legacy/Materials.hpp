@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 
 #include "Libs/veque.hpp"
 #include "Game/Core.hpp"

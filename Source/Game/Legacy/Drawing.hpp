@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
 #include "Game/Core.hpp"
 
