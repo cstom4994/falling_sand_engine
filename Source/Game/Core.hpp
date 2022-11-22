@@ -30,7 +30,7 @@
 #include <vector>
 
 #include "Libs/VisitStruct.hpp"
-#include "Libs/loguru.hpp"
+#include "Game/Logging.hpp"
 
 #include <nlohmann/json.hpp>
 

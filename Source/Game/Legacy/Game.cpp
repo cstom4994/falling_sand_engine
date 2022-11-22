@@ -86,7 +86,7 @@ Game::Game(int argc, char *argv[]) {
 
     // init console & print title
     std::cout << logo << std::endl;
-    loguru::init(argc, argv);
+    Logging::init(argc, argv);
 
     //data = new HostData;
 }
