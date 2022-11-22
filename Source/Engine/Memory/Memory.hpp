@@ -56,12 +56,22 @@
     METADOT_NEW(_field, _ptr, _class, __VA_ARGS__)
 
 
-#define METADOT_DELETE(_field, _ptr, _class_name) \
-    {                                             \
-        _ptr->~_class_name();                     \
-        GC::_field->Free(_ptr);                   \
-        GC::_field##_Count--;                     \
-        REMOVEDEBUGMAP(_class_name);              \
+#define METADOT_DELETE_RAW(_field, _ptr, _class_name, _class) \
+    {                                                         \
+        _ptr->~_class_name();                                 \
+        GC::_field->Free(_ptr);                               \
+        GC::_field##_Count--;                                 \
+        REMOVEDEBUGMAP(_class);                               \
+    }
+
+#define METADOT_DELETE(_field, _ptr, _class_name)                   \
+    {                                                               \
+        METADOT_DELETE_RAW(_field, _ptr, _class_name, _class_name); \
+    }
+
+#define METADOT_DELETE_EX(_field, _ptr, _class_name, _class)   \
+    {                                                          \
+        METADOT_DELETE_RAW(_field, _ptr, _class_name, _class); \
     }
 
 #define GCField_R(_c, _n) \

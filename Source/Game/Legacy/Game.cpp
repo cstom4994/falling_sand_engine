@@ -13,6 +13,7 @@
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Textures.hpp"
 #include "MaterialTestGenerator.cpp"
+#include "UserInterface/IMGUI/ImGuiTerminal.hpp"
 #include "imgui/imgui.h"
 
 #include "Game/Settings.hpp"
@@ -1378,20 +1379,20 @@ exit:
     METAENGINE_Scripting_End();
 
     global.ImGuiLayer->onDetach();
-    METADOT_DELETE(C, global.ImGuiLayer, ImGuiLayer);
+    METADOT_DELETE_EX(C, global.ImGuiLayer, ImGuiLayer, MetaEngine::ImGuiLayer);
 
     METADOT_DELETE(C, objectDelete, UInt8);
     METADOT_DELETE(C, backgrounds, Backgrounds);
 
-    METADOT_DELETE(C, terminal_log, terminal);
+    METADOT_DELETE_EX(C, terminal_log, terminal, ImTerm::terminal<terminal_commands>);
 
     running = false;
 
     METADOT_DELETE(C, b2DebugDraw, b2DebugDraw_impl);
     METADOT_DELETE(C, movingTiles, UInt16);
 
-    METADOT_DELETE(C, updateDirtyPool, thread_pool);
-    METADOT_DELETE(C, rotateVectorsPool, thread_pool);
+    METADOT_DELETE_EX(C, updateDirtyPool, thread_pool, ctpl::thread_pool);
+    METADOT_DELETE_EX(C, rotateVectorsPool, thread_pool, ctpl::thread_pool);
 
     if (world) {
         METADOT_DELETE(C, world, World);

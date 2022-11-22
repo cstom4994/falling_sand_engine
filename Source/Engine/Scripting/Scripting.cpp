@@ -48,7 +48,7 @@ void METAENGINE_Scripting_End() {
 
     auto end = MuCore->callFunction("end");
 
-    METADOT_DELETE(C, MuCore, MuScriptInterpreter);
+    METADOT_DELETE_EX(C, MuCore, MuScriptInterpreter, MuScript::MuScriptInterpreter);
 }
 
 void METAENGINE_Scripting_Update() {
