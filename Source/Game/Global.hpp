@@ -4,15 +4,19 @@
 
 #include "AudioEngine/AudioEngine.h"
 #include "Engine/Meta/Refl.hpp"
+#include "Engine/Platforms/Platform.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/FileSystem.hpp"
-#include "Engine/Platforms/Platform.hpp"
 
 #include <map>
 
 class Game;
 class Client;
 class Server;
+
+namespace MetaEngine {
+    class ImGuiLayer;
+}
 
 #define RegisterFunctions(name, func)              \
     MetaEngine::any_function func_log_info{&func}; \
@@ -21,6 +25,8 @@ class Server;
 struct Global
 {
     Game *game = nullptr;
+
+    MetaEngine::ImGuiLayer *ImGuiLayer = nullptr;
 
     CAudioEngine audioEngine;
     MetaEngine::GameDir GameDir;

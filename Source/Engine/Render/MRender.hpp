@@ -2,7 +2,7 @@
 
 #include "Game/Core.hpp"
 
-#include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 
 namespace MetaEngine {
     typedef class Color {

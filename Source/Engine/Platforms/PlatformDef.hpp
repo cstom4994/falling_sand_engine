@@ -6,6 +6,11 @@
 #include <Windows.h>
 #include <io.h>
 
+#ifdef _WIN32
+#include <SDL_syswm.h>
+#include <shobjidl.h>
+#endif
+
 #undef min
 #undef max
 

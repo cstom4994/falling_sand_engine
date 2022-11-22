@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Engine/AudioEngine/AudioEngine.h"
-#include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Libs/ImGui/TextEditor.h"

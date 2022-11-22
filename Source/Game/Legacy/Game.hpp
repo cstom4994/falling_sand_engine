@@ -22,18 +22,17 @@
 #endif
 #include "Background.hpp"
 #include "Controls.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 #include "Game/Settings.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
-
 #include "Libs/sparsehash/sparse_hash_map.h"
-
-#include "Engine/Render/SDLWrapper.hpp"
+#include "box2d/b2_distance_joint.h"
 
 #include <algorithm>
-#include <box2d/b2_distance_joint.h>
 #include <chrono>
 #include <codecvt>
+#include <functional>
 #include <iostream>
 #include <thread>
 #include <unordered_map>
@@ -106,8 +105,6 @@ private:
     STBTTF_Font *font16;
     STBTTF_Font *font14;
 
-    C_Window *window = nullptr;
-
     b2DebugDraw_impl *b2DebugDraw;
 
     int ent_prevLoadZoneX = 0;
@@ -150,13 +147,7 @@ private:
     DrawTextParams_t dt_frameGraph[5];
     DrawTextParams_t dt_loading;
 
-private:
-    MetaEngine::ImGuiLayer *m_ImGuiLayer = nullptr;
-
 public:
-    int WIDTH = 1024;
-    int HEIGHT = 720;
-
     bool running = true;
 
     //HostData *data;
@@ -228,7 +219,6 @@ public:
     } TexturePack_;
 
 public:
-    MetaEngine::ImGuiLayer *getImGuiLayer() const { return m_ImGuiLayer; }
     World *getWorld() { return world; }
     void setWorld(World *ptr) { world = ptr; }
     GameTimeState &getGameTimeState() { return game_timestate; }

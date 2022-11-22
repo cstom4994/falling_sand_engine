@@ -124,7 +124,7 @@ namespace MetaEngine::InternalGUI {
         }
 
         ImGui::SetNextWindowSize(ImVec2(400, 300));
-        ImGui::SetNextWindowPos(game->getImGuiLayer()->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(game->WIDTH / 2 - 200, game->HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
@@ -500,7 +500,7 @@ namespace MetaEngine::InternalGUI {
         }
 
         ImGui::SetNextWindowSize(ImVec2(400, 350));
-        ImGui::SetNextWindowPos(game->getImGuiLayer()->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(game->WIDTH / 2 - 400 / 2, game->HEIGHT / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 400 / 2, global.platform.HEIGHT / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
@@ -587,7 +587,7 @@ namespace MetaEngine::InternalGUI {
         if (!visible) return;
 
         ImGui::SetNextWindowSize(ImVec2(400, 425));
-        ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 200, game->HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
@@ -729,7 +729,7 @@ namespace MetaEngine::InternalGUI {
 
     void MainMenuUI::DrawMultiplayer(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 500));
-        ImGui::SetNextWindowPos(ImVec2(game->WIDTH / 2 - 200, game->HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;

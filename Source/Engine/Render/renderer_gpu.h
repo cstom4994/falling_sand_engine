@@ -6,7 +6,7 @@
 #endif
 #include <cmath>// Must be included before SDL.h, otherwise both try to define M_PI and we get a warning
 
-#include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 
 #include <cstdarg>
 #include <cstdio>

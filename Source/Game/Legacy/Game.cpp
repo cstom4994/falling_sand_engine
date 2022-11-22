@@ -12,8 +12,8 @@
 #include "Game/Global.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Textures.hpp"
-#include "ImGui/imgui.h"
 #include "MaterialTestGenerator.cpp"
+#include "imgui/imgui.h"
 
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
@@ -41,10 +41,6 @@
 
 #include "Game/InEngine.h"
 
-#ifdef _WIN32
-#include <SDL_syswm.h>
-#include <shobjidl.h>
-#endif
 
 const char *logo = R"(
       __  __      _        _____        _   
@@ -122,7 +118,7 @@ int Game::init(int argc, char *argv[]) {
             port = atoi(argv[2]);
         }
         global.server = Server::start(port);
-        SDL_SetWindowTitle(window, win_title_server.c_str());
+        SDL_SetWindowTitle(global.platform.window, win_title_server.c_str());
 
         /*while (true) {
             METADOT_BUG("[SERVER] tick {0:d}", server->server->connectedPeers);
@@ -153,13 +149,12 @@ int Game::init(int argc, char *argv[]) {
         //}
         //return 0;
 
-        SDL_SetWindowTitle(window, win_title_client.c_str());
+        SDL_SetWindowTitle(global.platform.window, win_title_client.c_str());
     }
 
-    // ctpl::thread_pool *initThreadPool = new ctpl::thread_pool(1);
-    // std::future<void> initThread;
-    // ctpl::thread_pool *worldInitThreadPool = new ctpl::thread_pool(1);
-    // std::future<void> worldInitThread;
+
+    global.platform.InitWindow();
+
     // if (Settings::networkMode != NetworkMode::SERVER) {
 
     //     // init fmod
@@ -191,153 +186,6 @@ int Game::init(int argc, char *argv[]) {
     //     });
     // }
 
-    // std::vector<std::future<void>> results = {};
-    // auto testpool = new ctpl::thread_pool(1);
-
-    // results.push_back(testpool->push([](int id) {
-    //     MountPhysFS(METADOT_RESLOC_STR("data/fuckme.zip"), "fuckme");
-    // }));
-
-    // for (auto &v: results) {
-    //     v.get();
-    // }
-
-    // char* fu = LoadFileTextFromPhysFS("fuckme/fucker.txt");
-
-    // METADOT_INFO("i'm {0}", fu);
-
-    // init sdl
-    METADOT_INFO("Initializing SDL...");
-    UInt32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO;
-    if (SDL_Init(sdl_init_flags) < 0) {
-        METADOT_ERROR("SDL_Init failed: {0}", SDL_GetError());
-        return EXIT_FAILURE;
-    }
-
-    SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", SDL_HINT_OVERRIDE);
-
-// Rendering on Catalina with High DPI (retina)
-// https://github.com/grimfang4/sdl-gpu/issues/201
-#if defined(METADOT_ALLOW_HIGHDPI)
-    METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-#else
-    METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-#endif
-
-    if (Settings::networkMode != NetworkMode::SERVER) {
-        // create the window
-        METADOT_INFO("Creating game window...");
-
-        auto title = MetaEngine::Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
-
-        window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_flags);
-
-        if (window == nullptr) {
-            METADOT_ERROR("Could not create SDL_Window: {0}", SDL_GetError());
-            return EXIT_FAILURE;
-        }
-
-        // SDL_SetWindowIcon(window, Textures::loadTexture("data/assets/Icon_32x.png"));
-
-        // create gpu target
-        METADOT_INFO("Creating gpu target...");
-
-        METAENGINE_Render_SetDebugLevel(METAENGINE_Render_DEBUG_LEVEL_MAX);
-        METAENGINE_Render_SetPreInitFlags(METAENGINE_Render_INIT_DISABLE_VSYNC);
-        METAENGINE_Render_SetInitWindow(SDL_GetWindowID(window));
-
-        RenderTarget_.target = METAENGINE_Render_Init(WIDTH, HEIGHT, SDL_flags);
-
-        if (RenderTarget_.target == NULL) {
-            METADOT_ERROR("Could not create METAENGINE_Render_Target: {0}", SDL_GetError());
-            return EXIT_FAILURE;
-        }
-
-#if defined(METADOT_ALLOW_HIGHDPI)
-        METAENGINE_Render_SetVirtualResolution(RenderTarget_.target, WIDTH * 2, HEIGHT * 2);
-#endif
-
-        RenderTarget_.realTarget = RenderTarget_.target;
-
-        SDL_GLContext &gl_context = RenderTarget_.target->context->context;
-
-
-        SDL_GL_MakeCurrent(window, gl_context);
-
-        if (GLEW_OK != glewInit()) {
-            std::cout << "Failed to initialize OpenGL loader!" << std::endl;
-            return EXIT_FAILURE;
-        }
-
-
-        METADOT_INFO("Initializing InitFont...");
-        if (!Drawing::InitFont(&gl_context)) {
-            METADOT_ERROR("InitFont failed");
-            return EXIT_FAILURE;
-        }
-
-
-        if (Settings::networkMode != NetworkMode::SERVER) {
-
-            font64 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 64);
-            font16 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
-            font14 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 14);
-        }
-
-        // load splash screen
-        METADOT_INFO("Loading splash screen...");
-
-        METAENGINE_Render_Clear(RenderTarget_.target);
-        METAENGINE_Render_Flip(RenderTarget_.target);
-        C_Surface *splashSurf = Textures::loadTexture("data/assets/title/splash.png");
-        METAENGINE_Render_Image *splashImg = METAENGINE_Render_CopyImageFromSurface(splashSurf);
-        METAENGINE_Render_SetImageFilter(splashImg, METAENGINE_Render_FILTER_NEAREST);
-        METAENGINE_Render_BlitRect(splashImg, NULL, RenderTarget_.target, NULL);
-        METAENGINE_Render_FreeImage(splashImg);
-        SDL_FreeSurface(splashSurf);
-        METAENGINE_Render_Flip(RenderTarget_.target);
-
-        // load key bind
-        Controls::initKey();
-
-        METADOT_INFO("Loading ImGUI");
-        METADOT_NEW(C, m_ImGuiLayer, MetaEngine::ImGuiLayer);
-        m_ImGuiLayer->Init(window, gl_context);
-
-#if defined(_WIN32)
-        SDL_SysWMinfo info{};
-        SDL_VERSION(&info.version);
-        if (SDL_GetWindowWMInfo(window, &info)) {
-            METADOT_ASSERT_E(IsWindow(info.info.win.window));
-            this->data->wndh = info.info.win.window;
-        } else {
-            this->data->wndh = NULL;
-        }
-#elif defined(__linux)
-        this->data->wndh = 0;
-#elif defined(__APPLE__)
-        //this->data->wndh = 0;
-#else
-#error "GetWindowWMInfo Error"
-#endif
-        //this->data->window = window;
-        //this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
-
-        // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
-        // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
-
-        // this->data->Functions.insert(std::make_pair("func1", func1));
-        // this->data->Functions.insert(std::make_pair("func2", func2));
-
-        // RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
-
-        // TODO CppScript
-
-        //initThread.get();
-
-        global.audioEngine.PlayEvent("event:/Music/Title");
-        global.audioEngine.Update();
-    }
 
     // scripting system
     auto loadscript = [&]() {
@@ -465,11 +313,11 @@ void Game::handleWindowSizeChange(int newWidth, int newHeight) {
     SDL_ShowCursor(Settings::draw_cursor ? SDL_ENABLE : SDL_DISABLE);
     //ImGui::SetMouseCursor(Settings::draw_cursor ? ImGuiMouseCursor_Arrow : ImGuiMouseCursor_None);
 
-    int prevWidth = WIDTH;
-    int prevHeight = HEIGHT;
+    int prevWidth = global.platform.WIDTH;
+    int prevHeight = global.platform.HEIGHT;
 
-    WIDTH = newWidth;
-    HEIGHT = newHeight;
+    global.platform.WIDTH = newWidth;
+    global.platform.HEIGHT = newHeight;
 
     createTexture();
 
@@ -523,7 +371,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
                 TexturePack_.loadingTexture = METAENGINE_Render_CreateImage(
-                        TexturePack_.loadingScreenW = (WIDTH / 20), TexturePack_.loadingScreenH = (HEIGHT / 20),
+                        TexturePack_.loadingScreenW = (global.platform.WIDTH / 20), TexturePack_.loadingScreenH = (global.platform.HEIGHT / 20),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
@@ -678,7 +526,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
                 TexturePack_.backgroundImage = METAENGINE_Render_CreateImage(
-                        WIDTH, HEIGHT,
+                        global.platform.WIDTH, global.platform.HEIGHT,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
 
@@ -760,37 +608,37 @@ void Game::setWindowFlash(WindowFlashAction action, int count, int period) {
 void Game::setDisplayMode(DisplayMode mode) {
     switch (mode) {
         case DisplayMode::WINDOWED:
-            SDL_SetWindowDisplayMode(window, NULL);
-            SDL_SetWindowFullscreen(window, 0);
+            SDL_SetWindowDisplayMode(global.platform.window, NULL);
+            SDL_SetWindowFullscreen(global.platform.window, 0);
             MetaEngine::InternalGUI::OptionsUI::item_current_idx = 0;
             break;
         case DisplayMode::BORDERLESS:
-            SDL_SetWindowDisplayMode(window, NULL);
-            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            SDL_SetWindowDisplayMode(global.platform.window, NULL);
+            SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
             MetaEngine::InternalGUI::OptionsUI::item_current_idx = 1;
             break;
         case DisplayMode::FULLSCREEN:
-            SDL_MaximizeWindow(window);
+            SDL_MaximizeWindow(global.platform.window);
 
             int w;
             int h;
-            SDL_GetWindowSize(window, &w, &h);
+            SDL_GetWindowSize(global.platform.window, &w, &h);
 
             SDL_DisplayMode disp;
-            SDL_GetWindowDisplayMode(window, &disp);
+            SDL_GetWindowDisplayMode(global.platform.window, &disp);
 
             disp.w = w;
             disp.h = h;
 
-            SDL_SetWindowDisplayMode(window, &disp);
-            SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+            SDL_SetWindowDisplayMode(global.platform.window, &disp);
+            SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN);
             MetaEngine::InternalGUI::OptionsUI::item_current_idx = 2;
             break;
     }
 
     int w;
     int h;
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSize(global.platform.window, &w, &h);
 
     METAENGINE_Render_SetWindowResolution(w, h);
     METAENGINE_Render_ResetProjection(RenderTarget_.realTarget);
@@ -854,8 +702,8 @@ int Game::run(int argc, char *argv[]) {
     ofsX = (int) (-CHUNK_W * 4);
     ofsY = (int) (-CHUNK_H * 2.5);
 
-    ofsX = (ofsX - WIDTH / 2) / 2 * 3 + WIDTH / 2;
-    ofsY = (ofsY - HEIGHT / 2) / 2 * 3 + HEIGHT / 2;
+    ofsX = (ofsX - global.platform.WIDTH / 2) / 2 * 3 + global.platform.WIDTH / 2;
+    ofsY = (ofsY - global.platform.HEIGHT / 2) / 2 * 3 + global.platform.HEIGHT / 2;
 
     for (int i = 0; i < frameTimeNum; i++) {
         frameTime[i] = 0;
@@ -1372,9 +1220,9 @@ int Game::run(int argc, char *argv[]) {
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
 
-            m_ImGuiLayer->begin();
+            global.ImGuiLayer->begin();
 
-            m_ImGuiLayer->Render(this);
+            global.ImGuiLayer->Render(this);
 
             //cr_plugin_update(MetaEngine::ctx);
 
@@ -1503,20 +1351,20 @@ int Game::run(int argc, char *argv[]) {
                 }
             }
 
-            m_ImGuiLayer->end();
+            global.ImGuiLayer->end();
 
 
             // render fade in/out
             if (fadeInWaitFrames > 0) {
                 fadeInWaitFrames--;
                 fadeInStart = game_timestate.now;
-                METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, 255});
+                METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, 255});
             } else if (fadeInStart > 0 && fadeInLength > 0) {
 
                 float thru = 1 - (float) (game_timestate.now - fadeInStart) / fadeInLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
+                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
                 } else {
                     fadeInStart = 0;
                     fadeInLength = 0;
@@ -1532,9 +1380,9 @@ int Game::run(int argc, char *argv[]) {
                 float thru = (float) (game_timestate.now - fadeOutStart) / fadeOutLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
+                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
                 } else {
-                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, WIDTH, HEIGHT, {0, 0, 0, 255});
+                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, 255});
                     fadeOutStart = 0;
                     fadeOutLength = 0;
                     fadeOutCallback();
@@ -1620,8 +1468,8 @@ exit:
 
     METAENGINE_Scripting_End();
 
-    m_ImGuiLayer->onDetach();
-    METADOT_DELETE(C, m_ImGuiLayer, ImGuiLayer);
+    global.ImGuiLayer->onDetach();
+    METADOT_DELETE(C, global.ImGuiLayer, ImGuiLayer);
 
     METADOT_DELETE(C, objectDelete, UInt8);
     METADOT_DELETE(C, backgrounds, Backgrounds);
@@ -1642,7 +1490,7 @@ exit:
     }
 
     if (Settings::networkMode != NetworkMode::SERVER) {
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(global.platform.window);
         SDL_Quit();
         global.audioEngine.Shutdown();
     }
@@ -2204,8 +2052,8 @@ void Game::tick() {
             scale += deltaScale;
             if (scale < 1) scale = 1;
 
-            ofsX = (ofsX - WIDTH / 2) / oldScale * scale + WIDTH / 2;
-            ofsY = (ofsY - HEIGHT / 2) / oldScale * scale + HEIGHT / 2;
+            ofsX = (ofsX - global.platform.WIDTH / 2) / oldScale * scale + global.platform.WIDTH / 2;
+            ofsY = (ofsY - global.platform.HEIGHT / 2) / oldScale * scale + global.platform.HEIGHT / 2;
         } else {
         }
 
@@ -2824,8 +2672,8 @@ void Game::tickPlayer() {
 
 
     if (world->player) {
-        desCamX = (float) (-(mx - (WIDTH / 2)) / 4);
-        desCamY = (float) (-(my - (HEIGHT / 2)) / 4);
+        desCamX = (float) (-(mx - (global.platform.WIDTH / 2)) / 4);
+        desCamY = (float) (-(my - (global.platform.HEIGHT / 2)) / 4);
 
         world->player->holdAngle = (float) (atan2(desCamY, desCamX) * 180 / (float) M_PI);
 
@@ -2842,8 +2690,8 @@ void Game::tickPlayer() {
             if (world->player->heldItem->getFlag(ItemFlags::VACUUM)) {
                 if (world->player->holdVacuum) {
 
-                    int wcx = (int) ((WIDTH / 2.0f - ofsX - camX) / scale);
-                    int wcy = (int) ((HEIGHT / 2.0f - ofsY - camY) / scale);
+                    int wcx = (int) ((global.platform.WIDTH / 2.0f - ofsX - camX) / scale);
+                    int wcy = (int) ((global.platform.HEIGHT / 2.0f - ofsY - camY) / scale);
 
                     int wmx = (int) ((mx - ofsX - camX) / scale);
                     int wmy = (int) ((my - ofsY - camY) / scale);
@@ -3062,14 +2910,14 @@ void Game::updateFrameLate() {
             //plPosX = (float)(plPosX + (world->player->x - plPosX) / 25.0);
             //plPosY = (float)(plPosY + (world->player->y - plPosY) / 25.0);
 
-            nofsX = (int) (-((int) plPosX + world->player->hw / 2 + world->loadZone.x) * scale + WIDTH / 2);
-            nofsY = (int) (-((int) plPosY + world->player->hh / 2 + world->loadZone.y) * scale + HEIGHT / 2);
+            nofsX = (int) (-((int) plPosX + world->player->hw / 2 + world->loadZone.x) * scale + global.platform.WIDTH / 2);
+            nofsY = (int) (-((int) plPosY + world->player->hh / 2 + world->loadZone.y) * scale + global.platform.HEIGHT / 2);
         } else {
             plPosX = (float) (plPosX + (freeCamX - plPosX) / 50.0f);
             plPosY = (float) (plPosY + (freeCamY - plPosY) / 50.0f);
 
-            nofsX = (int) (-(plPosX + 0 + world->loadZone.x) * scale + WIDTH / 2.0f);
-            nofsY = (int) (-(plPosY + 0 + world->loadZone.y) * scale + HEIGHT / 2.0f);
+            nofsX = (int) (-(plPosX + 0 + world->loadZone.x) * scale + global.platform.WIDTH / 2.0f);
+            nofsY = (int) (-(plPosY + 0 + world->loadZone.y) * scale + global.platform.HEIGHT / 2.0f);
         }
 
         accLoadX += (nofsX - ofsX) / (float) scale;
@@ -3135,8 +2983,8 @@ void Game::renderEarly() {
                     }
 
                     ldPixels[(x + y * TexturePack_.loadingScreenW)] = (newState ? loadingOnColor : loadingOffColor);
-                    int sx = WIDTH / TexturePack_.loadingScreenW;
-                    int sy = HEIGHT / TexturePack_.loadingScreenH;
+                    int sx = global.platform.WIDTH / TexturePack_.loadingScreenW;
+                    int sy = global.platform.HEIGHT / TexturePack_.loadingScreenH;
                     //METAENGINE_Render_RectangleFilled(target, x * sx, y * sy, x * sx + sx, y * sy + sy, state ? SDL_Color{ 0xff, 0, 0, 0xff } : SDL_Color{ 0, 0xff, 0, 0xff });
                 }
             }
@@ -3164,9 +3012,9 @@ void Game::renderEarly() {
         METAENGINE_Render_ActivateShaderProgram(0, NULL);
         METAENGINE_Render_BlitRect(TexturePack_.loadingTexture, NULL, RenderTarget_.target, NULL);
         if (dt_loading.w == -1) {
-            dt_loading = Drawing::drawTextParams(RenderTarget_.target, "Loading...", font64, WIDTH / 2, HEIGHT / 2 - 32, 255, 255, 255, ALIGN_CENTER);
+            dt_loading = Drawing::drawTextParams(RenderTarget_.target, "Loading...", font64, global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32, 255, 255, 255, ALIGN_CENTER);
         }
-        Drawing::drawText(RenderTarget_.target, dt_loading, WIDTH / 2, HEIGHT / 2 - 32, ALIGN_CENTER);
+        Drawing::drawText(RenderTarget_.target, dt_loading, global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32, ALIGN_CENTER);
     } else {
         // render entities with LERP
 
@@ -3278,8 +3126,8 @@ void Game::renderLate() {
             METADOT_NEW(C, dst, METAENGINE_Render_Rect);
             METADOT_NEW(C, src, METAENGINE_Render_Rect);
 
-            float arX = (float) WIDTH / (bg->layers[0].surface[0]->w);
-            float arY = (float) HEIGHT / (bg->layers[0].surface[0]->h);
+            float arX = (float) global.platform.WIDTH / (bg->layers[0].surface[0]->w);
+            float arY = (float) global.platform.HEIGHT / (bg->layers[0].surface[0]->h);
 
             double time = UTime::millis() / 1000.0;
 
@@ -3296,7 +3144,7 @@ void Game::renderLate() {
                 int tw = texture->w;
                 int th = texture->h;
 
-                int iter = (int) ceil((float) WIDTH / (tw)) + 1;
+                int iter = (int) ceil((float) global.platform.WIDTH / (tw)) + 1;
                 for (int n = 0; n < iter; n++) {
 
                     src->x = 0;
@@ -3305,14 +3153,14 @@ void Game::renderLate() {
                     src->h = th;
 
                     dst->x = (((ofsX + camX) + world->loadZone.x * scale) + n * tw / cur.parralaxX) * cur.parralaxX + world->width / 2.0f * scale - tw / 2.0f;
-                    dst->y = ((ofsY + camY) + world->loadZone.y * scale) * cur.parralaxY + world->height / 2.0f * scale - th / 2.0f - HEIGHT / 3.0f * (scale - 1);
+                    dst->y = ((ofsY + camY) + world->loadZone.y * scale) * cur.parralaxY + world->height / 2.0f * scale - th / 2.0f - global.platform.HEIGHT / 3.0f * (scale - 1);
                     dst->w = (float) tw;
                     dst->h = (float) th;
 
                     dst->x += (float) (scale * fmod(cur.moveX * time, tw));
 
                     //TODO: optimize
-                    while (dst->x >= WIDTH - 10) dst->x -= (iter * tw);
+                    while (dst->x >= global.platform.WIDTH - 10) dst->x -= (iter * tw);
                     while (dst->x + dst->w < 0) dst->x += (iter * tw - 1);
 
                     //TODO: optimize
@@ -3330,14 +3178,14 @@ void Game::renderLate() {
                         dst->y = 0;
                     }
 
-                    if (dst->x + dst->w >= WIDTH) {
-                        src->w -= (int) ((dst->x + dst->w) - WIDTH);
-                        dst->w += WIDTH - (dst->x + dst->w);
+                    if (dst->x + dst->w >= global.platform.WIDTH) {
+                        src->w -= (int) ((dst->x + dst->w) - global.platform.WIDTH);
+                        dst->w += global.platform.WIDTH - (dst->x + dst->w);
                     }
 
-                    if (dst->y + dst->h >= HEIGHT) {
-                        src->h -= (int) ((dst->y + dst->h) - HEIGHT);
-                        dst->h += HEIGHT - (dst->y + dst->h);
+                    if (dst->y + dst->h >= global.platform.HEIGHT) {
+                        src->h -= (int) ((dst->y + dst->h) - global.platform.HEIGHT);
+                        dst->h += global.platform.HEIGHT - (dst->y + dst->h);
                     }
 
                     METAENGINE_Render_BlitRect(tex, src, RenderTarget_.target, dst);
@@ -3534,20 +3382,20 @@ void Game::renderOverlays() {
         SDL_Color col = {0xff, 0x00, 0x00, 0x20};
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
-        METAENGINE_Render_Rect r3 = METAENGINE_Render_Rect{(float) (0), (float) (0), (float) ((ofsX + camX + world->tickZone.x * scale)), (float) (HEIGHT)};
+        METAENGINE_Render_Rect r3 = METAENGINE_Render_Rect{(float) (0), (float) (0), (float) ((ofsX + camX + world->tickZone.x * scale)), (float) (global.platform.HEIGHT)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
-        METAENGINE_Render_Rect r4 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale), (float) (0), (float) ((WIDTH) - (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale)), (float) (HEIGHT)};
+        METAENGINE_Render_Rect r4 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale), (float) (0), (float) ((global.platform.WIDTH) - (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale)), (float) (global.platform.HEIGHT)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
         METAENGINE_Render_Rect r5 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale), (float) (0), (float) (world->tickZone.w * scale), (float) (ofsY + camY + world->tickZone.y * scale)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
-        METAENGINE_Render_Rect r6 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale), (float) (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale), (float) (world->tickZone.w * scale), (float) (HEIGHT - (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale))};
+        METAENGINE_Render_Rect r6 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale), (float) (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale), (float) (world->tickZone.w * scale), (float) (global.platform.HEIGHT - (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale))};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        METAENGINE_Render_Rect r7 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->width / 2 * scale - (WIDTH / 3 * scale / 2)), (float) (ofsY + camY + world->height / 2 * scale - (HEIGHT / 3 * scale / 2)), (float) (WIDTH / 3 * scale), (float) (HEIGHT / 3 * scale)};
+        METAENGINE_Render_Rect r7 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->width / 2 * scale - (global.platform.WIDTH / 3 * scale / 2)), (float) (ofsY + camY + world->height / 2 * scale - (global.platform.HEIGHT / 3 * scale / 2)), (float) (global.platform.WIDTH / 3 * scale), (float) (global.platform.HEIGHT / 3 * scale)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r7, col);
     }
 
@@ -3694,10 +3542,10 @@ void Game::renderOverlays() {
         snprintf(buffFps, sizeof(buffFps), "%d FPS", game_timestate.fps);
         //if (dt_fps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t1);
         //if (dt_fps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t2);
-        dt_fps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16, WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
+        dt_fps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16, global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
     }
 
-    Drawing::drawText(RenderTarget_.target, dt_fps, WIDTH - 4, 2, ALIGN_RIGHT);
+    Drawing::drawText(RenderTarget_.target, dt_fps, global.platform.WIDTH - 4, 2, ALIGN_RIGHT);
 
 
     if (dt_feelsLikeFps.w == -1) {
@@ -3705,17 +3553,17 @@ void Game::renderOverlays() {
         snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS", game_timestate.feelsLikeFps);
         //if (dt_feelsLikeFps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t1);
         //if (dt_feelsLikeFps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t2);
-        dt_feelsLikeFps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16, WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
+        dt_feelsLikeFps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16, global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
     }
 
-    Drawing::drawText(RenderTarget_.target, dt_feelsLikeFps, WIDTH - 4, 2 + 14, ALIGN_RIGHT);
+    Drawing::drawText(RenderTarget_.target, dt_feelsLikeFps, global.platform.WIDTH - 4, 2 + 14, ALIGN_RIGHT);
 
 
     if (Settings::draw_chunk_state) {
 
         int chSize = 10;
 
-        int centerX = WIDTH / 2;
+        int centerX = global.platform.WIDTH / 2;
         int centerY = CHUNK_UNLOAD_DIST * chSize + 10;
 
 
@@ -3887,11 +3735,11 @@ void Game::renderOverlays() {
                 std::string buffAsStdStr = buff;
                 //if (dt_frameGraph[i].t1 != nullptr) METAENGINE_Render_FreeImage(dt_frameGraph[i].t1);
                 //if (dt_frameGraph[i].t2 != nullptr) METAENGINE_Render_FreeImage(dt_frameGraph[i].t2);
-                dt_frameGraph[i] = Drawing::drawTextParams(RenderTarget_.target, buffAsStdStr.c_str(), font14, WIDTH - 20, HEIGHT - 15 - (i * 25) - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
+                dt_frameGraph[i] = Drawing::drawTextParams(RenderTarget_.target, buffAsStdStr.c_str(), font14, global.platform.WIDTH - 20, global.platform.HEIGHT - 15 - (i * 25) - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
             }
 
-            Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], WIDTH - 20, HEIGHT - 15 - (i * 25) - 2, ALIGN_LEFT);
-            METAENGINE_Render_Line(RenderTarget_.target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (i * 25), WIDTH - 25, HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
+            Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20, global.platform.HEIGHT - 15 - (i * 25) - 2, ALIGN_LEFT);
+            METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5, global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25, global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
         }
         /*for (int i = 0; i <= 100; i += 25) {
             char buff[20];
@@ -3917,12 +3765,12 @@ void Game::renderOverlays() {
                 col = {0xff, 0x00, 0x00, 0xff};
             }
 
-            METAENGINE_Render_Line(RenderTarget_.target, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10, col);
+            METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - frameTimeNum - 30 + i, global.platform.HEIGHT - 10 - h, global.platform.WIDTH - frameTimeNum - 30 + i, global.platform.HEIGHT - 10, col);
             //SDL_RenderDrawLine(renderer, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        METAENGINE_Render_Line(RenderTarget_.target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), WIDTH - 25, HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), {0x00, 0xff, 0xff, 0xff});
-        METAENGINE_Render_Line(RenderTarget_.target, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), WIDTH - 25, HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
+        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), global.platform.WIDTH - 25, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), {0x00, 0xff, 0xff, 0xff});
+        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), global.platform.WIDTH - 25, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
     }
 
     METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
@@ -3934,24 +3782,24 @@ void Game::renderOverlays() {
         snprintf(buffDevBuild, sizeof(buffDevBuild), "Development Build");
         //if (dt_versionInfo1.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo1.t1);
         //if (dt_versionInfo1.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo1.t2);
-        dt_versionInfo1 = Drawing::drawTextParams(RenderTarget_.target, buffDevBuild, font16, 4, HEIGHT - 32 - 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+        dt_versionInfo1 = Drawing::drawTextParams(RenderTarget_.target, buffDevBuild, font16, 4, global.platform.HEIGHT - 32 - 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
         char buffVersion[40];
         snprintf(buffVersion, sizeof(buffVersion), "Version %s - dev", VERSION);
         //if (dt_versionInfo2.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo2.t1);
         //if (dt_versionInfo2.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo2.t2);
-        dt_versionInfo2 = Drawing::drawTextParams(RenderTarget_.target, buffVersion, font16, 4, HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
+        dt_versionInfo2 = Drawing::drawTextParams(RenderTarget_.target, buffVersion, font16, 4, global.platform.HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
         char buffBuildDate[40];
         snprintf(buffBuildDate, sizeof(buffBuildDate), "%s : %s", __DATE__, __TIME__);
         //if (dt_versionInfo3.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo3.t1);
         //if (dt_versionInfo3.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo3.t2);
-        dt_versionInfo3 = Drawing::drawTextParams(RenderTarget_.target, buffBuildDate, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+        dt_versionInfo3 = Drawing::drawTextParams(RenderTarget_.target, buffBuildDate, font16, 4, global.platform.HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
     }
 
-    Drawing::drawText(RenderTarget_.target, dt_versionInfo1, 4, HEIGHT - 32 - 13, ALIGN_LEFT);
-    Drawing::drawText(RenderTarget_.target, dt_versionInfo2, 4, HEIGHT - 32, ALIGN_LEFT);
-    Drawing::drawText(RenderTarget_.target, dt_versionInfo3, 4, HEIGHT - 32 + 13, ALIGN_LEFT);
+    Drawing::drawText(RenderTarget_.target, dt_versionInfo1, 4, global.platform.HEIGHT - 32 - 13, ALIGN_LEFT);
+    Drawing::drawText(RenderTarget_.target, dt_versionInfo2, 4, global.platform.HEIGHT - 32, ALIGN_LEFT);
+    Drawing::drawText(RenderTarget_.target, dt_versionInfo3, 4, global.platform.HEIGHT - 32 + 13, ALIGN_LEFT);
 #elif defined ALPHA_BUILD
     char buffDevBuild[40];
     snprintf(buffDevBuild, sizeof(buffDevBuild), "Alpha Build");
@@ -3986,18 +3834,18 @@ void Game::renderTemperatureMap(World *world) {
 }
 
 int Game::getAimSurface(int dist) {
-    int dcx = this->mx - WIDTH / 2;
-    int dcy = this->my - HEIGHT / 2;
+    int dcx = this->mx - global.platform.WIDTH / 2;
+    int dcy = this->my - global.platform.HEIGHT / 2;
 
     float len = sqrtf(dcx * dcx + dcy * dcy);
     float udx = dcx / len;
     float udy = dcy / len;
 
-    int mmx = WIDTH / 2.0f + udx * dist;
-    int mmy = HEIGHT / 2.0f + udy * dist;
+    int mmx = global.platform.WIDTH / 2.0f + udx * dist;
+    int mmy = global.platform.HEIGHT / 2.0f + udy * dist;
 
-    int wcx = (int) ((WIDTH / 2.0f - ofsX - camX) / scale);
-    int wcy = (int) ((HEIGHT / 2.0f - ofsY - camY) / scale);
+    int wcx = (int) ((global.platform.WIDTH / 2.0f - ofsX - camX) / scale);
+    int wcy = (int) ((global.platform.HEIGHT / 2.0f - ofsY - camY) / scale);
 
     int wmx = (int) ((mmx - ofsX - camX) / scale);
     int wmy = (int) ((mmy - ofsY - camY) / scale);
@@ -4110,18 +3958,18 @@ void Game::quitToMainMenu() {
 }
 
 int Game::getAimSolidSurface(int dist) {
-    int dcx = this->mx - WIDTH / 2;
-    int dcy = this->my - HEIGHT / 2;
+    int dcx = this->mx - global.platform.WIDTH / 2;
+    int dcy = this->my - global.platform.HEIGHT / 2;
 
     float len = sqrtf(dcx * dcx + dcy * dcy);
     float udx = dcx / len;
     float udy = dcy / len;
 
-    int mmx = WIDTH / 2.0f + udx * dist;
-    int mmy = HEIGHT / 2.0f + udy * dist;
+    int mmx = global.platform.WIDTH / 2.0f + udx * dist;
+    int mmy = global.platform.HEIGHT / 2.0f + udy * dist;
 
-    int wcx = (int) ((WIDTH / 2.0f - ofsX - camX) / scale);
-    int wcy = (int) ((HEIGHT / 2.0f - ofsY - camY) / scale);
+    int wcx = (int) ((global.platform.WIDTH / 2.0f - ofsX - camX) / scale);
+    int wcy = (int) ((global.platform.HEIGHT / 2.0f - ofsY - camY) / scale);
 
     int wmx = (int) ((mmx - ofsX - camX) / scale);
     int wmy = (int) ((mmy - ofsY - camY) / scale);

@@ -1,11 +1,16 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Platform.hpp"
+#include "Engine/Memory/Memory.hpp"
+#include "Engine/Render/renderer_gpu.h"
 #include "Game/Const.hpp"
+#include "Game/Global.hpp"
+#include "Game/Legacy/Game.hpp"
 #include "Game/Legacy/Networking.hpp"
 #include "Game/Settings.hpp"
 #include "Libs/structopt.hpp"
 
+#include "glew.h"
 
 struct Options
 {
@@ -35,5 +40,142 @@ int Platform::ParseRunArgs(int argc, char *argv[]) {
         std::cout << e.what() << "\n";
         std::cout << e.help();
     }
+    return 0;
+}
+
+int Platform::InitWindow() {
+
+    // init sdl
+    METADOT_INFO("Initializing SDL...");
+    UInt32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO;
+    if (SDL_Init(sdl_init_flags) < 0) {
+        METADOT_ERROR("SDL_Init failed: {0}", SDL_GetError());
+        return EXIT_FAILURE;
+    }
+
+    SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", SDL_HINT_OVERRIDE);
+
+// Rendering on Catalina with High DPI (retina)
+// https://github.com/grimfang4/sdl-gpu/issues/201
+#if defined(METADOT_ALLOW_HIGHDPI)
+    METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+#else
+    METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+#endif
+
+    if (Settings::networkMode != NetworkMode::SERVER) {
+        // create the window
+        METADOT_INFO("Creating game window...");
+
+        auto title = MetaEngine::Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
+
+        global.platform.window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_flags);
+
+        if (global.platform.window == nullptr) {
+            METADOT_ERROR("Could not create SDL_Window: {0}", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        // SDL_SetWindowIcon(window, Textures::loadTexture("data/assets/Icon_32x.png"));
+
+        // create gpu target
+        METADOT_INFO("Creating gpu target...");
+
+        METAENGINE_Render_SetDebugLevel(METAENGINE_Render_DEBUG_LEVEL_MAX);
+        METAENGINE_Render_SetPreInitFlags(METAENGINE_Render_INIT_DISABLE_VSYNC);
+        METAENGINE_Render_SetInitWindow(SDL_GetWindowID(global.platform.window));
+
+        global.game->RenderTarget_.target = METAENGINE_Render_Init(WIDTH, HEIGHT, SDL_flags);
+
+        if (global.game->RenderTarget_.target == NULL) {
+            METADOT_ERROR("Could not create METAENGINE_Render_Target: {0}", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+#if defined(METADOT_ALLOW_HIGHDPI)
+        METAENGINE_Render_SetVirtualResolution(RenderTarget_.target, WIDTH * 2, HEIGHT * 2);
+#endif
+
+        global.game->RenderTarget_.realTarget = global.game->RenderTarget_.target;
+
+        SDL_GLContext &gl_context = global.game->RenderTarget_.target->context->context;
+
+
+        SDL_GL_MakeCurrent(global.platform.window, gl_context);
+
+        if (GLEW_OK != glewInit()) {
+            std::cout << "Failed to initialize OpenGL loader!" << std::endl;
+            return EXIT_FAILURE;
+        }
+
+
+        // METADOT_INFO("Initializing InitFont...");
+        // if (!Drawing::InitFont(&gl_context)) {
+        //     METADOT_ERROR("InitFont failed");
+        //     return EXIT_FAILURE;
+        // }
+
+        // if (Settings::networkMode != NetworkMode::SERVER) {
+
+        //     font64 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 64);
+        //     font16 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
+        //     font14 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 14);
+        // }
+
+        // load splash screen
+        METADOT_INFO("Loading splash screen...");
+
+        METAENGINE_Render_Clear(global.game->RenderTarget_.target);
+        METAENGINE_Render_Flip(global.game->RenderTarget_.target);
+        C_Surface *splashSurf = Textures::loadTexture("data/assets/title/splash.png");
+        METAENGINE_Render_Image *splashImg = METAENGINE_Render_CopyImageFromSurface(splashSurf);
+        METAENGINE_Render_SetImageFilter(splashImg, METAENGINE_Render_FILTER_NEAREST);
+        METAENGINE_Render_BlitRect(splashImg, NULL, global.game->RenderTarget_.target, NULL);
+        METAENGINE_Render_FreeImage(splashImg);
+        SDL_FreeSurface(splashSurf);
+        METAENGINE_Render_Flip(global.game->RenderTarget_.target);
+
+        // load key bind
+        Controls::initKey();
+
+        METADOT_INFO("Loading ImGUI");
+        METADOT_NEW(C, global.ImGuiLayer, MetaEngine::ImGuiLayer);
+        global.ImGuiLayer->Init(global.platform.window, gl_context);
+
+#if defined(_WIN32)
+        SDL_SysWMinfo info{};
+        SDL_VERSION(&info.version);
+        if (SDL_GetWindowWMInfo(window, &info)) {
+            METADOT_ASSERT_E(IsWindow(info.info.win.window));
+            this->data->wndh = info.info.win.window;
+        } else {
+            this->data->wndh = NULL;
+        }
+#elif defined(__linux)
+        this->data->wndh = 0;
+#elif defined(__APPLE__)
+        //this->data->wndh = 0;
+#else
+#error "GetWindowWMInfo Error"
+#endif
+        //this->data->window = window;
+        //this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
+
+        // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
+        // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
+
+        // this->data->Functions.insert(std::make_pair("func1", func1));
+        // this->data->Functions.insert(std::make_pair("func2", func2));
+
+        // RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
+
+        // TODO CppScript
+
+        //initThread.get();
+
+        global.audioEngine.PlayEvent("event:/Music/Title");
+        global.audioEngine.Update();
+    }
+
     return 0;
 }

@@ -14,7 +14,7 @@
 #include "Game/Core.hpp"
 
 #include "Engine/Memory/Allocator.h"
-#include "Engine/Render/SDLWrapper.hpp"
+#include "Engine/Platforms/SDLWrapper.hpp"
 
 #define METADOT_GC_ALLOC(size) SDL_malloc(size)
 #define METADOT_GC_ALLOC_ALIGNED(size, alignment) SDL_malloc(size)
