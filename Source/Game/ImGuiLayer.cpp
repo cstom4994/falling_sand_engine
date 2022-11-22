@@ -187,6 +187,7 @@ namespace MetaEngine::InternalGUI {
     void IngameUI::DrawOptions(Game *game) {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
         ImGui::SetNextWindowSize(ImVec2(400, 400));
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             ImGui::PopStyleColor();
@@ -588,7 +589,7 @@ namespace MetaEngine::InternalGUI {
         if (!visible) return;
 
         ImGui::SetNextWindowSize(ImVec2(400, 425));
-        ImGui::SetNextWindowPos(ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
@@ -730,7 +731,7 @@ namespace MetaEngine::InternalGUI {
 
     void MainMenuUI::DrawMultiplayer(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 500));
-        ImGui::SetNextWindowPos(ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
@@ -774,6 +775,7 @@ namespace MetaEngine::InternalGUI {
 
     void MainMenuUI::DrawCreateWorld(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 360));
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
@@ -787,6 +789,7 @@ namespace MetaEngine::InternalGUI {
     void MainMenuUI::DrawOptions(Game *game) {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
         ImGui::SetNextWindowSize(ImVec2(400, 400));
+        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(MetaEngine::ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             ImGui::PopStyleColor();
