@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _METADOT_IMGUIHELPER_HPP_
+#define _METADOT_IMGUIHELPER_HPP_
 
 #include <algorithm>
 #include <string>
@@ -674,5 +675,7 @@ private:
     char *mData;
     int *mRefCount;
 };
+
+#endif
 
 #endif

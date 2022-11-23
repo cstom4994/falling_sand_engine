@@ -1,4 +1,6 @@
-#pragma once
+
+#ifndef _METADOT_PROPERTIES_HPP_
+#define _METADOT_PROPERTIES_HPP_
 
 #include <cassert>
 #include <concepts>
@@ -155,17 +157,17 @@ namespace MetaEngine::properties {
             std::bind(&setter, this, std::placeholders::_1), \
             std::bind(&getter, this));
 
-#define REGISTER_PROPERTY(type, f_to_string, f_from_string)      \
-    template<>                                                   \
+#define REGISTER_PROPERTY(type, f_to_string, f_from_string)             \
+    template<>                                                          \
     struct MetaEngine::properties::property<type> : property_impl<type> \
-    {                                                            \
-        using property_impl<type>::operator=;                    \
-        using property_impl<type>::operator==;                   \
-                                                                 \
-        property() {                                             \
-            this->to_string = f_to_string;                       \
-            this->from_string = f_from_string;                   \
-        }                                                        \
+    {                                                                   \
+        using property_impl<type>::operator=;                           \
+        using property_impl<type>::operator==;                          \
+                                                                        \
+        property() {                                                    \
+            this->to_string = f_to_string;                              \
+            this->from_string = f_from_string;                          \
+        }                                                               \
     };
 
 
@@ -811,3 +813,5 @@ namespace MetaEngine::properties {
         std::map<std::string, property_base *> m_properties;
     };
 }// namespace MetaEngine::properties
+
+#endif

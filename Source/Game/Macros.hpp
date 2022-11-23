@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_MACROS_HPP_
+#define _METADOT_MACROS_HPP_
 
 #include <string>
 
@@ -100,4 +101,6 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_COMPILER_CLANG
 #elif defined(__GNUC__)
 #define METADOT_COMPILER_GCC
+#endif
+
 #endif

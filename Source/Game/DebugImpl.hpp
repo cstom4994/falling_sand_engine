@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_DEBUGIMPL_HPP_
+#define _METADOT_DEBUGIMPL_HPP_
 
 #include <cassert>
 #include <cstddef>
@@ -1028,7 +1029,9 @@ namespace METADOT_UNIT {
         }
         METADOT_UNIT$(<)
         METADOT_UNIT$(<=)
-        METADOT_UNIT$(>) METADOT_UNIT$(>=) METADOT_UNIT$(!=) METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
+        METADOT_UNIT$(>)
+        METADOT_UNIT$(>=)
+        METADOT_UNIT$(!=) METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
     };
 }// namespace METADOT_UNIT
 #endif
@@ -1071,4 +1074,6 @@ public:
 
     void DrawAABB(b2AABB *aabb, const b2Color &color);
 };
+#endif
+
 #endif

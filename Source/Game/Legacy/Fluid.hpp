@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _METADOT_FLUID_HPP_
+#define _METADOT_FLUID_HPP_
 
 
 #include <algorithm>// std::clamp
@@ -148,3 +149,5 @@ private:// No stack over flow please OS!
 public:
     friend class FluidSimulation;// to access private members
 };
+
+#endif

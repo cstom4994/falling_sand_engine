@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_PLATFORM_HPP_
+#define _METADOT_PLATFORM_HPP_
 
 #include "SDLWrapper.hpp"
 
@@ -22,3 +23,5 @@ struct Platform
     void SetDisplayMode(DisplayMode mode);
     void HandleWindowSizeChange(int newWidth, int newHeight);
 };
+
+#endif

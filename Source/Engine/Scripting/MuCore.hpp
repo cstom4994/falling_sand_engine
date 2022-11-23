@@ -2,7 +2,8 @@
 // copyright KaoruXun 2022
 // MIT license
 
-#pragma once
+#ifndef _METADOT_MUCORE_HPP_
+#define _METADOT_MUCORE_HPP_
 
 #include <algorithm>
 #include <charconv>
@@ -2025,4 +2026,6 @@ namespace MuScript {
 
 #if defined(__EMSCRIPTEN__) || defined(MUSCRIPT_INTERNAL_PRINT)
 #define MUSCRIPT_DO_INTERNAL_PRINT
+#endif
+
 #endif

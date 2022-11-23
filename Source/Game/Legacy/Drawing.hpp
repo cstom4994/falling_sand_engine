@@ -1,6 +1,7 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_DRAWING_HPP_
+#define _METADOT_DRAWING_HPP_
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
@@ -64,12 +65,12 @@ public:
     static STBTTF_Font *LoadFont(const char *path, UInt16 size);
 
     static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
-                                         STBTTF_Font *font, int x, int y,
-                                         uint8_t fR, uint8_t fG, uint8_t fB, int align);
+                                           STBTTF_Font *font, int x, int y,
+                                           uint8_t fR, uint8_t fG, uint8_t fB, int align);
 
     static DrawTextParams_t drawTextParams(METAENGINE_Render_Target *renderer, const char *string,
-                                         STBTTF_Font *font, int x, int y,
-                                         uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align);
+                                           STBTTF_Font *font, int x, int y,
+                                           uint8_t fR, uint8_t fG, uint8_t fB, bool shadow, int align);
 
     static void drawText(METAENGINE_Render_Target *renderer, const char *string,
                          STBTTF_Font *font, int x, int y,
@@ -97,3 +98,5 @@ public:
 
     static uint32 darkenColor(uint32 col, float brightness);
 };
+
+#endif

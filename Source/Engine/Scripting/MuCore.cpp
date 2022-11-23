@@ -2708,9 +2708,6 @@ namespace MuScript {
 
 // --------------------------------------- scopeImplementation
 
-
-#pragma once
-
 namespace MuScript {
     template<typename T>
     vector<T> &Array::getStdVector() {

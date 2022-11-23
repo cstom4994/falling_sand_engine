@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_NETWORKING_HPP_
+#define _METADOT_NETWORKING_HPP_
 
 #include "Game/Core.hpp"
 
@@ -40,3 +41,5 @@ public:
 
     void tick();
 };
+
+#endif

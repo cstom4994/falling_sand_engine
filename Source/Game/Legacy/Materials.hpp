@@ -1,11 +1,12 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_MATERIALS_HPP_
+#define _METADOT_MATERIALS_HPP_
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 
-#include "Libs/veque.hpp"
 #include "Game/Core.hpp"
+#include "Libs/veque.hpp"
 
 #include <iostream>
 #include <string>
@@ -180,3 +181,5 @@ public:
 
     static MaterialInstance create(Material *mat, int x, int y);
 };
+
+#endif

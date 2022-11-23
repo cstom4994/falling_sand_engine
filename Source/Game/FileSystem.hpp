@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
-#pragma once
+#ifndef _METADOT_FILESYSTEM_HPP_
+#define _METADOT_FILESYSTEM_HPP_
 
 #include "Game/Core.hpp"
 #include "Game/DebugImpl.hpp"
@@ -104,3 +105,5 @@ namespace MetaEngine {
         uint64_t lastWriteTime(std::string_view path);
     }// namespace FUtil
 }// namespace MetaEngine
+
+#endif

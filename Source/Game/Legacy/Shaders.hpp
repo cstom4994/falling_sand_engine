@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_SHADERS_HPP_
+#define _METADOT_SHADERS_HPP_
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 
@@ -222,3 +223,5 @@ struct ShaderWorker
 
     void LoadShaders();
 };
+
+#endif

@@ -1,6 +1,7 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_REFL_HPP_
+#define _METADOT_REFL_HPP_
 
 #include "Game/Core.hpp"
 #include "Libs/nameof.hpp"
@@ -1825,3 +1826,5 @@ namespace reflect {
     };
 
 }// namespace reflect
+
+#endif

@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_GENERATOR_WORLD_CPP_
+#define _METADOT_GENERATOR_WORLD_CPP_
 
 #ifndef INC_WorldGenerator
 #include "WorldGenerator.hpp"
@@ -63,3 +64,5 @@ class MaterialTestGenerator : public WorldGenerator {
         return {};
     }
 };
+
+#endif

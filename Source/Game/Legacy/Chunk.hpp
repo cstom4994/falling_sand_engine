@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_CHUNK_HPP_
+#define _METADOT_CHUNK_HPP_
 
 #include <utility>
 #ifndef INC_Tiles
@@ -77,3 +78,5 @@ public:
     }
     ChunkReadyToMerge() : ChunkReadyToMerge(0, 0, nullptr){};
 };
+
+#endif

@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_IMGUILAYER_HPP_
+#define _METADOT_IMGUILAYER_HPP_
 
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Platforms/SDLWrapper.hpp"
@@ -182,3 +183,5 @@ namespace MetaEngine {
 
     }// namespace InternalGUI
 }// namespace MetaEngine
+
+#endif

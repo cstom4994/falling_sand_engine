@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_POPULATORS_CPP_
+#define _METADOT_POPULATORS_CPP_
 
 #include "Populators.hpp"
 #include "Structures.hpp"
@@ -511,3 +512,5 @@ public:
         return {};
     }
 };
+
+#endif

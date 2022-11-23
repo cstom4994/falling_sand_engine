@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_IN_HPP_
+#define _METADOT_IN_HPP_
 
 #include "Game/Core.hpp"
 #include "Game/DebugImpl.hpp"
@@ -47,3 +48,5 @@ namespace MetaEngine {}
 #include "Libs/FastNoise/FastNoise.h"
 #include "Libs/polypartition.h"
 #include "Libs/sparsehash/dense_hash_map.h"
+
+#endif

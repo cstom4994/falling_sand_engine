@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
-#pragma once
+#ifndef _METADOT_STRUCTURES_HPP_
+#define _METADOT_STRUCTURES_HPP_
 
 #include <iostream>
 
@@ -41,3 +42,5 @@ public:
     PlacedStructure(Structure base, int x, int y);
     //PlacedStructure(const PlacedStructure &p2) { this->base = Structure(base); this->x = x; this->y = y; }
 };
+
+#endif

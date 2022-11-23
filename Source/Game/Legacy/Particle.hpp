@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_PARTICLE_HPP_
+#define _METADOT_PARTICLE_HPP_
 
 
 #include "Engine/Platforms/SDLWrapper.hpp"
@@ -32,3 +33,5 @@ public:
     Particle(MaterialInstance tile, float x, float y, float vx, float vy, float ax, float ay);
     Particle(const Particle &part);
 };
+
+#endif

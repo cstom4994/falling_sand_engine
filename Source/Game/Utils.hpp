@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_UTILS_HPP_
+#define _METADOT_UTILS_HPP_
 
 #include "Game/Core.hpp"
 #include "Game/InEngine.h"
@@ -588,3 +589,5 @@ namespace MetaEngine {
         }
     }// namespace Utils
 }// namespace MetaEngine
+
+#endif

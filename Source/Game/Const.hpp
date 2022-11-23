@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_CONST_HPP_
+#define _METADOT_CONST_HPP_
 
 #include "Macros.hpp"
 
@@ -44,3 +45,5 @@ static const int VERSION_MINOR = METADOT_VERSION_MINOR;
 static const int VERSION_REV = METADOT_VERSION_BUILD;
 static const char *VERSION = METADOT_VERSION_TEXT;
 static const char *VERSION_COMPATIBILITY[] = {VERSION, "0.0.1", 0};
+
+#endif

@@ -1,11 +1,12 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_RIGIDBODY_HPP_
+#define _METADOT_RIGIDBODY_HPP_
 
 #define INC_RigidBody
+#include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
 #include "Materials.hpp"
-#include "Engine/Platforms/SDLWrapper.hpp"
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_math.h>
@@ -48,3 +49,5 @@ public:
     RigidBody(b2Body *body);
     ~RigidBody();
 };
+
+#endif

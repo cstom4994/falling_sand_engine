@@ -1,6 +1,7 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_LUALAYER_HPP_
+#define _METADOT_LUALAYER_HPP_
 
 #include "Libs/lua/sol/sol.hpp"
 
@@ -35,3 +36,5 @@ public:
         return this->s_lua.get<T>(name);
     }
 };
+
+#endif

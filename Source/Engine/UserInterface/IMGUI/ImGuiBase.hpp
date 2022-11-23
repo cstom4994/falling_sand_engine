@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
-#pragma once
+#ifndef _METADOT_IMGUIBASE_HPP_
+#define _METADOT_IMGUIBASE_HPP_
 
 #include "imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
@@ -628,3 +629,5 @@ IMGUI_AUTO_DEFINE_INLINE(template<>, const std::add_pointer_t<void()>, if (ImGui
 #pragma endregion
 
 #pragma endregion
+
+#endif

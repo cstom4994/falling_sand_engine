@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
-#pragma once
+#ifndef _METADOT_GAME_HPP_
+#define _METADOT_GAME_HPP_
 
 //#define b2_maxTranslation 10.0f
 //#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
@@ -254,3 +255,5 @@ public:
 
     void quitToMainMenu();
 };
+
+#endif

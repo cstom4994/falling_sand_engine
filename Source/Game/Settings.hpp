@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_SETTINGS_HPP_
+#define _METADOT_SETTINGS_HPP_
 
 #include <string>
 
@@ -56,8 +57,7 @@ struct SettingsBase
 
 struct Settings : SettingsBase, MetaEngine::properties::properties
 {
-    Settings()
-    {
+    Settings() {
         LINK_PROPERTY(ui_tweak, &ui_tweak);
         LINK_PROPERTY(ui_code_editor, &ui_code_editor);
         LINK_PROPERTY(ui_inspector, &ui_inspector);
@@ -65,3 +65,5 @@ struct Settings : SettingsBase, MetaEngine::properties::properties
         LINK_PROPERTY(ui_console, &ui_console);
     }
 };
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _METADOT_VECTOR_HPP_
+#define _METADOT_VECTOR_HPP_
 
 #include <cmath>
 #include <type_traits>
@@ -1456,3 +1457,5 @@ MAKE_LIB_FUNC(dFdy)
 MAKE_LIB_FUNC(fwidth)
 
 #undef MAKE_LIB_FUNC
+
+#endif

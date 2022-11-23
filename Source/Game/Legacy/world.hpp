@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_WORLD_HPP_
+#define _METADOT_WORLD_HPP_
 
 
 #include "Chunk.hpp"
@@ -71,7 +72,6 @@ public:
     static WorldMeta loadWorldMeta(std::string worldFileName);
     bool save(std::string worldFileName);
 };
-
 
 
 class World {
@@ -195,3 +195,5 @@ public:
 
     ~World();
 };
+
+#endif

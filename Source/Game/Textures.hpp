@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_TEXTURES_HPP_
+#define _METADOT_TEXTURES_HPP_
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 
@@ -39,3 +40,5 @@ public:
 
     static C_Surface *scaleTexture(C_Surface *, float x, float y);
 };
+
+#endif

@@ -1,18 +1,15 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
-#pragma once
-
-#ifndef _CORE_H
-#define _CORE_H
+#ifndef _METADOT_CORE_HPP_
+#define _METADOT_CORE_HPP_
 
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
 
-#include "Game/Macros.hpp"
 #include "Engine/Platforms/PlatformDef.hpp"
+#include "Game/Macros.hpp"
 
 #include <bitset>
 #include <cstdint>
@@ -29,8 +26,8 @@
 #include <typeinfo>
 #include <vector>
 
-#include "Libs/VisitStruct.hpp"
 #include "Game/Logging.hpp"
+#include "Libs/VisitStruct.hpp"
 
 #include <nlohmann/json.hpp>
 

@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef _METADOT_LUASH_HPP_
+#define _METADOT_LUASH_HPP_
 
 #include "Engine/Meta/Refl.hpp"
 #include "Libs/lua/lua.hpp"
@@ -954,3 +955,5 @@ namespace luash {
         lua_setglobal(L, name);
     }
 }// namespace luash
+
+#endif

@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#pragma once
+#ifndef _METADOT_GLOBAL_HPP_
+#define _METADOT_GLOBAL_HPP_
 
 #include "AudioEngine/AudioEngine.h"
 #include "Engine/Meta/Refl.hpp"
@@ -56,3 +57,5 @@ struct Global
 };
 
 extern Global global;
+
+#endif
