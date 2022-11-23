@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
+#include "Engine/Scripting/Scripting.hpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/MuCore.hpp"
@@ -11,51 +11,7 @@
 #include <memory>
 #include <vector>
 
-MuScript::MuScriptInterpreter *MuCore = nullptr;
-LuaLayer *LuaCore = nullptr;
-
-void LoadMuFuncs() {
-
-    METADOT_ASSERT_E(MuCore);
-
-    auto loadFunc = [](const MuScript::List &args) {
-        METADOT_NEW(C, LuaCore, LuaLayer);
-        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
-        return std::make_shared<MuScript::Value>();
-    };
-    auto loadLua = MuCore->newFunction("loadLua", loadFunc);
-
-    auto endFunc = [](const MuScript::List &args) {
-        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
-        METADOT_DELETE(C, LuaCore, LuaLayer);
-        return std::make_shared<MuScript::Value>();
-    };
-    auto endLua = MuCore->newFunction("endLua", endFunc);
-}
-
-void METAENGINE_Scripting_Init() {
-    METADOT_NEW(C, MuCore, MuScript::MuScriptInterpreter, MuScript::ModulePrivilege::allPrivilege);
-
-    LoadMuFuncs();
-
-    std::string init_src = MetaEngine::FUtil::readFileString("data/init.mu");
-    MuCore->evaluate(init_src);
-
-    auto end = MuCore->callFunction("init");
-}
-
-void METAENGINE_Scripting_End() {
-
-    auto end = MuCore->callFunction("end");
-
-    METADOT_DELETE_EX(C, MuCore, MuScriptInterpreter, MuScript::MuScriptInterpreter);
-}
-
-void METAENGINE_Scripting_Update() {
-    if (LuaCore) LuaCore->onUpdate();
-}
-
-#if 1
+#if 0
 
 MuScript::Int integrationExample(MuScript::Int a, MuScript::Int b) {
     return (a * b) + b;
@@ -166,4 +122,47 @@ void integrationExample() {
     }
 }
 
+
 #endif
+
+
+void Scripts::Init() {
+    METADOT_NEW(C, MuCore, MuScript::MuScriptInterpreter, MuScript::ModulePrivilege::allPrivilege);
+
+    LoadMuFuncs();
+
+    std::string init_src = MetaEngine::FUtil::readFileString("data/init.mu");
+    MuCore->evaluate(init_src);
+
+    auto end = MuCore->callFunction("init");
+}
+
+void Scripts::End() {
+
+    auto end = MuCore->callFunction("end");
+
+    METADOT_DELETE_EX(C, MuCore, MuScriptInterpreter, MuScript::MuScriptInterpreter);
+}
+
+void Scripts::Update() {
+    if (LuaCore) LuaCore->onUpdate();
+}
+
+void Scripts::LoadMuFuncs() {
+
+    METADOT_ASSERT_E(MuCore);
+
+    auto loadFunc = [&](const MuScript::List &args) {
+        METADOT_NEW(C, LuaCore, LuaLayer);
+        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
+        return std::make_shared<MuScript::Value>();
+    };
+    auto loadLua = MuCore->newFunction("loadLua", loadFunc);
+
+    auto endFunc = [&](const MuScript::List &args) {
+        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
+        METADOT_DELETE(C, LuaCore, LuaLayer);
+        return std::make_shared<MuScript::Value>();
+    };
+    auto endLua = MuCore->newFunction("endLua", endFunc);
+}

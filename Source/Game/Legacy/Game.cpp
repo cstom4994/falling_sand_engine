@@ -184,7 +184,8 @@ int Game::init(int argc, char *argv[]) {
     auto loadscript = [&]() {
         METADOT_LOG_SCOPE_FUNCTION(INFO);
         METADOT_INFO("Loading Script...");
-        METAENGINE_Scripting_Init();
+        METADOT_NEW(C, global.scripts, Scripts);
+        global.scripts->Init();
     };
     loadscript();
 
@@ -1093,7 +1094,7 @@ int Game::run(int argc, char *argv[]) {
             // for (MetaEngine::Module *l: *m_ModuleStack) {
             //     l->onUpdate();
             // }
-            METAENGINE_Scripting_Update();
+            global.scripts->Update();
         }
 
         while (game_timestate.now - game_timestate.lastTick > game_timestate.mspt) {
@@ -1376,7 +1377,8 @@ exit:
 
     // release resources & shutdown
 
-    METAENGINE_Scripting_End();
+    global.scripts->End();
+    METADOT_DELETE(C, global.scripts, Scripts);
 
     global.ImGuiLayer->onDetach();
     METADOT_DELETE_EX(C, global.ImGuiLayer, ImGuiLayer, MetaEngine::ImGuiLayer);

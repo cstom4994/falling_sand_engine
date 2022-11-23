@@ -14,6 +14,7 @@
 class Game;
 class Client;
 class Server;
+class Scripts;
 
 namespace MetaEngine {
     class ImGuiLayer;
@@ -26,6 +27,7 @@ namespace MetaEngine {
 struct Global
 {
     Game *game = nullptr;
+    Scripts *scripts = nullptr;
 
     MetaEngine::ImGuiLayer *ImGuiLayer = nullptr;
 
