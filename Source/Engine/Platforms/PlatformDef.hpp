@@ -15,12 +15,15 @@
 #undef max
 
 #elif defined(METADOT_PLATFORM_LINUX)
+#include <bits/types/struct_tm.h>
+#include <bits/types/time_t.h>
 #include <limits.h>
 #include <sys/io.h>
 #elif defined(METADOT_PLATFORM_APPLE)
 #include <TargetConditionals.h>
-#include <sys/ioctl.h>
 #include <mach-o/dyld.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
 #endif
 
 #include <string>
@@ -29,10 +32,7 @@
 #error "TODO: fix for this compiler! (at least C++14 is required)"
 #endif
 
-namespace MetaEngine {
-    namespace Platforms {
+namespace Platforms {
 
-        const std::string &GetExecutablePath();
-    }
-}// namespace MetaEngine
-
+    const std::string &GetExecutablePath();
+}

@@ -15,7 +15,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace MetaEngine::properties {
+namespace Meta::properties {
 
     class properties;
 
@@ -99,10 +99,10 @@ namespace MetaEngine::properties {
         }
     };
 
-}// namespace MetaEngine::properties
+}// namespace Meta::properties
 
 
-namespace MetaEngine::properties {
+namespace Meta::properties {
 
     /**
 	 * Exception indicating that a non-existing property was accessed.
@@ -139,11 +139,11 @@ namespace MetaEngine::properties {
     private:
         std::string property_name;
     };
-}// namespace MetaEngine::properties
+}// namespace Meta::properties
 
 
 #define MAKE_PROPERTY(name, type) \
-    ::MetaEngine::properties::property<type> &name = make_property<type>(#name);
+    ::Meta::properties::property<type> &name = make_property<type>(#name);
 
 #define MAKE_NESTED_PROPERTY(name, type) \
     type &name = make_nested_property<type>(#name);
@@ -157,17 +157,17 @@ namespace MetaEngine::properties {
             std::bind(&setter, this, std::placeholders::_1), \
             std::bind(&getter, this));
 
-#define REGISTER_PROPERTY(type, f_to_string, f_from_string)             \
-    template<>                                                          \
-    struct MetaEngine::properties::property<type> : property_impl<type> \
-    {                                                                   \
-        using property_impl<type>::operator=;                           \
-        using property_impl<type>::operator==;                          \
-                                                                        \
-        property() {                                                    \
-            this->to_string = f_to_string;                              \
-            this->from_string = f_from_string;                          \
-        }                                                               \
+#define REGISTER_PROPERTY(type, f_to_string, f_from_string)       \
+    template<>                                                    \
+    struct Meta::properties::property<type> : property_impl<type> \
+    {                                                             \
+        using property_impl<type>::operator=;                     \
+        using property_impl<type>::operator==;                    \
+                                                                  \
+        property() {                                              \
+            this->to_string = f_to_string;                        \
+            this->from_string = f_from_string;                    \
+        }                                                         \
     };
 
 
@@ -181,7 +181,7 @@ namespace MetaEngine::properties {
 #include <string>
 #include <vector>
 
-namespace MetaEngine::properties {
+namespace Meta::properties {
     /**
 	 * Callback type.
 	 */
@@ -523,7 +523,7 @@ namespace MetaEngine::properties {
         return os;
     }
 
-}// namespace MetaEngine::properties
+}// namespace Meta::properties
 
 // -------------------------------------------------------------------------
 
@@ -535,7 +535,7 @@ namespace MetaEngine::properties {
  * Property for `std::basic_string`.
  */
 template<typename T>
-struct MetaEngine::properties::property<std::basic_string<T>> : property_impl<std::basic_string<T>>
+struct Meta::properties::property<std::basic_string<T>> : property_impl<std::basic_string<T>>
 {
     using property_impl<std::basic_string<T>>::operator=;
     using property_impl<std::basic_string<T>>::operator==;
@@ -580,7 +580,7 @@ REGISTER_PROPERTY(
 
 // -------------------------------------------------------------------------
 
-namespace MetaEngine::properties {
+namespace Meta::properties {
     /**
      * A container for zero or more properties.
      */
@@ -812,6 +812,6 @@ namespace MetaEngine::properties {
     private:
         std::map<std::string, property_base *> m_properties;
     };
-}// namespace MetaEngine::properties
+}// namespace Meta::properties
 
 #endif

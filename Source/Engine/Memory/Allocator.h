@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cstddef>// size_t
 
-class Utils {
+class AllocatorUtils {
 public:
     static const std::size_t CalculatePadding(const std::size_t baseAddress, const std::size_t alignment) {
         const std::size_t multiplier = (baseAddress / alignment) + 1;

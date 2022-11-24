@@ -2,8 +2,8 @@
 
 
 #include "Game/Utils.hpp"
-#include "Engine/Meta/Refl.hpp"
 #include "Engine/Memory/Memory.hpp"
+#include "Engine/Meta/Refl.hpp"
 
 #include <chrono>
 #include <cstdint>
@@ -51,7 +51,7 @@ time_t UTime::mkgmtime(struct tm *unixdate) {
     src = out;
     return true;
 }*/
-namespace MetaEngine::SUtil {
+namespace SUtil {
     const int *utf8toCodePointsArray(const char *c, int *length) {
         //todo use something better than std::vector
         std::vector<int> out;
@@ -150,4 +150,4 @@ namespace MetaEngine::SUtil {
             out += (char) c;
         return out;
     }
-}// namespace MetaEngine::SUtil
+}// namespace SUtil

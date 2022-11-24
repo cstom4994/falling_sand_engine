@@ -3,6 +3,7 @@
 #ifndef _METADOT_UTILS_HPP_
 #define _METADOT_UTILS_HPP_
 
+#include "Engine/Platforms/PlatformDef.hpp"
 #include "Game/Core.hpp"
 #include "Game/InEngine.h"
 
@@ -12,17 +13,6 @@
 #include <locale>
 #include <unordered_map>
 
-#if defined(_WIN32)
-
-#elif defined(__linux)
-#include <bits/types/struct_tm.h>
-#include <bits/types/time_t.h>
-#elif defined(__APPLE__)
-#include <sys/time.h>
-#else
-#error
-#endif
-
 
 class UTime {
 public:
@@ -31,7 +21,7 @@ public:
 };
 
 
-namespace MetaEngine::SUtil {
+namespace SUtil {
     typedef std::string Stringo;
     typedef std::string_view Viewo;
 
@@ -468,7 +458,7 @@ namespace MetaEngine::SUtil {
         parseNumbers<size>(s.c_str(), ray, actualSize);
     }
 
-}// namespace MetaEngine::SUtil
+}// namespace SUtil
 
 
 #include <algorithm>
@@ -479,115 +469,113 @@ namespace MetaEngine::SUtil {
 #include <string>
 #include <vector>
 
-namespace MetaEngine {
-    namespace Utils {
-        class ArgBase {
-        public:
-            ArgBase() {}
-            virtual ~ArgBase() {}
-            virtual void Format(std::ostringstream &ss, const std::string &fmt) = 0;
-        };
+namespace Utils {
+    class ArgBase {
+    public:
+        ArgBase() {}
+        virtual ~ArgBase() {}
+        virtual void Format(std::ostringstream &ss, const std::string &fmt) = 0;
+    };
 
-        template<class T>
-        class Arg : public ArgBase {
-        public:
-            Arg(T arg) : m_arg(arg) {}
-            virtual ~Arg() {}
-            virtual void Format(std::ostringstream &ss, const std::string &fmt) {
-                ss << m_arg;
-            }
+    template<class T>
+    class Arg : public ArgBase {
+    public:
+        Arg(T arg) : m_arg(arg) {}
+        virtual ~Arg() {}
+        virtual void Format(std::ostringstream &ss, const std::string &fmt) {
+            ss << m_arg;
+        }
 
-        private:
-            T m_arg;
-        };
+    private:
+        T m_arg;
+    };
 
-        class ArgArray : public std::vector<ArgBase *> {
-        public:
-            ArgArray() {}
-            ~ArgArray() {
-                std::for_each(begin(), end(), [](ArgBase *p) { delete p; });
-            }
-        };
+    class ArgArray : public std::vector<ArgBase *> {
+    public:
+        ArgArray() {}
+        ~ArgArray() {
+            std::for_each(begin(), end(), [](ArgBase *p) { delete p; });
+        }
+    };
 
-        static void FormatItem(std::ostringstream &ss, const std::string &item, const ArgArray &args) {
-            int index = 0;
-            int alignment = 0;
-            std::string fmt;
+    static void FormatItem(std::ostringstream &ss, const std::string &item, const ArgArray &args) {
+        int index = 0;
+        int alignment = 0;
+        std::string fmt;
 
-            char *endptr = nullptr;
-            index = strtol(&item[0], &endptr, 10);
-            if (index < 0 || index >= args.size()) {
-                return;
-            }
-
-            if (*endptr == ',') {
-                alignment = strtol(endptr + 1, &endptr, 10);
-                if (alignment > 0) {
-                    ss << std::right << std::setw(alignment);
-                } else if (alignment < 0) {
-                    ss << std::left << std::setw(-alignment);
-                }
-            }
-
-            if (*endptr == ':') {
-                fmt = endptr + 1;
-            }
-
-            args[index]->Format(ss, fmt);
-
+        char *endptr = nullptr;
+        index = strtol(&item[0], &endptr, 10);
+        if (index < 0 || index >= args.size()) {
             return;
         }
 
-        template<class T>
-        static void Transfer(ArgArray &argArray, T t) {
-            argArray.push_back(new Arg<T>(t));
+        if (*endptr == ',') {
+            alignment = strtol(endptr + 1, &endptr, 10);
+            if (alignment > 0) {
+                ss << std::right << std::setw(alignment);
+            } else if (alignment < 0) {
+                ss << std::left << std::setw(-alignment);
+            }
         }
 
-        template<class T, typename... Args>
-        static void Transfer(ArgArray &argArray, T t, Args &&...args) {
-            Transfer(argArray, t);
-            Transfer(argArray, args...);
+        if (*endptr == ':') {
+            fmt = endptr + 1;
         }
 
-        template<typename... Args>
-        std::string Format(const std::string &format, Args &&...args) {
-            if (sizeof...(args) == 0) {
-                return format;
+        args[index]->Format(ss, fmt);
+
+        return;
+    }
+
+    template<class T>
+    static void Transfer(ArgArray &argArray, T t) {
+        argArray.push_back(new Arg<T>(t));
+    }
+
+    template<class T, typename... Args>
+    static void Transfer(ArgArray &argArray, T t, Args &&...args) {
+        Transfer(argArray, t);
+        Transfer(argArray, args...);
+    }
+
+    template<typename... Args>
+    std::string Format(const std::string &format, Args &&...args) {
+        if (sizeof...(args) == 0) {
+            return format;
+        }
+
+        ArgArray argArray;
+        Transfer(argArray, args...);
+        size_t start = 0;
+        size_t pos = 0;
+        std::ostringstream ss;
+        while (true) {
+            pos = format.find('{', start);
+            if (pos == std::string::npos) {
+                ss << format.substr(start);
+                break;
             }
 
-            ArgArray argArray;
-            Transfer(argArray, args...);
-            size_t start = 0;
-            size_t pos = 0;
-            std::ostringstream ss;
-            while (true) {
-                pos = format.find('{', start);
-                if (pos == std::string::npos) {
-                    ss << format.substr(start);
-                    break;
-                }
-
-                ss << format.substr(start, pos - start);
-                if (format[pos + 1] == '{') {
-                    ss << '{';
-                    start = pos + 2;
-                    continue;
-                }
-
-                start = pos + 1;
-                pos = format.find('}', start);
-                if (pos == std::string::npos) {
-                    ss << format.substr(start - 1);
-                    break;
-                }
-
-                FormatItem(ss, format.substr(start, pos - start), argArray);
-                start = pos + 1;
+            ss << format.substr(start, pos - start);
+            if (format[pos + 1] == '{') {
+                ss << '{';
+                start = pos + 2;
+                continue;
             }
 
-            return ss.str();
+            start = pos + 1;
+            pos = format.find('}', start);
+            if (pos == std::string::npos) {
+                ss << format.substr(start - 1);
+                break;
+            }
+
+            FormatItem(ss, format.substr(start, pos - start), argArray);
+            start = pos + 1;
         }
-    }// namespace Utils
-}// namespace MetaEngine
+
+        return ss.str();
+    }
+}// namespace Utils
 
 #endif

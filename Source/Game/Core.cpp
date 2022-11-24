@@ -5,10 +5,6 @@
 
 #include "Game/InEngine.h"
 
-namespace MetaEngine {
-
-}
-
 // STL
 #include <cmath>
 #include <limits>
@@ -16,7 +12,3 @@ namespace MetaEngine {
 
 #include "Game/FileSystem.hpp"
 #include "Game/Utils.hpp"
-
-namespace MetaEngine {
-
-}// namespace MetaEngine

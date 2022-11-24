@@ -55,7 +55,7 @@ struct SettingsBase
     static int server_port;
 };
 
-struct Settings : SettingsBase, MetaEngine::properties::properties
+struct Settings : SettingsBase, Meta::properties::properties
 {
     Settings() {
         LINK_PROPERTY(ui_tweak, &ui_tweak);

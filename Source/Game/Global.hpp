@@ -16,10 +16,7 @@ class Game;
 class Client;
 class Server;
 class Scripts;
-
-namespace MetaEngine {
-    class ImGuiLayer;
-}
+class ImGuiLayer;
 
 #define RegisterFunctions(name, func)              \
     MetaEngine::any_function func_log_info{&func}; \
@@ -30,11 +27,11 @@ struct Global
     Game *game = nullptr;
     Scripts *scripts = nullptr;
 
-    MetaEngine::ImGuiLayer *ImGuiLayer = nullptr;
+    ImGuiLayer *ImGuiLayer = nullptr;
 
     ShaderWorker shaderworker;
     CAudioEngine audioEngine;
-    MetaEngine::GameDir GameDir;
+    GameDir GameDir;
     Platform platform;
 
     Client *client = nullptr;
@@ -45,7 +42,7 @@ struct Global
         ImGuiContext *imgui_context = nullptr;
         void *wndh = nullptr;
 
-        std::map<std::string, MetaEngine::any_function> Functions;
+        std::map<std::string, Meta::any_function> Functions;
 
         // CppSource Functions register
         void (*draw)(void);

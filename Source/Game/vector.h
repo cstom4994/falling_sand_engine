@@ -6,7 +6,7 @@
 #include <utility>
 
 
-namespace MetaEngine::Math {
+namespace Maths {
     namespace detail {
 
         struct nothing
@@ -1392,7 +1392,7 @@ namespace MetaEngine::Math {
         static constexpr auto vec_traits_unit_test = vec_traits_test();
 
     }// namespace traits
-}// namespace MetaEngine::Math
+}// namespace Maths
 
 
 #define MAKE_LIB_FUNC(name)                                                                                                                                                         \

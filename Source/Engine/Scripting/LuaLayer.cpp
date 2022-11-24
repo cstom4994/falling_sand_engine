@@ -8,9 +8,9 @@
 #include "Game/InEngine.h"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
+#include "ImGuiBind.hpp"
 #include "Libs/lua/lua.hpp"
 #include "Libs/lua/sol/sol.hpp"
-#include "ImGuiBind.hpp"
 
 #include <cstring>
 
@@ -38,7 +38,7 @@ static void bindBasic(sol::state &state) {
 
 
     MyStruct myStruct;
-    MetaEngine::StructApply(myStruct, f);
+    Meta::StructApply(myStruct, f);
 }
 
 void bindEverything(sol::state &state) {
@@ -183,8 +183,8 @@ void LuaLayer::onAttach() {
 
     s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua.do_string(MetaEngine::Utils::Format("package.path = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/lua")));
-    s_lua.do_string(MetaEngine::Utils::Format("package.searchpath = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/lua")));
+    s_lua.do_string(Utils::Format("package.path = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/lua")));
+    s_lua.do_string(Utils::Format("package.searchpath = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/lua")));
 
     bindEverything(s_lua);
 

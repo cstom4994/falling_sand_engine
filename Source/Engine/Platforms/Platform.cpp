@@ -67,7 +67,7 @@ int Platform::InitWindow() {
         // create the window
         METADOT_INFO("Creating game window...");
 
-        auto title = MetaEngine::Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
+        auto title = Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
 
         global.platform.window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_flags);
 
@@ -139,7 +139,7 @@ int Platform::InitWindow() {
         Controls::initKey();
 
         METADOT_INFO("Loading ImGUI");
-        METADOT_NEW(C, global.ImGuiLayer, MetaEngine::ImGuiLayer);
+        METADOT_NEW(C, global.ImGuiLayer, ImGuiLayer);
         global.ImGuiLayer->Init(global.platform.window, gl_context);
 
 #if defined(_WIN32)
@@ -185,12 +185,12 @@ void Platform::SetDisplayMode(DisplayMode mode) {
         case DisplayMode::WINDOWED:
             SDL_SetWindowDisplayMode(global.platform.window, NULL);
             SDL_SetWindowFullscreen(global.platform.window, 0);
-            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 0;
+            GameUI::OptionsUI::item_current_idx = 0;
             break;
         case DisplayMode::BORDERLESS:
             SDL_SetWindowDisplayMode(global.platform.window, NULL);
             SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 1;
+            GameUI::OptionsUI::item_current_idx = 1;
             break;
         case DisplayMode::FULLSCREEN:
             SDL_MaximizeWindow(global.platform.window);
@@ -207,7 +207,7 @@ void Platform::SetDisplayMode(DisplayMode mode) {
 
             SDL_SetWindowDisplayMode(global.platform.window, &disp);
             SDL_SetWindowFullscreen(global.platform.window, SDL_WINDOW_FULLSCREEN);
-            MetaEngine::InternalGUI::OptionsUI::item_current_idx = 2;
+            GameUI::OptionsUI::item_current_idx = 2;
             break;
     }
 

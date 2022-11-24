@@ -3,8 +3,7 @@
 #include "PlatformDef.hpp"
 
 
-
-namespace MetaEngine::Platforms {
+namespace Platforms {
 
     const std::string &GetExecutablePath() {
         static std::string out;
@@ -30,4 +29,4 @@ namespace MetaEngine::Platforms {
 #endif
         return out;
     }
-}// namespace MetaEngine::Platforms
+}// namespace Platforms

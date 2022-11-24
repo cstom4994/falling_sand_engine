@@ -113,7 +113,7 @@ void FreeListAllocator::FindFirst(const std::size_t size, const std::size_t alig
          *itPrev = nullptr;
 
     while (it != nullptr) {
-        padding = Utils::CalculatePaddingWithHeader((std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
+        padding = AllocatorUtils::CalculatePaddingWithHeader((std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
         const std::size_t requiredSpace = size + padding;
         if (it->data.blockSize >= requiredSpace) {
             break;
@@ -132,7 +132,7 @@ void FreeListAllocator::FindBest(const std::size_t size, const std::size_t align
     Node *it = m_freeList.head,
          *itPrev = nullptr;
     while (it != nullptr) {
-        padding = Utils::CalculatePaddingWithHeader((std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
+        padding = AllocatorUtils::CalculatePaddingWithHeader((std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
         const std::size_t requiredSpace = size + padding;
         if (it->data.blockSize >= requiredSpace && (it->data.blockSize - requiredSpace < smallestDiff)) {
             bestBlock = it;
@@ -231,7 +231,7 @@ void *LinearAllocator::Allocate(const std::size_t size, const std::size_t alignm
 
     if (alignment != 0 && m_offset % alignment != 0) {
         // Alignment is required. Find the next aligned memory address and update offset
-        padding = Utils::CalculatePadding(currentAddress, alignment);
+        padding = AllocatorUtils::CalculatePadding(currentAddress, alignment);
     }
 
     if (m_offset + padding + size > m_totalSize) {
@@ -340,7 +340,7 @@ StackAllocator::~StackAllocator() {
 void *StackAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
     const std::size_t currentAddress = (std::size_t) m_start_ptr + m_offset;
 
-    std::size_t padding = Utils::CalculatePaddingWithHeader(currentAddress, alignment, sizeof(AllocationHeader));
+    std::size_t padding = AllocatorUtils::CalculatePaddingWithHeader(currentAddress, alignment, sizeof(AllocationHeader));
 
     if (m_offset + padding + size > m_totalSize) {
         return nullptr;

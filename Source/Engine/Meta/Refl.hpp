@@ -34,7 +34,7 @@ namespace IamAfuckingNamespace {
 #include <memory>    // For std::unique_ptr<T>
 #include <vector>    // For std::vector<T>
 
-namespace MetaEngine {
+namespace Meta {
 
     // https://stackoverflow.com/questions/26107041/how-can-i-determine-the-return-type-of-a-c11-member-function
 
@@ -195,7 +195,7 @@ namespace MetaEngine {
         type result_type;
     };
 
-}// namespace MetaEngine
+}// namespace Meta
 
 #endif
 
@@ -1012,7 +1012,7 @@ std::string GetMetaData(TypeData &type_data, std::string key) {
 #include <type_traits>
 #include <utility>
 
-namespace MetaEngine {
+namespace Meta {
 
     namespace detail {
         // 构造一个可以隐式转换为任意类型的类型
@@ -1650,7 +1650,7 @@ namespace MetaEngine {
         };
         using type = decltype(StructApply(std::declval<T>(), FakeApplyer()));
     };
-}// namespace MetaEngine
+}// namespace Meta
 
 
 #include <cstddef>

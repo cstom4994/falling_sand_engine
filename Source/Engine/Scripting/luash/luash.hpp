@@ -98,7 +98,7 @@ namespace luash {
 
     template<class T>
     struct GetAmountOfPrivateDataFields : std::integral_constant<std::size_t,
-                                                                 MetaEngine::StructMemberCount<typename ClassTraits<T>::PrivateData>::value + GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value>
+                                                                 Meta::StructMemberCount<typename ClassTraits<T>::PrivateData>::value + GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value>
     {
     };
     template<>

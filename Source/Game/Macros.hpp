@@ -46,7 +46,7 @@ const char *u8Cpp20(T &&t) noexcept {
     class_name &operator=(class_name &&) = default
 
 #define GENERATE_METHOD_CHECK(NAME, ...)                                                                         \
-    namespace MetaEngine {                                                                                       \
+    namespace Meta {                                                                                             \
         template<typename T>                                                                                     \
         class has_method_##NAME {                                                                                \
             template<typename U>                                                                                 \

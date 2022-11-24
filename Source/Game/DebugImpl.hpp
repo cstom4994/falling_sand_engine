@@ -15,10 +15,8 @@
 #include "Engine/Render/renderer_gpu.h"
 #include <box2d/box2d.h>
 
-namespace MetaEngine {
-    int MetaDot_buildnum(void);
-    const std::string metadata(void);
-}// namespace MetaEngine
+int MetaDot_buildnum(void);
+const std::string metadata(void);
 
 namespace Meko {
     namespace utils {
@@ -1031,7 +1029,8 @@ namespace METADOT_UNIT {
         METADOT_UNIT$(<=)
         METADOT_UNIT$(>)
         METADOT_UNIT$(>=)
-        METADOT_UNIT$(!=) METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
+        METADOT_UNIT$(!=)
+        METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
     };
 }// namespace METADOT_UNIT
 #endif

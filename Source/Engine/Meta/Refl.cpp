@@ -279,7 +279,7 @@ namespace IamAfuckingNamespace {
 auto fuckme() -> void {
     //std::map<std::string, std::function<double(double)>> func_map;
 
-    MetaEngine::any_function f{&TestRefleaction};
+    Meta::any_function f{&TestRefleaction};
 
     METADOT_INFO(f.get_result_type().info->name());
 

@@ -131,7 +131,7 @@ void Scripts::Init() {
 
     LoadMuFuncs();
 
-    std::string init_src = MetaEngine::FUtil::readFileString("data/init.mu");
+    std::string init_src = FUtil::readFileString("data/init.mu");
     MuCore->evaluate(init_src);
 
     auto end = MuCore->callFunction("init");

@@ -3497,7 +3497,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
     snprintf(metaFile, 255, "%s/world.json", worldFileName.c_str());
 
     //FILE* fp = fopen(metaFile, "rb"); // non-Windows use "r"
-    if (!MetaEngine::FUtil::exists(metaFile)) {
+    if (!FUtil::exists(metaFile)) {
         meta.save(worldFileName);
     }
 

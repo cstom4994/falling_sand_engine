@@ -9,7 +9,7 @@ UInt32 METAENGINE_Shaders_LoadShader(METAENGINE_Render_ShaderEnum shader_type, c
     UInt32 shader;
     METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
 
-    std::string source = MetaEngine::FUtil::readFileString(filename);
+    std::string source = FUtil::readFileString(filename);
 
     if (source.empty()) {
         METAENGINE_Render_PushErrorCode("load_shader", METAENGINE_Render_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found", filename);

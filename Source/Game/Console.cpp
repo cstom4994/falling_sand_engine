@@ -3,7 +3,6 @@
 #include "Console.hpp"
 
 #include "Game/Utils.hpp"
-#include "Game/Utils.hpp"
 
 #include <array>
 #include <charconv>
@@ -173,7 +172,7 @@ void terminal_commands::configure_term(argument_type &arg) {
         } else if (cl[2] == strings[cmds::cpl_disable]) {
             arg.term.set_autocomplete_pos(ImTerm::position::nowhere);
         } else {
-            arg.term.add_text_err(MetaEngine::Utils::Format("Unknown completion parameter: {0}", cl[2]));
+            arg.term.add_text_err(Utils::Format("Unknown completion parameter: {0}", cl[2]));
         }
     } else if (cl[1] == strings[cmds::colors]) {
         if (cl.size() == 3 && cl[2] == strings[cmds::col_list_themes]) {
@@ -201,13 +200,13 @@ void terminal_commands::configure_term(argument_type &arg) {
                     return;
                 }
             }
-            arg.term.add_text_err(MetaEngine::Utils::Format("Unknown theme: {0}", cl[3]));
+            arg.term.add_text_err(Utils::Format("Unknown theme: {0}", cl[3]));
 
         } else if (((cl.size() == 8 || cl.size() == 7 || cl.size() == 4) && cl[2] == strings[cmds::col_set_value]) || ((cl.size() == 4) && cl[2] == strings[cmds::col_get_value])) {
             auto it = misc::find_first_prefixed(cl[3], strings.begin() + cmds::csv_begin, strings.begin() + cmds::csv_end, [](auto &&) { return false; });
 
             if (it == strings.begin() + cmds::csv_end) {
-                arg.term.add_text_err(MetaEngine::Utils::Format("Unknown item: {0}", cl[3]));
+                arg.term.add_text_err(Utils::Format("Unknown item: {0}", cl[3]));
                 return;
             }
 
@@ -346,9 +345,9 @@ void terminal_commands::configure_term(argument_type &arg) {
                         return static_cast<int>(v * 255.f + 0.5f);
                     };
                     ;
-                    arg.term.add_text(MetaEngine::Utils::Format("Current value for {0}: [R: {1}] [G: {2}] [B: {3}] [A: {4}]", cl[3], to_255((**theme_color).r), to_255((**theme_color).g), to_255((**theme_color).b), to_255((**theme_color).a)));
+                    arg.term.add_text(Utils::Format("Current value for {0}: [R: {1}] [G: {2}] [B: {3}] [A: {4}]", cl[3], to_255((**theme_color).r), to_255((**theme_color).g), to_255((**theme_color).b), to_255((**theme_color).a)));
                 } else {
-                    arg.term.add_text(MetaEngine::Utils::Format("Current value for {0}: unset", cl[3]));
+                    arg.term.add_text(Utils::Format("Current value for {0}: unset", cl[3]));
                 }
             }
         }
@@ -358,7 +357,7 @@ void terminal_commands::configure_term(argument_type &arg) {
         if (it == strings.begin() + cmds::st_optional_end) {
             it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_optional_end, strings.begin() + cmds::st_end, [](auto &&) { return false; });
             if (it == strings.begin() + cmds::st_end) {
-                arg.term.add_text_err(MetaEngine::Utils::Format("Unknown text field: {0}", cl[2]));
+                arg.term.add_text_err(Utils::Format("Unknown text field: {0}", cl[2]));
             } else if (cl.size() != 10) {
                 arg.term.add_text_err("Not enough/Too much arguments !");
                 arg.term.add_text_err("You should specify, in order: trace text, debug text, info text, warning text, error text, critical text, none text");
@@ -396,7 +395,7 @@ void terminal_commands::configure_term(argument_type &arg) {
         }
 
     } else {
-        arg.term.add_text_err(MetaEngine::Utils::Format("Unknown parameter: {0}", cl[1]));
+        arg.term.add_text_err(Utils::Format("Unknown parameter: {0}", cl[1]));
     }
 }
 
@@ -480,9 +479,9 @@ void terminal_commands::echo(argument_type &arg) {
     }
     if (arg.command_line[1][0] == '-') {
         if (arg.command_line[1] == "--help" || arg.command_line[1] == "-help") {
-            arg.term.add_text(MetaEngine::Utils::Format("usage: {0} [text to be printed]", arg.command_line[0]));
+            arg.term.add_text(Utils::Format("usage: {0} [text to be printed]", arg.command_line[0]));
         } else {
-            arg.term.add_text_err(MetaEngine::Utils::Format("Unknown argument: {0}", arg.command_line[1]));
+            arg.term.add_text_err(Utils::Format("Unknown argument: {0}", arg.command_line[1]));
         }
     } else {
         std::string str{};
@@ -501,7 +500,7 @@ void terminal_commands::echo(argument_type &arg) {
                 str += *it;
             }
         }
-        arg.term.add_text(MetaEngine::Utils::Format("{0}", str));
+        arg.term.add_text(Utils::Format("{0}", str));
     }
 }
 
@@ -515,7 +514,7 @@ void terminal_commands::help(argument_type &arg) {
 
     arg.term.add_text("Available commands:");
     for (const command_type &cmd: local_command_list) {
-        arg.term.add_text(MetaEngine::Utils::Format("        {0}:{1} | {2}", cmd.name, list_element_name_max_size, cmd.description));
+        arg.term.add_text(Utils::Format("        {0}:{1} | {2}", cmd.name, list_element_name_max_size, cmd.description));
     }
     arg.term.add_text("");
     arg.term.add_text("Additional information might be available using \"'command' --help\"");

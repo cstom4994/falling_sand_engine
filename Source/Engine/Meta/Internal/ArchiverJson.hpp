@@ -4,7 +4,7 @@
 
 #include "Properties.hpp"
 
-namespace MetaEngine::properties {
+namespace Meta::properties {
 
     class properties;
 
@@ -26,6 +26,6 @@ namespace MetaEngine::properties {
         static void read_recursively();
     };
 
-}// namespace MetaEngine::properties
+}// namespace Meta::properties
 
 #endif

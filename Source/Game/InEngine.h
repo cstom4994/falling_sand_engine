@@ -23,13 +23,6 @@
 
 #include "Game/Utils.hpp"
 
-
-/*!
-Main namespace of MetaEngine framework. All classes are located here or in nested namespaces
-*/
-namespace MetaEngine {}
-
-
 #define DEVELOPMENT_BUILD
 #define ALPHA_BUILD
 
