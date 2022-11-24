@@ -11,6 +11,7 @@
 #include "Game/DebugImpl.hpp"
 #include "Game/Global.hpp"
 #include "Game/ImGuiLayer.hpp"
+#include "Game/Legacy/GameUI.hpp"
 #include "Game/Textures.hpp"
 #include "MaterialTestGenerator.cpp"
 #include "UserInterface/IMGUI/ImGuiTerminal.hpp"

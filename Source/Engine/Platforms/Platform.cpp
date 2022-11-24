@@ -6,6 +6,7 @@
 #include "Game/Const.hpp"
 #include "Game/Global.hpp"
 #include "Game/Legacy/Game.hpp"
+#include "Game/Legacy/GameUI.hpp"
 #include "Game/Legacy/Networking.hpp"
 #include "Game/Settings.hpp"
 #include "Libs/structopt.hpp"
