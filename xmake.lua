@@ -161,7 +161,6 @@ do
 
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
-    add_files("Source/Libs/external/**.c")
     add_files("Source/Libs/box2d/**.cpp", {unity_group = "libbox2d"})
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")

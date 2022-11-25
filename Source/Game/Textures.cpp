@@ -1,16 +1,17 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#include "Textures.hpp"
 
-#include "Game/InEngine.h"
-
-#include "Game/Textures.hpp"
-
+#include "Game/Core.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
-
+#include "Game/InEngine.h"
 #include "Memory/Memory.hpp"
 #include "Platforms/SDLWrapper.hpp"
-#include "external/stb_image.h"
+
+#include "Libs/cute_aseprite.h"
+#include "Libs/external/stb_image.h"
+#include "SDL_surface.h"
 
 C_Surface *Textures::testTexture = nullptr;
 C_Surface *Textures::dirt1Texture = nullptr;
@@ -29,6 +30,7 @@ C_Surface *Textures::goldSolid = nullptr;
 C_Surface *Textures::iron = nullptr;
 C_Surface *Textures::obsidian = nullptr;
 C_Surface *Textures::caveBG = nullptr;
+C_Surface *Textures::testAse = nullptr;
 
 void Textures::initTexture() {
     testTexture = Textures::loadTexture("data/assets/textures/test.png");
@@ -48,6 +50,8 @@ void Textures::initTexture() {
     iron = Textures::loadTexture("data/assets/textures/iron.png");
     obsidian = Textures::loadTexture("data/assets/textures/obsidian.png");
     caveBG = Textures::loadTexture("data/assets/backgrounds/testCave.png");
+
+    testAse = Textures::loadAseprite("data/assets/textures/tests/1_no_slices_blank.ase");
 }
 
 C_Surface *Textures::loadTexture(std::string path) {
@@ -99,6 +103,49 @@ C_Surface *Textures::loadTexture(std::string path, UInt32 pixelFormat) {
     //stbi_image_free(data);
 
     METADOT_ASSERT_E(loadedSurface);
+
+    return loadedSurface;
+}
+
+C_Surface *Textures::loadAseprite(std::string path) {
+
+    int req_format = STBI_rgb_alpha;
+
+    ase_t *ase = cute_aseprite_load_from_file(METADOT_RESLOC_STR(path), NULL);
+
+    if (ase == 0 || ase->frame_count == 0 || ase->w == 0 || ase->h == 0) {
+        METADOT_ERROR("Failed to load Aseprite");
+        return nullptr;
+    }
+
+    // Set up the pixel format color masks for RGB(A) byte arrays.
+    // Only STBI_rgb (3) and STBI_rgb_alpha (4) are supported here!
+    UInt32 rmask, gmask, bmask, amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    int shift = (req_format == STBI_rgb) ? 8 : 0;
+    rmask = 0xff000000 >> shift;
+    gmask = 0x00ff0000 >> shift;
+    bmask = 0x0000ff00 >> shift;
+    amask = 0x000000ff >> shift;
+#else// little endian, like x86
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = (req_format == STBI_rgb) ? 0 : 0xff000000;
+#endif
+
+    int depth, pitch;
+    if (req_format == STBI_rgb) {
+        depth = 24;
+        pitch = 3 * ase->w;// 3 bytes per pixel * pixels per row
+    } else {               // STBI_rgb_alpha (RGBA)
+        depth = 32;
+        pitch = 4 * ase->w;
+    }
+
+    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom(ase->frames->pixels, ase->w, ase->h, depth, pitch, rmask, gmask, bmask, amask);
+
+    cute_aseprite_free(ase);
 
     return loadedSurface;
 }

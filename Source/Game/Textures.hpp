@@ -4,11 +4,19 @@
 #define _METADOT_TEXTURES_HPP_
 
 #include "Engine/Platforms/SDLWrapper.hpp"
+#include "Game/Core.hpp"
 
 #include <iostream>
 
 
 #define INC_Textures
+
+struct ase_t;
+
+struct Aseprite
+{
+    ase_t *ase;     // Pointer to the cute_aseprite data.
+};
 
 class Textures {
 
@@ -33,10 +41,13 @@ public:
 
     static C_Surface *caveBG;
 
+    static C_Surface *testAse;
+
     static void initTexture();
 
     static C_Surface *loadTexture(std::string path);
     static C_Surface *loadTexture(std::string path, UInt32 pixelFormat);
+    static C_Surface *loadAseprite(std::string path);
 
     static C_Surface *scaleTexture(C_Surface *, float x, float y);
 };
