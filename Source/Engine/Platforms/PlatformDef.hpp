@@ -19,11 +19,13 @@
 #include <bits/types/time_t.h>
 #include <limits.h>
 #include <sys/io.h>
+#include <sys/stat.h>
 #elif defined(METADOT_PLATFORM_APPLE)
 #include <TargetConditionals.h>
 #include <mach-o/dyld.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #endif
 
 #include <string>

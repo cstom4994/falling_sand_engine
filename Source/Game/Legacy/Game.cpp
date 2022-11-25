@@ -29,8 +29,8 @@
 
 #include "Game/FileSystem.hpp"
 
-#include "Render/renderer_gpu.h"
 #include "Engine/Platforms/SDLWrapper.hpp"
+#include "Render/renderer_gpu.h"
 #include "Scripting/LuaLayer.hpp"
 #include "ctpl_stl.h"
 #include "glew.h"
@@ -3686,6 +3686,7 @@ void Game::renderOverlays() {
 
     METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
+    /*
 
 #ifdef DEVELOPMENT_BUILD
     if (dt_versionInfo1.w == -1) {
@@ -3724,6 +3725,8 @@ void Game::renderOverlays() {
     snprintf(buffVersion, sizeof(buffVersion), "Version %s", VERSION);
     Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 #endif
+
+*/
 }
 
 void Game::renderTemperatureMap(World *world) {

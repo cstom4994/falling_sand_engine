@@ -6,34 +6,23 @@
 #include "Game/Core.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/Macros.hpp"
-
-//streams
-#include <filesystem>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <mutex>
-#include <queue>
-#include <set>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include "Game/Utils.hpp"
 
-#define DEVELOPMENT_BUILD
-#define ALPHA_BUILD
-
+// STL
 #include <algorithm>
 #include <deque>
 #include <filesystem>
+#include <fstream>
+#include <functional>
 #include <future>
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <mutex>
+#include <queue>
 #include <regex>
+#include <set>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>

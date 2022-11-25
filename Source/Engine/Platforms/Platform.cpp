@@ -48,7 +48,7 @@ int Platform::InitWindow() {
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
-    UInt32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO;
+    UInt32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
     if (SDL_Init(sdl_init_flags) < 0) {
         METADOT_ERROR("SDL_Init failed: {0}", SDL_GetError());
         return EXIT_FAILURE;
@@ -174,8 +174,8 @@ int Platform::InitWindow() {
 
         //initThread.get();
 
-        global.audioEngine.PlayEvent("event:/Music/Title");
-        global.audioEngine.Update();
+        // global.audioEngine.PlayEvent("event:/Music/Title");
+        // global.audioEngine.Update();
     }
 
     return 0;
