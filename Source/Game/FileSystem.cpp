@@ -71,7 +71,7 @@ std::string FUtil::readFileString(std::string_view path) {
     auto p = METADOT_RESLOC(path);
     if (!exists(p))
         return "";
-    const std::ifstream input_stream(p, std::ios_base::binary);
+    const std::ifstream input_stream(p, std::ios_base::in);
 
     if (input_stream.fail()) {
         METADOT_ERROR("Failed to open file {}", p);
