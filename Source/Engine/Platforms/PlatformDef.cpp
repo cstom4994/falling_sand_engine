@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "PlatformDef.hpp"
-
+#include "Game/Utils.hpp"
+#include "Game/FileSystem.hpp"
 
 namespace Platforms {
 
@@ -12,7 +13,7 @@ namespace Platforms {
             WCHAR path[260];
             GetModuleFileNameW(NULL, path, 260);
             out = SUtil::ws2s(std::wstring(path));
-            cleanPathString(out);
+            FUtil::cleanPathString(out);
         }
 #elif defined(METADOT_PLATFORM_LINUX)
         char result[PATH_MAX];

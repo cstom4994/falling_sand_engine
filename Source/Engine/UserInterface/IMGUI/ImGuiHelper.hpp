@@ -595,10 +595,7 @@ public:
 //}
 //#endif
 
-#if METADOT_USINGSDL
-#include <SDL.h>
-#include <SDL_syswm.h>
-#endif
+#include "Engine/Platforms/SDLWrapper.hpp"
 
 #if defined(__cplusplus)
 

@@ -148,14 +148,14 @@ int Platform::InitWindow() {
         SDL_VERSION(&info.version);
         if (SDL_GetWindowWMInfo(window, &info)) {
             METADOT_ASSERT_E(IsWindow(info.info.win.window));
-            this->data->wndh = info.info.win.window;
+            global.HostData.wndh = info.info.win.window;
         } else {
-            this->data->wndh = NULL;
+            global.HostData.wndh = NULL;
         }
 #elif defined(__linux)
-        this->data->wndh = 0;
+        global.HostData.wndh = 0;
 #elif defined(__APPLE__)
-        //this->data->wndh = 0;
+        //global.HostData.wndh = 0;
 #else
 #error "GetWindowWMInfo Error"
 #endif

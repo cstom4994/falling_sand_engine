@@ -1,4 +1,4 @@
-#include "SDL_platform.h"
+
 #include "renderer_gpu.h"
 
 #include <string>

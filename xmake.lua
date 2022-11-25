@@ -1,7 +1,5 @@
 set_project("MetaDot")
 
-add_requires("libsdl", {configs = {shared = false}, verify = true})
-
 add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
@@ -9,6 +7,14 @@ set_policy("check.auto_ignore_flags", true)
 set_languages("c17", "c++20")
 
 add_rules("mode.debug", "mode.release")
+
+if (is_os("windows")) then
+	add_requires("vcpkg::sdl2")
+	add_packages("vcpkg::sdl2")
+else
+	add_requires("libsdl")
+	add_packages("libsdl")
+end
 
 -- rule("metadot.uidsl")
 -- set_extensions('.uidsl')
@@ -69,7 +75,7 @@ set_exceptions("cxx", "objc")
 
 if (is_os("windows")) then
 
-    set_arch("x86_64")
+    set_arch("x64")
 
     set_toolchains("clang-cl")
 
@@ -92,7 +98,7 @@ if (is_os("windows")) then
 
     add_cxxflags("/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800",
                  "/wd5030", "/wd5222", "/wd4554", "/wd4002", "/utf-8",
-                 "/Zc:__cplusplus", "/EHa", "/Za", "/Ze", "/fp:precise")
+                 "/Zc:__cplusplus", "/EHa", "/Za")
 
     add_cxflags("/bigobj")
 
@@ -144,7 +150,6 @@ defines_list = {}
 target("Libs")
 do
     set_kind("static")
-    add_packages("libsdl")
     add_rules("c.unity_build", {batchsize = 0})
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
@@ -165,7 +170,6 @@ end
 target("Engine")
 do
     set_kind("static")
-    add_packages("libsdl")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_files("Source/Engine/**.c")
@@ -180,7 +184,6 @@ end
 target("MetaDot")
 do
     set_kind("binary")
-    add_packages("libsdl")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)

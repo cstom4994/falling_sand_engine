@@ -30,9 +30,7 @@
 #include "Game/FileSystem.hpp"
 
 #include "Render/renderer_gpu.h"
-#include "SDL_events.h"
-#include "SDL_mouse.h"
-#include "SDL_video.h"
+#include "Engine/Platforms/SDLWrapper.hpp"
 #include "Scripting/LuaLayer.hpp"
 #include "ctpl_stl.h"
 #include "glew.h"
