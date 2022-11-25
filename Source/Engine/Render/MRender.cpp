@@ -21,8 +21,8 @@ void TextFuck(std::string text, uint8_t x, uint8_t y) {
     ImGui::End();
 }
 
-bool Drawing::InitFont(SDL_GLContext *SDLContext) {
-    static SDL_GLContext *m_SDLContext;
+bool Drawing::InitFont(C_GLContext *SDLContext) {
+    static C_GLContext *m_SDLContext;
     m_SDLContext = SDLContext;
 
     return true;

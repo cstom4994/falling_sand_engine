@@ -99,7 +99,7 @@ int Platform::InitWindow() {
 
         global.game->RenderTarget_.realTarget = global.game->RenderTarget_.target;
 
-        SDL_GLContext &gl_context = global.game->RenderTarget_.target->context->context;
+        C_GLContext &gl_context = global.game->RenderTarget_.target->context->context;
 
 
         SDL_GL_MakeCurrent(global.platform.window, gl_context);

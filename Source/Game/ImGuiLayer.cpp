@@ -358,7 +358,7 @@ void ImGuiLayer::end() {
     //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         C_Window *backup_current_window = SDL_GL_GetCurrentWindow();
-        SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+        C_GLContext backup_current_context = SDL_GL_GetCurrentContext();
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(backup_current_window, backup_current_context);

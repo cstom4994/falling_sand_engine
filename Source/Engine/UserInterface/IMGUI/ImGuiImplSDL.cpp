@@ -4,29 +4,15 @@
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 
-#if SDL_VERSION_ATLEAST(2, 0, 4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE 1
-#else
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE 0
-#endif
-#define SDL_HAS_WINDOW_ALPHA SDL_VERSION_ATLEAST(2, 0, 5)
-#define SDL_HAS_ALWAYS_ON_TOP SDL_VERSION_ATLEAST(2, 0, 5)
-#define SDL_HAS_USABLE_DISPLAY_BOUNDS SDL_VERSION_ATLEAST(2, 0, 5)
-#define SDL_HAS_PER_MONITOR_DPI SDL_VERSION_ATLEAST(2, 0, 4)
-#define SDL_HAS_VULKAN SDL_VERSION_ATLEAST(2, 0, 6)
-#if !SDL_HAS_VULKAN
-static const Uint32 SDL_WINDOW_VULKAN = 0x10000000;
-#endif
-
 // SDL Data
 struct ImGui_ImplSDL2_Data
 {
-    SDL_Window *Window;
-    SDL_Renderer *Renderer;
+    C_Window *Window;
+    C_Renderer *Renderer;
     Uint64 Time;
     Uint32 MouseWindowID;
     int MouseButtonsDown;
-    SDL_Cursor *MouseCursors[ImGuiMouseCursor_COUNT];
+    C_Cursor *MouseCursors[ImGuiMouseCursor_COUNT];
     int PendingMouseLeaveFrame;
     char *ClipboardTextData;
     bool MouseCanUseGlobalState;
@@ -647,7 +633,7 @@ static void ImGui_ImplSDL2_UpdateMonitors() {
     for (int n = 0; n < display_count; n++) {
         // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
         ImGuiPlatformMonitor monitor;
-        SDL_Rect r;
+        C_Rect r;
         SDL_GetDisplayBounds(n, &r);
         monitor.MainPos = monitor.WorkPos = ImVec2((float) r.x, (float) r.y);
         monitor.MainSize = monitor.WorkSize = ImVec2((float) r.w, (float) r.h);
@@ -721,10 +707,10 @@ void ImGui_ImplSDL2_NewFrame() {
 // Helper structure we store in the void* RenderUserData field of each ImGuiViewport to easily retrieve our backend data.
 struct ImGui_ImplSDL2_ViewportData
 {
-    SDL_Window *Window;
+    C_Window *Window;
     Uint32 WindowID;
     bool WindowOwned;
-    SDL_GLContext GLContext;
+    C_GLContext GLContext;
 
     ImGui_ImplSDL2_ViewportData() {
         Window = nullptr;
@@ -745,7 +731,7 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport *viewport) {
 
     // Share GL resources with main context
     bool use_opengl = (main_viewport_data->GLContext != nullptr);
-    SDL_GLContext backup_context = nullptr;
+    C_GLContext backup_context = nullptr;
     if (use_opengl) {
         backup_context = SDL_GL_GetCurrentContext();
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);

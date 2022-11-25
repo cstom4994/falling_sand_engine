@@ -97,7 +97,7 @@ struct DrawTextParams_t
 
 class Drawing {
 public:
-    static bool InitFont(SDL_GLContext *SDLContext);
+    static bool InitFont(C_GLContext *SDLContext);
 
     static STBTTF_Font *LoadFont(const char *path, UInt16 size);
 
