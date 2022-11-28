@@ -46,7 +46,7 @@
 
 #ifndef METADOT_LOGGING_FILENAME_WIDTH
 // Width of the column containing the file name
-#define METADOT_LOGGING_FILENAME_WIDTH 14
+#define METADOT_LOGGING_FILENAME_WIDTH 18
 #endif
 
 #ifndef METADOT_LOGGING_THREADNAME_WIDTH
@@ -384,7 +384,7 @@ namespace Logging {
         // NOTE: on SOME platforms Logging::init will only overwrite the thread name
         // if a thread name has not already been set.
         // To always set a thread name, use Logging::set_thread_name instead.
-        const char *main_thread_name = "main thread";
+        const char *main_thread_name = "Main Thread";
 
         SignalOptions signal_options;
     };

@@ -43,7 +43,7 @@
 #include "WorldGenerator.hpp"
 #endif
 
-#include "Game/Const.hpp"
+#include "Core/Const.hpp"
 
 class Populator;
 class WorldGenerator;

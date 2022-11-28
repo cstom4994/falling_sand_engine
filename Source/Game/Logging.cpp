@@ -185,9 +185,9 @@ namespace Logging {
     Verbosity g_internal_verbosity = Verbosity_0;
 
     // Preamble details
-    bool g_preamble_date = true;
-    bool g_preamble_time = true;
-    bool g_preamble_uptime = true;
+    bool g_preamble_date = false;
+    bool g_preamble_time = false;
+    bool g_preamble_uptime = false;
     bool g_preamble_thread = true;
     bool g_preamble_file = true;
     bool g_preamble_verbose = true;

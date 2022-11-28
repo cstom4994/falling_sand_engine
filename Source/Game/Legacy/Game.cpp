@@ -23,7 +23,7 @@
 #include "Engine/Memory/gc.h"
 #include "Engine/Scripting/Scripting.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
-#include "Game/Const.hpp"
+#include "Core/Const.hpp"
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
 
