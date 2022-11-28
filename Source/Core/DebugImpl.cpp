@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "DebugImpl.hpp"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include <cstddef>
 #include <exception>

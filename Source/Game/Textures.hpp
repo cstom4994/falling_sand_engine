@@ -4,7 +4,7 @@
 #define _METADOT_TEXTURES_HPP_
 
 #include "Engine/Platforms/SDLWrapper.hpp"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include <iostream>
 

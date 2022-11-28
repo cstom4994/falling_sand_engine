@@ -29,7 +29,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include "ImGuiImplGL3.h"
 #include "ImGuiImplSDL.h"

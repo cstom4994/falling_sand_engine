@@ -8,8 +8,8 @@
 #include "DefaultGenerator.cpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Game/Console.hpp"
-#include "Game/DebugImpl.hpp"
-#include "Game/Global.hpp"
+#include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Legacy/GameUI.hpp"
 #include "Game/Textures.hpp"
@@ -24,8 +24,8 @@
 #include "Engine/Scripting/Scripting.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/Const.hpp"
-#include "Game/Core.hpp"
-#include "Game/Macros.hpp"
+#include "Core/Core.hpp"
+#include "Core/Macros.hpp"
 
 #include "Game/FileSystem.hpp"
 

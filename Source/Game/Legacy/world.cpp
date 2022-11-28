@@ -7,7 +7,7 @@
 #include "world.hpp"
 #endif
 #include "DefaultGenerator.cpp"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"

@@ -3,8 +3,8 @@
 
 #define REGISTER_REFLECTION
 
-#include "Game/Core.hpp"
-#include "Game/DebugImpl.hpp"
+#include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
 
 
 #include "Refl.hpp"

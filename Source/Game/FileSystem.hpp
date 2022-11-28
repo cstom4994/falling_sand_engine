@@ -4,10 +4,10 @@
 #ifndef _METADOT_FILESYSTEM_HPP_
 #define _METADOT_FILESYSTEM_HPP_
 
-#include "Game/Core.hpp"
-#include "Game/DebugImpl.hpp"
+#include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Game/InEngine.h"
-#include "Game/Macros.hpp"
+#include "Core/Macros.hpp"
 #include "Game/Utils.hpp"
 
 #define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(FUtil::exists(stringPath), Utils::Format("FILE: {0} does not exist", stringPath))

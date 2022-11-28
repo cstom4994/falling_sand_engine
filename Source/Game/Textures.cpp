@@ -2,8 +2,8 @@
 
 #include "Textures.hpp"
 
-#include "Game/Core.hpp"
-#include "Game/DebugImpl.hpp"
+#include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/InEngine.h"
 #include "Memory/Memory.hpp"

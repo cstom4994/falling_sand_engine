@@ -2,7 +2,7 @@
 
 #include "ImGuiBase.hpp"
 
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #ifdef WIN32
 

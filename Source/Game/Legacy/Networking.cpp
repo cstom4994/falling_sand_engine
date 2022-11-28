@@ -3,7 +3,7 @@
 
 #include "Game/InEngine.h"
 
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include "Memory/Memory.hpp"
 #include "Networking.hpp"

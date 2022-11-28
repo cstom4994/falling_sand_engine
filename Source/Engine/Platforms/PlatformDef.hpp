@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "Game/Macros.hpp"
+#include "Core/Macros.hpp"
 
 #if defined(METADOT_PLATFORM_WINDOWS)
 #include <Windows.h>

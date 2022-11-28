@@ -2,7 +2,7 @@
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include <string>
 #include <unordered_map>

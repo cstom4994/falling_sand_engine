@@ -4,7 +4,7 @@
 #define _METADOT_UTILS_HPP_
 
 #include "Engine/Platforms/PlatformDef.hpp"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 #include "Game/InEngine.h"
 
 #include <algorithm>

@@ -3,7 +3,7 @@
 #ifndef _METADOT_REFL_HPP_
 #define _METADOT_REFL_HPP_
 
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 #include "Libs/nameof.hpp"
 
 #include <algorithm>

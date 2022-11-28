@@ -2,7 +2,7 @@
 
 #include "Game/Legacy/GameUI.hpp"
 #include "Engine/Memory/Memory.hpp"
-#include "Game/Global.hpp"
+#include "Core/Global.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Legacy/Game.hpp"
 #include "Game/Settings.hpp"

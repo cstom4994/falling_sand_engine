@@ -13,11 +13,11 @@
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiTerminal.hpp"
 #include "Game/Console.hpp"
-#include "Game/DebugImpl.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Legacy/Networking.hpp"
-#include "Game/Macros.hpp"
+#include "Core/Macros.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif

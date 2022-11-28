@@ -3,7 +3,7 @@
 #ifndef _METADOT_NETWORKING_HPP_
 #define _METADOT_NETWORKING_HPP_
 
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include <functional>
 

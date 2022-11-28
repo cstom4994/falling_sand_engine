@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Chunk.hpp"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
 #include "Engine/Platforms/PlatformDef.hpp"

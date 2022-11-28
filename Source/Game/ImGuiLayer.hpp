@@ -6,7 +6,7 @@
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
-#include "Game/DebugImpl.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Libs/ImGui/TextEditor.h"
 
 class Game;

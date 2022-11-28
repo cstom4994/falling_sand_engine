@@ -4,8 +4,8 @@
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/Scripting/LuaLayer.hpp"
 #include "Engine/Scripting/MuDSL.hpp"
-#include "Game/Core.hpp"
-#include "Game/DebugImpl.hpp"
+#include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include <iostream>
 #include <memory>

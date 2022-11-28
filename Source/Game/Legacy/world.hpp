@@ -8,7 +8,7 @@
 
 #define INC_World
 
-#include "Game/Macros.hpp"
+#include "Core/Macros.hpp"
 
 #include "Networking.hpp"
 #include "Particle.hpp"

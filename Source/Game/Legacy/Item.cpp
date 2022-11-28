@@ -5,7 +5,7 @@
 #include "Item.hpp"
 #endif// !INC_Item
 
-#include "Game/Macros.hpp"
+#include "Core/Macros.hpp"
 
 Item::Item() {}
 

@@ -10,7 +10,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Game/Macros.hpp"
+#include "Core/Macros.hpp"
 
 #include "Engine/Render/renderer_gpu.h"
 #include <box2d/box2d.h>

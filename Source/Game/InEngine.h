@@ -3,9 +3,9 @@
 #ifndef _METADOT_IN_HPP_
 #define _METADOT_IN_HPP_
 
-#include "Game/Core.hpp"
-#include "Game/DebugImpl.hpp"
-#include "Game/Macros.hpp"
+#include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
+#include "Core/Macros.hpp"
 #include "Game/Utils.hpp"
 
 // STL

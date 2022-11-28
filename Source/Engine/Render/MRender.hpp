@@ -5,7 +5,7 @@
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 #include "Engine/Render/renderer_gpu.h"
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 #include "box2d/b2_distance_joint.h"
 
 #include <unordered_map>

@@ -1,5 +1,5 @@
 
-#include "Game/Core.hpp"
+#include "Core/Core.hpp"
 
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
