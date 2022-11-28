@@ -9,8 +9,9 @@
 #include "Memory/Memory.hpp"
 #include "Platforms/SDLWrapper.hpp"
 
-#include "Libs/cute_aseprite.h"
+#include "Libs/Ase_Loader.h"
 #include "Libs/external/stb_image.h"
+#include "Render/renderer_gpu.h"
 #include "SDL_surface.h"
 
 C_Surface *Textures::testTexture = nullptr;
@@ -109,45 +110,23 @@ C_Surface *Textures::loadTexture(std::string path, UInt32 pixelFormat) {
 
 C_Surface *Textures::loadAseprite(std::string path) {
 
-    int req_format = STBI_rgb_alpha;
+    Ase_Output *ase = Ase_Load(METADOT_RESLOC(path));
 
-    ase_t *ase = cute_aseprite_load_from_file(METADOT_RESLOC_STR(path), NULL);
-
-    if (ase == 0 || ase->frame_count == 0 || ase->w == 0 || ase->h == 0) {
-        METADOT_ERROR("Failed to load Aseprite");
-        return nullptr;
+    SDL_PixelFormatEnum pixel_format;
+    if (ase->bpp == 1) {
+        pixel_format = SDL_PIXELFORMAT_INDEX8;
+    } else if (ase->bpp == 4) {
+        pixel_format = SDL_PIXELFORMAT_RGBA32;
+    } else {
+        printf("Test %i BPP not supported!", ase->bpp);
     }
 
-    // Set up the pixel format color masks for RGB(A) byte arrays.
-    // Only STBI_rgb (3) and STBI_rgb_alpha (4) are supported here!
-    UInt32 rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    int shift = (req_format == STBI_rgb) ? 8 : 0;
-    rmask = 0xff000000 >> shift;
-    gmask = 0x00ff0000 >> shift;
-    bmask = 0x0000ff00 >> shift;
-    amask = 0x000000ff >> shift;
-#else// little endian, like x86
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = (req_format == STBI_rgb) ? 0 : 0xff000000;
-#endif
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
+    if (!surface) printf("Surface could not be created!, %s\n", SDL_GetError());
+    SDL_SetPaletteColors(surface->format->palette, (SDL_Color *) &ase->palette.entries, 0, ase->palette.num_entries);
+    SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
 
-    int depth, pitch;
-    if (req_format == STBI_rgb) {
-        depth = 24;
-        pitch = 3 * ase->w;// 3 bytes per pixel * pixels per row
-    } else {               // STBI_rgb_alpha (RGBA)
-        depth = 32;
-        pitch = 4 * ase->w;
-    }
-
-    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom(ase->frames->pixels, ase->w, ase->h, depth, pitch, rmask, gmask, bmask, amask);
-
-    cute_aseprite_free(ase);
-
-    return loadedSurface;
+    return surface;
 }
 
 C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
