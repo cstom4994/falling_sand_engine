@@ -4,13 +4,13 @@
 #define _METADOT_SCRIPTING_HPP_
 
 class LuaLayer;
-namespace MuScript {
-    class MuScriptInterpreter;
+namespace MuDSL {
+    class MuDSLInterpreter;
 }
 
 struct Scripts
 {
-    MuScript::MuScriptInterpreter *MuCore = nullptr;
+    MuDSL::MuDSLInterpreter *MuDSL = nullptr;
     LuaLayer *LuaCore = nullptr;
 
     void Init();

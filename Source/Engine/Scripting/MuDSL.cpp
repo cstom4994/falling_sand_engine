@@ -1,13 +1,13 @@
 
-#include "MuCore.hpp"
+#include "MuDSL.hpp"
 #include "Game/Core.hpp"
 #include <string>
 
 
 // --------------------------------------- expressionImplementation
 
-namespace MuScript {
-    ValueRef MuScriptInterpreter::needsToReturn(ExpressionRef exp, ScopeRef scope, Class *classs) {
+namespace MuDSL {
+    ValueRef MuDSLInterpreter::needsToReturn(ExpressionRef exp, ScopeRef scope, Class *classs) {
         if (exp->type == ExpressionType::Return) {
             return getValue(exp, scope, classs);
         } else {
@@ -19,7 +19,7 @@ namespace MuScript {
         return nullptr;
     }
 
-    ValueRef MuScriptInterpreter::needsToReturn(const vector<ExpressionRef> &subexpressions, ScopeRef scope, Class *classs) {
+    ValueRef MuDSLInterpreter::needsToReturn(const vector<ExpressionRef> &subexpressions, ScopeRef scope, Class *classs) {
         for (auto &&sub: subexpressions) {
             if (auto returnVal = needsToReturn(sub, scope, classs)) {
                 return returnVal;
@@ -30,7 +30,7 @@ namespace MuScript {
 
     // walk the tree depth first and replace any function expressions
     // with a value expression of their results
-    ExpressionRef MuScriptInterpreter::consolidated(ExpressionRef exp, ScopeRef scope, Class *classs) {
+    ExpressionRef MuDSLInterpreter::consolidated(ExpressionRef exp, ScopeRef scope, Class *classs) {
         switch (exp->type) {
             case ExpressionType::DefineVar: {
                 auto &def = get<DefineVar>(exp->expression);
@@ -176,12 +176,12 @@ namespace MuScript {
     }
 
     // evaluate an expression from tokens
-    ValueRef MuScriptInterpreter::getValue(const vector<string_view> &strings, ScopeRef scope, Class *classs) {
+    ValueRef MuDSLInterpreter::getValue(const vector<string_view> &strings, ScopeRef scope, Class *classs) {
         return getValue(getExpression(strings, scope, classs), scope, classs);
     }
 
     // evaluate an expression from expressionRef
-    ValueRef MuScriptInterpreter::getValue(ExpressionRef exp, ScopeRef scope, Class *classs) {
+    ValueRef MuDSLInterpreter::getValue(ExpressionRef exp, ScopeRef scope, Class *classs) {
         // copy the expression so that we don't lose it when we consolidate
         return get<ValueRef>(consolidated(exp, scope, classs)->expression);
     }
@@ -189,7 +189,7 @@ namespace MuScript {
     // since the 'else' block in  an if/elfe is technically in a different scope
     // ifelse espressions are not closed immediately and instead left dangling
     // until the next expression is anything other than an 'else' or the else is unconditional
-    void MuScriptInterpreter::closeDanglingIfExpression() {
+    void MuDSLInterpreter::closeDanglingIfExpression() {
         if (currentExpression && currentExpression->type == ExpressionType::IfElse) {
             if (currentExpression->parent) {
                 currentExpression = currentExpression->parent;
@@ -200,7 +200,7 @@ namespace MuScript {
         }
     }
 
-    bool MuScriptInterpreter::closeCurrentExpression() {
+    bool MuDSLInterpreter::closeCurrentExpression() {
         if (currentExpression) {
             if (currentExpression->type != ExpressionType::IfElse) {
                 if (currentExpression->parent) {
@@ -216,7 +216,7 @@ namespace MuScript {
         }
         return false;
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 // --------------------------------------- expressionImplementation
 
@@ -224,8 +224,8 @@ namespace MuScript {
 // --------------------------------------- functionImplementation
 
 
-namespace MuScript {
-    ValueRef MuScriptInterpreter::callFunction(const string &name, ScopeRef scope, const List &args) {
+namespace MuDSL {
+    ValueRef MuDSLInterpreter::callFunction(const string &name, ScopeRef scope, const List &args) {
         return callFunction(resolveFunction(name, scope), scope, args);
     }
 
@@ -236,7 +236,7 @@ namespace MuScript {
         }
     }
 
-    ValueRef MuScriptInterpreter::callFunction(FunctionRef fnc, ScopeRef scope, const List &args, Class *classs) {
+    ValueRef MuDSLInterpreter::callFunction(FunctionRef fnc, ScopeRef scope, const List &args, Class *classs) {
         switch (fnc->getBodyType()) {
             case FunctionBodyType::Subexpressions: {
                 auto &subexpressions = get<vector<ExpressionRef>>(fnc->body);
@@ -317,7 +317,7 @@ namespace MuScript {
         return make_shared<Value>();
     }
 
-    FunctionRef MuScriptInterpreter::newFunction(const string &name, ScopeRef scope, FunctionRef func) {
+    FunctionRef MuDSLInterpreter::newFunction(const string &name, ScopeRef scope, FunctionRef func) {
         auto &ref = scope->functions[name];
         ref = func;
         if (ref->type == FunctionType::free && scope->isClassScope) {
@@ -328,14 +328,14 @@ namespace MuScript {
         return ref;
     }
 
-    FunctionRef MuScriptInterpreter::newFunction(
+    FunctionRef MuDSLInterpreter::newFunction(
             const string &name,
             ScopeRef scope,
             const vector<string> &argNames) {
         return newFunction(name, scope, make_shared<Function>(name, argNames));
     }
 
-    FunctionRef MuScriptInterpreter::newConstructor(const string &name, ScopeRef scope, FunctionRef func) {
+    FunctionRef MuDSLInterpreter::newConstructor(const string &name, ScopeRef scope, FunctionRef func) {
         auto &ref = scope->functions[name];
         ref = func;
         ref->type = FunctionType::constructor;
@@ -344,14 +344,14 @@ namespace MuScript {
         return ref;
     }
 
-    FunctionRef MuScriptInterpreter::newConstructor(
+    FunctionRef MuDSLInterpreter::newConstructor(
             const string &name,
             ScopeRef scope,
             const vector<string> &argNames) {
         return newConstructor(name, scope, make_shared<Function>(name, argNames));
     }
 
-    FunctionRef MuScriptInterpreter::newClass(const string &name, ScopeRef scope, const unordered_map<string, ValueRef> &variables, const ClassLambda &constructor, const unordered_map<string, ClassLambda> &functions) {
+    FunctionRef MuDSLInterpreter::newClass(const string &name, ScopeRef scope, const unordered_map<string, ValueRef> &variables, const ClassLambda &constructor, const unordered_map<string, ClassLambda> &functions) {
         scope = newClassScope(name, scope);
 
         scope->variables = variables;
@@ -367,7 +367,7 @@ namespace MuScript {
     }
 
     // name resolution for variables
-    ValueRef &MuScriptInterpreter::resolveVariable(const string &name, ScopeRef scope) {
+    ValueRef &MuDSLInterpreter::resolveVariable(const string &name, ScopeRef scope) {
         auto initialScope = scope;
         while (scope) {
             auto iter = scope->variables.find(name);
@@ -388,7 +388,7 @@ namespace MuScript {
         return initialScope->insertVar(name, make_shared<Value>());
     }
 
-    ValueRef &MuScriptInterpreter::resolveVariable(const string &name, Class *classs, ScopeRef scope) {
+    ValueRef &MuDSLInterpreter::resolveVariable(const string &name, Class *classs, ScopeRef scope) {
         auto iter = classs->variables.find(name);
         if (iter != classs->variables.end()) {
             return iter->second;
@@ -396,7 +396,7 @@ namespace MuScript {
         return resolveVariable(name, scope);
     }
 
-    FunctionRef MuScriptInterpreter::resolveFunction(const string &name, Class *classs, ScopeRef scope) {
+    FunctionRef MuDSLInterpreter::resolveFunction(const string &name, Class *classs, ScopeRef scope) {
         auto iter = classs->functionScope->functions.find(name);
         if (iter != classs->functionScope->functions.end()) {
             return iter->second;
@@ -405,7 +405,7 @@ namespace MuScript {
     }
 
     // name lookup for callfunction api method
-    FunctionRef MuScriptInterpreter::resolveFunction(const string &name, ScopeRef scope) {
+    FunctionRef MuDSLInterpreter::resolveFunction(const string &name, ScopeRef scope) {
         auto initialScope = scope;
         while (scope) {
             auto iter = scope->functions.find(name);
@@ -420,7 +420,7 @@ namespace MuScript {
         return func;
     }
 
-    ScopeRef MuScriptInterpreter::resolveScope(const string &name, ScopeRef scope) {
+    ScopeRef MuDSLInterpreter::resolveScope(const string &name, ScopeRef scope) {
         auto initialScope = scope;
         while (scope) {
             auto iter = scope->scopes.find(name);
@@ -437,15 +437,15 @@ namespace MuScript {
         }
         return initialScope->insertScope(make_shared<Scope>(name, initialScope));
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 // --------------------------------------- functionImplementation
 
 
 // --------------------------------------- modulesImplementation
 
-namespace MuScript {
-    ScopeRef MuScriptInterpreter::newModule(const string &name, ModulePrivilegeFlags flags, const unordered_map<string, Lambda> &functions) {
+namespace MuDSL {
+    ScopeRef MuDSLInterpreter::newModule(const string &name, ModulePrivilegeFlags flags, const unordered_map<string, Lambda> &functions) {
         auto &modSource = flags ? optionalModules : modules;
         modSource.emplace_back(flags, make_shared<Scope>(name, this));
         auto scope = modSource.back().scope;
@@ -457,7 +457,7 @@ namespace MuScript {
         return modSource.back().scope;
     }
 
-    Module *MuScriptInterpreter::getOptionalModule(const string &name) {
+    Module *MuDSLInterpreter::getOptionalModule(const string &name) {
         auto iter = std::find_if(optionalModules.begin(), optionalModules.end(), [&name](const auto &mod) { return mod.scope->name == name; });
         if (iter != optionalModules.end()) {
             return &*iter;
@@ -499,7 +499,7 @@ namespace MuScript {
     };
 
 
-    void MuScriptInterpreter::createStandardLibrary() {
+    void MuDSLInterpreter::createStandardLibrary() {
 
         // register compiled functions and standard library:
         newModule(
@@ -1642,7 +1642,7 @@ namespace MuScript {
         listIndexFunctionVarLocation = resolveVariable("listindex", modules.back().scope);
         identityFunctionVarLocation = resolveVariable("identity", modules.back().scope);
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 
 // --------------------------------------- modulesImplementation
@@ -1651,8 +1651,8 @@ namespace MuScript {
 // --------------------------------------- optionalModules
 
 
-namespace MuScript {
-    void MuScriptInterpreter::createOptionalModules() {
+namespace MuDSL {
+    void MuDSLInterpreter::createOptionalModules() {
         newModule(
                 "file",
                 ModulePrivilege::fileSystemRead | ModulePrivilege::fileSystemWrite,
@@ -1701,7 +1701,7 @@ namespace MuScript {
                          }},
                 });
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 
 // --------------------------------------- optionalModules
@@ -1710,7 +1710,7 @@ namespace MuScript {
 // --------------------------------------- parsing
 
 
-namespace MuScript {
+namespace MuDSL {
     // tokenizer special characters
     const std::string WhitespaceChars = " \t\n"s;
     const string GrammarChars = " \t\n,.(){}[];+-/*%<>=!&|\""s;
@@ -1850,7 +1850,7 @@ namespace MuScript {
         return (int) curr < (int) neww || (neww == curr && neww == OperatorPrecedence::incdec);
     }
 
-    ExpressionRef MuScriptInterpreter::getResolveVarExpression(const string &name, bool classScope) {
+    ExpressionRef MuDSLInterpreter::getResolveVarExpression(const string &name, bool classScope) {
         if (classScope) {
             return make_shared<Expression>(nullptr, name);
         } else {
@@ -1859,7 +1859,7 @@ namespace MuScript {
     }
 
     // recursively build an expression tree from a list of tokens
-    ExpressionRef MuScriptInterpreter::getExpression(const vector<string_view> &strings, ScopeRef scope, Class *classs) {
+    ExpressionRef MuDSLInterpreter::getExpression(const vector<string_view> &strings, ScopeRef scope, Class *classs) {
         ExpressionRef root = nullptr;
         size_t i = 0;
         while (i < strings.size()) {
@@ -2228,7 +2228,7 @@ namespace MuScript {
     }
 
     // parse one token at a time, uses the state machine
-    void MuScriptInterpreter::parse(string_view token) {
+    void MuDSLInterpreter::parse(string_view token) {
         auto tempState = parseState;
         switch (parseState) {
             case ParseState::beginExpression: {
@@ -2545,7 +2545,7 @@ namespace MuScript {
         prevState = tempState;
     }
 
-    bool MuScriptInterpreter::readLine(string_view text) {
+    bool MuDSLInterpreter::readLine(string_view text) {
         ++currentLine;
         auto tokenCount = 0;
         auto tokens = ViewTokenize(text);
@@ -2556,7 +2556,7 @@ namespace MuScript {
                 ++tokenCount;
             }
         } catch (Exception e) {
-#if defined MUSCRIPT_DO_INTERNAL_PRINT
+#if defined MuDSL_DO_INTERNAL_PRINT
             callFunctionWithArgs(resolveFunction("print"), "Error at line "s + std::to_string(currentLine) + ", at: " + std::to_string(tokenCount) + string(tokens[tokenCount]) + ": " + e.wh + "\n");
 #else
             printf("Error at line %llu at %i: %s : %s\n", currentLine, tokenCount, string(tokens[tokenCount]).c_str(), e.wh.c_str());
@@ -2566,7 +2566,7 @@ namespace MuScript {
             currentExpression = nullptr;
             didExcept = true;
         } catch (std::exception &e) {
-#if defined MUSCRIPT_DO_INTERNAL_PRINT
+#if defined MuDSL_DO_INTERNAL_PRINT
             callFunctionWithArgs(resolveFunction("print"), "Error at line "s + std::to_string(currentLine) + ", at: " + std::to_string(tokenCount) + string(tokens[tokenCount]) + ": " + e.what() + "\n");
 #else
             printf("Error at line %llu at %i: %s : %s\n", currentLine, tokenCount, string(tokens[tokenCount]).c_str(), e.what());
@@ -2579,7 +2579,7 @@ namespace MuScript {
         return didExcept;
     }
 
-    bool MuScriptInterpreter::evaluate(string_view script) {
+    bool MuDSLInterpreter::evaluate(string_view script) {
         for (auto &line: split(script, '\n')) {
             if (readLine(line)) {
                 return true;
@@ -2589,7 +2589,7 @@ namespace MuScript {
         return readLine(";"s);
     }
 
-    bool MuScriptInterpreter::evaluateFile(const string &path) {
+    bool MuDSLInterpreter::evaluateFile(const string &path) {
         string s;
         auto file = std::ifstream(path);
         if (file) {
@@ -2608,7 +2608,7 @@ namespace MuScript {
         }
     }
 
-    bool MuScriptInterpreter::readLine(string_view text, ScopeRef scope) {
+    bool MuDSLInterpreter::readLine(string_view text, ScopeRef scope) {
         auto temp = parseScope;
         parseScope = scope;
         auto result = readLine(text);
@@ -2616,7 +2616,7 @@ namespace MuScript {
         return result;
     }
 
-    bool MuScriptInterpreter::evaluate(string_view script, ScopeRef scope) {
+    bool MuDSLInterpreter::evaluate(string_view script, ScopeRef scope) {
         auto temp = parseScope;
         parseScope = scope;
         auto result = evaluate(script);
@@ -2624,7 +2624,7 @@ namespace MuScript {
         return result;
     }
 
-    bool MuScriptInterpreter::evaluateFile(const string &path, ScopeRef scope) {
+    bool MuDSLInterpreter::evaluateFile(const string &path, ScopeRef scope) {
         auto temp = parseScope;
         parseScope = scope;
         auto result = evaluateFile(path);
@@ -2640,7 +2640,7 @@ namespace MuScript {
         s->scopes.clear();
     }
 
-    void MuScriptInterpreter::clearState() {
+    void MuDSLInterpreter::clearState() {
         clearParseStacks();
         ClearScope(globalScope);
         globalScope = make_shared<Scope>(this);
@@ -2652,12 +2652,12 @@ namespace MuScript {
     }
 
     // general purpose clear to reset state machine for next statement
-    void MuScriptInterpreter::clearParseStacks() {
+    void MuDSLInterpreter::clearParseStacks() {
         parseState = ParseState::beginExpression;
         parseStrings.clear();
         outerNestLayer = 0;
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 
 // --------------------------------------- parsing
@@ -2666,9 +2666,9 @@ namespace MuScript {
 // --------------------------------------- scopeImplementation
 
 
-namespace MuScript {
+namespace MuDSL {
     // scope control lets you have object lifetimes
-    ScopeRef MuScriptInterpreter::newScope(const string &name, ScopeRef scope) {
+    ScopeRef MuDSLInterpreter::newScope(const string &name, ScopeRef scope) {
         // if the scope exists we just use it as is
         auto iter = scope->scopes.find(name);
         if (iter != scope->scopes.end()) {
@@ -2678,12 +2678,12 @@ namespace MuScript {
         }
     }
 
-    ScopeRef MuScriptInterpreter::insertScope(ScopeRef existing, ScopeRef parent) {
+    ScopeRef MuDSLInterpreter::insertScope(ScopeRef existing, ScopeRef parent) {
         existing->parent = parent;
         return parent->insertScope(existing);
     }
 
-    void MuScriptInterpreter::closeScope(ScopeRef &scope) {
+    void MuDSLInterpreter::closeScope(ScopeRef &scope) {
         if (scope->parent) {
             if (scope->isClassScope) {
                 scope = scope->parent;
@@ -2698,17 +2698,17 @@ namespace MuScript {
         }
     }
 
-    ScopeRef MuScriptInterpreter::newClassScope(const string &name, ScopeRef scope) {
+    ScopeRef MuDSLInterpreter::newClassScope(const string &name, ScopeRef scope) {
         auto ref = newScope(name, scope);
         ref->isClassScope = true;
         return ref;
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 
 // --------------------------------------- scopeImplementation
 
-namespace MuScript {
+namespace MuDSL {
     template<typename T>
     vector<T> &Array::getStdVector() {
         return get<vector<T>>(value);
@@ -3223,4 +3223,4 @@ namespace MuScript {
             }
         }
     }
-}// namespace MuScript
+}// namespace MuDSL

@@ -2,8 +2,8 @@
 // copyright KaoruXun 2022
 // MIT license
 
-#ifndef _METADOT_MUCORE_HPP_
-#define _METADOT_MUCORE_HPP_
+#ifndef _METADOT_MUDSL_HPP_
+#define _METADOT_MUDSL_HPP_
 
 #include <algorithm>
 #include <charconv>
@@ -19,18 +19,18 @@
 #include <vector>
 
 
-namespace MuScript {
+namespace MuDSL {
     struct Exception : public std::exception
     {
         std::string wh;
-        Exception(const std::string &w) : wh("MuScript Exception:" + w){};
+        Exception(const std::string &w) : wh("MuDSL Exception:" + w){};
     };
-}// namespace MuScript
+}// namespace MuDSL
 
 
 #pragma region PreSetting
 
-namespace MuScript {
+namespace MuDSL {
     using std::string;
     using std::string_view;
     using std::vector;
@@ -127,7 +127,7 @@ namespace MuScript {
             lpos = pos;
         }
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 
 #include <algorithm>
@@ -140,7 +140,7 @@ namespace MuScript {
 #include <vector>
 
 
-namespace MuScript {
+namespace MuDSL {
     using std::function;
     using std::get;
     using std::make_shared;
@@ -154,13 +154,13 @@ namespace MuScript {
     using std::vector;
     using namespace std::string_literals;
 
-#ifdef MUSCRIPT_USE_32_BIT_NUMBERS
+#ifdef MuDSL_USE_32_BIT_NUMBERS
     using Int = int;
     using Float = float;
 #else
     using Int = int64_t;
     using Float = double;
-#endif// MUSCRIPT_USE_32_BIT_TYPES
+#endif// MuDSL_USE_32_BIT_TYPES
 
     // our basic Type flag
     enum class Type : uint8_t {
@@ -411,7 +411,7 @@ namespace MuScript {
     // forward declare our value type so we can build abstract collections
     struct Value;
 
-    // MuScript uses shared_ptr for ref counting, anything with a name
+    // MuDSL uses shared_ptr for ref counting, anything with a name
     // like fooRef is a a shared_ptr to foo
     using ValueRef = shared_ptr<Value>;
 
@@ -715,7 +715,7 @@ namespace MuScript {
         string name;
         unordered_map<string, ValueRef> variables;
         ScopeRef functionScope;
-#ifndef MUSCRIPT_THREAD_UNSAFE
+#ifndef MuDSL_THREAD_UNSAFE
         std::mutex varInsert;
 #endif
 
@@ -726,7 +726,7 @@ namespace MuScript {
         ~Class();
 
         ValueRef &insertVar(const string &n, ValueRef val) {
-#ifndef MUSCRIPT_THREAD_UNSAFE
+#ifndef MuDSL_THREAD_UNSAFE
             auto l = std::unique_lock(varInsert);
 #endif
             auto &ref = variables[n];
@@ -748,7 +748,7 @@ namespace MuScript {
         func
     };
 
-    // Lambda is a "native function" it's how you wrap c++ code for use inside MuScript
+    // Lambda is a "native function" it's how you wrap c++ code for use inside MuDSL
     using Lambda = function<ValueRef(const List &)>;
     using ScopedLambda = function<ValueRef(ScopeRef, const List &)>;
     using ClassLambda = function<ValueRef(Class *, ScopeRef, const List &)>;
@@ -823,7 +823,7 @@ namespace MuScript {
             : name(name_), opPrecedence(getPrecedence(name_)), body(l) {}
         Function(const string &name_, const ClassLambda &l)
             : name(name_), opPrecedence(getPrecedence(name_)), body(l) {}
-        // when using a MuScript function body
+        // when using a MuDSL function body
         // the operator precedence will always be "func" level (aka the highest)
         Function(const string &name_, const vector<string> &argNames_, const vector<ExpressionRef> &body_)
             : name(name_), body(body_), argNames(argNames_), opPrecedence(OperatorPrecedence::func) {}
@@ -834,10 +834,10 @@ namespace MuScript {
         Function() : name("__anon") {}
         Function(const Function &o) = default;
     };
-}// namespace MuScript
+}// namespace MuDSL
 
 
-namespace MuScript {
+namespace MuDSL {
     struct Null
     {
     };
@@ -1477,13 +1477,13 @@ namespace MuScript {
         }
         return false;
     }
-}// namespace MuScript
+}// namespace MuDSL
 
 
 #pragma endregion PreSetting
 
 
-namespace MuScript {
+namespace MuDSL {
     // describes an expression tree with a function at the root
     struct FunctionExpression
     {
@@ -1662,7 +1662,7 @@ namespace MuScript {
                     IfElse>;
 
     // forward declare so we can use the parser to process functions
-    class MuScriptInterpreter;
+    class MuDSLInterpreter;
     // describes a 'generic' expression tree, with either a value or function at the root
     struct Expression
     {
@@ -1799,10 +1799,10 @@ namespace MuScript {
             }
         }
     };
-}// namespace MuScript
+}// namespace MuDSL
 
 
-namespace MuScript {
+namespace MuDSL {
     using ModulePrivilegeFlags = uint8_t;
 
     // bitfield for privileges
@@ -1852,19 +1852,19 @@ namespace MuScript {
         ScopeRef scope;
         Module(ModulePrivilegeFlags f, ScopeRef s) : requiredPermissions(f), scope(s) {}
     };
-}// namespace MuScript
+}// namespace MuDSL
 
 
 #include <mutex>
 
-namespace MuScript {
+namespace MuDSL {
     struct Scope
     {
         // this is the main storage object for all functions and variables
         string name;
         ScopeRef parent;
-        MuScriptInterpreter *host;
-#ifndef MUSCRIPT_THREAD_UNSAFE
+        MuDSLInterpreter *host;
+#ifndef MuDSL_THREAD_UNSAFE
         std::mutex varInsert;
         std::mutex scopeInsert;
         std::mutex fncInsert;
@@ -1875,7 +1875,7 @@ namespace MuScript {
         bool isClassScope = false;
 
         ValueRef &insertVar(const string &n, ValueRef val) {
-#ifndef MUSCRIPT_THREAD_UNSAFE
+#ifndef MuDSL_THREAD_UNSAFE
             auto l = std::unique_lock(varInsert);
 #endif
             auto &ref = variables[n];
@@ -1885,15 +1885,15 @@ namespace MuScript {
         }
 
         ScopeRef insertScope(ScopeRef val) {
-#ifndef MUSCRIPT_THREAD_UNSAFE
+#ifndef MuDSL_THREAD_UNSAFE
             auto l = std::unique_lock(scopeInsert);
 #endif
             scopes[val->name] = val;
             return val;
         }
 
-        Scope(MuScriptInterpreter *interpereter) : name("global"), parent(nullptr), host(interpereter) {}
-        Scope(const string &name_, MuScriptInterpreter *interpereter) : name(name_), parent(nullptr), host(interpereter) {}
+        Scope(MuDSLInterpreter *interpereter) : name("global"), parent(nullptr), host(interpereter) {}
+        Scope(const string &name_, MuDSLInterpreter *interpereter) : name(name_), parent(nullptr), host(interpereter) {}
         Scope(const string &name_, ScopeRef scope) : name(name_), parent(scope), host(scope->host) {}
         Scope(const Scope &o) : name(o.name), parent(o.parent), scopes(o.scopes), functions(o.functions), host(o.host) {
             // copy vars by value when cloning a scope
@@ -1903,10 +1903,10 @@ namespace MuScript {
         }
         Scope(const string &name_, const unordered_map<string, ValueRef> &variables_) : name(name_), variables(variables_) {}
     };
-}// namespace MuScript
+}// namespace MuDSL
 
 
-namespace MuScript {
+namespace MuDSL {
     // state enum for state machine for token by token parsing
     enum class ParseState : uint8_t {
         beginExpression,
@@ -1925,7 +1925,7 @@ namespace MuScript {
     };
 
     // finally we have our interpereter
-    class MuScriptInterpreter {
+    class MuDSLInterpreter {
         friend Expression;
         vector<Module> modules;
         vector<Module> optionalModules;
@@ -2015,17 +2015,17 @@ namespace MuScript {
         bool evaluate(string_view script, ScopeRef scope);
         bool evaluateFile(const string &path, ScopeRef scope);
         void clearState();
-        MuScriptInterpreter(ModulePrivilegeFlags priv) : allowedModulePrivileges(priv) {
+        MuDSLInterpreter(ModulePrivilegeFlags priv) : allowedModulePrivileges(priv) {
             createStandardLibrary();
             if (priv) { createOptionalModules(); }
         }
-        MuScriptInterpreter(ModulePrivilege priv) : MuScriptInterpreter(static_cast<ModulePrivilegeFlags>(priv)) {}
-        MuScriptInterpreter() : MuScriptInterpreter(ModulePrivilegeFlags()) {}
+        MuDSLInterpreter(ModulePrivilege priv) : MuDSLInterpreter(static_cast<ModulePrivilegeFlags>(priv)) {}
+        MuDSLInterpreter() : MuDSLInterpreter(ModulePrivilegeFlags()) {}
     };
-}// namespace MuScript
+}// namespace MuDSL
 
-#if defined(__EMSCRIPTEN__) || defined(MUSCRIPT_INTERNAL_PRINT)
-#define MUSCRIPT_DO_INTERNAL_PRINT
+#if defined(__EMSCRIPTEN__) || defined(MuDSL_INTERNAL_PRINT)
+#define MuDSL_DO_INTERNAL_PRINT
 #endif
 
 #endif

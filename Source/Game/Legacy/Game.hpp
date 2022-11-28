@@ -217,32 +217,24 @@ public:
         if (stateal.has_value()) { this->stateAfterLoad = stateal.value(); }
     }
 
-    void updateMaterialSounds();
-
-    void createTexture();
-
     Game(int argc, char *argv[]);
     ~Game();
 
     int init(int argc, char *argv[]);
-
     int run(int argc, char *argv[]);
-
     void updateFrameEarly();
     void tick();
     void tickChunkLoading();
     void tickPlayer();
     void updateFrameLate();
     void renderOverlays();
-
+    void updateMaterialSounds();
+    void createTexture();
     void renderEarly();
     void renderLate();
-
     void renderTemperatureMap(World *world);
-
     int getAimSolidSurface(int dist);
     int getAimSurface(int dist);
-
     void quitToMainMenu();
 };
 

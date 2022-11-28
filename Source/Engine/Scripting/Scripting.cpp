@@ -3,7 +3,7 @@
 #include "Engine/Scripting/Scripting.hpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/Scripting/LuaLayer.hpp"
-#include "Engine/Scripting/MuCore.hpp"
+#include "Engine/Scripting/MuDSL.hpp"
 #include "Game/Core.hpp"
 #include "Game/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
@@ -13,7 +13,7 @@
 
 #if 0
 
-MuScript::Int integrationExample(MuScript::Int a, MuScript::Int b) {
+MuDSL::Int integrationExample(MuDSL::Int a, MuDSL::Int b) {
     return (a * b) + b;
 }
 
@@ -31,24 +31,24 @@ void integrationExample() {
 
     // Demo c++ integration
     // Step 1: Create a function wrapper
-    auto newfunc = MuCore->newFunction("integrationExample", [](const MuScript::List &args) {
-        // MuScript doesn't enforce argument counts, so make sure you have enough
+    auto newfunc = MuCore->newFunction("integrationExample", [](const MuDSL::List &args) {
+        // MuDSL doesn't enforce argument counts, so make sure you have enough
         if (args.size() < 2) {
-            return std::make_shared<MuScript::Value>();
+            return std::make_shared<MuDSL::Value>();
         }
         // Dereference arguments
         auto a = *args[0];
         auto b = *args[1];
         // Coerce types
-        a.hardconvert(MuScript::Type::Int);
-        b.hardconvert(MuScript::Type::Int);
+        a.hardconvert(MuDSL::Type::Int);
+        b.hardconvert(MuDSL::Type::Int);
         // Call c++ code
         auto result = integrationExample(a.getInt(), b.getInt());
         // Wrap and return
-        return std::make_shared<MuScript::Value>(result);
+        return std::make_shared<MuDSL::Value>(result);
     });
 
-    // Step 2: Call into MuScript
+    // Step 2: Call into MuDSL
     // send command into script interperereter
     MuCore->readLine("i = integrationExample(4, 3);");
 
@@ -56,7 +56,7 @@ void integrationExample() {
     auto varRef = MuCore->resolveVariable("i");
 
     // or just call a function directly
-    varRef = MuCore->callFunctionWithArgs(newfunc, MuScript::Int(4), MuScript::Int(3));
+    varRef = MuCore->callFunctionWithArgs(newfunc, MuDSL::Int(4), MuDSL::Int(3));
 
     // Setp 3: Unwrap your result
     // if the type is known
@@ -68,40 +68,40 @@ void integrationExample() {
 
     // switch style
     switch (varRef->getType()) {
-        case MuScript::Type::Int:
+        case MuDSL::Type::Int:
             std::cout << varRef->getInt() << "\n";
             break;
-        case MuScript::Type::Float:
+        case MuDSL::Type::Float:
             std::cout << varRef->getFloat() << "\n";
             break;
-        case MuScript::Type::String:
+        case MuDSL::Type::String:
             std::cout << varRef->getString() << "\n";
             break;
         default:
             break;
     }
 
-    // create a MuScript class from C++:
-    MuCore->newClass("beansClass", {{"color", std::make_shared<MuScript::Value>("white")}},
+    // create a MuDSL class from C++:
+    MuCore->newClass("beansClass", {{"color", std::make_shared<MuDSL::Value>("white")}},
                      // constructor is required
-                     [](MuScript::Class *classs, MuScript::ScopeRef scope, const MuScript::List &vars) {
+                     [](MuDSL::Class *classs, MuDSL::ScopeRef scope, const MuDSL::List &vars) {
                          if (vars.size() > 0) {
                              MuCore->resolveVariable("color", classs, scope) = vars[0];
                          }
-                         return std::make_shared<MuScript::Value>();
+                         return std::make_shared<MuDSL::Value>();
                      },
                      // add as many functions as you want
                      {
-                             {"changeColor", [](MuScript::Class *classs, MuScript::ScopeRef scope, const MuScript::List &vars) {
+                             {"changeColor", [](MuDSL::Class *classs, MuDSL::ScopeRef scope, const MuDSL::List &vars) {
                                   if (vars.size() > 0) {
                                       MuCore->resolveVariable("color", classs, scope) = vars[0];
                                   }
-                                  return std::make_shared<MuScript::Value>();
+                                  return std::make_shared<MuDSL::Value>();
                               }},
-                             {"isRipe", [](MuScript::Class *classs, MuScript::ScopeRef scope, const MuScript::List &) {
+                             {"isRipe", [](MuDSL::Class *classs, MuDSL::ScopeRef scope, const MuDSL::List &) {
                                   auto color = MuCore->resolveVariable("color", classs, scope);
-                                  if (color->getType() == MuScript::Type::String) { return std::make_shared<MuScript::Value>(color->getString() == "brown"); }
-                                  return std::make_shared<MuScript::Value>(false);
+                                  if (color->getType() == MuDSL::Type::String) { return std::make_shared<MuDSL::Value>(color->getString() == "brown"); }
+                                  return std::make_shared<MuDSL::Value>(false);
                               }},
                      });
 
@@ -114,9 +114,9 @@ void integrationExample() {
     auto ripeRef = MuCore->resolveVariable("ripe");
 
     // read the values!
-    if (beanRef->getType() == MuScript::Type::Class && ripeRef->getType() == MuScript::Type::Int) {
+    if (beanRef->getType() == MuDSL::Type::Class && ripeRef->getType() == MuDSL::Type::Int) {
         auto colorRef = beanRef->getClass()->variables["color"];
-        if (colorRef->getType() == MuScript::Type::String) {
+        if (colorRef->getType() == MuDSL::Type::String) {
             std::cout << "My bean is " << beanRef->getClass()->variables["color"]->getString() << " and it is " << (ripeRef->getBool() ? "ripe" : "unripe") << "\n";
         }
     }
@@ -127,21 +127,21 @@ void integrationExample() {
 
 
 void Scripts::Init() {
-    METADOT_NEW(C, MuCore, MuScript::MuScriptInterpreter, MuScript::ModulePrivilege::allPrivilege);
+    METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);
 
     LoadMuFuncs();
 
     std::string init_src = FUtil::readFileString("data/init.mu");
-    MuCore->evaluate(init_src);
+    MuDSL->evaluate(init_src);
 
-    auto end = MuCore->callFunction("init");
+    auto end = MuDSL->callFunction("init");
 }
 
 void Scripts::End() {
 
-    auto end = MuCore->callFunction("end");
+    auto end = MuDSL->callFunction("end");
 
-    METADOT_DELETE_EX(C, MuCore, MuScriptInterpreter, MuScript::MuScriptInterpreter);
+    METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
 }
 
 void Scripts::Update() {
@@ -150,19 +150,19 @@ void Scripts::Update() {
 
 void Scripts::LoadMuFuncs() {
 
-    METADOT_ASSERT_E(MuCore);
+    METADOT_ASSERT_E(MuDSL);
 
-    auto loadFunc = [&](const MuScript::List &args) {
+    auto loadFunc = [&](const MuDSL::List &args) {
         METADOT_NEW(C, LuaCore, LuaLayer);
         LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
-        return std::make_shared<MuScript::Value>();
+        return std::make_shared<MuDSL::Value>();
     };
-    auto loadLua = MuCore->newFunction("loadLua", loadFunc);
+    auto loadLua = MuDSL->newFunction("loadLua", loadFunc);
 
-    auto endFunc = [&](const MuScript::List &args) {
+    auto endFunc = [&](const MuDSL::List &args) {
         LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
         METADOT_DELETE(C, LuaCore, LuaLayer);
-        return std::make_shared<MuScript::Value>();
+        return std::make_shared<MuDSL::Value>();
     };
-    auto endLua = MuCore->newFunction("endLua", endFunc);
+    auto endLua = MuDSL->newFunction("endLua", endFunc);
 }
