@@ -9,11 +9,11 @@ set_languages("c17", "c++20")
 add_rules("mode.debug", "mode.release")
 
 if (is_os("windows")) then
-	add_requires("vcpkg::sdl2")
-	add_packages("vcpkg::sdl2")
+    add_requires("vcpkg::sdl2")
+    add_packages("vcpkg::sdl2")
 else
-	add_requires("libsdl")
-	add_packages("libsdl")
+    add_requires("libsdl")
+    add_packages("libsdl")
 end
 
 -- rule("metadot.uidsl")
@@ -154,11 +154,13 @@ do
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
     add_defines(defines_list)
+    add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE", "CONFIG_BIGNUM")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
               "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
               "Source/Libs/glew/**.c", {unity_group = "libone"})
 
+    add_files("Source/Libs/quickjs/*.c")
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
     add_files("Source/Libs/box2d/**.cpp", {unity_group = "libbox2d"})
