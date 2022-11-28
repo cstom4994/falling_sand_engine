@@ -46,13 +46,6 @@ enum GameState {
     INGAME
 };
 
-enum WindowFlashAction {
-    START,
-    START_COUNT,
-    START_UNTIL_FG,
-    STOP
-};
-
 struct GameTimeState
 {
     int fps = 0;
@@ -225,9 +218,6 @@ public:
     }
 
     void updateMaterialSounds();
-    void setVSync(bool vsync);
-    void setMinimizeOnLostFocus(bool minimize);
-    void setWindowFlash(WindowFlashAction action, int count, int period);
 
     void createTexture();
 

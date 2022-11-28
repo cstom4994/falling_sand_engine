@@ -249,3 +249,44 @@ void Platform::HandleWindowSizeChange(int newWidth, int newHeight) {
         }
     }
 }
+
+void Platform::SetWindowFlash(WindowFlashAction action, int count, int period) {
+    // TODO: look into alternatives for linux/crossplatform
+#ifdef _WIN32
+
+    FLASHWINFO flash;
+    flash.cbSize = sizeof(FLASHWINFO);
+    //flash.hwnd = hwnd;
+    flash.uCount = count;
+    flash.dwTimeout = period;
+
+    // pretty sure these flags are supposed to work but they all seem to do the same thing on my machine so idk
+    switch (action) {
+        case WindowFlashAction::START:
+            flash.dwFlags = FLASHW_ALL;
+            break;
+        case WindowFlashAction::START_COUNT:
+            flash.dwFlags = FLASHW_ALL | FLASHW_TIMER;
+            break;
+        case WindowFlashAction::START_UNTIL_FG:
+            flash.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG;
+            break;
+        case WindowFlashAction::STOP:
+            flash.dwFlags = FLASHW_STOP;
+            break;
+    }
+
+    FlashWindowEx(&flash);
+
+#endif
+}
+
+void Platform::SetVSync(bool vsync) {
+    SDL_GL_SetSwapInterval(vsync ? 1 : 0);
+    GameUI::OptionsUI::vsync = vsync;
+}
+
+void Platform::SetMinimizeOnLostFocus(bool minimize) {
+    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
+    GameUI::OptionsUI::minimizeOnFocus = minimize;
+}

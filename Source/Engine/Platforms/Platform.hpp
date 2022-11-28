@@ -11,6 +11,13 @@ enum DisplayMode {
     FULLSCREEN
 };
 
+enum WindowFlashAction {
+    START,
+    START_COUNT,
+    START_UNTIL_FG,
+    STOP
+};
+
 struct Platform
 {
     C_Window *window = nullptr;
@@ -22,6 +29,9 @@ struct Platform
     int InitWindow();
     void SetDisplayMode(DisplayMode mode);
     void HandleWindowSizeChange(int newWidth, int newHeight);
+    void SetWindowFlash(WindowFlashAction action, int count, int period);
+    void SetVSync(bool vsync);
+    void SetMinimizeOnLostFocus(bool minimize);
 };
 
 #endif

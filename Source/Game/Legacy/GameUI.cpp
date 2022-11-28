@@ -256,11 +256,11 @@ namespace GameUI {
         }
 
         if (ImGui::Checkbox("VSync", &vsync)) {
-            game->setVSync(vsync);
+            global.platform.SetVSync(vsync);
         }
 
         if (ImGui::Checkbox("失去焦点后最小化", &minimizeOnFocus)) {
-            game->setMinimizeOnLostFocus(minimizeOnFocus);
+            global.platform.SetMinimizeOnLostFocus(minimizeOnFocus);
         }
 
 

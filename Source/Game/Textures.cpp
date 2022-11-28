@@ -52,7 +52,7 @@ void Textures::initTexture() {
     obsidian = Textures::loadTexture("data/assets/textures/obsidian.png");
     caveBG = Textures::loadTexture("data/assets/backgrounds/testCave.png");
 
-    testAse = Textures::loadAseprite("data/assets/textures/tests/5.0_rgba_format.ase");
+    testAse = Textures::loadAseprite("data/assets/textures/tests/3.0_one_slice.ase");
 }
 
 C_Surface *Textures::loadTexture(std::string path) {
@@ -118,11 +118,11 @@ C_Surface *Textures::loadAseprite(std::string path) {
     } else if (ase->bpp == 4) {
         pixel_format = SDL_PIXELFORMAT_RGBA32;
     } else {
-        printf("Test %i BPP not supported!", ase->bpp);
+        METADOT_ERROR("Test {} BPP not supported!", ase->bpp);
     }
 
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
-    if (!surface) printf("Surface could not be created!, %s\n", SDL_GetError());
+    if (!surface) METADOT_ERROR("Surface could not be created!, {}", SDL_GetError());
     SDL_SetPaletteColors(surface->format->palette, (SDL_Color *) &ase->palette.entries, 0, ase->palette.num_entries);
     SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
 

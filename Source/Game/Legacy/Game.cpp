@@ -263,11 +263,11 @@ int Game::init(int argc, char *argv[]) {
             global.platform.SetDisplayMode(DisplayMode::FULLSCREEN);
         }
 
-        setVSync(true);
+        global.platform.SetVSync(true);
 
         // TODO: load settings from settings file
         // also note OptionsUI::minimizeOnFocus exists
-        setMinimizeOnLostFocus(false);
+        global.platform.SetMinimizeOnLostFocus(false);
     }
 
 
@@ -523,47 +523,6 @@ void Game::createTexture() {
     TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
 
     METADOT_INFO("Creating world textures done");
-}
-
-void Game::setWindowFlash(WindowFlashAction action, int count, int period) {
-    // TODO: look into alternatives for linux/crossplatform
-#ifdef _WIN32
-
-    FLASHWINFO flash;
-    flash.cbSize = sizeof(FLASHWINFO);
-    //flash.hwnd = hwnd;
-    flash.uCount = count;
-    flash.dwTimeout = period;
-
-    // pretty sure these flags are supposed to work but they all seem to do the same thing on my machine so idk
-    switch (action) {
-        case WindowFlashAction::START:
-            flash.dwFlags = FLASHW_ALL;
-            break;
-        case WindowFlashAction::START_COUNT:
-            flash.dwFlags = FLASHW_ALL | FLASHW_TIMER;
-            break;
-        case WindowFlashAction::START_UNTIL_FG:
-            flash.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG;
-            break;
-        case WindowFlashAction::STOP:
-            flash.dwFlags = FLASHW_STOP;
-            break;
-    }
-
-    FlashWindowEx(&flash);
-
-#endif
-}
-
-void Game::setVSync(bool vsync) {
-    SDL_GL_SetSwapInterval(vsync ? 1 : 0);
-    GameUI::OptionsUI::vsync = vsync;
-}
-
-void Game::setMinimizeOnLostFocus(bool minimize) {
-    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
-    GameUI::OptionsUI::minimizeOnFocus = minimize;
 }
 
 int Game::run(int argc, char *argv[]) {
@@ -1126,8 +1085,8 @@ int Game::run(int argc, char *argv[]) {
 
 
             auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
-            METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 128, 128, 2.0f, 2.0f);
-            
+            METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200, 1.0f, 1.0f);
+
             // render ImGui
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
@@ -1771,7 +1730,7 @@ void Game::tick() {
                     state = stateAfterLoad;
                 };
 
-                setWindowFlash(WindowFlashAction::START_COUNT, 1, 333);
+                global.platform.SetWindowFlash(WindowFlashAction::START_COUNT, 1, 333);
             }
         }
     } else {
