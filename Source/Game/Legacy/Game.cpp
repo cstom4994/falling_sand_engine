@@ -1124,9 +1124,11 @@ int Game::run(int argc, char *argv[]) {
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
 
+
+            auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
+            METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 128, 128, 2.0f, 2.0f);
+            
             // render ImGui
-
-
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
 

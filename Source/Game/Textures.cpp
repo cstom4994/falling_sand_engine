@@ -51,7 +51,7 @@ void Textures::initTexture() {
     obsidian = Textures::loadTexture("data/assets/textures/obsidian.png");
     caveBG = Textures::loadTexture("data/assets/backgrounds/testCave.png");
 
-    testAse = Textures::loadAseprite("data/assets/textures/tests/1_no_slices_blank.ase");
+    testAse = Textures::loadAseprite("data/assets/textures/tests/5.0_rgba_format.ase");
 }
 
 C_Surface *Textures::loadTexture(std::string path) {
