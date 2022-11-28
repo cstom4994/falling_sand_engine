@@ -1,6 +1,6 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "LuaLayer.hpp"
+#include "LuaMachine.hpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/Meta/Refl.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
@@ -53,9 +53,9 @@ void bindEverything(sol::state &state) {
 #define LUACON_INFO_PREF "[info_]"
 #define LUACON_WARN_PREF "[warn_]"
 
-static LuaLayer *s_lua_layer;
+static LuaMachine *s_lua_layer;
 
-static std::string nd_print(lua_State *L, const char *channel) {
+static std::string proxy_print(lua_State *L, const char *channel) {
     auto argNumber = lua_gettop(L);
     std::string s;
     s.reserve(100);
@@ -68,28 +68,28 @@ static std::string nd_print(lua_State *L, const char *channel) {
 }
 
 static int metadot_info(lua_State *L) {
-    METADOT_INFO("[LUA] {0}", nd_print(L, LUACON_INFO_PREF).c_str());
+    METADOT_INFO("[LUA] {0}", proxy_print(L, LUACON_INFO_PREF).c_str());
     return 0;
 }
 
 static int metadot_trace(lua_State *L) {
-    METADOT_TRACE("[LUA] {0}", nd_print(L, LUACON_TRACE_PREF).c_str());
+    METADOT_TRACE("[LUA] {0}", proxy_print(L, LUACON_TRACE_PREF).c_str());
     return 0;
 }
 
 static int metadot_error(lua_State *L) {
-    METADOT_ERROR("[LUA] {0}", nd_print(L, LUACON_ERROR_PREF).c_str());
+    METADOT_ERROR("[LUA] {0}", proxy_print(L, LUACON_ERROR_PREF).c_str());
     return 0;
 }
 
 static int metadot_warn(lua_State *L) {
-    METADOT_WARN("[LUA] {0}", nd_print(L, LUACON_WARN_PREF).c_str());
+    METADOT_WARN("[LUA] {0}", proxy_print(L, LUACON_WARN_PREF).c_str());
     return 0;
 }
 
 static int catch_panic(lua_State *L) {
     auto message = lua_tostring(L, -1);
-    METADOT_ERROR("LUA PANIC ERROR: {}", message);
+    METADOT_ERROR("[LUA] PANIC ERROR: {}", message);
     return 0;
 }
 
@@ -133,16 +133,11 @@ static int ls(lua_State *L) {
     return 1;
 }
 
-
-void LuaLayer::print_error(lua_State *state) {
-    // The error message is on top of the stack.
-    // Fetch it, print it and then pop it off the stack.
+void LuaMachine::print_error(lua_State *state) {
     const char *message = lua_tostring(state, -1);
-    //printToLuaConsole(state, (std::string(LUACON_ERROR_PREF) + message).c_str());
     METADOT_ERROR("LuaScript ERROR:\n  {}", (message ? message : "no message"));
     lua_pop(state, 1);
 }
-
 
 static std::string s_couroutineFileSrc;
 static char buf[1024];
@@ -161,7 +156,7 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-void LuaLayer::onAttach() {
+void LuaMachine::onAttach() {
 
     s_lua_layer = this;
 
@@ -207,14 +202,14 @@ void LuaLayer::onAttach() {
 }
 
 
-void LuaLayer::onDetach() {
+void LuaMachine::onDetach() {
 }
 
-sol::state *LuaLayer::getSolState() {
+sol::state *LuaMachine::getSolState() {
     return &s_lua;
 }
 
-void LuaLayer::runScriptInConsole(lua_State *L, const char *c) {
+void LuaMachine::runScriptInConsole(lua_State *L, const char *c) {
     luaL_loadstring(m_L, c);
     auto result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
 
@@ -224,7 +219,7 @@ void LuaLayer::runScriptInConsole(lua_State *L, const char *c) {
     }
 }
 
-void LuaLayer::runScriptFromFile(lua_State *L, const std::string &filePath) {
+void LuaMachine::runScriptFromFile(lua_State *L, const std::string &filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
     int result = luaL_loadfile(m_L, METADOT_RESLOC(std::string(filePath)).c_str());
@@ -239,7 +234,7 @@ void LuaLayer::runScriptFromFile(lua_State *L, const std::string &filePath) {
     }
 }
 
-void LuaLayer::onUpdate() {
+void LuaMachine::onUpdate() {
     //todo store lua bytecode version instead (dont load it every tick)
     //lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
     //call coroutes

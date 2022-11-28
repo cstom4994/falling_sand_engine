@@ -1,21 +1,21 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_LUALAYER_HPP_
-#define _METADOT_LUALAYER_HPP_
+#ifndef _METADOT_LUAMACHINE_HPP_
+#define _METADOT_LUAMACHINE_HPP_
 
 #include "Libs/lua/sol/sol.hpp"
 
 struct lua_State;
 
-class LuaLayer {
+class LuaMachine {
 private:
     sol::state s_lua;
     lua_State *m_L;
     void print_error(lua_State *state);
 
 public:
-    LuaLayer() { this->onAttach(); };
-    ~LuaLayer() = default;
+    LuaMachine() { this->onAttach(); };
+    ~LuaMachine() = default;
 
     lua_State *getLuaState() { return m_L; }
     sol::state *getSolState();

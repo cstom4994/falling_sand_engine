@@ -2,7 +2,7 @@
 
 #include "Engine/Scripting/Scripting.hpp"
 #include "Engine/Memory/Memory.hpp"
-#include "Engine/Scripting/LuaLayer.hpp"
+#include "Engine/Scripting/LuaMachine.hpp"
 #include "Engine/Scripting/MuDSL.hpp"
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
@@ -153,7 +153,7 @@ void Scripts::LoadMuFuncs() {
     METADOT_ASSERT_E(MuDSL);
 
     auto loadFunc = [&](const MuDSL::List &args) {
-        METADOT_NEW(C, LuaCore, LuaLayer);
+        METADOT_NEW(C, LuaCore, LuaMachine);
         LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
         return std::make_shared<MuDSL::Value>();
     };
@@ -161,7 +161,7 @@ void Scripts::LoadMuFuncs() {
 
     auto endFunc = [&](const MuDSL::List &args) {
         LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
-        METADOT_DELETE(C, LuaCore, LuaLayer);
+        METADOT_DELETE(C, LuaCore, LuaMachine);
         return std::make_shared<MuDSL::Value>();
     };
     auto endLua = MuDSL->newFunction("endLua", endFunc);

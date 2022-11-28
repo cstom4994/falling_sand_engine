@@ -31,7 +31,7 @@
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 #include "Render/renderer_gpu.h"
-#include "Scripting/LuaLayer.hpp"
+#include "Scripting/LuaMachine.hpp"
 #include "ctpl_stl.h"
 #include "glew.h"
 

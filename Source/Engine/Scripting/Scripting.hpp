@@ -3,7 +3,7 @@
 #ifndef _METADOT_SCRIPTING_HPP_
 #define _METADOT_SCRIPTING_HPP_
 
-class LuaLayer;
+class LuaMachine;
 namespace MuDSL {
     class MuDSLInterpreter;
 }
@@ -11,7 +11,7 @@ namespace MuDSL {
 struct Scripts
 {
     MuDSL::MuDSLInterpreter *MuDSL = nullptr;
-    LuaLayer *LuaCore = nullptr;
+    LuaMachine *LuaCore = nullptr;
 
     void Init();
     void End();

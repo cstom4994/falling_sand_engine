@@ -10,7 +10,7 @@
 #include "Engine/AudioEngine/AudioEngine.h"
 #include "Engine/Render/MRender.hpp"
 #include "Engine/Render/renderer_gpu.h"
-#include "Engine/Scripting/LuaLayer.hpp"
+#include "Engine/Scripting/LuaMachine.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiTerminal.hpp"
 #include "Game/Console.hpp"
 #include "Core/DebugImpl.hpp"
