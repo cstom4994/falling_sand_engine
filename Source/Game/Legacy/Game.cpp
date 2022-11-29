@@ -1117,20 +1117,6 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::EndMainMenuBar();
             }
 
-
-            if (GameUI::DebugDrawUI::visible) {
-                ImGui::Begin("Debug Info");
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-                METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
-                METAENGINE_Render_RendererID id = renderer->id;
-
-                ImGui::Text("Using renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
-                ImGui::Text("  Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
-
-                ImGui::End();
-            }
-
             if (Settings::ui_console) {
                 terminal_log->show();
             }

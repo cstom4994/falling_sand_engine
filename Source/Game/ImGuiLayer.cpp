@@ -1,16 +1,16 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "ImGuiLayer.hpp"
-#include "Engine/Memory/Memory.hpp"
-#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Core/Const.hpp"
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
+#include "Core/Macros.hpp"
+#include "Engine/Memory/Memory.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/InEngine.h"
 #include "Game/Legacy/Game.hpp"
 #include "Game/Legacy/GameUI.hpp"
 #include "Game/Legacy/Networking.hpp"
-#include "Core/Macros.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
 #include "ImGui/imgui.h"
@@ -413,8 +413,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
 #endif
 
-void ImGuiLayer::Render()
-{
+void ImGuiLayer::Render() {
 
 #if defined(_METADOT_IMM32)
     imguiIMMCommunication();
@@ -584,6 +583,13 @@ void ImGuiLayer::Render()
         ImGui::BeginTabBar(U8("协变与逆变"));
 
         if (ImGui::BeginTabItem(U8("首页"))) {
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
+            METAENGINE_Render_RendererID id = renderer->id;
+
+            ImGui::Text("Using renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
+            ImGui::Text("  Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
             ImGui::EndTabItem();
         }
 
