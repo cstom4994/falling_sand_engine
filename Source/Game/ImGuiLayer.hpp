@@ -9,10 +9,8 @@
 #include "Core/DebugImpl.hpp"
 #include "Libs/ImGui/TextEditor.h"
 
-class Game;
 class Material;
 class WorldMeta;
-
 
 enum ImGuiWindowTags {
 
@@ -46,7 +44,7 @@ public:
     void onDetach();
     void begin();
     void end();
-    void Render(Game *game);
+    void Render();
     void registerWindow(std::string_view windowName, bool *opened);
     ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
