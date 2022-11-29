@@ -1,11 +1,14 @@
 
 #include "Core/Core.hpp"
 
+#include "Core/DebugImpl.hpp"
+#include "Core/Macros.hpp"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "renderer_RendererImpl.h"
 #include "renderer_gpu.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <string>
 
@@ -44,8 +47,6 @@ void gpu_init_renderer_register(void);
 void gpu_free_renderer_register(void);
 METAENGINE_Render_Renderer *gpu_create_and_add_renderer(METAENGINE_Render_RendererID id);
 
-int gpu_default_print(METAENGINE_Render_LogLevelEnum log_level, const char *format, va_list args);
-
 /*! A mapping of windowID to a METAENGINE_Render_Target to facilitate METAENGINE_Render_GetWindowTarget(). */
 typedef struct METAENGINE_Render_WindowMapping
 {
@@ -54,8 +55,6 @@ typedef struct METAENGINE_Render_WindowMapping
 } METAENGINE_Render_WindowMapping;
 
 static METAENGINE_Render_Renderer *_gpu_current_renderer = NULL;
-
-static METAENGINE_Render_DebugLevelEnum _gpu_debug_level = METAENGINE_Render_DEBUG_LEVEL_0;
 
 #define METAENGINE_Render_DEFAULT_MAX_NUM_ERRORS 20
 #define METAENGINE_Render_ERROR_FUNCTION_STRING_MAX 128
@@ -77,9 +76,6 @@ static METAENGINE_Render_InitFlagEnum _gpu_required_features = 0;
 
 static METAENGINE_Render_bool _gpu_initialized_SDL_core = METAENGINE_Render_FALSE;
 static METAENGINE_Render_bool _gpu_initialized_SDL = METAENGINE_Render_FALSE;
-
-static int (*_gpu_print)(METAENGINE_Render_LogLevelEnum log_level, const char *format, va_list args) = &gpu_default_print;
-
 
 SDL_version METAENGINE_Render_GetLinkedVersion(void) {
     return METAENGINE_Render_GetCompiledVersion();
@@ -123,50 +119,6 @@ Uint32 METAENGINE_Render_GetCurrentShaderProgram(void) {
 
     return _gpu_current_renderer->current_context_target->context->current_shader_program;
 }
-
-
-int gpu_default_print(METAENGINE_Render_LogLevelEnum log_level, const char *format, va_list args) {
-    switch (log_level) {
-        case METAENGINE_Render_LOG_INFO:
-            //METADOT_INFO(format, args);
-        case METAENGINE_Render_LOG_WARNING:
-            //METADOT_WARN(format, args);
-        case METAENGINE_Render_LOG_ERROR:
-            //METADOT_WARN(format, args);
-        default:
-            return 0;
-    }
-    return 0;
-}
-
-void METAENGINE_Render_SetLogCallback(int (*callback)(METAENGINE_Render_LogLevelEnum log_level, const char *format, va_list args)) {
-    if (callback == NULL)
-        _gpu_print = &gpu_default_print;
-    else
-        _gpu_print = callback;
-}
-
-void METAENGINE_Render_LogInfo(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    _gpu_print(METAENGINE_Render_LOG_INFO, format, args);
-    va_end(args);
-}
-
-void METAENGINE_Render_LogWarning(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    _gpu_print(METAENGINE_Render_LOG_WARNING, format, args);
-    va_end(args);
-}
-
-void METAENGINE_Render_LogError(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    _gpu_print(METAENGINE_Render_LOG_ERROR, format, args);
-    va_end(args);
-}
-
 
 static METAENGINE_Render_bool gpu_init_SDL(void) {
     if (!_gpu_initialized_SDL) {
@@ -605,8 +557,8 @@ void METAENGINE_Render_CloseCurrentRenderer(void) {
 }
 
 void METAENGINE_Render_Quit(void) {
-    if (_gpu_num_error_codes > 0 && METAENGINE_Render_GetDebugLevel() >= METAENGINE_Render_DEBUG_LEVEL_1)
-        METAENGINE_Render_LogError("METAENGINE_Render_Quit: %d uncleared error%s.\n", _gpu_num_error_codes, (_gpu_num_error_codes > 1 ? "s" : ""));
+    if (_gpu_num_error_codes > 0)
+        METADOT_ERROR("METAENGINE_Render_Quit: {} uncleared error{}.",  _gpu_num_error_codes, (_gpu_num_error_codes > 1 ? "s" : ""));
 
     gpu_free_error_queue();
 
@@ -639,20 +591,10 @@ void METAENGINE_Render_Quit(void) {
     }
 }
 
-void METAENGINE_Render_SetDebugLevel(METAENGINE_Render_DebugLevelEnum level) {
-    if (level > METAENGINE_Render_DEBUG_LEVEL_MAX)
-        level = METAENGINE_Render_DEBUG_LEVEL_MAX;
-    _gpu_debug_level = level;
-}
-
-METAENGINE_Render_DebugLevelEnum METAENGINE_Render_GetDebugLevel(void) {
-    return _gpu_debug_level;
-}
-
 void METAENGINE_Render_PushErrorCode(const char *function, METAENGINE_Render_ErrorEnum error, const char *details, ...) {
     gpu_init_error_queue();
 
-    if (METAENGINE_Render_GetDebugLevel() >= METAENGINE_Render_DEBUG_LEVEL_1) {
+    if (METADOT_DEBUG) {
         // Print the message
         if (details != NULL) {
             char buf[METAENGINE_Render_ERROR_DETAILS_STRING_MAX];
@@ -661,9 +603,9 @@ void METAENGINE_Render_PushErrorCode(const char *function, METAENGINE_Render_Err
             vsnprintf(buf, METAENGINE_Render_ERROR_DETAILS_STRING_MAX, details, lst);
             va_end(lst);
 
-            METAENGINE_Render_LogError("{0}: {1} - {2}", (function == NULL ? "NULL" : function), METAENGINE_Render_GetErrorString(error), buf);
+            METADOT_ERROR("{0}: {1} - {2}", (function == NULL ? "NULL" : function), METAENGINE_Render_GetErrorString(error), buf);
         } else
-            METAENGINE_Render_LogError("{0}: {1}", (function == NULL ? "NULL" : function), METAENGINE_Render_GetErrorString(error));
+            METADOT_ERROR("{0}: {1}", (function == NULL ? "NULL" : function), METAENGINE_Render_GetErrorString(error));
     }
 
     if (_gpu_num_error_codes < _gpu_error_code_queue_size) {

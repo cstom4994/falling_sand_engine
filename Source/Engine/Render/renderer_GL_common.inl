@@ -3,6 +3,7 @@ See a particular renderer's *.c file for specifics. */
 
 #pragma once
 
+#include "Core/Core.hpp"
 #ifdef _MSC_VER
 // Disable warning: selection for inlining
 #pragma warning(disable : 4514 4711 4710)
@@ -318,17 +319,17 @@ static_inline void upload_new_texture(void *pixels, METAENGINE_Render_Rect updat
 static void GLAPIENTRY glBindFramebufferNOOP(GLenum target, GLuint framebuffer) {
     (void) target;
     (void) framebuffer;
-    METAENGINE_Render_LogError("%s: Unsupported operation\n", __func__);
+    METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 static GLenum GLAPIENTRY glCheckFramebufferStatusNOOP(GLenum target) {
     (void) target;
-    METAENGINE_Render_LogError("%s: Unsupported operation\n", __func__);
+    METADOT_ERROR("{}: Unsupported operation", __func__);
     return 0;
 }
 static void GLAPIENTRY glDeleteFramebuffersNOOP(GLsizei n, const GLuint *framebuffers) {
     (void) n;
     (void) framebuffers;
-    METAENGINE_Render_LogError("%s: Unsupported operation\n", __func__);
+    METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 static void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) {
     (void) target;
@@ -336,16 +337,16 @@ static void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachme
     (void) textarget;
     (void) texture;
     (void) level;
-    METAENGINE_Render_LogError("%s: Unsupported operation\n", __func__);
+    METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 static void GLAPIENTRY glGenFramebuffersNOOP(GLsizei n, GLuint *ids) {
     (void) n;
     (void) ids;
-    METAENGINE_Render_LogError("%s: Unsupported operation\n", __func__);
+    METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 static void GLAPIENTRY glGenerateMipmapNOOP(GLenum target) {
     (void) target;
-    METAENGINE_Render_LogError("%s: Unsupported operation\n", __func__);
+    METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 
 static void(GLAPIENTRY *glBindFramebufferPROC)(GLenum target, GLuint framebuffer) = glBindFramebufferNOOP;

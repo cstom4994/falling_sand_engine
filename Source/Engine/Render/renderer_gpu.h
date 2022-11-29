@@ -717,32 +717,6 @@ typedef struct METAENGINE_Render_ErrorObject
     METAENGINE_Render_PAD_4_TO_64
 } METAENGINE_Render_ErrorObject;
 
-
-/*! \ingroup Logging
- * Type enumeration for debug levels.
- * \see METAENGINE_Render_SetDebugLevel()
- * \see METAENGINE_Render_GetDebugLevel()
- */
-typedef enum {
-    METAENGINE_Render_DEBUG_LEVEL_0 = 0,
-    METAENGINE_Render_DEBUG_LEVEL_1 = 1,
-    METAENGINE_Render_DEBUG_LEVEL_2 = 2,
-    METAENGINE_Render_DEBUG_LEVEL_3 = 3,
-    METAENGINE_Render_DEBUG_LEVEL_MAX = 3
-} METAENGINE_Render_DebugLevelEnum;
-
-
-/*! \ingroup Logging
- * Type enumeration for logging levels.
- * \see METAENGINE_Render_SetLogCallback()
- */
-typedef enum {
-    METAENGINE_Render_LOG_INFO = 0,
-    METAENGINE_Render_LOG_WARNING,
-    METAENGINE_Render_LOG_ERROR
-} METAENGINE_Render_LogLevelEnum;
-
-
 /* Private implementation of renderer members */
 struct METAENGINE_Render_RendererImpl;
 
@@ -869,36 +843,6 @@ void METAENGINE_Render_Quit(void);
 
 // End of Initialization
 /*! @} */
-
-
-// Debugging, logging, and error handling
-
-#define METAENGINE_Render_Log METAENGINE_Render_LogInfo
-/*! \ingroup Logging
- *  @{ */
-
-/*! Sets the global debug level.
- * METAENGINE_Render_DEBUG_LEVEL_0: Normal
- * METAENGINE_Render_DEBUG_LEVEL_1: Prints messages when errors are pushed via METAENGINE_Render_PushErrorCode()
- * METAENGINE_Render_DEBUG_LEVEL_2: Elevates warning logs to error priority
- * METAENGINE_Render_DEBUG_LEVEL_3: Elevates info logs to error priority
- */
-void METAENGINE_Render_SetDebugLevel(METAENGINE_Render_DebugLevelEnum level);
-
-/*! Returns the current global debug level. */
-METAENGINE_Render_DebugLevelEnum METAENGINE_Render_GetDebugLevel(void);
-
-/*! Prints an informational log message. */
-void METAENGINE_Render_LogInfo(const char *format, ...);
-
-/*! Prints a warning log message. */
-void METAENGINE_Render_LogWarning(const char *format, ...);
-
-/*! Prints an error log message. */
-void METAENGINE_Render_LogError(const char *format, ...);
-
-/*! Sets a custom callback for handling logging.  Use stdio's vsnprintf() to process the va_list into a string.  Passing NULL as the callback will reset to the default internal logging. */
-void METAENGINE_Render_SetLogCallback(int (*callback)(METAENGINE_Render_LogLevelEnum log_level, const char *format, va_list args));
 
 /*! Pushes a new error code into the error queue.  If the queue is full, the queue is not modified.
  * \param function The name of the function that pushed the error

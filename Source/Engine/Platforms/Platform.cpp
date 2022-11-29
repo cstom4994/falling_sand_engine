@@ -82,7 +82,6 @@ int Platform::InitWindow() {
         // create gpu target
         METADOT_INFO("Creating gpu target...");
 
-        METAENGINE_Render_SetDebugLevel(METAENGINE_Render_DEBUG_LEVEL_MAX);
         METAENGINE_Render_SetPreInitFlags(METAENGINE_Render_INIT_DISABLE_VSYNC);
         METAENGINE_Render_SetInitWindow(SDL_GetWindowID(global.platform.window));
 

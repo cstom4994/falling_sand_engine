@@ -27,18 +27,18 @@ METAENGINE_Render_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(UInt32 *p, co
     v = METAENGINE_Shaders_LoadShader(METAENGINE_Render_VERTEX_SHADER, vertex_shader_file);
 
     if (!v)
-        METAENGINE_Render_LogError("Failed to load vertex shader (%s): %s\n", vertex_shader_file, METAENGINE_Render_GetShaderMessage());
+        METADOT_ERROR("Failed to load vertex shader ({}): {}", vertex_shader_file, METAENGINE_Render_GetShaderMessage());
 
     f = METAENGINE_Shaders_LoadShader(METAENGINE_Render_FRAGMENT_SHADER, fragment_shader_file);
 
     if (!f)
-        METAENGINE_Render_LogError("Failed to load fragment shader (%s): %s\n", fragment_shader_file, METAENGINE_Render_GetShaderMessage());
+        METADOT_ERROR("Failed to load fragment shader ({}): {}", fragment_shader_file, METAENGINE_Render_GetShaderMessage());
 
     *p = METAENGINE_Render_LinkShaders(v, f);
 
     if (!*p) {
         METAENGINE_Render_ShaderBlock b = {-1, -1, -1, -1};
-        METAENGINE_Render_LogError("Failed to link shader program (%s + %s): %s\n", vertex_shader_file, fragment_shader_file, METAENGINE_Render_GetShaderMessage());
+        METADOT_ERROR("Failed to link shader program ({} + {}): {}", vertex_shader_file, fragment_shader_file, METAENGINE_Render_GetShaderMessage());
         return b;
     }
 
