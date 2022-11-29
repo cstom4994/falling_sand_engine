@@ -28,19 +28,35 @@
 #include <inttypes.h>
 #include <string.h>
 #include <assert.h>
+#if defined(_WIN32)
+#include <io.h>
+#include <process.h>
+#include "Libs/external/dirent.h"
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+#else
 #include <unistd.h>
+#include <sys/time.h>
+#include <dirent.h>
+#endif
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
 #include <time.h>
 #include <signal.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #if defined(_WIN32)
 #include <windows.h>
 #include <conio.h>
-#include <utime.h>
+#include <sys/utime.h>
+#include <sys/timeb.h>
+#include <sys/types.h>
+#define PATH_MAX MAX_PATH
+#define popen _popen
+// #define S_IFBLK _S_IFBLK
+#define S_IFIFO _S_IFIFO
 #else
 #include <dlfcn.h>
 #include <termios.h>
@@ -1970,11 +1986,11 @@ static JSValue js_os_signal(JSContext *ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32)
 static int64_t get_time_ms(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(1, &ts);
     return (uint64_t)ts.tv_sec * 1000 + (ts.tv_nsec / 1000000);
 }
 #else
@@ -3640,13 +3656,13 @@ static const JSCFunctionListEntry js_os_funcs[] = {
     OS_FLAG(S_IFIFO),
     OS_FLAG(S_IFCHR),
     OS_FLAG(S_IFDIR),
-    OS_FLAG(S_IFBLK),
     OS_FLAG(S_IFREG),
 #if !defined(_WIN32)
     OS_FLAG(S_IFSOCK),
     OS_FLAG(S_IFLNK),
     OS_FLAG(S_ISGID),
     OS_FLAG(S_ISUID),
+    OS_FLAG(S_IFBLK),
 #endif
     JS_CFUNC_MAGIC_DEF("stat", 1, js_os_stat, 0 ),
     JS_CFUNC_DEF("utimes", 3, js_os_utimes ),
