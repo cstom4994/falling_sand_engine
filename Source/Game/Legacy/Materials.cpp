@@ -63,7 +63,7 @@ Material Materials::FIRE = Material(nMaterials++, "Fire", PhysicsType::PASSABLE,
 Material Materials::FLAT_COBBLE_STONE = Material(nMaterials++, "Flat Cobblestone", PhysicsType::SOLID, 0, 1, 0);
 Material Materials::FLAT_COBBLE_DIRT = Material(nMaterials++, "Flat Hard Ground", PhysicsType::SOLID, 0, 1, 0);
 
-veque::veque<Material *> Materials::MATERIALS;
+std::vector<Material *> Materials::MATERIALS;
 Material **Materials::MATERIALS_ARRAY;
 void Materials::init() {
 
@@ -144,7 +144,7 @@ void Materials::init() {
 
     for (int j = 0; j < MATERIALS.size(); j++) {
         MATERIALS[j]->interact = false;
-        MATERIALS[j]->interactions = new veque::veque<MaterialInteraction>[MATERIALS.size()];
+        MATERIALS[j]->interactions = new std::vector<MaterialInteraction>[MATERIALS.size()];
         MATERIALS[j]->nInteractions = new int[MATERIALS.size()];
 
         for (int k = 0; k < MATERIALS.size(); k++) {

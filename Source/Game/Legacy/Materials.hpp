@@ -6,7 +6,7 @@
 #include "Engine/Platforms/SDLWrapper.hpp"
 
 #include "Core/Core.hpp"
-#include "Libs/veque.hpp"
+
 
 #include <iostream>
 #include <string>
@@ -58,10 +58,10 @@ public:
 
     bool interact = false;
     int *nInteractions = nullptr;
-    veque::veque<MaterialInteraction> *interactions = nullptr;
+    std::vector<MaterialInteraction> *interactions = nullptr;
     bool react = false;
     int nReactions = 0;
-    veque::veque<MaterialInteraction> reactions;
+    std::vector<MaterialInteraction> reactions;
 
     int slipperyness = 1;
 
@@ -78,7 +78,7 @@ public:
 class Materials {
 public:
     static int nMaterials;
-    static veque::veque<Material *> MATERIALS;
+    static std::vector<Material *> MATERIALS;
     static Material **MATERIALS_ARRAY;
 
     static Material GENERIC_AIR;

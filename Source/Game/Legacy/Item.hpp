@@ -2,7 +2,7 @@
 
 #define INC_Item
 
-#include "Libs/veque.hpp"
+
 
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
@@ -51,7 +51,7 @@ public:
     std::vector<UInt16Point> fill;
     uint16_t capacity = 0;
 
-    veque::veque<Particle *> vacuumParticles;
+    std::vector<Particle *> vacuumParticles;
 
     Item();
     ~Item();
