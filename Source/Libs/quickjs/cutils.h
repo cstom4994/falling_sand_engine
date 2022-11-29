@@ -25,6 +25,11 @@
 #ifndef CUTILS_H
 #define CUTILS_H
 
+#if defined (_WIN32)
+#else
+#define _alloca alloca
+#endif
+
 #include <stdlib.h>
 #include <inttypes.h>
 

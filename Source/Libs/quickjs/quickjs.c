@@ -28,7 +28,6 @@
 #include <inttypes.h>
 #include <string.h>
 #include <assert.h>
-#include <sys/utime.h>
 #include <time.h>
 #include <fenv.h>
 #include <math.h>
@@ -44,6 +43,7 @@
 #include "Libs/external/dirent.h"
 #include <io.h>
 #include <process.h>
+#include <sys/utime.h>
 #include <WinSock2.h>
 #if defined(_MSC_VER)
 #include <BaseTsd.h>

@@ -8,12 +8,11 @@ set_languages("c17", "c++20")
 
 add_rules("mode.debug", "mode.release")
 
-add_requires("vcpkg::pthreads")
-add_packages("vcpkg::pthreads")
-
 if (is_os("windows")) then
     add_requires("vcpkg::sdl2")
     add_packages("vcpkg::sdl2")
+    add_requires("vcpkg::pthreads")
+    add_packages("vcpkg::pthreads")
 else
     add_requires("libsdl")
     add_packages("libsdl")
