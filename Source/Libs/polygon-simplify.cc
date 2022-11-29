@@ -16,17 +16,16 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 */
 
 #include "polygon-simplify.hh"
-#include "veque.hpp"
 #include <cmath>
 
-/* veque::veque<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
+/* std::vector<b2Vec2> is just a vector<Point>, methods do exactly what you think. */
 
 /* Polyline Simplification Algorithm */
 
-void DouglasPeucker::simplify_section(const veque::veque<b2Vec2> &pts,
+void DouglasPeucker::simplify_section(const std::vector<b2Vec2> &pts,
                                       float tolerance,
                                       size_t i, size_t j,
-                                      veque::veque<bool> *mark_map,
+                                      std::vector<bool> *mark_map,
                                       size_t omitted) {
     /* make sure we always return 2 points. */
     if (pts.size() - omitted <= 2)
@@ -62,12 +61,12 @@ void DouglasPeucker::simplify_section(const veque::veque<b2Vec2> &pts,
 }
 
 
-veque::veque<b2Vec2> DouglasPeucker::simplify(const veque::veque<b2Vec2> &vertices, float tolerance) {
-    veque::veque<bool> mark_map(vertices.size(), true);
+std::vector<b2Vec2> DouglasPeucker::simplify(const std::vector<b2Vec2> &vertices, float tolerance) {
+    std::vector<bool> mark_map(vertices.size(), true);
 
     simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
 
-    veque::veque<b2Vec2> result;
+    std::vector<b2Vec2> result;
     for (size_t i = 0; i != vertices.size(); ++i) {
         if (mark_map[i]) {
             result.push_back(vertices[i]);
