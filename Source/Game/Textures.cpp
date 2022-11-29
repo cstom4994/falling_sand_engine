@@ -12,7 +12,6 @@
 #include "Libs/Ase_Loader.h"
 #include "Libs/external/stb_image.h"
 #include "Render/renderer_gpu.h"
-#include "SDL_surface.h"
 
 C_Surface *Textures::testTexture = nullptr;
 C_Surface *Textures::dirt1Texture = nullptr;
@@ -111,6 +110,8 @@ C_Surface *Textures::loadTexture(std::string path, UInt32 pixelFormat) {
 C_Surface *Textures::loadAseprite(std::string path) {
 
     Ase_Output *ase = Ase_Load(METADOT_RESLOC(path));
+
+    if (NULL == ase) return nullptr;
 
     SDL_PixelFormatEnum pixel_format;
     if (ase->bpp == 1) {
