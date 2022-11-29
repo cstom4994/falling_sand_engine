@@ -159,8 +159,9 @@ do
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE", "CONFIG_BIGNUM")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
-              "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
-              "Source/Libs/glew/**.c", {unity_group = "libone"})
+              "Source/Libs/ImGui/**.c", "Source/Libs/lua/**.c",
+              "Source/Libs/fmt/**.cc", "Source/Libs/glew/**.c",
+              {unity_group = "libone"})
 
     add_files("Source/Libs/quickjs/*.c")
     add_files("Source/Libs/lz4/**.c")

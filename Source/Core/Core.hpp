@@ -8,8 +8,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "Engine/Platforms/PlatformDef.hpp"
 #include "Core/Macros.hpp"
+#include "Engine/Platforms/Platform.hpp"
 
 #include <bitset>
 #include <cstdint>
@@ -171,21 +171,6 @@ namespace MetaEngine {
         // make a shared_ptr
         return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
     }
-
-#define METADOT_HAS_MEMBER_METHOD_PREPARE(methName)                                                                        \
-    template<typename T, typename U = void>                                                                                \
-    struct Has_##methName : std::false_type                                                                                \
-    {                                                                                                                      \
-    };                                                                                                                     \
-                                                                                                                           \
-    template<typename T>                                                                                                   \
-    struct Has_##methName<T, decltype(/*std::is_member_function_pointer<decltype(*/ &T::##methName /*)>::value*/, void())> \
-        : std::is_member_function_pointer<decltype(&T::##methName)>                                                        \
-    {                                                                                                                      \
-    };
-
-#define METADOT_HAS_MEMBER_METHOD(Type, methName) \
-    Has_##methName<Type>::value
 
 }// namespace MetaEngine
 

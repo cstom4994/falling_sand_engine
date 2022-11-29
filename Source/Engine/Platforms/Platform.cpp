@@ -1,17 +1,48 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Platform.hpp"
-#include "Engine/Memory/Memory.hpp"
-#include "Engine/Render/RendererGPU.h"
 #include "Core/Const.hpp"
 #include "Core/Global.hpp"
+#include "Engine/Memory/Memory.hpp"
+#include "Engine/Render/RendererGPU.h"
+#include "Game/FileSystem.hpp"
 #include "Game/Legacy/Game.hpp"
 #include "Game/Legacy/GameUI.hpp"
 #include "Game/Legacy/Networking.hpp"
 #include "Game/Settings.hpp"
+#include "Game/Utils.hpp"
 #include "Libs/structopt.hpp"
 
 #include "glew.h"
+
+
+namespace Platforms {
+
+    const std::string &GetExecutablePath() {
+        static std::string out;
+#if defined(METADOT_PLATFORM_WINDOWS)
+        if (out.empty()) {
+            WCHAR path[260];
+            GetModuleFileNameW(NULL, path, 260);
+            out = SUtil::ws2s(std::wstring(path));
+            FUtil::cleanPathString(out);
+        }
+#elif defined(METADOT_PLATFORM_LINUX)
+        char result[PATH_MAX];
+        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        std::string appPath = std::string(result, (count > 0) ? count : 0);
+
+        std::size_t found = appPath.find_last_of("/\\");
+        out = appPath.substr(0, found);
+#elif defined(METADOT_PLATFORM_APPLE)
+        char buf[PATH_MAX];
+        uint32_t bufsize = PATH_MAX;
+        if (!_NSGetExecutablePath(buf, &bufsize))
+            out = buf;
+#endif
+        return out;
+    }
+}// namespace Platforms
 
 struct Options
 {

@@ -657,12 +657,12 @@ namespace Logging {
             }
             fflush(stderr);
         }
-        VLOG_F(g_internal_verbosity, "arguments: " METADOT_LOGGING_FMT(s) "", s_arguments.c_str());
-        if (strlen(s_current_dir) != 0) {
-            VLOG_F(g_internal_verbosity, "Current dir: " METADOT_LOGGING_FMT(s) "", s_current_dir);
-        }
-        VLOG_F(g_internal_verbosity, "stderr verbosity: " METADOT_LOGGING_FMT(d) "", g_stderr_verbosity);
-        VLOG_F(g_internal_verbosity, "-----------------------------------");
+        // VLOG_F(g_internal_verbosity, "arguments: " METADOT_LOGGING_FMT(s) "", s_arguments.c_str());
+        // if (strlen(s_current_dir) != 0) {
+        //     VLOG_F(g_internal_verbosity, "Current dir: " METADOT_LOGGING_FMT(s) "", s_current_dir);
+        // }
+        // VLOG_F(g_internal_verbosity, "stderr verbosity: " METADOT_LOGGING_FMT(d) "", g_stderr_verbosity);
+        // VLOG_F(g_internal_verbosity, "-----------------------------------");
 
         install_signal_handlers(options.signal_options);
 

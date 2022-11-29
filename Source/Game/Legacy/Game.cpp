@@ -5,11 +5,11 @@
 #include <iterator>
 #include <regex>
 
+#include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
 #include "DefaultGenerator.cpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Game/Console.hpp"
-#include "Core/DebugImpl.hpp"
-#include "Core/Global.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Legacy/GameUI.hpp"
 #include "Game/Textures.hpp"
@@ -20,12 +20,12 @@
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 
-#include "Engine/Memory/gc.h"
-#include "Engine/Scripting/Scripting.hpp"
-#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Core/Const.hpp"
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
+#include "Engine/Memory/gc.h"
+#include "Engine/Scripting/Scripting.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 
 #include "Game/FileSystem.hpp"
 
@@ -63,6 +63,8 @@ Game::Game(int argc, char *argv[]) {
     // init console & print title
     std::cout << logo << std::endl;
     Logging::init(argc, argv);
+
+    METADOT_INFO("{} {}", METADOT_NAME, METADOT_VERSION_TEXT);
 
     //data = new HostData;
 }
@@ -1049,9 +1051,6 @@ int Game::run(int argc, char *argv[]) {
         if (Settings::networkMode != NetworkMode::SERVER) {
             //if(Settings::tick_world)
             updateFrameEarly();
-            // for (MetaEngine::Module *l: *m_ModuleStack) {
-            //     l->onUpdate();
-            // }
             global.scripts->Update();
         }
 
@@ -1092,13 +1091,7 @@ int Game::run(int argc, char *argv[]) {
             METAENGINE_Render_FlushBlitBuffer();
 
             global.ImGuiLayer->begin();
-
-            global.ImGuiLayer->Render(this);
-
-            //cr_plugin_update(MetaEngine::ctx);
-
-            // TODO CppScript
-
+            global.ImGuiLayer->Render();
 
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu(ICON_FA_SYNC " 系统")) {

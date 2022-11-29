@@ -4,7 +4,7 @@
 #include "Core/Core.hpp"
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
-#include "Engine/Platforms/PlatformDef.hpp"
+#include "Engine/Platforms/Platform.hpp"
 #include <sstream>
 #include <string>
 #include <vector>
