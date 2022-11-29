@@ -5,7 +5,7 @@
 
 #define INC_RigidBody
 #include "Engine/Platforms/SDLWrapper.hpp"
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 #include "Materials.hpp"
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>

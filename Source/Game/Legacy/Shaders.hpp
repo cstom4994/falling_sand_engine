@@ -5,7 +5,7 @@
 
 #include "Engine/Platforms/SDLWrapper.hpp"
 
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 #include "Game/FileSystem.hpp"
 
 #include <cstdlib>

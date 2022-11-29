@@ -5,8 +5,8 @@
 #include "Core/Macros.hpp"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
-#include "renderer_RendererImpl.h"
-#include "renderer_gpu.h"
+#include "RendererImpl.h"
+#include "RendererGPU.h"
 
 #include <cstdio>
 #include <cstdlib>

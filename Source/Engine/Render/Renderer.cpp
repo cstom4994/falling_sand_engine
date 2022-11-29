@@ -1,5 +1,5 @@
 
-#include "renderer_gpu.h"
+#include "RendererGPU.h"
 
 #include <string>
 
@@ -113,16 +113,8 @@ METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(METAENGINE_Render_R
     return METAENGINE_Render_MakeRendererID("Unknown", METAENGINE_Render_RENDERER_UNKNOWN, 0, 0);
 }
 
-METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_1_BASE(METAENGINE_Render_RendererID request);
-void METAENGINE_Render_FreeRenderer_OpenGL_1_BASE(METAENGINE_Render_Renderer *renderer);
-METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_1(METAENGINE_Render_RendererID request);
-void METAENGINE_Render_FreeRenderer_OpenGL_1(METAENGINE_Render_Renderer *renderer);
-METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_2(METAENGINE_Render_RendererID request);
-void METAENGINE_Render_FreeRenderer_OpenGL_2(METAENGINE_Render_Renderer *renderer);
 METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE_Render_RendererID request);
 void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer *renderer);
-METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_4(METAENGINE_Render_RendererID request);
-void METAENGINE_Render_FreeRenderer_OpenGL_4(METAENGINE_Render_Renderer *renderer);
 
 void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENGINE_Render_Renderer *(*create_renderer)(METAENGINE_Render_RendererID request), void (*free_renderer)(METAENGINE_Render_Renderer *renderer)) {
     int i = METAENGINE_Render_GetNumRegisteredRenderers();
@@ -149,26 +141,6 @@ void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENG
 }
 
 void gpu_register_built_in_renderers(void) {
-#ifndef METAENGINE_Render_DISABLE_OPENGL
-#ifndef METAENGINE_Render_DISABLE_OPENGL_1_BASE
-    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 1 BASE", METAENGINE_Render_RENDERER_OPENGL_1_BASE, 1, 1),
-                                       &METAENGINE_Render_CreateRenderer_OpenGL_1_BASE,
-                                       &METAENGINE_Render_FreeRenderer_OpenGL_1_BASE);
-#endif
-
-#ifndef METAENGINE_Render_DISABLE_OPENGL_1
-    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 1", METAENGINE_Render_RENDERER_OPENGL_1, 1, 1),
-                                       &METAENGINE_Render_CreateRenderer_OpenGL_1,
-                                       &METAENGINE_Render_FreeRenderer_OpenGL_1);
-#endif
-
-#ifndef METAENGINE_Render_DISABLE_OPENGL_2
-    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 2", METAENGINE_Render_RENDERER_OPENGL_2, 2, 0),
-                                       &METAENGINE_Render_CreateRenderer_OpenGL_2,
-                                       &METAENGINE_Render_FreeRenderer_OpenGL_2);
-#endif
-
-#ifndef METAENGINE_Render_DISABLE_OPENGL_3
 #ifdef __MACOSX__
     // Depending on OS X version, it might only support core GL 3.3 or 3.2
     METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 2),
@@ -178,9 +150,6 @@ void gpu_register_built_in_renderers(void) {
     METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 0),
                                        &METAENGINE_Render_CreateRenderer_OpenGL_3,
                                        &METAENGINE_Render_FreeRenderer_OpenGL_3);
-#endif
-#endif
-
 #endif
 }
 
@@ -260,33 +229,12 @@ void METAENGINE_Render_GetDefaultRendererOrder(int *order_size, METAENGINE_Rende
     int count = 0;
     METAENGINE_Render_RendererID default_order[METAENGINE_Render_RENDERER_ORDER_MAX];
 
-#ifndef METAENGINE_Render_DISABLE_OPENGL
 #ifdef __MACOSX__
-
-// My understanding of OS X OpenGL support:
-// OS X 10.9: GL 2.1, 3.3, 4.1
-// OS X 10.7: GL 2.1, 3.2
-// OS X 10.6: GL 1.4, 2.1
-#ifndef METAENGINE_Render_DISABLE_OPENGL_3
     default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 2);
-#endif
-
 #else
-
-#ifndef METAENGINE_Render_DISABLE_OPENGL_3
     default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 0);
 #endif
 
-#endif
-
-#ifndef METAENGINE_Render_DISABLE_OPENGL_2
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 2", METAENGINE_Render_RENDERER_OPENGL_2, 2, 0);
-#endif
-#ifndef METAENGINE_Render_DISABLE_OPENGL_1
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 1", METAENGINE_Render_RENDERER_OPENGL_1, 1, 1);
-#endif
-
-#endif
 
     if (order_size != NULL)
         *order_size = count;

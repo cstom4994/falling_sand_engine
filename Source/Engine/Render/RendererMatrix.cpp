@@ -1,4 +1,4 @@
-#include "renderer_gpu.h"
+#include "RendererGPU.h"
 
 #include <cmath>
 #include <string>

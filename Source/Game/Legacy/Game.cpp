@@ -30,7 +30,7 @@
 #include "Game/FileSystem.hpp"
 
 #include "Engine/Platforms/SDLWrapper.hpp"
-#include "Render/renderer_gpu.h"
+#include "Render/RendererGPU.h"
 #include "Scripting/LuaMachine.hpp"
 #include "ctpl_stl.h"
 #include "glew.h"

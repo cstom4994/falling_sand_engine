@@ -11,7 +11,7 @@
 
 #include "Libs/Ase_Loader.h"
 #include "Libs/external/stb_image.h"
-#include "Render/renderer_gpu.h"
+#include "Render/RendererGPU.h"
 
 C_Surface *Textures::testTexture = nullptr;
 C_Surface *Textures::dirt1Texture = nullptr;

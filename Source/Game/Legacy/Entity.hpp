@@ -7,7 +7,7 @@
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
 #endif
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 
 class Entity {
 public:

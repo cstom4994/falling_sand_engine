@@ -32,7 +32,7 @@
 #include "Libs/ctpl_stl.h"
 #include "Libs/veque.hpp"
 
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 
 #ifndef INC_Biome
 #include "Biome.hpp"

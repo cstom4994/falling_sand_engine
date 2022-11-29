@@ -3,7 +3,7 @@
 #ifndef _METADOT_GAMEUI_HPP_
 #define _METADOT_GAMEUI_HPP_
 
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/Legacy/Materials.hpp"
 #include "Game/Legacy/World.hpp"

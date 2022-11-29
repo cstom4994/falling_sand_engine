@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Engine/Platforms/SDLWrapper.hpp"
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 #include "Core/Core.hpp"
 
 #include <string>

@@ -1,5 +1,5 @@
-#include "renderer_RendererImpl.h"
-#include "renderer_gpu.h"
+#include "RendererImpl.h"
+#include "RendererGPU.h"
 
 #include <string>
 

@@ -1,7 +1,7 @@
 #ifndef _METAENGINE_Render_RENDERERIMPL_H__
 #define _METAENGINE_Render_RENDERERIMPL_H__
 
-#include "renderer_gpu.h"
+#include "RendererGPU.h"
 
 
 // Internal API for managing window mappings

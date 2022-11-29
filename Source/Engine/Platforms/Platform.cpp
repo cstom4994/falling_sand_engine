@@ -2,7 +2,7 @@
 
 #include "Platform.hpp"
 #include "Engine/Memory/Memory.hpp"
-#include "Engine/Render/renderer_gpu.h"
+#include "Engine/Render/RendererGPU.h"
 #include "Core/Const.hpp"
 #include "Core/Global.hpp"
 #include "Game/Legacy/Game.hpp"
