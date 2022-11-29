@@ -216,7 +216,6 @@ namespace MuDSL {
         }
         return false;
     }
-}// namespace MuDSL
 
 // --------------------------------------- expressionImplementation
 
@@ -224,7 +223,6 @@ namespace MuDSL {
 // --------------------------------------- functionImplementation
 
 
-namespace MuDSL {
     ValueRef MuDSLInterpreter::callFunction(const string &name, ScopeRef scope, const List &args) {
         return callFunction(resolveFunction(name, scope), scope, args);
     }
@@ -437,14 +435,12 @@ namespace MuDSL {
         }
         return initialScope->insertScope(make_shared<Scope>(name, initialScope));
     }
-}// namespace MuDSL
 
 // --------------------------------------- functionImplementation
 
 
 // --------------------------------------- modulesImplementation
 
-namespace MuDSL {
     ScopeRef MuDSLInterpreter::newModule(const string &name, ModulePrivilegeFlags flags, const unordered_map<string, Lambda> &functions) {
         auto &modSource = flags ? optionalModules : modules;
         modSource.emplace_back(flags, make_shared<Scope>(name, this));
@@ -1642,7 +1638,6 @@ namespace MuDSL {
         listIndexFunctionVarLocation = resolveVariable("listindex", modules.back().scope);
         identityFunctionVarLocation = resolveVariable("identity", modules.back().scope);
     }
-}// namespace MuDSL
 
 
 // --------------------------------------- modulesImplementation
@@ -1650,8 +1645,6 @@ namespace MuDSL {
 
 // --------------------------------------- optionalModules
 
-
-namespace MuDSL {
     void MuDSLInterpreter::createOptionalModules() {
         newModule(
                 "file",
@@ -1701,16 +1694,12 @@ namespace MuDSL {
                          }},
                 });
     }
-}// namespace MuDSL
-
 
 // --------------------------------------- optionalModules
 
 
 // --------------------------------------- parsing
 
-
-namespace MuDSL {
     // tokenizer special characters
     const std::string WhitespaceChars = " \t\n"s;
     const string GrammarChars = " \t\n,.(){}[];+-/*%<>=!&|\""s;
@@ -2657,16 +2646,12 @@ namespace MuDSL {
         parseStrings.clear();
         outerNestLayer = 0;
     }
-}// namespace MuDSL
-
 
 // --------------------------------------- parsing
 
 
 // --------------------------------------- scopeImplementation
 
-
-namespace MuDSL {
     // scope control lets you have object lifetimes
     ScopeRef MuDSLInterpreter::newScope(const string &name, ScopeRef scope) {
         // if the scope exists we just use it as is
@@ -2703,12 +2688,9 @@ namespace MuDSL {
         ref->isClassScope = true;
         return ref;
     }
-}// namespace MuDSL
-
 
 // --------------------------------------- scopeImplementation
 
-namespace MuDSL {
     template<typename T>
     vector<T> &Array::getStdVector() {
         return get<vector<T>>(value);

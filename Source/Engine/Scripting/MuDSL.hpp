@@ -12,12 +12,16 @@
 #include <cstdarg>
 #include <exception>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <memory>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <unordered_map>
+#include <variant>
 #include <vector>
-
 
 namespace MuDSL {
     struct Exception : public std::exception
@@ -25,12 +29,9 @@ namespace MuDSL {
         std::string wh;
         Exception(const std::string &w) : wh("MuDSL Exception:" + w){};
     };
-}// namespace MuDSL
-
 
 #pragma region PreSetting
 
-namespace MuDSL {
     using std::string;
     using std::string_view;
     using std::vector;
@@ -127,20 +128,7 @@ namespace MuDSL {
             lpos = pos;
         }
     }
-}// namespace MuDSL
 
-
-#include <algorithm>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <unordered_map>
-#include <variant>
-#include <vector>
-
-
-namespace MuDSL {
     using std::function;
     using std::get;
     using std::make_shared;
@@ -834,10 +822,7 @@ namespace MuDSL {
         Function() : name("__anon") {}
         Function(const Function &o) = default;
     };
-}// namespace MuDSL
 
-
-namespace MuDSL {
     struct Null
     {
     };
@@ -1477,13 +1462,9 @@ namespace MuDSL {
         }
         return false;
     }
-}// namespace MuDSL
-
 
 #pragma endregion PreSetting
 
-
-namespace MuDSL {
     // describes an expression tree with a function at the root
     struct FunctionExpression
     {
@@ -1799,10 +1780,7 @@ namespace MuDSL {
             }
         }
     };
-}// namespace MuDSL
 
-
-namespace MuDSL {
     using ModulePrivilegeFlags = uint8_t;
 
     // bitfield for privileges
@@ -1852,12 +1830,7 @@ namespace MuDSL {
         ScopeRef scope;
         Module(ModulePrivilegeFlags f, ScopeRef s) : requiredPermissions(f), scope(s) {}
     };
-}// namespace MuDSL
 
-
-#include <mutex>
-
-namespace MuDSL {
     struct Scope
     {
         // this is the main storage object for all functions and variables
@@ -1903,10 +1876,7 @@ namespace MuDSL {
         }
         Scope(const string &name_, const unordered_map<string, ValueRef> &variables_) : name(name_), variables(variables_) {}
     };
-}// namespace MuDSL
 
-
-namespace MuDSL {
     // state enum for state machine for token by token parsing
     enum class ParseState : uint8_t {
         beginExpression,
