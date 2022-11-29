@@ -181,17 +181,6 @@ void gpu_register_built_in_renderers(void) {
 #endif
 #endif
 
-#ifndef METAENGINE_Render_DISABLE_OPENGL_4
-#ifdef __MACOSX__
-    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 4", METAENGINE_Render_RENDERER_OPENGL_4, 4, 1),
-                                       &METAENGINE_Render_CreateRenderer_OpenGL_4,
-                                       &METAENGINE_Render_FreeRenderer_OpenGL_4);
-#else
-    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 4", METAENGINE_Render_RENDERER_OPENGL_4, 4, 0),
-                                       &METAENGINE_Render_CreateRenderer_OpenGL_4,
-                                       &METAENGINE_Render_FreeRenderer_OpenGL_4);
-#endif
-#endif
 #endif
 }
 
@@ -278,18 +267,12 @@ void METAENGINE_Render_GetDefaultRendererOrder(int *order_size, METAENGINE_Rende
 // OS X 10.9: GL 2.1, 3.3, 4.1
 // OS X 10.7: GL 2.1, 3.2
 // OS X 10.6: GL 1.4, 2.1
-#ifndef METAENGINE_Render_DISABLE_OPENGL_4
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 4", METAENGINE_Render_RENDERER_OPENGL_4, 4, 1);
-#endif
 #ifndef METAENGINE_Render_DISABLE_OPENGL_3
     default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 2);
 #endif
 
 #else
 
-#ifndef METAENGINE_Render_DISABLE_OPENGL_4
-    default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 4", METAENGINE_Render_RENDERER_OPENGL_4, 4, 0);
-#endif
 #ifndef METAENGINE_Render_DISABLE_OPENGL_3
     default_order[count++] = METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 0);
 #endif
