@@ -3,6 +3,9 @@
 #ifndef _METADOT_SCRIPTING_HPP_
 #define _METADOT_SCRIPTING_HPP_
 
+#include <map>
+#include <string>
+
 class LuaMachine;
 namespace MuDSL {
     class MuDSLInterpreter;
@@ -11,7 +14,7 @@ namespace MuDSL {
 struct Scripts
 {
     MuDSL::MuDSLInterpreter *MuDSL = nullptr;
-    LuaMachine *LuaCore = nullptr;
+    std::map<std::string, LuaMachine*> LuaMap;
 
     void Init();
     void End();

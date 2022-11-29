@@ -1,8 +1,11 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "LuaMachine.hpp"
+#include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/Meta/Refl.hpp"
+#include "Engine/Scripting/Scripting.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/InEngine.h"
@@ -53,8 +56,6 @@ void bindEverything(sol::state &state) {
 #define LUACON_INFO_PREF "[info_]"
 #define LUACON_WARN_PREF "[warn_]"
 
-static LuaMachine *s_lua_layer;
-
 static std::string proxy_print(lua_State *L, const char *channel) {
     auto argNumber = lua_gettop(L);
     std::string s;
@@ -95,7 +96,9 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_run_lua_file_script(lua_State *L) {
     auto string = lua_tostring(L, 1);
-    s_lua_layer->runScriptFromFile(L, string);
+    auto LuaCore = global.scripts->LuaMap["LuaCore"];
+    METADOT_ASSERT_E(LuaCore);
+    LuaCore->RunScriptFromFile(L, string);
     return 0;
 }
 
@@ -156,10 +159,7 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-void LuaMachine::onAttach() {
-
-    s_lua_layer = this;
-
+void LuaMachine::Attach() {
     m_L = s_lua.lua_state();
 
     luaopen_base(m_L);
@@ -183,12 +183,7 @@ void LuaMachine::onAttach() {
 
     bindEverything(s_lua);
 
-    //s_lua.set_function("opii", [](GUIWindow& e, int ee) {METADOT_INFO("gotcha {}", ee); });
-    //auto namespac = s_lua["GUIContext"].get_or_create<sol::table>();
-    //namespac.set_function("openWindow", [](GUIWindow& window) {GUIContext::get().openWindow(&window); });
-
-
-    runScriptFromFile(m_L, "data/lua/lang.lua");
+    RunScriptFromFile(m_L, "data/lua/lang.lua");
 
     sol::function lang = s_lua["translate"];
 
@@ -198,18 +193,18 @@ void LuaMachine::onAttach() {
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
 
-    runScriptFromFile(m_L, "data/lua/startup.lua");
+    RunScriptFromFile(m_L, "data/lua/startup.lua");
 }
 
 
-void LuaMachine::onDetach() {
+void LuaMachine::Detach() {
 }
 
 sol::state *LuaMachine::getSolState() {
     return &s_lua;
 }
 
-void LuaMachine::runScriptInConsole(lua_State *L, const char *c) {
+void LuaMachine::RunScriptInConsole(lua_State *L, const char *c) {
     luaL_loadstring(m_L, c);
     auto result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
 
@@ -219,7 +214,7 @@ void LuaMachine::runScriptInConsole(lua_State *L, const char *c) {
     }
 }
 
-void LuaMachine::runScriptFromFile(lua_State *L, const std::string &filePath) {
+void LuaMachine::RunScriptFromFile(lua_State *L, const std::string &filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
     int result = luaL_loadfile(m_L, METADOT_RESLOC(std::string(filePath)).c_str());
@@ -234,7 +229,7 @@ void LuaMachine::runScriptFromFile(lua_State *L, const std::string &filePath) {
     }
 }
 
-void LuaMachine::onUpdate() {
+void LuaMachine::Update() {
     //todo store lua bytecode version instead (dont load it every tick)
     //lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
     //call coroutes

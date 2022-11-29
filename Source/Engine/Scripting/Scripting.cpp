@@ -10,6 +10,7 @@
 #include "Game/FileSystem.hpp"
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #if 0
@@ -205,7 +206,7 @@ void Scripts::End() {
 }
 
 void Scripts::Update() {
-    if (LuaCore) LuaCore->onUpdate();
+    if (auto LuaCore = LuaMap["LuaCore"]) LuaCore->Update();
 }
 
 void Scripts::LoadMuFuncs() {
@@ -213,14 +214,20 @@ void Scripts::LoadMuFuncs() {
     METADOT_ASSERT_E(MuDSL);
 
     auto loadFunc = [&](const MuDSL::List &args) {
+        LuaMachine *LuaCore = nullptr;
         METADOT_NEW(C, LuaCore, LuaMachine);
+        LuaMap.insert(std::make_pair("LuaCore", LuaCore));
+        LuaCore->Attach();
         LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
         return std::make_shared<MuDSL::Value>();
     };
     auto loadLua = MuDSL->newFunction("loadLua", loadFunc);
 
     auto endFunc = [&](const MuDSL::List &args) {
+        auto LuaCore = LuaMap["LuaCore"];
         LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
+        LuaCore->Detach();
+        LuaMap.erase("LuaCore");
         METADOT_DELETE(C, LuaCore, LuaMachine);
         return std::make_shared<MuDSL::Value>();
     };

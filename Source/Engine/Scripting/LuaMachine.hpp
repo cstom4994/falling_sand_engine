@@ -7,24 +7,21 @@
 
 struct lua_State;
 
-class LuaMachine {
+struct LuaMachine {
 private:
     sol::state s_lua;
     lua_State *m_L;
     void print_error(lua_State *state);
 
 public:
-    LuaMachine() { this->onAttach(); };
-    ~LuaMachine() = default;
-
     lua_State *getLuaState() { return m_L; }
     sol::state *getSolState();
-    void runScriptInConsole(lua_State *L, const char *c);
+    void RunScriptInConsole(lua_State *L, const char *c);
 
-    void runScriptFromFile(lua_State *L, const std::string &filePath);
-    void onUpdate();
-    void onAttach();
-    void onDetach();
+    void RunScriptFromFile(lua_State *L, const std::string &filePath);
+    void Update();
+    void Attach();
+    void Detach();
 
     template<typename T>
     inline void set_variable(const std::string &name, T value) {
