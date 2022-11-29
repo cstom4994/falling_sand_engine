@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Antony Polukhin
+// Copyright (c) 2016-2017 Antony Polukhin
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,19 +7,17 @@
 #define BOOST_PFR_DETAIL_CORE14_CLASSIC_HPP
 #pragma once
 
-#include <boost/pfr/detail/config.hpp>
+#include "config.hpp"
 
 #include <type_traits>
 #include <utility>      // metaprogramming stuff
 
-#include <boost/pfr/detail/sequence_tuple.hpp>
-#include <boost/pfr/detail/offset_based_getter.hpp>
-#include <boost/pfr/detail/fields_count.hpp>
-#include <boost/pfr/detail/make_flat_tuple_of_references.hpp>
-#include <boost/pfr/detail/make_integer_sequence.hpp>
-#include <boost/pfr/detail/size_array.hpp>
-#include <boost/pfr/detail/size_t_.hpp>
-#include <boost/pfr/detail/rvalue_t.hpp>
+#include "sequence_tuple.hpp"
+#include "offset_based_getter.hpp"
+#include "fields_count.hpp"
+#include "make_flat_tuple_of_references.hpp"
+#include "size_array.hpp"
+#include "rvalue_t.hpp"
 
 #ifdef __clang__
 #   pragma clang diagnostic push
@@ -33,7 +31,7 @@ namespace boost { namespace pfr { namespace detail {
 
 ///////////////////// General utility stuff
 
-template <class T> struct identity {
+template <class T> struct identity{
     typedef T type;
 };
 
@@ -58,7 +56,7 @@ namespace typeid_conversions {
 
 constexpr std::size_t native_types_mask = 31;
 constexpr std::size_t bits_per_extension = 3;
-constexpr std::size_t extension_mask = (
+constexpr std::size_t extension_maks = (
     static_cast<std::size_t>((1 << bits_per_extension) - 1)
         << static_cast<std::size_t>(sizeof(std::size_t) * 8 - bits_per_extension)
 );
@@ -87,7 +85,7 @@ constexpr std::size_t native_ref_type = (
 );
 
 template <std::size_t Index, std::size_t Extension>
-using if_extension = std::enable_if_t< (Index & extension_mask) == Extension >*;
+using if_extension = std::enable_if_t< (Index & extension_maks) == Extension >*;
 
 ///////////////////// Helper functions
 template <std::size_t Unptr>
@@ -96,7 +94,7 @@ constexpr std::size_t type_to_id_extension_apply(std::size_t ext) noexcept {
     constexpr std::size_t extensions = (Unptr & ~native_types_mask);
     static_assert(
         !((extensions >> bits_per_extension) & native_types_mask),
-        "====================> Boost.PFR: Too many extensions for a single field (something close to `int************************** p;` is in the POD type)."
+        "Too many extensions for a single field (something close to `int************************** p;` is in the POD type)."
     );
 
     return (extensions >> bits_per_extension) | native_id | ext;
@@ -120,8 +118,7 @@ template <class Type> constexpr std::size_t type_to_id(identity<volatile Type*>)
 template <class Type> constexpr std::size_t type_to_id(identity<Type&>) noexcept;
 template <class Type> constexpr std::size_t type_to_id(identity<Type>, std::enable_if_t<std::is_enum<Type>::value>* = 0) noexcept;
 template <class Type> constexpr std::size_t type_to_id(identity<Type>, std::enable_if_t<std::is_empty<Type>::value>* = 0) noexcept;
-template <class Type> constexpr std::size_t type_to_id(identity<Type>, std::enable_if_t<std::is_union<Type>::value>* = 0) noexcept;
-template <class Type> constexpr size_array<sizeof(Type) * 3> type_to_id(identity<Type>, std::enable_if_t<!std::is_enum<Type>::value && !std::is_empty<Type>::value && !std::is_union<Type>::value>* = 0) noexcept;
+template <class Type> constexpr size_array<sizeof(Type) * 3> type_to_id(identity<Type>, std::enable_if_t<!std::is_enum<Type>::value && !std::is_empty<Type>::value>* = 0) noexcept;
 
 template <std::size_t Index> constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_const_ptr_type> = 0) noexcept;
 template <std::size_t Index> constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_ptr_type> = 0) noexcept;
@@ -137,7 +134,7 @@ template <std::size_t Index> constexpr auto id_to_type(size_t_<Index >, if_exten
         return Index;                                           \
     }                                                           \
     constexpr Type id_to_type( size_t_<Index > ) noexcept {     \
-        return detail::construct_helper<Type>();                \
+        return construct_helper<Type>();                        \
     }                                                           \
     /**/
 /// @endcond
@@ -175,77 +172,68 @@ constexpr std::size_t tuple_end_tag                 = 25;
 ///////////////////// Definitions of type_to_id and id_to_type for types with extensions and nested types
 template <class Type>
 constexpr std::size_t type_to_id(identity<Type*>) noexcept {
-    constexpr auto unptr = typeid_conversions::type_to_id(identity<Type>{});
+    constexpr auto unptr = type_to_id(identity<Type>{});
     static_assert(
         std::is_same<const std::size_t, decltype(unptr)>::value,
-        "====================> Boost.PFR: Pointers to user defined types are not supported."
+        "Pointers to user defined types are not supported."
     );
-    return typeid_conversions::type_to_id_extension_apply<unptr>(native_ptr_type);
+    return type_to_id_extension_apply<unptr>(native_ptr_type);
 }
 
 template <class Type>
 constexpr std::size_t type_to_id(identity<const Type*>) noexcept {
-    constexpr auto unptr = typeid_conversions::type_to_id(identity<Type>{});
+    constexpr auto unptr = type_to_id(identity<Type>{});
     static_assert(
         std::is_same<const std::size_t, decltype(unptr)>::value,
-        "====================> Boost.PFR: Const pointers to user defined types are not supported."
+        "Const pointers to user defined types are not supported."
     );
-    return typeid_conversions::type_to_id_extension_apply<unptr>(native_const_ptr_type);
+    return type_to_id_extension_apply<unptr>(native_const_ptr_type);
 }
 
 template <class Type>
 constexpr std::size_t type_to_id(identity<const volatile Type*>) noexcept {
-    constexpr auto unptr = typeid_conversions::type_to_id(identity<Type>{});
+    constexpr auto unptr = type_to_id(identity<Type>{});
     static_assert(
         std::is_same<const std::size_t, decltype(unptr)>::value,
-        "====================> Boost.PFR: Const volatile pointers to user defined types are not supported."
+        "Const volatile pointers to user defined types are not supported."
     );
-    return typeid_conversions::type_to_id_extension_apply<unptr>(native_const_volatile_ptr_type);
+    return type_to_id_extension_apply<unptr>(native_const_volatile_ptr_type);
 }
 
 template <class Type>
 constexpr std::size_t type_to_id(identity<volatile Type*>) noexcept {
-    constexpr auto unptr = typeid_conversions::type_to_id(identity<Type>{});
+    constexpr auto unptr = type_to_id(identity<Type>{});
     static_assert(
         std::is_same<const std::size_t, decltype(unptr)>::value,
-        "====================> Boost.PFR: Volatile pointers to user defined types are not supported."
+        "Volatile pointers to user defined types are not supported."
     );
-    return typeid_conversions::type_to_id_extension_apply<unptr>(native_volatile_ptr_type);
+    return type_to_id_extension_apply<unptr>(native_volatile_ptr_type);
 }
 
 template <class Type>
 constexpr std::size_t type_to_id(identity<Type&>) noexcept {
-    constexpr auto unptr = typeid_conversions::type_to_id(identity<Type>{});
+    constexpr auto unptr = type_to_id(identity<Type>{});
     static_assert(
         std::is_same<const std::size_t, decltype(unptr)>::value,
-        "====================> Boost.PFR: References to user defined types are not supported."
+        "References to user defined types are not supported."
     );
-    return typeid_conversions::type_to_id_extension_apply<unptr>(native_ref_type);
+    return type_to_id_extension_apply<unptr>(native_ref_type);
 }
 
 template <class Type>
 constexpr std::size_t type_to_id(identity<Type>, std::enable_if_t<std::is_enum<Type>::value>*) noexcept {
-    return typeid_conversions::type_to_id(identity<typename std::underlying_type<Type>::type >{});
+    return type_to_id(identity<typename std::underlying_type<Type>::type >{});
 }
 
 template <class Type>
 constexpr std::size_t type_to_id(identity<Type>, std::enable_if_t<std::is_empty<Type>::value>*) noexcept {
-    static_assert(!std::is_empty<Type>::value, "====================> Boost.PFR: Empty classes/structures as members are not supported.");
+    static_assert(!std::is_empty<Type>::value, "Empty classes/structures as members are not supported.");
     return 0;
 }
 
 template <class Type>
-constexpr std::size_t type_to_id(identity<Type>, std::enable_if_t<std::is_union<Type>::value>*) noexcept {
-    static_assert(
-        !std::is_union<Type>::value,
-        "====================> Boost.PFR: For safety reasons it is forbidden to reflect unions. See `Reflection of unions` section in the docs for more info."
-    );
-    return 0;
-}
-
-template <class Type>
-constexpr size_array<sizeof(Type) * 3> type_to_id(identity<Type>, std::enable_if_t<!std::is_enum<Type>::value && !std::is_empty<Type>::value && !std::is_union<Type>::value>*) noexcept {
-    constexpr auto t = detail::flat_array_of_type_ids<Type>();
+constexpr size_array<sizeof(Type) * 3> type_to_id(identity<Type>, std::enable_if_t<!std::is_enum<Type>::value && !std::is_empty<Type>::value>*) noexcept {
+    constexpr auto t = flat_array_of_type_ids<Type>();
     size_array<sizeof(Type) * 3> result {{tuple_begin_tag}};
     constexpr bool requires_tuplening = (
         (t.count_nonzeros() != 1)  || (t.count_nonzeros() == t.count_from_opening_till_matching_parenthis_seq(0, tuple_begin_tag, tuple_end_tag))
@@ -266,33 +254,33 @@ constexpr size_array<sizeof(Type) * 3> type_to_id(identity<Type>, std::enable_if
 
 template <std::size_t Index>
 constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_ptr_type>) noexcept {
-    typedef decltype( typeid_conversions::id_to_type(remove_1_ext<Index>()) )* res_t;
-    return detail::construct_helper<res_t>();
+    typedef decltype( id_to_type(remove_1_ext<Index>()) )* res_t;
+    return construct_helper<res_t>();
 }
 
 template <std::size_t Index>
 constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_const_ptr_type>) noexcept {
-    typedef const decltype( typeid_conversions::id_to_type(remove_1_ext<Index>()) )* res_t;
-    return detail::construct_helper<res_t>();
+    typedef const decltype( id_to_type(remove_1_ext<Index>()) )* res_t;
+    return construct_helper<res_t>();
 }
 
 template <std::size_t Index>
 constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_const_volatile_ptr_type>) noexcept {
-    typedef const volatile decltype( typeid_conversions::id_to_type(remove_1_ext<Index>()) )* res_t;
-    return detail::construct_helper<res_t>();
+    typedef const volatile decltype( id_to_type(remove_1_ext<Index>()) )* res_t;
+    return construct_helper<res_t>();
 }
 
 
 template <std::size_t Index>
 constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_volatile_ptr_type>) noexcept {
-    typedef volatile decltype( typeid_conversions::id_to_type(remove_1_ext<Index>()) )* res_t;
-    return detail::construct_helper<res_t>();
+    typedef volatile decltype( id_to_type(remove_1_ext<Index>()) )* res_t;
+    return construct_helper<res_t>();
 }
 
 
 template <std::size_t Index>
 constexpr auto id_to_type(size_t_<Index >, if_extension<Index, native_ref_type>) noexcept {
-    static_assert(!Index, "====================> Boost.PFR: References are not supported");
+    static_assert(!Index, "References are not supported");
     return nullptr;
 }
 
@@ -316,7 +304,7 @@ struct ubiq_val {
     constexpr operator Type() const noexcept {
         constexpr auto typeids = typeid_conversions::type_to_id(identity<Type>{});
         assign(typeids);
-        return detail::construct_helper<Type>();
+        return construct_helper<Type>();
     }
 };
 
@@ -327,7 +315,7 @@ struct ubiq_sizes {
     template <class Type>
     constexpr operator Type() const noexcept {
         ref_ = sizeof(Type);
-        return detail::construct_helper<Type>();
+        return construct_helper<Type>();
     }
 };
 
@@ -346,16 +334,17 @@ constexpr size_array<N> get_type_offsets() noexcept {
     return offsets;
 }
 
-///////////////////// Returns array of typeids and zeros if construtor of a type accepts sizeof...(I) parameters
+///////////////////// Returns array of typeids and zeros if construtor of a type accepts sizeof...(I) parameters, substitution failure otherwise
 template <class T, std::size_t N, std::size_t... I>
-constexpr void* flat_type_to_array_of_type_ids(std::size_t* types, std::index_sequence<I...>) noexcept
+constexpr auto flat_type_to_array_of_type_ids(std::size_t* types, std::index_sequence<I...>) noexcept
+    -> typename std::add_pointer<decltype(T{ ubiq_constructor{I}... })>::type
 {
     static_assert(
         N <= sizeof(T),
-        "====================> Boost.PFR: Bit fields are not supported."
+        "Bit fields are not supported."
     );
 
-    constexpr auto offsets = detail::get_type_offsets<T, N, I...>();
+    constexpr auto offsets = get_type_offsets<T, N, I...>();
     T tmp{ ubiq_val{types + get<I>(offsets) * 3}... };
     (void)types;
     (void)tmp;
@@ -367,15 +356,15 @@ constexpr void* flat_type_to_array_of_type_ids(std::size_t* types, std::index_se
 template <class T>
 constexpr size_array<sizeof(T) * 3> fields_count_and_type_ids_with_zeros() noexcept {
     size_array<sizeof(T) * 3> types{};
-    constexpr std::size_t N = detail::fields_count<T>();
-    detail::flat_type_to_array_of_type_ids<T, N>(types.data, detail::make_index_sequence<N>());
+    constexpr std::size_t N = fields_count<T>();
+    flat_type_to_array_of_type_ids<T, N>(types.data, std::make_index_sequence<N>());
     return types;
 }
 
 ///////////////////// Returns array of typeids without zeros
 template <class T>
 constexpr auto flat_array_of_type_ids() noexcept {
-    constexpr auto types = detail::fields_count_and_type_ids_with_zeros<T>();
+    constexpr auto types = fields_count_and_type_ids_with_zeros<T>();
     constexpr std::size_t count = types.count_nonzeros();
     size_array<count> res{};
     std::size_t j = 0;
@@ -406,21 +395,21 @@ constexpr auto increment_index_sequence(std::index_sequence<I...>) noexcept {
 
 template <class T, std::size_t V, std::size_t I, std::size_t SubtupleLength>
 constexpr auto prepare_subtuples(size_t_<V>, size_t_<I>, size_t_<SubtupleLength>) noexcept {
-    static_assert(SubtupleLength == 0, "====================> Boost.PFR: Internal error while representing nested field as tuple");
+    static_assert(SubtupleLength == 0, "Internal error while representing nested field as tuple");
     return typeid_conversions::id_to_type(size_t_<V>{});
 }
 
 template <class T, std::size_t I, std::size_t SubtupleLength>
 constexpr auto prepare_subtuples(size_t_<typeid_conversions::tuple_end_tag>, size_t_<I>, size_t_<SubtupleLength>) noexcept {
-    static_assert(sizeof(T) == 0, "====================> Boost.PFR: Internal error while representing nested field as tuple");
+    static_assert(sizeof(T) == 0, "Internal error while representing nested field as tuple");
     return int{};
 }
 
 template <class T, std::size_t I, std::size_t SubtupleLength>
 constexpr auto prepare_subtuples(size_t_<typeid_conversions::tuple_begin_tag>, size_t_<I>, size_t_<SubtupleLength>) noexcept {
-    static_assert(SubtupleLength > 2, "====================> Boost.PFR: Internal error while representing nested field as tuple");
-    constexpr auto seq = detail::make_index_sequence<SubtupleLength - 2>{};
-    return detail::as_flat_tuple_impl<T>( detail::increment_index_sequence<I + 1>(seq) );
+    static_assert(SubtupleLength > 2, "Internal error while representing nested field as tuple");
+    constexpr auto seq = std::make_index_sequence<SubtupleLength - 2>{};
+    return as_flat_tuple_impl<T>( increment_index_sequence<I + 1>(seq) );
 }
 
 
@@ -454,7 +443,7 @@ constexpr size_array<N> resize_dropping_zeros_and_decrementing(size_t_<N>, const
 
 template <class T, std::size_t First, std::size_t... I, std::size_t... INew>
 constexpr auto as_flat_tuple_impl_drop_helpers(std::index_sequence<First, I...>, std::index_sequence<INew...>) noexcept {
-    constexpr auto a = detail::flat_array_of_type_ids<T>();
+    constexpr auto a = flat_array_of_type_ids<T>();
 
     constexpr size_array<sizeof...(I) + 1> subtuples_length {{
         a.count_from_opening_till_matching_parenthis_seq(First, typeid_conversions::tuple_begin_tag, typeid_conversions::tuple_end_tag),
@@ -462,12 +451,12 @@ constexpr auto as_flat_tuple_impl_drop_helpers(std::index_sequence<First, I...>,
     }};
 
     constexpr size_array<sizeof...(I) + 1> type_indexes_with_subtuple_internals {{ 1, 1 + I - First...}};
-    constexpr auto type_indexes_plus_1_and_zeros_as_skips = detail::remove_subtuples(type_indexes_with_subtuple_internals, subtuples_length);
+    constexpr auto type_indexes_plus_1_and_zeros_as_skips = remove_subtuples(type_indexes_with_subtuple_internals, subtuples_length);
     constexpr auto new_size = size_t_<type_indexes_plus_1_and_zeros_as_skips.count_nonzeros()>{};
-    constexpr auto type_indexes = detail::resize_dropping_zeros_and_decrementing(new_size, type_indexes_plus_1_and_zeros_as_skips);
+    constexpr auto type_indexes = resize_dropping_zeros_and_decrementing(new_size, type_indexes_plus_1_and_zeros_as_skips);
 
     typedef sequence_tuple::tuple<
-        decltype(detail::prepare_subtuples<T>(
+        decltype(prepare_subtuples<T>(
             size_t_< a.data[ First + type_indexes.data[INew] ]          >{},    // id of type
             size_t_< First + type_indexes.data[INew]                    >{},    // index of current id in `a`
             size_t_< subtuples_length.data[ type_indexes.data[INew] ]   >{}     // if id of type is tuple, then length of that tuple
@@ -493,12 +482,12 @@ constexpr std::size_t count_skips_in_array(std::size_t begin_index, std::size_t 
 
 template <class T, std::size_t First, std::size_t... I>
 constexpr auto as_flat_tuple_impl(std::index_sequence<First, I...>) noexcept {
-    constexpr auto a = detail::flat_array_of_type_ids<T>();
+    constexpr auto a = flat_array_of_type_ids<T>();
     constexpr std::size_t count_of_I = sizeof...(I);
 
-    return detail::as_flat_tuple_impl_drop_helpers<T>(
+    return as_flat_tuple_impl_drop_helpers<T>(
         std::index_sequence<First, I...>{},
-        detail::make_index_sequence< 1 + count_of_I - count_skips_in_array(First, First + count_of_I, a) >{}
+        std::make_index_sequence< 1 + count_of_I - count_skips_in_array(First, First + count_of_I, a) >{}
     );
 }
 
@@ -506,20 +495,17 @@ template <class T>
 constexpr auto internal_tuple_with_same_alignment() noexcept {
     typedef typename std::remove_cv<T>::type type;
 
-    static_assert(
-        std::is_trivial<type>::value && std::is_standard_layout<type>::value,
-        "====================> Boost.PFR: Type can not be reflected without Loophole or C++17, because it's not POD"
-    );
-    static_assert(!std::is_reference<type>::value, "====================> Boost.PFR: Not applyable");
-    constexpr auto res = detail::as_flat_tuple_impl<type>(
-        detail::make_index_sequence< decltype(detail::flat_array_of_type_ids<type>())::size() >()
+    static_assert(std::is_pod<type>::value, "Type can not be used is flat_ functions, because it's not POD");
+    static_assert(!std::is_reference<type>::value, "Not applyable");
+    constexpr auto res = as_flat_tuple_impl<type>(
+        std::make_index_sequence< decltype(flat_array_of_type_ids<type>())::size() >()
     );
 
     return res;
 }
 
 template <class T>
-using internal_tuple_with_same_alignment_t = decltype( detail::internal_tuple_with_same_alignment<T>() );
+using internal_tuple_with_same_alignment_t = decltype( internal_tuple_with_same_alignment<T>() );
 
 
 ///////////////////// Flattening
@@ -528,7 +514,7 @@ struct ubiq_is_flat_refelectable {
 
     template <class Type>
     constexpr operator Type() const noexcept {
-        is_flat_refelectable = std::is_fundamental<std::remove_pointer_t<Type>>::value;
+        is_flat_refelectable = std::is_fundamental<Type>::value;
         return {};
     }
 };
@@ -549,17 +535,8 @@ constexpr bool is_flat_refelectable(std::index_sequence<I...>) noexcept {
     return true;
 }
 
-template<class T>
-constexpr bool is_flat_refelectable(std::index_sequence<>) noexcept {
-    return true; ///< all empty structs always flat refelectable
-}
-
 template <class T>
 auto tie_as_flat_tuple(T& lvalue) noexcept {
-    static_assert(
-        !std::is_union<T>::value,
-        "====================> Boost.PFR: For safety reasons it is forbidden to reflect unions. See `Reflection of unions` section in the docs for more info."
-    );
     using type = std::remove_cv_t<T>;
     using tuple_type = internal_tuple_with_same_alignment_t<type>;
 
@@ -567,18 +544,19 @@ auto tie_as_flat_tuple(T& lvalue) noexcept {
     return boost::pfr::detail::make_flat_tuple_of_references(lvalue, getter, size_t_<0>{}, size_t_<tuple_type::size_v>{});
 }
 
+#if !BOOST_PFR_USE_CPP17
+
 template <class T>
 auto tie_as_tuple(T& val) noexcept {
+    typedef T type;
     static_assert(
-        !std::is_union<T>::value,
-        "====================> Boost.PFR: For safety reasons it is forbidden to reflect unions. See `Reflection of unions` section in the docs for more info."
-    );
-    static_assert(
-        boost::pfr::detail::is_flat_refelectable<T>( detail::make_index_sequence<boost::pfr::detail::fields_count<T>()>{} ),
-        "====================> Boost.PFR: Not possible in C++14 to represent that type without loosing information. Change type definition or enable C++17"
+        boost::pfr::detail::is_flat_refelectable<type>( std::make_index_sequence<fields_count<type>()>{} ),
+        "Not possible in C++14 to represent that type without loosing information. Use boost::pfr::flat_ version, or change type definition, or enable C++17"
     );
     return boost::pfr::detail::tie_as_flat_tuple(val);
 }
+
+#endif // #if !BOOST_PFR_USE_CPP17
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -590,13 +568,15 @@ struct ubiq_constructor_constexpr_copy {
     constexpr operator Type() const noexcept {
         static_assert(
             std::is_trivially_destructible<Type>::value,
-            "====================> Boost.PFR: One of the fields in the type passed to `for_each_field` has non trivial destructor."
+            "One of the fields in the type passed to `for_each_field` has non trivial destructor."
         );
         return {};
     }
 };
 
 /////////////////////
+
+#if !BOOST_PFR_USE_CPP17
 
 template <class T, std::size_t... I>
 struct is_constexpr_aggregate_initializable { // TODO: try to fix it
@@ -672,11 +652,6 @@ void for_each_field_dispatcher_1(T& t, F&& f, std::index_sequence<I...>, std::fa
 
 template <class T, class F, std::size_t... I>
 void for_each_field_dispatcher(T& t, F&& f, std::index_sequence<I...>) {
-    static_assert(
-        !std::is_union<T>::value,
-        "====================> Boost.PFR: For safety reasons it is forbidden to reflect unions. See `Reflection of unions` section in the docs for more info."
-    );
-
     /// Compile time error at this point means that you have called `for_each_field` or some other non-flat function or operator for a
     /// type that is not constexpr aggregate initializable.
     ///
@@ -685,16 +660,18 @@ void for_each_field_dispatcher(T& t, F&& f, std::index_sequence<I...>) {
     constexpr T tmp{ ubiq_constructor_constexpr_copy{I}... };
     (void)tmp;
 
-    //static_assert(is_constexpr_aggregate_initializable<T, I...>::value, "====================> Boost.PFR: T must be a constexpr initializable type");
+    //static_assert(is_constexpr_aggregate_initializable<T, I...>::value, "T must be a constexpr initializable type");
 
-    constexpr bool is_flat_refelectable_val = detail::is_flat_refelectable<T>( std::index_sequence<I...>{} );
-    detail::for_each_field_dispatcher_1(
+    constexpr bool is_flat_refelectable_val = is_flat_refelectable<T>( std::index_sequence<I...>{} );
+    for_each_field_dispatcher_1(
         t,
         std::forward<F>(f),
         std::index_sequence<I...>{},
         std::integral_constant<bool, is_flat_refelectable_val>{}
     );
 }
+
+#endif // #if !BOOST_PFR_USE_CPP17
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

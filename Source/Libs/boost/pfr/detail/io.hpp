@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Antony Polukhin
+// Copyright (c) 2016-2017 Antony Polukhin
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,17 +7,16 @@
 #define BOOST_PFR_DETAIL_IO_HPP
 #pragma once
 
-#include <boost/pfr/detail/config.hpp>
+#include "config.hpp"
 
-#include <boost/pfr/detail/sequence_tuple.hpp>
+#include "sequence_tuple.hpp"
 #include <iosfwd>       // stream operators
 #include <iomanip>
 
-#if defined(__has_include)
-#   if __has_include(<string_view>) && BOOST_PFR_USE_CPP17
-#       include <string_view>
-#   endif
-#endif
+// Forward declaration
+namespace std {
+    template <class CharT, class Traits> class basic_string_view;
+}
 
 namespace boost { namespace pfr { namespace detail {
 
@@ -25,14 +24,10 @@ inline auto quoted_helper(const std::string& s) noexcept {
     return std::quoted(s);
 }
 
-#if defined(__has_include)
-#   if __has_include(<string_view>) && BOOST_PFR_USE_CPP17
 template <class CharT, class Traits>
-inline auto quoted_helper(std::basic_string_view<CharT, Traits> s) noexcept {
+inline auto quoted_helper(const std::basic_string_view<CharT, Traits>& s) noexcept {
     return std::quoted(s);
 }
-#   endif
-#endif
 
 inline auto quoted_helper(std::string& s) noexcept {
     return std::quoted(s);
@@ -48,7 +43,7 @@ struct print_impl {
     template <class Stream, class T>
     static void print (Stream& out, const T& value) {
         if (!!I) out << ", ";
-        out << detail::quoted_helper(boost::pfr::detail::sequence_tuple::get<I>(value));
+        out << quoted_helper(boost::pfr::detail::sequence_tuple::get<I>(value));
         print_impl<I + 1, N>::print(out, value);
     }
 };
@@ -70,7 +65,7 @@ struct read_impl {
             in >> ignore;
             if (ignore != ' ')  in.setstate(Stream::failbit);
         }
-        in >> detail::quoted_helper( boost::pfr::detail::sequence_tuple::get<I>(value) );
+        in >> quoted_helper( boost::pfr::detail::sequence_tuple::get<I>(value) );
         read_impl<I + 1, N>::read(in, value);
     }
 };
