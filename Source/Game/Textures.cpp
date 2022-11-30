@@ -122,7 +122,7 @@ C_Surface *Textures::loadAseprite(std::string path) {
         METADOT_ERROR("Test {} BPP not supported!", ase->bpp);
     }
 
-    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
+    C_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
     if (!surface) METADOT_ERROR("Surface could not be created!, {}", SDL_GetError());
     SDL_SetPaletteColors(surface->format->palette, (SDL_Color *) &ase->palette.entries, 0, ase->palette.num_entries);
     SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);

@@ -185,15 +185,12 @@ void LuaMachine::Attach() {
     bindEverything(s_lua);
 
     RunScriptFromFile("data/lua/lang.lua");
-
     sol::function lang = s_lua["translate"];
-
     std::string a = lang("welcome");
 
     METADOT_INFO(a.c_str());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
-
     RunScriptFromFile("data/lua/startup.lua");
 }
 
@@ -218,9 +215,7 @@ void LuaMachine::RunScriptInConsole(lua_State *L, const char *c) {
 void LuaMachine::RunScriptFromFile(const std::string &filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    auto a = METADOT_RESLOC(filePath).c_str();
-
-    int result = luaL_loadfile(m_L, a);
+    int result = luaL_loadfile(m_L, METADOT_RESLOC_STR(filePath));
     if (result != LUA_OK) {
         print_error(m_L);
         return;

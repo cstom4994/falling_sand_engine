@@ -15,6 +15,10 @@
 #include <shobjidl.h>
 #endif
 
+#if defined(WIN32) && defined(_MSC_VER)
+#define __func__ __FUNCTION__
+#endif
+
 #undef min
 #undef max
 

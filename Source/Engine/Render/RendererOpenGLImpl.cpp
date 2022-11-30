@@ -15,15 +15,6 @@
 #define METAENGINE_Render_GL_MAJOR_VERSION 3
 #define METAENGINE_Render_ENABLE_CORE_SHADERS
 
-#ifdef _MSC_VER
-// Disable warning: selection for inlining
-#pragma warning(disable : 4514 4711 4710)
-// Disable warning: Spectre mitigation
-#pragma warning(disable : 5045)
-// Disable warning: 'type cast': conversion from 'long' to 'void *' of greater size
-#pragma warning(disable : 4312)
-#endif
-
 #if !defined(GLAPIENTRY)
 #if defined(GL_APIENTRY)
 #define GLAPIENTRY GL_APIENTRY
@@ -39,14 +30,6 @@
 #include <cstdlib>
 #include <string>
 
-// Check for C99 support
-// We'll use it for intptr_t which is used to suppress warnings about converting an int to a ptr for GL calls.
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#include <stdint.h>
-#else
-#define intptr_t long
-#endif
-
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
 
@@ -57,48 +40,7 @@
 #define RAD_PER_DEG 0.017453293f
 #define DEG_PER_RAD 57.2957795f
 
-// Visual C does not support static inline
-#ifndef static_inline
-#ifdef _MSC_VER
-#define static_inline static
-#else
-#define static_inline static inline
-#endif
-#endif
-
-#if defined(WIN32) && defined(_MSC_VER)
-#define __func__ __FUNCTION__
-#endif
-
-// Old Visual C did not support C99 (which includes a safe snprintf)
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define snprintf c99_snprintf
-// From Valentin Milea: http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
-static_inline int c99_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
-    int count = -1;
-
-    if (size != 0)
-        count = _vsnprintf_s(str, size, _TRUNCATE, format, ap);
-    if (count == -1)
-        count = _vscprintf(format, ap);
-
-    return count;
-}
-
-static_inline int c99_snprintf(char *str, size_t size, const char *format, ...) {
-    int count;
-    va_list ap;
-
-    va_start(ap, format);
-    count = c99_vsnprintf(str, size, format, ap);
-    va_end(ap);
-
-    return count;
-}
-#endif
-
 int gpu_strcasecmp(const char *s1, const char *s2);
-
 
 // Default to buffer reset VBO upload method
 #if defined(METAENGINE_Render_USE_BUFFER_PIPELINE) && !defined(METAENGINE_Render_USE_BUFFER_RESET) && !defined(METAENGINE_Render_USE_BUFFER_MAPPING) && !defined(METAENGINE_Render_USE_BUFFER_UPDATE)

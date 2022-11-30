@@ -81,6 +81,14 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))
 #define METADOT_DEBUGBREAK __debugbreak()
 
+#ifndef static_inline
+#ifdef _MSC_VER
+#define static_inline static
+#else
+#define static_inline static inline
+#endif
+#endif
+
 // Platforms Macros
 #if defined(_WIN32) || defined(_WINDOWS)
 #define METADOT_PLATFORM_WINDOWS
