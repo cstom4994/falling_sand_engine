@@ -7,6 +7,7 @@
 #include "Core/Macros.hpp"
 #include "Engine/Memory/Memory.hpp"
 #include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Engine/UserInterface/IMGUI/ImGuiHelper.hpp"
 #include "Game/InEngine.h"
 #include "Game/Legacy/Game.hpp"
 #include "Game/Legacy/GameUI.hpp"

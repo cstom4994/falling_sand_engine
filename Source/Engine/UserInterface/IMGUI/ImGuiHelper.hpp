@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+
 #include "Libs/ImGui/md4c.h"
 
 #include <map>

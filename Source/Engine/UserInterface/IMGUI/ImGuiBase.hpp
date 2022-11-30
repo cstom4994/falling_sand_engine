@@ -21,6 +21,4 @@
 #include "ImGuiImplGL3.h"
 #include "ImGuiImplSDL.h"
 
-#include "Engine/UserInterface/IMGUI/ImGuiHelper.hpp"
-
 #endif
