@@ -200,5 +200,4 @@ do
     add_headerfiles("Source/Game/**.hpp")
     add_headerfiles("Source/Game/**.inl")
     add_headerfiles("Source/Shared/**.hpp")
-    remove_files("Source/Game/Game.**")
 end

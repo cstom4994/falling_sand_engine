@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstring>
 
-#include "Engine/UserInterface/IMGUI/ImGuiTerminal.hpp"
+#include "Engine/ImGuiTerminal.hpp"
 
 struct custom_command_struct
 {

@@ -6,12 +6,12 @@
 #include "Core/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/InEngine.h"
-#include "Memory/Memory.hpp"
-#include "Platforms/SDLWrapper.hpp"
+#include "Engine/Memory.hpp"
+#include "Engine/SDLWrapper.hpp"
 
 #include "Libs/Ase_Loader.h"
 #include "Libs/external/stb_image.h"
-#include "Render/RendererGPU.h"
+#include "Engine/RendererGPU.h"
 
 C_Surface *Textures::testTexture = nullptr;
 C_Surface *Textures::dirt1Texture = nullptr;

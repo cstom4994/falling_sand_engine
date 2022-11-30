@@ -12,7 +12,7 @@
 
 #include "Core/Macros.hpp"
 
-#include "Engine/Render/RendererGPU.h"
+#include "Engine/RendererGPU.h"
 #include <box2d/box2d.h>
 
 int MetaDot_buildnum(void);

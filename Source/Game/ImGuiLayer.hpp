@@ -3,9 +3,9 @@
 #ifndef _METADOT_IMGUILAYER_HPP_
 #define _METADOT_IMGUILAYER_HPP_
 
-#include "Engine/AudioEngine/AudioEngine.h"
-#include "Engine/Platforms/SDLWrapper.hpp"
-#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Engine/AudioEngine.h"
+#include "Engine/SDLWrapper.hpp"
+#include "Engine/ImGuiBase.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Libs/ImGui/TextEditor.h"
 

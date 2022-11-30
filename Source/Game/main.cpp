@@ -1,6 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "Game/Legacy/Game.hpp"
+#include "Game/Game.hpp"
 
 #include <memory>
 

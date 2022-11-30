@@ -2,8 +2,8 @@
 
 
 #include "Game/Utils.hpp"
-#include "Engine/Memory/Memory.hpp"
-#include "Engine/Meta/Refl.hpp"
+#include "Engine/Memory.hpp"
+#include "Engine/Refl.hpp"
 
 #include <chrono>
 #include <cstdint>

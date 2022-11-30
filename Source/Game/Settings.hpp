@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "Engine/Meta/Internal/Properties.hpp"
+#include "Engine/Internal/Properties.hpp"
 
 struct SettingsBase
 {

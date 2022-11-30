@@ -3,7 +3,7 @@
 #ifndef _METADOT_TEXTURES_HPP_
 #define _METADOT_TEXTURES_HPP_
 
-#include "Engine/Platforms/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.hpp"
 #include "Core/Core.hpp"
 
 #include <iostream>

@@ -3,7 +3,7 @@
 #include "FileSystem.hpp"
 #include "Game/Utils.hpp"
 
-#include "Engine/Platforms/Platform.hpp"
+#include "Engine/Platform.hpp"
 
 
 std::string Resource::s_ProjectRootPath;

@@ -3,7 +3,7 @@
 #ifndef _METADOT_UTILS_HPP_
 #define _METADOT_UTILS_HPP_
 
-#include "Engine/Platforms/Platform.hpp"
+#include "Engine/Platform.hpp"
 #include "Core/Core.hpp"
 #include "Game/InEngine.h"
 

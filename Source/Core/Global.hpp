@@ -3,12 +3,12 @@
 #ifndef _METADOT_GLOBAL_HPP_
 #define _METADOT_GLOBAL_HPP_
 
-#include "AudioEngine/AudioEngine.h"
-#include "Engine/Meta/Refl.hpp"
-#include "Engine/Platforms/Platform.hpp"
-#include "Engine/UserInterface/IMGUI/ImGuiBase.hpp"
+#include "Engine/AudioEngine.h"
+#include "Engine/Refl.hpp"
+#include "Engine/Platform.hpp"
+#include "Engine/ImGuiBase.hpp"
 #include "Game/FileSystem.hpp"
-#include "Game/Legacy/Shaders.hpp"
+#include "Game/Shaders.hpp"
 
 #include <map>
 

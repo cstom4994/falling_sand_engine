@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "Core/Macros.hpp"
-#include "Engine/Platforms/Platform.hpp"
+#include "Engine/Platform.hpp"
 
 #include <bitset>
 #include <cstdint>
