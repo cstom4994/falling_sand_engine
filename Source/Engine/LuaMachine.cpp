@@ -3,23 +3,19 @@
 #include "LuaMachine.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
+#include "Engine/ImGuiBase.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Refl.hpp"
 #include "Engine/Scripting.hpp"
-#include "Engine/ImGuiBase.hpp"
+#include "Engine/LuaWrapper.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/InEngine.h"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
-#include "ImGuiBind.hpp"
 #include "Libs/lua/lua.hpp"
-#include "Libs/lua/sol/sol.hpp"
-#include "LuaToml.hpp"
 
 #include <cstring>
 
-
-static void bindBasic(sol::state &state);
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
@@ -38,19 +34,12 @@ void As(T arg) {
 
 auto f = [](auto &...args) { (..., As(args)); };
 
-static void bindBasic(sol::state &state) {
+static void bindBasic() {
 
 
     MyStruct myStruct;
     Meta::StructApply(myStruct, f);
 }
-
-void bindEverything(sol::state &state) {
-    bindBasic(state);
-
-    MetaEngine::LuaBinder::ImGuiWarp::Init(state);
-}
-
 
 #define LUACON_ERROR_PREF "[error]"
 #define LUACON_TRACE_PREF "[trace]"
@@ -161,11 +150,11 @@ static std::string readStringFromFile(const char *filePath) {
 }
 
 void LuaMachine::Attach() {
-    m_L = s_lua.lua_state();
+    m_L = s_lua.state();
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
-    luaopen_toml(m_L);
+    //luaopen_toml(m_L);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
@@ -177,18 +166,29 @@ void LuaMachine::Attach() {
     lua_register(m_L, "exit", metadot_exit);
     lua_register(m_L, "ls", ls);
 
-    s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
+    // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua.do_string(Utils::Format("package.path = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()));
-    s_lua.do_string(Utils::Format("package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()));
+    s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const std::string &a) { return METADOT_RESLOC(a); });
 
-    bindEverything(s_lua);
+    s_lua.dostring(
+            Utils::Format(
+                    "package.path = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path",
+                    METADOT_RESLOC("data/lua"),
+                    FUtil::getExecutableFolderPath()),
+            s_lua.globalTable());
+    // s_lua.dostring(
+    //         Utils::Format(
+    //                 "package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath",
+    //                 METADOT_RESLOC("data/lua"),
+    //                 FUtil::getExecutableFolderPath()),
+    //         s_lua.globalTable());
 
     RunScriptFromFile("data/lua/lang.lua");
-    sol::function lang = s_lua["translate"];
+
+    LuaWrapper::LuaFunction lang = s_lua["translate"];
     std::string a = lang("welcome");
 
-    METADOT_INFO(a.c_str());
+    // METADOT_INFO(a.c_str());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
     RunScriptFromFile("data/lua/startup.lua");
@@ -196,10 +196,6 @@ void LuaMachine::Attach() {
 
 
 void LuaMachine::Detach() {
-}
-
-sol::state *LuaMachine::getSolState() {
-    return &s_lua;
 }
 
 void LuaMachine::RunScriptInConsole(lua_State *L, const char *c) {

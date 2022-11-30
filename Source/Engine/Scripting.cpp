@@ -218,14 +218,14 @@ void Scripts::LoadMuFuncs() {
         METADOT_NEW(C, LuaCore, LuaMachine);
         LuaMap.insert(std::make_pair("LuaCore", LuaCore));
         LuaCore->Attach();
-        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
+        //LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
         return std::make_shared<MuDSL::Value>();
     };
     auto loadLua = MuDSL->newFunction("loadLua", loadFunc);
 
     auto endFunc = [&](const MuDSL::List &args) {
         auto LuaCore = LuaMap["LuaCore"];
-        LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
+        //LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
         LuaCore->Detach();
         LuaMap.erase("LuaCore");
         METADOT_DELETE(C, LuaCore, LuaMachine);

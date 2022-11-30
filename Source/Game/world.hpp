@@ -27,10 +27,8 @@
 #ifndef INC_Player
 #include "Player.hpp"
 #endif
+#include "Core/ThreadPool.hpp"
 #include "Engine/AudioEngine.h"
-
-#include "Libs/ctpl_stl.h"
-
 
 #include "Engine/RendererGPU.h"
 
@@ -99,10 +97,10 @@ public:
     MaterialInstance getTileLayer2(int x, int y);
     void setTileLayer2(int x, int y, MaterialInstance type);
     int tickCt = 0;
-    static ctpl::thread_pool *tickPool;
-    static ctpl::thread_pool *tickVisitedPool;
-    static ctpl::thread_pool *updateRigidBodyHitboxPool;
-    static ctpl::thread_pool *loadChunkPool;
+    static ThreadPool *tickPool;
+    static ThreadPool *tickVisitedPool;
+    static ThreadPool *updateRigidBodyHitboxPool;
+    static ThreadPool *loadChunkPool;
 
     METAENGINE_Render_Image *fireTex = nullptr;
     bool *tickVisited1 = nullptr;

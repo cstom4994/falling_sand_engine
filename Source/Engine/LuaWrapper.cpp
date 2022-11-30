@@ -1,13 +1,10 @@
-#include "luash.hpp"
+// Copyright(c) 2022, KaoruXun All rights reserved.
+
+#include "LuaWrapper.hpp"
 
 #include <cassert>
 
-//namespace moe {
-//    template void VectorBase<float, 3>::LuaPush(lua_State* L) const;
-//    template void VectorBase<float, 3>::LuaGet(lua_State* L, int idx);
-//}
-
-namespace luash {
+namespace LuaStruct {
 
     std::unordered_map<std::string_view, const ITypeInterface *> &KnownTypeInterfaceMap() {
         static std::unordered_map<std::string_view, const ITypeInterface *> KnownTypeInterfaceMapInst;
@@ -236,4 +233,4 @@ namespace luash {
         lua_pushlightuserdata(L, ptr);
         return GetTypeInterfaceTop(L);
     }
-}// namespace luash
+}// namespace LuaStruct

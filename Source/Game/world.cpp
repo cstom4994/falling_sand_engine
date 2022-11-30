@@ -5,11 +5,11 @@
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
 #include "Engine/LuaMachine.hpp"
-#include "Engine/Scripting.hpp"
-#include "Game/Materials.hpp"
 #include "Engine/Memory.hpp"
-#include "ctpl_stl.h"
-#include "lua/sol/sol.hpp"
+#include "Engine/Scripting.hpp"
+#include "Engine/LuaWrapper.hpp"
+#include "Game/Materials.hpp"
+#include "Core/ThreadPool.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
@@ -42,10 +42,10 @@
 
 #define W_PI 3.14159265358979323846
 
-ctpl::thread_pool *World::tickPool = nullptr;
-ctpl::thread_pool *World::tickVisitedPool = nullptr;
-ctpl::thread_pool *World::updateRigidBodyHitboxPool = nullptr;
-ctpl::thread_pool *World::loadChunkPool = nullptr;
+ThreadPool *World::tickPool = nullptr;
+ThreadPool *World::tickVisitedPool = nullptr;
+ThreadPool *World::updateRigidBodyHitboxPool = nullptr;
+ThreadPool *World::loadChunkPool = nullptr;
 
 template<typename R>
 bool is_ready(std::future<R> const &f) {
@@ -70,16 +70,16 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     height = h;
 
 
-    if (tickPool == nullptr) METADOT_NEW(C, tickPool, ctpl::thread_pool, 6);
+    if (tickPool == nullptr) METADOT_NEW(C, tickPool, ThreadPool, 6);
 
 
-    if (loadChunkPool == nullptr) METADOT_NEW(C, loadChunkPool, ctpl::thread_pool, 8);
+    if (loadChunkPool == nullptr) METADOT_NEW(C, loadChunkPool, ThreadPool, 8);
 
 
-    if (tickVisitedPool == nullptr) METADOT_NEW(C, tickVisitedPool, ctpl::thread_pool, 1);
+    if (tickVisitedPool == nullptr) METADOT_NEW(C, tickVisitedPool, ThreadPool, 1);
 
 
-    if (updateRigidBodyHitboxPool == nullptr) METADOT_NEW(C, updateRigidBodyHitboxPool, ctpl::thread_pool, 8);
+    if (updateRigidBodyHitboxPool == nullptr) METADOT_NEW(C, updateRigidBodyHitboxPool, ThreadPool, 8);
 
 
     if (netMode != NetworkMode::SERVER) {
@@ -3507,18 +3507,17 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
         meta.save(worldFileName);
     }
 
-    L->RunScriptFromFile(metaFile);
+    L->getState()->dofile(metaFile);
 
-    sol::function LoadWorldMeta = (*L->getSolState())["LoadWorldMeta"];
-    sol::table a = LoadWorldMeta(metaFile);
+    LuaWrapper::LuaFunction LoadWorldMeta = (*L->getState())["LoadWorldMeta"];
+    LuaWrapper::LuaTable a = LoadWorldMeta();
 
-    if (!a.empty()) {
+    if (!a.isNilref()) {
         meta.worldName = a["name"].get<std::string>();
         meta.lastOpenedVersion = a["lastOpenedVersion"].get<std::string>();
         meta.lastOpenedTime = a["lastOpenedTime"].get<int64_t>();
 
         METADOT_INFO("Load World\n{0} {1} {2}", meta.worldName, meta.lastOpenedVersion, meta.lastOpenedTime);
-
     } else {
         METADOT_BUG("FP WAS NULL");
     }
@@ -3533,12 +3532,12 @@ bool WorldMeta::save(std::string worldFileName) {
     char *metaFile = new char[255];
     snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
 
-    if(this->worldName.empty()) this->worldName = "WorldName";
-    if(this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(MetaDot_buildnum());
+    if (this->worldName.empty()) this->worldName = "WorldName";
+    if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(MetaDot_buildnum());
 
     std::string s = fmt::format(
             R"(
-function LoadWorldMeta()
+LoadWorldMeta = function()
     mytable = {{}}
     mytable.name = "{0:s}"
     mytable.lastOpenedVersion = "{1:s}"
