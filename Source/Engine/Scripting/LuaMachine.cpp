@@ -14,6 +14,7 @@
 #include "ImGuiBind.hpp"
 #include "Libs/lua/lua.hpp"
 #include "Libs/lua/sol/sol.hpp"
+#include "LuaToml.hpp"
 
 #include <cstring>
 
@@ -98,7 +99,7 @@ static int metadot_run_lua_file_script(lua_State *L) {
     auto string = lua_tostring(L, 1);
     auto LuaCore = global.scripts->LuaMap["LuaCore"];
     METADOT_ASSERT_E(LuaCore);
-    LuaCore->RunScriptFromFile(L, string);
+    LuaCore->RunScriptFromFile(string);
     return 0;
 }
 
@@ -164,7 +165,7 @@ void LuaMachine::Attach() {
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
-
+    luaopen_toml(m_L);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
@@ -178,12 +179,12 @@ void LuaMachine::Attach() {
 
     s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua.do_string(Utils::Format("package.path = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/lua")));
-    s_lua.do_string(Utils::Format("package.searchpath = '{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/lua")));
+    s_lua.do_string(Utils::Format("package.path = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path", METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()));
+    s_lua.do_string(Utils::Format("package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath", METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()));
 
     bindEverything(s_lua);
 
-    RunScriptFromFile(m_L, "data/lua/lang.lua");
+    RunScriptFromFile("data/lua/lang.lua");
 
     sol::function lang = s_lua["translate"];
 
@@ -193,7 +194,7 @@ void LuaMachine::Attach() {
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
 
-    RunScriptFromFile(m_L, "data/lua/startup.lua");
+    RunScriptFromFile("data/lua/startup.lua");
 }
 
 
@@ -214,10 +215,12 @@ void LuaMachine::RunScriptInConsole(lua_State *L, const char *c) {
     }
 }
 
-void LuaMachine::RunScriptFromFile(lua_State *L, const std::string &filePath) {
+void LuaMachine::RunScriptFromFile(const std::string &filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(m_L, METADOT_RESLOC(std::string(filePath)).c_str());
+    auto a = METADOT_RESLOC(filePath).c_str();
+
+    int result = luaL_loadfile(m_L, a);
     if (result != LUA_OK) {
         print_error(m_L);
         return;

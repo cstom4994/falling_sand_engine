@@ -1,22 +1,29 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 
+#include "Core/Const.hpp"
+#include "Core/Global.hpp"
+#include "Core/Macros.hpp"
+#include "Engine/Scripting/LuaMachine.hpp"
+#include "Engine/Scripting/Scripting.hpp"
+#include "Game/Legacy/Materials.hpp"
 #include "Memory/Memory.hpp"
 #include "ctpl_stl.h"
+#include "lua/sol/sol.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
-#include "DefaultGenerator.cpp"
 #include "Core/Core.hpp"
+#include "DefaultGenerator.cpp"
 #include "Game/FileSystem.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
-#include "Libs/MarchingSquares/MarchingSquares.h"
+#include "Libs/MarchingSquares.h"
 #include "Libs/polygon-simplify.hh"
 #include "Libs/polypartition.h"
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
-#include "nlohmann/json.hpp"
+#include "fmt/format.h"
 
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
@@ -3491,26 +3498,26 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     WorldMeta meta = WorldMeta();
 
-    nlohmann::json j;
+    auto L = global.scripts->LuaMap["LuaCore"];
 
     char *metaFile = new char[255];
-    snprintf(metaFile, 255, "%s/world.json", worldFileName.c_str());
+    snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
 
-    //FILE* fp = fopen(metaFile, "rb"); // non-Windows use "r"
     if (!FUtil::exists(metaFile)) {
         meta.save(worldFileName);
     }
 
-    std::ifstream i(metaFile);
+    L->RunScriptFromFile(metaFile);
 
-    i >> j;
+    sol::function LoadWorldMeta = (*L->getSolState())["LoadWorldMeta"];
+    sol::table a = LoadWorldMeta(metaFile);
 
-    if (!j.empty()) {
+    if (!a.empty()) {
+        meta.worldName = a["name"].get<std::string>();
+        meta.lastOpenedVersion = a["lastOpenedVersion"].get<std::string>();
+        meta.lastOpenedTime = a["lastOpenedTime"].get<int64_t>();
 
-
-        meta.worldName = j["name"].get<std::string>();
-        meta.lastOpenedVersion = j["lastOpenedVersion"].get<std::string>();
-        meta.lastOpenedTime = j["lastOpenedTime"].get<int64_t>();
+        METADOT_INFO("Load World\n{0} {1} {2}", meta.worldName, meta.lastOpenedVersion, meta.lastOpenedTime);
 
     } else {
         METADOT_BUG("FP WAS NULL");
@@ -3524,17 +3531,28 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 bool WorldMeta::save(std::string worldFileName) {
 
     char *metaFile = new char[255];
-    snprintf(metaFile, 255, "%s/world.json", worldFileName.c_str());
+    snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
 
-    nlohmann::json j;
+    if(this->worldName.empty()) this->worldName = "WorldName";
+    if(this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(MetaDot_buildnum());
 
-    j["name"] = this->worldName;
-    j["lastOpenedVersion"] = this->lastOpenedVersion;
-    j["lastOpenedTime"] = this->lastOpenedTime;
+    std::string s = fmt::format(
+            R"(
+function LoadWorldMeta()
+    mytable = {{}}
+    mytable.name = "{0:s}"
+    mytable.lastOpenedVersion = "{1:s}"
+    mytable.lastOpenedTime = {2}
+    return mytable
+end
+)",
+            this->worldName, this->lastOpenedVersion, this->lastOpenedTime);
+
+    METADOT_INFO("Save World\n{0}", s.c_str());
 
     std::ofstream o(metaFile);
 
-    o << j;
+    o << s;
 
     delete[] metaFile;
 

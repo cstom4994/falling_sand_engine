@@ -33,6 +33,8 @@ std::string Resource::getResourceLoc(std::string_view resPath) {
     }
     if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
         return s_ProjectRootPath + (s_ProjectRootPath.empty() ? "" : "/") + std::string(resPath);
+    if (SUtil::startsWith(resPath, "saves") || SUtil::startsWith(resPath, "/saves"))
+        return std::string(resPath);
     return std::string(resPath);
 }
 

@@ -9,6 +9,7 @@
 
 #include "Game/Legacy/DefaultGenerator.cpp"
 #include "Game/Legacy/MaterialTestGenerator.cpp"
+#include <string>
 
 void GameUI::GameUI_Draw(Game *game) {
     // for (MetaEngine::Module *l: *game->getModuleStack())
@@ -582,7 +583,7 @@ namespace GameUI {
                             &global.audioEngine,
                             Settings::networkMode);
                     w->metadata.lastOpenedTime = UTime::millis() / 1000;
-                    w->metadata.lastOpenedVersion = std::string(VERSION);
+                    w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
                     w->metadata.save(w->worldName);
 
 
@@ -1322,7 +1323,7 @@ namespace GameUI {
                     generator);
             game->getWorld()->metadata.worldName = std::string(worldNameBuf);
             game->getWorld()->metadata.lastOpenedTime = UTime::millis() / 1000;
-            game->getWorld()->metadata.lastOpenedVersion = std::string(VERSION);
+            game->getWorld()->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
             game->getWorld()->metadata.save(wpStr);
 
 

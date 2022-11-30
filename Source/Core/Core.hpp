@@ -29,9 +29,6 @@
 #include "Game/Logging.hpp"
 #include "Libs/VisitStruct.hpp"
 
-#include <nlohmann/json.hpp>
-
-
 #define METADOT_INT8_MAX 0x7F
 #define METADOT_UINT8_MAX 0xFF
 #define METADOT_INT16_MAX 0x7FFF

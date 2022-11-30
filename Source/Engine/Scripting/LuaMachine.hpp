@@ -18,7 +18,7 @@ public:
     sol::state *getSolState();
     void RunScriptInConsole(lua_State *L, const char *c);
 
-    void RunScriptFromFile(lua_State *L, const std::string &filePath);
+    void RunScriptFromFile(const std::string &filePath);
     void Update();
     void Attach();
     void Detach();
