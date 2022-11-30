@@ -96,8 +96,8 @@ private:
 
     int ent_prevLoadZoneX = 0;
     int ent_prevLoadZoneY = 0;
-    ctpl::thread_pool *updateDirtyPool = nullptr;
-    ctpl::thread_pool *rotateVectorsPool = nullptr;
+    ThreadPool *updateDirtyPool = nullptr;
+    ThreadPool *rotateVectorsPool = nullptr;
 
     UInt16 *movingTiles;
 

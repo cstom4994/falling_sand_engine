@@ -5,34 +5,30 @@
 #include <iterator>
 #include <regex>
 
-#include "Core/DebugImpl.hpp"
-#include "Core/Global.hpp"
-#include "DefaultGenerator.cpp"
-#include "Engine/Memory.hpp"
-#include "Game/Console.hpp"
-#include "Game/ImGuiLayer.hpp"
-#include "Game/GameUI.hpp"
-#include "Game/Textures.hpp"
-#include "MaterialTestGenerator.cpp"
-#include "Engine/ImGuiTerminal.hpp"
-#include "imgui/imgui.h"
-
-#include "Game/Settings.hpp"
-#include "Game/Utils.hpp"
-
 #include "Core/Const.hpp"
 #include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/gc.h"
-#include "Engine/Scripting.hpp"
+#include "Core/ThreadPool.hpp"
+#include "DefaultGenerator.cpp"
 #include "Engine/ImGuiBase.hpp"
-
-#include "Game/FileSystem.hpp"
-
-#include "Engine/SDLWrapper.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/ImGuiTerminal.hpp"
 #include "Engine/LuaMachine.hpp"
-#include "ctpl_stl.h"
+#include "Engine/Memory.hpp"
+#include "Engine/RendererGPU.h"
+#include "Engine/SDLWrapper.hpp"
+#include "Engine/Scripting.hpp"
+#include "Engine/gc.h"
+#include "Game/Console.hpp"
+#include "Game/FileSystem.hpp"
+#include "Game/GameUI.hpp"
+#include "Game/ImGuiLayer.hpp"
+#include "Game/Settings.hpp"
+#include "Game/Textures.hpp"
+#include "Game/Utils.hpp"
+#include "MaterialTestGenerator.cpp"
+
 #include "glew.h"
 
 #include <imgui/IconsFontAwesome5.h>
@@ -276,8 +272,8 @@ int Game::init(int argc, char *argv[]) {
     // init threadpools
 
 
-    METADOT_NEW(C, updateDirtyPool, ctpl::thread_pool, 6);
-    METADOT_NEW(C, rotateVectorsPool, ctpl::thread_pool, 3);
+    METADOT_NEW(C, updateDirtyPool, ThreadPool, 6);
+    METADOT_NEW(C, rotateVectorsPool, ThreadPool, 3);
 
 
     if (Settings::networkMode != NetworkMode::SERVER) {
@@ -1332,8 +1328,8 @@ exit:
     METADOT_DELETE(C, b2DebugDraw, b2DebugDraw_impl);
     METADOT_DELETE(C, movingTiles, UInt16);
 
-    METADOT_DELETE_EX(C, updateDirtyPool, thread_pool, ctpl::thread_pool);
-    METADOT_DELETE_EX(C, rotateVectorsPool, thread_pool, ctpl::thread_pool);
+    METADOT_DELETE(C, updateDirtyPool, ThreadPool);
+    METADOT_DELETE(C, rotateVectorsPool, ThreadPool);
 
     if (world) {
         METADOT_DELETE(C, world, World);

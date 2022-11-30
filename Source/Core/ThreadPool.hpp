@@ -1,24 +1,7 @@
-/*********************************************************
-*
-*  Copyright (C) 2014 by Vitaliy Vitsentiy
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*
-*********************************************************/
+// Copyright(c) 2022, KaoruXun All rights reserved.
 
-
-#ifndef __ctpl_stl_thread_pool_H__
-#define __ctpl_stl_thread_pool_H__
+#ifndef _METADOT_THREADPOOL_HPP_
+#define _METADOT_THREADPOOL_HPP_
 
 #include <atomic>
 #include <exception>
@@ -30,16 +13,9 @@
 #include <thread>
 #include <vector>
 
+namespace {
 
-// thread pool to run user's functors with signature
-//      ret func(int id, other_params)
-// where id is the index of the thread that runs the functor
-// ret is some return type
-
-
-namespace ctpl {
-
-    namespace detail {
+    namespace ThreadPoolDetail {
         template<typename T>
         class Queue {
         public:
@@ -68,17 +44,17 @@ namespace ctpl {
         };
     }// namespace detail
 
-    class thread_pool {
+    class ThreadPool {
 
     public:
-        thread_pool() { this->init(); }
-        thread_pool(int nThreads) {
+        ThreadPool() { this->init(); }
+        ThreadPool(int nThreads) {
             this->init();
             this->resize(nThreads);
         }
 
         // the destructor waits for all the functions in the queue to be finished
-        ~thread_pool() {
+        ~ThreadPool() {
             this->stop(true);
         }
 
@@ -199,10 +175,10 @@ namespace ctpl {
 
     private:
         // deleted
-        thread_pool(const thread_pool &);           // = delete;
-        thread_pool(thread_pool &&);                // = delete;
-        thread_pool &operator=(const thread_pool &);// = delete;
-        thread_pool &operator=(thread_pool &&);     // = delete;
+        ThreadPool(const ThreadPool &);           // = delete;
+        ThreadPool(ThreadPool &&);                // = delete;
+        ThreadPool &operator=(const ThreadPool &);// = delete;
+        ThreadPool &operator=(ThreadPool &&);     // = delete;
 
         void set_thread(int i) {
             std::shared_ptr<std::atomic<bool>> flag(this->flags[i]);// a copy of the shared ptr to the flag
@@ -239,15 +215,15 @@ namespace ctpl {
 
         std::vector<std::unique_ptr<std::thread>> threads;
         std::vector<std::shared_ptr<std::atomic<bool>>> flags;
-        detail::Queue<std::function<void(int id)> *> q;
+        ThreadPoolDetail::Queue<std::function<void(int id)> *> q;
         std::atomic<bool> isDone;
         std::atomic<bool> isStop;
-        std::atomic<int> nWaiting;// how many threads are waiting
+        std::atomic<int> nWaiting;
 
         std::mutex mutex;
         std::condition_variable cv;
     };
 
-}// namespace ctpl
+}
 
-#endif// __ctpl_stl_thread_pool_H__
+#endif
