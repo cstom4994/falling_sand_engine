@@ -474,30 +474,33 @@ public:
             if (area[1 + 2 * 3]->tiles[x + y * CHUNK_W].mat->id == Materials::SOFT_DIRT.id) {
                 int px = x + ch->x * CHUNK_W;
                 int py = y + (ch->y + 1) * CHUNK_W;
-                /*Structure tree = Structures::makeTree1(*world, px, py);
-                px -= tree.w / 2;
-                py -= tree.h - 2;*/
 
-                /*for (int tx = 0; tx < tree.w; tx++) {
-                    for (int ty = 0; ty < tree.h; ty++) {
-                        int chx = (int)floor((tx + px) / (float)CHUNK_W) + 1 - ch.x;
-                        int chy = (int)floor((ty + py) / (float)CHUNK_H) + 1 - ch.y;
-                        if (chx < 0 || chy < 0 || chx > 2 || chy > 2) continue;
-                        int dxx = (CHUNK_W + ((tx + px) % CHUNK_W)) % CHUNK_W;
-                        int dyy = (CHUNK_H + ((ty + py) % CHUNK_H)) % CHUNK_H;
-                        if (tree.tiles[tx + ty * tree.w].mat->physicsType != PhysicsType::AIR && area[chx + chy * 3].tiles[dxx + dyy * CHUNK_W].mat->physicsType == PhysicsType::AIR && area[chx + chy * 3].layer2[dxx + dyy * CHUNK_W].mat->physicsType == PhysicsType::AIR) {
-                            area[chx + chy * 3].layer2[dxx + dyy * CHUNK_W] = tree.tiles[tx + ty * tree.w];
-                            dirty[chx + chy * 3] = true;
-                        }
-                    }
-                }*/
+                // Structure tree = Structures::makeTree1(*world, px, py);
+                // px -= tree.w / 2;
+                // py -= tree.h - 2;
+
+                // for (int tx = 0; tx < tree.w; tx++) {
+                //     for (int ty = 0; ty < tree.h; ty++) {
+                //         int chx = (int) floor((tx + px) / (float) CHUNK_W) + 1 - ch->x;
+                //         int chy = (int) floor((ty + py) / (float) CHUNK_H) + 1 - ch->y;
+                //         if (chx < 0 || chy < 0 || chx > 2 || chy > 2) continue;
+                //         int dxx = (CHUNK_W + ((tx + px) % CHUNK_W)) % CHUNK_W;
+                //         int dyy = (CHUNK_H + ((ty + py) % CHUNK_H)) % CHUNK_H;
+                //         if (tree.tiles[tx + ty * tree.w].mat->physicsType != PhysicsType::AIR &&
+                //             area[chx + chy * 3]->tiles[dxx + dyy * CHUNK_W].mat->physicsType ==
+                //                     PhysicsType::AIR &&
+                //             area[chx + chy * 3]->layer2[dxx + dyy * CHUNK_W].mat->physicsType ==
+                //                     PhysicsType::AIR) {
+                //             area[chx + chy * 3]->layer2[dxx + dyy * CHUNK_W] =
+                //                     tree.tiles[tx + ty * tree.w];
+                //             dirty[chx + chy * 3] = true;
+                //         }
+                //     }
+                // }
 
                 char buff[40];
-                //snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
-                snprintf(buff, sizeof(buff), "data/assets/objects/tree1.png");
-                //snprintf(buff, sizeof(buff), "data/assets/objects/testTree.png");
-                std::string buffAsStdStr = buff;
-                C_Surface *tex = Textures::LoadTexture(buffAsStdStr.c_str());
+                snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
+                C_Surface *tex = Textures::LoadTexture(buff);
 
                 px -= tex->w / 2;
                 py -= tex->h - 2;

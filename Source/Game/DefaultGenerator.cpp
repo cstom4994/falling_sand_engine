@@ -280,11 +280,8 @@ class DefaultGenerator : public WorldGenerator {
     }
 
     std::vector<Populator *> getPopulators() override {
-        return {
-                new CavePopulator(), new OrePopulator(),
-                new CobblePopulator()//,
-                                     //new TreePopulator()
-        };
+        return {new CavePopulator(), new OrePopulator(), new CobblePopulator(),
+                new TreePopulator()};
     }
 };
 
