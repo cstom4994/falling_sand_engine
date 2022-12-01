@@ -79,7 +79,6 @@ struct TPPLPoint
     }
 };
 
-
 //Polygon implemented as an array of points with a 'hole' flag
 class TPPLPoly {
 protected:
@@ -96,37 +95,21 @@ public:
     TPPLPoly &operator=(const TPPLPoly &src);
 
     //getters and setters
-    long GetNumPoints() const {
-        return numpoints;
-    }
+    long GetNumPoints() const { return numpoints; }
 
-    bool IsHole() const {
-        return hole;
-    }
+    bool IsHole() const { return hole; }
 
-    void SetHole(bool hole) {
-        this->hole = hole;
-    }
+    void SetHole(bool hole) { this->hole = hole; }
 
-    TPPLPoint &GetPoint(long i) {
-        return points[i];
-    }
+    TPPLPoint &GetPoint(long i) { return points[i]; }
 
-    const TPPLPoint &GetPoint(long i) const {
-        return points[i];
-    }
+    const TPPLPoint &GetPoint(long i) const { return points[i]; }
 
-    TPPLPoint *GetPoints() {
-        return points;
-    }
+    TPPLPoint *GetPoints() { return points; }
 
-    TPPLPoint &operator[](int i) {
-        return points[i];
-    }
+    TPPLPoint &operator[](int i) { return points[i]; }
 
-    const TPPLPoint &operator[](int i) const {
-        return points[i];
-    }
+    const TPPLPoint &operator[](int i) const { return points[i]; }
 
     //clears the polygon points
     void Clear();
@@ -381,6 +364,5 @@ public:
     //returns 1 on success, 0 on failure
     int ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts);
 };
-
 
 #endif

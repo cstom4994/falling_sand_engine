@@ -7,7 +7,8 @@
 namespace LuaStruct {
 
     std::unordered_map<std::string_view, const ITypeInterface *> &KnownTypeInterfaceMap() {
-        static std::unordered_map<std::string_view, const ITypeInterface *> KnownTypeInterfaceMapInst;
+        static std::unordered_map<std::string_view, const ITypeInterface *>
+                KnownTypeInterfaceMapInst;
         return KnownTypeInterfaceMapInst;
     }
 
@@ -45,9 +46,7 @@ namespace LuaStruct {
             if (auto iter = ti_map.find(name); iter != ti_map.end()) {
                 auto ti = iter->second;
                 lua_remove(L, 1);
-                if (auto size = lua_tointeger(L, 1); size > 0) {
-                    return ti->NewVector(L);
-                }
+                if (auto size = lua_tointeger(L, 1); size > 0) { return ti->NewVector(L); }
                 return ti->NewScalar(L);
             }
             luaL_error(L, "unrecognized type %s", name);
@@ -57,9 +56,7 @@ namespace LuaStruct {
         int CppDelete(lua_State *L) {
             void *value = lua_touserdata(L, 1);
             if (const ITypeInterface *ti = GetTypeInterface(L, value)) {
-                if (auto size = lua_tointeger(L, 2); size > 0) {
-                    return ti->DeleteVector(L);
-                }
+                if (auto size = lua_tointeger(L, 2); size > 0) { return ti->DeleteVector(L); }
                 return ti->DeleteScalar(L);
             }
             luaL_error(L, "unrecognized ref ptr %x", value);
@@ -68,7 +65,8 @@ namespace LuaStruct {
     }// namespace
 
     namespace detail {
-        void TypeInterfaceStringIndexReplace(const ITypeInterface *ti, lua_State *L, std::string_view PathPrefix, std::string_view name) {
+        void TypeInterfaceStringIndexReplace(const ITypeInterface *ti, lua_State *L,
+                                             std::string_view PathPrefix, std::string_view name) {
             // #1 = object
             // #2 = key (TO BE REPLACED)
             // ...(optional)
@@ -100,7 +98,8 @@ namespace LuaStruct {
     struct TypeList
     {
     };
-    using BuiltinTypes = TypeList<bool, char, char16_t, char32_t, wchar_t, short, int, long, long long, float, double, long double>;
+    using BuiltinTypes = TypeList<bool, char, char16_t, char32_t, wchar_t, short, int, long,
+                                  long long, float, double, long double>;
 
     template<class... Args>
     static void SetupBuiltinTypeInterfaceImpl(TypeList<Args...>) {
@@ -113,8 +112,8 @@ namespace LuaStruct {
     }
 
     int SetupPtrMetaTable(lua_State *L) {
-        lua_pushlightuserdata(L, nullptr);                                        // #1 = lightuseradata
-        lua_newtable(L);                                                          // #2 = metatable
+        lua_pushlightuserdata(L, nullptr);// #1 = lightuseradata
+        lua_newtable(L);                  // #2 = metatable
         lua_pushcfunction(L, RefValueMetaDispatch<&ITypeInterface::MetaIndex>);   // #3 = func
         lua_setfield(L, -2, "__index");                                           // #2
         lua_pushcfunction(L, RefValueMetaDispatch<&ITypeInterface::MetaNewIndex>);// #3 = func
@@ -123,8 +122,8 @@ namespace LuaStruct {
         lua_setfield(L, -2, "__call");                                            // #2
         lua_pushcfunction(L, RefValueMetaDispatch<&ITypeInterface::MetaToString>);// #3 = func
         lua_setfield(L, -2, "__tostring");                                        // #2
-        lua_setmetatable(L, -2);                                                  // #1 = lightuserdata
-        lua_pop(L, 1);                                                            // #0
+        lua_setmetatable(L, -2);// #1 = lightuserdata
+        lua_pop(L, 1);          // #0
         return 0;
     }
 
@@ -200,8 +199,7 @@ namespace LuaStruct {
     }
 
     bool GetPtrByLuaObject(lua_State *L, int N, void *&out) {
-        if (lua_isnil(L, N))
-            return false;
+        if (lua_isnil(L, N)) return false;
         lua_getfield(L, N, "this");
         if (lua_isnil(L, -1)) {
             lua_pop(L, 1);

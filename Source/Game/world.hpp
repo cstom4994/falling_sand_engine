@@ -3,7 +3,6 @@
 #ifndef _METADOT_WORLD_HPP_
 #define _METADOT_WORLD_HPP_
 
-
 #include "Chunk.hpp"
 
 #define INC_World
@@ -35,7 +34,6 @@
 #ifndef INC_Biome
 #include "Biome.hpp"
 #endif// !INC_Biome
-
 
 #ifndef INC_WorldGenerator
 #include "WorldGenerator.hpp"
@@ -71,7 +69,6 @@ public:
     bool save(std::string worldFileName);
 };
 
-
 class World {
 public:
     std::string worldName = "";
@@ -90,8 +87,10 @@ public:
     std::vector<Particle *> particles;
     uint16_t width = 0;
     uint16_t height = 0;
-    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer, CAudioEngine *audioEngine, int netMode, WorldGenerator *generator);
-    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer, CAudioEngine *audioEngine, int netMode);
+    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
+              CAudioEngine *audioEngine, int netMode, WorldGenerator *generator);
+    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
+              CAudioEngine *audioEngine, int netMode);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);
@@ -138,8 +137,11 @@ public:
     std::vector<RigidBody *> rigidBodies;
     RigidBody *staticBody = nullptr;
 
-    RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, C_Surface *texture);
-    RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, C_Surface *texture);
+    RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape,
+                             float density, float friction, C_Surface *texture);
+    RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle,
+                                  std::vector<b2PolygonShape> shape, float density, float friction,
+                                  C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
 
     std::vector<std::vector<b2Vec2>> worldMeshes;
@@ -189,7 +191,8 @@ public:
     void forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
 
     RigidBody *physicsCheck(int x, int y);
-    void physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *cols, int *minX, int *maxX, int *minY, int *maxY);
+    void physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *cols, int *minX,
+                            int *maxX, int *minY, int *maxY);
 
     ~World();
 };

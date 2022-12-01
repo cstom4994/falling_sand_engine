@@ -23,7 +23,6 @@
 #include <variant>
 #include <vector>
 
-
 #if defined(__cpp_rtti)
 #define QJSPP_TYPENAME(...) (typeid(__VA_ARGS__).name())
 #else
@@ -87,28 +86,26 @@ namespace JsWrapper {
             return JS_DupValue(ctx, v);
         }
 
-        static JSValue wrap(JSContext *ctx, JSValue &&v) noexcept {
-            return v;
-        }
+        static JSValue wrap(JSContext *ctx, JSValue &&v) noexcept { return v; }
     };
 
     /** Conversion traits for integers.
  * Intentionally doesn't define traits for uint64_t since it can be typedefed to JSValue. (@see JS_NAN_BOXING)
  */
     template<typename Int>
-    struct js_traits<Int, std::enable_if_t<std::is_integral_v<Int> && sizeof(Int) <= sizeof(int64_t) && !std::is_same_v<Int, uint64_t>>>
+    struct js_traits<Int,
+                     std::enable_if_t<std::is_integral_v<Int> && sizeof(Int) <= sizeof(int64_t) &&
+                                      !std::is_same_v<Int, uint64_t>>>
     {
         /// @throws exception
         static Int unwrap(JSContext *ctx, JSValueConst v) {
             if constexpr (sizeof(Int) > sizeof(int32_t)) {
                 int64_t r;
-                if (JS_ToInt64(ctx, &r, v))
-                    throw exception{ctx};
+                if (JS_ToInt64(ctx, &r, v)) throw exception{ctx};
                 return static_cast<Int>(r);
             } else {
                 int32_t r;
-                if (JS_ToInt32(ctx, &r, v))
-                    throw exception{ctx};
+                if (JS_ToInt32(ctx, &r, v)) throw exception{ctx};
                 return static_cast<Int>(r);
             }
         }
@@ -131,9 +128,7 @@ namespace JsWrapper {
             return JS_ToBool(ctx, v) > 0;
         }
 
-        static JSValue wrap(JSContext *ctx, bool i) noexcept {
-            return JS_NewBool(ctx, i);
-        }
+        static JSValue wrap(JSContext *ctx, bool i) noexcept { return JS_NewBool(ctx, i); }
     };
 
     /** Conversion trait for void.
@@ -143,8 +138,7 @@ namespace JsWrapper {
     {
         /// @throws exception if jsvalue is neither undefined nor null
         static void unwrap(JSContext *ctx, JSValueConst value) {
-            if (JS_IsException(value))
-                throw exception{ctx};
+            if (JS_IsException(value)) throw exception{ctx};
         }
     };
 
@@ -156,14 +150,11 @@ namespace JsWrapper {
         /// @throws exception
         static double unwrap(JSContext *ctx, JSValueConst v) {
             double r;
-            if (JS_ToFloat64(ctx, &r, v))
-                throw exception{ctx};
+            if (JS_ToFloat64(ctx, &r, v)) throw exception{ctx};
             return r;
         }
 
-        static JSValue wrap(JSContext *ctx, double i) noexcept {
-            return JS_NewFloat64(ctx, i);
-        }
+        static JSValue wrap(JSContext *ctx, double i) noexcept { return JS_NewFloat64(ctx, i); }
     };
 
     namespace detail {
@@ -175,7 +166,8 @@ namespace JsWrapper {
 
             friend struct js_traits<std::string_view>;
 
-            js_string(JSContext *ctx, const char *ptr, std::size_t len) : Base(ptr, len), ctx(ctx) {}
+            js_string(JSContext *ctx, const char *ptr, std::size_t len)
+                : Base(ptr, len), ctx(ctx) {}
 
         public:
             template<typename... Args>
@@ -183,13 +175,10 @@ namespace JsWrapper {
 
             js_string(const js_string &other) = delete;
 
-            operator const char *() const {
-                return this->data();
-            }
+            operator const char *() const { return this->data(); }
 
             ~js_string() {
-                if (ctx)
-                    JS_FreeCString(ctx, this->data());
+                if (ctx) JS_FreeCString(ctx, this->data());
             }
         };
     }// namespace detail
@@ -201,8 +190,7 @@ namespace JsWrapper {
         static detail::js_string unwrap(JSContext *ctx, JSValueConst v) {
             size_t plen;
             const char *ptr = JS_ToCStringLen(ctx, &plen, v);
-            if (!ptr)
-                throw exception{ctx};
+            if (!ptr) throw exception{ctx};
             return detail::js_string{ctx, ptr, plen};
         }
 
@@ -238,19 +226,18 @@ namespace JsWrapper {
         }
     };
 
-
     /** Conversion from const std::variant */
     template<typename... Ts>
     struct js_traits<std::variant<Ts...>>
     {
         static JSValue wrap(JSContext *ctx, std::variant<Ts...> value) noexcept {
-            return std::visit([ctx](auto &&value) {
-                using T = std::decay_t<decltype(value)>;
-                return js_traits<T>::wrap(ctx, value);
-            },
-                              std::move(value));
+            return std::visit(
+                    [ctx](auto &&value) {
+                        using T = std::decay_t<decltype(value)>;
+                        return js_traits<T>::wrap(ctx, value);
+                    },
+                    std::move(value));
         }
-
 
         /* Useful type traits */
         template<typename T>
@@ -264,7 +251,8 @@ namespace JsWrapper {
         template<typename T>
         struct is_string
         {
-            static constexpr bool value = std::is_same_v<T, const char *> || std::is_same_v<std::decay_t<T>, std::string> ||
+            static constexpr bool value = std::is_same_v<T, const char *> ||
+                                          std::is_same_v<std::decay_t<T>, std::string> ||
                                           std::is_same_v<std::decay_t<T>, std::string_view>;
         };
         template<typename T>
@@ -305,28 +293,22 @@ namespace JsWrapper {
         /** Attempt to match common types (integral, floating-point, string, etc.) */
         template<template<typename R> typename Trait, typename U, typename... Us>
         static std::optional<std::variant<Ts...>> unwrapImpl(JSContext *ctx, JSValueConst v) {
-            if constexpr (Trait<U>::value) {
-                return js_traits<U>::unwrap(ctx, v);
-            }
-            if constexpr ((sizeof...(Us)) > 0) {
-                return unwrapImpl<Trait, Us...>(ctx, v);
-            }
+            if constexpr (Trait<U>::value) { return js_traits<U>::unwrap(ctx, v); }
+            if constexpr ((sizeof...(Us)) > 0) { return unwrapImpl<Trait, Us...>(ctx, v); }
             return std::nullopt;
         }
 
         /** Attempt to match class ID with type */
         template<typename U, typename... Us>
-        static std::optional<std::variant<Ts...>> unwrapObj(JSContext *ctx, JSValueConst v, JSClassID class_id) {
+        static std::optional<std::variant<Ts...>> unwrapObj(JSContext *ctx, JSValueConst v,
+                                                            JSClassID class_id) {
             if constexpr (is_shared_ptr<U>::value) {
-                if (class_id == js_traits<U>::QJSClassId) {
-                    return js_traits<U>::unwrap(ctx, v);
-                }
+                if (class_id == js_traits<U>::QJSClassId) { return js_traits<U>::unwrap(ctx, v); }
             }
 
             // try to unwrap embedded variant (variant<variant<...>>), might be slow
             if constexpr (is_variant<U>::value) {
-                if (auto opt = js_traits<std::optional<U>>::unwrap(ctx, v))
-                    return *opt;
+                if (auto opt = js_traits<std::optional<U>>::unwrap(ctx, v)) return *opt;
             }
 
             if constexpr (is_vector<U>::value) {
@@ -334,9 +316,7 @@ namespace JsWrapper {
                     auto firstElement = JS_GetPropertyUint32(ctx, v, 0);
                     bool ok = isCompatible<std::decay_t<typename U::value_type>>(ctx, firstElement);
                     JS_FreeValue(ctx, firstElement);
-                    if (ok) {
-                        return U{js_traits<U>::unwrap(ctx, v)};
-                    }
+                    if (ok) { return U{js_traits<U>::unwrap(ctx, v)}; }
                 }
             }
 
@@ -345,30 +325,24 @@ namespace JsWrapper {
                     // todo: check length?
                     auto firstElement = JS_GetPropertyUint32(ctx, v, 0);
                     auto secondElement = JS_GetPropertyUint32(ctx, v, 1);
-                    bool ok = isCompatible<std::decay_t<typename U::first_type>>(ctx, firstElement) && isCompatible<std::decay_t<typename U::second_type>>(ctx, secondElement);
+                    bool ok =
+                            isCompatible<std::decay_t<typename U::first_type>>(ctx, firstElement) &&
+                            isCompatible<std::decay_t<typename U::second_type>>(ctx, secondElement);
                     JS_FreeValue(ctx, firstElement);
                     JS_FreeValue(ctx, secondElement);
-                    if (ok) {
-                        return U{js_traits<U>::unwrap(ctx, v)};
-                    }
+                    if (ok) { return U{js_traits<U>::unwrap(ctx, v)}; }
                 }
             }
 
-            if constexpr ((sizeof...(Us)) > 0) {
-                return unwrapObj<Us...>(ctx, v, class_id);
-            }
+            if constexpr ((sizeof...(Us)) > 0) { return unwrapObj<Us...>(ctx, v, class_id); }
             return std::nullopt;
         }
 
         /** Attempt to cast to types satisfying traits, ordered in terms of priority */
         template<template<typename T> typename Trait, template<typename T> typename... Traits>
         static std::variant<Ts...> unwrapPriority(JSContext *ctx, JSValueConst v) {
-            if (auto result = unwrapImpl<Trait, Ts...>(ctx, v)) {
-                return *result;
-            }
-            if constexpr ((sizeof...(Traits)) > 0) {
-                return unwrapPriority<Traits...>(ctx, v);
-            }
+            if (auto result = unwrapImpl<Trait, Ts...>(ctx, v)) { return *result; }
+            if constexpr ((sizeof...(Traits)) > 0) { return unwrapPriority<Traits...>(ctx, v); }
             JS_ThrowTypeError(ctx, "Expected type %s", QJSPP_TYPENAME(std::variant<Ts...>));
             throw exception{ctx};
         }
@@ -383,11 +357,9 @@ namespace JsWrapper {
                 case JS_TAG_FUNCTION_BYTECODE:
                     return std::is_function<T>::value;
                 case JS_TAG_OBJECT:
-                    if (JS_IsArray(ctx, v) == 1)
-                        return is_vector<T>::value || is_pair<T>::value;
+                    if (JS_IsArray(ctx, v) == 1) return is_vector<T>::value || is_pair<T>::value;
                     if constexpr (is_shared_ptr<T>::value) {
-                        if (JS_GetClassID(v) == js_traits<T>::QJSClassId)
-                            return true;
+                        if (JS_GetClassID(v) == js_traits<T>::QJSClassId) return true;
                     }
                     return false;
 
@@ -396,7 +368,8 @@ namespace JsWrapper {
                 case JS_TAG_BIG_INT:
                     return std::is_integral_v<T> || std::is_floating_point_v<T>;
                 case JS_TAG_BOOL:
-                    return is_boolean<T>::value || std::is_integral_v<T> || std::is_floating_point_v<T>;
+                    return is_boolean<T>::value || std::is_integral_v<T> ||
+                           std::is_floating_point_v<T>;
 
                 case JS_TAG_BIG_DECIMAL:
                     [[fallthrough]];
@@ -445,7 +418,8 @@ namespace JsWrapper {
                 case JS_TAG_BIG_INT:
                     return unwrapPriority<std::is_integral, std::is_floating_point>(ctx, v);
                 case JS_TAG_BOOL:
-                    return unwrapPriority<is_boolean, std::is_integral, std::is_floating_point>(ctx, v);
+                    return unwrapPriority<is_boolean, std::is_integral, std::is_floating_point>(ctx,
+                                                                                                v);
 
                 case JS_TAG_SYMBOL:
                     [[fallthrough]];
@@ -458,7 +432,8 @@ namespace JsWrapper {
                 case JS_TAG_UNINITIALIZED:
                     [[fallthrough]];
                 case JS_TAG_CATCH_OFFSET:
-                    JS_ThrowTypeError(ctx, "Expected type %s, got tag %d", QJSPP_TYPENAME(std::variant<Ts...>), tag);
+                    JS_ThrowTypeError(ctx, "Expected type %s, got tag %d",
+                                      QJSPP_TYPENAME(std::variant<Ts...>), tag);
                     [[fallthrough]];
                 case JS_TAG_EXCEPTION:
                     break;
@@ -522,7 +497,8 @@ namespace JsWrapper {
         struct unwrap_arg_impl<rest<T>, I, NArgs>
         {
             static rest<T> unwrap(JSContext *ctx, int argc, JSValueConst *argv) {
-                static_assert(I == NArgs - 1, "The `rest` argument must be the last function argument.");
+                static_assert(I == NArgs - 1,
+                              "The `rest` argument must be the last function argument.");
                 rest<T> result;
                 result.reserve(argc - I);
                 for (size_t i = I; i < size_t(argc); ++i)
@@ -532,16 +508,20 @@ namespace JsWrapper {
         };
 
         template<class Tuple, std::size_t... I>
-        Tuple unwrap_args_impl(JSContext *ctx, int argc, JSValueConst *argv, std::index_sequence<I...>) {
-            return Tuple{unwrap_arg_impl<std::tuple_element_t<I, Tuple>, I, sizeof...(I)>::unwrap(ctx, argc, argv)...};
+        Tuple unwrap_args_impl(JSContext *ctx, int argc, JSValueConst *argv,
+                               std::index_sequence<I...>) {
+            return Tuple{unwrap_arg_impl<std::tuple_element_t<I, Tuple>, I, sizeof...(I)>::unwrap(
+                    ctx, argc, argv)...};
         }
 
         /** Helper function to convert an array of JSValues to a tuple.
  * @tparam Args C++ types of the argv array
  */
         template<typename... Args>
-        std::tuple<std::decay_t<Args>...> unwrap_args(JSContext *ctx, int argc, JSValueConst *argv) {
-            return unwrap_args_impl<std::tuple<std::decay_t<Args>...>>(ctx, argc, argv, std::make_index_sequence<sizeof...(Args)>());
+        std::tuple<std::decay_t<Args>...> unwrap_args(JSContext *ctx, int argc,
+                                                      JSValueConst *argv) {
+            return unwrap_args_impl<std::tuple<std::decay_t<Args>...>>(
+                    ctx, argc, argv, std::make_index_sequence<sizeof...(Args)>());
         }
 
         /** Helper function to call f with an array of JSValues.
@@ -560,13 +540,11 @@ namespace JsWrapper {
                     std::apply(std::forward<Callable>(f), unwrap_args<Args...>(ctx, argc, argv));
                     return JS_NULL;
                 } else {
-                    return js_traits<std::decay_t<R>>::wrap(ctx,
-                                                            std::apply(std::forward<Callable>(f),
-                                                                       unwrap_args<Args...>(ctx, argc, argv)));
+                    return js_traits<std::decay_t<R>>::wrap(
+                            ctx, std::apply(std::forward<Callable>(f),
+                                            unwrap_args<Args...>(ctx, argc, argv)));
                 }
-            } catch (exception) {
-                return JS_EXCEPTION;
-            } catch (std::exception const &err) {
+            } catch (exception) { return JS_EXCEPTION; } catch (std::exception const &err) {
                 JS_ThrowInternalError(ctx, "%s", err.what());
                 return JS_EXCEPTION;
             } catch (...) {
@@ -579,22 +557,22 @@ namespace JsWrapper {
  * @tparam FirstArg type of this_value
  */
         template<typename R, typename FirstArg, typename... Args, typename Callable>
-        JSValue wrap_this_call(JSContext *ctx, Callable &&f, JSValueConst this_value, int argc, JSValueConst *argv) noexcept {
+        JSValue wrap_this_call(JSContext *ctx, Callable &&f, JSValueConst this_value, int argc,
+                               JSValueConst *argv) noexcept {
             try {
                 if constexpr (std::is_same_v<R, void>) {
-                    std::apply(std::forward<Callable>(f), std::tuple_cat(unwrap_args<FirstArg>(ctx, 1, &this_value),
-                                                                         unwrap_args<Args...>(ctx, argc, argv)));
+                    std::apply(std::forward<Callable>(f),
+                               std::tuple_cat(unwrap_args<FirstArg>(ctx, 1, &this_value),
+                                              unwrap_args<Args...>(ctx, argc, argv)));
                     return JS_NULL;
                 } else {
-                    return js_traits<std::decay_t<R>>::wrap(ctx,
-                                                            std::apply(std::forward<Callable>(f),
-                                                                       std::tuple_cat(
-                                                                               unwrap_args<FirstArg>(ctx, 1, &this_value),
-                                                                               unwrap_args<Args...>(ctx, argc, argv))));
+                    return js_traits<std::decay_t<R>>::wrap(
+                            ctx,
+                            std::apply(std::forward<Callable>(f),
+                                       std::tuple_cat(unwrap_args<FirstArg>(ctx, 1, &this_value),
+                                                      unwrap_args<Args...>(ctx, argc, argv))));
                 }
-            } catch (exception) {
-                return JS_EXCEPTION;
-            } catch (std::exception const &err) {
+            } catch (exception) { return JS_EXCEPTION; } catch (std::exception const &err) {
                 JS_ThrowInternalError(ctx, "%s", err.what());
                 return JS_EXCEPTION;
             } catch (...) {
@@ -605,7 +583,9 @@ namespace JsWrapper {
 
         template<class Tuple, std::size_t... I>
         void wrap_args_impl(JSContext *ctx, JSValue *argv, Tuple tuple, std::index_sequence<I...>) {
-            ((argv[I] = js_traits<std::decay_t<std::tuple_element_t<I, Tuple>>>::wrap(ctx, std::get<I>(tuple))), ...);
+            ((argv[I] = js_traits<std::decay_t<std::tuple_element_t<I, Tuple>>>::wrap(
+                      ctx, std::get<I>(tuple))),
+             ...);
         }
 
         /** Converts C++ args to JSValue array.
@@ -652,9 +632,12 @@ namespace JsWrapper {
     {
         static JSValue wrap(JSContext *ctx, fwrapper<F, PassThis> fw) noexcept {
             return JS_NewCFunction(
-                    ctx, [](JSContext *ctx, JSValueConst this_value, int argc, JSValueConst *argv) noexcept -> JSValue {
+                    ctx,
+                    [](JSContext *ctx, JSValueConst this_value, int argc,
+                       JSValueConst *argv) noexcept -> JSValue {
                         if constexpr (PassThis)
-                            return detail::wrap_this_call<R, Args...>(ctx, F, this_value, argc, argv);
+                            return detail::wrap_this_call<R, Args...>(ctx, F, this_value, argc,
+                                                                      argv);
                         else
                             return detail::wrap_call<R, Args...>(ctx, F, argc, argv);
                     },
@@ -668,21 +651,28 @@ namespace JsWrapper {
     {
         static JSValue wrap(JSContext *ctx, fwrapper<F, PassThis> fw) noexcept {
             return JS_NewCFunction(
-                    ctx, [](JSContext *ctx, JSValueConst this_value, int argc, JSValueConst *argv) noexcept -> JSValue {
-                        return detail::wrap_this_call<R, std::shared_ptr<T>, Args...>(ctx, F, this_value, argc, argv);
+                    ctx,
+                    [](JSContext *ctx, JSValueConst this_value, int argc,
+                       JSValueConst *argv) noexcept -> JSValue {
+                        return detail::wrap_this_call<R, std::shared_ptr<T>, Args...>(
+                                ctx, F, this_value, argc, argv);
                     },
                     fw.name, sizeof...(Args));
         }
     };
 
     /** Conversion to JSValue for const class member function in fwrapper. PassThis is ignored and treated as true */
-    template<typename R, class T, typename... Args, R (T::*F)(Args...) const, bool PassThis /*=ignored*/>
+    template<typename R, class T, typename... Args, R (T::*F)(Args...) const,
+             bool PassThis /*=ignored*/>
     struct js_traits<fwrapper<F, PassThis>>
     {
         static JSValue wrap(JSContext *ctx, fwrapper<F, PassThis> fw) noexcept {
             return JS_NewCFunction(
-                    ctx, [](JSContext *ctx, JSValueConst this_value, int argc, JSValueConst *argv) noexcept -> JSValue {
-                        return detail::wrap_this_call<R, std::shared_ptr<T>, Args...>(ctx, F, this_value, argc, argv);
+                    ctx,
+                    [](JSContext *ctx, JSValueConst this_value, int argc,
+                       JSValueConst *argv) noexcept -> JSValue {
+                        return detail::wrap_this_call<R, std::shared_ptr<T>, Args...>(
+                                ctx, F, this_value, argc, argv);
                     },
                     fw.name, sizeof...(Args));
         }
@@ -715,28 +705,33 @@ namespace JsWrapper {
     {
         static JSValue wrap(JSContext *ctx, ctor_wrapper<T, Args...> cw) noexcept {
             return JS_NewCFunction2(
-                    ctx, [](JSContext *ctx, JSValueConst this_value, int argc, JSValueConst *argv) noexcept -> JSValue {
+                    ctx,
+                    [](JSContext *ctx, JSValueConst this_value, int argc,
+                       JSValueConst *argv) noexcept -> JSValue {
                         if (js_traits<std::shared_ptr<T>>::QJSClassId == 0)// not registered
                         {
 #if defined(__cpp_rtti)
                             // automatically register class on first use (no prototype)
                             js_traits<std::shared_ptr<T>>::register_class(ctx, typeid(T).name());
 #else
-                            JS_ThrowTypeError(ctx, "quickjspp ctor_wrapper<T>::wrap: Class is not registered");
+                            JS_ThrowTypeError(
+                                    ctx,
+                                    "quickjspp ctor_wrapper<T>::wrap: Class is not registered");
                             return JS_EXCEPTION;
 #endif
                         }
 
                         auto proto = detail::GetPropertyPrototype(ctx, this_value);
-                        if (JS_IsException(proto))
-                            return proto;
-                        auto jsobj = JS_NewObjectProtoClass(ctx, proto, js_traits<std::shared_ptr<T>>::QJSClassId);
+                        if (JS_IsException(proto)) return proto;
+                        auto jsobj = JS_NewObjectProtoClass(
+                                ctx, proto, js_traits<std::shared_ptr<T>>::QJSClassId);
                         JS_FreeValue(ctx, proto);
-                        if (JS_IsException(jsobj))
-                            return jsobj;
+                        if (JS_IsException(jsobj)) return jsobj;
 
                         try {
-                            std::shared_ptr<T> ptr = std::apply(std::make_shared<T, Args...>, detail::unwrap_args<Args...>(ctx, argc, argv));
+                            std::shared_ptr<T> ptr =
+                                    std::apply(std::make_shared<T, Args...>,
+                                               detail::unwrap_args<Args...>(ctx, argc, argv));
                             JS_SetOpaque(jsobj, new std::shared_ptr<T>(std::move(ptr)));
                             return jsobj;
                         } catch (exception) {
@@ -757,7 +752,6 @@ namespace JsWrapper {
                     cw.name, sizeof...(Args), JS_CFUNC_constructor, 0);
         }
     };
-
 
     /** Conversions for std::shared_ptr<T>. Empty shared_ptr corresponds to JS_NULL.
  * T should be registered to a context before conversions.
@@ -786,7 +780,8 @@ namespace JsWrapper {
      */
         template<typename D>
         static void registerDerivedClass(JSClassID derived_class_id, ptr_cast_fcn_t ptr_cast_fcn) {
-            static_assert(std::is_base_of<T, D>::value && !std::is_same<T, D>::value, "Type is not a derived class");
+            static_assert(std::is_base_of<T, D>::value && !std::is_same<T, D>::value,
+                          "Type is not a derived class");
             using derived_ptr_cast_fcn_t = typename js_traits<std::shared_ptr<D>>::ptr_cast_fcn_t;
 
             // Register how to obtain the std::shared_ptr from the derived class.
@@ -798,11 +793,17 @@ namespace JsWrapper {
             // Instrument the derived class so that it can propagate new derived classes to us.
             auto old_registerWithBase = js_traits<std::shared_ptr<D>>::registerWithBase;
             js_traits<std::shared_ptr<D>>::registerWithBase =
-                    [old_registerWithBase = std::move(old_registerWithBase)](JSClassID derived_class_id, derived_ptr_cast_fcn_t derived_ptr_cast_fcn) {
-                        if (old_registerWithBase) old_registerWithBase(derived_class_id, derived_ptr_cast_fcn);
-                        registerDerivedClass<D>(derived_class_id, [derived_cast_fcn = std::move(derived_ptr_cast_fcn)](JSContext *ctx, JSValueConst v) {
-                            return std::shared_ptr<T>(derived_cast_fcn(ctx, v));
-                        });
+                    [old_registerWithBase = std::move(old_registerWithBase)](
+                            JSClassID derived_class_id,
+                            derived_ptr_cast_fcn_t derived_ptr_cast_fcn) {
+                        if (old_registerWithBase)
+                            old_registerWithBase(derived_class_id, derived_ptr_cast_fcn);
+                        registerDerivedClass<D>(
+                                derived_class_id,
+                                [derived_cast_fcn = std::move(derived_ptr_cast_fcn)](
+                                        JSContext *ctx, JSValueConst v) {
+                                    return std::shared_ptr<T>(derived_cast_fcn(ctx, v));
+                                });
                     };
         }
 
@@ -842,16 +843,16 @@ namespace JsWrapper {
      * @throws exception
      */
         static void register_class(JSContext *ctx, const char *name, JSValue proto = JS_NULL,
-                                   JSClassCall *call = nullptr, JSClassExoticMethods *exotic = nullptr) {
-            if (QJSClassId == 0) {
-                JS_NewClassID(&QJSClassId);
-            }
+                                   JSClassCall *call = nullptr,
+                                   JSClassExoticMethods *exotic = nullptr) {
+            if (QJSClassId == 0) { JS_NewClassID(&QJSClassId); }
             auto rt = JS_GetRuntime(ctx);
             if (!JS_IsRegisteredClass(rt, QJSClassId)) {
                 JSClassGCMark *marker = nullptr;
                 if (!markOffsets.empty()) {
                     marker = [](JSRuntime *rt, JSValueConst val, JS_MarkFunc *mark_func) {
-                        auto pptr = static_cast<std::shared_ptr<T> *>(JS_GetOpaque(val, QJSClassId));
+                        auto pptr =
+                                static_cast<std::shared_ptr<T> *>(JS_GetOpaque(val, QJSClassId));
                         assert(pptr);
                         const T *ptr = pptr->get();
                         assert(ptr);
@@ -860,19 +861,19 @@ namespace JsWrapper {
                         }
                     };
                 }
-                JSClassDef def{
-                        name,
-                        // destructor (finalizer)
-                        [](JSRuntime *rt, JSValue obj) noexcept {
-                            auto pptr = static_cast<std::shared_ptr<T> *>(JS_GetOpaque(obj, QJSClassId));
-                            delete pptr;
-                        },
-                        // mark
-                        marker,
-                        // call
-                        call,
-                        // exotic
-                        exotic};
+                JSClassDef def{name,
+                               // destructor (finalizer)
+                               [](JSRuntime *rt, JSValue obj) noexcept {
+                                   auto pptr = static_cast<std::shared_ptr<T> *>(
+                                           JS_GetOpaque(obj, QJSClassId));
+                                   delete pptr;
+                               },
+                               // mark
+                               marker,
+                               // call
+                               call,
+                               // exotic
+                               exotic};
                 int e = JS_NewClass(rt, QJSClassId, &def);
                 if (e < 0) {
                     JS_ThrowInternalError(ctx, "Can't register class %s", name);
@@ -886,21 +887,20 @@ namespace JsWrapper {
      * Creates an object with class if #QJSClassId and sets its opaque pointer to a new copy of #ptr.
      */
         static JSValue wrap(JSContext *ctx, std::shared_ptr<T> ptr) {
-            if (!ptr)
-                return JS_NULL;
+            if (!ptr) return JS_NULL;
             if (QJSClassId == 0)// not registered
             {
 #if defined(__cpp_rtti)
                 // automatically register class on first use (no prototype)
                 register_class(ctx, typeid(T).name());
 #else
-                JS_ThrowTypeError(ctx, "quickjspp std::shared_ptr<T>::wrap: Class is not registered");
+                JS_ThrowTypeError(ctx,
+                                  "quickjspp std::shared_ptr<T>::wrap: Class is not registered");
                 return JS_EXCEPTION;
 #endif
             }
             auto jsobj = JS_NewObjectClass(ctx, QJSClassId);
-            if (JS_IsException(jsobj))
-                return jsobj;
+            if (JS_IsException(jsobj)) return jsobj;
 
             auto pptr = new std::shared_ptr<T>(std::move(ptr));
             JS_SetOpaque(jsobj, pptr);
@@ -910,9 +910,7 @@ namespace JsWrapper {
         /// @throws exception if #v doesn't have the correct class id
         static std::shared_ptr<T> unwrap(JSContext *ctx, JSValueConst v) {
             std::shared_ptr<T> ptr = nullptr;
-            if (JS_IsNull(v)) {
-                return ptr;
-            }
+            if (JS_IsNull(v)) { return ptr; }
             auto obj_class_id = JS_GetClassID(v);
 
             if (obj_class_id == QJSClassId) {
@@ -944,9 +942,7 @@ namespace JsWrapper {
     struct js_traits<T *, std::enable_if_t<std::is_class_v<T>>>
     {
         static JSValue wrap(JSContext *ctx, T *ptr) {
-            if (ptr == nullptr) {
-                return JS_NULL;
-            }
+            if (ptr == nullptr) { return JS_NULL; }
             if (js_traits<std::shared_ptr<T>>::QJSClassId == 0)// not registered
             {
 #if defined(__cpp_rtti)
@@ -959,8 +955,7 @@ namespace JsWrapper {
 #endif
             }
             auto jsobj = JS_NewObjectClass(ctx, js_traits<std::shared_ptr<T>>::QJSClassId);
-            if (JS_IsException(jsobj))
-                return jsobj;
+            if (JS_IsException(jsobj)) return jsobj;
 
             // shared_ptr with empty deleter since we don't own T*
             auto pptr = new std::shared_ptr<T>(ptr, [](T *) {});
@@ -969,9 +964,7 @@ namespace JsWrapper {
         }
 
         static T *unwrap(JSContext *ctx, JSValueConst v) {
-            if (JS_IsNull(v)) {
-                return nullptr;
-            }
+            if (JS_IsNull(v)) { return nullptr; }
             auto ptr = js_traits<std::shared_ptr<T>>::unwrap(ctx, v);
             return ptr.get();
         }
@@ -998,7 +991,8 @@ namespace JsWrapper {
  */
         struct function
         {
-            JSValue (*invoker)(function *self, JSContext *ctx, JSValueConst this_value, int argc, JSValueConst *argv) = nullptr;
+            JSValue (*invoker)(function *self, JSContext *ctx, JSValueConst this_value, int argc,
+                               JSValueConst *argv) = nullptr;
 
             void (*destroyer)(function *self) = nullptr;
 
@@ -1007,9 +1001,9 @@ namespace JsWrapper {
             template<typename Functor>
             static function *create(JSRuntime *rt, Functor &&f) {
                 using Functor_t = std::decay_t<Functor>;
-                auto fptr = static_cast<function *>(js_malloc_rt(rt, sizeof(function) + sizeof(Functor_t)));
-                if (!fptr)
-                    throw std::bad_alloc{};
+                auto fptr = static_cast<function *>(
+                        js_malloc_rt(rt, sizeof(function) + sizeof(Functor_t)));
+                if (!fptr) throw std::bad_alloc{};
                 new (fptr) function;
                 auto functorptr = reinterpret_cast<Functor_t *>(fptr->functor);
                 new (functorptr) Functor_t(std::forward<Functor>(f));
@@ -1034,38 +1028,32 @@ namespace JsWrapper {
 
         // TODO: replace ctx with rt
         static void register_class(JSContext *ctx, const char *name) {
-            if (QJSClassId == 0) {
-                JS_NewClassID(&QJSClassId);
-            }
+            if (QJSClassId == 0) { JS_NewClassID(&QJSClassId); }
             auto rt = JS_GetRuntime(ctx);
-            if (JS_IsRegisteredClass(rt, QJSClassId))
-                return;
+            if (JS_IsRegisteredClass(rt, QJSClassId)) return;
             JSClassDef def{
                     name,
                     // destructor
                     [](JSRuntime *rt, JSValue obj) noexcept {
                         auto fptr = static_cast<detail::function *>(JS_GetOpaque(obj, QJSClassId));
                         assert(fptr);
-                        if (fptr->destroyer)
-                            fptr->destroyer(fptr);
+                        if (fptr->destroyer) fptr->destroyer(fptr);
                         js_free_rt(rt, fptr);
                     },
                     nullptr,// mark
                     // call
                     [](JSContext *ctx, JSValueConst func_obj, JSValueConst this_val, int argc,
                        JSValueConst *argv, int flags) -> JSValue {
-                        auto ptr = static_cast<detail::function *>(JS_GetOpaque2(ctx, func_obj, QJSClassId));
-                        if (!ptr)
-                            return JS_EXCEPTION;
+                        auto ptr = static_cast<detail::function *>(
+                                JS_GetOpaque2(ctx, func_obj, QJSClassId));
+                        if (!ptr) return JS_EXCEPTION;
                         return ptr->invoker(ptr, ctx, this_val, argc, argv);
                     },
                     nullptr};
             int e = JS_NewClass(rt, QJSClassId, &def);
-            if (e < 0)
-                throw std::runtime_error{"Cannot register C++ function class"};
+            if (e < 0) throw std::runtime_error{"Cannot register C++ function class"};
         }
     };
-
 
     /** Traits for accessing object properties.
  * @tparam Key property key type (uint32 and strings are supported)
@@ -1081,10 +1069,10 @@ namespace JsWrapper {
     template<>
     struct js_property_traits<const char *>
     {
-        static void set_property(JSContext *ctx, JSValue this_obj, const char *name, JSValue value) {
+        static void set_property(JSContext *ctx, JSValue this_obj, const char *name,
+                                 JSValue value) {
             int err = JS_SetPropertyStr(ctx, this_obj, name, value);
-            if (err < 0)
-                throw exception{ctx};
+            if (err < 0) throw exception{ctx};
         }
 
         static JSValue get_property(JSContext *ctx, JSValue this_obj, const char *name) noexcept {
@@ -1097,8 +1085,7 @@ namespace JsWrapper {
     {
         static void set_property(JSContext *ctx, JSValue this_obj, uint32_t idx, JSValue value) {
             int err = JS_SetPropertyUint32(ctx, this_obj, idx, value);
-            if (err < 0)
-                throw exception{ctx};
+            if (err < 0) throw exception{ctx};
         }
 
         static JSValue get_property(JSContext *ctx, JSValue this_obj, uint32_t idx) noexcept {
@@ -1111,7 +1098,6 @@ namespace JsWrapper {
     {
     };
 
-
     namespace detail {
         template<typename Key>
         struct property_proxy
@@ -1123,12 +1109,15 @@ namespace JsWrapper {
             /** Conversion helper function */
             template<typename T>
             T as() const {
-                return unwrap_free<T>(ctx, js_property_traits<Key>::get_property(ctx, this_obj, key));
+                return unwrap_free<T>(ctx,
+                                      js_property_traits<Key>::get_property(ctx, this_obj, key));
             }
 
             /** Explicit conversion operator (to any type) */
             template<typename T>
-            explicit operator T() const { return as<T>(); }
+            explicit operator T() const {
+                return as<T>();
+            }
 
             /** Implicit converion to JsWrapper::Value */
             operator Value() const;// defined later due to Value being incomplete type
@@ -1138,8 +1127,9 @@ namespace JsWrapper {
 
             template<typename T>
             property_proxy &operator=(T &&value) {
-                js_property_traits<Key>::set_property(ctx, this_obj, key,
-                                                      js_traits<std::decay_t<T>>::wrap(ctx, std::forward<T>(value)));
+                js_property_traits<Key>::set_property(
+                        ctx, this_obj, key,
+                        js_traits<std::decay_t<T>>::wrap(ctx, std::forward<T>(value)));
                 return *this;
             }
 
@@ -1150,7 +1140,6 @@ namespace JsWrapper {
 
             ~property_proxy() noexcept { JS_FreeValue(ctx, this_obj); }
         };
-
 
         // class member variable getter/setter
         template<auto M>
@@ -1164,13 +1153,9 @@ namespace JsWrapper {
         {
             using is_const = std::is_const<R>;
 
-            static const R &get(std::shared_ptr<T> ptr) {
-                return *ptr.*M;
-            }
+            static const R &get(std::shared_ptr<T> ptr) { return *ptr.*M; }
 
-            static R &set(std::shared_ptr<T> ptr, R value) {
-                return *ptr.*M = std::move(value);
-            }
+            static R &set(std::shared_ptr<T> ptr, R value) { return *ptr.*M = std::move(value); }
         };
 
         // M - static member object
@@ -1179,13 +1164,9 @@ namespace JsWrapper {
         {
             using is_const = std::is_const<R>;
 
-            static const R &get(bool) {
-                return *M;
-            }
+            static const R &get(bool) { return *M; }
 
-            static R &set(bool, R value) {
-                return *M = std::move(value);
-            }
+            static R &set(bool, R value) { return *M = std::move(value); }
         };
 
     }// namespace detail
@@ -1207,8 +1188,7 @@ namespace JsWrapper {
         template<typename T>
         Value(JSContext *ctx, T &&val) : ctx(ctx) {
             v = js_traits<std::decay_t<T>>::wrap(ctx, std::forward<T>(val));
-            if (JS_IsException(v))
-                throw exception{ctx};
+            if (JS_IsException(v)) throw exception{ctx};
         }
 
         Value(JSValue &&v) noexcept : v(std::move(v)), ctx(nullptr) {}
@@ -1230,18 +1210,16 @@ namespace JsWrapper {
         }
 
         bool operator==(JSValueConst other) const {
-            return JS_VALUE_GET_TAG(v) == JS_VALUE_GET_TAG(other) && JS_VALUE_GET_PTR(v) == JS_VALUE_GET_PTR(other);
+            return JS_VALUE_GET_TAG(v) == JS_VALUE_GET_TAG(other) &&
+                   JS_VALUE_GET_PTR(v) == JS_VALUE_GET_PTR(other);
         }
 
         bool operator!=(JSValueConst other) const { return !((*this) == other); }
 
         /** Returns true if 2 values are the same (equality for arithmetic types or point to the same object) */
-        bool operator==(const Value &rhs) const {
-            return (*this == rhs.v);
-        }
+        bool operator==(const Value &rhs) const { return (*this == rhs.v); }
 
         bool operator!=(const Value &rhs) const { return !((*this) == rhs); }
-
 
         ~Value() {
             if (ctx) JS_FreeValue(ctx, v);
@@ -1254,11 +1232,15 @@ namespace JsWrapper {
      * @return type returned by js_traits<std::decay_t<T>>::unwrap that should be implicitly convertible to T
      * */
         template<typename T>
-        auto as() const { return js_traits<std::decay_t<T>>::unwrap(ctx, v); }
+        auto as() const {
+            return js_traits<std::decay_t<T>>::unwrap(ctx, v);
+        }
 
         /** Explicit conversion: static_cast<T>(value) or (T)value */
         template<typename T>
-        explicit operator T() const { return as<T>(); }
+        explicit operator T() const {
+            return as<T>();
+        }
 
         JSValue release() noexcept// dont call freevalue
         {
@@ -1269,7 +1251,6 @@ namespace JsWrapper {
         /** Implicit conversion to JSValue (rvalue only). Example: JSValue v = std::move(value); */
         operator JSValue() &&noexcept { return release(); }
 
-
         /** Access JS properties. Returns proxy type which is implicitly convertible to JsWrapper::Value */
         template<typename Key>
         detail::property_proxy<Key> operator[](Key key) {
@@ -1277,19 +1258,20 @@ namespace JsWrapper {
             return {ctx, JS_DupValue(ctx, v), std::move(key)};
         }
 
-
         // add("f", []() {...});
         template<typename Function>
         Value &add(const char *name, Function &&f) {
-            (*this)[name] = js_traits<decltype(std::function{std::forward<Function>(f)})>::wrap(ctx,
-                                                                                                std::forward<Function>(f));
+            (*this)[name] = js_traits<decltype(std::function{std::forward<Function>(f)})>::wrap(
+                    ctx, std::forward<Function>(f));
             return *this;
         }
 
         // add<&f>("f");
         // add<&T::f>("f");
         template<auto F>
-        std::enable_if_t<std::is_member_function_pointer_v<decltype(F)> || std::is_function_v<std::remove_pointer_t<decltype(F)>>, Value &>
+        std::enable_if_t<std::is_member_function_pointer_v<decltype(F)> ||
+                                 std::is_function_v<std::remove_pointer_t<decltype(F)>>,
+                         Value &>
         add(const char *name) {
             (*this)[name] = fwrapper<F>{name};
             return *this;
@@ -1301,13 +1283,12 @@ namespace JsWrapper {
             auto prop = JS_NewAtom(ctx, name);
             using fgetter = fwrapper<FGet, true>;
             using fsetter = fwrapper<FSet, true>;
-            int ret = JS_DefinePropertyGetSet(ctx, v, prop,
-                                              js_traits<fgetter>::wrap(ctx, fgetter{name}),
-                                              js_traits<fsetter>::wrap(ctx, fsetter{name}),
-                                              JS_PROP_CONFIGURABLE | JS_PROP_WRITABLE | JS_PROP_ENUMERABLE);
+            int ret = JS_DefinePropertyGetSet(
+                    ctx, v, prop, js_traits<fgetter>::wrap(ctx, fgetter{name}),
+                    js_traits<fsetter>::wrap(ctx, fsetter{name}),
+                    JS_PROP_CONFIGURABLE | JS_PROP_WRITABLE | JS_PROP_ENUMERABLE);
             JS_FreeAtom(ctx, prop);
-            if (ret < 0)
-                throw exception{ctx};
+            if (ret < 0) throw exception{ctx};
             return *this;
         }
 
@@ -1316,20 +1297,18 @@ namespace JsWrapper {
         Value &add_getter(const char *name) {
             auto prop = JS_NewAtom(ctx, name);
             using fgetter = fwrapper<FGet, true>;
-            int ret = JS_DefinePropertyGetSet(ctx, v, prop,
-                                              js_traits<fgetter>::wrap(ctx, fgetter{name}),
-                                              JS_UNDEFINED,
-                                              JS_PROP_CONFIGURABLE | JS_PROP_ENUMERABLE);
+            int ret = JS_DefinePropertyGetSet(
+                    ctx, v, prop, js_traits<fgetter>::wrap(ctx, fgetter{name}), JS_UNDEFINED,
+                    JS_PROP_CONFIGURABLE | JS_PROP_ENUMERABLE);
             JS_FreeAtom(ctx, prop);
-            if (ret < 0)
-                throw exception{ctx};
+            if (ret < 0) throw exception{ctx};
             return *this;
         }
 
         // add<&T::member>("member");
         template<auto M>
-        std::enable_if_t<std::is_member_object_pointer_v<decltype(M)>, Value &>
-        add(const char *name) {
+        std::enable_if_t<std::is_member_object_pointer_v<decltype(M)>, Value &> add(
+                const char *name) {
             if constexpr (detail::get_set<M>::is_const::value)
                 return add_getter<detail::get_set<M>::get>(name);
             else
@@ -1338,7 +1317,9 @@ namespace JsWrapper {
 
         // add<&T::static_member>("static_member");
         template<auto M>
-        std::enable_if_t<std::is_pointer_v<decltype(M)> && !std::is_function_v<std::remove_pointer_t<decltype(M)>>, Value &>
+        std::enable_if_t<std::is_pointer_v<decltype(M)> &&
+                                 !std::is_function_v<std::remove_pointer_t<decltype(M)>>,
+                         Value &>
         add(const char *name) {
             if constexpr (detail::get_set<M>::is_const::value)
                 return add_getter<detail::get_set<M>::get>(name);
@@ -1346,8 +1327,8 @@ namespace JsWrapper {
                 return add_getter_setter<detail::get_set<M>::get, detail::get_set<M>::set>(name);
         }
 
-        std::string
-        toJSON(const Value &replacer = JS_UNDEFINED, const Value &space = JS_UNDEFINED) {
+        std::string toJSON(const Value &replacer = JS_UNDEFINED,
+                           const Value &space = JS_UNDEFINED) {
             assert(ctx);
             assert(!replacer.ctx || ctx == replacer.ctx);
             assert(!space.ctx || ctx == space.ctx);
@@ -1355,8 +1336,10 @@ namespace JsWrapper {
         }
 
         /** same as Context::eval() but with this Value as 'this' */
-        Value evalThis(std::string_view buffer, const char *filename = "<evalThis>", int flags = 0) {
-            assert(buffer.data()[buffer.size()] == '\0' && "eval buffer is not null-terminated");// JS_Eval requirement
+        Value evalThis(std::string_view buffer, const char *filename = "<evalThis>",
+                       int flags = 0) {
+            assert(buffer.data()[buffer.size()] == '\0' &&
+                   "eval buffer is not null-terminated");// JS_Eval requirement
             assert(ctx);
             return Value{ctx, JS_EvalThis(ctx, v, buffer.data(), buffer.size(), filename, flags)};
         }
@@ -1371,33 +1354,29 @@ namespace JsWrapper {
 
         Runtime() {
             rt = JS_NewRuntime();
-            if (!rt)
-                throw std::runtime_error{"qjs: Cannot create runtime"};
+            if (!rt) throw std::runtime_error{"qjs: Cannot create runtime"};
 
-            JS_SetHostUnhandledPromiseRejectionTracker(rt, promise_unhandled_rejection_tracker, NULL);
+            JS_SetHostUnhandledPromiseRejectionTracker(rt, promise_unhandled_rejection_tracker,
+                                                       NULL);
             JS_SetModuleLoaderFunc(rt, nullptr, module_loader, nullptr);
         }
 
         // noncopyable
         Runtime(const Runtime &) = delete;
 
-        ~Runtime() {
-            JS_FreeRuntime(rt);
-        }
+        ~Runtime() { JS_FreeRuntime(rt); }
 
         /// @return pointer to JsWrapper::Context of the executed job or nullptr if no job is pending
         Context *executePendingJob();
 
-        bool isJobPending() const {
-            return JS_IsJobPending(rt);
-        }
+        bool isJobPending() const { return JS_IsJobPending(rt); }
 
     private:
         static void promise_unhandled_rejection_tracker(JSContext *ctx, JSValueConst promise,
-                                                        JSValueConst reason, JS_BOOL is_handled, void *opaque);
+                                                        JSValueConst reason, JS_BOOL is_handled,
+                                                        void *opaque);
 
-        static JSModuleDef *module_loader(JSContext *ctx,
-                                          const char *module_name, void *opaque);
+        static JSModuleDef *module_loader(JSContext *ctx, const char *module_name, void *opaque);
     };
 
     namespace detail {
@@ -1416,9 +1395,7 @@ namespace JsWrapper {
             if (fname.find("://") < fname.find("/")) return fname;
 
             auto fpath = std::filesystem::path(fname);
-            if (!fpath.is_absolute()) {
-                fpath = "." / fpath;
-            }
+            if (!fpath.is_absolute()) { fpath = "." / fpath; }
             fpath = std::filesystem::weakly_canonical(fpath);
             fname = "file://" + fpath.generic_string();
             return fname;
@@ -1452,16 +1429,14 @@ namespace JsWrapper {
                     auto &context = Context::get(ctx);
                     auto it = std::find_if(context.modules.begin(), context.modules.end(),
                                            [m](const Module &module) { return module.m == m; });
-                    if (it == context.modules.end())
-                        return -1;
+                    if (it == context.modules.end()) return -1;
                     for (const auto &e: it->exports) {
                         if (JS_SetModuleExport(ctx, m, e.first, JS_DupValue(ctx, e.second.v)) != 0)
                             return -1;
                     }
                     return 0;
                 });
-                if (!m)
-                    throw exception{ctx};
+                if (!m) throw exception{ctx};
             }
 
             Module &add(const char *name, JSValue &&value) {
@@ -1469,7 +1444,6 @@ namespace JsWrapper {
                 JS_AddModuleExport(ctx, m, name);
                 return *this;
             }
-
 
             template<typename T>
             Module &add(const char *name, T &&value) {
@@ -1480,7 +1454,6 @@ namespace JsWrapper {
 
             Module(Module &&) = default;
             //Module& operator=(Module&&) = default;
-
 
             // function wrappers
 
@@ -1499,7 +1472,8 @@ namespace JsWrapper {
          */
             template<typename F>
             Module &function(const char *name, F &&f) {
-                return add(name, js_traits<decltype(std::function{std::forward<F>(f)})>::wrap(ctx, std::forward<F>(f)));
+                return add(name, js_traits<decltype(std::function{std::forward<F>(f)})>::wrap(
+                                         ctx, std::forward<F>(f)));
             }
 
             // class register wrapper
@@ -1516,12 +1490,10 @@ namespace JsWrapper {
                 JsWrapper::Context &context;
                 JsWrapper::Value ctor;// last added constructor
             public:
-                explicit class_registrar(const char *name, JsWrapper::Context::Module &module, JsWrapper::Context &context) : name(name),
-                                                                                                                              prototype(context.newObject()),
-                                                                                                                              module(module),
-                                                                                                                              context(context),
-                                                                                                                              ctor(JS_NULL) {
-                }
+                explicit class_registrar(const char *name, JsWrapper::Context::Module &module,
+                                         JsWrapper::Context &context)
+                    : name(name), prototype(context.newObject()), module(module), context(context),
+                      ctor(JS_NULL) {}
 
                 class_registrar(const class_registrar &) = delete;
 
@@ -1580,8 +1552,7 @@ namespace JsWrapper {
              */
                 template<typename... Args>
                 class_registrar &constructor(const char *name = nullptr) {
-                    if (!name)
-                        name = this->name;
+                    if (!name) name = this->name;
                     ctor = context.newValue(JsWrapper::ctor_wrapper<T, Args...>{name});
                     JS_SetConstructor(context.ctx, ctor.v, prototype.v);
                     module.add(name, JsWrapper::Value{ctor});
@@ -1594,13 +1565,14 @@ namespace JsWrapper {
                 template<class B>
                 class_registrar &base() {
                     static_assert(!std::is_same_v<B, T>, "Type cannot be a base of itself");
-                    assert(js_traits<std::shared_ptr<B>>::QJSClassId && "base class is not registered");
+                    assert(js_traits<std::shared_ptr<B>>::QJSClassId &&
+                           "base class is not registered");
                     js_traits<std::shared_ptr<T>>::template ensureCanCastToBase<B>();
-                    auto base_proto = JS_GetClassProto(context.ctx, js_traits<std::shared_ptr<B>>::QJSClassId);
+                    auto base_proto = JS_GetClassProto(context.ctx,
+                                                       js_traits<std::shared_ptr<B>>::QJSClassId);
                     int err = JS_SetPrototype(context.ctx, prototype.v, base_proto);
                     JS_FreeValue(context.ctx, base_proto);
-                    if (err < 0)
-                        throw exception{context.ctx};
+                    if (err < 0) throw exception{context.ctx};
                     return *this;
                 }
 
@@ -1613,10 +1585,7 @@ namespace JsWrapper {
                     return *this;
                 }
 
-
-                ~class_registrar() {
-                    context.registerClass<T>(name, std::move(prototype));
-                }
+                ~class_registrar() { context.registerClass<T>(name, std::move(prototype)); }
             };
 
         public:
@@ -1642,14 +1611,11 @@ namespace JsWrapper {
 
         Context(JSRuntime *rt) {
             ctx = JS_NewContext(rt);
-            if (!ctx)
-                throw std::runtime_error{"qjs: Cannot create context"};
+            if (!ctx) throw std::runtime_error{"qjs: Cannot create context"};
             init();
         }
 
-        Context(JSContext *ctx) : ctx{ctx} {
-            init();
-        }
+        Context(JSContext *ctx) : ctx{ctx} { init(); }
 
         // noncopyable
         Context(const Context &) = delete;
@@ -1667,8 +1633,10 @@ namespace JsWrapper {
         {
             std::optional<std::string> source, url;
             ModuleData() : source(std::nullopt), url(std::nullopt) {}
-            ModuleData(std::optional<std::string> source) : source(std::move(source)), url(std::nullopt) {}
-            ModuleData(std::optional<std::string> url, std::optional<std::string> source) : source(std::move(source)), url(std::move(url)) {}
+            ModuleData(std::optional<std::string> source)
+                : source(std::move(source)), url(std::nullopt) {}
+            ModuleData(std::optional<std::string> url, std::optional<std::string> source)
+                : source(std::move(source)), url(std::move(url)) {}
         };
 
         /** Function called to obtain the source of a module */
@@ -1694,7 +1662,9 @@ namespace JsWrapper {
 
         /** returns JS value converted from c++ object val */
         template<typename T>
-        Value newValue(T &&val) { return Value{ctx, std::forward<T>(val)}; }
+        Value newValue(T &&val) {
+            return Value{ctx, std::forward<T>(val)};
+        }
 
         /** returns current exception associated with context and clears it. Should be called when JsWrapper::exception is caught */
         Value getException() { return Value{ctx, JS_GetException(ctx)}; }
@@ -1712,7 +1682,8 @@ namespace JsWrapper {
 
         /// @see JS_Eval
         Value eval(std::string_view buffer, const char *filename = "<eval>", int flags = 0) {
-            assert(buffer.data()[buffer.size()] == '\0' && "eval buffer is not null-terminated");// JS_Eval requirement
+            assert(buffer.data()[buffer.size()] == '\0' &&
+                   "eval buffer is not null-terminated");// JS_Eval requirement
             JSValue v = JS_Eval(ctx, buffer.data(), buffer.size(), filename, flags);
             return Value{ctx, std::move(v)};
         }
@@ -1725,7 +1696,8 @@ namespace JsWrapper {
         }
 
         /// @see JS_ParseJSON2
-        Value fromJSON(std::string_view buffer, const char *filename = "<fromJSON>", int flags = 0) {
+        Value fromJSON(std::string_view buffer, const char *filename = "<fromJSON>",
+                       int flags = 0) {
             assert(buffer.data()[buffer.size()] == '\0' &&
                    "fromJSON buffer is not null-terminated");// JS_ParseJSON requirement
             return Value{ctx, JS_ParseJSON2(ctx, buffer.data(), buffer.size(), filename, flags)};
@@ -1766,8 +1738,7 @@ namespace JsWrapper {
             if constexpr (argc == 0) {
                 return [jsfun_obj = Value{ctx, JS_DupValue(ctx, fun_obj)}]() -> R {
                     JSValue result = JS_Call(jsfun_obj.ctx, jsfun_obj.v, JS_UNDEFINED, 0, nullptr);
-                    if (JS_IsException(result))
-                        throw exception{jsfun_obj.ctx};
+                    if (JS_IsException(result)) throw exception{jsfun_obj.ctx};
                     return detail::unwrap_free<R>(jsfun_obj.ctx, result);
                 };
             } else {
@@ -1778,8 +1749,7 @@ namespace JsWrapper {
                     JSValue result = JS_Call(jsfun_obj.ctx, jsfun_obj.v, JS_UNDEFINED, argc,
                                              const_cast<JSValueConst *>(argv));
                     for (int i = 0; i < argc; i++) JS_FreeValue(jsfun_obj.ctx, argv[i]);
-                    if (JS_IsException(result))
-                        throw exception{jsfun_obj.ctx};
+                    if (JS_IsException(result)) throw exception{jsfun_obj.ctx};
                     return detail::unwrap_free<R>(jsfun_obj.ctx, result);
                 };
             }
@@ -1793,12 +1763,11 @@ namespace JsWrapper {
             using detail::function;
             assert(js_traits<function>::QJSClassId);
             auto obj = JS_NewObjectClass(ctx, js_traits<function>::QJSClassId);
-            if (JS_IsException(obj))
-                return obj;
+            if (JS_IsException(obj)) return obj;
             try {
                 auto fptr = function::create(JS_GetRuntime(ctx), std::forward<Functor>(functor));
-                fptr->invoker = [](function *self, JSContext *ctx, JSValueConst this_value, int argc,
-                                   JSValueConst *argv) {
+                fptr->invoker = [](function *self, JSContext *ctx, JSValueConst this_value,
+                                   int argc, JSValueConst *argv) {
                     assert(self);
                     auto f = reinterpret_cast<std::decay_t<Functor> *>(&self->functor);
                     return detail::wrap_call<R, Args...>(ctx, *f, argc, argv);
@@ -1823,7 +1792,9 @@ namespace JsWrapper {
         };
 
         template<typename T>
-        struct is_callable<T, std::enable_if_t<std::is_same_v<decltype(void(&T::operator())), void>>> : std::true_type
+        struct is_callable<T,
+                           std::enable_if_t<std::is_same_v<decltype(void(&T::operator())), void>>>
+            : std::true_type
         {
         };
 
@@ -1836,16 +1807,14 @@ namespace JsWrapper {
     struct js_traits<Function, std::enable_if_t<detail::is_callable_v<Function>>>
     {
         static auto unwrap(JSContext *ctx, JSValueConst fun_obj) {
-            return js_traits<
-                    decltype(std::function{std::declval<Function>()}),
-                    int>::unwrap(ctx, fun_obj);
+            return js_traits<decltype(std::function{std::declval<Function>()}), int>::unwrap(
+                    ctx, fun_obj);
         }
 
         template<typename Functor>
         static JSValue wrap(JSContext *ctx, Functor &&functor) {
-            return js_traits<
-                    decltype(std::function{std::declval<Function>()}),
-                    int>::wrap(ctx, std::forward<Functor>(functor));
+            return js_traits<decltype(std::function{std::declval<Function>()}), int>::wrap(
+                    ctx, std::forward<Functor>(functor));
         }
     };
 
@@ -1856,12 +1825,9 @@ namespace JsWrapper {
         static JSValue wrap(JSContext *ctx, const std::vector<T> &arr) noexcept {
             try {
                 auto jsarray = Value{ctx, JS_NewArray(ctx)};
-                for (uint32_t i = 0; i < (uint32_t) arr.size(); i++)
-                    jsarray[i] = arr[i];
+                for (uint32_t i = 0; i < (uint32_t) arr.size(); i++) jsarray[i] = arr[i];
                 return jsarray.release();
-            } catch (exception) {
-                return JS_EXCEPTION;
-            } catch (std::exception const &err) {
+            } catch (exception) { return JS_EXCEPTION; } catch (std::exception const &err) {
                 JS_ThrowInternalError(ctx, "%s", err.what());
                 return JS_EXCEPTION;
             } catch (...) {
@@ -1872,20 +1838,16 @@ namespace JsWrapper {
 
         static std::vector<T> unwrap(JSContext *ctx, JSValueConst jsarr) {
             int e = JS_IsArray(ctx, jsarr);
-            if (e == 0)
-                JS_ThrowTypeError(ctx, "js_traits<std::vector<T>>::unwrap expects array");
-            if (e <= 0)
-                throw exception{ctx};
+            if (e == 0) JS_ThrowTypeError(ctx, "js_traits<std::vector<T>>::unwrap expects array");
+            if (e <= 0) throw exception{ctx};
             Value jsarray{ctx, JS_DupValue(ctx, jsarr)};
             std::vector<T> arr;
             auto len = static_cast<int32_t>(jsarray["length"]);
             arr.reserve((uint32_t) len);
-            for (uint32_t i = 0; i < (uint32_t) len; i++)
-                arr.push_back(static_cast<T>(jsarray[i]));
+            for (uint32_t i = 0; i < (uint32_t) len; i++) arr.push_back(static_cast<T>(jsarray[i]));
             return arr;
         }
     };
-
 
     template<typename U, typename V>
     struct js_traits<std::pair<U, V>>
@@ -1896,9 +1858,7 @@ namespace JsWrapper {
                 jsarray[uint32_t(0)] = std::move(obj.first);
                 jsarray[uint32_t(1)] = std::move(obj.second);
                 return jsarray.release();
-            } catch (exception) {
-                return JS_EXCEPTION;
-            } catch (std::exception const &err) {
+            } catch (exception) { return JS_EXCEPTION; } catch (std::exception const &err) {
                 JS_ThrowInternalError(ctx, "%s", err.what());
                 return JS_EXCEPTION;
             } catch (...) {
@@ -1910,19 +1870,19 @@ namespace JsWrapper {
         static std::pair<U, V> unwrap(JSContext *ctx, JSValueConst jsarr) {
             int e = JS_IsArray(ctx, jsarr);
             if (e == 0)
-                JS_ThrowTypeError(ctx, "js_traits<%s>::unwrap expects array", QJSPP_TYPENAME(std::pair<U, V>));
-            if (e <= 0)
-                throw exception{ctx};
+                JS_ThrowTypeError(ctx, "js_traits<%s>::unwrap expects array",
+                                  QJSPP_TYPENAME(std::pair<U, V>));
+            if (e <= 0) throw exception{ctx};
             Value jsarray{ctx, JS_DupValue(ctx, jsarr)};
             const auto len = static_cast<uint32_t>(jsarray["length"]);
             if (len != 2) {
-                JS_ThrowTypeError(ctx, "js_traits<%s>::unwrap expected array of length 2, got length %d",
+                JS_ThrowTypeError(ctx,
+                                  "js_traits<%s>::unwrap expected array of length 2, got length %d",
                                   QJSPP_TYPENAME(std::pair<U, V>), len);
                 throw exception{ctx};
             }
-            return std::pair<U, V>{
-                    static_cast<U>(jsarray[uint32_t(0)]),
-                    static_cast<V>(jsarray[uint32_t(1)])};
+            return std::pair<U, V>{static_cast<U>(jsarray[uint32_t(0)]),
+                                   static_cast<V>(jsarray[uint32_t(1)])};
         }
     };
 
@@ -1935,16 +1895,15 @@ namespace JsWrapper {
     {
         /** Wraps T or null. */
         static JSValue wrap(JSContext *ctx, std::optional<T> obj) noexcept {
-            if (obj)
-                return js_traits<std::decay_t<T>>::wrap(ctx, *obj);
+            if (obj) return js_traits<std::decay_t<T>>::wrap(ctx, *obj);
             return JS_NULL;
         }
 
         /** If conversion to T fails returns std::nullopt. */
-        static auto unwrap(JSContext *ctx, JSValueConst v) noexcept -> std::optional<decltype(js_traits<std::decay_t<T>>::unwrap(ctx, v))> {
+        static auto unwrap(JSContext *ctx, JSValueConst v) noexcept
+                -> std::optional<decltype(js_traits<std::decay_t<T>>::unwrap(ctx, v))> {
             try {
-                if (JS_IsNull(v))
-                    return std::nullopt;
+                if (JS_IsNull(v)) return std::nullopt;
                 return js_traits<std::decay_t<T>>::unwrap(ctx, v);
             } catch (exception) {
                 // ignore and clear exception
@@ -1953,7 +1912,6 @@ namespace JsWrapper {
             return std::nullopt;
         }
     };
-
 
     namespace detail {
         template<typename Key>
@@ -1967,13 +1925,12 @@ namespace JsWrapper {
         JSValue job_val = js_traits<std::function<void()>>::wrap(ctx, std::forward<Function>(job));
         JSValueConst arg = job_val;
         int err = JS_EnqueueJob(
-                ctx, [](JSContext *ctx, int argc, JSValueConst *argv) {
+                ctx,
+                [](JSContext *ctx, int argc, JSValueConst *argv) {
                     try {
                         assert(argc >= 1);
                         js_traits<std::function<void()>>::unwrap(ctx, argv[0])();
-                    } catch (exception) {
-                        return JS_EXCEPTION;
-                    } catch (std::exception const &err) {
+                    } catch (exception) { return JS_EXCEPTION; } catch (std::exception const &err) {
                         JS_ThrowInternalError(ctx, "%s", err.what());
                         return JS_EXCEPTION;
                     } catch (...) {
@@ -1984,28 +1941,24 @@ namespace JsWrapper {
                 },
                 1, &arg);
         JS_FreeValue(ctx, job_val);
-        if (err < 0)
-            throw exception{ctx};
+        if (err < 0) throw exception{ctx};
     }
 
-    inline Context &exception::context() const {
-        return Context::get(ctx);
-    }
+    inline Context &exception::context() const { return Context::get(ctx); }
 
-    inline Value exception::get() {
-        return context().getException();
-    }
+    inline Value exception::get() { return context().getException(); }
 
     inline void Runtime::promise_unhandled_rejection_tracker(JSContext *ctx, JSValueConst promise,
-                                                             JSValueConst reason, JS_BOOL is_handled, void *opaque) {
+                                                             JSValueConst reason,
+                                                             JS_BOOL is_handled, void *opaque) {
         auto &context = Context::get(ctx);
         if (context.onUnhandledPromiseRejection) {
             context.onUnhandledPromiseRejection(context.newValue(JS_DupValue(ctx, reason)));
         }
     }
 
-    inline JSModuleDef *Runtime::module_loader(JSContext *ctx,
-                                               const char *module_name, void *opaque) {
+    inline JSModuleDef *Runtime::module_loader(JSContext *ctx, const char *module_name,
+                                               void *opaque) {
         Context::ModuleData data;
         auto &context = Context::get(ctx);
 
@@ -2020,7 +1973,8 @@ namespace JsWrapper {
             if (!data.url) data.url = module_name;
 
             // compile the module
-            auto func_val = context.eval(*data.source, module_name, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+            auto func_val = context.eval(*data.source, module_name,
+                                         JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
             assert(JS_VALUE_GET_TAG(func_val.v) == JS_TAG_MODULE);
             JSModuleDef *m = reinterpret_cast<JSModuleDef *>(JS_VALUE_GET_PTR(func_val.v));
 
@@ -2030,9 +1984,7 @@ namespace JsWrapper {
             meta["main"] = false;
 
             return m;
-        } catch (exception) {
-            return NULL;
-        } catch (std::exception const &err) {
+        } catch (exception) { return NULL; } catch (std::exception const &err) {
             JS_ThrowInternalError(ctx, "%s", err.what());
             return NULL;
         } catch (...) {
@@ -2040,7 +1992,6 @@ namespace JsWrapper {
             return NULL;
         }
     }
-
 
     inline Context *Runtime::executePendingJob() {
         JSContext *ctx;

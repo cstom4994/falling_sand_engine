@@ -37,9 +37,6 @@
 
 #include <string>
 
-
-
-
 namespace Platforms {
     const std::string &GetExecutablePath();
 }

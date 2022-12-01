@@ -207,8 +207,7 @@ namespace ImGuiHelper {
     /**
      * @brief Render text with alignment
      */
-    inline void AlignedText(const std::string &text, Alignment align,
-                            const float &width = 0.0F) {
+    inline void AlignedText(const std::string &text, Alignment align, const float &width = 0.0F) {
         const auto alignment = static_cast<unsigned char>(align);
         const auto text_size = ImGui::CalcTextSize(text.c_str());
         const auto wind_size = ImGui::GetContentRegionAvail();
@@ -216,8 +215,7 @@ namespace ImGuiHelper {
             if (width < 0.1F) {
                 ImGui::SetCursorPosX((wind_size.x - text_size.x) * 0.5F);
             } else {
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
-                                     (width - text_size.x) * 0.5F);
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (width - text_size.x) * 0.5F);
             }
         }
         if (alignment & static_cast<unsigned char>(Alignment::kVerticalCenter)) {
@@ -227,23 +225,18 @@ namespace ImGuiHelper {
         ImGui::TextUnformatted(text.c_str());
     }
 
-    inline auto CheckButton(const std::string &label, bool checked,
-                            const ImVec2 &size) -> bool {
+    inline auto CheckButton(const std::string &label, bool checked, const ImVec2 &size) -> bool {
         if (checked) {
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
                                   ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-            ImGui::PushStyleColor(ImGuiCol_Button,
-                                  ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
         } else {
-            ImGui::PushStyleColor(
-                    ImGuiCol_ButtonHovered,
-                    ImGui::GetStyle().Colors[ImGuiCol_TabUnfocusedActive]);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                  ImGui::GetStyle().Colors[ImGuiCol_TabUnfocusedActive]);
             ImGui::PushStyleColor(ImGuiCol_Button,
                                   ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
         }
-        if (ImGui::Button(label.c_str(), size)) {
-            checked = !checked;
-        }
+        if (ImGui::Button(label.c_str(), size)) { checked = !checked; }
 
         ImGui::PopStyleColor(2);
 
@@ -262,13 +255,10 @@ namespace ImGuiHelper {
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, h);
         ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, h);
 
-        ImGui::PushStyleColor(ImGuiCol_ChildBg,
-                              ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
-        ImGui::BeginChild(tab_names.c_str(),
-                          {tab_width, h + ImGui::GetStyle().FramePadding.y * 2},
-                          false,
-                          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
-                                  ImGuiWindowFlags_NoResize);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
+        ImGui::BeginChild(
+                tab_names.c_str(), {tab_width, h + ImGui::GetStyle().FramePadding.y * 2}, false,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
         for (int i = 0; i < tabs.size(); ++i) {
             auto &tab = tabs[i];
@@ -279,9 +269,7 @@ namespace ImGuiHelper {
                 checked = 1 << i;
             }
 
-            if (i != tabs.size() - 1) {
-                ImGui::SameLine();
-            }
+            if (i != tabs.size() - 1) { ImGui::SameLine(); }
         }
         ImGui::PopStyleColor();
         ImGui::PopStyleVar(3);
@@ -296,8 +284,7 @@ namespace ImGuiHelper {
         return index;
     }
 
-    inline void SwitchButton(std::string &&icon, std::string &&label,
-                             bool &checked) {
+    inline void SwitchButton(std::string &&icon, std::string &&label, bool &checked) {
         float height = ImGui::GetFrameHeight();
         float width = height * 1.55F;
         float radius = height * 0.50F;
@@ -308,9 +295,7 @@ namespace ImGuiHelper {
 
         ImGui::SetCursorPosX(frame_width - width);
         ImVec2 pos = ImGui::GetCursorScreenPos();
-        if (ImGui::InvisibleButton(label.c_str(), ImVec2(width, height))) {
-            checked = !checked;
-        }
+        if (ImGui::InvisibleButton(label.c_str(), ImVec2(width, height))) { checked = !checked; }
         ImU32 col_bg = 0;
         if (checked) {
             col_bg = ImColor(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
@@ -318,11 +303,9 @@ namespace ImGuiHelper {
             col_bg = ImColor(ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
         }
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        draw_list->AddRectFilled(pos, ImVec2(pos.x + width, pos.y + height), col_bg,
-                                 radius);
+        draw_list->AddRectFilled(pos, ImVec2(pos.x + width, pos.y + height), col_bg, radius);
         draw_list->AddCircleFilled(
-                ImVec2(checked ? (pos.x + width - radius) : (pos.x + radius),
-                       pos.y + radius),
+                ImVec2(checked ? (pos.x + width - radius) : (pos.x + radius), pos.y + radius),
                 radius - 1.5F, IM_COL32_WHITE);
     }
 
@@ -333,7 +316,8 @@ namespace ImGuiHelper {
         ImGui::SameLine();
         ImGui::SetCursorPosX(p_w - 150.0F - ImGui::GetStyle().FramePadding.x);
         ImGui::SetNextItemWidth(150.0F);
-        ImGui::Combo((std::string("##") + label).c_str(), &index, items.data(), static_cast<int>(items.size()));
+        ImGui::Combo((std::string("##") + label).c_str(), &index, items.data(),
+                     static_cast<int>(items.size()));
     }
 
     inline void InputInt(std::string &&icon, std::string &&label, int &value) {
@@ -347,9 +331,7 @@ namespace ImGuiHelper {
 
     inline void ListSeparator(float indent = 30.0F) {
         ImGuiWindow *window = ImGui::GetCurrentWindow();
-        if (window->SkipItems) {
-            return;
-        }
+        if (window->SkipItems) { return; }
 
         ImGuiContext &g = *GImGui;
 
@@ -365,23 +347,22 @@ namespace ImGuiHelper {
         }
 
         // We don't provide our width to the layout so that it doesn't get feed back into AutoFit
-        const ImRect bb(ImVec2(x1, window->DC.CursorPos.y), ImVec2(x2, window->DC.CursorPos.y + thickness_draw));
+        const ImRect bb(ImVec2(x1, window->DC.CursorPos.y),
+                        ImVec2(x2, window->DC.CursorPos.y + thickness_draw));
         ImGui::ItemSize(ImVec2(0.0F, thickness_layout));
         const bool item_visible = ImGui::ItemAdd(bb, 0);
         if (item_visible) {
             // Draw
-            window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x, bb.Min.y), ImGui::GetColorU32(ImGuiCol_Separator));
+            window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x, bb.Min.y),
+                                      ImGui::GetColorU32(ImGuiCol_Separator));
         }
     }
 
 }// namespace ImGuiHelper
 
-
 struct test_markdown : public ImMarkdown
 {
-    void open_url() const override {
-        system(std::string("start msedge " + m_href).c_str());
-    }
+    void open_url() const override { system(std::string("start msedge " + m_href).c_str()); }
 
     bool get_image(image_info &nfo) const override {
         //use m_href to identify images
@@ -394,12 +375,10 @@ struct test_markdown : public ImMarkdown
     }
 };
 
-
 /**
    Dear ImGui with IME on-the-spot translation routines.
    author: TOGURO Mikito , mit@shalab.net
 */
-
 
 #if !defined(imgex_hpp_HEADER_GUARD_7556619d_62b7_4f3b_b364_f02af36a3bbc)
 #define imgex_hpp_HEADER_GUARD_7556619d_62b7_4f3b_b364_f02af36a3bbc 1
@@ -427,7 +406,7 @@ struct test_markdown : public ImMarkdown
 
 #if !defined(VERIFY)
 #if defined(NDEBUG)
-#define VERIFY(exp) \
+#define VERIFY(exp)                                                                                \
     do { (void) (exp); } while (0)
 #else /* defined( NDEBUG ) */
 #define VERIFY(exp) VERIFY_ASSERT(exp)
@@ -440,27 +419,23 @@ namespace imgex {
     // composition of flags
     namespace implements {
         template<typename first_t>
-        constexpr inline unsigned int
-        composite_flags_0(first_t first) {
+        constexpr inline unsigned int composite_flags_0(first_t first) {
             return static_cast<unsigned int>(first);
         }
         template<typename first_t, typename... tail_t>
-        constexpr inline unsigned int
-        composite_flags_0(first_t first, tail_t... tail) {
+        constexpr inline unsigned int composite_flags_0(first_t first, tail_t... tail) {
             return static_cast<unsigned int>(first) | composite_flags_0(tail...);
         }
     }// namespace implements
 
     template<typename require_t, typename... tail_t>
-    constexpr inline require_t
-    composite_flags(tail_t... tail) {
+    constexpr inline require_t composite_flags(tail_t... tail) {
         return static_cast<require_t>(implements::composite_flags_0(tail...));
     }
 }// namespace imgex
 
 #endif /* defined( __cplusplus ) */
 #endif /* !defined( imgex_hpp_HEADER_GUARD_7556619d_62b7_4f3b_b364_f02af36a3bbc ) */
-
 
 #if !defined(IMGUI_IMM32_ONTHESPOT_H_UUID_ccfbd514_0a94_4888_a8b8_f065c57c1e70_HEADER_GUARD)
 #define IMGUI_IMM32_ONTHESPOT_H_UUID_ccfbd514_0a94_4888_a8b8_f065c57c1e70_HEADER_GUARD 1
@@ -505,25 +480,18 @@ struct ImGUIIMMCommunication
         std::vector<std::string> list_utf8;
         std::vector<std::string>::size_type selection;
 
-        IMMCandidateList()
-            : list_utf8{}, selection(0) {
-        }
+        IMMCandidateList() : list_utf8{}, selection(0) {}
         IMMCandidateList(const IMMCandidateList &rhv) = default;
-        IMMCandidateList(IMMCandidateList &&rhv) noexcept
-            : list_utf8(), selection(0) {
+        IMMCandidateList(IMMCandidateList &&rhv) noexcept : list_utf8(), selection(0) {
             *this = std::move(rhv);
         }
 
         ~IMMCandidateList() = default;
 
-        inline IMMCandidateList &
-        operator=(const IMMCandidateList &rhv) = default;
+        inline IMMCandidateList &operator=(const IMMCandidateList &rhv) = default;
 
-        inline IMMCandidateList &
-        operator=(IMMCandidateList &&rhv) noexcept {
-            if (this == &rhv) {
-                return *this;
-            }
+        inline IMMCandidateList &operator=(IMMCandidateList &&rhv) noexcept {
+            if (this == &rhv) { return *this; }
             std::swap(list_utf8, rhv.list_utf8);
             std::swap(selection, rhv.selection);
             return *this;
@@ -547,14 +515,9 @@ struct ImGUIIMMCommunication
     IMMCandidateList candidate_list;
 
     ImGUIIMMCommunication()
-        : is_open(false),
-          comp_conved_utf8(nullptr),
-          comp_target_utf8(nullptr),
-          comp_unconv_utf8(nullptr),
-          show_ime_candidate_list(false),
-          request_candidate_list_str_commit(false),
-          candidate_list() {
-    }
+        : is_open(false), comp_conved_utf8(nullptr), comp_target_utf8(nullptr),
+          comp_unconv_utf8(nullptr), show_ime_candidate_list(false),
+          request_candidate_list_str_commit(false), candidate_list() {}
 
     ~ImGUIIMMCommunication() = default;
     void operator()();
@@ -562,13 +525,12 @@ struct ImGUIIMMCommunication
 private:
     bool update_candidate_window(HWND hWnd);
 
-    static LRESULT
-            WINAPI
-            imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-                                           UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-    static LRESULT
-    imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-                                             UINT_PTR uIdSubclass, ImGUIIMMCommunication &comm);
+    static LRESULT WINAPI imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                                         LPARAM lParam, UINT_PTR uIdSubclass,
+                                                         DWORD_PTR dwRefData);
+    static LRESULT imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                                            LPARAM lParam, UINT_PTR uIdSubclass,
+                                                            ImGUIIMMCommunication &comm);
     BOOL subclassify_impl(HWND hWnd);
 
 public:
@@ -603,8 +565,7 @@ public:
 
 #if defined(_WIN32)
 template<>
-inline BOOL
-ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
+inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info)) {
@@ -618,7 +579,6 @@ ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
 #endif /* defined( __cplusplus ) */
 
 #endif
-
 
 #ifndef __IM_STRING__
 #define __IM_STRING__

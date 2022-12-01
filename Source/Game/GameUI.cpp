@@ -1,10 +1,10 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Game/GameUI.hpp"
-#include "Engine/Memory.hpp"
 #include "Core/Global.hpp"
-#include "Game/ImGuiLayer.hpp"
+#include "Engine/Memory.hpp"
 #include "Game/Game.hpp"
+#include "Game/ImGuiLayer.hpp"
 #include "Game/Settings.hpp"
 
 #include "Game/DefaultGenerator.cpp"
@@ -28,11 +28,9 @@ namespace GameUI {
     bool IngameUI::visible = false;
     bool IngameUI::setup = false;
 
-    void IngameUI::Setup() {
-    }
+    void IngameUI::Setup() {}
 
     void IngameUI::Draw(Game *game) {
-
 
         if (!visible) return;
 
@@ -45,14 +43,17 @@ namespace GameUI {
 
     void IngameUI::DrawIngame(Game *game) {
 
-
-        if (!setup) {
-            Setup();
-        }
+        if (!setup) { Setup(); }
 
         ImGui::SetNextWindowSize(ImVec2(400, 300));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(
+                        ImGuiWindowTags::UI_MainMenu,
+                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Pause Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
         }
@@ -69,32 +70,32 @@ namespace GameUI {
 
         ImVec2 selPos;
 
-        ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 1));
+        ImGui::SetCursorPos(
+                ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 1));
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##continue", ImVec2(mainMenuButtonsWidth, 36))) {
-            visible = false;
-        }
+        if (ImGui::Button("##continue", ImVec2(mainMenuButtonsWidth, 36))) { visible = false; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("继续").x / 2, selPos.y));
+        ImGui::SetCursorPos(ImVec2(
+                selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("继续").x / 2, selPos.y));
         ImGui::Text("继续");
         //ImGui::PopFont();
 
-        ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 2));
+        ImGui::SetCursorPos(
+                ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 2));
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##options", ImVec2(mainMenuButtonsWidth, 36))) {
-            state = 1;
-        }
+        if (ImGui::Button("##options", ImVec2(mainMenuButtonsWidth, 36))) { state = 1; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("选项").x / 2, selPos.y));
+        ImGui::SetCursorPos(ImVec2(
+                selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("选项").x / 2, selPos.y));
         ImGui::Text("选项");
         //ImGui::PopFont();
 
-
-        ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 4));
+        ImGui::SetCursorPos(
+                ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 4));
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
@@ -103,7 +104,9 @@ namespace GameUI {
             game->quitToMainMenu();
         }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("离开到主菜单").x / 2, selPos.y));
+        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 -
+                                           ImGui::CalcTextSize("离开到主菜单").x / 2,
+                                   selPos.y));
         ImGui::Text("离开到主菜单");
         //ImGui::PopFont();
 
@@ -113,8 +116,14 @@ namespace GameUI {
     void IngameUI::DrawOptions(Game *game) {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
         ImGui::SetNextWindowSize(ImVec2(400, 400));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(
+                        ImGuiWindowTags::UI_MainMenu,
+                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Pause Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             ImGui::PopStyleColor();
             return;
@@ -126,14 +135,12 @@ namespace GameUI {
         ImGui::PopStyleColor();
     }
 
-
     // std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
     int OptionsUI::item_current_idx = 0;
     bool OptionsUI::vsync = false;
     bool OptionsUI::minimizeOnFocus = false;
 
     void OptionsUI::Draw(Game *game) {
-
 
         int createWorldWidth = 350;
 
@@ -186,7 +193,6 @@ namespace GameUI {
                 ImGui::EndTabItem();
             }
 
-
             ImGui::EndTabBar();
         }
 
@@ -206,7 +212,8 @@ namespace GameUI {
             IngameUI::state = 0;
         }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
         ImGui::Text("返回");
         //ImGui::PopFont();
     }
@@ -225,7 +232,8 @@ namespace GameUI {
         ImGui::Indent(4);
 
         const char *items[] = {"Windowed", "Fullscreen Borderless", "Fullscreen"};
-        const char *combo_label = items[item_current_idx];// Label to preview before opening the combo (technically it could be anything)
+        const char *combo_label = items
+                [item_current_idx];// Label to preview before opening the combo (technically it could be anything)
         ImGui::SetNextItemWidth(190);
         if (ImGui::BeginCombo("Display Mode", combo_label, 0)) {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
@@ -247,23 +255,17 @@ namespace GameUI {
                     item_current_idx = n;
                 }
 
-
                 // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                if (is_selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
+                if (is_selected) { ImGui::SetItemDefaultFocus(); }
             }
             ImGui::EndCombo();
         }
 
-        if (ImGui::Checkbox("VSync", &vsync)) {
-            global.platform.SetVSync(vsync);
-        }
+        if (ImGui::Checkbox("VSync", &vsync)) { global.platform.SetVSync(vsync); }
 
         if (ImGui::Checkbox("失去焦点后最小化", &minimizeOnFocus)) {
             global.platform.SetMinimizeOnLostFocus(minimizeOnFocus);
         }
-
 
         ImGui::Unindent(4);
         ImGui::Separator();
@@ -280,22 +282,34 @@ namespace GameUI {
             METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
 
             game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                    game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                    game->getWorld()->width *
+                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                    game->getWorld()->height *
+                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
+            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
+                                             METAENGINE_Render_FILTER_NEAREST);
 
             game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                    game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                    game->getWorld()->width *
+                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                    game->getWorld()->height *
+                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
+            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
+                                             METAENGINE_Render_FILTER_NEAREST);
 
             METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjects);
             METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
 
             game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                    game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                    game->getWorld()->width *
+                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                    game->getWorld()->height *
+                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
+            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
+                                             METAENGINE_Render_FILTER_NEAREST);
 
             METAENGINE_Render_LoadTarget(game->TexturePack_.textureEntities);
         }
@@ -329,12 +343,11 @@ namespace GameUI {
         //     }
         // }
 
-        std::vector<std::vector<std::string>> disp = {
-                {"bus:/Master", "Master"},
-                {"bus:/Master/Underwater/Music", "Music"},
-                {"bus:/Master/GUI", "GUI"},
-                {"bus:/Master/Underwater/Player", "Player"},
-                {"bus:/Master/Underwater/World", "World"}};
+        std::vector<std::vector<std::string>> disp = {{"bus:/Master", "Master"},
+                                                      {"bus:/Master/Underwater/Music", "Music"},
+                                                      {"bus:/Master/GUI", "GUI"},
+                                                      {"bus:/Master/Underwater/Player", "Player"},
+                                                      {"bus:/Master/Underwater/World", "World"}};
 
         // for (auto &v: disp) {
         //     float volume = 0;
@@ -349,9 +362,7 @@ namespace GameUI {
         ImGui::Unindent(4);
     }
 
-    void OptionsUI::DrawInput(Game *game) {
-    }
-
+    void OptionsUI::DrawInput(Game *game) {}
 
     int MainMenuUI::state = 0;
 
@@ -372,13 +383,13 @@ namespace GameUI {
 
     void MainMenuUI::RefreshWorlds(Game *game) {
 
-
         worlds = {};
 
         for (auto &p: std::filesystem::directory_iterator(global.GameDir.getPath("worlds/"))) {
             std::string worldName = p.path().filename().generic_string();
 
-            WorldMeta meta = WorldMeta::loadWorldMeta((char *) global.GameDir.getWorldPath(worldName).c_str());
+            WorldMeta meta = WorldMeta::loadWorldMeta(
+                    (char *) global.GameDir.getWorldPath(worldName).c_str());
 
             worlds.push_back(std::make_tuple(worldName, meta));
         }
@@ -387,7 +398,6 @@ namespace GameUI {
     }
 
     void MainMenuUI::Setup() {
-
 
         C_Surface *logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
         title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
@@ -398,7 +408,6 @@ namespace GameUI {
     }
 
     void MainMenuUI::Draw(Game *game) {
-
 
         if (!visible) return;
 
@@ -417,10 +426,7 @@ namespace GameUI {
 
     void MainMenuUI::DrawMainMenu(Game *game) {
 
-
-        if (!setup) {
-            Setup();
-        }
+        if (!setup) { Setup(); }
         long long now = UTime::millis();
         if (now - lastRefresh > 3000) {
             RefreshWorlds(game);
@@ -428,8 +434,14 @@ namespace GameUI {
         }
 
         ImGui::SetNextWindowSize(ImVec2(400, 350));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 400 / 2, global.platform.HEIGHT / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu,
+                                                     ImVec2(global.platform.WIDTH / 2 - 400 / 2,
+                                                            global.platform.HEIGHT / 2 - 350 / 2)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Main Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
         }
@@ -442,8 +454,10 @@ namespace GameUI {
         ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
         ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
 
-        ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
-        ImGui::Image(texId, ImVec2(title->w / 2, title->h / 2), uv_min, uv_max, tint_col, border_col);
+        ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - title->w / 2) * 0.5f,
+                                   ImGui::GetCursorPosY() + 10));
+        ImGui::Image(texId, ImVec2(title->w / 2, title->h / 2), uv_min, uv_max, tint_col,
+                     border_col);
         ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), U8("大摆钟送快递"));
 
         int mainMenuButtonsWidth = 250;
@@ -452,54 +466,54 @@ namespace GameUI {
         ImVec2 selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##singleplayer", ImVec2(mainMenuButtonsWidth, 36))) {
-            state = 2;
-        }
+        if (ImGui::Button("##singleplayer", ImVec2(mainMenuButtonsWidth, 36))) { state = 2; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("单人游戏").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("单人游戏").x / 2,
+                       selPos.y));
         ImGui::Text(U8("单人游戏"));
         //ImGui::PopFont();
 
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 
-        ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 2));
+        ImGui::SetCursorPos(
+                ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 2));
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##multiplayer", ImVec2(mainMenuButtonsWidth, 36))) {
-            state = 2;
-        }
+        if (ImGui::Button("##multiplayer", ImVec2(mainMenuButtonsWidth, 36))) { state = 2; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("多人游戏").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("多人游戏").x / 2,
+                       selPos.y));
         ImGui::Text("多人游戏");
         //ImGui::PopFont();
 
         ImGui::PopItemFlag();
         ImGui::PopStyleVar();
 
-        ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 3));
+        ImGui::SetCursorPos(
+                ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 3));
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##options", ImVec2(mainMenuButtonsWidth, 36))) {
-            state = 4;
-        }
+        if (ImGui::Button("##options", ImVec2(mainMenuButtonsWidth, 36))) { state = 4; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("选项").x / 2, selPos.y));
+        ImGui::SetCursorPos(ImVec2(
+                selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("选项").x / 2, selPos.y));
         ImGui::Text("选项");
         //ImGui::PopFont();
 
-
-        ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 4));
+        ImGui::SetCursorPos(
+                ImVec2(200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset * 4));
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##quit", ImVec2(mainMenuButtonsWidth, 36))) {
-            game->running = false;
-        }
+        if (ImGui::Button("##quit", ImVec2(mainMenuButtonsWidth, 36))) { game->running = false; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("退出").x / 2, selPos.y));
+        ImGui::SetCursorPos(ImVec2(
+                selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("退出").x / 2, selPos.y));
         ImGui::Text("退出");
         //ImGui::PopFont();
 
@@ -515,8 +529,14 @@ namespace GameUI {
         if (!visible) return;
 
         ImGui::SetNextWindowSize(ImVec2(400, 425));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(
+                        ImGuiWindowTags::UI_MainMenu,
+                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Main Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
         }
@@ -538,7 +558,9 @@ namespace GameUI {
             CreateWorldUI::Reset(game);
         }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuNewButtonWidth / 2 - ImGui::CalcTextSize("新世界").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + mainMenuNewButtonWidth / 2 - ImGui::CalcTextSize("新世界").x / 2,
+                       selPos.y));
         ImGui::Text("新世界");
         //ImGui::PopFont();
 
@@ -556,7 +578,8 @@ namespace GameUI {
 
             ImGui::PushID(nMainMenuButtons);
 
-            ImGui::SetCursorPos(ImVec2(200 - 8 - mainMenuButtonsWidth / 2, 4 + (nMainMenuButtons++ * 60)));
+            ImGui::SetCursorPos(
+                    ImVec2(200 - 8 - mainMenuButtonsWidth / 2, 4 + (nMainMenuButtons++ * 60)));
             selPos = ImGui::GetCursorScreenPos();
             ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
             if (ImGui::Button("", ImVec2(mainMenuButtonsWidth, 50))) {
@@ -575,17 +598,15 @@ namespace GameUI {
 
                     World *w = nullptr;
                     METADOT_NEW(C, w, World);
-                    w->init(
-                            global.GameDir.getWorldPath(worldName),
-                            (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                            (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                            game->RenderTarget_.target,
-                            &global.audioEngine,
-                            Settings::networkMode);
+                    w->init(global.GameDir.getWorldPath(worldName),
+                            (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W +
+                                    CHUNK_W * 3,
+                            (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
+                                    CHUNK_H * 3,
+                            game->RenderTarget_.target, &global.audioEngine, Settings::networkMode);
                     w->metadata.lastOpenedTime = UTime::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
                     w->metadata.save(w->worldName);
-
 
                     METADOT_INFO("Queueing chunk loading...");
                     for (int x = -CHUNK_W * 4; x < w->width + CHUNK_W * 4; x += CHUNK_W) {
@@ -593,7 +614,6 @@ namespace GameUI {
                             w->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
                         }
                     }
-
 
                     game->setWorld(w);
                     //});
@@ -607,7 +627,6 @@ namespace GameUI {
 
             ImVec2 prevPos = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y));
-
 
             // time_t t_times;
             // tm *tm_utc = gmtime(&t_times);
@@ -626,11 +645,17 @@ namespace GameUI {
             snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), "formattedTime");
 
             //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-            ImGui::SetCursorScreenPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize(meta.worldName.c_str()).x / 2, selPos.y));
+            ImGui::SetCursorScreenPos(
+                    ImVec2(selPos.x + mainMenuButtonsWidth / 2 -
+                                   ImGui::CalcTextSize(meta.worldName.c_str()).x / 2,
+                           selPos.y));
             ImGui::Text("%s", meta.worldName.c_str());
             //ImGui::PopFont();
 
-            ImGui::SetCursorScreenPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize(filenameAndTimestamp).x / 2, selPos.y + 32));
+            ImGui::SetCursorScreenPos(
+                    ImVec2(selPos.x + mainMenuButtonsWidth / 2 -
+                                   ImGui::CalcTextSize(filenameAndTimestamp).x / 2,
+                           selPos.y + 32));
             ImGui::Text("%s", filenameAndTimestamp);
 
             ImGui::SetCursorScreenPos(prevPos);
@@ -644,11 +669,10 @@ namespace GameUI {
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##back", ImVec2(150, 36))) {
-            state = 0;
-        }
+        if (ImGui::Button("##back", ImVec2(150, 36))) { state = 0; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
         ImGui::Text("返回");
         //ImGui::PopFont();
 
@@ -657,8 +681,14 @@ namespace GameUI {
 
     void MainMenuUI::DrawMultiplayer(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 500));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(
+                        ImGuiWindowTags::UI_MainMenu,
+                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Main Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
         }
@@ -701,8 +731,14 @@ namespace GameUI {
 
     void MainMenuUI::DrawCreateWorld(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 360));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(
+                        ImGuiWindowTags::UI_MainMenu,
+                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Main Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             return;
         }
@@ -715,8 +751,14 @@ namespace GameUI {
     void MainMenuUI::DrawOptions(Game *game) {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
         ImGui::SetNextWindowSize(ImVec2(400, 400));
-        ImGui::SetNextWindowPos(global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::SetNextWindowPos(
+                global.ImGuiLayer->GetNextWindowsPos(
+                        ImGuiWindowTags::UI_MainMenu,
+                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Main Menu", NULL,
+                          ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
+                                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::End();
             ImGui::PopStyleColor();
             return;
@@ -727,7 +769,6 @@ namespace GameUI {
         ImGui::End();
         ImGui::PopStyleColor();
     }
-
 
     void DebugUI::Draw(Game *game) {
 
@@ -769,9 +810,7 @@ namespace GameUI {
             }
 
             if (ImGui::TreeNode(U8("GLSL方法"))) {
-                if (ImGui::Button(U8("重新加载GLSL"))) {
-                    global.shaderworker.LoadShaders();
-                }
+                if (ImGui::Button(U8("重新加载GLSL"))) { global.shaderworker.LoadShaders(); }
                 ImGui::Checkbox(U8("绘制GLSL"), &Settings::draw_shaders);
 
                 if (ImGui::TreeNode(U8("光照"))) {
@@ -797,9 +836,7 @@ namespace GameUI {
                             }
 
                             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                            if (is_selected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
+                            if (is_selected) { ImGui::SetItemDefaultFocus(); }
                         }
                         ImGui::EndCombo();
                     }
@@ -809,7 +846,6 @@ namespace GameUI {
 
                     ImGui::TreePop();
                 }
-
 
                 ImGui::TreePop();
             }
@@ -845,22 +881,34 @@ namespace GameUI {
                     METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
 
                     game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                            game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            game->getWorld()->width *
+                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            game->getWorld()->height *
+                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
+                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
+                                                     METAENGINE_Render_FILTER_NEAREST);
 
                     game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                            game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            game->getWorld()->width *
+                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            game->getWorld()->height *
+                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
+                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
+                                                     METAENGINE_Render_FILTER_NEAREST);
 
                     METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjects);
                     METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
 
                     game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                            game->getWorld()->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), game->getWorld()->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            game->getWorld()->width *
+                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            game->getWorld()->height *
+                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
+                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
+                                                     METAENGINE_Render_FILTER_NEAREST);
 
                     METAENGINE_Render_LoadTarget(game->TexturePack_.textureEntities);
                 }
@@ -880,10 +928,8 @@ namespace GameUI {
             ImGui::TreePop();
         }
 
-
         //ImGui::End();
     }
-
 
     bool DebugDrawUI::visible = true;
     int DebugDrawUI::selIndex = -1;
@@ -893,11 +939,11 @@ namespace GameUI {
 
     void DebugDrawUI::Setup() {
 
-
         images = {};
         for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
             Material *mat = Materials::MATERIALS[i];
-            C_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
+            C_Surface *surface =
+                    SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
             for (int x = 0; x < surface->w; x++) {
                 for (int y = 0; y < surface->h; y++) {
                     MaterialInstance m = Tiles::create(mat, x, y);
@@ -911,7 +957,6 @@ namespace GameUI {
     }
 
     void DebugDrawUI::Draw(Game *game) {
-
 
         if (images.empty()) Setup();
 
@@ -940,8 +985,7 @@ namespace GameUI {
             int x = (int) (i % width);
             int y = (int) (i / width);
 
-            if (x > 0)
-                ImGui::SameLine();
+            if (x > 0) ImGui::SameLine();
             ImGui::PushID((int) i);
 
             ImVec2 selPos = ImGui::GetCursorScreenPos();
@@ -974,7 +1018,6 @@ namespace GameUI {
 
             ImGui::SetCursorScreenPos(prevPos);
 
-
             ImGui::PopID();
 
             /*mn->hoverCallback = [hoverMaterialLabel](Material* mat) {
@@ -994,12 +1037,10 @@ namespace GameUI {
         ImGui::End();
     }
 
-
     bool DebugCheatsUI::visible = true;
     std::vector<METAENGINE_Render_Image *> DebugCheatsUI::images = {};
 
     void DebugCheatsUI::Setup() {
-
 
         images = {};
         C_Surface *sfc = Textures::loadTexture("data/assets/objects/testPickaxe.png");
@@ -1022,7 +1063,6 @@ namespace GameUI {
 
     void DebugCheatsUI::Draw(Game *game) {
 
-
         if (images.empty()) Setup();
 
         if (!visible) return;
@@ -1041,10 +1081,10 @@ namespace GameUI {
             } else {
                 int i = 0;
                 ImGui::PushID(i);
-                int frame_padding = 4;                           // -1 == uses default padding (style.FramePadding)
-                ImVec2 size = ImVec2(48, 48);                    // Size of the image we want to make visible
-                ImVec2 uv0 = ImVec2(0.0f, 0.0f);                 // UV coordinates for lower-left
-                ImVec2 uv1 = ImVec2(1.0f, 1.0f);                 // UV coordinates for (32,32) in our texture
+                int frame_padding = 4;          // -1 == uses default padding (style.FramePadding)
+                ImVec2 size = ImVec2(48, 48);   // Size of the image we want to make visible
+                ImVec2 uv0 = ImVec2(0.0f, 0.0f);// UV coordinates for lower-left
+                ImVec2 uv1 = ImVec2(1.0f, 1.0f);// UV coordinates for (32,32) in our texture
                 ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // Black background
                 ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
 
@@ -1116,7 +1156,8 @@ namespace GameUI {
                     i3->setFlag(ItemFlags::FLUID_CONTAINER);
                     i3->surface = Textures::loadTexture("data/assets/objects/testBucket.png");
                     i3->capacity = 100;
-                    i3->loadFillTexture(Textures::loadTexture("data/assets/objects/testBucket_fill.png"));
+                    i3->loadFillTexture(
+                            Textures::loadTexture("data/assets/objects/testBucket_fill.png"));
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 0;
@@ -1135,7 +1176,6 @@ namespace GameUI {
         ImGui::End();
     }
 
-
     char CreateWorldUI::worldNameBuf[32] = "";
     bool CreateWorldUI::setup = false;
     METAENGINE_Render_Image *CreateWorldUI::materialTestWorld = nullptr;
@@ -1145,7 +1185,6 @@ namespace GameUI {
     int CreateWorldUI::selIndex = 0;
 
     void CreateWorldUI::Setup() {
-
 
         C_Surface *logoMT = Textures::loadTexture("data/assets/ui/prev_materialtest.png");
         materialTestWorld = METAENGINE_Render_CopyImageFromSurface(logoMT);
@@ -1162,13 +1201,13 @@ namespace GameUI {
 
     void CreateWorldUI::Draw(Game *game) {
 
-
         if (!setup) Setup();
 
         int createWorldWidth = 350;
 
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("Create World").x / 2);
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 -
+                             ImGui::CalcTextSize("Create World").x / 2);
         ImGui::Text("Create World");
         //ImGui::PopFont();
 
@@ -1196,9 +1235,7 @@ namespace GameUI {
 
         ImGui::SetCursorPos(ImVec2(400 / 2 - 100 - 24 - 4, 170));
         ImVec2 selPos = ImGui::GetCursorPos();
-        if (ImGui::Selectable("", selIndex == 0, 0, ImVec2(111 - 4, 111))) {
-            selIndex = 0;
-        }
+        if (ImGui::Selectable("", selIndex == 0, 0, ImVec2(111 - 4, 111))) { selIndex = 0; }
 
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
@@ -1225,14 +1262,11 @@ namespace GameUI {
 
         ImGui::PopID();
 
-
         ImGui::PushID(1);
 
         ImGui::SetCursorPos(ImVec2(400 / 2 + 24 - 4, 170));
         selPos = ImGui::GetCursorPos();
-        if (ImGui::Selectable("", selIndex == 1, 0, ImVec2(111 - 4, 111))) {
-            selIndex = 1;
-        }
+        if (ImGui::Selectable("", selIndex == 1, 0, ImVec2(111 - 4, 111))) { selIndex = 1; }
 
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
@@ -1263,11 +1297,10 @@ namespace GameUI {
         selPos = ImGui::GetCursorPos();
         //ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("##back", ImVec2(150, 36))) {
-            MainMenuUI::state = 2;
-        }
+        if (ImGui::Button("##back", ImVec2(150, 36))) { MainMenuUI::state = 2; }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
         ImGui::Text("返回");
         //ImGui::PopFont();
 
@@ -1290,7 +1323,8 @@ namespace GameUI {
             std::regex trimWhitespaceRegex("^ *(.+?) *$");
             worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
-            METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle, global.GameDir.getWorldPath(wn));
+            METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle,
+                         global.GameDir.getWorldPath(wn));
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
@@ -1317,25 +1351,24 @@ namespace GameUI {
                     wpStr,
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                    game->RenderTarget_.target,
-                    &global.audioEngine,
-                    Settings::networkMode,
+                    game->RenderTarget_.target, &global.audioEngine, Settings::networkMode,
                     generator);
             game->getWorld()->metadata.worldName = std::string(worldNameBuf);
             game->getWorld()->metadata.lastOpenedTime = UTime::millis() / 1000;
             game->getWorld()->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
             game->getWorld()->metadata.save(wpStr);
 
-
             METADOT_INFO("Queueing chunk loading...");
             for (int x = -CHUNK_W * 4; x < game->getWorld()->width + CHUNK_W * 4; x += CHUNK_W) {
-                for (int y = -CHUNK_H * 3; y < game->getWorld()->height + CHUNK_H * 8; y += CHUNK_H) {
+                for (int y = -CHUNK_H * 3; y < game->getWorld()->height + CHUNK_H * 8;
+                     y += CHUNK_H) {
                     game->getWorld()->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
                 }
             }
         }
         ImGui::PopStyleVar();
-        ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Create").x / 2, selPos.y));
+        ImGui::SetCursorPos(
+                ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Create").x / 2, selPos.y));
         ImGui::Text("Create");
         //ImGui::PopFont();
 
@@ -1346,7 +1379,6 @@ namespace GameUI {
     }
 
     void CreateWorldUI::inputChanged(std::string text, Game *game) {
-
 
         std::regex trimWhitespaceRegex("^ *(.+?) *$");
         text = regex_replace(text, trimWhitespaceRegex, "$1");
@@ -1376,7 +1408,6 @@ namespace GameUI {
 
             i++;
         }
-
 
         worldFolderLabel = "Saved in: " + newWorldFolderName;
     }

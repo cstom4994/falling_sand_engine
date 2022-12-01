@@ -4,10 +4,10 @@
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Engine/ImGuiBase.hpp"
+#include "Engine/LuaWrapper.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Refl.hpp"
 #include "Engine/Scripting.hpp"
-#include "Engine/LuaWrapper.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/InEngine.h"
 #include "Game/Settings.hpp"
@@ -15,7 +15,6 @@
 #include "Libs/lua/lua.hpp"
 
 #include <cstring>
-
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
@@ -35,7 +34,6 @@ void As(T arg) {
 auto f = [](auto &...args) { (..., As(args)); };
 
 static void bindBasic() {
-
 
     MyStruct myStruct;
     Meta::StructApply(myStruct, f);
@@ -139,12 +137,10 @@ static std::string readStringFromFile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
     FILE *f = fopen(filePath, "r");
-    if (!f)
-        return "";
+    if (!f) return "";
     int read = 0;
     std::string out;
-    while ((read = fread(buf, 1, 1024, f)) != 0)
-        out += std::string_view(buf, read);
+    while ((read = fread(buf, 1, 1024, f)) != 0) out += std::string_view(buf, read);
     fclose(f);
     return out;
 }
@@ -168,14 +164,14 @@ void LuaCore::Attach() {
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const std::string &a) { return METADOT_RESLOC(a); });
+    s_lua["METADOT_RESLOC"] =
+            LuaWrapper::function([](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua.dostring(
-            Utils::Format(
-                    "package.path = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.path",
-                    METADOT_RESLOC("data/lua"),
-                    FUtil::getExecutableFolderPath()),
-            s_lua.globalTable());
+    s_lua.dostring(Utils::Format("package.path = "
+                                 "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                                 "?/?.lua;' .. package.path",
+                                 METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()),
+                   s_lua.globalTable());
     // s_lua.dostring(
     //         Utils::Format(
     //                 "package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath",
@@ -194,9 +190,7 @@ void LuaCore::Attach() {
     RunScriptFromFile("data/lua/startup.lua");
 }
 
-
-void LuaCore::Detach() {
-}
+void LuaCore::Detach() {}
 
 void LuaCore::RunScriptInConsole(lua_State *L, const char *c) {
     luaL_loadstring(m_L, c);
@@ -218,9 +212,7 @@ void LuaCore::RunScriptFromFile(const std::string &filePath) {
     }
     result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
 
-    if (result != LUA_OK) {
-        print_error(m_L);
-    }
+    if (result != LUA_OK) { print_error(m_L); }
 }
 
 void LuaCore::Update() {

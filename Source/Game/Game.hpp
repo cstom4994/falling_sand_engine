@@ -1,23 +1,22 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #ifndef _METADOT_GAME_HPP_
 #define _METADOT_GAME_HPP_
 
 //#define b2_maxTranslation 10.0f
 //#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
 
+#include "Core/DebugImpl.hpp"
+#include "Core/Macros.hpp"
 #include "Engine/AudioEngine.h"
+#include "Engine/ImGuiTerminal.hpp"
+#include "Engine/LuaCore.hpp"
 #include "Engine/MRender.hpp"
 #include "Engine/RendererGPU.h"
-#include "Engine/LuaCore.hpp"
-#include "Engine/ImGuiTerminal.hpp"
 #include "Game/Console.hpp"
-#include "Core/DebugImpl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Networking.hpp"
-#include "Core/Macros.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
@@ -66,10 +65,8 @@ private:
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
 
-
     custom_command_struct cmd_struct;
     ImTerm::terminal<terminal_commands> *terminal_log;
-
 
     int ofsX = 0;
     int ofsY = 0;
@@ -104,7 +101,6 @@ private:
     int tickTime = 0;
 
     World *world = nullptr;
-
 
     int mx = 0;
     int my = 0;

@@ -145,7 +145,8 @@
 #if defined(__clang__) || defined(__GNUC__)
 // Helper macro for declaring functions as having similar signature to printf.
 // This allows the compiler to catch format errors at compile-time.
-#define METADOT_LOGGING_PRINTF_LIKE(fmtarg, firstvararg) __attribute__((__format__(__printf__, fmtarg, firstvararg)))
+#define METADOT_LOGGING_PRINTF_LIKE(fmtarg, firstvararg)                                           \
+    __attribute__((__format__(__printf__, fmtarg, firstvararg)))
 #define METADOT_LOGGING_FORMAT_STRING_TYPE const char *
 #elif defined(_MSC_VER)
 #define METADOT_LOGGING_PRINTF_LIKE(fmtarg, firstvararg)
@@ -221,14 +222,14 @@ namespace Logging {
     Text vtextprintf(const char *format, fmt::format_args args);
 
     template<typename... Args>
-    METADOT_LOGGING_EXPORT
-            Text
-            textprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, const Args &...args) {
+    METADOT_LOGGING_EXPORT Text textprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format,
+                                           const Args &...args) {
         return vtextprintf(format, fmt::make_format_args(args...));
     }
 #else
     METADOT_LOGGING_EXPORT
-    Text textprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(1, 2);
+    Text textprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, ...)
+            METADOT_LOGGING_PRINTF_LIKE(1, 2);
 #endif
 
     // Overloaded for variadic template matching.
@@ -297,8 +298,10 @@ namespace Logging {
     METADOT_LOGGING_EXPORT extern Verbosity g_stderr_verbosity;
     METADOT_LOGGING_EXPORT extern bool g_colorlogtostderr;     // True by default.
     METADOT_LOGGING_EXPORT extern unsigned g_flush_interval_ms;// 0 (unbuffered) by default.
-    METADOT_LOGGING_EXPORT extern bool g_preamble_header;      // Prepend each log start by a descriptions line with all columns name? True by default.
-    METADOT_LOGGING_EXPORT extern bool g_preamble;             // Prefix each log line with date, time etc? True by default.
+    METADOT_LOGGING_EXPORT extern bool
+            g_preamble_header;// Prepend each log start by a descriptions line with all columns name? True by default.
+    METADOT_LOGGING_EXPORT extern bool
+            g_preamble;// Prefix each log line with date, time etc? True by default.
 
     /* Specify the verbosity used by loguru to log its info messages including the header
 	logged when logged::init() is called or on exit. Default is 0 (INFO).
@@ -306,13 +309,14 @@ namespace Logging {
     METADOT_LOGGING_EXPORT extern Verbosity g_internal_verbosity;
 
     // Turn off individual parts of the preamble
-    METADOT_LOGGING_EXPORT extern bool g_preamble_date;   // The date field
-    METADOT_LOGGING_EXPORT extern bool g_preamble_time;   // The time of the current day
-    METADOT_LOGGING_EXPORT extern bool g_preamble_uptime; // The time since init call
-    METADOT_LOGGING_EXPORT extern bool g_preamble_thread; // The logging thread
-    METADOT_LOGGING_EXPORT extern bool g_preamble_file;   // The file from which the log originates from
+    METADOT_LOGGING_EXPORT extern bool g_preamble_date;  // The date field
+    METADOT_LOGGING_EXPORT extern bool g_preamble_time;  // The time of the current day
+    METADOT_LOGGING_EXPORT extern bool g_preamble_uptime;// The time since init call
+    METADOT_LOGGING_EXPORT extern bool g_preamble_thread;// The logging thread
+    METADOT_LOGGING_EXPORT extern bool
+            g_preamble_file;// The file from which the log originates from
     METADOT_LOGGING_EXPORT extern bool g_preamble_verbose;// The verbosity field
-    METADOT_LOGGING_EXPORT extern bool g_preamble_pipe;   // The pipe symbol right before the message
+    METADOT_LOGGING_EXPORT extern bool g_preamble_pipe;// The pipe symbol right before the message
 
     // May not throw!
     typedef void (*log_handler_t)(void *user_data, const Message &message);
@@ -503,13 +507,8 @@ namespace Logging {
 		The given on_close is also expected to flush (if desired).
 	*/
     METADOT_LOGGING_EXPORT
-    void add_callback(
-            const char *id,
-            log_handler_t callback,
-            void *user_data,
-            Verbosity verbosity,
-            close_handler_t on_close = nullptr,
-            flush_handler_t on_flush = nullptr);
+    void add_callback(const char *id, log_handler_t callback, void *user_data, Verbosity verbosity,
+                      close_handler_t on_close = nullptr, flush_handler_t on_flush = nullptr);
 
     /*  Set a callback that returns custom verbosity level names. If callback
 		is nullptr or returns nullptr, default log names will be used.
@@ -549,50 +548,65 @@ namespace Logging {
 #if METADOT_LOGGING_USE_FMTLIB
     // Internal functions
     METADOT_LOGGING_EXPORT
-    void vlog(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, fmt::format_args args);
+    void vlog(Verbosity verbosity, const char *file, unsigned line,
+              METADOT_LOGGING_FORMAT_STRING_TYPE format, fmt::format_args args);
     METADOT_LOGGING_EXPORT
-    void raw_vlog(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, fmt::format_args args);
+    void raw_vlog(Verbosity verbosity, const char *file, unsigned line,
+                  METADOT_LOGGING_FORMAT_STRING_TYPE format, fmt::format_args args);
 
     // Actual logging function. Use the LOG macro instead of calling this directly.
     template<typename... Args>
-    METADOT_LOGGING_EXPORT void log(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, const Args &...args) {
+    METADOT_LOGGING_EXPORT void log(Verbosity verbosity, const char *file, unsigned line,
+                                    METADOT_LOGGING_FORMAT_STRING_TYPE format,
+                                    const Args &...args) {
         vlog(verbosity, file, line, format, fmt::make_format_args(args...));
     }
 
     // Log without any preamble or indentation.
     template<typename... Args>
-    METADOT_LOGGING_EXPORT void raw_log(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, const Args &...args) {
+    METADOT_LOGGING_EXPORT void raw_log(Verbosity verbosity, const char *file, unsigned line,
+                                        METADOT_LOGGING_FORMAT_STRING_TYPE format,
+                                        const Args &...args) {
         raw_vlog(verbosity, file, line, format, fmt::make_format_args(args...));
     }
 #else // METADOT_LOGGING_USE_FMTLIB?
     // Actual logging function. Use the LOG macro instead of calling this directly.
     METADOT_LOGGING_EXPORT
-    void log(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(4, 5);
+    void log(Verbosity verbosity, const char *file, unsigned line,
+             METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(4, 5);
 
     // Actual logging function.
     METADOT_LOGGING_EXPORT
-    void vlog(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list) METADOT_LOGGING_PRINTF_LIKE(4, 0);
+    void vlog(Verbosity verbosity, const char *file, unsigned line,
+              METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list) METADOT_LOGGING_PRINTF_LIKE(4, 0);
 
     // Log without any preamble or indentation.
     METADOT_LOGGING_EXPORT
-    void raw_log(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(4, 5);
+    void raw_log(Verbosity verbosity, const char *file, unsigned line,
+                 METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(4, 5);
 #endif// !METADOT_LOGGING_USE_FMTLIB
 
     // Helper class for LOG_SCOPE_F
     class METADOT_LOGGING_EXPORT LogScopeRAII {
     public:
         LogScopeRAII() : _file(nullptr) {}// No logging
-        LogScopeRAII(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list vlist) METADOT_LOGGING_PRINTF_LIKE(5, 0);
-        LogScopeRAII(Verbosity verbosity, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(5, 6);
+        LogScopeRAII(Verbosity verbosity, const char *file, unsigned line,
+                     METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list vlist)
+                METADOT_LOGGING_PRINTF_LIKE(5, 0);
+        LogScopeRAII(Verbosity verbosity, const char *file, unsigned line,
+                     METADOT_LOGGING_FORMAT_STRING_TYPE format, ...)
+                METADOT_LOGGING_PRINTF_LIKE(5, 6);
         ~LogScopeRAII();
 
-        void Init(METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list vlist) METADOT_LOGGING_PRINTF_LIKE(2, 0);
+        void Init(METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list vlist)
+                METADOT_LOGGING_PRINTF_LIKE(2, 0);
 
 #if defined(_MSC_VER) && _MSC_VER > 1800
         // older MSVC default move ctors close the scope on move. See
         // issue #43
         LogScopeRAII(LogScopeRAII &&other)
-            : _verbosity(other._verbosity), _file(other._file), _line(other._line), _indent_stderr(other._indent_stderr), _start_time_ns(other._start_time_ns) {
+            : _verbosity(other._verbosity), _file(other._file), _line(other._line),
+              _indent_stderr(other._indent_stderr), _start_time_ns(other._start_time_ns) {
             // Make sure the tmp object's destruction doesn't close the scope:
             other._file = nullptr;
 
@@ -621,19 +635,26 @@ namespace Logging {
     // stack_trace_skip is the number of extrace stack frames to skip above log_and_abort.
 #if METADOT_LOGGING_USE_FMTLIB
     METADOT_LOGGING_EXPORT
-    METADOT_LOGGING_NORETURN void vlog_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, fmt::format_args);
+    METADOT_LOGGING_NORETURN void vlog_and_abort(int stack_trace_skip, const char *expr,
+                                                 const char *file, unsigned line,
+                                                 METADOT_LOGGING_FORMAT_STRING_TYPE format,
+                                                 fmt::format_args);
     template<typename... Args>
-    METADOT_LOGGING_EXPORT
-            METADOT_LOGGING_NORETURN void
-            log_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, const Args &...args) {
+    METADOT_LOGGING_EXPORT METADOT_LOGGING_NORETURN void log_and_abort(
+            int stack_trace_skip, const char *expr, const char *file, unsigned line,
+            METADOT_LOGGING_FORMAT_STRING_TYPE format, const Args &...args) {
         vlog_and_abort(stack_trace_skip, expr, file, line, format, fmt::make_format_args(args...));
     }
 #else
     METADOT_LOGGING_EXPORT
-    METADOT_LOGGING_NORETURN void log_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line, METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(5, 6);
+    METADOT_LOGGING_NORETURN void log_and_abort(int stack_trace_skip, const char *expr,
+                                                const char *file, unsigned line,
+                                                METADOT_LOGGING_FORMAT_STRING_TYPE format, ...)
+            METADOT_LOGGING_PRINTF_LIKE(5, 6);
 #endif
     METADOT_LOGGING_EXPORT
-    METADOT_LOGGING_NORETURN void log_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line);
+    METADOT_LOGGING_NORETURN void log_and_abort(int stack_trace_skip, const char *expr,
+                                                const char *file, unsigned line);
 
     // Flush output to stderr and files.
     // If g_flush_interval_ms is set to non-zero, this will be called automatically this often.
@@ -642,38 +663,68 @@ namespace Logging {
     void flush();
 
     template<class T>
-    inline Text format_value(const T &) { return textprintf("N/A"); }
+    inline Text format_value(const T &) {
+        return textprintf("N/A");
+    }
     template<>
-    inline Text format_value(const char &v) { return textprintf(METADOT_LOGGING_FMT(c), v); }
+    inline Text format_value(const char &v) {
+        return textprintf(METADOT_LOGGING_FMT(c), v);
+    }
     template<>
-    inline Text format_value(const int &v) { return textprintf(METADOT_LOGGING_FMT(d), v); }
+    inline Text format_value(const int &v) {
+        return textprintf(METADOT_LOGGING_FMT(d), v);
+    }
     template<>
-    inline Text format_value(const float &v) { return textprintf(METADOT_LOGGING_FMT(f), v); }
+    inline Text format_value(const float &v) {
+        return textprintf(METADOT_LOGGING_FMT(f), v);
+    }
     template<>
-    inline Text format_value(const double &v) { return textprintf(METADOT_LOGGING_FMT(f), v); }
+    inline Text format_value(const double &v) {
+        return textprintf(METADOT_LOGGING_FMT(f), v);
+    }
 
 #if METADOT_LOGGING_USE_FMTLIB
     template<>
-    inline Text format_value(const unsigned int &v) { return textprintf(METADOT_LOGGING_FMT(d), v); }
+    inline Text format_value(const unsigned int &v) {
+        return textprintf(METADOT_LOGGING_FMT(d), v);
+    }
     template<>
-    inline Text format_value(const long &v) { return textprintf(METADOT_LOGGING_FMT(d), v); }
+    inline Text format_value(const long &v) {
+        return textprintf(METADOT_LOGGING_FMT(d), v);
+    }
     template<>
-    inline Text format_value(const unsigned long &v) { return textprintf(METADOT_LOGGING_FMT(d), v); }
+    inline Text format_value(const unsigned long &v) {
+        return textprintf(METADOT_LOGGING_FMT(d), v);
+    }
     template<>
-    inline Text format_value(const long long &v) { return textprintf(METADOT_LOGGING_FMT(d), v); }
+    inline Text format_value(const long long &v) {
+        return textprintf(METADOT_LOGGING_FMT(d), v);
+    }
     template<>
-    inline Text format_value(const unsigned long long &v) { return textprintf(METADOT_LOGGING_FMT(d), v); }
+    inline Text format_value(const unsigned long long &v) {
+        return textprintf(METADOT_LOGGING_FMT(d), v);
+    }
 #else
     template<>
-    inline Text format_value(const unsigned int &v) { return textprintf(METADOT_LOGGING_FMT(u), v); }
+    inline Text format_value(const unsigned int &v) {
+        return textprintf(METADOT_LOGGING_FMT(u), v);
+    }
     template<>
-    inline Text format_value(const long &v) { return textprintf(METADOT_LOGGING_FMT(lu), v); }
+    inline Text format_value(const long &v) {
+        return textprintf(METADOT_LOGGING_FMT(lu), v);
+    }
     template<>
-    inline Text format_value(const unsigned long &v) { return textprintf(METADOT_LOGGING_FMT(ld), v); }
+    inline Text format_value(const unsigned long &v) {
+        return textprintf(METADOT_LOGGING_FMT(ld), v);
+    }
     template<>
-    inline Text format_value(const long long &v) { return textprintf(METADOT_LOGGING_FMT(llu), v); }
+    inline Text format_value(const long long &v) {
+        return textprintf(METADOT_LOGGING_FMT(llu), v);
+    }
     template<>
-    inline Text format_value(const unsigned long long &v) { return textprintf(METADOT_LOGGING_FMT(lld), v); }
+    inline Text format_value(const unsigned long long &v) {
+        return textprintf(METADOT_LOGGING_FMT(lld), v);
+    }
 #endif
 
     /* Thread names can be set for the benefit of readable logs.
@@ -894,11 +945,13 @@ namespace Logging {
 		Error contexts are printed automatically on crashes, and only on crashes.
 		This makes them much faster than logging the value of a variable.
 	*/
-#define ERROR_CONTEXT(descr, data)                                        \
-    const Logging::EcEntryData<Logging::make_ec_type<decltype(data)>::type> \
-    METADOT_LOGGING_ANONYMOUS_VARIABLE(error_context_scope_)(                      \
-            __FILE__, __LINE__, descr, data,                              \
-            static_cast<Logging::EcEntryData<Logging::make_ec_type<decltype(data)>::type>::Printer>(Logging::ec_to_text))// For better error messages
+#define ERROR_CONTEXT(descr, data)                                                                 \
+    const Logging::EcEntryData<Logging::make_ec_type<decltype(data)>::type>                        \
+    METADOT_LOGGING_ANONYMOUS_VARIABLE(error_context_scope_)(                                      \
+            __FILE__, __LINE__, descr, data,                                                       \
+            static_cast<                                                                           \
+                    Logging::EcEntryData<Logging::make_ec_type<decltype(data)>::type>::Printer>(   \
+                    Logging::ec_to_text))// For better error messages
 
     /*
 	#define ERROR_CONTEXT(descr, data)                                 \
@@ -990,7 +1043,7 @@ namespace Logging {
 			....
 		}
 	*/
-}// namespace loguru
+}// namespace Logging
 
 METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 
@@ -998,34 +1051,38 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 // Logging macros
 
 // LOG_F(2, "Only logged if verbosity is 2 or higher: %d", some_number);
-#define VLOG_F(verbosity, ...)                                    \
-    ((verbosity) > Logging::current_verbosity_cutoff()) ? (void) 0 \
-                                                       : Logging::log(verbosity, __FILE__, __LINE__, __VA_ARGS__)
+#define VLOG_F(verbosity, ...)                                                                     \
+    ((verbosity) > Logging::current_verbosity_cutoff())                                            \
+            ? (void) 0                                                                             \
+            : Logging::log(verbosity, __FILE__, __LINE__, __VA_ARGS__)
 
 // LOG_F(INFO, "Foo: %d", some_number);
 #define LOG_F(verbosity_name, ...) VLOG_F(Logging::Verbosity_##verbosity_name, __VA_ARGS__)
 
-#define VLOG_IF_F(verbosity, cond, ...)                                   \
-    ((verbosity) > Logging::current_verbosity_cutoff() || (cond) == false) \
-            ? (void) 0                                                    \
+#define VLOG_IF_F(verbosity, cond, ...)                                                            \
+    ((verbosity) > Logging::current_verbosity_cutoff() || (cond) == false)                         \
+            ? (void) 0                                                                             \
             : Logging::log(verbosity, __FILE__, __LINE__, __VA_ARGS__)
 
-#define LOG_IF_F(verbosity_name, cond, ...) \
+#define LOG_IF_F(verbosity_name, cond, ...)                                                        \
     VLOG_IF_F(Logging::Verbosity_##verbosity_name, cond, __VA_ARGS__)
 
-#define VLOG_SCOPE_F(verbosity, ...)                                      \
-    Logging::LogScopeRAII METADOT_LOGGING_ANONYMOUS_VARIABLE(error_context_RAII_) = \
-            ((verbosity) > Logging::current_verbosity_cutoff()) ? Logging::LogScopeRAII() : Logging::LogScopeRAII(verbosity, __FILE__, __LINE__, __VA_ARGS__)
+#define VLOG_SCOPE_F(verbosity, ...)                                                               \
+    Logging::LogScopeRAII METADOT_LOGGING_ANONYMOUS_VARIABLE(error_context_RAII_) =                \
+            ((verbosity) > Logging::current_verbosity_cutoff())                                    \
+                    ? Logging::LogScopeRAII()                                                      \
+                    : Logging::LogScopeRAII(verbosity, __FILE__, __LINE__, __VA_ARGS__)
 
 // Raw logging - no preamble, no indentation. Slightly faster than full logging.
-#define RAW_VLOG_F(verbosity, ...)                                \
-    ((verbosity) > Logging::current_verbosity_cutoff()) ? (void) 0 \
-                                                       : Logging::raw_log(verbosity, __FILE__, __LINE__, __VA_ARGS__)
+#define RAW_VLOG_F(verbosity, ...)                                                                 \
+    ((verbosity) > Logging::current_verbosity_cutoff())                                            \
+            ? (void) 0                                                                             \
+            : Logging::raw_log(verbosity, __FILE__, __LINE__, __VA_ARGS__)
 
 #define RAW_LOG_F(verbosity_name, ...) RAW_VLOG_F(Logging::Verbosity_##verbosity_name, __VA_ARGS__)
 
 // Use to book-end a scope. Affects logging on all threads.
-#define LOG_SCOPE_F(verbosity_name, ...) \
+#define LOG_SCOPE_F(verbosity_name, ...)                                                           \
     VLOG_SCOPE_F(Logging::Verbosity_##verbosity_name, __VA_ARGS__)
 
 #define LOG_SCOPE_FUNCTION(verbosity_name) LOG_SCOPE_F(verbosity_name, __func__)
@@ -1039,8 +1096,11 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 // --------------------------------------------------------------------
 // CHECK_F macros:
 
-#define CHECK_WITH_INFO_F(test, info, ...) \
-    METADOT_LOGGING_PREDICT_TRUE((test) == true) ? (void) 0 : Logging::log_and_abort(0, "CHECK FAILED:  " info "  ", __FILE__, __LINE__, ##__VA_ARGS__)
+#define CHECK_WITH_INFO_F(test, info, ...)                                                         \
+    METADOT_LOGGING_PREDICT_TRUE((test) == true)                                                   \
+            ? (void) 0                                                                             \
+            : Logging::log_and_abort(0, "CHECK FAILED:  " info "  ", __FILE__, __LINE__,           \
+                                     ##__VA_ARGS__)
 
 /* Checked at runtime too. Will print error, then call fatal_handler (if any), then 'abort'.
    Note that the test must be boolean.
@@ -1049,19 +1109,21 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 
 #define CHECK_NOTNULL_F(x, ...) CHECK_WITH_INFO_F((x) != nullptr, #x " != nullptr", ##__VA_ARGS__)
 
-#define CHECK_OP_F(expr_left, expr_right, op, ...)                                                                                                                                 \
-    do {                                                                                                                                                                           \
-        auto val_left = expr_left;                                                                                                                                                 \
-        auto val_right = expr_right;                                                                                                                                               \
-        if (!METADOT_LOGGING_PREDICT_TRUE(val_left op val_right)) {                                                                                                                         \
-            auto str_left = Logging::format_value(val_left);                                                                                                                        \
-            auto str_right = Logging::format_value(val_right);                                                                                                                      \
-            auto fail_info = Logging::textprintf("CHECK FAILED:  " METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) "  (" METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) ")  ", \
-                                                #expr_left, #op, #expr_right, str_left.c_str(), #op, str_right.c_str());                                                           \
-            auto user_msg = Logging::textprintf(__VA_ARGS__);                                                                                                                       \
-            Logging::log_and_abort(0, fail_info.c_str(), __FILE__, __LINE__,                                                                                                        \
-                                  METADOT_LOGGING_FMT(s), user_msg.c_str());                                                                                                                \
-        }                                                                                                                                                                          \
+#define CHECK_OP_F(expr_left, expr_right, op, ...)                                                                       \
+    do {                                                                                                                 \
+        auto val_left = expr_left;                                                                                       \
+        auto val_right = expr_right;                                                                                     \
+        if (!METADOT_LOGGING_PREDICT_TRUE(val_left op val_right)) {                                                      \
+            auto str_left = Logging::format_value(val_left);                                                             \
+            auto str_right = Logging::format_value(val_right);                                                           \
+            auto fail_info = Logging::textprintf(                                                                        \
+                    "CHECK FAILED:  " METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(         \
+                            s) "  (" METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) " " METADOT_LOGGING_FMT(s) ")  ", \
+                    #expr_left, #op, #expr_right, str_left.c_str(), #op, str_right.c_str());                             \
+            auto user_msg = Logging::textprintf(__VA_ARGS__);                                                            \
+            Logging::log_and_abort(0, fail_info.c_str(), __FILE__, __LINE__,                                             \
+                                   METADOT_LOGGING_FMT(s), user_msg.c_str());                                            \
+        }                                                                                                                \
     } while (false)
 
 #ifndef METADOT_LOGGING_DEBUG_LOGGING
@@ -1127,7 +1189,6 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 #define DCHECK_GE_F(a, b, ...)
 #endif// NDEBUG
 
-
 #if METADOT_LOGGING_REDEFINE_ASSERT
 #undef assert
 #ifndef NDEBUG
@@ -1164,15 +1225,18 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_BEGIN
 namespace Logging {
     // Like sprintf, but returns the formated text.
     METADOT_LOGGING_EXPORT
-    std::string strprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, ...) METADOT_LOGGING_PRINTF_LIKE(1, 2);
+    std::string strprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, ...)
+            METADOT_LOGGING_PRINTF_LIKE(1, 2);
 
     // Like vsprintf, but returns the formated text.
     METADOT_LOGGING_EXPORT
-    std::string vstrprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list) METADOT_LOGGING_PRINTF_LIKE(1, 0);
+    std::string vstrprintf(METADOT_LOGGING_FORMAT_STRING_TYPE format, va_list)
+            METADOT_LOGGING_PRINTF_LIKE(1, 0);
 
     class METADOT_LOGGING_EXPORT StreamLogger {
     public:
-        StreamLogger(Verbosity verbosity, const char *file, unsigned line) : _verbosity(verbosity), _file(file), _line(line) {}
+        StreamLogger(Verbosity verbosity, const char *file, unsigned line)
+            : _verbosity(verbosity), _file(file), _line(line) {}
         ~StreamLogger() noexcept(false);
 
         template<typename T>
@@ -1196,7 +1260,8 @@ namespace Logging {
 
     class METADOT_LOGGING_EXPORT AbortLogger {
     public:
-        AbortLogger(const char *expr, const char *file, unsigned line) : _expr(expr), _file(file), _line(line) {}
+        AbortLogger(const char *expr, const char *file, unsigned line)
+            : _expr(expr), _file(file), _line(line) {}
         METADOT_LOGGING_NORETURN ~AbortLogger() noexcept(false);
 
         template<typename T>
@@ -1229,16 +1294,16 @@ namespace Logging {
 /*  Helper functions for CHECK_OP_S macro.
 		GLOG trick: The (int, int) specialization works around the issue that the compiler
 		will not instantiate the template version of the function on values of unnamed enum type. */
-#define DEFINE_CHECK_OP_IMPL(name, op)                                                           \
-    template<typename T1, typename T2>                                                           \
-    inline std::string *name(const char *expr, const T1 &v1, const char *op_str, const T2 &v2) { \
-        if (METADOT_LOGGING_PREDICT_TRUE(v1 op v2)) { return NULL; }                                      \
-        std::ostringstream ss;                                                                   \
-        ss << "CHECK FAILED:  " << expr << "  (" << v1 << " " << op_str << " " << v2 << ")  ";   \
-        return new std::string(ss.str());                                                        \
-    }                                                                                            \
-    inline std::string *name(const char *expr, int v1, const char *op_str, int v2) {             \
-        return name<int, int>(expr, v1, op_str, v2);                                             \
+#define DEFINE_CHECK_OP_IMPL(name, op)                                                             \
+    template<typename T1, typename T2>                                                             \
+    inline std::string *name(const char *expr, const T1 &v1, const char *op_str, const T2 &v2) {   \
+        if (METADOT_LOGGING_PREDICT_TRUE(v1 op v2)) { return NULL; }                               \
+        std::ostringstream ss;                                                                     \
+        ss << "CHECK FAILED:  " << expr << "  (" << v1 << " " << op_str << " " << v2 << ")  ";     \
+        return new std::string(ss.str());                                                          \
+    }                                                                                              \
+    inline std::string *name(const char *expr, int v1, const char *op_str, int v2) {               \
+        return name<int, int>(expr, v1, op_str, v2);                                               \
     }
 
     DEFINE_CHECK_OP_IMPL(check_EQ_impl, ==)
@@ -1252,7 +1317,9 @@ namespace Logging {
     /*  GLOG trick: Function is overloaded for integral types to allow static const integrals
 		declared in classes and not defined to be used as arguments to CHECK* macros. */
     template<class T>
-    inline const T &referenceable_value(const T &t) { return t; }
+    inline const T &referenceable_value(const T &t) {
+        return t;
+    }
     inline char referenceable_value(char t) { return t; }
     inline unsigned char referenceable_value(unsigned char t) { return t; }
     inline signed char referenceable_value(signed char t) { return t; }
@@ -1272,9 +1339,9 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 // Logging macros:
 
 // usage:  LOG_STREAM(INFO) << "Foo " << std::setprecision(10) << some_value;
-#define VLOG_IF_S(verbosity, cond)                                        \
-    ((verbosity) > Logging::current_verbosity_cutoff() || (cond) == false) \
-            ? (void) 0                                                    \
+#define VLOG_IF_S(verbosity, cond)                                                                 \
+    ((verbosity) > Logging::current_verbosity_cutoff() || (cond) == false)                         \
+            ? (void) 0                                                                             \
             : Logging::Voidify() & Logging::StreamLogger(verbosity, __FILE__, __LINE__)
 #define LOG_IF_S(verbosity_name, cond) VLOG_IF_S(Logging::Verbosity_##verbosity_name, cond)
 #define VLOG_S(verbosity) VLOG_IF_S(verbosity, true)
@@ -1288,18 +1355,18 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 // -----------------------------------------------
 // CHECK_S macros:
 
-#define CHECK_WITH_INFO_S(cond, info)   \
-    METADOT_LOGGING_PREDICT_TRUE((cond) == true) \
-    ? (void) 0                          \
+#define CHECK_WITH_INFO_S(cond, info)                                                              \
+    METADOT_LOGGING_PREDICT_TRUE((cond) == true)                                                   \
+    ? (void) 0                                                                                     \
     : Logging::Voidify() & Logging::AbortLogger("CHECK FAILED:  " info "  ", __FILE__, __LINE__)
 
 #define CHECK_S(cond) CHECK_WITH_INFO_S(cond, #cond)
 #define CHECK_NOTNULL_S(x) CHECK_WITH_INFO_S((x) != nullptr, #x " != nullptr")
 
-#define CHECK_OP_S(function_name, expr1, op, expr2)                                           \
-    while (auto error_string = Logging::function_name(#expr1 " " #op " " #expr2,               \
-                                                     Logging::referenceable_value(expr1), #op, \
-                                                     Logging::referenceable_value(expr2)))     \
+#define CHECK_OP_S(function_name, expr1, op, expr2)                                                \
+    while (auto error_string = Logging::function_name(#expr1 " " #op " " #expr2,                   \
+                                                      Logging::referenceable_value(expr1), #op,    \
+                                                      Logging::referenceable_value(expr2)))        \
     Logging::AbortLogger(error_string->c_str(), __FILE__, __LINE__)
 
 #define CHECK_EQ_S(expr1, expr2) CHECK_OP_S(check_EQ_impl, expr1, ==, expr2)
@@ -1317,9 +1384,9 @@ METADOT_LOGGING_ANONYMOUS_NAMESPACE_END
 #define DLOG_S(verbosity_name) LOG_S(verbosity_name)
 #else
 // Debug logging disabled:
-#define DVLOG_IF_S(verbosity, cond)                                               \
-    (true || (verbosity) > Logging::current_verbosity_cutoff() || (cond) == false) \
-            ? (void) 0                                                            \
+#define DVLOG_IF_S(verbosity, cond)                                                                \
+    (true || (verbosity) > Logging::current_verbosity_cutoff() || (cond) == false)                 \
+            ? (void) 0                                                                             \
             : Logging::Voidify() & Logging::StreamLogger(verbosity, __FILE__, __LINE__)
 
 #define DLOG_IF_S(verbosity_name, cond) DVLOG_IF_S(Logging::Verbosity_##verbosity_name, cond)

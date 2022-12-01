@@ -12,9 +12,6 @@
 #error "TODO: fix for this compiler! (at least C++14 is required)"
 #endif
 
-
-
-
 enum DisplayMode {
     WINDOWED,
     BORDERLESS,

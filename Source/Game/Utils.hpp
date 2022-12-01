@@ -3,8 +3,8 @@
 #ifndef _METADOT_UTILS_HPP_
 #define _METADOT_UTILS_HPP_
 
-#include "Engine/Platform.hpp"
 #include "Core/Core.hpp"
+#include "Engine/Platform.hpp"
 #include "Game/InEngine.h"
 
 #include <algorithm>
@@ -13,13 +13,11 @@
 #include <locale>
 #include <unordered_map>
 
-
 class UTime {
 public:
     static long long millis();
     static time_t mkgmtime(struct tm *unixdate);
 };
-
 
 namespace SUtil {
     typedef std::string Stringo;
@@ -32,30 +30,24 @@ namespace SUtil {
         return converterX.to_bytes(wstr);
     }
 
-    inline bool equals(const char *a, const char *c) {
-        return strcmp(a, c) == 0;
-    }
+    inline bool equals(const char *a, const char *c) { return strcmp(a, c) == 0; }
 
     inline bool startsWith(Viewo s, Viewo prefix) {
         return prefix.size() <= s.size() && (strncmp(prefix.data(), s.data(), prefix.size()) == 0);
     }
 
-    inline bool startsWith(Viewo s, char prefix) {
-        return !s.empty() && s[0] == prefix;
-    }
+    inline bool startsWith(Viewo s, char prefix) { return !s.empty() && s[0] == prefix; }
 
     inline bool startsWith(const char *s, const char *prefix) {
         return strncmp(s, prefix, strlen(prefix)) == 0;
     }
 
-
     inline bool endsWith(Viewo s, Viewo suffix) {
-        return suffix.size() <= s.size() && strncmp(suffix.data(), s.data() + s.size() - suffix.size(), suffix.size()) == 0;
+        return suffix.size() <= s.size() &&
+               strncmp(suffix.data(), s.data() + s.size() - suffix.size(), suffix.size()) == 0;
     }
 
-    inline bool endsWith(Viewo s, char suffix) {
-        return !s.empty() && s[s.size() - 1] == suffix;
-    }
+    inline bool endsWith(Viewo s, char suffix) { return !s.empty() && s[s.size() - 1] == suffix; }
 
     inline bool endsWith(const char *s, const char *suffix) {
         auto sizeS = strlen(s);
@@ -76,9 +68,7 @@ namespace SUtil {
             ind += 4;
         }
         //do the rest linearly
-        for (int i = 0; i < (l & 3); ++i) {
-            s[ind++] = std::tolower(s[ind]);
-        }
+        for (int i = 0; i < (l & 3); ++i) { s[ind++] = std::tolower(s[ind]); }
     }
 
     inline void toLower(Stringo &ss) {
@@ -94,8 +84,7 @@ namespace SUtil {
             ind += 4;
         }
         //do the rest linearly
-        for (int i = 0; i < (l & 3); ++i)
-            s[ind++] = std::tolower(s[ind]);
+        for (int i = 0; i < (l & 3); ++i) s[ind++] = std::tolower(s[ind]);
     }
 
     inline void toUpper(char *s) {
@@ -110,9 +99,7 @@ namespace SUtil {
             ind += 4;
         }
         //do the rest linearly
-        for (int i = 0; i < (l & 3); ++i) {
-            s[ind++] = std::toupper(s[ind]);
-        }
+        for (int i = 0; i < (l & 3); ++i) { s[ind++] = std::toupper(s[ind]); }
     }
 
     inline void toUpper(Stringo &ss) {
@@ -128,8 +115,7 @@ namespace SUtil {
             ind += 4;
         }
         //do the rest linearly
-        for (int i = 0; i < (l & 3); ++i)
-            s[ind++] = std::toupper(s[ind]);
+        for (int i = 0; i < (l & 3); ++i) s[ind++] = std::toupper(s[ind]);
     }
 
     inline bool replaceWith(char *src, char what, char with) {
@@ -170,13 +156,10 @@ namespace SUtil {
         return true;
     }
 
-
     inline bool replaceWith(Stringo &src, const char *what, const char *with, int times) {
-        for (int i = 0; i < times; ++i)
-            replaceWith(src, what, with);
+        for (int i = 0; i < times; ++i) replaceWith(src, what, with);
         return true;
     }
-
 
     //populates words with words that were crated by splitting line with one char of dividers
     //NOTE!: when using views
@@ -200,7 +183,8 @@ namespace SUtil {
             }
         }
     }*/
-    inline void splitString(const Stringo &line, std::vector<Stringo> &words, const char *divider = " \n\t") {
+    inline void splitString(const Stringo &line, std::vector<Stringo> &words,
+                            const char *divider = " \n\t") {
         auto beginIdx = line.find_first_not_of(divider, 0);
         while (beginIdx != Stringo::npos) {
             auto endIdx = line.find_first_of(divider, beginIdx);
@@ -213,7 +197,6 @@ namespace SUtil {
             }
         }
     }
-
 
     /*inline void splitString(const Viewo& line, std::vector<Viewo>& words, const char* divider = " \n\t")
     {
@@ -244,9 +227,11 @@ namespace SUtil {
     //	if(operator bool()==false)
     //		-> on calling operator*() or operator->()
     //
-    template<bool ignoreBlanks = false, typename DividerType = const char *, bool throwException = false>
+    template<bool ignoreBlanks = false, typename DividerType = const char *,
+             bool throwException = false>
     class SplitIterator {
-        static_assert(std::is_same<DividerType, const char *>::value || std::is_same<DividerType, char>::value);
+        static_assert(std::is_same<DividerType, const char *>::value ||
+                      std::is_same<DividerType, char>::value);
 
     private:
         Viewo m_source;
@@ -255,30 +240,27 @@ namespace SUtil {
         DividerType m_divider;
         bool m_ending = false;
 
-
         void step() {
-            if (!operator bool())
-                return;
+            if (!operator bool()) return;
 
             if constexpr (ignoreBlanks) {
                 bool first = true;
                 while (m_pointer.empty() || first) {
                     first = false;
 
-                    if (!operator bool())
-                        return;
+                    if (!operator bool()) return;
                     //check if this is ending
                     //the next one will be false
                     if (m_source.size() == m_pointer.size()) {
                         m_source = Viewo(nullptr, 0);
                     } else {
                         auto viewSize = m_pointer.size();
-                        m_source = Viewo(m_source.data() + viewSize + 1, m_source.size() - viewSize - 1);
+                        m_source = Viewo(m_source.data() + viewSize + 1,
+                                         m_source.size() - viewSize - 1);
                         //shift source by viewSize
 
                         auto nextDivi = m_source.find_first_of(m_divider, 0);
-                        if (nextDivi != Stringo::npos)
-                            m_pointer = Viewo(m_source.data(), nextDivi);
+                        if (nextDivi != Stringo::npos) m_pointer = Viewo(m_source.data(), nextDivi);
                         else
                             m_pointer = Viewo(m_source.data(), m_source.size());
                     }
@@ -291,13 +273,12 @@ namespace SUtil {
                     m_ending = false;
                 } else {
                     auto viewSize = m_pointer.size();
-                    m_source = Viewo(m_source.data() + viewSize + 1, m_source.size() - viewSize - 1);
+                    m_source =
+                            Viewo(m_source.data() + viewSize + 1, m_source.size() - viewSize - 1);
                     //shift source by viewSize
-                    if (m_source.empty())
-                        m_ending = true;
+                    if (m_source.empty()) m_ending = true;
                     auto nextDivi = m_source.find_first_of(m_divider, 0);
-                    if (nextDivi != Stringo::npos)
-                        m_pointer = Viewo(m_source.data(), nextDivi);
+                    if (nextDivi != Stringo::npos) m_pointer = Viewo(m_source.data(), nextDivi);
                     else
                         m_pointer = Viewo(m_source.data(), m_source.size());
                 }
@@ -305,22 +286,17 @@ namespace SUtil {
         }
 
     public:
-        SplitIterator(Viewo src, DividerType divider)
-            : m_source(src), m_divider(divider) {
+        SplitIterator(Viewo src, DividerType divider) : m_source(src), m_divider(divider) {
             auto div = m_source.find_first_of(m_divider, 0);
             m_pointer = Viewo(m_source.data(), div == Stringo::npos ? m_source.size() : div);
             if constexpr (ignoreBlanks) {
-                if (m_pointer.empty())
-                    step();
+                if (m_pointer.empty()) step();
             }
         }
 
-
         SplitIterator(const SplitIterator &s) = default;
 
-        operator bool() const {
-            return !m_source.empty() || m_ending;
-        }
+        operator bool() const { return !m_source.empty() || m_ending; }
 
         SplitIterator &operator+=(size_t delta) {
             while (this->operator bool() && delta) {
@@ -331,8 +307,7 @@ namespace SUtil {
         }
 
         SplitIterator &operator++() {
-            if (this->operator bool())
-                step();
+            if (this->operator bool()) step();
             return (*this);
         }
 
@@ -343,13 +318,16 @@ namespace SUtil {
         }
 
         const Viewo &operator*() {
-            if (throwException && !operator bool())//Attempt to access* it or it->when no word is left in the iterator
+            if (throwException &&
+                !operator bool())//Attempt to access* it or it->when no word is left in the iterator
                 throw Stringo("No Word Left");
             return m_pointer;
         }
 
         const Viewo *operator->() {
-            if (throwException && !operator bool())//Attempt to access *it or it-> when no word is left in the iterator
+            if (throwException &&
+                !
+                operator bool())//Attempt to access *it or it-> when no word is left in the iterator
                 throw Stringo("No Word Left");
             return &m_pointer;
         }
@@ -367,8 +345,7 @@ namespace SUtil {
             if (slash != Stringo::npos) {
                 Stringo s = src.substr(slash);
                 if (!opened) {
-                    if (src.size() == slash - 1)
-                        return;
+                    if (src.size() == slash - 1) return;
 
                     char next = src[slash + 1];
                     if (next == '/')//one liner
@@ -415,13 +392,11 @@ namespace SUtil {
     // use only if you know that there are only ascii characters
     Stringo u32StringToString(std::u32string_view s);
 
-
     // returns first occurrence of digit or nullptr
     inline const char *skipToNextDigit(const char *c) {
         c--;
         while (*(++c)) {
-            if (*c >= '0' && *c <= '9')
-                return c;
+            if (*c >= '0' && *c <= '9') return c;
         }
         return nullptr;
     }
@@ -434,8 +409,7 @@ namespace SUtil {
 
         for (int i = 0; i < size; ++i) {
             if ((c = skipToNextDigit(c + chars)) != nullptr) {
-                if (std::is_same<numberType, int>::value)
-                    ray[i] = std::stoi(c, &chars);
+                if (std::is_same<numberType, int>::value) ray[i] = std::stoi(c, &chars);
                 else if (std::is_same<numberType, float>::value)
                     ray[i] = std::stof(c, &chars);
                 else if (std::is_same<numberType, double>::value)
@@ -450,7 +424,6 @@ namespace SUtil {
         if (actualSize) *actualSize = size;
     }
 
-
     // keeps parsing numbers until size is reached or until there are no numbers
     // actualSize is set to number of numbers actually parsed
     template<int size, typename numberType>
@@ -459,7 +432,6 @@ namespace SUtil {
     }
 
 }// namespace SUtil
-
 
 #include <algorithm>
 #include <cstdlib>
@@ -482,9 +454,7 @@ namespace Utils {
     public:
         Arg(T arg) : m_arg(arg) {}
         virtual ~Arg() {}
-        virtual void Format(std::ostringstream &ss, const std::string &fmt) {
-            ss << m_arg;
-        }
+        virtual void Format(std::ostringstream &ss, const std::string &fmt) { ss << m_arg; }
 
     private:
         T m_arg;
@@ -505,9 +475,7 @@ namespace Utils {
 
         char *endptr = nullptr;
         index = strtol(&item[0], &endptr, 10);
-        if (index < 0 || index >= args.size()) {
-            return;
-        }
+        if (index < 0 || index >= args.size()) { return; }
 
         if (*endptr == ',') {
             alignment = strtol(endptr + 1, &endptr, 10);
@@ -518,9 +486,7 @@ namespace Utils {
             }
         }
 
-        if (*endptr == ':') {
-            fmt = endptr + 1;
-        }
+        if (*endptr == ':') { fmt = endptr + 1; }
 
         args[index]->Format(ss, fmt);
 
@@ -540,9 +506,7 @@ namespace Utils {
 
     template<typename... Args>
     std::string Format(const std::string &format, Args &&...args) {
-        if (sizeof...(args) == 0) {
-            return format;
-        }
+        if (sizeof...(args) == 0) { return format; }
 
         ArgArray argArray;
         Transfer(argArray, args...);

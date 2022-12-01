@@ -1,8 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "Engine/SDLWrapper.hpp"
-#include "Engine/RendererGPU.h"
 #include "Core/Core.hpp"
+#include "Engine/RendererGPU.h"
+#include "Engine/SDLWrapper.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -25,7 +25,8 @@ class Background {
 public:
     UInt32 solid;
     std::vector<BackgroundLayer> layers;
-    explicit Background(UInt32 solid, std::vector<BackgroundLayer> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    explicit Background(UInt32 solid, std::vector<BackgroundLayer> layers)
+        : solid(std::move(solid)), layers(std::move(layers)){};
     void init();
 };
 

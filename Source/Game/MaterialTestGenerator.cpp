@@ -22,7 +22,8 @@ class MaterialTestGenerator : public WorldGenerator {
 
         while (true) {
             mat = Materials::MATERIALS[rand() % Materials::MATERIALS.size()];
-            if (mat->id >= 31 && (mat->physicsType == PhysicsType::SAND || mat->physicsType == PhysicsType::SOUP))
+            if (mat->id >= 31 &&
+                (mat->physicsType == PhysicsType::SAND || mat->physicsType == PhysicsType::SOUP))
                 break;
         }
 
@@ -36,7 +37,8 @@ class MaterialTestGenerator : public WorldGenerator {
                 if (py > 400 && py <= 450) {
                     prop[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py);
                 } else if (ch->y == 1 && ch->x >= 1 && ch->x <= 4) {
-                    if (x < 8 || y < 8 || x >= CHUNK_H - 8 || (y >= CHUNK_W - 8 && (x < 60 || x >= 68))) {
+                    if (x < 8 || y < 8 || x >= CHUNK_H - 8 ||
+                        (y >= CHUNK_W - 8 && (x < 60 || x >= 68))) {
                         prop[x + y * CHUNK_W] = Tiles::createCobbleDirt(px, py);
                     } else if (y > CHUNK_H * 0.75) {
                         prop[x + y * CHUNK_W] = Tiles::create(mat, px, py);
@@ -60,9 +62,7 @@ class MaterialTestGenerator : public WorldGenerator {
         ch->background = background;
     }
 
-    std::vector<Populator *> getPopulators() override {
-        return {};
-    }
+    std::vector<Populator *> getPopulators() override { return {}; }
 };
 
 #endif

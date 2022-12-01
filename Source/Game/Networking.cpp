@@ -1,13 +1,11 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Game/InEngine.h"
 
 #include "Core/Core.hpp"
 
 #include "Engine/Memory.hpp"
 #include "Networking.hpp"
-
 
 bool Networking::init() {
     // if (enet_initialize() != 0) {
@@ -41,7 +39,6 @@ Server *Server::start(UInt16 port) {
     //     enet_address_get_host_ip(&server->server->address, ch, 20);
     //     METADOT_INFO("[SERVER] Started on {}:{}.", ch, server->server->address.port);
     // }
-
 
     return server;
 }

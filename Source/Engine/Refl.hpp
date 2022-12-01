@@ -16,13 +16,11 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace IamAfuckingNamespace {
     int func1(float f, char c);
     void func2(void);
     void func_log_info(std::string info);
 }// namespace IamAfuckingNamespace
-
 
 // any_function
 
@@ -68,7 +66,6 @@ namespace Meta {
     template<typename T>
     using return_type_t = typename return_type<T>::type;
 
-
     struct any_function
     {
     public:
@@ -77,10 +74,19 @@ namespace Meta {
             const std::type_info *info;
             bool is_lvalue_reference, is_rvalue_reference;
             bool is_const, is_volatile;
-            bool operator==(const type &r) const { return info == r.info && is_lvalue_reference == r.is_lvalue_reference && is_rvalue_reference == r.is_rvalue_reference && is_const == r.is_const && is_volatile == r.is_volatile; }
+            bool operator==(const type &r) const {
+                return info == r.info && is_lvalue_reference == r.is_lvalue_reference &&
+                       is_rvalue_reference == r.is_rvalue_reference && is_const == r.is_const &&
+                       is_volatile == r.is_volatile;
+            }
             bool operator!=(const type &r) const { return !(*this == r); }
             template<class T>
-            static type capture() { return {&typeid(T), std::is_lvalue_reference<T>::value, std::is_rvalue_reference<T>::value, std::is_const<typename std::remove_reference<T>::type>::value, std::is_volatile<typename std::remove_reference<T>::type>::value}; }
+            static type capture() {
+                return {&typeid(T), std::is_lvalue_reference<T>::value,
+                        std::is_rvalue_reference<T>::value,
+                        std::is_const<typename std::remove_reference<T>::type>::value,
+                        std::is_volatile<typename std::remove_reference<T>::type>::value};
+            }
         };
 
         class result {
@@ -96,7 +102,10 @@ namespace Meta {
             {
                 T x;
                 typed_result(T x) : x(get((void *) &x, tag<T>{})) {}
-                std::unique_ptr<result_base> clone() const { return std::unique_ptr<typed_result>(new typed_result(get((void *) &x, tag<T>{}))); }
+                std::unique_ptr<result_base> clone() const {
+                    return std::unique_ptr<typed_result>(
+                            new typed_result(get((void *) &x, tag<T>{})));
+                }
                 type get_type() const { return type::capture<T>(); }
                 void *get_address() { return (void *) &x; }
             };
@@ -133,9 +142,11 @@ namespace Meta {
         any_function() : result_type{} {}
         any_function(std::nullptr_t) : result_type{} {}
         template<class R, class... A>
-        any_function(R (*p)(A...)) : any_function(p, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+        any_function(R (*p)(A...))
+            : any_function(p, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
         template<class R, class... A>
-        any_function(std::function<R(A...)> f) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+        any_function(std::function<R(A...)> f)
+            : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
         template<class F>
         any_function(F f) : any_function(f, &F::operator()) {}
 
@@ -164,31 +175,47 @@ namespace Meta {
         };
 
         template<class T>
-        static T get(void *arg, tag<T>) { return *reinterpret_cast<T *>(arg); }
+        static T get(void *arg, tag<T>) {
+            return *reinterpret_cast<T *>(arg);
+        }
         template<class T>
-        static T &get(void *arg, tag<T &>) { return *reinterpret_cast<T *>(arg); }
+        static T &get(void *arg, tag<T &>) {
+            return *reinterpret_cast<T *>(arg);
+        }
         template<class T>
-        static T &&get(void *arg, tag<T &&>) { return std::move(*reinterpret_cast<T *>(arg)); }
+        static T &&get(void *arg, tag<T &&>) {
+            return std::move(*reinterpret_cast<T *>(arg));
+        }
         template<class F, class R, class... A, size_t... I>
-        any_function(F f, tag<R>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<R>()) {
-            func = [f](void *const args[]) mutable { return result::capture<R>(f(get(args[I], tag<A>{})...)); };
+        any_function(F f, tag<R>, tag<A...>, indices<I...>)
+            : parameter_types({type::capture<A>()...}), result_type(type::capture<R>()) {
+            func = [f](void *const args[]) mutable {
+                return result::capture<R>(f(get(args[I], tag<A>{})...));
+            };
         }
         template<class F, class... A, size_t... I>
-        any_function(F f, tag<void>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<void>()) {
-            func = [f](void *const args[]) mutable { return f(get(args[I], tag<A>{})...), result{}; };
+        any_function(F f, tag<void>, tag<A...>, indices<I...>)
+            : parameter_types({type::capture<A>()...}), result_type(type::capture<void>()) {
+            func = [f](void *const args[]) mutable {
+                return f(get(args[I], tag<A>{})...), result{};
+            };
         }
         template<class F, class R>
-        any_function(F f, tag<R>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<R>()) {
+        any_function(F f, tag<R>, tag<>, indices<>)
+            : parameter_types({}), result_type(type::capture<R>()) {
             func = [f](void *const args[]) mutable { return result::capture<R>(f()); };
         }
         template<class F>
-        any_function(F f, tag<void>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<void>()) {
+        any_function(F f, tag<void>, tag<>, indices<>)
+            : parameter_types({}), result_type(type::capture<void>()) {
             func = [f](void *const args[]) mutable { return f(), result{}; };
         }
         template<class F, class R, class... A>
-        any_function(F f, R (F::*p)(A...)) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+        any_function(F f, R (F::*p)(A...))
+            : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
         template<class F, class R, class... A>
-        any_function(F f, R (F::*p)(A...) const) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+        any_function(F f, R (F::*p)(A...) const)
+            : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
 
         std::function<result(void *const *)> func;
         std::vector<type> parameter_types;
@@ -202,50 +229,45 @@ namespace Meta {
 template<typename T>
 struct StructMetaInfo
 {
-    static std::tuple<> Info() {
-        return std::make_tuple();
-    }
+    static std::tuple<> Info() { return std::make_tuple(); }
 };
 
-#define REFL(Struct, ...)                                      \
-    template<>                                                 \
-    struct StructMetaInfo<Struct>                              \
-    {                                                          \
-        static decltype(std::make_tuple(__VA_ARGS__)) Info() { \
-            return std::make_tuple(__VA_ARGS__);               \
-        }                                                      \
+#define REFL(Struct, ...)                                                                          \
+    template<>                                                                                     \
+    struct StructMetaInfo<Struct>                                                                  \
+    {                                                                                              \
+        static decltype(std::make_tuple(__VA_ARGS__)) Info() {                                     \
+            return std::make_tuple(__VA_ARGS__);                                                   \
+        }                                                                                          \
     };
 
-#define FIELD(class, field) \
-    std::make_tuple(#field, &class ::field)
+#define FIELD(class, field) std::make_tuple(#field, &class ::field)
 
 template<typename T, typename Fields, typename F, size_t... Is>
 void refl_foreach(T &&obj, Fields &&fields, F &&f, std::index_sequence<Is...>) {
-    (void) std::initializer_list<size_t>{(f(
-                                                  std::get<0>(std::get<Is>(fields)),
-                                                  obj.*std::get<1>(std::get<Is>(fields))),
-                                          Is)...};
+    (void) std::initializer_list<size_t>{
+            (f(std::get<0>(std::get<Is>(fields)), obj.*std::get<1>(std::get<Is>(fields))), Is)...};
 }
 
 template<typename T, typename F>
 void refl_foreach(T &&obj, F &&f) {
     auto fields = StructMetaInfo<std::decay_t<T>>::Info();
-    refl_foreach(std::forward<T>(obj),
-                 fields,
-                 std::forward<F>(f),
+    refl_foreach(std::forward<T>(obj), fields, std::forward<F>(f),
                  std::make_index_sequence<std::tuple_size<decltype(fields)>::value>{});
 }
 
 template<typename F>
 struct refl_recur_func;
 
-template<typename T, typename F, std::enable_if_t<std::is_class<std::decay_t<T>>::value> * = nullptr>
+template<typename T, typename F,
+         std::enable_if_t<std::is_class<std::decay_t<T>>::value> * = nullptr>
 void refl_recur_obj(T &&obj, F &&f, const char *fieldName, int depth) {
     f(fieldName, depth);
     refl_foreach(obj, refl_recur_func<F>(f, depth));
 }
 
-template<typename T, typename F, std::enable_if_t<!std::is_class<std::decay_t<T>>::value> * = nullptr>
+template<typename T, typename F,
+         std::enable_if_t<!std::is_class<std::decay_t<T>>::value> * = nullptr>
 void refl_recur_obj(T &&obj, F &&f, const char *fieldName, int depth) {
     f(fieldName, depth);
 }
@@ -340,10 +362,9 @@ namespace tmp {
     struct filter<typelist<T, TS...>, PRED>
     {
         using remaining = typename filter<typelist<TS...>, PRED>::type;
-        using type = typename std::conditional<
-                PRED<T>::value,
-                typename push_front<T, remaining>::type,
-                remaining>::type;
+        using type =
+                typename std::conditional<PRED<T>::value, typename push_front<T, remaining>::type,
+                                          remaining>::type;
     };
 
     // 'max' given a template binary predicate
@@ -361,9 +382,8 @@ namespace tmp {
     {
         using first = typename at<typelist<TS...>, 0>::type;
         using remaining_max = typename max<typename pop_front<typelist<TS...>>::type, PRED>::type;
-        using type = typename std::conditional<
-                PRED<first, remaining_max>::value,
-                first, remaining_max>::type;
+        using type = typename std::conditional<PRED<first, remaining_max>::value, first,
+                                               remaining_max>::type;
     };
 
     // 'find_ancestors'
@@ -383,9 +403,9 @@ namespace tmp {
             template<typename T>
             using not_most_ancient = typename negation<std::is_same<most_ancient, T>>::type;
 
-            using type = typename find_ancestors<
-                    typename filter<SRCLIST, not_most_ancient>::type,
-                    typename push_back<most_ancient, DESTLIST>::type>::type;
+            using type =
+                    typename find_ancestors<typename filter<SRCLIST, not_most_ancient>::type,
+                                            typename push_back<most_ancient, DESTLIST>::type>::type;
         };
 
         template<typename DESTLIST>
@@ -404,9 +424,7 @@ namespace tmp {
         template<typename U>
         using base_of_T = typename std::is_base_of<U, T>::type;
         using src_list = typename filter<TL, base_of_T>::type;
-        using type = typename impl::find_ancestors<
-                src_list,
-                typelist<>>::type;
+        using type = typename impl::find_ancestors<src_list, typelist<>>::type;
     };
 
 }// namespace tmp
@@ -430,8 +448,7 @@ struct hierarchy_iterator
 template<>
 struct hierarchy_iterator<typelist<>>
 {
-    inline static void exec(void *) {
-    }
+    inline static void exec(void *) {}
 };
 
 //####################################################################################
@@ -680,8 +697,9 @@ static TypeData unknown_type{};
 //############################
 class SnReflect {
 public:
-    std::unordered_map<TypeHash, TypeData> classes{};               // Holds data about classes / structs
-    std::unordered_map<TypeHash, std::map<int, TypeData>> members{};// Holds data about member variables (of classes)
+    std::unordered_map<TypeHash, TypeData> classes{};// Holds data about classes / structs
+    std::unordered_map<TypeHash, std::map<int, TypeData>>
+            members{};// Holds data about member variables (of classes)
 
 public:
     void AddClass(TypeData class_data) {
@@ -690,7 +708,8 @@ public:
     }
     void AddMember(TypeData class_data, TypeData member_data) {
         assert(class_data.type_hash != 0 && "Class type hash is 0, error in registration?");
-        assert(classes.find(class_data.type_hash) != classes.end() && "Class never registered with AddClass before calling AddMember!");
+        assert(classes.find(class_data.type_hash) != classes.end() &&
+               "Class never registered with AddClass before calling AddMember!");
         members[class_data.type_hash][member_data.offset] = member_data;
         classes[class_data.type_hash].member_count = members[class_data.type_hash].size();
     }
@@ -705,14 +724,16 @@ extern Functions g_register_list;           // Keeps list of registration functi
 //####################################################################################
 //##    General Functions
 //############################
-void InitializeReflection();                                   // Creates SnReflect instance and registers classes and member variables
-void CreateTitle(std::string &name);                           // Create nice display name from class / member variable names
+void InitializeReflection();// Creates SnReflect instance and registers classes and member variables
+void CreateTitle(std::string &name);// Create nice display name from class / member variable names
 void RegisterClass(TypeData class_data);                       // Update class TypeData
 void RegisterMember(TypeData class_data, TypeData member_data);// Update member TypeData
 
 // TypeHash helper function
 template<typename T>
-TypeHash TypeHashID() { return typeid(T).hash_code(); }
+TypeHash TypeHashID() {
+    return typeid(T).hash_code();
+}
 
 // Meta data
 void SetMetaData(TypeData &type_data, int key, std::string data);
@@ -808,7 +829,8 @@ TypeData &MemberData(T &class_instance, std::string member_name) {
 template<typename ReturnType>
 ReturnType &ClassMember(void *class_ptr, TypeData &member_data) {
     assert(member_data.name != "unknown" && "Could not find member variable!");
-    assert(member_data.type_hash == TypeHashID<ReturnType>() && "Did not request correct return type!");
+    assert(member_data.type_hash == TypeHashID<ReturnType>() &&
+           "Did not request correct return type!");
     return *(reinterpret_cast<ReturnType *>(((char *) (class_ptr)) + member_data.offset));
 }
 
@@ -816,60 +838,60 @@ ReturnType &ClassMember(void *class_ptr, TypeData &member_data) {
 //##    Macros for Reflection Registration
 //####################################################################################
 // Static variable added to class allows registration function to be added to list of classes to be registered
-#define REFLECT()           \
-    static bool reflection; \
+#define REFLECT()                                                                                  \
+    static bool reflection;                                                                        \
     static bool initReflection();
 
 // Define Registration Function
-#define REFLECT_CLASS(TYPE)                              \
-    template<>                                           \
-    void InitiateClass<TYPE>() {                         \
-        using T = TYPE;                                  \
-        TypeData class_data{};                           \
-        class_data.name = #TYPE;                         \
-        class_data.type_hash = typeid(TYPE).hash_code(); \
-        class_data.title = #TYPE;                        \
-        CreateTitle(class_data.title);                   \
-        RegisterClass<T>(class_data);                    \
-        int member_index = -1;                           \
+#define REFLECT_CLASS(TYPE)                                                                        \
+    template<>                                                                                     \
+    void InitiateClass<TYPE>() {                                                                   \
+        using T = TYPE;                                                                            \
+        TypeData class_data{};                                                                     \
+        class_data.name = #TYPE;                                                                   \
+        class_data.type_hash = typeid(TYPE).hash_code();                                           \
+        class_data.title = #TYPE;                                                                  \
+        CreateTitle(class_data.title);                                                             \
+        RegisterClass<T>(class_data);                                                              \
+        int member_index = -1;                                                                     \
         std::unordered_map<int, TypeData> mbrs{};
 
 // Meta data functions
-#define CLASS_META_TITLE(STRING) \
-    class_data.title = #STRING;  \
+#define CLASS_META_TITLE(STRING)                                                                   \
+    class_data.title = #STRING;                                                                    \
     RegisterClass(class_data);
-#define CLASS_META_DATA(KEY, VALUE)      \
-    SetMetaData(class_data, KEY, VALUE); \
+#define CLASS_META_DATA(KEY, VALUE)                                                                \
+    SetMetaData(class_data, KEY, VALUE);                                                           \
     RegisterClass(class_data);
 
 // Member Registration
-#define REFLECT_MEMBER(MEMBER)                                    \
-    member_index++;                                               \
-    mbrs[member_index] = TypeData();                              \
-    mbrs[member_index].name = #MEMBER;                            \
-    mbrs[member_index].index = member_index;                      \
-    mbrs[member_index].type_hash = typeid(T::MEMBER).hash_code(); \
-    mbrs[member_index].offset = offsetof(T, MEMBER);              \
-    mbrs[member_index].size = sizeof(T::MEMBER);                  \
-    mbrs[member_index].title = #MEMBER;                           \
-    CreateTitle(mbrs[member_index].title);                        \
+#define REFLECT_MEMBER(MEMBER)                                                                     \
+    member_index++;                                                                                \
+    mbrs[member_index] = TypeData();                                                               \
+    mbrs[member_index].name = #MEMBER;                                                             \
+    mbrs[member_index].index = member_index;                                                       \
+    mbrs[member_index].type_hash = typeid(T::MEMBER).hash_code();                                  \
+    mbrs[member_index].offset = offsetof(T, MEMBER);                                               \
+    mbrs[member_index].size = sizeof(T::MEMBER);                                                   \
+    mbrs[member_index].title = #MEMBER;                                                            \
+    CreateTitle(mbrs[member_index].title);                                                         \
     RegisterMember<decltype(T::MEMBER)>(class_data, mbrs[member_index]);
 
 // Meta data functions
-#define MEMBER_META_TITLE(STRING)       \
-    mbrs[member_index].title = #STRING; \
+#define MEMBER_META_TITLE(STRING)                                                                  \
+    mbrs[member_index].title = #STRING;                                                            \
     RegisterMember(class_data, mbrs[member_index]);
-#define MEMBER_META_DATA(KEY, VALUE)             \
-    SetMetaData(mbrs[member_index], KEY, VALUE); \
+#define MEMBER_META_DATA(KEY, VALUE)                                                               \
+    SetMetaData(mbrs[member_index], KEY, VALUE);                                                   \
     RegisterMember(class_data, mbrs[member_index]);
 
 // Static definitions add registration function to list of classes to be registered
-#define REFLECT_END(TYPE)                                           \
-    }                                                               \
-    bool TYPE::reflection{initReflection()};                        \
-    bool TYPE::initReflection() {                                   \
-        g_register_list.push_back(std::bind(&InitiateClass<TYPE>)); \
-        return true;                                                \
+#define REFLECT_END(TYPE)                                                                          \
+    }                                                                                              \
+    bool TYPE::reflection{initReflection()};                                                       \
+    bool TYPE::initReflection() {                                                                  \
+        g_register_list.push_back(std::bind(&InitiateClass<TYPE>));                                \
+        return true;                                                                               \
     }
 
 //####################################################################################
@@ -892,9 +914,7 @@ void InitializeReflection() {
     g_reflect = std::make_shared<SnReflect>();
 
     // Register Structs / Classes
-    for (int func = 0; func < g_register_list.size(); ++func) {
-        g_register_list[func]();
-    }
+    for (int func = 0; func < g_register_list.size(); ++func) { g_register_list[func](); }
     g_register_list.clear();// Clean up
 }
 
@@ -904,8 +924,7 @@ void CreateTitle(std::string &name) {
     std::replace(name.begin(), name.end(), '_', ' ');
     name[0] = toupper(name[0]);
     for (int c = 1; c < name.length(); c++) {
-        if (name[c - 1] == ' ')
-            name[c] = toupper(name[c]);
+        if (name[c - 1] == ' ') name[c] = toupper(name[c]);
     }
 
     // Add spaces to seperate words
@@ -924,9 +943,7 @@ void CreateTitle(std::string &name) {
 
 // ########## Class / Member Registration ##########
 // Update class TypeData
-void RegisterClass(TypeData class_data) {
-    g_reflect->AddClass(class_data);
-}
+void RegisterClass(TypeData class_data) { g_reflect->AddClass(class_data); }
 
 // Update member TypeData
 void RegisterMember(TypeData class_data, TypeData member_data) {
@@ -940,31 +957,26 @@ void RegisterMember(TypeData class_data, TypeData member_data) {
 // Class TypeData fetching from passed in class TypeHash
 TypeData &ClassData(TypeHash class_hash) {
     for (auto &pair: g_reflect->classes) {
-        if (pair.first == class_hash)
-            return pair.second;
+        if (pair.first == class_hash) return pair.second;
     }
     return unknown_type;
 }
 // Class TypeData fetching from passed in class name
 TypeData &ClassData(std::string class_name) {
     for (auto &pair: g_reflect->classes) {
-        if (pair.second.name == class_name)
-            return pair.second;
+        if (pair.second.name == class_name) return pair.second;
     }
     return unknown_type;
 }
 // Class TypeData fetching from passed in class name
-TypeData &ClassData(const char *class_name) {
-    return ClassData(std::string(class_name));
-}
+TypeData &ClassData(const char *class_name) { return ClassData(std::string(class_name)); }
 
 // ########## Member Data Fetching ##########
 // Member TypeData fetching by member variable index and class TypeHash
 TypeData &MemberData(TypeHash class_hash, int member_index) {
     int count = 0;
     for (auto &member: g_reflect->members[class_hash]) {
-        if (count == member_index)
-            return member.second;
+        if (count == member_index) return member.second;
         ++count;
     }
     return unknown_type;
@@ -972,8 +984,7 @@ TypeData &MemberData(TypeHash class_hash, int member_index) {
 // Member TypeData fetching by member variable name and class TypeHash
 TypeData &MemberData(TypeHash class_hash, std::string member_name) {
     for (auto &member: g_reflect->members[class_hash]) {
-        if (member.second.name == member_name)
-            return member.second;
+        if (member.second.name == member_name) return member.second;
     }
     return unknown_type;
 }
@@ -982,12 +993,10 @@ TypeData &MemberData(TypeHash class_hash, std::string member_name) {
 //##    Meta Data (User Info)
 //####################################################################################
 void SetMetaData(TypeData &type_data, int key, std::string data) {
-    if (type_data.type_hash != 0)
-        type_data.meta_int_map[key] = data;
+    if (type_data.type_hash != 0) type_data.meta_int_map[key] = data;
 }
 void SetMetaData(TypeData &type_data, std::string key, std::string data) {
-    if (type_data.type_hash != 0)
-        type_data.meta_string_map[key] = data;
+    if (type_data.type_hash != 0) type_data.meta_string_map[key] = data;
 }
 std::string GetMetaData(TypeData &type_data, int key) {
     if (type_data.type_hash != 0) {
@@ -1007,7 +1016,6 @@ std::string GetMetaData(TypeData &type_data, std::string key) {
 #endif// REGISTER_REFLECTION
 #endif// SCID_REFLECT_H
 
-
 #include <functional>
 #include <type_traits>
 #include <utility>
@@ -1020,7 +1028,9 @@ namespace Meta {
         struct any_converter
         {
             // 不能convert至自身
-            template<class U, class = typename std::enable_if<!std::is_same<typename std::decay<T>::type, typename std::decay<U>::type>::value>::type>
+            template<class U, class = typename std::enable_if<
+                                      !std::is_same<typename std::decay<T>::type,
+                                                    typename std::decay<U>::type>::value>::type>
             operator U() const noexcept;
         };
 
@@ -1031,27 +1041,32 @@ namespace Meta {
 
         // 判断T是否可以使用Args...进行聚合初始化：T{ std::declval<Args>()... }
         template<class T, class... Args>
-        constexpr auto is_aggregate_constructible_impl(T &&, Args &&...args) -> decltype(T{{args}...}, std::true_type());
+        constexpr auto is_aggregate_constructible_impl(T &&, Args &&...args)
+                -> decltype(T{{args}...}, std::true_type());
         // 多加一个重载可以去掉讨厌的clang warning
         template<class T, class Arg>
-        constexpr auto is_aggregate_constructible_impl(T &&, Arg &&args) -> decltype(T{args}, std::true_type());
+        constexpr auto is_aggregate_constructible_impl(T &&, Arg &&args)
+                -> decltype(T{args}, std::true_type());
         // 这个函数千万别改成模板函数否则会死机的！
         constexpr auto is_aggregate_constructible_impl(...) -> std::false_type;
 
         template<class T, class... Args>
-        struct is_aggregate_constructible : decltype(is_aggregate_constructible_impl(std::declval<T>(), std::declval<Args>()...))
+        struct is_aggregate_constructible
+            : decltype(is_aggregate_constructible_impl(std::declval<T>(), std::declval<Args>()...))
         {
         };
 
         template<class T, class Seq>
         struct is_aggregate_constructible_with_n_args;
         template<class T, std::size_t... I>
-        struct is_aggregate_constructible_with_n_args<T, std::index_sequence<I...>> : is_aggregate_constructible<T, any_converter_tagged<T, I>...>
+        struct is_aggregate_constructible_with_n_args<T, std::index_sequence<I...>>
+            : is_aggregate_constructible<T, any_converter_tagged<T, I>...>
         {
         };
         // 这里添加一个元函数是用来支持沙雕GCC的，不知道为什么GCC里面变长模板参数不能作为嵌套的实参展开……
         template<class T, std::size_t N>
-        struct is_aggregate_constructible_with_n_args_ex : is_aggregate_constructible_with_n_args<T, std::make_index_sequence<N>>
+        struct is_aggregate_constructible_with_n_args_ex
+            : is_aggregate_constructible_with_n_args<T, std::make_index_sequence<N>>
         {
         };
 
@@ -1059,7 +1074,10 @@ namespace Meta {
         template<class T, class Seq = std::make_index_sequence<sizeof(T)>>
         struct struct_member_count_impl1;
         template<class T, std::size_t... I>
-        struct struct_member_count_impl1<T, std::index_sequence<I...>> : std::integral_constant<std::size_t, (... + !!(is_aggregate_constructible_with_n_args_ex<T, I + 1>::value))>
+        struct struct_member_count_impl1<T, std::index_sequence<I...>>
+            : std::integral_constant<
+                      std::size_t,
+                      (... + !!(is_aggregate_constructible_with_n_args_ex<T, I + 1>::value))>
         {
         };
 
@@ -1080,10 +1098,14 @@ namespace Meta {
         template<class T, class Seq = std::index_sequence<0>>
         struct struct_member_count_impl2;
         template<class T, std::size_t... I>
-        struct struct_member_count_impl2<T, std::index_sequence<I...>> : lazy_conditional<
-                                                                                 std::conjunction<is_aggregate_constructible_with_n_args_ex<T, I + 1>...>,
-                                                                                 struct_member_count_impl2<T, std::index_sequence<I..., (I + sizeof...(I))...>>,
-                                                                                 std::integral_constant<std::size_t, (... + !!(is_aggregate_constructible_with_n_args_ex<T, I + 1>::value))>>::type
+        struct struct_member_count_impl2<T, std::index_sequence<I...>>
+            : lazy_conditional<
+                      std::conjunction<is_aggregate_constructible_with_n_args_ex<T, I + 1>...>,
+                      struct_member_count_impl2<T,
+                                                std::index_sequence<I..., (I + sizeof...(I))...>>,
+                      std::integral_constant<std::size_t,
+                                             (... + !!(is_aggregate_constructible_with_n_args_ex<
+                                                            T, I + 1>::value))>>::type
         {
         };
 
@@ -1093,7 +1115,6 @@ namespace Meta {
     struct StructMemberCount : detail::struct_member_count_impl2<T>
     {
     };
-
 
     // 横向迭代专用，ENUM_PARAMS(x, 3) => x1, x2, x3
 
@@ -1356,7 +1377,6 @@ namespace Meta {
 
 #define ENUM_PARAMS(x, N) ENUM_PARAMS_##N(x)
 
-
     // 纵向迭代专用
 
 #define ENUM_FOR_EACH_0(x)
@@ -1616,17 +1636,15 @@ namespace Meta {
 #define ENUM_FOR_EACH_254(x) ENUM_FOR_EACH_253(x) x(254)
 #define ENUM_FOR_EACH_255(x) ENUM_FOR_EACH_254(x) x(255)
 
-
 #define ENUM_FOR_EACH(x, N) ENUM_FOR_EACH_##N(x)
-
 
     namespace detail {
 
-#define APPLYER_DEF(N)                                                                          \
-    template<class T, class ApplyFunc>                                                          \
-    auto StructApply_impl(T &&my_struct, ApplyFunc f, std::integral_constant<std::size_t, N>) { \
-        auto &&[ENUM_PARAMS(x, N)] = std::forward<T>(my_struct);                                \
-        return std::invoke(f, ENUM_PARAMS(x, N));                                               \
+#define APPLYER_DEF(N)                                                                             \
+    template<class T, class ApplyFunc>                                                             \
+    auto StructApply_impl(T &&my_struct, ApplyFunc f, std::integral_constant<std::size_t, N>) {    \
+        auto &&[ENUM_PARAMS(x, N)] = std::forward<T>(my_struct);                                   \
+        return std::invoke(f, ENUM_PARAMS(x, N));                                                  \
     }
 
         ENUM_FOR_EACH(APPLYER_DEF, 128)
@@ -1636,7 +1654,8 @@ namespace Meta {
     // StructApply : 把结构体解包为变长参数调用可调用对象f
     template<class T, class ApplyFunc>
     auto StructApply(T &&my_struct, ApplyFunc f) {
-        return detail::StructApply_impl(std::forward<T>(my_struct), f, StructMemberCount<typename std::decay<T>::type>());
+        return detail::StructApply_impl(std::forward<T>(my_struct), f,
+                                        StructMemberCount<typename std::decay<T>::type>());
     }
 
     // StructTransformMeta : 把结构体各成员的类型作为变长参数调用元函数MetaFunc
@@ -1651,7 +1670,6 @@ namespace Meta {
         using type = decltype(StructApply(std::declval<T>(), FakeApplyer()));
     };
 }// namespace Meta
-
 
 #include <cstddef>
 #include <iostream>
@@ -1715,9 +1733,7 @@ namespace reflect {
     template<typename T>
     struct TypeResolver
     {
-        static TypeDescriptor *get() {
-            return DefaultResolver::get<T>();
-        }
+        static TypeDescriptor *get() { return DefaultResolver::get<T>(); }
     };
 
     //--------------------------------------------------------
@@ -1738,8 +1754,9 @@ namespace reflect {
         TypeDescriptor_Struct(void (*init)(TypeDescriptor_Struct *)) : TypeDescriptor{nullptr, 0} {
             init(this);
         }
-        TypeDescriptor_Struct(const char *name, size_t size, const std::initializer_list<Member> &init) : TypeDescriptor{nullptr, 0}, members{init} {
-        }
+        TypeDescriptor_Struct(const char *name, size_t size,
+                              const std::initializer_list<Member> &init)
+            : TypeDescriptor{nullptr, 0}, members{init} {}
         virtual void dump(const void *obj, int indentLevel) const override {
             std::cout << name << " {" << std::endl;
             for (const Member &member: members) {
@@ -1751,25 +1768,25 @@ namespace reflect {
         }
     };
 
-#define REFLECT_STRUCT()                              \
-    friend struct reflect::DefaultResolver;           \
-    static reflect::TypeDescriptor_Struct Reflection; \
+#define REFLECT_STRUCT()                                                                           \
+    friend struct reflect::DefaultResolver;                                                        \
+    static reflect::TypeDescriptor_Struct Reflection;                                              \
     static void initReflection(reflect::TypeDescriptor_Struct *);
 
-#define REFLECT_STRUCT_BEGIN(type)                                         \
-    reflect::TypeDescriptor_Struct type::Reflection{type::initReflection}; \
-    void type::initReflection(reflect::TypeDescriptor_Struct *typeDesc) {  \
-        using T = type;                                                    \
-        typeDesc->name = #type;                                            \
-        typeDesc->size = sizeof(T);                                        \
+#define REFLECT_STRUCT_BEGIN(type)                                                                 \
+    reflect::TypeDescriptor_Struct type::Reflection{type::initReflection};                         \
+    void type::initReflection(reflect::TypeDescriptor_Struct *typeDesc) {                          \
+        using T = type;                                                                            \
+        typeDesc->name = #type;                                                                    \
+        typeDesc->size = sizeof(T);                                                                \
         typeDesc->members = {
 
-#define REFLECT_STRUCT_MEMBER(name) \
+#define REFLECT_STRUCT_MEMBER(name)                                                                \
     {#name, offsetof(T, name), reflect::TypeResolver<decltype(T::name)>::get()},
 
-#define REFLECT_STRUCT_END() \
-    }                        \
-    ;                        \
+#define REFLECT_STRUCT_END()                                                                       \
+    }                                                                                              \
+    ;                                                                                              \
     }
 
     //--------------------------------------------------------

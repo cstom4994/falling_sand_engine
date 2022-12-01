@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #define INC_WorldGenerator
 
 #ifndef INC_World

@@ -5,7 +5,6 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace Maths {
     namespace detail {
 
@@ -27,8 +26,7 @@ namespace Maths {
         struct static_for<N, N>
         {
             template<class Func>
-            constexpr void operator()(Func &&) {
-            }
+            constexpr void operator()(Func &&) {}
         };
 
         template<class T>
@@ -76,13 +74,9 @@ namespace Maths {
                 return vec;
             }
 
-            operator vector_type() const {
-                return decay();
-            }
+            operator vector_type() const { return decay(); }
 
-            operator vector_type() {
-                return decay();
-            }
+            operator vector_type() { return decay(); }
 
             swizzler &operator=(const vector_type &vec) {
                 assign_across(vec, 0, indices...);
@@ -110,9 +104,7 @@ namespace Maths {
                 return operator=(decay() / std::forward<O>(o));
             }
 
-            vector_type operator-() const {
-                return vector_type((-data[indices])...);
-            }
+            vector_type operator-() const { return vector_type((-data[indices])...); }
 
         private:
             template<typename... Indices>
@@ -218,7 +210,9 @@ namespace Maths {
             }
 
             LIB scalar_type rsqrt(scalar_type t) {
-                return one / std::sqrt(t);//NOTE: https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
+                return one /
+                       std::sqrt(
+                               t);//NOTE: https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
             }
 
             LIB vector_type FUNC(inversesqrt)(vector_arg_type t) {
@@ -232,9 +226,7 @@ namespace Maths {
                 return vector_type(std::abs(t.data[Ns])...);
             }
 
-            LIB scalar_type sign(scalar_type x) {
-                return (zero < x) - (x < zero);
-            }
+            LIB scalar_type sign(scalar_type x) { return (zero < x) - (x < zero); }
 
             LIB vector_type FUNC(sign)(vector_arg_type t) {
                 return vector_type(sign(t.data[Ns])...);
@@ -263,11 +255,13 @@ namespace Maths {
             }
 
             LIB vector_type FUNC(mod)(vector_arg_type x, vector_arg_type y) {
-                return vector_type((x.data[Ns] - y.data[Ns] * std::floor(x.data[Ns] / y.data[Ns]))...);
+                return vector_type(
+                        (x.data[Ns] - y.data[Ns] * std::floor(x.data[Ns] / y.data[Ns]))...);
             }
 
             LIB vector_type FUNC(min)(vector_arg_type left, vector_arg_type right) {
-                return vector_type((left.data[Ns] < right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
+                return vector_type(
+                        (left.data[Ns] < right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
             }
 
             LIB vector_type FUNC(min)(vector_arg_type left, scalar_type right) {
@@ -275,14 +269,16 @@ namespace Maths {
             }
 
             LIB vector_type FUNC(max)(vector_arg_type left, vector_arg_type right) {
-                return vector_type((left.data[Ns] > right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
+                return vector_type(
+                        (left.data[Ns] > right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
             }
 
             LIB vector_type FUNC(max)(vector_arg_type left, scalar_type right) {
                 return vector_type((left.data[Ns] > right ? left.data[Ns] : right)...);
             }
 
-            LIB vector_type FUNC(clamp)(vector_arg_type x, vector_arg_type minVal, vector_arg_type maxVal) {
+            LIB vector_type FUNC(clamp)(vector_arg_type x, vector_arg_type minVal,
+                                        vector_arg_type maxVal) {
                 return FUNC(min)(FUNC(max)(x, minVal), maxVal);
             }
 
@@ -309,24 +305,25 @@ namespace Maths {
             }
 
             LIB vector_type FUNC(step)(vector_arg_type edge, vector_arg_type x) {
-                return vector_type((x.data[Ns] < edge.data[Ns] ? scalar_type(0) : scalar_type(1))...);
+                return vector_type(
+                        (x.data[Ns] < edge.data[Ns] ? scalar_type(0) : scalar_type(1))...);
             }
 
-            LIB vector_type FUNC(smoothstep)(scalar_type edge0, scalar_type edge1, vector_arg_type x) {
+            LIB vector_type FUNC(smoothstep)(scalar_type edge0, scalar_type edge1,
+                                             vector_arg_type x) {
                 auto t = FUNC(clamp)((x - edge0) / (edge1 - edge0), zero, one);
                 return t * t * (scalar_type(3) - scalar_type(2) * t);
             }
 
-            LIB vector_type FUNC(smoothstep)(vector_arg_type edge0, vector_arg_type edge1, vector_arg_type x) {
+            LIB vector_type FUNC(smoothstep)(vector_arg_type edge0, vector_arg_type edge1,
+                                             vector_arg_type x) {
                 auto t = FUNC(clamp)((x - edge0) / (edge1 - edge0), zero, one);
                 return t * t * (scalar_type(3) - scalar_type(2) * t);
             }
             //
             // 8.5 Geometric functions
             //
-            LIB scalar_type FUNC(length)(vector_arg_type v) {
-                return std::sqrt(FUNC(dot)(v, v));
-            }
+            LIB scalar_type FUNC(length)(vector_arg_type v) { return std::sqrt(FUNC(dot)(v, v)); }
 
             LIB scalar_type FUNC(distance)(vector_arg_type p0, vector_arg_type p1) {
                 return FUNC(length)(p0 - p1);
@@ -345,15 +342,15 @@ namespace Maths {
             }
 
             LIB vector_type FUNC(cross)(vector_arg_type a, vector_arg_type b) {
-                static_assert(vector_type::num_components == 3, "cross product only works for vec3");
+                static_assert(vector_type::num_components == 3,
+                              "cross product only works for vec3");
 
-                return vector_type(
-                        a.y * b.z - a.z * b.y,
-                        a.z * b.x - a.x * b.z,
-                        a.x * b.y - a.y * b.x);
+                return vector_type(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                                   a.x * b.y - a.y * b.x);
             }
 
-            LIB vector_type FUNC(faceforward)(vector_arg_type N, vector_arg_type I, vector_arg_type Nref) {
+            LIB vector_type FUNC(faceforward)(vector_arg_type N, vector_arg_type I,
+                                              vector_arg_type Nref) {
                 return (FUNC(dot)(Nref, I) < scalar_type(0) ? N : (-N));
             }
 
@@ -397,28 +394,28 @@ namespace Maths {
                 return bool_vector_type((x.data[Ns] != y.data[Ns])...);
             }
 
-            LIB bool FUNC(any)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, nothing>::type b) {
+            LIB bool FUNC(any)(typename std::conditional<std::is_same<scalar_type, bool>::value,
+                                                         vector_arg_type, nothing>::type b) {
                 return (... || b.data[Ns]);
             }
 
-            LIB bool FUNC(all)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, nothing>::type b) {
+            LIB bool FUNC(all)(typename std::conditional<std::is_same<scalar_type, bool>::value,
+                                                         vector_arg_type, nothing>::type b) {
                 return (... && b.data[Ns]);
             }
 
-            LIB bool_vector_type FUNC(_not)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, nothing>::type b) {
+            LIB bool_vector_type
+            FUNC(_not)(typename std::conditional<std::is_same<scalar_type, bool>::value,
+                                                 vector_arg_type, nothing>::type b) {
                 return bool_vector_type((!b.data[Ns])...);
             }
 
             //
             // 8.13.1 Derivative Functions
             // NOTE: can only fake these
-            LIB vector_type FUNC(dFdx)(vector_arg_type p) {
-                return p * scalar_type(.01);
-            }
+            LIB vector_type FUNC(dFdx)(vector_arg_type p) { return p * scalar_type(.01); }
 
-            LIB vector_type FUNC(dFdy)(vector_arg_type p) {
-                return p * scalar_type(.01);
-            }
+            LIB vector_type FUNC(dFdy)(vector_arg_type p) { return p * scalar_type(.01); }
 
             LIB vector_type FUNC(fwidth)(vector_arg_type p) {
                 return FUNC(abs)(FUNC(dFdx)(p)) + FUNC(abs)(FUNC(dFdy)(p));
@@ -435,11 +432,11 @@ namespace Maths {
         template<typename vector_type, typename scalar_type>
         struct binary_vec_ops
         {
-#define DEF_OP_BINARY(op, impl_op, a_type, b_type)       \
-    friend vector_type operator op(a_type a, b_type b) { \
-        auto out = vector_type(a);                       \
-        out impl_op b;                                   \
-        return out;                                      \
+#define DEF_OP_BINARY(op, impl_op, a_type, b_type)                                                 \
+    friend vector_type operator op(a_type a, b_type b) {                                           \
+        auto out = vector_type(a);                                                                 \
+        out impl_op b;                                                                             \
+        return out;                                                                                \
     }
 
             DEF_OP_BINARY(+, +=, const vector_type &, const vector_type &)
@@ -459,7 +456,6 @@ namespace Maths {
         };
 
     }// namespace detail
-
 
     template<typename T, size_t... Ns>
     struct vector;
@@ -510,8 +506,8 @@ namespace Maths {
                 // .xy is vec2 that is part of a vec3
                 // .xy is also vec2 but part of a vec4
                 // they need to be same underlying type
-                using type = detail::swizzler<
-                        typename vec_equiv<T, sizeof...(indices)>::type, T, sizeof...(Ns), indices...>;
+                using type = detail::swizzler<typename vec_equiv<T, sizeof...(indices)>::type, T,
+                                              sizeof...(Ns), indices...>;
             };
 
             template<size_t x>
@@ -1116,43 +1112,48 @@ namespace Maths {
     }// namespace detail
 
 #ifdef _MSC_VER
-#define _MSC_FIX_EBO __declspec(empty_bases)// https://blogs.msdn.microsoft.com/vcblog/2016/03/30/optimizing-the-layout-of-empty-base-classes-in-vs2015-update-2-3/
+#define _MSC_FIX_EBO                                                                               \
+    __declspec(                                                                                    \
+            empty_bases)// https://blogs.msdn.microsoft.com/vcblog/2016/03/30/optimizing-the-layout-of-empty-base-classes-in-vs2015-update-2-3/
 #else
 #define _MSC_FIX_EBO
 #endif
 
     template<typename T, size_t... Ns>
-    struct _MSC_FIX_EBO vector : public detail::vector_base_selector<T, Ns...>::base_type,
-                                 public detail::builtin_func_lib<vector, T, Ns...>,
-                                 public std::conditional<sizeof...(Ns) != 1,// no binary ops for promoted scalar
-                                                         detail::binary_vec_ops<vector<T, Ns...>, T>, detail::nothing>::type
+    struct _MSC_FIX_EBO vector
+        : public detail::vector_base_selector<T, Ns...>::base_type,
+          public detail::builtin_func_lib<vector, T, Ns...>,
+          public std::conditional<sizeof...(Ns) != 1,// no binary ops for promoted scalar
+                                  detail::binary_vec_ops<vector<T, Ns...>, T>,
+                                  detail::nothing>::type
     {
         static constexpr auto num_components = sizeof...(Ns);
 
         using scalar_type = T;
         using vector_type = vector<T, Ns...>;
         using base_type = typename detail::vector_base_selector<T, Ns...>::base_type;
-        using decay_type = typename std::conditional<num_components == 1, scalar_type, vector_type>::type;
+        using decay_type =
+                typename std::conditional<num_components == 1, scalar_type, vector_type>::type;
 
         // bring in scope the union member
         using base_type::data;
 
-        vector() {
-            ((data[Ns] = 0), ...);
-        }
+        vector() { ((data[Ns] = 0), ...); }
 
-        vector(typename std::conditional<num_components == 1, scalar_type, detail::nothing>::type s) {
+        vector(typename std::conditional<num_components == 1, scalar_type, detail::nothing>::type
+                       s) {
             data[0] = s;
         }
 
-        explicit vector(typename std::conditional<num_components != 1, scalar_type, detail::nothing>::type s) {
+        explicit vector(typename std::conditional<num_components != 1, scalar_type,
+                                                  detail::nothing>::type s) {
             ((data[Ns] = s), ...);
         }
 
         template<typename A0, typename... Args,
-                 class = typename std::enable_if<
-                         ((sizeof...(Args) >= 1) ||
-                          ((sizeof...(Args) == 0) && !std::is_scalar<A0>::value))>::type>
+                 class = typename std::enable_if<((sizeof...(Args) >= 1) ||
+                                                  ((sizeof...(Args) == 0) &&
+                                                   !std::is_scalar<A0>::value))>::type>
         explicit vector(A0 &&a0, Args &&...args) {
             static_assert((sizeof...(args) < num_components), "too many arguments");
 
@@ -1167,19 +1168,14 @@ namespace Maths {
 #endif
         }
 
-        scalar_type const operator[](size_t i) const {
-            return data[i];
-        }
+        scalar_type const operator[](size_t i) const { return data[i]; }
 
-        scalar_type &operator[](size_t i) {
-            return data[i];
-        }
+        scalar_type &operator[](size_t i) { return data[i]; }
 
-        decay_type decay() const {
-            return static_cast<const decay_type &>(*this);
-        }
+        decay_type decay() const { return static_cast<const decay_type &>(*this); }
 
-        operator typename std::conditional<num_components == 1, scalar_type, detail::nothing>::type() const {
+        operator typename std::conditional<num_components == 1, scalar_type,
+                                           detail::nothing>::type() const {
             return data[0];
         }
 
@@ -1190,10 +1186,10 @@ namespace Maths {
         // must define `self_type` and `other_type`
         // must define `Is` as the param pack expansion of the indices
 
-#define DEF_OP_UNARY_SCALAR(op)             \
-    self_type &operator op(scalar_type s) { \
-        ((data[Is] op s), ...);             \
-        return *this;                       \
+#define DEF_OP_UNARY_SCALAR(op)                                                                    \
+    self_type &operator op(scalar_type s) {                                                        \
+        ((data[Is] op s), ...);                                                                    \
+        return *this;                                                                              \
     }
 
         DEF_OP_UNARY_SCALAR(+=)
@@ -1201,10 +1197,10 @@ namespace Maths {
         DEF_OP_UNARY_SCALAR(*=)
         DEF_OP_UNARY_SCALAR(/=)
 
-#define DEF_OP_UNARY_VECTOR(op)                   \
-    self_type &operator op(const other_type &v) { \
-        ((data[Is] op v.data[Is]), ...);          \
-        return *this;                             \
+#define DEF_OP_UNARY_VECTOR(op)                                                                    \
+    self_type &operator op(const other_type &v) {                                                  \
+        ((data[Is] op v.data[Is]), ...);                                                           \
+        return *this;                                                                              \
     }
 
         DEF_OP_UNARY_VECTOR(+=)
@@ -1216,9 +1212,7 @@ namespace Maths {
         DEF_OP_UNARY_VECTOR(/=)
 
 #ifndef OMIT_NEG_OP
-        self_type operator-() const {
-            return self_type((-data[Is])...);
-        }
+        self_type operator-() const { return self_type((-data[Is])...); }
 #endif// !OMIT_NEG_OP
 
         //TODO: add  ==, !=
@@ -1231,18 +1225,14 @@ namespace Maths {
 
     private:
 #ifdef CTOR_FOLD
-        void construct_at_index(size_t &i, scalar_type arg) {
-            data[i++] = arg;
-        }
+        void construct_at_index(size_t &i, scalar_type arg) { data[i++] = arg; }
 
         template<typename Other, size_t... Other_Ns>
         void construct_at_index(size_t &i, const vector<Other, Other_Ns...> &arg) {
             constexpr auto other_num = vector<Other, Other_Ns...>::num_components;
             constexpr auto count = num_components <= other_num ? num_components : other_num;
 
-            detail::static_for<0, count>()([&](size_t j) {
-                data[i++] = arg.data[j];
-            });
+            detail::static_for<0, count>()([&](size_t j) { data[i++] = arg.data[j]; });
         }
 #else
         template<size_t i>
@@ -1253,10 +1243,9 @@ namespace Maths {
         template<size_t i, typename Other, size_t... Other_Ns>
         void construct_at_index(const vector<Other, Other_Ns...> &arg) {
             constexpr auto other_num = vector<Other, Other_Ns...>::num_components;
-            constexpr auto count = (i + other_num) > num_components ? num_components : (i + other_num);
-            detail::static_for<i, count>()([&](size_t j) {
-                data[j] = arg.data[j - i];
-            });
+            constexpr auto count =
+                    (i + other_num) > num_components ? num_components : (i + other_num);
+            detail::static_for<i, count>()([&](size_t j) { data[j] = arg.data[j - i]; });
         }
 
         template<size_t I, typename Arg0, typename... Args>
@@ -1278,41 +1267,42 @@ namespace Maths {
         //   - if vector of different dimensions, at least one must be vec1 (promoted scalar)
         // output:
         //   the higher dimension vector is chosen
-        template<
-                class vector_type_1, class scalar_type_1, size_t size_1,
-                class vector_type_2, class scalar_type_2, size_t size_2>
+        template<class vector_type_1, class scalar_type_1, size_t size_1, class vector_type_2,
+                 class scalar_type_2, size_t size_2>
         struct common_vec_type_impl
         {
-            using scalar_common_type = typename std::common_type<scalar_type_1, scalar_type_2>::type;
+            using scalar_common_type =
+                    typename std::common_type<scalar_type_1, scalar_type_2>::type;
             static_assert(std::is_same<scalar_common_type, scalar_type_1>::value ||
                                   std::is_same<scalar_common_type, scalar_type_2>::value,
                           "invalid vector common scalar type");
-            static_assert(size_1 == size_2 || size_1 == 1 || size_2 == 1,
-                          "vector sizes must be equal or at least one needs to be a promoted scalar");
+            static_assert(
+                    size_1 == size_2 || size_1 == 1 || size_2 == 1,
+                    "vector sizes must be equal or at least one needs to be a promoted scalar");
 
             using type = typename std::conditional<
                     // if same dimensions, choose the one with the common scalar
                     size_1 == size_2,
-                    typename std::conditional<std::is_same<scalar_common_type, scalar_type_1>::value,
-                                              vector_type_1, vector_type_2>::type,
+                    typename std::conditional<
+                            std::is_same<scalar_common_type, scalar_type_1>::value, vector_type_1,
+                            vector_type_2>::type,
                     // else (diff dimensions) choose the bigger one
-                    typename std::conditional<size_1 == 1,
-                                              vector_type_2, vector_type_1>::type>::type;
+                    typename std::conditional<size_1 == 1, vector_type_2,
+                                              vector_type_1>::type>::type;
         };
 
         template<class V1, class V2>
-        struct common_vec_type : common_vec_type_impl<
-                                         V1, typename V1::scalar_type, V1::num_components,
-                                         V2, typename V2::scalar_type, V2::num_components>
+        struct common_vec_type
+            : common_vec_type_impl<V1, typename V1::scalar_type, V1::num_components, V2,
+                                   typename V2::scalar_type, V2::num_components>
         {
         };
 
         // get the equivalent vec type doing necesary promotion (scalar to vec1 for ex)
         // this is the general case operating on a list of types
         template<class T, class... Ts>
-        struct promote_to_vec : common_vec_type<
-                                        typename promote_to_vec<T>::type,
-                                        typename promote_to_vec<Ts...>::type>
+        struct promote_to_vec : common_vec_type<typename promote_to_vec<T>::type,
+                                                typename promote_to_vec<Ts...>::type>
         {
         };
 
@@ -1324,7 +1314,8 @@ namespace Maths {
 
         // specialization for promotion of a single type, defers to impl class
         template<class T>
-        struct promote_to_vec<T> : promote_to_vec_impl<typename MetaEngine::Math::detail::remove_cvref<T>::type>
+        struct promote_to_vec<T>
+            : promote_to_vec_impl<typename MetaEngine::Math::detail::remove_cvref<T>::type>
         {
         };
 
@@ -1337,7 +1328,8 @@ namespace Maths {
 
         // specialization: swizzlers return their equivalent vec (.xx -> vec2)
         template<typename vector_type, typename T, size_t N, size_t... indices>
-        struct promote_to_vec_impl<MetaEngine::Math::detail::swizzler<vector_type, T, N, indices...>>
+        struct promote_to_vec_impl<
+                MetaEngine::Math::detail::swizzler<vector_type, T, N, indices...>>
         {
             using type = vector_type;
         };
@@ -1378,13 +1370,18 @@ namespace Maths {
 
             static_assert(std::is_same<promote_to_vec<float>::type, vec1>::value, "mismatch");
             static_assert(std::is_same<promote_to_vec<vec3>::type, vec3>::value, "mismatch");
-            static_assert(std::is_same<promote_to_vec<decltype(vec3().xyz)>::type, vec3>::value, "mismatch");
+            static_assert(std::is_same<promote_to_vec<decltype(vec3().xyz)>::type, vec3>::value,
+                          "mismatch");
 
-            static_assert(std::is_same<promote_to_vec<float, float>::type, vec1>::value, "mismatch");
-            static_assert(std::is_same<promote_to_vec<float, double>::type, dvec1>::value, "mismatch");
+            static_assert(std::is_same<promote_to_vec<float, float>::type, vec1>::value,
+                          "mismatch");
+            static_assert(std::is_same<promote_to_vec<float, double>::type, dvec1>::value,
+                          "mismatch");
             static_assert(std::is_same<promote_to_vec<vec3, float>::type, vec3>::value, "mismatch");
-            static_assert(std::is_same<promote_to_vec<double, vec3>::type, vec3>::value, "mismatch");
-            static_assert(std::is_same<promote_to_vec<vec3, float, double>::type, vec3>::value, "mismatch");
+            static_assert(std::is_same<promote_to_vec<double, vec3>::type, vec3>::value,
+                          "mismatch");
+            static_assert(std::is_same<promote_to_vec<vec3, float, double>::type, vec3>::value,
+                          "mismatch");
 
             return 0;
         }
@@ -1394,12 +1391,14 @@ namespace Maths {
     }// namespace traits
 }// namespace Maths
 
-
-#define MAKE_LIB_FUNC(name)                                                                                                                                                         \
-    template<class... Args>                                                                                                                                                         \
-    inline auto name(Args &&...args)->decltype(MetaEngine::Math::detail::decay(MetaEngine::Math::traits::promote_to_vec<Args...>::type::lib_##name(std::forward<Args>(args)...))) { \
-        return MetaEngine::Math::traits::promote_to_vec<Args...>::type::                                                                                                            \
-                lib_##name(std::forward<Args>(args)...);                                                                                                                            \
+#define MAKE_LIB_FUNC(name)                                                                        \
+    template<class... Args>                                                                        \
+    inline auto name(Args &&...args)                                                               \
+            ->decltype(MetaEngine::Math::detail::decay(                                            \
+                    MetaEngine::Math::traits::promote_to_vec<Args...>::type::lib_##name(           \
+                            std::forward<Args>(args)...))) {                                       \
+        return MetaEngine::Math::traits::promote_to_vec<Args...>::type::lib_##name(                \
+                std::forward<Args>(args)...);                                                      \
     }
 
 MAKE_LIB_FUNC(radians)

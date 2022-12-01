@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 
-
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -35,8 +34,7 @@ namespace Meta::properties {
 		 * @param p The properties to serialize.
 		 * @return The serialized properties.
 		 */
-        [[nodiscard]] virtual std::string
-        save(const properties &p) const = 0;
+        [[nodiscard]] virtual std::string save(const properties &p) const = 0;
 
         /**
 		 * Deserialize properties from string.
@@ -45,8 +43,7 @@ namespace Meta::properties {
 		 * @param str The serialized properties.
 		 * @return `true` on success, `false` on failure with optional error message.
 		 */
-        virtual std::pair<bool, std::string>
-        load(properties &p, const std::string &str) const = 0;
+        virtual std::pair<bool, std::string> load(properties &p, const std::string &str) const = 0;
 
         /**
 		 * Serialize properties to a file.
@@ -55,8 +52,8 @@ namespace Meta::properties {
 		 * @param path The path of the output file.
 		 * @return `true` on success, `false` on failure with optional error message.
 		 */
-        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string>
-        save(const properties &p, const std::filesystem::path &path) const {
+        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string> save(
+                const properties &p, const std::filesystem::path &path) const {
             // Prepare file
             std::ofstream file;
             file.open(path, std::ios::out | std::ios::trunc);
@@ -79,8 +76,8 @@ namespace Meta::properties {
 		 * @param path The path of the input file.
 		 * @return `true` on success, `false` on failure with optional error message.
 		 */
-        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string>
-        load(properties &p, const std::filesystem::path &path) const {
+        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string> load(
+                properties &p, const std::filesystem::path &path) const {
             // Prepare file
             std::ifstream file;
             file.open(path, std::ios::in);
@@ -101,7 +98,6 @@ namespace Meta::properties {
 
 }// namespace Meta::properties
 
-
 namespace Meta::properties {
 
     /**
@@ -114,9 +110,9 @@ namespace Meta::properties {
 		 *
 		 * @param _property_name The name of the property that does not exist.
 		 */
-        explicit property_nonexist(const std::string &_property_name) : std::runtime_error("property \"" + _property_name + "\" does not exist."),
-                                                                        property_name(_property_name) {
-        }
+        explicit property_nonexist(const std::string &_property_name)
+            : std::runtime_error("property \"" + _property_name + "\" does not exist."),
+              property_name(_property_name) {}
 
     private:
         std::string property_name;
@@ -132,44 +128,38 @@ namespace Meta::properties {
 		 *
 		 * @param _property_name The name of the property that exists.
 		 */
-        explicit property_exists(const std::string &_property_name) : std::runtime_error("property \"" + _property_name + "\" exists already."),
-                                                                      property_name(_property_name) {
-        }
+        explicit property_exists(const std::string &_property_name)
+            : std::runtime_error("property \"" + _property_name + "\" exists already."),
+              property_name(_property_name) {}
 
     private:
         std::string property_name;
     };
 }// namespace Meta::properties
 
-
-#define MAKE_PROPERTY(name, type) \
+#define MAKE_PROPERTY(name, type)                                                                  \
     ::Meta::properties::property<type> &name = make_property<type>(#name);
 
-#define MAKE_NESTED_PROPERTY(name, type) \
-    type &name = make_nested_property<type>(#name);
+#define MAKE_NESTED_PROPERTY(name, type) type &name = make_nested_property<type>(#name);
 
-#define LINK_PROPERTY(name, ptr) \
-    make_linked_property(#name, ptr);
+#define LINK_PROPERTY(name, ptr) make_linked_property(#name, ptr);
 
-#define LINK_PROPERTY_FUNCTIONS(name, type, setter, getter)  \
-    make_linked_property_functions<type>(                    \
-            #name,                                           \
-            std::bind(&setter, this, std::placeholders::_1), \
-            std::bind(&getter, this));
+#define LINK_PROPERTY_FUNCTIONS(name, type, setter, getter)                                        \
+    make_linked_property_functions<type>(#name, std::bind(&setter, this, std::placeholders::_1),   \
+                                         std::bind(&getter, this));
 
-#define REGISTER_PROPERTY(type, f_to_string, f_from_string)       \
-    template<>                                                    \
-    struct Meta::properties::property<type> : property_impl<type> \
-    {                                                             \
-        using property_impl<type>::operator=;                     \
-        using property_impl<type>::operator==;                    \
-                                                                  \
-        property() {                                              \
-            this->to_string = f_to_string;                        \
-            this->from_string = f_from_string;                    \
-        }                                                         \
+#define REGISTER_PROPERTY(type, f_to_string, f_from_string)                                        \
+    template<>                                                                                     \
+    struct Meta::properties::property<type> : property_impl<type>                                  \
+    {                                                                                              \
+        using property_impl<type>::operator=;                                                      \
+        using property_impl<type>::operator==;                                                     \
+                                                                                                   \
+        property() {                                                                               \
+            this->to_string = f_to_string;                                                         \
+            this->from_string = f_from_string;                                                     \
+        }                                                                                          \
     };
-
 
 // -------------------------------------------------------------------------
 
@@ -258,8 +248,7 @@ namespace Meta::properties {
 		 * @param key The attribute key.
 		 * @param value The attribute value.
 		 */
-        void
-        set_attribute(const std::string &key, const std::string &value) {
+        void set_attribute(const std::string &key, const std::string &value) {
             m_attributes.insert_or_assign(key, value);
         }
 
@@ -269,11 +258,9 @@ namespace Meta::properties {
 		 * @param key The attribute key.
 		 * @return The attribute value (if any exists).
 		 */
-        [[nodiscard]] std::optional<std::string>
-        attribute(const std::string &key) const {
+        [[nodiscard]] std::optional<std::string> attribute(const std::string &key) const {
             const auto &it = m_attributes.find(key);
-            if (it == std::cend(m_attributes))
-                return std::nullopt;
+            if (it == std::cend(m_attributes)) return std::nullopt;
 
             return it->second;
         }
@@ -281,10 +268,7 @@ namespace Meta::properties {
         /**
 		 * Get a key-value map of all attributes.
 		 */
-        [[nodiscard]] std::map<std::string, std::string>
-        attributes() const {
-            return m_attributes;
-        }
+        [[nodiscard]] std::map<std::string, std::string> attributes() const { return m_attributes; }
 
     private:
         std::map<std::string, std::string> m_attributes;
@@ -321,9 +305,7 @@ namespace Meta::properties {
 		 */
         property_impl(const property_impl<T> &other)
             requires std::is_copy_constructible_v<T>
-            : property_base(other),
-              data(other.data) {
-        }
+        : property_base(other), data(other.data) {}
 
         /**
 		 * @brief Move constructor.
@@ -334,9 +316,7 @@ namespace Meta::properties {
 		 */
         property_impl(property_impl<T> &&other) noexcept
             requires std::is_move_constructible_v<T>
-            : property_base(std::move(other)),
-              data(std::move(other.data)) {
-        }
+        : property_base(std::move(other)), data(std::move(other.data)) {}
 
         /**
 		 * @brief Copy assig the value.
@@ -406,16 +386,12 @@ namespace Meta::properties {
 		 * @param t The value to compare with.
 		 * @return @p true if the values are equal, @p false otherwise.
 		 */
-        bool operator==(const T &t) const {
-            return this->data == t;
-        }
+        bool operator==(const T &t) const { return this->data == t; }
 
         /**
 		 * Get the value.
 		 */
-        explicit operator T() const noexcept {
-            return data;
-        }
+        explicit operator T() const noexcept { return data; }
 
         /**
 		 * @brief Register an observer.
@@ -424,9 +400,7 @@ namespace Meta::properties {
 		 *
 		 * @param cb The callback to register.
 		 */
-        void register_observer(const callback &cb) {
-            m_observers.push_back(cb);
-        }
+        void register_observer(const callback &cb) { m_observers.push_back(cb); }
 
     protected:
         /**
@@ -435,9 +409,8 @@ namespace Meta::properties {
 		 * @brief Notify all registered observers by invoking their callback.
 		 */
         void notify() {
-            std::for_each(std::begin(m_observers), std::end(m_observers), [](const callback &cb) {
-                std::invoke(cb);
-            });
+            std::for_each(std::begin(m_observers), std::end(m_observers),
+                          [](const callback &cb) { std::invoke(cb); });
         }
 
     private:
@@ -464,7 +437,8 @@ namespace Meta::properties {
 
         property_link() {
             property_base::to_string = std::bind(&property_link<T>::to_string, this);
-            property_base::from_string = std::bind(&property_link<T>::from_string, this, std::placeholders::_1);
+            property_base::from_string =
+                    std::bind(&property_link<T>::from_string, this, std::placeholders::_1);
         }
 
     private:
@@ -484,10 +458,11 @@ namespace Meta::properties {
     template<typename T>
     struct property_link_functions : property_base
     {
-        property_link_functions(const setter<T> &setter, const getter<T> &getter) : m_setter(setter),
-                                                                                    m_getter(getter) {
+        property_link_functions(const setter<T> &setter, const getter<T> &getter)
+            : m_setter(setter), m_getter(getter) {
             property_base::to_string = std::bind(&property_link_functions<T>::to_string, this);
-            property_base::from_string = std::bind(&property_link_functions<T>::from_string, this, std::placeholders::_1);
+            property_base::from_string = std::bind(&property_link_functions<T>::from_string, this,
+                                                   std::placeholders::_1);
         }
 
     private:
@@ -527,9 +502,7 @@ namespace Meta::properties {
 
 // -------------------------------------------------------------------------
 
-
 #include <string>
-
 
 /**
  * Property for `std::basic_string`.
@@ -547,25 +520,20 @@ struct Meta::properties::property<std::basic_string<T>> : property_impl<std::bas
 };
 
 REGISTER_PROPERTY(
-        bool,
-        [this]() { return (this->data ? "true" : "false"); },
+        bool, [this]() { return (this->data ? "true" : "false"); },
         [this](const std::string &str) { this->data = (str == "true" || str == "True"); })
 
 REGISTER_PROPERTY(
-        int,
-        [this]() { return std::to_string(this->data); },
+        int, [this]() { return std::to_string(this->data); },
         [this](const std::string &str) { this->data = std::stoi(str); })
 
 REGISTER_PROPERTY(
-        float,
-        [this]() { return std::to_string(this->data); },
+        float, [this]() { return std::to_string(this->data); },
         [this](const std::string &str) { this->data = std::stof(str); })
 
 REGISTER_PROPERTY(
-        double,
-        [this]() { return std::to_string(this->data); },
+        double, [this]() { return std::to_string(this->data); },
         [this](const std::string &str) { this->data = std::stod(str); })
-
 
 #include <filesystem>
 
@@ -573,10 +541,8 @@ REGISTER_PROPERTY(
  * std::filesystem::path
  */
 REGISTER_PROPERTY(
-        std::filesystem::path,
-        [this]() { return this->data.string(); },
+        std::filesystem::path, [this]() { return this->data.string(); },
         [this](const std::string &str) { *this = str; })
-
 
 // -------------------------------------------------------------------------
 
@@ -598,8 +564,7 @@ namespace Meta::properties {
 		 * Destructor.
 		 */
         virtual ~properties() {
-            for (auto &[key, value]: m_properties)
-                delete value;
+            for (auto &[key, value]: m_properties) delete value;
         }
 
         properties &operator=(const properties &rhs) = delete;
@@ -629,8 +594,7 @@ namespace Meta::properties {
          */
         template<typename T>
         property<T> &make_property(const std::string &name) {
-            if (m_properties.contains(name))
-                throw property_exists(name);
+            if (m_properties.contains(name)) throw property_exists(name);
 
             auto p = new property<T>;
             m_properties.emplace(name, p);
@@ -647,8 +611,7 @@ namespace Meta::properties {
         template<typename T>
             requires std::derived_from<T, properties>
         T &make_nested_property(const std::string &name) {
-            if (m_properties.contains(name))
-                throw property_exists(name);
+            if (m_properties.contains(name)) throw property_exists(name);
 
             auto p = new T;
             m_properties.emplace(name, p);
@@ -665,11 +628,9 @@ namespace Meta::properties {
 		 */
         template<typename T>
         void make_linked_property(const std::string &name, T *ptr) {
-            if (m_properties.contains(name))
-                throw property_exists(name);
+            if (m_properties.contains(name)) throw property_exists(name);
 
-            if (!ptr)
-                throw std::logic_error("ptr must not be null.");
+            if (!ptr) throw std::logic_error("ptr must not be null.");
 
             auto p = new property_link<T>;
             p->data = ptr;
@@ -685,15 +646,13 @@ namespace Meta::properties {
 		 * @param getter The getter function.
 		 */
         template<typename T>
-        void make_linked_property_functions(const std::string &name, const setter<T> &setter, const getter<T> &getter) {
-            if (m_properties.contains(name))
-                throw property_exists(name);
+        void make_linked_property_functions(const std::string &name, const setter<T> &setter,
+                                            const getter<T> &getter) {
+            if (m_properties.contains(name)) throw property_exists(name);
 
-            if (!setter)
-                throw std::logic_error("setter must not be null.");
+            if (!setter) throw std::logic_error("setter must not be null.");
 
-            if (!getter)
-                throw std::logic_error("setter must not be null.");
+            if (!getter) throw std::logic_error("setter must not be null.");
 
             auto p = new property_link_functions<T>(setter, getter);
             m_properties.template emplace(name, p);
@@ -704,10 +663,7 @@ namespace Meta::properties {
 		 *
 		 * @return The number of properties.
 		 */
-        [[nodiscard]] std::size_t
-        properties_count() const noexcept {
-            return m_properties.size();
-        }
+        [[nodiscard]] std::size_t properties_count() const noexcept { return m_properties.size(); }
 
         /**
 		 * Set the value of a specific property.
@@ -717,10 +673,8 @@ namespace Meta::properties {
 		 * @param t The value to be set.
 		 */
         template<typename T>
-        void
-        set_property(const std::string &name, const T &t) {
-            if (!m_properties.contains(name))
-                throw property_nonexist(name);
+        void set_property(const std::string &name, const T &t) {
+            if (!m_properties.contains(name)) throw property_nonexist(name);
 
             property_cast<T>(m_properties[name]) = t;
         }
@@ -735,13 +689,10 @@ namespace Meta::properties {
 		 * @return The value of the property.
 		 */
         template<typename T>
-        [[nodiscard]] const T &
-        get_property(const std::string &name) const {
+        [[nodiscard]] const T &get_property(const std::string &name) const {
             try {
                 return property_cast<T>(m_properties.at(name));
-            } catch ([[maybe_unused]] const std::out_of_range &e) {
-                throw property_nonexist(name);
-            }
+            } catch ([[maybe_unused]] const std::out_of_range &e) { throw property_nonexist(name); }
         }
 
         /**
@@ -754,11 +705,9 @@ namespace Meta::properties {
 		 * @param The name of the properties group.
 		 * @return The corresponding properties group.
 		 */
-        [[nodiscard]] properties *
-        get_nested_properties(const std::string &name) {
+        [[nodiscard]] properties *get_nested_properties(const std::string &name) {
             auto it = m_properties.find(name);
-            if (it == std::cend(m_properties))
-                throw property_nonexist(name);
+            if (it == std::cend(m_properties)) throw property_nonexist(name);
 
             return dynamic_cast<properties *>(it->second);
         }
@@ -769,10 +718,7 @@ namespace Meta::properties {
 		 * @param ar The archiver to use.
 		 * @return The serialized string.
 		 */
-        [[nodiscard]] std::string
-        save(const archiver &ar) const {
-            return ar.save(*this);
-        }
+        [[nodiscard]] std::string save(const archiver &ar) const { return ar.save(*this); }
 
         /**
 		 * Serialize properties to file.
@@ -781,8 +727,8 @@ namespace Meta::properties {
 		 * @param path The file path.
 		 * @return @p true if successful, @p false otherwise with optional error message.
 		 */
-        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string>
-        save(const archiver &ar, const std::filesystem::path &path) {
+        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string> save(
+                const archiver &ar, const std::filesystem::path &path) {
             return ar.save(*this, path);
         }
 
@@ -792,10 +738,7 @@ namespace Meta::properties {
 		 * @param ar The archiver to use.
 		 * @param str The string to deserialize.
 		 */
-        void
-        load(const archiver &ar, const std::string &str) {
-            ar.load(*this, str);
-        }
+        void load(const archiver &ar, const std::string &str) { ar.load(*this, str); }
 
         /**
 		 * Deserialize properties from file.
@@ -804,8 +747,8 @@ namespace Meta::properties {
 		 * @path The file path.
 		 * @return @p true on success, @p false otherwise with optional error message.
 		 */
-        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string>
-        load(const archiver &ar, const std::filesystem::path &path) {
+        [[nodiscard("file i/o might fail")]] std::pair<bool, std::string> load(
+                const archiver &ar, const std::filesystem::path &path) {
             return ar.load(*this, path);
         }
 

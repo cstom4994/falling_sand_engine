@@ -4,10 +4,10 @@
 #define CONSOLE_HPP
 
 #include <array>
+#include <cstring>
 #include <mutex>
 #include <string>
 #include <vector>
-#include <cstring>
 
 #include "Engine/ImGuiTerminal.hpp"
 
@@ -16,7 +16,8 @@ struct custom_command_struct
     bool should_close = false;
 };
 
-class terminal_commands : public ImTerm::basic_terminal_helper<terminal_commands, custom_command_struct> {
+class terminal_commands
+    : public ImTerm::basic_terminal_helper<terminal_commands, custom_command_struct> {
 public:
     terminal_commands();
 
@@ -31,4 +32,4 @@ public:
     static void quit(argument_type &);
 };
 
-#endif  // CONSOLE_HPP
+#endif// CONSOLE_HPP

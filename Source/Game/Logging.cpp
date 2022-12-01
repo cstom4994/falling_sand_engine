@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #if defined(__GNUC__) || defined(__clang__)
 // Disable all warnings from gcc/clang:
 #pragma GCC diagnostic push
@@ -28,7 +27,8 @@
 #ifndef METADOT_LOGGING_HAS_BEEN_IMPLEMENTED
 #define METADOT_LOGGING_HAS_BEEN_IMPLEMENTED
 
-#define METADOT_LOGGING_PREAMBLE_WIDTH (53 + METADOT_LOGGING_THREADNAME_WIDTH + METADOT_LOGGING_FILENAME_WIDTH)
+#define METADOT_LOGGING_PREAMBLE_WIDTH                                                             \
+    (53 + METADOT_LOGGING_THREADNAME_WIDTH + METADOT_LOGGING_FILENAME_WIDTH)
 
 #undef min
 #undef max
@@ -56,7 +56,8 @@
 #ifdef _WIN32
 #include <direct.h>
 
-#define localtime_r(a, b) localtime_s(b, a)// No localtime_r with MSVC, but arguments are swapped for localtime_s
+#define localtime_r(a, b)                                                                          \
+    localtime_s(b, a)// No localtime_r with MSVC, but arguments are swapped for localtime_s
 #else
 #include <signal.h>
 #include <sys/stat.h>// mkdir
@@ -226,11 +227,15 @@ namespace Logging {
         }
         return false;
 #else
-        if (!isatty(STDERR_FILENO)) {
-            return false;
-        }
+        if (!isatty(STDERR_FILENO)) { return false; }
         if (const char *term = getenv("TERM")) {
-            return 0 == strcmp(term, "cygwin") || 0 == strcmp(term, "linux") || 0 == strcmp(term, "rxvt-unicode-256color") || 0 == strcmp(term, "screen") || 0 == strcmp(term, "screen-256color") || 0 == strcmp(term, "screen.xterm-256color") || 0 == strcmp(term, "tmux-256color") || 0 == strcmp(term, "xterm") || 0 == strcmp(term, "xterm-256color") || 0 == strcmp(term, "xterm-termite") || 0 == strcmp(term, "xterm-color");
+            return 0 == strcmp(term, "cygwin") || 0 == strcmp(term, "linux") ||
+                   0 == strcmp(term, "rxvt-unicode-256color") || 0 == strcmp(term, "screen") ||
+                   0 == strcmp(term, "screen-256color") ||
+                   0 == strcmp(term, "screen.xterm-256color") ||
+                   0 == strcmp(term, "tmux-256color") || 0 == strcmp(term, "xterm") ||
+                   0 == strcmp(term, "xterm-256color") || 0 == strcmp(term, "xterm-termite") ||
+                   0 == strcmp(term, "xterm-color");
         } else {
             return false;
         }
@@ -282,36 +287,29 @@ namespace Logging {
     void file_log(void *user_data, const Message &message) {
 #if METADOT_LOGGING_WITH_FILEABS
         FileAbs *file_abs = reinterpret_cast<FileAbs *>(user_data);
-        if (file_abs->is_reopening) {
-            return;
-        }
+        if (file_abs->is_reopening) { return; }
         // It is better checking file change every minute/hour/day,
         // instead of doing this every time we log.
         // Here check_interval is set to zero to enable checking every time;
         const auto check_interval = seconds(0);
-        if (duration_cast<seconds>(steady_clock::now() - file_abs->last_check_time) > check_interval) {
+        if (duration_cast<seconds>(steady_clock::now() - file_abs->last_check_time) >
+            check_interval) {
             file_abs->last_check_time = steady_clock::now();
             file_reopen(user_data);
         }
         FILE *file = to_file(user_data);
-        if (!file) {
-            return;
-        }
+        if (!file) { return; }
 #else
         FILE *file = to_file(user_data);
 #endif
-        fprintf(file, "%s%s%s%s\n",
-                message.preamble, message.indentation, message.prefix, message.message);
-        if (g_flush_interval_ms == 0) {
-            fflush(file);
-        }
+        fprintf(file, "%s%s%s%s\n", message.preamble, message.indentation, message.prefix,
+                message.message);
+        if (g_flush_interval_ms == 0) { fflush(file); }
     }
 
     void file_close(void *user_data) {
         FILE *file = to_file(user_data);
-        if (file) {
-            fclose(file);
-        }
+        if (file) { fclose(file); }
 #if METADOT_LOGGING_WITH_FILEABS
         delete reinterpret_cast<FileAbs *>(user_data);
 #endif
@@ -327,22 +325,29 @@ namespace Logging {
         FileAbs *file_abs = reinterpret_cast<FileAbs *>(user_data);
         struct stat st;
         int ret;
-        if (!file_abs->fp || (ret = stat(file_abs->path, &st)) == -1 || (st.st_ino != file_abs->st.st_ino)) {
+        if (!file_abs->fp || (ret = stat(file_abs->path, &st)) == -1 ||
+            (st.st_ino != file_abs->st.st_ino)) {
             file_abs->is_reopening = true;
-            if (file_abs->fp) {
-                fclose(file_abs->fp);
-            }
+            if (file_abs->fp) { fclose(file_abs->fp); }
             if (!file_abs->fp) {
-                VLOG_F(g_internal_verbosity, "Reopening file '" METADOT_LOGGING_FMT(s) "' due to previous error", file_abs->path);
+                VLOG_F(g_internal_verbosity,
+                       "Reopening file '" METADOT_LOGGING_FMT(s) "' due to previous error",
+                       file_abs->path);
             } else if (ret < 0) {
                 const auto why = errno_as_text();
-                VLOG_F(g_internal_verbosity, "Reopening file '" METADOT_LOGGING_FMT(s) "' due to '" METADOT_LOGGING_FMT(s) "'", file_abs->path, why.c_str());
+                VLOG_F(g_internal_verbosity,
+                       "Reopening file '" METADOT_LOGGING_FMT(s) "' due to '" METADOT_LOGGING_FMT(
+                               s) "'",
+                       file_abs->path, why.c_str());
             } else {
-                VLOG_F(g_internal_verbosity, "Reopening file '" METADOT_LOGGING_FMT(s) "' due to file changed", file_abs->path);
+                VLOG_F(g_internal_verbosity,
+                       "Reopening file '" METADOT_LOGGING_FMT(s) "' due to file changed",
+                       file_abs->path);
             }
             // try reopen current file.
             if (!create_directories(file_abs->path)) {
-                LOG_F(ERROR, "Failed to create directories to '" METADOT_LOGGING_FMT(s) "'", file_abs->path);
+                LOG_F(ERROR, "Failed to create directories to '" METADOT_LOGGING_FMT(s) "'",
+                      file_abs->path);
             }
             file_abs->fp = fopen(file_abs->path, file_abs->mode_str);
             if (!file_abs->fp) {
@@ -395,9 +400,7 @@ namespace Logging {
         syslog(level, "%s%s%s", message.indentation, message.prefix, message.message);
     }
 
-    void syslog_close(void * /*user_data*/) {
-        closelog();
-    }
+    void syslog_close(void * /*user_data*/) { closelog(); }
 
     void syslog_flush(void * /*user_data*/) {}
 #endif
@@ -437,22 +440,19 @@ namespace Logging {
 #endif
 
     // Overloaded for variadic template matching.
-    Text textprintf() {
-        return Text(static_cast<char *>(calloc(1, 1)));
-    }
+    Text textprintf() { return Text(static_cast<char *>(calloc(1, 1))); }
 
     static const char *indentation(unsigned depth) {
-        static const char buff[] =
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   "
-                ".   .   .   .   .   .   .   .   .   .   ";
+        static const char buff[] = ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   "
+                                   ".   .   .   .   .   .   .   .   .   .   ";
         static const size_t INDENTATION_WIDTH = 4;
         static const size_t NUM_INDENTATIONS = (sizeof(buff) - 1) / INDENTATION_WIDTH;
         depth = std::min<unsigned>(depth, NUM_INDENTATIONS);
@@ -471,9 +471,7 @@ namespace Logging {
 #if METADOT_LOGGING_USE_LOCALE
             try {// locale variant of isalpha will throw on error
                 last_is_alpha = std::isalpha(cmd[arg_len], std::locale(""));
-            } catch (...) {
-                last_is_alpha = std::isalpha(static_cast<int>(cmd[arg_len]));
-            }
+            } catch (...) { last_is_alpha = std::isalpha(static_cast<int>(cmd[arg_len])); }
 #else
             last_is_alpha = std::isalpha(static_cast<int>(cmd[arg_len]));
 #endif
@@ -484,7 +482,9 @@ namespace Logging {
                 if (value_str[0] == '\0') {
                     // Value in separate argument
                     arg_it += 1;
-                    CHECK_LT_F(arg_it, argc, "Missing verbosiy level after " METADOT_LOGGING_FMT(s) "", verbosity_flag);
+                    CHECK_LT_F(arg_it, argc,
+                               "Missing verbosiy level after " METADOT_LOGGING_FMT(s) "",
+                               verbosity_flag);
                     value_str = argv[arg_it];
                     out_argc -= 1;
                 }
@@ -497,7 +497,9 @@ namespace Logging {
                     char *end = 0;
                     g_stderr_verbosity = static_cast<int>(strtol(value_str, &end, 10));
                     CHECK_F(end && *end == '\0',
-                            "Invalid verbosity. Expected integer, INFO, WARNING, ERROR or OFF, got '" METADOT_LOGGING_FMT(s) "'", value_str);
+                            "Invalid verbosity. Expected integer, INFO, WARNING, ERROR or OFF, got "
+                            "'" METADOT_LOGGING_FMT(s) "'",
+                            value_str);
                 }
             } else {
                 argv[arg_dest++] = argv[arg_it];
@@ -515,9 +517,7 @@ namespace Logging {
     // Returns the part of the path after the last / or \ (if any).
     const char *filename(const char *path) {
         for (auto ptr = path; *ptr; ++ptr) {
-            if (*ptr == '/' || *ptr == '\\') {
-                path = ptr + 1;
-            }
+            if (*ptr == '/' || *ptr == '\\') { path = ptr + 1; }
         }
         return path;
     }
@@ -570,7 +570,7 @@ namespace Logging {
             } else if (c == ' ') {
                 out += "\\ ";
             } else if (0 <= c && c < 0x20) {// ASCI control character:
-                                            // else if (c < 0x20 || c != (c & 127)) { // ASCII control character or UTF-8:
+                // else if (c < 0x20 || c != (c & 127)) { // ASCII control character or UTF-8:
                 out += "\\x";
                 write_hex_byte(out, static_cast<uint8_t>(c));
             } else {
@@ -609,20 +609,17 @@ namespace Logging {
 
         if (!getcwd(s_current_dir, sizeof(s_current_dir))) {
             const auto error_text = errno_as_text();
-            LOG_F(WARNING, "Failed to get current working directory: " METADOT_LOGGING_FMT(s) "", error_text.c_str());
+            LOG_F(WARNING, "Failed to get current working directory: " METADOT_LOGGING_FMT(s) "",
+                  error_text.c_str());
         }
 
         s_arguments = "";
         for (int i = 0; i < argc; ++i) {
             escape(s_arguments, argv[i]);
-            if (i + 1 < argc) {
-                s_arguments += " ";
-            }
+            if (i + 1 < argc) { s_arguments += " "; }
         }
 
-        if (options.verbosity_flag) {
-            parse_args(argc, argv, options.verbosity_flag);
-        }
+        if (options.verbosity_flag) { parse_args(argc, argv, options.verbosity_flag); }
 
         if (const auto main_thread_name = options.main_thread_name) {
 #if METADOT_LOGGING_PTLS_NAMES || METADOT_LOGGING_WINTHREADS
@@ -683,22 +680,16 @@ namespace Logging {
         time_t sec_since_epoch = time_t(ms_since_epoch / 1000);
         tm time_info;
         localtime_r(&sec_since_epoch, &time_info);
-        snprintf(buff, buff_size, "%04d%02d%02d_%02d%02d%02d.%03lld",
-                 1900 + time_info.tm_year, 1 + time_info.tm_mon, time_info.tm_mday,
-                 time_info.tm_hour, time_info.tm_min, time_info.tm_sec, ms_since_epoch % 1000);
+        snprintf(buff, buff_size, "%04d%02d%02d_%02d%02d%02d.%03lld", 1900 + time_info.tm_year,
+                 1 + time_info.tm_mon, time_info.tm_mday, time_info.tm_hour, time_info.tm_min,
+                 time_info.tm_sec, ms_since_epoch % 1000);
     }
 
-    const char *argv0_filename() {
-        return s_argv0_filename.c_str();
-    }
+    const char *argv0_filename() { return s_argv0_filename.c_str(); }
 
-    const char *arguments() {
-        return s_arguments.c_str();
-    }
+    const char *arguments() { return s_arguments.c_str(); }
 
-    const char *current_dir() {
-        return s_current_dir;
-    }
+    const char *current_dir() { return s_current_dir; }
 
     const char *home_dir() {
 #ifdef __MINGW32__
@@ -736,7 +727,8 @@ namespace Logging {
         }
 
 #ifdef _WIN32
-        strncat_s(buff, buff_size - strlen(buff) - 1, s_argv0_filename.c_str(), buff_size - strlen(buff) - 1);
+        strncat_s(buff, buff_size - strlen(buff) - 1, s_argv0_filename.c_str(),
+                  buff_size - strlen(buff) - 1);
         strncat_s(buff, buff_size - strlen(buff) - 1, "/", buff_size - strlen(buff) - 1);
         write_date_time(buff + strlen(buff), buff_size - strlen(buff));
         strncat_s(buff, buff_size - strlen(buff) - 1, ".log", buff_size - strlen(buff) - 1);
@@ -760,7 +752,8 @@ namespace Logging {
             if (mkdir(file_path, 0755) == -1) {
 #endif
                 if (errno != EEXIST) {
-                    LOG_F(ERROR, "Failed to create directory '" METADOT_LOGGING_FMT(s) "'", file_path);
+                    LOG_F(ERROR, "Failed to create directory '" METADOT_LOGGING_FMT(s) "'",
+                          file_path);
                     LOG_IF_F(ERROR, errno == EACCES, "EACCES");
                     LOG_IF_F(ERROR, errno == ENAMETOOLONG, "ENAMETOOLONG");
                     LOG_IF_F(ERROR, errno == ENOENT, "ENOENT");
@@ -812,15 +805,9 @@ namespace Logging {
         add_callback(path_in, file_log, file, verbosity, file_close, file_flush);
 #endif
 
-        if (mode == FileMode::Append) {
-            fprintf(file, "\n\n\n\n\n");
-        }
-        if (!s_arguments.empty()) {
-            fprintf(file, "arguments: %s\n", s_arguments.c_str());
-        }
-        if (strlen(s_current_dir) != 0) {
-            fprintf(file, "Current dir: %s\n", s_current_dir);
-        }
+        if (mode == FileMode::Append) { fprintf(file, "\n\n\n\n\n"); }
+        if (!s_arguments.empty()) { fprintf(file, "arguments: %s\n", s_arguments.c_str()); }
+        if (strlen(s_current_dir) != 0) { fprintf(file, "Current dir: %s\n", s_current_dir); }
         fprintf(file, "File verbosity level: %d\n", verbosity);
         if (g_preamble_header) {
             char preamble_explain[METADOT_LOGGING_PREAMBLE_WIDTH];
@@ -829,7 +816,10 @@ namespace Logging {
         }
         fflush(file);
 
-        VLOG_F(g_internal_verbosity, "Logging to '" METADOT_LOGGING_FMT(s) "', mode: '" METADOT_LOGGING_FMT(s) "', verbosity: " METADOT_LOGGING_FMT(d) "", path, mode_str, verbosity);
+        VLOG_F(g_internal_verbosity,
+               "Logging to '" METADOT_LOGGING_FMT(s) "', mode: '" METADOT_LOGGING_FMT(
+                       s) "', verbosity: " METADOT_LOGGING_FMT(d) "",
+               path, mode_str, verbosity);
         return true;
     }
 
@@ -853,30 +843,26 @@ namespace Logging {
     }
     bool add_syslog(const char *app_name, Verbosity verbosity, int facility) {
 #if METADOT_LOGGING_SYSLOG
-        if (app_name == nullptr) {
-            app_name = argv0_filename();
-        }
+        if (app_name == nullptr) { app_name = argv0_filename(); }
         openlog(app_name, 0, facility);
         add_callback("'syslog'", syslog_log, nullptr, verbosity, syslog_close, syslog_flush);
 
-        VLOG_F(g_internal_verbosity, "Logging to 'syslog' , verbosity: " METADOT_LOGGING_FMT(d) "", verbosity);
+        VLOG_F(g_internal_verbosity, "Logging to 'syslog' , verbosity: " METADOT_LOGGING_FMT(d) "",
+               verbosity);
         return true;
 #else
         (void) app_name;
         (void) verbosity;
         (void) facility;
-        VLOG_F(g_internal_verbosity, "syslog not implemented on this system. Request to install syslog logging ignored.");
+        VLOG_F(g_internal_verbosity,
+               "syslog not implemented on this system. Request to install syslog logging ignored.");
         return false;
 #endif
     }
     // Will be called right before abort().
-    void set_fatal_handler(fatal_handler_t handler) {
-        s_fatal_handler = handler;
-    }
+    void set_fatal_handler(fatal_handler_t handler) { s_fatal_handler = handler; }
 
-    fatal_handler_t get_fatal_handler() {
-        return s_fatal_handler;
-    }
+    fatal_handler_t get_fatal_handler() { return s_fatal_handler; }
 
     void set_verbosity_to_name_callback(verbosity_to_name_t callback) {
         s_verbosity_to_name_callback = callback;
@@ -888,7 +874,8 @@ namespace Logging {
 
     void add_stack_cleanup(const char *find_this, const char *replace_with_this) {
         if (strlen(find_this) <= strlen(replace_with_this)) {
-            LOG_F(WARNING, "add_stack_cleanup: the replacement should be shorter than the pattern!");
+            LOG_F(WARNING,
+                  "add_stack_cleanup: the replacement should be shorter than the pattern!");
             return;
         }
 
@@ -902,13 +889,8 @@ namespace Logging {
         }
     }
 
-    void add_callback(
-            const char *id,
-            log_handler_t callback,
-            void *user_data,
-            Verbosity verbosity,
-            close_handler_t on_close,
-            flush_handler_t on_flush) {
+    void add_callback(const char *id, log_handler_t callback, void *user_data, Verbosity verbosity,
+                      close_handler_t on_close, flush_handler_t on_flush) {
         std::lock_guard<std::recursive_mutex> lock(s_mutex);
         s_callbacks.push_back(Callback{id, callback, user_data, verbosity, on_close, on_flush, 0});
         on_callback_change();
@@ -917,9 +899,8 @@ namespace Logging {
     // Returns a custom verbosity name if one is available, or nullptr.
     // See also set_verbosity_to_name_callback.
     const char *get_verbosity_name(Verbosity verbosity) {
-        auto name = s_verbosity_to_name_callback
-                            ? (*s_verbosity_to_name_callback)(verbosity)
-                            : nullptr;
+        auto name =
+                s_verbosity_to_name_callback ? (*s_verbosity_to_name_callback)(verbosity) : nullptr;
 
         // Use standard replacements if callback fails:
         if (!name) {
@@ -940,9 +921,8 @@ namespace Logging {
     // Returns Verbosity_INVALID if the name is not found.
     // See also set_name_to_verbosity_callback.
     Verbosity get_verbosity_from_name(const char *name) {
-        auto verbosity = s_name_to_verbosity_callback
-                                 ? (*s_name_to_verbosity_callback)(name)
-                                 : Verbosity_INVALID;
+        auto verbosity = s_name_to_verbosity_callback ? (*s_name_to_verbosity_callback)(name)
+                                                      : Verbosity_INVALID;
 
         // Use standard replacements if callback fails:
         if (verbosity == Verbosity_INVALID) {
@@ -964,7 +944,8 @@ namespace Logging {
 
     bool remove_callback(const char *id) {
         std::lock_guard<std::recursive_mutex> lock(s_mutex);
-        auto it = std::find_if(begin(s_callbacks), end(s_callbacks), [&](const Callback &c) { return c.id == id; });
+        auto it = std::find_if(begin(s_callbacks), end(s_callbacks),
+                               [&](const Callback &c) { return c.id == id; });
         if (it != s_callbacks.end()) {
             if (it->close) { it->close(it->user_data); }
             s_callbacks.erase(it);
@@ -979,9 +960,7 @@ namespace Logging {
     void remove_all_callbacks() {
         std::lock_guard<std::recursive_mutex> lock(s_mutex);
         for (auto &callback: s_callbacks) {
-            if (callback.close) {
-                callback.close(callback.user_data);
-            }
+            if (callback.close) { callback.close(callback.user_data); }
         }
         s_callbacks.clear();
         on_callback_change();
@@ -999,9 +978,7 @@ namespace Logging {
     static pthread_once_t s_pthread_key_once = PTHREAD_ONCE_INIT;
     static pthread_key_t s_pthread_key_name;
 
-    void make_pthread_key_name() {
-        (void) pthread_key_create(&s_pthread_key_name, free);
-    }
+    void make_pthread_key_name() { (void) pthread_key_create(&s_pthread_key_name, free); }
 #endif
 
 #if METADOT_LOGGING_WINTHREADS
@@ -1080,9 +1057,11 @@ namespace Logging {
 #endif
 
             if (right_align_hex_id) {
-                snprintf(buffer, static_cast<size_t>(length), "%*X", static_cast<int>(length - 1), static_cast<unsigned>(thread_id));
+                snprintf(buffer, static_cast<size_t>(length), "%*X", static_cast<int>(length - 1),
+                         static_cast<unsigned>(thread_id));
             } else {
-                snprintf(buffer, static_cast<size_t>(length), "%X", static_cast<unsigned>(thread_id));
+                snprintf(buffer, static_cast<size_t>(length), "%X",
+                         static_cast<unsigned>(thread_id));
             }
         }
     }
@@ -1170,23 +1149,22 @@ namespace Logging {
                 if (info.dli_sname[0] == '_') {
                     demangled = abi::__cxa_demangle(info.dli_sname, 0, 0, &status);
                 }
-                snprintf(buf, sizeof(buf), "%-3d %*p %s + %zd\n",
-                         i - skip, int(2 + sizeof(void *) * 2), callstack[i],
-                         status == 0 ? demangled : info.dli_sname == 0 ? symbols[i]
-                                                                       : info.dli_sname,
+                snprintf(buf, sizeof(buf), "%-3d %*p %s + %zd\n", i - skip,
+                         int(2 + sizeof(void *) * 2), callstack[i],
+                         status == 0           ? demangled
+                         : info.dli_sname == 0 ? symbols[i]
+                                               : info.dli_sname,
                          static_cast<char *>(callstack[i]) - static_cast<char *>(info.dli_saddr));
                 free(demangled);
             } else {
-                snprintf(buf, sizeof(buf), "%-3d %*p %s\n",
-                         i - skip, int(2 + sizeof(void *) * 2), callstack[i], symbols[i]);
+                snprintf(buf, sizeof(buf), "%-3d %*p %s\n", i - skip, int(2 + sizeof(void *) * 2),
+                         callstack[i], symbols[i]);
             }
             result += buf;
         }
         free(symbols);
 
-        if (num_frames == max_frames) {
-            result = "[truncated]\n" + result;
-        }
+        if (num_frames == max_frames) { result = "[truncated]\n" + result; }
 
         if (!result.empty() && result[result.size() - 1] == '\n') {
             result.resize(result.size() - 1);
@@ -1196,9 +1174,7 @@ namespace Logging {
     }
 
 #else// METADOT_LOGGING_STACKTRACES
-    Text demangle(const char *name) {
-        return Text(STRDUP(name));
-    }
+    Text demangle(const char *name) { return Text(STRDUP(name)); }
 
     std::string stacktrace_as_stdstring(int) {
         // No stacktraces available on this platform"
@@ -1220,53 +1196,43 @@ namespace Logging {
         size_t pos = 0;
         if (g_preamble_date && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "date       ");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_time && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "time         ");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_uptime && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "( uptime  ) ");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_thread && pos < out_buff_size) {
-            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "[%-*s]", METADOT_LOGGING_THREADNAME_WIDTH, " thread name/id");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "[%-*s]",
+                                 METADOT_LOGGING_THREADNAME_WIDTH, " thread name/id");
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_file && pos < out_buff_size) {
-            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%*s:line  ", METADOT_LOGGING_FILENAME_WIDTH, "file");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%*s:line  ",
+                                 METADOT_LOGGING_FILENAME_WIDTH, "file");
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_verbose && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "   v");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_pipe && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "| ");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
     }
 
-    static void print_preamble(char *out_buff, size_t out_buff_size, Verbosity verbosity, const char *file, unsigned line) {
+    static void print_preamble(char *out_buff, size_t out_buff_size, Verbosity verbosity,
+                               const char *file, unsigned line) {
         if (out_buff_size == 0) { return; }
         out_buff[0] = '\0';
         if (!g_preamble) { return; }
-        long long ms_since_epoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        long long ms_since_epoch =
+                duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         time_t sec_since_epoch = time_t(ms_since_epoch / 1000);
         tm time_info;
         localtime_r(&sec_since_epoch, &time_info);
@@ -1277,9 +1243,7 @@ namespace Logging {
         char thread_name[METADOT_LOGGING_THREADNAME_WIDTH + 1] = {0};
         get_thread_name(thread_name, METADOT_LOGGING_THREADNAME_WIDTH + 1, true);
 
-        if (s_strip_file_path) {
-            file = filename(file);
-        }
+        if (s_strip_file_path) { file = filename(file); }
 
         char level_buff[6];
         const char *custom_level_name = get_verbosity_name(verbosity);
@@ -1294,57 +1258,43 @@ namespace Logging {
         if (g_preamble_date && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%04d-%02d-%02d ",
                                  1900 + time_info.tm_year, 1 + time_info.tm_mon, time_info.tm_mday);
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_time && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%02d:%02d:%02d.%03lld ",
-                                 time_info.tm_hour, time_info.tm_min, time_info.tm_sec, ms_since_epoch % 1000);
-            if (bytes > 0) {
-                pos += bytes;
-            }
+                                 time_info.tm_hour, time_info.tm_min, time_info.tm_sec,
+                                 ms_since_epoch % 1000);
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_uptime && pos < out_buff_size) {
-            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "(%8.3fs) ",
-                                 uptime_sec);
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "(%8.3fs) ", uptime_sec);
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_thread && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "[%-*s]",
                                  METADOT_LOGGING_THREADNAME_WIDTH, thread_name);
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_file && pos < out_buff_size) {
             char shortened_filename[METADOT_LOGGING_FILENAME_WIDTH + 1];
             snprintf(shortened_filename, METADOT_LOGGING_FILENAME_WIDTH + 1, "%s", file);
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%*s:%-5u ",
                                  METADOT_LOGGING_FILENAME_WIDTH, shortened_filename, line);
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_verbose && pos < out_buff_size) {
-            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%4s",
-                                 level_buff);
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            int bytes = snprintf(out_buff + pos, out_buff_size - pos, "%4s", level_buff);
+            if (bytes > 0) { pos += bytes; }
         }
         if (g_preamble_pipe && pos < out_buff_size) {
             int bytes = snprintf(out_buff + pos, out_buff_size - pos, "| ");
-            if (bytes > 0) {
-                pos += bytes;
-            }
+            if (bytes > 0) { pos += bytes; }
         }
     }
 
     // stack_trace_skip is just if verbosity == FATAL.
-    static void log_message(int stack_trace_skip, Message &message, bool with_indentation, bool abort_if_fatal) {
+    static void log_message(int stack_trace_skip, Message &message, bool with_indentation,
+                            bool abort_if_fatal) {
         const auto verbosity = message.verbosity;
         std::lock_guard<std::recursive_mutex> lock(s_mutex);
 
@@ -1355,40 +1305,27 @@ namespace Logging {
             }
 
             auto ec = Logging::get_error_context();
-            if (!ec.empty()) {
-                RAW_LOG_F(ERROR, "" METADOT_LOGGING_FMT(s) "", ec.c_str());
-            }
+            if (!ec.empty()) { RAW_LOG_F(ERROR, "" METADOT_LOGGING_FMT(s) "", ec.c_str()); }
         }
 
-        if (with_indentation) {
-            message.indentation = indentation(s_stderr_indentation);
-        }
+        if (with_indentation) { message.indentation = indentation(s_stderr_indentation); }
 
         if (verbosity <= g_stderr_verbosity) {
             if (g_colorlogtostderr && s_terminal_has_color) {
                 if (verbosity > Verbosity_WARNING) {
-                    fprintf(stderr, "%s%s%s%s%s%s%s%s\n",
-                            terminal_reset(),
-                            terminal_dim(),
-                            message.preamble,
-                            message.indentation,
+                    fprintf(stderr, "%s%s%s%s%s%s%s%s\n", terminal_reset(), terminal_dim(),
+                            message.preamble, message.indentation,
                             verbosity == Verbosity_INFO ? terminal_reset() : "",// un-dim for info
-                            message.prefix,
-                            message.message,
-                            terminal_reset());
+                            message.prefix, message.message, terminal_reset());
                 } else {
-                    fprintf(stderr, "%s%s%s%s%s%s%s\n",
-                            terminal_reset(),
+                    fprintf(stderr, "%s%s%s%s%s%s%s\n", terminal_reset(),
                             verbosity == Verbosity_WARNING ? terminal_yellow() : terminal_red(),
-                            message.preamble,
-                            message.indentation,
-                            message.prefix,
-                            message.message,
+                            message.preamble, message.indentation, message.prefix, message.message,
                             terminal_reset());
                 }
             } else {
-                fprintf(stderr, "%s%s%s%s\n",
-                        message.preamble, message.indentation, message.prefix, message.message);
+                fprintf(stderr, "%s%s%s%s\n", message.preamble, message.indentation, message.prefix,
+                        message.message);
             }
 
             if (g_flush_interval_ms == 0) {
@@ -1400,9 +1337,7 @@ namespace Logging {
 
         for (auto &p: s_callbacks) {
             if (verbosity <= p.verbosity) {
-                if (with_indentation) {
-                    message.indentation = indentation(p.indentation);
-                }
+                if (with_indentation) { message.indentation = indentation(p.indentation); }
                 p.callback(p.user_data, message);
                 if (g_flush_interval_ms == 0) {
                     if (p.flush) { p.flush(p.user_data); }
@@ -1415,9 +1350,7 @@ namespace Logging {
         if (g_flush_interval_ms > 0 && !s_flush_thread) {
             s_flush_thread = new std::thread([]() {
                 for (;;) {
-                    if (s_needs_flushing) {
-                        flush();
-                    }
+                    if (s_needs_flushing) { flush(); }
                     std::this_thread::sleep_for(std::chrono::milliseconds(g_flush_interval_ms));
                 }
             });
@@ -1444,9 +1377,8 @@ namespace Logging {
     }
 
     // stack_trace_skip is just if verbosity == FATAL.
-    void log_to_everywhere(int stack_trace_skip, Verbosity verbosity,
-                           const char *file, unsigned line,
-                           const char *prefix, const char *buff) {
+    void log_to_everywhere(int stack_trace_skip, Verbosity verbosity, const char *file,
+                           unsigned line, const char *prefix, const char *buff) {
         char preamble_buff[METADOT_LOGGING_PREAMBLE_WIDTH];
         print_preamble(preamble_buff, sizeof(preamble_buff), verbosity, file, line);
         auto message = Message{verbosity, file, line, preamble_buff, "", prefix, buff};
@@ -1454,12 +1386,14 @@ namespace Logging {
     }
 
 #if METADOT_LOGGING_USE_FMTLIB
-    void vlog(Verbosity verbosity, const char *file, unsigned line, const char *format, fmt::format_args args) {
+    void vlog(Verbosity verbosity, const char *file, unsigned line, const char *format,
+              fmt::format_args args) {
         auto formatted = fmt::vformat(format, args);
         log_to_everywhere(1, verbosity, file, line, "", formatted.c_str());
     }
 
-    void raw_vlog(Verbosity verbosity, const char *file, unsigned line, const char *format, fmt::format_args args) {
+    void raw_vlog(Verbosity verbosity, const char *file, unsigned line, const char *format,
+                  fmt::format_args args) {
         auto formatted = fmt::vformat(format, args);
         auto message = Message{verbosity, file, line, "", "", "", formatted.c_str()};
         log_message(1, message, false, true);
@@ -1472,7 +1406,8 @@ namespace Logging {
         va_end(vlist);
     }
 
-    void vlog(Verbosity verbosity, const char *file, unsigned line, const char *format, va_list vlist) {
+    void vlog(Verbosity verbosity, const char *file, unsigned line, const char *format,
+              va_list vlist) {
         auto buff = vtextprintf(format, vlist);
         log_to_everywhere(1, verbosity, file, line, "", buff.c_str());
     }
@@ -1491,18 +1426,20 @@ namespace Logging {
         std::lock_guard<std::recursive_mutex> lock(s_mutex);
         fflush(stderr);
         for (const auto &callback: s_callbacks) {
-            if (callback.flush) {
-                callback.flush(callback.user_data);
-            }
+            if (callback.flush) { callback.flush(callback.user_data); }
         }
         s_needs_flushing = false;
     }
 
-    LogScopeRAII::LogScopeRAII(Verbosity verbosity, const char *file, unsigned line, const char *format, va_list vlist) : _verbosity(verbosity), _file(file), _line(line) {
+    LogScopeRAII::LogScopeRAII(Verbosity verbosity, const char *file, unsigned line,
+                               const char *format, va_list vlist)
+        : _verbosity(verbosity), _file(file), _line(line) {
         this->Init(format, vlist);
     }
 
-    LogScopeRAII::LogScopeRAII(Verbosity verbosity, const char *file, unsigned line, const char *format, ...) : _verbosity(verbosity), _file(file), _line(line) {
+    LogScopeRAII::LogScopeRAII(Verbosity verbosity, const char *file, unsigned line,
+                               const char *format, ...)
+        : _verbosity(verbosity), _file(file), _line(line) {
         va_list vlist;
         va_start(vlist, format);
         this->Init(format, vlist);
@@ -1512,24 +1449,22 @@ namespace Logging {
     LogScopeRAII::~LogScopeRAII() {
         if (_file) {
             std::lock_guard<std::recursive_mutex> lock(s_mutex);
-            if (_indent_stderr && s_stderr_indentation > 0) {
-                --s_stderr_indentation;
-            }
+            if (_indent_stderr && s_stderr_indentation > 0) { --s_stderr_indentation; }
             for (auto &p: s_callbacks) {
                 // Note: Callback indentation cannot change!
                 if (_verbosity <= p.verbosity) {
                     // in unlikely case this callback is new
-                    if (p.indentation > 0) {
-                        --p.indentation;
-                    }
+                    if (p.indentation > 0) { --p.indentation; }
                 }
             }
 #if METADOT_LOGGING_VERBOSE_SCOPE_ENDINGS
             auto duration_sec = static_cast<double>(now_ns() - _start_time_ns) / 1e9;
 #if METADOT_LOGGING_USE_FMTLIB
-            auto buff = textprintf("{:.{}f} s: {:s}", duration_sec, METADOT_LOGGING_SCOPE_TIME_PRECISION, _name);
+            auto buff = textprintf("{:.{}f} s: {:s}", duration_sec,
+                                   METADOT_LOGGING_SCOPE_TIME_PRECISION, _name);
 #else
-            auto buff = textprintf("%.*f s: %s", METADOT_LOGGING_SCOPE_TIME_PRECISION, duration_sec, _name);
+            auto buff = textprintf("%.*f s: %s", METADOT_LOGGING_SCOPE_TIME_PRECISION, duration_sec,
+                                   _name);
 #endif
             log_to_everywhere(1, _verbosity, _file, _line, "} ", buff.c_str());
 #else
@@ -1546,14 +1481,10 @@ namespace Logging {
             vsnprintf(_name, sizeof(_name), format, vlist);
             log_to_everywhere(1, _verbosity, _file, _line, "{ ", _name);
 
-            if (_indent_stderr) {
-                ++s_stderr_indentation;
-            }
+            if (_indent_stderr) { ++s_stderr_indentation; }
 
             for (auto &p: s_callbacks) {
-                if (_verbosity <= p.verbosity) {
-                    ++p.indentation;
-                }
+                if (_verbosity <= p.verbosity) { ++p.indentation; }
             }
         } else {
             _file = nullptr;
@@ -1561,13 +1492,16 @@ namespace Logging {
     }
 
 #if METADOT_LOGGING_USE_FMTLIB
-    void vlog_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line, const char *format, fmt::format_args args) {
+    void vlog_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line,
+                        const char *format, fmt::format_args args) {
         auto formatted = fmt::vformat(format, args);
-        log_to_everywhere(stack_trace_skip + 1, Verbosity_FATAL, file, line, expr, formatted.c_str());
+        log_to_everywhere(stack_trace_skip + 1, Verbosity_FATAL, file, line, expr,
+                          formatted.c_str());
         abort();// log_to_everywhere already does this, but this makes the analyzer happy.
     }
 #else
-    void log_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line, const char *format, ...) {
+    void log_and_abort(int stack_trace_skip, const char *expr, const char *file, unsigned line,
+                       const char *format, ...) {
         va_list vlist;
         va_start(vlist, format);
         auto buff = vtextprintf(format, vlist);
@@ -1655,9 +1589,7 @@ namespace Logging {
 #endif
     static METADOT_LOGGING_THREAD_LOCAL ECPtr thread_ec_ptr = nullptr;
 
-    ECPtr &get_thread_ec_head_ref() {
-        return thread_ec_ptr;
-    }
+    ECPtr &get_thread_ec_head_ref() { return thread_ec_ptr; }
 #else // !thread_local
     static pthread_once_t s_ec_pthread_once = PTHREAD_ONCE_INIT;
     static pthread_key_t s_ec_pthread_key;
@@ -1666,9 +1598,7 @@ namespace Logging {
         delete reinterpret_cast<ECPtr *>(io_error_context);
     }
 
-    void ec_make_pthread_key() {
-        (void) pthread_key_create(&s_ec_pthread_key, free_ec_head_ref);
-    }
+    void ec_make_pthread_key() { (void) pthread_key_create(&s_ec_pthread_key, free_ec_head_ref); }
 
     ECPtr &get_thread_ec_head_ref() {
         (void) pthread_once(&s_ec_pthread_once, ec_make_pthread_key);
@@ -1683,13 +1613,9 @@ namespace Logging {
 
     // ----------------------------------------------------------------------------
 
-    EcHandle get_thread_ec_handle() {
-        return get_thread_ec_head_ref();
-    }
+    EcHandle get_thread_ec_handle() { return get_thread_ec_head_ref(); }
 
-    Text get_error_context() {
-        return get_error_context_for(get_thread_ec_head_ref());
-    }
+    Text get_error_context() { return get_error_context_for(get_thread_ec_head_ref()); }
 
     Text get_error_context_for(const EcEntryBase *ec_head) {
         std::vector<const EcEntryBase *> stack;
@@ -1706,10 +1632,12 @@ namespace Logging {
                 const auto description = std::string(entry->_descr) + ":";
 #if METADOT_LOGGING_USE_FMTLIB
                 auto prefix = textprintf("[ErrorContext] {.{}s}:{:-5u} {:-20s} ",
-                                         filename(entry->_file), METADOT_LOGGING_FILENAME_WIDTH, entry->_line, description.c_str());
+                                         filename(entry->_file), METADOT_LOGGING_FILENAME_WIDTH,
+                                         entry->_line, description.c_str());
 #else
-                auto prefix = textprintf("[ErrorContext] %*s:%-5u %-20s ",
-                                         METADOT_LOGGING_FILENAME_WIDTH, filename(entry->_file), entry->_line, description.c_str());
+                auto prefix =
+                        textprintf("[ErrorContext] %*s:%-5u %-20s ", METADOT_LOGGING_FILENAME_WIDTH,
+                                   filename(entry->_file), entry->_line, description.c_str());
 #endif
                 result.str += prefix.c_str();
                 entry->print_value(result);
@@ -1727,9 +1655,7 @@ namespace Logging {
         ec_head = this;
     }
 
-    EcEntryBase::~EcEntryBase() {
-        get_thread_ec_head_ref() = _previous;
-    }
+    EcEntryBase::~EcEntryBase() { get_thread_ec_head_ref() = _previous; }
 
     // ------------------------------------------------------------------------
 
@@ -1789,10 +1715,10 @@ namespace Logging {
         return Text{STRDUP(str.c_str())};
     }
 
-#define DEFINE_EC(Type)                   \
-    Text ec_to_text(Type value) {         \
-        auto str = std::to_string(value); \
-        return Text{STRDUP(str.c_str())}; \
+#define DEFINE_EC(Type)                                                                            \
+    Text ec_to_text(Type value) {                                                                  \
+        auto str = std::to_string(value);                                                          \
+        return Text{STRDUP(str.c_str())};                                                          \
     }
 
     DEFINE_EC(int)
@@ -1847,9 +1773,7 @@ namespace Logging {
         (void) result;// Ignore errors.
     }
 
-    void write_to_stderr(const char *data) {
-        write_to_stderr(data, strlen(data));
-    }
+    void write_to_stderr(const char *data) { write_to_stderr(data, strlen(data)); }
 
     void call_default_signal_handler(int signal_number) {
         struct sigaction sig_action;
@@ -1887,9 +1811,7 @@ namespace Logging {
         write_to_stderr("Loguru caught a signal: ");
         write_to_stderr(signal_name);
         write_to_stderr("\n");
-        if (g_colorlogtostderr && s_terminal_has_color) {
-            write_to_stderr(terminal_reset());
-        }
+        if (g_colorlogtostderr && s_terminal_has_color) { write_to_stderr(terminal_reset()); }
 
         // --------------------------------------------------------------------
 
@@ -1903,7 +1825,8 @@ namespace Logging {
             flush();
             char preamble_buff[METADOT_LOGGING_PREAMBLE_WIDTH];
             print_preamble(preamble_buff, sizeof(preamble_buff), Verbosity_FATAL, "", 0);
-            auto message = Message{Verbosity_FATAL, "", 0, preamble_buff, "", "Signal: ", signal_name};
+            auto message =
+                    Message{Verbosity_FATAL, "", 0, preamble_buff, "", "Signal: ", signal_name};
             try {
                 log_message(1, message, false, false);
             } catch (...) {
@@ -1928,31 +1851,37 @@ namespace Logging {
         sig_action.sa_sigaction = &signal_handler;
 
         if (signal_options.sigabrt) {
-            CHECK_F(sigaction(SIGABRT, &sig_action, NULL) != -1, "Failed to install handler for SIGABRT");
+            CHECK_F(sigaction(SIGABRT, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGABRT");
         }
         if (signal_options.sigbus) {
-            CHECK_F(sigaction(SIGBUS, &sig_action, NULL) != -1, "Failed to install handler for SIGBUS");
+            CHECK_F(sigaction(SIGBUS, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGBUS");
         }
         if (signal_options.sigfpe) {
-            CHECK_F(sigaction(SIGFPE, &sig_action, NULL) != -1, "Failed to install handler for SIGFPE");
+            CHECK_F(sigaction(SIGFPE, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGFPE");
         }
         if (signal_options.sigill) {
-            CHECK_F(sigaction(SIGILL, &sig_action, NULL) != -1, "Failed to install handler for SIGILL");
+            CHECK_F(sigaction(SIGILL, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGILL");
         }
         if (signal_options.sigint) {
-            CHECK_F(sigaction(SIGINT, &sig_action, NULL) != -1, "Failed to install handler for SIGINT");
+            CHECK_F(sigaction(SIGINT, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGINT");
         }
         if (signal_options.sigsegv) {
-            CHECK_F(sigaction(SIGSEGV, &sig_action, NULL) != -1, "Failed to install handler for SIGSEGV");
+            CHECK_F(sigaction(SIGSEGV, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGSEGV");
         }
         if (signal_options.sigterm) {
-            CHECK_F(sigaction(SIGTERM, &sig_action, NULL) != -1, "Failed to install handler for SIGTERM");
+            CHECK_F(sigaction(SIGTERM, &sig_action, NULL) != -1,
+                    "Failed to install handler for SIGTERM");
         }
     }
 }// namespace Logging
 
 #endif// _WIN32
-
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop

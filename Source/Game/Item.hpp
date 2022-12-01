@@ -2,8 +2,6 @@
 
 #define INC_Item
 
-
-
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
 #endif
@@ -34,13 +32,9 @@ class Item {
 public:
     uint8_t flags = 0;
 
-    void setFlag(uint8_t f) {
-        flags |= f;
-    }
+    void setFlag(uint8_t f) { flags |= f; }
 
-    bool getFlag(uint8_t f) {
-        return flags & f;
-    }
+    bool getFlag(uint8_t f) { return flags & f; }
 
     C_Surface *surface = nullptr;
     METAENGINE_Render_Image *texture = nullptr;

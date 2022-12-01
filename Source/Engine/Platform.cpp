@@ -34,9 +34,7 @@ int Platform::ParseRunArgs(int argc, char *argv[]) {
         }
 
         if (!options.test.value_or("").empty()) {
-            if (options.test == "test_") {
-                return 0;
-            }
+            if (options.test == "test_") { return 0; }
         }
 
     } catch (structopt::exception &e) {
@@ -61,7 +59,8 @@ int Platform::InitWindow() {
 // Rendering on Catalina with High DPI (retina)
 // https://github.com/grimfang4/sdl-gpu/issues/201
 #if defined(METADOT_ALLOW_HIGHDPI)
-    METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    METAENGINE_Render_WindowFlagEnum SDL_flags =
+            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #else
     METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 #endif
@@ -72,7 +71,9 @@ int Platform::InitWindow() {
 
         auto title = Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
 
-        global.platform.window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_flags);
+        global.platform.window =
+                SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                 WIDTH, HEIGHT, SDL_flags);
 
         if (global.platform.window == nullptr) {
             METADOT_ERROR("Could not create SDL_Window: {0}", SDL_GetError());
@@ -102,14 +103,12 @@ int Platform::InitWindow() {
 
         C_GLContext &gl_context = global.game->RenderTarget_.target->context->context;
 
-
         SDL_GL_MakeCurrent(global.platform.window, gl_context);
 
         if (GLEW_OK != glewInit()) {
             std::cout << "Failed to initialize OpenGL loader!" << std::endl;
             return EXIT_FAILURE;
         }
-
 
         // METADOT_INFO("Initializing InitFont...");
         // if (!Drawing::InitFont(&gl_context)) {

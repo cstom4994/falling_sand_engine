@@ -6,7 +6,6 @@
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-
 #ifndef _METADOT_LUAWRAPPER_HPP_
 #define _METADOT_LUAWRAPPER_HPP_
 
@@ -42,7 +41,6 @@
 #include "Libs/nameof.hpp"
 #include "LuaWrapperFlat.hpp"
 
-
 template<class T>
 struct TypeIdentity : std::enable_if<true, T>
 {
@@ -60,7 +58,6 @@ template<>
 struct PriorityTag<0>
 {
 };
-
 
 template<class T, class = void>
 struct IsCompleteType : std::false_type
@@ -114,13 +111,18 @@ namespace LuaStruct {
     {
     };
     template<class T>
-    struct IsSupportedClass<T, std::void_t<typename ClassTraits<T>::ThisClass, typename ClassTraits<T>::BaseClass, typename ClassTraits<T>::PrivateData>> : std::true_type
+    struct IsSupportedClass<
+            T, std::void_t<typename ClassTraits<T>::ThisClass, typename ClassTraits<T>::BaseClass,
+                           typename ClassTraits<T>::PrivateData>> : std::true_type
     {
     };
 
     template<class T>
-    struct GetAmountOfPrivateDataFields : std::integral_constant<std::size_t,
-                                                                 Meta::StructMemberCount<typename ClassTraits<T>::PrivateData>::value + GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value>
+    struct GetAmountOfPrivateDataFields
+        : std::integral_constant<
+                  std::size_t,
+                  Meta::StructMemberCount<typename ClassTraits<T>::PrivateData>::value +
+                          GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value>
     {
     };
     template<>
@@ -133,10 +135,20 @@ namespace LuaStruct {
         using T = typename std::decay<TT>::type;
         using BaseClass = typename ClassTraits<T>::BaseClass;
         using PrivateData = typename ClassTraits<T>::PrivateData;
-        if constexpr (N >= GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value) {
-            return StructApply(static_cast<typename std::conditional<std::is_const<TT>::value, const PrivateData &, PrivateData &>::type>(x), [](auto &&...args) -> decltype(auto) { return std::get<N - GetAmountOfPrivateDataFields<BaseClass>::value>(std::tie(args...)); });
+        if constexpr (N >=
+                      GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value) {
+            return StructApply(
+                    static_cast<typename std::conditional<
+                            std::is_const<TT>::value, const PrivateData &, PrivateData &>::type>(x),
+                    [](auto &&...args) -> decltype(auto) {
+                        return std::get<N - GetAmountOfPrivateDataFields<BaseClass>::value>(
+                                std::tie(args...));
+                    });
         } else {
-            return GetStructMember<N>(static_cast<typename std::conditional<std::is_const<TT>::value, const BaseClass &, BaseClass &>::type>(x));
+            return GetStructMember<N>(
+                    static_cast<typename std::conditional<std::is_const<TT>::value,
+                                                          const BaseClass &, BaseClass &>::type>(
+                            x));
         }
     }
 
@@ -178,18 +190,18 @@ namespace LuaStruct {
     template<class T, class Base>
     class TypeInterfaceDecoratorCommon : public Base {
     public:
-        std::string_view GetTypeName() const override {
-            return nameof::nameof_type<T>();
-        }
-        bool IsConst() const override {
-            return std::is_const<T>::value;
-        }
+        std::string_view GetTypeName() const override { return nameof::nameof_type<T>(); }
+        bool IsConst() const override { return std::is_const<T>::value; }
     };
     namespace detail {
         // hackme : ref type as pointer when pushed by __index to support a.b.c=2
         template<class T>
         auto MetaIndexImpl2(lua_State *L, T &&arg) {
-            if constexpr (std::disjunction<typename std::negation<IsCompleteType<typename std::remove_cv<T>::type>>::type, std::is_aggregate<typename std::remove_cv<T>::type>, IsSupportedClass<typename std::remove_cv<T>::type>>::value)
+            if constexpr (std::disjunction<
+                                  typename std::negation<
+                                          IsCompleteType<typename std::remove_cv<T>::type>>::type,
+                                  std::is_aggregate<typename std::remove_cv<T>::type>,
+                                  IsSupportedClass<typename std::remove_cv<T>::type>>::value)
                 Push(L, &arg);
             else
                 Push(L, arg);
@@ -217,9 +229,7 @@ namespace LuaStruct {
     template<class T, class Base, bool = IsCompleteType<typename std::remove_cv<T>::type>::value>
     class TypeInterfaceDecoratorComplete : public Base {
     public:
-        std::type_index GetTypeID() const override {
-            return typeid(void);
-        }
+        std::type_index GetTypeID() const override { return typeid(void); }
         int NewScalar(lua_State *L) const override {
             std::string type(this->GetTypeName());
             return luaL_error(L, "can not new incomplete ref type %s", type.c_str());
@@ -250,9 +260,7 @@ namespace LuaStruct {
         }
         int NewVector(lua_State *L) const override {
             auto len = lua_tointeger(L, 1);
-            if (len < 0) {
-                return luaL_error(L, "invalid new[] len %d", (int) len);
-            }
+            if (len < 0) { return luaL_error(L, "invalid new[] len %d", (int) len); }
             auto new_object = new T[len]{};
             Push(L, new_object);
             return 1;
@@ -271,7 +279,10 @@ namespace LuaStruct {
         }
     };
 
-    template<class T, class Base, bool = std::conjunction<IsCompleteType<typename std::remove_cv<T>::type>, std::negation<IsSupportedClass<typename std::remove_cv<T>::type>>>::value>
+    template<class T, class Base,
+             bool = std::conjunction<
+                     IsCompleteType<typename std::remove_cv<T>::type>,
+                     std::negation<IsSupportedClass<typename std::remove_cv<T>::type>>>::value>
     class TypeInterfaceDecoratorCopy : public Base {
     public:
         int Copy(lua_State *L) const override {
@@ -337,28 +348,27 @@ namespace LuaStruct {
         }
     };
     template<class Base>
-    class TypeInterfaceDecoratorToString<char, Base> : public TypeInterfaceDecoratorToString<const char, Base> {};
+    class TypeInterfaceDecoratorToString<char, Base>
+        : public TypeInterfaceDecoratorToString<const char, Base> {};
 
     template<class T, class Base,
-             bool = std::conjunction<IsCompleteType<typename std::remove_cv<T>::type>, std::is_aggregate<typename std::remove_cv<T>::type>>::value,
-             bool = std::conjunction<IsCompleteType<typename std::remove_cv<T>::type>, IsSupportedClass<typename std::remove_cv<T>::type>>::value>
+             bool = std::conjunction<IsCompleteType<typename std::remove_cv<T>::type>,
+                                     std::is_aggregate<typename std::remove_cv<T>::type>>::value,
+             bool = std::conjunction<IsCompleteType<typename std::remove_cv<T>::type>,
+                                     IsSupportedClass<typename std::remove_cv<T>::type>>::value>
     class TypeInterfaceDecoratorIndex : public Base {
     public:
-        size_t GetMemberCount() const override {
-            return 0;
-        }
+        size_t GetMemberCount() const override { return 0; }
         int MetaIndex(lua_State *L) const override {
             if (lua_type(L, 2) == LUA_TSTRING) {
-                if (!strcmp(lua_tostring(L, 2), "self"))
-                    return this->Copy(L);
+                if (!strcmp(lua_tostring(L, 2), "self")) return this->Copy(L);
                 return 0;
             }
             return 0;
         }
         int MetaNewIndex(lua_State *L) const override {
             if (lua_type(L, 2) == LUA_TSTRING) {
-                if (!strcmp(lua_tostring(L, 2), "self"))
-                    return this->Assign(L);
+                if (!strcmp(lua_tostring(L, 2), "self")) return this->Assign(L);
                 return 0;
             }
             return 0;
@@ -366,41 +376,44 @@ namespace LuaStruct {
     };
 
     namespace detail {
-        void TypeInterfaceStringIndexReplace(const ITypeInterface *ti, lua_State *L, std::string_view PathPrefix, std::string_view name);
+        void TypeInterfaceStringIndexReplace(const ITypeInterface *ti, lua_State *L,
+                                             std::string_view PathPrefix, std::string_view name);
     }
 
     template<class T, class Base>
     class TypeInterfaceDecoratorIndex<T, Base, true, false> : public Base {
     public:
-        size_t GetMemberCount() const override {
-            return StructMemberCount<T>();
-        }
+        size_t GetMemberCount() const override { return StructMemberCount<T>(); }
         int MetaIndex(lua_State *L) const override {
             if (lua_type(L, 2) == LUA_TSTRING) {
-                if (!strcmp(lua_tostring(L, 2), "self"))
-                    return this->Copy(L);
-                detail::TypeInterfaceStringIndexReplace(this, L, "struct/", nameof::nameof_short_type<typename std::decay<T>::type>());
+                if (!strcmp(lua_tostring(L, 2), "self")) return this->Copy(L);
+                detail::TypeInterfaceStringIndexReplace(
+                        this, L, "struct/",
+                        nameof::nameof_short_type<typename std::decay<T>::type>());
             }
             void *value = lua_touserdata(L, 1);
             int N = lua_tointeger(L, 2);
             T *object = reinterpret_cast<T *>(value);
             bool success = StructApply(*object, [L, N](auto &&...args) {
-                return detail::MetaIndexImpl(L, N, std::make_index_sequence<sizeof...(args)>(), std::forward<decltype(args)>(args)...);
+                return detail::MetaIndexImpl(L, N, std::make_index_sequence<sizeof...(args)>(),
+                                             std::forward<decltype(args)>(args)...);
             });
             return success ? 1 : 0;
         }
         int MetaNewIndex(lua_State *L) const override {
 
             if (lua_type(L, 2) == LUA_TSTRING) {
-                if (!strcmp(lua_tostring(L, 2), "self"))
-                    return this->Assign(L);
-                detail::TypeInterfaceStringIndexReplace(this, L, "struct/", nameof::nameof_short_type<typename std::decay<T>::type>());
+                if (!strcmp(lua_tostring(L, 2), "self")) return this->Assign(L);
+                detail::TypeInterfaceStringIndexReplace(
+                        this, L, "struct/",
+                        nameof::nameof_short_type<typename std::decay<T>::type>());
             }
             void *value = lua_touserdata(L, 1);
             int N = lua_tointeger(L, 2);
             T *object = reinterpret_cast<T *>(value);
             bool success = StructApply(*object, [L, N](auto &&...args) {
-                return detail::MetaNewIndexImpl(L, N, std::make_index_sequence<sizeof...(args)>(), std::forward<decltype(args)>(args)...);
+                return detail::MetaNewIndexImpl(L, N, std::make_index_sequence<sizeof...(args)>(),
+                                                std::forward<decltype(args)>(args)...);
             });
             if (!success) {
                 std::string type(this->GetTypeName());
@@ -410,38 +423,37 @@ namespace LuaStruct {
         }
     };
 
-
     template<class T, class Base>
     class TypeInterfaceDecoratorIndex<T, Base, false, true> : public Base {
     public:
-        static constexpr auto MemberCount = GetAmountOfPrivateDataFields<typename std::remove_const<T>::type>::value;
-        size_t GetMemberCount() const override {
-            return MemberCount;
-        }
+        static constexpr auto MemberCount =
+                GetAmountOfPrivateDataFields<typename std::remove_const<T>::type>::value;
+        size_t GetMemberCount() const override { return MemberCount; }
         template<std::size_t... I>
         int MetaIndexImpl(lua_State *L, T &objref, std::size_t N, std::index_sequence<I...>) const {
             static constexpr void (*meta_switch[sizeof...(I)])(lua_State * L, T & objref) = {
-                    +[](lua_State *L, T &objref) { detail::MetaIndexImpl2(L, GetStructMember<I>(objref)); }...};
-            if (N < 1 || N > sizeof...(I))
-                return 0;
+                    +[](lua_State *L, T &objref) {
+                        detail::MetaIndexImpl2(L, GetStructMember<I>(objref));
+                    }...};
+            if (N < 1 || N > sizeof...(I)) return 0;
             meta_switch[N - 1](L, objref);
             return 1;
         }
         template<std::size_t... I>
-        int MetaNewIndexImpl(lua_State *L, T &objref, std::size_t N, std::index_sequence<I...>) const {
+        int MetaNewIndexImpl(lua_State *L, T &objref, std::size_t N,
+                             std::index_sequence<I...>) const {
             static constexpr void (*meta_switch[sizeof...(I)])(lua_State * L, T & objref) = {
                     +[](lua_State *L, T &objref) { Get(L, -1, GetStructMember<I>(objref)); }...};
-            if (N < 1 || N > sizeof...(I))
-                return 0;
+            if (N < 1 || N > sizeof...(I)) return 0;
             meta_switch[N - 1](L, objref);
             return 1;
         }
         int MetaIndex(lua_State *L) const override {
             if (lua_type(L, 2) == LUA_TSTRING) {
-                if (!strcmp(lua_tostring(L, 2), "self"))
-                    return this->Copy(L);
+                if (!strcmp(lua_tostring(L, 2), "self")) return this->Copy(L);
             }
-            detail::TypeInterfaceStringIndexReplace(this, L, "class/", nameof::nameof_short_type<typename std::decay<T>::type>());
+            detail::TypeInterfaceStringIndexReplace(
+                    this, L, "class/", nameof::nameof_short_type<typename std::decay<T>::type>());
             void *value = lua_touserdata(L, 1);
             int N = lua_tointeger(L, 2);
             if (T *object = reinterpret_cast<T *>(value))
@@ -450,10 +462,10 @@ namespace LuaStruct {
         }
         int MetaNewIndex(lua_State *L) const override {
             if (lua_type(L, 2) == LUA_TSTRING) {
-                if (!strcmp(lua_tostring(L, 2), "self"))
-                    return this->Assign(L);
+                if (!strcmp(lua_tostring(L, 2), "self")) return this->Assign(L);
             }
-            detail::TypeInterfaceStringIndexReplace(this, L, "class/", nameof::nameof_short_type<typename std::decay<T>::type>());
+            detail::TypeInterfaceStringIndexReplace(
+                    this, L, "class/", nameof::nameof_short_type<typename std::decay<T>::type>());
             void *value = lua_touserdata(L, 1);
             int N = lua_tointeger(L, 2);
             T *object = reinterpret_cast<T *>(value);
@@ -469,7 +481,8 @@ namespace LuaStruct {
         {
         };
         template<class T>
-        struct IsFunctionType<T, std::void_t<decltype(std::function(std::declval<T>()))>> : std::true_type
+        struct IsFunctionType<T, std::void_t<decltype(std::function(std::declval<T>()))>>
+            : std::true_type
         {
         };
     }// namespace detail
@@ -496,9 +509,11 @@ namespace LuaStruct {
     template<class T, class Base>
     class TypeInterfaceDecoratorCall<T, Base, true> : public Base {
         template<std::size_t... I, class Ret, class... Args>
-        int MetaCallImpl2(lua_State *L, std::index_sequence<I...>, TypeIdentity<std::function<Ret(Args...)>>) const {
+        int MetaCallImpl2(lua_State *L, std::index_sequence<I...>,
+                          TypeIdentity<std::function<Ret(Args...)>>) const {
             if (int argn = lua_gettop(L); argn - 1 < (int) sizeof...(I)) {
-                luaL_error(L, "bad function call with unmatched args, excepted %d got %d", static_cast<int>(sizeof...(I)), argn - 1);
+                luaL_error(L, "bad function call with unmatched args, excepted %d got %d",
+                           static_cast<int>(sizeof...(I)), argn - 1);
                 return 0;
             }
 
@@ -508,7 +523,9 @@ namespace LuaStruct {
             // dont support lvalue reference
             //static_assert((... && !(std::is_lvalue_reference<Args>::value && !std::is_const<typename std::remove_reference<Args>::type>::value)));
 
-            std::tuple<typename std::remove_const<typename std::remove_reference<Args>::type>::type...> args;
+            std::tuple<
+                    typename std::remove_const<typename std::remove_reference<Args>::type>::type...>
+                    args;
             (..., Get(L, I + 2, std::get<I>(args)));
             if constexpr (std::is_void_v<Ret>) {
                 (*pfn)(std::get<I>(args)...);
@@ -517,7 +534,11 @@ namespace LuaStruct {
                 Push(L, std::move(ret));
             }
 
-            return (!std::is_void_v<Ret> + ... + PushIfLvRef(L, std::get<I>(args), std::bool_constant<(std::is_lvalue_reference<Args>::value && !std::is_const<typename std::remove_reference<Args>::type>::value)>()));
+            return (!std::is_void_v<Ret> + ... +
+                    PushIfLvRef(L, std::get<I>(args),
+                                std::bool_constant<(std::is_lvalue_reference<Args>::value &&
+                                                    !std::is_const<typename std::remove_reference<
+                                                            Args>::type>::value)>()));
         }
 
         template<std::size_t... I, class Ret, class... Args>
@@ -531,13 +552,14 @@ namespace LuaStruct {
     };
 
     template<class T>
-    class TypeInterface : public TypeInterfaceDecoratorCommon<T,
-                                                              TypeInterfaceDecoratorIndex<T,
-                                                                                          TypeInterfaceDecoratorComplete<T,
-                                                                                                                         TypeInterfaceDecoratorCopy<T,
-                                                                                                                                                    TypeInterfaceDecoratorCall<T,
-                                                                                                                                                                               TypeInterfaceDecoratorToString<T,
-                                                                                                                                                                                                              ITypeInterface>>>>>> {
+    class TypeInterface
+        : public TypeInterfaceDecoratorCommon<
+                  T, TypeInterfaceDecoratorIndex<
+                             T, TypeInterfaceDecoratorComplete<
+                                        T, TypeInterfaceDecoratorCopy<
+                                                   T, TypeInterfaceDecoratorCall<
+                                                              T, TypeInterfaceDecoratorToString<
+                                                                         T, ITypeInterface>>>>>> {
     public:
         TypeInterface();
     };
@@ -566,8 +588,7 @@ namespace LuaStruct {
     template<int (ITypeInterface::*pmemfn)(lua_State *) const>
     int RefValueMetaDispatch(lua_State *L) {
         void *value = lua_touserdata(L, 1);
-        if (const ITypeInterface *ti = GetTypeInterface(L, value))
-            return (ti->*pmemfn)(L);
+        if (const ITypeInterface *ti = GetTypeInterface(L, value)) return (ti->*pmemfn)(L);
         luaL_error(L, "unrecognized ref ptr %x", value);
         return 0;
     }
@@ -580,27 +601,36 @@ namespace LuaStruct {
     struct PushLambda
     {
         template<class T>
-        auto operator()(T &&in) { return Push(L, std::forward<T>(in)); }
+        auto operator()(T &&in) {
+            return Push(L, std::forward<T>(in));
+        }
         lua_State *const L;
     };
     template<class T>
-    auto PushBoolean(lua_State *L, T x) -> typename std::enable_if<std::is_same<T, bool>::value>::type {
+    auto PushBoolean(lua_State *L, T x) ->
+            typename std::enable_if<std::is_same<T, bool>::value>::type {
         lua_pushboolean(L, x);
     }
     template<class T>
-    auto PushInteger(lua_State *L, T x) -> typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value>::type {
+    auto PushInteger(lua_State *L, T x) ->
+            typename std::enable_if<std::is_integral<T>::value &&
+                                    !std::is_same<T, bool>::value>::type {
         lua_pushinteger(L, x);
     }
     template<class T>
-    auto PushFloat(lua_State *L, T x) -> typename std::enable_if<std::is_floating_point<T>::value>::type {
+    auto PushFloat(lua_State *L, T x) ->
+            typename std::enable_if<std::is_floating_point<T>::value>::type {
         lua_pushnumber(L, x);
     }
     template<class T, class Ratio>
-    auto PushFloat(lua_State *L, std::chrono::duration<T, Ratio> x) -> typename std::enable_if<std::is_floating_point<T>::value>::type {
-        lua_pushnumber(L, std::chrono::duration_cast<std::chrono::duration<T, std::ratio<1>>>(x).count());
+    auto PushFloat(lua_State *L, std::chrono::duration<T, Ratio> x) ->
+            typename std::enable_if<std::is_floating_point<T>::value>::type {
+        lua_pushnumber(
+                L, std::chrono::duration_cast<std::chrono::duration<T, std::ratio<1>>>(x).count());
     }
     template<class Clock, class Duration>
-    auto PushFloat(lua_State *L, const std::chrono::time_point<Clock, Duration> &x) -> typename std::enable_if<std::is_floating_point<typename Duration::rep>::value>::type {
+    auto PushFloat(lua_State *L, const std::chrono::time_point<Clock, Duration> &x) ->
+            typename std::enable_if<std::is_floating_point<typename Duration::rep>::value>::type {
         PushFloat(L, x.time_since_epoch());
     }
     template<class T>
@@ -615,13 +645,12 @@ namespace LuaStruct {
     inline void PushString(lua_State *L, std::string_view str) {
         lua_pushlstring(L, str.data(), str.size());
     }
-    inline void PushNil(lua_State *L, std::nullptr_t = nullptr) {
-        lua_pushboolean(L, false);
-    }
+    inline void PushNil(lua_State *L, std::nullptr_t = nullptr) { lua_pushboolean(L, false); }
     using std::begin;
     using std::end;
     template<class T>
-    auto PushArray(lua_State *L, T &&v) -> decltype(begin(std::forward<T>(v)), end(std::forward<T>(v)), void()) {
+    auto PushArray(lua_State *L, T &&v)
+            -> decltype(begin(std::forward<T>(v)), end(std::forward<T>(v)), void()) {
         lua_newtable(L);
         int i = 0;
         for (auto &&x: std::forward<T>(v)) {
@@ -633,21 +662,23 @@ namespace LuaStruct {
     namespace detail {
         template<std::size_t... I, class... Args>
         void PushStructImpl(lua_State *L, std::index_sequence<I...>, Args &&...args) {
-            (lua_newtable(L), ..., (lua_pushinteger(L, I + 1), Push(L, std::forward<Args>(args)), lua_settable(L, -3)));
+            (lua_newtable(L), ...,
+             (lua_pushinteger(L, I + 1), Push(L, std::forward<Args>(args)), lua_settable(L, -3)));
         }
     }// namespace detail
     template<class T>
-    auto PushStruct(lua_State *L, T &&v) -> typename std::enable_if<std::is_aggregate<typename std::decay<T>::type>::value>::type {
+    auto PushStruct(lua_State *L, T &&v) ->
+            typename std::enable_if<std::is_aggregate<typename std::decay<T>::type>::value>::type {
         StructApply(v, [L](auto &&...args) {
-            detail::PushStructImpl(L, std::make_index_sequence<sizeof...(args)>(), std::forward<decltype(args)>(args)...);
+            detail::PushStructImpl(L, std::make_index_sequence<sizeof...(args)>(),
+                                   std::forward<decltype(args)>(args)...);
         });
         CallOnStructCreate<typename std::decay<T>::type>(L);
     }
     int PushLuaObjectByPtr(lua_State *L, void *Ptr);
     template<class T>
     void PushPointer(lua_State *L, T *ptr) {
-        if (!ptr)
-            return lua_pushboolean(L, false);
+        if (!ptr) return lua_pushboolean(L, false);
         if (!PushLuaObjectByPtr(L, (void *) ptr)) {
             lua_pushlightuserdata(L, (void *) ptr);// #1 = ptr
             SetupRefTypeInterface(L, (void *) ptr, CreateTypeInterface<T>());
@@ -672,12 +703,8 @@ namespace LuaStruct {
 		lua_pushlightuserdata(L, nullptr);
 	}
 	*/
-    inline void PushString(lua_State *L, char *ptr) {
-        PushPointer(L, ptr);
-    }
-    inline void PushString(lua_State *L, const char *ptr) {
-        lua_pushstring(L, ptr);
-    }
+    inline void PushString(lua_State *L, char *ptr) { PushPointer(L, ptr); }
+    inline void PushString(lua_State *L, const char *ptr) { lua_pushstring(L, ptr); }
     template<class T>
     auto PushCustom(lua_State *L, const T &x) -> decltype(x.LuaPush(L)) {
         return x.LuaPush(L);
@@ -697,27 +724,33 @@ namespace LuaStruct {
             return PushEnum(L, x);
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<5>, int = 0) -> decltype(PushInteger(L, x)) {
+        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<5>, int = 0)
+                -> decltype(PushInteger(L, x)) {
             return PushInteger(L, x);
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<5>, float = 0) -> decltype(PushFloat(L, x)) {
+        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<5>, float = 0)
+                -> decltype(PushFloat(L, x)) {
             return PushFloat(L, x);
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T &&x, PriorityTag<4>) -> decltype(PushString(L, std::forward<T>(x))) {
+        auto PushUnknownImpl(lua_State *L, T &&x, PriorityTag<4>)
+                -> decltype(PushString(L, std::forward<T>(x))) {
             return PushString(L, std::forward<T>(x));
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T &&x, PriorityTag<3>) -> decltype(PushArray(L, std::forward<T>(x))) {
+        auto PushUnknownImpl(lua_State *L, T &&x, PriorityTag<3>)
+                -> decltype(PushArray(L, std::forward<T>(x))) {
             return PushArray(L, std::forward<T>(x));
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T &&x, PriorityTag<2>) -> decltype(PushStruct(L, std::forward<T>(x))) {
+        auto PushUnknownImpl(lua_State *L, T &&x, PriorityTag<2>)
+                -> decltype(PushStruct(L, std::forward<T>(x))) {
             return PushStruct(L, std::forward<T>(x));
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<1>) -> decltype(PushMemberPointer(L, x)) {
+        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<1>)
+                -> decltype(PushMemberPointer(L, x)) {
             return PushMemberPointer(L, x);
         }
         template<class T>
@@ -725,41 +758,46 @@ namespace LuaStruct {
             return PushPointer(L, x);
         }
         template<class T>
-        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<0>, std::nullptr_t = nullptr) -> typename std::enable_if<std::is_null_pointer<T>::value>::type {
+        auto PushUnknownImpl(lua_State *L, T x, PriorityTag<0>, std::nullptr_t = nullptr) ->
+                typename std::enable_if<std::is_null_pointer<T>::value>::type {
             return PushNil(L, x);
         }
         using MaxPriorityTag = PriorityTag<10>;
         template<class T>
-        auto PushImpl(lua_State *L, T &&value) -> decltype(PushUnknownImpl(L, std::forward<T>(value), MaxPriorityTag())) {
+        auto PushImpl(lua_State *L, T &&value)
+                -> decltype(PushUnknownImpl(L, std::forward<T>(value), MaxPriorityTag())) {
             return PushUnknownImpl(L, std::forward<T>(value), MaxPriorityTag());
         }
     }// namespace detail
 
-    inline void GetBoolean(lua_State *L, int N, bool &x) {
-        x = lua_toboolean(L, N);
-    }
+    inline void GetBoolean(lua_State *L, int N, bool &x) { x = lua_toboolean(L, N); }
     template<class T>
-    auto GetInteger(lua_State *L, int N, T &x) -> typename std::enable_if<std::is_integral<T>::value>::type {
+    auto GetInteger(lua_State *L, int N, T &x) ->
+            typename std::enable_if<std::is_integral<T>::value>::type {
         x = lua_tointeger(L, N);
     }
     template<class T>
-    auto GetFloat(lua_State *L, int N, T &x) -> typename std::enable_if<std::is_floating_point<T>::value>::type {
+    auto GetFloat(lua_State *L, int N, T &x) ->
+            typename std::enable_if<std::is_floating_point<T>::value>::type {
         x = lua_tonumber(L, N);
     }
     template<class T, class Ratio>
-    auto GetFloat(lua_State *L, int N, std::chrono::duration<T, Ratio> &x) -> typename std::enable_if<std::is_floating_point<T>::value>::type {
+    auto GetFloat(lua_State *L, int N, std::chrono::duration<T, Ratio> &x) ->
+            typename std::enable_if<std::is_floating_point<T>::value>::type {
         T y;
         GetFloat(L, N, y);
         x = std::chrono::duration<T, std::ratio<1>>(y);
     }
     template<class Clock, class Duration>
-    auto GetFloat(lua_State *L, int N, std::chrono::time_point<Clock, Duration> &x) -> typename std::enable_if<std::is_floating_point<typename Duration::rep>::value>::type {
+    auto GetFloat(lua_State *L, int N, std::chrono::time_point<Clock, Duration> &x) ->
+            typename std::enable_if<std::is_floating_point<typename Duration::rep>::value>::type {
         Duration z;
         GetFloat(L, N, z);
         x = std::chrono::time_point<Clock, Duration>() + z;
     }
     template<class T>
-    auto GetEnum(lua_State *L, int N, T &x) -> typename std::enable_if<std::is_enum<T>::value>::type {
+    auto GetEnum(lua_State *L, int N, T &x) ->
+            typename std::enable_if<std::is_enum<T>::value>::type {
         typename std::underlying_type<T>::type y;
         GetInteger(L, N, y);
         x = static_cast<T>(y);
@@ -771,12 +809,8 @@ namespace LuaStruct {
             sz = lua_tostring(L, N);
         }
     }
-    inline void GetString(lua_State *L, int N, std::string &str) {
-        str = lua_tostring(L, N);
-    }
-    inline void GetString(lua_State *L, int N, std::string_view &sv) {
-        sv = lua_tostring(L, N);
-    }
+    inline void GetString(lua_State *L, int N, std::string &str) { str = lua_tostring(L, N); }
+    inline void GetString(lua_State *L, int N, std::string_view &sv) { sv = lua_tostring(L, N); }
     inline void GetNil(lua_State *L, int N, std::nullptr_t &np) {}
     template<class T, std::size_t Size>
     auto GetArray(lua_State *L, int N, std::array<T, Size> &arr) {
@@ -830,20 +864,20 @@ namespace LuaStruct {
         template<std::size_t... I, class... Args>
         void GetStructImpl(lua_State *L, std::index_sequence<I...>, Args &...args) {
             // #1 = struct
-            (..., (
-                          lua_pushinteger(L, I + 1),
-                          // #2 = I+1
-                          lua_gettable(L, -2),
-                          // #2 = vec[I+1]
-                          Get(L, -1, args),
-                          //
-                          lua_pop(L, 1)
-                          // #1 = struct
-                          ));
+            (..., (lua_pushinteger(L, I + 1),
+                   // #2 = I+1
+                   lua_gettable(L, -2),
+                   // #2 = vec[I+1]
+                   Get(L, -1, args),
+                   //
+                   lua_pop(L, 1)
+                   // #1 = struct
+                   ));
         }
     }// namespace detail
     template<class T>
-    auto GetStruct(lua_State *L, int N, T &v) -> typename std::enable_if<std::is_aggregate<typename std::decay<T>::type>::value>::type {
+    auto GetStruct(lua_State *L, int N, T &v) ->
+            typename std::enable_if<std::is_aggregate<typename std::decay<T>::type>::value>::type {
         lua_pushvalue(L, N);
         // #1 = struct
         StructApply(v, [L](auto &...args) {
@@ -894,60 +928,74 @@ namespace LuaStruct {
 
     namespace detail {
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<10>) -> decltype(GetCustom(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<10>)
+                -> decltype(GetCustom(L, N, x)) {
             return GetCustom(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<8>) -> decltype(GetBoolean(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<8>)
+                -> decltype(GetBoolean(L, N, x)) {
             return GetBoolean(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<7>) -> decltype(GetEnum(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<7>)
+                -> decltype(GetEnum(L, N, x)) {
             return GetEnum(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<6>, int = 0) -> decltype(GetInteger(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<6>, int = 0)
+                -> decltype(GetInteger(L, N, x)) {
             return GetInteger(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<6>, float = 0) -> decltype(GetFloat(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<6>, float = 0)
+                -> decltype(GetFloat(L, N, x)) {
             return GetFloat(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<5>) -> decltype(GetString(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<5>)
+                -> decltype(GetString(L, N, x)) {
             return GetString(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<4>) -> decltype(GetEntity(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<4>)
+                -> decltype(GetEntity(L, N, x)) {
             return GetEntity(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<4>) -> decltype(GetVector(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<4>)
+                -> decltype(GetVector(L, N, x)) {
             return GetVector(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<3>) -> decltype(GetArray(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<3>)
+                -> decltype(GetArray(L, N, x)) {
             return GetArray(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<2>) -> decltype(GetStruct(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<2>)
+                -> decltype(GetStruct(L, N, x)) {
             return GetStruct(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<1>) -> decltype(GetMemberPointer(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<1>)
+                -> decltype(GetMemberPointer(L, N, x)) {
             return GetMemberPointer(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<0>) -> decltype(GetPointer(L, N, x)) {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<0>)
+                -> decltype(GetPointer(L, N, x)) {
             return GetPointer(L, N, x);
         }
         template<class T>
-        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<0>, std::nullptr_t = nullptr) -> typename std::enable_if<std::is_null_pointer<T>::value>::type {
+        auto GetUnknownImpl(lua_State *L, int N, T &x, PriorityTag<0>, std::nullptr_t = nullptr) ->
+                typename std::enable_if<std::is_null_pointer<T>::value>::type {
             return GetNil(L, N, x);
         }
         using MaxPriorityTag = PriorityTag<10>;
         template<class T>
-        auto GetImpl(lua_State *L, int N, T &value) -> decltype(GetUnknownImpl(L, N, value, MaxPriorityTag())) {
+        auto GetImpl(lua_State *L, int N, T &value)
+                -> decltype(GetUnknownImpl(L, N, value, MaxPriorityTag())) {
             return GetUnknownImpl(L, N, value, MaxPriorityTag());
         }
     }// namespace detail
@@ -967,7 +1015,6 @@ namespace LuaStruct {
     }
 }// namespace LuaStruct
 
-
 #define METAENGINE_LUAWRAPPER_USE_CPP11 1
 
 #ifndef METAENGINE_LUAWRAPPER_NO_USERDATA_TYPE_CHECK
@@ -981,7 +1028,8 @@ namespace LuaStruct {
 #endif
 
 #ifndef METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK
-#define METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK METAENGINE_LUAWRAPPER_SUPPORT_MULTIPLE_SHARED_LIBRARY
+#define METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK                                                \
+    METAENGINE_LUAWRAPPER_SUPPORT_MULTIPLE_SHARED_LIBRARY
 #endif
 
 #ifdef METAENGINE_LUAWRAPPER_NO_VECTOR_AND_MAP_TO_TABLE
@@ -1010,7 +1058,8 @@ namespace LuaStruct {
 #define METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES 9
 #endif
 
-#if defined(__GNUC__) || defined(__clang__) && (!defined(_MSC_VER) && !defined(METADOT_PLATFORM_WINDOWS))
+#if defined(__GNUC__) ||                                                                           \
+        defined(__clang__) && (!defined(_MSC_VER) && !defined(METADOT_PLATFORM_WINDOWS))
 #define METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE
 #endif
 
@@ -1098,9 +1147,7 @@ namespace LuaWrapper {
         optional() : value_(0){};
         optional(nullopt_t) : value_(0){};
         optional(const optional &other) : value_(0) {
-            if (other) {
-                value_ = new (&storage_) T(other.value());
-            }
+            if (other) { value_ = new (&storage_) T(other.value()); }
         }
         optional(const T &value) { value_ = new (&storage_) T(value); }
 
@@ -1128,9 +1175,7 @@ namespace LuaWrapper {
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
         optional(optional &&other) : value_(0) {
-            if (other) {
-                value_ = new (&storage_) T(std::move(other.value()));
-            }
+            if (other) { value_ = new (&storage_) T(std::move(other.value())); }
         }
         optional(T &&value) { value_ = new (&storage_) T(std::move(value)); }
         optional &operator=(optional &&other) {
@@ -1156,32 +1201,24 @@ namespace LuaWrapper {
             return value_ != 0 ? &optional::this_type_does_not_support_comparisons : 0;
         }
         T &value() {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             throw bad_optional_access();
         }
         const T &value() const {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             throw bad_optional_access();
         }
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
         template<class U>
         T value_or(U &&default_value) const {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             return default_value;
         }
 #else
         template<class U>
         T value_or(const U &default_value) const {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             return default_value;
         }
 #endif
@@ -1210,8 +1247,8 @@ namespace LuaWrapper {
             }
         }
 
-        typename standard::aligned_storage<
-                sizeof(T), standard::alignment_of<T>::value>::type storage_;
+        typename standard::aligned_storage<sizeof(T), standard::alignment_of<T>::value>::type
+                storage_;
 
         T *value_;
     };
@@ -1248,30 +1285,22 @@ namespace LuaWrapper {
             return value_ != 0 ? &optional::this_type_does_not_support_comparisons : 0;
         }
         T &value() {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             throw bad_optional_access();
         }
         const T &value() const {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             throw bad_optional_access();
         }
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
         T &value_or(T &default_value) const {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             return default_value;
         }
 #else
         T &value_or(T &default_value) const {
-            if (value_) {
-                return *value_;
-            }
+            if (value_) { return *value_; }
             return default_value;
         }
 #endif
@@ -1302,12 +1331,8 @@ namespace LuaWrapper {
     ///@{
     template<class T>
     bool operator==(const optional<T> &lhs, const optional<T> &rhs) {
-        if (bool(lhs) != bool(rhs)) {
-            return false;
-        }
-        if (bool(lhs) == false) {
-            return true;
-        }
+        if (bool(lhs) != bool(rhs)) { return false; }
+        if (bool(lhs) == false) { return true; }
         return lhs.value() == rhs.value();
     }
     template<class T>
@@ -1316,12 +1341,8 @@ namespace LuaWrapper {
     }
     template<class T>
     bool operator<(const optional<T> &lhs, const optional<T> &rhs) {
-        if (!bool(rhs)) {
-            return false;
-        }
-        if (!bool(lhs)) {
-            return true;
-        }
+        if (!bool(rhs)) { return false; }
+        if (!bool(lhs)) { return true; }
         return lhs.value() < rhs.value();
     }
     template<class T>
@@ -1340,7 +1361,6 @@ namespace LuaWrapper {
 
     /// @}
 }// namespace LuaWrapper
-
 
 namespace LuaWrapper {
     namespace traits {
@@ -1381,8 +1401,7 @@ namespace LuaWrapper {
         template<typename T_Mem>
         struct is_object
         {
-            typedef typename standard::is_member_function_pointer<T_Mem Helper::*>::type
-                    NotResult;
+            typedef typename standard::is_member_function_pointer<T_Mem Helper::*>::type NotResult;
             enum {
                 value = !NotResult::value
             };
@@ -1516,8 +1535,7 @@ namespace LuaWrapper {
     {
     };
     template<typename T>
-    struct is_usertype<T, typename lua_type_traits<T>::Registerable>
-        : traits::true_type
+    struct is_usertype<T, typename lua_type_traits<T>::Registerable> : traits::true_type
     {
     };
 
@@ -1529,7 +1547,6 @@ namespace LuaWrapper {
     };
 }// namespace LuaWrapper
 
-
 namespace LuaWrapper {
     // for lua version compatibility
     namespace compat {
@@ -1537,15 +1554,11 @@ namespace LuaWrapper {
         inline int lua_rawgetp_rtype(lua_State *L, int idx, const void *ptr) {
             return lua_rawgetp(L, idx, ptr);
         }
-        inline int lua_rawget_rtype(lua_State *L, int idx) {
-            return lua_rawget(L, idx);
-        }
+        inline int lua_rawget_rtype(lua_State *L, int idx) { return lua_rawget(L, idx); }
         inline int lua_getfield_rtype(lua_State *L, int idx, const char *k) {
             return lua_getfield(L, idx, k);
         }
-        inline int lua_gettable_rtype(lua_State *L, int idx) {
-            return lua_gettable(L, idx);
-        }
+        inline int lua_gettable_rtype(lua_State *L, int idx) { return lua_gettable(L, idx); }
 #elif LUA_VERSION_NUM == 502
         inline int lua_rawgetp_rtype(lua_State *L, int idx, const void *ptr) {
             lua_rawgetp(L, idx, ptr);
@@ -1570,9 +1583,7 @@ namespace LuaWrapper {
             }
         }
 
-        inline void lua_pushglobaltable(lua_State *L) {
-            lua_pushvalue(L, LUA_GLOBALSINDEX);
-        }
+        inline void lua_pushglobaltable(lua_State *L) { lua_pushvalue(L, LUA_GLOBALSINDEX); }
         inline size_t lua_rawlen(lua_State *L, int index) {
             int type = lua_type(L, index);
             if (type != LUA_TSTRING && type != LUA_TTABLE && type != LUA_TUSERDATA &&
@@ -1587,8 +1598,7 @@ namespace LuaWrapper {
             return ::lua_resume(L, nargs);
         }
         inline int lua_absindex(lua_State *L, int idx) {
-            return (idx > 0 || (idx <= LUA_REGISTRYINDEX)) ? idx
-                                                           : lua_gettop(L) + 1 + idx;
+            return (idx > 0 || (idx <= LUA_REGISTRYINDEX)) ? idx : lua_gettop(L) + 1 + idx;
         }
         inline int lua_rawgetp_rtype(lua_State *L, int idx, const void *ptr) {
             int absidx = lua_absindex(L, idx);
@@ -1603,8 +1613,7 @@ namespace LuaWrapper {
             lua_replace(L, -3);
             lua_rawset(L, absidx);
         }
-        inline void luaL_requiref(lua_State *L, const char *modname,
-                                  lua_CFunction openf, int glb) {
+        inline void luaL_requiref(lua_State *L, const char *modname, lua_CFunction openf, int glb) {
 
             lua_pushcfunction(L, openf);
             lua_pushstring(L, modname);
@@ -1616,9 +1625,7 @@ namespace LuaWrapper {
             }
         }
         inline lua_Number lua_tonumberx(lua_State *L, int index, int *isnum) {
-            if (isnum) {
-                *isnum = lua_isnumber(L, index);
-            }
+            if (isnum) { *isnum = lua_isnumber(L, index); }
             return lua_tonumber(L, index);
         }
 #endif
@@ -1657,7 +1664,6 @@ namespace LuaWrapper {
     using namespace compat;
 }// namespace LuaWrapper
 
-
 namespace LuaWrapper {
     class LuaException : public std::exception {
         int status_;
@@ -1665,8 +1671,7 @@ namespace LuaWrapper {
         const char *what_c_;
 
     public:
-        LuaException(int status, const char *what) throw()
-            : status_(status), what_c_(what) {}
+        LuaException(int status, const char *what) throw() : status_(status), what_c_(what) {}
         LuaException(int status, const std::string &what)
             : status_(status), what_(what), what_c_(0) {}
         int status() const throw() { return status_; }
@@ -1693,44 +1698,33 @@ namespace LuaWrapper {
     };
     class LuaMemoryError : public LuaException {
     public:
-        LuaMemoryError(int status, const char *what) throw()
-            : LuaException(status, what) {}
-        LuaMemoryError(int status, const std::string &what)
-            : LuaException(status, what) {}
+        LuaMemoryError(int status, const char *what) throw() : LuaException(status, what) {}
+        LuaMemoryError(int status, const std::string &what) : LuaException(status, what) {}
     };
     class LuaRuntimeError : public LuaException {
     public:
-        LuaRuntimeError(int status, const char *what) throw()
-            : LuaException(status, what) {}
-        LuaRuntimeError(int status, const std::string &what)
-            : LuaException(status, what) {}
+        LuaRuntimeError(int status, const char *what) throw() : LuaException(status, what) {}
+        LuaRuntimeError(int status, const std::string &what) : LuaException(status, what) {}
     };
     class LuaErrorRunningError : public LuaException {
     public:
-        LuaErrorRunningError(int status, const char *what) throw()
-            : LuaException(status, what) {}
-        LuaErrorRunningError(int status, const std::string &what)
-            : LuaException(status, what) {}
+        LuaErrorRunningError(int status, const char *what) throw() : LuaException(status, what) {}
+        LuaErrorRunningError(int status, const std::string &what) : LuaException(status, what) {}
     };
     class LuaGCError : public LuaException {
     public:
-        LuaGCError(int status, const char *what) throw()
-            : LuaException(status, what) {}
-        LuaGCError(int status, const std::string &what)
-            : LuaException(status, what) {}
+        LuaGCError(int status, const char *what) throw() : LuaException(status, what) {}
+        LuaGCError(int status, const std::string &what) : LuaException(status, what) {}
     };
     class LuaUnknownError : public LuaException {
     public:
-        LuaUnknownError(int status, const char *what) throw()
-            : LuaException(status, what) {}
-        LuaUnknownError(int status, const std::string &what)
-            : LuaException(status, what) {}
+        LuaUnknownError(int status, const char *what) throw() : LuaException(status, what) {}
+        LuaUnknownError(int status, const std::string &what) : LuaException(status, what) {}
     };
 
     class LuaSyntaxError : public LuaException {
     public:
-        LuaSyntaxError(int status, const std::string &what)
-            : LuaException(status, what) {}
+        LuaSyntaxError(int status, const std::string &what) : LuaException(status, what) {}
     };
 
     namespace except {
@@ -1742,7 +1736,6 @@ namespace LuaWrapper {
 }// namespace LuaWrapper
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
-
 
 namespace LuaWrapper {
     namespace util {
@@ -1793,15 +1786,15 @@ namespace LuaWrapper {
         {
         };
         template<typename T>
-        struct has_operator_fn<T, typename std::enable_if<!std::is_same<
-                                          void, decltype(&T::operator())>::value>::type>
+        struct has_operator_fn<
+                T,
+                typename std::enable_if<!std::is_same<void, decltype(&T::operator())>::value>::type>
             : std::true_type
         {
         };
 
         template<typename T>
-        struct FunctionSignature<
-                T, typename std::enable_if<has_operator_fn<T>::value>::type>
+        struct FunctionSignature<T, typename std::enable_if<has_operator_fn<T>::value>::type>
             : public FunctorSignature<decltype(&T::operator())>
         {
         };
@@ -1872,29 +1865,25 @@ namespace LuaWrapper {
         namespace detail {
             template<class F, class ThisType, class... Args>
             auto invoke_helper(F &&f, ThisType &&this_, Args &&...args)
-                    -> decltype((std::forward<ThisType>(this_).*
-                                 f)(std::forward<Args>(args)...)) {
+                    -> decltype((std::forward<ThisType>(this_).*f)(std::forward<Args>(args)...)) {
                 return (std::forward<ThisType>(this_).*f)(std::forward<Args>(args)...);
             }
 
             template<class F, class... Args>
-            auto invoke_helper(F &&f, Args &&...args)
-                    -> decltype(f(std::forward<Args>(args)...)) {
+            auto invoke_helper(F &&f, Args &&...args) -> decltype(f(std::forward<Args>(args)...)) {
                 return f(std::forward<Args>(args)...);
             }
         }// namespace detail
         template<class F, class... Args>
-        typename FunctionResultType<typename traits::decay<F>::type>::type
-        invoke(F &&f, Args &&...args) {
+        typename FunctionResultType<typename traits::decay<F>::type>::type invoke(F &&f,
+                                                                                  Args &&...args) {
             return detail::invoke_helper(std::forward<F>(f), std::forward<Args>(args)...);
         }
     }// namespace util
 }// namespace LuaWrapper
 #else
 
-
 #include <string>
-
 
 namespace LuaWrapper {
     namespace util {
@@ -1903,11 +1892,13 @@ namespace LuaWrapper {
         {
         };
 
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP(N) METAENGINE_LUAWRAPPER_PP_CAT(typename A, N) = null_type
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N) \
+#define METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP(N)                                                \
+    METAENGINE_LUAWRAPPER_PP_CAT(typename A, N) = null_type
+#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N)                                     \
     METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP)
 
-        template<METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
+        template<METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(
+                METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
         struct TypeTuple
         {
         };
@@ -1915,89 +1906,92 @@ namespace LuaWrapper {
         template<typename F>
         struct TypeTupleSize;
 
-#define METAENGINE_LUAWRAPPER_TYPE_TUPLE_SIZE_DEF(N)                                 \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                        \
-    struct TypeTupleSize<TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>> \
-    {                                                                                \
-        static const size_t value = N;                                               \
+#define METAENGINE_LUAWRAPPER_TYPE_TUPLE_SIZE_DEF(N)                                               \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    struct TypeTupleSize<TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>               \
+    {                                                                                              \
+        static const size_t value = N;                                                             \
     };
 
         METAENGINE_LUAWRAPPER_TYPE_TUPLE_SIZE_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_TYPE_TUPLE_SIZE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_TYPE_TUPLE_SIZE_DEF)
 #undef METAENGINE_LUAWRAPPER_TYPE_TUPLE_SIZE_DEF
 
         template<typename Ret, typename typetuple>
         struct CFuntionType;
-#define METAENGINE_LUAWRAPPER_CFUNCTION_TYPE_DEF(N)                                      \
-    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>        \
-    struct CFuntionType<Ret, TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>> \
-    {                                                                                    \
-        typedef Ret (*type)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N));            \
+#define METAENGINE_LUAWRAPPER_CFUNCTION_TYPE_DEF(N)                                                \
+    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                  \
+    struct CFuntionType<Ret, TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>           \
+    {                                                                                              \
+        typedef Ret (*type)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N));                      \
     };
 
         METAENGINE_LUAWRAPPER_CFUNCTION_TYPE_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_CFUNCTION_TYPE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_CFUNCTION_TYPE_DEF)
 #undef METAENGINE_LUAWRAPPER_CFUNCTION_TYPE_DEF
 
-        template<typename Ret,
-                 METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
+        template<typename Ret, METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(
+                                       METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
         struct FunctionSignatureType
         {
             typedef Ret result_type;
-            typedef TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
+            typedef TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(
+                    METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
                     argument_type_tuple;
-            static const size_t argument_count =
-                    TypeTupleSize<argument_type_tuple>::value;
+            static const size_t argument_count = TypeTupleSize<argument_type_tuple>::value;
             typedef typename CFuntionType<Ret, argument_type_tuple>::type c_function_type;
         };
 
         template<typename T, typename Enable = void>
         struct FunctionSignature;
 
-#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_SIGNATURE_DEF(N)                                    \
-    template<typename T, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>     \
-    struct FunctionSignature<Ret (T::*)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>         \
-    {                                                                                             \
-        typedef FunctionSignatureType<Ret,                                                        \
-                                      T & METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)> \
-                type;                                                                             \
-    };                                                                                            \
-    template<typename T, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>     \
-    struct FunctionSignature<Ret (T::*)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))          \
-                                     const>                                                       \
-    {                                                                                             \
-        typedef FunctionSignatureType<                                                            \
-                Ret, const T & METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>            \
-                type;                                                                             \
+#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_SIGNATURE_DEF(N)                                     \
+    template<typename T, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>      \
+    struct FunctionSignature<Ret (T::*)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>          \
+    {                                                                                              \
+        typedef FunctionSignatureType<Ret,                                                         \
+                                      T & METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>  \
+                type;                                                                              \
+    };                                                                                             \
+    template<typename T, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>      \
+    struct FunctionSignature<Ret (T::*)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)) const>    \
+    {                                                                                              \
+        typedef FunctionSignatureType<                                                             \
+                Ret, const T & METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>             \
+                type;                                                                              \
     };
 
-#define METAENGINE_LUAWRAPPER_FUNCTION_SIGNATURE_DEF(N)                                           \
-    template<class Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                    \
-    struct FunctionSignature<Ret (*)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>            \
-    {                                                                                             \
-        typedef FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)> \
-                type;                                                                             \
-    };                                                                                            \
-    template<class Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                    \
-    struct FunctionSignature<Ret(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>                \
-    {                                                                                             \
-        typedef FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)> \
-                type;                                                                             \
-    };                                                                                            \
-    template<class Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                    \
-    struct FunctionSignature<                                                                     \
-            standard::function<Ret(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>>             \
-    {                                                                                             \
-        typedef FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)> \
-                type;                                                                             \
+#define METAENGINE_LUAWRAPPER_FUNCTION_SIGNATURE_DEF(N)                                            \
+    template<class Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                     \
+    struct FunctionSignature<Ret (*)(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>             \
+    {                                                                                              \
+        typedef FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>  \
+                type;                                                                              \
+    };                                                                                             \
+    template<class Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                     \
+    struct FunctionSignature<Ret(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>                 \
+    {                                                                                              \
+        typedef FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>  \
+                type;                                                                              \
+    };                                                                                             \
+    template<class Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                     \
+    struct FunctionSignature<                                                                      \
+            standard::function<Ret(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>>              \
+    {                                                                                              \
+        typedef FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>  \
+                type;                                                                              \
     };
 
         METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_SIGNATURE_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_PP_DEC(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS),
-                                            METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_SIGNATURE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(
+                METAENGINE_LUAWRAPPER_PP_DEC(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS),
+                METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_SIGNATURE_DEF)
 #undef METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_SIGNATURE_DEF
         METAENGINE_LUAWRAPPER_FUNCTION_SIGNATURE_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_FUNCTION_SIGNATURE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_FUNCTION_SIGNATURE_DEF)
 #undef METAENGINE_LUAWRAPPER_FUNCTION_SIGNATURE_DEF
 
         template<typename F>
@@ -2011,26 +2005,24 @@ namespace LuaWrapper {
         {
         };
 
-#define METAENGINE_LUAWRAPPER_TYPE_INDEX_GET_DEF(N)                                               \
-    template<std::size_t remain,                                                                  \
-             class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                    \
-    struct TypeIndexGet<                                                                          \
-            remain, TypeTuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, true>  \
-    {                                                                                             \
-        typedef arg type;                                                                         \
-    };                                                                                            \
-    template<std::size_t remain,                                                                  \
-             class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                    \
-    struct TypeIndexGet<                                                                          \
-            remain, TypeTuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, false> \
-        : TypeIndexGet<remain - 1,                                                                \
-                       TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>                \
-    {                                                                                             \
+#define METAENGINE_LUAWRAPPER_TYPE_INDEX_GET_DEF(N)                                                \
+    template<std::size_t remain, class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)> \
+    struct TypeIndexGet<                                                                           \
+            remain, TypeTuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, true>   \
+    {                                                                                              \
+        typedef arg type;                                                                          \
+    };                                                                                             \
+    template<std::size_t remain, class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)> \
+    struct TypeIndexGet<                                                                           \
+            remain, TypeTuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, false>  \
+        : TypeIndexGet<remain - 1, TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>     \
+    {                                                                                              \
     };
 
         //		METAENGINE_LUAWRAPPER_TYPE_INDEX_GET_DEF(0);
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_PP_DEC(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS),
-                                            METAENGINE_LUAWRAPPER_TYPE_INDEX_GET_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(
+                METAENGINE_LUAWRAPPER_PP_DEC(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS),
+                METAENGINE_LUAWRAPPER_TYPE_INDEX_GET_DEF)
 #undef METAENGINE_LUAWRAPPER_TYPE_INDEX_GET_DEF
 
         template<std::size_t N, typename F>
@@ -2042,44 +2034,46 @@ namespace LuaWrapper {
 
         namespace detail {
 
-#define METAENGINE_LUAWRAPPER_INVOKE_HELPER_DEF(N)                                           \
-    template<class F, class ThisType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N), \
-             typename T>                                                                     \
-    typename FunctionResultType<F>::type invoke_helper(                                      \
-            typename FunctionResultType<F>::type (T::*f)(                                    \
-                    METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)),                        \
-            ThisType this_ METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {              \
-        return (this_.*f)(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N));                           \
-    }                                                                                        \
-    template<class F, class ThisType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N), \
-             typename T>                                                                     \
-    typename FunctionResultType<F>::type invoke_helper(                                      \
-            typename FunctionResultType<F>::type (T::*f)(                                    \
-                    METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)) const,                  \
-            ThisType this_ METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {              \
-        return (this_.*f)(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N));                           \
-    }                                                                                        \
-    template<class F METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                 \
-    typename FunctionResultType<F>::type invoke_helper(                                      \
-            F f METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {                         \
-        return f(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N));                                    \
+#define METAENGINE_LUAWRAPPER_INVOKE_HELPER_DEF(N)                                                 \
+    template<class F, class ThisType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N),       \
+             typename T>                                                                           \
+    typename FunctionResultType<F>::type invoke_helper(                                            \
+            typename FunctionResultType<F>::type (T::*f)(                                          \
+                    METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)),                              \
+            ThisType this_ METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {                    \
+        return (this_.*f)(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N));                                 \
+    }                                                                                              \
+    template<class F, class ThisType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N),       \
+             typename T>                                                                           \
+    typename FunctionResultType<F>::type invoke_helper(                                            \
+            typename FunctionResultType<F>::type (T::*f)(                                          \
+                    METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)) const,                        \
+            ThisType this_ METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {                    \
+        return (this_.*f)(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N));                                 \
+    }                                                                                              \
+    template<class F METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                       \
+    typename FunctionResultType<F>::type invoke_helper(                                            \
+            F f METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {                               \
+        return f(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N));                                          \
     }
 
             METAENGINE_LUAWRAPPER_INVOKE_HELPER_DEF(0)
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_INVOKE_HELPER_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                                METAENGINE_LUAWRAPPER_INVOKE_HELPER_DEF)
 #undef METAENGINE_LUAWRAPPER_INVOKE_HELPER_DEF
         }// namespace detail
 
-#define METAENGINE_LUAWRAPPER_INVOKE_DEF(N)                                                     \
-    template<class F METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                    \
-    typename FunctionResultType<F>::type invoke(                                                \
-            F f METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {                            \
-        return detail::invoke_helper<F METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>( \
-                f METAENGINE_LUAWRAPPER_PP_ARG_REPEAT_CONCAT(N));                               \
+#define METAENGINE_LUAWRAPPER_INVOKE_DEF(N)                                                        \
+    template<class F METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                       \
+    typename FunctionResultType<F>::type invoke(                                                   \
+            F f METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT_CONCAT(N)) {                               \
+        return detail::invoke_helper<F METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>(    \
+                f METAENGINE_LUAWRAPPER_PP_ARG_REPEAT_CONCAT(N));                                  \
     }
 
         METAENGINE_LUAWRAPPER_INVOKE_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_INVOKE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_INVOKE_DEF)
 #undef METAENGINE_LUAWRAPPER_INVOKE_DEF
 
 #undef METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP
@@ -2109,9 +2103,7 @@ namespace LuaWrapper {
 
             /// @brief restore stack count
             ~ScopedSavedStack() {
-                if (state_) {
-                    lua_settop(state_, saved_top_index_);
-                }
+                if (state_) { lua_settop(state_, saved_top_index_); }
             }
 
         private:
@@ -2225,9 +2217,7 @@ namespace LuaWrapper {
                 lua_rawgeti(state, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
                 lua_State *mainthread = lua_tothread(state, -1);
                 lua_pop(state, 1);
-                if (mainthread) {
-                    return mainthread;
-                }
+                if (mainthread) { return mainthread; }
             }
             return state;
         }
@@ -2238,15 +2228,11 @@ namespace LuaWrapper {
                 // lua_pushthread return 1 if state is main thread
                 bool state_is_main = lua_pushthread(state) == 1;
                 lua_pop(state, 1);
-                if (state_is_main) {
-                    return state;
-                }
+                if (state_is_main) { return state; }
                 lua_getfield(state, LUA_REGISTRYINDEX, "METAENGINE_LUAWRAPPER_REG_MAINTHREAD");
                 lua_State *mainthread = lua_tothread(state, -1);
                 lua_pop(state, 1);
-                if (mainthread) {
-                    return mainthread;
-                }
+                if (mainthread) { return mainthread; }
             }
             return state;
         }
@@ -2277,16 +2263,18 @@ namespace LuaWrapper {
 #else
         inline int push_args(lua_State *) { return 0; }
 
-#define METAENGINE_LUAWRAPPER_PUSH_DEF(N) \
-    c += lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::push(l, METAENGINE_LUAWRAPPER_PP_CAT(a, N));
-#define METAENGINE_LUAWRAPPER_PUSH_ARG_DEF(N)                                           \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                           \
-    inline int push_args(lua_State *l, METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) { \
-        int c = 0;                                                                      \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_PUSH_DEF)              \
-        return c;                                                                       \
+#define METAENGINE_LUAWRAPPER_PUSH_DEF(N)                                                          \
+    c += lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::push(                                \
+            l, METAENGINE_LUAWRAPPER_PP_CAT(a, N));
+#define METAENGINE_LUAWRAPPER_PUSH_ARG_DEF(N)                                                      \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    inline int push_args(lua_State *l, METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {            \
+        int c = 0;                                                                                 \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_PUSH_DEF)                         \
+        return c;                                                                                  \
     }
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_PUSH_ARG_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_PUSH_ARG_DEF)
 #undef METAENGINE_LUAWRAPPER_PUSH_DEF
 #undef METAENGINE_LUAWRAPPER_PUSH_ARG_DEF
 #endif
@@ -2295,18 +2283,14 @@ namespace LuaWrapper {
         template<typename T>
         inline bool one_push(lua_State *state, T &&v) {
             int count = util::push_args(state, std::forward<T>(v));
-            if (count > 1) {
-                lua_pop(state, count - 1);
-            }
+            if (count > 1) { lua_pop(state, count - 1); }
             return count != 0;
         }
 #else
         template<typename T>
         inline bool one_push(lua_State *state, const T &v) {
             int count = util::push_args(state, v);
-            if (count > 1) {
-                lua_pop(state, count - 1);
-            }
+            if (count > 1) { lua_pop(state, count - 1); }
             return count != 0;
         }
 #endif
@@ -2387,9 +2371,9 @@ namespace LuaWrapper {
 #else
 
         ObjectWrapper() : object_() {}
-#define METAENGINE_LUAWRAPPER_OBJECT_WRAPPER_CONSTRUCTOR_DEF(N) \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>   \
-    ObjectWrapper(METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT(N))   \
+#define METAENGINE_LUAWRAPPER_OBJECT_WRAPPER_CONSTRUCTOR_DEF(N)                                    \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    ObjectWrapper(METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT(N))                                      \
         : object_(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)) {}
 
         METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
@@ -2410,22 +2394,20 @@ namespace LuaWrapper {
     {
         template<typename T>
         ObjectSharedPointerWrapper(const standard::shared_ptr<T> &sptr)
-            : object_(standard::const_pointer_cast<
-                      typename standard::remove_const<T>::type>(sptr)),
+            : object_(standard::const_pointer_cast<typename standard::remove_const<T>::type>(sptr)),
               type_(metatableType<T>()),
               shared_ptr_type_(
-                      metatableType<
-                              standard::shared_ptr<typename traits::decay<T>::type>>()),
+                      metatableType<standard::shared_ptr<typename traits::decay<T>::type>>()),
               const_value_(traits::is_const<T>::value) {}
 
         template<typename T>
         ObjectSharedPointerWrapper(standard::shared_ptr<T> &&sptr)
-            : object_(std::move(standard::const_pointer_cast<
-                                typename standard::remove_const<T>::type>(sptr))),
+            : object_(std::move(
+                      standard::const_pointer_cast<typename standard::remove_const<T>::type>(
+                              sptr))),
               type_(metatableType<T>()),
               shared_ptr_type_(
-                      metatableType<
-                              standard::shared_ptr<typename traits::decay<T>::type>>()),
+                      metatableType<standard::shared_ptr<typename traits::decay<T>::type>>()),
               const_value_(traits::is_const<T>::value) {}
 
         virtual const std::type_info &type() { return type_; }
@@ -2473,9 +2455,7 @@ namespace LuaWrapper {
 
         virtual const std::type_info &type() { return metatableType<T>(); }
         virtual void *get() {
-            if (traits::is_const<T>::value) {
-                return 0;
-            }
+            if (traits::is_const<T>::value) { return 0; }
             return const_cast<void *>(static_cast<const void *>(object_));
         }
         virtual const void *cget() { return object_; }
@@ -2500,8 +2480,8 @@ namespace LuaWrapper {
             return static_cast<T *>(static_cast<F *>(from));
         }
         template<typename T, typename F>
-        static standard::shared_ptr<void>
-        base_shared_pointer_cast(const standard::shared_ptr<void> &from) {
+        static standard::shared_ptr<void> base_shared_pointer_cast(
+                const standard::shared_ptr<void> &from) {
             return standard::shared_ptr<T>(standard::static_pointer_cast<F>(from));
         }
 
@@ -2527,10 +2507,8 @@ namespace LuaWrapper {
             //{
             //	return static_cast<TO*>(from->get());
             //}
-            std::map<convert_map_key,
-                     std::vector<convert_function_type>>::const_iterator match =
-                    function_map_.find(
-                            convert_map_key(to_type.name(), from->type().name()));
+            std::map<convert_map_key, std::vector<convert_function_type>>::const_iterator match =
+                    function_map_.find(convert_map_key(to_type.name(), from->type().name()));
             if (match != function_map_.end()) {
                 return static_cast<TO *>(pcvt_list_apply(from->get(), match->second));
             }
@@ -2544,10 +2522,8 @@ namespace LuaWrapper {
             //{
             //	return static_cast<const TO*>(from->cget());
             //}
-            std::map<convert_map_key,
-                     std::vector<convert_function_type>>::const_iterator match =
-                    function_map_.find(
-                            convert_map_key(to_type.name(), from->type().name()));
+            std::map<convert_map_key, std::vector<convert_function_type>>::const_iterator match =
+                    function_map_.find(convert_map_key(to_type.name(), from->type().name()));
             if (match != function_map_.end()) {
                 return static_cast<const TO *>(
                         pcvt_list_apply(const_cast<void *>(from->cget()), match->second));
@@ -2556,10 +2532,9 @@ namespace LuaWrapper {
         }
 
         template<typename TO>
-        standard::shared_ptr<TO>
-        get_shared_pointer(ObjectSharedPointerWrapper *from) const {
-            const std::type_info &to_type = metatableType<
-                    standard::shared_ptr<typename traits::decay<TO>::type>>();
+        standard::shared_ptr<TO> get_shared_pointer(ObjectSharedPointerWrapper *from) const {
+            const std::type_info &to_type =
+                    metatableType<standard::shared_ptr<typename traits::decay<TO>::type>>();
             // unreachable
             //			if (to_type == from->type())
             //			{
@@ -2567,8 +2542,7 @@ namespace LuaWrapper {
             // standard::static_pointer_cast<TO>(from->object());
             //			}
             const std::type_info &from_type = from->shared_ptr_type();
-            std::map<convert_map_key,
-                     std::vector<shared_ptr_convert_function_type>>::const_iterator
+            std::map<convert_map_key, std::vector<shared_ptr_convert_function_type>>::const_iterator
                     match = shared_ptr_function_map_.find(
                             convert_map_key(to_type.name(), from_type.name()));
             if (match != shared_ptr_function_map_.end()) {
@@ -2578,8 +2552,7 @@ namespace LuaWrapper {
                     sptr = standard::const_pointer_cast<void>(from->const_object());
                 }
 
-                return standard::static_pointer_cast<TO>(
-                        pcvt_list_apply(sptr, match->second));
+                return standard::static_pointer_cast<TO>(pcvt_list_apply(sptr, match->second));
             }
             return standard::shared_ptr<TO>();
         }
@@ -2589,14 +2562,10 @@ namespace LuaWrapper {
             return get_pointer<T>(from);
         }
         template<class T>
-        standard::shared_ptr<T>
-        get_pointer(ObjectWrapperBase *from,
-                    types::typetag<standard::shared_ptr<T>>) {
-            ObjectSharedPointerWrapper *ptr =
-                    dynamic_cast<ObjectSharedPointerWrapper *>(from);
-            if (ptr) {
-                return get_shared_pointer<T>(ptr);
-            }
+        standard::shared_ptr<T> get_pointer(ObjectWrapperBase *from,
+                                            types::typetag<standard::shared_ptr<T>>) {
+            ObjectSharedPointerWrapper *ptr = dynamic_cast<ObjectSharedPointerWrapper *>(from);
+            if (ptr) { return get_shared_pointer<T>(ptr); }
             return standard::shared_ptr<T>();
         }
 
@@ -2622,8 +2591,8 @@ namespace LuaWrapper {
             if (lua_isuserdata(state, -1)) {
                 return *static_cast<PointerConverter *>(lua_touserdata(state, -1));
             } else {
-                void *ptr = lua_newuserdata(
-                        state, sizeof(PointerConverter));// dummy data for gc call
+                void *ptr =
+                        lua_newuserdata(state, sizeof(PointerConverter));// dummy data for gc call
                 PointerConverter *converter = new (ptr) PointerConverter();
 
                 lua_createtable(state, 0, 2);
@@ -2644,11 +2613,10 @@ namespace LuaWrapper {
         }
 
     private:
-        void add_function(const std::type_info &to_type,
-                          const std::type_info &from_type, convert_function_type f) {
+        void add_function(const std::type_info &to_type, const std::type_info &from_type,
+                          convert_function_type f) {
             std::map<convert_map_key, std::vector<convert_function_type>> add_map;
-            for (std::map<convert_map_key,
-                          std::vector<convert_function_type>>::iterator it =
+            for (std::map<convert_map_key, std::vector<convert_function_type>>::iterator it =
                          function_map_.begin();
                  it != function_map_.end(); ++it) {
                 if (it->first.second == to_type.name()) {
@@ -2664,14 +2632,11 @@ namespace LuaWrapper {
             flist.push_back(f);
             function_map_[convert_map_key(to_type.name(), from_type.name())] = flist;
         }
-        void add_function(const std::type_info &to_type,
-                          const std::type_info &from_type,
+        void add_function(const std::type_info &to_type, const std::type_info &from_type,
                           shared_ptr_convert_function_type f) {
-            std::map<convert_map_key, std::vector<shared_ptr_convert_function_type>>
-                    add_map;
-            for (std::map<convert_map_key,
-                          std::vector<shared_ptr_convert_function_type>>::iterator it =
-                         shared_ptr_function_map_.begin();
+            std::map<convert_map_key, std::vector<shared_ptr_convert_function_type>> add_map;
+            for (std::map<convert_map_key, std::vector<shared_ptr_convert_function_type>>::iterator
+                         it = shared_ptr_function_map_.begin();
                  it != shared_ptr_function_map_.end(); ++it) {
                 if (it->first.second == to_type.name()) {
                     std::vector<shared_ptr_convert_function_type> newlist;
@@ -2684,12 +2649,10 @@ namespace LuaWrapper {
 
             std::vector<shared_ptr_convert_function_type> flist;
             flist.push_back(f);
-            shared_ptr_function_map_[convert_map_key(to_type.name(),
-                                                     from_type.name())] = flist;
+            shared_ptr_function_map_[convert_map_key(to_type.name(), from_type.name())] = flist;
         }
 
-        void *pcvt_list_apply(void *ptr,
-                              const std::vector<convert_function_type> &flist) const {
+        void *pcvt_list_apply(void *ptr, const std::vector<convert_function_type> &flist) const {
             for (std::vector<convert_function_type>::const_iterator i = flist.begin();
                  i != flist.end(); ++i) {
                 ptr = (*i)(ptr);
@@ -2699,8 +2662,7 @@ namespace LuaWrapper {
         standard::shared_ptr<void> pcvt_list_apply(
                 standard::shared_ptr<void> ptr,
                 const std::vector<shared_ptr_convert_function_type> &flist) const {
-            for (std::vector<shared_ptr_convert_function_type>::const_iterator i =
-                         flist.begin();
+            for (std::vector<shared_ptr_convert_function_type>::const_iterator i = flist.begin();
                  i != flist.end(); ++i) {
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
@@ -2743,20 +2705,18 @@ namespace LuaWrapper {
 
     inline ObjectWrapperBase *object_wrapper(lua_State *l, int index) {
         if (detail::object_wrapper_type_check(l, index)) {
-            ObjectWrapperBase *ptr =
-                    static_cast<ObjectWrapperBase *>(lua_touserdata(l, index));
+            ObjectWrapperBase *ptr = static_cast<ObjectWrapperBase *>(lua_touserdata(l, index));
             return ptr;
         }
         return 0;
     }
 
     template<typename RequireType>
-    inline ObjectWrapperBase *
-    object_wrapper(lua_State *l, int index, bool convert = true,
-                   types::typetag<RequireType> = types::typetag<RequireType>()) {
+    inline ObjectWrapperBase *object_wrapper(
+            lua_State *l, int index, bool convert = true,
+            types::typetag<RequireType> = types::typetag<RequireType>()) {
         if (detail::object_wrapper_type_check(l, index)) {
-            ObjectWrapperBase *ptr =
-                    static_cast<ObjectWrapperBase *>(lua_touserdata(l, index));
+            ObjectWrapperBase *ptr = static_cast<ObjectWrapperBase *>(lua_touserdata(l, index));
 #if METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK
             if (strcmp(ptr->type().name(), metatableType<RequireType>().name()) == 0) {
 #else
@@ -2832,8 +2792,7 @@ namespace LuaWrapper {
     }
 
     template<class T>
-    standard::shared_ptr<T> get_shared_pointer(lua_State *l, int index,
-                                               types::typetag<T>) {
+    standard::shared_ptr<T> get_shared_pointer(lua_State *l, int index, types::typetag<T>) {
         ObjectSharedPointerWrapper *ptr =
                 dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
         if (ptr) {
@@ -2861,27 +2820,21 @@ namespace LuaWrapper {
                                                          types::typetag<void>) {
         ObjectSharedPointerWrapper *ptr =
                 dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
-        if (ptr) {
-            return ptr->object();
-        }
+        if (ptr) { return ptr->object(); }
         return standard::shared_ptr<void>();
     }
-    inline standard::shared_ptr<const void>
-    get_shared_pointer(lua_State *l, int index, types::typetag<const void>) {
+    inline standard::shared_ptr<const void> get_shared_pointer(lua_State *l, int index,
+                                                               types::typetag<const void>) {
         ObjectSharedPointerWrapper *ptr =
                 dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
-        if (ptr) {
-            return ptr->const_object();
-        }
+        if (ptr) { return ptr->const_object(); }
         return standard::shared_ptr<const void>();
     }
 
     namespace class_userdata {
         template<typename T>
         inline void destructor(T *pointer) {
-            if (pointer) {
-                pointer->~T();
-            }
+            if (pointer) { pointer->~T(); }
         }
         inline bool get_metatable(lua_State *l, const std::type_info &typeinfo) {
 #if METAENGINE_LUAWRAPPER_SUPPORT_MULTIPLE_SHARED_LIBRARY
@@ -2889,8 +2842,7 @@ namespace LuaWrapper {
 #else
             lua_pushlightuserdata(l, metatable_type_table_key());
 #endif
-            int ttype =
-                    lua_rawget_rtype(l, LUA_REGISTRYINDEX);// get metatable registry table
+            int ttype = lua_rawget_rtype(l, LUA_REGISTRYINDEX);// get metatable registry table
             if (ttype != LUA_TTABLE) {
 #if METAENGINE_LUAWRAPPER_SUPPORT_MULTIPLE_SHARED_LIBRARY
                 lua_pushstring(l, metatable_type_table_key());
@@ -2920,8 +2872,7 @@ namespace LuaWrapper {
             return get_metatable<T>(l);
         }
 
-        inline bool newmetatable(lua_State *l, const std::type_info &typeinfo,
-                                 const char *name) {
+        inline bool newmetatable(lua_State *l, const std::type_info &typeinfo, const char *name) {
             if (get_metatable(l, typeinfo))// already register
             {
                 return false;//
@@ -2993,8 +2944,7 @@ namespace LuaWrapper {
         }
     }// namespace class_userdata
     template<typename T>
-    bool available_metatable(lua_State *l,
-                             types::typetag<T> = types::typetag<T>()) {
+    bool available_metatable(lua_State *l, types::typetag<T> = types::typetag<T>()) {
         return class_userdata::available_metatable<T>(l);
     }
 
@@ -3012,9 +2962,7 @@ namespace LuaWrapper {
         inline optional<T> object_getopt(lua_State *l, int index) {
             const typename traits::remove_reference<T>::type *pointer = get_const_pointer(
                     l, index, types::typetag<typename traits::remove_reference<T>::type>());
-            if (!pointer) {
-                return optional<T>();
-            }
+            if (!pointer) { return optional<T>(); }
             return *pointer;
         }
 
@@ -3022,9 +2970,7 @@ namespace LuaWrapper {
         inline T object_get(lua_State *l, int index) {
             const typename traits::remove_reference<T>::type *pointer = get_const_pointer(
                     l, index, types::typetag<typename traits::remove_reference<T>::type>());
-            if (!pointer) {
-                throw LuaTypeMismatch();
-            }
+            if (!pointer) { throw LuaTypeMismatch(); }
             return *pointer;
         }
 
@@ -3032,8 +2978,7 @@ namespace LuaWrapper {
         struct ConvertibleRegisterHelperProxy
         {
             template<typename DataType>
-            ConvertibleRegisterHelperProxy(DataType v)
-                : holder_(new DataHolder<DataType>(v)) {}
+            ConvertibleRegisterHelperProxy(DataType v) : holder_(new DataHolder<DataType>(v)) {}
             operator To() { return holder_->get(); }
 
         private:
@@ -3069,14 +3014,18 @@ namespace LuaWrapper {
 
         namespace conv_helper_detail {
             template<class To>
-            bool checkType(lua_State *, int) { return false; }
+            bool checkType(lua_State *, int) {
+                return false;
+            }
             template<class To, class From, class... Remain>
             bool checkType(lua_State *l, int index) {
                 return lua_type_traits<From>::checkType(l, index) ||
                        checkType<To, Remain...>(l, index);
             }
             template<class To>
-            bool strictCheckType(lua_State *, int) { return false; }
+            bool strictCheckType(lua_State *, int) {
+                return false;
+            }
             template<class To, class From, class... Remain>
             bool strictCheckType(lua_State *l, int index) {
                 return lua_type_traits<From>::strictCheckType(l, index) ||
@@ -3085,13 +3034,13 @@ namespace LuaWrapper {
             }
 
             template<class To>
-            To get(lua_State *, int) { throw LuaTypeMismatch(); }
+            To get(lua_State *, int) {
+                throw LuaTypeMismatch();
+            }
             template<class To, class From, class... Remain>
             To get(lua_State *l, int index) {
                 typedef optional<typename lua_type_traits<From>::get_type> opt_type;
-                if (auto opt = lua_type_traits<opt_type>::get(l, index)) {
-                    return *opt;
-                }
+                if (auto opt = lua_type_traits<opt_type>::get(l, index)) { return *opt; }
                 return get<To, Remain...>(l, index);
             }
         }// namespace conv_helper_detail
@@ -3102,22 +3051,16 @@ namespace LuaWrapper {
             typedef To get_type;
 
             static bool checkType(lua_State *l, int index) {
-                if (object_checkType<To>(l, index)) {
-                    return true;
-                }
+                if (object_checkType<To>(l, index)) { return true; }
                 return conv_helper_detail::checkType<To, From...>(l, index);
             }
             static bool strictCheckType(lua_State *l, int index) {
-                if (object_strictCheckType<To>(l, index)) {
-                    return true;
-                }
+                if (object_strictCheckType<To>(l, index)) { return true; }
                 return conv_helper_detail::strictCheckType<To, From...>(l, index);
             }
 
             static get_type get(lua_State *l, int index) {
-                if (auto opt = object_getopt<To>(l, index)) {
-                    return *opt;
-                }
+                if (auto opt = object_getopt<To>(l, index)) { return *opt; }
                 return conv_helper_detail::get<get_type, From...>(l, index);
             }
         };
@@ -3132,59 +3075,63 @@ namespace LuaWrapper {
             return 1;
         }
         namespace conv_helper_detail {
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_REP(N) \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_REP(N)                             \
     || lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::checkType(state, index)
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_STRICT_CHECK_TYPE_REP(N) \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_STRICT_CHECK_TYPE_REP(N)                      \
     || lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::strictCheckType(state, index)
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_OPT_TYPEDEF(N)                      \
-    typedef optional<typename lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::get_type> \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_OPT_TYPEDEF(N)                            \
+    typedef optional<typename lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::get_type>       \
             METAENGINE_LUAWRAPPER_PP_CAT(opt_type, N);
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_REP(N)                                  \
-    if (METAENGINE_LUAWRAPPER_PP_CAT(opt_type, N) opt =                                          \
-                lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(opt_type, N)>::get(state, index)) { \
-        return *opt;                                                                             \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_REP(N)                                    \
+    if (METAENGINE_LUAWRAPPER_PP_CAT(opt_type, N) opt =                                            \
+                lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(opt_type, N)>::get(state, index)) {   \
+        return *opt;                                                                               \
     } else
 
             template<typename To>
             bool checkType(lua_State *, int, TypeTuple<>) {
                 return false;
             }
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_DEF(N)           \
-    template<typename To, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>       \
-    bool checkType(lua_State *state, int index,                                  \
-                   TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>) { \
-        return false METAENGINE_LUAWRAPPER_PP_REPEAT(                            \
-                N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_REP); \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_DEF(N)                             \
+    template<typename To, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                         \
+    bool checkType(lua_State *state, int index,                                                    \
+                   TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>) {                   \
+        return false METAENGINE_LUAWRAPPER_PP_REPEAT(                                              \
+                N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_REP);                   \
     }
 
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
-                                                METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(
+                    METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                    METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_DEF)
 #undef METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_DEF
             template<typename To>
             bool strictCheckType(lua_State *, int, TypeTuple<>) {
                 return false;
             }
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_ST_CHECK_TYPE_DEF(N)               \
-    template<typename To, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>              \
-    bool strictCheckType(lua_State *state, int index,                                   \
-                         TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>) {  \
-        return false METAENGINE_LUAWRAPPER_PP_REPEAT(                                   \
-                N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_STRICT_CHECK_TYPE_REP); \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_ST_CHECK_TYPE_DEF(N)                          \
+    template<typename To, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                         \
+    bool strictCheckType(lua_State *state, int index,                                              \
+                         TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>) {             \
+        return false METAENGINE_LUAWRAPPER_PP_REPEAT(                                              \
+                N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_STRICT_CHECK_TYPE_REP);            \
     }
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
-                                                METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_ST_CHECK_TYPE_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(
+                    METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                    METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_ST_CHECK_TYPE_DEF)
 #undef METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_ST_CHECK_TYPE_DEF
-#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_DEF(N)                                          \
-    template<typename To, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                               \
-    To get(lua_State *state, int index,                                                                  \
-           TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>) {                                 \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_OPT_TYPEDEF) \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_REP) {       \
-            throw LuaTypeMismatch();                                                                     \
-        }                                                                                                \
+#define METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_DEF(N)                                    \
+    template<typename To, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                         \
+    To get(lua_State *state, int index,                                                            \
+           TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>) {                           \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(                                                           \
+                N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_OPT_TYPEDEF)                   \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_REP) { \
+            throw LuaTypeMismatch();                                                               \
+        }                                                                                          \
     }
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
-                                                METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(
+                    METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                    METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_DEF)
 #undef METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_DEF
 
 #undef METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_CHECK_TYPE_REP
@@ -3193,35 +3140,30 @@ namespace LuaWrapper {
 #undef METAENGINE_LUAWRAPPER_CONVERTIBLE_REG_HELPER_GET_REP
         }// namespace conv_helper_detail
 
-#define METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REP(N) \
+#define METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REP(N)                                 \
     METAENGINE_LUAWRAPPER_PP_CAT(typename A, N) = null_type
-#define METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REPEAT(N) \
+#define METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REPEAT(N)                              \
     METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REP)
 
-        template<typename To,
-                 METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REPEAT(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
+        template<typename To, METAENGINE_LUAWRAPPER_PP_CONVERTIBLE_REG_HELPER_DEF_REPEAT(
+                                      METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
         struct ConvertibleRegisterHelper
         {
             typedef To get_type;
-            typedef TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
+            typedef TypeTuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(
+                    METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS)>
                     conv_types;
 
             static bool checkType(lua_State *l, int index) {
-                if (object_checkType<To>(l, index)) {
-                    return true;
-                }
+                if (object_checkType<To>(l, index)) { return true; }
                 return conv_helper_detail::checkType<To>(l, index, conv_types());
             }
             static bool strictCheckType(lua_State *l, int index) {
-                if (object_strictCheckType<To>(l, index)) {
-                    return true;
-                }
+                if (object_strictCheckType<To>(l, index)) { return true; }
                 return conv_helper_detail::strictCheckType<To>(l, index, conv_types());
             }
             static get_type get(lua_State *l, int index) {
-                if (optional<To> opt = object_getopt<To>(l, index)) {
-                    return *opt;
-                }
+                if (optional<To> opt = object_getopt<To>(l, index)) { return *opt; }
                 return conv_helper_detail::get<get_type>(l, index, conv_types());
             }
         };
@@ -3230,7 +3172,6 @@ namespace LuaWrapper {
 #endif
     }// namespace util
 }// namespace LuaWrapper
-
 
 namespace LuaWrapper {
 #if METAENGINE_LUAWRAPPER_USE_CPP11
@@ -3269,17 +3210,19 @@ namespace LuaWrapper {
     };
 #else
 #define METAENGINE_LUAWRAPPER_PP_GET_DATA(N) standard::get<N - 1>(v)
-#define METAENGINE_LUAWRAPPER_PUSH_TUPLE_DEF(N)                                                                   \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                                     \
-    struct lua_type_traits<standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>                      \
-    {                                                                                                             \
-        static int                                                                                                \
-        push(lua_State *l,                                                                                        \
-             const standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> &v) {                         \
-            return util::push_args(l, METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_GET_DATA)); \
-        }                                                                                                         \
+#define METAENGINE_LUAWRAPPER_PUSH_TUPLE_DEF(N)                                                    \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    struct lua_type_traits<standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>       \
+    {                                                                                              \
+        static int push(                                                                           \
+                lua_State *l,                                                                      \
+                const standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> &v) {       \
+            return util::push_args(                                                                \
+                    l, METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_GET_DATA)); \
+        }                                                                                          \
     };
-    METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_TUPLE_SIZE, METAENGINE_LUAWRAPPER_PUSH_TUPLE_DEF)
+    METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_TUPLE_SIZE,
+                                        METAENGINE_LUAWRAPPER_PUSH_TUPLE_DEF)
 #undef METAENGINE_LUAWRAPPER_PP_GET_DATA
 #undef METAENGINE_LUAWRAPPER_PUSH_TUPLE_DEF
 #endif
@@ -3297,23 +3240,19 @@ namespace LuaWrapper {
         return object_wrapper<T>(l, index, false) != 0;
     }
     template<typename T, typename Enable>
-    typename lua_type_traits<T, Enable>::opt_type
-    lua_type_traits<T, Enable>::opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
+    typename lua_type_traits<T, Enable>::opt_type lua_type_traits<T, Enable>::opt(
+            lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
         const typename traits::remove_reference<T>::type *pointer = get_const_pointer(
                 l, index, types::typetag<typename traits::remove_reference<T>::type>());
-        if (!pointer) {
-            return opt_type();
-        }
+        if (!pointer) { return opt_type(); }
         return *pointer;
     }
     template<typename T, typename Enable>
-    typename lua_type_traits<T, Enable>::get_type
-    lua_type_traits<T, Enable>::get(lua_State *l, int index) {
+    typename lua_type_traits<T, Enable>::get_type lua_type_traits<T, Enable>::get(lua_State *l,
+                                                                                  int index) {
         const typename traits::remove_reference<T>::type *pointer = get_const_pointer(
                 l, index, types::typetag<typename traits::remove_reference<T>::type>());
-        if (!pointer) {
-            throw LuaTypeMismatch();
-        }
+        if (!pointer) { throw LuaTypeMismatch(); }
         return *pointer;
     }
     template<typename T, typename Enable>
@@ -3329,8 +3268,8 @@ namespace LuaWrapper {
     /// @ingroup lua_type_traits
     /// @brief lua_type_traits for const reference type
     template<typename T>
-    struct lua_type_traits<
-            T, typename traits::enable_if<traits::is_const_reference<T>::value>::type>
+    struct lua_type_traits<T,
+                           typename traits::enable_if<traits::is_const_reference<T>::value>::type>
         : lua_type_traits<typename traits::remove_const_reference<T>::type>
     {
     };
@@ -3339,10 +3278,10 @@ namespace LuaWrapper {
     /// @brief lua_type_traits for lvalue reference type
     template<typename REF>
     struct lua_type_traits<
-            REF, typename traits::enable_if<
-                         traits::is_lvalue_reference<REF>::value &&
-                         !traits::is_const<
-                                 typename traits::remove_reference<REF>::type>::value>::type>
+            REF,
+            typename traits::enable_if<
+                    traits::is_lvalue_reference<REF>::value &&
+                    !traits::is_const<typename traits::remove_reference<REF>::type>::value>::type>
     {
         typedef void Registerable;
 
@@ -3355,29 +3294,22 @@ namespace LuaWrapper {
             return object_wrapper<T>(l, index, false) != 0;
         }
         static bool checkType(lua_State *l, int index) {
-            if (lua_type(l, index) == LUA_TLIGHTUSERDATA) {
-                return true;
-            }
+            if (lua_type(l, index) == LUA_TLIGHTUSERDATA) { return true; }
             return object_wrapper<T>(l, index) != 0;
         }
         static get_type get(lua_State *l, int index) {
             T *pointer = get_pointer(l, index, types::typetag<T>());
-            if (!pointer) {
-                throw LuaTypeMismatch();
-            }
+            if (!pointer) { throw LuaTypeMismatch(); }
             return *pointer;
         }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
             T *pointer = get_pointer(l, index, types::typetag<T>());
-            if (!pointer) {
-                return opt_type();
-            }
+            if (!pointer) { return opt_type(); }
             return opt_type(*pointer);
         }
         static int push(lua_State *l, push_type v) {
             if (!available_metatable<T>(l)) {
-                lua_pushlightuserdata(
-                        l, const_cast<typename traits::remove_const<T>::type *>(&v));
+                lua_pushlightuserdata(l, const_cast<typename traits::remove_const<T>::type *>(&v));
             } else {
                 typedef typename ObjectPointerWrapperType<T>::type wrapper_type;
                 void *storage = lua_newuserdata(l, sizeof(wrapper_type));
@@ -3392,11 +3324,10 @@ namespace LuaWrapper {
     /// @brief lua_type_traits for pointer type
     template<typename PTR>
     struct lua_type_traits<
-            PTR, typename traits::enable_if<
-                         traits::is_pointer<
-                                 typename traits::remove_const_reference<PTR>::type>::value &&
-                         !traits::is_function<
-                                 typename traits::remove_pointer<PTR>::type>::value>::type>
+            PTR,
+            typename traits::enable_if<
+                    traits::is_pointer<typename traits::remove_const_reference<PTR>::type>::value &&
+                    !traits::is_function<typename traits::remove_pointer<PTR>::type>::value>::type>
     {
         typedef void Registerable;
 
@@ -3421,9 +3352,7 @@ namespace LuaWrapper {
                 return get_pointer(l, index, types::typetag<T>());
             }
 
-            if (type == LUA_TNIL || type == LUA_TNONE) {
-                return 0;
-            }
+            if (type == LUA_TNIL || type == LUA_TNONE) { return 0; }
             throw LuaTypeMismatch();
             return 0;
         }
@@ -3432,17 +3361,14 @@ namespace LuaWrapper {
             if (type == LUA_TUSERDATA || type == LUA_TLIGHTUSERDATA) {
                 return get_pointer(l, index, types::typetag<T>());
             }
-            if (type == LUA_TNIL || type == LUA_TNONE) {
-                return opt_type(0);
-            }
+            if (type == LUA_TNIL || type == LUA_TNONE) { return opt_type(0); }
             return opt_type();
         }
         static int push(lua_State *l, push_type v) {
             if (!v) {
                 lua_pushnil(l);
             } else if (!available_metatable<T>(l)) {
-                lua_pushlightuserdata(
-                        l, const_cast<typename traits::remove_const<T>::type *>(v));
+                lua_pushlightuserdata(l, const_cast<typename traits::remove_const<T>::type *>(v));
             } else {
                 typedef typename ObjectPointerWrapperType<T>::type wrapper_type;
                 void *storage = lua_newuserdata(l, sizeof(wrapper_type));
@@ -3470,9 +3396,7 @@ namespace LuaWrapper {
             METAENGINE_LUAWRAPPER_UNUSED(index);
             return true;
         }
-        static bool get(lua_State *l, int index) {
-            return l && lua_toboolean(l, index) != 0;
-        }
+        static bool get(lua_State *l, int index) { return l && lua_toboolean(l, index) != 0; }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
             if (l) {
                 return opt_type(lua_toboolean(l, index) != 0);
@@ -3507,9 +3431,7 @@ namespace LuaWrapper {
     {
         typedef const standard::reference_wrapper<T> &push_type;
 
-        static int push(lua_State *l, push_type v) {
-            return util::push_args(l, &v.get());
-        }
+        static int push(lua_State *l, push_type v) { return util::push_args(l, &v.get()); }
     };
 
     namespace detail {
@@ -3519,26 +3441,24 @@ namespace LuaWrapper {
         {
         };
         template<typename T>
-        struct has_optional_get<
-                T, typename traits::enable_if<!traits::is_same<
-                           void, typename lua_type_traits<T>::opt_type>::value>::type>
+        struct has_optional_get<T,
+                                typename traits::enable_if<!traits::is_same<
+                                        void, typename lua_type_traits<T>::opt_type>::value>::type>
             : traits::true_type
         {
         };
 
         template<typename T>
-        typename traits::enable_if<has_optional_get<T>::value, optional<T>>::type
-        opt_helper(lua_State *state, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
+        typename traits::enable_if<has_optional_get<T>::value, optional<T>>::type opt_helper(
+                lua_State *state, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
             return lua_type_traits<T>::opt(state, index);
         }
         template<typename T>
-        typename traits::enable_if<!has_optional_get<T>::value, optional<T>>::type
-        opt_helper(lua_State *state, int index) {
+        typename traits::enable_if<!has_optional_get<T>::value, optional<T>>::type opt_helper(
+                lua_State *state, int index) {
             try {
                 return lua_type_traits<T>::get(state, index);
-            } catch (...) {
-                return optional<T>();
-            }
+            } catch (...) { return optional<T>(); }
         }
     }// namespace detail
 
@@ -3583,9 +3503,7 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             ObjectSharedPointerWrapper *wrapper =
                     dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
-            if (!wrapper) {
-                return false;
-            }
+            if (!wrapper) { return false; }
             const std::type_info &type =
                     metatableType<standard::shared_ptr<typename traits::decay<T>::type>>();
 #if METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK
@@ -3595,13 +3513,10 @@ namespace LuaWrapper {
 #endif
         }
         static bool checkType(lua_State *l, int index) {
-            return get_shared_pointer(l, index, types::typetag<T>()) ||
-                   lua_isnil(l, index);
+            return get_shared_pointer(l, index, types::typetag<T>()) || lua_isnil(l, index);
         }
         static get_type get(lua_State *l, int index) {
-            if (lua_isnil(l, index)) {
-                return get_type();
-            }
+            if (lua_isnil(l, index)) { return get_type(); }
             return get_shared_pointer(l, index, types::typetag<T>());
         }
 
@@ -3635,9 +3550,7 @@ namespace LuaWrapper {
         }
         static get_type get(lua_State *l, int index) {
             type *pointer = get_pointer(l, index, types::typetag<type>());
-            if (!pointer) {
-                throw LuaTypeMismatch();
-            }
+            if (!pointer) { throw LuaTypeMismatch(); }
             return *pointer;
         }
 
@@ -3662,22 +3575,14 @@ namespace LuaWrapper {
         typedef std::nullptr_t get_type;
         typedef optional<get_type> opt_type;
 
-        static bool checkType(lua_State *l, int index) {
-            return lua_isnoneornil(l, index);
-        }
-        static bool strictCheckType(lua_State *l, int index) {
-            return lua_isnil(l, index);
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isnoneornil(l, index); }
+        static bool strictCheckType(lua_State *l, int index) { return lua_isnil(l, index); }
         static opt_type opt(lua_State *l, int index) {
-            if (!lua_isnoneornil(l, index)) {
-                return opt_type();
-            }
+            if (!lua_isnoneornil(l, index)) { return opt_type(); }
             return nullptr;
         }
         static get_type get(lua_State *l, int index) {
-            if (!lua_isnoneornil(l, index)) {
-                throw LuaTypeMismatch();
-            }
+            if (!lua_isnoneornil(l, index)) { throw LuaTypeMismatch(); }
             return nullptr;
         }
 
@@ -3699,12 +3604,8 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return object_wrapper(l, index) != 0;
         }
-        static bool checkType(lua_State *l, int index) {
-            return object_wrapper(l, index) != 0;
-        }
-        static get_type get(lua_State *l, int index) {
-            return object_wrapper(l, index);
-        }
+        static bool checkType(lua_State *l, int index) { return object_wrapper(l, index) != 0; }
+        static get_type get(lua_State *l, int index) { return object_wrapper(l, index); }
     };
 
     /// @ingroup lua_type_traits
@@ -3715,22 +3616,15 @@ namespace LuaWrapper {
         typedef lua_State *get_type;
         typedef lua_State *push_type;
 
-        static bool strictCheckType(lua_State *l, int index) {
-            return lua_isthread(l, index);
-        }
-        static bool checkType(lua_State *l, int index) {
-            return lua_isthread(l, index);
-        }
-        static lua_State *get(lua_State *l, int index) {
-            return lua_tothread(l, index);
-        }
+        static bool strictCheckType(lua_State *l, int index) { return lua_isthread(l, index); }
+        static bool checkType(lua_State *l, int index) { return lua_isthread(l, index); }
+        static lua_State *get(lua_State *l, int index) { return lua_tothread(l, index); }
     };
 
     /// @ingroup lua_type_traits
     /// @brief lua_type_traits for floating point number value
     template<typename T>
-    struct lua_type_traits<
-            T, typename traits::enable_if<traits::is_floating_point<T>::value>::type>
+    struct lua_type_traits<T, typename traits::enable_if<traits::is_floating_point<T>::value>::type>
     {
         typedef typename traits::remove_const_reference<T>::type get_type;
         typedef optional<get_type> opt_type;
@@ -3739,23 +3633,17 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return lua_type(l, index) == LUA_TNUMBER;
         }
-        static bool checkType(lua_State *l, int index) {
-            return lua_isnumber(l, index) != 0;
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isnumber(l, index) != 0; }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
             int isnum = 0;
             get_type num = static_cast<T>(lua_tonumberx(l, index, &isnum));
-            if (!isnum) {
-                return opt_type();
-            }
+            if (!isnum) { return opt_type(); }
             return num;
         }
         static get_type get(lua_State *l, int index) {
             int isnum = 0;
             get_type num = static_cast<T>(lua_tonumberx(l, index, &isnum));
-            if (!isnum) {
-                throw LuaTypeMismatch();
-            }
+            if (!isnum) { throw LuaTypeMismatch(); }
             return num;
         }
         static int push(lua_State *l, lua_Number s) {
@@ -3767,8 +3655,7 @@ namespace LuaWrapper {
     /// @ingroup lua_type_traits
     /// @brief lua_type_traits for integral number value
     template<typename T>
-    struct lua_type_traits<
-            T, typename traits::enable_if<traits::is_integral<T>::value>::type>
+    struct lua_type_traits<T, typename traits::enable_if<traits::is_integral<T>::value>::type>
     {
         typedef typename traits::remove_const_reference<T>::type get_type;
         typedef optional<get_type> opt_type;
@@ -3778,23 +3665,17 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return lua_isinteger(l, index) != 0;
         }
-        static bool checkType(lua_State *l, int index) {
-            return lua_isnumber(l, index) != 0;
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isnumber(l, index) != 0; }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
             int isnum = 0;
             get_type num = static_cast<T>(lua_tointegerx(l, index, &isnum));
-            if (!isnum) {
-                return opt_type();
-            }
+            if (!isnum) { return opt_type(); }
             return num;
         }
         static get_type get(lua_State *l, int index) {
             int isnum = 0;
             get_type num = static_cast<T>(lua_tointegerx(l, index, &isnum));
-            if (!isnum) {
-                throw LuaTypeMismatch();
-            }
+            if (!isnum) { throw LuaTypeMismatch(); }
             return num;
         }
         static int push(lua_State *l, lua_Integer s) {
@@ -3814,11 +3695,8 @@ namespace LuaWrapper {
             return static_cast<get_type>(lua_type_traits<lua_Number>::get(l, index));
         }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
-            lua_type_traits<lua_Number>::opt_type v =
-                    lua_type_traits<lua_Number>::opt(l, index);
-            if (!v) {
-                return opt_type();
-            }
+            lua_type_traits<lua_Number>::opt_type v = lua_type_traits<lua_Number>::opt(l, index);
+            if (!v) { return opt_type(); }
             return static_cast<get_type>(*v);
         }
         static int push(lua_State *l, push_type s) { return util::push_args(l, s); }
@@ -3828,8 +3706,7 @@ namespace LuaWrapper {
     /// @ingroup lua_type_traits
     /// @brief lua_type_traits for enum
     template<typename T>
-    struct lua_type_traits<
-            T, typename traits::enable_if<traits::is_enum<T>::value>::type>
+    struct lua_type_traits<T, typename traits::enable_if<traits::is_enum<T>::value>::type>
     {
         typedef typename traits::remove_const_reference<T>::type get_type;
         typedef optional<get_type> opt_type;
@@ -3842,8 +3719,7 @@ namespace LuaWrapper {
             return lua_type_traits<luaInt>::checkType(l, index);
         }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
-            if (lua_type_traits<luaInt>::opt_type t =
-                        lua_type_traits<luaInt>::opt(l, index)) {
+            if (lua_type_traits<luaInt>::opt_type t = lua_type_traits<luaInt>::opt(l, index)) {
                 return opt_type(static_cast<get_type>(*t));
             }
             return opt_type();
@@ -3852,8 +3728,7 @@ namespace LuaWrapper {
             return static_cast<get_type>(lua_type_traits<luaInt>::get(l, index));
         }
         static int push(lua_State *l, push_type s) {
-            return util::push_args(
-                    l, static_cast<typename lua_type_traits<int64_t>::push_type>(s));
+            return util::push_args(l, static_cast<typename lua_type_traits<int64_t>::push_type>(s));
         }
     };
 
@@ -3869,21 +3744,15 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return lua_type(l, index) == LUA_TSTRING;
         }
-        static bool checkType(lua_State *l, int index) {
-            return lua_isstring(l, index) != 0;
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isstring(l, index) != 0; }
         static get_type get(lua_State *l, int index) {
             const char *buffer = lua_tostring(l, index);
-            if (!buffer) {
-                throw LuaTypeMismatch();
-            }
+            if (!buffer) { throw LuaTypeMismatch(); }
             return buffer;
         }
         static opt_type opt(lua_State *l, int index) {
             const char *buffer = lua_tostring(l, index);
-            if (!buffer) {
-                return opt_type();
-            }
+            if (!buffer) { return opt_type(); }
             return buffer;
         }
         static int push(lua_State *l, const char *s) {
@@ -3903,14 +3772,10 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return lua_type(l, index) == LUA_TSTRING;
         }
-        static bool checkType(lua_State *l, int index) {
-            return lua_isstring(l, index) != 0;
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isstring(l, index) != 0; }
         static const char *get(lua_State *l, int index) {
             const char *buffer = lua_tostring(l, index);
-            if (!buffer) {
-                throw LuaTypeMismatch();
-            }
+            if (!buffer) { throw LuaTypeMismatch(); }
             return buffer;
         }
         static int push(lua_State *l, const char s[N]) {
@@ -3937,21 +3802,15 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return lua_type(l, index) == LUA_TSTRING;
         }
-        static bool checkType(lua_State *l, int index) {
-            return lua_isstring(l, index) != 0;
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isstring(l, index) != 0; }
         static opt_type opt(lua_State *l, int index) METAENGINE_LUAWRAPPER_NOEXCEPT {
             size_t size = 0;
             const char *buffer = lua_tolstring(l, index, &size);
-            if (!buffer) {
-                return opt_type();
-            }
+            if (!buffer) { return opt_type(); }
             return std::string(buffer, size);
         }
         static get_type get(lua_State *l, int index) {
-            if (opt_type o = opt(l, index)) {
-                return *o;
-            }
+            if (opt_type o = opt(l, index)) { return *o; }
             throw LuaTypeMismatch();
         }
         static int push(lua_State *l, const std::string &s) {
@@ -4013,23 +3872,15 @@ namespace LuaWrapper {
         typedef optional<get_type> opt_type;
         typedef NilValue push_type;
 
-        static bool checkType(lua_State *l, int index) {
-            return lua_isnoneornil(l, index);
-        }
-        static bool strictCheckType(lua_State *l, int index) {
-            return lua_isnil(l, index);
-        }
+        static bool checkType(lua_State *l, int index) { return lua_isnoneornil(l, index); }
+        static bool strictCheckType(lua_State *l, int index) { return lua_isnil(l, index); }
 
         static opt_type opt(lua_State *l, int index) {
-            if (!checkType(l, index)) {
-                return opt_type();
-            }
+            if (!checkType(l, index)) { return opt_type(); }
             return NilValue();
         }
         static get_type get(lua_State *l, int index) {
-            if (!checkType(l, index)) {
-                throw LuaTypeMismatch();
-            }
+            if (!checkType(l, index)) { throw LuaTypeMismatch(); }
             return NilValue();
         }
         static int push(lua_State *l, const NilValue &) {
@@ -4037,9 +3888,7 @@ namespace LuaWrapper {
             return 1;
         }
     };
-    inline std::ostream &operator<<(std::ostream &os, const NilValue &) {
-        return os << "nil";
-    }
+    inline std::ostream &operator<<(std::ostream &os, const NilValue &) { return os << "nil"; }
     inline bool operator==(const NilValue &, const NilValue &) { return true; }
     inline bool operator!=(const NilValue &, const NilValue &) { return false; }
 
@@ -4090,9 +3939,7 @@ namespace LuaWrapper {
             /// @return Size of table, string length or userdata memory block size.
             size_t size() const {
                 lua_State *state = state_();
-                if (!state) {
-                    return 0;
-                }
+                if (!state) { return 0; }
                 util::ScopedSavedStack save(state);
                 int index = pushStackIndex_(state);
 
@@ -4102,9 +3949,7 @@ namespace LuaWrapper {
             // return type
             int type() const {
                 lua_State *state = state_();
-                if (!state) {
-                    return LUA_TNONE;
-                }
+                if (!state) { return LUA_TNONE; }
                 util::ScopedSavedStack save(state);
                 return lua_type(state, pushStackIndex_(state));
             }
@@ -4135,9 +3980,7 @@ namespace LuaWrapper {
             //@{
             template<typename OtherDrived>
             inline bool operator==(const LuaBasicTypeFunctions<OtherDrived> &rhs) const {
-                if (isNilref_() || rhs.isNilref_()) {
-                    return !isNilref_() == !rhs.isNilref_();
-                }
+                if (isNilref_() || rhs.isNilref_()) { return !isNilref_() == !rhs.isNilref_(); }
                 lua_State *state = state_();
                 util::ScopedSavedStack save(state);
                 int index = pushStackIndex_(state);
@@ -4146,9 +3989,7 @@ namespace LuaWrapper {
             }
             template<typename OtherDrived>
             inline bool operator<(const LuaBasicTypeFunctions<OtherDrived> &rhs) const {
-                if (isNilref_() || rhs.isNilref_()) {
-                    return !isNilref_() != !rhs.isNilref_();
-                }
+                if (isNilref_() || rhs.isNilref_()) { return !isNilref_() != !rhs.isNilref_(); }
                 lua_State *state = state_();
                 util::ScopedSavedStack save(state);
                 int index = pushStackIndex_(state);
@@ -4157,9 +3998,7 @@ namespace LuaWrapper {
             }
             template<typename OtherDrived>
             inline bool operator<=(const LuaBasicTypeFunctions<OtherDrived> &rhs) const {
-                if (isNilref_() || rhs.isNilref_()) {
-                    return !isNilref_() == !rhs.isNilref_();
-                }
+                if (isNilref_() || rhs.isNilref_()) { return !isNilref_() == !rhs.isNilref_(); }
                 lua_State *state = state_();
                 util::ScopedSavedStack save(state);
                 int index = pushStackIndex_(state);
@@ -4181,8 +4020,7 @@ namespace LuaWrapper {
 
             template<typename T>
             inline typename traits::enable_if<
-                    !traits::is_convertible<T *, LuaBasicTypeFunctions<T> *>::value,
-                    bool>::type
+                    !traits::is_convertible<T *, LuaBasicTypeFunctions<T> *>::value, bool>::type
             operator==(const T &rhs) const {
                 if (optional<typename lua_type_traits<T>::get_type> d = checkGet_<T>()) {
                     return *d == rhs;
@@ -4191,8 +4029,7 @@ namespace LuaWrapper {
             }
             template<typename T>
             inline typename traits::enable_if<
-                    !traits::is_convertible<T *, LuaBasicTypeFunctions<T> *>::value,
-                    bool>::type
+                    !traits::is_convertible<T *, LuaBasicTypeFunctions<T> *>::value, bool>::type
             operator!=(const T &rhs) const {
                 return !((*this) == rhs);
             }
@@ -4206,9 +4043,7 @@ namespace LuaWrapper {
             }
 
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -4217,14 +4052,12 @@ namespace LuaWrapper {
                 lua_State *state = state_();
                 util::ScopedSavedStack save(state);
                 int stackindex = pushStackIndex_(state);
-                return lua_type_traits<
-                        optional<typename lua_type_traits<T>::get_type>>::get(state,
-                                                                              stackindex);
+                return lua_type_traits<optional<typename lua_type_traits<T>::get_type>>::get(
+                        state, stackindex);
             }
         };
         template<typename D>
-        inline std::ostream &operator<<(std::ostream &os,
-                                        const LuaBasicTypeFunctions<D> &ref) {
+        inline std::ostream &operator<<(std::ostream &os, const LuaBasicTypeFunctions<D> &ref) {
             ref.dump(os);
             return os;
         }
@@ -4234,18 +4067,17 @@ namespace LuaWrapper {
 */
         //@{
 
-#define METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(RETTYPE)                  \
-    typename traits::enable_if<                                              \
-            !traits::is_convertible<T *, LuaBasicTypeFunctions<T> *>::value, \
-            RETTYPE>::type
+#define METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(RETTYPE)                                        \
+    typename traits::enable_if<!traits::is_convertible<T *, LuaBasicTypeFunctions<T> *>::value,    \
+                               RETTYPE>::type
         template<typename D, typename T>
-        inline METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(bool)
-        operator==(const T &lhs, const LuaBasicTypeFunctions<D> &rhs) {
+        inline METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(bool) operator==(
+                const T &lhs, const LuaBasicTypeFunctions<D> &rhs) {
             return rhs == lhs;
         }
         template<typename D, typename T>
-        inline METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(bool)
-        operator!=(const T &lhs, const LuaBasicTypeFunctions<D> &rhs) {
+        inline METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(bool) operator!=(
+                const T &lhs, const LuaBasicTypeFunctions<D> &rhs) {
             return !(rhs == lhs);
         }
 #undef METAENGINE_LUAWRAPPER_ENABLE_IF_NOT_LUAREF
@@ -4298,18 +4130,14 @@ namespace LuaWrapper {
 
         static function_type getHandler(lua_State *state) {
             function_type *funptr = getFunctionPointer(state);
-            if (funptr) {
-                return *funptr;
-            }
+            if (funptr) { return *funptr; }
             return function_type();
         }
 
         static void unregisterHandler(lua_State *state) {
             if (state) {
                 function_type *funptr = getFunctionPointer(state);
-                if (funptr) {
-                    *funptr = function_type();
-                }
+                if (funptr) { *funptr = function_type(); }
             }
         }
         static void registerHandler(lua_State *state, function_type f) {
@@ -4322,8 +4150,8 @@ namespace LuaWrapper {
 #else
                     lua_pushlightuserdata(state, handlerRegistryKey());
 #endif
-                    void *ptr = lua_newuserdata(
-                            state, sizeof(function_type));// dummy data for gc call
+                    void *ptr =
+                            lua_newuserdata(state, sizeof(function_type));// dummy data for gc call
                     funptr = new (ptr) function_type();
 
                     // create function_type metatable
@@ -4343,27 +4171,24 @@ namespace LuaWrapper {
         static void throwDefaultError(int status, const char *message = 0) {
             switch (status) {
                 case LUA_ERRSYNTAX:
-                    throw LuaSyntaxError(
-                            status, message ? std::string(message) : "unknown syntax error");
+                    throw LuaSyntaxError(status,
+                                         message ? std::string(message) : "unknown syntax error");
                 case LUA_ERRRUN:
-                    throw LuaRuntimeError(
-                            status, message ? std::string(message) : "unknown runtime error");
+                    throw LuaRuntimeError(status,
+                                          message ? std::string(message) : "unknown runtime error");
                 case LUA_ERRMEM:
-                    throw LuaMemoryError(status,
-                                         message ? std::string(message)
-                                                 : "lua memory allocation error");
+                    throw LuaMemoryError(status, message ? std::string(message)
+                                                         : "lua memory allocation error");
                 case LUA_ERRERR:
-                    throw LuaErrorRunningError(status,
-                                               message ? std::string(message)
-                                                       : "unknown error running error");
+                    throw LuaErrorRunningError(status, message ? std::string(message)
+                                                               : "unknown error running error");
 #ifdef LUA_ERRGCMM
                 case LUA_ERRGCMM:
-                    throw LuaGCError(status,
-                                     message ? std::string(message) : "unknown gc error");
+                    throw LuaGCError(status, message ? std::string(message) : "unknown gc error");
 #endif
                 default:
-                    throw LuaUnknownError(
-                            status, message ? std::string(message) : "lua unknown error");
+                    throw LuaUnknownError(status,
+                                          message ? std::string(message) : "lua unknown error");
             }
         }
 
@@ -4407,19 +4232,13 @@ namespace LuaWrapper {
 
     namespace except {
         inline void OtherError(lua_State *state, const std::string &message) {
-            if (ErrorHandler::handle(message.c_str(), state)) {
-                return;
-            }
+            if (ErrorHandler::handle(message.c_str(), state)) { return; }
         }
         inline void typeMismatchError(lua_State *state, const std::string &message) {
-            if (ErrorHandler::handle(message.c_str(), state)) {
-                return;
-            }
+            if (ErrorHandler::handle(message.c_str(), state)) { return; }
         }
         inline void memoryError(lua_State *state, const char *message) {
-            if (ErrorHandler::handle(message, state)) {
-                return;
-            }
+            if (ErrorHandler::handle(message, state)) { return; }
         }
         inline bool checkErrorAndThrow(int status, lua_State *state) {
             if (status != 0 && status != LUA_YIELD) {
@@ -4431,7 +4250,6 @@ namespace LuaWrapper {
         }
     }// namespace except
 }// namespace LuaWrapper
-
 
 namespace LuaWrapper {
     /// @brief StackTop tag type
@@ -4541,8 +4359,7 @@ namespace LuaWrapper {
                     }
                     lua_State *state_;
                 };
-                RefHolder(lua_State *L, int ref)
-                    : state_(L), ref_(new int(ref), RefDeleter(L)) {}
+                RefHolder(lua_State *L, int ref) : state_(L), ref_(new int(ref), RefDeleter(L)) {}
 
                 RefHolder(const RefHolder &src) : state_(src.state_), ref_(src.ref_) {}
                 RefHolder &operator=(const RefHolder &src) {
@@ -4562,9 +4379,7 @@ namespace LuaWrapper {
                     std::swap(ref_, other.ref_);
                 }
                 int ref() const {
-                    if (state_ && ref_) {
-                        return *ref_;
-                    }
+                    if (state_ && ref_) { return *ref_; }
                     return LUA_REFNIL;
                 }
                 void reset() { ref_.reset(); }
@@ -4607,9 +4422,7 @@ namespace LuaWrapper {
                     std::swap(ref_, other.ref_);
                 }
                 int ref() const {
-                    if (state_) {
-                        return ref_;
-                    }
+                    if (state_) { return ref_; }
                     return LUA_REFNIL;
                 }
                 void reset() {
@@ -4629,9 +4442,7 @@ namespace LuaWrapper {
 #endif
             RegistoryRef(const RegistoryRef &src) : ref_(src.ref_) {}
             RegistoryRef &operator=(const RegistoryRef &src) {
-                if (this != &src) {
-                    ref_ = src.ref_;
-                }
+                if (this != &src) { ref_ = src.ref_; }
                 return *this;
             }
 
@@ -4660,20 +4471,15 @@ namespace LuaWrapper {
             void swap(RegistoryRef &other) throw() { ref_.swap(other.ref_); }
 
             template<typename T>
-            RegistoryRef(lua_State *state, const T &v, NoMainCheck)
-                : ref_(0, LUA_REFNIL) {
-                if (!state) {
-                    return;
-                }
+            RegistoryRef(lua_State *state, const T &v, NoMainCheck) : ref_(0, LUA_REFNIL) {
+                if (!state) { return; }
                 util::ScopedSavedStack save(state);
                 util::one_push(state, v);
                 ref_ = RefHolder(state, ref_from_stacktop(state));
             }
             template<typename T>
             RegistoryRef(lua_State *state, const T &v) : ref_(0, LUA_REFNIL) {
-                if (!state) {
-                    return;
-                }
+                if (!state) { return; }
                 util::ScopedSavedStack save(state);
                 util::one_push(state, v);
                 ref_ = RefHolder(util::toMainThread(state), ref_from_stacktop(state));
@@ -4681,18 +4487,14 @@ namespace LuaWrapper {
 #if METAENGINE_LUAWRAPPER_USE_CPP11
             template<typename T>
             RegistoryRef(lua_State *state, T &&v, NoMainCheck) : ref_(0, LUA_REFNIL) {
-                if (!state) {
-                    return;
-                }
+                if (!state) { return; }
                 util::ScopedSavedStack save(state);
                 util::one_push(state, standard::forward<T>(v));
                 ref_ = RefHolder(state, ref_from_stacktop(state));
             }
             template<typename T>
             RegistoryRef(lua_State *state, T &&v) : ref_(0, LUA_REFNIL) {
-                if (!state) {
-                    return;
-                }
+                if (!state) { return; }
                 util::ScopedSavedStack save(state);
                 util::one_push(state, standard::forward<T>(v));
                 ref_ = RefHolder(util::toMainThread(state), ref_from_stacktop(state));
@@ -4701,8 +4503,7 @@ namespace LuaWrapper {
             ~RegistoryRef() {
                 try {
                     unref();
-                } catch (...) {
-                }// can't throw at Destructor
+                } catch (...) {}// can't throw at Destructor
             }
 
             /// @brief push to Lua stack
@@ -4738,7 +4539,6 @@ namespace LuaWrapper {
     }// namespace Ref
 }// namespace LuaWrapper
 
-
 namespace LuaWrapper {
     class LuaTable;
     class LuaFunction;
@@ -4761,8 +4561,7 @@ namespace LuaWrapper {
             template<typename RetType>
             static RetType ReturnValue(lua_State *state, int restatus, int retindex,
                                        types::typetag<RetType> tag);
-            static FunctionResults ReturnValue(lua_State *state, int restatus,
-                                               int retindex,
+            static FunctionResults ReturnValue(lua_State *state, int restatus, int retindex,
                                                types::typetag<FunctionResults> tag);
             static void ReturnValue(lua_State *state, int restatus, int retindex,
                                     types::typetag<void> tag);
@@ -4771,9 +4570,7 @@ namespace LuaWrapper {
         template<typename Derived>
         class LuaFunctionImpl {
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -4816,38 +4613,40 @@ namespace LuaWrapper {
             FunctionResults operator()(Args &&...args);
 #else
 
-#define METAENGINE_LUAWRAPPER_CALL_DEF(N)                                                  \
-    template<class Result METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>          \
-    Result call(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                           \
-        lua_State *state = state_();                                                       \
-        if (!state) {                                                                      \
-            except::typeMismatchError(state, "attempt to call nil value");                 \
-            return Result();                                                               \
-        }                                                                                  \
-        int argstart = lua_gettop(state) + 1;                                              \
-        push_(state);                                                                      \
-        int argnum = util::push_args(state METAENGINE_LUAWRAPPER_PP_ARG_REPEAT_CONCAT(N)); \
-        int result = lua_pcall_wrap(state, argnum, LUA_MULTRET);                           \
-        except::checkErrorAndThrow(result, state);                                         \
-        return detail::FunctionResultProxy::ReturnValue(state, result, argstart,           \
-                                                        types::typetag<Result>());         \
+#define METAENGINE_LUAWRAPPER_CALL_DEF(N)                                                          \
+    template<class Result METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                  \
+    Result call(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                                   \
+        lua_State *state = state_();                                                               \
+        if (!state) {                                                                              \
+            except::typeMismatchError(state, "attempt to call nil value");                         \
+            return Result();                                                                       \
+        }                                                                                          \
+        int argstart = lua_gettop(state) + 1;                                                      \
+        push_(state);                                                                              \
+        int argnum = util::push_args(state METAENGINE_LUAWRAPPER_PP_ARG_REPEAT_CONCAT(N));         \
+        int result = lua_pcall_wrap(state, argnum, LUA_MULTRET);                                   \
+        except::checkErrorAndThrow(result, state);                                                 \
+        return detail::FunctionResultProxy::ReturnValue(state, result, argstart,                   \
+                                                        types::typetag<Result>());                 \
     }
 
             METAENGINE_LUAWRAPPER_CALL_DEF(0)
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_CALL_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                                METAENGINE_LUAWRAPPER_CALL_DEF)
 
 #undef METAENGINE_LUAWRAPPER_RESUME_DEF
 
             inline FunctionResults operator()();
 
-#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                    \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)> \
+#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                         \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
     inline FunctionResults operator()(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N));
 
 #define METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)
 #define METAENGINE_LUAWRAPPER_CALL_ARGS(N) METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)
 
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_OP_FN_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                                METAENGINE_LUAWRAPPER_OP_FN_DEF)
 #undef METAENGINE_LUAWRAPPER_OP_FN_DEF
 
 #undef METAENGINE_LUAWRAPPER_CALL_ARGS
@@ -4859,9 +4658,7 @@ namespace LuaWrapper {
         template<typename Derived>
         class LuaThreadImpl {
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -4883,14 +4680,10 @@ namespace LuaWrapper {
                     return Result();
                 }
                 int argstart = 1;// exist function in stack at first resume.
-                if (lua_status(thread) == LUA_YIELD) {
-                    argstart = 0;
-                }
+                if (lua_status(thread) == LUA_YIELD) { argstart = 0; }
                 util::push_args(thread, std::forward<Args>(args)...);
                 int argnum = lua_gettop(thread) - argstart;
-                if (argnum < 0) {
-                    argnum = 0;
-                }
+                if (argnum < 0) { argnum = 0; }
                 int nres = 0;
                 int result = lua_resume(thread, state, argnum, &nres);
                 except::checkErrorAndThrow(result, thread);
@@ -4901,48 +4694,46 @@ namespace LuaWrapper {
             FunctionResults operator()(Args &&...args);
 #else
 
-#define METAENGINE_LUAWRAPPER_RESUME_DEF(N)                                        \
-    template<class Result METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>  \
-    Result resume(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                 \
-        lua_State *state = state_();                                               \
-        if (!state) {                                                              \
-            except::typeMismatchError(state, "attempt to call nil value");         \
-            return Result();                                                       \
-        }                                                                          \
-        util::ScopedSavedStack save(state);                                        \
-        int corStackIndex = pushStackIndex_(state);                                \
-        lua_State *thread = lua_tothread(state, corStackIndex);                    \
-        if (!thread) {                                                             \
-            except::typeMismatchError(state, "not thread");                        \
-            return Result();                                                       \
-        }                                                                          \
-        int argstart = 1;                                                          \
-        if (lua_status(thread) == LUA_YIELD) {                                     \
-            argstart = 0;                                                          \
-        }                                                                          \
-        util::push_args(thread METAENGINE_LUAWRAPPER_PP_ARG_REPEAT_CONCAT(N));     \
-        int argnum = lua_gettop(thread) - argstart;                                \
-        if (argnum < 0) {                                                          \
-            argnum = 0;                                                            \
-        }                                                                          \
-        int result = lua_resume(thread, state, argnum);                            \
-        except::checkErrorAndThrow(result, thread);                                \
-        return detail::FunctionResultProxy::ReturnValue(thread, result, 1,         \
-                                                        types::typetag<Result>()); \
+#define METAENGINE_LUAWRAPPER_RESUME_DEF(N)                                                        \
+    template<class Result METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                  \
+    Result resume(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                                 \
+        lua_State *state = state_();                                                               \
+        if (!state) {                                                                              \
+            except::typeMismatchError(state, "attempt to call nil value");                         \
+            return Result();                                                                       \
+        }                                                                                          \
+        util::ScopedSavedStack save(state);                                                        \
+        int corStackIndex = pushStackIndex_(state);                                                \
+        lua_State *thread = lua_tothread(state, corStackIndex);                                    \
+        if (!thread) {                                                                             \
+            except::typeMismatchError(state, "not thread");                                        \
+            return Result();                                                                       \
+        }                                                                                          \
+        int argstart = 1;                                                                          \
+        if (lua_status(thread) == LUA_YIELD) { argstart = 0; }                                     \
+        util::push_args(thread METAENGINE_LUAWRAPPER_PP_ARG_REPEAT_CONCAT(N));                     \
+        int argnum = lua_gettop(thread) - argstart;                                                \
+        if (argnum < 0) { argnum = 0; }                                                            \
+        int result = lua_resume(thread, state, argnum);                                            \
+        except::checkErrorAndThrow(result, thread);                                                \
+        return detail::FunctionResultProxy::ReturnValue(thread, result, 1,                         \
+                                                        types::typetag<Result>());                 \
     }
 
             METAENGINE_LUAWRAPPER_RESUME_DEF(0)
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_RESUME_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                                METAENGINE_LUAWRAPPER_RESUME_DEF)
 
 #undef METAENGINE_LUAWRAPPER_RESUME_DEF
 
             inline FunctionResults operator()();
 
-#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                    \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)> \
+#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                         \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
     inline FunctionResults operator()(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N));
 
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_OP_FN_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                                METAENGINE_LUAWRAPPER_OP_FN_DEF)
 
 #undef METAENGINE_LUAWRAPPER_OP_FN_DEF
 #endif
@@ -4975,9 +4766,7 @@ namespace LuaWrapper {
             //!
             coroutine_status costatus(lua_State *l = 0) const {
                 lua_State *state = state_();
-                if (!state) {
-                    return COSTAT_DEAD;
-                }
+                if (!state) { return COSTAT_DEAD; }
                 util::ScopedSavedStack save(state);
                 int corStackIndex = pushStackIndex_(state);
                 lua_State *thread = lua_tothread(state, corStackIndex);
@@ -5025,7 +4814,6 @@ namespace LuaWrapper {
     }// namespace detail
 }// namespace LuaWrapper
 
-
 namespace LuaWrapper {
     class LuaRef;
     class LuaStackRef;
@@ -5047,14 +4835,12 @@ namespace LuaWrapper {
                 lua_settable(state, table_index);
             }
             template<typename V>
-            static void set(lua_State *state, int table_index, const char *key,
-                            V &&value) {
+            static void set(lua_State *state, int table_index, const char *key, V &&value) {
                 util::one_push(state, std::forward<V>(value));
                 lua_setfield(state, table_index, key);
             }
             template<typename V>
-            static void set(lua_State *state, int table_index, const std::string &key,
-                            V &&value) {
+            static void set(lua_State *state, int table_index, const std::string &key, V &&value) {
                 set(state, table_index, key.c_str(), std::forward<V>(value));
             }
 
@@ -5076,15 +4862,13 @@ namespace LuaWrapper {
             }
 #else
             template<typename V, typename KEY>
-            static void set(lua_State *state, int table_index, const KEY &key,
-                            const V &value) {
+            static void set(lua_State *state, int table_index, const KEY &key, const V &value) {
                 util::one_push(state, key);
                 util::one_push(state, value);
                 lua_settable(state, table_index);
             }
             template<typename V>
-            static void set(lua_State *state, int table_index, const char *key,
-                            const V &value) {
+            static void set(lua_State *state, int table_index, const char *key, const V &value) {
                 util::one_push(state, value);
                 lua_setfield(state, table_index, key);
             }
@@ -5096,22 +4880,19 @@ namespace LuaWrapper {
             }
 
             template<typename V>
-            static void set(lua_State *state, int table_index, luaInt key,
-                            const V &value) {
+            static void set(lua_State *state, int table_index, luaInt key, const V &value) {
                 util::one_push(state, value);
                 lua_seti(state, table_index, key);
             }
 
             template<typename V, typename KEY>
-            static void rawset(lua_State *state, int table_index, const KEY &key,
-                               const V &value) {
+            static void rawset(lua_State *state, int table_index, const KEY &key, const V &value) {
                 util::one_push(state, key);
                 util::one_push(state, value);
                 lua_rawset(state, table_index);
             }
             template<typename V>
-            static void rawset(lua_State *state, int table_index, luaInt key,
-                               const V &value) {
+            static void rawset(lua_State *state, int table_index, luaInt key, const V &value) {
                 util::one_push(state, value);
                 lua_rawseti(state, table_index, key);
             }
@@ -5158,9 +4939,7 @@ namespace LuaWrapper {
         template<typename Derived>
         class LuaTableOrUserDataImpl {
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -5218,8 +4997,7 @@ namespace LuaWrapper {
                 util::ScopedSavedStack save(state);
                 int stackIndex = pushStackIndex_(state);
 
-                table_proxy::set(state, stackIndex, std::forward<K>(key),
-                                 std::forward<V>(value));
+                table_proxy::set(state, stackIndex, std::forward<K>(key), std::forward<V>(value));
                 return true;
             }
 #else
@@ -5256,9 +5034,7 @@ namespace LuaWrapper {
         template<typename Derived>
         class LuaTableImpl {
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -5388,9 +5164,7 @@ namespace LuaWrapper {
                     bool cont = f(lua_type_traits<K>::get(state, -1),
                                   lua_type_traits<V>::get(state, -2));
                     lua_pop(state, 2);// pop key and value
-                    if (!cont) {
-                        break;
-                    }
+                    if (!cont) { break; }
                 }
             }
 
@@ -5464,9 +5238,7 @@ namespace LuaWrapper {
         template<typename Derived>
         class LuaUserDataImpl {
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -5491,9 +5263,13 @@ namespace LuaWrapper {
             }
 
             template<typename T>
-            bool typeTest() const { return isType<T>(); }
+            bool typeTest() const {
+                return isType<T>();
+            }
             template<typename T>
-            bool weakTypeTest() const { return isConvertible<T>(); }
+            bool weakTypeTest() const {
+                return isConvertible<T>();
+            }
 
             template<typename T>
             typename lua_type_traits<T>::get_type get() const {
@@ -5503,7 +5279,9 @@ namespace LuaWrapper {
             }
 
             template<typename T>
-            operator T() const { return get<T>(); }
+            operator T() const {
+                return get<T>();
+            }
         };
     }// namespace detail
 }// namespace LuaWrapper
@@ -5524,9 +5302,7 @@ namespace LuaWrapper {
                                public detail::LuaThreadImpl<Derived>,
                                public LuaBasicTypeFunctions<Derived> {
         private:
-            lua_State *state_() const {
-                return static_cast<const Derived *>(this)->state();
-            }
+            lua_State *state_() const { return static_cast<const Derived *>(this)->state(); }
             int pushStackIndex_(lua_State *state) const {
                 return static_cast<const Derived *>(this)->pushStackIndex(state);
             }
@@ -5537,11 +5313,15 @@ namespace LuaWrapper {
 
             /// @brief deprecated, use isType instead.
             template<typename T>
-            bool typeTest() const { return isType<T>(); }
+            bool typeTest() const {
+                return isType<T>();
+            }
 
             /// @brief deprecated, use isConvertible instead.
             template<typename T>
-            bool weakTypeTest() const { return isConvertible<T>(); }
+            bool weakTypeTest() const {
+                return isConvertible<T>();
+            }
 
             /// @brief is type test
             template<typename T>
@@ -5568,15 +5348,14 @@ namespace LuaWrapper {
             typename lua_type_traits<T>::get_type value_or(U v) const {
                 lua_State *state = state_();
                 util::ScopedSavedStack save(state);
-                return lua_type_traits<optional<T>>::get(
-                               state, state ? pushStackIndex_(state) : 0)
+                return lua_type_traits<optional<T>>::get(state, state ? pushStackIndex_(state) : 0)
                         .value_or(v);
             }
 
             // deprecated. use get<LuaWrapper::optional<T> >() instead;
             template<typename T>
-            typename lua_type_traits<T>::get_type
-            get(bool &was_valid, bool allow_convertible = true) const {
+            typename lua_type_traits<T>::get_type get(bool &was_valid,
+                                                      bool allow_convertible = true) const {
                 lua_State *state = state_();
                 util::ScopedSavedStack save(state);
                 int stackindex = pushStackIndex_(state);
@@ -5592,7 +5371,9 @@ namespace LuaWrapper {
                 }
             }
             template<typename T>
-            operator T() const { return get<T>(); }
+            operator T() const {
+                return get<T>();
+            }
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
             template<class... Args>
@@ -5600,11 +5381,12 @@ namespace LuaWrapper {
 #else
             inline FunctionResults operator()();
 
-#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                    \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)> \
+#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                         \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
     inline FunctionResults operator()(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N));
 
-            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_OP_FN_DEF)
+            METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                                METAENGINE_LUAWRAPPER_OP_FN_DEF)
 #undef METAENGINE_LUAWRAPPER_OP_FN_DEF
 #endif
         };
@@ -5614,28 +5396,25 @@ namespace LuaWrapper {
 namespace LuaWrapper {
     namespace util {
         template<class Result>
-        inline Result get_result_impl(lua_State *l, int startindex,
-                                      types::typetag<Result>) {
+        inline Result get_result_impl(lua_State *l, int startindex, types::typetag<Result>) {
             return lua_type_traits<Result>::get(l, startindex);
         }
 #if METAENGINE_LUAWRAPPER_USE_CPP11
-        inline standard::tuple<>
-        get_result_tuple_impl(lua_State *, int, types::typetag<standard::tuple<>>) {
+        inline standard::tuple<> get_result_tuple_impl(lua_State *, int,
+                                                       types::typetag<standard::tuple<>>) {
             return standard::tuple<>();
         }
         template<typename T, typename... TYPES>
-        inline standard::tuple<T, TYPES...>
-        get_result_tuple_impl(lua_State *l, int index,
-                              types::typetag<standard::tuple<T, TYPES...>>) {
+        inline standard::tuple<T, TYPES...> get_result_tuple_impl(
+                lua_State *l, int index, types::typetag<standard::tuple<T, TYPES...>>) {
             return standard::tuple_cat(
                     standard::tuple<T>(lua_type_traits<T>::get(l, index)),
                     get_result_tuple_impl(l, index + 1,
                                           types::typetag<standard::tuple<TYPES...>>()));
         }
         template<typename... TYPES>
-        inline standard::tuple<TYPES...>
-        get_result_impl(lua_State *l, int startindex,
-                        types::typetag<standard::tuple<TYPES...>> tag) {
+        inline standard::tuple<TYPES...> get_result_impl(
+                lua_State *l, int startindex, types::typetag<standard::tuple<TYPES...>> tag) {
             return get_result_tuple_impl<TYPES...>(l, startindex, tag);
         }
 #else
@@ -5647,17 +5426,18 @@ namespace LuaWrapper {
             return standard::tuple<>();
         }
 
-#define METAENGINE_LUAWRAPPER_GET_DEF(N) \
+#define METAENGINE_LUAWRAPPER_GET_DEF(N)                                                           \
     lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::get(l, N + startindex - 1)
-#define METAENGINE_LUAWRAPPER_GET_TUPLE_DEF(N)                                                  \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                   \
-    inline standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> get_result_impl(    \
-            lua_State *l, int startindex,                                                       \
-            types::typetag<standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>) { \
-        return standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>(                \
-                METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_GET_DEF));         \
+#define METAENGINE_LUAWRAPPER_GET_TUPLE_DEF(N)                                                     \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    inline standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> get_result_impl(       \
+            lua_State *l, int startindex,                                                          \
+            types::typetag<standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>) {    \
+        return standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>(                   \
+                METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_GET_DEF));            \
     }
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_TUPLE_SIZE, METAENGINE_LUAWRAPPER_GET_TUPLE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_TUPLE_SIZE,
+                                            METAENGINE_LUAWRAPPER_GET_TUPLE_DEF)
 #undef METAENGINE_LUAWRAPPER_GET_DEF
 #undef METAENGINE_LUAWRAPPER_GET_TUPLE_DEF
 #endif
@@ -5721,9 +5501,7 @@ namespace LuaWrapper {
             return lua_topointer(state(), -1);
         }
         static void putindent(std::ostream &os, int indent) {
-            while (indent-- > 0) {
-                os << "  ";
-            }
+            while (indent-- > 0) { os << "  "; }
         }
     };
 
@@ -5759,17 +5537,14 @@ namespace LuaWrapper {
     {
     };
 
-    class LuaStackRef : public Ref::StackRef,
-                        public detail::LuaVariantImpl<LuaStackRef> {
+    class LuaStackRef : public Ref::StackRef, public detail::LuaVariantImpl<LuaStackRef> {
     public:
         LuaStackRef() : Ref::StackRef() {}
         LuaStackRef(lua_State *s, int index) : Ref::StackRef(s, index, false) {}
         LuaStackRef(lua_State *s, int index, bool popAtDestruct)
             : Ref::StackRef(s, index, popAtDestruct) {}
 #if METAENGINE_LUAWRAPPER_USE_CPP11
-        LuaStackRef(LuaStackRef &&src) : Ref::StackRef(std::move(src)) {
-            src.pop_ = false;
-        }
+        LuaStackRef(LuaStackRef &&src) : Ref::StackRef(std::move(src)) { src.pop_ = false; }
         LuaStackRef &operator=(LuaStackRef &&src) {
             if (this != &src) {
                 Ref::StackRef::operator=(std::move(src));
@@ -5828,8 +5603,7 @@ namespace LuaWrapper {
 
         void typecheck() {
             int t = type();
-            if (t != TYPE_USERDATA && t != TYPE_LIGHTUSERDATA && t != TYPE_NIL &&
-                t != TYPE_NONE) {
+            if (t != TYPE_USERDATA && t != TYPE_LIGHTUSERDATA && t != TYPE_NIL && t != TYPE_NONE) {
                 except::typeMismatchError(state(), "not user data");
                 unref();
             }
@@ -5840,17 +5614,14 @@ namespace LuaWrapper {
             push(state());
             return LuaRef(state(), StackTop());
         }
-        LuaUserData(lua_State *state, StackTop)
-            : Ref::RegistoryRef(state, StackTop()) {
+        LuaUserData(lua_State *state, StackTop) : Ref::RegistoryRef(state, StackTop()) {
             typecheck();
         }
         template<typename TYPE>
-        LuaUserData(lua_State *state, const TYPE &table)
-            : Ref::RegistoryRef(state, table) {
+        LuaUserData(lua_State *state, const TYPE &table) : Ref::RegistoryRef(state, table) {
             typecheck();
         }
-        explicit LuaUserData(lua_State *state)
-            : Ref::RegistoryRef(state, NilValue()) {
+        explicit LuaUserData(lua_State *state) : Ref::RegistoryRef(state, NilValue()) {
             typecheck();
         }
         LuaUserData() { typecheck(); }
@@ -5903,16 +5674,11 @@ namespace LuaWrapper {
             push(state());
             return LuaRef(state(), StackTop());
         }
-        LuaTable(lua_State *state, StackTop) : Ref::RegistoryRef(state, StackTop()) {
+        LuaTable(lua_State *state, StackTop) : Ref::RegistoryRef(state, StackTop()) { typecheck(); }
+        LuaTable(lua_State *state, const NewTable &table) : Ref::RegistoryRef(state, table) {
             typecheck();
         }
-        LuaTable(lua_State *state, const NewTable &table)
-            : Ref::RegistoryRef(state, table) {
-            typecheck();
-        }
-        explicit LuaTable(lua_State *state) : Ref::RegistoryRef(state, NewTable()) {
-            typecheck();
-        }
+        explicit LuaTable(lua_State *state) : Ref::RegistoryRef(state, NewTable()) { typecheck(); }
         LuaTable() { typecheck(); }
     };
 
@@ -5924,9 +5690,7 @@ namespace LuaWrapper {
         typedef LuaTable get_type;
         typedef LuaTable push_type;
 
-        static bool strictCheckType(lua_State *l, int index) {
-            return lua_istable(l, index);
-        }
+        static bool strictCheckType(lua_State *l, int index) { return lua_istable(l, index); }
         static bool checkType(lua_State *l, int index) {
             return lua_istable(l, index) || lua_isnil(l, index);
         }
@@ -5958,8 +5722,7 @@ namespace LuaWrapper {
 
         struct LuaLoadStreamWrapper
         {
-            LuaLoadStreamWrapper(std::istream &stream)
-                : preloaded_(false), stream_(stream) {
+            LuaLoadStreamWrapper(std::istream &stream) : preloaded_(false), stream_(stream) {
                 buffer_.reserve(512);
                 skipComment();
                 preloaded_ = !buffer_.empty();
@@ -5978,9 +5741,7 @@ namespace LuaWrapper {
                         break;
                     }
                     bomseq++;
-                    if ('\0' == *bomseq) {
-                        return;
-                    }
+                    if ('\0' == *bomseq) { return; }
                 }
 
                 // skip comment
@@ -6027,8 +5788,7 @@ namespace LuaWrapper {
 
         /// @brief construct with stack top value.
         /// @param state pointer to lua_State
-        LuaFunction(lua_State *state, StackTop)
-            : Ref::RegistoryRef(state, StackTop()) {
+        LuaFunction(lua_State *state, StackTop) : Ref::RegistoryRef(state, StackTop()) {
             typecheck();
         }
 
@@ -6092,11 +5852,9 @@ namespace LuaWrapper {
                                              const char *chunkname = 0) {
             LuaLoadStreamWrapper wrapper(stream);
 #if LUA_VERSION_NUM >= 502
-            int status =
-                    lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname, 0);
+            int status = lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname, 0);
 #else
-            int status =
-                    lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname);
+            int status = lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname);
 #endif
             if (status) {
                 ErrorHandler::handle(status, state);
@@ -6117,11 +5875,9 @@ namespace LuaWrapper {
             util::ScopedSavedStack save(state);
             LuaLoadStreamWrapper wrapper(stream);
 #if LUA_VERSION_NUM >= 502
-            int status =
-                    lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname, 0);
+            int status = lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname, 0);
 #else
-            int status =
-                    lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname);
+            int status = lua_load(state, &LuaLoadStreamWrapper::getdata, &wrapper, chunkname);
 #endif
             if (status) {
                 ErrorHandler::handle(status, state);
@@ -6150,8 +5906,7 @@ namespace LuaWrapper {
             typecheck();
         }
         /// @brief construct with new thread.
-        LuaThread(lua_State *state, const NewThread &t)
-            : Ref::RegistoryRef(state, t) {}
+        LuaThread(lua_State *state, const NewThread &t) : Ref::RegistoryRef(state, t) {}
         /// @brief construct with nil reference.
         LuaThread(lua_State *state) : Ref::RegistoryRef(state, NewThread()) {}
         /// @brief construct with nil reference.
@@ -6187,9 +5942,7 @@ namespace std {
 }// namespace std
 #endif
 
-
 #if METAENGINE_LUAWRAPPER_USE_CPP11
-
 
 namespace LuaWrapper {
     namespace nativefunction {
@@ -6214,8 +5967,8 @@ namespace LuaWrapper {
         template<class F, class Ret, class... Args, size_t... Indexes>
         int _call_apply(lua_State *state, F &&f, index_tuple<Indexes...>,
                         util::FunctionSignatureType<Ret, Args...>) {
-            return util::push_args(
-                    state, util::invoke(f, lua_type_traits<Args>::get(state, Indexes)...));
+            return util::push_args(state,
+                                   util::invoke(f, lua_type_traits<Args>::get(state, Indexes)...));
         }
         template<class F, class... Args, size_t... Indexes>
         int _call_apply(lua_State *state, F &&f, index_tuple<Indexes...>,
@@ -6233,8 +5986,7 @@ namespace LuaWrapper {
 
         inline void join(std::string &, const char *) {}
         template<class Arg, class... Args>
-        void join(std::string &result, const char *delim, const Arg &str,
-                  const Args &...args) {
+        void join(std::string &result, const char *delim, const Arg &str, const Args &...args) {
             result += str;
             result += delim;
             join(result, delim, args...);
@@ -6243,8 +5995,7 @@ namespace LuaWrapper {
         template<typename T>
         struct _wcheckeval
         {
-            _wcheckeval(lua_State *s, int i, bool opt)
-                : state(s), index(i), opt_arg(opt) {}
+            _wcheckeval(lua_State *s, int i, bool opt) : state(s), index(i), opt_arg(opt) {}
             lua_State *state;
             int index;
             bool opt_arg;
@@ -6257,8 +6008,7 @@ namespace LuaWrapper {
         template<typename T>
         struct _scheckeval
         {
-            _scheckeval(lua_State *s, int i, bool opt)
-                : state(s), index(i), opt_arg(opt) {}
+            _scheckeval(lua_State *s, int i, bool opt) : state(s), index(i), opt_arg(opt) {}
             lua_State *state;
             int index;
             bool opt_arg;
@@ -6269,20 +6019,20 @@ namespace LuaWrapper {
         };
 
         template<class... Args, size_t... Indexes>
-        bool _ctype_apply(lua_State *state, index_tuple<Indexes...>,
-                          util::TypeTuple<Args...>, int opt_count) {
+        bool _ctype_apply(lua_State *state, index_tuple<Indexes...>, util::TypeTuple<Args...>,
+                          int opt_count) {
             METAENGINE_LUAWRAPPER_UNUSED(state);
             METAENGINE_LUAWRAPPER_UNUSED(opt_count);
-            return all_true(_wcheckeval<Args>(
-                    state, Indexes, sizeof...(Indexes) - opt_count < Indexes)...);
+            return all_true(
+                    _wcheckeval<Args>(state, Indexes, sizeof...(Indexes) - opt_count < Indexes)...);
         }
         template<class... Args, size_t... Indexes>
-        bool _sctype_apply(lua_State *state, index_tuple<Indexes...>,
-                           util::TypeTuple<Args...>, int opt_count) {
+        bool _sctype_apply(lua_State *state, index_tuple<Indexes...>, util::TypeTuple<Args...>,
+                           int opt_count) {
             METAENGINE_LUAWRAPPER_UNUSED(state);
             METAENGINE_LUAWRAPPER_UNUSED(opt_count);
-            return all_true(_scheckeval<Args>(
-                    state, Indexes, sizeof...(Indexes) - opt_count < Indexes)...);
+            return all_true(
+                    _scheckeval<Args>(state, Indexes, sizeof...(Indexes) - opt_count < Indexes)...);
         }
 
         template<class... Args, size_t... Indexes>
@@ -6292,8 +6042,7 @@ namespace LuaWrapper {
             std::string result;
             const int max_arg = sizeof...(Args);
             join(result, ",",
-                 (((max_arg - opt_count < int(Indexes)) ? std::string("[OPT]")
-                                                        : std::string("")) +
+                 (((max_arg - opt_count < int(Indexes)) ? std::string("[OPT]") : std::string("")) +
                   util::pretty_name(typeid(Args)))...);
             return result;
         }
@@ -6371,18 +6120,16 @@ namespace LuaWrapper {
             int operator()(lua_State *L) const { return invoke(L, get_index()); }
 
             bool checkArgTypes(lua_State *L, int opt_count = 0) const {
-                return _ctype_apply(L, get_index(),
-                                    typename signature_type::argument_type_tuple(),
+                return _ctype_apply(L, get_index(), typename signature_type::argument_type_tuple(),
                                     opt_count);
             }
             bool strictCheckArgTypes(lua_State *L, int opt_count = 0) const {
-                return _sctype_apply(L, get_index(),
-                                     typename signature_type::argument_type_tuple(),
+                return _sctype_apply(L, get_index(), typename signature_type::argument_type_tuple(),
                                      opt_count);
             }
             std::string argTypesName(int opt_count = 0) const {
-                return _type_name_apply(
-                        get_index(), typename signature_type::argument_type_tuple(), opt_count);
+                return _type_name_apply(get_index(), typename signature_type::argument_type_tuple(),
+                                        opt_count);
             }
         };
 
@@ -6391,96 +6138,95 @@ namespace LuaWrapper {
         template<typename ClassType, typename... Args>
         struct ConstructorFunction<ClassType(Args...)>
         {
-            typedef ConstructorFunctor<util::FunctionSignatureType<ClassType, Args...>>
-                    type;
+            typedef ConstructorFunctor<util::FunctionSignatureType<ClassType, Args...>> type;
         };
         template<typename ClassType, typename RetType, typename... Args>
         struct ConstructorFunction<ClassType,
                                    RetType(Args...)>// class type check version
         {
-            typedef ConstructorFunctor<util::FunctionSignatureType<ClassType, Args...>>
-                    type;
+            typedef ConstructorFunctor<util::FunctionSignatureType<ClassType, Args...>> type;
         };
     }// namespace nativefunction
     using nativefunction::ConstructorFunction;
 }// namespace LuaWrapper
 #else
 
-
 #include <string>
-
 
 namespace LuaWrapper {
     namespace nativefunction {
 
-#define METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_CONCAT_REP(N) \
+#define METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_CONCAT_REP(N)                                    \
     , typename util::ArgumentType<N - 1, F>::type
-#define METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_REPEAT_CONCAT(N) \
+#define METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_REPEAT_CONCAT(N)                                 \
     METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_CONCAT_REP)
 
-#define METAENGINE_LUAWRAPPER_GET_REP(N) , lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::get(state, N)
-#define METAENGINE_LUAWRAPPER_FUNC_DEF(N)                                                      \
-    const util::FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT( \
-            N)> &fsig
-#define METAENGINE_LUAWRAPPER_TYPENAME_REP(N)     \
-    +((MAX_ARG - opt_count < N) ? "[OPT]" : "") + \
+#define METAENGINE_LUAWRAPPER_GET_REP(N)                                                           \
+    , lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::get(state, N)
+#define METAENGINE_LUAWRAPPER_FUNC_DEF(N)                                                          \
+    const util::FunctionSignatureType<Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>  \
+            &fsig
+#define METAENGINE_LUAWRAPPER_TYPENAME_REP(N)                                                      \
+    +((MAX_ARG - opt_count < N) ? "[OPT]" : "") +                                                  \
             util::pretty_name(typeid(METAENGINE_LUAWRAPPER_PP_CAT(A, N))) + ","
-#define METAENGINE_LUAWRAPPER_TYPECHECK_REP(N)                     \
-    &&(((MAX_ARG - opt_count < N) && lua_isnoneornil(state, N)) || \
+#define METAENGINE_LUAWRAPPER_TYPECHECK_REP(N)                                                     \
+    &&(((MAX_ARG - opt_count < N) && lua_isnoneornil(state, N)) ||                                 \
        lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::checkType(state, N))
-#define METAENGINE_LUAWRAPPER_STRICT_TYPECHECK_REP(N)              \
-    &&(((MAX_ARG - opt_count < N) && lua_isnoneornil(state, N)) || \
+#define METAENGINE_LUAWRAPPER_STRICT_TYPECHECK_REP(N)                                              \
+    &&(((MAX_ARG - opt_count < N) && lua_isnoneornil(state, N)) ||                                 \
        lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::strictCheckType(state, N))
-#define METAENGINE_LUAWRAPPER_CALL_FN_DEF(N)                                                                \
-    template<typename F, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>               \
-    inline typename traits::enable_if<!traits::is_same<void, Ret>::value,                                   \
-                                      int>::type                                                            \
-    _call_apply(lua_State *state, F &f, METAENGINE_LUAWRAPPER_FUNC_DEF(N)) {                                \
-        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                                 \
-        return util::push_args(                                                                             \
-                state, util::invoke<F METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_REPEAT_CONCAT(N)>(          \
-                               f METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_GET_REP)));       \
-    }                                                                                                       \
-    template<typename F, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>               \
-    inline                                                                                                  \
-            typename traits::enable_if<traits::is_same<void, Ret>::value, int>::type                        \
-            _call_apply(lua_State *state, F &f, METAENGINE_LUAWRAPPER_FUNC_DEF(N)) {                        \
-        METAENGINE_LUAWRAPPER_UNUSED(state);                                                                \
-        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                                 \
-        util::invoke<F METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_REPEAT_CONCAT(N)>(                         \
-                f METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_GET_REP));                       \
-        return 0;                                                                                           \
-    }                                                                                                       \
-    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                           \
-    bool _ctype_apply(lua_State *state, METAENGINE_LUAWRAPPER_FUNC_DEF(N), int opt_count = 0) {             \
-        METAENGINE_LUAWRAPPER_UNUSED(state);                                                                \
-        METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                            \
-        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                                 \
-        const int MAX_ARG = N;                                                                              \
-        (void) MAX_ARG;                                                                                     \
-        return true METAENGINE_LUAWRAPPER_PP_REVERSE_REPEAT(N, METAENGINE_LUAWRAPPER_TYPECHECK_REP);        \
-    }                                                                                                       \
-    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                           \
-    bool _sctype_apply(lua_State *state, METAENGINE_LUAWRAPPER_FUNC_DEF(N),                                 \
-                       int opt_count = 0) {                                                                 \
-        METAENGINE_LUAWRAPPER_UNUSED(state);                                                                \
-        METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                            \
-        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                                 \
-        const int MAX_ARG = N;                                                                              \
-        (void) MAX_ARG;                                                                                     \
-        return true METAENGINE_LUAWRAPPER_PP_REVERSE_REPEAT(N, METAENGINE_LUAWRAPPER_STRICT_TYPECHECK_REP); \
-    }                                                                                                       \
-    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                           \
-    std::string _type_name_apply(METAENGINE_LUAWRAPPER_FUNC_DEF(N), int opt_count) {                        \
-        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                                 \
-        METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                            \
-        const int MAX_ARG = N;                                                                              \
-        (void) MAX_ARG;                                                                                     \
-        return std::string() METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_TYPENAME_REP);        \
+#define METAENGINE_LUAWRAPPER_CALL_FN_DEF(N)                                                       \
+    template<typename F, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>      \
+    inline typename traits::enable_if<!traits::is_same<void, Ret>::value, int>::type _call_apply(  \
+            lua_State *state, F &f, METAENGINE_LUAWRAPPER_FUNC_DEF(N)) {                           \
+        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                        \
+        return util::push_args(                                                                    \
+                state,                                                                             \
+                util::invoke<F METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_REPEAT_CONCAT(N)>(        \
+                        f METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_GET_REP)));     \
+    }                                                                                              \
+    template<typename F, typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>      \
+    inline typename traits::enable_if<traits::is_same<void, Ret>::value, int>::type _call_apply(   \
+            lua_State *state, F &f, METAENGINE_LUAWRAPPER_FUNC_DEF(N)) {                           \
+        METAENGINE_LUAWRAPPER_UNUSED(state);                                                       \
+        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                        \
+        util::invoke<F METAENGINE_LUAWRAPPER_INVOKE_SIG_TARG_DEF_REPEAT_CONCAT(N)>(                \
+                f METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_GET_REP));              \
+        return 0;                                                                                  \
+    }                                                                                              \
+    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                  \
+    bool _ctype_apply(lua_State *state, METAENGINE_LUAWRAPPER_FUNC_DEF(N), int opt_count = 0) {    \
+        METAENGINE_LUAWRAPPER_UNUSED(state);                                                       \
+        METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                   \
+        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                        \
+        const int MAX_ARG = N;                                                                     \
+        (void) MAX_ARG;                                                                            \
+        return true METAENGINE_LUAWRAPPER_PP_REVERSE_REPEAT(N,                                     \
+                                                            METAENGINE_LUAWRAPPER_TYPECHECK_REP);  \
+    }                                                                                              \
+    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                  \
+    bool _sctype_apply(lua_State *state, METAENGINE_LUAWRAPPER_FUNC_DEF(N), int opt_count = 0) {   \
+        METAENGINE_LUAWRAPPER_UNUSED(state);                                                       \
+        METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                   \
+        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                        \
+        const int MAX_ARG = N;                                                                     \
+        (void) MAX_ARG;                                                                            \
+        return true METAENGINE_LUAWRAPPER_PP_REVERSE_REPEAT(                                       \
+                N, METAENGINE_LUAWRAPPER_STRICT_TYPECHECK_REP);                                    \
+    }                                                                                              \
+    template<typename Ret METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                  \
+    std::string _type_name_apply(METAENGINE_LUAWRAPPER_FUNC_DEF(N), int opt_count) {               \
+        METAENGINE_LUAWRAPPER_UNUSED(fsig);                                                        \
+        METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                   \
+        const int MAX_ARG = N;                                                                     \
+        (void) MAX_ARG;                                                                            \
+        return std::string()                                                                       \
+                METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_TYPENAME_REP);            \
     }
 
         METAENGINE_LUAWRAPPER_CALL_FN_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_CALL_FN_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_CALL_FN_DEF)
 #undef METAENGINE_LUAWRAPPER_CALL_FN_DEF
 
 #undef METAENGINE_LUAWRAPPER_CALL_FN_DEF
@@ -6531,67 +6277,69 @@ namespace LuaWrapper {
         template<typename T>
         struct ConstructorFunctor;
 
-#define METAENGINE_LUAWRAPPER_CONSTRUCTOR_GET_REP(N) \
+#define METAENGINE_LUAWRAPPER_CONSTRUCTOR_GET_REP(N)                                               \
     lua_type_traits<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::get(L, N)
-#define METAENGINE_LUAWRAPPER_CONSTRUCTOR_CALL_FN_DEF(N)                                                                 \
-    template<typename ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                                  \
-    struct ConstructorFunctor<util::FunctionSignatureType<                                                               \
-            ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>>                                           \
-    {                                                                                                                    \
-        typedef util::FunctionSignatureType<                                                                             \
-                ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>                                        \
-                signature_type;                                                                                          \
-        int operator()(lua_State *L) const {                                                                             \
-            typedef ObjectWrapper<ClassType> wrapper_type;                                                               \
-            void *storage = lua_newuserdata(L, sizeof(wrapper_type));                                                    \
-            try {                                                                                                        \
-                new (storage)                                                                                            \
-                        wrapper_type(METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_CONSTRUCTOR_GET_REP)); \
-            } catch (...) {                                                                                              \
-                lua_pop(L, 1);                                                                                           \
-                throw;                                                                                                   \
-            }                                                                                                            \
-            class_userdata::setmetatable<ClassType>(L);                                                                  \
-            return 1;                                                                                                    \
-        }                                                                                                                \
-        bool checkArgTypes(lua_State *L, int opt_count = 0) const {                                                      \
-            return _ctype_apply(L, signature_type(), opt_count);                                                         \
-        }                                                                                                                \
-        bool strictCheckArgTypes(lua_State *L, int opt_count = 0) const {                                                \
-            return _sctype_apply(L, signature_type(), opt_count);                                                        \
-        }                                                                                                                \
-        std::string argTypesName(int opt_count = 0) const {                                                              \
-            METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                                                     \
-            return _type_name_apply(signature_type(), 0);                                                                \
-        }                                                                                                                \
+#define METAENGINE_LUAWRAPPER_CONSTRUCTOR_CALL_FN_DEF(N)                                           \
+    template<typename ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>            \
+    struct ConstructorFunctor<util::FunctionSignatureType<                                         \
+            ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>>                     \
+    {                                                                                              \
+        typedef util::FunctionSignatureType<                                                       \
+                ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>                  \
+                signature_type;                                                                    \
+        int operator()(lua_State *L) const {                                                       \
+            typedef ObjectWrapper<ClassType> wrapper_type;                                         \
+            void *storage = lua_newuserdata(L, sizeof(wrapper_type));                              \
+            try {                                                                                  \
+                new (storage) wrapper_type(METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(                    \
+                        N, METAENGINE_LUAWRAPPER_CONSTRUCTOR_GET_REP));                            \
+            } catch (...) {                                                                        \
+                lua_pop(L, 1);                                                                     \
+                throw;                                                                             \
+            }                                                                                      \
+            class_userdata::setmetatable<ClassType>(L);                                            \
+            return 1;                                                                              \
+        }                                                                                          \
+        bool checkArgTypes(lua_State *L, int opt_count = 0) const {                                \
+            return _ctype_apply(L, signature_type(), opt_count);                                   \
+        }                                                                                          \
+        bool strictCheckArgTypes(lua_State *L, int opt_count = 0) const {                          \
+            return _sctype_apply(L, signature_type(), opt_count);                                  \
+        }                                                                                          \
+        std::string argTypesName(int opt_count = 0) const {                                        \
+            METAENGINE_LUAWRAPPER_UNUSED(opt_count);                                               \
+            return _type_name_apply(signature_type(), 0);                                          \
+        }                                                                                          \
     };
 
         METAENGINE_LUAWRAPPER_CONSTRUCTOR_CALL_FN_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_CONSTRUCTOR_CALL_FN_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_CONSTRUCTOR_CALL_FN_DEF)
 #undef METAENGINE_LUAWRAPPER_CONSTRUCTOR_CALL_FN_DEF
 
         template<class ClassType, class FunType = void>
         struct ConstructorFunction;
 
-#define METAENGINE_LUAWRAPPER_F_TO_CONSIG_TYPE_DEF(N) \
-    ConstructorFunctor<util::FunctionSignatureType<   \
+#define METAENGINE_LUAWRAPPER_F_TO_CONSIG_TYPE_DEF(N)                                              \
+    ConstructorFunctor<util::FunctionSignatureType<                                                \
             ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>>
-#define METAENGINE_LUAWRAPPER_F_TO_CONSIG_DEF(N)                                           \
-    template<typename ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>    \
-    struct ConstructorFunction<ClassType(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))> \
-    {                                                                                      \
-        typedef METAENGINE_LUAWRAPPER_F_TO_CONSIG_TYPE_DEF(N) type;                        \
-    };                                                                                     \
-    template<typename ClassType,                                                           \
-             typename RetType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>      \
-    struct ConstructorFunction<ClassType,                                                  \
-                               RetType(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>   \
-    {                                                                                      \
-        typedef METAENGINE_LUAWRAPPER_F_TO_CONSIG_TYPE_DEF(N) type;                        \
+#define METAENGINE_LUAWRAPPER_F_TO_CONSIG_DEF(N)                                                   \
+    template<typename ClassType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>            \
+    struct ConstructorFunction<ClassType(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>         \
+    {                                                                                              \
+        typedef METAENGINE_LUAWRAPPER_F_TO_CONSIG_TYPE_DEF(N) type;                                \
+    };                                                                                             \
+    template<typename ClassType,                                                                   \
+             typename RetType METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>              \
+    struct ConstructorFunction<ClassType,                                                          \
+                               RetType(METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N))>           \
+    {                                                                                              \
+        typedef METAENGINE_LUAWRAPPER_F_TO_CONSIG_TYPE_DEF(N) type;                                \
     };
 
         METAENGINE_LUAWRAPPER_F_TO_CONSIG_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_F_TO_CONSIG_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_F_TO_CONSIG_DEF)
 #undef METAENGINE_LUAWRAPPER_F_TO_CONSIG_DEF
     }// namespace nativefunction
     using nativefunction::ConstructorFunction;
@@ -6611,8 +6359,9 @@ namespace LuaWrapper {
 #else
         using util::null_type;
 // boost::tuple is max
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP(N) METAENGINE_LUAWRAPPER_PP_CAT(typename A, N) = null_type
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N) \
+#define METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP(N)                                                \
+    METAENGINE_LUAWRAPPER_PP_CAT(typename A, N) = null_type
+#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N)                                     \
     METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP)
 
         template<METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(
@@ -6623,19 +6372,20 @@ namespace LuaWrapper {
 #undef METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP
 #undef METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT
 
-#define METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT(N) \
-    METAENGINE_LUAWRAPPER_PP_CAT(A, N)                  \
+#define METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT(N)                                            \
+    METAENGINE_LUAWRAPPER_PP_CAT(A, N)                                                             \
     METAENGINE_LUAWRAPPER_PP_CAT(elem, N);
-#define METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT_INIT(N) \
-    METAENGINE_LUAWRAPPER_PP_CAT(elem, N)                    \
+#define METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT_INIT(N)                                       \
+    METAENGINE_LUAWRAPPER_PP_CAT(elem, N)                                                          \
     (METAENGINE_LUAWRAPPER_PP_CAT(a, N))
-#define METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_IMPL_DEF(N)                                                   \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                              \
-    struct tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>                                          \
-    {                                                                                                      \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT)                   \
-        tuple(METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT(N))                                                  \
-            : METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT_INIT) {} \
+#define METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_IMPL_DEF(N)                                           \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    struct tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>                                  \
+    {                                                                                              \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT)           \
+        tuple(METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT(N))                                          \
+            : METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(                                                 \
+                      N, METAENGINE_LUAWRAPPER_FUNCTION_TUPLE_ELEMENT_INIT) {}                     \
     };
 
         METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
@@ -6644,55 +6394,56 @@ namespace LuaWrapper {
         template<typename Tuple>
         struct tuple_size;
 
-#define METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF(N)                               \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                 \
-    struct tuple_size<tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>> \
-    {                                                                         \
-        static const size_t value = N;                                        \
+#define METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF(N)                                                    \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    struct tuple_size<tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>                      \
+    {                                                                                              \
+        static const size_t value = N;                                                             \
     };
 
         METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF(0)
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS, METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
+                                            METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF)
 #undef METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF
 
         template<std::size_t remain, class result, bool flag = remain <= 0>
         struct tuple_element
         {
         };
-#define METAENGINE_LUAWRAPPER_TUPLE_ELEMENT_DEF(N)                                            \
-    template<std::size_t remain,                                                              \
-             class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                \
-    struct tuple_element<                                                                     \
-            remain, tuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, true>  \
-    {                                                                                         \
-        typedef arg type;                                                                     \
-    };                                                                                        \
-    template<std::size_t remain,                                                              \
-             class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)>                \
-    struct tuple_element<                                                                     \
-            remain, tuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, false> \
-        : tuple_element<remain - 1, tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>   \
-    {                                                                                         \
+#define METAENGINE_LUAWRAPPER_TUPLE_ELEMENT_DEF(N)                                                 \
+    template<std::size_t remain, class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)> \
+    struct tuple_element<remain,                                                                   \
+                         tuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, true>  \
+    {                                                                                              \
+        typedef arg type;                                                                          \
+    };                                                                                             \
+    template<std::size_t remain, class arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT_CONCAT(N)> \
+    struct tuple_element<remain,                                                                   \
+                         tuple<arg METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT_CONCAT(N)>, false> \
+        : tuple_element<remain - 1, tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>        \
+    {                                                                                              \
     };
 
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS, METAENGINE_LUAWRAPPER_TUPLE_ELEMENT_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
+                                            METAENGINE_LUAWRAPPER_TUPLE_ELEMENT_DEF)
 
 #undef METAENGINE_LUAWRAPPER_TUPLE_SIZE_DEF
 
         template<size_t S, typename T>
         struct tuple_get_helper;
-#define METAENGINE_LUAWRAPPER_TUPLE_GET_DEF(N)                                  \
-    template<typename T>                                                        \
-    struct tuple_get_helper<N, T>                                               \
-    {                                                                           \
-        static typename tuple_element<N - 1, T>::type &get(T &t) {              \
-            return t.METAENGINE_LUAWRAPPER_PP_CAT(elem, N);                     \
-        }                                                                       \
-        static const typename tuple_element<N - 1, T>::type &cget(const T &t) { \
-            return t.METAENGINE_LUAWRAPPER_PP_CAT(elem, N);                     \
-        }                                                                       \
+#define METAENGINE_LUAWRAPPER_TUPLE_GET_DEF(N)                                                     \
+    template<typename T>                                                                           \
+    struct tuple_get_helper<N, T>                                                                  \
+    {                                                                                              \
+        static typename tuple_element<N - 1, T>::type &get(T &t) {                                 \
+            return t.METAENGINE_LUAWRAPPER_PP_CAT(elem, N);                                        \
+        }                                                                                          \
+        static const typename tuple_element<N - 1, T>::type &cget(const T &t) {                    \
+            return t.METAENGINE_LUAWRAPPER_PP_CAT(elem, N);                                        \
+        }                                                                                          \
     };
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS, METAENGINE_LUAWRAPPER_TUPLE_GET_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
+                                            METAENGINE_LUAWRAPPER_TUPLE_GET_DEF)
 
         template<size_t S, typename T>
         typename tuple_element<S, T>::type &get(T &t) {
@@ -6723,12 +6474,8 @@ namespace LuaWrapper {
         PolymorphicInvoker(const holder_type &fptr) : fnc(fptr) {}
         int invoke(lua_State *state) const { return fnc->invoke(state); }
         std::string argTypesName() const { return fnc->argTypesName(); }
-        bool checkArgTypes(lua_State *state) const {
-            return fnc->checkArgTypes(state);
-        }
-        bool strictCheckArgTypes(lua_State *state) const {
-            return fnc->strictCheckArgTypes(state);
-        }
+        bool checkArgTypes(lua_State *state) const { return fnc->checkArgTypes(state); }
+        bool strictCheckArgTypes(lua_State *state) const { return fnc->strictCheckArgTypes(state); }
         int minArgCount() const { return fnc->minArgCount(); }
         int maxArgCount() const { return fnc->maxArgCount(); }
         ~PolymorphicInvoker() {}
@@ -6738,23 +6485,22 @@ namespace LuaWrapper {
     };
     struct PolymorphicMemberInvoker : PolymorphicInvoker
     {
-        PolymorphicMemberInvoker(const holder_type &fptr)
-            : PolymorphicInvoker(fptr) {}
+        PolymorphicMemberInvoker(const holder_type &fptr) : PolymorphicInvoker(fptr) {}
     };
 
     namespace nativefunction {
         template<size_t INDEX, typename F>
-        typename lua_type_traits<typename util::ArgumentType<INDEX, F>::type>::get_type
-        getArgument(lua_State *state) {
-            return lua_type_traits<typename util::ArgumentType<INDEX, F>::type>::get(
-                    state, INDEX + 1);
+        typename lua_type_traits<typename util::ArgumentType<INDEX, F>::type>::get_type getArgument(
+                lua_State *state) {
+            return lua_type_traits<typename util::ArgumentType<INDEX, F>::type>::get(state,
+                                                                                     INDEX + 1);
         }
 
         template<typename T, typename Enable = void>
         struct is_callable
             : traits::integral_constant<
-                      bool, !traits::is_same<
-                                    void, typename util::FunctionSignature<T>::type>::value>
+                      bool,
+                      !traits::is_same<void, typename util::FunctionSignature<T>::type>::value>
         {
         };
 
@@ -6764,8 +6510,7 @@ namespace LuaWrapper {
         };
 
         template<typename T>
-        struct is_callable<ConstructorFunctor<T>>
-            : traits::integral_constant<bool, true>
+        struct is_callable<ConstructorFunctor<T>> : traits::integral_constant<bool, true>
         {
         };
 
@@ -6779,8 +6524,7 @@ namespace LuaWrapper {
             return con(state);
         }
         template<class T>
-        bool checkArgTypes(lua_State *state, const ConstructorFunctor<T> &con,
-                           int opt_count = 0) {
+        bool checkArgTypes(lua_State *state, const ConstructorFunctor<T> &con, int opt_count = 0) {
             return con.checkArgTypes(state, opt_count);
         }
         template<class T>
@@ -6806,8 +6550,8 @@ namespace LuaWrapper {
         // or corrupt file: duplicate COMDAT
         // '?value@?$result_@P8ABC@test_02_classreg@@AE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ@?$is_mem_fun_pointer_select@$0A@@detail@boost@@2_NB'
         template<class MemType, class T>
-        typename traits::enable_if<traits::is_object<MemType>::value, int>::type
-        call(lua_State *state, MemType T::*mptr) {
+        typename traits::enable_if<traits::is_object<MemType>::value, int>::type call(
+                lua_State *state, MemType T::*mptr) {
             T *this_ = lua_type_traits<T *>::get(state, 1);
             if (lua_gettop(state) == 1) {
                 if (!this_) {
@@ -6820,23 +6564,21 @@ namespace LuaWrapper {
                     }
                 } else {
                     if (is_usertype<MemType>::value && !traits::is_pointer<MemType>::value) {
-                        return util::push_args(
-                                state, standard::reference_wrapper<MemType>(this_->*mptr));
+                        return util::push_args(state,
+                                               standard::reference_wrapper<MemType>(this_->*mptr));
                     } else {
                         return util::push_args(state, this_->*mptr);
                     }
                 }
             } else {
-                if (!this_) {
-                    throw LuaTypeMismatch();
-                }
+                if (!this_) { throw LuaTypeMismatch(); }
                 this_->*mptr = lua_type_traits<MemType>::get(state, 2);
                 return 0;
             }
         }
         template<class MemType, class T>
-        typename traits::enable_if<traits::is_object<MemType>::value, bool>::type
-        checkArgTypes(lua_State *state, MemType T::*, int opt_count = 0) {
+        typename traits::enable_if<traits::is_object<MemType>::value, bool>::type checkArgTypes(
+                lua_State *state, MemType T::*, int opt_count = 0) {
             METAENGINE_LUAWRAPPER_UNUSED(opt_count);
             if (lua_gettop(state) >= 2) {
                 // setter typecheck
@@ -6861,35 +6603,28 @@ namespace LuaWrapper {
         template<class MemType, class T>
         typename traits::enable_if<traits::is_object<MemType>::value, std::string>::type
         argTypesName(MemType T::*) {
-            return util::pretty_name(typeid(T *)) + ",[OPT] " +
-                   util::pretty_name(typeid(MemType));
+            return util::pretty_name(typeid(T *)) + ",[OPT] " + util::pretty_name(typeid(MemType));
         }
         template<class MemType, class T>
-        typename traits::enable_if<traits::is_object<MemType>::value, int>::type
-        minArgCount(MemType T::*) {
+        typename traits::enable_if<traits::is_object<MemType>::value, int>::type minArgCount(
+                MemType T::*) {
             return 1;
         }
         template<class MemType, class T>
-        typename traits::enable_if<traits::is_object<MemType>::value, int>::type
-        maxArgCount(MemType T::*) {
+        typename traits::enable_if<traits::is_object<MemType>::value, int>::type maxArgCount(
+                MemType T::*) {
             return 2;
         }
 
-        inline int call(lua_State *state, const PolymorphicInvoker &f) {
-            return f.invoke(state);
-        }
-        inline int call(lua_State *state, PolymorphicInvoker &f) {
-            return f.invoke(state);
-        }
+        inline int call(lua_State *state, const PolymorphicInvoker &f) { return f.invoke(state); }
+        inline int call(lua_State *state, PolymorphicInvoker &f) { return f.invoke(state); }
         inline bool checkArgTypes(lua_State *state, const PolymorphicInvoker &f) {
             return f.checkArgTypes(state);
         }
         inline bool strictCheckArgTypes(lua_State *state, const PolymorphicInvoker &f) {
             return f.strictCheckArgTypes(state);
         }
-        inline std::string argTypesName(const PolymorphicInvoker &f) {
-            return f.argTypesName();
-        }
+        inline std::string argTypesName(const PolymorphicInvoker &f) { return f.argTypesName(); }
         inline int minArgCount(const PolymorphicInvoker &f) { return f.minArgCount(); }
         inline int maxArgCount(const PolymorphicInvoker &f) { return f.maxArgCount(); }
 
@@ -6901,29 +6636,21 @@ namespace LuaWrapper {
         inline int call(lua_State *state, const PolymorphicMemberInvoker &f) {
             return f.invoke(state);
         }
-        inline int call(lua_State *state, PolymorphicMemberInvoker &f) {
-            return f.invoke(state);
-        }
+        inline int call(lua_State *state, PolymorphicMemberInvoker &f) { return f.invoke(state); }
         inline bool checkArgTypes(lua_State *state, const PolymorphicMemberInvoker &f) {
             return f.checkArgTypes(state);
         }
-        inline bool strictCheckArgTypes(lua_State *state,
-                                        const PolymorphicMemberInvoker &f) {
+        inline bool strictCheckArgTypes(lua_State *state, const PolymorphicMemberInvoker &f) {
             return f.strictCheckArgTypes(state);
         }
         inline std::string argTypesName(const PolymorphicMemberInvoker &f) {
             return f.argTypesName();
         }
-        inline int minArgCount(const PolymorphicMemberInvoker &f) {
-            return f.minArgCount();
-        }
-        inline int maxArgCount(const PolymorphicMemberInvoker &f) {
-            return f.maxArgCount();
-        }
+        inline int minArgCount(const PolymorphicMemberInvoker &f) { return f.minArgCount(); }
+        inline int maxArgCount(const PolymorphicMemberInvoker &f) { return f.maxArgCount(); }
 
         template<>
-        struct is_callable<PolymorphicMemberInvoker>
-            : traits::integral_constant<bool, true>
+        struct is_callable<PolymorphicMemberInvoker> : traits::integral_constant<bool, true>
         {
         };
     }// namespace nativefunction
@@ -6931,18 +6658,13 @@ namespace LuaWrapper {
     class VariadicArgType {
     public:
         VariadicArgType(lua_State *state, int startIndex)
-            : state_(state), startIndex_(startIndex),
-              endIndex_(lua_gettop(state) + 1) {
-            if (startIndex_ > endIndex_) {
-                endIndex_ = startIndex_;
-            }
+            : state_(state), startIndex_(startIndex), endIndex_(lua_gettop(state) + 1) {
+            if (startIndex_ > endIndex_) { endIndex_ = startIndex_; }
         }
 
         template<typename T>
         operator std::vector<T>() const {
-            if (startIndex_ >= endIndex_) {
-                return std::vector<T>();
-            }
+            if (startIndex_ >= endIndex_) { return std::vector<T>(); }
             std::vector<T> result;
             result.reserve(endIndex_ - startIndex_);
             for (int index = startIndex_; index < endIndex_; ++index) {
@@ -6951,8 +6673,7 @@ namespace LuaWrapper {
             return result;
         }
 
-        struct reference : public Ref::StackRef,
-                           public detail::LuaVariantImpl<reference>
+        struct reference : public Ref::StackRef, public detail::LuaVariantImpl<reference>
         {
             reference(lua_State *s, int index) : Ref::StackRef(s, index, false) {}
 
@@ -6968,8 +6689,7 @@ namespace LuaWrapper {
             typedef reference *pointer;
 
             iterator() : state_(0), stack_index_(0) {}
-            iterator(lua_State *state, int index)
-                : state_(state), stack_index_(index) {}
+            iterator(lua_State *state, int index) : state_(state), stack_index_(index) {}
             reference operator*() const { return reference(state_, stack_index_); }
             reference operator->() const { return reference(state_, stack_index_); }
             iterator &operator++() {
@@ -6982,9 +6702,7 @@ namespace LuaWrapper {
                 stack_index_ += n;
                 return *this;
             }
-            iterator operator+(int n) const {
-                return iterator(state_, stack_index_ + n);
-            }
+            iterator operator+(int n) const { return iterator(state_, stack_index_ + n); }
             iterator &operator--() {
                 stack_index_--;
                 return *this;
@@ -6994,12 +6712,8 @@ namespace LuaWrapper {
                 stack_index_ -= n;
                 return *this;
             }
-            iterator operator-(int n) const {
-                return iterator(state_, stack_index_ - n);
-            }
-            difference_type operator-(const iterator &n) {
-                return stack_index_ - n.stack_index_;
-            }
+            iterator operator-(int n) const { return iterator(state_, stack_index_ - n); }
+            difference_type operator-(const iterator &n) { return stack_index_ - n.stack_index_; }
 
             reference operator[](difference_type offset) const {
                 return reference(state_, stack_index_ + offset);
@@ -7035,17 +6749,12 @@ namespace LuaWrapper {
 
         template<typename T>
         typename lua_type_traits<T>::get_type at(size_t index) const {
-            if (index >= size()) {
-                throw std::out_of_range("variadic arguments out of range");
-            }
-            return lua_type_traits<T>::get(state_,
-                                           startIndex_ + static_cast<int>(index));
+            if (index >= size()) { throw std::out_of_range("variadic arguments out of range"); }
+            return lua_type_traits<T>::get(state_, startIndex_ + static_cast<int>(index));
         }
 
         reference at(size_t index) const {
-            if (index >= size()) {
-                throw std::out_of_range("variadic arguments out of range");
-            }
+            if (index >= size()) { throw std::out_of_range("variadic arguments out of range"); }
             return reference(state_, startIndex_ + static_cast<int>(index));
         }
 
@@ -7061,8 +6770,7 @@ namespace LuaWrapper {
         int endIndex_;
     };
 
-    inline VariadicArgType::iterator operator+(int n,
-                                               const VariadicArgType::iterator &i) {
+    inline VariadicArgType::iterator operator+(int n, const VariadicArgType::iterator &i) {
         return i + n;
     }
 
@@ -7083,9 +6791,7 @@ namespace LuaWrapper {
             METAENGINE_LUAWRAPPER_UNUSED(index);
             return true;
         }
-        static get_type get(lua_State *l, int index) {
-            return VariadicArgType(l, index);
-        }
+        static get_type get(lua_State *l, int index) { return VariadicArgType(l, index); }
     };
 
     namespace nativefunction {
@@ -7120,9 +6826,7 @@ namespace LuaWrapper {
         }
         inline int pushArgmentTypeNames(lua_State *state, int top) {
             for (int i = 1; i <= top; i++) {
-                if (i != 1) {
-                    lua_pushliteral(state, ",");
-                }
+                if (i != 1) { lua_pushliteral(state, ","); }
 
                 int type = lua_type(state, i);
                 if (type == LUA_TUSERDATA) {
@@ -7143,17 +6847,14 @@ namespace LuaWrapper {
 
     namespace detail {
         template<typename Fn, typename... Functions>
-        void function_match_scoring(lua_State *state, uint8_t *score_array,
-                                    int current_index, const Fn &fn) {
-            score_array[current_index] =
-                    nativefunction::compute_function_matching_score(state, fn);
+        void function_match_scoring(lua_State *state, uint8_t *score_array, int current_index,
+                                    const Fn &fn) {
+            score_array[current_index] = nativefunction::compute_function_matching_score(state, fn);
         }
         template<typename Fn, typename... Functions>
-        void function_match_scoring(lua_State *state, uint8_t *score_array,
-                                    int current_index, const Fn &fn,
-                                    const Functions &...fns) {
-            score_array[current_index] =
-                    nativefunction::compute_function_matching_score(state, fn);
+        void function_match_scoring(lua_State *state, uint8_t *score_array, int current_index,
+                                    const Fn &fn, const Functions &...fns) {
+            score_array[current_index] = nativefunction::compute_function_matching_score(state, fn);
             if (score_array[current_index] < nativefunction::MAX_OVERLOAD_SCORE) {
                 function_match_scoring(state, score_array, current_index + 1, fns...);
             }
@@ -7169,9 +6870,7 @@ namespace LuaWrapper {
                 if (best_score < score[i]) {
                     best_score = score[i];
                     best_score_index = i;
-                    if (best_score == nativefunction::MAX_OVERLOAD_SCORE) {
-                        break;
-                    }
+                    if (best_score == nativefunction::MAX_OVERLOAD_SCORE) { break; }
                 }
             }
             return best_score_index;
@@ -7218,8 +6917,8 @@ namespace LuaWrapper {
         int invoke_tuple(lua_State *state, TupleType &&tuple) {
             typedef typename std::decay<TupleType>::type ttype;
 
-            typedef typename nativefunction::index_range<
-                    0, fntuple::tuple_size<ttype>::value>::type indexrange;
+            typedef typename nativefunction::index_range<0, fntuple::tuple_size<ttype>::value>::type
+                    indexrange;
 
             return invoke_tuple_impl(state, tuple, indexrange());
         }
@@ -7232,8 +6931,7 @@ namespace LuaWrapper {
         }
 
         template<typename Fun, typename... Functions>
-        void push_arg_typename(lua_State *state, const Fun &fn,
-                               const Functions &...fns) {
+        void push_arg_typename(lua_State *state, const Fun &fn, const Functions &...fns) {
             lua_pushliteral(state, "\t\t");
             lua_pushstring(state, nativefunction::argTypesName(fn).c_str());
             lua_pushliteral(state, "\n");
@@ -7247,8 +6945,8 @@ namespace LuaWrapper {
         template<typename TupleType>
         void push_arg_typename_tuple(lua_State *state, TupleType &&tuple) {
             typedef typename std::decay<TupleType>::type ttype;
-            typedef typename nativefunction::index_range<
-                    0, fntuple::tuple_size<ttype>::value>::type indexrange;
+            typedef typename nativefunction::index_range<0, fntuple::tuple_size<ttype>::value>::type
+                    indexrange;
 
             return push_arg_typename_tuple_impl(state, tuple, indexrange());
         }
@@ -7257,48 +6955,44 @@ namespace LuaWrapper {
 #else
 
     namespace detail {
-#define METAENGINE_LUAWRAPPER_FUNCTION_SCOREING(N)                   \
-    if (currentbestscore < nativefunction::MAX_OVERLOAD_SCORE) {     \
-        int score = nativefunction::compute_function_matching_score( \
-                state, fntuple::get<N - 1>(tuple));                  \
-        if (currentbestscore < score) {                              \
-            currentbestscore = score;                                \
-            currentbestindex = N;                                    \
-        }                                                            \
+#define METAENGINE_LUAWRAPPER_FUNCTION_SCOREING(N)                                                 \
+    if (currentbestscore < nativefunction::MAX_OVERLOAD_SCORE) {                                   \
+        int score = nativefunction::compute_function_matching_score(state,                         \
+                                                                    fntuple::get<N - 1>(tuple));   \
+        if (currentbestscore < score) {                                                            \
+            currentbestscore = score;                                                              \
+            currentbestindex = N;                                                                  \
+        }                                                                                          \
     }
-#define METAENGINE_LUAWRAPPER_FUNCTION_INVOKE(N)                        \
-    if (currentbestindex == N) {                                        \
-        return nativefunction::call(state, fntuple::get<N - 1>(tuple)); \
-    }
+#define METAENGINE_LUAWRAPPER_FUNCTION_INVOKE(N)                                                   \
+    if (currentbestindex == N) { return nativefunction::call(state, fntuple::get<N - 1>(tuple)); }
 
-#define METAENGINE_LUAWRAPPER_ARG_PUSH_TYPENAMES(N)                            \
-    lua_pushliteral(state, "\t\t");                                            \
-    lua_pushstring(                                                            \
-            state,                                                             \
-            nativefunction::argTypesName(fntuple::get<N - 1>(tuple)).c_str()); \
+#define METAENGINE_LUAWRAPPER_ARG_PUSH_TYPENAMES(N)                                                \
+    lua_pushliteral(state, "\t\t");                                                                \
+    lua_pushstring(state, nativefunction::argTypesName(fntuple::get<N - 1>(tuple)).c_str());       \
     lua_pushliteral(state, "\n");
-#define METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N) template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>
-#define METAENGINE_LUAWRAPPER_TUPLE_INVOKE_DEF(N)                                              \
-    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
-    int invoke_tuple(lua_State *state,                                                         \
-                     fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> &tuple) { \
-        if (N == 1) {                                                                          \
-            return nativefunction::call(state, fntuple::get<0>(tuple));                        \
-        }                                                                                      \
-        int32_t currentbestscore = 0;                                                          \
-        int32_t currentbestindex = -1;                                                         \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_FUNCTION_SCOREING);           \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_FUNCTION_INVOKE);             \
-        throw LuaTypeMismatch();                                                               \
-    }                                                                                          \
-    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
-    void push_arg_typename_tuple(                                                              \
-            lua_State *state,                                                                  \
-            fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> &tuple) {          \
-        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_ARG_PUSH_TYPENAMES);          \
+#define METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>
+#define METAENGINE_LUAWRAPPER_TUPLE_INVOKE_DEF(N)                                                  \
+    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                    \
+    int invoke_tuple(lua_State *state,                                                             \
+                     fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> &tuple) {     \
+        if (N == 1) { return nativefunction::call(state, fntuple::get<0>(tuple)); }                \
+        int32_t currentbestscore = 0;                                                              \
+        int32_t currentbestindex = -1;                                                             \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_FUNCTION_SCOREING);               \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_FUNCTION_INVOKE);                 \
+        throw LuaTypeMismatch();                                                                   \
+    }                                                                                              \
+    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                    \
+    void push_arg_typename_tuple(                                                                  \
+            lua_State *state,                                                                      \
+            fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> &tuple) {              \
+        METAENGINE_LUAWRAPPER_PP_REPEAT(N, METAENGINE_LUAWRAPPER_ARG_PUSH_TYPENAMES);              \
     }
 
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS, METAENGINE_LUAWRAPPER_TUPLE_INVOKE_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
+                                            METAENGINE_LUAWRAPPER_TUPLE_INVOKE_DEF)
 #undef METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER
 #undef METAENGINE_LUAWRAPPER_TUPLE_INVOKE_DEF
 #undef METAENGINE_LUAWRAPPER_ARG_TYPENAMES
@@ -7330,8 +7024,7 @@ namespace LuaWrapper {
     }
 
     template<typename FTYPE, typename T>
-    inline FunctionInvokerType<fntuple::tuple<standard::function<FTYPE>>>
-    function(T f) {
+    inline FunctionInvokerType<fntuple::tuple<standard::function<FTYPE>>> function(T f) {
         return FunctionInvokerType<fntuple::tuple<standard::function<FTYPE>>>(
                 fntuple::tuple<standard::function<FTYPE>>(standard::function<FTYPE>(f)));
     }
@@ -7343,14 +7036,15 @@ namespace LuaWrapper {
                 fntuple::tuple<Functions...>(fns...));
     }
 #else
-#define METAENGINE_LUAWRAPPER_FOVERLOAD_DEF(N)                                                  \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                   \
-    FunctionInvokerType<fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>>        \
-    overload(METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT(N)) {                                      \
-        typedef typename fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> ttype; \
-        return FunctionInvokerType<ttype>(ttype(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)));       \
+#define METAENGINE_LUAWRAPPER_FOVERLOAD_DEF(N)                                                     \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    FunctionInvokerType<fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>> overload( \
+            METAENGINE_LUAWRAPPER_PP_ARG_DEF_REPEAT(N)) {                                          \
+        typedef typename fntuple::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)> ttype;    \
+        return FunctionInvokerType<ttype>(ttype(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)));          \
     }
-    METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS, METAENGINE_LUAWRAPPER_FOVERLOAD_DEF)
+    METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
+                                        METAENGINE_LUAWRAPPER_FOVERLOAD_DEF)
 #undef METAENGINE_LUAWRAPPER_FOVERLOAD_DEF
 #endif
 
@@ -7373,9 +7067,7 @@ namespace LuaWrapper {
         static const char *build_arg_error_message(lua_State *state, const char *msg,
                                                    FunctionTuple *tuple) {
             int stack_top = lua_gettop(state);
-            if (msg) {
-                lua_pushstring(state, msg);
-            }
+            if (msg) { lua_pushstring(state, msg); }
             lua_pushliteral(state, "Argument mismatch:");
             nativefunction::pushArgmentTypeNames(state, stack_top);
 
@@ -7387,8 +7079,8 @@ namespace LuaWrapper {
         }
 
         static int invoke(lua_State *state) {
-            FunctionTuple *t = static_cast<FunctionTuple *>(
-                    lua_touserdata(state, lua_upvalueindex(1)));
+            FunctionTuple *t =
+                    static_cast<FunctionTuple *>(lua_touserdata(state, lua_upvalueindex(1)));
 
             if (t) {
                 try {
@@ -7399,9 +7091,7 @@ namespace LuaWrapper {
                     } else {
                         util::traceBack(state, e.what());
                     }
-                } catch (std::exception &e) {
-                    util::traceBack(state, e.what());
-                } catch (...) {
+                } catch (std::exception &e) { util::traceBack(state, e.what()); } catch (...) {
                     util::traceBack(state, "Unknown exception");
                 }
             }
@@ -7410,9 +7100,7 @@ namespace LuaWrapper {
 
         inline static int tuple_destructor(lua_State *state) {
             FunctionTuple *f = static_cast<FunctionTuple *>(lua_touserdata(state, 1));
-            if (f) {
-                f->~FunctionTuple();
-            }
+            if (f) { f->~FunctionTuple(); }
             return 0;
         }
 
@@ -7434,13 +7122,10 @@ namespace LuaWrapper {
     /// @ingroup lua_type_traits
     /// @brief lua_type_traits for c function
     template<typename T>
-    struct lua_type_traits<
-            T, typename traits::enable_if<traits::is_function<
-                       typename traits::remove_pointer<T>::type>::value>::type>
+    struct lua_type_traits<T, typename traits::enable_if<traits::is_function<
+                                      typename traits::remove_pointer<T>::type>::value>::type>
     {
-        static int push(lua_State *l, T f) {
-            return util::one_push(l, LuaWrapper::function(f));
-        }
+        static int push(lua_State *l, T f) { return util::one_push(l, LuaWrapper::function(f)); }
     };
     /// @ingroup lua_type_traits
     /// @brief lua_type_traits for luacfunction
@@ -7452,12 +7137,8 @@ namespace LuaWrapper {
         static bool strictCheckType(lua_State *l, int index) {
             return lua_iscfunction(l, index) != 0;
         }
-        static bool checkType(lua_State *l, int index) {
-            return lua_iscfunction(l, index) != 0;
-        }
-        static get_type get(lua_State *l, int index) {
-            return lua_tocfunction(l, index);
-        }
+        static bool checkType(lua_State *l, int index) { return lua_iscfunction(l, index) != 0; }
+        static get_type get(lua_State *l, int index) { return lua_tocfunction(l, index); }
         static int push(lua_State *l, push_type f) {
             lua_pushcfunction(l, f);
             return 1;
@@ -7479,9 +7160,7 @@ namespace LuaWrapper {
             return lua_type(l, index) == LUA_TFUNCTION;
         }
         static get_type get(lua_State *l, int index) {
-            if (!l || lua_type(l, index) != LUA_TFUNCTION) {
-                return get_type();
-            }
+            if (!l || lua_type(l, index) != LUA_TFUNCTION) { return get_type(); }
             lua_pushvalue(l, index);
             return get_type(LuaFunction(l, StackTop()));
         }
@@ -7491,30 +7170,25 @@ namespace LuaWrapper {
         }
     };
 
-    template<typename F,
-             typename Ret = typename util::FunctionSignature<F>::type::result_type>
+    template<typename F, typename Ret = typename util::FunctionSignature<F>::type::result_type>
     struct OverloadFunctionImpl : LuaWrapper::FunctionImpl
     {
         typedef Ret result_type;
-        typedef typename util::FunctionSignature<F>::type::c_function_type
-                c_function_type;
+        typedef typename util::FunctionSignature<F>::type::c_function_type c_function_type;
 
         virtual result_type invoke_type(lua_State *state) = 0;
 
-        virtual int invoke(lua_State *state) {
-            return util::push_args(state, invoke_type(state));
-        }
+        virtual int invoke(lua_State *state) { return util::push_args(state, invoke_type(state)); }
         virtual std::string argTypesName() const {
-            return nativefunction::argTypesName(c_function_type(0),
-                                                maxArgCount() - minArgCount());
+            return nativefunction::argTypesName(c_function_type(0), maxArgCount() - minArgCount());
         }
         virtual bool checkArgTypes(lua_State *state) const {
             return LuaWrapper::nativefunction::checkArgTypes(state, c_function_type(0),
                                                              maxArgCount() - minArgCount());
         }
         virtual bool strictCheckArgTypes(lua_State *state) const {
-            return LuaWrapper::nativefunction::strictCheckArgTypes(
-                    state, c_function_type(0), maxArgCount() - minArgCount());
+            return LuaWrapper::nativefunction::strictCheckArgTypes(state, c_function_type(0),
+                                                                   maxArgCount() - minArgCount());
         }
     };
 
@@ -7522,8 +7196,7 @@ namespace LuaWrapper {
     struct OverloadFunctionImpl<F, void> : LuaWrapper::FunctionImpl
     {
         typedef void result_type;
-        typedef typename util::FunctionSignature<F>::type::c_function_type
-                c_function_type;
+        typedef typename util::FunctionSignature<F>::type::c_function_type c_function_type;
 
         virtual result_type invoke_type(lua_State *state) = 0;
 
@@ -7532,112 +7205,110 @@ namespace LuaWrapper {
             return 0;
         }
         virtual std::string argTypesName() const {
-            return nativefunction::argTypesName(c_function_type(0),
-                                                maxArgCount() - minArgCount());
+            return nativefunction::argTypesName(c_function_type(0), maxArgCount() - minArgCount());
         }
         virtual bool checkArgTypes(lua_State *state) const {
             return LuaWrapper::nativefunction::checkArgTypes(state, c_function_type(0),
                                                              maxArgCount() - minArgCount());
         }
         virtual bool strictCheckArgTypes(lua_State *state) const {
-            return LuaWrapper::nativefunction::strictCheckArgTypes(
-                    state, c_function_type(0), maxArgCount() - minArgCount());
+            return LuaWrapper::nativefunction::strictCheckArgTypes(state, c_function_type(0),
+                                                                   maxArgCount() - minArgCount());
         }
     };
 }// namespace LuaWrapper
 
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP(N) \
-    getArgument<N - 1, F>(state)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(N) \
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP(N) getArgument<N - 1, F>(state)
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(N)                             \
     METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)    \
-    if (argcount == METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))) { \
-        return FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(            \
-                METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))));     \
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)          \
+    if (argcount == METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))) {       \
+        return FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(                  \
+                METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))));           \
     }
 
-#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG,                 \
-                                                          MAXARG, CREATE_FN)                            \
-                                                                                                        \
-    struct GENERATE_NAME                                                                                \
-    {                                                                                                   \
-        template<typename F>                                                                            \
-        struct Function : LuaWrapper::OverloadFunctionImpl<F>                                           \
-        {                                                                                               \
-            typedef                                                                                     \
-                    typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;              \
-            virtual result_type invoke_type(lua_State *state) {                                         \
-                using namespace LuaWrapper::nativefunction;                                             \
-                int argcount = lua_gettop(state);                                                       \
-                METAENGINE_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(                                             \
-                        METAENGINE_LUAWRAPPER_PP_INC(METAENGINE_LUAWRAPPER_PP_SUB(MAXARG, MINARG)),     \
-                        METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE, FNAME, MINARG, MAXARG) \
-                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                           \
-            }                                                                                           \
-            virtual int minArgCount() const { return MINARG; }                                          \
-            virtual int maxArgCount() const { return MAXARG; }                                          \
-        };                                                                                              \
-        template<typename F>                                                                            \
-        LuaWrapper::PolymorphicInvoker::holder_type create(F) {                                         \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                               \
-            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                    \
-        }                                                                                               \
-        template<typename F>                                                                            \
-        LuaWrapper::PolymorphicInvoker::holder_type create() {                                          \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                               \
-            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                    \
-        }                                                                                               \
-        LuaWrapper::PolymorphicInvoker operator()() { return CREATE_FN; }                               \
-                                                                                                        \
+#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG,    \
+                                                          CREATE_FN)                               \
+                                                                                                   \
+    struct GENERATE_NAME                                                                           \
+    {                                                                                              \
+        template<typename F>                                                                       \
+        struct Function : LuaWrapper::OverloadFunctionImpl<F>                                      \
+        {                                                                                          \
+            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;         \
+            virtual result_type invoke_type(lua_State *state) {                                    \
+                using namespace LuaWrapper::nativefunction;                                        \
+                int argcount = lua_gettop(state);                                                  \
+                METAENGINE_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(                                        \
+                        METAENGINE_LUAWRAPPER_PP_INC(                                              \
+                                METAENGINE_LUAWRAPPER_PP_SUB(MAXARG, MINARG)),                     \
+                        METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE, FNAME, MINARG,    \
+                        MAXARG)                                                                    \
+                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                      \
+            }                                                                                      \
+            virtual int minArgCount() const { return MINARG; }                                     \
+            virtual int maxArgCount() const { return MAXARG; }                                     \
+        };                                                                                         \
+        template<typename F>                                                                       \
+        LuaWrapper::PolymorphicInvoker::holder_type create(F) {                                    \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                          \
+            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                               \
+        }                                                                                          \
+        template<typename F>                                                                       \
+        LuaWrapper::PolymorphicInvoker::holder_type create() {                                     \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                          \
+            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                               \
+        }                                                                                          \
+        LuaWrapper::PolymorphicInvoker operator()() { return CREATE_FN; }                          \
+                                                                                                   \
     } GENERATE_NAME;
 
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP(N) \
-    getArgument<N, F>(state)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(N) \
-    METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE(N, FNAME, MINARG,         \
-                                                                       MAXARG)                   \
-    if (argcount == 1 + METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))) { \
-        return (getArgument<0, F>(state))                                                        \
-                .FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(       \
-                        METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N)))); \
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP(N) getArgument<N, F>(state)
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(N)                      \
+    METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(                                                           \
+            N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP)
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)   \
+    if (argcount == 1 + METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))) {   \
+        return (getArgument<0, F>(state))                                                          \
+                .FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(         \
+                        METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))));   \
     }
 
-#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME,          \
-                                                                 MINARG, MAXARG, CREATE_FN)            \
-                                                                                                       \
-    struct GENERATE_NAME                                                                               \
-    {                                                                                                  \
-        template<typename F>                                                                           \
-        struct Function : LuaWrapper::OverloadFunctionImpl<F>                                          \
-        {                                                                                              \
-            typedef                                                                                    \
-                    typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;             \
-            virtual result_type invoke_type(lua_State *state) {                                        \
-                using namespace LuaWrapper::nativefunction;                                            \
-                int argcount = lua_gettop(state);                                                      \
-                METAENGINE_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(                                            \
-                        METAENGINE_LUAWRAPPER_PP_INC(METAENGINE_LUAWRAPPER_PP_SUB(MAXARG, MINARG)),    \
-                        METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE, FNAME, MINARG, \
-                        MAXARG)                                                                        \
-                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                          \
-            }                                                                                          \
-            virtual int minArgCount() const { return MINARG + 1; }                                     \
-            virtual int maxArgCount() const { return MAXARG + 1; }                                     \
-        };                                                                                             \
-        template<typename F>                                                                           \
-        LuaWrapper::PolymorphicMemberInvoker::holder_type create(F f) {                                \
-            METAENGINE_LUAWRAPPER_UNUSED(f);                                                           \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                              \
-            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                             \
-        }                                                                                              \
-        template<typename F>                                                                           \
-        LuaWrapper::PolymorphicMemberInvoker::holder_type create() {                                   \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                              \
-            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                             \
-        }                                                                                              \
-        LuaWrapper::PolymorphicMemberInvoker operator()() { return CREATE_FN; }                        \
-                                                                                                       \
+#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME,      \
+                                                                 MINARG, MAXARG, CREATE_FN)        \
+                                                                                                   \
+    struct GENERATE_NAME                                                                           \
+    {                                                                                              \
+        template<typename F>                                                                       \
+        struct Function : LuaWrapper::OverloadFunctionImpl<F>                                      \
+        {                                                                                          \
+            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;         \
+            virtual result_type invoke_type(lua_State *state) {                                    \
+                using namespace LuaWrapper::nativefunction;                                        \
+                int argcount = lua_gettop(state);                                                  \
+                METAENGINE_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(                                        \
+                        METAENGINE_LUAWRAPPER_PP_INC(                                              \
+                                METAENGINE_LUAWRAPPER_PP_SUB(MAXARG, MINARG)),                     \
+                        METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE, FNAME,     \
+                        MINARG, MAXARG)                                                            \
+                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                      \
+            }                                                                                      \
+            virtual int minArgCount() const { return MINARG + 1; }                                 \
+            virtual int maxArgCount() const { return MAXARG + 1; }                                 \
+        };                                                                                         \
+        template<typename F>                                                                       \
+        LuaWrapper::PolymorphicMemberInvoker::holder_type create(F f) {                            \
+            METAENGINE_LUAWRAPPER_UNUSED(f);                                                       \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                          \
+            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                         \
+        }                                                                                          \
+        template<typename F>                                                                       \
+        LuaWrapper::PolymorphicMemberInvoker::holder_type create() {                               \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                          \
+            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                         \
+        }                                                                                          \
+        LuaWrapper::PolymorphicMemberInvoker operator()() { return CREATE_FN; }                    \
+                                                                                                   \
     } GENERATE_NAME;
 
 /// @brief Generate wrapper function object for count based overloads with
@@ -7646,8 +7317,8 @@ namespace LuaWrapper {
 /// @param FNAME target function name
 /// @param MINARG minimum arguments count
 /// @param MAXARG maximum arguments count
-#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS(GENERATE_NAME, FNAME, MINARG, MAXARG)      \
-    METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG, \
+#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS(GENERATE_NAME, FNAME, MINARG, MAXARG)             \
+    METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG,        \
                                                       create(FNAME))
 
 /// @brief Generate wrapper function object for count based overloads with
@@ -7657,9 +7328,9 @@ namespace LuaWrapper {
 /// @param MINARG minimum arguments count
 /// @param MAXARG maximum arguments count
 /// @param SIGNATURE function signature. e,g, int(int)
-#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_WITH_SIGNATURE(GENERATE_NAME, FNAME, MINARG, \
-                                                                MAXARG, SIGNATURE)            \
-    METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG,   \
+#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_WITH_SIGNATURE(GENERATE_NAME, FNAME, MINARG,      \
+                                                                MAXARG, SIGNATURE)                 \
+    METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG,        \
                                                       create<SIGNATURE>())
 
 /// @brief Generate wrapper function object for count based overloads with
@@ -7669,10 +7340,10 @@ namespace LuaWrapper {
 /// @param FNAME target function name
 /// @param MINARG minimum arguments count
 /// @param MAXARG maximum arguments count
-#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS(GENERATE_NAME, CLASS, FNAME, MINARG, \
-                                                        MAXARG)                              \
-    METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(                                \
-            GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, create(&CLASS::FNAME))
+#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS(GENERATE_NAME, CLASS, FNAME, MINARG,       \
+                                                        MAXARG)                                    \
+    METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME, MINARG,  \
+                                                             MAXARG, create(&CLASS::FNAME))
 
 /// @brief Generate wrapper function object for count based overloads with
 /// nonvoid return function. Include default arguments parameter function
@@ -7682,11 +7353,10 @@ namespace LuaWrapper {
 /// @param MINARG minimum arguments count
 /// @param MAXARG maximum arguments count
 /// @param SIGNATURE function signature. e,g, int(Test::*)(int)
-#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_WITH_SIGNATURE( \
-        GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, SIGNATURE)         \
-    METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(           \
-            GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, create<SIGNATURE>())
-
+#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_WITH_SIGNATURE(                            \
+        GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, SIGNATURE)                                    \
+    METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME, MINARG,  \
+                                                             MAXARG, create<SIGNATURE>())
 
 namespace LuaWrapper {
     /// @brief any data holder class for push to lua
@@ -7713,8 +7383,7 @@ namespace LuaWrapper {
             return *this;
         }
         template<typename DataType>
-        AnyDataPusher(DataType &&v)
-            : holder_(new DataHolder<DataType>(std::move(v))) {}
+        AnyDataPusher(DataType &&v) : holder_(new DataHolder<DataType>(std::move(v))) {}
 #endif
         AnyDataPusher(const AnyDataPusher &other) : holder_(other.holder_) {}
         AnyDataPusher &operator=(const AnyDataPusher &other) {
@@ -7741,9 +7410,7 @@ namespace LuaWrapper {
 #else
             explicit DataHolder(const DataType &v) : data_(v) {}
 #endif
-            virtual int pushToLua(lua_State *state) const {
-                return util::push_args(state, data_);
-            }
+            virtual int pushToLua(lua_State *state) const { return util::push_args(state, data_); }
 
         private:
             DataType data_;
@@ -7753,15 +7420,13 @@ namespace LuaWrapper {
         struct DataHolder<const char[N]> : DataHolder<std::string>
         {
             explicit DataHolder(const char *v)
-                : DataHolder<std::string>(
-                          std::string(v, v[N - 1] != '\0' ? v + N : v + N - 1)) {}
+                : DataHolder<std::string>(std::string(v, v[N - 1] != '\0' ? v + N : v + N - 1)) {}
         };
         template<int N>
         struct DataHolder<char[N]> : DataHolder<std::string>
         {
             explicit DataHolder(const char *v)
-                : DataHolder<std::string>(
-                          std::string(v, v[N - 1] != '\0' ? v + N : v + N - 1)) {}
+                : DataHolder<std::string>(std::string(v, v[N - 1] != '\0' ? v + N : v + N - 1)) {}
         };
         standard::shared_ptr<DataHolderBase> holder_;
     };
@@ -7771,52 +7436,43 @@ namespace LuaWrapper {
     template<>
     struct lua_type_traits<AnyDataPusher>
     {
-        static int push(lua_State *l, const AnyDataPusher &data) {
-            return data.pushToLua(l);
-        }
+        static int push(lua_State *l, const AnyDataPusher &data) { return data.pushToLua(l); }
     };
 }// namespace LuaWrapper
-
 
 namespace LuaWrapper {
     /// @brief function result value proxy class.
     /// don't direct use.
-    class FunctionResults : public Ref::StackRef,
-                            public detail::LuaVariantImpl<FunctionResults> {
+    class FunctionResults : public Ref::StackRef, public detail::LuaVariantImpl<FunctionResults> {
         FunctionResults(lua_State *state, int return_status, int startIndex)
-            : Ref::StackRef(state, startIndex, true), state_(state),
-              resultStatus_(return_status),
+            : Ref::StackRef(state, startIndex, true), state_(state), resultStatus_(return_status),
               resultCount_(lua_gettop(state) + 1 - startIndex) {}
-        FunctionResults(lua_State *state, int return_status, int startIndex,
-                        int endIndex)
-            : Ref::StackRef(state, startIndex, true), state_(state),
-              resultStatus_(return_status), resultCount_(endIndex - startIndex) {}
+        FunctionResults(lua_State *state, int return_status, int startIndex, int endIndex)
+            : Ref::StackRef(state, startIndex, true), state_(state), resultStatus_(return_status),
+              resultCount_(endIndex - startIndex) {}
         friend class detail::FunctionResultProxy;
 
     public:
-        FunctionResults()
-            : Ref::StackRef(), state_(0), resultStatus_(0), resultCount_(0) {}
+        FunctionResults() : Ref::StackRef(), state_(0), resultStatus_(0), resultCount_(0) {}
         FunctionResults(lua_State *state)
-            : Ref::StackRef(state, 0, true), state_(state), resultStatus_(0),
-              resultCount_(0) {}
+            : Ref::StackRef(state, 0, true), state_(state), resultStatus_(0), resultCount_(0) {}
 #if METAENGINE_LUAWRAPPER_USE_CPP11
         FunctionResults(FunctionResults &&src)
-            : Ref::StackRef(std::move(src)), state_(src.state_),
-              resultStatus_(src.resultStatus_), resultCount_(src.resultCount_) {
+            : Ref::StackRef(std::move(src)), state_(src.state_), resultStatus_(src.resultStatus_),
+              resultCount_(src.resultCount_) {
             src.state_ = 0;
         }
 #else
         FunctionResults(const FunctionResults &src)
-            : Ref::StackRef(src), state_(src.state_),
-              resultStatus_(src.resultStatus_), resultCount_(src.resultCount_) {
+            : Ref::StackRef(src), state_(src.state_), resultStatus_(src.resultStatus_),
+              resultCount_(src.resultCount_) {
             src.state_ = 0;
         }
 #endif
 
         ~FunctionResults() {}
 
-        struct reference : public Ref::StackRef,
-                           public detail::LuaVariantImpl<reference>
+        struct reference : public Ref::StackRef, public detail::LuaVariantImpl<reference>
         {
             reference(lua_State *s, int index) : Ref::StackRef(s, index, false) {}
 
@@ -7836,9 +7492,7 @@ namespace LuaWrapper {
                 stack_index++;
                 return *this;
             }
-            iterator_base operator++(int) {
-                return iterator_base(state, stack_index++);
-            }
+            iterator_base operator++(int) { return iterator_base(state, stack_index++); }
 
             iterator_base operator+=(int n) {
                 stack_index += n;
@@ -7852,9 +7506,7 @@ namespace LuaWrapper {
             bool operator==(const iterator_base &other) const {
                 return state == other.state && stack_index == other.stack_index;
             }
-            bool operator!=(const iterator_base &other) const {
-                return !(*this == other);
-            }
+            bool operator!=(const iterator_base &other) const { return !(*this == other); }
             //@}
             int index() const { return stack_index; }
 
@@ -7871,13 +7523,9 @@ namespace LuaWrapper {
         iterator begin() { return iterator(state_, stack_index_); }
         iterator end() { return iterator(state_, stack_index_ + resultCount_); }
         const_iterator begin() const { return const_iterator(state_, stack_index_); }
-        const_iterator end() const {
-            return const_iterator(state_, stack_index_ + resultCount_);
-        }
+        const_iterator end() const { return const_iterator(state_, stack_index_ + resultCount_); }
         const_iterator cbegin() const { return const_iterator(state_, stack_index_); }
-        const_iterator cend() const {
-            return const_iterator(state_, stack_index_ + resultCount_);
-        }
+        const_iterator cend() const { return const_iterator(state_, stack_index_ + resultCount_); }
 
         template<class Result>
         Result get_result(types::typetag<Result> = types::typetag<Result>()) const {
@@ -7891,16 +7539,11 @@ namespace LuaWrapper {
 
         template<typename T>
         typename lua_type_traits<T>::get_type result_at(size_t index) const {
-            if (index >= result_size()) {
-                throw std::out_of_range("function result out of range");
-            }
-            return lua_type_traits<T>::get(state_,
-                                           stack_index_ + static_cast<int>(index));
+            if (index >= result_size()) { throw std::out_of_range("function result out of range"); }
+            return lua_type_traits<T>::get(state_, stack_index_ + static_cast<int>(index));
         }
         reference result_at(size_t index) const {
-            if (index >= result_size()) {
-                throw std::out_of_range("function result out of range");
-            }
+            if (index >= result_size()) { throw std::out_of_range("function result out of range"); }
             return reference(state_, stack_index_ + static_cast<int>(index));
         }
 
@@ -7921,21 +7564,18 @@ namespace LuaWrapper {
 
     namespace detail {
         template<typename RetType>
-        inline RetType FunctionResultProxy::ReturnValue(lua_State *state,
-                                                        int return_status, int retindex,
-                                                        types::typetag<RetType>) {
+        inline RetType FunctionResultProxy::ReturnValue(lua_State *state, int return_status,
+                                                        int retindex, types::typetag<RetType>) {
             return FunctionResults(state, return_status, retindex)
                     .get_result(types::typetag<RetType>());
         }
-        inline FunctionResults
-        FunctionResultProxy::ReturnValue(lua_State *state, int return_status,
-                                         int retindex,
-                                         types::typetag<FunctionResults>) {
+        inline FunctionResults FunctionResultProxy::ReturnValue(lua_State *state, int return_status,
+                                                                int retindex,
+                                                                types::typetag<FunctionResults>) {
             return FunctionResults(state, return_status, retindex);
         }
-        inline void FunctionResultProxy::ReturnValue(lua_State *state,
-                                                     int return_status, int retindex,
-                                                     types::typetag<void>) {
+        inline void FunctionResultProxy::ReturnValue(lua_State *state, int return_status,
+                                                     int retindex, types::typetag<void>) {
             METAENGINE_LUAWRAPPER_UNUSED(return_status);
             lua_settop(state, retindex - 1);
         }
@@ -7970,29 +7610,29 @@ namespace LuaWrapper {
 #define METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)
 #define METAENGINE_LUAWRAPPER_CALL_ARGS(N)
 
-#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                     \
-    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
-    inline FunctionResults LuaFunctionImpl<Derived>::operator()(                               \
-            METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)) {                                      \
-        return this->template call<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));       \
-    }                                                                                          \
-    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
-    inline FunctionResults LuaThreadImpl<Derived>::operator()(                                 \
-            METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)) {                                      \
-        return this->template resume<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));     \
-    }                                                                                          \
-    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
-    inline FunctionResults LuaVariantImpl<Derived>::operator()(                                \
-            METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)) {                                      \
-        int t = type();                                                                        \
-        if (t == LUA_TTHREAD) {                                                                \
-            return this->template resume<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N)); \
-        } else if (t == LUA_TFUNCTION) {                                                       \
-            return this->template call<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));   \
-        } else {                                                                               \
-            except::typeMismatchError(state_(), " is not function or thread");                 \
-            return FunctionResults(state_());                                                  \
-        }                                                                                      \
+#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                         \
+    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                    \
+    inline FunctionResults LuaFunctionImpl<Derived>::operator()(                                   \
+            METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)) {                                          \
+        return this->template call<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));           \
+    }                                                                                              \
+    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                    \
+    inline FunctionResults LuaThreadImpl<Derived>::operator()(                                     \
+            METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)) {                                          \
+        return this->template resume<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));         \
+    }                                                                                              \
+    METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                    \
+    inline FunctionResults LuaVariantImpl<Derived>::operator()(                                    \
+            METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N)) {                                          \
+        int t = type();                                                                            \
+        if (t == LUA_TTHREAD) {                                                                    \
+            return this->template resume<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));     \
+        } else if (t == LUA_TFUNCTION) {                                                           \
+            return this->template call<FunctionResults>(METAENGINE_LUAWRAPPER_CALL_ARGS(N));       \
+        } else {                                                                                   \
+            except::typeMismatchError(state_(), " is not function or thread");                     \
+            return FunctionResults(state_());                                                      \
+        }                                                                                          \
     }
 
         METAENGINE_LUAWRAPPER_OP_FN_DEF(0)
@@ -8000,13 +7640,14 @@ namespace LuaWrapper {
 #undef METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER
 #undef METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF
 #undef METAENGINE_LUAWRAPPER_CALL_ARGS
-#define METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N) \
-    template<typename Derived>                      \
+#define METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER(N)                                                \
+    template<typename Derived>                                                                     \
     template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>
 #define METAENGINE_LUAWRAPPER_FUNCTION_ARGS_DEF(N) METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)
 #define METAENGINE_LUAWRAPPER_CALL_ARGS(N) METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)
 
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_OP_FN_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_OP_FN_DEF)
 #undef METAENGINE_LUAWRAPPER_OP_FN_DEF
 #undef METAENGINE_LUAWRAPPER_TEMPLATE_PARAMETER
 
@@ -8018,11 +7659,8 @@ namespace LuaWrapper {
     }// namespace detail
 
     inline std::ostream &operator<<(std::ostream &os, const FunctionResults &res) {
-        for (FunctionResults::const_iterator it = res.begin(); it != res.end();
-             ++it) {
-            if (it != res.begin()) {
-                os << ",";
-            }
+        for (FunctionResults::const_iterator it = res.begin(); it != res.end(); ++it) {
+            if (it != res.begin()) { os << ","; }
             util::stackValueDump(os, res.state(), it.index());
         }
 
@@ -8036,8 +7674,7 @@ namespace LuaWrapper {
     {
         static int push(lua_State *l, const FunctionResults &ref) {
             int size = 0;
-            for (FunctionResults::const_iterator it = ref.cbegin(); it != ref.cend();
-                 ++it) {
+            for (FunctionResults::const_iterator it = ref.cbegin(); it != ref.cend(); ++it) {
                 size += it->push(l);
             }
             return size;
@@ -8049,9 +7686,7 @@ namespace LuaWrapper {
     template<>
     struct lua_type_traits<FunctionResults::reference>
     {
-        static int push(lua_State *l, const FunctionResults::reference &ref) {
-            return ref.push(l);
-        }
+        static int push(lua_State *l, const FunctionResults::reference &ref) { return ref.push(l); }
     };
     template<unsigned int I>
     FunctionResults::reference get(const FunctionResults &res) {
@@ -8066,9 +7701,7 @@ namespace LuaWrapper {
         typedef LuaFunction get_type;
         typedef LuaFunction push_type;
 
-        static bool strictCheckType(lua_State *l, int index) {
-            return lua_isfunction(l, index);
-        }
+        static bool strictCheckType(lua_State *l, int index) { return lua_isfunction(l, index); }
         static bool checkType(lua_State *l, int index) {
             return lua_isfunction(l, index) || lua_isnil(l, index);
         }
@@ -8093,9 +7726,7 @@ namespace LuaWrapper {
         typedef LuaThread get_type;
         typedef LuaThread push_type;
 
-        static bool strictCheckType(lua_State *l, int index) {
-            return lua_isthread(l, index);
-        }
+        static bool strictCheckType(lua_State *l, int index) { return lua_isthread(l, index); }
         static bool checkType(lua_State *l, int index) {
             return lua_isthread(l, index) || lua_isnil(l, index);
         }
@@ -8120,8 +7751,7 @@ namespace LuaWrapper {
     class MemberFunctionBinder {
     public:
         template<class T>
-        MemberFunctionBinder(LuaRef self, T key)
-            : self_(self), fun_(self_.getField(key)) {}
+        MemberFunctionBinder(LuaRef self, T key) : self_(self), fun_(self_.getField(key)) {}
 
 #define METAENGINE_LUAWRAPPER_DELEGATE_LUAREF fun_
 #define METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG self_
@@ -8141,11 +7771,12 @@ namespace LuaWrapper {
         }
 #else
 
-#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                          \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                       \
-    FunctionResults operator()(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                     \
-        return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF(                                               \
-                METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG_C METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)); \
+#define METAENGINE_LUAWRAPPER_OP_FN_DEF(N)                                                         \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    FunctionResults operator()(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                    \
+        return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF(                                              \
+                METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG_C METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(    \
+                        N));                                                                       \
     }
 
         /**
@@ -8156,22 +7787,26 @@ namespace LuaWrapper {
         FunctionResults operator()() {
             return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF(METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG);
         }
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_OP_FN_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_OP_FN_DEF)
 
 #undef METAENGINE_LUAWRAPPER_OP_FN_DEF
 
-#define METAENGINE_LUAWRAPPER_CALL_DEF(N)                                                           \
-    template<class Result, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                         \
-    Result call(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                                    \
-        return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF.call<Result>(                                  \
-                METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG_C METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)); \
+#define METAENGINE_LUAWRAPPER_CALL_DEF(N)                                                          \
+    template<class Result, METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                        \
+    Result call(METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                                   \
+        return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF.call<Result>(                                 \
+                METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG_C METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(    \
+                        N));                                                                       \
     }
 
         template<class Result>
         Result call() {
-            return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF.call<Result>(METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG);
+            return METAENGINE_LUAWRAPPER_DELEGATE_LUAREF.call<Result>(
+                    METAENGINE_LUAWRAPPER_DELEGATE_FIRST_ARG);
         }
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS, METAENGINE_LUAWRAPPER_CALL_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_ARGS,
+                                            METAENGINE_LUAWRAPPER_CALL_DEF)
 
 #undef METAENGINE_LUAWRAPPER_CALL_DEF
 #endif
@@ -8193,10 +7828,11 @@ namespace LuaWrapper {
 namespace LuaWrapper {
 
 #define METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP(N) METAENGINE_LUAWRAPPER_PP_CAT(class A, N) = void
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N) \
+#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N)                                     \
     METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP)
 
-    template<METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES)>
+    template<METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(
+            METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES)>
     struct MultipleBase
     {
     };
@@ -8221,12 +7857,10 @@ namespace LuaWrapper {
     struct lua_type_traits<LuaCodeChunk>
     {
         static int push(lua_State *state, const LuaCodeChunk &ref) {
-            int status = luaL_loadbuffer(
-                    state, ref.code_.c_str(), ref.code_.size(),
-                    ref.chunk_name_.empty() ? ref.code_.c_str() : ref.chunk_name_.c_str());
-            if (!except::checkErrorAndThrow(status, state)) {
-                return 0;
-            }
+            int status = luaL_loadbuffer(state, ref.code_.c_str(), ref.code_.size(),
+                                         ref.chunk_name_.empty() ? ref.code_.c_str()
+                                                                 : ref.chunk_name_.c_str());
+            if (!except::checkErrorAndThrow(status, state)) { return 0; }
             return 1;
         }
     };
@@ -8234,8 +7868,7 @@ namespace LuaWrapper {
     {
         LuaCodeChunkExecute(const std::string &src, const std::string &name = "")
             : LuaCodeChunk(src, name) {}
-        LuaCodeChunkExecute(const char *src, const char *name = "")
-            : LuaCodeChunk(src, name) {}
+        LuaCodeChunkExecute(const char *src, const char *name = "") : LuaCodeChunk(src, name) {}
     };
     typedef LuaCodeChunkExecute LuaCodeChunkResult;
     /// @ingroup lua_type_traits
@@ -8244,16 +7877,12 @@ namespace LuaWrapper {
     struct lua_type_traits<LuaCodeChunkExecute>
     {
         static int push(lua_State *state, const LuaCodeChunkExecute &ref) {
-            int status = luaL_loadbuffer(
-                    state, ref.code_.c_str(), ref.code_.size(),
-                    ref.chunk_name_.empty() ? ref.code_.c_str() : ref.chunk_name_.c_str());
-            if (!except::checkErrorAndThrow(status, state)) {
-                return 0;
-            }
+            int status = luaL_loadbuffer(state, ref.code_.c_str(), ref.code_.size(),
+                                         ref.chunk_name_.empty() ? ref.code_.c_str()
+                                                                 : ref.chunk_name_.c_str());
+            if (!except::checkErrorAndThrow(status, state)) { return 0; }
             status = lua_pcall_wrap(state, 0, 1);
-            if (!except::checkErrorAndThrow(status, state)) {
-                return 0;
-            }
+            if (!except::checkErrorAndThrow(status, state)) { return 0; }
             return 1;
         }
     };
@@ -8263,9 +7892,8 @@ namespace LuaWrapper {
         typedef std::map<std::string, AnyDataPusher> MemberMapType;
 
         inline bool is_property_key(const char *keyname) {
-            return keyname &&
-                   strncmp(keyname, METAENGINE_LUAWRAPPER_PROPERTY_PREFIX,
-                           sizeof(METAENGINE_LUAWRAPPER_PROPERTY_PREFIX) - 1) != 0;
+            return keyname && strncmp(keyname, METAENGINE_LUAWRAPPER_PROPERTY_PREFIX,
+                                      sizeof(METAENGINE_LUAWRAPPER_PROPERTY_PREFIX) - 1) != 0;
         }
         inline int property_index_function(lua_State *L) {
             // Lua
@@ -8284,7 +7912,8 @@ namespace LuaWrapper {
 
             if (lua_type(L, 1) == LUA_TUSERDATA && is_property_key(strkey)) {
                 int type = lua_getfield_rtype(
-                        L, metatable, (METAENGINE_LUAWRAPPER_PROPERTY_PREFIX + std::string(strkey)).c_str());
+                        L, metatable,
+                        (METAENGINE_LUAWRAPPER_PROPERTY_PREFIX + std::string(strkey)).c_str());
                 if (type == LUA_TFUNCTION) {
                     lua_pushvalue(L, table);
                     lua_call(L, 1, 1);
@@ -8315,7 +7944,8 @@ namespace LuaWrapper {
 
             if (lua_type(L, 1) == LUA_TUSERDATA && is_property_key(strkey)) {
                 int type = lua_getfield_rtype(
-                        L, metatable, (METAENGINE_LUAWRAPPER_PROPERTY_PREFIX + std::string(strkey)).c_str());
+                        L, metatable,
+                        (METAENGINE_LUAWRAPPER_PROPERTY_PREFIX + std::string(strkey)).c_str());
                 if (type == LUA_TFUNCTION) {
                     lua_pushvalue(L, table);
                     lua_pushvalue(L, value);
@@ -8396,16 +8026,15 @@ namespace LuaWrapper {
         }
 
         inline void setMembers(lua_State *state, int metatable_index,
-                               const MemberMapType &member_map,
-                               const PropMapType &property_map) {
-            for (MemberMapType::const_iterator it = member_map.begin();
-                 it != member_map.end(); ++it) {
+                               const MemberMapType &member_map, const PropMapType &property_map) {
+            for (MemberMapType::const_iterator it = member_map.begin(); it != member_map.end();
+                 ++it) {
                 util::one_push(state, it->first);
                 util::one_push(state, it->second);
                 lua_rawset(state, metatable_index);
             }
-            for (PropMapType::const_iterator it = property_map.begin();
-                 it != property_map.end(); ++it) {
+            for (PropMapType::const_iterator it = property_map.begin(); it != property_map.end();
+                 ++it) {
                 util::one_push(state, METAENGINE_LUAWRAPPER_PROPERTY_PREFIX + it->first);
                 util::one_push(state, it->second);
                 lua_rawset(state, metatable_index);
@@ -8419,8 +8048,7 @@ namespace LuaWrapper {
             lua_rawset(state, metatable_index);
         }
 
-        inline void setPropertyNewIndexMetamethod(lua_State *state,
-                                                  int metatable_index) {
+        inline void setPropertyNewIndexMetamethod(lua_State *state, int metatable_index) {
             lua_pushstring(state, "__newindex");
             lua_pushvalue(state, metatable_index);
             lua_pushcclosure(state, &property_newindex_function, 1);
@@ -8435,7 +8063,7 @@ namespace LuaWrapper {
                                                        // multiple_base_index_function
             lua_pushcclosure(state, &multiple_base_index_function, 1);
             lua_rawset(state,
-                       newmetaindex);                // newmeta["__index"] = multiple_base_index_function
+                       newmetaindex);// newmeta["__index"] = multiple_base_index_function
             lua_setmetatable(state, metatable_index);// metatable.setMetatable(newmeta);
         }
     }// namespace Metatable
@@ -8447,17 +8075,17 @@ namespace LuaWrapper {
         UserdataMetatable() {
             addStaticFunction("__gc", &class_userdata::destructor<ObjectWrapperBase>);
 
-            METAENGINE_LUAWRAPPER_STATIC_ASSERT(is_registerable<class_type>::value ||
-                                                        !traits::is_std_vector<class_type>::value,
-                                                "std::vector is binding to lua-table by default.If "
-                                                "you wants register for std::vector yourself,"
-                                                "please define METAENGINE_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
+            METAENGINE_LUAWRAPPER_STATIC_ASSERT(
+                    is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
+                    "std::vector is binding to lua-table by default.If "
+                    "you wants register for std::vector yourself,"
+                    "please define METAENGINE_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
 
-            METAENGINE_LUAWRAPPER_STATIC_ASSERT(is_registerable<class_type>::value ||
-                                                        !traits::is_std_map<class_type>::value,
-                                                "std::map is binding to lua-table by default.If you "
-                                                "wants register for std::map yourself,"
-                                                "please define METAENGINE_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
+            METAENGINE_LUAWRAPPER_STATIC_ASSERT(
+                    is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
+                    "std::map is binding to lua-table by default.If you "
+                    "wants register for std::map yourself,"
+                    "please define METAENGINE_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
 
             // can not register push specialized class
             METAENGINE_LUAWRAPPER_STATIC_ASSERT(is_registerable<class_type>::value,
@@ -8467,9 +8095,8 @@ namespace LuaWrapper {
 
         bool pushCreateMetatable(lua_State *state) const {
             if (!class_userdata::newmetatable<class_type>(state)) {
-                except::OtherError(state,
-                                   typeid(class_type *).name() +
-                                           std::string(" is already registered"));
+                except::OtherError(state, typeid(class_type *).name() +
+                                                  std::string(" is already registered"));
                 return false;
             }
             int metatable_index = lua_gettop(state);
@@ -8495,8 +8122,7 @@ namespace LuaWrapper {
                 }
             }
 
-            set_base_metatable(state, metatable_index,
-                               types::typetag<base_class_type>());
+            set_base_metatable(state, metatable_index, types::typetag<base_class_type>());
 
             if (lua_getmetatable(state, metatable_index))// get base_metatable
             {
@@ -8513,31 +8139,30 @@ namespace LuaWrapper {
         }
         LuaTable createMatatable(lua_State *state) const {
             util::ScopedSavedStack save(state);
-            if (!pushCreateMetatable(state)) {
-                return LuaTable();
-            }
+            if (!pushCreateMetatable(state)) { return LuaTable(); }
             return LuaStackRef(state, -1);
         }
 
 #if METAENGINE_LUAWRAPPER_USE_CPP11
         template<typename... ArgTypes>
         UserdataMetatable &setConstructors() {
-            addOverloadedFunctions(
-                    "new", typename ConstructorFunction<class_type, ArgTypes>::type()...);
+            addOverloadedFunctions("new",
+                                   typename ConstructorFunction<class_type, ArgTypes>::type()...);
             return *this;
         }
 #else
-#define METAENGINE_LUAWRAPPER_SET_CON_TYPE_DEF(N) \
+#define METAENGINE_LUAWRAPPER_SET_CON_TYPE_DEF(N)                                                  \
     typename ConstructorFunction<class_type, METAENGINE_LUAWRAPPER_PP_CAT(A, N)>::type()
-#define METAENGINE_LUAWRAPPER_SET_CON_FN_DEF(N)                                                                 \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                                   \
-    inline UserdataMetatable &setConstructors() {                                                               \
-        addOverloadedFunctions("new",                                                                           \
-                               METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_SET_CON_TYPE_DEF)); \
-        return *this;                                                                                           \
+#define METAENGINE_LUAWRAPPER_SET_CON_FN_DEF(N)                                                    \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    inline UserdataMetatable &setConstructors() {                                                  \
+        addOverloadedFunctions("new", METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(                         \
+                                              N, METAENGINE_LUAWRAPPER_SET_CON_TYPE_DEF));         \
+        return *this;                                                                              \
     }
 
-        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS, METAENGINE_LUAWRAPPER_SET_CON_FN_DEF)
+        METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
+                                            METAENGINE_LUAWRAPPER_SET_CON_FN_DEF)
 #undef METAENGINE_LUAWRAPPER_SET_CON_FN_DEF
 #undef METAENGINE_LUAWRAPPER_SET_CON_TYPE_DEF
 
@@ -8560,8 +8185,7 @@ namespace LuaWrapper {
         /// @param name function name for lua
         /// @param getter getter function
         template<typename GetType>
-        UserdataMetatable &addProperty(const char *name,
-                                       GetType (class_type::*getter)() const) {
+        UserdataMetatable &addProperty(const char *name, GetType (class_type::*getter)() const) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
                 return *this;
@@ -8575,8 +8199,7 @@ namespace LuaWrapper {
         /// @param getter getter function
         /// @param setter setter function
         template<typename GetType>
-        UserdataMetatable &addProperty(const char *name,
-                                       GetType (*getter)(const class_type *)) {
+        UserdataMetatable &addProperty(const char *name, GetType (*getter)(const class_type *)) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
                 return *this;
@@ -8589,8 +8212,7 @@ namespace LuaWrapper {
         /// @param getter getter function
         /// @param setter setter function
         template<typename GetType>
-        UserdataMetatable &addProperty(const char *name,
-                                       GetType (*getter)(const class_type &)) {
+        UserdataMetatable &addProperty(const char *name, GetType (*getter)(const class_type &)) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
                 return *this;
@@ -8604,8 +8226,7 @@ namespace LuaWrapper {
         /// @param getter getter function
         /// @param setter setter function
         template<typename GetType, typename SetType>
-        UserdataMetatable &addProperty(const char *name,
-                                       GetType (class_type::*getter)() const,
+        UserdataMetatable &addProperty(const char *name, GetType (class_type::*getter)() const,
                                        void (class_type::*setter)(SetType)) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
@@ -8621,8 +8242,7 @@ namespace LuaWrapper {
         /// @param getter getter function
         /// @param setter setter function
         template<typename GetType, typename SetType>
-        UserdataMetatable &addProperty(const char *name,
-                                       GetType (*getter)(const class_type *),
+        UserdataMetatable &addProperty(const char *name, GetType (*getter)(const class_type *),
                                        void (*setter)(class_type *, SetType)) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
@@ -8638,8 +8258,7 @@ namespace LuaWrapper {
         /// @param getter getter function
         /// @param setter setter function
         template<typename GetType, typename SetType>
-        UserdataMetatable &addProperty(const char *name,
-                                       GetType (*getter)(const class_type &),
+        UserdataMetatable &addProperty(const char *name, GetType (*getter)(const class_type &),
                                        void (*setter)(class_type &, SetType)) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
@@ -8666,8 +8285,7 @@ namespace LuaWrapper {
         /// @param getter getter function
         /// @param setter setter function
         template<typename GetterType, typename SetterType>
-        UserdataMetatable &addPropertyAny(const char *name, GetterType getter,
-                                          SetterType setter) {
+        UserdataMetatable &addPropertyAny(const char *name, GetterType getter, SetterType setter) {
             if (has_key(name)) {
                 throw KaguyaException(std::string(name) + " is already registered.");
                 return *this;
@@ -8719,17 +8337,17 @@ namespace LuaWrapper {
         }
 #else
 
-#define METAENGINE_LUAWRAPPER_ADD_OVERLOAD_FUNCTION_DEF(N)                                   \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                \
-    inline UserdataMetatable &addOverloadedFunctions(                                        \
-            const char *name, METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {               \
-        if (has_key(name)) {                                                                 \
-            throw KaguyaException(std::string(name) + " is already registered.");            \
-            return *this;                                                                    \
-        }                                                                                    \
-        member_map_[name] =                                                                  \
-                AnyDataPusher(LuaWrapper::overload(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N))); \
-        return *this;                                                                        \
+#define METAENGINE_LUAWRAPPER_ADD_OVERLOAD_FUNCTION_DEF(N)                                         \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    inline UserdataMetatable &addOverloadedFunctions(                                              \
+            const char *name, METAENGINE_LUAWRAPPER_PP_ARG_CR_DEF_REPEAT(N)) {                     \
+        if (has_key(name)) {                                                                       \
+            throw KaguyaException(std::string(name) + " is already registered.");                  \
+            return *this;                                                                          \
+        }                                                                                          \
+        member_map_[name] =                                                                        \
+                AnyDataPusher(LuaWrapper::overload(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)));       \
+        return *this;                                                                              \
     }
 
         METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_OVERLOADS,
@@ -8796,8 +8414,7 @@ namespace LuaWrapper {
     private:
         void set_base_metatable(lua_State *, int, types::typetag<void>) const {}
         template<class Base>
-        void set_base_metatable(lua_State *state, int metatable_index,
-                                types::typetag<Base>) const {
+        void set_base_metatable(lua_State *state, int metatable_index, types::typetag<Base>) const {
             class_userdata::get_metatable<Base>(state);
             lua_setmetatable(state,
                              metatable_index);// metatable.setMetatable(newmeta);
@@ -8808,30 +8425,25 @@ namespace LuaWrapper {
 #if METAENGINE_LUAWRAPPER_USE_CPP11
 
         template<typename Base>
-        void metatables(lua_State *state, int metabase_array_index,
-                        PointerConverter &pvtreg,
+        void metatables(lua_State *state, int metabase_array_index, PointerConverter &pvtreg,
                         types::typetag<MultipleBase<Base>>) const {
             class_userdata::get_metatable<Base>(state);
-            lua_rawseti(state, metabase_array_index,
-                        lua_rawlen(state, metabase_array_index) + 1);
+            lua_rawseti(state, metabase_array_index, lua_rawlen(state, metabase_array_index) + 1);
             pvtreg.add_type_conversion<Base, class_type>();
         }
         template<typename Base, typename... Remain>
-        void metatables(lua_State *state, int metabase_array_index,
-                        PointerConverter &pvtreg,
+        void metatables(lua_State *state, int metabase_array_index, PointerConverter &pvtreg,
                         types::typetag<MultipleBase<Base, Remain...>>) const {
             class_userdata::get_metatable<Base>(state);
-            lua_rawseti(state, metabase_array_index,
-                        lua_rawlen(state, metabase_array_index) + 1);
+            lua_rawseti(state, metabase_array_index, lua_rawlen(state, metabase_array_index) + 1);
             pvtreg.add_type_conversion<Base, class_type>();
             metatables(state, metabase_array_index, pvtreg,
                        types::typetag<MultipleBase<Remain...>>());
         }
 
         template<typename... Bases>
-        void
-        set_base_metatable(lua_State *state, int metatable_index,
-                           types::typetag<MultipleBase<Bases...>> metatypes) const {
+        void set_base_metatable(lua_State *state, int metatable_index,
+                                types::typetag<MultipleBase<Bases...>> metatypes) const {
             PointerConverter &pconverter = PointerConverter::get(state);
 
             lua_createtable(state, sizeof...(Bases), 0);
@@ -8841,10 +8453,9 @@ namespace LuaWrapper {
         }
 
 #else
-#define METAENGINE_LUAWRAPPER_GET_BASE_METATABLE(N)                           \
-    class_userdata::get_metatable<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>(state); \
-    lua_rawseti(state, metabase_array_index,                                  \
-                lua_rawlen(state, metabase_array_index) + 1);                 \
+#define METAENGINE_LUAWRAPPER_GET_BASE_METATABLE(N)                                                \
+    class_userdata::get_metatable<METAENGINE_LUAWRAPPER_PP_CAT(A, N)>(state);                      \
+    lua_rawseti(state, metabase_array_index, lua_rawlen(state, metabase_array_index) + 1);         \
     pconverter.add_type_conversion<METAENGINE_LUAWRAPPER_PP_CAT(A, N), class_type>();
 #define METAENGINE_LUAWRAPPER_MULTIPLE_INHERITANCE_SETBASE_DEF(N)                                  \
     template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
@@ -8865,12 +8476,8 @@ namespace LuaWrapper {
 #endif
 
         bool has_key(const std::string &key) {
-            if (member_map_.count(key) > 0) {
-                return true;
-            }
-            if (property_map_.count(key) > 0) {
-                return true;
-            }
+            if (member_map_.count(key) > 0) { return true; }
+            if (property_map_.count(key) > 0) { return true; }
             std::string propkey = METAENGINE_LUAWRAPPER_PROPERTY_PREFIX + key;
             if (member_map_.count(propkey) > 0)//_prop_keyname is reserved for property
             {
@@ -8905,8 +8512,7 @@ namespace LuaWrapper {
 * directly accessing its elements.
 */
     template<typename KEY>
-    class TableKeyReferenceProxy
-        : public detail::LuaVariantImpl<TableKeyReferenceProxy<KEY>> {
+    class TableKeyReferenceProxy : public detail::LuaVariantImpl<TableKeyReferenceProxy<KEY>> {
     public:
         int pushStackIndex(lua_State *state) const {
             push(state);
@@ -8938,9 +8544,7 @@ namespace LuaWrapper {
 #endif
 
         bool isNilref() const {
-            if (!state_) {
-                return false;
-            }
+            if (!state_) { return false; }
             util::ScopedSavedStack save(state_);
             push(state_);
             return lua_isnoneornil(state_, -1);
@@ -8967,9 +8571,7 @@ namespace LuaWrapper {
 
             detail::table_proxy::get(state_, table_index_, key_);
 
-            if (state_ != state) {
-                lua_xmove(state_, state, 1);
-            }
+            if (state_ != state) { lua_xmove(state_, state, 1); }
             return 1;
         }
 
@@ -8982,23 +8584,19 @@ namespace LuaWrapper {
         }
 
         ~TableKeyReferenceProxy() {
-            if (state_) {
-                lua_settop(state_, stack_top_);
-            }
+            if (state_) { lua_settop(state_, stack_top_); }
         }
 
         ///!constructs the reference. Accessible only to LuaWrapper::LuaRef itself
         TableKeyReferenceProxy(const TableKeyReferenceProxy &src)
-            : state_(src.state_), stack_top_(src.stack_top_),
-              table_index_(src.table_index_), key_(src.key_) {
+            : state_(src.state_), stack_top_(src.stack_top_), table_index_(src.table_index_),
+              key_(src.key_) {
             src.state_ = 0;
         }
 
         ///!constructs the reference. Accessible only to LuaWrapper::LuaRef itself
-        TableKeyReferenceProxy(lua_State *state, int table_index, KEY key,
-                               int revstacktop)
-            : state_(state), stack_top_(revstacktop), table_index_(table_index),
-              key_(key) {}
+        TableKeyReferenceProxy(lua_State *state, int table_index, KEY key, int revstacktop)
+            : state_(state), stack_top_(revstacktop), table_index_(table_index), key_(key) {}
 
     private:
         template<typename T, typename P>
@@ -9007,10 +8605,9 @@ namespace LuaWrapper {
         }
 
         ///!constructs the reference. Accessible only to LuaWrapper::LuaRef itself
-        TableKeyReferenceProxy(lua_State *state, int table_index, const KEY &key,
-                               int revstacktop, const NoTypeCheck &)
-            : state_(state), stack_top_(revstacktop), table_index_(table_index),
-              key_(key) {}
+        TableKeyReferenceProxy(lua_State *state, int table_index, const KEY &key, int revstacktop,
+                               const NoTypeCheck &)
+            : state_(state), stack_top_(revstacktop), table_index_(table_index), key_(key) {}
 
         TableKeyReferenceProxy(const LuaTable &table, const KEY &key)
             : state_(table.state()), stack_top_(lua_gettop(state_)), key_(key) {
@@ -9023,8 +8620,8 @@ namespace LuaWrapper {
             table_index_ = stack_top_ + 1;
             int t = lua_type(state_, table_index_);
             if (t != LUA_TTABLE) {
-                except::typeMismatchError(state_, lua_typename(state_, t) +
-                                                          std::string(" is not table"));
+                except::typeMismatchError(state_,
+                                          lua_typename(state_, t) + std::string(" is not table"));
             }
         }
 
@@ -9035,8 +8632,7 @@ namespace LuaWrapper {
     };
 
     template<typename KEY>
-    inline std::ostream &operator<<(std::ostream &os,
-                                    const TableKeyReferenceProxy<KEY> &ref) {
+    inline std::ostream &operator<<(std::ostream &os, const TableKeyReferenceProxy<KEY> &ref) {
         lua_State *state = ref.state();
         util::ScopedSavedStack save(state);
         int stackIndex = ref.pushStackIndex(state);
@@ -9048,15 +8644,13 @@ namespace LuaWrapper {
         template<typename T>
         inline bool LuaFunctionImpl<T>::setFunctionEnv(const LuaTable &env) {
             lua_State *state = state_();
-            if (!state) {
-                return false;
-            }
+            if (!state) { return false; }
             util::ScopedSavedStack save(state);
             int stackIndex = pushStackIndex_(state);
             int t = lua_type(state, stackIndex);
             if (t != LUA_TFUNCTION) {
-                except::typeMismatchError(state, lua_typename(state, t) +
-                                                         std::string(" is not function"));
+                except::typeMismatchError(state,
+                                          lua_typename(state, t) + std::string(" is not function"));
                 return false;
             }
             env.push(state);
@@ -9083,8 +8677,8 @@ namespace LuaWrapper {
             int stackIndex = pushStackIndex_(state);
             int t = lua_type(state, stackIndex);
             if (t != LUA_TFUNCTION) {
-                except::typeMismatchError(state, lua_typename(state, t) +
-                                                         std::string(" is not function"));
+                except::typeMismatchError(state,
+                                          lua_typename(state, t) + std::string(" is not function"));
                 return LuaTable();
             }
 #if LUA_VERSION_NUM >= 502
@@ -9115,8 +8709,8 @@ namespace LuaWrapper {
             int stackindex = pushStackIndex_(state);
             int t = lua_type(state, stackindex);
             if (t != LUA_TTABLE && t != LUA_TUSERDATA) {
-                except::typeMismatchError(state, lua_typename(state, t) +
-                                                         std::string(" is not table"));
+                except::typeMismatchError(state,
+                                          lua_typename(state, t) + std::string(" is not table"));
                 return false;
             }
             table.push();
@@ -9133,18 +8727,15 @@ namespace LuaWrapper {
             int stackindex = pushStackIndex_(state);
             int t = lua_type(state, stackindex);
             if (t != LUA_TTABLE && t != LUA_TUSERDATA) {
-                except::typeMismatchError(state, lua_typename(state, t) +
-                                                         std::string(" is not table"));
+                except::typeMismatchError(state,
+                                          lua_typename(state, t) + std::string(" is not table"));
                 return LuaTable();
             }
-            if (!lua_getmetatable(state, stackindex)) {
-                lua_pushnil(state);
-            }
+            if (!lua_getmetatable(state, stackindex)) { lua_pushnil(state); }
             return LuaTable(state, StackTop());
         }
         template<typename T>
-        MemberFunctionBinder LuaTableOrUserDataImpl<T>::
-        operator->*(const char *function_name) {
+        MemberFunctionBinder LuaTableOrUserDataImpl<T>::operator->*(const char *function_name) {
             push_(state_());
             return MemberFunctionBinder(LuaRef(state_(), StackTop()), function_name);
         }
@@ -9225,14 +8816,10 @@ namespace LuaWrapper {
         typedef const std::array<T, S> &push_type;
 
         static bool checkType(lua_State *l, int index) {
-            if (lua_type(l, index) != LUA_TTABLE) {
-                return false;
-            }
+            if (lua_type(l, index) != LUA_TTABLE) { return false; }
 
             LuaStackRef table(l, index);
-            if (table.size() != S) {
-                return false;
-            }// TODO
+            if (table.size() != S) { return false; }// TODO
             bool valid = true;
             table.foreach_table_breakable<LuaStackRef, LuaStackRef>(
                     [&](const LuaStackRef &k, const LuaStackRef &v) {
@@ -9242,14 +8829,10 @@ namespace LuaWrapper {
             return valid;
         }
         static bool strictCheckType(lua_State *l, int index) {
-            if (lua_type(l, index) != LUA_TTABLE) {
-                return false;
-            }
+            if (lua_type(l, index) != LUA_TTABLE) { return false; }
 
             LuaStackRef table(l, index);
-            if (table.size() != S) {
-                return false;
-            }// TODO
+            if (table.size() != S) { return false; }// TODO
             bool valid = true;
             table.foreach_table_breakable<LuaStackRef, LuaStackRef>(
                     [&](const LuaStackRef &k, const LuaStackRef &v) {
@@ -9270,9 +8853,7 @@ namespace LuaWrapper {
             }
             get_type res;
             t.foreach_table<size_t, const T &>([&](size_t k, const T &v) {
-                if (k > 0 && k <= S) {
-                    res[k - 1] = v;
-                }
+                if (k > 0 && k <= S) { res[k - 1] = v; }
             });
             return res;
         }
@@ -9316,24 +8897,18 @@ namespace LuaWrapper {
 
         static bool checkType(lua_State *l, int index) {
             LuaStackRef table(l, index);
-            if (table.type() != LuaRef::TYPE_TABLE) {
-                return false;
-            }
+            if (table.type() != LuaRef::TYPE_TABLE) { return false; }
 
             bool valid = true;
-            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(
-                    checkTypeForEach(valid));
+            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(checkTypeForEach(valid));
             return valid;
         }
         static bool strictCheckType(lua_State *l, int index) {
             LuaStackRef table(l, index);
-            if (table.type() != LuaRef::TYPE_TABLE) {
-                return false;
-            }
+            if (table.type() != LuaRef::TYPE_TABLE) { return false; }
 
             bool valid = true;
-            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(
-                    strictCheckTypeForEach(valid));
+            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(strictCheckTypeForEach(valid));
             return valid;
         }
 
@@ -9349,8 +8924,7 @@ namespace LuaWrapper {
         static int push(lua_State *l, move_push_type v) {
             lua_createtable(l, int(v.size()), 0);
             int count = 1;// array is 1 origin in Lua
-            for (typename std::vector<T, A>::iterator it = v.begin(); it != v.end();
-                 ++it) {
+            for (typename std::vector<T, A>::iterator it = v.begin(); it != v.end(); ++it) {
                 util::one_push(l, static_cast<T &&>(*it));
                 lua_rawseti(l, -2, count++);
             }
@@ -9360,8 +8934,7 @@ namespace LuaWrapper {
         static int push(lua_State *l, push_type v) {
             lua_createtable(l, int(v.size()), 0);
             int count = 1;// array is 1 origin in Lua
-            for (typename std::vector<T, A>::const_iterator it = v.begin();
-                 it != v.end(); ++it) {
+            for (typename std::vector<T, A>::const_iterator it = v.begin(); it != v.end(); ++it) {
                 util::one_push(l, static_cast<const T &>(*it));
                 lua_rawseti(l, -2, count++);
             }
@@ -9399,24 +8972,18 @@ namespace LuaWrapper {
         };
         static bool checkType(lua_State *l, int index) {
             LuaStackRef table(l, index);
-            if (table.type() != LuaRef::TYPE_TABLE) {
-                return false;
-            }
+            if (table.type() != LuaRef::TYPE_TABLE) { return false; }
 
             bool valid = true;
-            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(
-                    checkTypeForEach(valid));
+            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(checkTypeForEach(valid));
             return valid;
         }
         static bool strictCheckType(lua_State *l, int index) {
             LuaStackRef table(l, index);
-            if (table.type() != LuaRef::TYPE_TABLE) {
-                return false;
-            }
+            if (table.type() != LuaRef::TYPE_TABLE) { return false; }
 
             bool valid = true;
-            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(
-                    strictCheckTypeForEach(valid));
+            table.foreach_table_breakable<LuaStackRef, LuaStackRef>(strictCheckTypeForEach(valid));
             return valid;
         }
 
@@ -9429,8 +8996,8 @@ namespace LuaWrapper {
         }
         static int push(lua_State *l, push_type v) {
             lua_createtable(l, 0, int(v.size()));
-            for (typename std::map<K, V, C, A>::const_iterator it = v.begin();
-                 it != v.end(); ++it) {
+            for (typename std::map<K, V, C, A>::const_iterator it = v.begin(); it != v.end();
+                 ++it) {
                 util::one_push(l, it->first);
                 util::one_push(l, it->second);
                 lua_rawset(l, -3);
@@ -9445,12 +9012,10 @@ namespace LuaWrapper {
         typedef std::pair<AnyDataPusher, AnyDataPusher> keyvalue_type;
 
         template<typename Value>
-        TableDataElement(Value value)
-            : keyvalue(keyvalue_type(AnyDataPusher(), value)) {}
+        TableDataElement(Value value) : keyvalue(keyvalue_type(AnyDataPusher(), value)) {}
 
         template<typename Key, typename Value>
-        TableDataElement(Key key, Value value)
-            : keyvalue(keyvalue_type(key, value)) {}
+        TableDataElement(Key key, Value value) : keyvalue(keyvalue_type(key, value)) {}
         std::pair<AnyDataPusher, AnyDataPusher> keyvalue;
     };
 
@@ -9477,8 +9042,7 @@ namespace LuaWrapper {
         static int push(lua_State *l, const TableData &list) {
             lua_createtable(l, int(list.elements.size()), int(list.elements.size()));
             int count = 1;// array is 1 origin in Lua
-            for (std::vector<TableDataElement>::const_iterator it =
-                         list.elements.begin();
+            for (std::vector<TableDataElement>::const_iterator it = list.elements.begin();
                  it != list.elements.end(); ++it) {
                 const TableDataElement &v = *it;
                 if (v.keyvalue.first.empty()) {
@@ -9555,9 +9119,7 @@ namespace LuaWrapper {
             return 0;// return to Lua to abort
         }
         static int default_panic(lua_State *L) {
-            if (ErrorHandler::handle(lua_status(L), L)) {
-                return 0;
-            }
+            if (ErrorHandler::handle(lua_status(L), L)) { return 0; }
             fprintf(stderr, "PANIC: unprotected error in call to Lua API (%s)\n",
                     lua_tostring(L, -1));
             fflush(stderr);
@@ -9573,9 +9135,7 @@ namespace LuaWrapper {
             if (state_) {
                 lua_atpanic(state_, &initializing_panic);
                 try {
-                    if (!ErrorHandler::getHandler(state_)) {
-                        setErrorHandler(&stderror_out);
-                    }
+                    if (!ErrorHandler::getHandler(state_)) { setErrorHandler(&stderror_out); }
                     registerMainThreadIfNeeded();
                     openlibs(lib);
                     lua_atpanic(state_, &default_panic);
@@ -9588,9 +9148,7 @@ namespace LuaWrapper {
 
         void registerMainThreadIfNeeded() {
 #if LUA_VERSION_NUM < 502
-            if (state_) {
-                util::registerMainThread(state_);
-            }
+            if (state_) { util::registerMainThread(state_); }
 #endif
         }
 
@@ -9607,8 +9165,7 @@ namespace LuaWrapper {
         template<typename Allocator>
         State(standard::shared_ptr<Allocator> allocator)
             : allocator_holder_(allocator),
-              state_(lua_newstate(&AllocatorFunction<Allocator>,
-                                  allocator_holder_.get())),
+              state_(lua_newstate(&AllocatorFunction<Allocator>, allocator_holder_.get())),
               created_(true) {
             init(AllLoadLibs());
         }
@@ -9618,8 +9175,7 @@ namespace LuaWrapper {
         /// e.g. LoadLibs libs;libs.push_back(LoadLib("libname",libfunction));State
         /// state(libs);
         /// e.g. State state({{"libname",libfunction}}); for c++ 11
-        State(const LoadLibs &libs)
-            : allocator_holder_(), state_(luaL_newstate()), created_(true) {
+        State(const LoadLibs &libs) : allocator_holder_(), state_(luaL_newstate()), created_(true) {
             init(libs);
         }
 
@@ -9631,8 +9187,7 @@ namespace LuaWrapper {
         template<typename Allocator>
         State(const LoadLibs &libs, standard::shared_ptr<Allocator> allocator)
             : allocator_holder_(allocator),
-              state_(lua_newstate(&AllocatorFunction<Allocator>,
-                                  allocator_holder_.get())),
+              state_(lua_newstate(&AllocatorFunction<Allocator>, allocator_holder_.get())),
               created_(true) {
             init(libs);
         }
@@ -9642,48 +9197,35 @@ namespace LuaWrapper {
         State(lua_State *lua) : state_(lua), created_(false) {
             if (state_) {
                 registerMainThreadIfNeeded();
-                if (!ErrorHandler::getHandler(state_)) {
-                    setErrorHandler(&stderror_out);
-                }
+                if (!ErrorHandler::getHandler(state_)) { setErrorHandler(&stderror_out); }
             }
         }
         ~State() {
-            if (created_ && state_) {
-                lua_close(state_);
-            }
+            if (created_ && state_) { lua_close(state_); }
         }
 
         /// @brief set error handler for lua error.
-        void
-        setErrorHandler(standard::function<void(int statuscode, const char *message)>
-                                errorfunction) {
-            if (!state_) {
-                return;
-            }
+        void setErrorHandler(
+                standard::function<void(int statuscode, const char *message)> errorfunction) {
+            if (!state_) { return; }
             util::ScopedSavedStack save(state_);
             ErrorHandler::registerHandler(state_, errorfunction);
         }
 
         /// @brief load all lua standard library
         void openlibs(AllLoadLibs = AllLoadLibs()) {
-            if (!state_) {
-                return;
-            }
+            if (!state_) { return; }
             luaL_openlibs(state_);
         }
 
         /// @brief load lua library
         LuaStackRef openlib(const LoadLib &lib) {
-            if (!state_) {
-                return LuaStackRef();
-            }
+            if (!state_) { return LuaStackRef(); }
             luaL_requiref(state_, lib.first.c_str(), lib.second, 1);
             return LuaStackRef(state_, -1, true);
         }
         /// @brief load lua library
-        LuaStackRef openlib(std::string name, lua_CFunction f) {
-            return openlib(LoadLib(name, f));
-        }
+        LuaStackRef openlib(std::string name, lua_CFunction f) { return openlib(LoadLib(name, f)); }
 
         /// @brief load lua libraries
         void openlibs(const LoadLibs &libs) {
@@ -9703,9 +9245,7 @@ namespace LuaWrapper {
         ///  Otherwise send error message to error handler and return nil reference
         /// @param file  file path of lua script
         /// @return reference of lua function
-        LuaFunction loadfile(const char *file) {
-            return LuaFunction::loadfile(state_, file);
-        }
+        LuaFunction loadfile(const char *file) { return LuaFunction::loadfile(state_, file); }
 
         /// @brief If there are no errors,compiled stream as a Lua function and
         /// return.
@@ -9728,9 +9268,7 @@ namespace LuaWrapper {
             if (!f) {// load failed
                 return false;
             }
-            if (!env.isNilref()) {
-                f.setFunctionEnv(env);
-            }
+            if (!env.isNilref()) { f.setFunctionEnv(env); }
 
             FunctionResults ret = f.call<FunctionResults>();
             return !ret.resultStatus();
@@ -9749,9 +9287,7 @@ namespace LuaWrapper {
         ///  Otherwise send error message to error handler and return nil reference
         /// @param str lua code
         /// @return reference of lua function
-        LuaFunction loadstring(const char *str) {
-            return LuaFunction::loadstring(state_, str);
-        }
+        LuaFunction loadstring(const char *str) { return LuaFunction::loadstring(state_, str); }
 
         /// @brief Loads and runs the given file.
         /// @param file file path of lua script
@@ -9844,8 +9380,8 @@ namespace LuaWrapper {
             int stack_top = lua_gettop(state_);
             util::push_args(state_, GlobalTable());
             int table_index = stack_top + 1;
-            return TableKeyReferenceProxy<std::string>(state_, table_index, str,
-                                                       stack_top, NoTypeCheck());
+            return TableKeyReferenceProxy<std::string>(state_, table_index, str, stack_top,
+                                                       NoTypeCheck());
         }
 
         /// @brief return element reference from global table
@@ -9856,8 +9392,8 @@ namespace LuaWrapper {
             int stack_top = lua_gettop(state_);
             util::push_args(state_, GlobalTable());
             int table_index = stack_top + 1;
-            return TableKeyReferenceProxy<const char *>(state_, table_index, str,
-                                                        stack_top, NoTypeCheck());
+            return TableKeyReferenceProxy<const char *>(state_, table_index, str, stack_top,
+                                                        NoTypeCheck());
         }
 
         /// @brief return global table
@@ -9947,9 +9483,7 @@ namespace LuaWrapper {
 
             ///  @brief sets arg as the new value for the step multiplier of the
             ///  collector. Returns the previous value for step.
-            int setstepmul(int value) {
-                return lua_gc(state_, LUA_GCSETSTEPMUL, value);
-            }
+            int setstepmul(int value) { return lua_gc(state_, LUA_GCSETSTEPMUL, value); }
 
             /// @brief enable gc
             void enable() { lua_gc(state_, LUA_GCRESTART, 0); }
@@ -10008,32 +9542,37 @@ namespace LuaWrapper {
             tref = fres.get_result(types::typetag<GetTuple>());
         }
         template<class T>
-        void operator=(const T &fres) { tref = fres; }
+        void operator=(const T &fres) {
+            tref = fres;
+        }
     };
 #if METAENGINE_LUAWRAPPER_USE_CPP11
     template<class... Args>
-    ref_tuple<standard::tuple<Args &...>, standard::tuple<Args...>>
-    tie(Args &...va) {
+    ref_tuple<standard::tuple<Args &...>, standard::tuple<Args...>> tie(Args &...va) {
         typedef standard::tuple<Args &...> RefTuple;
         typedef standard::tuple<Args...> GetTuple;
         return ref_tuple<RefTuple, GetTuple>(RefTuple(va...));
     }
 #else
-#define METAENGINE_LUAWRAPPER_VARIADIC_REFARG_REP(N) METAENGINE_LUAWRAPPER_PP_CAT(A, N) & METAENGINE_LUAWRAPPER_PP_CAT(a, N)
+#define METAENGINE_LUAWRAPPER_VARIADIC_REFARG_REP(N)                                               \
+    METAENGINE_LUAWRAPPER_PP_CAT(A, N) & METAENGINE_LUAWRAPPER_PP_CAT(a, N)
 #define METAENGINE_LUAWRAPPER_VARIADIC_TREFARG_REP(N) METAENGINE_LUAWRAPPER_PP_CAT(A, N) &
-#define METAENGINE_LUAWRAPPER_TEMPLATE_REFARG_REPEAT(N) \
+#define METAENGINE_LUAWRAPPER_TEMPLATE_REFARG_REPEAT(N)                                            \
     METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_VARIADIC_TREFARG_REP)
-#define METAENGINE_LUAWRAPPER_REF_TUPLE(N) standard::tuple<METAENGINE_LUAWRAPPER_TEMPLATE_REFARG_REPEAT(N)>
-#define METAENGINE_LUAWRAPPER_GET_TUPLE(N) standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>
-#define METAENGINE_LUAWRAPPER_REF_TUPLE_DEF(N)                                                    \
-    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                     \
-    ref_tuple<METAENGINE_LUAWRAPPER_REF_TUPLE(N), METAENGINE_LUAWRAPPER_GET_TUPLE(N)> tie(        \
-            METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_VARIADIC_REFARG_REP)) {  \
-        return ref_tuple<METAENGINE_LUAWRAPPER_REF_TUPLE(N), METAENGINE_LUAWRAPPER_GET_TUPLE(N)>( \
-                METAENGINE_LUAWRAPPER_REF_TUPLE(N)(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)));      \
+#define METAENGINE_LUAWRAPPER_REF_TUPLE(N)                                                         \
+    standard::tuple<METAENGINE_LUAWRAPPER_TEMPLATE_REFARG_REPEAT(N)>
+#define METAENGINE_LUAWRAPPER_GET_TUPLE(N)                                                         \
+    standard::tuple<METAENGINE_LUAWRAPPER_PP_TEMPLATE_ARG_REPEAT(N)>
+#define METAENGINE_LUAWRAPPER_REF_TUPLE_DEF(N)                                                     \
+    template<METAENGINE_LUAWRAPPER_PP_TEMPLATE_DEF_REPEAT(N)>                                      \
+    ref_tuple<METAENGINE_LUAWRAPPER_REF_TUPLE(N), METAENGINE_LUAWRAPPER_GET_TUPLE(N)> tie(         \
+            METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_VARIADIC_REFARG_REP)) {   \
+        return ref_tuple<METAENGINE_LUAWRAPPER_REF_TUPLE(N), METAENGINE_LUAWRAPPER_GET_TUPLE(N)>(  \
+                METAENGINE_LUAWRAPPER_REF_TUPLE(N)(METAENGINE_LUAWRAPPER_PP_ARG_REPEAT(N)));       \
     }
 
-    METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_TUPLE_SIZE, METAENGINE_LUAWRAPPER_REF_TUPLE_DEF)
+    METAENGINE_LUAWRAPPER_PP_REPEAT_DEF(METAENGINE_LUAWRAPPER_FUNCTION_MAX_TUPLE_SIZE,
+                                        METAENGINE_LUAWRAPPER_REF_TUPLE_DEF)
 #undef METAENGINE_LUAWRAPPER_VARIADIC_REFARG_REP
 #undef METAENGINE_LUAWRAPPER_TEMPLATE_REFARG_REPEAT
 #undef METAENGINE_LUAWRAPPER_REF_TUPLE

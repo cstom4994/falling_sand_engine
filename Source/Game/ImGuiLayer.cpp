@@ -5,12 +5,12 @@
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/Memory.hpp"
 #include "Engine/ImGuiBase.hpp"
 #include "Engine/ImGuiHelper.hpp"
-#include "Game/InEngine.h"
+#include "Engine/Memory.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameUI.hpp"
+#include "Game/InEngine.h"
 #include "Game/Networking.hpp"
 #include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
@@ -38,18 +38,22 @@ extern void ShowAutoTestWindow();
 
 static int common_control_initialize() {
     HMODULE comctl32 = nullptr;
-    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"Comctl32.dll", &comctl32)) {
+    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"Comctl32.dll",
+                            &comctl32)) {
         return EXIT_FAILURE;
     }
 
     assert(comctl32 != nullptr);
     if (comctl32) {
         {
-            typename std::add_pointer<decltype(InitCommonControlsEx)>::type lpfnInitCommonControlsEx =
-                    reinterpret_cast<typename std::add_pointer<decltype(InitCommonControlsEx)>::type>(GetProcAddress(comctl32, "InitCommonControlsEx"));
+            typename std::add_pointer<decltype(InitCommonControlsEx)>::type
+                    lpfnInitCommonControlsEx = reinterpret_cast<
+                            typename std::add_pointer<decltype(InitCommonControlsEx)>::type>(
+                            GetProcAddress(comctl32, "InitCommonControlsEx"));
 
             if (lpfnInitCommonControlsEx) {
-                const INITCOMMONCONTROLSEX initcommoncontrolsex = {sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES};
+                const INITCOMMONCONTROLSEX initcommoncontrolsex = {sizeof(INITCOMMONCONTROLSEX),
+                                                                   ICC_WIN95_CLASSES};
                 if (!lpfnInitCommonControlsEx(&initcommoncontrolsex)) {
                     assert(!" InitCommonControlsEx(&initcommoncontrolsex) ");
                     return EXIT_FAILURE;
@@ -85,7 +89,6 @@ static unsigned char font_fa[] = {
 
 #endif
 
-
 namespace layout {
     constexpr auto kRenderOptionsPanelWidth = 300;
     constexpr auto kMargin = 5;
@@ -96,11 +99,9 @@ namespace layout {
 static bool s_is_animaiting = false;
 static const int view_size = 256;
 
-
 ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
 
-    if (tag & UI_MainMenu)
-        ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+    if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowSize(ImGui::GetMainViewport());
@@ -113,8 +114,7 @@ ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     return pos;
 }
 
-ImGuiLayer::ImGuiLayer() {
-}
+ImGuiLayer::ImGuiLayer() {}
 
 class OpenGL3TextureManager {
 public:
@@ -138,7 +138,8 @@ public:
 #ifdef GL_UNPACK_ROW_LENGTH
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 #endif
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     pixels);
         glBindTexture(GL_TEXTURE_2D, last_texture);
         mTextures.reserve(mTextures.size() + 1);
         mTextures.push_back(texture_id);
@@ -161,7 +162,6 @@ static bool firstRun = false;
 #if defined(_METADOT_IMM32)
 ImGUIIMMCommunication imguiIMMCommunication{};
 #endif
-
 
 // void TextFuck(std::string text)
 // {
@@ -212,7 +212,8 @@ void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
     memcpy(fonts_2, (void *) font_silver, sizeof(font_silver));
     memcpy(fonts_3, (void *) font_fa, sizeof(font_fa));
 
-    io.Fonts->AddFontFromMemoryTTF(fonts_1, sizeof(font_fz), 16.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromMemoryTTF(fonts_1, sizeof(font_fz), 16.0f, &config,
+                                   io.Fonts->GetGlyphRangesChineseFull());
 
     config.MergeMode = true;
     config.GlyphMinAdvanceX = 10.0f;
@@ -222,17 +223,19 @@ void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
     io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
 #else
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/FZXIANGSU12.ttf").c_str(), 22.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/FZXIANGSU12.ttf").c_str(), 22.0f,
+                                 &config, io.Fonts->GetGlyphRangesChineseFull());
 
     config.MergeMode = true;
     config.GlyphMinAdvanceX = 10.0f;
 
     static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa_solid_900.ttf").c_str(), 18.0f, &config, icon_ranges);
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/Silver.ttf").c_str(), 32.0f, &config);
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa_solid_900.ttf").c_str(),
+                                 18.0f, &config, icon_ranges);
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/Silver.ttf").c_str(), 32.0f,
+                                 &config);
 
 #endif
-
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
@@ -241,30 +244,25 @@ void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
-
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
     const char *glsl_version = "#version 330 core";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-
     style.ScaleAllSizes(scale);
 
     ImGuiHelper::init_style(0.5f, 0.5f);
-
 
 #if defined(_METADOT_IMM32)
     common_control_initialize();
     VERIFY(imguiIMMCommunication.subclassify(window));
 #endif
 
-
     //registerWindow("NavBar", &dynamic_cast<FakeWindow*>(APwin())->m_enableNavigationBar);
 
     //	static const char* fileToEdit = "test.cpp";
 
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-
 
 #if 0
 
@@ -324,7 +322,6 @@ void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
 
 #endif
 
-
     std::ifstream t(fileToEdit);
     if (t.good()) {
         std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
@@ -377,7 +374,6 @@ auto myCollapsingHeader = [](const char *name) -> bool {
     return b;
 };
 
-
 #if 0
 MarkdownData md1;
 md1.data = R"markdown(
@@ -420,7 +416,6 @@ void ImGuiLayer::Render() {
     imguiIMMCommunication();
 #endif
 
-
     //ImGui::Begin("Progress Indicators");
 
     //const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
@@ -430,7 +425,6 @@ void ImGuiLayer::Render() {
     //ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
 
     //ImGui::End();
-
 
 #if 0
 
@@ -516,7 +510,8 @@ void ImGuiLayer::Render() {
     if (Settings::ui_code_editor) {
 
         auto cpos = editor.GetCursorPosition();
-        ImGui::Begin("脚本编辑器", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("脚本编辑器", nullptr,
+                     ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
         ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("File")) {
@@ -528,8 +523,7 @@ void ImGuiLayer::Render() {
             }
             if (ImGui::BeginMenu("Edit")) {
                 bool ro = editor.IsReadOnly();
-                if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
-                    editor.SetReadOnly(ro);
+                if (ImGui::MenuItem("Read-only mode", nullptr, &ro)) editor.SetReadOnly(ro);
                 ImGui::Separator();
 
                 if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
@@ -545,13 +539,15 @@ void ImGuiLayer::Render() {
                     editor.Cut();
                 if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
                     editor.Delete();
-                if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
+                if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr,
+                                    !ro && ImGui::GetClipboardText() != nullptr))
                     editor.Paste();
 
                 ImGui::Separator();
 
                 if (ImGui::MenuItem("Select all", nullptr, nullptr))
-                    editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
+                    editor.SetSelection(TextEditor::Coordinates(),
+                                        TextEditor::Coordinates(editor.GetTotalLines(), 0));
 
                 ImGui::EndMenu();
             }
@@ -568,10 +564,10 @@ void ImGuiLayer::Render() {
             ImGui::EndMenuBar();
         }
 
-        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-                    editor.IsOverwrite() ? "Ovr" : "Ins",
-                    editor.CanUndo() ? "*" : " ",
-                    editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
+        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1,
+                    editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
+                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(),
+                    fileToEdit);
 
         editor.Render("TextEditor");
         ImGui::End();
@@ -584,13 +580,16 @@ void ImGuiLayer::Render() {
         ImGui::BeginTabBar(U8("协变与逆变"));
 
         if (ImGui::BeginTabItem(U8("首页"))) {
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                        1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
             METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
             METAENGINE_Render_RendererID id = renderer->id;
 
-            ImGui::Text("Using renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
-            ImGui::Text("  Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
+            ImGui::Text("Using renderer: %s (%d.%d)\n", id.name, id.major_version,
+                        id.minor_version);
+            ImGui::Text("  Shader versions supported: %d to %d\n\n", renderer->min_shader_version,
+                        renderer->max_shader_version);
             ImGui::EndTabItem();
         }
 
@@ -602,7 +601,6 @@ void ImGuiLayer::Render() {
 
             ImGui::EndTabItem();
         }
-
 
         if (ImGui::BeginTabItem(U8("测试"))) {
             ImGui::BeginTabBar(U8("测试#haha"));
@@ -619,9 +617,7 @@ void ImGuiLayer::Render() {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem(U8("调整"))) {
-            if (myCollapsingHeader(U8("遥测"))) {
-                GameUI::DebugUI::Draw(global.game);
-            }
+            if (myCollapsingHeader(U8("遥测"))) { GameUI::DebugUI::Draw(global.game); }
             // Call the function in our RCC++ class
             //if (myCollapsingHeader("RCCpp"))
             //    getSystemTable()->pRCCppMainLoopI->MainLoop();
@@ -636,7 +632,6 @@ void ImGuiLayer::Render() {
 
         ImGui::End();
     }
-
 
     GameUI::GameUI_Draw(global.game);
 
@@ -657,7 +652,6 @@ void ImGuiLayer::Render() {
 
 void ImGuiLayer::registerWindow(std::string_view windowName, bool *opened) {
     for (auto &m_win: m_wins)
-        if (m_win.name == windowName)
-            return;
+        if (m_win.name == windowName) return;
     m_wins.push_back({std::string(windowName), opened});
 }

@@ -5,7 +5,6 @@
 
 #include "Engine/Platform.hpp"
 
-
 std::string Resource::s_ProjectRootPath;
 std::string Resource::s_DataPath;
 
@@ -23,13 +22,12 @@ void Resource::init() {
     METADOT_ERROR("Runtime folder detect failed");
 }
 
-const std::string &Resource::getDataPath() {
-    return s_DataPath;
-}
+const std::string &Resource::getDataPath() { return s_DataPath; }
 
 std::string Resource::getResourceLoc(std::string_view resPath) {
     if (s_ProjectRootPath.empty()) {
-        std::cout << "Try to load resource when ResourceLoc is unloaded (" << resPath << ")" << std::endl;
+        std::cout << "Try to load resource when ResourceLoc is unloaded (" << resPath << ")"
+                  << std::endl;
     }
     if (SUtil::startsWith(resPath, "data") || SUtil::startsWith(resPath, "/data"))
         return s_ProjectRootPath + (s_ProjectRootPath.empty() ? "" : "/") + std::string(resPath);
@@ -45,20 +43,15 @@ std::string Resource::getLocalPath(std::string_view resPath) {
     size_t out = std::string::npos;
     while (true) {
         auto index = res.find("/data/", offset);
-        if (index == std::string::npos)
-            break;
+        if (index == std::string::npos) break;
         offset = index + 1;
         out = index;
     }
-    if (out == std::string::npos)
-        return "";
+    if (out == std::string::npos) return "";
     return res.substr(out + 1);
 }
 
-
-std::string GameDir::getPath(std::string filePathRel) {
-    return this->gameDir + filePathRel;
-}
+std::string GameDir::getPath(std::string filePathRel) { return this->gameDir + filePathRel; }
 
 std::string GameDir::getWorldPath(std::string worldName) {
     return this->getPath("worlds/" + worldName);
@@ -71,8 +64,7 @@ void FUtil::cleanPathString(std::string &s) {
 
 std::string FUtil::readFileString(std::string_view path) {
     auto p = METADOT_RESLOC(path);
-    if (!exists(p))
-        return "";
+    if (!exists(p)) return "";
     const std::ifstream input_stream(p, std::ios_base::in);
 
     if (input_stream.fail()) {
@@ -89,7 +81,6 @@ uint64_t FUtil::lastWriteTime(std::string_view path) {
     return std::filesystem::last_write_time(path).time_since_epoch().count();
 }
 
-
 std::string FUtil::getAbsolutePath(const char *fileName) {
     std::string out = getExecutableFolderPath() + fileName;
     return std::filesystem::exists(out) ? out : "";
@@ -98,7 +89,8 @@ std::string FUtil::getAbsolutePath(const char *fileName) {
 const std::string &FUtil::getExecutableFolderPath() {
     static std::string out;
     if (out.empty()) {
-        out = Platforms::GetExecutablePath().substr(0, Platforms::GetExecutablePath().find_last_of('/') + 1);
+        out = Platforms::GetExecutablePath().substr(
+                0, Platforms::GetExecutablePath().find_last_of('/') + 1);
     }
     return out;
 }
@@ -107,8 +99,7 @@ std::vector<std::string> FUtil::fileList(std::string_view folder_path, FileSearc
     std::vector<std::string> out;
     std::filesystem::file_time_type bestTime;
     bool nope = flags & (FileSearchFlags_Oldest | FileSearchFlags_Newest);
-    if (!FUtil::exists(folder_path))
-        return out;
+    if (!FUtil::exists(folder_path)) return out;
 
     if (!(flags & FileSearchFlags_Recursive)) {
         for (const auto &entry: std::filesystem::directory_iterator(folder_path)) {
@@ -127,8 +118,8 @@ std::vector<std::string> FUtil::fileList(std::string_view folder_path, FileSearc
                 }
                 auto currentTime = last_write_time(entry.path());
 
-                if (
-                        ((flags & FileSearchFlags_Newest) && currentTime > bestTime) || ((flags & FileSearchFlags_Oldest) && currentTime < bestTime)) {
+                if (((flags & FileSearchFlags_Newest) && currentTime > bestTime) ||
+                    ((flags & FileSearchFlags_Oldest) && currentTime < bestTime)) {
                     bestTime = currentTime;
                     out.clear();
                     out.push_back(s);
@@ -153,8 +144,8 @@ std::vector<std::string> FUtil::fileList(std::string_view folder_path, FileSearc
                 }
                 auto currentTime = last_write_time(entry.path());
 
-                if (
-                        ((flags & FileSearchFlags_Newest) && currentTime > bestTime) || ((flags & FileSearchFlags_Oldest) && currentTime < bestTime)) {
+                if (((flags & FileSearchFlags_Newest) && currentTime > bestTime) ||
+                    ((flags & FileSearchFlags_Oldest) && currentTime < bestTime)) {
                     bestTime = currentTime;
                     out.clear();
                     out.push_back(s);

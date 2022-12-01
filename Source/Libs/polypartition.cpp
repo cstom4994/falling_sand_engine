@@ -18,7 +18,6 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //THE SOFTWARE.
 
-
 #include <algorithm>
 #include <iostream>
 #include <list>
@@ -107,17 +106,12 @@ int TPPLPoly::GetOrientation() const {
 
 void TPPLPoly::SetOrientation(int orientation) {
     int polyorientation = GetOrientation();
-    if (polyorientation && (polyorientation != orientation)) {
-        Invert();
-    }
+    if (polyorientation && (polyorientation != orientation)) { Invert(); }
 }
 
-void TPPLPoly::Invert() {
-    std::reverse(points, points + numpoints);
-}
+void TPPLPoly::Invert() { std::reverse(points, points + numpoints); }
 
-TPPLPartition::PartitionVertex::PartitionVertex() : previous(NULL), next(NULL) {
-}
+TPPLPartition::PartitionVertex::PartitionVertex() : previous(NULL), next(NULL) {}
 
 TPPLPoint TPPLPartition::Normalize(const TPPLPoint &p) {
     TPPLPoint r;
@@ -229,8 +223,7 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
             for (i = 0; i < iter->GetNumPoints(); i++) {
                 if (iter->GetPoint(i).x <= holepoint.x) continue;
                 if (!InCone(iter->GetPoint((i + iter->GetNumPoints() - 1) % (iter->GetNumPoints())),
-                            iter->GetPoint(i),
-                            iter->GetPoint((i + 1) % (iter->GetNumPoints())),
+                            iter->GetPoint(i), iter->GetPoint((i + 1) % (iter->GetNumPoints())),
                             holepoint))
                     continue;
                 polypoint = iter->GetPoint(i);
@@ -283,9 +276,7 @@ int TPPLPartition::RemoveHoles(TPPLPolyList *inpolys, TPPLPolyList *outpolys) {
         polys.push_back(newpoly);
     }
 
-    for (iter = polys.begin(); iter != polys.end(); iter++) {
-        outpolys->push_back(*iter);
-    }
+    for (iter = polys.begin(); iter != polys.end(); iter++) { outpolys->push_back(*iter); }
 
     //std::cout << "b" << std::endl;
     return 1;
@@ -407,9 +398,7 @@ int TPPLPartition::Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles) {
         else
             vertices[i].previous = &(vertices[i - 1]);
     }
-    for (i = 0; i < numvertices; i++) {
-        UpdateVertex(&vertices[i], vertices, numvertices);
-    }
+    for (i = 0; i < numvertices; i++) { UpdateVertex(&vertices[i], vertices, numvertices); }
 
     for (i = 0; i < numvertices - 3; i++) {
         earfound = false;
@@ -421,9 +410,7 @@ int TPPLPartition::Triangulate_EC(TPPLPoly *poly, TPPLPolyList *triangles) {
                 earfound = true;
                 ear = &(vertices[j]);
             } else {
-                if (vertices[j].angle > ear->angle) {
-                    ear = &(vertices[j]);
-                }
+                if (vertices[j].angle > ear->angle) { ear = &(vertices[j]); }
             }
         }
         if (!earfound) {
@@ -513,9 +500,11 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
                 poly2 = &(*iter2);
 
                 for (i21 = 0; i21 < poly2->GetNumPoints(); i21++) {
-                    if ((d2.x != poly2->GetPoint(i21).x) || (d2.y != poly2->GetPoint(i21).y)) continue;
+                    if ((d2.x != poly2->GetPoint(i21).x) || (d2.y != poly2->GetPoint(i21).y))
+                        continue;
                     i22 = (i21 + 1) % (poly2->GetNumPoints());
-                    if ((d1.x != poly2->GetPoint(i22).x) || (d1.y != poly2->GetPoint(i22).y)) continue;
+                    if ((d1.x != poly2->GetPoint(i22).x) || (d1.y != poly2->GetPoint(i22).y))
+                        continue;
                     isdiagonal = true;
                     break;
                 }
@@ -568,9 +557,7 @@ int TPPLPartition::ConvexPartition_HM(TPPLPoly *poly, TPPLPolyList *parts) {
         }
     }
 
-    for (iter1 = triangles.begin(); iter1 != triangles.end(); iter1++) {
-        parts->push_back(*iter1);
-    }
+    for (iter1 = triangles.begin(); iter1 != triangles.end(); iter1++) { parts->push_back(*iter1); }
 
     return 1;
 }
@@ -604,9 +591,7 @@ int TPPLPartition::Triangulate_OPT(TPPLPoly *poly, TPPLPolyList *triangles) {
 
     n = poly->GetNumPoints();
     dpstates = new DPState *[n];
-    for (i = 1; i < n; i++) {
-        dpstates[i] = new DPState[i];
-    }
+    for (i = 1; i < n; i++) { dpstates[i] = new DPState[i]; }
 
     //init states and visibility
     for (i = 0; i < (n - 1); i++) {
@@ -682,9 +667,7 @@ int TPPLPartition::Triangulate_OPT(TPPLPoly *poly, TPPLPolyList *triangles) {
                 }
             }
             if (bestvertex == -1) {
-                for (i = 1; i < n; i++) {
-                    delete[] dpstates[i];
-                }
+                for (i = 1; i < n; i++) { delete[] dpstates[i]; }
                 delete[] dpstates;
 
                 return 0;
@@ -706,7 +689,8 @@ int TPPLPartition::Triangulate_OPT(TPPLPoly *poly, TPPLPolyList *triangles) {
             ret = 0;
             break;
         }
-        triangle.Triangle(poly->GetPoint(diagonal.index1), poly->GetPoint(bestvertex), poly->GetPoint(diagonal.index2));
+        triangle.Triangle(poly->GetPoint(diagonal.index1), poly->GetPoint(bestvertex),
+                          poly->GetPoint(diagonal.index2));
         triangles->push_back(triangle);
         if (bestvertex > (diagonal.index1 + 1)) {
             newdiagonal.index1 = diagonal.index1;
@@ -720,9 +704,7 @@ int TPPLPartition::Triangulate_OPT(TPPLPoly *poly, TPPLPolyList *triangles) {
         }
     }
 
-    for (i = 1; i < n; i++) {
-        delete[] dpstates[i];
-    }
+    for (i = 1; i < n; i++) { delete[] dpstates[i]; }
     delete[] dpstates;
 
     return ret;
@@ -802,7 +784,8 @@ void TPPLPartition::TypeB(long i, long j, long k, PartitionVertex *vertices, DPS
         pairs = &(dpstates[j][k].pairs);
 
         iter = pairs->begin();
-        if ((!pairs->empty()) && (!IsReflex(vertices[i].p, vertices[j].p, vertices[iter->index1].p))) {
+        if ((!pairs->empty()) &&
+            (!IsReflex(vertices[i].p, vertices[j].p, vertices[iter->index1].p))) {
             lastiter = iter;
             while (iter != pairs->end()) {
                 if (!IsReflex(vertices[i].p, vertices[j].p, vertices[iter->index1].p)) {
@@ -841,9 +824,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
     vertices = new PartitionVertex[n];
 
     dpstates = new DPState2 *[n];
-    for (i = 0; i < n; i++) {
-        dpstates[i] = new DPState2[n];
-    }
+    for (i = 0; i < n; i++) { dpstates[i] = new DPState2[n]; }
 
     //init vertex information
     for (i = 0; i < n; i++) {
@@ -856,9 +837,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
         else
             vertices[i].next = &(vertices[i + 1]);
     }
-    for (i = 1; i < n; i++) {
-        UpdateVertexReflexity(&(vertices[i]));
-    }
+    for (i = 1; i < n; i++) { UpdateVertexReflexity(&(vertices[i])); }
 
     //init states and visibility
     for (i = 0; i < (n - 1); i++) {
@@ -938,7 +917,6 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
         }
     }
 
-
     //recover solution
     ret = 1;
     newdiagonal.index1 = 0;
@@ -1009,9 +987,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
     }
 
     if (ret == 0) {
-        for (i = 0; i < n; i++) {
-            delete[] dpstates[i];
-        }
+        for (i = 0; i < n; i++) { delete[] dpstates[i]; }
         delete[] dpstates;
         delete[] vertices;
 
@@ -1079,9 +1055,7 @@ int TPPLPartition::ConvexPartition_OPT(TPPLPoly *poly, TPPLPolyList *parts) {
         parts->push_back(newpoly);
     }
 
-    for (i = 0; i < n; i++) {
-        delete[] dpstates[i];
-    }
+    for (i = 0; i < n; i++) { delete[] dpstates[i]; }
     delete[] dpstates;
     delete[] vertices;
 
@@ -1365,8 +1339,9 @@ int TPPLPartition::MonotonePartition(TPPLPolyList *inpolys, TPPLPolyList *monoto
 }
 
 //adds a diagonal to the doubly-connected list of vertices
-void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
-                                char *vertextypes, set<ScanLineEdge>::iterator *edgeTreeIterators,
+void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1,
+                                long index2, char *vertextypes,
+                                set<ScanLineEdge>::iterator *edgeTreeIterators,
                                 set<ScanLineEdge> *edgeTree, long *helpers) {
     long newindex1, newindex2;
 
@@ -1420,7 +1395,8 @@ bool TPPLPartition::VertexSorter::operator()(long index1, long index2) {
     return false;
 }
 
-bool TPPLPartition::ScanLineEdge::IsConvex(const TPPLPoint &p1, const TPPLPoint &p2, const TPPLPoint &p3) const {
+bool TPPLPartition::ScanLineEdge::IsConvex(const TPPLPoint &p1, const TPPLPoint &p2,
+                                           const TPPLPoint &p3) const {
     tppl_float tmp;
     tmp = (p3.y - p1.y) * (p2.x - p1.x) - (p3.x - p1.x) * (p2.y - p1.y);
     if (tmp > 0) return 1;
@@ -1559,16 +1535,20 @@ int TPPLPartition::TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles
             stackptr--;
             while (stackptr > 0) {
                 if (vertextypes[vindex] == 1) {
-                    if (IsConvex(points[vindex], points[stack[stackptr - 1]], points[stack[stackptr]])) {
-                        triangle.Triangle(points[vindex], points[stack[stackptr - 1]], points[stack[stackptr]]);
+                    if (IsConvex(points[vindex], points[stack[stackptr - 1]],
+                                 points[stack[stackptr]])) {
+                        triangle.Triangle(points[vindex], points[stack[stackptr - 1]],
+                                          points[stack[stackptr]]);
                         triangles->push_back(triangle);
                         stackptr--;
                     } else {
                         break;
                     }
                 } else {
-                    if (IsConvex(points[vindex], points[stack[stackptr]], points[stack[stackptr - 1]])) {
-                        triangle.Triangle(points[vindex], points[stack[stackptr]], points[stack[stackptr - 1]]);
+                    if (IsConvex(points[vindex], points[stack[stackptr]],
+                                 points[stack[stackptr - 1]])) {
+                        triangle.Triangle(points[vindex], points[stack[stackptr]],
+                                          points[stack[stackptr - 1]]);
                         triangles->push_back(triangle);
                         stackptr--;
                     } else {

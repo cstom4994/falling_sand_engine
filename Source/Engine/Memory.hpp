@@ -13,10 +13,10 @@
 #include <cstdint>
 #include <map>
 
-#include "Engine/Allocator.h"
-#include "Engine/SDLWrapper.hpp"
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
+#include "Engine/Allocator.h"
+#include "Engine/SDLWrapper.hpp"
 #include "Libs/nameof.hpp"
 
 #define METADOT_GC_ALLOC(size) SDL_malloc(size)
@@ -34,54 +34,48 @@
 #define REMOVEDEBUGMAP(_c)
 #endif
 
-#define METADOT_NEW(_field, _ptr, _class, ...)                  \
-    {                                                           \
-        _ptr = (_class *) GC::_field->Allocate(sizeof(_class)); \
-        new (_ptr) _class(__VA_ARGS__);                         \
-        GC::_field##_Count++;                                   \
-        ADDTODEBUGMAP(_class);                                  \
+#define METADOT_NEW(_field, _ptr, _class, ...)                                                     \
+    {                                                                                              \
+        _ptr = (_class *) GC::_field->Allocate(sizeof(_class));                                    \
+        new (_ptr) _class(__VA_ARGS__);                                                            \
+        GC::_field##_Count++;                                                                      \
+        ADDTODEBUGMAP(_class);                                                                     \
     }
 
-#define METADOT_NEW_ARRAY(_field, _ptr, _class, _count, ...)            \
-    {                                                                   \
-        _ptr = (_class *) GC::_field->Allocate(sizeof(_class[_count])); \
-        new (_ptr) _class(__VA_ARGS__);                                 \
-        GC::_field##_Count++;                                           \
-        ADDTODEBUGMAP(_class);                                          \
+#define METADOT_NEW_ARRAY(_field, _ptr, _class, _count, ...)                                       \
+    {                                                                                              \
+        _ptr = (_class *) GC::_field->Allocate(sizeof(_class[_count]));                            \
+        new (_ptr) _class(__VA_ARGS__);                                                            \
+        GC::_field##_Count++;                                                                      \
+        ADDTODEBUGMAP(_class);                                                                     \
     }
 
-#define METADOT_CREATE(_field, _ptr, _class, ...) \
-                                                  \
-    _class *_ptr = nullptr;                       \
+#define METADOT_CREATE(_field, _ptr, _class, ...)                                                  \
+                                                                                                   \
+    _class *_ptr = nullptr;                                                                        \
     METADOT_NEW(_field, _ptr, _class, __VA_ARGS__)
 
-
-#define METADOT_DELETE_RAW(_field, _ptr, _class_name, _class) \
-    {                                                         \
-        _ptr->~_class_name();                                 \
-        GC::_field->Free(_ptr);                               \
-        GC::_field##_Count--;                                 \
-        REMOVEDEBUGMAP(_class);                               \
+#define METADOT_DELETE_RAW(_field, _ptr, _class_name, _class)                                      \
+    {                                                                                              \
+        _ptr->~_class_name();                                                                      \
+        GC::_field->Free(_ptr);                                                                    \
+        GC::_field##_Count--;                                                                      \
+        REMOVEDEBUGMAP(_class);                                                                    \
     }
 
-#define METADOT_DELETE(_field, _ptr, _class_name)                   \
-    {                                                               \
-        METADOT_DELETE_RAW(_field, _ptr, _class_name, _class_name); \
-    }
+#define METADOT_DELETE(_field, _ptr, _class_name)                                                  \
+    { METADOT_DELETE_RAW(_field, _ptr, _class_name, _class_name); }
 
-#define METADOT_DELETE_EX(_field, _ptr, _class_name, _class)   \
-    {                                                          \
-        METADOT_DELETE_RAW(_field, _ptr, _class_name, _class); \
-    }
+#define METADOT_DELETE_EX(_field, _ptr, _class_name, _class)                                       \
+    { METADOT_DELETE_RAW(_field, _ptr, _class_name, _class); }
 
-#define GCField_R(_c, _n) \
-    static _c *_n;        \
+#define GCField_R(_c, _n)                                                                          \
+    static _c *_n;                                                                                 \
     static std::atomic<int> _n##_Count
 
-#define GCField_S(_c, _n) \
-    _c *GC::_n = nullptr; \
+#define GCField_S(_c, _n)                                                                          \
+    _c *GC::_n = nullptr;                                                                          \
     std::atomic<int> GC::_n##_Count = 0
-
 
 struct GC
 {

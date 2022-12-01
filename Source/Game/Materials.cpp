@@ -1,11 +1,11 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Materials.hpp"
 #include "Core/Macros.hpp"
 #include "Game/Textures.hpp"
 
-Material::Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor, UInt32 color) {
+Material::Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha,
+                   float density, int iterations, int emit, UInt32 emitColor, UInt32 color) {
     this->name = name;
     this->id = id;
     this->physicsType = physicsType;
@@ -18,50 +18,72 @@ Material::Material(int id, std::string name, int physicsType, int slipperyness, 
     this->color = color;
 }
 
-
 int Materials::nMaterials = 0;
-Material Materials::GENERIC_AIR = Material(nMaterials++, "_AIR", PhysicsType::AIR, 0, 255, 0, 0, 16, 0);
-Material Materials::GENERIC_SOLID = Material(nMaterials++, "_SOLID", PhysicsType::SOLID, 0, 255, 1, 0, 0, 0);
-Material Materials::GENERIC_SAND = Material(nMaterials++, "_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
-Material Materials::GENERIC_LIQUID = Material(nMaterials++, "_LIQUID", PhysicsType::SOUP, 0, 255, 1.5, 3, 0, 0);
-Material Materials::GENERIC_GAS = Material(nMaterials++, "_GAS", PhysicsType::GAS, 0, 255, -1, 1, 0, 0);
-Material Materials::GENERIC_PASSABLE = Material(nMaterials++, "_PASSABLE", PhysicsType::PASSABLE, 0, 255, 0, 0, 0, 0);
-Material Materials::GENERIC_OBJECT = Material(nMaterials++, "_OBJECT", PhysicsType::OBJECT, 0, 255, 1000.0, 0, 0, 0);
+Material Materials::GENERIC_AIR =
+        Material(nMaterials++, "_AIR", PhysicsType::AIR, 0, 255, 0, 0, 16, 0);
+Material Materials::GENERIC_SOLID =
+        Material(nMaterials++, "_SOLID", PhysicsType::SOLID, 0, 255, 1, 0, 0, 0);
+Material Materials::GENERIC_SAND =
+        Material(nMaterials++, "_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
+Material Materials::GENERIC_LIQUID =
+        Material(nMaterials++, "_LIQUID", PhysicsType::SOUP, 0, 255, 1.5, 3, 0, 0);
+Material Materials::GENERIC_GAS =
+        Material(nMaterials++, "_GAS", PhysicsType::GAS, 0, 255, -1, 1, 0, 0);
+Material Materials::GENERIC_PASSABLE =
+        Material(nMaterials++, "_PASSABLE", PhysicsType::PASSABLE, 0, 255, 0, 0, 0, 0);
+Material Materials::GENERIC_OBJECT =
+        Material(nMaterials++, "_OBJECT", PhysicsType::OBJECT, 0, 255, 1000.0, 0, 0, 0);
 
-Material Materials::TEST_SAND = Material(nMaterials++, "Test Sand", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
-Material Materials::TEST_TEXTURED_SAND = Material(nMaterials++, "Test Textured Sand", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
-Material Materials::TEST_LIQUID = Material(nMaterials++, "Test Liquid", PhysicsType::SOUP, 0, 255, 1.5, 4, 0, 0);
+Material Materials::TEST_SAND =
+        Material(nMaterials++, "Test Sand", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
+Material Materials::TEST_TEXTURED_SAND =
+        Material(nMaterials++, "Test Textured Sand", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
+Material Materials::TEST_LIQUID =
+        Material(nMaterials++, "Test Liquid", PhysicsType::SOUP, 0, 255, 1.5, 4, 0, 0);
 
 Material Materials::STONE = Material(nMaterials++, "Stone", PhysicsType::SOLID, 0, 1, 0);
 Material Materials::GRASS = Material(nMaterials++, "Grass", PhysicsType::SAND, 20, 12, 1);
 Material Materials::DIRT = Material(nMaterials++, "Dirt", PhysicsType::SAND, 8, 15, 1);
 
 Material Materials::SMOOTH_STONE = Material(nMaterials++, "Stone", PhysicsType::SOLID, 0, 1, 0);
-Material Materials::COBBLE_STONE = Material(nMaterials++, "Cobblestone", PhysicsType::SOLID, 0, 1, 0);
+Material Materials::COBBLE_STONE =
+        Material(nMaterials++, "Cobblestone", PhysicsType::SOLID, 0, 1, 0);
 Material Materials::SMOOTH_DIRT = Material(nMaterials++, "Ground", PhysicsType::SOLID, 0, 1, 0);
-Material Materials::COBBLE_DIRT = Material(nMaterials++, "Hard Ground", PhysicsType::SOLID, 0, 1, 0);
+Material Materials::COBBLE_DIRT =
+        Material(nMaterials++, "Hard Ground", PhysicsType::SOLID, 0, 1, 0);
 Material Materials::SOFT_DIRT = Material(nMaterials++, "Dirt", PhysicsType::SOLID, 0, 15, 2);
 
-Material Materials::WATER = Material(nMaterials++, "Water", PhysicsType::SOUP, 0, 0x80, 1.5, 6, 40, 0x3000AFB5);
-Material Materials::LAVA = Material(nMaterials++, "Lava", PhysicsType::SOUP, 0, 0xC0, 2, 1, 40, 0xFFFF6900);
+Material Materials::WATER =
+        Material(nMaterials++, "Water", PhysicsType::SOUP, 0, 0x80, 1.5, 6, 40, 0x3000AFB5);
+Material Materials::LAVA =
+        Material(nMaterials++, "Lava", PhysicsType::SOUP, 0, 0xC0, 2, 1, 40, 0xFFFF6900);
 
 Material Materials::CLOUD = Material(nMaterials++, "Cloud", PhysicsType::SOLID, 0, 127, 1, 0);
 
-Material Materials::GOLD_ORE = Material(nMaterials++, "Gold Ore", PhysicsType::SAND, 20, 255, 20, 2, 8, 0x804000);
-Material Materials::GOLD_MOLTEN = Material(nMaterials++, "Molten Gold", PhysicsType::SOUP, 0, 255, 20, 2, 8, 0x6FFF9B40);
-Material Materials::GOLD_SOLID = Material(nMaterials++, "Solid Gold", PhysicsType::SOLID, 0, 255, 20, 2, 8, 0);
+Material Materials::GOLD_ORE =
+        Material(nMaterials++, "Gold Ore", PhysicsType::SAND, 20, 255, 20, 2, 8, 0x804000);
+Material Materials::GOLD_MOLTEN =
+        Material(nMaterials++, "Molten Gold", PhysicsType::SOUP, 0, 255, 20, 2, 8, 0x6FFF9B40);
+Material Materials::GOLD_SOLID =
+        Material(nMaterials++, "Solid Gold", PhysicsType::SOLID, 0, 255, 20, 2, 8, 0);
 
-Material Materials::IRON_ORE = Material(nMaterials++, "Iron Ore", PhysicsType::SAND, 20, 255, 20, 2, 8, 0x7F442F);
+Material Materials::IRON_ORE =
+        Material(nMaterials++, "Iron Ore", PhysicsType::SAND, 20, 255, 20, 2, 8, 0x7F442F);
 
-Material Materials::OBSIDIAN = Material(nMaterials++, "Obsidian", PhysicsType::SOLID, 0, 255, 1, 0, 0, 0);
+Material Materials::OBSIDIAN =
+        Material(nMaterials++, "Obsidian", PhysicsType::SOLID, 0, 255, 1, 0, 0, 0);
 Material Materials::STEAM = Material(nMaterials++, "Steam", PhysicsType::GAS, 0, 255, -1, 1, 0, 0);
 
-Material Materials::SOFT_DIRT_SAND = Material(nMaterials++, "Soft Dirt Sand", PhysicsType::SAND, 8, 15, 2);
+Material Materials::SOFT_DIRT_SAND =
+        Material(nMaterials++, "Soft Dirt Sand", PhysicsType::SAND, 8, 15, 2);
 
-Material Materials::FIRE = Material(nMaterials++, "Fire", PhysicsType::PASSABLE, 0, 255, 20, 1, 0, 0);
+Material Materials::FIRE =
+        Material(nMaterials++, "Fire", PhysicsType::PASSABLE, 0, 255, 20, 1, 0, 0);
 
-Material Materials::FLAT_COBBLE_STONE = Material(nMaterials++, "Flat Cobblestone", PhysicsType::SOLID, 0, 1, 0);
-Material Materials::FLAT_COBBLE_DIRT = Material(nMaterials++, "Flat Hard Ground", PhysicsType::SOLID, 0, 1, 0);
+Material Materials::FLAT_COBBLE_STONE =
+        Material(nMaterials++, "Flat Cobblestone", PhysicsType::SOLID, 0, 1, 0);
+Material Materials::FLAT_COBBLE_DIRT =
+        Material(nMaterials++, "Flat Hard Ground", PhysicsType::SOLID, 0, 1, 0);
 
 std::vector<Material *> Materials::MATERIALS;
 Material **Materials::MATERIALS_ARRAY;
@@ -129,7 +151,8 @@ void Materials::init() {
         rgb = (rgb << 8) + rand() % 255;
         rgb = (rgb << 8) + rand() % 255;
 
-        int type = rand() % 2 == 0 ? (rand() % 2 == 0 ? PhysicsType::SAND : PhysicsType::GAS) : PhysicsType::SOUP;
+        int type = rand() % 2 == 0 ? (rand() % 2 == 0 ? PhysicsType::SAND : PhysicsType::GAS)
+                                   : PhysicsType::SOUP;
         float dens = 0;
         if (type == PhysicsType::SAND) {
             dens = 5 + (rand() % 1000) / 1000.0;
@@ -138,7 +161,9 @@ void Materials::init() {
         } else if (type == PhysicsType::GAS) {
             dens = 3 + (rand() % 1000) / 1000.0;
         }
-        randMats[i] = Material(nMaterials++, buff, type, 10, type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens, rand() % 4 + 1, 0, 0, rgb);
+        randMats[i] = Material(nMaterials++, buff, type, 10,
+                               type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens,
+                               rand() % 4 + 1, 0, 0, rgb);
         REGISTER(randMats[i]);
     }
 
@@ -216,7 +241,6 @@ void Materials::init() {
 #undef REGISTER
 }
 
-
 int MaterialInstance::_curID = 1;
 
 MaterialInstance::MaterialInstance(Material *mat, UInt32 color, int32_t temperature) {
@@ -226,10 +250,7 @@ MaterialInstance::MaterialInstance(Material *mat, UInt32 color, int32_t temperat
     this->temperature = temperature;
 }
 
-bool MaterialInstance::operator==(const MaterialInstance &other) {
-    return this->id == other.id;
-}
-
+bool MaterialInstance::operator==(const MaterialInstance &other) { return this->id == other.id; }
 
 const MaterialInstance Tiles::NOTHING = MaterialInstance(&Materials::GENERIC_AIR, 0x000000);
 const MaterialInstance Tiles::TEST_SOLID = MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
@@ -401,9 +422,7 @@ MaterialInstance Tiles::createObsidian(int x, int y) {
     return MaterialInstance(&Materials::OBSIDIAN, rgb);
 }
 
-MaterialInstance Tiles::createSteam() {
-    return MaterialInstance(&Materials::STEAM, 0x666666);
-}
+MaterialInstance Tiles::createSteam() { return MaterialInstance(&Materials::STEAM, 0x666666); }
 
 MaterialInstance Tiles::createFire() {
 

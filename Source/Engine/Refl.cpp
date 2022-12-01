@@ -1,11 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #define REGISTER_REFLECTION
 
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
-
 
 #include "Refl.hpp"
 
@@ -13,7 +11,6 @@
 #include <functional>
 #include <map>
 #include <string>
-
 
 namespace reflect {
 
@@ -23,8 +20,7 @@ namespace reflect {
 
     struct TypeDescriptor_Int : TypeDescriptor
     {
-        TypeDescriptor_Int() : TypeDescriptor{"int", sizeof(int)} {
-        }
+        TypeDescriptor_Int() : TypeDescriptor{"int", sizeof(int)} {}
         virtual void dump(const void *obj, int /* unused */) const override {
             std::cout << "int{" << *(const int *) obj << "}";
         }
@@ -42,8 +38,7 @@ namespace reflect {
 
     struct TypeDescriptor_StdString : TypeDescriptor
     {
-        TypeDescriptor_StdString() : TypeDescriptor{"std::string", sizeof(std::string)} {
-        }
+        TypeDescriptor_StdString() : TypeDescriptor{"std::string", sizeof(std::string)} {}
         virtual void dump(const void *obj, int /* unused */) const override {
             std::cout << "std::string{\"" << *(const std::string *) obj << "\"}";
         }
@@ -57,12 +52,10 @@ namespace reflect {
 
 }// namespace reflect
 
-
 //
 // Here is acknowledgement
 // https://stackoverflow.com/questions/41453/how-can-i-add-reflection-to-a-c-application/
 //
-
 
 struct Point
 {
@@ -77,7 +70,6 @@ struct Rect
 
 REFL(Point, FIELD(Point, x), FIELD(Point, y));
 REFL(Rect, FIELD(Rect, p1), FIELD(Rect, p2), FIELD(Rect, color));
-
 
 //####################################################################################
 //##    Component: Transform2D
@@ -94,7 +86,6 @@ struct Transform2D
 
     REFLECT();
 };
-
 
 //####################################################################################
 //##    Register Reflection / Meta Data
@@ -113,7 +104,6 @@ REFLECT_MEMBER(text)
 REFLECT_END(Transform2D)
 #endif
 
-
 struct Node
 {
     std::string key;
@@ -123,7 +113,6 @@ struct Node
     REFLECT_STRUCT()// Enable reflection for this type
 };
 
-
 // Define Node's type descriptor
 REFLECT_STRUCT_BEGIN(Node)
 REFLECT_STRUCT_MEMBER(key)
@@ -131,12 +120,10 @@ REFLECT_STRUCT_MEMBER(value)
 REFLECT_STRUCT_MEMBER(children)
 REFLECT_STRUCT_END()
 
-
 void TestRefleaction() {
 
     // ########## Turn on reflection, register classes / member variables
     InitializeReflection();
-
 
     // ########## Create class instance
     Transform2D t{};
@@ -147,26 +134,29 @@ void TestRefleaction() {
     t.scale = std::vector<double>({7.0, 8.0, 9.0});
     t.text = "hello world!";
 
-
     // ########## Store TypeHash for later
     TypeHash t_type_hash = TypeHashID<Transform2D>();
 
-
     // ########## EXAMPLE: Get class TypeData by class type / instance / type hash / name
-    std::cout << "Class Data by Type     - Name:     " << ClassData<Transform2D>().name << std::endl;
+    std::cout << "Class Data by Type     - Name:     " << ClassData<Transform2D>().name
+              << std::endl;
     std::cout << "Class Data by Instance - Members:  " << ClassData(t).member_count << std::endl;
     std::cout << "Class Data by TypeHash - Title:    " << ClassData(t_type_hash).title << std::endl;
-    std::cout << "Class Data by Name     - TypeHash: " << ClassData("Transform2D").type_hash << std::endl;
-
+    std::cout << "Class Data by Name     - TypeHash: " << ClassData("Transform2D").type_hash
+              << std::endl;
 
     // ########## EXAMPLE: Get member TypeData by member variable index / name
-    std::cout << "By Class Type, Member Index:       " << MemberData<Transform2D>(t, 2).name << std::endl;
-    std::cout << "By Class Type, Member Name:        " << MemberData<Transform2D>("position").index << std::endl;
+    std::cout << "By Class Type, Member Index:       " << MemberData<Transform2D>(t, 2).name
+              << std::endl;
+    std::cout << "By Class Type, Member Name:        " << MemberData<Transform2D>("position").index
+              << std::endl;
     std::cout << "By Class Instance, Member Index:   " << MemberData(t, 2).name << std::endl;
-    std::cout << "By Class Instance, Member Name:    " << MemberData(t, "position").index << std::endl;
-    std::cout << "By Class TypeHash, Member Index:   " << MemberData(t_type_hash, 2).name << std::endl;
-    std::cout << "By Class TypeHash, Member Name:    " << MemberData(t_type_hash, "position").index << std::endl;
-
+    std::cout << "By Class Instance, Member Name:    " << MemberData(t, "position").index
+              << std::endl;
+    std::cout << "By Class TypeHash, Member Index:   " << MemberData(t_type_hash, 2).name
+              << std::endl;
+    std::cout << "By Class TypeHash, Member Name:    " << MemberData(t_type_hash, "position").index
+              << std::endl;
 
     // ########## EXAMPLE: Meta Data
     // Class meta data
@@ -177,7 +167,6 @@ void TestRefleaction() {
     // Member meta data
     description = GetMetaData(MemberData<Transform2D>("position"), META_DATA_DESCRIPTION);
     std::cout << "Member Meta Data - Description: " << description << std::endl;
-
 
     // ########## Get Values
     std::cout << "Transform2D instance 't' member variable values:" << std::endl;
@@ -205,11 +194,12 @@ void TestRefleaction() {
         std::cout << "  " << MemberData(t_type_hash, "text").title << ": " << txt << std::endl;
     }
 
-
     // ########## EXAMPLE: Iterating Members
-    std::cout << "Iterating Members (member count: " << ClassData("Transform2D").member_count << "): " << std::endl;
+    std::cout << "Iterating Members (member count: " << ClassData("Transform2D").member_count
+              << "): " << std::endl;
     for (int p = 0; p < ClassData("Transform2D").member_count; ++p) {
-        std::cout << "  Member Index: " << p << ", Name: " << MemberData(t, p).name << ", Value(s): ";
+        std::cout << "  Member Index: " << p << ", Name: " << MemberData(t, p).name
+                  << ", Value(s): ";
         member = MemberData(t, p);
         if (member.type_hash == TypeHashID<int>()) {
             std::cout << ClassMember<int>(&t, member);
@@ -222,17 +212,18 @@ void TestRefleaction() {
         std::cout << std::endl;
     }
 
-
     // ########## EXAMPLE: SetValue by Name (can also be called by class type / member variable index, etc...)
     member = MemberData(t, "position");
     if (member.type_hash == TypeHashID<std::vector<double>>()) {
         ClassMember<std::vector<double>>(&t, member) = {56.0, 58.5, 60.2};
         std::cout << "After calling SetValue on 'position':" << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " X: " << ClassMember<std::vector<double>>(&t, member)[0] << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " Y: " << ClassMember<std::vector<double>>(&t, member)[1] << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " Z: " << ClassMember<std::vector<double>>(&t, member)[2] << std::endl;
+        std::cout << "  " << MemberData(t, "position").title
+                  << " X: " << ClassMember<std::vector<double>>(&t, member)[0] << std::endl;
+        std::cout << "  " << MemberData(t, "position").title
+                  << " Y: " << ClassMember<std::vector<double>>(&t, member)[1] << std::endl;
+        std::cout << "  " << MemberData(t, "position").title
+                  << " Z: " << ClassMember<std::vector<double>>(&t, member)[2] << std::endl;
     }
-
 
     // ########## EXAMPLE: GetValue from unknown class types
     //
@@ -250,13 +241,12 @@ void TestRefleaction() {
     member = MemberData(saved_hash, 3);
     if (member.type_hash == TypeHashID<std::vector<double>>()) {
         std::vector<double> &rotation = ClassMember<std::vector<double>>(component_ptr, member);
-        std::cout << "  Rotation X: " << rotation[0] << ", Rotation Y: " << rotation[1] << ", Rotation Z: " << rotation[2] << std::endl;
+        std::cout << "  Rotation X: " << rotation[0] << ", Rotation Y: " << rotation[1]
+                  << ", Rotation Z: " << rotation[2] << std::endl;
     }
-
 
     // ########## END DEMO
 }
-
 
 namespace IamAfuckingNamespace {
     int func1(float f, char c) {
@@ -264,15 +254,10 @@ namespace IamAfuckingNamespace {
         return 42;
     }
 
-    void func2(void) {
-        std::cout << "func2()" << std::endl;
-    }
+    void func2(void) { std::cout << "func2()" << std::endl; }
 
-    void func_log_info(std::string info) {
-        METADOT_INFO(info.c_str());
-    }
+    void func_log_info(std::string info) { METADOT_INFO(info.c_str()); }
 }// namespace IamAfuckingNamespace
-
 
 #define RETURNTYPE(fc) MetaEngine::return_type_t<decltype(&fc)>
 
@@ -292,11 +277,12 @@ auto fuckme() -> void {
     };
 
     refl_recur_obj(
-            rect, [](const char *name, int depth) {
-            std::cout << "field name:" << name << std::endl;
-            return; },
+            rect,
+            [](const char *name, int depth) {
+                std::cout << "field name:" << name << std::endl;
+                return;
+            },
             "", 0);
-
 
     // Create an object of type Node
     Node node = {"apple", 3, {{"banana", 7, {}}, {"cherry", 11, {}}}};
@@ -307,7 +293,6 @@ auto fuckme() -> void {
     // Dump a description of the Node object to the console
     typeDesc->dump(&node);
 }
-
 
 namespace MetaEngine {
     auto tedtH() -> void {

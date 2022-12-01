@@ -4,9 +4,9 @@
 #define _METADOT_GLOBAL_HPP_
 
 #include "Engine/AudioEngine.h"
-#include "Engine/Refl.hpp"
-#include "Engine/Platform.hpp"
 #include "Engine/ImGuiBase.hpp"
+#include "Engine/Platform.hpp"
+#include "Engine/Refl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/Shaders.hpp"
 
@@ -18,8 +18,8 @@ class Server;
 class Scripts;
 class ImGuiLayer;
 
-#define RegisterFunctions(name, func)              \
-    MetaEngine::any_function func_log_info{&func}; \
+#define RegisterFunctions(name, func)                                                              \
+    MetaEngine::any_function func_log_info{&func};                                                 \
     global->HostData->Functions.insert(std::make_pair(#name, name))
 
 struct Global

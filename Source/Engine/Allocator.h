@@ -11,14 +11,17 @@
 
 class AllocatorUtils {
 public:
-    static const std::size_t CalculatePadding(const std::size_t baseAddress, const std::size_t alignment) {
+    static const std::size_t CalculatePadding(const std::size_t baseAddress,
+                                              const std::size_t alignment) {
         const std::size_t multiplier = (baseAddress / alignment) + 1;
         const std::size_t alignedAddress = multiplier * alignment;
         const std::size_t padding = alignedAddress - baseAddress;
         return padding;
     }
 
-    static const std::size_t CalculatePaddingWithHeader(const std::size_t baseAddress, const std::size_t alignment, const std::size_t headerSize) {
+    static const std::size_t CalculatePaddingWithHeader(const std::size_t baseAddress,
+                                                        const std::size_t alignment,
+                                                        const std::size_t headerSize) {
         std::size_t padding = CalculatePadding(baseAddress, alignment);
         std::size_t neededSpace = headerSize;
 
@@ -37,7 +40,6 @@ public:
         return padding;
     }
 };
-
 
 class Allocator {
 protected:
@@ -93,10 +95,8 @@ private:
     DoublyLinkedList(DoublyLinkedList &doublyLinkedList);
 };
 
-
 template<class T>
-DoublyLinkedList<T>::DoublyLinkedList() {
-}
+DoublyLinkedList<T>::DoublyLinkedList() {}
 
 template<class T>
 void DoublyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
@@ -119,9 +119,7 @@ void DoublyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
         } else {
             // Is a middle node
             newNode->next = previousNode->next;
-            if (newNode->next != nullptr) {
-                newNode->next->previous = newNode;
-            }
+            if (newNode->next != nullptr) { newNode->next->previous = newNode; }
             previousNode->next = newNode;
             newNode->previous = previousNode;
         }
@@ -279,8 +277,7 @@ public:
 };
 
 template<class T>
-SinglyLinkedList<T>::SinglyLinkedList() {
-}
+SinglyLinkedList<T>::SinglyLinkedList() {}
 
 template<class T>
 void SinglyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
@@ -342,7 +339,6 @@ private:
 
     typedef SinglyLinkedList<FreeHeader>::Node Node;
 
-
     void *m_start_ptr = nullptr;
     PlacementPolicy m_pPolicy;
     SinglyLinkedList<FreeHeader> m_freeList;
@@ -365,10 +361,12 @@ private:
 
     void Coalescence(Node *prevBlock, Node *freeBlock);
 
-    void Find(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode);
-    void FindBest(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode);
-    void FindFirst(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode);
+    void Find(const std::size_t size, const std::size_t alignment, std::size_t &padding,
+              Node *&previousNode, Node *&foundNode);
+    void FindBest(const std::size_t size, const std::size_t alignment, std::size_t &padding,
+                  Node *&previousNode, Node *&foundNode);
+    void FindFirst(const std::size_t size, const std::size_t alignment, std::size_t &padding,
+                   Node *&previousNode, Node *&foundNode);
 };
-
 
 #endif

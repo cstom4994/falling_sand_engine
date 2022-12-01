@@ -3,33 +3,33 @@
 */
 
 #ifndef METAENGINE_GUI_DISABLE_TEST_WINDOW
-#	include <vector>
-#	include <map>
-#	include <set>
-#	include <deque>
-#	include <tuple>
-#	include <array>
-#	include <list>
+#include <vector>
+#include <map>
+#include <set>
+#include <deque>
+#include <tuple>
+#include <array>
+#include <list>
 #endif
 
 #include "ImGuiAuto.hpp"
 
-void ShowAutoTestWindow()
-{
-	if (!ImGui::Begin("ImGui::Auto() Test Window")) { ImGui::End(); return; }
-	auto myCollapsingHeader = [](const char* name)->bool
-	{
-		ImGuiStyle & style = ImGui::GetStyle();
-		ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
-		ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.Colors[ImGuiCol_ButtonActive]);
-		bool b = ImGui::CollapsingHeader(name);
-		ImGui::PopStyleColor(3);
-		return b;
-};
-	if (myCollapsingHeader("About ImGui::Auto()"))
-	{
-		ImGui::Auto(R"comment(
+void ShowAutoTestWindow() {
+    if (!ImGui::Begin("ImGui::Auto() Test Window")) {
+        ImGui::End();
+        return;
+    }
+    auto myCollapsingHeader = [](const char *name) -> bool {
+        ImGuiStyle &style = ImGui::GetStyle();
+        ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.Colors[ImGuiCol_ButtonActive]);
+        bool b = ImGui::CollapsingHeader(name);
+        ImGui::PopStyleColor(3);
+        return b;
+    };
+    if (myCollapsingHeader("About ImGui::Auto()")) {
+        ImGui::Auto(R"comment(
 ImGui::Auto() is one simple function that can create GUI for almost any data structure using ImGui functions.
 a. Your data is presented in tree-like structure that is defined by your type.
     The generated code is highly efficient.
@@ -66,9 +66,8 @@ The libary uses partial template specialization, so definitions can overlap, the
 However, using large, nested structs can lead to slow compilation.
 Container data, large structs and tuples are hidden by default.
 )comment");
-		if(ImGui::TreeNode("TODO-s"))
-		{
-			ImGui::Auto(R"todos(
+        if (ImGui::TreeNode("TODO-s")) {
+            ImGui::Auto(R"todos(
 	1	Insert items to (non-const) set, map, list, ect
 	2	Call any function or function object.
 	3	Deduce function arguments as a tuple. User can edit the arguments, call the function (button), and view return value.
@@ -82,259 +81,275 @@ Container data, large structs and tuples are hidden by default.
 				(some of, or) all data that was not accesed in the last (few) frames. How?
 		This means after closing a TreeNode, and opening it, the temporary values might be deleted and recreated.
 )todos");
-			ImGui::TreePop();
-		}
-	}
-	if (myCollapsingHeader("1. String"))
-	{
-		ImGui::Indent();
+            ImGui::TreePop();
+        }
+    }
+    if (myCollapsingHeader("1. String")) {
+        ImGui::Indent();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	ImGui::Auto("Hello Imgui::Auto() !"); //This is how this text is written as well.)code");
-		ImGui::Auto("Hello Imgui::Auto() !"); //This is how this text is written as well.
+        ImGui::Auto("Hello Imgui::Auto() !");//This is how this text is written as well.
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::string str = "Hello ImGui::Auto() for strings!";
 	ImGui::Auto(str, "asd");)code");
-		static std::string str = "Hello ImGui::Auto() for strings!";
-		ImGui::Auto(str, "str");
+        static std::string str = "Hello ImGui::Auto() for strings!";
+        ImGui::Auto(str, "str");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::string str2 = "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
 	ImGui::Auto(str2, "str2");)code");
-		static std::string str2 = "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
-		ImGui::Auto(str2, "str2");
+        static std::string str2 =
+                "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
+        ImGui::Auto(str2, "str2");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static const std::string conststr = "Const types are not to be changed!";
 	ImGui::Auto(conststr, "conststr");)code");
-		static const std::string conststr = "Const types are not to be changed!";
-		ImGui::Auto(conststr, "conststr");
+        static const std::string conststr = "Const types are not to be changed!";
+        ImGui::Auto(conststr, "conststr");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	char * buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
 	ImGui::Auto(buffer, "buffer");)code");
-		char * buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
-		ImGui::Auto(buffer, "buffer");
+        char *buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
+        ImGui::Auto(buffer, "buffer");
 
-		ImGui::Unindent();
-	}
-	if (myCollapsingHeader("2. Numbers"))
-	{
-		ImGui::Indent();
+        ImGui::Unindent();
+    }
+    if (myCollapsingHeader("2. Numbers")) {
+        ImGui::Indent();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static int i = 42;
 	ImGui::Auto(i, "i");)code");
-		static int i = 42;
-		ImGui::Auto(i, "i");
+        static int i = 42;
+        ImGui::Auto(i, "i");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static float f = 3.14;
 	ImGui::Auto(f, "f");)code");
-		static float f = 3.14;
-		ImGui::Auto(f, "f");
+        static float f = 3.14;
+        ImGui::Auto(f, "f");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static ImVec4 f4 = {1.5f,2.1f,3.4f,4.3f};
 	ImGui::Auto(f4, "f4");)code");
-		static ImVec4 f4 = {1.5f,2.1f,3.4f,4.3f};
-		ImGui::Auto(f4, "f4");
+        static ImVec4 f4 = {1.5f, 2.1f, 3.4f, 4.3f};
+        ImGui::Auto(f4, "f4");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static const ImVec2 f2 = {1.f,2.f};
 	ImGui::Auto(f2, "f2");)code");
-		static const ImVec2 f2 = {1.f,2.f};
-		ImGui::Auto(f2, "f2");
+        static const ImVec2 f2 = {1.f, 2.f};
+        ImGui::Auto(f2, "f2");
 
-		ImGui::Unindent();
-	}
-	if (myCollapsingHeader("3. Containers"))
-	{
-		ImGui::Indent();
+        ImGui::Unindent();
+    }
+    if (myCollapsingHeader("3. Containers")) {
+        ImGui::Indent();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::vector<std::string> vec = { "First string","Second str",":)" };
 	ImGui::Auto(vec,"vec");)code");
-		static std::vector<std::string> vec = { "First string","Second str",":)" };
-		ImGui::Auto(vec, "vec");
+        static std::vector<std::string> vec = {"First string", "Second str", ":)"};
+        ImGui::Auto(vec, "vec");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static const std::vector<float> constvec = { 3,1,2.1f,4,3,4,5 };
 	ImGui::Auto(constvec,"constvec");	//Cannot change vector, nor values)code");
-		static const std::vector<float> constvec = { 3,1,2.1f,4,3,4,5 };
-		ImGui::Auto(constvec, "constvec");	//Cannot change vector, nor values
+        static const std::vector<float> constvec = {3, 1, 2.1f, 4, 3, 4, 5};
+        ImGui::Auto(constvec, "constvec");//Cannot change vector, nor values
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::vector<bool> bvec = { false, true, false, false };
 	ImGui::Auto(bvec,"bvec");)code");
-		static std::vector<bool> bvec = { false, true, false, false };
-		ImGui::Auto(bvec, "bvec");
+        static std::vector<bool> bvec = {false, true, false, false};
+        ImGui::Auto(bvec, "bvec");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static const std::vector<bool> constbvec = { false, true, false, false };
 	ImGui::Auto(constbvec,"constbvec");
 	)code");
-		static const std::vector<bool> constbvec = { false, true, false, false };
-		ImGui::Auto(constbvec, "constbvec");
+        static const std::vector<bool> constbvec = {false, true, false, false};
+        ImGui::Auto(constbvec, "constbvec");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::map<int, float> map = { {3,2},{1,2} };
 	ImGui::Auto(map, "map");	// insert and other operations)code");
-		static std::map<int, float> map = { {3,2},{1,2} };
-		ImGui::Auto(map, "map");	// insert and other operations
+        static std::map<int, float> map = {{3, 2}, {1, 2}};
+        ImGui::Auto(map, "map");// insert and other operations
 
-		if (ImGui::TreeNode("All cases"))
-		{
-			ImGui::Auto(R"code(
+        if (ImGui::TreeNode("All cases")) {
+            ImGui::Auto(R"code(
 	static std::deque<bool> deque = { false, true, false, false };
 	ImGui::Auto(deque,"deque");)code");
-			static std::deque<bool> deque = { false, true, false, false };
-			ImGui::Auto(deque, "deque");
+            static std::deque<bool> deque = {false, true, false, false};
+            ImGui::Auto(deque, "deque");
 
-			ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
-			ImGui::Auto(R"code(
+            ImGui::Auto(R"code(
 	static std::set<char*> set = { "set","with","char*" };
 	ImGui::Auto(set,"set");)code");
-			static std::set<char*> set = { "set","with","char*" }; //for some reason, this does not work
-			ImGui::Auto(set, "set");	// the problem is with the const iterator, but
+            static std::set<char *> set = {"set", "with",
+                                           "char*"};//for some reason, this does not work
+            ImGui::Auto(set, "set");                // the problem is with the const iterator, but
 
-			ImGui::NewLine(); ImGui::Separator();
+            ImGui::NewLine();
+            ImGui::Separator();
 
-			ImGui::Auto(R"code(
+            ImGui::Auto(R"code(
 	static std::map<char*, std::string> map = { {"asd","somevalue"},{"bsd","value"} };
 	ImGui::Auto(map, "map");	// insert and other operations)code");
-			static std::map<char*, std::string> map = { {"asd","somevalue"},{"bsd","value"} };
-			ImGui::Auto(map, "map");	// insert and other operations
+            static std::map<char *, std::string> map = {{"asd", "somevalue"}, {"bsd", "value"}};
+            ImGui::Auto(map, "map");// insert and other operations
 
-			ImGui::TreePop();
-		}
-		ImGui::Unindent();
-	}
-	if (myCollapsingHeader("4. Pointers and Arrays"))
-	{
-		ImGui::Indent();
+            ImGui::TreePop();
+        }
+        ImGui::Unindent();
+    }
+    if (myCollapsingHeader("4. Pointers and Arrays")) {
+        ImGui::Indent();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static float *pf = nullptr;
 	ImGui::Auto(pf, "pf");)code");
-		static float *pf = nullptr;
-		ImGui::Auto(pf, "pf");
+        static float *pf = nullptr;
+        ImGui::Auto(pf, "pf");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static int i=10, *pi=&i;
 	ImGui::Auto(pi, "pi");)code");
-		static int i = 10, *pi = &i;
-		ImGui::Auto(pi, "pi");
+        static int i = 10, *pi = &i;
+        ImGui::Auto(pi, "pi");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static const std::string cs= "I cannot be changed!", * cps=&cs;
 	ImGui::Auto(cps, "cps");)code");
-		static const std::string cs = "I cannot be changed!", *cps = &cs;
-		ImGui::Auto(cps, "cps");
+        static const std::string cs = "I cannot be changed!", *cps = &cs;
+        ImGui::Auto(cps, "cps");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::string str = "I can be changed! (my pointee cannot)";
 	static std::string *const strpc = &str;)code");
-		static std::string str = "I can be changed! (my pointee cannot)";
-		static std::string *const strpc = &str;
-		ImGui::Auto(strpc, "strpc");
+        static std::string str = "I can be changed! (my pointee cannot)";
+        static std::string *const strpc = &str;
+        ImGui::Auto(strpc, "strpc");
 
-		ImGui::NewLine(); ImGui::Separator();
-		ImGui::Auto(R"code(
+        ImGui::NewLine();
+        ImGui::Separator();
+        ImGui::Auto(R"code(
 	static std::array<float,5> farray = { 1.2, 3.4, 5.6, 7.8, 9.0 };
 	ImGui::Auto(farray, "std::array");)code");
-		static std::array<float, 5> farray = { 1.2, 3.4 , 5.6, 7.8, 9.0};
-		ImGui::Auto(farray, "std::array");
+        static std::array<float, 5> farray = {1.2, 3.4, 5.6, 7.8, 9.0};
+        ImGui::Auto(farray, "std::array");
 
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::NewLine(); ImGui::Separator();
-
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static float farr[5] = { 1.2, 3.4, 5.6, 7.8, 9.0 };
 	ImGui::Auto(farr, "float[5]");)code");
-		static float farr[5] = { 11.2, 3.4, 5.6, 7.8, 911.0 };
-		ImGui::Auto(farr, "float[5]");
+        static float farr[5] = {11.2, 3.4, 5.6, 7.8, 911.0};
+        ImGui::Auto(farr, "float[5]");
 
-		ImGui::Unindent();
-	}
-	if(myCollapsingHeader("5. Pairs and Tuples"))
-	{
-		ImGui::Indent();
+        ImGui::Unindent();
+    }
+    if (myCollapsingHeader("5. Pairs and Tuples")) {
+        ImGui::Indent();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::pair<bool, ImVec2> pair = { true,{2.1f,3.2f} };
 	ImGui::Auto(pair, "pair");)code");
-		static std::pair<bool, ImVec2> pair = { true,{2.1f,3.2f} };
-		ImGui::Auto(pair, "pair");
+        static std::pair<bool, ImVec2> pair = {true, {2.1f, 3.2f}};
+        ImGui::Auto(pair, "pair");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::pair<int, std::string> pair2 = { -3,"simple types appear next to each other in a pair" };
 	ImGui::Auto(pair2, "pair2");)code");
-		static std::pair<int, std::string> pair2 = { -3,"simple types appear next to each other in a pair" };
-		ImGui::Auto(pair2, "pair2");
+        static std::pair<int, std::string> pair2 = {
+                -3, "simple types appear next to each other in a pair"};
+        ImGui::Auto(pair2, "pair2");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	ImGui::Auto(ImGui::as_const(pair), "as_const(pair)"); //easy way to view as const)code");
-		ImGui::Auto(ImGui::as_const(pair), "as_const(pair)"); //easy way to view as const
+        ImGui::Auto(ImGui::as_const(pair), "as_const(pair)");//easy way to view as const
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	std::tuple<const int, std::string, ImVec2> tuple = { 42, "string in tuple", {3.1f,3.2f} };
 	ImGui::Auto(tuple, "tuple");)code");
-		std::tuple<const int, std::string, ImVec2> tuple = { 42, "string in tuple", {3.1f,3.2f} };
-		ImGui::Auto(tuple, "tuple");
+        std::tuple<const int, std::string, ImVec2> tuple = {42, "string in tuple", {3.1f, 3.2f}};
+        ImGui::Auto(tuple, "tuple");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-	// 	ImGui::Auto(R"code(
-	// const std::tuple<int, const char*, ImVec2> consttuple = { 42, "smaller tuples are inlined", {3.1f,3.2f} };
-	// ImGui::Auto(consttuple, "consttuple");)code");
-	// 	const std::tuple<int, const char*, ImVec2> consttuple = { 42, "Smaller tuples are inlined", {3.1f,3.2f} };
-	// 	ImGui::Auto(consttuple, "consttuple");
+        // 	ImGui::Auto(R"code(
+        // const std::tuple<int, const char*, ImVec2> consttuple = { 42, "smaller tuples are inlined", {3.1f,3.2f} };
+        // ImGui::Auto(consttuple, "consttuple");)code");
+        // 	const std::tuple<int, const char*, ImVec2> consttuple = { 42, "Smaller tuples are inlined", {3.1f,3.2f} };
+        // 	ImGui::Auto(consttuple, "consttuple");
 
+        ImGui::Unindent();
+    }
+    if (myCollapsingHeader("6. Structs!!")) {
+        ImGui::Indent();
 
-		ImGui::Unindent();
-	}
-	if (myCollapsingHeader("6. Structs!!"))
-	{
-		ImGui::Indent();
-
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	struct A //Structs are automagically converted to tuples!
 	{
 		int i = 216;
@@ -342,23 +357,25 @@ Container data, large structs and tuples are hidden by default.
 	};
 	static A a;
 	ImGui::Auto("a", a);)code");
-		struct A
-		{
-			int i = 216;
-			bool b = true;
-		};
-		static A a;
-		ImGui::Auto(a, "a");
+        struct A
+        {
+            int i = 216;
+            bool b = true;
+        };
+        static A a;
+        ImGui::Auto(a, "a");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	ImGui::Auto(ImGui::as_const(a), "as_const(a)");// const structs are possible)code");
-		ImGui::Auto(ImGui::as_const(a), "as_const(a)");
+        ImGui::Auto(ImGui::as_const(a), "as_const(a)");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	struct B
 	{
 		std::string str = "Unfortunatelly, cannot deduce const-ness from within a struct";
@@ -366,25 +383,27 @@ Container data, large structs and tuples are hidden by default.
 	};
 	static B b;
 	ImGui::Auto(b, "b");)code");
-		struct B
-		{
-			std::string str = "Unfortunatelly, cannot deduce const-ness from within a struct";
-			const A a = A();
-		};
-		static B b;
-		ImGui::Auto(b, "b");
+        struct B
+        {
+            std::string str = "Unfortunatelly, cannot deduce const-ness from within a struct";
+            const A a = A();
+        };
+        static B b;
+        ImGui::Auto(b, "b");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	static std::vector<B> vec = { {"vector of structs!", A()}, B() };
 	ImGui::Auto(vec, "vec");)code");
-		static std::vector<B> vec = { {"vector of structs!", A()}, B() };
-		ImGui::Auto(vec, "vec");
+        static std::vector<B> vec = {{"vector of structs!", A()}, B()};
+        ImGui::Auto(vec, "vec");
 
-		ImGui::NewLine(); ImGui::Separator();
+        ImGui::NewLine();
+        ImGui::Separator();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	struct C
 	{
 		std::list<B> vec;
@@ -392,27 +411,29 @@ Container data, large structs and tuples are hidden by default.
 	};
 	static C c = { {{"Container inside a struct!", A() }}, &a };
 	ImGui::Auto(c, "c");)code");
-		struct C
-		{
-			std::list<B> vec;
-			A *a;
-		};
-		static C c = { {{"Container inside a struct!", A() }}, &a };
-		ImGui::Auto(c, "c");
+        struct C
+        {
+            std::list<B> vec;
+            A *a;
+        };
+        static C c = {{{"Container inside a struct!", A()}}, &a};
+        ImGui::Auto(c, "c");
 
-		ImGui::Unindent();
-	}
-	if (myCollapsingHeader("Functions"))
-	{
-		ImGui::Indent();
+        ImGui::Unindent();
+    }
+    if (myCollapsingHeader("Functions")) {
+        ImGui::Indent();
 
-		ImGui::Auto(R"code(
+        ImGui::Auto(R"code(
 	void (*func)() = []() { ImGui::TextColored(ImVec4(0.5, 1, 0.5, 1.0), "Button pressed, function called :)"); };
 	ImGui::Auto(func, "void(void) function");)code");
-		void(*func)() = []() { ImGui::SameLine(); ImGui::TextColored(ImVec4(0.5, 1, 0.5, 1.0), "Button pressed, function called :)"); };
-		ImGui::Auto(func, "void(void) function");
+        void (*func)() = []() {
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(0.5, 1, 0.5, 1.0), "Button pressed, function called :)");
+        };
+        ImGui::Auto(func, "void(void) function");
 
-		ImGui::Unindent();
-	}
-	ImGui::End();
+        ImGui::Unindent();
+    }
+    ImGui::End();
 }

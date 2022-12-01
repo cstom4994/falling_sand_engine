@@ -15,8 +15,10 @@
 // Based on https://github.com/grimfang4/sdl-gpu/blob/master/demos/simple-shader/main.c (MIT License)
 
 // Loads a shader and prepends version/compatibility info before compiling it.
-UInt32 METAENGINE_Shaders_LoadShader(METAENGINE_Render_ShaderEnum shader_type, const char *filename);
-METAENGINE_Render_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(UInt32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
+UInt32 METAENGINE_Shaders_LoadShader(METAENGINE_Render_ShaderEnum shader_type,
+                                     const char *filename);
+METAENGINE_Render_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(
+        UInt32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
 void METAENGINE_Shaders_FreeShader(UInt32 p);
 
 class Shader {
@@ -26,25 +28,24 @@ public:
 
     Shader(const char *vertex_shader_file, const char *fragment_shader_file) {
         shader = 0;
-        block = METAENGINE_Shaders_LoadShaderProgram(&shader, vertex_shader_file, fragment_shader_file);
+        block = METAENGINE_Shaders_LoadShaderProgram(&shader, vertex_shader_file,
+                                                     fragment_shader_file);
     }
 
-    ~Shader() {
-        METAENGINE_Shaders_FreeShader(shader);
-    }
+    ~Shader() { METAENGINE_Shaders_FreeShader(shader); }
 
     virtual void prepare() = 0;
 
-    void activate() {
-        METAENGINE_Render_ActivateShaderProgram(shader, &block);
-    }
+    void activate() { METAENGINE_Render_ActivateShaderProgram(shader, &block); }
 };
 
 class WaterFlowPassShader : public Shader {
 public:
     bool dirty = false;
 
-    WaterFlowPassShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/waterFlow.frag")){};
+    WaterFlowPassShader()
+        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                 METADOT_RESLOC_STR("data/shaders/waterFlow.frag")){};
 
     void prepare() {}
 
@@ -58,11 +59,15 @@ public:
 
 class WaterShader : public Shader {
 public:
-    WaterShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/water.frag")){};
+    WaterShader()
+        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                 METADOT_RESLOC_STR("data/shaders/water.frag")){};
 
     void prepare() {}
 
-    void update(float t, int w, int h, METAENGINE_Render_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, METAENGINE_Render_Image *flowImg, int overlay, bool showFlow, bool pixelated) {
+    void update(float t, int w, int h, METAENGINE_Render_Image *maskImg, int mask_x, int mask_y,
+                int mask_w, int mask_h, int scale, METAENGINE_Render_Image *flowImg, int overlay,
+                bool showFlow, bool pixelated) {
         int time_loc = METAENGINE_Render_GetUniformLocation(shader, "time");
         int res_loc = METAENGINE_Render_GetUniformLocation(shader, "resolution");
         int mask_loc = METAENGINE_Render_GetUniformLocation(shader, "mask");
@@ -106,7 +111,9 @@ public:
     bool lastEmissionEnabled = false;
     bool lastDitheringEnabled = false;
 
-    NewLightingShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/newLighting.frag")){};
+    NewLightingShader()
+        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                 METADOT_RESLOC_STR("data/shaders/newLighting.frag")){};
 
     void prepare() {}
 
@@ -179,7 +186,9 @@ public:
 
 class FireShader : public Shader {
 public:
-    FireShader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/fire.frag")){};
+    FireShader()
+        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                 METADOT_RESLOC_STR("data/shaders/fire.frag")){};
 
     void prepare() {}
 
@@ -196,7 +205,9 @@ public:
 
 class Fire2Shader : public Shader {
 public:
-    Fire2Shader() : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"), METADOT_RESLOC_STR("data/shaders/fire2.frag")){};
+    Fire2Shader()
+        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                 METADOT_RESLOC_STR("data/shaders/fire2.frag")){};
 
     void prepare() {}
 

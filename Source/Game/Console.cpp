@@ -11,13 +11,21 @@
 namespace {
 
     constexpr std::array local_command_list{
-            terminal_commands::command_type{"clear", "清除终端屏幕", terminal_commands::clear, terminal_commands::no_completion},
-            terminal_commands::command_type{"configure_terminal", "配置终端行为和外观", terminal_commands::configure_term, terminal_commands::configure_term_autocomplete},
-            terminal_commands::command_type{"echo", "打印文本", terminal_commands::echo, terminal_commands::no_completion},
-            terminal_commands::command_type{"exit", "关闭这个终端", terminal_commands::exit, terminal_commands::no_completion},
-            terminal_commands::command_type{"help", "显示帮助列表", terminal_commands::help, terminal_commands::no_completion},
-            terminal_commands::command_type{"print", "打印文本", terminal_commands::echo, terminal_commands::no_completion},
-            terminal_commands::command_type{"quit", "退出游戏", terminal_commands::quit, terminal_commands::no_completion},
+            terminal_commands::command_type{"clear", "清除终端屏幕", terminal_commands::clear,
+                                            terminal_commands::no_completion},
+            terminal_commands::command_type{"configure_terminal", "配置终端行为和外观",
+                                            terminal_commands::configure_term,
+                                            terminal_commands::configure_term_autocomplete},
+            terminal_commands::command_type{"echo", "打印文本", terminal_commands::echo,
+                                            terminal_commands::no_completion},
+            terminal_commands::command_type{"exit", "关闭这个终端", terminal_commands::exit,
+                                            terminal_commands::no_completion},
+            terminal_commands::command_type{"help", "显示帮助列表", terminal_commands::help,
+                                            terminal_commands::no_completion},
+            terminal_commands::command_type{"print", "打印文本", terminal_commands::echo,
+                                            terminal_commands::no_completion},
+            terminal_commands::command_type{"quit", "退出游戏", terminal_commands::quit,
+                                            terminal_commands::no_completion},
     };
 
     namespace cfg_term {
@@ -148,22 +156,16 @@ namespace {
 }// namespace
 
 terminal_commands::terminal_commands() {
-    for (const command_type &cmd: local_command_list) {
-        add_command_(cmd);
-    }
+    for (const command_type &cmd: local_command_list) { add_command_(cmd); }
 }
 
-void terminal_commands::clear(argument_type &arg) {
-    arg.term.clear();
-}
+void terminal_commands::clear(argument_type &arg) { arg.term.clear(); }
 
 void terminal_commands::configure_term(argument_type &arg) {
     using namespace cfg_term;
 
     std::vector<std::string> &cl = arg.command_line;
-    if (cl.size() < 3) {
-        arg.term.add_text_err("Not enough arguments");
-    }
+    if (cl.size() < 3) { arg.term.add_text_err("Not enough arguments"); }
     if (cl[1] == strings[cmds::completion] && cl.size() == 3) {
         if (cl[2] == strings[cmds::cpl_up]) {
             arg.term.set_autocomplete_pos(ImTerm::position::up);
@@ -188,7 +190,6 @@ void terminal_commands::configure_term(argument_type &arg) {
                 arg.term.add_text(std::move(str));
             }
 
-
         } else if (cl.size() == 3 && cl[2] == strings[cmds::col_reset_theme]) {
             arg.term.reset_colors();
 
@@ -202,8 +203,12 @@ void terminal_commands::configure_term(argument_type &arg) {
             }
             arg.term.add_text_err(Utils::Format("Unknown theme: {0}", cl[3]));
 
-        } else if (((cl.size() == 8 || cl.size() == 7 || cl.size() == 4) && cl[2] == strings[cmds::col_set_value]) || ((cl.size() == 4) && cl[2] == strings[cmds::col_get_value])) {
-            auto it = misc::find_first_prefixed(cl[3], strings.begin() + cmds::csv_begin, strings.begin() + cmds::csv_end, [](auto &&) { return false; });
+        } else if (((cl.size() == 8 || cl.size() == 7 || cl.size() == 4) &&
+                    cl[2] == strings[cmds::col_set_value]) ||
+                   ((cl.size() == 4) && cl[2] == strings[cmds::col_get_value])) {
+            auto it = misc::find_first_prefixed(cl[3], strings.begin() + cmds::csv_begin,
+                                                strings.begin() + cmds::csv_end,
+                                                [](auto &&) { return false; });
 
             if (it == strings.begin() + cmds::csv_end) {
                 arg.term.add_text_err(Utils::Format("Unknown item: {0}", cl[3]));
@@ -334,33 +339,42 @@ void terminal_commands::configure_term(argument_type &arg) {
                     return misc::success(res.ec) && res.ptr == (&str[str.size() - 1] + 1);
                 };
                 std::uint8_t r{}, g{}, b{}, a{255};
-                if (!try_parse(cl[4], r) || !try_parse(cl[5], g) || !try_parse(cl[6], b) || (cl.size() == 8 && !try_parse(cl[7], a))) {
+                if (!try_parse(cl[4], r) || !try_parse(cl[5], g) || !try_parse(cl[6], b) ||
+                    (cl.size() == 8 && !try_parse(cl[7], a))) {
                     arg.term.add_text_err("Bad color argument(s)");
                 }
 
-                *theme_color = {static_cast<float>(r) / 255.f, static_cast<float>(g) / 255.f, static_cast<float>(b) / 255.f, static_cast<float>(a) / 255.f};
+                *theme_color = {static_cast<float>(r) / 255.f, static_cast<float>(g) / 255.f,
+                                static_cast<float>(b) / 255.f, static_cast<float>(a) / 255.f};
             } else {
                 if (*theme_color) {
-                    auto to_255 = [](float v) {
-                        return static_cast<int>(v * 255.f + 0.5f);
-                    };
+                    auto to_255 = [](float v) { return static_cast<int>(v * 255.f + 0.5f); };
                     ;
-                    arg.term.add_text(Utils::Format("Current value for {0}: [R: {1}] [G: {2}] [B: {3}] [A: {4}]", cl[3], to_255((**theme_color).r), to_255((**theme_color).g), to_255((**theme_color).b), to_255((**theme_color).a)));
+                    arg.term.add_text(Utils::Format(
+                            "Current value for {0}: [R: {1}] [G: {2}] [B: {3}] [A: {4}]", cl[3],
+                            to_255((**theme_color).r), to_255((**theme_color).g),
+                            to_255((**theme_color).b), to_255((**theme_color).a)));
                 } else {
                     arg.term.add_text(Utils::Format("Current value for {0}: unset", cl[3]));
                 }
             }
         }
 
-    } else if ((cl.size() == 3 || cl.size() == 4 || cl.size() == 10) && cl[1] == strings[cmds::set_text]) {
-        auto it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_begin, strings.begin() + cmds::st_optional_end, [](auto &&) { return false; });
+    } else if ((cl.size() == 3 || cl.size() == 4 || cl.size() == 10) &&
+               cl[1] == strings[cmds::set_text]) {
+        auto it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_begin,
+                                            strings.begin() + cmds::st_optional_end,
+                                            [](auto &&) { return false; });
         if (it == strings.begin() + cmds::st_optional_end) {
-            it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_optional_end, strings.begin() + cmds::st_end, [](auto &&) { return false; });
+            it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_optional_end,
+                                           strings.begin() + cmds::st_end,
+                                           [](auto &&) { return false; });
             if (it == strings.begin() + cmds::st_end) {
                 arg.term.add_text_err(Utils::Format("Unknown text field: {0}", cl[2]));
             } else if (cl.size() != 10) {
                 arg.term.add_text_err("Not enough/Too much arguments !");
-                arg.term.add_text_err("You should specify, in order: trace text, debug text, info text, warning text, error text, critical text, none text");
+                arg.term.add_text_err("You should specify, in order: trace text, debug text, info "
+                                      "text, warning text, error text, critical text, none text");
             } else {
                 arg.term.set_level_list_text(cl[3], cl[4], cl[5], cl[6], cl[7], cl[8], cl[9]);
             }
@@ -409,25 +423,19 @@ std::vector<std::string> terminal_commands::configure_term_autocomplete(argument
     auto try_match_str = [&ans, &args, &current_subpart](std::string_view vs) {
         std::string &str = args[current_subpart];
 
-        if (str.size() > vs.size()) {
-            return;
-        }
+        if (str.size() > vs.size()) { return; }
 
         bool is_prefix = std::equal(str.begin(), str.end(), vs.begin(), [](char c1, char c2) {
-            auto to_upper = [](char c) -> char { return c < 'a' ? c + ('a' - 'A') : c; };// don't care about the locale here
+            auto to_upper = [](char c) -> char {
+                return c < 'a' ? c + ('a' - 'A') : c;
+            };// don't care about the locale here
             return to_upper(c1) == to_upper(c2);
         });
-        if (is_prefix) {
-            ans.emplace_back(vs.data(), vs.size());
-        }
+        if (is_prefix) { ans.emplace_back(vs.data(), vs.size()); }
     };
-    auto try_match = [&try_match_str](cmds::cmds cmd) {
-        try_match_str(strings[cmd]);
-    };
+    auto try_match = [&try_match_str](cmds::cmds cmd) { try_match_str(strings[cmd]); };
     auto try_match_range = [&try_match](cmds::cmds begin, cmds::cmds end) {
-        for (int i = begin; i < end; ++i) {
-            try_match(static_cast<cmds::cmds>(i));
-        }
+        for (int i = begin; i < end; ++i) { try_match(static_cast<cmds::cmds>(i)); }
     };
 
     if (args.size() == 2) {
@@ -463,7 +471,8 @@ std::vector<std::string> terminal_commands::configure_term_autocomplete(argument
                 for (const ImTerm::theme &theme: ImTerm::themes::list) {
                     try_match_str(theme.name);
                 }
-            } else if (args[2] == strings[cmds::col_set_value] || args[2] == strings[cmds::col_get_value]) {
+            } else if (args[2] == strings[cmds::col_set_value] ||
+                       args[2] == strings[cmds::col_get_value]) {
                 try_match_range(cmds::csv_begin, cmds::csv_end);
             }
         }
@@ -479,22 +488,19 @@ void terminal_commands::echo(argument_type &arg) {
     }
     if (arg.command_line[1][0] == '-') {
         if (arg.command_line[1] == "--help" || arg.command_line[1] == "-help") {
-            arg.term.add_text(Utils::Format("usage: {0} [text to be printed]", arg.command_line[0]));
+            arg.term.add_text(
+                    Utils::Format("usage: {0} [text to be printed]", arg.command_line[0]));
         } else {
             arg.term.add_text_err(Utils::Format("Unknown argument: {0}", arg.command_line[1]));
         }
     } else {
         std::string str{};
         auto it = std::next(arg.command_line.begin(), 1);
-        while (it != arg.command_line.end() && it->empty()) {
-            ++it;
-        }
+        while (it != arg.command_line.end() && it->empty()) { ++it; }
         if (it != arg.command_line.end()) {
             str = *it;
             for (++it; it != arg.command_line.end(); ++it) {
-                if (it->empty()) {
-                    continue;
-                }
+                if (it->empty()) { continue; }
                 str.reserve(str.size() + it->size() + 1);
                 str += ' ';
                 str += *it;
@@ -504,22 +510,20 @@ void terminal_commands::echo(argument_type &arg) {
     }
 }
 
-void terminal_commands::exit(argument_type &arg) {
-    arg.term.set_should_close();
-}
+void terminal_commands::exit(argument_type &arg) { arg.term.set_should_close(); }
 
 void terminal_commands::help(argument_type &arg) {
-    constexpr unsigned long list_element_name_max_size = misc::max_size(local_command_list.begin(), local_command_list.end(),
-                                                                        [](const command_type &cmd) { return cmd.name.size(); });
+    constexpr unsigned long list_element_name_max_size =
+            misc::max_size(local_command_list.begin(), local_command_list.end(),
+                           [](const command_type &cmd) { return cmd.name.size(); });
 
     arg.term.add_text("Available commands:");
     for (const command_type &cmd: local_command_list) {
-        arg.term.add_text(Utils::Format("        {0}:{1} | {2}", cmd.name, list_element_name_max_size, cmd.description));
+        arg.term.add_text(Utils::Format("        {0}:{1} | {2}", cmd.name,
+                                        list_element_name_max_size, cmd.description));
     }
     arg.term.add_text("");
     arg.term.add_text("Additional information might be available using \"'command' --help\"");
 }
 
-void terminal_commands::quit(argument_type &arg) {
-    arg.val.should_close = true;
-}
+void terminal_commands::quit(argument_type &arg) { arg.val.should_close = true; }

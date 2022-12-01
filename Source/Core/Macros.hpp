@@ -28,8 +28,11 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_CONCAT_IMPL(x, y) x##y
 #define METADOT_CONCAT(x, y) METADOT_CONCAT_IMPL(x, y)
 
-#define INVOKE_ONCE(...)                                        \
-    static char METADOT_CONCAT(unused, __LINE__) = [&]() { __VA_ARGS__; return '\0'; }(); \
+#define INVOKE_ONCE(...)                                                                           \
+    static char METADOT_CONCAT(unused, __LINE__) = [&]() {                                         \
+        __VA_ARGS__;                                                                               \
+        return '\0';                                                                               \
+    }();                                                                                           \
     (void) METADOT_CONCAT(unused, __LINE__)
 
 #define BOOL_STRING(b) (bool(b) ? "true" : "false")
@@ -40,25 +43,29 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_MAKE_INTERNAL_TAG(tag) ("!" tag)
 #define METADOT_INTERNAL_TAG_SYMBOL '!'
 
-#define METADOT_MAKE_MOVEONLY(class_name)               \
-    class_name() = default;                             \
-    class_name(const class_name &) = delete;            \
-    class_name &operator=(const class_name &) = delete; \
-    class_name(class_name &&) = default;                \
+#define METADOT_MAKE_MOVEONLY(class_name)                                                          \
+    class_name() = default;                                                                        \
+    class_name(const class_name &) = delete;                                                       \
+    class_name &operator=(const class_name &) = delete;                                            \
+    class_name(class_name &&) = default;                                                           \
     class_name &operator=(class_name &&) = default
 
-#define GENERATE_METHOD_CHECK(NAME, ...)                                                                         \
-    namespace Meta {                                                                                             \
-        template<typename T>                                                                                     \
-        class has_method_##NAME {                                                                                \
-            template<typename U>                                                                                 \
-            constexpr static auto check(int) -> decltype(std::declval<U>().__VA_ARGS__, bool()) { return true; } \
-            template<typename>                                                                                   \
-            constexpr static bool check(...) { return false; }                                                   \
-                                                                                                                 \
-        public:                                                                                                  \
-            static constexpr bool value = check<T>(0);                                                           \
-        };                                                                                                       \
+#define GENERATE_METHOD_CHECK(NAME, ...)                                                           \
+    namespace Meta {                                                                               \
+        template<typename T>                                                                       \
+        class has_method_##NAME {                                                                  \
+            template<typename U>                                                                   \
+            constexpr static auto check(int) -> decltype(std::declval<U>().__VA_ARGS__, bool()) {  \
+                return true;                                                                       \
+            }                                                                                      \
+            template<typename>                                                                     \
+            constexpr static bool check(...) {                                                     \
+                return false;                                                                      \
+            }                                                                                      \
+                                                                                                   \
+        public:                                                                                    \
+            static constexpr bool value = check<T>(0);                                             \
+        };                                                                                         \
     }
 
 // VS2013 doesn't support alignof
@@ -77,7 +84,8 @@ const char *u8Cpp20(T &&t) noexcept {
 
 #define METADOT_NODISCARD [[nodiscard]]
 
-#define METADOT_GET_PIXEL(surface, x, y) *((UInt32 *) ((UInt8 *) surface->pixels + ((y) *surface->pitch) + ((x) * sizeof(UInt32))))
+#define METADOT_GET_PIXEL(surface, x, y)                                                           \
+    *((UInt32 *) ((UInt8 *) surface->pixels + ((y) *surface->pitch) + ((x) * sizeof(UInt32))))
 
 #define METADOT_OPTMIZE_OFF __pragma(optimize("", off))
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))

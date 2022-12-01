@@ -89,7 +89,6 @@
 #define METAENGINE_Render_FALSE 0
 #define METAENGINE_Render_TRUE 1
 
-
 typedef struct METAENGINE_Render_Renderer METAENGINE_Render_Renderer;
 typedef struct METAENGINE_Render_Target METAENGINE_Render_Target;
 
@@ -153,7 +152,6 @@ typedef struct METAENGINE_Render_RendererID
     METAENGINE_Render_PAD_4_TO_64
 } METAENGINE_Render_RendererID;
 
-
 /*! \ingroup TargetControls
  * Comparison operations (for depth testing)
  * \see METAENGINE_Render_SetDepthFunction()
@@ -169,7 +167,6 @@ typedef enum {
     METAENGINE_Render_GEQUAL = 0x0206,
     METAENGINE_Render_ALWAYS = 0x0207
 } METAENGINE_Render_ComparisonEnum;
-
 
 /*! \ingroup ImageControls
  * Blend component functions
@@ -254,7 +251,6 @@ typedef enum {
     METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS = 3
 } METAENGINE_Render_SnapEnum;
 
-
 /*! \ingroup ImageControls
  * Image wrapping options.  These affect how images handle src_rect coordinates beyond their dimensions when blitted.
  * \see METAENGINE_Render_SetWrapMode()
@@ -296,7 +292,6 @@ typedef enum {
     METAENGINE_Render_FILE_BMP,
     METAENGINE_Render_FILE_TGA
 } METAENGINE_Render_FileFormatEnum;
-
 
 /*! \ingroup ImageControls
  * Image object for containing pixel/texture data.
@@ -347,7 +342,6 @@ typedef struct METAENGINE_Render_Image
  */
 typedef uintptr_t METAENGINE_Render_TextureHandle;
 
-
 /*! \ingroup TargetControls
  * Camera object that determines viewing transform.
  * \see METAENGINE_Render_SetCamera() 
@@ -359,12 +353,12 @@ typedef struct METAENGINE_Render_Camera
     float x, y, z;
     float angle;
     float zoom_x, zoom_y;
-    float z_near, z_far;                       // z clipping planes
-    METAENGINE_Render_bool use_centered_origin;// move rotation/scaling origin to the center of the camera's view
+    float z_near, z_far;// z clipping planes
+    METAENGINE_Render_bool
+            use_centered_origin;// move rotation/scaling origin to the center of the camera's view
 
     METAENGINE_Render_PAD_7_TO_64
 } METAENGINE_Render_Camera;
-
 
 /*! \ingroup ShaderInterface
  * Container for the built-in shader attribute and uniform locations (indices).
@@ -381,7 +375,6 @@ typedef struct METAENGINE_Render_ShaderBlock
     int modelViewProjection_loc;
 } METAENGINE_Render_ShaderBlock;
 
-
 #define METAENGINE_Render_MODEL 0
 #define METAENGINE_Render_VIEW 1
 #define METAENGINE_Render_PROJECTION 2
@@ -394,7 +387,6 @@ typedef struct METAENGINE_Render_MatrixStack
     unsigned int size;
     float **matrix;
 } METAENGINE_Render_MatrixStack;
-
 
 /*! \ingroup ContextControls
  * Rendering context data.  Only METAENGINE_Render_Targets which represent windows will store this. */
@@ -409,7 +401,6 @@ typedef struct METAENGINE_Render_Context
     METAENGINE_Render_ShaderBlock current_shader_block;
     METAENGINE_Render_ShaderBlock default_textured_shader_block;
     METAENGINE_Render_ShaderBlock default_untextured_shader_block;
-
 
     /*! SDL window ID */
     Uint32 windowID;
@@ -432,7 +423,6 @@ typedef struct METAENGINE_Render_Context
     Uint32 default_untextured_vertex_shader_id;
     Uint32 default_untextured_fragment_shader_id;
 
-
     /*! Internal state */
     Uint32 current_shader_program;
     Uint32 default_textured_shader_program;
@@ -451,7 +441,6 @@ typedef struct METAENGINE_Render_Context
 
     METAENGINE_Render_PAD_5_TO_64
 } METAENGINE_Render_Context;
-
 
 /*! \ingroup TargetControls
  * Render target object for use as a blitting destination.
@@ -489,7 +478,6 @@ struct METAENGINE_Render_Target
     METAENGINE_Render_bool use_color;
     METAENGINE_Render_bool use_camera;
 
-
     METAENGINE_Render_ComparisonEnum depth_function;
 
     /*! Renderer context data.  NULL if the target does not represent a window or rendering context. */
@@ -513,7 +501,8 @@ static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_NON_POWER_O
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_RENDER_TARGETS = 0x2;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_BLEND_EQUATIONS = 0x4;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_BLEND_FUNC_SEPARATE = 0x8;
-static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_BLEND_EQUATIONS_SEPARATE = 0x10;
+static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_BLEND_EQUATIONS_SEPARATE =
+        0x10;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_GL_BGR = 0x20;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_GL_BGRA = 0x40;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_GL_ABGR = 0x80;
@@ -522,15 +511,21 @@ static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_FRAGMENT_SH
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_PIXEL_SHADER = 0x200;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_GEOMETRY_SHADER = 0x400;
 static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_WRAP_REPEAT_MIRRORED = 0x800;
-static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_CORE_FRAMEBUFFER_OBJECTS = 0x1000;
+static const METAENGINE_Render_FeatureEnum METAENGINE_Render_FEATURE_CORE_FRAMEBUFFER_OBJECTS =
+        0x1000;
 
 /*! Combined feature flags */
 #define METAENGINE_Render_FEATURE_ALL_BASE METAENGINE_Render_FEATURE_RENDER_TARGETS
-#define METAENGINE_Render_FEATURE_ALL_BLEND_PRESETS (METAENGINE_Render_FEATURE_BLEND_EQUATIONS | METAENGINE_Render_FEATURE_BLEND_FUNC_SEPARATE)
-#define METAENGINE_Render_FEATURE_ALL_GL_FORMATS (METAENGINE_Render_FEATURE_GL_BGR | METAENGINE_Render_FEATURE_GL_BGRA | METAENGINE_Render_FEATURE_GL_ABGR)
-#define METAENGINE_Render_FEATURE_BASIC_SHADERS (METAENGINE_Render_FEATURE_FRAGMENT_SHADER | METAENGINE_Render_FEATURE_VERTEX_SHADER)
-#define METAENGINE_Render_FEATURE_ALL_SHADERS (METAENGINE_Render_FEATURE_FRAGMENT_SHADER | METAENGINE_Render_FEATURE_VERTEX_SHADER | METAENGINE_Render_FEATURE_GEOMETRY_SHADER)
-
+#define METAENGINE_Render_FEATURE_ALL_BLEND_PRESETS                                                \
+    (METAENGINE_Render_FEATURE_BLEND_EQUATIONS | METAENGINE_Render_FEATURE_BLEND_FUNC_SEPARATE)
+#define METAENGINE_Render_FEATURE_ALL_GL_FORMATS                                                   \
+    (METAENGINE_Render_FEATURE_GL_BGR | METAENGINE_Render_FEATURE_GL_BGRA |                        \
+     METAENGINE_Render_FEATURE_GL_ABGR)
+#define METAENGINE_Render_FEATURE_BASIC_SHADERS                                                    \
+    (METAENGINE_Render_FEATURE_FRAGMENT_SHADER | METAENGINE_Render_FEATURE_VERTEX_SHADER)
+#define METAENGINE_Render_FEATURE_ALL_SHADERS                                                      \
+    (METAENGINE_Render_FEATURE_FRAGMENT_SHADER | METAENGINE_Render_FEATURE_VERTEX_SHADER |         \
+     METAENGINE_Render_FEATURE_GEOMETRY_SHADER)
 
 typedef Uint32 METAENGINE_Render_WindowFlagEnum;
 
@@ -544,13 +539,16 @@ typedef Uint32 METAENGINE_Render_InitFlagEnum;
 static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_ENABLE_VSYNC = 0x1;
 static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_DISABLE_VSYNC = 0x2;
 static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_DISABLE_DOUBLE_BUFFER = 0x4;
-static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION = 0x8;
-static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_REQUEST_COMPATIBILITY_PROFILE = 0x10;
-static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_USE_ROW_BY_ROW_TEXTURE_UPLOAD_FALLBACK = 0x20;
-static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK = 0x40;
+static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION =
+        0x8;
+static const METAENGINE_Render_InitFlagEnum METAENGINE_Render_INIT_REQUEST_COMPATIBILITY_PROFILE =
+        0x10;
+static const METAENGINE_Render_InitFlagEnum
+        METAENGINE_Render_INIT_USE_ROW_BY_ROW_TEXTURE_UPLOAD_FALLBACK = 0x20;
+static const METAENGINE_Render_InitFlagEnum
+        METAENGINE_Render_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK = 0x40;
 
 #define METAENGINE_Render_DEFAULT_INIT_FLAGS 0
-
 
 static const Uint32 METAENGINE_Render_NONE = 0x0;
 
@@ -567,7 +565,6 @@ static const METAENGINE_Render_PrimitiveEnum METAENGINE_Render_LINE_STRIP = 0x3;
 static const METAENGINE_Render_PrimitiveEnum METAENGINE_Render_TRIANGLES = 0x4;
 static const METAENGINE_Render_PrimitiveEnum METAENGINE_Render_TRIANGLE_STRIP = 0x5;
 static const METAENGINE_Render_PrimitiveEnum METAENGINE_Render_TRIANGLE_FAN = 0x6;
-
 
 /*! Bit flags for geometry batching.
  * \see METAENGINE_Render_TriangleBatch()
@@ -589,16 +586,23 @@ static const METAENGINE_Render_BatchFlagEnum METAENGINE_Render_BATCH_RGBA8 = 0x4
 #define METAENGINE_Render_BATCH_XY_RGB (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_RGB)
 #define METAENGINE_Render_BATCH_XYZ_RGB (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGB)
 #define METAENGINE_Render_BATCH_XY_RGBA (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_RGBA)
-#define METAENGINE_Render_BATCH_XYZ_RGBA (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGBA)
-#define METAENGINE_Render_BATCH_XY_ST_RGBA (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA)
-#define METAENGINE_Render_BATCH_XYZ_ST_RGBA (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA)
+#define METAENGINE_Render_BATCH_XYZ_RGBA                                                           \
+    (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGBA)
+#define METAENGINE_Render_BATCH_XY_ST_RGBA                                                         \
+    (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA)
+#define METAENGINE_Render_BATCH_XYZ_ST_RGBA                                                        \
+    (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA)
 #define METAENGINE_Render_BATCH_XY_RGB8 (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_RGB8)
-#define METAENGINE_Render_BATCH_XYZ_RGB8 (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGB8)
-#define METAENGINE_Render_BATCH_XY_RGBA8 (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_RGBA8)
-#define METAENGINE_Render_BATCH_XYZ_RGBA8 (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGBA8)
-#define METAENGINE_Render_BATCH_XY_ST_RGBA8 (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA8)
-#define METAENGINE_Render_BATCH_XYZ_ST_RGBA8 (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA8)
-
+#define METAENGINE_Render_BATCH_XYZ_RGB8                                                           \
+    (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGB8)
+#define METAENGINE_Render_BATCH_XY_RGBA8                                                           \
+    (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_RGBA8)
+#define METAENGINE_Render_BATCH_XYZ_RGBA8                                                          \
+    (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_RGBA8)
+#define METAENGINE_Render_BATCH_XY_ST_RGBA8                                                        \
+    (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA8)
+#define METAENGINE_Render_BATCH_XYZ_ST_RGBA8                                                       \
+    (METAENGINE_Render_BATCH_XYZ | METAENGINE_Render_BATCH_ST | METAENGINE_Render_BATCH_RGBA8)
 
 /*! Bit flags for blitting into a rectangular region.
  * \see METAENGINE_Render_BlitRect
@@ -608,7 +612,6 @@ typedef Uint32 METAENGINE_Render_FlipEnum;
 static const METAENGINE_Render_FlipEnum METAENGINE_Render_FLIP_NONE = 0x0;
 static const METAENGINE_Render_FlipEnum METAENGINE_Render_FLIP_HORIZONTAL = 0x1;
 static const METAENGINE_Render_FlipEnum METAENGINE_Render_FLIP_VERTICAL = 0x2;
-
 
 /*! \ingroup ShaderInterface
  * Type enumeration for METAENGINE_Render_AttributeFormat specifications.
@@ -624,7 +627,6 @@ static const METAENGINE_Render_TypeEnum METAENGINE_Render_TYPE_UNSIGNED_INT = 0x
 static const METAENGINE_Render_TypeEnum METAENGINE_Render_TYPE_FLOAT = 0x1406;
 static const METAENGINE_Render_TypeEnum METAENGINE_Render_TYPE_DOUBLE = 0x140A;
 
-
 /*! \ingroup ShaderInterface
  * Shader type enum.
  * \see METAENGINE_Render_LoadShader()
@@ -637,7 +639,6 @@ typedef enum {
     METAENGINE_Render_PIXEL_SHADER = 1,
     METAENGINE_Render_GEOMETRY_SHADER = 2
 } METAENGINE_Render_ShaderEnum;
-
 
 /*! \ingroup ShaderInterface
  * Type enumeration for the shader language used by the renderer.
@@ -655,7 +656,8 @@ typedef enum {
 typedef struct METAENGINE_Render_AttributeFormat
 {
     int num_elems_per_value;
-    METAENGINE_Render_TypeEnum type;     // METAENGINE_Render_TYPE_FLOAT, METAENGINE_Render_TYPE_INT, METAENGINE_Render_TYPE_UNSIGNED_INT, etc.
+    METAENGINE_Render_TypeEnum
+            type;// METAENGINE_Render_TYPE_FLOAT, METAENGINE_Render_TYPE_INT, METAENGINE_Render_TYPE_UNSIGNED_INT, etc.
     int stride_bytes;                    // Number of bytes between two vertex specifications
     int offset_bytes;                    // Number of bytes to skip at the beginning of 'values'
     METAENGINE_Render_bool is_per_sprite;// Per-sprite values are expanded to 4 vertices
@@ -690,7 +692,6 @@ typedef struct METAENGINE_Render_AttributeSource
 
     METAENGINE_Render_PAD_7_TO_64
 } METAENGINE_Render_AttributeSource;
-
 
 /*! \ingroup Logging
  * Type enumeration for error codes.
@@ -749,7 +750,6 @@ struct METAENGINE_Render_Renderer
     METAENGINE_Render_PAD_7_TO_64
 };
 
-
 /*! \ingroup Initialization
  *  @{ */
 
@@ -760,7 +760,8 @@ static SDL_version METAENGINE_Render_GetCompiledVersion(void)
 static inline SDL_version METAENGINE_Render_GetCompiledVersion(void)
 #endif
 {
-    SDL_version v = {METAENGINE_Render_VERSION_MAJOR, METAENGINE_Render_VERSION_MINOR, METAENGINE_Render_VERSION_PATCH};
+    SDL_version v = {METAENGINE_Render_VERSION_MAJOR, METAENGINE_Render_VERSION_MINOR,
+                     METAENGINE_Render_VERSION_PATCH};
     return v;
 }
 
@@ -787,7 +788,8 @@ void METAENGINE_Render_SetRequiredFeatures(METAENGINE_Render_FeatureEnum feature
 METAENGINE_Render_FeatureEnum METAENGINE_Render_GetRequiredFeatures(void);
 
 /*! Gets the default initialization renderer IDs for the current platform copied into the 'order' array and the number of renderer IDs into 'order_size'.  Pass NULL for 'order' to just get the size of the renderer order array.  Will return at most METAENGINE_Render_RENDERER_ORDER_MAX renderers. */
-void METAENGINE_Render_GetDefaultRendererOrder(int *order_size, METAENGINE_Render_RendererID *order);
+void METAENGINE_Render_GetDefaultRendererOrder(int *order_size,
+                                               METAENGINE_Render_RendererID *order);
 
 /*! Gets the current renderer ID order for initialization copied into the 'order' array and the number of renderer IDs into 'order_size'.  Pass NULL for 'order' to just get the size of the renderer order array. */
 void METAENGINE_Render_GetRendererOrder(int *order_size, METAENGINE_Render_RendererID *order);
@@ -818,16 +820,21 @@ void METAENGINE_Render_SetRendererOrder(int order_size, METAENGINE_Render_Render
  * \see METAENGINE_Render_SetRendererOrder()
  * \see METAENGINE_Render_PushErrorCode()
  */
-METAENGINE_Render_Target *METAENGINE_Render_Init(Uint16 w, Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags);
+METAENGINE_Render_Target *METAENGINE_Render_Init(Uint16 w, Uint16 h,
+                                                 METAENGINE_Render_WindowFlagEnum SDL_flags);
 
 /*! Initializes SDL and SDL_gpu.  Creates a window and the requested renderer context. */
-METAENGINE_Render_Target *METAENGINE_Render_InitRenderer(METAENGINE_Render_RendererEnum renderer_enum, Uint16 w, Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags);
+METAENGINE_Render_Target *METAENGINE_Render_InitRenderer(
+        METAENGINE_Render_RendererEnum renderer_enum, Uint16 w, Uint16 h,
+        METAENGINE_Render_WindowFlagEnum SDL_flags);
 
 /*! Initializes SDL and SDL_gpu.  Creates a window and the requested renderer context.
  * By requesting a renderer via ID, you can specify the major and minor versions of an individual renderer backend.
  * \see METAENGINE_Render_MakeRendererID
  */
-METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(METAENGINE_Render_RendererID renderer_request, Uint16 w, Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags);
+METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(
+        METAENGINE_Render_RendererID renderer_request, Uint16 w, Uint16 h,
+        METAENGINE_Render_WindowFlagEnum SDL_flags);
 
 /*! Checks for important GPU features which may not be supported depending on a device's extension support.  Feature flags (METAENGINE_Render_FEATURE_*) can be bitwise OR'd together.
  * \return 1 if all of the passed features are enabled/supported
@@ -849,7 +856,8 @@ void METAENGINE_Render_Quit(void);
  * \param error The error code to push on the error queue
  * \param details Additional information string, can be NULL.
  */
-void METAENGINE_Render_PushErrorCode(const char *function, METAENGINE_Render_ErrorEnum error, const char *details, ...);
+void METAENGINE_Render_PushErrorCode(const char *function, METAENGINE_Render_ErrorEnum error,
+                                     const char *details, ...);
 
 /*! Pops an error object from the error queue and returns it.  If the error queue is empty, it returns an error object with NULL function, METAENGINE_Render_ERROR_NONE error, and NULL details. */
 METAENGINE_Render_ErrorObject METAENGINE_Render_PopErrorCode(void);
@@ -863,15 +871,17 @@ void METAENGINE_Render_SetErrorQueueMax(unsigned int max);
 // End of Logging
 /*! @} */
 
-
 /*! \ingroup RendererSetup
  *  @{ */
 
 /*! Returns an initialized METAENGINE_Render_RendererID. */
-METAENGINE_Render_RendererID METAENGINE_Render_MakeRendererID(const char *name, METAENGINE_Render_RendererEnum renderer, int major_version, int minor_version);
+METAENGINE_Render_RendererID METAENGINE_Render_MakeRendererID(
+        const char *name, METAENGINE_Render_RendererEnum renderer, int major_version,
+        int minor_version);
 
 /*! Gets the first registered renderer identifier for the given enum value. */
-METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(METAENGINE_Render_RendererEnum renderer);
+METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(
+        METAENGINE_Render_RendererEnum renderer);
 
 /*! Gets the number of registered (available) renderers. */
 int METAENGINE_Render_GetNumRegisteredRenderers(void);
@@ -880,11 +890,13 @@ int METAENGINE_Render_GetNumRegisteredRenderers(void);
 void METAENGINE_Render_GetRegisteredRendererList(METAENGINE_Render_RendererID *renderers_array);
 
 /*! Prepares a renderer for use by SDL_gpu. */
-void METAENGINE_Render_RegisterRenderer(METAENGINE_Render_RendererID id, METAENGINE_Render_Renderer *(*create_renderer)(METAENGINE_Render_RendererID request), void (*free_renderer)(METAENGINE_Render_Renderer *renderer));
+void METAENGINE_Render_RegisterRenderer(
+        METAENGINE_Render_RendererID id,
+        METAENGINE_Render_Renderer *(*create_renderer)(METAENGINE_Render_RendererID request),
+        void (*free_renderer)(METAENGINE_Render_Renderer *renderer));
 
 // End of RendererSetup
 /*! @} */
-
 
 /*! \ingroup RendererControls
  *  @{ */
@@ -932,7 +944,6 @@ void METAENGINE_Render_GetDefaultAnchor(float *anchor_x, float *anchor_y);
 // End of RendererControls
 /*! @} */
 
-
 // Context / window controls
 
 /*! \ingroup ContextControls
@@ -962,7 +973,8 @@ METAENGINE_Render_bool METAENGINE_Render_SetWindowResolution(Uint16 w, Uint16 h)
  * \param enable_fullscreen If true, make the application go fullscreen.  If false, make the application go to windowed mode.
  * \param use_desktop_resolution If true, lets the window change its resolution when it enters fullscreen mode (via SDL_WINDOW_FULLSCREEN_DESKTOP).
  * \return 0 if the new mode is windowed, 1 if the new mode is fullscreen.  */
-METAENGINE_Render_bool METAENGINE_Render_SetFullscreen(METAENGINE_Render_bool enable_fullscreen, METAENGINE_Render_bool use_desktop_resolution);
+METAENGINE_Render_bool METAENGINE_Render_SetFullscreen(
+        METAENGINE_Render_bool enable_fullscreen, METAENGINE_Render_bool use_desktop_resolution);
 
 /*! Returns true if the current context target's window is in fullscreen mode. */
 METAENGINE_Render_bool METAENGINE_Render_GetFullscreen(void);
@@ -977,13 +989,18 @@ METAENGINE_Render_bool METAENGINE_Render_SetActiveTarget(METAENGINE_Render_Targe
 void METAENGINE_Render_SetShapeBlending(METAENGINE_Render_bool enable);
 
 /*! Translates a blend preset into a blend mode. */
-METAENGINE_Render_BlendMode METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BlendPresetEnum preset);
+METAENGINE_Render_BlendMode METAENGINE_Render_GetBlendModeFromPreset(
+        METAENGINE_Render_BlendPresetEnum preset);
 
 /*! Sets the blending component functions for shape rendering. */
-void METAENGINE_Render_SetShapeBlendFunction(METAENGINE_Render_BlendFuncEnum source_color, METAENGINE_Render_BlendFuncEnum dest_color, METAENGINE_Render_BlendFuncEnum source_alpha, METAENGINE_Render_BlendFuncEnum dest_alpha);
+void METAENGINE_Render_SetShapeBlendFunction(METAENGINE_Render_BlendFuncEnum source_color,
+                                             METAENGINE_Render_BlendFuncEnum dest_color,
+                                             METAENGINE_Render_BlendFuncEnum source_alpha,
+                                             METAENGINE_Render_BlendFuncEnum dest_alpha);
 
 /*! Sets the blending component equations for shape rendering. */
-void METAENGINE_Render_SetShapeBlendEquation(METAENGINE_Render_BlendEqEnum color_equation, METAENGINE_Render_BlendEqEnum alpha_equation);
+void METAENGINE_Render_SetShapeBlendEquation(METAENGINE_Render_BlendEqEnum color_equation,
+                                             METAENGINE_Render_BlendEqEnum alpha_equation);
 
 /*! Sets the blending mode for shape rendering on the current window, if supported by the renderer. */
 void METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BlendPresetEnum mode);
@@ -997,14 +1014,11 @@ float METAENGINE_Render_SetLineThickness(float thickness);
 /*! Returns the current line thickness value. */
 float METAENGINE_Render_GetLineThickness(void);
 
-
 // End of ContextControls
 /*! @} */
 
-
 /*! \ingroup TargetControls
  *  @{ */
-
 
 /*! Creates a target that aliases the given target.  Aliases can be used to store target settings (e.g. viewports) for easy switching.
  * METAENGINE_Render_FreeTarget() frees the alias's memory, but does not affect the original. */
@@ -1026,7 +1040,8 @@ void METAENGINE_Render_SetVirtualResolution(METAENGINE_Render_Target *target, Ui
 void METAENGINE_Render_GetVirtualResolution(METAENGINE_Render_Target *target, Uint16 *w, Uint16 *h);
 
 /*! Converts screen space coordinates (such as from mouse input) to logical drawing coordinates.  This interacts with METAENGINE_Render_SetCoordinateMode() when the y-axis is flipped (screen space is assumed to be inverted: (0,0) in the upper-left corner). */
-void METAENGINE_Render_GetVirtualCoords(METAENGINE_Render_Target *target, float *x, float *y, float displayX, float displayY);
+void METAENGINE_Render_GetVirtualCoords(METAENGINE_Render_Target *target, float *x, float *y,
+                                        float displayX, float displayY);
 
 /*! Reset the logical size of the given target to its original value. */
 void METAENGINE_Render_UnsetVirtualResolution(METAENGINE_Render_Target *target);
@@ -1038,7 +1053,8 @@ METAENGINE_Render_Rect METAENGINE_Render_MakeRect(float x, float y, float w, flo
 SDL_Color METAENGINE_Render_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /*! Sets the given target's viewport. */
-void METAENGINE_Render_SetViewport(METAENGINE_Render_Target *target, METAENGINE_Render_Rect viewport);
+void METAENGINE_Render_SetViewport(METAENGINE_Render_Target *target,
+                                   METAENGINE_Render_Rect viewport);
 
 /*! Resets the given target's viewport to the entire target area. */
 void METAENGINE_Render_UnsetViewport(METAENGINE_Render_Target *target);
@@ -1053,10 +1069,12 @@ METAENGINE_Render_Camera METAENGINE_Render_GetCamera(METAENGINE_Render_Target *t
  * \param target A pointer to the target that will copy this camera.
  * \param cam A pointer to the camera data to use or NULL to use the default camera.
  * \return The old camera. */
-METAENGINE_Render_Camera METAENGINE_Render_SetCamera(METAENGINE_Render_Target *target, METAENGINE_Render_Camera *cam);
+METAENGINE_Render_Camera METAENGINE_Render_SetCamera(METAENGINE_Render_Target *target,
+                                                     METAENGINE_Render_Camera *cam);
 
 /*! Enables or disables using the built-in camera matrix transforms. */
-void METAENGINE_Render_EnableCamera(METAENGINE_Render_Target *target, METAENGINE_Render_bool use_camera);
+void METAENGINE_Render_EnableCamera(METAENGINE_Render_Target *target,
+                                    METAENGINE_Render_bool use_camera);
 
 /*! Returns 1 if the camera transforms are enabled, 0 otherwise. */
 METAENGINE_Render_bool METAENGINE_Render_IsCameraEnabled(METAENGINE_Render_Target *target);
@@ -1069,33 +1087,42 @@ METAENGINE_Render_bool METAENGINE_Render_AddDepthBuffer(METAENGINE_Render_Target
 /*! Enables or disables the depth test, which will skip drawing pixels/fragments behind other fragments.  Disabled by default.
  *  This has implications for alpha blending, where compositing might not work correctly depending on render order.
  */
-void METAENGINE_Render_SetDepthTest(METAENGINE_Render_Target *target, METAENGINE_Render_bool enable);
+void METAENGINE_Render_SetDepthTest(METAENGINE_Render_Target *target,
+                                    METAENGINE_Render_bool enable);
 
 /*! Enables or disables writing the depth (effective view z-coordinate) of new pixels to the depth buffer.  Enabled by default, but you must call METAENGINE_Render_SetDepthTest() to use it. */
-void METAENGINE_Render_SetDepthWrite(METAENGINE_Render_Target *target, METAENGINE_Render_bool enable);
+void METAENGINE_Render_SetDepthWrite(METAENGINE_Render_Target *target,
+                                     METAENGINE_Render_bool enable);
 
 /*! Sets the operation to perform when depth testing. */
-void METAENGINE_Render_SetDepthFunction(METAENGINE_Render_Target *target, METAENGINE_Render_ComparisonEnum compare_operation);
+void METAENGINE_Render_SetDepthFunction(METAENGINE_Render_Target *target,
+                                        METAENGINE_Render_ComparisonEnum compare_operation);
 
 /*! \return The RGBA color of a pixel. */
 SDL_Color METAENGINE_Render_GetPixel(METAENGINE_Render_Target *target, Sint16 x, Sint16 y);
 
 /*! Sets the clipping rect for the given render target. */
-METAENGINE_Render_Rect METAENGINE_Render_SetClipRect(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect);
+METAENGINE_Render_Rect METAENGINE_Render_SetClipRect(METAENGINE_Render_Target *target,
+                                                     METAENGINE_Render_Rect rect);
 
 /*! Sets the clipping rect for the given render target. */
-METAENGINE_Render_Rect METAENGINE_Render_SetClip(METAENGINE_Render_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
+METAENGINE_Render_Rect METAENGINE_Render_SetClip(METAENGINE_Render_Target *target, Sint16 x,
+                                                 Sint16 y, Uint16 w, Uint16 h);
 
 /*! Turns off clipping for the given target. */
 void METAENGINE_Render_UnsetClip(METAENGINE_Render_Target *target);
 
 /*! Returns METAENGINE_Render_TRUE if the given rects A and B overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the intersection. */
-METAENGINE_Render_bool METAENGINE_Render_IntersectRect(METAENGINE_Render_Rect A, METAENGINE_Render_Rect B, METAENGINE_Render_Rect *result);
+METAENGINE_Render_bool METAENGINE_Render_IntersectRect(METAENGINE_Render_Rect A,
+                                                       METAENGINE_Render_Rect B,
+                                                       METAENGINE_Render_Rect *result);
 
 /*! Returns METAENGINE_Render_TRUE if the given target's clip rect and the given B rect overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the intersection.
  * If the target doesn't have a clip rect enabled, this uses the whole target area.
  */
-METAENGINE_Render_bool METAENGINE_Render_IntersectClipRect(METAENGINE_Render_Target *target, METAENGINE_Render_Rect B, METAENGINE_Render_Rect *result);
+METAENGINE_Render_bool METAENGINE_Render_IntersectClipRect(METAENGINE_Render_Target *target,
+                                                           METAENGINE_Render_Rect B,
+                                                           METAENGINE_Render_Rect *result);
 
 /*! Sets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has a cumulative effect with the image coloring functions.
@@ -1116,7 +1143,8 @@ void METAENGINE_Render_SetTargetRGB(METAENGINE_Render_Target *target, Uint8 r, U
  *  e.g. METAENGINE_Render_SetRGB(image, 255, 128, 0); METAENGINE_Render_SetTargetRGB(target, 128, 128, 128);
  *  Would make the image draw with color of roughly (128, 64, 0).
  */
-void METAENGINE_Render_SetTargetRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+void METAENGINE_Render_SetTargetRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b,
+                                     Uint8 a);
 
 /*! Unsets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has the same effect as coloring with pure opaque white (255, 255, 255, 255).
@@ -1125,7 +1153,6 @@ void METAENGINE_Render_UnsetTargetColor(METAENGINE_Render_Target *target);
 
 // End of TargetControls
 /*! @} */
-
 
 /*! \ingroup SurfaceControls
  *  @{ */
@@ -1139,16 +1166,18 @@ SDL_Surface *METAENGINE_Render_LoadSurface_RW(SDL_RWops *rwops, METAENGINE_Rende
 /*! Save surface to a file.
  * With a format of METAENGINE_Render_FILE_AUTO, the file type is deduced from the extension.  Supported formats are: png, bmp, tga.
  * Returns 0 on failure. */
-METAENGINE_Render_bool METAENGINE_Render_SaveSurface(SDL_Surface *surface, const char *filename, METAENGINE_Render_FileFormatEnum format);
+METAENGINE_Render_bool METAENGINE_Render_SaveSurface(SDL_Surface *surface, const char *filename,
+                                                     METAENGINE_Render_FileFormatEnum format);
 
 /*! Save surface to a RWops stream.
  * Does not support format of METAENGINE_Render_FILE_AUTO, because the file type cannot be deduced.  Supported formats are: png, bmp, tga.
  * Returns 0 on failure. */
-METAENGINE_Render_bool METAENGINE_Render_SaveSurface_RW(SDL_Surface *surface, SDL_RWops *rwops, METAENGINE_Render_bool free_rwops, METAENGINE_Render_FileFormatEnum format);
+METAENGINE_Render_bool METAENGINE_Render_SaveSurface_RW(SDL_Surface *surface, SDL_RWops *rwops,
+                                                        METAENGINE_Render_bool free_rwops,
+                                                        METAENGINE_Render_FileFormatEnum format);
 
 // End of SurfaceControls
 /*! @} */
-
 
 /*! \ingroup ImageControls
  *  @{ */
@@ -1158,16 +1187,19 @@ METAENGINE_Render_bool METAENGINE_Render_SaveSurface_RW(SDL_Surface *surface, SD
 	 * \param h Image height in pixels
 	 * \param format Format of color channels.
 	 */
-METAENGINE_Render_Image *METAENGINE_Render_CreateImage(Uint16 w, Uint16 h, METAENGINE_Render_FormatEnum format);
+METAENGINE_Render_Image *METAENGINE_Render_CreateImage(Uint16 w, Uint16 h,
+                                                       METAENGINE_Render_FormatEnum format);
 
 /*! Create a new image that uses the given native texture handle as the image texture. */
-METAENGINE_Render_Image *METAENGINE_Render_CreateImageUsingTexture(METAENGINE_Render_TextureHandle handle, METAENGINE_Render_bool take_ownership);
+METAENGINE_Render_Image *METAENGINE_Render_CreateImageUsingTexture(
+        METAENGINE_Render_TextureHandle handle, METAENGINE_Render_bool take_ownership);
 
 /*! Load image from an image file that is supported by this renderer.  Don't forget to METAENGINE_Render_FreeImage() it. */
 METAENGINE_Render_Image *METAENGINE_Render_LoadImage(const char *filename);
 
 /*! Load image from an image file in memory.  Don't forget to METAENGINE_Render_FreeImage() it. */
-METAENGINE_Render_Image *METAENGINE_Render_LoadImage_RW(SDL_RWops *rwops, METAENGINE_Render_bool free_rwops);
+METAENGINE_Render_Image *METAENGINE_Render_LoadImage_RW(SDL_RWops *rwops,
+                                                        METAENGINE_Render_bool free_rwops);
 
 /*! Creates an image that aliases the given image.  Aliases can be used to store image settings (e.g. modulation color) for easy switching.
  * METAENGINE_Render_FreeImage() frees the alias's memory, but does not affect the original. */
@@ -1180,29 +1212,41 @@ METAENGINE_Render_Image *METAENGINE_Render_CopyImage(METAENGINE_Render_Image *im
 void METAENGINE_Render_FreeImage(METAENGINE_Render_Image *image);
 
 /*! Change the logical size of the given image.  Rendering this image will scaled it as if the dimensions were actually the ones given. */
-void METAENGINE_Render_SetImageVirtualResolution(METAENGINE_Render_Image *image, Uint16 w, Uint16 h);
+void METAENGINE_Render_SetImageVirtualResolution(METAENGINE_Render_Image *image, Uint16 w,
+                                                 Uint16 h);
 
 /*! Reset the logical size of the given image to its original value. */
 void METAENGINE_Render_UnsetImageVirtualResolution(METAENGINE_Render_Image *image);
 
 /*! Update an image from surface data.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-void METAENGINE_Render_UpdateImage(METAENGINE_Render_Image *image, const METAENGINE_Render_Rect *image_rect, SDL_Surface *surface, const METAENGINE_Render_Rect *surface_rect);
+void METAENGINE_Render_UpdateImage(METAENGINE_Render_Image *image,
+                                   const METAENGINE_Render_Rect *image_rect, SDL_Surface *surface,
+                                   const METAENGINE_Render_Rect *surface_rect);
 
 /*! Update an image from an array of pixel data.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-void METAENGINE_Render_UpdateImageBytes(METAENGINE_Render_Image *image, const METAENGINE_Render_Rect *image_rect, const unsigned char *bytes, int bytes_per_row);
+void METAENGINE_Render_UpdateImageBytes(METAENGINE_Render_Image *image,
+                                        const METAENGINE_Render_Rect *image_rect,
+                                        const unsigned char *bytes, int bytes_per_row);
 
 /*! Update an image from surface data, replacing its underlying texture to allow for size changes.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-METAENGINE_Render_bool METAENGINE_Render_ReplaceImage(METAENGINE_Render_Image *image, SDL_Surface *surface, const METAENGINE_Render_Rect *surface_rect);
+METAENGINE_Render_bool METAENGINE_Render_ReplaceImage(METAENGINE_Render_Image *image,
+                                                      SDL_Surface *surface,
+                                                      const METAENGINE_Render_Rect *surface_rect);
 
 /*! Save image to a file.
  * With a format of METAENGINE_Render_FILE_AUTO, the file type is deduced from the extension.  Supported formats are: png, bmp, tga.
  * Returns 0 on failure. */
-METAENGINE_Render_bool METAENGINE_Render_SaveImage(METAENGINE_Render_Image *image, const char *filename, METAENGINE_Render_FileFormatEnum format);
+METAENGINE_Render_bool METAENGINE_Render_SaveImage(METAENGINE_Render_Image *image,
+                                                   const char *filename,
+                                                   METAENGINE_Render_FileFormatEnum format);
 
 /*! Save image to a RWops stream.
  * Does not support format of METAENGINE_Render_FILE_AUTO, because the file type cannot be deduced.  Supported formats are: png, bmp, tga.
  * Returns 0 on failure. */
-METAENGINE_Render_bool METAENGINE_Render_SaveImage_RW(METAENGINE_Render_Image *image, SDL_RWops *rwops, METAENGINE_Render_bool free_rwops, METAENGINE_Render_FileFormatEnum format);
+METAENGINE_Render_bool METAENGINE_Render_SaveImage_RW(METAENGINE_Render_Image *image,
+                                                      SDL_RWops *rwops,
+                                                      METAENGINE_Render_bool free_rwops,
+                                                      METAENGINE_Render_FileFormatEnum format);
 
 /*! Loads mipmaps for the given image, if supported by the renderer. */
 void METAENGINE_Render_GenerateMipmaps(METAENGINE_Render_Image *image);
@@ -1227,16 +1271,24 @@ METAENGINE_Render_bool METAENGINE_Render_GetBlending(METAENGINE_Render_Image *im
 void METAENGINE_Render_SetBlending(METAENGINE_Render_Image *image, METAENGINE_Render_bool enable);
 
 /*! Sets the blending component functions. */
-void METAENGINE_Render_SetBlendFunction(METAENGINE_Render_Image *image, METAENGINE_Render_BlendFuncEnum source_color, METAENGINE_Render_BlendFuncEnum dest_color, METAENGINE_Render_BlendFuncEnum source_alpha, METAENGINE_Render_BlendFuncEnum dest_alpha);
+void METAENGINE_Render_SetBlendFunction(METAENGINE_Render_Image *image,
+                                        METAENGINE_Render_BlendFuncEnum source_color,
+                                        METAENGINE_Render_BlendFuncEnum dest_color,
+                                        METAENGINE_Render_BlendFuncEnum source_alpha,
+                                        METAENGINE_Render_BlendFuncEnum dest_alpha);
 
 /*! Sets the blending component equations. */
-void METAENGINE_Render_SetBlendEquation(METAENGINE_Render_Image *image, METAENGINE_Render_BlendEqEnum color_equation, METAENGINE_Render_BlendEqEnum alpha_equation);
+void METAENGINE_Render_SetBlendEquation(METAENGINE_Render_Image *image,
+                                        METAENGINE_Render_BlendEqEnum color_equation,
+                                        METAENGINE_Render_BlendEqEnum alpha_equation);
 
 /*! Sets the blending mode, if supported by the renderer. */
-void METAENGINE_Render_SetBlendMode(METAENGINE_Render_Image *image, METAENGINE_Render_BlendPresetEnum mode);
+void METAENGINE_Render_SetBlendMode(METAENGINE_Render_Image *image,
+                                    METAENGINE_Render_BlendPresetEnum mode);
 
 /*! Sets the image filtering mode, if supported by the renderer. */
-void METAENGINE_Render_SetImageFilter(METAENGINE_Render_Image *image, METAENGINE_Render_FilterEnum filter);
+void METAENGINE_Render_SetImageFilter(METAENGINE_Render_Image *image,
+                                      METAENGINE_Render_FilterEnum filter);
 
 /*! Sets the image anchor, which is the point about which the image is blitted.  The default is to blit the image on-center (0.5, 0.5).  The anchor is in normalized coordinates (0.0-1.0). */
 void METAENGINE_Render_SetAnchor(METAENGINE_Render_Image *image, float anchor_x, float anchor_y);
@@ -1251,14 +1303,15 @@ METAENGINE_Render_SnapEnum METAENGINE_Render_GetSnapMode(METAENGINE_Render_Image
 void METAENGINE_Render_SetSnapMode(METAENGINE_Render_Image *image, METAENGINE_Render_SnapEnum mode);
 
 /*! Sets the image wrapping mode, if supported by the renderer. */
-void METAENGINE_Render_SetWrapMode(METAENGINE_Render_Image *image, METAENGINE_Render_WrapEnum wrap_mode_x, METAENGINE_Render_WrapEnum wrap_mode_y);
+void METAENGINE_Render_SetWrapMode(METAENGINE_Render_Image *image,
+                                   METAENGINE_Render_WrapEnum wrap_mode_x,
+                                   METAENGINE_Render_WrapEnum wrap_mode_y);
 
 /*! Returns the backend-specific texture handle associated with the given image.  Note that SDL_gpu will be unaware of changes made to the texture.  */
 METAENGINE_Render_TextureHandle METAENGINE_Render_GetTextureHandle(METAENGINE_Render_Image *image);
 
 // End of ImageControls
 /*! @} */
-
 
 // Surface / Image / Target conversions
 /*! \ingroup Conversions
@@ -1268,7 +1321,8 @@ METAENGINE_Render_TextureHandle METAENGINE_Render_GetTextureHandle(METAENGINE_Re
 METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurface(SDL_Surface *surface);
 
 /*! Like METAENGINE_Render_CopyImageFromSurface but enable to copy only part of the surface.*/
-METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurfaceRect(SDL_Surface *surface, METAENGINE_Render_Rect *surface_rect);
+METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurfaceRect(
+        SDL_Surface *surface, METAENGINE_Render_Rect *surface_rect);
 
 /*! Copy METAENGINE_Render_Target data into a new METAENGINE_Render_Image.  Don't forget to METAENGINE_Render_FreeImage() the image.*/
 METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromTarget(METAENGINE_Render_Target *target);
@@ -1281,7 +1335,6 @@ SDL_Surface *METAENGINE_Render_CopySurfaceFromImage(METAENGINE_Render_Image *ima
 
 // End of Conversions
 /*! @} */
-
 
 /*! \ingroup Matrix
  *  @{ */
@@ -1309,7 +1362,6 @@ void METAENGINE_Render_VectorApplyMatrix(float *vec3, const float *matrix_4x4);
 /*! Multiplies the given matrix into the given vector (vec4 = matrix*vec4). */
 void METAENGINE_Render_Vector4ApplyMatrix(float *vec4, const float *matrix_4x4);
 
-
 // Basic matrix operations (4x4)
 
 /*! Overwrite 'result' matrix with the values from matrix A. */
@@ -1319,16 +1371,21 @@ void METAENGINE_Render_MatrixCopy(float *result, const float *A);
 void METAENGINE_Render_MatrixIdentity(float *result);
 
 /*! Multiplies an orthographic projection matrix into the given matrix. */
-void METAENGINE_Render_MatrixOrtho(float *result, float left, float right, float bottom, float top, float z_near, float z_far);
+void METAENGINE_Render_MatrixOrtho(float *result, float left, float right, float bottom, float top,
+                                   float z_near, float z_far);
 
 /*! Multiplies a perspective projection matrix into the given matrix. */
-void METAENGINE_Render_MatrixFrustum(float *result, float left, float right, float bottom, float top, float z_near, float z_far);
+void METAENGINE_Render_MatrixFrustum(float *result, float left, float right, float bottom,
+                                     float top, float z_near, float z_far);
 
 /*! Multiplies a perspective projection matrix into the given matrix. */
-void METAENGINE_Render_MatrixPerspective(float *result, float fovy, float aspect, float z_near, float z_far);
+void METAENGINE_Render_MatrixPerspective(float *result, float fovy, float aspect, float z_near,
+                                         float z_far);
 
 /*! Multiplies a view matrix into the given matrix. */
-void METAENGINE_Render_MatrixLookAt(float *matrix, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z);
+void METAENGINE_Render_MatrixLookAt(float *matrix, float eye_x, float eye_y, float eye_z,
+                                    float target_x, float target_y, float target_z, float up_x,
+                                    float up_y, float up_z);
 
 /*! Adds a translation into the given matrix. */
 void METAENGINE_Render_MatrixTranslate(float *result, float x, float y, float z);
@@ -1346,7 +1403,6 @@ void METAENGINE_Render_MatrixMultiply(float *result, const float *A, const float
 
 /*! Multiplies matrices 'result' and B and stores the result in the given 'result' matrix (result = result * B). */
 void METAENGINE_Render_MultiplyAndAssign(float *result, const float *B);
-
 
 // Matrix stack accessors
 
@@ -1371,7 +1427,6 @@ float *METAENGINE_Render_GetProjection(void);
 /*! Copies the current modelview-projection matrix from the active target into the given 'result' matrix (result = P*V*M). */
 void METAENGINE_Render_GetModelViewProjection(float *result);
 
-
 // Matrix stack manipulators
 
 /*! Returns a newly allocated matrix stack that has already been initialized. */
@@ -1384,7 +1439,8 @@ void METAENGINE_Render_FreeMatrixStack(METAENGINE_Render_MatrixStack *stack);
 void METAENGINE_Render_InitMatrixStack(METAENGINE_Render_MatrixStack *stack);
 
 /*! Copies matrices from one stack to another. */
-void METAENGINE_Render_CopyMatrixStack(const METAENGINE_Render_MatrixStack *source, METAENGINE_Render_MatrixStack *dest);
+void METAENGINE_Render_CopyMatrixStack(const METAENGINE_Render_MatrixStack *source,
+                                       METAENGINE_Render_MatrixStack *dest);
 
 /*! Deletes matrices in the given stack. */
 void METAENGINE_Render_ClearMatrixStack(METAENGINE_Render_MatrixStack *stack);
@@ -1426,16 +1482,19 @@ void METAENGINE_Render_LoadIdentity(void);
 void METAENGINE_Render_LoadMatrix(const float *matrix4x4);
 
 /*! Multiplies an orthographic projection matrix into the current matrix. */
-void METAENGINE_Render_Ortho(float left, float right, float bottom, float top, float z_near, float z_far);
+void METAENGINE_Render_Ortho(float left, float right, float bottom, float top, float z_near,
+                             float z_far);
 
 /*! Multiplies a perspective projection matrix into the current matrix. */
-void METAENGINE_Render_Frustum(float left, float right, float bottom, float top, float z_near, float z_far);
+void METAENGINE_Render_Frustum(float left, float right, float bottom, float top, float z_near,
+                               float z_far);
 
 /*! Multiplies a perspective projection matrix into the current matrix. */
 void METAENGINE_Render_Perspective(float fovy, float aspect, float z_near, float z_far);
 
 /*! Multiplies a view matrix into the current matrix. */
-void METAENGINE_Render_LookAt(float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z);
+void METAENGINE_Render_LookAt(float eye_x, float eye_y, float eye_z, float target_x, float target_y,
+                              float target_z, float up_x, float up_y, float up_z);
 
 /*! Adds a translation into the current matrix. */
 void METAENGINE_Render_Translate(float x, float y, float z);
@@ -1452,7 +1511,6 @@ void METAENGINE_Render_MultMatrix(const float *matrix4x4);
 // End of Matrix
 /*! @} */
 
-
 /*! \ingroup Rendering
  *  @{ */
 
@@ -1466,20 +1524,24 @@ void METAENGINE_Render_ClearColor(METAENGINE_Render_Target *target, SDL_Color co
 void METAENGINE_Render_ClearRGB(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b);
 
 /*! Fills the given render target with a color. */
-void METAENGINE_Render_ClearRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+void METAENGINE_Render_ClearRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b,
+                                 Uint8 a);
 
 /*! Draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
     * \param x Destination x-position
     * \param y Destination y-position */
-void METAENGINE_Render_Blit(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y);
+void METAENGINE_Render_Blit(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
+                            METAENGINE_Render_Target *target, float x, float y);
 
 /*! Rotates and draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
     * \param x Destination x-position
     * \param y Destination y-position
     * \param degrees Rotation angle (in degrees) */
-void METAENGINE_Render_BlitRotate(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float degrees);
+void METAENGINE_Render_BlitRotate(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
+                                  METAENGINE_Render_Target *target, float x, float y,
+                                  float degrees);
 
 /*! Scales and draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1487,7 +1549,9 @@ void METAENGINE_Render_BlitRotate(METAENGINE_Render_Image *image, METAENGINE_Ren
     * \param y Destination y-position
     * \param scaleX Horizontal stretch factor
     * \param scaleY Vertical stretch factor */
-void METAENGINE_Render_BlitScale(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float scaleX, float scaleY);
+void METAENGINE_Render_BlitScale(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
+                                 METAENGINE_Render_Target *target, float x, float y, float scaleX,
+                                 float scaleY);
 
 /*! Scales, rotates, and draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1496,7 +1560,10 @@ void METAENGINE_Render_BlitScale(METAENGINE_Render_Image *image, METAENGINE_Rend
     * \param degrees Rotation angle (in degrees)
     * \param scaleX Horizontal stretch factor
     * \param scaleY Vertical stretch factor */
-void METAENGINE_Render_BlitTransform(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
+void METAENGINE_Render_BlitTransform(METAENGINE_Render_Image *image,
+                                     METAENGINE_Render_Rect *src_rect,
+                                     METAENGINE_Render_Target *target, float x, float y,
+                                     float degrees, float scaleX, float scaleY);
 
 /*! Scales, rotates around a pivot point, and draws the given image to the given render target.  The drawing point (x, y) coincides with the pivot point on the src image (pivot_x, pivot_y).
 	* \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1507,13 +1574,19 @@ void METAENGINE_Render_BlitTransform(METAENGINE_Render_Image *image, METAENGINE_
 	* \param degrees Rotation angle (in degrees)
 	* \param scaleX Horizontal stretch factor
 	* \param scaleY Vertical stretch factor */
-void METAENGINE_Render_BlitTransformX(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
+void METAENGINE_Render_BlitTransformX(METAENGINE_Render_Image *image,
+                                      METAENGINE_Render_Rect *src_rect,
+                                      METAENGINE_Render_Target *target, float x, float y,
+                                      float pivot_x, float pivot_y, float degrees, float scaleX,
+                                      float scaleY);
 
 /*! Draws the given image to the given render target, scaling it to fit the destination region.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
     * \param dest_rect The region of the destination target image to draw upon.  Pass NULL for the entire target.
     */
-void METAENGINE_Render_BlitRect(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, METAENGINE_Render_Rect *dest_rect);
+void METAENGINE_Render_BlitRect(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
+                                METAENGINE_Render_Target *target,
+                                METAENGINE_Render_Rect *dest_rect);
 
 /*! Draws the given image to the given render target, scaling it to fit the destination region.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1523,22 +1596,32 @@ void METAENGINE_Render_BlitRect(METAENGINE_Render_Image *image, METAENGINE_Rende
 	* \param pivot_y Pivot y-position (in image coordinates)
 	* \param flip_direction A METAENGINE_Render_FlipEnum value (or bitwise OR'd combination) that specifies which direction the image should be flipped.
     */
-void METAENGINE_Render_BlitRectX(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, METAENGINE_Render_Rect *dest_rect, float degrees, float pivot_x, float pivot_y, METAENGINE_Render_FlipEnum flip_direction);
-
+void METAENGINE_Render_BlitRectX(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
+                                 METAENGINE_Render_Target *target,
+                                 METAENGINE_Render_Rect *dest_rect, float degrees, float pivot_x,
+                                 float pivot_y, METAENGINE_Render_FlipEnum flip_direction);
 
 /*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already normalized to 0.0 - 1.0.  Pass NULL to render with only custom shader attributes.
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void METAENGINE_Render_TriangleBatch(METAENGINE_Render_Image *image, METAENGINE_Render_Target *target, unsigned short num_vertices, float *values, unsigned int num_indices, unsigned short *indices, METAENGINE_Render_BatchFlagEnum flags);
+void METAENGINE_Render_TriangleBatch(METAENGINE_Render_Image *image,
+                                     METAENGINE_Render_Target *target, unsigned short num_vertices,
+                                     float *values, unsigned int num_indices,
+                                     unsigned short *indices,
+                                     METAENGINE_Render_BatchFlagEnum flags);
 
 /*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already normalized to 0.0 - 1.0 (or 0 - 255 for 8-bit color components).  Pass NULL to render with only custom shader attributes.
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void METAENGINE_Render_TriangleBatchX(METAENGINE_Render_Image *image, METAENGINE_Render_Target *target, unsigned short num_vertices, void *values, unsigned int num_indices, unsigned short *indices, METAENGINE_Render_BatchFlagEnum flags);
+void METAENGINE_Render_TriangleBatchX(METAENGINE_Render_Image *image,
+                                      METAENGINE_Render_Target *target, unsigned short num_vertices,
+                                      void *values, unsigned int num_indices,
+                                      unsigned short *indices,
+                                      METAENGINE_Render_BatchFlagEnum flags);
 
 /*! Renders primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param primitive_type The kind of primitive to render.
@@ -1546,7 +1629,12 @@ void METAENGINE_Render_TriangleBatchX(METAENGINE_Render_Image *image, METAENGINE
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void METAENGINE_Render_PrimitiveBatch(METAENGINE_Render_Image *image, METAENGINE_Render_Target *target, METAENGINE_Render_PrimitiveEnum primitive_type, unsigned short num_vertices, float *values, unsigned int num_indices, unsigned short *indices, METAENGINE_Render_BatchFlagEnum flags);
+void METAENGINE_Render_PrimitiveBatch(METAENGINE_Render_Image *image,
+                                      METAENGINE_Render_Target *target,
+                                      METAENGINE_Render_PrimitiveEnum primitive_type,
+                                      unsigned short num_vertices, float *values,
+                                      unsigned int num_indices, unsigned short *indices,
+                                      METAENGINE_Render_BatchFlagEnum flags);
 
 /*! Renders primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param primitive_type The kind of primitive to render.
@@ -1554,7 +1642,12 @@ void METAENGINE_Render_PrimitiveBatch(METAENGINE_Render_Image *image, METAENGINE
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void METAENGINE_Render_PrimitiveBatchV(METAENGINE_Render_Image *image, METAENGINE_Render_Target *target, METAENGINE_Render_PrimitiveEnum primitive_type, unsigned short num_vertices, void *values, unsigned int num_indices, unsigned short *indices, METAENGINE_Render_BatchFlagEnum flags);
+void METAENGINE_Render_PrimitiveBatchV(METAENGINE_Render_Image *image,
+                                       METAENGINE_Render_Target *target,
+                                       METAENGINE_Render_PrimitiveEnum primitive_type,
+                                       unsigned short num_vertices, void *values,
+                                       unsigned int num_indices, unsigned short *indices,
+                                       METAENGINE_Render_BatchFlagEnum flags);
 
 /*! Send all buffered blitting data to the current context target. */
 void METAENGINE_Render_FlushBlitBuffer(void);
@@ -1564,7 +1657,6 @@ void METAENGINE_Render_Flip(METAENGINE_Render_Target *target);
 
 // End of Rendering
 /*! @} */
-
 
 /*! \ingroup Shapes
  *  @{ */
@@ -1585,7 +1677,8 @@ void METAENGINE_Render_Pixel(METAENGINE_Render_Target *target, float x, float y,
  * \param y2 y-coord of ending point
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Line(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color);
+void METAENGINE_Render_Line(METAENGINE_Render_Target *target, float x1, float y1, float x2,
+                            float y2, SDL_Color color);
 
 /*! Renders a colored arc curve (circle segment).
  * \param target The destination render target
@@ -1596,7 +1689,8 @@ void METAENGINE_Render_Line(METAENGINE_Render_Target *target, float x1, float y1
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Arc(METAENGINE_Render_Target *target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color);
+void METAENGINE_Render_Arc(METAENGINE_Render_Target *target, float x, float y, float radius,
+                           float start_angle, float end_angle, SDL_Color color);
 
 /*! Renders a colored filled arc (circle segment / pie piece).
  * \param target The destination render target
@@ -1607,7 +1701,8 @@ void METAENGINE_Render_Arc(METAENGINE_Render_Target *target, float x, float y, f
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_ArcFilled(METAENGINE_Render_Target *target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color);
+void METAENGINE_Render_ArcFilled(METAENGINE_Render_Target *target, float x, float y, float radius,
+                                 float start_angle, float end_angle, SDL_Color color);
 
 /*! Renders a colored circle outline.
  * \param target The destination render target
@@ -1616,7 +1711,8 @@ void METAENGINE_Render_ArcFilled(METAENGINE_Render_Target *target, float x, floa
  * \param radius The radius of the circle / distance from the center point that rendering will occur
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Circle(METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color);
+void METAENGINE_Render_Circle(METAENGINE_Render_Target *target, float x, float y, float radius,
+                              SDL_Color color);
 
 /*! Renders a colored filled circle.
  * \param target The destination render target
@@ -1625,7 +1721,8 @@ void METAENGINE_Render_Circle(METAENGINE_Render_Target *target, float x, float y
  * \param radius The radius of the circle / distance from the center point that rendering will occur
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_CircleFilled(METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color);
+void METAENGINE_Render_CircleFilled(METAENGINE_Render_Target *target, float x, float y,
+                                    float radius, SDL_Color color);
 
 /*! Renders a colored ellipse outline.
  * \param target The destination render target
@@ -1636,7 +1733,8 @@ void METAENGINE_Render_CircleFilled(METAENGINE_Render_Target *target, float x, f
  * \param degrees The angle to rotate the ellipse
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Ellipse(METAENGINE_Render_Target *target, float x, float y, float rx, float ry, float degrees, SDL_Color color);
+void METAENGINE_Render_Ellipse(METAENGINE_Render_Target *target, float x, float y, float rx,
+                               float ry, float degrees, SDL_Color color);
 
 /*! Renders a colored filled ellipse.
  * \param target The destination render target
@@ -1647,7 +1745,8 @@ void METAENGINE_Render_Ellipse(METAENGINE_Render_Target *target, float x, float 
  * \param degrees The angle to rotate the ellipse
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_EllipseFilled(METAENGINE_Render_Target *target, float x, float y, float rx, float ry, float degrees, SDL_Color color);
+void METAENGINE_Render_EllipseFilled(METAENGINE_Render_Target *target, float x, float y, float rx,
+                                     float ry, float degrees, SDL_Color color);
 
 /*! Renders a colored annular sector outline (ring segment).
  * \param target The destination render target
@@ -1659,7 +1758,9 @@ void METAENGINE_Render_EllipseFilled(METAENGINE_Render_Target *target, float x, 
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Sector(METAENGINE_Render_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color);
+void METAENGINE_Render_Sector(METAENGINE_Render_Target *target, float x, float y,
+                              float inner_radius, float outer_radius, float start_angle,
+                              float end_angle, SDL_Color color);
 
 /*! Renders a colored filled annular sector (ring segment).
  * \param target The destination render target
@@ -1671,7 +1772,9 @@ void METAENGINE_Render_Sector(METAENGINE_Render_Target *target, float x, float y
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_SectorFilled(METAENGINE_Render_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color);
+void METAENGINE_Render_SectorFilled(METAENGINE_Render_Target *target, float x, float y,
+                                    float inner_radius, float outer_radius, float start_angle,
+                                    float end_angle, SDL_Color color);
 
 /*! Renders a colored triangle outline.
  * \param target The destination render target
@@ -1683,7 +1786,8 @@ void METAENGINE_Render_SectorFilled(METAENGINE_Render_Target *target, float x, f
  * \param y3 y-coord of third point
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Tri(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color);
+void METAENGINE_Render_Tri(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2,
+                           float x3, float y3, SDL_Color color);
 
 /*! Renders a colored filled triangle.
  * \param target The destination render target
@@ -1695,7 +1799,8 @@ void METAENGINE_Render_Tri(METAENGINE_Render_Target *target, float x1, float y1,
  * \param y3 y-coord of third point
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_TriFilled(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color);
+void METAENGINE_Render_TriFilled(METAENGINE_Render_Target *target, float x1, float y1, float x2,
+                                 float y2, float x3, float y3, SDL_Color color);
 
 /*! Renders a colored rectangle outline.
  * \param target The destination render target
@@ -1705,14 +1810,16 @@ void METAENGINE_Render_TriFilled(METAENGINE_Render_Target *target, float x1, flo
  * \param y2 y-coord of bottom-right corner
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Rectangle(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color);
+void METAENGINE_Render_Rectangle(METAENGINE_Render_Target *target, float x1, float y1, float x2,
+                                 float y2, SDL_Color color);
 
 /*! Renders a colored rectangle outline.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Rectangle2(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect, SDL_Color color);
+void METAENGINE_Render_Rectangle2(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect,
+                                  SDL_Color color);
 
 /*! Renders a colored filled rectangle.
  * \param target The destination render target
@@ -1722,14 +1829,16 @@ void METAENGINE_Render_Rectangle2(METAENGINE_Render_Target *target, METAENGINE_R
  * \param y2 y-coord of bottom-right corner
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_RectangleFilled(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color);
+void METAENGINE_Render_RectangleFilled(METAENGINE_Render_Target *target, float x1, float y1,
+                                       float x2, float y2, SDL_Color color);
 
 /*! Renders a colored filled rectangle.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_RectangleFilled2(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect, SDL_Color color);
+void METAENGINE_Render_RectangleFilled2(METAENGINE_Render_Target *target,
+                                        METAENGINE_Render_Rect rect, SDL_Color color);
 
 /*! Renders a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1740,7 +1849,8 @@ void METAENGINE_Render_RectangleFilled2(METAENGINE_Render_Target *target, METAEN
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_RectangleRound(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float radius, SDL_Color color);
+void METAENGINE_Render_RectangleRound(METAENGINE_Render_Target *target, float x1, float y1,
+                                      float x2, float y2, float radius, SDL_Color color);
 
 /*! Renders a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1748,7 +1858,8 @@ void METAENGINE_Render_RectangleRound(METAENGINE_Render_Target *target, float x1
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_RectangleRound2(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect, float radius, SDL_Color color);
+void METAENGINE_Render_RectangleRound2(METAENGINE_Render_Target *target,
+                                       METAENGINE_Render_Rect rect, float radius, SDL_Color color);
 
 /*! Renders a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1759,7 +1870,8 @@ void METAENGINE_Render_RectangleRound2(METAENGINE_Render_Target *target, METAENG
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_RectangleRoundFilled(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float radius, SDL_Color color);
+void METAENGINE_Render_RectangleRoundFilled(METAENGINE_Render_Target *target, float x1, float y1,
+                                            float x2, float y2, float radius, SDL_Color color);
 
 /*! Renders a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1767,7 +1879,9 @@ void METAENGINE_Render_RectangleRoundFilled(METAENGINE_Render_Target *target, fl
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_RectangleRoundFilled2(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect, float radius, SDL_Color color);
+void METAENGINE_Render_RectangleRoundFilled2(METAENGINE_Render_Target *target,
+                                             METAENGINE_Render_Rect rect, float radius,
+                                             SDL_Color color);
 
 /*! Renders a colored polygon outline.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1775,7 +1889,8 @@ void METAENGINE_Render_RectangleRoundFilled2(METAENGINE_Render_Target *target, M
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_Polygon(METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color);
+void METAENGINE_Render_Polygon(METAENGINE_Render_Target *target, unsigned int num_vertices,
+                               float *vertices, SDL_Color color);
 
 /*! Renders a colored sequence of line segments.
  * \param target The destination render target
@@ -1784,7 +1899,9 @@ void METAENGINE_Render_Polygon(METAENGINE_Render_Target *target, unsigned int nu
  * \param color The color of the shape to render
  * \param close_loop Make a closed polygon by drawing a line at the end back to the start point
  */
-void METAENGINE_Render_Polyline(METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color, METAENGINE_Render_bool close_loop);
+void METAENGINE_Render_Polyline(METAENGINE_Render_Target *target, unsigned int num_vertices,
+                                float *vertices, SDL_Color color,
+                                METAENGINE_Render_bool close_loop);
 
 /*! Renders a colored filled polygon.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1792,11 +1909,11 @@ void METAENGINE_Render_Polyline(METAENGINE_Render_Target *target, unsigned int n
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
  * \param color The color of the shape to render
  */
-void METAENGINE_Render_PolygonFilled(METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color);
+void METAENGINE_Render_PolygonFilled(METAENGINE_Render_Target *target, unsigned int num_vertices,
+                                     float *vertices, SDL_Color color);
 
 // End of Shapes
 /*! @} */
-
 
 /*! \ingroup ShaderInterface
  *  @{ */
@@ -1811,10 +1928,13 @@ Uint32 METAENGINE_Render_CreateShaderProgram(void);
 void METAENGINE_Render_FreeShaderProgram(Uint32 program_object);
 
 /*! Loads shader source from an SDL_RWops, compiles it, and returns the new shader object. */
-Uint32 METAENGINE_Render_CompileShader_RW(METAENGINE_Render_ShaderEnum shader_type, SDL_RWops *shader_source, METAENGINE_Render_bool free_rwops);
+Uint32 METAENGINE_Render_CompileShader_RW(METAENGINE_Render_ShaderEnum shader_type,
+                                          SDL_RWops *shader_source,
+                                          METAENGINE_Render_bool free_rwops);
 
 /*! Compiles shader source and returns the new shader object. */
-Uint32 METAENGINE_Render_CompileShader(METAENGINE_Render_ShaderEnum shader_type, const char *shader_source);
+Uint32 METAENGINE_Render_CompileShader(METAENGINE_Render_ShaderEnum shader_type,
+                                       const char *shader_source);
 
 /*! Loads shader source from a file, compiles it, and returns the new shader object. */
 Uint32 METAENGINE_Render_LoadShader(METAENGINE_Render_ShaderEnum shader_type, const char *filename);
@@ -1844,7 +1964,8 @@ Uint32 METAENGINE_Render_GetCurrentShaderProgram(void);
 METAENGINE_Render_bool METAENGINE_Render_IsDefaultShaderProgram(Uint32 program_object);
 
 /*! Activates the given shader program.  Passing NULL for 'block' will disable the built-in shader variables for custom shaders until a METAENGINE_Render_ShaderBlock is set again. */
-void METAENGINE_Render_ActivateShaderProgram(Uint32 program_object, METAENGINE_Render_ShaderBlock *block);
+void METAENGINE_Render_ActivateShaderProgram(Uint32 program_object,
+                                             METAENGINE_Render_ShaderBlock *block);
 
 /*! Deactivates the current shader program (activates program 0). */
 void METAENGINE_Render_DeactivateShaderProgram(void);
@@ -1856,16 +1977,23 @@ const char *METAENGINE_Render_GetShaderMessage(void);
 int METAENGINE_Render_GetAttributeLocation(Uint32 program_object, const char *attrib_name);
 
 /*! Returns a filled METAENGINE_Render_AttributeFormat object. */
-METAENGINE_Render_AttributeFormat METAENGINE_Render_MakeAttributeFormat(int num_elems_per_vertex, METAENGINE_Render_TypeEnum type, METAENGINE_Render_bool normalize, int stride_bytes, int offset_bytes);
+METAENGINE_Render_AttributeFormat METAENGINE_Render_MakeAttributeFormat(
+        int num_elems_per_vertex, METAENGINE_Render_TypeEnum type, METAENGINE_Render_bool normalize,
+        int stride_bytes, int offset_bytes);
 
 /*! Returns a filled METAENGINE_Render_Attribute object. */
-METAENGINE_Render_Attribute METAENGINE_Render_MakeAttribute(int location, void *values, METAENGINE_Render_AttributeFormat format);
+METAENGINE_Render_Attribute METAENGINE_Render_MakeAttribute(
+        int location, void *values, METAENGINE_Render_AttributeFormat format);
 
 /*! Returns an integer representing the location of the specified uniform shader variable. */
 int METAENGINE_Render_GetUniformLocation(Uint32 program_object, const char *uniform_name);
 
 /*! Loads the given shader program's built-in attribute and uniform locations. */
-METAENGINE_Render_ShaderBlock METAENGINE_Render_LoadShaderBlock(Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name);
+METAENGINE_Render_ShaderBlock METAENGINE_Render_LoadShaderBlock(Uint32 program_object,
+                                                                const char *position_name,
+                                                                const char *texcoord_name,
+                                                                const char *color_name,
+                                                                const char *modelViewMatrix_name);
 
 /*! Sets the current shader block to use the given attribute and uniform locations. */
 void METAENGINE_Render_SetShaderBlock(METAENGINE_Render_ShaderBlock block);
@@ -1887,7 +2015,8 @@ void METAENGINE_Render_GetUniformiv(Uint32 program_object, int location, int *va
 void METAENGINE_Render_SetUniformi(int location, int value);
 
 /*! Sets the value of the integer uniform shader variable at the given location. */
-void METAENGINE_Render_SetUniformiv(int location, int num_elements_per_value, int num_values, int *values);
+void METAENGINE_Render_SetUniformiv(int location, int num_elements_per_value, int num_values,
+                                    int *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
 void METAENGINE_Render_GetUniformuiv(Uint32 program_object, int location, unsigned int *values);
@@ -1897,7 +2026,8 @@ void METAENGINE_Render_GetUniformuiv(Uint32 program_object, int location, unsign
 void METAENGINE_Render_SetUniformui(int location, unsigned int value);
 
 /*! Sets the value of the unsigned integer uniform shader variable at the given location. */
-void METAENGINE_Render_SetUniformuiv(int location, int num_elements_per_value, int num_values, unsigned int *values);
+void METAENGINE_Render_SetUniformuiv(int location, int num_elements_per_value, int num_values,
+                                     unsigned int *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
 void METAENGINE_Render_GetUniformfv(Uint32 program_object, int location, float *values);
@@ -1907,13 +2037,16 @@ void METAENGINE_Render_GetUniformfv(Uint32 program_object, int location, float *
 void METAENGINE_Render_SetUniformf(int location, float value);
 
 /*! Sets the value of the floating point uniform shader variable at the given location. */
-void METAENGINE_Render_SetUniformfv(int location, int num_elements_per_value, int num_values, float *values);
+void METAENGINE_Render_SetUniformfv(int location, int num_elements_per_value, int num_values,
+                                    float *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location.  The results are identical to calling METAENGINE_Render_GetUniformfv().  Matrices are gotten in column-major order. */
 void METAENGINE_Render_GetUniformMatrixfv(Uint32 program_object, int location, float *values);
 
 /*! Sets the value of the matrix uniform shader variable at the given location.  The size of the matrices sent is specified by num_rows and num_columns.  Rows and columns must be between 2 and 4. */
-void METAENGINE_Render_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, METAENGINE_Render_bool transpose, float *values);
+void METAENGINE_Render_SetUniformMatrixfv(int location, int num_matrices, int num_rows,
+                                          int num_columns, METAENGINE_Render_bool transpose,
+                                          float *values);
 
 /*! Sets a constant-value shader attribute that will be used for each rendered vertex. */
 void METAENGINE_Render_SetAttributef(int location, float value);
@@ -1938,6 +2071,5 @@ void METAENGINE_Render_SetAttributeSource(int num_values, METAENGINE_Render_Attr
 
 // End of ShaderInterface
 /*! @} */
-
 
 #endif

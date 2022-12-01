@@ -3,7 +3,6 @@
 #include "box2d/b2_body.h"
 #define INC_Entity
 
-
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
 #endif

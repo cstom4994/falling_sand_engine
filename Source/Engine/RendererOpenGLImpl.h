@@ -21,13 +21,11 @@
 #define GL_ABGR GL_ABGR_EXT
 #endif
 
-
 #define METAENGINE_Render_CONTEXT_DATA ContextData_OpenGL_3
 #define METAENGINE_Render_IMAGE_DATA ImageData_OpenGL_3
 #define METAENGINE_Render_TARGET_DATA TargetData_OpenGL_3
 
-
-#define METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE \
+#define METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE                                    \
     "#version 130\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -46,7 +44,7 @@ void main(void)\n\
 }"
 
 // Tier 3 uses shader attributes to send position, texcoord, and color data for each vertex.
-#define METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE \
+#define METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE                                  \
     "#version 130\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -61,8 +59,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-
-#define METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE \
+#define METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE                                  \
     "#version 130\n\
 \
 in vec4 color;\n\
@@ -75,7 +72,7 @@ void main(void)\n\
     gl_FragColor = texture2D(tex, texCoord) * color;\n\
 }"
 
-#define METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE \
+#define METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE                                \
     "#version 130\n\
 \
 in vec4 color;\n\
@@ -85,10 +82,9 @@ void main(void)\n\
     gl_FragColor = color;\n\
 }"
 
-
 // OpenGL 3.2 and 3.3 need newer shaders in case a core profile is used
 
-#define METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE_CORE \
+#define METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE_CORE                               \
     "#version 150\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -106,7 +102,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-#define METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE_CORE \
+#define METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE_CORE                             \
     "#version 150\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -121,8 +117,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-
-#define METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE_CORE \
+#define METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE_CORE                             \
     "#version 150\n\
 \
 in vec4 color;\n\
@@ -137,7 +132,7 @@ void main(void)\n\
     fragColor = texture(tex, texCoord) * color;\n\
 }"
 
-#define METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE_CORE \
+#define METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE_CORE                           \
     "#version 150\n\
 \
 in vec4 color;\n\
@@ -148,7 +143,6 @@ void main(void)\n\
 {\n\
     fragColor = color;\n\
 }"
-
 
 typedef struct ContextData_OpenGL_3
 {
@@ -169,7 +163,8 @@ typedef struct ContextData_OpenGL_3
     float *blit_buffer;// Holds sets of 4 vertices, each with interleaved position, tex coords, and colors (e.g. [x0, y0, z0, s0, t0, r0, g0, b0, a0, ...]).
     unsigned short blit_buffer_num_vertices;
     unsigned short blit_buffer_max_num_vertices;
-    unsigned short *index_buffer;// Indexes into the blit buffer so we can use 4 vertices for every 2 triangles (1 quad)
+    unsigned short *
+            index_buffer;// Indexes into the blit buffer so we can use 4 vertices for every 2 triangles (1 quad)
     unsigned int index_buffer_num_vertices;
     unsigned int index_buffer_max_num_vertices;
 
@@ -197,6 +192,5 @@ typedef struct TargetData_OpenGL_3
     Uint32 handle;
     Uint32 format;
 } TargetData_OpenGL_3;
-
 
 #endif

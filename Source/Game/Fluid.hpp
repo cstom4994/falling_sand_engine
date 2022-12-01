@@ -1,14 +1,12 @@
 #ifndef _METADOT_FLUID_HPP_
 #define _METADOT_FLUID_HPP_
 
-
 #include <algorithm>// std::clamp
 #include <array>
 #include <cassert>
 #include <memory>
 #include <random>
 #include <utility>
-
 
 namespace {
     static constexpr const int SCALE = 3;
@@ -29,7 +27,6 @@ namespace {
         return x + (y * N);
     }
 }// namespace
-
 
 #include <random>
 
@@ -56,7 +53,6 @@ private:
         return engine;
     }
 };
-
 
 class Fluid {
 public:

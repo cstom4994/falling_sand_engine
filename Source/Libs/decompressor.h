@@ -55,22 +55,22 @@ SOFTWARE.
 #define BASE 65521U
 #define NMAX 5552
 
-#define DO1(buf, i)        \
-    {                      \
-        adler += (buf)[i]; \
-        sum2 += adler;     \
+#define DO1(buf, i)                                                                                \
+    {                                                                                              \
+        adler += (buf)[i];                                                                         \
+        sum2 += adler;                                                                             \
     }
-#define DO2(buf, i) \
-    DO1(buf, i);    \
+#define DO2(buf, i)                                                                                \
+    DO1(buf, i);                                                                                   \
     DO1(buf, i + 1);
-#define DO4(buf, i) \
-    DO2(buf, i);    \
+#define DO4(buf, i)                                                                                \
+    DO2(buf, i);                                                                                   \
     DO2(buf, i + 2);
-#define DO8(buf, i) \
-    DO4(buf, i);    \
+#define DO8(buf, i)                                                                                \
+    DO4(buf, i);                                                                                   \
     DO4(buf, i + 4);
-#define DO16(buf) \
-    DO8(buf, 0);  \
+#define DO16(buf)                                                                                  \
+    DO8(buf, 0);                                                                                   \
     DO8(buf, 8);
 #define MOD(a) a %= BASE
 #define MOD28(a) a %= BASE
@@ -88,17 +88,14 @@ inline unsigned int adler32_z(unsigned int adler, const unsigned char *buf, unsi
     /* in case user likes doing a byte at a time, keep it fast */
     if (len == 1) {
         adler += buf[0];
-        if (adler >= BASE)
-            adler -= BASE;
+        if (adler >= BASE) adler -= BASE;
         sum2 += adler;
-        if (sum2 >= BASE)
-            sum2 -= BASE;
+        if (sum2 >= BASE) sum2 -= BASE;
         return adler | (sum2 << 16);
     }
 
     /* initial Adler-32 value (deferred check for len == 1 speed) */
-    if (buf == NULL)
-        return 1L;
+    if (buf == NULL) return 1L;
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (len < 16) {
@@ -106,8 +103,7 @@ inline unsigned int adler32_z(unsigned int adler, const unsigned char *buf, unsi
             adler += *buf++;
             sum2 += adler;
         }
-        if (adler >= BASE)
-            adler -= BASE;
+        if (adler >= BASE) adler -= BASE;
         MOD28(sum2); /* only added so many BASE's */
         return adler | (sum2 << 16);
     }
@@ -173,7 +169,8 @@ struct BitReader
 #ifdef X64BIT_SHIFTER
         if (this->shifter_bit_count <= 32 && (this->in_block + 4) <= this->in_blockend) {
 #ifdef defined(_M_X64) || defined(__x86_64__)
-            this->shifter_data |= (((shifter_t) (*((unsigned int *) this->in_block))) << this->shifter_bit_count);
+            this->shifter_data |=
+                    (((shifter_t) (*((unsigned int *) this->in_block))) << this->shifter_bit_count);
             this->shifter_bit_count += 32;
             this->in_block += 4;
 #else
@@ -210,11 +207,13 @@ struct BitReader
     unsigned int GetBits(const int n) {
         if (this->shifter_bit_count < n) {
             if (this->in_block < this->in_blockend) {
-                this->shifter_data |= (((shifter_t) (*this->in_block++)) << this->shifter_bit_count);
+                this->shifter_data |=
+                        (((shifter_t) (*this->in_block++)) << this->shifter_bit_count);
                 this->shifter_bit_count += 8;
 
                 if (this->in_block < this->in_blockend) {
-                    this->shifter_data |= (((shifter_t) (*this->in_block++)) << this->shifter_bit_count);
+                    this->shifter_data |=
+                            (((shifter_t) (*this->in_block++)) << this->shifter_bit_count);
                     this->shifter_bit_count += 8;
                 }
             } else
@@ -236,9 +235,11 @@ struct BitReader
         if (this->shifter_bit_count < 16) {
             if (this->in_block < this->in_blockend) {
 
-                this->shifter_data |= (((shifter_t) (*this->in_block++)) << this->shifter_bit_count);
+                this->shifter_data |=
+                        (((shifter_t) (*this->in_block++)) << this->shifter_bit_count);
                 if (this->in_block < this->in_blockend)
-                    this->shifter_data |= (((shifter_t) (*this->in_block++)) << (this->shifter_bit_count + 8));
+                    this->shifter_data |=
+                            (((shifter_t) (*this->in_block++)) << (this->shifter_bit_count + 8));
                 this->shifter_bit_count += 16;
             }
         }
@@ -260,10 +261,7 @@ struct BitReader
         return 0;
     }
 
-    void ModifyInBlock(const int v) {
-        this->in_block += v;
-    }
-
+    void ModifyInBlock(const int v) { this->in_block += v; }
 
     int shifter_bit_count = 0;
     shifter_t shifter_data = 0;
@@ -286,18 +284,18 @@ struct HuffmanDecoder
 	*
 	* @return 0 for success, -1 for failure
 	*/
-    int PrepareTable(unsigned int *rev_symbol_table, const int read_symbols, const int symbols, unsigned char *code_length) {
+    int PrepareTable(unsigned int *rev_symbol_table, const int read_symbols, const int symbols,
+                     unsigned char *code_length) {
 
         int num_symbols_per_len[16];
         int i;
 
-        if (read_symbols < 0 || read_symbols > kMaxSymbols || symbols < 0 || symbols > kMaxSymbols || read_symbols > symbols)
+        if (read_symbols < 0 || read_symbols > kMaxSymbols || symbols < 0 ||
+            symbols > kMaxSymbols || read_symbols > symbols)
             return -1;
         this->symbols_ = symbols;
 
-
-        for (i = 0; i < 16; i++)
-            num_symbols_per_len[i] = 0;
+        for (i = 0; i < 16; i++) num_symbols_per_len[i] = 0;
 
         for (i = 0; i < read_symbols; i++) {
             if (code_length[i] >= 16) return -1;
@@ -311,12 +309,10 @@ struct HuffmanDecoder
             this->num_sorted_ += num_symbols_per_len[i];
         }
 
-        for (i = 0; i < symbols; i++)
-            rev_symbol_table[i] = -1;
+        for (i = 0; i < symbols; i++) rev_symbol_table[i] = -1;
 
         for (i = 0; i < read_symbols; i++) {
-            if (code_length[i])
-                rev_symbol_table[this->starting_pos_[code_length[i]]++] = i;
+            if (code_length[i]) rev_symbol_table[this->starting_pos_[code_length[i]]++] = i;
         }
 
         return 0;
@@ -357,7 +353,8 @@ struct HuffmanDecoder
                     unsigned int rev_word;
 
                     /* Get upside down codeword (branchless method by Eric Biggers) */
-                    rev_word = ((canonical_code_word & 0x5555) << 1) | ((canonical_code_word & 0xaaaa) >> 1);
+                    rev_word = ((canonical_code_word & 0x5555) << 1) |
+                               ((canonical_code_word & 0xaaaa) >> 1);
                     rev_word = ((rev_word & 0x3333) << 2) | ((rev_word & 0xcccc) >> 2);
                     rev_word = ((rev_word & 0x0f0f) << 4) | ((rev_word & 0xf0f0) >> 4);
                     rev_word = ((rev_word & 0x00ff) << 8) | ((rev_word & 0xff00) >> 8);
@@ -365,7 +362,8 @@ struct HuffmanDecoder
 
                     int slots = 1 << (kFastSymbolBits - canonical_length);
                     while (slots) {
-                        this->fast_symbol_[rev_word] = (rev_symbol_table[i] & 0xffffff) | (canonical_length << 24);
+                        this->fast_symbol_[rev_word] =
+                                (rev_symbol_table[i] & 0xffffff) | (canonical_length << 24);
                         rev_word += (1 << canonical_length);
                         slots--;
                     }
@@ -397,12 +395,15 @@ struct HuffmanDecoder
 	*
 	* @return 0 for success, -1 for failure
 	*/
-    static int ReadRawLengths(const int len_bits, const int read_symbols, const int symbols, unsigned char *code_length, BitReader *bit_reader) {
+    static int ReadRawLengths(const int len_bits, const int read_symbols, const int symbols,
+                              unsigned char *code_length, BitReader *bit_reader) {
 
-        const unsigned char code_len_syms[kCodeLenSyms] = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+        const unsigned char code_len_syms[kCodeLenSyms] = {16, 17, 18, 0, 8,  7, 9,  6, 10, 5,
+                                                           11, 4,  12, 3, 13, 2, 14, 1, 15};
         int i;
 
-        if (read_symbols < 0 || read_symbols > kMaxSymbols || symbols < 0 || symbols > kMaxSymbols || read_symbols > symbols)
+        if (read_symbols < 0 || read_symbols > kMaxSymbols || symbols < 0 ||
+            symbols > kMaxSymbols || read_symbols > symbols)
             return -1;
 
         i = 0;
@@ -412,9 +413,7 @@ struct HuffmanDecoder
             code_length[code_len_syms[i++]] = length;
         }
 
-        while (i < symbols) {
-            code_length[code_len_syms[i++]] = 0;
-        }
+        while (i < symbols) { code_length[code_len_syms[i++]] = 0; }
 
         return 0;
     }
@@ -430,7 +429,8 @@ struct HuffmanDecoder
 	*
 	* @return 0 for success, -1 for failure
 	*/
-    int ReadLength(const unsigned int *tables_rev_symbol_table, const int read_symbols, const int symbols, unsigned char *code_length, BitReader *bit_reader) {
+    int ReadLength(const unsigned int *tables_rev_symbol_table, const int read_symbols,
+                   const int symbols, unsigned char *code_length, BitReader *bit_reader) {
 
         if (read_symbols < 0 || symbols < 0 || read_symbols > symbols) return -1;
 
@@ -471,8 +471,7 @@ struct HuffmanDecoder
             }
         }
 
-        while (i < symbols)
-            code_length[i++] = 0;
+        while (i < symbols) code_length[i++] = 0;
 
         return 0;
     }
@@ -524,7 +523,6 @@ struct HuffmanDecoder
     int starting_pos_[16];
 };
 
-
 #define MATCHLEN_PAIR(__base, __dispbits) ((__base) | ((__dispbits) << 16) | 0x8000)
 #define OFFSET_PAIR(__base, __dispbits) ((__base) | ((__dispbits) << 16))
 
@@ -538,79 +536,48 @@ const int kOffsetSyms = 32;
 const int kMinMatchSize = 3;
 
 constexpr unsigned int kMatchLenCode[kMatchLenSyms] = {
-        MATCHLEN_PAIR(kMinMatchSize + 0, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 1, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 2, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 3, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 4, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 5, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 6, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 7, 0),
-        MATCHLEN_PAIR(kMinMatchSize + 8, 1),
-        MATCHLEN_PAIR(kMinMatchSize + 10, 1),
-        MATCHLEN_PAIR(kMinMatchSize + 12, 1),
-        MATCHLEN_PAIR(kMinMatchSize + 14, 1),
-        MATCHLEN_PAIR(kMinMatchSize + 16, 2),
-        MATCHLEN_PAIR(kMinMatchSize + 20, 2),
-        MATCHLEN_PAIR(kMinMatchSize + 24, 2),
-        MATCHLEN_PAIR(kMinMatchSize + 28, 2),
-        MATCHLEN_PAIR(kMinMatchSize + 32, 3),
-        MATCHLEN_PAIR(kMinMatchSize + 40, 3),
-        MATCHLEN_PAIR(kMinMatchSize + 48, 3),
-        MATCHLEN_PAIR(kMinMatchSize + 56, 3),
-        MATCHLEN_PAIR(kMinMatchSize + 64, 4),
-        MATCHLEN_PAIR(kMinMatchSize + 80, 4),
-        MATCHLEN_PAIR(kMinMatchSize + 96, 4),
-        MATCHLEN_PAIR(kMinMatchSize + 112, 4),
-        MATCHLEN_PAIR(kMinMatchSize + 128, 5),
-        MATCHLEN_PAIR(kMinMatchSize + 160, 5),
-        MATCHLEN_PAIR(kMinMatchSize + 192, 5),
-        MATCHLEN_PAIR(kMinMatchSize + 224, 5),
+        MATCHLEN_PAIR(kMinMatchSize + 0, 0),   MATCHLEN_PAIR(kMinMatchSize + 1, 0),
+        MATCHLEN_PAIR(kMinMatchSize + 2, 0),   MATCHLEN_PAIR(kMinMatchSize + 3, 0),
+        MATCHLEN_PAIR(kMinMatchSize + 4, 0),   MATCHLEN_PAIR(kMinMatchSize + 5, 0),
+        MATCHLEN_PAIR(kMinMatchSize + 6, 0),   MATCHLEN_PAIR(kMinMatchSize + 7, 0),
+        MATCHLEN_PAIR(kMinMatchSize + 8, 1),   MATCHLEN_PAIR(kMinMatchSize + 10, 1),
+        MATCHLEN_PAIR(kMinMatchSize + 12, 1),  MATCHLEN_PAIR(kMinMatchSize + 14, 1),
+        MATCHLEN_PAIR(kMinMatchSize + 16, 2),  MATCHLEN_PAIR(kMinMatchSize + 20, 2),
+        MATCHLEN_PAIR(kMinMatchSize + 24, 2),  MATCHLEN_PAIR(kMinMatchSize + 28, 2),
+        MATCHLEN_PAIR(kMinMatchSize + 32, 3),  MATCHLEN_PAIR(kMinMatchSize + 40, 3),
+        MATCHLEN_PAIR(kMinMatchSize + 48, 3),  MATCHLEN_PAIR(kMinMatchSize + 56, 3),
+        MATCHLEN_PAIR(kMinMatchSize + 64, 4),  MATCHLEN_PAIR(kMinMatchSize + 80, 4),
+        MATCHLEN_PAIR(kMinMatchSize + 96, 4),  MATCHLEN_PAIR(kMinMatchSize + 112, 4),
+        MATCHLEN_PAIR(kMinMatchSize + 128, 5), MATCHLEN_PAIR(kMinMatchSize + 160, 5),
+        MATCHLEN_PAIR(kMinMatchSize + 192, 5), MATCHLEN_PAIR(kMinMatchSize + 224, 5),
         MATCHLEN_PAIR(kMinMatchSize + 255, 0),
 };
 
 constexpr unsigned int kOffsetCode[kOffsetSyms] = {
-        OFFSET_PAIR(1, 0),
-        OFFSET_PAIR(2, 0),
-        OFFSET_PAIR(3, 0),
-        OFFSET_PAIR(4, 0),
-        OFFSET_PAIR(5, 1),
-        OFFSET_PAIR(7, 1),
-        OFFSET_PAIR(9, 2),
-        OFFSET_PAIR(13, 2),
-        OFFSET_PAIR(17, 3),
-        OFFSET_PAIR(25, 3),
-        OFFSET_PAIR(33, 4),
-        OFFSET_PAIR(49, 4),
-        OFFSET_PAIR(65, 5),
-        OFFSET_PAIR(97, 5),
-        OFFSET_PAIR(129, 6),
-        OFFSET_PAIR(193, 6),
-        OFFSET_PAIR(257, 7),
-        OFFSET_PAIR(385, 7),
-        OFFSET_PAIR(513, 8),
-        OFFSET_PAIR(769, 8),
-        OFFSET_PAIR(1025, 9),
-        OFFSET_PAIR(1537, 9),
-        OFFSET_PAIR(2049, 10),
-        OFFSET_PAIR(3073, 10),
-        OFFSET_PAIR(4097, 11),
-        OFFSET_PAIR(6145, 11),
-        OFFSET_PAIR(8193, 12),
-        OFFSET_PAIR(12289, 12),
-        OFFSET_PAIR(16385, 13),
-        OFFSET_PAIR(24577, 13),
+        OFFSET_PAIR(1, 0),      OFFSET_PAIR(2, 0),      OFFSET_PAIR(3, 0),
+        OFFSET_PAIR(4, 0),      OFFSET_PAIR(5, 1),      OFFSET_PAIR(7, 1),
+        OFFSET_PAIR(9, 2),      OFFSET_PAIR(13, 2),     OFFSET_PAIR(17, 3),
+        OFFSET_PAIR(25, 3),     OFFSET_PAIR(33, 4),     OFFSET_PAIR(49, 4),
+        OFFSET_PAIR(65, 5),     OFFSET_PAIR(97, 5),     OFFSET_PAIR(129, 6),
+        OFFSET_PAIR(193, 6),    OFFSET_PAIR(257, 7),    OFFSET_PAIR(385, 7),
+        OFFSET_PAIR(513, 8),    OFFSET_PAIR(769, 8),    OFFSET_PAIR(1025, 9),
+        OFFSET_PAIR(1537, 9),   OFFSET_PAIR(2049, 10),  OFFSET_PAIR(3073, 10),
+        OFFSET_PAIR(4097, 11),  OFFSET_PAIR(6145, 11),  OFFSET_PAIR(8193, 12),
+        OFFSET_PAIR(12289, 12), OFFSET_PAIR(16385, 13), OFFSET_PAIR(24577, 13),
 };
 
-inline unsigned int CopyStored(BitReader *bit_reader, unsigned char *out, unsigned int out_offset, unsigned int block_size_max) {
+inline unsigned int CopyStored(BitReader *bit_reader, unsigned char *out, unsigned int out_offset,
+                               unsigned int block_size_max) {
 
     if (bit_reader->ByteAllign() < 0 || bit_reader->in_block + 4 > bit_reader->in_blockend)
         return -1;
 
-    unsigned short stored_length = ((unsigned short) bit_reader->in_block[0]) | (((unsigned short) bit_reader->in_block[0]) << 8);
+    unsigned short stored_length = ((unsigned short) bit_reader->in_block[0]) |
+                                   (((unsigned short) bit_reader->in_block[0]) << 8);
     bit_reader->ModifyInBlock(2);
 
-    unsigned short neg_stored_length = ((unsigned short) bit_reader->in_block[0]) | (((unsigned short) bit_reader->in_block[1]) << 8);
+    unsigned short neg_stored_length = ((unsigned short) bit_reader->in_block[0]) |
+                                       (((unsigned short) bit_reader->in_block[1]) << 8);
     bit_reader->ModifyInBlock(2);
 
     if (stored_length != ((~neg_stored_length) & 0xffff) || stored_length > block_size_max)
@@ -622,7 +589,8 @@ inline unsigned int CopyStored(BitReader *bit_reader, unsigned char *out, unsign
     return (unsigned int) stored_length;
 }
 
-inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, unsigned char *out, unsigned int out_offset, unsigned int block_size_max) {
+inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, unsigned char *out,
+                                    unsigned int out_offset, unsigned int block_size_max) {
 
     HuffmanDecoder literals_decoder;
     HuffmanDecoder offset_decoder;
@@ -651,7 +619,17 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
         code_len_syms += 4;
         if (code_len_syms > kCodeLenSyms) return -1;
 
-        if (HuffmanDecoder::ReadRawLengths(kCodeLenBits, code_len_syms, kCodeLenSyms, code_length, bit_reader) < 0 || tables_decoder.PrepareTable(tables_rev_sym_table, kCodeLenSyms, kCodeLenSyms, code_length) < 0 || tables_decoder.FinalizeTable(tables_rev_sym_table) < 0 || tables_decoder.ReadLength(tables_rev_sym_table, literal_syms + offset_syms, kLiteralSyms + kOffsetSyms, code_length, bit_reader) < 0 || literals_decoder.PrepareTable(literals_rev_sym_table, literal_syms, kLiteralSyms, code_length) < 0 || offset_decoder.PrepareTable(offset_rev_sym_table, offset_syms, kOffsetSyms, code_length + literal_syms) < 0)
+        if (HuffmanDecoder::ReadRawLengths(kCodeLenBits, code_len_syms, kCodeLenSyms, code_length,
+                                           bit_reader) < 0 ||
+            tables_decoder.PrepareTable(tables_rev_sym_table, kCodeLenSyms, kCodeLenSyms,
+                                        code_length) < 0 ||
+            tables_decoder.FinalizeTable(tables_rev_sym_table) < 0 ||
+            tables_decoder.ReadLength(tables_rev_sym_table, literal_syms + offset_syms,
+                                      kLiteralSyms + kOffsetSyms, code_length, bit_reader) < 0 ||
+            literals_decoder.PrepareTable(literals_rev_sym_table, literal_syms, kLiteralSyms,
+                                          code_length) < 0 ||
+            offset_decoder.PrepareTable(offset_rev_sym_table, offset_syms, kOffsetSyms,
+                                        code_length + literal_syms) < 0)
             return -1;
     } else {
         unsigned char fixed_literal_code_len[kLiteralSyms];
@@ -663,15 +641,16 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
         for (; i < kLiteralSyms; i++) fixed_literal_code_len[i] = 8;
         for (i = 0; i < kOffsetSyms; i++) fixed_offset_code_len[i] = 5;
 
-        if (literals_decoder.PrepareTable(literals_rev_sym_table, kLiteralSyms, kLiteralSyms, fixed_literal_code_len) < 0 || offset_decoder.PrepareTable(offset_rev_sym_table, kOffsetSyms, kOffsetSyms, fixed_offset_code_len) < 0)
+        if (literals_decoder.PrepareTable(literals_rev_sym_table, kLiteralSyms, kLiteralSyms,
+                                          fixed_literal_code_len) < 0 ||
+            offset_decoder.PrepareTable(offset_rev_sym_table, kOffsetSyms, kOffsetSyms,
+                                        fixed_offset_code_len) < 0)
             return -1;
     }
 
     for (i = 0; i < kOffsetSyms; i++) {
         unsigned int n = offset_rev_sym_table[i];
-        if (n < kOffsetSyms) {
-            offset_rev_sym_table[i] = kOffsetCode[n];
-        }
+        if (n < kOffsetSyms) { offset_rev_sym_table[i] = kOffsetCode[n]; }
     }
 
     for (i = 0; i < kLiteralSyms; i++) {
@@ -681,7 +660,8 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
         }
     }
 
-    if (literals_decoder.FinalizeTable(literals_rev_sym_table) < 0 || offset_decoder.FinalizeTable(offset_rev_sym_table) < 0)
+    if (literals_decoder.FinalizeTable(literals_rev_sym_table) < 0 ||
+        offset_decoder.FinalizeTable(offset_rev_sym_table) < 0)
         return -1;
 
     unsigned char *current_out = out + out_offset;
@@ -691,11 +671,11 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
     while (1) {
         bit_reader->Refill32();
 
-        unsigned int literals_code_word = literals_decoder.ReadValue(literals_rev_sym_table, bit_reader);
+        unsigned int literals_code_word =
+                literals_decoder.ReadValue(literals_rev_sym_table, bit_reader);
         if (literals_code_word < 256) {
 
-            if (current_out < out_end)
-                *current_out++ = literals_code_word;
+            if (current_out < out_end) *current_out++ = literals_code_word;
             else
                 return -1;
         } else {
@@ -707,7 +687,8 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
 
             match_length += (literals_code_word & 0x7fff);
 
-            unsigned int offset_code_word = offset_decoder.ReadValue(offset_rev_sym_table, bit_reader);
+            unsigned int offset_code_word =
+                    offset_decoder.ReadValue(offset_rev_sym_table, bit_reader);
             if (offset_code_word == -1) return -1;
 
             unsigned int match_offset = bit_reader->GetBits((offset_code_word >> 16) & 15);
@@ -733,9 +714,7 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
 
                     if ((current_out + match_length) > out_end) return -1;
 
-                    while (match_length--) {
-                        *current_out++ = *src++;
-                    }
+                    while (match_length--) { *current_out++ = *src++; }
                 }
             } else
                 return -1;
@@ -756,7 +735,9 @@ inline unsigned int DecompressBlock(BitReader *bit_reader, int dynamic_block, un
  *
  * @return number of bytes decompressed, or -1 in case of an error
  */
-inline unsigned int Decompressor_Feed(const void *compressed_data, unsigned int compressed_data_size, unsigned char *out, unsigned int out_size_max, bool checksum) {
+inline unsigned int Decompressor_Feed(const void *compressed_data,
+                                      unsigned int compressed_data_size, unsigned char *out,
+                                      unsigned int out_size_max, bool checksum) {
 
     unsigned char *current_compressed_data = (unsigned char *) compressed_data;
     unsigned char *end_compressed_data = current_compressed_data + compressed_data_size;
@@ -794,15 +775,18 @@ inline unsigned int Decompressor_Feed(const void *compressed_data, unsigned int 
 
         switch (block_type) {
             case 0:
-                block_result = CopyStored(&bit_reader, out, current_out_offset, out_size_max - current_out_offset);
+                block_result = CopyStored(&bit_reader, out, current_out_offset,
+                                          out_size_max - current_out_offset);
                 break;
 
             case 1:
-                block_result = DecompressBlock(&bit_reader, 0, out, current_out_offset, out_size_max - current_out_offset);
+                block_result = DecompressBlock(&bit_reader, 0, out, current_out_offset,
+                                               out_size_max - current_out_offset);
                 break;
 
             case 2:
-                block_result = DecompressBlock(&bit_reader, 1, out, current_out_offset, out_size_max - current_out_offset);
+                block_result = DecompressBlock(&bit_reader, 1, out, current_out_offset,
+                                               out_size_max - current_out_offset);
                 break;
 
             case 3:
@@ -811,9 +795,7 @@ inline unsigned int Decompressor_Feed(const void *compressed_data, unsigned int 
 
         if (block_result == -1) return -1;
 
-        if (checksum) {
-            check_sum = adler32_z(check_sum, out + current_out_offset, block_result);
-        }
+        if (checksum) { check_sum = adler32_z(check_sum, out + current_out_offset, block_result); }
 
         current_out_offset += block_result;
     } while (!final_block);

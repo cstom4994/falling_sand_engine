@@ -27,8 +27,7 @@ namespace {
             // deletes the retrieved element, do not use for non integral types
             bool pop(T &v) {
                 std::unique_lock<std::mutex> lock(this->mutex);
-                if (this->q.empty())
-                    return false;
+                if (this->q.empty()) return false;
                 v = this->q.front();
                 this->q.pop();
                 return true;
@@ -42,7 +41,7 @@ namespace {
             std::queue<T> q;
             std::mutex mutex;
         };
-    }// namespace detail
+    }// namespace ThreadPoolDetail
 
     class ThreadPool {
 
@@ -54,9 +53,7 @@ namespace {
         }
 
         // the destructor waits for all the functions in the queue to be finished
-        ~ThreadPool() {
-            this->stop(true);
-        }
+        ~ThreadPool() { this->stop(true); }
 
         // get the number of running threads in the pool
         int size() { return static_cast<int>(this->threads.size()); }
@@ -89,8 +86,10 @@ namespace {
                         std::unique_lock<std::mutex> lock(this->mutex);
                         this->cv.notify_all();
                     }
-                    this->threads.resize(nThreads);// safe to delete because the threads are detached
-                    this->flags.resize(nThreads);  // safe to delete because the threads have copies of shared_ptr of the flags, not originals
+                    this->threads.resize(
+                            nThreads);// safe to delete because the threads are detached
+                    this->flags.resize(
+                            nThreads);// safe to delete because the threads have copies of shared_ptr of the flags, not originals
                 }
             }
         }
@@ -98,18 +97,17 @@ namespace {
         // empty the queue
         void clear_queue() {
             std::function<void(int id)> *_f;
-            while (this->q.pop(_f))
-                delete _f;// empty the queue
+            while (this->q.pop(_f)) delete _f;// empty the queue
         }
 
         // pops a functional wrapper to the original function
         std::function<void(int)> pop() {
             std::function<void(int id)> *_f = nullptr;
             this->q.pop(_f);
-            std::unique_ptr<std::function<void(int id)>> func(_f);// at return, delete the function even if an exception occurred
+            std::unique_ptr<std::function<void(int id)>> func(
+                    _f);// at return, delete the function even if an exception occurred
             std::function<void(int)> f;
-            if (_f)
-                f = *_f;
+            if (_f) f = *_f;
             return f;
         }
 
@@ -118,25 +116,23 @@ namespace {
         // if isWait == true, all the functions in the queue are run, otherwise the queue is cleared without running the functions
         void stop(bool isWait = false) {
             if (!isWait) {
-                if (this->isStop)
-                    return;
+                if (this->isStop) return;
                 this->isStop = true;
                 for (int i = 0, n = this->size(); i < n; ++i) {
                     *this->flags[i] = true;// command the threads to stop
                 }
                 this->clear_queue();// empty the queue
             } else {
-                if (this->isDone || this->isStop)
-                    return;
+                if (this->isDone || this->isStop) return;
                 this->isDone = true;// give the waiting threads a command to finish
             }
             {
                 std::unique_lock<std::mutex> lock(this->mutex);
                 this->cv.notify_all();// stop all waiting threads
             }
-            for (int i = 0; i < static_cast<int>(this->threads.size()); ++i) {// wait for the computing threads to finish
-                if (this->threads[i]->joinable())
-                    this->threads[i]->join();
+            for (int i = 0; i < static_cast<int>(this->threads.size());
+                 ++i) {// wait for the computing threads to finish
+                if (this->threads[i]->joinable()) this->threads[i]->join();
             }
             // if there were no threads in the pool but some functors in the queue, the functors are not deleted by the threads
             // therefore delete them here
@@ -147,11 +143,9 @@ namespace {
 
         template<typename F, typename... Rest>
         auto push(F &&f, Rest &&...rest) -> std::future<decltype(f(0, rest...))> {
-            auto pck = std::make_shared<std::packaged_task<decltype(f(0, rest...))(int)>>(
-                    std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Rest>(rest)...));
-            auto _f = new std::function<void(int id)>([pck](int id) {
-                (*pck)(id);
-            });
+            auto pck = std::make_shared<std::packaged_task<decltype(f(0, rest...))(int)>>(std::bind(
+                    std::forward<F>(f), std::placeholders::_1, std::forward<Rest>(rest)...));
+            auto _f = new std::function<void(int id)>([pck](int id) { (*pck)(id); });
             this->q.push(_f);
             std::unique_lock<std::mutex> lock(this->mutex);
             this->cv.notify_one();
@@ -162,16 +156,14 @@ namespace {
         // operator returns std::future, where the user can get the result and rethrow the catched exceptins
         template<typename F>
         auto push(F &&f) -> std::future<decltype(f(0))> {
-            auto pck = std::make_shared<std::packaged_task<decltype(f(0))(int)>>(std::forward<F>(f));
-            auto _f = new std::function<void(int id)>([pck](int id) {
-                (*pck)(id);
-            });
+            auto pck =
+                    std::make_shared<std::packaged_task<decltype(f(0))(int)>>(std::forward<F>(f));
+            auto _f = new std::function<void(int id)>([pck](int id) { (*pck)(id); });
             this->q.push(_f);
             std::unique_lock<std::mutex> lock(this->mutex);
             this->cv.notify_one();
             return pck->get_future();
         }
-
 
     private:
         // deleted
@@ -181,14 +173,16 @@ namespace {
         ThreadPool &operator=(ThreadPool &&);     // = delete;
 
         void set_thread(int i) {
-            std::shared_ptr<std::atomic<bool>> flag(this->flags[i]);// a copy of the shared ptr to the flag
+            std::shared_ptr<std::atomic<bool>> flag(
+                    this->flags[i]);// a copy of the shared ptr to the flag
             auto f = [this, i, flag /* a copy of the shared ptr to the flag */]() {
                 std::atomic<bool> &_flag = *flag;
                 std::function<void(int id)> *_f;
                 bool isPop = this->q.pop(_f);
                 while (true) {
-                    while (isPop) {                                           // if there is anything in the queue
-                        std::unique_ptr<std::function<void(int id)>> func(_f);// at return, delete the function even if an exception occurred
+                    while (isPop) {// if there is anything in the queue
+                        std::unique_ptr<std::function<void(int id)>> func(
+                                _f);// at return, delete the function even if an exception occurred
                         (*_f)(i);
                         if (_flag)
                             return;// the thread is wanted to stop, return even if the queue is not empty yet
@@ -198,13 +192,17 @@ namespace {
                     // the queue is empty here, wait for the next command
                     std::unique_lock<std::mutex> lock(this->mutex);
                     ++this->nWaiting;
-                    this->cv.wait(lock, [this, &_f, &isPop, &_flag]() { isPop = this->q.pop(_f); return isPop || this->isDone || _flag; });
+                    this->cv.wait(lock, [this, &_f, &isPop, &_flag]() {
+                        isPop = this->q.pop(_f);
+                        return isPop || this->isDone || _flag;
+                    });
                     --this->nWaiting;
                     if (!isPop)
                         return;// if the queue is empty and this->isDone == true or *flag then return
                 }
             };
-            this->threads[i].reset(new std::thread(f));// compiler may not support std::make_unique()
+            this->threads[i].reset(
+                    new std::thread(f));// compiler may not support std::make_unique()
         }
 
         void init() {
@@ -224,6 +222,6 @@ namespace {
         std::condition_variable cv;
     };
 
-}
+}// namespace
 
 #endif

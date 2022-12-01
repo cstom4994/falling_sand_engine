@@ -1,10 +1,10 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Particle.hpp"
 #include <iostream>
 
-Particle::Particle(MaterialInstance tile, float x, float y, float vx, float vy, float ax, float ay) {
+Particle::Particle(MaterialInstance tile, float x, float y, float vx, float vy, float ax,
+                   float ay) {
     this->tile = tile;
     this->x = x;
     this->y = y;

@@ -1,16 +1,13 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #ifndef _METADOT_STRUCTURES_HPP_
 #define _METADOT_STRUCTURES_HPP_
 
 #include <iostream>
 
-
 #ifndef INC_Tiles
 #include "Materials.hpp"
 #endif// !INC_Tiles
-
 
 #define INC_Structure
 

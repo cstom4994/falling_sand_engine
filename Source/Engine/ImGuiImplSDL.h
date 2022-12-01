@@ -18,7 +18,9 @@ void ImGui_ImplSDL2_NewFrame();
 bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event);
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) { ImGui_ImplSDL2_NewFrame(); }// 1.84: removed unnecessary parameter
+static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) {
+    ImGui_ImplSDL2_NewFrame();
+}// 1.84: removed unnecessary parameter
 #endif
 
 #endif

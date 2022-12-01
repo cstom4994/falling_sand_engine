@@ -14,7 +14,7 @@ namespace MuDSL {
 struct Scripts
 {
     MuDSL::MuDSLInterpreter *MuDSL = nullptr;
-    std::map<std::string, LuaCore*> LuaMap;
+    std::map<std::string, LuaCore *> LuaMap;
 
     void Init();
     void End();

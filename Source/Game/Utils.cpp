@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Game/Utils.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Refl.hpp"
@@ -8,7 +7,6 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
-
 
 long long UTime::millis() {
     long long ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -23,12 +21,9 @@ time_t UTime::mkgmtime(struct tm *unixdate) {
     struct tm *fakeDate = gmtime(&fakeUnixtime);
 
     int32_t nOffSet = fakeDate->tm_hour - unixdate->tm_hour;
-    if (nOffSet > 12) {
-        nOffSet = 24 - nOffSet;
-    }
+    if (nOffSet > 12) { nOffSet = 24 - nOffSet; }
     return fakeUnixtime - nOffSet * 3600;
 }
-
 
 /*bool SUtil::replaceWith(Stringo& src, const char* what, const char* with)
 {
@@ -57,9 +52,7 @@ namespace SUtil {
         std::vector<int> out;
         char byte1 = 0;
         while ((byte1 = *c++) != 0) {
-            if (!(byte1 & 0b10000000)) {
-                out.push_back(byte1);
-            }
+            if (!(byte1 & 0b10000000)) { out.push_back(byte1); }
             if ((byte1 & 0b11100000) == 0b11000000) {
                 //starts with 110
                 char byte2 = *c++;
@@ -91,10 +84,8 @@ namespace SUtil {
                 out.push_back(b4 | (b3 << 6) | (b2 << 12) | (b1 << 18));
             }
         }
-        if (length)
-            *length = out.size();
-        if (out.empty())
-            return nullptr;
+        if (length) *length = out.size();
+        if (out.empty()) return nullptr;
 
         out.push_back(0);
         auto o = (int *) METAENGINE_MALLOC(out.size() * sizeof(int));
@@ -107,9 +98,7 @@ namespace SUtil {
         std::u32string out;
         uint8_t byte1;
         while ((byte1 = *c++) != 0) {
-            if (!(byte1 & 0b10000000)) {
-                out.push_back(byte1);
-            }
+            if (!(byte1 & 0b10000000)) { out.push_back(byte1); }
             if ((byte1 & 0b11100000) == 0b11000000) {
                 //starts with 110
                 uint8_t byte2 = *c++;
@@ -146,8 +135,7 @@ namespace SUtil {
 
     std::string u32StringToString(std::u32string_view s) {
         std::string out;
-        for (auto c: s)
-            out += (char) c;
+        for (auto c: s) out += (char) c;
         return out;
     }
 }// namespace SUtil

@@ -172,8 +172,7 @@ namespace structopt {
         static inline bool string_replace(std::string &str, const std::string &from,
                                           const std::string &to) {
             size_t start_pos = str.find(from);
-            if (start_pos == std::string::npos)
-                return false;
+            if (start_pos == std::string::npos) return false;
             str.replace(start_pos, from.length(), to);
             return true;
         }
@@ -214,25 +213,19 @@ namespace structopt {
                 return true;
             }
 
-            if (input.empty()) {
-                return false;
-            }
+            if (input.empty()) { return false; }
 
             std::size_t i = 0, j = input.length() - 1;
 
             // Handling whitespaces
-            while (i < input.length() && input[i] == ' ')
-                i++;
-            while (input[j] == ' ')
-                j--;
+            while (i < input.length() && input[i] == ' ') i++;
+            while (input[j] == ' ') j--;
 
-            if (i > j)
-                return false;
+            if (i > j) return false;
 
             // if string is of length 1 and the only
             // character is not a digit
-            if (i == j && !(input[i] >= '0' && input[i] <= '9'))
-                return false;
+            if (i == j && !(input[i] >= '0' && input[i] <= '9')) return false;
 
             // If the 1st char is not '+', '-', '.' or digit
             if (input[i] != '.' && input[i] != '+' && input[i] != '-' &&
@@ -254,16 +247,13 @@ namespace structopt {
                 if (input[i] == '.') {
                     // checks if the char 'e' has already
                     // occurred before '.' If yes, return false;.
-                    if (dot_or_exp == true)
-                        return false;
+                    if (dot_or_exp == true) return false;
 
                     // If '.' is the last character.
-                    if (i + 1 > input.length())
-                        return false;
+                    if (i + 1 > input.length()) return false;
 
                     // if '.' is not followed by a digit.
-                    if (!(input[i + 1] >= '0' && input[i + 1] <= '9'))
-                        return false;
+                    if (!(input[i + 1] >= '0' && input[i + 1] <= '9')) return false;
                 }
 
                 else if (input[i] == 'e') {
@@ -271,12 +261,10 @@ namespace structopt {
                     dot_or_exp = true;
 
                     // if there is no digit before 'e'.
-                    if (!(input[i - 1] >= '0' && input[i - 1] <= '9'))
-                        return false;
+                    if (!(input[i - 1] >= '0' && input[i - 1] <= '9')) return false;
 
                     // If 'e' is the last Character
-                    if (i + 1 > input.length())
-                        return false;
+                    if (i + 1 > input.length()) return false;
 
                     // if e is not followed either by
                     // '+', '-' or a digit
@@ -331,7 +319,8 @@ namespace structopt {
             explicit visitor(const std::string &name, const std::string &version)
                 : name(name), version(version) {}
 
-            explicit visitor(const std::string &name, const std::string &version, const std::string &help)
+            explicit visitor(const std::string &name, const std::string &version,
+                             const std::string &help)
                 : name(name), version(version), help(help) {}
 
             // Visitor function for std::optional - could be an option or a flag
@@ -391,21 +380,13 @@ namespace structopt {
                 } else {
                     os << "\nUSAGE: " << name << " ";
 
-                    if (flag_field_names.empty() == false) {
-                        os << "[FLAGS] ";
-                    }
+                    if (flag_field_names.empty() == false) { os << "[FLAGS] "; }
 
-                    if (optional_field_names.empty() == false) {
-                        os << "[OPTIONS] ";
-                    }
+                    if (optional_field_names.empty() == false) { os << "[OPTIONS] "; }
 
-                    if (nested_struct_field_names.empty() == false) {
-                        os << "[SUBCOMMANDS] ";
-                    }
+                    if (nested_struct_field_names.empty() == false) { os << "[SUBCOMMANDS] "; }
 
-                    for (auto &field: positional_field_names_for_help) {
-                        os << field << " ";
-                    }
+                    for (auto &field: positional_field_names_for_help) { os << field << " "; }
 
                     bool has_h = false;
                     bool has_v = false;
@@ -453,7 +434,8 @@ namespace structopt {
                             if ((has_v && option == "version") || (has_h && option == "help")) {
                                 os << "    --" << long_form << " <" << option << ">\n";
                             } else {
-                                os << "    -" << option[0] << ", --" << long_form << " <" << option << ">"
+                                os << "    -" << option[0] << ", --" << long_form << " <" << option
+                                   << ">"
                                    << "\n";
                             }
 
@@ -470,9 +452,7 @@ namespace structopt {
 
                     if (nested_struct_field_names.empty() == false) {
                         os << "\nSUBCOMMANDS:\n";
-                        for (auto &sc: nested_struct_field_names) {
-                            os << "    " << sc << "\n";
-                        }
+                        for (auto &sc: nested_struct_field_names) { os << "    " << sc << "\n"; }
                     }
 
                     if (positional_field_names_for_help.empty() == false) {
@@ -588,9 +568,7 @@ namespace structopt {
                     if (name[0] == '-') {
                         result = true;
                         // e.g., --verbose
-                        if (name[1] == '-') {
-                            result = true;
-                        }
+                        if (name[1] == '-') { result = true; }
                     }
                 }
                 return result;
@@ -608,9 +586,7 @@ namespace structopt {
                         maybe_kebab_case.erase(0, 1);
                     }
                     std::replace(maybe_kebab_case.begin(), maybe_kebab_case.end(), '-', '_');
-                    if (maybe_kebab_case == field_name) {
-                        result = true;
-                    }
+                    if (maybe_kebab_case == field_name) { result = true; }
                 }
                 return result;
             }
@@ -618,7 +594,8 @@ namespace structopt {
             bool is_optional_field(const std::string &next, const std::string &field_name) {
                 bool result = false;
                 if (next == "-" + field_name || next == "--" + field_name ||
-                    next == "-" + std::string(1, field_name[0]) || is_kebab_case(next, field_name)) {
+                    next == "-" + std::string(1, field_name[0]) ||
+                    is_kebab_case(next, field_name)) {
                     // okay `next` matches _a_ field name (which is an optional field)
                     result = true;
                 }
@@ -626,16 +603,12 @@ namespace structopt {
             }
 
             bool is_optional_field(const std::string &next) {
-                if (!is_optional(next)) {
-                    return false;
-                }
+                if (!is_optional(next)) { return false; }
 
                 bool result = false;
                 for (auto &field_name: visitor.field_names) {
                     result = is_optional_field(next, field_name);
-                    if (result) {
-                        break;
-                    }
+                    if (result) { break; }
                 }
                 return result;
             }
@@ -673,16 +646,12 @@ namespace structopt {
                             delimiter = c;
                             delimiter_found = true;
                         } else {
-                            if (!delimiter_found) {
-                                key += next[i];
-                            }
+                            if (!delimiter_found) { key += next[i]; }
                         }
                     }
 
                     // check if `key` is a valid optional field
-                    if (delimiter_found && is_optional_field(key)) {
-                        success = true;
-                    }
+                    if (delimiter_found && is_optional_field(key)) { success = true; }
                 }
                 return {success, delimiter};
             }
@@ -712,12 +681,8 @@ namespace structopt {
                 std::string result;
                 bool prefix_dashes_ended = false;
                 for (auto &c: next) {
-                    if (prefix_dashes_ended == false && c != '-') {
-                        prefix_dashes_ended = true;
-                    }
-                    if (prefix_dashes_ended) {
-                        result += c;
-                    }
+                    if (prefix_dashes_ended == false && c != '-') { prefix_dashes_ended = true; }
+                    if (prefix_dashes_ended) { result += c; }
                 }
                 return result;
             }
@@ -744,7 +709,8 @@ namespace structopt {
                     std::string potential_field_name = lstrip_dashes(next);
 
                     // replace `-` in the middle with `_`
-                    std::replace(potential_field_name.begin(), potential_field_name.end(), '-', '_');
+                    std::replace(potential_field_name.begin(), potential_field_name.end(), '-',
+                                 '_');
 
                     // check if `potential_field_name` is in the optional field names list
                     for (auto &oarg: visitor.optional_field_names) {
@@ -760,9 +726,7 @@ namespace structopt {
 
             template<typename T>
             std::pair<T, bool> parse_argument(const char *name) {
-                if (next_index >= arguments.size()) {
-                    return {T(), false};
-                }
+                if (next_index >= arguments.size()) { return {T(), false}; }
                 T result;
                 bool success = true;
                 if constexpr (visit_struct::traits::is_visitable<T>::value) {
@@ -771,7 +735,8 @@ namespace structopt {
                     result = parse_enum_argument<T>(name);
                     next_index += 1;
                 } else if constexpr (structopt::is_specialization<T, std::pair>::value) {
-                    result = parse_pair_argument<typename T::first_type, typename T::second_type>(name);
+                    result = parse_pair_argument<typename T::first_type, typename T::second_type>(
+                            name);
                 } else if constexpr (structopt::is_specialization<T, std::tuple>::value) {
                     result = parse_tuple_argument<T>(name);
                 } else if constexpr (!is_stl_container<T>::value) {
@@ -810,8 +775,8 @@ namespace structopt {
                         result = value;
                     } else {
                         throw structopt::exception(
-                                "Error: failed to correctly parse optional argument `" + std::string{name} +
-                                        "`.",
+                                "Error: failed to correctly parse optional argument `" +
+                                        std::string{name} + "`.",
                                 visitor);
                     }
                 } else {
@@ -875,11 +840,12 @@ namespace structopt {
                     already_invoked_subcommand_name = name;
                 } else {
                     // a sub-command has already been invoked
-                    throw structopt::exception(
-                            "Error: failed to invoke sub-command `" + std::string{name} +
-                                    "` because a different sub-command, `" + already_invoked_subcommand_name +
-                                    "`, has already been invoked.",
-                            argument_struct.visitor_);
+                    throw structopt::exception("Error: failed to invoke sub-command `" +
+                                                       std::string{name} +
+                                                       "` because a different sub-command, `" +
+                                                       already_invoked_subcommand_name +
+                                                       "`, has already been invoked.",
+                                               argument_struct.visitor_);
                 }
 
                 structopt::details::parser parser;
@@ -923,9 +889,10 @@ namespace structopt {
                             parser.visitor.vector_like_positional_field_names.end()) {
                             // this positional argument is not a vector-like argument
                             // it expects value(s)
-                            throw structopt::exception("Error: expected value for positional argument `" +
-                                                               field_name + "`.",
-                                                       argument_struct.visitor_);
+                            throw structopt::exception(
+                                    "Error: expected value for positional argument `" + field_name +
+                                            "`.",
+                                    argument_struct.visitor_);
                         }
                     }
                 }
@@ -950,10 +917,11 @@ namespace structopt {
                         if (next_index == arguments.size()) {
                             // end of arguments list
                             // first argument not provided
-                            throw structopt::exception("Error: failed to correctly parse the pair `" +
-                                                               std::string{name} +
-                                                               "`. Expected 2 arguments, 0 provided.",
-                                                       visitor);
+                            throw structopt::exception(
+                                    "Error: failed to correctly parse the pair `" +
+                                            std::string{name} +
+                                            "`. Expected 2 arguments, 0 provided.",
+                                    visitor);
                         } else {
                             throw structopt::exception(
                                     "Error: failed to correctly parse first element of pair `" +
@@ -971,10 +939,11 @@ namespace structopt {
                         if (next_index == arguments.size()) {
                             // end of arguments list
                             // second argument not provided
-                            throw structopt::exception("Error: failed to correctly parse the pair `" +
-                                                               std::string{name} +
-                                                               "`. Expected 2 arguments, only 1 provided.",
-                                                       visitor);
+                            throw structopt::exception(
+                                    "Error: failed to correctly parse the pair `" +
+                                            std::string{name} +
+                                            "`. Expected 2 arguments, only 1 provided.",
+                                    visitor);
                         } else {
                             throw structopt::exception(
                                     "Error: failed to correctly parse second element of pair `" +
@@ -996,15 +965,14 @@ namespace structopt {
                     throw structopt::exception("Error: expected " + std::to_string(N) +
                                                        " values for std::array argument `" + name +
                                                        "` - instead got only " +
-                                                       std::to_string(arguments_left) + " arguments.",
+                                                       std::to_string(arguments_left) +
+                                                       " arguments.",
                                                visitor);
                 }
 
                 for (std::size_t i = 0; i < N; i++) {
                     auto [value, success] = parse_argument<T>(name);
-                    if (success) {
-                        result[i] = value;
-                    }
+                    if (success) { result[i] = value; }
                 }
                 return result;
             }
@@ -1018,16 +986,18 @@ namespace structopt {
 
             template<class Tuple, class F>
             constexpr F for_each(Tuple &&t, F &&f) {
-                return for_each_impl(std::forward<Tuple>(t), std::forward<F>(f),
-                                     std::make_index_sequence<
-                                             std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
+                return for_each_impl(
+                        std::forward<Tuple>(t), std::forward<F>(f),
+                        std::make_index_sequence<
+                                std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
             }
 
             // Parse single tuple element
             template<typename T>
             void parse_tuple_element(const char *name, std::size_t index, std::size_t size,
                                      T &&result) {
-                auto [value, success] = parse_argument<typename std::remove_reference<T>::type>(name);
+                auto [value, success] =
+                        parse_argument<typename std::remove_reference<T>::type>(name);
                 if (success) {
                     result = value;
                 } else {
@@ -1040,11 +1010,11 @@ namespace structopt {
                                                            std::to_string(index) + " provided.",
                                                    visitor);
                     } else {
-                        throw structopt::exception("Error: failed to correctly parse tuple `" +
-                                                           std::string{name} +
-                                                           "` {size = " + std::to_string(size) +
-                                                           "} at index " + std::to_string(index) + ".",
-                                                   visitor);
+                        throw structopt::exception(
+                                "Error: failed to correctly parse tuple `" + std::string{name} +
+                                        "` {size = " + std::to_string(size) + "} at index " +
+                                        std::to_string(index) + ".",
+                                visitor);
                     }
                 }
             }
@@ -1080,9 +1050,7 @@ namespace structopt {
                         break;
                     }
                     auto [value, success] = parse_argument<typename T::value_type>(name);
-                    if (success) {
-                        result.push_back(value);
-                    }
+                    if (success) { result.push_back(value); }
                 }
                 return result;
             }
@@ -1104,9 +1072,7 @@ namespace structopt {
                         break;
                     }
                     auto [value, success] = parse_argument<typename T::value_type>(name);
-                    if (success) {
-                        result.push(value);
-                    }
+                    if (success) { result.push(value); }
                 }
                 return result;
             }
@@ -1128,9 +1094,7 @@ namespace structopt {
                         break;
                     }
                     auto [value, success] = parse_argument<typename T::value_type>(name);
-                    if (success) {
-                        result.insert(value);
-                    }
+                    if (success) { result.insert(value); }
                 }
                 return result;
             }
@@ -1167,9 +1131,7 @@ namespace structopt {
             template<typename T>
             inline typename std::enable_if<visit_struct::traits::is_visitable<T>::value, void>::type
             operator()(const char *name, T &value) {
-                if (next_index > current_index) {
-                    current_index = next_index;
-                }
+                if (next_index > current_index) { current_index = next_index; }
 
                 if (current_index < arguments.size()) {
                     const auto next = arguments[current_index];
@@ -1189,21 +1151,18 @@ namespace structopt {
                                                    !visit_struct::traits::is_visitable<T>::value,
                                            void>::type
             operator()(const char *name, T &result) {
-                if (next_index > current_index) {
-                    current_index = next_index;
-                }
+                if (next_index > current_index) { current_index = next_index; }
 
                 if (current_index < arguments.size()) {
                     const auto next = arguments[current_index];
 
-                    if (is_optional(next)) {
-                        return;
-                    }
+                    if (is_optional(next)) { return; }
 
                     if (visitor.positional_field_names.empty()) {
                         // We're not looking to save any more positional fields
                         // all of them already have a value
-                        throw structopt::exception("Error: unexpected argument '" + next + "'", visitor);
+                        throw structopt::exception("Error: unexpected argument '" + next + "'",
+                                                   visitor);
                         return;
                     }
 
@@ -1237,9 +1196,7 @@ namespace structopt {
             inline typename std::enable_if<structopt::is_specialization<T, std::optional>::value,
                                            void>::type
             operator()(const char *name, T &value) {
-                if (next_index > current_index) {
-                    current_index = next_index;
-                }
+                if (next_index > current_index) { current_index = next_index; }
 
                 if (current_index < arguments.size()) {
                     const auto next = arguments[current_index];
@@ -1284,9 +1241,11 @@ namespace structopt {
                             // maybe this is an optional argument that is delimited with '=' or ':'
                             // e.g., --foo=bar or --foo:BAR
                             if (next.size() > 1 && next[0] == '-') {
-                                const auto [success, delimiter] = is_delimited_optional_argument(next);
+                                const auto [success, delimiter] =
+                                        is_delimited_optional_argument(next);
                                 if (success) {
-                                    const auto [lhs, rhs] = split_delimited_argument(delimiter, next);
+                                    const auto [lhs, rhs] =
+                                            split_delimited_argument(delimiter, next);
                                     // update next_index and return
                                     // the parser will take care of the rest
 
@@ -1313,7 +1272,8 @@ namespace structopt {
                             if (is_optional_field(next) == false && next[0] == '-' &&
                                 (next.size() > 1 && next[1] != '-')) {
                                 for (std::size_t i = 1; i < next.size(); i++) {
-                                    potential_combined_argument.push_back("-" + std::string(1, next[i]));
+                                    potential_combined_argument.push_back("-" +
+                                                                          std::string(1, next[i]));
                                 }
                             }
 
@@ -1390,9 +1350,7 @@ namespace structopt {
         // Converts argument to lower case before check
         template<>
         inline bool parser::parse_single_argument<bool>(const char *name) {
-            if (next_index > current_index) {
-                current_index = next_index;
-            }
+            if (next_index > current_index) { current_index = next_index; }
 
             if (current_index < arguments.size()) {
                 const std::vector<std::string> true_strings{"on", "yes", "1", "true"};
@@ -1408,13 +1366,13 @@ namespace structopt {
                 if (std::find(true_strings.begin(), true_strings.end(), current_argument) !=
                     true_strings.end()) {
                     return true;
-                } else if (std::find(false_strings.begin(), false_strings.end(), current_argument) !=
-                           false_strings.end()) {
+                } else if (std::find(false_strings.begin(), false_strings.end(),
+                                     current_argument) != false_strings.end()) {
                     return false;
                 } else {
                     throw structopt::exception("Error: failed to parse boolean argument `" +
-                                                       std::string{name} + "`." + " `" + current_argument +
-                                                       "`" + " is invalid.",
+                                                       std::string{name} + "`." + " `" +
+                                                       current_argument + "`" + " is invalid.",
                                                visitor);
                     return false;
                 }
@@ -1446,7 +1404,8 @@ namespace structopt {
         details::visitor visitor;
 
     public:
-        explicit app(const std::string &name, const std::string &version = "", const std::string &help = "")
+        explicit app(const std::string &name, const std::string &version = "",
+                     const std::string &help = "")
             : visitor(name, version, help) {}
 
         template<typename T>
@@ -1497,15 +1456,18 @@ namespace structopt {
                         parser.visitor.vector_like_positional_field_names.end()) {
                         // this positional argument is not a vector-like argument
                         // it expects value(s)
-                        throw structopt::exception("Error: expected value for positional argument `" +
-                                                           field_name + "`.",
-                                                   parser.visitor);
+                        throw structopt::exception(
+                                "Error: expected value for positional argument `" + field_name +
+                                        "`.",
+                                parser.visitor);
                     }
                 }
             }
 
             if (parser.current_index < parser.arguments.size()) {
-                throw structopt::exception("Error: unrecognized argument '" + parser.arguments[parser.current_index] + "'", parser.visitor);
+                throw structopt::exception("Error: unrecognized argument '" +
+                                                   parser.arguments[parser.current_index] + "'",
+                                           parser.visitor);
             }
 
             return argument_struct;

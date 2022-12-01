@@ -3,8 +3,8 @@
 #ifndef _METADOT_GAMEUI_HPP_
 #define _METADOT_GAMEUI_HPP_
 
-#include "Engine/RendererGPU.h"
 #include "Engine/ImGuiBase.hpp"
+#include "Engine/RendererGPU.h"
 #include "Game/Materials.hpp"
 #include "Game/World.hpp"
 
@@ -14,7 +14,6 @@ class Game;
 
 namespace GameUI {
     void GameUI_Draw(Game *game);
-
 
     class DebugUI {
     public:

@@ -7,21 +7,19 @@
 #include <exception>
 #include <string>
 
-
 static const char *date = __DATE__;
-static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char mond[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 int MetaDot_buildnum(void) {
     int m = 0, d = 0, y = 0;
     static int b = 0;
 
-    if (b != 0)
-        return b;
+    if (b != 0) return b;
 
     for (m = 0; m < 11; m++) {
-        if (!strncmp(&date[0], mon[m], 3))
-            break;
+        if (!strncmp(&date[0], mon[m], 3)) break;
         d += mond[m];
     }
 
@@ -29,9 +27,7 @@ int MetaDot_buildnum(void) {
     y = atoi(&date[7]) - 2000;
     b = d + (int) ((y - 1) * 365.25f);
 
-    if (((y % 4) == 0) && m > 1) {
-        b += 1;
-    }
+    if (((y % 4) == 0) && m > 1) { b += 1; }
     b -= 7340;
 
     return b;
@@ -63,7 +59,8 @@ const std::string metadata() {
 #elif defined(__GNUC__) || defined(__GNUG__)
     result += "compiler.family = gcc\n";
     result += "compiler.version = ";
-    result += std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__);
+    result += std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." +
+              std::to_string(__GNUC_PATCHLEVEL__);
     result += "\n";
 #elif defined(_MSC_VER)
     result += "compiler.family = msvc\n";
@@ -86,11 +83,8 @@ const std::string metadata() {
     return result;
 }
 
-
 #if 1
-b2DebugDraw_impl::b2DebugDraw_impl(METAENGINE_Render_Target *target) {
-    this->target = target;
-}
+b2DebugDraw_impl::b2DebugDraw_impl(METAENGINE_Render_Target *target) { this->target = target; }
 
 b2DebugDraw_impl::~b2DebugDraw_impl() {}
 
@@ -105,15 +99,15 @@ b2Vec2 b2DebugDraw_impl::transform(const b2Vec2 &pt) {
 }
 
 SDL_Color b2DebugDraw_impl::convertColor(const b2Color &color) {
-    return {(UInt8) (color.r * 255), (UInt8) (color.g * 255), (UInt8) (color.b * 255), (UInt8) (color.a * 255)};
+    return {(UInt8) (color.r * 255), (UInt8) (color.g * 255), (UInt8) (color.b * 255),
+            (UInt8) (color.a * 255)};
 }
 
-void b2DebugDraw_impl::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {
+void b2DebugDraw_impl::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount,
+                                   const b2Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
-    for (int i = 0; i < vertexCount; i++) {
-        verts[i] = transform(vertices[i]);
-    }
+    for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
     METAENGINE_Render_Polygon(target, vertexCount, (float *) verts, convertColor(color));
@@ -121,12 +115,11 @@ void b2DebugDraw_impl::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, co
     delete[] verts;
 }
 
-void b2DebugDraw_impl::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {
+void b2DebugDraw_impl::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount,
+                                        const b2Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
-    for (int i = 0; i < vertexCount; i++) {
-        verts[i] = transform(vertices[i]);
-    }
+    for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
     SDL_Color c2 = convertColor(color);
@@ -142,7 +135,8 @@ void b2DebugDraw_impl::DrawCircle(const b2Vec2 &center, float radius, const b2Co
     METAENGINE_Render_Circle(target, tr.x, tr.y, radius * scale, convertColor(color));
 }
 
-void b2DebugDraw_impl::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const b2Color &color) {
+void b2DebugDraw_impl::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
+                                       const b2Color &color) {
     b2Vec2 tr = transform(center);
     METAENGINE_Render_CircleFilled(target, tr.x, tr.y, radius * scale, convertColor(color));
 }

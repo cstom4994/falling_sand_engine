@@ -4,8 +4,8 @@
 #define _METADOT_RIGIDBODY_HPP_
 
 #define INC_RigidBody
-#include "Engine/SDLWrapper.hpp"
 #include "Engine/RendererGPU.h"
+#include "Engine/SDLWrapper.hpp"
 #include "Materials.hpp"
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
@@ -15,7 +15,6 @@
 #include <box2d/b2_world.h>
 #include <memory>
 #include <vector>
-
 
 #include "Libs/polypartition.h"
 

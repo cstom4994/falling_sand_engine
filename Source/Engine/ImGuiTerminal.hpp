@@ -20,7 +20,6 @@
 ///                                                                                                                                     ///
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -62,56 +61,50 @@ namespace misc {
     template<typename T>
     using non_void_t = typename details::non_void<T>::type;
 
-
     // Returns the length of the given byte string, at most buffer_size
     constexpr unsigned int strnlen(const char *beg, unsigned int buffer_size) {
         unsigned int len = 0;
-        while (len < buffer_size && beg[len] != '\0') {
-            ++len;
-        }
+        while (len < buffer_size && beg[len] != '\0') { ++len; }
         return len;
     }
 
     // std::is_sorted is not constexpr pre C++20
-    template<typename ForwardIt, typename EndIt, typename Comparator = std::less<std::remove_reference_t<decltype(*std::declval<ForwardIt>())>>>
+    template<typename ForwardIt, typename EndIt,
+             typename Comparator =
+                     std::less<std::remove_reference_t<decltype(*std::declval<ForwardIt>())>>>
     constexpr bool is_sorted(ForwardIt it, EndIt last, Comparator &&comp = {}) {
-        if (it == last) {
-            return true;
-        }
+        if (it == last) { return true; }
 
         for (ForwardIt next = std::next(it); next != last; ++next, ++it) {
-            if (comp(*next, *it)) {
-                return false;
-            }
+            if (comp(*next, *it)) { return false; }
         }
         return true;
     }
 
     // returns the length of the longest element of the list, minimum 0
     template<typename ForwardIt, typename EndIt, typename SizeExtractor>
-    constexpr auto max_size(ForwardIt it, EndIt last, SizeExtractor &&size_of) -> decltype(size_of(*it)) {
+    constexpr auto max_size(ForwardIt it, EndIt last, SizeExtractor &&size_of)
+            -> decltype(size_of(*it)) {
         using size_type = decltype(size_of(*it));
         size_type max_size = 0u;
         while (it != last) {
             size_type current_size = size_of(*it++);
-            if (current_size > max_size) {
-                max_size = current_size;
-            }
+            if (current_size > max_size) { max_size = current_size; }
         }
         return max_size;
     }
 
     // copies until it reaches the end of any of the two collections
     template<typename ForwardIt, typename OutputIt>
-    constexpr void copy(ForwardIt src_beg, ForwardIt src_end, OutputIt dest_beg, OutputIt dest_end) {
-        while (src_beg != src_end && dest_beg != dest_end) {
-            *dest_beg++ = *src_beg++;
-        }
+    constexpr void copy(ForwardIt src_beg, ForwardIt src_end, OutputIt dest_beg,
+                        OutputIt dest_end) {
+        while (src_beg != src_end && dest_beg != dest_end) { *dest_beg++ = *src_beg++; }
     }
 
     // same as misc::copy, but in reversed order
     template<typename BidirIt1, typename BidirIt2>
-    constexpr void copy_backward(BidirIt1 src_beg, BidirIt1 src_end, BidirIt2 dest_beg, BidirIt2 dest_end) {
+    constexpr void copy_backward(BidirIt1 src_beg, BidirIt1 src_end, BidirIt2 dest_beg,
+                                 BidirIt2 dest_end) {
         auto copy_length = std::distance(src_beg, src_end);
         auto avail_length = std::distance(dest_beg, dest_end);
         if (avail_length < copy_length) {
@@ -119,28 +112,30 @@ namespace misc {
         } else {
             std::advance(dest_end, copy_length - avail_length);
         }
-        while (src_beg != src_end && dest_beg != dest_end) {
-            *--dest_end = *--src_end;
-        }
+        while (src_beg != src_end && dest_beg != dest_end) { *--dest_end = *--src_end; }
     }
 
     // Returns new end of dest collection
     // ignores the n first values of the destination
     template<typename ForwardIt, typename RandomAccessIt>
-    constexpr RandomAccessIt erase_insert(ForwardIt src_beg, ForwardIt src_end, RandomAccessIt dest_beg, RandomAccessIt dest_end, RandomAccessIt dest_max, unsigned int n) {
+    constexpr RandomAccessIt erase_insert(ForwardIt src_beg, ForwardIt src_end,
+                                          RandomAccessIt dest_beg, RandomAccessIt dest_end,
+                                          RandomAccessIt dest_max, unsigned int n) {
         n = std::min(static_cast<unsigned>(std::distance(dest_beg, dest_end)), n);
         auto copy_length = static_cast<unsigned>(std::distance(src_beg, src_end));
         auto avail_length = static_cast<unsigned>(std::distance(dest_end, dest_max)) + n;
 
         if (copy_length <= avail_length) {
-            misc::copy_backward(dest_beg + n, dest_end, dest_beg + copy_length, dest_end + copy_length);
+            misc::copy_backward(dest_beg + n, dest_end, dest_beg + copy_length,
+                                dest_end + copy_length);
             misc::copy(src_beg, src_end, dest_beg, dest_beg + copy_length);
             return dest_end + copy_length - n;
 
         } else {
             std::advance(src_beg, copy_length - avail_length);
             copy_length = avail_length;
-            misc::copy_backward(dest_beg + n, dest_end, dest_beg + copy_length, dest_end + copy_length);
+            misc::copy_backward(dest_beg + n, dest_end, dest_beg + copy_length,
+                                dest_end + copy_length);
             misc::copy(src_beg, src_end, dest_beg, dest_beg + copy_length);
             return dest_end + copy_length - n;
         }
@@ -148,53 +143,53 @@ namespace misc {
 
     // returns the last element in the range [begin, end) that is equal to val, returns end if there is no such element
     template<typename ForwardIterator, typename ValueType>
-    constexpr ForwardIterator find_last(ForwardIterator begin, ForwardIterator end, const ValueType &val) {
+    constexpr ForwardIterator find_last(ForwardIterator begin, ForwardIterator end,
+                                        const ValueType &val) {
         auto rend = std::reverse_iterator(begin);
         auto rbegin = std::reverse_iterator(end);
         auto search = std::find(rbegin, rend, val);
-        if (search == rend) {
-            return end;
-        }
+        if (search == rend) { return end; }
         return std::prev(search.base());
     }
 
     // Returns an iterator to the first character that has no a space after him
     template<typename ForwardIterator, typename SpaceDetector>
-    constexpr ForwardIterator find_terminating_word(ForwardIterator begin, ForwardIterator end, SpaceDetector &&is_space_pred) {
+    constexpr ForwardIterator find_terminating_word(ForwardIterator begin, ForwardIterator end,
+                                                    SpaceDetector &&is_space_pred) {
         auto rend = std::reverse_iterator(begin);
         auto rbegin = std::reverse_iterator(end);
 
         int sp_size = 0;
         auto is_space = [&sp_size, &is_space_pred, &end](char c) {
-            sp_size = is_space_pred(std::string_view{&c, static_cast<unsigned>(&*std::prev(end) - &c)});
+            sp_size = is_space_pred(
+                    std::string_view{&c, static_cast<unsigned>(&*std::prev(end) - &c)});
             return sp_size > 0;
         };
 
         auto search = std::find_if(rbegin, rend, is_space);
-        if (search == rend) {
-            return begin;
-        }
+        if (search == rend) { return begin; }
         ForwardIterator it = std::prev(search.base());
         it += sp_size;
         return it;
     }
 
-    constexpr bool success(std::errc ec) {
-        return ec == std::errc{};
-    }
+    constexpr bool success(std::errc ec) { return ec == std::errc{}; }
 
     // Search any element starting by "prefix" in the sorted collection formed by [c_beg, c_end)
     // str_ext must map dectype(*c_beg) to std::string_view
     // transform is whatever transformation you want to do to the matching elements.
     template<typename ForwardIt, typename StrExtractor = identity, typename Transform = identity>
     auto prefix_search(std::string_view prefix, ForwardIt c_beg, ForwardIt c_end,
-                       StrExtractor &&str_ext = {}, Transform &&transform = {}) -> std::vector<std::decay_t<decltype(transform(*c_beg))>> {
+                       StrExtractor &&str_ext = {}, Transform &&transform = {})
+            -> std::vector<std::decay_t<decltype(transform(*c_beg))>> {
 
         auto lower = std::lower_bound(c_beg, c_end, prefix);
-        auto higher = std::upper_bound(lower, c_end, prefix, [&str_ext](std::string_view pre, const auto &element) {
-            std::string_view val = str_ext(element);
-            return pre.substr(0, std::min(val.size(), pre.size())) < val.substr(0, std::min(val.size(), pre.size()));
-        });
+        auto higher = std::upper_bound(lower, c_end, prefix,
+                                       [&str_ext](std::string_view pre, const auto &element) {
+                                           std::string_view val = str_ext(element);
+                                           return pre.substr(0, std::min(val.size(), pre.size())) <
+                                                  val.substr(0, std::min(val.size(), pre.size()));
+                                       });
 
         std::vector<std::decay_t<decltype(transform(*c_beg))>> ans;
         std::transform(lower, higher, std::back_inserter(ans), std::forward<Transform>(transform));
@@ -205,7 +200,8 @@ namespace misc {
     // is_space is a predicate returning a value greater than 0 if a given string_view starts by a space and 0 otherwise
     // str_ext is an unary functor maping decltype(*beg) to std::string_view
     template<typename ForwardIt, typename IsSpace, typename StrExtractor = identity>
-    ForwardIt find_first_prefixed(std::string_view prefix, ForwardIt beg, ForwardIt end, IsSpace &&is_space, StrExtractor &&str_ext = {}) {
+    ForwardIt find_first_prefixed(std::string_view prefix, ForwardIt beg, ForwardIt end,
+                                  IsSpace &&is_space, StrExtractor &&str_ext = {}) {
         // std::string_view::start_with is C++20
         auto start_with = [&](std::string_view str, std::string_view pr) {
             std::string_view::size_type idx = 0;
@@ -216,14 +212,11 @@ namespace misc {
             return (str.size() - idx) >= pr.size() ? str.substr(idx, pr.size()) == pr : false;
         };
         while (beg != end) {
-            if (start_with(str_ext(*beg), prefix)) {
-                return beg;
-            }
+            if (start_with(str_ext(*beg), prefix)) { return beg; }
             ++beg;
         }
         return beg;
     }
-
 
     namespace details {
         template<typename AlwaysVoid, template<typename...> typename Op, typename... Args>
@@ -251,7 +244,8 @@ namespace misc {
 
     // compile time function detection
     template<template<typename...> typename Op, typename ReturnType, typename... Args>
-    constexpr bool is_detected_with_return_type_v = std::is_same_v<is_detected_t<Op, Args...>, ReturnType>;
+    constexpr bool is_detected_with_return_type_v =
+            std::is_same_v<is_detected_t<Op, Args...>, ReturnType>;
 
     // dummy mutex
     struct no_mutex
@@ -264,7 +258,6 @@ namespace misc {
 }// namespace misc
 
 #endif//IMTERM_MISC_HPP
-
 
 #ifndef IMTERM_UTILS_HPP
 #define IMTERM_UTILS_HPP
@@ -299,10 +292,12 @@ namespace ImTerm {
     {
         using value_type = misc::non_void_t<typename Terminal::value_type>;
 
-        value_type &val;// misc::details::structured_void if Terminal::value_type is void, reference to Terminal::value_type otherwise
-        Terminal &term; // reference to the ImTerm::terminal that called the command
+        value_type &
+                val;// misc::details::structured_void if Terminal::value_type is void, reference to Terminal::value_type otherwise
+        Terminal &term;// reference to the ImTerm::terminal that called the command
 
-        std::vector<std::string> command_line;// list of arguments the user specified in the command line. command_line[0] is the command name
+        std::vector<std::string>
+                command_line;// list of arguments the user specified in the command line. command_line[0] is the command name
     };
 
     // structure used to represent a command
@@ -310,13 +305,15 @@ namespace ImTerm {
     struct command_t
     {
         using command_function = void (*)(argument_t<Terminal> &);
-        using further_completion_function = std::vector<std::string> (*)(argument_t<Terminal> &argument_line);
+        using further_completion_function =
+                std::vector<std::string> (*)(argument_t<Terminal> &argument_line);
 
         std::string_view name{};       // name of the command
         std::string_view description{};// short description
         command_function call{};       // function doing whatever you want
 
-        further_completion_function complete{};// function called when users starts typing in arguments for your command
+        further_completion_function
+                complete{};// function called when users starts typing in arguments for your command
         // return a vector of strings containing possible completions.
 
         friend constexpr bool operator<(const command_t &lhs, const command_t &rhs) {
@@ -335,8 +332,8 @@ namespace ImTerm {
     struct message
     {
         enum class type {
-            user_input,            // terminal wants to log user input
-            error,                 // terminal wants to log an error in user input
+            user_input,// terminal wants to log user input
+            error,     // terminal wants to log an error in user input
             cmd_history_completion,// terminal wants to log that it replaced "!:*" family input in the appropriate string
         };
         struct severity
@@ -391,34 +388,37 @@ namespace ImTerm {
         {
             float r, g, b, a;
 
-            ImVec4 imv4() const {
-                return {r, g, b, a};
-            }
+            ImVec4 imv4() const { return {r, g, b, a}; }
         };
 
         std::string_view name;// if you want to give a name to the theme
 
-        std::optional<constexpr_color> text;                       // global text color
-        std::optional<constexpr_color> window_bg;                  // ImGuiCol_WindowBg & ImGuiCol_ChildBg
-        std::optional<constexpr_color> border;                     // ImGuiCol_Border
-        std::optional<constexpr_color> border_shadow;              // ImGuiCol_BorderShadow
-        std::optional<constexpr_color> button;                     // ImGuiCol_Button
-        std::optional<constexpr_color> button_hovered;             // ImGuiCol_ButtonHovered
-        std::optional<constexpr_color> button_active;              // ImGuiCol_ButtonActive
-        std::optional<constexpr_color> frame_bg;                   // ImGuiCol_FrameBg
-        std::optional<constexpr_color> frame_bg_hovered;           // ImGuiCol_FrameBgHovered
-        std::optional<constexpr_color> frame_bg_active;            // ImGuiCol_FrameBgActive
-        std::optional<constexpr_color> text_selected_bg;           // ImGuiCol_TextSelectedBg, for text input field
-        std::optional<constexpr_color> check_mark;                 // ImGuiCol_CheckMark
-        std::optional<constexpr_color> title_bg;                   // ImGuiCol_TitleBg
-        std::optional<constexpr_color> title_bg_active;            // ImGuiCol_TitleBgActive
-        std::optional<constexpr_color> title_bg_collapsed;         // ImGuiCol_TitleBgCollapsed
-        std::optional<constexpr_color> message_panel;              // logging panel
-        std::optional<constexpr_color> auto_complete_selected;     // left-most text in the autocompletion OSD
-        std::optional<constexpr_color> auto_complete_non_selected; // every text but the left most in the autocompletion OSD
-        std::optional<constexpr_color> auto_complete_separator;    // color for the separator in the autocompletion OSD
-        std::optional<constexpr_color> cmd_backlog;                // color for message type user_input
-        std::optional<constexpr_color> cmd_history_completed;      // color for message type cmd_history_completion
+        std::optional<constexpr_color> text;            // global text color
+        std::optional<constexpr_color> window_bg;       // ImGuiCol_WindowBg & ImGuiCol_ChildBg
+        std::optional<constexpr_color> border;          // ImGuiCol_Border
+        std::optional<constexpr_color> border_shadow;   // ImGuiCol_BorderShadow
+        std::optional<constexpr_color> button;          // ImGuiCol_Button
+        std::optional<constexpr_color> button_hovered;  // ImGuiCol_ButtonHovered
+        std::optional<constexpr_color> button_active;   // ImGuiCol_ButtonActive
+        std::optional<constexpr_color> frame_bg;        // ImGuiCol_FrameBg
+        std::optional<constexpr_color> frame_bg_hovered;// ImGuiCol_FrameBgHovered
+        std::optional<constexpr_color> frame_bg_active; // ImGuiCol_FrameBgActive
+        std::optional<constexpr_color>
+                text_selected_bg;                 // ImGuiCol_TextSelectedBg, for text input field
+        std::optional<constexpr_color> check_mark;// ImGuiCol_CheckMark
+        std::optional<constexpr_color> title_bg;  // ImGuiCol_TitleBg
+        std::optional<constexpr_color> title_bg_active;   // ImGuiCol_TitleBgActive
+        std::optional<constexpr_color> title_bg_collapsed;// ImGuiCol_TitleBgCollapsed
+        std::optional<constexpr_color> message_panel;     // logging panel
+        std::optional<constexpr_color>
+                auto_complete_selected;// left-most text in the autocompletion OSD
+        std::optional<constexpr_color>
+                auto_complete_non_selected;// every text but the left most in the autocompletion OSD
+        std::optional<constexpr_color>
+                auto_complete_separator;// color for the separator in the autocompletion OSD
+        std::optional<constexpr_color> cmd_backlog;// color for message type user_input
+        std::optional<constexpr_color>
+                cmd_history_completed;// color for message type cmd_history_completion
         std::optional<constexpr_color> log_level_drop_down_list_bg;// ImGuiCol_PopupBg
         std::optional<constexpr_color> log_level_active;           // ImGuiCol_HeaderActive
         std::optional<constexpr_color> log_level_hovered;          // ImGuiCol_HeaderHovered
@@ -431,9 +431,9 @@ namespace ImTerm {
         std::optional<constexpr_color> filter_text;                // user input in log filter
         std::optional<constexpr_color> matching_text;              // text matching the log filter
 
-        std::array<std::optional<constexpr_color>, message::severity::critical + 1> log_level_colors{};// colors by severity
+        std::array<std::optional<constexpr_color>, message::severity::critical + 1>
+                log_level_colors{};// colors by severity
     };
-
 
     namespace themes {
 
@@ -524,15 +524,11 @@ namespace ImTerm {
                 },
         };
 
-        constexpr std::array list{
-                cherry,
-                light};
+        constexpr std::array list{cherry, light};
     }// namespace themes
 }// namespace ImTerm
 
-
 #endif//IMTERM_UTILS_HPP
-
 
 #ifndef IMTERM_TERMINAL_HPP
 #define IMTERM_TERMINAL_HPP
@@ -560,34 +556,46 @@ namespace ImTerm {
 
             template<typename T>
             using find_commands_by_prefix_method_v1 =
-                    decltype(std::declval<T &>().find_commands_by_prefix(std::declval<std::string_view>()));
+                    decltype(std::declval<T &>().find_commands_by_prefix(
+                            std::declval<std::string_view>()));
 
             template<typename T>
             using find_commands_by_prefix_method_v2 =
-                    decltype(std::declval<T &>().find_commands_by_prefix(std::declval<const char *>(),
-                                                                         std::declval<const char *>()));
+                    decltype(std::declval<T &>().find_commands_by_prefix(
+                            std::declval<const char *>(), std::declval<const char *>()));
 
             template<typename T>
             using list_commands_method = decltype(std::declval<T &>().list_commands());
 
             template<typename T>
-            using format_method = decltype(std::declval<T &>().format(std::declval<std::string>(), std::declval<message::type>()));
+            using format_method = decltype(std::declval<T &>().format(
+                    std::declval<std::string>(), std::declval<message::type>()));
 
             static_assert(
-                    misc::is_detected_with_return_type_v<find_commands_by_prefix_method_v1, std::vector<CommandTypeCref>, TerminalHelper>,
-                    "TerminalHelper should implement the method 'std::vector<command_type_cref> find_command_by_prefix(std::string_view)'. "
+                    misc::is_detected_with_return_type_v<find_commands_by_prefix_method_v1,
+                                                         std::vector<CommandTypeCref>,
+                                                         TerminalHelper>,
+                    "TerminalHelper should implement the method 'std::vector<command_type_cref> "
+                    "find_command_by_prefix(std::string_view)'. "
                     "See term::terminal_helper_example for reference");
             static_assert(
-                    misc::is_detected_with_return_type_v<find_commands_by_prefix_method_v2, std::vector<CommandTypeCref>, TerminalHelper>,
-                    "TerminalHelper should implement the method 'std::vector<command_type_cref> find_command_by_prefix(const char*, const char*)'. "
+                    misc::is_detected_with_return_type_v<find_commands_by_prefix_method_v2,
+                                                         std::vector<CommandTypeCref>,
+                                                         TerminalHelper>,
+                    "TerminalHelper should implement the method 'std::vector<command_type_cref> "
+                    "find_command_by_prefix(const char*, const char*)'. "
                     "See term::terminal_helper_example for reference");
             static_assert(
-                    misc::is_detected_with_return_type_v<list_commands_method, std::vector<CommandTypeCref>, TerminalHelper>,
-                    "TerminalHelper should implement the method 'std::vector<command_type_cref> list_commands()'. "
+                    misc::is_detected_with_return_type_v<
+                            list_commands_method, std::vector<CommandTypeCref>, TerminalHelper>,
+                    "TerminalHelper should implement the method 'std::vector<command_type_cref> "
+                    "list_commands()'. "
                     "See term::terminal_helper_example for reference");
             static_assert(
-                    misc::is_detected_with_return_type_v<format_method, std::optional<message>, TerminalHelper>,
-                    "TerminalHelper should implement the method 'std::optional<term::message> format(std::string, term::message::type)'. "
+                    misc::is_detected_with_return_type_v<format_method, std::optional<message>,
+                                                         TerminalHelper>,
+                    "TerminalHelper should implement the method 'std::optional<term::message> "
+                    "format(std::string, term::message::type)'. "
                     "See term::terminal_helper_example for reference");
         };
     }// namespace details
@@ -603,28 +611,33 @@ namespace ImTerm {
         using command_type_cref = std::reference_wrapper<const command_type>;
         using argument_type = argument_t<terminal>;
 
-        using terminal_helper_is_valid = details::assert_wellformed<TerminalHelper, command_type_cref>;
+        using terminal_helper_is_valid =
+                details::assert_wellformed<TerminalHelper, command_type_cref>;
 
-        inline static const std::vector<config_panels> DEFAULT_ORDER = {config_panels::clearbutton,
-                                                                        config_panels::autoscroll, config_panels::autowrap, config_panels::long_filter, config_panels::loglevel};
+        inline static const std::vector<config_panels> DEFAULT_ORDER = {
+                config_panels::clearbutton, config_panels::autoscroll, config_panels::autowrap,
+                config_panels::long_filter, config_panels::loglevel};
 
         // You shall call this constructor you used a non void value_type
-        template<typename T = value_type, typename = std::enable_if_t<!std::is_same_v<T, misc::details::structured_void>>>
-        explicit terminal(value_type &arg_value, const char *window_name_ = "terminal", int base_width_ = 900,
-                          int base_height_ = 200, std::shared_ptr<TerminalHelper> th = std::make_shared<TerminalHelper>())
-            : terminal(arg_value, window_name_, base_width_, base_height_, std::move(th), terminal_helper_is_valid{}) {}
-
+        template<typename T = value_type,
+                 typename = std::enable_if_t<!std::is_same_v<T, misc::details::structured_void>>>
+        explicit terminal(value_type &arg_value, const char *window_name_ = "terminal",
+                          int base_width_ = 900, int base_height_ = 200,
+                          std::shared_ptr<TerminalHelper> th = std::make_shared<TerminalHelper>())
+            : terminal(arg_value, window_name_, base_width_, base_height_, std::move(th),
+                       terminal_helper_is_valid{}) {}
 
         // You shall call this constructor you used a void value_type
-        template<typename T = value_type, typename = std::enable_if_t<std::is_same_v<T, misc::details::structured_void>>>
+        template<typename T = value_type,
+                 typename = std::enable_if_t<std::is_same_v<T, misc::details::structured_void>>>
         explicit terminal(const char *window_name_ = "terminal", int base_width_ = 900,
-                          int base_height_ = 200, std::shared_ptr<TerminalHelper> th = std::make_shared<TerminalHelper>())
-            : terminal(misc::details::no_value, window_name_, base_width_, base_height_, std::move(th), terminal_helper_is_valid{}) {}
+                          int base_height_ = 200,
+                          std::shared_ptr<TerminalHelper> th = std::make_shared<TerminalHelper>())
+            : terminal(misc::details::no_value, window_name_, base_width_, base_height_,
+                       std::move(th), terminal_helper_is_valid{}) {}
 
         // Returns the underlying terminal helper
-        std::shared_ptr<TerminalHelper> get_terminal_helper() {
-            return m_t_helper;
-        }
+        std::shared_ptr<TerminalHelper> get_terminal_helper() { return m_t_helper; }
 
         // shows the terminal. Call at each frame (in a more ImGui style, this would be something like ImGui::terminal(....);
         // returns true if the terminal thinks it should still be displayed next frame, false if it thinks it should be hidden
@@ -632,14 +645,10 @@ namespace ImTerm {
         bool show(const std::vector<config_panels> &panels_order = DEFAULT_ORDER) noexcept;
 
         // returns the command line history
-        const std::vector<std::string> &get_history() const noexcept {
-            return m_command_history;
-        }
+        const std::vector<std::string> &get_history() const noexcept { return m_command_history; }
 
         // if invoked, the next call to "show" will return false
-        void set_should_close() noexcept {
-            m_close_request = true;
-        }
+        void set_should_close() noexcept { m_close_request = true; }
 
         // clears all theme's optionals
         void reset_colors() noexcept;
@@ -651,14 +660,10 @@ namespace ImTerm {
         }
 
         // set whether the autocompletion OSD should be above/under the text input, or if it should be disabled
-        void set_autocomplete_pos(position p) {
-            m_autocomplete_pos = p;
-        }
+        void set_autocomplete_pos(position p) { m_autocomplete_pos = p; }
 
         // returns current autocompletion position
-        position get_autocomplete_pos() const {
-            return m_autocomplete_pos;
-        }
+        position get_autocomplete_pos() const { return m_autocomplete_pos; }
 
         // logs a text to the message panel
         // added as terminal message with info severity
@@ -672,9 +677,7 @@ namespace ImTerm {
 
         // logs a colorless text to the message panel
         // added as a terminal message with info severity,
-        void add_text(std::string str) {
-            add_text(str, 0, 0);
-        }
+        void add_text(std::string str) { add_text(str, 0, 0); }
 
         // logs a text to the message panel
         // added as terminal message with warn severity
@@ -688,65 +691,53 @@ namespace ImTerm {
 
         // logs a colorless text to the message panel
         // added as terminal message with warn severity
-        void add_text_err(std::string str) {
-            add_text_err(str, 0, 0);
-        }
+        void add_text_err(std::string str) { add_text_err(str, 0, 0); }
 
         // logs a message to the message panel
-        void add_message(const message &msg) {
-            add_message(message{msg});
-        }
+        void add_message(const message &msg) { add_message(message{msg}); }
         void add_message(message &&msg);
 
         // clears the message panel
         void clear();
 
         message::severity::severity_t log_level() noexcept {
-            return (message::severity::severity_t)((message::severity::severity_t) m_level + (message::severity::severity_t) m_lowest_log_level_val);
+            return (message::severity::severity_t)(
+                    (message::severity::severity_t) m_level +
+                    (message::severity::severity_t) m_lowest_log_level_val);
         }
 
         void log_level(message::severity::severity_t new_level) noexcept {
-            if (m_lowest_log_level_val > new_level) {
-                set_min_log_level(new_level);
-            }
+            if (m_lowest_log_level_val > new_level) { set_min_log_level(new_level); }
             m_level = new_level - m_lowest_log_level_val;
         }
 
         // returns the text used to label the button that clears the message panel
         // set it to an empty optional if you don't want the button to be displayed
-        std::optional<std::string> &clear_text() noexcept {
-            return m_clear_text;
-        }
+        std::optional<std::string> &clear_text() noexcept { return m_clear_text; }
 
         // returns the text used to label the checkbox enabling or disabling message panel auto scrolling
         // set it to an empty optional if you don't want the checkbox to be displayed
-        std::optional<std::string> &autoscroll_text() noexcept {
-            return m_autoscroll_text;
-        }
+        std::optional<std::string> &autoscroll_text() noexcept { return m_autoscroll_text; }
 
         // returns the text used to label the checkbox enabling or disabling message panel text auto wrap
         // set it to an empty optional if you don't want the checkbox to be displayed
-        std::optional<std::string> &autowrap_text() noexcept {
-            return m_autowrap_text;
-        }
+        std::optional<std::string> &autowrap_text() noexcept { return m_autowrap_text; }
 
         // returns the text used to label the drop down list used to select the minimum severity to be displayed
         // set it to an empty optional if you don't want the drop down list to be displayed
-        std::optional<std::string> &log_level_text() noexcept {
-            return m_log_level_text;
-        }
+        std::optional<std::string> &log_level_text() noexcept { return m_log_level_text; }
 
         // returns the text used to label the text input used to filter out logs
         // set it to an empty optional if you don't want the filter to be displayed
-        std::optional<std::string> &filter_hint() noexcept {
-            return m_filter_hint;
-        }
+        std::optional<std::string> &filter_hint() noexcept { return m_filter_hint; }
 
         // allows you to set the text in the log_level drop down list
         // the std::string_view/s are copied, so you don't need to manage their life-time
         // set log_level_text() to an empty optional if you want to disable the drop down list
-        void set_level_list_text(std::string_view trace_str, std::string_view debug_str, std::string_view info_str,
-                                 std::string_view warn_str, std::string_view err_str, std::string_view critical_str, std::string_view none_str);
+        void set_level_list_text(std::string_view trace_str, std::string_view debug_str,
+                                 std::string_view info_str, std::string_view warn_str,
+                                 std::string_view err_str, std::string_view critical_str,
+                                 std::string_view none_str);
 
         // sets the maximum verbosity a user can set in the terminal with the log_level drop down list
         // for instance, if you pass 'info', the user will be able to select 'info','warning','error', 'critical', and 'none',
@@ -754,9 +745,7 @@ namespace ImTerm {
         void set_min_log_level(message::severity::severity_t level);
 
         // Adds custom flags to the terminal window
-        void set_flags(ImGuiWindowFlags flags) noexcept {
-            m_flags = flags;
-        }
+        void set_flags(ImGuiWindowFlags flags) noexcept { m_flags = flags; }
 
         // Sets the maximum number of saved messages
         void set_max_log_len(std::vector<message>::size_type max_size);
@@ -784,32 +773,18 @@ namespace ImTerm {
         }
 
         // Get last window size
-        ImVec2 get_size() const noexcept {
-            return m_current_size;
-        }
+        ImVec2 get_size() const noexcept { return m_current_size; }
 
         // Allows / disallow resize on a given axis
-        void allow_x_resize() noexcept {
-            m_allow_x_resize = true;
-        }
+        void allow_x_resize() noexcept { m_allow_x_resize = true; }
 
-        void allow_y_resize() noexcept {
-            m_allow_y_resize = true;
-        }
-        void disallow_x_resize() noexcept {
-            m_allow_x_resize = false;
-        }
+        void allow_y_resize() noexcept { m_allow_y_resize = true; }
+        void disallow_x_resize() noexcept { m_allow_x_resize = false; }
 
-        void disallow_y_resize() noexcept {
-            m_allow_y_resize = false;
-        }
-        void set_x_resize_allowance(bool allowed) noexcept {
-            m_allow_x_resize = allowed;
-        }
+        void disallow_y_resize() noexcept { m_allow_y_resize = false; }
+        void set_x_resize_allowance(bool allowed) noexcept { m_allow_x_resize = allowed; }
 
-        void set_y_resize_allowance(bool allowed) noexcept {
-            m_allow_y_resize = allowed;
-        }
+        void set_y_resize_allowance(bool allowed) noexcept { m_allow_y_resize = allowed; }
 
         // executes a statement, simulating user input
         // returns false if given string is too long to be interpreted
@@ -827,7 +802,9 @@ namespace ImTerm {
         }
 
     private:
-        explicit terminal(value_type &arg_value, const char *window_name_, int base_width_, int base_height_, std::shared_ptr<TerminalHelper> th, terminal_helper_is_valid &&);
+        explicit terminal(value_type &arg_value, const char *window_name_, int base_width_,
+                          int base_height_, std::shared_ptr<TerminalHelper> th,
+                          terminal_helper_is_valid &&);
 
         void try_log(std::string_view str, message::type type);
 
@@ -850,10 +827,11 @@ namespace ImTerm {
 
         void push_message(message &&);
 
-        std::optional<std::string> resolve_history_reference(std::string_view str, bool &modified) const noexcept;
+        std::optional<std::string> resolve_history_reference(std::string_view str,
+                                                             bool &modified) const noexcept;
 
-        std::pair<bool, std::string> resolve_history_references(std::string_view str, bool &modified) const;
-
+        std::pair<bool, std::string> resolve_history_references(std::string_view str,
+                                                                bool &modified) const;
 
         static int command_line_callback_st(ImGuiInputTextCallbackData *data) noexcept;
 
@@ -867,14 +845,14 @@ namespace ImTerm {
             return 0;
         }
 
-        static int try_push_style(ImGuiCol col, const std::optional<theme::constexpr_color> &color) {
+        static int try_push_style(ImGuiCol col,
+                                  const std::optional<theme::constexpr_color> &color) {
             if (color) {
                 ImGui::PushStyleColor(col, color->imv4());
                 return 1;
             }
             return 0;
         }
-
 
         int is_space(std::string_view str) const;
 
@@ -885,15 +863,14 @@ namespace ImTerm {
         // Returns a vector containing each element that were space separated
         // Returns an empty optional if a '"' char was not matched with a closing '"',
         //                except if ignore_non_match was set to true
-        std::optional<std::vector<std::string>> split_by_space(std::string_view in, bool ignore_non_match = false) const;
+        std::optional<std::vector<std::string>> split_by_space(std::string_view in,
+                                                               bool ignore_non_match = false) const;
 
         inline void try_lock() {
             while (m_flag.test_and_set(std::memory_order_seq_cst)) {}
         }
 
-        inline void try_unlock() {
-            m_flag.clear(std::memory_order_seq_cst);
-        }
+        inline void try_unlock() { m_flag.clear(std::memory_order_seq_cst); }
 
         ////////////
 
@@ -935,13 +912,14 @@ namespace ImTerm {
         std::optional<std::string> m_autowrap_text;
         std::optional<std::string> m_filter_hint;
         std::string m_level_list_text{};
-        const char *m_longest_log_level{nullptr};// points to the longest log level, in m_level_list_text
-        const char *m_lowest_log_level{nullptr}; // points to the lowest log level possible, in m_level_list_text
+        const char *m_longest_log_level{
+                nullptr};// points to the longest log level, in m_level_list_text
+        const char *m_lowest_log_level{
+                nullptr};// points to the lowest log level possible, in m_level_list_text
         message::severity::severity_t m_lowest_log_level_val{message::severity::trace};
 
         small_buffer_type m_log_text_filter_buffer{};
         small_buffer_type::size_type m_log_text_filter_buffer_usage{0u};
-
 
         // message panel variables
         unsigned long m_last_flush_at_history{0u};// for the [-n] indicator on command line
@@ -950,11 +928,11 @@ namespace ImTerm {
         std::vector<message>::size_type m_max_log_len{5'000};// TODO: command
         std::vector<message>::size_type m_current_log_oldest_idx{0};
 
-
         // command line variables
         buffer_type m_command_buffer{};
-        buffer_type::size_type m_buffer_usage{0u};// max accessible: command_buffer[buffer_usage - 1]
-                                                  // (buffer_usage might be 0 for empty string)
+        buffer_type::size_type m_buffer_usage{
+                0u};// max accessible: command_buffer[buffer_usage - 1]
+                    // (buffer_usage might be 0 for empty string)
         buffer_type::size_type m_previous_buffer_usage{0u};
         bool m_should_take_focus{false};
 
@@ -981,7 +959,6 @@ namespace ImTerm {
     };
 }// namespace ImTerm
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
@@ -1000,77 +977,108 @@ namespace ImTerm {
 namespace ImTerm {
     namespace details {
         template<typename T>
-        using is_space_method = decltype(std::declval<T &>().is_space(std::declval<std::string_view>()));
+        using is_space_method =
+                decltype(std::declval<T &>().is_space(std::declval<std::string_view>()));
 
         template<typename TerminalHelper>
-        std::enable_if_t<misc::is_detected_v<is_space_method, TerminalHelper>, int> constexpr is_space(std::shared_ptr<TerminalHelper> &t_h, std::string_view str) {
-            static_assert(std::is_same_v<decltype(t_h->is_space(str)), int>, "TerminalHelper::is_space(std::string_view) should return an int");
+        std::enable_if_t<misc::is_detected_v<is_space_method, TerminalHelper>,
+                         int> constexpr is_space(std::shared_ptr<TerminalHelper> &t_h,
+                                                 std::string_view str) {
+            static_assert(std::is_same_v<decltype(t_h->is_space(str)), int>,
+                          "TerminalHelper::is_space(std::string_view) should return an int");
             return t_h->is_space(str);
         }
 
         template<typename TerminalHelper>
-        std::enable_if_t<!misc::is_detected_v<is_space_method, TerminalHelper>, int> constexpr is_space(std::shared_ptr<TerminalHelper> &, std::string_view str) {
+        std::enable_if_t<!misc::is_detected_v<is_space_method, TerminalHelper>,
+                         int> constexpr is_space(std::shared_ptr<TerminalHelper> &,
+                                                 std::string_view str) {
             return str[0] == ' ' ? 1 : 0;
         }
 
         template<typename T>
-        using get_length_method = decltype(std::declval<T &>().get_length(std::declval<std::string_view>()));
+        using get_length_method =
+                decltype(std::declval<T &>().get_length(std::declval<std::string_view>()));
 
         template<typename TerminalHelper>
-        std::enable_if_t<misc::is_detected_v<get_length_method, TerminalHelper>, unsigned long> constexpr get_length(std::shared_ptr<TerminalHelper> &t_h, std::string_view str) {
-            static_assert(std::is_same_v<decltype(t_h->get_length(str)), int>, "TerminalHelper::get_length(std::string_view) should return an int");
+        std::enable_if_t<misc::is_detected_v<get_length_method, TerminalHelper>,
+                         unsigned long> constexpr get_length(std::shared_ptr<TerminalHelper> &t_h,
+                                                             std::string_view str) {
+            static_assert(std::is_same_v<decltype(t_h->get_length(str)), int>,
+                          "TerminalHelper::get_length(std::string_view) should return an int");
             return t_h->get_length(str);
         }
 
         template<typename TerminalHelper>
-        std::enable_if_t<!misc::is_detected_v<get_length_method, TerminalHelper>, unsigned long> constexpr get_length(std::shared_ptr<TerminalHelper> &, std::string_view str) {
+        std::enable_if_t<!misc::is_detected_v<get_length_method, TerminalHelper>,
+                         unsigned long> constexpr get_length(std::shared_ptr<TerminalHelper> &,
+                                                             std::string_view str) {
             return str.size();
         }
 
         template<typename T>
-        using set_terminal_method = decltype(std::declval<T &>().set_terminal(std::declval<terminal<T> &>()));
+        using set_terminal_method =
+                decltype(std::declval<T &>().set_terminal(std::declval<terminal<T> &>()));
 
         template<typename TerminalHelper>
-        std::enable_if_t<misc::is_detected_v<set_terminal_method, TerminalHelper>>
-        assign_terminal(TerminalHelper &helper, terminal<TerminalHelper> &terminal) {
+        std::enable_if_t<misc::is_detected_v<set_terminal_method, TerminalHelper>> assign_terminal(
+                TerminalHelper &helper, terminal<TerminalHelper> &terminal) {
             helper.set_terminal(terminal);
         }
 
         template<typename TerminalHelper>
-        std::enable_if_t<!misc::is_detected_v<set_terminal_method, TerminalHelper>>
-        assign_terminal(TerminalHelper &helper, terminal<TerminalHelper> &terminal) {}
+        std::enable_if_t<!misc::is_detected_v<set_terminal_method, TerminalHelper>> assign_terminal(
+                TerminalHelper &helper, terminal<TerminalHelper> &terminal) {}
 
         // simple as in "non regex"
-        inline std::map<std::string::const_iterator, std::pair<unsigned long, std::optional<theme::constexpr_color>>>
-        simple_colors_split(std::string_view filter, const message &msg, const std::optional<theme::constexpr_color> &matching_text_color) {
+        inline std::map<std::string::const_iterator,
+                        std::pair<unsigned long, std::optional<theme::constexpr_color>>>
+        simple_colors_split(std::string_view filter, const message &msg,
+                            const std::optional<theme::constexpr_color> &matching_text_color) {
 
-            std::map<std::string::const_iterator, std::pair<unsigned long, std::optional<theme::constexpr_color>>> colors;
+            std::map<std::string::const_iterator,
+                     std::pair<unsigned long, std::optional<theme::constexpr_color>>>
+                    colors;
             if (filter.empty()) {
-                colors.emplace(msg.value.cbegin() + msg.color_end, std::pair{msg.value.size() - msg.color_end, std::optional<theme::constexpr_color>{}});
-                colors.emplace(msg.value.cbegin() + msg.color_beg, std::pair{msg.color_end - msg.color_beg, std::optional<theme::constexpr_color>{}});
-                colors.emplace(msg.value.cbegin(), std::pair{msg.color_beg, std::optional<theme::constexpr_color>{}});
+                colors.emplace(msg.value.cbegin() + msg.color_end,
+                               std::pair{msg.value.size() - msg.color_end,
+                                         std::optional<theme::constexpr_color>{}});
+                colors.emplace(msg.value.cbegin() + msg.color_beg,
+                               std::pair{msg.color_end - msg.color_beg,
+                                         std::optional<theme::constexpr_color>{}});
+                colors.emplace(msg.value.cbegin(),
+                               std::pair{msg.color_beg, std::optional<theme::constexpr_color>{}});
                 return colors;
             }
 
-            auto it = std::search(msg.value.cbegin(), msg.value.cend(), filter.begin(), filter.end());
-            if (it == msg.value.end()) {
-                return colors;
-            }
+            auto it =
+                    std::search(msg.value.cbegin(), msg.value.cend(), filter.begin(), filter.end());
+            if (it == msg.value.end()) { return colors; }
 
             auto distance = static_cast<unsigned long>(std::distance(msg.value.cbegin(), it));
             if (distance > msg.color_beg) {
-                colors.emplace(msg.value.cbegin(), std::pair{msg.color_beg, std::optional<theme::constexpr_color>{}});
+                colors.emplace(msg.value.cbegin(),
+                               std::pair{msg.color_beg, std::optional<theme::constexpr_color>{}});
                 if (distance > msg.color_end) {
-                    colors.emplace(msg.value.cbegin() + msg.color_beg, std::pair{msg.color_end - msg.color_beg, std::optional<theme::constexpr_color>{}});
-                    colors.emplace(msg.value.cbegin() + msg.color_end, std::pair{distance - msg.color_end, std::optional<theme::constexpr_color>{}});
+                    colors.emplace(msg.value.cbegin() + msg.color_beg,
+                                   std::pair{msg.color_end - msg.color_beg,
+                                             std::optional<theme::constexpr_color>{}});
+                    colors.emplace(msg.value.cbegin() + msg.color_end,
+                                   std::pair{distance - msg.color_end,
+                                             std::optional<theme::constexpr_color>{}});
                 } else {
-                    colors.emplace(msg.value.cbegin() + msg.color_beg, std::pair{distance - msg.color_beg, std::optional<theme::constexpr_color>{}});
+                    colors.emplace(msg.value.cbegin() + msg.color_beg,
+                                   std::pair{distance - msg.color_beg,
+                                             std::optional<theme::constexpr_color>{}});
                 }
             } else {
-                colors.emplace(msg.value.cbegin(), std::pair{distance, std::optional<theme::constexpr_color>{}});
-                colors.emplace(msg.value.cbegin() + msg.color_beg, std::pair{0, std::optional<theme::constexpr_color>{}});
+                colors.emplace(msg.value.cbegin(),
+                               std::pair{distance, std::optional<theme::constexpr_color>{}});
+                colors.emplace(msg.value.cbegin() + msg.color_beg,
+                               std::pair{0, std::optional<theme::constexpr_color>{}});
             }
-            colors.emplace(msg.value.cbegin() + msg.color_end, std::pair{0, std::optional<theme::constexpr_color>{}});
+            colors.emplace(msg.value.cbegin() + msg.color_end,
+                           std::pair{0, std::optional<theme::constexpr_color>{}});
 
             std::string::const_iterator last_valid;
             do {
@@ -1079,26 +1087,38 @@ namespace ImTerm {
                 it = std::search(last_valid, msg.value.cend(), filter.begin(), filter.end());
 
                 distance = static_cast<unsigned long>(std::distance(last_valid, it));
-                if (last_valid < msg.value.cbegin() + msg.color_beg && last_valid + distance > msg.value.cbegin() + msg.color_beg) {
+                if (last_valid < msg.value.cbegin() + msg.color_beg &&
+                    last_valid + distance > msg.value.cbegin() + msg.color_beg) {
 
-                    auto mid_point = static_cast<unsigned long>(msg.color_beg + msg.value.cbegin() - last_valid);
-                    colors[last_valid] = std::pair{mid_point, std::optional<theme::constexpr_color>{}};
+                    auto mid_point = static_cast<unsigned long>(msg.color_beg + msg.value.cbegin() -
+                                                                last_valid);
+                    colors[last_valid] =
+                            std::pair{mid_point, std::optional<theme::constexpr_color>{}};
 
                     if (last_valid + distance < msg.value.cbegin() + msg.color_end) {
-                        colors[last_valid + mid_point] = std::pair{distance - mid_point, std::optional<theme::constexpr_color>{}};
+                        colors[last_valid + mid_point] = std::pair{
+                                distance - mid_point, std::optional<theme::constexpr_color>{}};
                     } else {
                         auto len = msg.color_end - msg.color_beg;
-                        colors[last_valid + mid_point] = std::pair{len, std::optional<theme::constexpr_color>{}};
-                        colors[last_valid + mid_point + len] = std::pair{distance - mid_point - len, std::optional<theme::constexpr_color>{}};
+                        colors[last_valid + mid_point] =
+                                std::pair{len, std::optional<theme::constexpr_color>{}};
+                        colors[last_valid + mid_point + len] =
+                                std::pair{distance - mid_point - len,
+                                          std::optional<theme::constexpr_color>{}};
                     }
 
-                } else if (last_valid < msg.value.cbegin() + msg.color_end && last_valid + distance > msg.value.cbegin() + msg.color_end) {
-                    auto mid_point = static_cast<unsigned long>(msg.color_end + msg.value.cbegin() - last_valid);
-                    colors[last_valid] = std::pair{mid_point, std::optional<theme::constexpr_color>{}};
-                    colors[last_valid + mid_point] = std::pair{distance - mid_point, std::optional<theme::constexpr_color>{}};
+                } else if (last_valid < msg.value.cbegin() + msg.color_end &&
+                           last_valid + distance > msg.value.cbegin() + msg.color_end) {
+                    auto mid_point = static_cast<unsigned long>(msg.color_end + msg.value.cbegin() -
+                                                                last_valid);
+                    colors[last_valid] =
+                            std::pair{mid_point, std::optional<theme::constexpr_color>{}};
+                    colors[last_valid + mid_point] = std::pair{
+                            distance - mid_point, std::optional<theme::constexpr_color>{}};
 
                 } else {
-                    colors[last_valid] = std::pair{distance, std::optional<theme::constexpr_color>{}};
+                    colors[last_valid] =
+                            std::pair{distance, std::optional<theme::constexpr_color>{}};
                 }
 
             } while (it != msg.value.cend());
@@ -1106,16 +1126,22 @@ namespace ImTerm {
         }
 
 #ifdef IMTERM_ENABLE_REGEX
-        inline std::map<std::string::const_iterator, std::pair<unsigned long, std::optional<theme::constexpr_color>>>
-        regex_colors_split(std::string_view filter, const message &msg, const std::optional<theme::constexpr_color> &matching_text_color) {
+        inline std::map<std::string::const_iterator,
+                        std::pair<unsigned long, std::optional<theme::constexpr_color>>>
+        regex_colors_split(std::string_view filter, const message &msg,
+                           const std::optional<theme::constexpr_color> &matching_text_color) {
             auto make_pair = [](auto len, std::optional<theme::constexpr_color> color = {}) {
                 return std::pair{static_cast<unsigned long>(len), color};
             };
 
-            std::map<std::string::const_iterator, std::pair<unsigned long, std::optional<theme::constexpr_color>>> colors;
+            std::map<std::string::const_iterator,
+                     std::pair<unsigned long, std::optional<theme::constexpr_color>>>
+                    colors;
             if (filter.empty()) {
-                colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(msg.value.size() - msg.color_end));
-                colors.emplace(msg.value.cbegin() + msg.color_beg, make_pair(msg.color_end - msg.color_beg));
+                colors.emplace(msg.value.cbegin() + msg.color_end,
+                               make_pair(msg.value.size() - msg.color_end));
+                colors.emplace(msg.value.cbegin() + msg.color_beg,
+                               make_pair(msg.color_end - msg.color_beg));
                 colors.emplace(msg.value.cbegin(), make_pair(msg.color_beg));
                 return colors;
             }
@@ -1123,9 +1149,7 @@ namespace ImTerm {
             std::smatch matches;
             std::regex_search(msg.value, matches, std::regex(filter.begin(), filter.end()));
 
-            if (matches.empty()) {
-                return colors;
-            }
+            if (matches.empty()) { return colors; }
 
             const auto &match = matches[0];
             auto match_len = std::distance(match.first, match.second);
@@ -1135,36 +1159,51 @@ namespace ImTerm {
             auto match_end = match_begin + match_len;
             if (match_begin > msg.color_beg) {
                 if (match_begin > msg.color_end) {
-                    colors.emplace(match.second, make_pair(std::distance(match.second, msg.value.cend())));
-                    colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(match_begin - msg.color_end));
-                    colors.emplace(msg.value.cbegin() + msg.color_beg, make_pair(msg.color_end - msg.color_beg));
+                    colors.emplace(match.second,
+                                   make_pair(std::distance(match.second, msg.value.cend())));
+                    colors.emplace(msg.value.cbegin() + msg.color_end,
+                                   make_pair(match_begin - msg.color_end));
+                    colors.emplace(msg.value.cbegin() + msg.color_beg,
+                                   make_pair(msg.color_end - msg.color_beg));
                 } else {
                     if (match_end > msg.color_end) {
-                        colors.emplace(match.second, make_pair(std::distance(match.second, msg.value.cend())));
+                        colors.emplace(match.second,
+                                       make_pair(std::distance(match.second, msg.value.cend())));
                         colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(0u));
-                        colors.emplace(msg.value.cbegin() + msg.color_beg, make_pair(match_begin - msg.color_beg));
+                        colors.emplace(msg.value.cbegin() + msg.color_beg,
+                                       make_pair(match_begin - msg.color_beg));
                     } else {
-                        colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(std::distance(msg.value.begin() + msg.color_end, msg.value.end())));
-                        colors.emplace(match.second, make_pair(std::distance(match.second, msg.value.cbegin() + msg.color_end)));
-                        colors.emplace(msg.value.cbegin() + msg.color_beg, make_pair(match_begin - msg.color_beg));
+                        colors.emplace(msg.value.cbegin() + msg.color_end,
+                                       make_pair(std::distance(msg.value.begin() + msg.color_end,
+                                                               msg.value.end())));
+                        colors.emplace(match.second,
+                                       make_pair(std::distance(
+                                               match.second, msg.value.cbegin() + msg.color_end)));
+                        colors.emplace(msg.value.cbegin() + msg.color_beg,
+                                       make_pair(match_begin - msg.color_beg));
                     }
                 }
                 colors.emplace(msg.value.cbegin(), make_pair(msg.color_beg));
             } else {
                 if (match_end > msg.color_beg) {
                     if (match_end > msg.color_end) {
-                        colors.emplace(msg.value.cbegin() + match_end, make_pair(msg.value.size() - match_end));
+                        colors.emplace(msg.value.cbegin() + match_end,
+                                       make_pair(msg.value.size() - match_end));
                         colors.emplace(msg.value.cbegin(), make_pair(match_begin));
                         colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(0));
                     } else {
-                        colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(msg.value.size() - msg.color_end));
-                        colors.emplace(msg.value.cbegin() + match_end, make_pair(msg.color_end - match_end));
+                        colors.emplace(msg.value.cbegin() + msg.color_end,
+                                       make_pair(msg.value.size() - msg.color_end));
+                        colors.emplace(msg.value.cbegin() + match_end,
+                                       make_pair(msg.color_end - match_end));
                         colors.emplace(msg.value.cbegin() + msg.color_beg, make_pair(0));
                         colors.emplace(msg.value.cbegin(), make_pair(match_begin));
                     }
                 } else {
-                    colors.emplace(msg.value.cbegin() + msg.color_end, make_pair(msg.value.size() - msg.color_end));
-                    colors.emplace(msg.value.cbegin() + msg.color_beg, make_pair(msg.color_end - msg.color_beg));
+                    colors.emplace(msg.value.cbegin() + msg.color_end,
+                                   make_pair(msg.value.size() - msg.color_end));
+                    colors.emplace(msg.value.cbegin() + msg.color_beg,
+                                   make_pair(msg.color_end - msg.color_beg));
                     colors.emplace(match.second, make_pair(msg.color_beg - match_end));
                     colors.emplace(msg.value.cbegin(), make_pair(match_begin));
                 }
@@ -1175,8 +1214,14 @@ namespace ImTerm {
     }// namespace details
 
     template<typename TerminalHelper>
-    terminal<TerminalHelper>::terminal(value_type &arg_value, const char *window_name_, int base_width_, int base_height_, std::shared_ptr<TerminalHelper> th, terminal_helper_is_valid && /*unused*/)
-        : m_argument_value{arg_value}, m_t_helper{std::move(th)}, m_window_name(window_name_), m_base_width(base_width_), m_base_height(base_height_), m_autoscroll_text{"自动滚动"}, m_clear_text{"清空"}, m_log_level_text{"日志等级"}, m_autowrap_text{"自动换行"}, m_filter_hint{"过滤..."} {
+    terminal<TerminalHelper>::terminal(value_type &arg_value, const char *window_name_,
+                                       int base_width_, int base_height_,
+                                       std::shared_ptr<TerminalHelper> th,
+                                       terminal_helper_is_valid && /*unused*/)
+        : m_argument_value{arg_value}, m_t_helper{std::move(th)}, m_window_name(window_name_),
+          m_base_width(base_width_),
+          m_base_height(base_height_), m_autoscroll_text{"自动滚动"}, m_clear_text{"清空"},
+          m_log_level_text{"日志等级"}, m_autowrap_text{"自动换行"}, m_filter_hint{"过滤..."} {
         m_flag.clear();
         assert(m_t_helper != nullptr);
         details::assign_terminal(*m_t_helper, *this);
@@ -1198,25 +1243,32 @@ namespace ImTerm {
 
         if (m_update_height) {
             if (m_update_width) {
-                ImGui::SetNextWindowSizeConstraints({static_cast<float>(m_base_width), static_cast<float>(m_base_height)},
-                                                    {static_cast<float>(m_base_width), static_cast<float>(m_base_height)});
+                ImGui::SetNextWindowSizeConstraints(
+                        {static_cast<float>(m_base_width), static_cast<float>(m_base_height)},
+                        {static_cast<float>(m_base_width), static_cast<float>(m_base_height)});
                 m_update_width = false;
             } else {
-                ImGui::SetNextWindowSizeConstraints({-1.f, static_cast<float>(m_base_height)}, {-1.f, static_cast<float>(m_base_height)});
+                ImGui::SetNextWindowSizeConstraints({-1.f, static_cast<float>(m_base_height)},
+                                                    {-1.f, static_cast<float>(m_base_height)});
             }
             m_update_height = false;
         } else if (m_update_width) {
-            ImGui::SetNextWindowSizeConstraints({static_cast<float>(m_base_width), -1.f}, {static_cast<float>(m_base_width), -1.f});
+            ImGui::SetNextWindowSizeConstraints({static_cast<float>(m_base_width), -1.f},
+                                                {static_cast<float>(m_base_width), -1.f});
             m_update_width = false;
         } else {
             if (!m_allow_x_resize) {
                 if (!m_allow_y_resize) {
                     ImGui::SetNextWindowSizeConstraints(m_current_size, m_current_size);
                 } else {
-                    ImGui::SetNextWindowSizeConstraints({m_current_size.x, 0.f}, {m_current_size.x, std::numeric_limits<float>::infinity()});
+                    ImGui::SetNextWindowSizeConstraints(
+                            {m_current_size.x, 0.f},
+                            {m_current_size.x, std::numeric_limits<float>::infinity()});
                 }
             } else if (!m_allow_y_resize) {
-                ImGui::SetNextWindowSizeConstraints({0.f, m_current_size.y}, {std::numeric_limits<float>::infinity(), m_current_size.y});
+                ImGui::SetNextWindowSizeConstraints(
+                        {0.f, m_current_size.y},
+                        {std::numeric_limits<float>::infinity(), m_current_size.y});
             }
         }
 
@@ -1247,7 +1299,8 @@ namespace ImTerm {
         pop_count += try_push_style(ImGuiCol_ScrollbarGrabHovered, m_colors.scrollbar_grab_hovered);
 
         if (m_has_focus) {
-            ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
+            ImGui::PushStyleColor(ImGuiCol_TitleBg,
+                                  ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive));
             ++pop_count;
             m_has_focus = false;
         }
@@ -1311,7 +1364,8 @@ namespace ImTerm {
     }
 
     template<typename TerminalHelper>
-    void terminal<TerminalHelper>::add_text(std::string str, unsigned int color_beg, unsigned int color_end) {
+    void terminal<TerminalHelper>::add_text(std::string str, unsigned int color_beg,
+                                            unsigned int color_end) {
         message msg;
         msg.is_term_message = true;
         msg.severity = message::severity::info;
@@ -1322,7 +1376,8 @@ namespace ImTerm {
     }
 
     template<typename TerminalHelper>
-    void terminal<TerminalHelper>::add_text_err(std::string str, unsigned int color_beg, unsigned int color_end) {
+    void terminal<TerminalHelper>::add_text_err(std::string str, unsigned int color_beg,
+                                                unsigned int color_end) {
         message msg;
         msg.is_term_message = true;
         msg.severity = message::severity::warn;
@@ -1350,13 +1405,18 @@ namespace ImTerm {
     }
 
     template<typename TerminalHelper>
-    void terminal<TerminalHelper>::set_level_list_text(std::string_view trace_str, std::string_view debug_str, std::string_view info_str, std::string_view warn_str, std::string_view err_str, std::string_view critical_str, std::string_view none_str) {
+    void terminal<TerminalHelper>::set_level_list_text(
+            std::string_view trace_str, std::string_view debug_str, std::string_view info_str,
+            std::string_view warn_str, std::string_view err_str, std::string_view critical_str,
+            std::string_view none_str) {
 
         m_level_list_text.clear();
-        m_level_list_text.reserve(
-                trace_str.size() + 1 + debug_str.size() + 1 + info_str.size() + 1 + warn_str.size() + 1 + err_str.size() + 1 + critical_str.size() + 1 + 1);
+        m_level_list_text.reserve(trace_str.size() + 1 + debug_str.size() + 1 + info_str.size() +
+                                  1 + warn_str.size() + 1 + err_str.size() + 1 +
+                                  critical_str.size() + 1 + 1);
 
-        const std::string_view *const levels[] = {&trace_str, &debug_str, &info_str, &warn_str, &err_str, &critical_str, &none_str};
+        const std::string_view *const levels[] = {&trace_str, &debug_str,    &info_str, &warn_str,
+                                                  &err_str,   &critical_str, &none_str};
 
         for (const std::string_view *const lvl: levels) {
             std::copy(lvl->begin(), lvl->end(), std::back_inserter(m_level_list_text));
@@ -1366,7 +1426,6 @@ namespace ImTerm {
 
         set_min_log_level(m_lowest_log_level_val);
     }
-
 
     template<typename TerminalHelper>
     void terminal<TerminalHelper>::set_min_log_level(message::severity::severity_t level) {
@@ -1401,7 +1460,9 @@ namespace ImTerm {
         for (auto i = 0u; i < std::min(max_size, m_logs.size() - m_current_log_oldest_idx); ++i) {
             new_msg_vect.emplace_back(std::move(m_logs[i + m_current_log_oldest_idx]));
         }
-        for (auto i = 0u; i < std::min(max_size - new_msg_vect.size(), m_logs.size() - new_msg_vect.size()); ++i) {
+        for (auto i = 0u;
+             i < std::min(max_size - new_msg_vect.size(), m_logs.size() - new_msg_vect.size());
+             ++i) {
             new_msg_vect.emplace_back(std::move(m_logs[i]));
         }
         m_logs = std::move(new_msg_vect);
@@ -1433,25 +1494,46 @@ namespace ImTerm {
     }
 
     template<typename TerminalHelper>
-    void terminal<TerminalHelper>::display_settings_bar(const std::vector<config_panels> &panels_order) noexcept {
-        if (panels_order.empty()) {
+    void terminal<TerminalHelper>::display_settings_bar(
+            const std::vector<config_panels> &panels_order) noexcept {
+        if (panels_order.empty()) { return; }
+        if (!m_autoscroll_text && !m_autowrap_text && !m_clear_text && !m_filter_hint &&
+            !m_log_level_text) {
             return;
         }
-        if (!m_autoscroll_text && !m_autowrap_text && !m_clear_text && !m_filter_hint && !m_log_level_text) {
-            return;
-        }
 
-        const float autoscroll_size = !m_autoscroll_text ? 0.f : ImGui::CalcTextSize(m_autoscroll_text->data()).x + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.x;
+        const float autoscroll_size = !m_autoscroll_text
+                                              ? 0.f
+                                              : ImGui::CalcTextSize(m_autoscroll_text->data()).x +
+                                                        ImGui::GetFrameHeight() +
+                                                        ImGui::GetStyle().ItemInnerSpacing.x;
 
-        const float autowrap_size = !m_autowrap_text ? 0.f : ImGui::CalcTextSize(m_autowrap_text->data()).x + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.x;
+        const float autowrap_size = !m_autowrap_text
+                                            ? 0.f
+                                            : ImGui::CalcTextSize(m_autowrap_text->data()).x +
+                                                      ImGui::GetFrameHeight() +
+                                                      ImGui::GetStyle().ItemInnerSpacing.x;
 
-        const float clearbutton_size = !m_clear_text ? 0.f : ImGui::CalcTextSize(m_clear_text->data()).x + ImGui::GetStyle().FramePadding.x * 2.f;
+        const float clearbutton_size = !m_clear_text
+                                               ? 0.f
+                                               : ImGui::CalcTextSize(m_clear_text->data()).x +
+                                                         ImGui::GetStyle().FramePadding.x * 2.f;
 
-        const float filter_size = !m_filter_hint ? 0.f : ImGui::CalcTextSize(m_filter_hint->data()).x + ImGui::GetStyle().FramePadding.x * 2.f;
+        const float filter_size = !m_filter_hint ? 0.f
+                                                 : ImGui::CalcTextSize(m_filter_hint->data()).x +
+                                                           ImGui::GetStyle().FramePadding.x * 2.f;
 
-        const float loglevel_selector_size = !m_log_level_text ? 0.f : ImGui::CalcTextSize(m_longest_log_level).x + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.x * 2.f;
+        const float loglevel_selector_size =
+                !m_log_level_text
+                        ? 0.f
+                        : ImGui::CalcTextSize(m_longest_log_level).x + ImGui::GetFrameHeight() +
+                                  ImGui::GetStyle().ItemInnerSpacing.x * 2.f;
 
-        const float loglevel_global_size = !m_log_level_text ? 0.f : ImGui::CalcTextSize(m_log_level_text->data()).x + ImGui::GetStyle().ItemSpacing.x + loglevel_selector_size;
+        const float loglevel_global_size =
+                !m_log_level_text
+                        ? 0.f
+                        : ImGui::CalcTextSize(m_log_level_text->data()).x +
+                                  ImGui::GetStyle().ItemSpacing.x + loglevel_selector_size;
 
         unsigned space_consumer_count = 0u;
         float required_space = ImGui::GetStyle().ItemSpacing.x * (panels_order.size() - 1);
@@ -1482,13 +1564,13 @@ namespace ImTerm {
             }
         }
 
-        float consumer_width = std::max((ImGui::GetContentRegionAvail().x - required_space) / static_cast<float>(space_consumer_count), 0.1f);
+        float consumer_width = std::max((ImGui::GetContentRegionAvail().x - required_space) /
+                                                static_cast<float>(space_consumer_count),
+                                        0.1f);
 
         bool same_line_req{false};
         auto same_line = [&same_line_req]() {
-            if (same_line_req) {
-                ImGui::SameLine();
-            }
+            if (same_line_req) { ImGui::SameLine(); }
             same_line_req = true;
         };
 
@@ -1499,8 +1581,11 @@ namespace ImTerm {
                 pop_count += try_push_style(ImGuiCol_Text, m_colors.filter_text);
 
                 ImGui::PushItemWidth(size);
-                if (ImGui::InputTextWithHint("##terminal:settings:text_filter", m_filter_hint->data(), m_log_text_filter_buffer.data(), m_log_text_filter_buffer.size())) {
-                    m_log_text_filter_buffer_usage = misc::strnlen(m_log_text_filter_buffer.data(), m_log_text_filter_buffer.size());
+                if (ImGui::InputTextWithHint("##terminal:settings:text_filter",
+                                             m_filter_hint->data(), m_log_text_filter_buffer.data(),
+                                             m_log_text_filter_buffer.size())) {
+                    m_log_text_filter_buffer_usage = misc::strnlen(m_log_text_filter_buffer.data(),
+                                                                   m_log_text_filter_buffer.size());
                 }
                 ImGui::PopItemWidth();
 
@@ -1532,9 +1617,7 @@ namespace ImTerm {
                     break;
                 case config_panels::clearbutton:
                     if (m_clear_text) {
-                        if (ImGui::Button(m_clear_text->data())) {
-                            clear();
-                        }
+                        if (ImGui::Button(m_clear_text->data())) { clear(); }
                     } else {
                         ImGui::Dummy(ImVec2(clearbutton_size, 1.f));
                     }
@@ -1547,11 +1630,13 @@ namespace ImTerm {
                     break;
                 case config_panels::loglevel:
                     if (m_log_level_text) {
-                        ImGui::TextUnformatted(m_log_level_text->data(), m_log_level_text->data() + m_log_level_text->size());
+                        ImGui::TextUnformatted(m_log_level_text->data(),
+                                               m_log_level_text->data() + m_log_level_text->size());
 
                         ImGui::SameLine();
                         ImGui::PushItemWidth(loglevel_selector_size);
-                        ImGui::Combo("##terminal:log_level_selector:combo", &m_level, m_lowest_log_level);
+                        ImGui::Combo("##terminal:log_level_selector:combo", &m_level,
+                                     m_lowest_log_level);
                         ImGui::PopItemWidth();
                     } else {
                         ImGui::Dummy(ImVec2(loglevel_global_size, 1.f));
@@ -1570,12 +1655,15 @@ namespace ImTerm {
     void terminal<TerminalHelper>::display_messages() noexcept {
 
         ImVec2 avail_space = ImGui::GetContentRegionAvail();
-        float commandline_height = ImGui::CalcTextSize("a").y + ImGui::GetStyle().FramePadding.y * 4.f;
+        float commandline_height =
+                ImGui::CalcTextSize("a").y + ImGui::GetStyle().FramePadding.y * 4.f;
         if (avail_space.y > commandline_height) {
 
             int style_push_count = try_push_style(ImGuiCol_ChildBg, m_colors.message_panel);
-            if (ImGui::BeginChild("terminal:logs_window", ImVec2(avail_space.x, avail_space.y - commandline_height), false,
-                                  ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoTitleBar)) {
+            if (ImGui::BeginChild("terminal:logs_window",
+                                  ImVec2(avail_space.x, avail_space.y - commandline_height), false,
+                                  ImGuiWindowFlags_HorizontalScrollbar |
+                                          ImGuiWindowFlags_NoTitleBar)) {
 
                 unsigned traced_count = 0;
                 void (*text_formatted)(const char *, ...);
@@ -1585,7 +1673,8 @@ namespace ImTerm {
                     text_formatted = ImGui::Text;
                 }
 
-                auto print_single_message = [this, &traced_count, &text_formatted](const message &msg) {
+                auto print_single_message = [this, &traced_count,
+                                             &text_formatted](const message &msg) {
                     if (msg.severity < (m_level + m_lowest_log_level_val) && !msg.is_term_message) {
                         return;
                     }
@@ -1595,43 +1684,54 @@ namespace ImTerm {
                         return;
                     }
 
-                    std::map<std::string::const_iterator, std::pair<unsigned long, std::optional<theme::constexpr_color>>> colors;
+                    std::map<std::string::const_iterator,
+                             std::pair<unsigned long, std::optional<theme::constexpr_color>>>
+                            colors;
 #ifdef IMTERM_ENABLE_REGEX
                     if (m_regex_search) {
                         try {
-                            std::string_view filter{m_log_text_filter_buffer.data(), m_log_text_filter_buffer_usage};
-                            colors = details::regex_colors_split(filter, msg, m_colors.matching_text);
+                            std::string_view filter{m_log_text_filter_buffer.data(),
+                                                    m_log_text_filter_buffer_usage};
+                            colors = details::regex_colors_split(filter, msg,
+                                                                 m_colors.matching_text);
                         } catch (const std::regex_error &) {
                             return;// malformed regex is treated as no match
                         }
                     } else {
-                        std::string_view filter{m_log_text_filter_buffer.data(), m_log_text_filter_buffer_usage};
+                        std::string_view filter{m_log_text_filter_buffer.data(),
+                                                m_log_text_filter_buffer_usage};
                         colors = details::simple_colors_split(filter, msg, m_colors.matching_text);
                     }
 #else
-                    std::string_view filter{m_log_text_filter_buffer.data(), m_log_text_filter_buffer_usage};
+                    std::string_view filter{m_log_text_filter_buffer.data(),
+                                            m_log_text_filter_buffer_usage};
                     colors = details::simple_colors_split(filter, msg, m_colors.matching_text);
 #endif
-                    if (colors.empty()) {
-                        return;
-                    }
+                    if (colors.empty()) { return; }
 
                     unsigned int msg_col_pop = 0u;
                     for (const auto &color: colors) {
                         if (color.first == msg.value.begin() + msg.color_beg) {
                             if (msg.is_term_message) {
                                 if (msg.severity == message::severity::trace) {
-                                    msg_col_pop += try_push_style(ImGuiCol_Text, m_colors.cmd_backlog);
-                                    text_formatted("[%d] ", static_cast<int>(traced_count + m_last_flush_at_history - m_command_history.size()));
+                                    msg_col_pop +=
+                                            try_push_style(ImGuiCol_Text, m_colors.cmd_backlog);
+                                    text_formatted("[%d] ",
+                                                   static_cast<int>(traced_count +
+                                                                    m_last_flush_at_history -
+                                                                    m_command_history.size()));
                                     ++traced_count;
                                     ImGui::SameLine(0.f, 0.f);
                                 } else if (msg.severity == message::severity::debug) {
-                                    msg_col_pop += try_push_style(ImGuiCol_Text, m_colors.cmd_history_completed);
+                                    msg_col_pop += try_push_style(ImGuiCol_Text,
+                                                                  m_colors.cmd_history_completed);
                                 } else {
-                                    msg_col_pop += try_push_style(ImGuiCol_Text, m_colors.log_level_colors[msg.severity]);
+                                    msg_col_pop += try_push_style(
+                                            ImGuiCol_Text, m_colors.log_level_colors[msg.severity]);
                                 }
                             } else {
-                                msg_col_pop += try_push_style(ImGuiCol_Text, m_colors.log_level_colors[msg.severity]);
+                                msg_col_pop += try_push_style(
+                                        ImGuiCol_Text, m_colors.log_level_colors[msg.severity]);
                             }
                         }
                         if (color.first == msg.value.begin() + msg.color_end) {
@@ -1672,8 +1772,10 @@ namespace ImTerm {
 
     template<typename TerminalHelper>
     void terminal<TerminalHelper>::display_command_line() noexcept {
-        if (!m_command_entered && ImGui::GetActiveID() == m_input_text_id && m_input_text_id != 0 && m_current_autocomplete.empty()) {
-            if (m_autocomplete_pos != position::nowhere && m_buffer_usage == 0u && m_current_autocomplete_strings.empty()) {
+        if (!m_command_entered && ImGui::GetActiveID() == m_input_text_id && m_input_text_id != 0 &&
+            m_current_autocomplete.empty()) {
+            if (m_autocomplete_pos != position::nowhere && m_buffer_usage == 0u &&
+                m_current_autocomplete_strings.empty()) {
                 m_current_autocomplete = m_t_helper->list_commands();
             }
         }
@@ -1693,14 +1795,17 @@ namespace ImTerm {
         }
         m_previous_buffer_usage = m_buffer_usage;
 
-        if (ImGui::InputText("##terminal:input_text", m_command_buffer.data(), m_command_buffer.size(),
-                             ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
-                             terminal::command_line_callback_st, this) &&
+        if (ImGui::InputText(
+                    "##terminal:input_text", m_command_buffer.data(), m_command_buffer.size(),
+                    ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
+                    terminal::command_line_callback_st, this) &&
             !m_ignore_next_textinput) {
             m_current_history_selection = {};
             if (m_buffer_usage > 0u && m_command_buffer[m_buffer_usage - 1] == '\0') {
                 --m_buffer_usage;
-            } else if (m_buffer_usage + 1 < m_command_buffer.size() && m_command_buffer[m_buffer_usage + 1] == '\0' && m_command_buffer[m_buffer_usage] != '\0') {
+            } else if (m_buffer_usage + 1 < m_command_buffer.size() &&
+                       m_command_buffer[m_buffer_usage + 1] == '\0' &&
+                       m_command_buffer[m_buffer_usage] != '\0') {
                 ++m_buffer_usage;
             } else {
                 m_buffer_usage = misc::strnlen(m_command_buffer.data(), m_command_buffer.size());
@@ -1714,7 +1819,8 @@ namespace ImTerm {
                         --sp_count;
                         return true;
                     } else {
-                        sp_count = is_space({&c, static_cast<unsigned>(m_command_buffer.data() + m_buffer_usage - &c)});
+                        sp_count = is_space({&c, static_cast<unsigned>(m_command_buffer.data() +
+                                                                       m_buffer_usage - &c)});
                         if (sp_count > 0) {
                             --sp_count;
                             return true;
@@ -1722,10 +1828,12 @@ namespace ImTerm {
                         return false;
                     }
                 };
-                char *beg = std::find_if_not(m_command_buffer.data(), m_command_buffer.data() + m_buffer_usage,
-                                             is_space_lbd);
+                char *beg =
+                        std::find_if_not(m_command_buffer.data(),
+                                         m_command_buffer.data() + m_buffer_usage, is_space_lbd);
                 sp_count = 0;
-                const char *ed = std::find_if(beg, m_command_buffer.data() + m_buffer_usage, is_space_lbd);
+                const char *ed =
+                        std::find_if(beg, m_command_buffer.data() + m_buffer_usage, is_space_lbd);
 
                 if (ed == m_command_buffer.data() + m_buffer_usage) {
                     m_current_autocomplete = m_t_helper->find_commands_by_prefix(beg, ed);
@@ -1734,7 +1842,8 @@ namespace ImTerm {
                 } else {
                     m_command_entered = false;
                     m_current_autocomplete.clear();
-                    std::vector<command_type_cref> cmds = m_t_helper->find_commands_by_prefix(beg, ed);
+                    std::vector<command_type_cref> cmds =
+                            m_t_helper->find_commands_by_prefix(beg, ed);
 
                     if (!cmds.empty()) {
                         std::string_view sv{m_command_buffer.data(), m_buffer_usage};
@@ -1751,9 +1860,7 @@ namespace ImTerm {
         m_ignore_next_textinput = false;
         ImGui::PopItemWidth();
 
-        if (m_input_text_id == 0u) {
-            m_input_text_id = ImGui::GetItemID();
-        }
+        if (m_input_text_id == 0u) { m_input_text_id = ImGui::GetItemID(); }
     }
 
     template<typename TerminalHelper>
@@ -1787,12 +1894,15 @@ namespace ImTerm {
 
     template<typename TerminalHelper>
     void terminal<TerminalHelper>::show_autocomplete() noexcept {
-        constexpr ImGuiWindowFlags overlay_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-        if (m_autocomplete_pos == position::nowhere) {
-            return;
-        }
+        constexpr ImGuiWindowFlags overlay_flags =
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
+                ImGuiWindowFlags_NoNav;
+        if (m_autocomplete_pos == position::nowhere) { return; }
 
-        if ((m_input_text_id == ImGui::GetActiveID() || m_should_take_focus) && (!m_current_autocomplete.empty() || !m_current_autocomplete_strings.empty())) {
+        if ((m_input_text_id == ImGui::GetActiveID() || m_should_take_focus) &&
+            (!m_current_autocomplete.empty() || !m_current_autocomplete_strings.empty())) {
             m_has_focus = true;
 
             ImGui::SetNextWindowBgAlpha(0.9f);
@@ -1802,7 +1912,8 @@ namespace ImTerm {
             ImVec2 auto_complete_pos = ImGui::GetItemRectMin();
 
             if (m_autocomplete_pos == position::up) {
-                auto_complete_pos.y -= (ImGui::CalcTextSize("a").y + ImGui::GetStyle().FramePadding.y) * 2.f;
+                auto_complete_pos.y -=
+                        (ImGui::CalcTextSize("a").y + ImGui::GetStyle().FramePadding.y) * 2.f;
             } else {
                 auto_complete_pos.y = ImGui::GetItemRectMax().y;
             }
@@ -1818,14 +1929,16 @@ namespace ImTerm {
                     ImGui::SameLine(0.f, 0.f);
                     int pop = try_push_style(ImGuiCol_Text, m_colors.auto_complete_separator);
                     ImGui::TextUnformatted(m_autocomlete_separator.data(),
-                                           m_autocomlete_separator.data() + m_autocomlete_separator.size());
+                                           m_autocomlete_separator.data() +
+                                                   m_autocomlete_separator.size());
                     ImGui::PopStyleColor(pop);
                     ImGui::SameLine(0.f, 0.f);
                 };
 
                 int max_displayable_sv = 0;
                 float separator_length = ImGui::CalcTextSize(m_autocomlete_separator.data(),
-                                                             m_autocomlete_separator.data() + m_autocomlete_separator.size())
+                                                             m_autocomlete_separator.data() +
+                                                                     m_autocomlete_separator.size())
                                                  .x;
                 float total_text_length = ImGui::CalcTextSize("...").x;
 
@@ -1843,7 +1956,8 @@ namespace ImTerm {
                 }
 
                 for (const std::string_view &sv: autocomplete_text) {
-                    float t_len = ImGui::CalcTextSize(sv.data(), sv.data() + sv.size()).x + separator_length;
+                    float t_len = ImGui::CalcTextSize(sv.data(), sv.data() + sv.size()).x +
+                                  separator_length;
                     if (t_len + total_text_length < auto_complete_max_size.x) {
                         total_text_length += t_len;
                         ++max_displayable_sv;
@@ -1879,7 +1993,8 @@ namespace ImTerm {
                         pop_count += try_push_style(ImGuiCol_Text, m_colors.auto_complete_selected);
                         total_text_length -= separator_length;
                     } else {
-                        pop_count += try_push_style(ImGuiCol_Text, m_colors.auto_complete_non_selected);
+                        pop_count +=
+                                try_push_style(ImGuiCol_Text, m_colors.auto_complete_non_selected);
                         print_separator();
                     }
 
@@ -1888,11 +2003,17 @@ namespace ImTerm {
                     std::copy(last.begin(), last.end(), buf.begin());
                     std::fill(buf.begin() + last.size(), buf.end(), '.');
                     auto size = static_cast<unsigned>(last.size() + 3);
-                    while (size >= 4 && total_text_length + ImGui::CalcTextSize(buf.data(), buf.data() + size).x >= auto_complete_max_size.x) {
+                    while (size >= 4 &&
+                           total_text_length +
+                                           ImGui::CalcTextSize(buf.data(), buf.data() + size).x >=
+                                   auto_complete_max_size.x) {
                         buf[size - 4] = '.';
                         --size;
                     }
-                    while (size != 0 && total_text_length + ImGui::CalcTextSize(buf.data(), buf.data() + size).x >= auto_complete_max_size.x) {
+                    while (size != 0 &&
+                           total_text_length +
+                                           ImGui::CalcTextSize(buf.data(), buf.data() + size).x >=
+                                   auto_complete_max_size.x) {
                         --size;
                     }
                     ImGui::TextUnformatted(buf.data(), buf.data() + size);
@@ -1906,15 +2027,14 @@ namespace ImTerm {
 
     template<typename TerminalHelper>
     void terminal<TerminalHelper>::call_command() noexcept {
-        if (m_buffer_usage == 0) {
-            return;
-        }
+        if (m_buffer_usage == 0) { return; }
 
         m_current_autocomplete_strings.clear();
         m_current_autocomplete.clear();
 
         bool modified{};
-        std::pair<bool, std::string> resolved = resolve_history_references({m_command_buffer.data(), m_buffer_usage}, modified);
+        std::pair<bool, std::string> resolved =
+                resolve_history_references({m_command_buffer.data(), m_buffer_usage}, modified);
 
         if (!resolved.first) {
             try_log(R"(No such event: )" + resolved.second, message::type::error);
@@ -1929,14 +2049,11 @@ namespace ImTerm {
         }
 
         try_log({m_command_buffer.data(), m_buffer_usage}, message::type::user_input);
-        if (splitted->empty()) {
-            return;
-        }
-        if (modified) {
-            try_log("> " + resolved.second, message::type::cmd_history_completion);
-        }
+        if (splitted->empty()) { return; }
+        if (modified) { try_log("> " + resolved.second, message::type::cmd_history_completion); }
 
-        std::vector<command_type_cref> matching_command_list = m_t_helper->find_commands_by_prefix(splitted->front());
+        std::vector<command_type_cref> matching_command_list =
+                m_t_helper->find_commands_by_prefix(splitted->front());
         if (matching_command_list.empty()) {
             splitted->front() += ": command not found";
             try_log(splitted->front(), message::type::error);
@@ -1947,11 +2064,13 @@ namespace ImTerm {
         argument_type arg{m_argument_value, *this, *splitted};
 
         matching_command_list[0].get().call(arg);
-        m_command_history.emplace_back(std::move(resolved.second));// resolved.second has ownership over *splitted
+        m_command_history.emplace_back(
+                std::move(resolved.second));// resolved.second has ownership over *splitted
     }
 
     template<typename TerminalHelper>
-    std::pair<bool, std::string> terminal<TerminalHelper>::resolve_history_references(std::string_view str, bool &modified) const {
+    std::pair<bool, std::string> terminal<TerminalHelper>::resolve_history_references(
+            std::string_view str, bool &modified) const {
         enum class state {
             nothing,// matched nothing
             part_1, // matched one char: '!'
@@ -1962,13 +2081,9 @@ namespace ImTerm {
         };
 
         modified = false;
-        if (str.empty()) {
-            return {true, {}};
-        }
+        if (str.empty()) { return {true, {}}; }
 
-        if (str.size() == 1) {
-            return {(str[0] != '!'), {str.data(), str.size()}};
-        }
+        if (str.size() == 1) { return {(str[0] != '!'), {str.data(), str.size()}}; }
 
         std::string ans;
         ans.reserve(str.size());
@@ -1980,20 +2095,21 @@ namespace ImTerm {
 
         auto resolve = [&](std::string_view history_request, bool add_escaping = true) -> bool {
             bool local_modified{};
-            std::optional<std::string> solved = resolve_history_reference(history_request, local_modified);
-            if (!solved) {
-                return false;
-            }
+            std::optional<std::string> solved =
+                    resolve_history_reference(history_request, local_modified);
+            if (!solved) { return false; }
 
             auto is_space_lbd = [&solved, this](char c) {
-                return is_space({&c, static_cast<unsigned>(&solved.value()[solved->size() - 1] + 1 - &c)}) > 0;
+                return is_space({&c, static_cast<unsigned>(&solved.value()[solved->size() - 1] + 1 -
+                                                           &c)}) > 0;
             };
 
             modified |= local_modified;
             if (add_escaping) {
                 if (solved->empty()) {
                     ans += R"("")";
-                } else if (std::find_if(solved->begin(), solved->end(), is_space_lbd) != solved->end()) {
+                } else if (std::find_if(solved->begin(), solved->end(), is_space_lbd) !=
+                           solved->end()) {
                     ans += '"';
                     ans += *solved;
                     ans += '"';
@@ -2014,20 +2130,13 @@ namespace ImTerm {
             if (*it == '\\') {
                 do {
                     ++it;
-                    if (it != end) {
-                        ++it;
-                    }
+                    if (it != end) { ++it; }
                 } while (it != end && *it == '\\');
 
-                if (current_state != state::nothing) {
-                    return {false, {substr_beg, it}};
-                }
+                if (current_state != state::nothing) { return {false, {substr_beg, it}}; }
 
-                if (it == end) {
-                    break;
-                }
+                if (it == end) { break; }
             }
-
 
             switch (current_state) {
                 case state::nothing:
@@ -2044,9 +2153,7 @@ namespace ImTerm {
                     } else if (*it == ':') {
                         current_state = state::part_4;
                     } else if (*it == '!') {
-                        if (!resolve("!!", false)) {
-                            return {false, "!!"};
-                        }
+                        if (!resolve("!!", false)) { return {false, "!!"}; }
                     } else {
                         current_state = state::nothing;
                     }
@@ -2071,7 +2178,8 @@ namespace ImTerm {
                     if (is_digit(*it)) {
                         current_state = state::finalize;
                     } else if (*it == '*') {
-                        if (!resolve({substr_beg, static_cast<unsigned>(it + 1 - substr_beg)}, false)) {
+                        if (!resolve({substr_beg, static_cast<unsigned>(it + 1 - substr_beg)},
+                                     false)) {
                             return {false, {substr_beg, it}};
                         }
                     } else {
@@ -2119,16 +2227,13 @@ namespace ImTerm {
     }
 
     template<typename TerminalHelper>
-    std::optional<std::string> terminal<TerminalHelper>::resolve_history_reference(std::string_view str, bool &modified) const noexcept {
+    std::optional<std::string> terminal<TerminalHelper>::resolve_history_reference(
+            std::string_view str, bool &modified) const noexcept {
         modified = false;
 
-        if (str.empty() || str[0] != '!') {
-            return std::string{str.begin(), str.end()};
-        }
+        if (str.empty() || str[0] != '!') { return std::string{str.begin(), str.end()}; }
 
-        if (str.size() < 2) {
-            return {};
-        }
+        if (str.size() < 2) { return {}; }
 
         if (str[1] == '!') {
             if (m_command_history.empty() || str.size() != 2) {
@@ -2143,12 +2248,11 @@ namespace ImTerm {
         unsigned int backward_jump = 1;
         unsigned int char_idx = 1;
         if (str[1] == '-') {
-            if (str.size() <= 2 || !is_digit(str[2])) {
-                return {};
-            }
+            if (str.size() <= 2 || !is_digit(str[2])) { return {}; }
 
             unsigned int val{0};
-            std::from_chars_result res = std::from_chars(str.data() + 2, str.data() + str.size(), val, 10);
+            std::from_chars_result res =
+                    std::from_chars(str.data() + 2, str.data() + str.size(), val, 10);
             if (val == 0) {
                 return {};// val == 0  <=> (garbage input || user inputted 0)
             }
@@ -2157,24 +2261,17 @@ namespace ImTerm {
             char_idx = static_cast<unsigned int>(res.ptr - str.data());
         }
 
-        if (m_command_history.size() < backward_jump) {
-            return {};
-        }
+        if (m_command_history.size() < backward_jump) { return {}; }
 
         if (char_idx >= str.size()) {
             modified = true;
             return m_command_history[m_command_history.size() - backward_jump];
         }
 
-        if (str[char_idx] != ':') {
-            return {};
-        }
-
+        if (str[char_idx] != ':') { return {}; }
 
         ++char_idx;
-        if (str.size() <= char_idx) {
-            return {};
-        }
+        if (str.size() <= char_idx) { return {}; }
 
         if (str[char_idx] == '*') {
             modified = true;
@@ -2200,35 +2297,36 @@ namespace ImTerm {
             sp_count = 0;
             first_non_space = std::find_if_not(first_space, cmd.end(), is_space_lbd);
 
-            if (first_non_space == cmd.end()) {
-                return std::string{""};
-            }
+            if (first_non_space == cmd.end()) { return std::string{""}; }
             return std::string{first_non_space, cmd.end()};
         }
 
-        if (!is_digit(str[char_idx])) {
-            return {};
-        }
+        if (!is_digit(str[char_idx])) { return {}; }
 
         unsigned int val1{};
-        std::from_chars_result res1 = std::from_chars(str.data() + char_idx, str.data() + str.size(), val1, 10);
-        if (!misc::success(res1.ec) || res1.ptr != str.data() + str.size()) {// either unsuccessful or we didn't reach the end of the string
+        std::from_chars_result res1 =
+                std::from_chars(str.data() + char_idx, str.data() + str.size(), val1, 10);
+        if (!misc::success(res1.ec) ||
+            res1.ptr !=
+                    str.data() +
+                            str.size()) {// either unsuccessful or we didn't reach the end of the string
             return {};
         }
 
-        const std::string &cmd = m_command_history[m_command_history.size() - backward_jump];// 1 <= backward_jump <= command_history.size()
+        const std::string &cmd =
+                m_command_history[m_command_history.size() -
+                                  backward_jump];// 1 <= backward_jump <= command_history.size()
         std::optional<std::vector<std::string>> args = split_by_space(cmd);
 
-        if (!args || args->size() <= val1) {
-            return {};
-        }
+        if (!args || args->size() <= val1) { return {}; }
 
         modified = true;
         return (*args)[val1];
     }
 
     template<typename TerminalHelper>
-    int terminal<TerminalHelper>::command_line_callback_st(ImGuiInputTextCallbackData *data) noexcept {
+    int terminal<TerminalHelper>::command_line_callback_st(
+            ImGuiInputTextCallbackData *data) noexcept {
         return reinterpret_cast<terminal *>(data->UserData)->command_line_callback(data);
     }
 
@@ -2237,7 +2335,8 @@ namespace ImTerm {
 
         auto paste_buffer = [data](auto begin, auto end, auto buffer_shift) {
             misc::copy(begin, end, data->Buf + buffer_shift, data->Buf + data->BufSize - 1);
-            data->BufTextLen = std::min(static_cast<int>(std::distance(begin, end) + buffer_shift), data->BufSize - 1);
+            data->BufTextLen = std::min(static_cast<int>(std::distance(begin, end) + buffer_shift),
+                                        data->BufSize - 1);
             data->Buf[data->BufTextLen] = '\0';
             data->BufDirty = true;
             data->SelectionStart = data->SelectionEnd;
@@ -2245,13 +2344,17 @@ namespace ImTerm {
         };
 
         auto auto_complete_buffer = [data, this](std::string &&str, auto reference_size) {
-            auto buff_end = misc::erase_insert(str.begin(), str.end(), data->Buf + data->CursorPos - reference_size, data->Buf + m_buffer_usage, data->Buf + data->BufSize, reference_size);
+            auto buff_end = misc::erase_insert(
+                    str.begin(), str.end(), data->Buf + data->CursorPos - reference_size,
+                    data->Buf + m_buffer_usage, data->Buf + data->BufSize, reference_size);
 
             data->BufTextLen = static_cast<unsigned>(std::distance(data->Buf, buff_end));
             data->Buf[data->BufTextLen] = '\0';
             data->BufDirty = true;
             data->SelectionStart = data->SelectionEnd;
-            data->CursorPos = std::min(static_cast<int>(data->CursorPos + str.size() - reference_size), data->BufTextLen);
+            data->CursorPos =
+                    std::min(static_cast<int>(data->CursorPos + str.size() - reference_size),
+                             data->BufTextLen);
             m_buffer_usage = static_cast<unsigned>(data->BufTextLen);
         };
 
@@ -2269,29 +2372,27 @@ namespace ImTerm {
                 }
             }
 
-
             if (autocomplete_text.empty()) {
-                if (m_buffer_usage == 0 || data->CursorPos < 2) {
-                    return 0;
-                }
+                if (m_buffer_usage == 0 || data->CursorPos < 2) { return 0; }
 
-                auto excl = misc::find_last(m_command_buffer.data(), m_command_buffer.data() + data->CursorPos, '!');
-                if (excl == m_command_buffer.data() + data->CursorPos) {
-                    return 0;
-                }
-                if (excl == m_command_buffer.data() + data->CursorPos - 1 && m_command_buffer[data->CursorPos - 2] == '!') {
+                auto excl = misc::find_last(m_command_buffer.data(),
+                                            m_command_buffer.data() + data->CursorPos, '!');
+                if (excl == m_command_buffer.data() + data->CursorPos) { return 0; }
+                if (excl == m_command_buffer.data() + data->CursorPos - 1 &&
+                    m_command_buffer[data->CursorPos - 2] == '!') {
                     --excl;
                 }
                 bool modified{};
-                std::string_view reference{excl, static_cast<unsigned>(m_command_buffer.data() + data->CursorPos - excl)};
+                std::string_view reference{excl, static_cast<unsigned>(m_command_buffer.data() +
+                                                                       data->CursorPos - excl)};
                 std::optional<std::string> val = resolve_history_reference(reference, modified);
-                if (!modified) {
-                    return 0;
-                }
+                if (!modified) { return 0; }
 
-                if (reference.substr(reference.size() - 2) != ":*" && reference.find(':') != std::string_view::npos) {
+                if (reference.substr(reference.size() - 2) != ":*" &&
+                    reference.find(':') != std::string_view::npos) {
                     auto is_space_lbd = [&val, this](char c) {
-                        return is_space({&c, static_cast<unsigned>(&val.value()[val->size()] + 1 - &c)}) > 0;
+                        return is_space({&c, static_cast<unsigned>(&val.value()[val->size()] + 1 -
+                                                                   &c)}) > 0;
                     };
 
                     if (std::find_if(val->begin(), val->end(), is_space_lbd) != val->end()) {
@@ -2305,17 +2406,26 @@ namespace ImTerm {
 
             std::string_view complete_sv = autocomplete_text[0];
 
-            auto quote_count = std::count(m_command_buffer.data(), m_command_buffer.data() + m_buffer_usage, '"');
+            auto quote_count = std::count(m_command_buffer.data(),
+                                          m_command_buffer.data() + m_buffer_usage, '"');
             const char *command_beg = nullptr;
             if (quote_count % 2) {
-                command_beg = misc::find_last(m_command_buffer.data(), m_command_buffer.data() + m_buffer_usage, '"');
+                command_beg = misc::find_last(m_command_buffer.data(),
+                                              m_command_buffer.data() + m_buffer_usage, '"');
             } else {
-                command_beg = misc::find_terminating_word(m_command_buffer.data(), m_command_buffer.data() + m_buffer_usage, [this](std::string_view sv) { return is_space(sv); });
+                command_beg = misc::find_terminating_word(
+                        m_command_buffer.data(), m_command_buffer.data() + m_buffer_usage,
+                        [this](std::string_view sv) { return is_space(sv); });
                 ;
             }
 
-
-            bool space_found = std::find_if(complete_sv.begin(), complete_sv.end(), [this, &complete_sv](char c) { return is_space({&c, static_cast<unsigned>(&complete_sv[complete_sv.size() - 1] + 1 - &c)}) > 0; }) != complete_sv.end();
+            bool space_found =
+                    std::find_if(
+                            complete_sv.begin(), complete_sv.end(), [this, &complete_sv](char c) {
+                                return is_space({&c, static_cast<unsigned>(
+                                                             &complete_sv[complete_sv.size() - 1] +
+                                                             1 - &c)}) > 0;
+                            }) != complete_sv.end();
 
             if (space_found) {
                 std::string complete;
@@ -2323,9 +2433,11 @@ namespace ImTerm {
                 complete = '"';
                 complete += complete_sv;
                 complete += '"';
-                paste_buffer(complete.data(), complete.data() + complete.size(), command_beg - m_command_buffer.data());
+                paste_buffer(complete.data(), complete.data() + complete.size(),
+                             command_beg - m_command_buffer.data());
             } else {
-                paste_buffer(complete_sv.data(), complete_sv.data() + complete_sv.size(), command_beg - m_command_buffer.data());
+                paste_buffer(complete_sv.data(), complete_sv.data() + complete_sv.size(),
+                             command_beg - m_command_buffer.data());
             }
 
             m_buffer_usage = static_cast<unsigned>(data->BufTextLen);
@@ -2333,24 +2445,25 @@ namespace ImTerm {
             m_current_autocomplete_strings.clear();
 
         } else if (data->EventKey == ImGuiKey_UpArrow) {
-            if (m_command_history.empty()) {
-                return 0;
-            }
+            if (m_command_history.empty()) { return 0; }
             m_ignore_next_textinput = true;
 
             if (!m_current_history_selection) {
 
                 m_current_history_selection = m_command_history.end();
-                m_command_line_backup = std::string(m_command_buffer.data(), m_command_buffer.data() + m_buffer_usage);
+                m_command_line_backup = std::string(m_command_buffer.data(),
+                                                    m_command_buffer.data() + m_buffer_usage);
                 m_command_line_backup_prefix = m_command_line_backup;
 
                 auto is_space_lbd = [this](unsigned int idx) {
                     const char *ptr = &m_command_line_backup_prefix[idx];
-                    return is_space({ptr, static_cast<unsigned>(m_command_line_backup_prefix.size() - idx)});
+                    return is_space({ptr, static_cast<unsigned>(
+                                                  m_command_line_backup_prefix.size() - idx)});
                 };
                 unsigned int idx = 0;
                 int space_count = 0;
-                while (idx < m_command_line_backup_prefix.size() && (space_count = is_space_lbd(idx)) > 0) {
+                while (idx < m_command_line_backup_prefix.size() &&
+                       (space_count = is_space_lbd(idx)) > 0) {
                     idx += space_count;
                 }
                 if (idx > m_command_line_backup_prefix.size()) {
@@ -2363,11 +2476,15 @@ namespace ImTerm {
             }
 
             auto it = misc::find_first_prefixed(
-                    m_command_line_backup_prefix, std::reverse_iterator(*m_current_history_selection), m_command_history.rend(), [this](std::string_view str) { return is_space(str); });
+                    m_command_line_backup_prefix,
+                    std::reverse_iterator(*m_current_history_selection), m_command_history.rend(),
+                    [this](std::string_view str) { return is_space(str); });
 
             if (it != m_command_history.rend()) {
                 m_current_history_selection = std::prev(it.base());
-                paste_buffer((*m_current_history_selection)->begin() + m_command_line_backup_prefix.size(), (*m_current_history_selection)->end(), m_command_line_backup.size());
+                paste_buffer((*m_current_history_selection)->begin() +
+                                     m_command_line_backup_prefix.size(),
+                             (*m_current_history_selection)->end(), m_command_line_backup.size());
                 m_buffer_usage = static_cast<unsigned>(data->BufTextLen);
             } else {
                 if (m_current_history_selection == m_command_history.end()) {
@@ -2381,16 +2498,18 @@ namespace ImTerm {
 
         } else if (data->EventKey == ImGuiKey_DownArrow) {
 
-            if (!m_current_history_selection) {
-                return 0;
-            }
+            if (!m_current_history_selection) { return 0; }
             m_ignore_next_textinput = true;
 
             m_current_history_selection = misc::find_first_prefixed(
-                    m_command_line_backup_prefix, std::next(*m_current_history_selection), m_command_history.end(), [this](std::string_view str) { return is_space(str); });
+                    m_command_line_backup_prefix, std::next(*m_current_history_selection),
+                    m_command_history.end(),
+                    [this](std::string_view str) { return is_space(str); });
 
             if (m_current_history_selection != m_command_history.end()) {
-                paste_buffer((*m_current_history_selection)->begin() + m_command_line_backup_prefix.size(), (*m_current_history_selection)->end(), m_command_line_backup.size());
+                paste_buffer((*m_current_history_selection)->begin() +
+                                     m_command_line_backup_prefix.size(),
+                             (*m_current_history_selection)->end(), m_command_line_backup.size());
                 m_buffer_usage = static_cast<unsigned>(data->BufTextLen);
 
             } else {
@@ -2429,7 +2548,8 @@ namespace ImTerm {
     }
 
     template<typename TerminalHelper>
-    std::optional<std::vector<std::string>> terminal<TerminalHelper>::split_by_space(std::string_view in, bool ignore_non_match) const {
+    std::optional<std::vector<std::string>> terminal<TerminalHelper>::split_by_space(
+            std::string_view in, bool ignore_non_match) const {
         std::vector<std::string> out;
 
         const char *it = &in[0];
@@ -2443,13 +2563,9 @@ namespace ImTerm {
             } while (it != in_end && space_count > 0);
         };
 
-        if (it != in_end) {
-            skip_spaces();
-        }
+        if (it != in_end) { skip_spaces(); }
 
-        if (it == in_end) {
-            return out;
-        }
+        if (it == in_end) { return out; }
 
         bool matched_quote{};
         bool matched_space{};
@@ -2463,9 +2579,7 @@ namespace ImTerm {
 
                     if (it != in_end && (*it != '"' || escaped)) {
                         if (*it == '\\') {
-                            if (escaped) {
-                                current_string += *it;
-                            }
+                            if (escaped) { current_string += *it; }
                         } else {
                             current_string += *it;
                         }
@@ -2476,9 +2590,7 @@ namespace ImTerm {
                 } while (true);
 
                 if (it == in_end) {
-                    if (!ignore_non_match) {
-                        return {};
-                    }
+                    if (!ignore_non_match) { return {}; }
                 } else {
                     ++it;
                 }
@@ -2531,15 +2643,12 @@ namespace ImTerm {
     }
 }// namespace ImTerm
 
-
 #undef IMTERM_FMT_INCLUDED
 
 #endif//IMTERM_TERMINAL_HPP
 
-
 #ifndef TERMINAL_HELPER_HPP
 #define TERMINAL_HELPER_HPP
-
 
 #include <array>
 #include <set>
@@ -2563,7 +2672,6 @@ namespace ImTerm {
 
 namespace ImTerm {
 
-
     // terminal_helper_example is meant to be an example
     // if you want to inherit from one, pick term::basic_terminal_helper (see below)
     template<typename T>
@@ -2581,7 +2689,8 @@ namespace ImTerm {
             auto compare_by_name = [](const command_type &cmd) { return cmd.name; };
             auto map_to_cref = [](const command_type &cmd) { return std::cref(cmd); };
 
-            return misc::prefix_search(prefix, cmd_list.begin(), cmd_list.end(), std::move(compare_by_name), std::move(map_to_cref));
+            return misc::prefix_search(prefix, cmd_list.begin(), cmd_list.end(),
+                                       std::move(compare_by_name), std::move(map_to_cref));
         }
 
         // mandatory : return every command starting by the text formed by [beg, end)
@@ -2598,7 +2707,8 @@ namespace ImTerm {
         // msg type is either user_input, error, or cmd_history_completion
         // return an empty optional if you do not want the string to be logged
         // message's members 'is_term_message' and 'severity' are ignored
-        std::optional<ImTerm::message> format(std::string str, [[maybe_unused]] ImTerm::message::type msg_type) {
+        std::optional<ImTerm::message> format(std::string str,
+                                              [[maybe_unused]] ImTerm::message::type msg_type) {
             ImTerm::message msg;
             msg.color_beg = msg.color_end = 0u;
             msg.value = std::move(str);
@@ -2624,18 +2734,16 @@ namespace ImTerm {
         //		void set_terminal(term_t& term) {
         //		}
 
-
         // command samples (implemented as static methods, but they can be outside of a class, if you will to)
         static std::vector<std::string> no_completion(argument_type &) { return {}; }
 
-        static void clear(argument_type &arg) {
-            arg.term.clear();
-        }
+        static void clear(argument_type &arg) { arg.term.clear(); }
 
         static void echo(argument_type &arg) {
             std::string str{};
             str = arg.command_line[1];
-            for (auto it = std::next(arg.command_line.begin(), 2); it != arg.command_line.end(); ++it) {
+            for (auto it = std::next(arg.command_line.begin(), 2); it != arg.command_line.end();
+                 ++it) {
                 str.reserve(str.size() + it->size() + 1);
                 str += ' ';
                 str += *it;
@@ -2676,8 +2784,8 @@ namespace ImTerm {
             auto compare_name = [](const command_type &cmd) { return cmd.name; };
             auto map_to_cref = [](const command_type &cmd) { return std::cref(cmd); };
 
-            return misc::prefix_search(prefix, cmd_list_.begin(), cmd_list_.end(), std::move(compare_name),
-                                       std::move(map_to_cref));
+            return misc::prefix_search(prefix, cmd_list_.begin(), cmd_list_.end(),
+                                       std::move(compare_name), std::move(map_to_cref));
         }
 
         std::vector<command_type_cref> find_commands_by_prefix(const char *beg, const char *end) {
@@ -2687,9 +2795,7 @@ namespace ImTerm {
         std::vector<command_type_cref> list_commands() {
             std::vector<command_type_cref> ans;
             ans.reserve(cmd_list_.size());
-            for (const command_type &cmd: cmd_list_) {
-                ans.emplace_back(cmd);
-            }
+            for (const command_type &cmd: cmd_list_) { ans.emplace_back(cmd); }
             return ans;
         }
 
@@ -2701,9 +2807,7 @@ namespace ImTerm {
         }
 
     protected:
-        void add_command_(const command_type &cmd) {
-            cmd_list_.emplace(cmd);
-        }
+        void add_command_(const command_type &cmd) { cmd_list_.emplace(cmd); }
 
         std::set<command_type> cmd_list_{};
     };
@@ -2719,14 +2823,16 @@ namespace ImTerm {
     // Refer to terminal_helper_example (see above) for a commented example
     // should not be used after move
     template<typename TerminalHelper, typename Value, typename Mutex>
-    class basic_spdlog_terminal_helper : public basic_terminal_helper<TerminalHelper, Value>, public spdlog::sinks::base_sink<Mutex> {
+    class basic_spdlog_terminal_helper : public basic_terminal_helper<TerminalHelper, Value>,
+                                         public spdlog::sinks::base_sink<Mutex> {
         using SinkBase = spdlog::sinks::base_sink<Mutex>;
         using TermHBase = basic_terminal_helper<TerminalHelper, Value>;
 
     public:
         using typename TermHBase::term_t;
 
-        explicit basic_spdlog_terminal_helper(std::string terminal_to_terminal_logger_name = "ImTerm Terminal")
+        explicit basic_spdlog_terminal_helper(
+                std::string terminal_to_terminal_logger_name = "ImTerm Terminal")
             : logger_name_{std::move(terminal_to_terminal_logger_name)} {
             set_terminal_pattern_("%T.%e - [%^command line%$]: %v", message::type::error);
             set_terminal_pattern_("%T.%e - %^%v%$", message::type::user_input);
@@ -2734,14 +2840,18 @@ namespace ImTerm {
         }
 
         basic_spdlog_terminal_helper(basic_spdlog_terminal_helper &&other) noexcept
-            : SinkBase{}, TermHBase(std::move(other)), terminal_{std::exchange(other.terminal_, nullptr)}, terminal_formatter_{std::move(other.terminal_formatter_)}, logger_name_{std::move(other.logger_name_)} {
+            : SinkBase{},
+              TermHBase(std::move(other)), terminal_{std::exchange(other.terminal_, nullptr)},
+              terminal_formatter_{std::move(other.terminal_formatter_)},
+              logger_name_{std::move(other.logger_name_)} {
             SinkBase::set_level(other.level());
             SinkBase::set_formatter(std::move(other.formatter_));
         }
 
         virtual ~basic_spdlog_terminal_helper() noexcept = default;
 
-        std::optional<ImTerm::message> format(std::string str, [[maybe_unused]] ImTerm::message::type type) {
+        std::optional<ImTerm::message> format(std::string str,
+                                              [[maybe_unused]] ImTerm::message::type type) {
             spdlog::details::log_msg msg(logger_name_, {}, str);
             spdlog::memory_buf_t buff{};
             terminal_formatter_[static_cast<int>(type)]->format(msg, buff);
@@ -2753,9 +2863,7 @@ namespace ImTerm {
 
         // this method is called automatically right after ImTerm::terminal's construction
         // used to sink logs to the message panel
-        void set_terminal(term_t &term) {
-            terminal_ = &term;
-        }
+        void set_terminal(term_t &term) { terminal_ = &term; }
 
         // set logging pattern per message type, for feed-back messages from the terminal
         void set_terminal_pattern(const std::string &pattern, ImTerm::message::type type) {
@@ -2763,7 +2871,8 @@ namespace ImTerm {
             set_terminal_pattern_(std::make_unique<spdlog::pattern_formatter>(pattern), type);
         }
 
-        void set_terminal_formatter(std::unique_ptr<spdlog::formatter> &&terminal_formatter, ImTerm::message::type type) {
+        void set_terminal_formatter(std::unique_ptr<spdlog::formatter> &&terminal_formatter,
+                                    ImTerm::message::type type) {
             std::lock_guard<Mutex> lock(SinkBase::mutex_);
             set_terminal_formatter_(std::move(terminal_formatter), type);
         }
@@ -2773,39 +2882,43 @@ namespace ImTerm {
             set_terminal_formatter_(std::make_unique<spdlog::pattern_formatter>(pattern), type);
         }
 
-        void set_terminal_formatter_(std::unique_ptr<spdlog::formatter> &&terminal_formatter, ImTerm::message::type type) {
+        void set_terminal_formatter_(std::unique_ptr<spdlog::formatter> &&terminal_formatter,
+                                     ImTerm::message::type type) {
             terminal_formatter_[static_cast<int>(type)] = std::move(terminal_formatter);
         }
 
         void sink_it_(const spdlog::details::log_msg &msg) override {
-            if (msg.level == spdlog::level::off) {
-                return;
-            }
+            if (msg.level == spdlog::level::off) { return; }
             assert(terminal_ != nullptr);
             spdlog::memory_buf_t buff{};
             SinkBase::formatter_->format(msg, buff);
-            terminal_->add_message({details::to_imterm_severity(msg.level), fmt::to_string(buff), msg.color_range_start, msg.color_range_end, false});
+            terminal_->add_message({details::to_imterm_severity(msg.level), fmt::to_string(buff),
+                                    msg.color_range_start, msg.color_range_end, false});
         }
 
         void flush_() override {}
 
         term_t *terminal_{};
-        std::array<std::unique_ptr<spdlog::formatter>, 3> terminal_formatter_{};// user_input, error, cmd_history_completion (c.f. ImTerm::message::type)
+        std::array<std::unique_ptr<spdlog::formatter>, 3>
+                terminal_formatter_{};// user_input, error, cmd_history_completion (c.f. ImTerm::message::type)
         std::string logger_name_;
     };
-
 
     namespace details {
 
         constexpr message::severity::severity_t to_imterm_severity(spdlog::level::level_enum lvl) {
             assert(lvl != spdlog::level::off);
-            if constexpr (
-                    ImTerm::message::severity::trace == static_cast<int>(spdlog::level::trace) &&
-                    ImTerm::message::severity::debug == static_cast<int>(spdlog::level::debug) &&
-                    ImTerm::message::severity::info == static_cast<int>(spdlog::level::info) &&
-                    ImTerm::message::severity::warn == static_cast<int>(spdlog::level::warn) &&
-                    ImTerm::message::severity::err == static_cast<int>(spdlog::level::err) &&
-                    ImTerm::message::severity::critical == static_cast<int>(spdlog::level::critical)) {
+            if constexpr (ImTerm::message::severity::trace ==
+                                  static_cast<int>(spdlog::level::trace) &&
+                          ImTerm::message::severity::debug ==
+                                  static_cast<int>(spdlog::level::debug) &&
+                          ImTerm::message::severity::info ==
+                                  static_cast<int>(spdlog::level::info) &&
+                          ImTerm::message::severity::warn ==
+                                  static_cast<int>(spdlog::level::warn) &&
+                          ImTerm::message::severity::err == static_cast<int>(spdlog::level::err) &&
+                          ImTerm::message::severity::critical ==
+                                  static_cast<int>(spdlog::level::critical)) {
                 return static_cast<message::severity::severity_t>(lvl);
             } else {
                 switch (lvl) {
@@ -2829,13 +2942,17 @@ namespace ImTerm {
         }
 
         constexpr spdlog::level::level_enum to_spdlog_severity(message::severity::severity_t lvl) {
-            if constexpr (
-                    ImTerm::message::severity::trace == static_cast<int>(spdlog::level::trace) &&
-                    ImTerm::message::severity::debug == static_cast<int>(spdlog::level::debug) &&
-                    ImTerm::message::severity::info == static_cast<int>(spdlog::level::info) &&
-                    ImTerm::message::severity::warn == static_cast<int>(spdlog::level::warn) &&
-                    ImTerm::message::severity::err == static_cast<int>(spdlog::level::err) &&
-                    ImTerm::message::severity::critical == static_cast<int>(spdlog::level::critical)) {
+            if constexpr (ImTerm::message::severity::trace ==
+                                  static_cast<int>(spdlog::level::trace) &&
+                          ImTerm::message::severity::debug ==
+                                  static_cast<int>(spdlog::level::debug) &&
+                          ImTerm::message::severity::info ==
+                                  static_cast<int>(spdlog::level::info) &&
+                          ImTerm::message::severity::warn ==
+                                  static_cast<int>(spdlog::level::warn) &&
+                          ImTerm::message::severity::err == static_cast<int>(spdlog::level::err) &&
+                          ImTerm::message::severity::critical ==
+                                  static_cast<int>(spdlog::level::critical)) {
                 return static_cast<spdlog::level::level_enum>(lvl);
             } else {
                 switch (lvl) {
@@ -2866,7 +2983,6 @@ namespace ImTerm {
 #endif
 
 }// namespace ImTerm
-
 
 #undef IMTERM_SPDLOG_INCLUDED
 

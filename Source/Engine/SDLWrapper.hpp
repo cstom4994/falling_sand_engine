@@ -5,17 +5,18 @@
 
 // SDL 2.0.5+
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_platform.h>
-#include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_syswm.h>
-#include <SDL2/SDL_vulkan.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_mouse.h>
-#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_platform.h>
+#include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_syswm.h>
+#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_vulkan.h>
 
-#if SDL_VERSION_ATLEAST(2, 0, 4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
+#if SDL_VERSION_ATLEAST(2, 0, 4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) &&           \
+        !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE 1
 #else
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE 0

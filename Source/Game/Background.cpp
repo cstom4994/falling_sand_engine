@@ -6,11 +6,13 @@
 #include "Game/Textures.hpp"
 #include <algorithm>
 
-#include "Game/InEngine.h"
 #include "Engine/Memory.hpp"
+#include "Game/InEngine.h"
 
-BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
-    this->surface = {Textures::scaleTexture(texture, 1, 1), Textures::scaleTexture(texture, 2, 2), Textures::scaleTexture(texture, 3, 3)};
+BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX,
+                                 float moveY) {
+    this->surface = {Textures::scaleTexture(texture, 1, 1), Textures::scaleTexture(texture, 2, 2),
+                     Textures::scaleTexture(texture, 3, 3)};
     this->parralaxX = parallaxX;
     this->parralaxY = parallaxY;
     this->moveX = moveX;
@@ -18,21 +20,17 @@ BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float para
 }
 
 void BackgroundLayer::init() {
-    this->texture = {
-            METAENGINE_Render_CopyImageFromSurface(this->surface[0]),
-            METAENGINE_Render_CopyImageFromSurface(this->surface[1]),
-            METAENGINE_Render_CopyImageFromSurface(this->surface[2])};
+    this->texture = {METAENGINE_Render_CopyImageFromSurface(this->surface[0]),
+                     METAENGINE_Render_CopyImageFromSurface(this->surface[1]),
+                     METAENGINE_Render_CopyImageFromSurface(this->surface[2])};
 
     METAENGINE_Render_SetImageFilter(this->texture[0], METAENGINE_Render_FILTER_NEAREST);
     METAENGINE_Render_SetImageFilter(this->texture[1], METAENGINE_Render_FILTER_NEAREST);
     METAENGINE_Render_SetImageFilter(this->texture[2], METAENGINE_Render_FILTER_NEAREST);
 }
 
-
 void Background::init() {
-    for (size_t i = 0; i < layers.size(); i++) {
-        layers[i].init();
-    }
+    for (size_t i = 0; i < layers.size(); i++) { layers[i].init(); }
 }
 
 void Backgrounds::Push(std::string name, Background *bg) {

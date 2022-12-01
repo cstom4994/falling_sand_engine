@@ -25,8 +25,7 @@ namespace Platforms {
 #elif defined(METADOT_PLATFORM_APPLE)
         char buf[PATH_MAX];
         uint32_t bufsize = PATH_MAX;
-        if (!_NSGetExecutablePath(buf, &bufsize))
-            out = buf;
+        if (!_NSGetExecutablePath(buf, &bufsize)) out = buf;
 #endif
         return out;
     }

@@ -13,7 +13,6 @@ struct Vector3
     float z;
 };
 
-
 class CAudioEngine {
 public:
     static void Init();
@@ -21,13 +20,17 @@ public:
     static void Shutdown();
 
     void LoadEvent(const std::string &strEventName);
-    void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false, bool bStream = false);
+    void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false,
+                   bool bStream = false);
     void UnLoadSound(const std::string &strSoundName);
-    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0}, float fVolumedB = 0.0f);
+    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0},
+                   float fVolumedB = 0.0f);
     void PlayEvent(const std::string &strEventName);
     void StopEvent(const std::string &strEventName, bool bImmediate = false);
-    void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter, float *parameter);
-    void SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue);
+    void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter,
+                           float *parameter);
+    void SetEventParameter(const std::string &strEventName, const std::string &strParameterName,
+                           float fValue);
     void SetGlobalParameter(const std::string &strParameterName, float fValue);
     void GetGlobalParameter(const std::string &strEventParameter, float *parameter);
     void SetChannel3dPosition(int nChannelId, const Vector3 &vPosition);

@@ -3,9 +3,9 @@
 #include "Engine/Scripting.hpp"
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
-#include "Engine/Memory.hpp"
 #include "Engine/JsWrapper.hpp"
 #include "Engine/LuaCore.hpp"
+#include "Engine/Memory.hpp"
 #include "Engine/MuDSL.hpp"
 #include "Game/FileSystem.hpp"
 #include <iostream>
@@ -124,7 +124,6 @@ void integrationExample() {
     }
 }
 
-
 #endif
 
 class MyClass {
@@ -173,17 +172,16 @@ void test_js() {
         cb("world");
 
         // passing c++ objects to JS
-        auto lambda = context.eval("x=>my.println(x.member_function('lambda'))").as<std::function<void(JsWrapper::shared_ptr<MyClass>)>>();
+        auto lambda = context.eval("x=>my.println(x.member_function('lambda'))")
+                              .as<std::function<void(JsWrapper::shared_ptr<MyClass>)>>();
         auto v3 = JsWrapper::make_shared<MyClass>(context.ctx, std::vector{1, 2, 3});
         lambda(v3);
     } catch (JsWrapper::exception) {
         auto exc = context.getException();
         std::cerr << (std::string) exc << std::endl;
-        if ((bool) exc["stack"])
-            std::cerr << (std::string) exc["stack"] << std::endl;
+        if ((bool) exc["stack"]) std::cerr << (std::string) exc["stack"] << std::endl;
     }
 }
-
 
 void Scripts::Init() {
     METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);

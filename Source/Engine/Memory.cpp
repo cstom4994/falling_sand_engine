@@ -70,6 +70,4 @@ void METAENGINE_Memory_End() {
     gc_stop(&gc);
 }
 
-void METAENGINE_Memory_RunGC() {
-    gc_run(&gc);
-}
+void METAENGINE_Memory_RunGC() { gc_run(&gc); }

@@ -43,43 +43,40 @@
 int gpu_strcasecmp(const char *s1, const char *s2);
 
 // Default to buffer reset VBO upload method
-#if defined(METAENGINE_Render_USE_BUFFER_PIPELINE) && !defined(METAENGINE_Render_USE_BUFFER_RESET) && !defined(METAENGINE_Render_USE_BUFFER_MAPPING) && !defined(METAENGINE_Render_USE_BUFFER_UPDATE)
+#if defined(METAENGINE_Render_USE_BUFFER_PIPELINE) &&                                              \
+        !defined(METAENGINE_Render_USE_BUFFER_RESET) &&                                            \
+        !defined(METAENGINE_Render_USE_BUFFER_MAPPING) &&                                          \
+        !defined(METAENGINE_Render_USE_BUFFER_UPDATE)
 #define METAENGINE_Render_USE_BUFFER_RESET
 #endif
 
-
 // Forces a flush when vertex limit is reached (roughly 1000 sprites)
 #define METAENGINE_Render_BLIT_BUFFER_VERTICES_PER_SPRITE 4
-#define METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES (METAENGINE_Render_BLIT_BUFFER_VERTICES_PER_SPRITE * 1000)
-
+#define METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES                                        \
+    (METAENGINE_Render_BLIT_BUFFER_VERTICES_PER_SPRITE * 1000)
 
 // Near the unsigned short limit (65535)
 #define METAENGINE_Render_BLIT_BUFFER_ABSOLUTE_MAX_VERTICES 60000
 // Near the unsigned int limit (4294967295)
 #define METAENGINE_Render_INDEX_BUFFER_ABSOLUTE_MAX_VERTICES 4000000000u
 
-
 // x, y, s, t, r, g, b, a
 #define METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX 8
 
 // bytes per vertex
-#define METAENGINE_Render_BLIT_BUFFER_STRIDE (sizeof(float) * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX)
+#define METAENGINE_Render_BLIT_BUFFER_STRIDE                                                       \
+    (sizeof(float) * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX)
 #define METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET 0
 #define METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET 2
 #define METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET 4
-
 
 // SDL 2.0 translation layer
 
 #define GET_ALPHA(sdl_color) ((sdl_color).a)
 
-static_inline SDL_Window *get_window(Uint32 windowID) {
-    return SDL_GetWindowFromID(windowID);
-}
+static_inline SDL_Window *get_window(Uint32 windowID) { return SDL_GetWindowFromID(windowID); }
 
-static_inline Uint32 get_window_id(SDL_Window *window) {
-    return SDL_GetWindowID(window);
-}
+static_inline Uint32 get_window_id(SDL_Window *window) { return SDL_GetWindowID(window); }
 
 static_inline void get_window_dimensions(SDL_Window *window, int *w, int *h) {
     SDL_GetWindowSize(window, w, h);
@@ -105,30 +102,26 @@ static_inline METAENGINE_Render_bool is_alpha_format(SDL_PixelFormat *format) {
     return SDL_ISPIXELFORMAT_ALPHA(format->format);
 }
 
-
 static_inline void get_target_window_dimensions(METAENGINE_Render_Target *target, int *w, int *h) {
     SDL_Window *window;
-    if (target == NULL || target->context == NULL)
-        return;
+    if (target == NULL || target->context == NULL) return;
     window = get_window(target->context->windowID);
     get_window_dimensions(window, w, h);
 }
 
-static_inline void get_target_drawable_dimensions(METAENGINE_Render_Target *target, int *w, int *h) {
+static_inline void get_target_drawable_dimensions(METAENGINE_Render_Target *target, int *w,
+                                                  int *h) {
     SDL_Window *window;
-    if (target == NULL || target->context == NULL)
-        return;
+    if (target == NULL || target->context == NULL) return;
     window = get_window(target->context->windowID);
     get_drawable_dimensions(window, w, h);
 }
-
 
 #ifndef GL_VERTEX_SHADER
 #ifndef METAENGINE_Render_DISABLE_SHADERS
 #define METAENGINE_Render_DISABLE_SHADERS
 #endif
 #endif
-
 
 // Workaround for Intel HD glVertexAttrib() bug.
 #ifdef METAENGINE_Render_USE_OPENGL
@@ -137,13 +130,10 @@ static METAENGINE_Render_bool apply_Intel_attrib_workaround = METAENGINE_Render_
 static METAENGINE_Render_bool vendor_is_Intel = METAENGINE_Render_FALSE;
 #endif
 
-
 static SDL_PixelFormat *AllocFormat(GLenum glFormat);
 static void FreeFormat(SDL_PixelFormat *format);
 
-
 static char shader_message[256];
-
 
 static METAENGINE_Render_bool isExtensionSupported(const char *extension_str) {
 #ifdef METAENGINE_Render_USE_OPENGL
@@ -154,16 +144,14 @@ static METAENGINE_Render_bool isExtensionSupported(const char *extension_str) {
     char *end;
     unsigned long extNameLen;
 
-    if (p == NULL)
-        return METAENGINE_Render_FALSE;
+    if (p == NULL) return METAENGINE_Render_FALSE;
 
     extNameLen = strlen(extension_str);
     end = p + strlen(p);
 
     while (p < end) {
         unsigned long n = strcspn(p, " ");
-        if ((extNameLen == n) && (strncmp(extension_str, p, n) == 0))
-            return METAENGINE_Render_TRUE;
+        if ((extNameLen == n) && (strncmp(extension_str, p, n) == 0)) return METAENGINE_Render_TRUE;
 
         p += (n + 1);
     }
@@ -171,15 +159,16 @@ static METAENGINE_Render_bool isExtensionSupported(const char *extension_str) {
 #endif
 }
 
-static_inline void fast_upload_texture(const void *pixels, METAENGINE_Render_Rect update_rect, Uint32 format, int alignment, int row_length) {
+static_inline void fast_upload_texture(const void *pixels, METAENGINE_Render_Rect update_rect,
+                                       Uint32 format, int alignment, int row_length) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 #if defined(METAENGINE_Render_USE_OPENGL) || METAENGINE_Render_GLES_MAJOR_VERSION > 2
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
 #endif
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0,
-                    (GLint) update_rect.x, (GLint) update_rect.y, (GLsizei) update_rect.w, (GLsizei) update_rect.h,
-                    format, GL_UNSIGNED_BYTE, pixels);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, (GLint) update_rect.x, (GLint) update_rect.y,
+                    (GLsizei) update_rect.w, (GLsizei) update_rect.h, format, GL_UNSIGNED_BYTE,
+                    pixels);
 
 #if defined(METAENGINE_Render_USE_OPENGL) || METAENGINE_Render_GLES_MAJOR_VERSION > 2
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -187,7 +176,9 @@ static_inline void fast_upload_texture(const void *pixels, METAENGINE_Render_Rec
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-static void row_upload_texture(const unsigned char *pixels, METAENGINE_Render_Rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+static void row_upload_texture(const unsigned char *pixels, METAENGINE_Render_Rect update_rect,
+                               Uint32 format, int alignment, unsigned int pitch,
+                               int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int) update_rect.h;
     (void) bytes_per_pixel;
@@ -195,16 +186,17 @@ static void row_upload_texture(const unsigned char *pixels, METAENGINE_Render_Re
     if (h > 0 && update_rect.w > 0.0f) {
         // Must upload row by row to account for row length
         for (i = 0; i < h; ++i) {
-            glTexSubImage2D(GL_TEXTURE_2D, 0,
-                            (GLint) update_rect.x, (GLint) (update_rect.y + i), (GLsizei) update_rect.w, 1,
-                            format, GL_UNSIGNED_BYTE, pixels);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, (GLint) update_rect.x, (GLint) (update_rect.y + i),
+                            (GLsizei) update_rect.w, 1, format, GL_UNSIGNED_BYTE, pixels);
             pixels += pitch;
         }
     }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-static void copy_upload_texture(const unsigned char *pixels, METAENGINE_Render_Rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+static void copy_upload_texture(const unsigned char *pixels, METAENGINE_Render_Rect update_rect,
+                                Uint32 format, int alignment, unsigned int pitch,
+                                int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int) update_rect.h;
     unsigned int w = ((unsigned int) update_rect.w) * bytes_per_pixel;
@@ -212,8 +204,7 @@ static void copy_upload_texture(const unsigned char *pixels, METAENGINE_Render_R
     if (h > 0 && w > 0) {
         unsigned int rem = w % alignment;
         // If not already aligned, account for padding on each row
-        if (rem > 0)
-            w += alignment - rem;
+        if (rem > 0) w += alignment - rem;
 
         unsigned char *copy = (unsigned char *) SDL_malloc(w * h);
         unsigned char *dst = copy;
@@ -228,9 +219,13 @@ static void copy_upload_texture(const unsigned char *pixels, METAENGINE_Render_R
     }
 }
 
-static void (*slow_upload_texture)(const unsigned char *pixels, METAENGINE_Render_Rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
+static void (*slow_upload_texture)(const unsigned char *pixels, METAENGINE_Render_Rect update_rect,
+                                   Uint32 format, int alignment, unsigned int pitch,
+                                   int bytes_per_pixel) = NULL;
 
-static_inline void upload_texture(const void *pixels, METAENGINE_Render_Rect update_rect, Uint32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
+static_inline void upload_texture(const void *pixels, METAENGINE_Render_Rect update_rect,
+                                  Uint32 format, int alignment, int row_length, unsigned int pitch,
+                                  int bytes_per_pixel) {
     (void) pitch;
 #if defined(METAENGINE_Render_USE_OPENGL) || METAENGINE_Render_GLES_MAJOR_VERSION > 2
     (void) bytes_per_pixel;
@@ -244,7 +239,9 @@ static_inline void upload_texture(const void *pixels, METAENGINE_Render_Rect upd
 #endif
 }
 
-static_inline void upload_new_texture(void *pixels, METAENGINE_Render_Rect update_rect, Uint32 format, int alignment, int row_length, int bytes_per_pixel) {
+static_inline void upload_new_texture(void *pixels, METAENGINE_Render_Rect update_rect,
+                                      Uint32 format, int alignment, int row_length,
+                                      int bytes_per_pixel) {
 #if defined(METAENGINE_Render_USE_OPENGL) || METAENGINE_Render_GLES_MAJOR_VERSION > 2
     (void) bytes_per_pixel;
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
@@ -256,7 +253,8 @@ static_inline void upload_new_texture(void *pixels, METAENGINE_Render_Rect updat
 #else
     glTexImage2D(GL_TEXTURE_2D, 0, format, (GLsizei) update_rect.w, (GLsizei) update_rect.h, 0,
                  format, GL_UNSIGNED_BYTE, NULL);
-    upload_texture(pixels, update_rect, format, alignment, row_length, row_length * bytes_per_pixel, bytes_per_pixel);
+    upload_texture(pixels, update_rect, format, alignment, row_length, row_length * bytes_per_pixel,
+                   bytes_per_pixel);
 #endif
 }
 
@@ -284,7 +282,8 @@ static void GLAPIENTRY glDeleteFramebuffersNOOP(GLsizei n, const GLuint *framebu
     (void) framebuffers;
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
-static void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) {
+static void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachment,
+                                                  GLenum textarget, GLuint texture, GLint level) {
     (void) target;
     (void) attachment;
     (void) textarget;
@@ -302,10 +301,15 @@ static void GLAPIENTRY glGenerateMipmapNOOP(GLenum target) {
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 
-static void(GLAPIENTRY *glBindFramebufferPROC)(GLenum target, GLuint framebuffer) = glBindFramebufferNOOP;
-static GLenum(GLAPIENTRY *glCheckFramebufferStatusPROC)(GLenum target) = glCheckFramebufferStatusNOOP;
-static void(GLAPIENTRY *glDeleteFramebuffersPROC)(GLsizei n, const GLuint *framebuffers) = glDeleteFramebuffersNOOP;
-static void(GLAPIENTRY *glFramebufferTexture2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = glFramebufferTexture2DNOOP;
+static void(GLAPIENTRY *glBindFramebufferPROC)(GLenum target,
+                                               GLuint framebuffer) = glBindFramebufferNOOP;
+static GLenum(GLAPIENTRY *glCheckFramebufferStatusPROC)(GLenum target) =
+        glCheckFramebufferStatusNOOP;
+static void(GLAPIENTRY *glDeleteFramebuffersPROC)(GLsizei n, const GLuint *framebuffers) =
+        glDeleteFramebuffersNOOP;
+static void(GLAPIENTRY *glFramebufferTexture2DPROC)(GLenum target, GLenum attachment,
+                                                    GLenum textarget, GLuint texture,
+                                                    GLint level) = glFramebufferTexture2DNOOP;
 static void(GLAPIENTRY *glGenFramebuffersPROC)(GLsizei n, GLuint *ids) = glGenFramebuffersNOOP;
 static void(GLAPIENTRY *glGenerateMipmapPROC)(GLenum target) = glGenerateMipmapNOOP;
 #endif
@@ -330,7 +334,10 @@ static void init_features(METAENGINE_Render_Renderer *renderer) {
     // Core in GLES 3+
     renderer->enabled_features |= METAENGINE_Render_FEATURE_NON_POWER_OF_TWO;
 #else
-    if (isExtensionSupported("GL_OES_texture_npot") || isExtensionSupported("GL_IMG_texture_npot") || isExtensionSupported("GL_APPLE_texture_2D_limited_npot") || isExtensionSupported("GL_ARB_texture_non_power_of_two"))
+    if (isExtensionSupported("GL_OES_texture_npot") ||
+        isExtensionSupported("GL_IMG_texture_npot") ||
+        isExtensionSupported("GL_APPLE_texture_2D_limited_npot") ||
+        isExtensionSupported("GL_ARB_texture_non_power_of_two"))
         renderer->enabled_features |= METAENGINE_Render_FEATURE_NON_POWER_OF_TWO;
     else
         renderer->enabled_features &= ~METAENGINE_Render_FEATURE_NON_POWER_OF_TWO;
@@ -475,27 +482,27 @@ static void extBindFramebuffer(METAENGINE_Render_Renderer *renderer, GLuint hand
         glBindFramebufferPROC(GL_FRAMEBUFFER, handle);
 }
 
-
 static_inline METAENGINE_Render_bool isPowerOfTwo(unsigned int x) {
     return ((x != 0) && !(x & (x - 1)));
 }
 
 static_inline unsigned int getNearestPowerOf2(unsigned int n) {
     unsigned int x = 1;
-    while (x < n) {
-        x <<= 1;
-    }
+    while (x < n) { x <<= 1; }
     return x;
 }
 
 static void bindTexture(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
     // Bind the texture to which subsequent calls refer
-    if (image != ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image) {
+    if (image !=
+        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+                ->last_image) {
         GLuint handle = ((METAENGINE_Render_IMAGE_DATA *) image->data)->handle;
         renderer->impl->FlushBlitBuffer(renderer);
 
         glBindTexture(GL_TEXTURE_2D, handle);
-        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image = image;
+        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+                ->last_image = image;
     }
 }
 
@@ -504,12 +511,13 @@ static_inline void flushAndBindTexture(METAENGINE_Render_Renderer *renderer, GLu
     renderer->impl->FlushBlitBuffer(renderer);
 
     glBindTexture(GL_TEXTURE_2D, handle);
-    ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image = NULL;
+    ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+            ->last_image = NULL;
 }
 
-
 // Only for window targets, which have their own contexts.
-static void makeContextCurrent(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static void makeContextCurrent(METAENGINE_Render_Renderer *renderer,
+                               METAENGINE_Render_Target *target) {
     if (target == NULL || target->context == NULL || renderer->current_context_target == target)
         return;
 
@@ -521,11 +529,11 @@ static void makeContextCurrent(METAENGINE_Render_Renderer *renderer, METAENGINE_
 }
 
 // Binds the target's framebuffer.  Returns false if it can't be bound, true if it is bound or already bound.
-static METAENGINE_Render_bool SetActiveTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static METAENGINE_Render_bool SetActiveTarget(METAENGINE_Render_Renderer *renderer,
+                                              METAENGINE_Render_Target *target) {
     makeContextCurrent(renderer, target);
 
-    if (target == NULL || renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
+    if (target == NULL || renderer->current_context_target == NULL) return METAENGINE_Render_FALSE;
 
     if (renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS) {
         // Bind the FBO
@@ -552,31 +560,43 @@ static_inline void flushAndBindFramebuffer(METAENGINE_Render_Renderer *renderer,
     renderer->current_context_target->context->active_target = NULL;
 }
 
-static_inline void flushBlitBufferIfCurrentTexture(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
-    if (image == ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image) {
+static_inline void flushBlitBufferIfCurrentTexture(METAENGINE_Render_Renderer *renderer,
+                                                   METAENGINE_Render_Image *image) {
+    if (image ==
+        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+                ->last_image) {
         renderer->impl->FlushBlitBuffer(renderer);
     }
 }
 
-static_inline void flushAndClearBlitBufferIfCurrentTexture(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
-    if (image == ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image) {
+static_inline void flushAndClearBlitBufferIfCurrentTexture(METAENGINE_Render_Renderer *renderer,
+                                                           METAENGINE_Render_Image *image) {
+    if (image ==
+        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+                ->last_image) {
         renderer->impl->FlushBlitBuffer(renderer);
-        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image = NULL;
+        ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+                ->last_image = NULL;
     }
 }
 
-static_inline METAENGINE_Render_bool isCurrentTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
-    return (target == renderer->current_context_target->context->active_target || renderer->current_context_target->context->active_target == NULL);
+static_inline METAENGINE_Render_bool isCurrentTarget(METAENGINE_Render_Renderer *renderer,
+                                                     METAENGINE_Render_Target *target) {
+    return (target == renderer->current_context_target->context->active_target ||
+            renderer->current_context_target->context->active_target == NULL);
 }
 
-static_inline void flushAndClearBlitBufferIfCurrentFramebuffer(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
-    if (target == renderer->current_context_target->context->active_target || renderer->current_context_target->context->active_target == NULL) {
+static_inline void flushAndClearBlitBufferIfCurrentFramebuffer(METAENGINE_Render_Renderer *renderer,
+                                                               METAENGINE_Render_Target *target) {
+    if (target == renderer->current_context_target->context->active_target ||
+        renderer->current_context_target->context->active_target == NULL) {
         renderer->impl->FlushBlitBuffer(renderer);
         renderer->current_context_target->context->active_target = NULL;
     }
 }
 
-static METAENGINE_Render_bool growBlitBuffer(METAENGINE_Render_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed) {
+static METAENGINE_Render_bool growBlitBuffer(METAENGINE_Render_CONTEXT_DATA *cdata,
+                                             unsigned int minimum_vertices_needed) {
     unsigned int new_max_num_vertices;
     float *new_buffer;
 
@@ -587,8 +607,7 @@ static METAENGINE_Render_bool growBlitBuffer(METAENGINE_Render_CONTEXT_DATA *cda
 
     // Calculate new size (in vertices)
     new_max_num_vertices = ((unsigned int) cdata->blit_buffer_max_num_vertices) * 2;
-    while (new_max_num_vertices <= minimum_vertices_needed)
-        new_max_num_vertices *= 2;
+    while (new_max_num_vertices <= minimum_vertices_needed) new_max_num_vertices *= 2;
 
     if (new_max_num_vertices > METAENGINE_Render_BLIT_BUFFER_ABSOLUTE_MAX_VERTICES)
         new_max_num_vertices = METAENGINE_Render_BLIT_BUFFER_ABSOLUTE_MAX_VERTICES;
@@ -596,7 +615,8 @@ static METAENGINE_Render_bool growBlitBuffer(METAENGINE_Render_CONTEXT_DATA *cda
     //METAENGINE_Render_LogError("Growing to %d vertices\n", new_max_num_vertices);
     // Resize the blit buffer
     new_buffer = (float *) SDL_malloc(new_max_num_vertices * METAENGINE_Render_BLIT_BUFFER_STRIDE);
-    memcpy(new_buffer, cdata->blit_buffer, cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_STRIDE);
+    memcpy(new_buffer, cdata->blit_buffer,
+           cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_STRIDE);
     SDL_free(cdata->blit_buffer);
     cdata->blit_buffer = new_buffer;
     cdata->blit_buffer_max_num_vertices = (unsigned short) new_max_num_vertices;
@@ -608,9 +628,13 @@ static METAENGINE_Render_bool growBlitBuffer(METAENGINE_Render_CONTEXT_DATA *cda
 #endif
 
     glBindBuffer(GL_ARRAY_BUFFER, cdata->blit_VBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL,
+                 GL_STREAM_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, cdata->blit_VBO[1]);
-    glBufferData(GL_ARRAY_BUFFER, METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL,
+                 GL_STREAM_DRAW);
 
 #if !defined(METAENGINE_Render_NO_VAO)
     glBindVertexArray(0);
@@ -620,19 +644,20 @@ static METAENGINE_Render_bool growBlitBuffer(METAENGINE_Render_CONTEXT_DATA *cda
     return METAENGINE_Render_TRUE;
 }
 
-static METAENGINE_Render_bool growIndexBuffer(METAENGINE_Render_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed) {
+static METAENGINE_Render_bool growIndexBuffer(METAENGINE_Render_CONTEXT_DATA *cdata,
+                                              unsigned int minimum_vertices_needed) {
     unsigned int new_max_num_vertices;
     unsigned short *new_indices;
 
     if (minimum_vertices_needed <= cdata->index_buffer_max_num_vertices)
         return METAENGINE_Render_TRUE;
-    if (cdata->index_buffer_max_num_vertices == METAENGINE_Render_INDEX_BUFFER_ABSOLUTE_MAX_VERTICES)
+    if (cdata->index_buffer_max_num_vertices ==
+        METAENGINE_Render_INDEX_BUFFER_ABSOLUTE_MAX_VERTICES)
         return METAENGINE_Render_FALSE;
 
     // Calculate new size (in vertices)
     new_max_num_vertices = cdata->index_buffer_max_num_vertices * 2;
-    while (new_max_num_vertices <= minimum_vertices_needed)
-        new_max_num_vertices *= 2;
+    while (new_max_num_vertices <= minimum_vertices_needed) new_max_num_vertices *= 2;
 
     if (new_max_num_vertices > METAENGINE_Render_INDEX_BUFFER_ABSOLUTE_MAX_VERTICES)
         new_max_num_vertices = METAENGINE_Render_INDEX_BUFFER_ABSOLUTE_MAX_VERTICES;
@@ -640,7 +665,8 @@ static METAENGINE_Render_bool growIndexBuffer(METAENGINE_Render_CONTEXT_DATA *cd
     //METAENGINE_Render_LogError("Growing to %d indices\n", new_max_num_vertices);
     // Resize the index buffer
     new_indices = (unsigned short *) SDL_malloc(new_max_num_vertices * sizeof(unsigned short));
-    memcpy(new_indices, cdata->index_buffer, cdata->index_buffer_num_vertices * sizeof(unsigned short));
+    memcpy(new_indices, cdata->index_buffer,
+           cdata->index_buffer_num_vertices * sizeof(unsigned short));
     SDL_free(cdata->index_buffer);
     cdata->index_buffer = new_indices;
     cdata->index_buffer_max_num_vertices = new_max_num_vertices;
@@ -652,7 +678,9 @@ static METAENGINE_Render_bool growIndexBuffer(METAENGINE_Render_CONTEXT_DATA *cd
 #endif
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cdata->blit_IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * cdata->index_buffer_max_num_vertices, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 sizeof(unsigned short) * cdata->index_buffer_max_num_vertices, NULL,
+                 GL_DYNAMIC_DRAW);
 
 #if !defined(METAENGINE_Render_NO_VAO)
     glBindVertexArray(0);
@@ -661,7 +689,6 @@ static METAENGINE_Render_bool growIndexBuffer(METAENGINE_Render_CONTEXT_DATA *cd
 
     return METAENGINE_Render_TRUE;
 }
-
 
 static void setClipRect(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
     if (target->use_clip_rect) {
@@ -675,27 +702,27 @@ static void setClipRect(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
                 y = target->clip_rect.y;
             float xFactor = ((float) context_target->context->drawable_w) / context_target->w;
             float yFactor = ((float) context_target->context->drawable_h) / context_target->h;
-            glScissor((GLint) (target->clip_rect.x * xFactor), (GLint) (y * yFactor), (GLsizei) (target->clip_rect.w * xFactor), (GLsizei) (target->clip_rect.h * yFactor));
+            glScissor((GLint) (target->clip_rect.x * xFactor), (GLint) (y * yFactor),
+                      (GLsizei) (target->clip_rect.w * xFactor),
+                      (GLsizei) (target->clip_rect.h * yFactor));
         } else
-            glScissor((GLint) target->clip_rect.x, (GLint) target->clip_rect.y, (GLsizei) target->clip_rect.w, (GLsizei) target->clip_rect.h);
+            glScissor((GLint) target->clip_rect.x, (GLint) target->clip_rect.y,
+                      (GLsizei) target->clip_rect.w, (GLsizei) target->clip_rect.h);
     }
 }
 
 static void unsetClipRect(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
     (void) renderer;
-    if (target->use_clip_rect)
-        glDisable(GL_SCISSOR_TEST);
+    if (target->use_clip_rect) glDisable(GL_SCISSOR_TEST);
 }
 
-
 static void changeDepthTest(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_bool enable) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
-    if (cdata->last_depth_test == enable)
-        return;
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+    if (cdata->last_depth_test == enable) return;
 
     cdata->last_depth_test = enable;
-    if (enable)
-        glEnable(GL_DEPTH_TEST);
+    if (enable) glEnable(GL_DEPTH_TEST);
     else
         glDisable(GL_DEPTH_TEST);
 
@@ -703,24 +730,26 @@ static void changeDepthTest(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 }
 
 static void changeDepthWrite(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_bool enable) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
-    if (cdata->last_depth_write == enable)
-        return;
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+    if (cdata->last_depth_write == enable) return;
 
     cdata->last_depth_write = enable;
     glDepthMask(enable);
 }
 
-static void changeDepthFunction(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_ComparisonEnum compare_operation) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
-    if (cdata->last_depth_function == compare_operation)
-        return;
+static void changeDepthFunction(METAENGINE_Render_Renderer *renderer,
+                                METAENGINE_Render_ComparisonEnum compare_operation) {
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+    if (cdata->last_depth_function == compare_operation) return;
 
     cdata->last_depth_function = compare_operation;
     glDepthFunc(compare_operation);
 }
 
-static void prepareToRenderToTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static void prepareToRenderToTarget(METAENGINE_Render_Renderer *renderer,
+                                    METAENGINE_Render_Target *target) {
     // Set up the camera
     renderer->impl->SetCamera(renderer, target, &target->camera);
     changeDepthTest(renderer, target->use_depth_test);
@@ -728,39 +757,42 @@ static void prepareToRenderToTarget(METAENGINE_Render_Renderer *renderer, METAEN
     changeDepthFunction(renderer, target->depth_function);
 }
 
-
 static void changeColor(METAENGINE_Render_Renderer *renderer, SDL_Color color) {
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
     (void) renderer;
     (void) color;
     return;
 #else
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
-    if (cdata->last_color.r != color.r || cdata->last_color.g != color.g || cdata->last_color.b != color.b || GET_ALPHA(cdata->last_color) != GET_ALPHA(color)) {
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+    if (cdata->last_color.r != color.r || cdata->last_color.g != color.g ||
+        cdata->last_color.b != color.b || GET_ALPHA(cdata->last_color) != GET_ALPHA(color)) {
         renderer->impl->FlushBlitBuffer(renderer);
         cdata->last_color = color;
-        glColor4f(color.r / 255.01f, color.g / 255.01f, color.b / 255.01f, GET_ALPHA(color) / 255.01f);
+        glColor4f(color.r / 255.01f, color.g / 255.01f, color.b / 255.01f,
+                  GET_ALPHA(color) / 255.01f);
     }
 #endif
 }
 
 static void changeBlending(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_bool enable) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
-    if (cdata->last_use_blending == enable)
-        return;
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+    if (cdata->last_use_blending == enable) return;
 
     renderer->impl->FlushBlitBuffer(renderer);
 
-    if (enable)
-        glEnable(GL_BLEND);
+    if (enable) glEnable(GL_BLEND);
     else
         glDisable(GL_BLEND);
 
     cdata->last_use_blending = enable;
 }
 
-static void forceChangeBlendMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_BlendMode mode) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+static void forceChangeBlendMode(METAENGINE_Render_Renderer *renderer,
+                                 METAENGINE_Render_BlendMode mode) {
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
 
     renderer->impl->FlushBlitBuffer(renderer);
 
@@ -771,30 +803,44 @@ static void forceChangeBlendMode(METAENGINE_Render_Renderer *renderer, METAENGIN
     } else if (renderer->enabled_features & METAENGINE_Render_FEATURE_BLEND_FUNC_SEPARATE) {
         glBlendFuncSeparate(mode.source_color, mode.dest_color, mode.source_alpha, mode.dest_alpha);
     } else {
-        METAENGINE_Render_PushErrorCode("(SDL_gpu internal)", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not set blend function because METAENGINE_Render_FEATURE_BLEND_FUNC_SEPARATE is not supported.");
+        METAENGINE_Render_PushErrorCode(
+                "(SDL_gpu internal)", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                "Could not set blend function because "
+                "METAENGINE_Render_FEATURE_BLEND_FUNC_SEPARATE is not supported.");
     }
 
     if (renderer->enabled_features & METAENGINE_Render_FEATURE_BLEND_EQUATIONS) {
-        if (mode.color_equation == mode.alpha_equation)
-            glBlendEquation(mode.color_equation);
+        if (mode.color_equation == mode.alpha_equation) glBlendEquation(mode.color_equation);
         else if (renderer->enabled_features & METAENGINE_Render_FEATURE_BLEND_EQUATIONS_SEPARATE)
             glBlendEquationSeparate(mode.color_equation, mode.alpha_equation);
         else {
-            METAENGINE_Render_PushErrorCode("(SDL_gpu internal)", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not set blend equation because METAENGINE_Render_FEATURE_BLEND_EQUATIONS_SEPARATE is not supported.");
+            METAENGINE_Render_PushErrorCode(
+                    "(SDL_gpu internal)", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                    "Could not set blend equation because "
+                    "METAENGINE_Render_FEATURE_BLEND_EQUATIONS_SEPARATE is not supported.");
         }
     } else {
-        METAENGINE_Render_PushErrorCode("(SDL_gpu internal)", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not set blend equation because METAENGINE_Render_FEATURE_BLEND_EQUATIONS is not supported.");
+        METAENGINE_Render_PushErrorCode(
+                "(SDL_gpu internal)", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                "Could not set blend equation because METAENGINE_Render_FEATURE_BLEND_EQUATIONS is "
+                "not supported.");
     }
 }
 
-static void changeBlendMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_BlendMode mode) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
-    if (cdata->last_blend_mode.source_color == mode.source_color && cdata->last_blend_mode.dest_color == mode.dest_color && cdata->last_blend_mode.source_alpha == mode.source_alpha && cdata->last_blend_mode.dest_alpha == mode.dest_alpha && cdata->last_blend_mode.color_equation == mode.color_equation && cdata->last_blend_mode.alpha_equation == mode.alpha_equation)
+static void changeBlendMode(METAENGINE_Render_Renderer *renderer,
+                            METAENGINE_Render_BlendMode mode) {
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
+    if (cdata->last_blend_mode.source_color == mode.source_color &&
+        cdata->last_blend_mode.dest_color == mode.dest_color &&
+        cdata->last_blend_mode.source_alpha == mode.source_alpha &&
+        cdata->last_blend_mode.dest_alpha == mode.dest_alpha &&
+        cdata->last_blend_mode.color_equation == mode.color_equation &&
+        cdata->last_blend_mode.alpha_equation == mode.alpha_equation)
         return;
 
     forceChangeBlendMode(renderer, mode);
 }
-
 
 // If 0 is returned, there is no valid shader.
 static Uint32 get_proper_program_id(METAENGINE_Render_Renderer *renderer, Uint32 program_object) {
@@ -802,20 +848,19 @@ static Uint32 get_proper_program_id(METAENGINE_Render_Renderer *renderer, Uint32
     if (context->default_textured_shader_program == 0)// No shaders loaded!
         return 0;
 
-    if (program_object == 0)
-        return context->default_textured_shader_program;
+    if (program_object == 0) return context->default_textured_shader_program;
 
     return program_object;
 }
 
-
 static void applyTexturing(METAENGINE_Render_Renderer *renderer) {
     METAENGINE_Render_Context *context = renderer->current_context_target->context;
-    if (context->use_texturing != ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing) {
-        ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing = context->use_texturing;
+    if (context->use_texturing !=
+        ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing) {
+        ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing =
+                context->use_texturing;
 #ifndef METAENGINE_Render_SKIP_ENABLE_TEXTURE_2D
-        if (context->use_texturing)
-            glEnable(GL_TEXTURE_2D);
+        if (context->use_texturing) glEnable(GL_TEXTURE_2D);
         else
             glDisable(GL_TEXTURE_2D);
 #endif
@@ -829,8 +874,7 @@ static void changeTexturing(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 
         ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing = enable;
 #ifndef METAENGINE_Render_SKIP_ENABLE_TEXTURE_2D
-        if (enable)
-            glEnable(GL_TEXTURE_2D);
+        if (enable) glEnable(GL_TEXTURE_2D);
         else
             glDisable(GL_TEXTURE_2D);
 #endif
@@ -854,7 +898,9 @@ static void disableTexturing(METAENGINE_Render_Renderer *renderer) {
 #define MIX_COLOR_COMPONENT_NORMALIZED_RESULT(a, b) ((a) / 255.0f * (b) / 255.0f)
 #define MIX_COLOR_COMPONENT(a, b) ((Uint8) (((a) / 255.0f * (b) / 255.0f) * 255))
 
-static SDL_Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, METAENGINE_Render_Image *image) {
+static SDL_Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer,
+                                        METAENGINE_Render_Target *target,
+                                        METAENGINE_Render_Image *image) {
     (void) renderer;
     SDL_Color color = {255, 255, 255, 255};
     if (target->use_color) {
@@ -862,7 +908,8 @@ static SDL_Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer, ME
             color.r = MIX_COLOR_COMPONENT(target->color.r, image->color.r);
             color.g = MIX_COLOR_COMPONENT(target->color.g, image->color.g);
             color.b = MIX_COLOR_COMPONENT(target->color.b, image->color.b);
-            GET_ALPHA(color) = MIX_COLOR_COMPONENT(GET_ALPHA(target->color), GET_ALPHA(image->color));
+            GET_ALPHA(color) =
+                    MIX_COLOR_COMPONENT(GET_ALPHA(target->color), GET_ALPHA(image->color));
         } else {
             color = target->color;
         }
@@ -874,7 +921,8 @@ static SDL_Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer, ME
         return color;
 }
 
-static void prepareToRenderImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, METAENGINE_Render_Image *image) {
+static void prepareToRenderImage(METAENGINE_Render_Renderer *renderer,
+                                 METAENGINE_Render_Target *target, METAENGINE_Render_Image *image) {
     METAENGINE_Render_Context *context = renderer->current_context_target->context;
 
     enableTexturing(renderer);
@@ -890,7 +938,8 @@ static void prepareToRenderImage(METAENGINE_Render_Renderer *renderer, METAENGIN
 
     // If we're using the untextured shader, switch it.
     if (context->current_shader_program == context->default_untextured_shader_program)
-        renderer->impl->ActivateShaderProgram(renderer, context->default_textured_shader_program, NULL);
+        renderer->impl->ActivateShaderProgram(renderer, context->default_textured_shader_program,
+                                              NULL);
 }
 
 static void prepareToRenderShapes(METAENGINE_Render_Renderer *renderer, unsigned int shape) {
@@ -909,21 +958,22 @@ static void prepareToRenderShapes(METAENGINE_Render_Renderer *renderer, unsigned
 
     // If we're using the textured shader, switch it.
     if (context->current_shader_program == context->default_textured_shader_program)
-        renderer->impl->ActivateShaderProgram(renderer, context->default_untextured_shader_program, NULL);
+        renderer->impl->ActivateShaderProgram(renderer, context->default_untextured_shader_program,
+                                              NULL);
 }
-
 
 static void forceChangeViewport(METAENGINE_Render_Target *target, METAENGINE_Render_Rect viewport) {
     float y;
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) (METAENGINE_Render_GetContextTarget()->context->data);
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) (METAENGINE_Render_GetContextTarget()
+                                                        ->context->data);
 
     cdata->last_viewport = viewport;
 
     y = viewport.y;
     if (METAENGINE_Render_GetCoordinateMode() == 0) {
         // Need the real height to flip the y-coord (from OpenGL coord system)
-        if (target->image != NULL)
-            y = target->image->texture_h - viewport.h - viewport.y;
+        if (target->image != NULL) y = target->image->texture_h - viewport.h - viewport.y;
         else if (target->context != NULL)
             y = target->context->drawable_h - viewport.h - viewport.y;
     }
@@ -932,32 +982,38 @@ static void forceChangeViewport(METAENGINE_Render_Target *target, METAENGINE_Ren
 }
 
 static void changeViewport(METAENGINE_Render_Target *target) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) (METAENGINE_Render_GetContextTarget()->context->data);
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) (METAENGINE_Render_GetContextTarget()
+                                                        ->context->data);
 
-    if (cdata->last_viewport.x == target->viewport.x && cdata->last_viewport.y == target->viewport.y && cdata->last_viewport.w == target->viewport.w && cdata->last_viewport.h == target->viewport.h)
+    if (cdata->last_viewport.x == target->viewport.x &&
+        cdata->last_viewport.y == target->viewport.y &&
+        cdata->last_viewport.w == target->viewport.w &&
+        cdata->last_viewport.h == target->viewport.h)
         return;
 
     forceChangeViewport(target, target->viewport);
 }
 
 static void applyTargetCamera(METAENGINE_Render_Target *target) {
-    METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) METAENGINE_Render_GetContextTarget()->context->data;
+    METAENGINE_Render_CONTEXT_DATA *cdata =
+            (METAENGINE_Render_CONTEXT_DATA *) METAENGINE_Render_GetContextTarget()->context->data;
 
     cdata->last_camera = target->camera;
     cdata->last_camera_inverted = (target->image != NULL);
 }
 
-static METAENGINE_Render_bool equal_cameras(METAENGINE_Render_Camera a, METAENGINE_Render_Camera b) {
-    return (a.x == b.x && a.y == b.y && a.z == b.z && a.angle == b.angle && a.zoom_x == b.zoom_x && a.zoom_y == b.zoom_y && a.use_centered_origin == b.use_centered_origin);
+static METAENGINE_Render_bool equal_cameras(METAENGINE_Render_Camera a,
+                                            METAENGINE_Render_Camera b) {
+    return (a.x == b.x && a.y == b.y && a.z == b.z && a.angle == b.angle && a.zoom_x == b.zoom_x &&
+            a.zoom_y == b.zoom_y && a.use_centered_origin == b.use_centered_origin);
 }
 
 static void changeCamera(METAENGINE_Render_Target *target) {
     //METAENGINE_Render_CONTEXT_DATA* cdata = (METAENGINE_Render_CONTEXT_DATA*)METAENGINE_Render_GetContextTarget()->context->data;
 
     //if(cdata->last_camera_target != target || !equal_cameras(cdata->last_camera, target->camera))
-    {
-        applyTargetCamera(target);
-    }
+    { applyTargetCamera(target); }
 }
 
 static void get_camera_matrix(METAENGINE_Render_Target *target, float *result) {
@@ -965,7 +1021,8 @@ static void get_camera_matrix(METAENGINE_Render_Target *target, float *result) {
 
     METAENGINE_Render_MatrixIdentity(result);
 
-    METAENGINE_Render_MatrixTranslate(result, -target->camera.x, -target->camera.y, -target->camera.z);
+    METAENGINE_Render_MatrixTranslate(result, -target->camera.x, -target->camera.y,
+                                      -target->camera.z);
 
     if (target->camera.use_centered_origin) {
         offsetX = target->w / 2.0f;
@@ -980,7 +1037,6 @@ static void get_camera_matrix(METAENGINE_Render_Target *target, float *result) {
         METAENGINE_Render_MatrixTranslate(result, -offsetX, -offsetY, 0);
 }
 
-
 #ifdef METAENGINE_Render_APPLY_TRANSFORMS_TO_GL_STACK
 static void applyTransforms(METAENGINE_Render_Target *target) {
     float *p = METAENGINE_Render_GetTopMatrix(&target->projection_matrix);
@@ -994,7 +1050,8 @@ static void applyTransforms(METAENGINE_Render_Target *target) {
 
         METAENGINE_Render_MultiplyAndAssign(mv, cam_matrix);
     } else {
-        METAENGINE_Render_MultiplyAndAssign(mv, METAENGINE_Render_GetTopMatrix(&target->view_matrix));
+        METAENGINE_Render_MultiplyAndAssign(mv,
+                                            METAENGINE_Render_GetTopMatrix(&target->view_matrix));
     }
 
     METAENGINE_Render_MultiplyAndAssign(mv, m);
@@ -1006,8 +1063,9 @@ static void applyTransforms(METAENGINE_Render_Target *target) {
 }
 #endif
 
-
-static METAENGINE_Render_Target *Init(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_RendererID renderer_request, Uint16 w, Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags) {
+static METAENGINE_Render_Target *Init(METAENGINE_Render_Renderer *renderer,
+                                      METAENGINE_Render_RendererID renderer_request, Uint16 w,
+                                      Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags) {
     METAENGINE_Render_InitFlagEnum METAENGINE_Render_flags;
     SDL_Window *window;
 
@@ -1030,7 +1088,8 @@ static METAENGINE_Render_Target *Init(METAENGINE_Render_Renderer *renderer, META
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     // GL profile
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);// Disable in case this is a fallback renderer
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        0);// Disable in case this is a fallback renderer
 #ifdef METAENGINE_Render_USE_GLES
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #endif
@@ -1077,17 +1136,16 @@ static METAENGINE_Render_Target *Init(METAENGINE_Render_Renderer *renderer, META
 
         // Set up window flags
         SDL_flags |= SDL_WINDOW_OPENGL;
-        if (!(SDL_flags & SDL_WINDOW_HIDDEN))
-            SDL_flags |= SDL_WINDOW_SHOWN;
+        if (!(SDL_flags & SDL_WINDOW_HIDDEN)) SDL_flags |= SDL_WINDOW_SHOWN;
 
         renderer->SDL_init_flags = SDL_flags;
-        window = SDL_CreateWindow("",
-                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                  win_w, win_h,
+        window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, win_w, win_h,
                                   SDL_flags);
 
         if (window == NULL) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_Init", METAENGINE_Render_ERROR_BACKEND_ERROR, "Window creation failed.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_Init",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Window creation failed.");
             return NULL;
         }
 
@@ -1095,16 +1153,18 @@ static METAENGINE_Render_Target *Init(METAENGINE_Render_Renderer *renderer, META
     } else
         renderer->SDL_init_flags = SDL_flags;
 
-
-    renderer->enabled_features = 0xFFFFFFFF;// Pretend to support them all if using incompatible headers
-
+    renderer->enabled_features =
+            0xFFFFFFFF;// Pretend to support them all if using incompatible headers
 
     // Create or re-init the current target.  This also creates the GL context and initializes enabled_features.
-    if (renderer->impl->CreateTargetFromWindow(renderer, get_window_id(window), renderer->current_context_target) == NULL)
+    if (renderer->impl->CreateTargetFromWindow(renderer, get_window_id(window),
+                                               renderer->current_context_target) == NULL)
         return NULL;
 
     // If the dimensions of the window don't match what we asked for, then set up a virtual resolution to pretend like they are.
-    if (!(METAENGINE_Render_flags & METAENGINE_Render_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION) && w != 0 && h != 0 && (w != renderer->current_context_target->w || h != renderer->current_context_target->h)) {
+    if (!(METAENGINE_Render_flags & METAENGINE_Render_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION) &&
+        w != 0 && h != 0 &&
+        (w != renderer->current_context_target->w || h != renderer->current_context_target->h)) {
         renderer->impl->SetVirtualResolution(renderer, renderer->current_context_target, w, h);
     }
 
@@ -1120,8 +1180,8 @@ static METAENGINE_Render_Target *Init(METAENGINE_Render_Renderer *renderer, META
     return renderer->current_context_target;
 }
 
-
-static METAENGINE_Render_bool IsFeatureEnabled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_FeatureEnum feature) {
+static METAENGINE_Render_bool IsFeatureEnabled(METAENGINE_Render_Renderer *renderer,
+                                               METAENGINE_Render_FeatureEnum feature) {
     return ((renderer->enabled_features & feature) == feature);
 }
 
@@ -1139,7 +1199,9 @@ static METAENGINE_Render_bool get_GL_version(int *major, int *minor) {
         *minor = 0;
 #endif
 
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to parse OpenGL version string: \"%s\"", version_string);
+        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to parse OpenGL version string: \"%s\"",
+                                        version_string);
         return METAENGINE_Render_FALSE;
     }
     return METAENGINE_Render_TRUE;
@@ -1149,7 +1211,8 @@ static METAENGINE_Render_bool get_GL_version(int *major, int *minor) {
     // OpenGL ES 2.0?
     if (version_string == NULL || sscanf(version_string, "OpenGL ES %d.%d", major, minor) <= 0) {
         // OpenGL ES-CM 1.1?  OpenGL ES-CL 1.1?
-        if (version_string == NULL || sscanf(version_string, "OpenGL ES-C%*c %d.%d", major, minor) <= 0) {
+        if (version_string == NULL ||
+            sscanf(version_string, "OpenGL ES-C%*c %d.%d", major, minor) <= 0) {
             // Failure
             *major = METAENGINE_Render_GLES_MAJOR_VERSION;
 #if METAENGINE_Render_GLES_MAJOR_VERSION == 1
@@ -1158,7 +1221,9 @@ static METAENGINE_Render_bool get_GL_version(int *major, int *minor) {
             *minor = 0;
 #endif
 
-            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to parse OpenGL ES version string: \"%s\"", version_string);
+            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to parse OpenGL ES version string: \"%s\"",
+                                            version_string);
             return METAENGINE_Render_FALSE;
         }
     }
@@ -1174,7 +1239,9 @@ static METAENGINE_Render_bool get_GLSL_version(int *version) {
     {
         version_string = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
         if (version_string == NULL || sscanf(version_string, "%d.%d", &major, &minor) <= 0) {
-            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to parse GLSL version string: \"%s\"", version_string);
+            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to parse GLSL version string: \"%s\"",
+                                            version_string);
             *version = METAENGINE_Render_GLSL_VERSION;
             return METAENGINE_Render_FALSE;
         } else
@@ -1183,8 +1250,11 @@ static METAENGINE_Render_bool get_GLSL_version(int *version) {
 #else
     {
         version_string = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
-        if (version_string == NULL || sscanf(version_string, "OpenGL ES GLSL ES %d.%d", &major, &minor) <= 0) {
-            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to parse GLSL ES version string: \"%s\"", version_string);
+        if (version_string == NULL ||
+            sscanf(version_string, "OpenGL ES GLSL ES %d.%d", &major, &minor) <= 0) {
+            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to parse GLSL ES version string: \"%s\"",
+                                            version_string);
             *version = METAENGINE_Render_GLSL_VERSION;
             return METAENGINE_Render_FALSE;
         } else
@@ -1198,16 +1268,15 @@ static METAENGINE_Render_bool get_GLSL_version(int *version) {
 }
 
 static METAENGINE_Render_bool get_API_versions(METAENGINE_Render_Renderer *renderer) {
-    return (get_GL_version(&renderer->id.major_version, &renderer->id.minor_version) && get_GLSL_version(&renderer->max_shader_version));
+    return (get_GL_version(&renderer->id.major_version, &renderer->id.minor_version) &&
+            get_GLSL_version(&renderer->max_shader_version));
 }
-
 
 static void update_stored_dimensions(METAENGINE_Render_Target *target) {
     METAENGINE_Render_bool is_fullscreen;
     SDL_Window *window;
 
-    if (target->context == NULL)
-        return;
+    if (target->context == NULL) return;
 
     window = get_window(target->context->windowID);
     get_window_dimensions(window, &target->context->window_w, &target->context->window_h);
@@ -1219,8 +1288,11 @@ static void update_stored_dimensions(METAENGINE_Render_Target *target) {
     }
 }
 
-static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Renderer *renderer, Uint32 windowID, METAENGINE_Render_Target *target) {
-    METAENGINE_Render_bool created = METAENGINE_Render_FALSE;// Make a new one or repurpose an existing target?
+static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Renderer *renderer,
+                                                        Uint32 windowID,
+                                                        METAENGINE_Render_Target *target) {
+    METAENGINE_Render_bool created =
+            METAENGINE_Render_FALSE;// Make a new one or repurpose an existing target?
     METAENGINE_Render_CONTEXT_DATA *cdata;
     SDL_Window *window;
 
@@ -1240,13 +1312,16 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
         memset(target, 0, sizeof(METAENGINE_Render_Target));
         target->refcount = 1;
         target->is_alias = METAENGINE_Render_FALSE;
-        target->data = (METAENGINE_Render_TARGET_DATA *) SDL_malloc(sizeof(METAENGINE_Render_TARGET_DATA));
+        target->data =
+                (METAENGINE_Render_TARGET_DATA *) SDL_malloc(sizeof(METAENGINE_Render_TARGET_DATA));
         memset(target->data, 0, sizeof(METAENGINE_Render_TARGET_DATA));
         ((METAENGINE_Render_TARGET_DATA *) target->data)->refcount = 1;
         target->image = NULL;
-        target->context = (METAENGINE_Render_Context *) SDL_malloc(sizeof(METAENGINE_Render_Context));
+        target->context =
+                (METAENGINE_Render_Context *) SDL_malloc(sizeof(METAENGINE_Render_Context));
         memset(target->context, 0, sizeof(METAENGINE_Render_Context));
-        cdata = (METAENGINE_Render_CONTEXT_DATA *) SDL_malloc(sizeof(METAENGINE_Render_CONTEXT_DATA));
+        cdata = (METAENGINE_Render_CONTEXT_DATA *) SDL_malloc(
+                sizeof(METAENGINE_Render_CONTEXT_DATA));
         memset(cdata, 0, sizeof(METAENGINE_Render_CONTEXT_DATA));
 
         target->context->refcount = 1;
@@ -1257,21 +1332,24 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
         // Initialize the blit buffer
         cdata->blit_buffer_max_num_vertices = METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES;
         cdata->blit_buffer_num_vertices = 0;
-        blit_buffer_storage_size = METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES * METAENGINE_Render_BLIT_BUFFER_STRIDE;
+        blit_buffer_storage_size = METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES *
+                                   METAENGINE_Render_BLIT_BUFFER_STRIDE;
         cdata->blit_buffer = (float *) SDL_malloc(blit_buffer_storage_size);
         cdata->index_buffer_max_num_vertices = METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES;
         cdata->index_buffer_num_vertices = 0;
-        index_buffer_storage_size = METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES * sizeof(unsigned short);
+        index_buffer_storage_size =
+                METAENGINE_Render_BLIT_BUFFER_INIT_MAX_NUM_VERTICES * sizeof(unsigned short);
         cdata->index_buffer = (unsigned short *) SDL_malloc(index_buffer_storage_size);
     } else {
         METAENGINE_Render_RemoveWindowMapping(target->context->windowID);
         cdata = (METAENGINE_Render_CONTEXT_DATA *) target->context->data;
     }
 
-
     window = get_window(windowID);
     if (window == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to acquire the window from the given ID.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to acquire the window from the given ID.");
         if (created) {
             SDL_free(cdata->blit_buffer);
             SDL_free(cdata->index_buffer);
@@ -1290,7 +1368,9 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     if (created || target->context->context == NULL) {
         target->context->context = SDL_GL_CreateContext(window);
         if (target->context->context == NULL) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create GL context.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to create GL context.");
             SDL_free(cdata->blit_buffer);
             SDL_free(cdata->index_buffer);
             SDL_free(target->context->data);
@@ -1306,7 +1386,6 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     SDL_GL_GetDrawableSize(window, &target->context->drawable_w, &target->context->drawable_h);
 
     update_stored_dimensions(target);
-
 
     ((METAENGINE_Render_TARGET_DATA *) target->data)->handle = 0;
     ((METAENGINE_Render_TARGET_DATA *) target->data)->format = GL_RGBA;
@@ -1325,8 +1404,8 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     target->clip_rect.h = target->h;
     target->use_color = METAENGINE_Render_FALSE;
 
-    target->viewport = METAENGINE_Render_MakeRect(0, 0, (float) target->context->drawable_w, (float) target->context->drawable_h);
-
+    target->viewport = METAENGINE_Render_MakeRect(0, 0, (float) target->context->drawable_w,
+                                                  (float) target->context->drawable_h);
 
     target->matrix_mode = METAENGINE_Render_MODEL;
     METAENGINE_Render_InitMatrixStack(&target->projection_matrix);
@@ -1336,14 +1415,14 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     target->camera = METAENGINE_Render_GetDefaultCamera();
     target->use_camera = METAENGINE_Render_TRUE;
 
-
     target->use_depth_test = METAENGINE_Render_FALSE;
     target->use_depth_write = METAENGINE_Render_TRUE;
 
     target->context->line_thickness = 1.0f;
     target->context->use_texturing = METAENGINE_Render_TRUE;
     target->context->shapes_use_blending = METAENGINE_Render_TRUE;
-    target->context->shapes_blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
+    target->context->shapes_blend_mode =
+            METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
 
     cdata->last_color = white;
 
@@ -1351,7 +1430,8 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     cdata->last_shape = GL_TRIANGLES;
 
     cdata->last_use_blending = METAENGINE_Render_FALSE;
-    cdata->last_blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
+    cdata->last_blend_mode =
+            METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
 
     cdata->last_viewport = target->viewport;
     cdata->last_camera = target->camera;// Redundant due to applyTargetCamera(), below
@@ -1361,11 +1441,14 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     cdata->last_depth_write = METAENGINE_Render_TRUE;
 
 #ifdef METAENGINE_Render_USE_OPENGL
-    glewExperimental = GL_TRUE;// Force GLEW to get exported functions instead of checking via extension string
+    glewExperimental =
+            GL_TRUE;// Force GLEW to get exported functions instead of checking via extension string
     err = glewInit();
     if (GLEW_OK != err) {
         // Probably don't have the right GL version for this renderer
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to initialize extensions for renderer %s.", renderer->id.name);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                "Failed to initialize extensions for renderer %s.", renderer->id.name);
         target->context->failed = METAENGINE_Render_TRUE;
         return NULL;
     }
@@ -1377,43 +1460,49 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebuffer_handle);
     ((METAENGINE_Render_TARGET_DATA *) target->data)->handle = framebuffer_handle;
 
-
     // Update our renderer info from the current GL context.
     if (!get_API_versions(renderer))
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to get backend API versions.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to get backend API versions.");
 
     // Did the wrong runtime library try to use a later versioned renderer?
     if (renderer->id.major_version < renderer->requested_id.major_version) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Renderer major version (%d) is incompatible with the available OpenGL runtime library version (%d).", renderer->requested_id.major_version, renderer->id.major_version);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                "Renderer major version (%d) is incompatible with the available OpenGL runtime "
+                "library version (%d).",
+                renderer->requested_id.major_version, renderer->id.major_version);
         target->context->failed = METAENGINE_Render_TRUE;
         return NULL;
     }
 
-
     init_features(renderer);
 
     if (!IsFeatureEnabled(renderer, required_features)) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Renderer does not support required features.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Renderer does not support required features.");
         target->context->failed = METAENGINE_Render_TRUE;
         return NULL;
     }
 
     // No preference for vsync?
-    if (!(renderer->METAENGINE_Render_init_flags & (METAENGINE_Render_INIT_DISABLE_VSYNC | METAENGINE_Render_INIT_ENABLE_VSYNC))) {
+    if (!(renderer->METAENGINE_Render_init_flags &
+          (METAENGINE_Render_INIT_DISABLE_VSYNC | METAENGINE_Render_INIT_ENABLE_VSYNC))) {
         // Default to late swap vsync if available
-        if (SDL_GL_SetSwapInterval(-1) < 0)
-            SDL_GL_SetSwapInterval(1);// Or go for vsync
+        if (SDL_GL_SetSwapInterval(-1) < 0) SDL_GL_SetSwapInterval(1);// Or go for vsync
     } else if (renderer->METAENGINE_Render_init_flags & METAENGINE_Render_INIT_ENABLE_VSYNC)
         SDL_GL_SetSwapInterval(1);
     else if (renderer->METAENGINE_Render_init_flags & METAENGINE_Render_INIT_DISABLE_VSYNC)
         SDL_GL_SetSwapInterval(0);
 
     // Set fallback texture upload method
-    if (renderer->METAENGINE_Render_init_flags & METAENGINE_Render_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK)
+    if (renderer->METAENGINE_Render_init_flags &
+        METAENGINE_Render_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK)
         slow_upload_texture = copy_upload_texture;
     else
         slow_upload_texture = row_upload_texture;
-
 
 // Set up GL state
 
@@ -1430,10 +1519,10 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     glViewport(0, 0, (GLsizei) target->viewport.w, (GLsizei) target->viewport.h);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#if defined(METAENGINE_Render_USE_FIXED_FUNCTION_PIPELINE) || defined(METAENGINE_Render_USE_ARRAY_PIPELINE)
+#if defined(METAENGINE_Render_USE_FIXED_FUNCTION_PIPELINE) ||                                      \
+        defined(METAENGINE_Render_USE_ARRAY_PIPELINE)
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 #endif
-
 
     // Set up camera
     applyTargetCamera(target);
@@ -1441,9 +1530,7 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     // Set up default projection matrix
     METAENGINE_Render_ResetProjection(target);
 
-
     renderer->impl->SetLineThickness(renderer, 1.0f);
-
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
 // Create vertex array container and buffer
@@ -1462,34 +1549,51 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
 
     if (IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) {
         Uint32 v, f, p;
-        const char *textured_vertex_shader_source = METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE;
-        const char *textured_fragment_shader_source = METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE;
-        const char *untextured_vertex_shader_source = METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE;
-        const char *untextured_fragment_shader_source = METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE;
+        const char *textured_vertex_shader_source =
+                METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE;
+        const char *textured_fragment_shader_source =
+                METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE;
+        const char *untextured_vertex_shader_source =
+                METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE;
+        const char *untextured_fragment_shader_source =
+                METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE;
 
 #ifdef METAENGINE_Render_ENABLE_CORE_SHADERS
         // Use core shaders only when supported by the actual context we got
-        if (renderer->id.major_version > 3 || (renderer->id.major_version == 3 && renderer->id.minor_version >= 2)) {
-            textured_vertex_shader_source = METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE_CORE;
-            textured_fragment_shader_source = METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE_CORE;
-            untextured_vertex_shader_source = METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE_CORE;
-            untextured_fragment_shader_source = METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE_CORE;
+        if (renderer->id.major_version > 3 ||
+            (renderer->id.major_version == 3 && renderer->id.minor_version >= 2)) {
+            textured_vertex_shader_source =
+                    METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE_CORE;
+            textured_fragment_shader_source =
+                    METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE_CORE;
+            untextured_vertex_shader_source =
+                    METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE_CORE;
+            untextured_fragment_shader_source =
+                    METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE_CORE;
         }
 #endif
 
         // Textured shader
-        v = renderer->impl->CompileShader(renderer, METAENGINE_Render_VERTEX_SHADER, textured_vertex_shader_source);
+        v = renderer->impl->CompileShader(renderer, METAENGINE_Render_VERTEX_SHADER,
+                                          textured_vertex_shader_source);
 
         if (!v) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to load default textured vertex shader: %s.", METAENGINE_Render_GetShaderMessage());
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to load default textured vertex shader: %s.",
+                                            METAENGINE_Render_GetShaderMessage());
             target->context->failed = METAENGINE_Render_TRUE;
             return NULL;
         }
 
-        f = renderer->impl->CompileShader(renderer, METAENGINE_Render_FRAGMENT_SHADER, textured_fragment_shader_source);
+        f = renderer->impl->CompileShader(renderer, METAENGINE_Render_FRAGMENT_SHADER,
+                                          textured_fragment_shader_source);
 
         if (!f) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to load default textured fragment shader: %s.", METAENGINE_Render_GetShaderMessage());
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to load default textured fragment shader: %s.",
+                                            METAENGINE_Render_GetShaderMessage());
             target->context->failed = METAENGINE_Render_TRUE;
             return NULL;
         }
@@ -1500,7 +1604,10 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
         renderer->impl->LinkShaderProgram(renderer, p);
 
         if (!p) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to link default textured shader program: %s.", METAENGINE_Render_GetShaderMessage());
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to link default textured shader program: %s.",
+                                            METAENGINE_Render_GetShaderMessage());
             target->context->failed = METAENGINE_Render_TRUE;
             return NULL;
         }
@@ -1510,22 +1617,31 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
         target->context->default_textured_shader_program = p;
 
         // Get locations of the attributes in the shader
-        target->context->default_textured_shader_block = METAENGINE_Render_LoadShaderBlock(p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
-
+        target->context->default_textured_shader_block = METAENGINE_Render_LoadShaderBlock(
+                p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
 
         // Untextured shader
-        v = renderer->impl->CompileShader(renderer, METAENGINE_Render_VERTEX_SHADER, untextured_vertex_shader_source);
+        v = renderer->impl->CompileShader(renderer, METAENGINE_Render_VERTEX_SHADER,
+                                          untextured_vertex_shader_source);
 
         if (!v) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to load default untextured vertex shader: %s.", METAENGINE_Render_GetShaderMessage());
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to load default untextured vertex shader: %s.",
+                                            METAENGINE_Render_GetShaderMessage());
             target->context->failed = METAENGINE_Render_TRUE;
             return NULL;
         }
 
-        f = renderer->impl->CompileShader(renderer, METAENGINE_Render_FRAGMENT_SHADER, untextured_fragment_shader_source);
+        f = renderer->impl->CompileShader(renderer, METAENGINE_Render_FRAGMENT_SHADER,
+                                          untextured_fragment_shader_source);
 
         if (!f) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to load default untextured fragment shader: %s.", METAENGINE_Render_GetShaderMessage());
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_CreateTargetFromWindow",
+                    METAENGINE_Render_ERROR_BACKEND_ERROR,
+                    "Failed to load default untextured fragment shader: %s.",
+                    METAENGINE_Render_GetShaderMessage());
             target->context->failed = METAENGINE_Render_TRUE;
             return NULL;
         }
@@ -1536,7 +1652,10 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
         renderer->impl->LinkShaderProgram(renderer, p);
 
         if (!p) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to link default untextured shader program: %s.", METAENGINE_Render_GetShaderMessage());
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateTargetFromWindow",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to link default untextured shader program: %s.",
+                                            METAENGINE_Render_GetShaderMessage());
             target->context->failed = METAENGINE_Render_TRUE;
             return NULL;
         }
@@ -1545,15 +1664,19 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
 
         target->context->default_untextured_vertex_shader_id = v;
         target->context->default_untextured_fragment_shader_id = f;
-        target->context->default_untextured_shader_program = target->context->current_shader_program = p;
+        target->context->default_untextured_shader_program =
+                target->context->current_shader_program = p;
 
         // Get locations of the attributes in the shader
-        target->context->default_untextured_shader_block = METAENGINE_Render_LoadShaderBlock(p, "gpu_Vertex", NULL, "gpu_Color", "gpu_ModelViewProjectionMatrix");
+        target->context->default_untextured_shader_block = METAENGINE_Render_LoadShaderBlock(
+                p, "gpu_Vertex", NULL, "gpu_Color", "gpu_ModelViewProjectionMatrix");
         METAENGINE_Render_SetShaderBlock(target->context->default_untextured_shader_block);
 
     } else {
-        snprintf(shader_message, 256, "Shaders not supported by this hardware.  Default shaders are disabled.\n");
-        target->context->default_untextured_shader_program = target->context->current_shader_program = 0;
+        snprintf(shader_message, 256,
+                 "Shaders not supported by this hardware.  Default shaders are disabled.\n");
+        target->context->default_untextured_shader_program =
+                target->context->current_shader_program = 0;
     }
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
@@ -1562,14 +1685,20 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     glGenBuffers(2, cdata->blit_VBO);
     // Create space on the GPU
     glBindBuffer(GL_ARRAY_BUFFER, cdata->blit_VBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL,
+                 GL_STREAM_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, cdata->blit_VBO[1]);
-    glBufferData(GL_ARRAY_BUFFER, METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+                 METAENGINE_Render_BLIT_BUFFER_STRIDE * cdata->blit_buffer_max_num_vertices, NULL,
+                 GL_STREAM_DRAW);
     cdata->blit_VBO_flop = METAENGINE_Render_FALSE;
 
     glGenBuffers(1, &cdata->blit_IBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cdata->blit_IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * cdata->blit_buffer_max_num_vertices, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 sizeof(unsigned short) * cdata->blit_buffer_max_num_vertices, NULL,
+                 GL_DYNAMIC_DRAW);
 
     glGenBuffers(16, cdata->attribute_VBO);
 
@@ -1581,13 +1710,12 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     return target;
 }
 
-
-static METAENGINE_Render_Target *CreateAliasTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static METAENGINE_Render_Target *CreateAliasTarget(METAENGINE_Render_Renderer *renderer,
+                                                   METAENGINE_Render_Target *target) {
     METAENGINE_Render_Target *result;
     (void) renderer;
 
-    if (target == NULL)
-        return NULL;
+    if (target == NULL) return NULL;
 
     result = (METAENGINE_Render_Target *) SDL_malloc(sizeof(METAENGINE_Render_Target));
 
@@ -1606,10 +1734,8 @@ static METAENGINE_Render_Target *CreateAliasTarget(METAENGINE_Render_Renderer *r
     METAENGINE_Render_CopyMatrixStack(&target->model_matrix, &result->model_matrix);
 
     // Alias info
-    if (target->image != NULL)
-        target->image->refcount++;
-    if (target->context != NULL)
-        target->context->refcount++;
+    if (target->image != NULL) target->image->refcount++;
+    if (target->context != NULL) target->context->refcount++;
     ((METAENGINE_Render_TARGET_DATA *) target->data)->refcount++;
     result->refcount = 1;
     result->is_alias = METAENGINE_Render_TRUE;
@@ -1617,15 +1743,13 @@ static METAENGINE_Render_Target *CreateAliasTarget(METAENGINE_Render_Renderer *r
     return result;
 }
 
-static void MakeCurrent(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, Uint32 windowID) {
+static void MakeCurrent(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                        Uint32 windowID) {
     SDL_Window *window;
 
-    if (target == NULL || target->context == NULL)
-        return;
+    if (target == NULL || target->context == NULL) return;
 
-    if (target->image != NULL)
-        return;
-
+    if (target->image != NULL) return;
 
     if (target->context->context != NULL) {
         renderer->current_context_target = target;
@@ -1645,8 +1769,10 @@ static void MakeCurrent(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
             // Update target's window size
             window = get_window(windowID);
             if (window != NULL) {
-                get_window_dimensions(window, &target->context->window_w, &target->context->window_h);
-                get_drawable_dimensions(window, &target->context->drawable_w, &target->context->drawable_h);
+                get_window_dimensions(window, &target->context->window_w,
+                                      &target->context->window_h);
+                get_drawable_dimensions(window, &target->context->drawable_w,
+                                        &target->context->drawable_h);
                 target->base_w = (Uint16) target->context->drawable_w;
                 target->base_h = (Uint16) target->context->drawable_h;
             }
@@ -1657,24 +1783,21 @@ static void MakeCurrent(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
     }
 }
 
-
 static void SetAsCurrent(METAENGINE_Render_Renderer *renderer) {
-    if (renderer->current_context_target == NULL)
-        return;
+    if (renderer->current_context_target == NULL) return;
 
-    renderer->impl->MakeCurrent(renderer, renderer->current_context_target, renderer->current_context_target->context->windowID);
+    renderer->impl->MakeCurrent(renderer, renderer->current_context_target,
+                                renderer->current_context_target->context->windowID);
 }
 
 static void ResetRendererState(METAENGINE_Render_Renderer *renderer) {
     METAENGINE_Render_Target *target;
     METAENGINE_Render_CONTEXT_DATA *cdata;
 
-    if (renderer->current_context_target == NULL)
-        return;
+    if (renderer->current_context_target == NULL) return;
 
     target = renderer->current_context_target;
     cdata = (METAENGINE_Render_CONTEXT_DATA *) target->context->data;
-
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
     if (IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
@@ -1684,24 +1807,22 @@ static void ResetRendererState(METAENGINE_Render_Renderer *renderer) {
     SDL_GL_MakeCurrent(SDL_GetWindowFromID(target->context->windowID), target->context->context);
 
 #ifndef METAENGINE_Render_USE_BUFFER_PIPELINE
-    glColor4f(cdata->last_color.r / 255.01f, cdata->last_color.g / 255.01f, cdata->last_color.b / 255.01f, GET_ALPHA(cdata->last_color) / 255.01f);
+    glColor4f(cdata->last_color.r / 255.01f, cdata->last_color.g / 255.01f,
+              cdata->last_color.b / 255.01f, GET_ALPHA(cdata->last_color) / 255.01f);
 #endif
 #ifndef METAENGINE_Render_SKIP_ENABLE_TEXTURE_2D
-    if (cdata->last_use_texturing)
-        glEnable(GL_TEXTURE_2D);
+    if (cdata->last_use_texturing) glEnable(GL_TEXTURE_2D);
     else
         glDisable(GL_TEXTURE_2D);
 #endif
 
-    if (cdata->last_use_blending)
-        glEnable(GL_BLEND);
+    if (cdata->last_use_blending) glEnable(GL_BLEND);
     else
         glDisable(GL_BLEND);
 
     forceChangeBlendMode(renderer, cdata->last_blend_mode);
 
-    if (cdata->last_depth_test)
-        glEnable(GL_DEPTH_TEST);
+    if (cdata->last_depth_test) glEnable(GL_DEPTH_TEST);
     else
         glDisable(GL_DEPTH_TEST);
 
@@ -1710,18 +1831,23 @@ static void ResetRendererState(METAENGINE_Render_Renderer *renderer) {
     forceChangeViewport(target, target->viewport);
 
     if (cdata->last_image != NULL)
-        glBindTexture(GL_TEXTURE_2D, ((METAENGINE_Render_IMAGE_DATA *) (cdata->last_image)->data)->handle);
+        glBindTexture(GL_TEXTURE_2D,
+                      ((METAENGINE_Render_IMAGE_DATA *) (cdata->last_image)->data)->handle);
 
     if (target->context->active_target != NULL)
-        extBindFramebuffer(renderer, ((METAENGINE_Render_TARGET_DATA *) target->context->active_target->data)->handle);
+        extBindFramebuffer(
+                renderer,
+                ((METAENGINE_Render_TARGET_DATA *) target->context->active_target->data)->handle);
     else
         extBindFramebuffer(renderer, ((METAENGINE_Render_TARGET_DATA *) target->data)->handle);
 }
 
-
-static METAENGINE_Render_bool AddDepthBuffer(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static METAENGINE_Render_bool AddDepthBuffer(METAENGINE_Render_Renderer *renderer,
+                                             METAENGINE_Render_Target *target) {
 #if defined(METAENGINE_Render_USE_GLES) && METAENGINE_Render_GLES_MAJOR_VERSION == 1
-    METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer", METAENGINE_Render_ERROR_USER_ERROR, "Not supported in GL ES 1.1.");
+    METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer",
+                                    METAENGINE_Render_ERROR_USER_ERROR,
+                                    "Not supported in GL ES 1.1.");
     return METAENGINE_Render_FALSE;
 #else
     GLuint depth_buffer;
@@ -1729,15 +1855,17 @@ static METAENGINE_Render_bool AddDepthBuffer(METAENGINE_Render_Renderer *rendere
     METAENGINE_Render_CONTEXT_DATA *cdata;
 
     if (renderer->current_context_target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer", METAENGINE_Render_ERROR_BACKEND_ERROR, "NULL context.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR, "NULL context.");
         return METAENGINE_Render_FALSE;
     }
 
-    if (isCurrentTarget(renderer, target))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
 
     if (!SetActiveTarget(renderer, target)) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind target framebuffer.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to bind target framebuffer.");
         return METAENGINE_Render_FALSE;
     }
 
@@ -1748,10 +1876,11 @@ static METAENGINE_Render_bool AddDepthBuffer(METAENGINE_Render_Renderer *rendere
 
     status = glCheckFramebufferStatusPROC(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to attach depth buffer to target.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_AddDepthBuffer",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to attach depth buffer to target.");
         return METAENGINE_Render_FALSE;
     }
-
 
     cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
     cdata->last_depth_write = target->use_depth_write;
@@ -1763,20 +1892,23 @@ static METAENGINE_Render_bool AddDepthBuffer(METAENGINE_Render_Renderer *rendere
 #endif
 }
 
-static METAENGINE_Render_bool SetWindowResolution(METAENGINE_Render_Renderer *renderer, Uint16 w, Uint16 h) {
+static METAENGINE_Render_bool SetWindowResolution(METAENGINE_Render_Renderer *renderer, Uint16 w,
+                                                  Uint16 h) {
     METAENGINE_Render_Target *target = renderer->current_context_target;
 
     METAENGINE_Render_bool isCurrent = isCurrentTarget(renderer, target);
-    if (isCurrent)
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrent) renderer->impl->FlushBlitBuffer(renderer);
 
     // Don't need to resize (only update internals) when resolution isn't changing.
     get_target_window_dimensions(target, &target->context->window_w, &target->context->window_h);
-    get_target_drawable_dimensions(target, &target->context->drawable_w, &target->context->drawable_h);
+    get_target_drawable_dimensions(target, &target->context->drawable_w,
+                                   &target->context->drawable_h);
     if (target->context->window_w != w || target->context->window_h != h) {
         resize_window(target, w, h);
-        get_target_window_dimensions(target, &target->context->window_w, &target->context->window_h);
-        get_target_drawable_dimensions(target, &target->context->drawable_w, &target->context->drawable_h);
+        get_target_window_dimensions(target, &target->context->window_w,
+                                     &target->context->window_h);
+        get_target_drawable_dimensions(target, &target->context->drawable_w,
+                                       &target->context->drawable_h);
     }
 
 #ifdef METAENGINE_Render_USE_SDL1
@@ -1788,7 +1920,8 @@ static METAENGINE_Render_bool SetWindowResolution(METAENGINE_Render_Renderer *re
         // Reset texturing state
         context = renderer->current_context_target->context;
         context->use_texturing = METAENGINE_Render_TRUE;
-        ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing = METAENGINE_Render_FALSE;
+        ((METAENGINE_Render_CONTEXT_DATA *) context->data)->last_use_texturing =
+                METAENGINE_Render_FALSE;
     }
 
     // Clear target (no state change)
@@ -1814,51 +1947,46 @@ static METAENGINE_Render_bool SetWindowResolution(METAENGINE_Render_Renderer *re
 
     METAENGINE_Render_UnsetClip(target);
 
-    if (isCurrent)
-        applyTargetCamera(target);
+    if (isCurrent) applyTargetCamera(target);
 
     METAENGINE_Render_ResetProjection(target);
 
     return 1;
 }
 
-static void SetVirtualResolution(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, Uint16 w, Uint16 h) {
+static void SetVirtualResolution(METAENGINE_Render_Renderer *renderer,
+                                 METAENGINE_Render_Target *target, Uint16 w, Uint16 h) {
     METAENGINE_Render_bool isCurrent;
 
-    if (target == NULL)
-        return;
+    if (target == NULL) return;
 
     isCurrent = isCurrentTarget(renderer, target);
-    if (isCurrent)
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrent) renderer->impl->FlushBlitBuffer(renderer);
 
     target->w = w;
     target->h = h;
     target->using_virtual_resolution = METAENGINE_Render_TRUE;
 
-    if (isCurrent)
-        applyTargetCamera(target);
+    if (isCurrent) applyTargetCamera(target);
 
     METAENGINE_Render_ResetProjection(target);
 }
 
-static void UnsetVirtualResolution(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static void UnsetVirtualResolution(METAENGINE_Render_Renderer *renderer,
+                                   METAENGINE_Render_Target *target) {
     METAENGINE_Render_bool isCurrent;
 
-    if (target == NULL)
-        return;
+    if (target == NULL) return;
 
     isCurrent = isCurrentTarget(renderer, target);
-    if (isCurrent)
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrent) renderer->impl->FlushBlitBuffer(renderer);
 
     target->w = target->base_w;
     target->h = target->base_h;
 
     target->using_virtual_resolution = METAENGINE_Render_FALSE;
 
-    if (isCurrent)
-        applyTargetCamera(target);
+    if (isCurrent) applyTargetCamera(target);
 
     METAENGINE_Render_ResetProjection(target);
 }
@@ -1868,8 +1996,9 @@ static void Quit(METAENGINE_Render_Renderer *renderer) {
     renderer->current_context_target = NULL;
 }
 
-
-static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_bool enable_fullscreen, METAENGINE_Render_bool use_desktop_resolution) {
+static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer *renderer,
+                                            METAENGINE_Render_bool enable_fullscreen,
+                                            METAENGINE_Render_bool use_desktop_resolution) {
     METAENGINE_Render_Target *target = renderer->current_context_target;
 
     SDL_Window *window = SDL_GetWindowFromID(target->context->windowID);
@@ -1880,8 +2009,7 @@ static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer *renderer
     Uint32 flags = 0;
 
     if (enable_fullscreen) {
-        if (use_desktop_resolution)
-            flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+        if (use_desktop_resolution) flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
         else
             flags = SDL_WINDOW_FULLSCREEN;
     }
@@ -1899,14 +2027,18 @@ static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer *renderer
         }
 
         // If we're in windowed mode now and a resolution was stored, restore the original window resolution
-        if (was_fullscreen && !is_fullscreen && (target->context->stored_window_w != 0 && target->context->stored_window_h != 0))
-            SDL_SetWindowSize(window, target->context->stored_window_w, target->context->stored_window_h);
+        if (was_fullscreen && !is_fullscreen &&
+            (target->context->stored_window_w != 0 && target->context->stored_window_h != 0))
+            SDL_SetWindowSize(window, target->context->stored_window_w,
+                              target->context->stored_window_h);
     }
 
     if (is_fullscreen != was_fullscreen) {
         // Update window dims
-        get_target_window_dimensions(target, &target->context->window_w, &target->context->window_h);
-        get_target_drawable_dimensions(target, &target->context->drawable_w, &target->context->drawable_h);
+        get_target_window_dimensions(target, &target->context->window_w,
+                                     &target->context->window_h);
+        get_target_drawable_dimensions(target, &target->context->drawable_w,
+                                       &target->context->drawable_h);
 
         // If virtual res is not set, we need to update the target dims and reset stuff that no longer is right
         if (!target->using_virtual_resolution) {
@@ -1916,15 +2048,15 @@ static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer *renderer
         }
 
         // Reset viewport
-        target->viewport = METAENGINE_Render_MakeRect(0, 0, (float) target->context->drawable_w, (float) target->context->drawable_h);
+        target->viewport = METAENGINE_Render_MakeRect(0, 0, (float) target->context->drawable_w,
+                                                      (float) target->context->drawable_h);
         changeViewport(target);
 
         // Reset clip
         METAENGINE_Render_UnsetClip(target);
 
         // Update camera
-        if (isCurrentTarget(renderer, target))
-            applyTargetCamera(target);
+        if (isCurrentTarget(renderer, target)) applyTargetCamera(target);
     }
 
     target->base_w = (Uint16) target->context->drawable_w;
@@ -1933,25 +2065,26 @@ static METAENGINE_Render_bool SetFullscreen(METAENGINE_Render_Renderer *renderer
     return is_fullscreen;
 }
 
-static METAENGINE_Render_Camera SetCamera(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, METAENGINE_Render_Camera *cam) {
+static METAENGINE_Render_Camera SetCamera(METAENGINE_Render_Renderer *renderer,
+                                          METAENGINE_Render_Target *target,
+                                          METAENGINE_Render_Camera *cam) {
     METAENGINE_Render_Camera new_camera;
     METAENGINE_Render_Camera old_camera;
 
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetCamera", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetCamera",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return METAENGINE_Render_GetDefaultCamera();
     }
 
-    if (cam == NULL)
-        new_camera = METAENGINE_Render_GetDefaultCamera();
+    if (cam == NULL) new_camera = METAENGINE_Render_GetDefaultCamera();
     else
         new_camera = *cam;
 
     old_camera = target->camera;
 
     if (!equal_cameras(new_camera, old_camera)) {
-        if (isCurrentTarget(renderer, target))
-            renderer->impl->FlushBlitBuffer(renderer);
+        if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
 
         target->camera = new_camera;
     }
@@ -1963,8 +2096,7 @@ static GLuint CreateUninitializedTexture(METAENGINE_Render_Renderer *renderer) {
     GLuint handle;
 
     glGenTextures(1, &handle);
-    if (handle == 0)
-        return 0;
+    if (handle == 0) return 0;
 
     flushAndBindTexture(renderer, handle);
 
@@ -1982,7 +2114,9 @@ static GLuint CreateUninitializedTexture(METAENGINE_Render_Renderer *renderer) {
     return handle;
 }
 
-static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Renderer *renderer, Uint16 w, Uint16 h, METAENGINE_Render_FormatEnum format) {
+static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Renderer *renderer,
+                                                         Uint16 w, Uint16 h,
+                                                         METAENGINE_Render_FormatEnum format) {
     GLuint handle, num_layers, bytes_per_pixel;
     GLenum gl_format;
     METAENGINE_Render_Image *result;
@@ -2054,19 +2188,25 @@ static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Rende
             bytes_per_pixel = 1;
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateUninitializedImage", METAENGINE_Render_ERROR_DATA_ERROR, "Unsupported image format (0x%x)", format);
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateUninitializedImage",
+                                            METAENGINE_Render_ERROR_DATA_ERROR,
+                                            "Unsupported image format (0x%x)", format);
             return NULL;
     }
 
     if (bytes_per_pixel < 1 || bytes_per_pixel > 4) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateUninitializedImage", METAENGINE_Render_ERROR_DATA_ERROR, "Unsupported number of bytes per pixel (%d)", bytes_per_pixel);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CreateUninitializedImage", METAENGINE_Render_ERROR_DATA_ERROR,
+                "Unsupported number of bytes per pixel (%d)", bytes_per_pixel);
         return NULL;
     }
 
     // Create the underlying texture
     handle = CreateUninitializedTexture(renderer);
     if (handle == 0) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateUninitializedImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to generate a texture handle.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateUninitializedImage",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to generate a texture handle.");
         return NULL;
     }
 
@@ -2112,22 +2252,26 @@ static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Rende
     return result;
 }
 
-
-static METAENGINE_Render_Image *CreateImage(METAENGINE_Render_Renderer *renderer, Uint16 w, Uint16 h, METAENGINE_Render_FormatEnum format) {
+static METAENGINE_Render_Image *CreateImage(METAENGINE_Render_Renderer *renderer, Uint16 w,
+                                            Uint16 h, METAENGINE_Render_FormatEnum format) {
     METAENGINE_Render_Image *result;
     GLenum internal_format;
     static unsigned char *zero_buffer = NULL;
     static unsigned int zero_buffer_size = 0;
 
     if (format < 1) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImage", METAENGINE_Render_ERROR_DATA_ERROR, "Unsupported image format (0x%x)", format);
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImage",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Unsupported image format (0x%x)", format);
         return NULL;
     }
 
     result = CreateUninitializedImage(renderer, w, h, format);
 
     if (result == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not create image as requested.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImage",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Could not create image as requested.");
         return NULL;
     }
 
@@ -2138,10 +2282,8 @@ static METAENGINE_Render_Image *CreateImage(METAENGINE_Render_Renderer *renderer
     w = result->w;
     h = result->h;
     if (!(renderer->enabled_features & METAENGINE_Render_FEATURE_NON_POWER_OF_TWO)) {
-        if (!isPowerOfTwo(w))
-            w = (Uint16) getNearestPowerOf2(w);
-        if (!isPowerOfTwo(h))
-            h = (Uint16) getNearestPowerOf2(h);
+        if (!isPowerOfTwo(w)) w = (Uint16) getNearestPowerOf2(w);
+        if (!isPowerOfTwo(h)) h = (Uint16) getNearestPowerOf2(h);
     }
 
     // Initialize texture using a blank buffer
@@ -2152,22 +2294,24 @@ static METAENGINE_Render_Image *CreateImage(METAENGINE_Render_Renderer *renderer
         memset(zero_buffer, 0, zero_buffer_size);
     }
 
-
-    upload_new_texture(zero_buffer, METAENGINE_Render_MakeRect(0, 0, w, h), internal_format, 1, w, result->bytes_per_pixel);
-
+    upload_new_texture(zero_buffer, METAENGINE_Render_MakeRect(0, 0, w, h), internal_format, 1, w,
+                       result->bytes_per_pixel);
 
     // Tell SDL_gpu what we got (power-of-two requirements have made this change)
     result->texture_w = w;
     result->texture_h = h;
 
-
     return result;
 }
 
-
-static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_TextureHandle handle, METAENGINE_Render_bool take_ownership) {
+static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Renderer *renderer,
+                                                        METAENGINE_Render_TextureHandle handle,
+                                                        METAENGINE_Render_bool take_ownership) {
 #ifdef METAENGINE_Render_DISABLE_TEXTURE_GETS
-    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_UNSUPPORTED_FUNCTION, "Renderer %s does not support this function", renderer->id.name);
+    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture",
+                                    METAENGINE_Render_ERROR_UNSUPPORTED_FUNCTION,
+                                    "Renderer %s does not support this function",
+                                    renderer->id.name);
     return NULL;
 #else
 
@@ -2187,7 +2331,11 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
 
 #ifdef METAENGINE_Render_USE_GLES
     if (renderer->id.major_version == 3 && renderer->id.minor_version == 0) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_UNSUPPORTED_FUNCTION, "Renderer %s's runtime version on this device (3.0) does not support this function", renderer->id.name);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CreateImageUsingTexture",
+                METAENGINE_Render_ERROR_UNSUPPORTED_FUNCTION,
+                "Renderer %s's runtime version on this device (3.0) does not support this function",
+                renderer->id.name);
         return NULL;
     }
 #endif
@@ -2251,13 +2399,14 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
             break;
 #endif
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_DATA_ERROR, "Unsupported GL image format (0x%x)", gl_format);
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture",
+                                            METAENGINE_Render_ERROR_DATA_ERROR,
+                                            "Unsupported GL image format (0x%x)", gl_format);
             return NULL;
     }
 
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
-
 
     glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &min_filter);
     // Ignore mag filter...  Maybe the wrong thing to do?
@@ -2275,11 +2424,12 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
             filter_mode = METAENGINE_Render_FILTER_LINEAR_MIPMAP;
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_USER_ERROR, "Unsupported value for GL_TEXTURE_MIN_FILTER (0x%x)", min_filter);
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_USER_ERROR,
+                    "Unsupported value for GL_TEXTURE_MIN_FILTER (0x%x)", min_filter);
             filter_mode = METAENGINE_Render_FILTER_LINEAR;
             break;
     }
-
 
     glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &wrap_s);
     glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &wrap_t);
@@ -2296,7 +2446,9 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
             wrap_x = METAENGINE_Render_WRAP_MIRRORED;
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_USER_ERROR, "Unsupported value for GL_TEXTURE_WRAP_S (0x%x)", wrap_s);
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_USER_ERROR,
+                    "Unsupported value for GL_TEXTURE_WRAP_S (0x%x)", wrap_s);
             wrap_x = METAENGINE_Render_WRAP_NONE;
             break;
     }
@@ -2312,7 +2464,9 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
             wrap_y = METAENGINE_Render_WRAP_MIRRORED;
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_USER_ERROR, "Unsupported value for GL_TEXTURE_WRAP_T (0x%x)", wrap_t);
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_CreateImageUsingTexture", METAENGINE_Render_ERROR_USER_ERROR,
+                    "Unsupported value for GL_TEXTURE_WRAP_T (0x%x)", wrap_t);
             wrap_y = METAENGINE_Render_WRAP_NONE;
             break;
     }
@@ -2324,7 +2478,6 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
     data->handle = (GLuint) handle;
     data->owns_handle = take_ownership;
     data->format = gl_format;
-
 
     result = (METAENGINE_Render_Image *) SDL_malloc(sizeof(METAENGINE_Render_Image));
     result->refcount = 1;
@@ -2363,13 +2516,12 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
 #endif
 }
 
-
-static METAENGINE_Render_Image *CreateAliasImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static METAENGINE_Render_Image *CreateAliasImage(METAENGINE_Render_Renderer *renderer,
+                                                 METAENGINE_Render_Image *image) {
     METAENGINE_Render_Image *result;
     (void) renderer;
 
-    if (image == NULL)
-        return NULL;
+    if (image == NULL) return NULL;
 
     result = (METAENGINE_Render_Image *) SDL_malloc(sizeof(METAENGINE_Render_Image));
     // Copy the members
@@ -2383,13 +2535,12 @@ static METAENGINE_Render_Image *CreateAliasImage(METAENGINE_Render_Renderer *ren
     return result;
 }
 
+static METAENGINE_Render_bool readTargetPixels(METAENGINE_Render_Renderer *renderer,
+                                               METAENGINE_Render_Target *source, GLint format,
+                                               GLubyte *pixels) {
+    if (source == NULL) return METAENGINE_Render_FALSE;
 
-static METAENGINE_Render_bool readTargetPixels(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *source, GLint format, GLubyte *pixels) {
-    if (source == NULL)
-        return METAENGINE_Render_FALSE;
-
-    if (isCurrentTarget(renderer, source))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, source)) renderer->impl->FlushBlitBuffer(renderer);
 
     if (SetActiveTarget(renderer, source)) {
         glReadPixels(0, 0, source->base_w, source->base_h, format, GL_UNSIGNED_BYTE, pixels);
@@ -2398,14 +2549,15 @@ static METAENGINE_Render_bool readTargetPixels(METAENGINE_Render_Renderer *rende
     return METAENGINE_Render_FALSE;
 }
 
-static METAENGINE_Render_bool readImagePixels(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *source, GLint format, GLubyte *pixels) {
+static METAENGINE_Render_bool readImagePixels(METAENGINE_Render_Renderer *renderer,
+                                              METAENGINE_Render_Image *source, GLint format,
+                                              GLubyte *pixels) {
 #ifdef METAENGINE_Render_USE_GLES
     METAENGINE_Render_bool created_target;
     METAENGINE_Render_bool result;
 #endif
 
-    if (source == NULL)
-        return METAENGINE_Render_FALSE;
+    if (source == NULL) return METAENGINE_Render_FALSE;
 
 // No glGetTexImage() in OpenGLES
 #ifdef METAENGINE_Render_USE_GLES
@@ -2420,8 +2572,7 @@ static METAENGINE_Render_bool readImagePixels(METAENGINE_Render_Renderer *render
     // FIXME: I should force it to use the texture dims.
     result = readTargetPixels(renderer, source->target, format, pixels);
     // Free the target
-    if (created_target)
-        renderer->impl->FreeTarget(renderer, source->target);
+    if (created_target) renderer->impl->FreeTarget(renderer, source->target);
     return result;
 #else
     // Bind the texture temporarily
@@ -2429,29 +2580,36 @@ static METAENGINE_Render_bool readImagePixels(METAENGINE_Render_Renderer *render
     // Get the data
     glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, pixels);
     // Rebind the last texture
-    if (((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image != NULL)
-        glBindTexture(GL_TEXTURE_2D, ((METAENGINE_Render_IMAGE_DATA *) (((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)->last_image)->data)->handle);
+    if (((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data)
+                ->last_image != NULL)
+        glBindTexture(
+                GL_TEXTURE_2D,
+                ((METAENGINE_Render_IMAGE_DATA *) (((METAENGINE_Render_CONTEXT_DATA *) renderer
+                                                            ->current_context_target->context->data)
+                                                           ->last_image)
+                         ->data)
+                        ->handle);
     return METAENGINE_Render_TRUE;
 #endif
 }
 
-static unsigned char *getRawTargetData(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static unsigned char *getRawTargetData(METAENGINE_Render_Renderer *renderer,
+                                       METAENGINE_Render_Target *target) {
     int bytes_per_pixel;
     unsigned char *data;
     int pitch;
     unsigned char *copy;
     int y;
 
-    if (isCurrentTarget(renderer, target))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
 
     bytes_per_pixel = 4;
-    if (target->image != NULL)
-        bytes_per_pixel = target->image->bytes_per_pixel;
+    if (target->image != NULL) bytes_per_pixel = target->image->bytes_per_pixel;
     data = (unsigned char *) SDL_malloc(target->base_w * target->base_h * bytes_per_pixel);
 
     // This can take regions of pixels, so using base_w and base_h with an image target should be fine.
-    if (!readTargetPixels(renderer, target, ((METAENGINE_Render_TARGET_DATA *) target->data)->format, data)) {
+    if (!readTargetPixels(renderer, target,
+                          ((METAENGINE_Render_TARGET_DATA *) target->data)->format, data)) {
         SDL_free(data);
         return NULL;
     }
@@ -2472,16 +2630,19 @@ static unsigned char *getRawTargetData(METAENGINE_Render_Renderer *renderer, MET
     return data;
 }
 
-static unsigned char *getRawImageData(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static unsigned char *getRawImageData(METAENGINE_Render_Renderer *renderer,
+                                      METAENGINE_Render_Image *image) {
     unsigned char *data;
 
     if (image->target != NULL && isCurrentTarget(renderer, image->target))
         renderer->impl->FlushBlitBuffer(renderer);
 
-    data = (unsigned char *) SDL_malloc(image->texture_w * image->texture_h * image->bytes_per_pixel);
+    data = (unsigned char *) SDL_malloc(image->texture_w * image->texture_h *
+                                        image->bytes_per_pixel);
 
     // FIXME: Sometimes the texture is stored and read in RGBA even when I specify RGB.  getRawImageData() might need to return the stored format or Bpp.
-    if (!readImagePixels(renderer, image, ((METAENGINE_Render_IMAGE_DATA *) image->data)->format, data)) {
+    if (!readImagePixels(renderer, image, ((METAENGINE_Render_IMAGE_DATA *) image->data)->format,
+                         data)) {
         SDL_free(data);
         return NULL;
     }
@@ -2489,19 +2650,20 @@ static unsigned char *getRawImageData(METAENGINE_Render_Renderer *renderer, META
     return data;
 }
 
-static METAENGINE_Render_bool SaveImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, const char *filename, METAENGINE_Render_FileFormatEnum format) {
+static METAENGINE_Render_bool SaveImage(METAENGINE_Render_Renderer *renderer,
+                                        METAENGINE_Render_Image *image, const char *filename,
+                                        METAENGINE_Render_FileFormatEnum format) {
     METAENGINE_Render_bool result;
     SDL_Surface *surface;
 
-    if (image == NULL || filename == NULL ||
-        image->texture_w < 1 || image->texture_h < 1 || image->bytes_per_pixel < 1 || image->bytes_per_pixel > 4) {
+    if (image == NULL || filename == NULL || image->texture_w < 1 || image->texture_h < 1 ||
+        image->bytes_per_pixel < 1 || image->bytes_per_pixel > 4) {
         return METAENGINE_Render_FALSE;
     }
 
     surface = renderer->impl->CopySurfaceFromImage(renderer, image);
 
-    if (surface == NULL)
-        return METAENGINE_Render_FALSE;
+    if (surface == NULL) return METAENGINE_Render_FALSE;
 
     result = METAENGINE_Render_SaveSurface(surface, filename, format);
 
@@ -2509,33 +2671,43 @@ static METAENGINE_Render_bool SaveImage(METAENGINE_Render_Renderer *renderer, ME
     return result;
 }
 
-static SDL_Surface *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static SDL_Surface *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer,
+                                          METAENGINE_Render_Target *target) {
     unsigned char *data;
     SDL_Surface *result;
     SDL_PixelFormat *format;
 
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromTarget", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromTarget",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return NULL;
     }
     if (target->base_w < 1 || target->base_h < 1) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromTarget", METAENGINE_Render_ERROR_DATA_ERROR, "Invalid target dimensions (%dx%d)", target->base_w, target->base_h);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CopySurfaceFromTarget", METAENGINE_Render_ERROR_DATA_ERROR,
+                "Invalid target dimensions (%dx%d)", target->base_w, target->base_h);
         return NULL;
     }
 
     data = getRawTargetData(renderer, target);
 
     if (data == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromTarget", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not retrieve target data.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromTarget",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Could not retrieve target data.");
         return NULL;
     }
 
     format = AllocFormat(((METAENGINE_Render_TARGET_DATA *) target->data)->format);
 
-    result = SDL_CreateRGBSurface(SDL_SWSURFACE, target->base_w, target->base_h, format->BitsPerPixel, format->Rmask, format->Gmask, format->Bmask, format->Amask);
+    result = SDL_CreateRGBSurface(SDL_SWSURFACE, target->base_w, target->base_h,
+                                  format->BitsPerPixel, format->Rmask, format->Gmask, format->Bmask,
+                                  format->Amask);
 
     if (result == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromTarget", METAENGINE_Render_ERROR_DATA_ERROR, "Failed to create new %dx%d surface", target->base_w, target->base_h);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CopySurfaceFromTarget", METAENGINE_Render_ERROR_DATA_ERROR,
+                "Failed to create new %dx%d surface", target->base_w, target->base_h);
         SDL_free(data);
         return NULL;
     }
@@ -2545,7 +2717,8 @@ static SDL_Surface *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer, 
         int i;
         int source_pitch = target->base_w * format->BytesPerPixel;
         for (i = 0; i < target->base_h; ++i) {
-            memcpy((Uint8 *) result->pixels + i * result->pitch, data + source_pitch * i, source_pitch);
+            memcpy((Uint8 *) result->pixels + i * result->pitch, data + source_pitch * i,
+                   source_pitch);
         }
     }
 
@@ -2555,18 +2728,22 @@ static SDL_Surface *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer, 
     return result;
 }
 
-static SDL_Surface *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static SDL_Surface *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer,
+                                         METAENGINE_Render_Image *image) {
     unsigned char *data;
     SDL_Surface *result;
     SDL_PixelFormat *format;
     int w, h;
 
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return NULL;
     }
     if (image->w < 1 || image->h < 1) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage", METAENGINE_Render_ERROR_DATA_ERROR, "Invalid image dimensions (%dx%d)", image->base_w, image->base_h);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_CopySurfaceFromImage", METAENGINE_Render_ERROR_DATA_ERROR,
+                "Invalid image dimensions (%dx%d)", image->base_w, image->base_h);
         return NULL;
     }
 
@@ -2581,16 +2758,21 @@ static SDL_Surface *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer, M
     data = getRawImageData(renderer, image);
 
     if (data == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not retrieve target data.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Could not retrieve target data.");
         return NULL;
     }
 
     format = AllocFormat(((METAENGINE_Render_IMAGE_DATA *) image->data)->format);
 
-    result = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, format->BitsPerPixel, format->Rmask, format->Gmask, format->Bmask, format->Amask);
+    result = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, format->BitsPerPixel, format->Rmask,
+                                  format->Gmask, format->Bmask, format->Amask);
 
     if (result == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage", METAENGINE_Render_ERROR_DATA_ERROR, "Failed to create new %dx%d surface", w, h);
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopySurfaceFromImage",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Failed to create new %dx%d surface", w, h);
         SDL_free(data);
         return NULL;
     }
@@ -2598,9 +2780,12 @@ static SDL_Surface *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer, M
     // Copy row-by-row in case the pitch doesn't match
     {
         int i;
-        int source_pitch = image->texture_w * format->BytesPerPixel;// Use the actual texture width to pull from the data
+        int source_pitch =
+                image->texture_w *
+                format->BytesPerPixel;// Use the actual texture width to pull from the data
         for (i = 0; i < h; ++i) {
-            memcpy((Uint8 *) result->pixels + i * result->pitch, data + source_pitch * i, result->pitch);
+            memcpy((Uint8 *) result->pixels + i * result->pitch, data + source_pitch * i,
+                   result->pitch);
         }
     }
 
@@ -2610,29 +2795,28 @@ static SDL_Surface *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer, M
     return result;
 }
 
-
 // Returns 0 if a direct conversion (asking OpenGL to do it) is safe.  Returns 1 if a copy is needed.  Returns -1 on error.
 // The surfaceFormatResult is used to specify what direct conversion format the surface pixels are in (source format).
 #ifdef METAENGINE_Render_USE_GLES
 // OpenGLES does not do direct conversion.  Internal format (glFormat) and original format (surfaceFormatResult) must be the same.
-static int compareFormats(METAENGINE_Render_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
+static int compareFormats(METAENGINE_Render_Renderer *renderer, GLenum glFormat,
+                          SDL_Surface *surface, GLenum *surfaceFormatResult) {
     SDL_PixelFormat *format = surface->format;
     switch (glFormat) {
             // 3-channel formats
         case GL_RGB:
-            if (format->BytesPerPixel != 3)
-                return 1;
+            if (format->BytesPerPixel != 3) return 1;
 
-            if (format->Rmask == 0x0000FF && format->Gmask == 0x00FF00 && format->Bmask == 0xFF0000) {
-                if (surfaceFormatResult != NULL)
-                    *surfaceFormatResult = GL_RGB;
+            if (format->Rmask == 0x0000FF && format->Gmask == 0x00FF00 &&
+                format->Bmask == 0xFF0000) {
+                if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_RGB;
                 return 0;
             }
 #ifdef GL_BGR
-            if (format->Rmask == 0xFF0000 && format->Gmask == 0x00FF00 && format->Bmask == 0x0000FF) {
+            if (format->Rmask == 0xFF0000 && format->Gmask == 0x00FF00 &&
+                format->Bmask == 0x0000FF) {
                 if (renderer->enabled_features & METAENGINE_Render_FEATURE_GL_BGR) {
-                    if (surfaceFormatResult != NULL)
-                        *surfaceFormatResult = GL_BGR;
+                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_BGR;
                     return 0;
                 }
             }
@@ -2640,60 +2824,61 @@ static int compareFormats(METAENGINE_Render_Renderer *renderer, GLenum glFormat,
             return 1;
             // 4-channel formats
         case GL_RGBA:
-            if (format->BytesPerPixel != 4)
-                return 1;
+            if (format->BytesPerPixel != 4) return 1;
 
-            if (format->Rmask == 0x000000FF && format->Gmask == 0x0000FF00 && format->Bmask == 0x00FF0000) {
-                if (surfaceFormatResult != NULL)
-                    *surfaceFormatResult = GL_RGBA;
+            if (format->Rmask == 0x000000FF && format->Gmask == 0x0000FF00 &&
+                format->Bmask == 0x00FF0000) {
+                if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_RGBA;
                 return 0;
             }
 #ifdef GL_BGRA
-            if (format->Rmask == 0x00FF0000 && format->Gmask == 0x0000FF00 && format->Bmask == 0x000000FF) {
+            if (format->Rmask == 0x00FF0000 && format->Gmask == 0x0000FF00 &&
+                format->Bmask == 0x000000FF) {
                 if (renderer->enabled_features & METAENGINE_Render_FEATURE_GL_BGRA) {
-                    if (surfaceFormatResult != NULL)
-                        *surfaceFormatResult = GL_BGRA;
+                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_BGRA;
                     return 0;
                 }
             }
 #endif
 #ifdef GL_ABGR
-            if (format->Rmask == 0xFF000000 && format->Gmask == 0x00FF0000 && format->Bmask == 0x0000FF00) {
+            if (format->Rmask == 0xFF000000 && format->Gmask == 0x00FF0000 &&
+                format->Bmask == 0x0000FF00) {
                 if (renderer->enabled_features & METAENGINE_Render_FEATURE_GL_ABGR) {
-                    if (surfaceFormatResult != NULL)
-                        *surfaceFormatResult = GL_ABGR;
+                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_ABGR;
                     return 0;
                 }
             }
 #endif
             return 1;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompareFormats", METAENGINE_Render_ERROR_DATA_ERROR, "Invalid texture format (0x%x)", glFormat);
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompareFormats",
+                                            METAENGINE_Render_ERROR_DATA_ERROR,
+                                            "Invalid texture format (0x%x)", glFormat);
             return -1;
     }
 }
 #else
 //GL_RGB/GL_RGBA and Surface format
-static int compareFormats(METAENGINE_Render_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
+static int compareFormats(METAENGINE_Render_Renderer *renderer, GLenum glFormat,
+                          SDL_Surface *surface, GLenum *surfaceFormatResult) {
     SDL_PixelFormat *format = surface->format;
     switch (glFormat) {
             // 3-channel formats
         case GL_RGB:
-            if (format->BytesPerPixel != 3)
-                return 1;
+            if (format->BytesPerPixel != 3) return 1;
 
             // Looks like RGB?  Easy!
-            if (format->Rmask == 0x0000FF && format->Gmask == 0x00FF00 && format->Bmask == 0xFF0000) {
-                if (surfaceFormatResult != NULL)
-                    *surfaceFormatResult = GL_RGB;
+            if (format->Rmask == 0x0000FF && format->Gmask == 0x00FF00 &&
+                format->Bmask == 0xFF0000) {
+                if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_RGB;
                 return 0;
             }
             // Looks like BGR?
-            if (format->Rmask == 0xFF0000 && format->Gmask == 0x00FF00 && format->Bmask == 0x0000FF) {
+            if (format->Rmask == 0xFF0000 && format->Gmask == 0x00FF00 &&
+                format->Bmask == 0x0000FF) {
 #ifdef GL_BGR
                 if (renderer->enabled_features & METAENGINE_Render_FEATURE_GL_BGR) {
-                    if (surfaceFormatResult != NULL)
-                        *surfaceFormatResult = GL_BGR;
+                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_BGR;
                     return 0;
                 }
 #endif
@@ -2703,44 +2888,44 @@ static int compareFormats(METAENGINE_Render_Renderer *renderer, GLenum glFormat,
             // 4-channel formats
         case GL_RGBA:
 
-            if (format->BytesPerPixel != 4)
-                return 1;
+            if (format->BytesPerPixel != 4) return 1;
 
             // Looks like RGBA?  Easy!
-            if (format->Rmask == 0x000000FF && format->Gmask == 0x0000FF00 && format->Bmask == 0x00FF0000) {
-                if (surfaceFormatResult != NULL)
-                    *surfaceFormatResult = GL_RGBA;
+            if (format->Rmask == 0x000000FF && format->Gmask == 0x0000FF00 &&
+                format->Bmask == 0x00FF0000) {
+                if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_RGBA;
                 return 0;
             }
             // Looks like ABGR?
-            if (format->Rmask == 0xFF000000 && format->Gmask == 0x00FF0000 && format->Bmask == 0x0000FF00) {
+            if (format->Rmask == 0xFF000000 && format->Gmask == 0x00FF0000 &&
+                format->Bmask == 0x0000FF00) {
 #ifdef GL_ABGR
                 if (renderer->enabled_features & METAENGINE_Render_FEATURE_GL_ABGR) {
-                    if (surfaceFormatResult != NULL)
-                        *surfaceFormatResult = GL_ABGR;
+                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_ABGR;
                     return 0;
                 }
 #endif
             }
             // Looks like BGRA?
-            else if (format->Rmask == 0x00FF0000 && format->Gmask == 0x0000FF00 && format->Bmask == 0x000000FF) {
+            else if (format->Rmask == 0x00FF0000 && format->Gmask == 0x0000FF00 &&
+                     format->Bmask == 0x000000FF) {
 #ifdef GL_BGRA
                 if (renderer->enabled_features & METAENGINE_Render_FEATURE_GL_BGRA) {
                     //ARGB, for OpenGL BGRA
-                    if (surfaceFormatResult != NULL)
-                        *surfaceFormatResult = GL_BGRA;
+                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_BGRA;
                     return 0;
                 }
 #endif
             }
             return 1;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompareFormats", METAENGINE_Render_ERROR_DATA_ERROR, "Invalid texture format (0x%x)", glFormat);
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompareFormats",
+                                            METAENGINE_Render_ERROR_DATA_ERROR,
+                                            "Invalid texture format (0x%x)", glFormat);
             return -1;
     }
 }
 #endif
-
 
 // Adapted from SDL_AllocFormat()
 static SDL_PixelFormat *AllocFormat(GLenum glFormat) {
@@ -2805,59 +2990,47 @@ static SDL_PixelFormat *AllocFormat(GLenum glFormat) {
     result->Rshift = 0;
     result->Rloss = 8;
     if (Rmask) {
-        for (mask = Rmask; !(mask & 0x01); mask >>= 1)
-            ++result->Rshift;
-        for (; (mask & 0x01); mask >>= 1)
-            --result->Rloss;
+        for (mask = Rmask; !(mask & 0x01); mask >>= 1) ++result->Rshift;
+        for (; (mask & 0x01); mask >>= 1) --result->Rloss;
     }
 
     result->Gmask = Gmask;
     result->Gshift = 0;
     result->Gloss = 8;
     if (Gmask) {
-        for (mask = Gmask; !(mask & 0x01); mask >>= 1)
-            ++result->Gshift;
-        for (; (mask & 0x01); mask >>= 1)
-            --result->Gloss;
+        for (mask = Gmask; !(mask & 0x01); mask >>= 1) ++result->Gshift;
+        for (; (mask & 0x01); mask >>= 1) --result->Gloss;
     }
 
     result->Bmask = Bmask;
     result->Bshift = 0;
     result->Bloss = 8;
     if (Bmask) {
-        for (mask = Bmask; !(mask & 0x01); mask >>= 1)
-            ++result->Bshift;
-        for (; (mask & 0x01); mask >>= 1)
-            --result->Bloss;
+        for (mask = Bmask; !(mask & 0x01); mask >>= 1) ++result->Bshift;
+        for (; (mask & 0x01); mask >>= 1) --result->Bloss;
     }
 
     result->Amask = Amask;
     result->Ashift = 0;
     result->Aloss = 8;
     if (Amask) {
-        for (mask = Amask; !(mask & 0x01); mask >>= 1)
-            ++result->Ashift;
-        for (; (mask & 0x01); mask >>= 1)
-            --result->Aloss;
+        for (mask = Amask; !(mask & 0x01); mask >>= 1) ++result->Ashift;
+        for (; (mask & 0x01); mask >>= 1) --result->Aloss;
     }
 
     return result;
 }
 
-static void FreeFormat(SDL_PixelFormat *format) {
-    SDL_free(format);
-}
-
+static void FreeFormat(SDL_PixelFormat *format) { SDL_free(format); }
 
 // Returns NULL on failure.  Returns the original surface if no copy is needed.  Returns a new surface converted to the right format otherwise.
-static SDL_Surface *copySurfaceIfNeeded(METAENGINE_Render_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
+static SDL_Surface *copySurfaceIfNeeded(METAENGINE_Render_Renderer *renderer, GLenum glFormat,
+                                        SDL_Surface *surface, GLenum *surfaceFormatResult) {
     // If format doesn't match, we need to do a copy
     int format_compare = compareFormats(renderer, glFormat, surface, surfaceFormatResult);
 
     // There's a problem, logged in compareFormats()
-    if (format_compare < 0)
-        return NULL;
-
+    if (format_compare < 0) return NULL;
 
     // Copy it to a different format
     if (format_compare > 0) {
@@ -2865,19 +3038,18 @@ static SDL_Surface *copySurfaceIfNeeded(METAENGINE_Render_Renderer *renderer, GL
         SDL_PixelFormat *dst_fmt = AllocFormat(glFormat);
         surface = SDL_ConvertSurface(surface, dst_fmt, 0);
         FreeFormat(dst_fmt);
-        if (surfaceFormatResult != NULL && surface != NULL)
-            *surfaceFormatResult = glFormat;
+        if (surfaceFormatResult != NULL && surface != NULL) *surfaceFormatResult = glFormat;
     }
 
     // No copy needed
     return surface;
 }
 
-static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Renderer *renderer,
+                                                           METAENGINE_Render_Image *image) {
     METAENGINE_Render_Image *result = NULL;
 
-    if (image == NULL)
-        return NULL;
+    if (image == NULL) return NULL;
 
     switch (image->format) {
         case METAENGINE_Render_FORMAT_RGB:
@@ -2889,9 +3061,12 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
             {
                 METAENGINE_Render_Target *target;
 
-                result = renderer->impl->CreateImage(renderer, image->texture_w, image->texture_h, image->format);
+                result = renderer->impl->CreateImage(renderer, image->texture_w, image->texture_h,
+                                                     image->format);
                 if (result == NULL) {
-                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create new image.");
+                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage",
+                                                    METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                                    "Failed to create new image.");
                     return NULL;
                 }
 
@@ -2899,7 +3074,9 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
                 target = METAENGINE_Render_GetTarget(result);
                 if (target == NULL) {
                     METAENGINE_Render_FreeImage(result);
-                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to load target.");
+                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage",
+                                                    METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                                    "Failed to load target.");
                     return NULL;
                 }
 
@@ -2922,15 +3099,14 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
                         METAENGINE_Render_UnsetImageVirtualResolution(image);
                     }
 
-                    renderer->impl->Blit(renderer, image, NULL, target, (float) (image->w / 2), (float) (image->h / 2));
+                    renderer->impl->Blit(renderer, image, NULL, target, (float) (image->w / 2),
+                                         (float) (image->h / 2));
 
                     // Restore the saved settings
                     METAENGINE_Render_SetColor(image, color);
                     METAENGINE_Render_SetBlending(image, use_blending);
                     METAENGINE_Render_SetImageFilter(image, filter_mode);
-                    if (use_virtual) {
-                        METAENGINE_Render_SetImageVirtualResolution(image, w, h);
-                    }
+                    if (use_virtual) { METAENGINE_Render_SetImageVirtualResolution(image, w, h); }
                 }
             }
             break;
@@ -2945,14 +3121,19 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
                 int h;
                 unsigned char *texture_data = getRawImageData(renderer, image);
                 if (texture_data == NULL) {
-                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to get raw texture data.");
+                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage",
+                                                    METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                                    "Failed to get raw texture data.");
                     return NULL;
                 }
 
-                result = CreateUninitializedImage(renderer, image->texture_w, image->texture_h, image->format);
+                result = CreateUninitializedImage(renderer, image->texture_w, image->texture_h,
+                                                  image->format);
                 if (result == NULL) {
                     SDL_free(texture_data);
-                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create new image.");
+                    METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage",
+                                                    METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                                    "Failed to create new image.");
                     return NULL;
                 }
 
@@ -2963,14 +3144,13 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
                 w = result->w;
                 h = result->h;
                 if (!(renderer->enabled_features & METAENGINE_Render_FEATURE_NON_POWER_OF_TWO)) {
-                    if (!isPowerOfTwo(w))
-                        w = getNearestPowerOf2(w);
-                    if (!isPowerOfTwo(h))
-                        h = getNearestPowerOf2(h);
+                    if (!isPowerOfTwo(w)) w = getNearestPowerOf2(w);
+                    if (!isPowerOfTwo(h)) h = getNearestPowerOf2(h);
                 }
 
-                upload_new_texture(texture_data, METAENGINE_Render_MakeRect(0, 0, (float) w, (float) h), internal_format, 1, w, result->bytes_per_pixel);
-
+                upload_new_texture(texture_data,
+                                   METAENGINE_Render_MakeRect(0, 0, (float) w, (float) h),
+                                   internal_format, 1, w, result->bytes_per_pixel);
 
                 // Tell SDL_gpu what we got.
                 result->texture_w = (Uint16) w;
@@ -2980,18 +3160,20 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
             }
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Could not copy the given image format.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImage",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Could not copy the given image format.");
             break;
     }
 
     return result;
 }
 
-static METAENGINE_Render_Image *CopyImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static METAENGINE_Render_Image *CopyImage(METAENGINE_Render_Renderer *renderer,
+                                          METAENGINE_Render_Image *image) {
     METAENGINE_Render_Image *result = NULL;
 
-    if (image == NULL)
-        return NULL;
+    if (image == NULL) return NULL;
 
     result = gpu_copy_image_pixels_only(renderer, image);
 
@@ -3003,8 +3185,7 @@ static METAENGINE_Render_Image *CopyImage(METAENGINE_Render_Renderer *renderer, 
         METAENGINE_Render_SetImageFilter(result, image->filter_mode);
         METAENGINE_Render_SetSnapMode(result, image->snap_mode);
         METAENGINE_Render_SetWrapMode(result, image->wrap_mode_x, image->wrap_mode_y);
-        if (image->has_mipmaps)
-            METAENGINE_Render_GenerateMipmaps(result);
+        if (image->has_mipmaps) METAENGINE_Render_GenerateMipmaps(result);
         if (image->using_virtual_resolution)
             METAENGINE_Render_SetImageVirtualResolution(result, image->w, image->h);
     }
@@ -3012,8 +3193,9 @@ static METAENGINE_Render_Image *CopyImage(METAENGINE_Render_Renderer *renderer, 
     return result;
 }
 
-
-static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, const METAENGINE_Render_Rect *image_rect, SDL_Surface *surface, const METAENGINE_Render_Rect *surface_rect) {
+static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                        const METAENGINE_Render_Rect *image_rect, SDL_Surface *surface,
+                        const METAENGINE_Render_Rect *surface_rect) {
     METAENGINE_Render_IMAGE_DATA *data;
     GLenum original_format;
 
@@ -3023,15 +3205,16 @@ static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
     int alignment;
     Uint8 *pixels;
 
-    if (image == NULL || surface == NULL)
-        return;
+    if (image == NULL || surface == NULL) return;
 
     data = (METAENGINE_Render_IMAGE_DATA *) image->data;
     original_format = data->format;
 
     newSurface = copySurfaceIfNeeded(renderer, data->format, surface, &original_format);
     if (newSurface == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to convert surface to proper pixel format.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to convert surface to proper pixel format.");
         return;
     }
 
@@ -3050,17 +3233,17 @@ static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
         if (updateRect.y + updateRect.h > image->base_h)
             updateRect.h += image->base_h - (updateRect.y + updateRect.h);
 
-        if (updateRect.w <= 0)
-            updateRect.w = 0;
-        if (updateRect.h <= 0)
-            updateRect.h = 0;
+        if (updateRect.w <= 0) updateRect.w = 0;
+        if (updateRect.h <= 0) updateRect.h = 0;
     } else {
         updateRect.x = 0;
         updateRect.y = 0;
         updateRect.w = image->base_w;
         updateRect.h = image->base_h;
         if (updateRect.w < 0.0f || updateRect.h < 0.0f) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage", METAENGINE_Render_ERROR_USER_ERROR, "Given negative image rectangle.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage",
+                                            METAENGINE_Render_ERROR_USER_ERROR,
+                                            "Given negative image rectangle.");
             return;
         }
     }
@@ -3080,10 +3263,8 @@ static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
         if (sourceRect.y + sourceRect.h > newSurface->h)
             sourceRect.h += newSurface->h - (sourceRect.y + sourceRect.h);
 
-        if (sourceRect.w <= 0)
-            sourceRect.w = 0;
-        if (sourceRect.h <= 0)
-            sourceRect.h = 0;
+        if (sourceRect.w <= 0) sourceRect.w = 0;
+        if (sourceRect.h <= 0) sourceRect.h = 0;
     } else {
         sourceRect.x = 0;
         sourceRect.y = 0;
@@ -3091,42 +3272,40 @@ static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
         sourceRect.h = (float) newSurface->h;
     }
 
-
     changeTexturing(renderer, 1);
     if (image->target != NULL && isCurrentTarget(renderer, image->target))
         renderer->impl->FlushBlitBuffer(renderer);
     bindTexture(renderer, image);
     alignment = 8;
-    while (newSurface->pitch % alignment)
-        alignment >>= 1;
+    while (newSurface->pitch % alignment) alignment >>= 1;
 
     // Use the smaller of the image and surface rect dimensions
-    if (sourceRect.w < updateRect.w)
-        updateRect.w = sourceRect.w;
-    if (sourceRect.h < updateRect.h)
-        updateRect.h = sourceRect.h;
+    if (sourceRect.w < updateRect.w) updateRect.w = sourceRect.w;
+    if (sourceRect.h < updateRect.h) updateRect.h = sourceRect.h;
 
     pixels = (Uint8 *) newSurface->pixels;
     // Shift the pixels pointer to the proper source position
-    pixels += (int) (newSurface->pitch * sourceRect.y + (newSurface->format->BytesPerPixel) * sourceRect.x);
+    pixels += (int) (newSurface->pitch * sourceRect.y +
+                     (newSurface->format->BytesPerPixel) * sourceRect.x);
 
-    upload_texture(pixels, updateRect, original_format, alignment, newSurface->pitch / newSurface->format->BytesPerPixel, newSurface->pitch, newSurface->format->BytesPerPixel);
+    upload_texture(pixels, updateRect, original_format, alignment,
+                   newSurface->pitch / newSurface->format->BytesPerPixel, newSurface->pitch,
+                   newSurface->format->BytesPerPixel);
 
     // Delete temporary surface
-    if (surface != newSurface)
-        SDL_FreeSurface(newSurface);
+    if (surface != newSurface) SDL_FreeSurface(newSurface);
 }
 
-
-static void UpdateImageBytes(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, const METAENGINE_Render_Rect *image_rect, const unsigned char *bytes, int bytes_per_row) {
+static void UpdateImageBytes(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                             const METAENGINE_Render_Rect *image_rect, const unsigned char *bytes,
+                             int bytes_per_row) {
     METAENGINE_Render_IMAGE_DATA *data;
     GLenum original_format;
 
     METAENGINE_Render_Rect updateRect;
     int alignment;
 
-    if (image == NULL || bytes == NULL)
-        return;
+    if (image == NULL || bytes == NULL) return;
 
     data = (METAENGINE_Render_IMAGE_DATA *) image->data;
     original_format = data->format;
@@ -3146,35 +3325,35 @@ static void UpdateImageBytes(METAENGINE_Render_Renderer *renderer, METAENGINE_Re
         if (updateRect.y + updateRect.h > image->base_h)
             updateRect.h += image->base_h - (updateRect.y + updateRect.h);
 
-        if (updateRect.w <= 0)
-            updateRect.w = 0;
-        if (updateRect.h <= 0)
-            updateRect.h = 0;
+        if (updateRect.w <= 0) updateRect.w = 0;
+        if (updateRect.h <= 0) updateRect.h = 0;
     } else {
         updateRect.x = 0;
         updateRect.y = 0;
         updateRect.w = image->base_w;
         updateRect.h = image->base_h;
         if (updateRect.w < 0.0f || updateRect.h < 0.0f) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage", METAENGINE_Render_ERROR_USER_ERROR, "Given negative image rectangle.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage",
+                                            METAENGINE_Render_ERROR_USER_ERROR,
+                                            "Given negative image rectangle.");
             return;
         }
     }
-
 
     changeTexturing(renderer, 1);
     if (image->target != NULL && isCurrentTarget(renderer, image->target))
         renderer->impl->FlushBlitBuffer(renderer);
     bindTexture(renderer, image);
     alignment = 8;
-    while (bytes_per_row % alignment)
-        alignment >>= 1;
+    while (bytes_per_row % alignment) alignment >>= 1;
 
-    upload_texture(bytes, updateRect, original_format, alignment, bytes_per_row / image->bytes_per_pixel, bytes_per_row, image->bytes_per_pixel);
+    upload_texture(bytes, updateRect, original_format, alignment,
+                   bytes_per_row / image->bytes_per_pixel, bytes_per_row, image->bytes_per_pixel);
 }
 
-
-static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, SDL_Surface *surface, const METAENGINE_Render_Rect *surface_rect) {
+static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
+                                           METAENGINE_Render_Image *image, SDL_Surface *surface,
+                                           const METAENGINE_Render_Rect *surface_rect) {
     METAENGINE_Render_IMAGE_DATA *data;
     METAENGINE_Render_Rect sourceRect;
     SDL_Surface *newSurface;
@@ -3184,12 +3363,14 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
     int alignment;
 
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return METAENGINE_Render_FALSE;
     }
 
     if (surface == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_NULL_ARGUMENT, "surface");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "surface");
         return METAENGINE_Render_FALSE;
     }
 
@@ -3198,23 +3379,25 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
 
     newSurface = copySurfaceIfNeeded(renderer, internal_format, surface, &internal_format);
     if (newSurface == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to convert surface to proper pixel format.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to convert surface to proper pixel format.");
         return METAENGINE_Render_FALSE;
     }
 
     // Free the attached framebuffer
-    if ((renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS) && image->target != NULL) {
-        METAENGINE_Render_TARGET_DATA *tdata = (METAENGINE_Render_TARGET_DATA *) image->target->data;
+    if ((renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS) &&
+        image->target != NULL) {
+        METAENGINE_Render_TARGET_DATA *tdata =
+                (METAENGINE_Render_TARGET_DATA *) image->target->data;
         if (renderer->current_context_target != NULL)
             flushAndClearBlitBufferIfCurrentFramebuffer(renderer, image->target);
-        if (tdata->handle != 0)
-            glDeleteFramebuffersPROC(1, &tdata->handle);
+        if (tdata->handle != 0) glDeleteFramebuffersPROC(1, &tdata->handle);
         tdata->handle = 0;
     }
 
     // Free the old texture
-    if (data->owns_handle)
-        glDeleteTextures(1, &data->handle);
+    if (data->owns_handle) glDeleteTextures(1, &data->handle);
     data->handle = 0;
 
     // Get the area of the surface we'll use
@@ -3235,18 +3418,16 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
         sourceRect.h += sourceRect.y;
         sourceRect.y = 0;
     }
-    if (sourceRect.x >= surface->w)
-        sourceRect.x = (float) surface->w - 1;
-    if (sourceRect.y >= surface->h)
-        sourceRect.y = (float) surface->h - 1;
+    if (sourceRect.x >= surface->w) sourceRect.x = (float) surface->w - 1;
+    if (sourceRect.y >= surface->h) sourceRect.y = (float) surface->h - 1;
 
-    if (sourceRect.x + sourceRect.w > surface->w)
-        sourceRect.w = (float) surface->w - sourceRect.x;
-    if (sourceRect.y + sourceRect.h > surface->h)
-        sourceRect.h = (float) surface->h - sourceRect.y;
+    if (sourceRect.x + sourceRect.w > surface->w) sourceRect.w = (float) surface->w - sourceRect.x;
+    if (sourceRect.y + sourceRect.h > surface->h) sourceRect.h = (float) surface->h - sourceRect.y;
 
     if (sourceRect.w <= 0 || sourceRect.h <= 0) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_DATA_ERROR, "Clipped source rect has zero size.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Clipped source rect has zero size.");
         return METAENGINE_Render_FALSE;
     }
 
@@ -3254,7 +3435,9 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
     data->handle = CreateUninitializedTexture(renderer);
     data->owns_handle = 1;
     if (data->handle == 0) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create a new texture handle.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to create a new texture handle.");
         return METAENGINE_Render_FALSE;
     }
 
@@ -3270,36 +3453,34 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
     image->base_h = (Uint16) h;
 
     if (!(renderer->enabled_features & METAENGINE_Render_FEATURE_NON_POWER_OF_TWO)) {
-        if (!isPowerOfTwo(w))
-            w = getNearestPowerOf2(w);
-        if (!isPowerOfTwo(h))
-            h = getNearestPowerOf2(h);
+        if (!isPowerOfTwo(w)) w = getNearestPowerOf2(w);
+        if (!isPowerOfTwo(h)) h = getNearestPowerOf2(h);
     }
     image->texture_w = (Uint16) w;
     image->texture_h = (Uint16) h;
 
     image->has_mipmaps = METAENGINE_Render_FALSE;
 
-
     // Upload surface pixel data
     alignment = 8;
-    while (newSurface->pitch % alignment)
-        alignment >>= 1;
+    while (newSurface->pitch % alignment) alignment >>= 1;
 
     pixels = (Uint8 *) newSurface->pixels;
     // Shift the pixels pointer to the proper source position
-    pixels += (int) (newSurface->pitch * sourceRect.y + (newSurface->format->BytesPerPixel) * sourceRect.x);
+    pixels += (int) (newSurface->pitch * sourceRect.y +
+                     (newSurface->format->BytesPerPixel) * sourceRect.x);
 
-    upload_new_texture(pixels, METAENGINE_Render_MakeRect(0, 0, (float) w, (float) h), internal_format, alignment, (newSurface->pitch / newSurface->format->BytesPerPixel), newSurface->format->BytesPerPixel);
-
+    upload_new_texture(pixels, METAENGINE_Render_MakeRect(0, 0, (float) w, (float) h),
+                       internal_format, alignment,
+                       (newSurface->pitch / newSurface->format->BytesPerPixel),
+                       newSurface->format->BytesPerPixel);
 
     // Delete temporary surface
-    if (surface != newSurface)
-        SDL_FreeSurface(newSurface);
-
+    if (surface != newSurface) SDL_FreeSurface(newSurface);
 
     // Update target members
-    if ((renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS) && image->target != NULL) {
+    if ((renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS) &&
+        image->target != NULL) {
         GLenum status;
         METAENGINE_Render_Target *target = image->target;
         METAENGINE_Render_TARGET_DATA *tdata = (METAENGINE_Render_TARGET_DATA *) target->data;
@@ -3307,18 +3488,23 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
         // Create framebuffer object
         glGenFramebuffersPROC(1, &tdata->handle);
         if (tdata->handle == 0) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create new framebuffer target.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to create new framebuffer target.");
             return METAENGINE_Render_FALSE;
         }
 
         flushAndBindFramebuffer(renderer, tdata->handle);
 
         // Attach the texture to it
-        glFramebufferTexture2DPROC(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, data->handle, 0);
+        glFramebufferTexture2DPROC(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                                   data->handle, 0);
 
         status = glCheckFramebufferStatusPROC(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to recreate framebuffer target.");
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
+                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to recreate framebuffer target.");
             return METAENGINE_Render_FALSE;
         }
 
@@ -3336,13 +3522,11 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
     return METAENGINE_Render_TRUE;
 }
 
-
 static_inline Uint32 getPixel(SDL_Surface *Surface, int x, int y) {
     Uint8 *bits;
     Uint32 bpp;
 
-    if (x < 0 || x >= Surface->w)
-        return 0;// Best I could do for errors
+    if (x < 0 || x >= Surface->w) return 0;// Best I could do for errors
 
     bpp = Surface->format->BytesPerPixel;
     bits = ((Uint8 *) Surface->pixels) + y * Surface->pitch + x * bpp;
@@ -3372,20 +3556,25 @@ static_inline Uint32 getPixel(SDL_Surface *Surface, int x, int y) {
     return 0;// FIXME: Handle errors better
 }
 
-static METAENGINE_Render_Image *CopyImageFromSurface(METAENGINE_Render_Renderer *renderer, SDL_Surface *surface, const METAENGINE_Render_Rect *surface_rect) {
+static METAENGINE_Render_Image *CopyImageFromSurface(METAENGINE_Render_Renderer *renderer,
+                                                     SDL_Surface *surface,
+                                                     const METAENGINE_Render_Rect *surface_rect) {
     METAENGINE_Render_FormatEnum format;
     METAENGINE_Render_Image *image;
     int sw, sh;
 
     if (surface == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImageFromSurface", METAENGINE_Render_ERROR_NULL_ARGUMENT, "surface");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImageFromSurface",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "surface");
         return NULL;
     }
     sw = surface_rect == NULL ? surface->w : surface_rect->w;
     sh = surface_rect == NULL ? surface->h : surface_rect->h;
 
     if (surface->w == 0 || surface->h == 0) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImageFromSurface", METAENGINE_Render_ERROR_DATA_ERROR, "Surface has a zero dimension.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImageFromSurface",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Surface has a zero dimension.");
         return NULL;
     }
 
@@ -3401,20 +3590,18 @@ static METAENGINE_Render_Image *CopyImageFromSurface(METAENGINE_Render_Renderer 
     }
 
     image = renderer->impl->CreateImage(renderer, (Uint16) sw, (Uint16) sh, format);
-    if (image == NULL)
-        return NULL;
+    if (image == NULL) return NULL;
 
     renderer->impl->UpdateImage(renderer, image, NULL, surface, surface_rect);
 
     return image;
 }
 
-
-static METAENGINE_Render_Image *CopyImageFromTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
+static METAENGINE_Render_Image *CopyImageFromTarget(METAENGINE_Render_Renderer *renderer,
+                                                    METAENGINE_Render_Target *target) {
     METAENGINE_Render_Image *result;
 
-    if (target == NULL)
-        return NULL;
+    if (target == NULL) return NULL;
 
     if (target->image != NULL) {
         result = gpu_copy_image_pixels_only(renderer, target->image);
@@ -3427,12 +3614,10 @@ static METAENGINE_Render_Image *CopyImageFromTarget(METAENGINE_Render_Renderer *
     return result;
 }
 
-
 static void FreeImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
     METAENGINE_Render_IMAGE_DATA *data;
 
-    if (image == NULL)
-        return;
+    if (image == NULL) return;
 
     if (image->refcount > 1) {
         image->refcount--;
@@ -3457,7 +3642,8 @@ static void FreeImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Im
         data->refcount--;
     } else {
         if (data->owns_handle && image->renderer == METAENGINE_Render_GetCurrentRenderer()) {
-            METAENGINE_Render_MakeCurrent(image->context_target, image->context_target->context->windowID);
+            METAENGINE_Render_MakeCurrent(image->context_target,
+                                          image->context_target->context->windowID);
             glDeleteTextures(1, &data->handle);
         }
         SDL_free(data);
@@ -3466,32 +3652,34 @@ static void FreeImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Im
     SDL_free(image);
 }
 
-
-static METAENGINE_Render_Target *GetTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static METAENGINE_Render_Target *GetTarget(METAENGINE_Render_Renderer *renderer,
+                                           METAENGINE_Render_Image *image) {
     GLuint handle;
     GLenum status;
     METAENGINE_Render_Target *result;
     METAENGINE_Render_TARGET_DATA *data;
 
-    if (image == NULL)
-        return NULL;
+    if (image == NULL) return NULL;
 
-    if (image->target != NULL)
-        return image->target;
+    if (image->target != NULL) return image->target;
 
-    if (!(renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS))
-        return NULL;
+    if (!(renderer->enabled_features & METAENGINE_Render_FEATURE_RENDER_TARGETS)) return NULL;
 
     // Create framebuffer object
     glGenFramebuffersPROC(1, &handle);
     flushAndBindFramebuffer(renderer, handle);
 
     // Attach the texture to it
-    glFramebufferTexture2DPROC(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ((METAENGINE_Render_IMAGE_DATA *) image->data)->handle, 0);
+    glFramebufferTexture2DPROC(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               ((METAENGINE_Render_IMAGE_DATA *) image->data)->handle, 0);
 
     status = glCheckFramebufferStatusPROC(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_GetTarget", METAENGINE_Render_ERROR_DATA_ERROR, "Framebuffer incomplete with status: 0x%x.  Format 0x%x for framebuffers might not be supported on this hardware.", status, ((METAENGINE_Render_IMAGE_DATA *) image->data)->format);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_GetTarget", METAENGINE_Render_ERROR_DATA_ERROR,
+                "Framebuffer incomplete with status: 0x%x.  Format 0x%x for framebuffers might not "
+                "be supported on this hardware.",
+                status, ((METAENGINE_Render_IMAGE_DATA *) image->data)->format);
         return NULL;
     }
 
@@ -3541,10 +3729,9 @@ static METAENGINE_Render_Target *GetTarget(METAENGINE_Render_Renderer *renderer,
     return result;
 }
 
-
-static void FreeTargetData(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_TARGET_DATA *data) {
-    if (data == NULL)
-        return;
+static void FreeTargetData(METAENGINE_Render_Renderer *renderer,
+                           METAENGINE_Render_TARGET_DATA *data) {
+    if (data == NULL) return;
 
     if (data->refcount > 1) {
         data->refcount--;
@@ -3563,8 +3750,7 @@ static void FreeTargetData(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
 static void FreeContext(METAENGINE_Render_Context *context) {
     METAENGINE_Render_CONTEXT_DATA *cdata;
 
-    if (context == NULL)
-        return;
+    if (context == NULL) return;
 
     if (context->refcount > 1) {
         context->refcount--;
@@ -3588,16 +3774,14 @@ static void FreeContext(METAENGINE_Render_Context *context) {
 #endif
     }
 
-    if (context->context != 0)
-        SDL_GL_DeleteContext(context->context);
+    if (context->context != 0) SDL_GL_DeleteContext(context->context);
 
     SDL_free(cdata);
     SDL_free(context);
 }
 
 static void FreeTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
-    if (target == NULL)
-        return;
+    if (target == NULL) return;
 
     if (target->refcount > 1) {
         target->refcount--;
@@ -3607,12 +3791,11 @@ static void FreeTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_T
     // Time to actually free this target
 
     // Prepare to work in this target's context, if it has one
-    if (target == renderer->current_context_target)
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (target == renderer->current_context_target) renderer->impl->FlushBlitBuffer(renderer);
     else if (target->context_target != NULL) {
-        METAENGINE_Render_MakeCurrent(target->context_target, target->context_target->context->windowID);
+        METAENGINE_Render_MakeCurrent(target->context_target,
+                                      target->context_target->context->windowID);
     }
-
 
     // Release renderer data reference
     FreeTargetData(renderer, (METAENGINE_Render_TARGET_DATA *) target->data);
@@ -3626,15 +3809,15 @@ static void FreeTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_T
     }
 
     // Clear references to this target
-    if (target == renderer->current_context_target)
-        renderer->current_context_target = NULL;
+    if (target == renderer->current_context_target) renderer->current_context_target = NULL;
 
     // Make sure this target is not referenced by the context
     if (renderer->current_context_target != NULL) {
-        METAENGINE_Render_CONTEXT_DATA *cdata = ((METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context_target->context->data);
+        METAENGINE_Render_CONTEXT_DATA *cdata =
+                ((METAENGINE_Render_CONTEXT_DATA *)
+                         renderer->current_context_target->context_target->context->data);
         // Clear reference to image
-        if (cdata->last_image == target->image)
-            cdata->last_image = NULL;
+        if (cdata->last_image == target->image) cdata->last_image = NULL;
 
         if (target == renderer->current_context_target->context->active_target)
             renderer->current_context_target->context->active_target = NULL;
@@ -3642,8 +3825,7 @@ static void FreeTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_T
 
     if (target->image != NULL) {
         // Make sure this is not targeted by an image that will persist
-        if (target->image->target == target)
-            target->image->target = NULL;
+        if (target->image->target == target) target->image->target = NULL;
     }
 
     // Delete matrices
@@ -3654,90 +3836,91 @@ static void FreeTarget(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_T
     SDL_free(target);
 }
 
-
-#define SET_TEXTURED_VERTEX(x, y, s, t, r, g, b, a)                                       \
-    blit_buffer[vert_index] = x;                                                          \
-    blit_buffer[vert_index + 1] = y;                                                      \
-    blit_buffer[tex_index] = s;                                                           \
-    blit_buffer[tex_index + 1] = t;                                                       \
-    blit_buffer[color_index] = r;                                                         \
-    blit_buffer[color_index + 1] = g;                                                     \
-    blit_buffer[color_index + 2] = b;                                                     \
-    blit_buffer[color_index + 3] = a;                                                     \
-    index_buffer[cdata->index_buffer_num_vertices++] = cdata->blit_buffer_num_vertices++; \
-    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                        \
-    tex_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                         \
+#define SET_TEXTURED_VERTEX(x, y, s, t, r, g, b, a)                                                \
+    blit_buffer[vert_index] = x;                                                                   \
+    blit_buffer[vert_index + 1] = y;                                                               \
+    blit_buffer[tex_index] = s;                                                                    \
+    blit_buffer[tex_index + 1] = t;                                                                \
+    blit_buffer[color_index] = r;                                                                  \
+    blit_buffer[color_index + 1] = g;                                                              \
+    blit_buffer[color_index + 2] = b;                                                              \
+    blit_buffer[color_index + 3] = a;                                                              \
+    index_buffer[cdata->index_buffer_num_vertices++] = cdata->blit_buffer_num_vertices++;          \
+    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                                 \
+    tex_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                                  \
     color_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
 
-#define SET_TEXTURED_VERTEX_UNINDEXED(x, y, s, t, r, g, b, a)      \
-    blit_buffer[vert_index] = x;                                   \
-    blit_buffer[vert_index + 1] = y;                               \
-    blit_buffer[tex_index] = s;                                    \
-    blit_buffer[tex_index + 1] = t;                                \
-    blit_buffer[color_index] = r;                                  \
-    blit_buffer[color_index + 1] = g;                              \
-    blit_buffer[color_index + 2] = b;                              \
-    blit_buffer[color_index + 3] = a;                              \
-    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
-    tex_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;  \
+#define SET_TEXTURED_VERTEX_UNINDEXED(x, y, s, t, r, g, b, a)                                      \
+    blit_buffer[vert_index] = x;                                                                   \
+    blit_buffer[vert_index + 1] = y;                                                               \
+    blit_buffer[tex_index] = s;                                                                    \
+    blit_buffer[tex_index + 1] = t;                                                                \
+    blit_buffer[color_index] = r;                                                                  \
+    blit_buffer[color_index + 1] = g;                                                              \
+    blit_buffer[color_index + 2] = b;                                                              \
+    blit_buffer[color_index + 3] = a;                                                              \
+    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                                 \
+    tex_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                                  \
     color_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
 
-#define SET_UNTEXTURED_VERTEX(x, y, r, g, b, a)                                           \
-    blit_buffer[vert_index] = x;                                                          \
-    blit_buffer[vert_index + 1] = y;                                                      \
-    blit_buffer[color_index] = r;                                                         \
-    blit_buffer[color_index + 1] = g;                                                     \
-    blit_buffer[color_index + 2] = b;                                                     \
-    blit_buffer[color_index + 3] = a;                                                     \
-    index_buffer[cdata->index_buffer_num_vertices++] = cdata->blit_buffer_num_vertices++; \
-    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                        \
+#define SET_UNTEXTURED_VERTEX(x, y, r, g, b, a)                                                    \
+    blit_buffer[vert_index] = x;                                                                   \
+    blit_buffer[vert_index + 1] = y;                                                               \
+    blit_buffer[color_index] = r;                                                                  \
+    blit_buffer[color_index + 1] = g;                                                              \
+    blit_buffer[color_index + 2] = b;                                                              \
+    blit_buffer[color_index + 3] = a;                                                              \
+    index_buffer[cdata->index_buffer_num_vertices++] = cdata->blit_buffer_num_vertices++;          \
+    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                                 \
     color_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
 
-#define SET_UNTEXTURED_VERTEX_UNINDEXED(x, y, r, g, b, a)          \
-    blit_buffer[vert_index] = x;                                   \
-    blit_buffer[vert_index + 1] = y;                               \
-    blit_buffer[color_index] = r;                                  \
-    blit_buffer[color_index + 1] = g;                              \
-    blit_buffer[color_index + 2] = b;                              \
-    blit_buffer[color_index + 3] = a;                              \
-    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
+#define SET_UNTEXTURED_VERTEX_UNINDEXED(x, y, r, g, b, a)                                          \
+    blit_buffer[vert_index] = x;                                                                   \
+    blit_buffer[vert_index + 1] = y;                                                               \
+    blit_buffer[color_index] = r;                                                                  \
+    blit_buffer[color_index + 1] = g;                                                              \
+    blit_buffer[color_index + 2] = b;                                                              \
+    blit_buffer[color_index + 3] = a;                                                              \
+    vert_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;                                 \
     color_index += METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
 
-#define SET_INDEXED_VERTEX(offset) \
-    index_buffer[cdata->index_buffer_num_vertices++] = blit_buffer_starting_index + (unsigned short) (offset);
+#define SET_INDEXED_VERTEX(offset)                                                                 \
+    index_buffer[cdata->index_buffer_num_vertices++] =                                             \
+            blit_buffer_starting_index + (unsigned short) (offset);
 
-#define SET_RELATIVE_INDEXED_VERTEX(offset) \
-    index_buffer[cdata->index_buffer_num_vertices++] = cdata->blit_buffer_num_vertices + (unsigned short) (offset);
+#define SET_RELATIVE_INDEXED_VERTEX(offset)                                                        \
+    index_buffer[cdata->index_buffer_num_vertices++] =                                             \
+            cdata->blit_buffer_num_vertices + (unsigned short) (offset);
 
-
-#define BEGIN_UNTEXTURED_SEGMENTS(x1, y1, x2, y2, r, g, b, a) \
-    SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);                \
+#define BEGIN_UNTEXTURED_SEGMENTS(x1, y1, x2, y2, r, g, b, a)                                      \
+    SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);                                                     \
     SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);
 
 // Finish previous triangles and start the next one
-#define SET_UNTEXTURED_SEGMENTS(x1, y1, x2, y2, r, g, b, a) \
-    SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);              \
-    SET_RELATIVE_INDEXED_VERTEX(-2);                        \
-    SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);              \
-    SET_RELATIVE_INDEXED_VERTEX(-2);                        \
-    SET_RELATIVE_INDEXED_VERTEX(-2);                        \
+#define SET_UNTEXTURED_SEGMENTS(x1, y1, x2, y2, r, g, b, a)                                        \
+    SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);                                                     \
+    SET_RELATIVE_INDEXED_VERTEX(-2);                                                               \
+    SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);                                                     \
+    SET_RELATIVE_INDEXED_VERTEX(-2);                                                               \
+    SET_RELATIVE_INDEXED_VERTEX(-2);                                                               \
     SET_RELATIVE_INDEXED_VERTEX(-1);
 
 // Finish previous triangles
-#define LOOP_UNTEXTURED_SEGMENTS()   \
-    SET_INDEXED_VERTEX(0);           \
-    SET_RELATIVE_INDEXED_VERTEX(-1); \
-    SET_INDEXED_VERTEX(1);           \
+#define LOOP_UNTEXTURED_SEGMENTS()                                                                 \
+    SET_INDEXED_VERTEX(0);                                                                         \
+    SET_RELATIVE_INDEXED_VERTEX(-1);                                                               \
+    SET_INDEXED_VERTEX(1);                                                                         \
     SET_INDEXED_VERTEX(0);
 
-#define END_UNTEXTURED_SEGMENTS(x1, y1, x2, y2, r, g, b, a) \
-    SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);              \
-    SET_RELATIVE_INDEXED_VERTEX(-2);                        \
-    SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);              \
+#define END_UNTEXTURED_SEGMENTS(x1, y1, x2, y2, r, g, b, a)                                        \
+    SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);                                                     \
+    SET_RELATIVE_INDEXED_VERTEX(-2);                                                               \
+    SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);                                                     \
     SET_RELATIVE_INDEXED_VERTEX(-2);
 
-
-static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y) {
+static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                 METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x,
+                 float y) {
     Uint32 tex_w, tex_h;
     float w;
     float h;
@@ -3753,21 +3936,25 @@ static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *
     float r, g, b, a;
 
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return;
     }
     if (renderer != image->renderer || renderer != target->renderer) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit", METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit",
+                                        METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
         return;
     }
 
     makeContextCurrent(renderer, target);
     if (renderer->current_context_target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit", METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit",
+                                        METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
         return;
     }
 
@@ -3779,14 +3966,17 @@ static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *
 
     // Bind the FBO
     if (!SetActiveTarget(renderer, target)) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_Blit",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to bind framebuffer.");
         return;
     }
 
     tex_w = image->texture_w;
     tex_h = image->texture_h;
 
-    if (image->snap_mode == METAENGINE_Render_SNAP_POSITION || image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
+    if (image->snap_mode == METAENGINE_Render_SNAP_POSITION ||
+        image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
         // Avoid rounding errors in texture sampling by insisting on integral pixel positions
         x = floorf(x);
         y = floorf(y);
@@ -3824,7 +4014,8 @@ static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *
     dx2 = x + w * (1.0f - image->anchor_x);
     dy2 = y + h * (1.0f - image->anchor_y);
 
-    if (image->snap_mode == METAENGINE_Render_SNAP_DIMENSIONS || image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
+    if (image->snap_mode == METAENGINE_Render_SNAP_DIMENSIONS ||
+        image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
         float fractional;
         fractional = w / 2.0f - floorf(w / 2.0f);
         dx1 += fractional;
@@ -3856,14 +4047,18 @@ static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *
 
     blit_buffer_starting_index = cdata->blit_buffer_num_vertices;
 
-    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
-    tex_index = METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
-    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET +
+                 cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+    tex_index = METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET +
+                cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET +
+                  cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
     if (target->use_color) {
         r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, image->color.r);
         g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, image->color.g);
         b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, image->color.b);
-        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(image->color));
+        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color),
+                                                  GET_ALPHA(image->color));
     } else {
         r = image->color.r / 255.0f;
         g = image->color.g / 255.0f;
@@ -3889,56 +4084,73 @@ static void Blit(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *
     cdata->blit_buffer_num_vertices += METAENGINE_Render_BLIT_BUFFER_VERTICES_PER_SPRITE;
 }
 
-
-static void BlitRotate(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float degrees) {
+static void BlitRotate(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                       METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x,
+                       float y, float degrees) {
     float w, h;
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitRotate", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitRotate",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitRotate", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitRotate",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return;
     }
 
     w = (src_rect == NULL ? image->w : src_rect->w);
     h = (src_rect == NULL ? image->h : src_rect->h);
-    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, 1.0f, 1.0f);
+    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x,
+                                   h * image->anchor_y, degrees, 1.0f, 1.0f);
 }
 
-static void BlitScale(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float scaleX, float scaleY) {
+static void BlitScale(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                      METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x,
+                      float y, float scaleX, float scaleY) {
     float w, h;
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitScale", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitScale",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitScale", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitScale",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return;
     }
 
     w = (src_rect == NULL ? image->w : src_rect->w);
     h = (src_rect == NULL ? image->h : src_rect->h);
-    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, 0.0f, scaleX, scaleY);
+    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x,
+                                   h * image->anchor_y, 0.0f, scaleX, scaleY);
 }
 
-static void BlitTransform(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
+static void BlitTransform(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                          METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target,
+                          float x, float y, float degrees, float scaleX, float scaleY) {
     float w, h;
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransform", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransform",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransform", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransform",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return;
     }
 
     w = (src_rect == NULL ? image->w : src_rect->w);
     h = (src_rect == NULL ? image->h : src_rect->h);
-    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, scaleX, scaleY);
+    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x,
+                                   h * image->anchor_y, degrees, scaleX, scaleY);
 }
 
-static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
+static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                           METAENGINE_Render_Rect *src_rect, METAENGINE_Render_Target *target,
+                           float x, float y, float pivot_x, float pivot_y, float degrees,
+                           float scaleX, float scaleY) {
     Uint32 tex_w, tex_h;
     float x1, y1, x2, y2;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
@@ -3953,18 +4165,20 @@ static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     float r, g, b, a;
 
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return;
     }
     if (renderer != image->renderer || renderer != target->renderer) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX", METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX",
+                                        METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
         return;
     }
-
 
     makeContextCurrent(renderer, target);
 
@@ -3976,14 +4190,17 @@ static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
 
     // Bind the FBO
     if (!SetActiveTarget(renderer, target)) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_BlitTransformX",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to bind framebuffer.");
         return;
     }
 
     tex_w = image->texture_w;
     tex_h = image->texture_h;
 
-    if (image->snap_mode == METAENGINE_Render_SNAP_POSITION || image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
+    if (image->snap_mode == METAENGINE_Render_SNAP_POSITION ||
+        image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
         // Avoid rounding errors in texture sampling by insisting on integral pixel positions
         x = floorf(x);
         y = floorf(y);
@@ -4027,7 +4244,8 @@ static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     dx2 = w - pivot_x;
     dy2 = h - pivot_y;
 
-    if (image->snap_mode == METAENGINE_Render_SNAP_DIMENSIONS || image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
+    if (image->snap_mode == METAENGINE_Render_SNAP_DIMENSIONS ||
+        image->snap_mode == METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS) {
         // This is a little weird for rotating sprites, but oh well.
         float fractional;
         fractional = w / 2.0f - floorf(w / 2.0f);
@@ -4104,15 +4322,19 @@ static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
 
     blit_buffer_starting_index = cdata->blit_buffer_num_vertices;
 
-    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
-    tex_index = METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
-    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET +
+                 cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+    tex_index = METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET +
+                cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET +
+                  cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
 
     if (target->use_color) {
         r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, image->color.r);
         g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, image->color.g);
         b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, image->color.b);
-        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(image->color));
+        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color),
+                                                  GET_ALPHA(image->color));
     } else {
         r = image->color.r / 255.0f;
         g = image->color.g / 255.0f;
@@ -4138,9 +4360,7 @@ static void BlitTransformX(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     cdata->blit_buffer_num_vertices += METAENGINE_Render_BLIT_BUFFER_VERTICES_PER_SPRITE;
 }
 
-
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
-
 
 static_inline int sizeof_METAENGINE_Render_type(METAENGINE_Render_TypeEnum type) {
     if (type == METAENGINE_Render_TYPE_DOUBLE) return sizeof(double);
@@ -4158,12 +4378,15 @@ static void refresh_attribute_data(METAENGINE_Render_CONTEXT_DATA *cdata) {
     int i;
     for (i = 0; i < 16; i++) {
         METAENGINE_Render_AttributeSource *a = &cdata->shader_attributes[i];
-        if (a->attribute.values != NULL && a->attribute.location >= 0 && a->num_values > 0 && a->attribute.format.is_per_sprite) {
+        if (a->attribute.values != NULL && a->attribute.location >= 0 && a->num_values > 0 &&
+            a->attribute.format.is_per_sprite) {
             // Expand the values to 4 vertices
             int n;
             void *storage_ptr = a->per_vertex_storage;
-            void *values_ptr = (void *) ((char *) a->attribute.values + a->attribute.format.offset_bytes);
-            int value_size_bytes = a->attribute.format.num_elems_per_value * sizeof_METAENGINE_Render_type(a->attribute.format.type);
+            void *values_ptr =
+                    (void *) ((char *) a->attribute.values + a->attribute.format.offset_bytes);
+            int value_size_bytes = a->attribute.format.num_elems_per_value *
+                                   sizeof_METAENGINE_Render_type(a->attribute.format.type);
             for (n = 0; n < a->num_values; n += 4) {
                 memcpy(storage_ptr, values_ptr, value_size_bytes);
                 storage_ptr = (void *) ((char *) storage_ptr + a->per_vertex_storage_stride_bytes);
@@ -4188,8 +4411,7 @@ static void upload_attribute_data(METAENGINE_Render_CONTEXT_DATA *cdata, int num
             int num_values_used = num_vertices;
             int bytes_used;
 
-            if (a->num_values < num_values_used)
-                num_values_used = a->num_values;
+            if (a->num_values < num_values_used) num_values_used = a->num_values;
 
             glBindBuffer(GL_ARRAY_BUFFER, cdata->attribute_VBO[i]);
 
@@ -4197,13 +4419,15 @@ static void upload_attribute_data(METAENGINE_Render_CONTEXT_DATA *cdata, int num
             glBufferData(GL_ARRAY_BUFFER, bytes_used, a->next_value, GL_STREAM_DRAW);
 
             glEnableVertexAttribArray(a->attribute.location);
-            glVertexAttribPointer(a->attribute.location, a->attribute.format.num_elems_per_value, a->attribute.format.type, a->attribute.format.normalize, a->per_vertex_storage_stride_bytes, (void *) (intptr_t) a->per_vertex_storage_offset_bytes);
+            glVertexAttribPointer(a->attribute.location, a->attribute.format.num_elems_per_value,
+                                  a->attribute.format.type, a->attribute.format.normalize,
+                                  a->per_vertex_storage_stride_bytes,
+                                  (void *) (intptr_t) a->per_vertex_storage_offset_bytes);
 
             a->enabled = METAENGINE_Render_TRUE;
             // Move the data along so we use the next values for the next flush
             a->num_values -= num_values_used;
-            if (a->num_values <= 0)
-                a->next_value = a->per_vertex_storage;
+            if (a->num_values <= 0) a->next_value = a->per_vertex_storage;
             else
                 a->next_value = (void *) (((char *) a->next_value) + bytes_used);
         }
@@ -4231,8 +4455,7 @@ static int get_lowest_attribute_num_values(METAENGINE_Render_CONTEXT_DATA *cdata
     for (i = 0; i < 16; i++) {
         METAENGINE_Render_AttributeSource *a = &cdata->shader_attributes[i];
         if (a->attribute.values != NULL && a->attribute.location >= 0) {
-            if (a->num_values < lowest)
-                lowest = a->num_values;
+            if (a->num_values < lowest) lowest = a->num_values;
         }
     }
 #else
@@ -4242,7 +4465,8 @@ static int get_lowest_attribute_num_values(METAENGINE_Render_CONTEXT_DATA *cdata
     return lowest;
 }
 
-static_inline void submit_buffer_data(int bytes, float *values, int bytes_indices, unsigned short *indices) {
+static_inline void submit_buffer_data(int bytes, float *values, int bytes_indices,
+                                      unsigned short *indices) {
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
 #if defined(METAENGINE_Render_USE_BUFFER_RESET)
     glBufferData(GL_ARRAY_BUFFER, bytes, values, GL_STREAM_DRAW);
@@ -4251,7 +4475,10 @@ static_inline void submit_buffer_data(int bytes, float *values, int bytes_indice
 #elif defined(METAENGINE_Render_USE_BUFFER_MAPPING)
     // NOTE: On the Raspberry Pi, you may have to use GL_DYNAMIC_DRAW instead of GL_STREAM_DRAW for buffers to work with glMapBuffer().
     float *data = (float *) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    unsigned short *data_i = (indices == NULL ? NULL : (unsigned short *) glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+    unsigned short *data_i =
+            (indices == NULL
+                     ? NULL
+                     : (unsigned short *) glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
     if (data != NULL) {
         memcpy(data, values, bytes);
         glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -4262,8 +4489,7 @@ static_inline void submit_buffer_data(int bytes, float *values, int bytes_indice
     }
 #elif defined(METAENGINE_Render_USE_BUFFER_UPDATE)
     glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, values);
-    if (indices != NULL)
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, bytes_indices, indices);
+    if (indices != NULL) glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, bytes_indices, indices);
 #else
 #error "SDL_gpu's VBO upload needs to choose METAENGINE_Render_USE_BUFFER_RESET, METAENGINE_Render_USE_BUFFER_MAPPING, or METAENGINE_Render_USE_BUFFER_UPDATE and none is defined!"
 #endif
@@ -4272,11 +4498,12 @@ static_inline void submit_buffer_data(int bytes, float *values, int bytes_indice
 #endif
 }
 
-
-static void SetAttributefv(METAENGINE_Render_Renderer *renderer, int location, int num_elements, float *value);
+static void SetAttributefv(METAENGINE_Render_Renderer *renderer, int location, int num_elements,
+                           float *value);
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
-static void gpu_upload_modelviewprojection(METAENGINE_Render_Target *dest, METAENGINE_Render_Context *context) {
+static void gpu_upload_modelviewprojection(METAENGINE_Render_Target *dest,
+                                           METAENGINE_Render_Context *context) {
     if (context->current_shader_block.modelViewProjection_loc >= 0) {
         float mvp[16];
 
@@ -4285,7 +4512,6 @@ static void gpu_upload_modelviewprojection(METAENGINE_Render_Target *dest, METAE
         // P
         METAENGINE_Render_MatrixCopy(mvp, METAENGINE_Render_GetTopMatrix(&dest->projection_matrix));
 
-
         // V
         if (dest->use_camera) {
             float cam_matrix[16];
@@ -4293,20 +4519,25 @@ static void gpu_upload_modelviewprojection(METAENGINE_Render_Target *dest, METAE
 
             METAENGINE_Render_MultiplyAndAssign(mvp, cam_matrix);
         } else {
-            METAENGINE_Render_MultiplyAndAssign(mvp, METAENGINE_Render_GetTopMatrix(&dest->view_matrix));
+            METAENGINE_Render_MultiplyAndAssign(mvp,
+                                                METAENGINE_Render_GetTopMatrix(&dest->view_matrix));
         }
 
         // M
-        METAENGINE_Render_MultiplyAndAssign(mvp, METAENGINE_Render_GetTopMatrix(&dest->model_matrix));
+        METAENGINE_Render_MultiplyAndAssign(mvp,
+                                            METAENGINE_Render_GetTopMatrix(&dest->model_matrix));
 
         glUniformMatrix4fv(context->current_shader_block.modelViewProjection_loc, 1, 0, mvp);
     }
 }
 #endif
 
-
 // Assumes the right format
-static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_Target *target, METAENGINE_Render_PrimitiveEnum primitive_type, unsigned short num_vertices, void *values, unsigned int num_indices, unsigned short *indices, METAENGINE_Render_BatchFlagEnum flags) {
+static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                            METAENGINE_Render_Target *target,
+                            METAENGINE_Render_PrimitiveEnum primitive_type,
+                            unsigned short num_vertices, void *values, unsigned int num_indices,
+                            unsigned short *indices, METAENGINE_Render_BatchFlagEnum flags) {
     METAENGINE_Render_Context *context;
     METAENGINE_Render_CONTEXT_DATA *cdata;
     int stride;
@@ -4314,47 +4545,52 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     int size_vertices, size_texcoords, size_colors;
 
     METAENGINE_Render_bool using_texture = (image != NULL);
-    METAENGINE_Render_bool use_vertices = (flags & (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_XYZ));
+    METAENGINE_Render_bool use_vertices =
+            (flags & (METAENGINE_Render_BATCH_XY | METAENGINE_Render_BATCH_XYZ));
     METAENGINE_Render_bool use_texcoords = (flags & METAENGINE_Render_BATCH_ST);
-    METAENGINE_Render_bool use_colors = (flags & (METAENGINE_Render_BATCH_RGB | METAENGINE_Render_BATCH_RGBA | METAENGINE_Render_BATCH_RGB8 | METAENGINE_Render_BATCH_RGBA8));
-    METAENGINE_Render_bool use_byte_colors = (flags & (METAENGINE_Render_BATCH_RGB8 | METAENGINE_Render_BATCH_RGBA8));
+    METAENGINE_Render_bool use_colors =
+            (flags & (METAENGINE_Render_BATCH_RGB | METAENGINE_Render_BATCH_RGBA |
+                      METAENGINE_Render_BATCH_RGB8 | METAENGINE_Render_BATCH_RGBA8));
+    METAENGINE_Render_bool use_byte_colors =
+            (flags & (METAENGINE_Render_BATCH_RGB8 | METAENGINE_Render_BATCH_RGBA8));
     METAENGINE_Render_bool use_z = (flags & METAENGINE_Render_BATCH_XYZ);
-    METAENGINE_Render_bool use_a = (flags & (METAENGINE_Render_BATCH_RGBA | METAENGINE_Render_BATCH_RGBA8));
+    METAENGINE_Render_bool use_a =
+            (flags & (METAENGINE_Render_BATCH_RGBA | METAENGINE_Render_BATCH_RGBA8));
 
-    if (num_vertices == 0)
-        return;
+    if (num_vertices == 0) return;
 
     if (target == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_PrimitiveBatchX", METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_PrimitiveBatchX",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
         return;
     }
     if ((image != NULL && renderer != image->renderer) || renderer != target->renderer) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_PrimitiveBatchX", METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_PrimitiveBatchX",
+                                        METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
         return;
     }
 
     makeContextCurrent(renderer, target);
 
     // Bind the texture to which subsequent calls refer
-    if (using_texture)
-        bindTexture(renderer, image);
+    if (using_texture) bindTexture(renderer, image);
 
     // Bind the FBO
     if (!SetActiveTarget(renderer, target)) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_PrimitiveBatchX", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_PrimitiveBatchX",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to bind framebuffer.");
         return;
     }
 
     prepareToRenderToTarget(renderer, target);
-    if (using_texture)
-        prepareToRenderImage(renderer, target, image);
+    if (using_texture) prepareToRenderImage(renderer, target, image);
     else
         prepareToRenderShapes(renderer, primitive_type);
     changeViewport(target);
     changeCamera(target);
 
-    if (using_texture)
-        changeTexturing(renderer, METAENGINE_Render_TRUE);
+    if (using_texture) changeTexturing(renderer, METAENGINE_Render_TRUE);
 
     setClipRect(renderer, target);
 
@@ -4362,7 +4598,6 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_VERTEX_SHADER))
         applyTransforms(target);
 #endif
-
 
     context = renderer->current_context_target->context;
     cdata = (METAENGINE_Render_CONTEXT_DATA *) context->data;
@@ -4394,8 +4629,7 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     refresh_attribute_data(cdata);
 #endif
 
-    if (indices == NULL)
-        num_indices = num_vertices;
+    if (indices == NULL) num_indices = num_vertices;
 
     (void) stride;
     (void) offset_texcoords;
@@ -4410,8 +4644,7 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 
     // Determine stride, size, and offsets
     if (use_vertices) {
-        if (use_z)
-            size_vertices = 3;
+        if (use_z) size_vertices = 3;
         else
             size_vertices = 2;
 
@@ -4430,16 +4663,13 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     }
 
     if (use_colors) {
-        if (use_a)
-            size_colors = 4;
+        if (use_a) size_colors = 4;
         else
             size_colors = 3;
     }
 
     // Floating point color components (either 3 or 4 floats)
-    if (use_colors && !use_byte_colors) {
-        stride += size_colors;
-    }
+    if (use_colors && !use_byte_colors) { stride += size_colors; }
 
     // Convert offsets to a number of bytes
     stride *= sizeof(float);
@@ -4447,49 +4677,40 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     offset_colors *= sizeof(float);
 
     // Unsigned byte color components (either 3 or 4 bytes)
-    if (use_colors && use_byte_colors) {
-        stride += size_colors;
-    }
+    if (use_colors && use_byte_colors) { stride += size_colors; }
 
 #ifdef METAENGINE_Render_USE_ARRAY_PIPELINE
 
     {
         // Enable
-        if (use_vertices)
-            glEnableClientState(GL_VERTEX_ARRAY);
-        if (use_texcoords)
-            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        if (use_colors)
-            glEnableClientState(GL_COLOR_ARRAY);
+        if (use_vertices) glEnableClientState(GL_VERTEX_ARRAY);
+        if (use_texcoords) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        if (use_colors) glEnableClientState(GL_COLOR_ARRAY);
 
         // Set pointers
-        if (use_vertices)
-            glVertexPointer(size_vertices, GL_FLOAT, stride, values);
+        if (use_vertices) glVertexPointer(size_vertices, GL_FLOAT, stride, values);
         if (use_texcoords)
-            glTexCoordPointer(size_texcoords, GL_FLOAT, stride, (GLubyte *) values + offset_texcoords);
+            glTexCoordPointer(size_texcoords, GL_FLOAT, stride,
+                              (GLubyte *) values + offset_texcoords);
         if (use_colors) {
             if (use_byte_colors)
-                glColorPointer(size_colors, GL_UNSIGNED_BYTE, stride, (GLubyte *) values + offset_colors);
+                glColorPointer(size_colors, GL_UNSIGNED_BYTE, stride,
+                               (GLubyte *) values + offset_colors);
             else
                 glColorPointer(size_colors, GL_FLOAT, stride, (GLubyte *) values + offset_colors);
         }
 
         // Upload
-        if (indices == NULL)
-            glDrawArrays(primitive_type, 0, num_indices);
+        if (indices == NULL) glDrawArrays(primitive_type, 0, num_indices);
         else
             glDrawElements(primitive_type, num_indices, GL_UNSIGNED_SHORT, indices);
 
         // Disable
-        if (use_colors)
-            glDisableClientState(GL_COLOR_ARRAY);
-        if (use_texcoords)
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        if (use_vertices)
-            glDisableClientState(GL_VERTEX_ARRAY);
+        if (use_colors) glDisableClientState(GL_COLOR_ARRAY);
+        if (use_texcoords) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        if (use_vertices) glDisableClientState(GL_VERTEX_ARRAY);
     }
 #endif
-
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE_FALLBACK
     if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_VERTEX_SHADER))
@@ -4504,23 +4725,27 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 
             glBegin(primitive_type);
             for (i = 0; i < num_indices; i++) {
-                if (indices == NULL)
-                    index = i * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
+                if (indices == NULL) index = i * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
                 else
                     index = indices[i] * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
                 if (use_colors) {
                     if (use_byte_colors) {
                         Uint8 *color_pointer = (Uint8 *) ((char *) values + offset_colors);
-                        glColor4ub(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], (use_a ? color_pointer[index + 3] : 255));
+                        glColor4ub(color_pointer[index], color_pointer[index + 1],
+                                   color_pointer[index + 2],
+                                   (use_a ? color_pointer[index + 3] : 255));
                     } else {
                         float *color_pointer = (float *) ((char *) values + offset_colors);
-                        glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], (use_a ? color_pointer[index + 3] : 1.0f));
+                        glColor4f(color_pointer[index], color_pointer[index + 1],
+                                  color_pointer[index + 2],
+                                  (use_a ? color_pointer[index + 3] : 1.0f));
                     }
                 }
                 if (use_texcoords)
                     glTexCoord2f(texcoord_pointer[index], texcoord_pointer[index + 1]);
                 if (use_vertices)
-                    glVertex3f(vertex_pointer[index], vertex_pointer[index + 1], (use_z ? vertex_pointer[index + 2] : 0.0f));
+                    glVertex3f(vertex_pointer[index], vertex_pointer[index + 1],
+                               (use_z ? vertex_pointer[index + 2] : 0.0f));
             }
             glEnd();
         }
@@ -4530,16 +4755,12 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     else
 #endif
 
-
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
     {
         // Skip uploads if we have no attribute location
-        if (context->current_shader_block.position_loc < 0)
-            use_vertices = METAENGINE_Render_FALSE;
-        if (context->current_shader_block.texcoord_loc < 0)
-            use_texcoords = METAENGINE_Render_FALSE;
-        if (context->current_shader_block.color_loc < 0)
-            use_colors = METAENGINE_Render_FALSE;
+        if (context->current_shader_block.position_loc < 0) use_vertices = METAENGINE_Render_FALSE;
+        if (context->current_shader_block.texcoord_loc < 0) use_texcoords = METAENGINE_Render_FALSE;
+        if (context->current_shader_block.color_loc < 0) use_colors = METAENGINE_Render_FALSE;
 
 // Update the vertex array object's buffers
 #if !defined(METAENGINE_Render_NO_VAO)
@@ -4555,45 +4776,52 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cdata->blit_IBO);
 
             // Copy the whole blit buffer to the GPU
-            submit_buffer_data(stride * num_vertices, (float *) values, sizeof(unsigned short) * num_indices, indices);// Fills GPU buffer with data.
+            submit_buffer_data(stride * num_vertices, (float *) values,
+                               sizeof(unsigned short) * num_indices,
+                               indices);// Fills GPU buffer with data.
 
             // Specify the formatting of the blit buffer
             if (use_vertices) {
-                glEnableVertexAttribArray(context->current_shader_block.position_loc);                                          // Tell GL to use client-side attribute data
-                glVertexAttribPointer(context->current_shader_block.position_loc, size_vertices, GL_FLOAT, GL_FALSE, stride, 0);// Tell how the data is formatted
+                glEnableVertexAttribArray(
+                        context->current_shader_block
+                                .position_loc);// Tell GL to use client-side attribute data
+                glVertexAttribPointer(context->current_shader_block.position_loc, size_vertices,
+                                      GL_FLOAT, GL_FALSE, stride,
+                                      0);// Tell how the data is formatted
             }
             if (use_texcoords) {
                 glEnableVertexAttribArray(context->current_shader_block.texcoord_loc);
-                glVertexAttribPointer(context->current_shader_block.texcoord_loc, size_texcoords, GL_FLOAT, GL_FALSE, stride, (void *) (offset_texcoords));
+                glVertexAttribPointer(context->current_shader_block.texcoord_loc, size_texcoords,
+                                      GL_FLOAT, GL_FALSE, stride, (void *) (offset_texcoords));
             }
             if (use_colors) {
                 glEnableVertexAttribArray(context->current_shader_block.color_loc);
                 if (use_byte_colors) {
-                    glVertexAttribPointer(context->current_shader_block.color_loc, size_colors, GL_UNSIGNED_BYTE, GL_TRUE, stride, (void *) (offset_colors));
+                    glVertexAttribPointer(context->current_shader_block.color_loc, size_colors,
+                                          GL_UNSIGNED_BYTE, GL_TRUE, stride,
+                                          (void *) (offset_colors));
                 } else {
-                    glVertexAttribPointer(context->current_shader_block.color_loc, size_colors, GL_FLOAT, GL_FALSE, stride, (void *) (offset_colors));
+                    glVertexAttribPointer(context->current_shader_block.color_loc, size_colors,
+                                          GL_FLOAT, GL_FALSE, stride, (void *) (offset_colors));
                 }
             } else {
                 SDL_Color color = get_complete_mod_color(renderer, target, image);
-                float default_color[4] = {color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, GET_ALPHA(color) / 255.0f};
+                float default_color[4] = {color.r / 255.0f, color.g / 255.0f, color.b / 255.0f,
+                                          GET_ALPHA(color) / 255.0f};
                 SetAttributefv(renderer, context->current_shader_block.color_loc, 4, default_color);
             }
         }
 
         upload_attribute_data(cdata, num_indices);
 
-        if (indices == NULL)
-            glDrawArrays(primitive_type, 0, num_indices);
+        if (indices == NULL) glDrawArrays(primitive_type, 0, num_indices);
         else
             glDrawElements(primitive_type, num_indices, GL_UNSIGNED_SHORT, (void *) 0);
 
         // Disable the vertex arrays again
-        if (use_vertices)
-            glDisableVertexAttribArray(context->current_shader_block.position_loc);
-        if (use_texcoords)
-            glDisableVertexAttribArray(context->current_shader_block.texcoord_loc);
-        if (use_colors)
-            glDisableVertexAttribArray(context->current_shader_block.color_loc);
+        if (use_vertices) glDisableVertexAttribArray(context->current_shader_block.position_loc);
+        if (use_texcoords) glDisableVertexAttribArray(context->current_shader_block.texcoord_loc);
+        if (use_colors) glDisableVertexAttribArray(context->current_shader_block.color_loc);
 
         disable_attribute_data(cdata);
 
@@ -4602,7 +4830,6 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 #endif
     }
 #endif
-
 
     cdata->blit_buffer_num_vertices = 0;
     cdata->index_buffer_num_vertices = 0;
@@ -4613,8 +4840,7 @@ static void PrimitiveBatchV(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 static void GenerateMipmaps(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
 #ifndef __IPHONEOS__
     GLint filter;
-    if (image == NULL)
-        return;
+    if (image == NULL) return;
 
     if (image->target != NULL && isCurrentTarget(renderer, image->target))
         renderer->impl->FlushBlitBuffer(renderer);
@@ -4628,16 +4854,16 @@ static void GenerateMipmaps(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
 #endif
 }
 
-
-static METAENGINE_Render_Rect SetClip(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
+static METAENGINE_Render_Rect SetClip(METAENGINE_Render_Renderer *renderer,
+                                      METAENGINE_Render_Target *target, Sint16 x, Sint16 y,
+                                      Uint16 w, Uint16 h) {
     METAENGINE_Render_Rect r;
     if (target == NULL) {
         r.x = r.y = r.w = r.h = 0;
         return r;
     }
 
-    if (isCurrentTarget(renderer, target))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
     target->use_clip_rect = METAENGINE_Render_TRUE;
 
     r = target->clip_rect;
@@ -4651,15 +4877,12 @@ static METAENGINE_Render_Rect SetClip(METAENGINE_Render_Renderer *renderer, META
 }
 
 static void UnsetClip(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target) {
-    if (target == NULL)
-        return;
+    if (target == NULL) return;
 
-    if (isCurrentTarget(renderer, target))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
     // Leave the clip rect values intact so they can still be useful as storage
     target->use_clip_rect = METAENGINE_Render_FALSE;
 }
-
 
 static void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pixel[4]) {
     switch (format) {
@@ -4722,17 +4945,14 @@ static void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pi
     }
 }
 
-static SDL_Color GetPixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, Sint16 x, Sint16 y) {
+static SDL_Color GetPixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                          Sint16 x, Sint16 y) {
     SDL_Color result = {0, 0, 0, 0};
-    if (target == NULL)
-        return result;
-    if (renderer != target->renderer)
-        return result;
-    if (x < 0 || y < 0 || x >= target->w || y >= target->h)
-        return result;
+    if (target == NULL) return result;
+    if (renderer != target->renderer) return result;
+    if (x < 0 || y < 0 || x >= target->w || y >= target->h) return result;
 
-    if (isCurrentTarget(renderer, target))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
     if (SetActiveTarget(renderer, target)) {
         unsigned char pixels[4];
         GLenum format = ((METAENGINE_Render_TARGET_DATA *) target->data)->format;
@@ -4744,15 +4964,18 @@ static SDL_Color GetPixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Rende
     return result;
 }
 
-static void SetImageFilter(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_FilterEnum filter) {
+static void SetImageFilter(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                           METAENGINE_Render_FilterEnum filter) {
     GLenum minFilter, magFilter;
 
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetImageFilter", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetImageFilter",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (renderer != image->renderer) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetImageFilter", METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetImageFilter",
+                                        METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
         return;
     }
 
@@ -4762,23 +4985,23 @@ static void SetImageFilter(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
             magFilter = GL_NEAREST;
             break;
         case METAENGINE_Render_FILTER_LINEAR:
-            if (image->has_mipmaps)
-                minFilter = GL_LINEAR_MIPMAP_NEAREST;
+            if (image->has_mipmaps) minFilter = GL_LINEAR_MIPMAP_NEAREST;
             else
                 minFilter = GL_LINEAR;
 
             magFilter = GL_LINEAR;
             break;
         case METAENGINE_Render_FILTER_LINEAR_MIPMAP:
-            if (image->has_mipmaps)
-                minFilter = GL_LINEAR_MIPMAP_LINEAR;
+            if (image->has_mipmaps) minFilter = GL_LINEAR_MIPMAP_LINEAR;
             else
                 minFilter = GL_LINEAR;
 
             magFilter = GL_LINEAR;
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetImageFilter", METAENGINE_Render_ERROR_USER_ERROR, "Unsupported value for filter (0x%x)", filter);
+            METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetImageFilter",
+                                            METAENGINE_Render_ERROR_USER_ERROR,
+                                            "Unsupported value for filter (0x%x)", filter);
             return;
     }
 
@@ -4791,15 +5014,19 @@ static void SetImageFilter(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 }
 
-static void SetWrapMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, METAENGINE_Render_WrapEnum wrap_mode_x, METAENGINE_Render_WrapEnum wrap_mode_y) {
+static void SetWrapMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                        METAENGINE_Render_WrapEnum wrap_mode_x,
+                        METAENGINE_Render_WrapEnum wrap_mode_y) {
     GLenum wrap_x, wrap_y;
 
     if (image == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode",
+                                        METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
         return;
     }
     if (renderer != image->renderer) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode",
+                                        METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");
         return;
     }
 
@@ -4814,12 +5041,16 @@ static void SetWrapMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
             if (renderer->enabled_features & METAENGINE_Render_FEATURE_WRAP_REPEAT_MIRRORED)
                 wrap_x = GL_MIRRORED_REPEAT;
             else {
-                METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_BACKEND_ERROR, "This renderer does not support METAENGINE_Render_WRAP_MIRRORED.");
+                METAENGINE_Render_PushErrorCode(
+                        "METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                        "This renderer does not support METAENGINE_Render_WRAP_MIRRORED.");
                 return;
             }
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_USER_ERROR, "Unsupported value for wrap_mode_x (0x%x)", wrap_mode_x);
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_USER_ERROR,
+                    "Unsupported value for wrap_mode_x (0x%x)", wrap_mode_x);
             return;
     }
 
@@ -4834,12 +5065,16 @@ static void SetWrapMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
             if (renderer->enabled_features & METAENGINE_Render_FEATURE_WRAP_REPEAT_MIRRORED)
                 wrap_y = GL_MIRRORED_REPEAT;
             else {
-                METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_BACKEND_ERROR, "This renderer does not support METAENGINE_Render_WRAP_MIRRORED.");
+                METAENGINE_Render_PushErrorCode(
+                        "METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                        "This renderer does not support METAENGINE_Render_WRAP_MIRRORED.");
                 return;
             }
             break;
         default:
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_USER_ERROR, "Unsupported value for wrap_mode_y (0x%x)", wrap_mode_y);
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_SetWrapMode", METAENGINE_Render_ERROR_USER_ERROR,
+                    "Unsupported value for wrap_mode_y (0x%x)", wrap_mode_y);
             return;
     }
 
@@ -4853,22 +5088,20 @@ static void SetWrapMode(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_y);
 }
 
-static METAENGINE_Render_TextureHandle GetTextureHandle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image) {
+static METAENGINE_Render_TextureHandle GetTextureHandle(METAENGINE_Render_Renderer *renderer,
+                                                        METAENGINE_Render_Image *image) {
     (void) renderer;
     return ((METAENGINE_Render_IMAGE_DATA *) image->data)->handle;
 }
 
-
-static void ClearRGBA(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    if (target == NULL)
-        return;
-    if (renderer != target->renderer)
-        return;
+static void ClearRGBA(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                      Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    if (target == NULL) return;
+    if (renderer != target->renderer) return;
 
     makeContextCurrent(renderer, target);
 
-    if (isCurrentTarget(renderer, target))
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
     if (SetActiveTarget(renderer, target)) {
         setClipRect(renderer, target);
 
@@ -4879,7 +5112,10 @@ static void ClearRGBA(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
     }
 }
 
-static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *dest, METAENGINE_Render_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
+static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *dest,
+                           METAENGINE_Render_Context *context, unsigned short num_vertices,
+                           float *blit_buffer, unsigned int num_indices,
+                           unsigned short *index_buffer) {
     METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) context->data;
     (void) renderer;
     (void) num_vertices;
@@ -4888,9 +5124,12 @@ static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
-    glVertexPointer(2, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE, blit_buffer + METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET);
-    glTexCoordPointer(2, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE, blit_buffer + METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET);
-    glColorPointer(4, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE, blit_buffer + METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET);
+    glVertexPointer(2, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                    blit_buffer + METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET);
+    glTexCoordPointer(2, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                      blit_buffer + METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET);
+    glColorPointer(4, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                   blit_buffer + METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET);
 
     glDrawElements(cdata->last_shape, num_indices, GL_UNSIGNED_SHORT, index_buffer);
 
@@ -4898,7 +5137,6 @@ static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
 #endif
-
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE_FALLBACK
     if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_VERTEX_SHADER))
@@ -4914,7 +5152,8 @@ static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
         glBegin(cdata->last_shape);
         for (i = 0; i < num_indices; i++) {
             index = index_buffer[i] * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
-            glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], color_pointer[index + 3]);
+            glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2],
+                      color_pointer[index + 3]);
             glTexCoord2f(texcoord_pointer[index], texcoord_pointer[index + 1]);
             glVertex3f(vertex_pointer[index], vertex_pointer[index + 1], 0.0f);
         }
@@ -4923,7 +5162,6 @@ static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
         return;
     }
 #endif
-
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE
     {
@@ -4940,20 +5178,32 @@ static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cdata->blit_IBO);
 
         // Copy the whole blit buffer to the GPU
-        submit_buffer_data(METAENGINE_Render_BLIT_BUFFER_STRIDE * num_vertices, blit_buffer, sizeof(unsigned short) * num_indices, index_buffer);// Fills GPU buffer with data.
+        submit_buffer_data(METAENGINE_Render_BLIT_BUFFER_STRIDE * num_vertices, blit_buffer,
+                           sizeof(unsigned short) * num_indices,
+                           index_buffer);// Fills GPU buffer with data.
 
         // Specify the formatting of the blit buffer
         if (context->current_shader_block.position_loc >= 0) {
-            glEnableVertexAttribArray(context->current_shader_block.position_loc);                                                            // Tell GL to use client-side attribute data
-            glVertexAttribPointer(context->current_shader_block.position_loc, 2, GL_FLOAT, GL_FALSE, METAENGINE_Render_BLIT_BUFFER_STRIDE, 0);// Tell how the data is formatted
+            glEnableVertexAttribArray(
+                    context->current_shader_block
+                            .position_loc);// Tell GL to use client-side attribute data
+            glVertexAttribPointer(context->current_shader_block.position_loc, 2, GL_FLOAT, GL_FALSE,
+                                  METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                                  0);// Tell how the data is formatted
         }
         if (context->current_shader_block.texcoord_loc >= 0) {
             glEnableVertexAttribArray(context->current_shader_block.texcoord_loc);
-            glVertexAttribPointer(context->current_shader_block.texcoord_loc, 2, GL_FLOAT, GL_FALSE, METAENGINE_Render_BLIT_BUFFER_STRIDE, (void *) (METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET * sizeof(float)));
+            glVertexAttribPointer(
+                    context->current_shader_block.texcoord_loc, 2, GL_FLOAT, GL_FALSE,
+                    METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                    (void *) (METAENGINE_Render_BLIT_BUFFER_TEX_COORD_OFFSET * sizeof(float)));
         }
         if (context->current_shader_block.color_loc >= 0) {
             glEnableVertexAttribArray(context->current_shader_block.color_loc);
-            glVertexAttribPointer(context->current_shader_block.color_loc, 4, GL_FLOAT, GL_FALSE, METAENGINE_Render_BLIT_BUFFER_STRIDE, (void *) (METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET * sizeof(float)));
+            glVertexAttribPointer(
+                    context->current_shader_block.color_loc, 4, GL_FLOAT, GL_FALSE,
+                    METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                    (void *) (METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET * sizeof(float)));
         }
 
         upload_attribute_data(cdata, num_vertices);
@@ -4977,7 +5227,10 @@ static void DoPartialFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
 #endif
 }
 
-static void DoUntexturedFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *dest, METAENGINE_Render_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
+static void DoUntexturedFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *dest,
+                              METAENGINE_Render_Context *context, unsigned short num_vertices,
+                              float *blit_buffer, unsigned int num_indices,
+                              unsigned short *index_buffer) {
     METAENGINE_Render_CONTEXT_DATA *cdata = (METAENGINE_Render_CONTEXT_DATA *) context->data;
     (void) renderer;
     (void) num_vertices;
@@ -4985,15 +5238,16 @@ static void DoUntexturedFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_R
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
-    glVertexPointer(2, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE, blit_buffer + METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET);
-    glColorPointer(4, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE, blit_buffer + METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET);
+    glVertexPointer(2, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                    blit_buffer + METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET);
+    glColorPointer(4, GL_FLOAT, METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                   blit_buffer + METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET);
 
     glDrawElements(cdata->last_shape, num_indices, GL_UNSIGNED_SHORT, index_buffer);
 
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
 #endif
-
 
 #ifdef METAENGINE_Render_USE_BUFFER_PIPELINE_FALLBACK
     if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_VERTEX_SHADER))
@@ -5008,7 +5262,8 @@ static void DoUntexturedFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_R
         glBegin(cdata->last_shape);
         for (i = 0; i < num_indices; i++) {
             index = index_buffer[i] * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;
-            glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], color_pointer[index + 3]);
+            glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2],
+                      color_pointer[index + 3]);
             glVertex3f(vertex_pointer[index], vertex_pointer[index + 1], 0.0f);
         }
         glEnd();
@@ -5032,16 +5287,25 @@ static void DoUntexturedFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_R
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cdata->blit_IBO);
 
         // Copy the whole blit buffer to the GPU
-        submit_buffer_data(METAENGINE_Render_BLIT_BUFFER_STRIDE * num_vertices, blit_buffer, sizeof(unsigned short) * num_indices, index_buffer);// Fills GPU buffer with data.
+        submit_buffer_data(METAENGINE_Render_BLIT_BUFFER_STRIDE * num_vertices, blit_buffer,
+                           sizeof(unsigned short) * num_indices,
+                           index_buffer);// Fills GPU buffer with data.
 
         // Specify the formatting of the blit buffer
         if (context->current_shader_block.position_loc >= 0) {
-            glEnableVertexAttribArray(context->current_shader_block.position_loc);                                                            // Tell GL to use client-side attribute data
-            glVertexAttribPointer(context->current_shader_block.position_loc, 2, GL_FLOAT, GL_FALSE, METAENGINE_Render_BLIT_BUFFER_STRIDE, 0);// Tell how the data is formatted
+            glEnableVertexAttribArray(
+                    context->current_shader_block
+                            .position_loc);// Tell GL to use client-side attribute data
+            glVertexAttribPointer(context->current_shader_block.position_loc, 2, GL_FLOAT, GL_FALSE,
+                                  METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                                  0);// Tell how the data is formatted
         }
         if (context->current_shader_block.color_loc >= 0) {
             glEnableVertexAttribArray(context->current_shader_block.color_loc);
-            glVertexAttribPointer(context->current_shader_block.color_loc, 4, GL_FLOAT, GL_FALSE, METAENGINE_Render_BLIT_BUFFER_STRIDE, (void *) (METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET * sizeof(float)));
+            glVertexAttribPointer(
+                    context->current_shader_block.color_loc, 4, GL_FLOAT, GL_FALSE,
+                    METAENGINE_Render_BLIT_BUFFER_STRIDE,
+                    (void *) (METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET * sizeof(float)));
         }
 
         upload_attribute_data(cdata, num_vertices);
@@ -5068,8 +5332,7 @@ static void DoUntexturedFlush(METAENGINE_Render_Renderer *renderer, METAENGINE_R
 static void FlushBlitBuffer(METAENGINE_Render_Renderer *renderer) {
     METAENGINE_Render_Context *context;
     METAENGINE_Render_CONTEXT_DATA *cdata;
-    if (renderer->current_context_target == NULL)
-        return;
+    if (renderer->current_context_target == NULL) return;
 
     context = renderer->current_context_target->context;
     cdata = (METAENGINE_Render_CONTEXT_DATA *) context->data;
@@ -5101,10 +5364,14 @@ static void FlushBlitBuffer(METAENGINE_Render_Renderer *renderer) {
 
         if (cdata->last_use_texturing) {
             while (cdata->blit_buffer_num_vertices > 0) {
-                num_vertices = MAX(cdata->blit_buffer_num_vertices, get_lowest_attribute_num_values(cdata, cdata->blit_buffer_num_vertices));
-                num_indices = num_vertices * 3 / 2;// 6 indices per sprite / 4 vertices per sprite = 3/2
+                num_vertices = MAX(
+                        cdata->blit_buffer_num_vertices,
+                        get_lowest_attribute_num_values(cdata, cdata->blit_buffer_num_vertices));
+                num_indices =
+                        num_vertices * 3 / 2;// 6 indices per sprite / 4 vertices per sprite = 3/2
 
-                DoPartialFlush(renderer, dest, context, (unsigned short) num_vertices, blit_buffer, (unsigned int) num_indices, index_buffer);
+                DoPartialFlush(renderer, dest, context, (unsigned short) num_vertices, blit_buffer,
+                               (unsigned int) num_indices, index_buffer);
 
                 cdata->blit_buffer_num_vertices -= (unsigned short) num_vertices;
                 // Move our pointers ahead
@@ -5112,7 +5379,8 @@ static void FlushBlitBuffer(METAENGINE_Render_Renderer *renderer) {
                 index_buffer += num_indices;
             }
         } else {
-            DoUntexturedFlush(renderer, dest, context, cdata->blit_buffer_num_vertices, blit_buffer, cdata->index_buffer_num_vertices, index_buffer);
+            DoUntexturedFlush(renderer, dest, context, cdata->blit_buffer_num_vertices, blit_buffer,
+                              cdata->index_buffer_num_vertices, index_buffer);
         }
 
         cdata->blit_buffer_num_vertices = 0;
@@ -5132,14 +5400,11 @@ static void Flip(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target 
     }
 
 #ifdef METAENGINE_Render_USE_OPENGL
-    if (vendor_is_Intel)
-        apply_Intel_attrib_workaround = METAENGINE_Render_TRUE;
+    if (vendor_is_Intel) apply_Intel_attrib_workaround = METAENGINE_Render_TRUE;
 #endif
 }
 
-
 // Shader API
-
 
 #include <string.h>
 
@@ -5153,13 +5418,11 @@ static void read_until_end_of_comment(SDL_RWops *rwops, char multiline) {
     char buffer;
     while (SDL_RWread(rwops, &buffer, 1, 1) > 0) {
         if (!multiline) {
-            if (buffer == '\n')
-                break;
+            if (buffer == '\n') break;
         } else {
             if (buffer == '*') {
                 // If the stream ends at the next character or it is a '/', then we're done.
-                if (SDL_RWread(rwops, &buffer, 1, 1) <= 0 || buffer == '/')
-                    break;
+                if (SDL_RWread(rwops, &buffer, 1, 1) <= 0 || buffer == '/') break;
             }
         }
     }
@@ -5171,8 +5434,7 @@ static Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
     char buffer[512];
     long len;
 
-    if (shader_source == NULL)
-        return 0;
+    if (shader_source == NULL) return 0;
 
     size = 0;
 
@@ -5188,8 +5450,7 @@ static Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
             char *token;
             while ((line_len = SDL_RWread(shader_source, buffer + line_size, 1, 1)) > 0) {
                 line_size += line_len;
-                if (buffer[line_size - line_len] == '\n')
-                    break;
+                if (buffer[line_size - line_len] == '\n') break;
             }
             buffer[line_size] = '\0';
 
@@ -5229,7 +5490,6 @@ static Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
     return size;
 }
 
-
 static Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
     Uint32 size;
     char last_char;
@@ -5256,8 +5516,7 @@ static Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
             char *token;
             while ((line_len = SDL_RWread(shader_source, buffer + line_size, 1, 1)) > 0) {
                 line_size += line_len;
-                if (buffer[line_size - line_len] == '\n')
-                    break;
+                if (buffer[line_size - line_len] == '\n') break;
             }
 
             // Is there "include" after '#'?
@@ -5310,8 +5569,7 @@ static Uint32 GetShaderSource(const char *filename, char *result) {
     SDL_RWops *rwops;
     Uint32 size;
 
-    if (filename == NULL)
-        return 0;
+    if (filename == NULL) return 0;
     rwops = SDL_RWFromFile(filename, "r");
 
     size = GetShaderSource_RW(rwops, result);
@@ -5324,8 +5582,7 @@ static Uint32 GetShaderSourceSize(const char *filename) {
     SDL_RWops *rwops;
     Uint32 result;
 
-    if (filename == NULL)
-        return 0;
+    if (filename == NULL) return 0;
     rwops = SDL_RWFromFile(filename, "r");
 
     result = GetShaderSourceSize_RW(rwops);
@@ -5334,8 +5591,8 @@ static Uint32 GetShaderSourceSize(const char *filename) {
     return result;
 }
 
-
-static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type, const char *shader_source) {
+static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type,
+                                    const char *shader_source) {
     // Create the proper new shader object
     GLuint shader_object = 0;
     (void) shader_type;
@@ -5355,7 +5612,9 @@ static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type, co
 #ifdef GL_GEOMETRY_SHADER
             shader_object = glCreateShader(GL_GEOMETRY_SHADER);
 #else
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader", METAENGINE_Render_ERROR_BACKEND_ERROR, "Hardware does not support METAENGINE_Render_GEOMETRY_SHADER.");
+            METAENGINE_Render_PushErrorCode(
+                    "METAENGINE_Render_CompileShader", METAENGINE_Render_ERROR_BACKEND_ERROR,
+                    "Hardware does not support METAENGINE_Render_GEOMETRY_SHADER.");
             snprintf(shader_message, 256, "Failed to create geometry shader object.\n");
             return 0;
 #endif
@@ -5363,7 +5622,9 @@ static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type, co
     }
 
     if (shader_object == 0) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to create new shader object");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to create new shader object");
         snprintf(shader_message, 256, "Failed to create new shader object.\n");
         return 0;
     }
@@ -5376,7 +5637,9 @@ static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type, co
 
     glGetShaderiv(shader_object, GL_COMPILE_STATUS, &compiled);
     if (!compiled) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader", METAENGINE_Render_ERROR_DATA_ERROR, "Failed to compile shader source");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Failed to compile shader source");
         glGetShaderInfoLog(shader_object, 256, NULL, shader_message);
         glDeleteShader(shader_object);
         return 0;
@@ -5387,8 +5650,9 @@ static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type, co
     return shader_object;
 }
 
-
-static Uint32 CompileShader_RW(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_ShaderEnum shader_type, SDL_RWops *shader_source, METAENGINE_Render_bool free_rwops) {
+static Uint32 CompileShader_RW(METAENGINE_Render_Renderer *renderer,
+                               METAENGINE_Render_ShaderEnum shader_type, SDL_RWops *shader_source,
+                               METAENGINE_Render_bool free_rwops) {
     // Read in the shader source code
     Uint32 size = GetShaderSourceSize_RW(shader_source);
     char *source_string = (char *) SDL_malloc(size + 1);
@@ -5396,11 +5660,12 @@ static Uint32 CompileShader_RW(METAENGINE_Render_Renderer *renderer, METAENGINE_
     Uint32 result2;
     (void) renderer;
 
-    if (free_rwops)
-        SDL_RWclose(shader_source);
+    if (free_rwops) SDL_RWclose(shader_source);
 
     if (!result) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader", METAENGINE_Render_ERROR_DATA_ERROR, "Failed to read shader source");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Failed to read shader source");
         snprintf(shader_message, 256, "Failed to read shader source.\n");
         SDL_free(source_string);
         return 0;
@@ -5412,11 +5677,11 @@ static Uint32 CompileShader_RW(METAENGINE_Render_Renderer *renderer, METAENGINE_
     return result2;
 }
 
-static Uint32 CompileShader(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_ShaderEnum shader_type, const char *shader_source) {
+static Uint32 CompileShader(METAENGINE_Render_Renderer *renderer,
+                            METAENGINE_Render_ShaderEnum shader_type, const char *shader_source) {
     Uint32 size = (Uint32) strlen(shader_source);
     SDL_RWops *rwops;
-    if (size == 0)
-        return 0;
+    if (size == 0) return 0;
     rwops = SDL_RWFromConstMem(shader_source, size);
     return renderer->impl->CompileShader_RW(renderer, shader_type, rwops, 1);
 }
@@ -5425,8 +5690,7 @@ static Uint32 CreateShaderProgram(METAENGINE_Render_Renderer *renderer) {
 #ifndef METAENGINE_Render_DISABLE_SHADERS
     GLuint p;
 
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return 0;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return 0;
 
     p = glCreateProgram();
 
@@ -5437,7 +5701,8 @@ static Uint32 CreateShaderProgram(METAENGINE_Render_Renderer *renderer) {
 #endif
 }
 
-static METAENGINE_Render_bool LinkShaderProgram(METAENGINE_Render_Renderer *renderer, Uint32 program_object) {
+static METAENGINE_Render_bool LinkShaderProgram(METAENGINE_Render_Renderer *renderer,
+                                                Uint32 program_object) {
 #ifndef METAENGINE_Render_DISABLE_SHADERS
     int linked;
 
@@ -5453,7 +5718,9 @@ static METAENGINE_Render_bool LinkShaderProgram(METAENGINE_Render_Renderer *rend
     glGetProgramiv(program_object, GL_LINK_STATUS, &linked);
 
     if (!linked) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_LinkShaderProgram", METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to link shader program");
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_LinkShaderProgram",
+                                        METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                        "Failed to link shader program");
         glGetProgramInfoLog(program_object, 256, NULL, shader_message);
         glDeleteProgram(program_object);
         return METAENGINE_Render_FALSE;
@@ -5487,7 +5754,8 @@ static void FreeShaderProgram(METAENGINE_Render_Renderer *renderer, Uint32 progr
 #endif
 }
 
-static void AttachShader(METAENGINE_Render_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
+static void AttachShader(METAENGINE_Render_Renderer *renderer, Uint32 program_object,
+                         Uint32 shader_object) {
     (void) renderer;
     (void) program_object;
     (void) shader_object;
@@ -5497,7 +5765,8 @@ static void AttachShader(METAENGINE_Render_Renderer *renderer, Uint32 program_ob
 #endif
 }
 
-static void DetachShader(METAENGINE_Render_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
+static void DetachShader(METAENGINE_Render_Renderer *renderer, Uint32 program_object,
+                         Uint32 shader_object) {
     (void) renderer;
     (void) program_object;
     (void) shader_object;
@@ -5507,7 +5776,8 @@ static void DetachShader(METAENGINE_Render_Renderer *renderer, Uint32 program_ob
 #endif
 }
 
-static void ActivateShaderProgram(METAENGINE_Render_Renderer *renderer, Uint32 program_object, METAENGINE_Render_ShaderBlock *block) {
+static void ActivateShaderProgram(METAENGINE_Render_Renderer *renderer, Uint32 program_object,
+                                  METAENGINE_Render_ShaderBlock *block) {
     METAENGINE_Render_Target *target = renderer->current_context_target;
     (void) block;
 #ifndef METAENGINE_Render_DISABLE_SHADERS
@@ -5515,7 +5785,10 @@ static void ActivateShaderProgram(METAENGINE_Render_Renderer *renderer, Uint32 p
         if (program_object == 0)// Implies default shader
         {
             // Already using a default shader?
-            if (target->context->current_shader_program == target->context->default_textured_shader_program || target->context->current_shader_program == target->context->default_untextured_shader_program)
+            if (target->context->current_shader_program ==
+                        target->context->default_textured_shader_program ||
+                target->context->current_shader_program ==
+                        target->context->default_untextured_shader_program)
                 return;
 
             program_object = target->context->default_untextured_shader_program;
@@ -5528,9 +5801,11 @@ static void ActivateShaderProgram(METAENGINE_Render_Renderer *renderer, Uint32 p
             // Set up our shader attribute and uniform locations
             if (block == NULL) {
                 if (program_object == target->context->default_textured_shader_program)
-                    target->context->current_shader_block = target->context->default_textured_shader_block;
+                    target->context->current_shader_block =
+                            target->context->default_textured_shader_block;
                 else if (program_object == target->context->default_untextured_shader_program)
-                    target->context->current_shader_block = target->context->default_untextured_shader_block;
+                    target->context->current_shader_block =
+                            target->context->default_untextured_shader_block;
                 else {
                     METAENGINE_Render_ShaderBlock b;
                     b.position_loc = -1;
@@ -5557,13 +5832,12 @@ static const char *GetShaderMessage(METAENGINE_Render_Renderer *renderer) {
     return shader_message;
 }
 
-static int GetAttributeLocation(METAENGINE_Render_Renderer *renderer, Uint32 program_object, const char *attrib_name) {
+static int GetAttributeLocation(METAENGINE_Render_Renderer *renderer, Uint32 program_object,
+                                const char *attrib_name) {
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return -1;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
-    if (program_object == 0)
-        return -1;
+    if (program_object == 0) return -1;
     return glGetAttribLocation(program_object, attrib_name);
 #else
     (void) renderer;
@@ -5573,13 +5847,12 @@ static int GetAttributeLocation(METAENGINE_Render_Renderer *renderer, Uint32 pro
 #endif
 }
 
-static int GetUniformLocation(METAENGINE_Render_Renderer *renderer, Uint32 program_object, const char *uniform_name) {
+static int GetUniformLocation(METAENGINE_Render_Renderer *renderer, Uint32 program_object,
+                              const char *uniform_name) {
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return -1;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
-    if (program_object == 0)
-        return -1;
+    if (program_object == 0) return -1;
     return glGetUniformLocation(program_object, uniform_name);
 #else
     (void) renderer;
@@ -5589,10 +5862,13 @@ static int GetUniformLocation(METAENGINE_Render_Renderer *renderer, Uint32 progr
 #endif
 }
 
-static METAENGINE_Render_ShaderBlock LoadShaderBlock(METAENGINE_Render_Renderer *renderer, Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
+static METAENGINE_Render_ShaderBlock LoadShaderBlock(
+        METAENGINE_Render_Renderer *renderer, Uint32 program_object, const char *position_name,
+        const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
     METAENGINE_Render_ShaderBlock b;
     program_object = get_proper_program_id(renderer, program_object);
-    if (program_object == 0 || !IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) {
+    if (program_object == 0 ||
+        !IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) {
         b.position_loc = -1;
         b.texcoord_loc = -1;
         b.color_loc = -1;
@@ -5600,52 +5876,49 @@ static METAENGINE_Render_ShaderBlock LoadShaderBlock(METAENGINE_Render_Renderer 
         return b;
     }
 
-    if (position_name == NULL)
-        b.position_loc = -1;
+    if (position_name == NULL) b.position_loc = -1;
     else
-        b.position_loc = renderer->impl->GetAttributeLocation(renderer, program_object, position_name);
+        b.position_loc =
+                renderer->impl->GetAttributeLocation(renderer, program_object, position_name);
 
-    if (texcoord_name == NULL)
-        b.texcoord_loc = -1;
+    if (texcoord_name == NULL) b.texcoord_loc = -1;
     else
-        b.texcoord_loc = renderer->impl->GetAttributeLocation(renderer, program_object, texcoord_name);
+        b.texcoord_loc =
+                renderer->impl->GetAttributeLocation(renderer, program_object, texcoord_name);
 
-    if (color_name == NULL)
-        b.color_loc = -1;
+    if (color_name == NULL) b.color_loc = -1;
     else
         b.color_loc = renderer->impl->GetAttributeLocation(renderer, program_object, color_name);
 
-    if (modelViewMatrix_name == NULL)
-        b.modelViewProjection_loc = -1;
+    if (modelViewMatrix_name == NULL) b.modelViewProjection_loc = -1;
     else
-        b.modelViewProjection_loc = renderer->impl->GetUniformLocation(renderer, program_object, modelViewMatrix_name);
+        b.modelViewProjection_loc =
+                renderer->impl->GetUniformLocation(renderer, program_object, modelViewMatrix_name);
 
     return b;
 }
 
-static void SetShaderImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image, int location, int image_unit) {
+static void SetShaderImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
+                           int location, int image_unit) {
 // TODO: OpenGL 1 needs to check for ARB_multitexture to use glActiveTexture().
 #ifndef METAENGINE_Render_DISABLE_SHADERS
     Uint32 new_texture;
 
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
 
     renderer->impl->FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0 || image_unit < 0)
         return;
 
     new_texture = 0;
-    if (image != NULL)
-        new_texture = ((METAENGINE_Render_IMAGE_DATA *) image->data)->handle;
+    if (image != NULL) new_texture = ((METAENGINE_Render_IMAGE_DATA *) image->data)->handle;
 
     // Set the new image unit
     glUniform1i(location, image_unit);
     glActiveTexture(GL_TEXTURE0 + image_unit);
     glBindTexture(GL_TEXTURE_2D, new_texture);
 
-    if (image_unit != 0)
-        glActiveTexture(GL_TEXTURE0);
+    if (image_unit != 0) glActiveTexture(GL_TEXTURE0);
 
 #endif
 
@@ -5655,19 +5928,17 @@ static void SetShaderImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     (void) image_unit;
 }
 
-
-static void GetUniformiv(METAENGINE_Render_Renderer *renderer, Uint32 program_object, int location, int *values) {
+static void GetUniformiv(METAENGINE_Render_Renderer *renderer, Uint32 program_object, int location,
+                         int *values) {
     (void) renderer;
     (void) program_object;
     (void) location;
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     program_object = get_proper_program_id(renderer, program_object);
-    if (program_object != 0)
-        glGetUniformiv(program_object, location, values);
+    if (program_object != 0) glGetUniformiv(program_object, location, values);
 #endif
 }
 
@@ -5677,16 +5948,15 @@ static void SetUniformi(METAENGINE_Render_Renderer *renderer, int location, int 
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
     glUniform1i(location, value);
 #endif
 }
 
-static void SetUniformiv(METAENGINE_Render_Renderer *renderer, int location, int num_elements_per_value, int num_values, int *values) {
+static void SetUniformiv(METAENGINE_Render_Renderer *renderer, int location,
+                         int num_elements_per_value, int num_values, int *values) {
     (void) renderer;
     (void) location;
     (void) num_elements_per_value;
@@ -5694,11 +5964,9 @@ static void SetUniformiv(METAENGINE_Render_Renderer *renderer, int location, int
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
     switch (num_elements_per_value) {
         case 1:
             glUniform1iv(location, num_values, values);
@@ -5716,16 +5984,15 @@ static void SetUniformiv(METAENGINE_Render_Renderer *renderer, int location, int
 #endif
 }
 
-
-static void GetUniformuiv(METAENGINE_Render_Renderer *renderer, Uint32 program_object, int location, unsigned int *values) {
+static void GetUniformuiv(METAENGINE_Render_Renderer *renderer, Uint32 program_object, int location,
+                          unsigned int *values) {
     (void) renderer;
     (void) program_object;
     (void) location;
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object != 0)
 #if defined(METAENGINE_Render_USE_GLES) && METAENGINE_Render_GLES_MAJOR_VERSION < 3
@@ -5742,11 +6009,9 @@ static void SetUniformui(METAENGINE_Render_Renderer *renderer, int location, uns
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 #if defined(METAENGINE_Render_USE_GLES) && METAENGINE_Render_GLES_MAJOR_VERSION < 3
     glUniform1i(location, (int) value);
 #else
@@ -5755,7 +6020,8 @@ static void SetUniformui(METAENGINE_Render_Renderer *renderer, int location, uns
 #endif
 }
 
-static void SetUniformuiv(METAENGINE_Render_Renderer *renderer, int location, int num_elements_per_value, int num_values, unsigned int *values) {
+static void SetUniformuiv(METAENGINE_Render_Renderer *renderer, int location,
+                          int num_elements_per_value, int num_values, unsigned int *values) {
     (void) renderer;
     (void) location;
     (void) num_elements_per_value;
@@ -5763,11 +6029,9 @@ static void SetUniformuiv(METAENGINE_Render_Renderer *renderer, int location, in
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 #if defined(METAENGINE_Render_USE_GLES) && METAENGINE_Render_GLES_MAJOR_VERSION < 3
     switch (num_elements_per_value) {
         case 1:
@@ -5802,19 +6066,17 @@ static void SetUniformuiv(METAENGINE_Render_Renderer *renderer, int location, in
 #endif
 }
 
-
-static void GetUniformfv(METAENGINE_Render_Renderer *renderer, Uint32 program_object, int location, float *values) {
+static void GetUniformfv(METAENGINE_Render_Renderer *renderer, Uint32 program_object, int location,
+                         float *values) {
     (void) renderer;
     (void) program_object;
     (void) location;
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     program_object = get_proper_program_id(renderer, program_object);
-    if (program_object != 0)
-        glGetUniformfv(program_object, location, values);
+    if (program_object != 0) glGetUniformfv(program_object, location, values);
 #endif
 }
 
@@ -5824,16 +6086,15 @@ static void SetUniformf(METAENGINE_Render_Renderer *renderer, int location, floa
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
     glUniform1f(location, value);
 #endif
 }
 
-static void SetUniformfv(METAENGINE_Render_Renderer *renderer, int location, int num_elements_per_value, int num_values, float *values) {
+static void SetUniformfv(METAENGINE_Render_Renderer *renderer, int location,
+                         int num_elements_per_value, int num_values, float *values) {
     (void) renderer;
     (void) location;
     (void) num_elements_per_value;
@@ -5841,11 +6102,9 @@ static void SetUniformfv(METAENGINE_Render_Renderer *renderer, int location, int
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
     switch (num_elements_per_value) {
         case 1:
             glUniform1fv(location, num_values, values);
@@ -5863,7 +6122,9 @@ static void SetUniformfv(METAENGINE_Render_Renderer *renderer, int location, int
 #endif
 }
 
-static void SetUniformMatrixfv(METAENGINE_Render_Renderer *renderer, int location, int num_matrices, int num_rows, int num_columns, METAENGINE_Render_bool transpose, float *values) {
+static void SetUniformMatrixfv(METAENGINE_Render_Renderer *renderer, int location, int num_matrices,
+                               int num_rows, int num_columns, METAENGINE_Render_bool transpose,
+                               float *values) {
     (void) renderer;
     (void) location;
     (void) num_matrices;
@@ -5873,13 +6134,13 @@ static void SetUniformMatrixfv(METAENGINE_Render_Renderer *renderer, int locatio
     (void) values;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
     if (num_rows < 2 || num_rows > 4 || num_columns < 2 || num_columns > 4) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetUniformMatrixfv", METAENGINE_Render_ERROR_DATA_ERROR, "Given invalid dimensions (%dx%d)", num_rows, num_columns);
+        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetUniformMatrixfv",
+                                        METAENGINE_Render_ERROR_DATA_ERROR,
+                                        "Given invalid dimensions (%dx%d)", num_rows, num_columns);
         return;
     }
 #if defined(METAENGINE_Render_USE_GLES)
@@ -5891,31 +6152,31 @@ static void SetUniformMatrixfv(METAENGINE_Render_Renderer *renderer, int locatio
 #define glUniformMatrix4x2fv glUniformMatrix2fv
 #define glUniformMatrix4x3fv glUniformMatrix2fv
     if (num_rows != num_columns) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_SetUniformMatrixfv", METAENGINE_Render_ERROR_DATA_ERROR, "GLES renderers do not accept non-square matrices (given %dx%d)", num_rows, num_columns);
+        METAENGINE_Render_PushErrorCode(
+                "METAENGINE_Render_SetUniformMatrixfv", METAENGINE_Render_ERROR_DATA_ERROR,
+                "GLES renderers do not accept non-square matrices (given %dx%d)", num_rows,
+                num_columns);
         return;
     }
 #endif
 
     switch (num_rows) {
         case 2:
-            if (num_columns == 2)
-                glUniformMatrix2fv(location, num_matrices, transpose, values);
+            if (num_columns == 2) glUniformMatrix2fv(location, num_matrices, transpose, values);
             else if (num_columns == 3)
                 glUniformMatrix2x3fv(location, num_matrices, transpose, values);
             else if (num_columns == 4)
                 glUniformMatrix2x4fv(location, num_matrices, transpose, values);
             break;
         case 3:
-            if (num_columns == 2)
-                glUniformMatrix3x2fv(location, num_matrices, transpose, values);
+            if (num_columns == 2) glUniformMatrix3x2fv(location, num_matrices, transpose, values);
             else if (num_columns == 3)
                 glUniformMatrix3fv(location, num_matrices, transpose, values);
             else if (num_columns == 4)
                 glUniformMatrix3x4fv(location, num_matrices, transpose, values);
             break;
         case 4:
-            if (num_columns == 2)
-                glUniformMatrix4x2fv(location, num_matrices, transpose, values);
+            if (num_columns == 2) glUniformMatrix4x2fv(location, num_matrices, transpose, values);
             else if (num_columns == 3)
                 glUniformMatrix4x3fv(location, num_matrices, transpose, values);
             else if (num_columns == 4)
@@ -5925,18 +6186,15 @@ static void SetUniformMatrixfv(METAENGINE_Render_Renderer *renderer, int locatio
 #endif
 }
 
-
 static void SetAttributef(METAENGINE_Render_Renderer *renderer, int location, float value) {
     (void) renderer;
     (void) location;
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef METAENGINE_Render_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
@@ -5957,11 +6215,9 @@ static void SetAttributei(METAENGINE_Render_Renderer *renderer, int location, in
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef METAENGINE_Render_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
@@ -5982,11 +6238,9 @@ static void SetAttributeui(METAENGINE_Render_Renderer *renderer, int location, u
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef METAENGINE_Render_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
@@ -6001,19 +6255,17 @@ static void SetAttributeui(METAENGINE_Render_Renderer *renderer, int location, u
 #endif
 }
 
-
-static void SetAttributefv(METAENGINE_Render_Renderer *renderer, int location, int num_elements, float *value) {
+static void SetAttributefv(METAENGINE_Render_Renderer *renderer, int location, int num_elements,
+                           float *value) {
     (void) renderer;
     (void) location;
     (void) num_elements;
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef METAENGINE_Render_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
@@ -6041,17 +6293,16 @@ static void SetAttributefv(METAENGINE_Render_Renderer *renderer, int location, i
 #endif
 }
 
-static void SetAttributeiv(METAENGINE_Render_Renderer *renderer, int location, int num_elements, int *value) {
+static void SetAttributeiv(METAENGINE_Render_Renderer *renderer, int location, int num_elements,
+                           int *value) {
     (void) renderer;
     (void) location;
     (void) num_elements;
     (void) value;
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef METAENGINE_Render_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
@@ -6079,18 +6330,17 @@ static void SetAttributeiv(METAENGINE_Render_Renderer *renderer, int location, i
 #endif
 }
 
-static void SetAttributeuiv(METAENGINE_Render_Renderer *renderer, int location, int num_elements, unsigned int *value) {
+static void SetAttributeuiv(METAENGINE_Render_Renderer *renderer, int location, int num_elements,
+                            unsigned int *value) {
     (void) renderer;
     (void) location;
     (void) num_elements;
     (void) value;
 
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
     renderer->impl->FlushBlitBuffer(renderer);
-    if (renderer->current_context_target->context->current_shader_program == 0)
-        return;
+    if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef METAENGINE_Render_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
@@ -6118,15 +6368,14 @@ static void SetAttributeuiv(METAENGINE_Render_Renderer *renderer, int location, 
 #endif
 }
 
-static void SetAttributeSource(METAENGINE_Render_Renderer *renderer, int num_values, METAENGINE_Render_Attribute source) {
+static void SetAttributeSource(METAENGINE_Render_Renderer *renderer, int num_values,
+                               METAENGINE_Render_Attribute source) {
 #ifndef METAENGINE_Render_DISABLE_SHADERS
     METAENGINE_Render_CONTEXT_DATA *cdata;
     METAENGINE_Render_AttributeSource *a;
 
-    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS))
-        return;
-    if (source.location < 0 || source.location >= 16)
-        return;
+    if (!IsFeatureEnabled(renderer, METAENGINE_Render_FEATURE_BASIC_SHADERS)) return;
+    if (source.location < 0 || source.location >= 16) return;
 
     FlushBlitBuffer(renderer);
     cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;
@@ -6135,7 +6384,8 @@ static void SetAttributeSource(METAENGINE_Render_Renderer *renderer, int num_val
         int needed_size;
 
         a->per_vertex_storage_offset_bytes = 0;
-        a->per_vertex_storage_stride_bytes = source.format.num_elems_per_value * sizeof_METAENGINE_Render_type(source.format.type);
+        a->per_vertex_storage_stride_bytes = source.format.num_elems_per_value *
+                                             sizeof_METAENGINE_Render_type(source.format.type);
         a->num_values = 4 * num_values;// 4 vertices now
         needed_size = a->num_values * a->per_vertex_storage_stride_bytes;
 
@@ -6170,206 +6420,210 @@ static void SetAttributeSource(METAENGINE_Render_Renderer *renderer, int num_val
     (void) source;
 }
 
-
-#define SET_COMMON_FUNCTIONS(impl)                            \
-    impl->Init = &Init;                                       \
-    impl->CreateTargetFromWindow = &CreateTargetFromWindow;   \
-    impl->SetActiveTarget = &SetActiveTarget;                 \
-    impl->CreateAliasTarget = &CreateAliasTarget;             \
-    impl->MakeCurrent = &MakeCurrent;                         \
-    impl->SetAsCurrent = &SetAsCurrent;                       \
-    impl->ResetRendererState = &ResetRendererState;           \
-    impl->AddDepthBuffer = &AddDepthBuffer;                   \
-    impl->SetWindowResolution = &SetWindowResolution;         \
-    impl->SetVirtualResolution = &SetVirtualResolution;       \
-    impl->UnsetVirtualResolution = &UnsetVirtualResolution;   \
-    impl->Quit = &Quit;                                       \
-                                                              \
-    impl->SetFullscreen = &SetFullscreen;                     \
-    impl->SetCamera = &SetCamera;                             \
-                                                              \
-    impl->CreateImage = &CreateImage;                         \
-    impl->CreateImageUsingTexture = &CreateImageUsingTexture; \
-    impl->CreateAliasImage = &CreateAliasImage;               \
-    impl->SaveImage = &SaveImage;                             \
-    impl->CopyImage = &CopyImage;                             \
-    impl->UpdateImage = &UpdateImage;                         \
-    impl->UpdateImageBytes = &UpdateImageBytes;               \
-    impl->ReplaceImage = &ReplaceImage;                       \
-    impl->CopyImageFromSurface = &CopyImageFromSurface;       \
-    impl->CopyImageFromTarget = &CopyImageFromTarget;         \
-    impl->CopySurfaceFromTarget = &CopySurfaceFromTarget;     \
-    impl->CopySurfaceFromImage = &CopySurfaceFromImage;       \
-    impl->FreeImage = &FreeImage;                             \
-                                                              \
-    impl->GetTarget = &GetTarget;                             \
-    impl->FreeTarget = &FreeTarget;                           \
-                                                              \
-    impl->Blit = &Blit;                                       \
-    impl->BlitRotate = &BlitRotate;                           \
-    impl->BlitScale = &BlitScale;                             \
-    impl->BlitTransform = &BlitTransform;                     \
-    impl->BlitTransformX = &BlitTransformX;                   \
-    impl->PrimitiveBatchV = &PrimitiveBatchV;                 \
-                                                              \
-    impl->GenerateMipmaps = &GenerateMipmaps;                 \
-                                                              \
-    impl->SetClip = &SetClip;                                 \
-    impl->UnsetClip = &UnsetClip;                             \
-                                                              \
-    impl->GetPixel = &GetPixel;                               \
-    impl->SetImageFilter = &SetImageFilter;                   \
-    impl->SetWrapMode = &SetWrapMode;                         \
-    impl->GetTextureHandle = &GetTextureHandle;               \
-                                                              \
-    impl->ClearRGBA = &ClearRGBA;                             \
-    impl->FlushBlitBuffer = &FlushBlitBuffer;                 \
-    impl->Flip = &Flip;                                       \
-                                                              \
-    impl->CompileShader_RW = &CompileShader_RW;               \
-    impl->CompileShader = &CompileShader;                     \
-    impl->CreateShaderProgram = &CreateShaderProgram;         \
-    impl->LinkShaderProgram = &LinkShaderProgram;             \
-    impl->FreeShader = &FreeShader;                           \
-    impl->FreeShaderProgram = &FreeShaderProgram;             \
-    impl->AttachShader = &AttachShader;                       \
-    impl->DetachShader = &DetachShader;                       \
-    impl->ActivateShaderProgram = &ActivateShaderProgram;     \
-    impl->DeactivateShaderProgram = &DeactivateShaderProgram; \
-    impl->GetShaderMessage = &GetShaderMessage;               \
-    impl->GetAttributeLocation = &GetAttributeLocation;       \
-    impl->GetUniformLocation = &GetUniformLocation;           \
-    impl->LoadShaderBlock = &LoadShaderBlock;                 \
-    impl->SetShaderImage = &SetShaderImage;                   \
-    impl->GetUniformiv = &GetUniformiv;                       \
-    impl->SetUniformi = &SetUniformi;                         \
-    impl->SetUniformiv = &SetUniformiv;                       \
-    impl->GetUniformuiv = &GetUniformuiv;                     \
-    impl->SetUniformui = &SetUniformui;                       \
-    impl->SetUniformuiv = &SetUniformuiv;                     \
-    impl->GetUniformfv = &GetUniformfv;                       \
-    impl->SetUniformf = &SetUniformf;                         \
-    impl->SetUniformfv = &SetUniformfv;                       \
-    impl->SetUniformMatrixfv = &SetUniformMatrixfv;           \
-    impl->SetAttributef = &SetAttributef;                     \
-    impl->SetAttributei = &SetAttributei;                     \
-    impl->SetAttributeui = &SetAttributeui;                   \
-    impl->SetAttributefv = &SetAttributefv;                   \
-    impl->SetAttributeiv = &SetAttributeiv;                   \
-    impl->SetAttributeuiv = &SetAttributeuiv;                 \
-    impl->SetAttributeSource = &SetAttributeSource;           \
-                                                              \
-    /* Shape rendering */                                     \
-                                                              \
-    impl->SetLineThickness = &SetLineThickness;               \
-    impl->GetLineThickness = &GetLineThickness;               \
-    impl->Pixel = &Pixel;                                     \
-    impl->Line = &Line;                                       \
-    impl->Arc = &Arc;                                         \
-    impl->ArcFilled = &ArcFilled;                             \
-    impl->Circle = &Circle;                                   \
-    impl->CircleFilled = &CircleFilled;                       \
-    impl->Ellipse = &Ellipse;                                 \
-    impl->EllipseFilled = &EllipseFilled;                     \
-    impl->Sector = &Sector;                                   \
-    impl->SectorFilled = &SectorFilled;                       \
-    impl->Tri = &Tri;                                         \
-    impl->TriFilled = &TriFilled;                             \
-    impl->Rectangle = &Rectangle;                             \
-    impl->RectangleFilled = &RectangleFilled;                 \
-    impl->RectangleRound = &RectangleRound;                   \
-    impl->RectangleRoundFilled = &RectangleRoundFilled;       \
-    impl->Polygon = &Polygon;                                 \
-    impl->Polyline = &Polyline;                               \
+#define SET_COMMON_FUNCTIONS(impl)                                                                 \
+    impl->Init = &Init;                                                                            \
+    impl->CreateTargetFromWindow = &CreateTargetFromWindow;                                        \
+    impl->SetActiveTarget = &SetActiveTarget;                                                      \
+    impl->CreateAliasTarget = &CreateAliasTarget;                                                  \
+    impl->MakeCurrent = &MakeCurrent;                                                              \
+    impl->SetAsCurrent = &SetAsCurrent;                                                            \
+    impl->ResetRendererState = &ResetRendererState;                                                \
+    impl->AddDepthBuffer = &AddDepthBuffer;                                                        \
+    impl->SetWindowResolution = &SetWindowResolution;                                              \
+    impl->SetVirtualResolution = &SetVirtualResolution;                                            \
+    impl->UnsetVirtualResolution = &UnsetVirtualResolution;                                        \
+    impl->Quit = &Quit;                                                                            \
+                                                                                                   \
+    impl->SetFullscreen = &SetFullscreen;                                                          \
+    impl->SetCamera = &SetCamera;                                                                  \
+                                                                                                   \
+    impl->CreateImage = &CreateImage;                                                              \
+    impl->CreateImageUsingTexture = &CreateImageUsingTexture;                                      \
+    impl->CreateAliasImage = &CreateAliasImage;                                                    \
+    impl->SaveImage = &SaveImage;                                                                  \
+    impl->CopyImage = &CopyImage;                                                                  \
+    impl->UpdateImage = &UpdateImage;                                                              \
+    impl->UpdateImageBytes = &UpdateImageBytes;                                                    \
+    impl->ReplaceImage = &ReplaceImage;                                                            \
+    impl->CopyImageFromSurface = &CopyImageFromSurface;                                            \
+    impl->CopyImageFromTarget = &CopyImageFromTarget;                                              \
+    impl->CopySurfaceFromTarget = &CopySurfaceFromTarget;                                          \
+    impl->CopySurfaceFromImage = &CopySurfaceFromImage;                                            \
+    impl->FreeImage = &FreeImage;                                                                  \
+                                                                                                   \
+    impl->GetTarget = &GetTarget;                                                                  \
+    impl->FreeTarget = &FreeTarget;                                                                \
+                                                                                                   \
+    impl->Blit = &Blit;                                                                            \
+    impl->BlitRotate = &BlitRotate;                                                                \
+    impl->BlitScale = &BlitScale;                                                                  \
+    impl->BlitTransform = &BlitTransform;                                                          \
+    impl->BlitTransformX = &BlitTransformX;                                                        \
+    impl->PrimitiveBatchV = &PrimitiveBatchV;                                                      \
+                                                                                                   \
+    impl->GenerateMipmaps = &GenerateMipmaps;                                                      \
+                                                                                                   \
+    impl->SetClip = &SetClip;                                                                      \
+    impl->UnsetClip = &UnsetClip;                                                                  \
+                                                                                                   \
+    impl->GetPixel = &GetPixel;                                                                    \
+    impl->SetImageFilter = &SetImageFilter;                                                        \
+    impl->SetWrapMode = &SetWrapMode;                                                              \
+    impl->GetTextureHandle = &GetTextureHandle;                                                    \
+                                                                                                   \
+    impl->ClearRGBA = &ClearRGBA;                                                                  \
+    impl->FlushBlitBuffer = &FlushBlitBuffer;                                                      \
+    impl->Flip = &Flip;                                                                            \
+                                                                                                   \
+    impl->CompileShader_RW = &CompileShader_RW;                                                    \
+    impl->CompileShader = &CompileShader;                                                          \
+    impl->CreateShaderProgram = &CreateShaderProgram;                                              \
+    impl->LinkShaderProgram = &LinkShaderProgram;                                                  \
+    impl->FreeShader = &FreeShader;                                                                \
+    impl->FreeShaderProgram = &FreeShaderProgram;                                                  \
+    impl->AttachShader = &AttachShader;                                                            \
+    impl->DetachShader = &DetachShader;                                                            \
+    impl->ActivateShaderProgram = &ActivateShaderProgram;                                          \
+    impl->DeactivateShaderProgram = &DeactivateShaderProgram;                                      \
+    impl->GetShaderMessage = &GetShaderMessage;                                                    \
+    impl->GetAttributeLocation = &GetAttributeLocation;                                            \
+    impl->GetUniformLocation = &GetUniformLocation;                                                \
+    impl->LoadShaderBlock = &LoadShaderBlock;                                                      \
+    impl->SetShaderImage = &SetShaderImage;                                                        \
+    impl->GetUniformiv = &GetUniformiv;                                                            \
+    impl->SetUniformi = &SetUniformi;                                                              \
+    impl->SetUniformiv = &SetUniformiv;                                                            \
+    impl->GetUniformuiv = &GetUniformuiv;                                                          \
+    impl->SetUniformui = &SetUniformui;                                                            \
+    impl->SetUniformuiv = &SetUniformuiv;                                                          \
+    impl->GetUniformfv = &GetUniformfv;                                                            \
+    impl->SetUniformf = &SetUniformf;                                                              \
+    impl->SetUniformfv = &SetUniformfv;                                                            \
+    impl->SetUniformMatrixfv = &SetUniformMatrixfv;                                                \
+    impl->SetAttributef = &SetAttributef;                                                          \
+    impl->SetAttributei = &SetAttributei;                                                          \
+    impl->SetAttributeui = &SetAttributeui;                                                        \
+    impl->SetAttributefv = &SetAttributefv;                                                        \
+    impl->SetAttributeiv = &SetAttributeiv;                                                        \
+    impl->SetAttributeuiv = &SetAttributeuiv;                                                      \
+    impl->SetAttributeSource = &SetAttributeSource;                                                \
+                                                                                                   \
+    /* Shape rendering */                                                                          \
+                                                                                                   \
+    impl->SetLineThickness = &SetLineThickness;                                                    \
+    impl->GetLineThickness = &GetLineThickness;                                                    \
+    impl->Pixel = &Pixel;                                                                          \
+    impl->Line = &Line;                                                                            \
+    impl->Arc = &Arc;                                                                              \
+    impl->ArcFilled = &ArcFilled;                                                                  \
+    impl->Circle = &Circle;                                                                        \
+    impl->CircleFilled = &CircleFilled;                                                            \
+    impl->Ellipse = &Ellipse;                                                                      \
+    impl->EllipseFilled = &EllipseFilled;                                                          \
+    impl->Sector = &Sector;                                                                        \
+    impl->SectorFilled = &SectorFilled;                                                            \
+    impl->Tri = &Tri;                                                                              \
+    impl->TriFilled = &TriFilled;                                                                  \
+    impl->Rectangle = &Rectangle;                                                                  \
+    impl->RectangleFilled = &RectangleFilled;                                                      \
+    impl->RectangleRound = &RectangleRound;                                                        \
+    impl->RectangleRoundFilled = &RectangleRoundFilled;                                            \
+    impl->Polygon = &Polygon;                                                                      \
+    impl->Polyline = &Polyline;                                                                    \
     impl->PolygonFilled = &PolygonFilled;
 
-
 // All shapes start this way for setup and so they can access the blit buffer properly
-#define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices)                                                   \
-    METAENGINE_Render_CONTEXT_DATA *cdata;                                                                                                        \
-    float *blit_buffer;                                                                                                                           \
-    unsigned short *index_buffer;                                                                                                                 \
-    int vert_index;                                                                                                                               \
-    int color_index;                                                                                                                              \
-    float r, g, b, a;                                                                                                                             \
-    unsigned short blit_buffer_starting_index;                                                                                                    \
-    if (target == NULL) {                                                                                                                         \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");                                          \
-        return;                                                                                                                                   \
-    }                                                                                                                                             \
-    if (renderer != target->renderer) {                                                                                                           \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR, "Mismatched renderer");                                \
-        return;                                                                                                                                   \
-    }                                                                                                                                             \
-                                                                                                                                                  \
-    makeContextCurrent(renderer, target);                                                                                                         \
-    if (renderer->current_context_target == NULL) {                                                                                               \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR, "NULL context");                                       \
-        return;                                                                                                                                   \
-    }                                                                                                                                             \
-                                                                                                                                                  \
-    if (!SetActiveTarget(renderer, target)) {                                                                                                     \
-        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");                     \
-        return;                                                                                                                                   \
-    }                                                                                                                                             \
-                                                                                                                                                  \
-    prepareToRenderToTarget(renderer, target);                                                                                                    \
-    prepareToRenderShapes(renderer, shape);                                                                                                       \
-                                                                                                                                                  \
-    cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;                                                   \
-                                                                                                                                                  \
-    if (cdata->blit_buffer_num_vertices + (num_additional_vertices) >= cdata->blit_buffer_max_num_vertices) {                                     \
-        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + (num_additional_vertices)))                                                  \
-            renderer->impl->FlushBlitBuffer(renderer);                                                                                            \
-    }                                                                                                                                             \
-    if (cdata->index_buffer_num_vertices + (num_additional_indices) >= cdata->index_buffer_max_num_vertices) {                                    \
-        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + (num_additional_indices)))                                                 \
-            renderer->impl->FlushBlitBuffer(renderer);                                                                                            \
-    }                                                                                                                                             \
-                                                                                                                                                  \
-    blit_buffer = cdata->blit_buffer;                                                                                                             \
-    index_buffer = cdata->index_buffer;                                                                                                           \
-                                                                                                                                                  \
-    vert_index = METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
-    color_index = METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX; \
-                                                                                                                                                  \
-    if (target->use_color) {                                                                                                                      \
-        r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, color.r);                                                                      \
-        g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, color.g);                                                                      \
-        b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, color.b);                                                                      \
-        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(color));                                                    \
-    } else {                                                                                                                                      \
-        r = color.r / 255.0f;                                                                                                                     \
-        g = color.g / 255.0f;                                                                                                                     \
-        b = color.b / 255.0f;                                                                                                                     \
-        a = GET_ALPHA(color) / 255.0f;                                                                                                            \
-    }                                                                                                                                             \
-    blit_buffer_starting_index = cdata->blit_buffer_num_vertices;                                                                                 \
+#define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices)    \
+    METAENGINE_Render_CONTEXT_DATA *cdata;                                                         \
+    float *blit_buffer;                                                                            \
+    unsigned short *index_buffer;                                                                  \
+    int vert_index;                                                                                \
+    int color_index;                                                                               \
+    float r, g, b, a;                                                                              \
+    unsigned short blit_buffer_starting_index;                                                     \
+    if (target == NULL) {                                                                          \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_NULL_ARGUMENT,      \
+                                        "target");                                                 \
+        return;                                                                                    \
+    }                                                                                              \
+    if (renderer != target->renderer) {                                                            \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR,         \
+                                        "Mismatched renderer");                                    \
+        return;                                                                                    \
+    }                                                                                              \
+                                                                                                   \
+    makeContextCurrent(renderer, target);                                                          \
+    if (renderer->current_context_target == NULL) {                                                \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_USER_ERROR,         \
+                                        "NULL context");                                           \
+        return;                                                                                    \
+    }                                                                                              \
+                                                                                                   \
+    if (!SetActiveTarget(renderer, target)) {                                                      \
+        METAENGINE_Render_PushErrorCode(function_name, METAENGINE_Render_ERROR_BACKEND_ERROR,      \
+                                        "Failed to bind framebuffer.");                            \
+        return;                                                                                    \
+    }                                                                                              \
+                                                                                                   \
+    prepareToRenderToTarget(renderer, target);                                                     \
+    prepareToRenderShapes(renderer, shape);                                                        \
+                                                                                                   \
+    cdata = (METAENGINE_Render_CONTEXT_DATA *) renderer->current_context_target->context->data;    \
+                                                                                                   \
+    if (cdata->blit_buffer_num_vertices + (num_additional_vertices) >=                             \
+        cdata->blit_buffer_max_num_vertices) {                                                     \
+        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + (num_additional_vertices)))   \
+            renderer->impl->FlushBlitBuffer(renderer);                                             \
+    }                                                                                              \
+    if (cdata->index_buffer_num_vertices + (num_additional_indices) >=                             \
+        cdata->index_buffer_max_num_vertices) {                                                    \
+        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + (num_additional_indices)))  \
+            renderer->impl->FlushBlitBuffer(renderer);                                             \
+    }                                                                                              \
+                                                                                                   \
+    blit_buffer = cdata->blit_buffer;                                                              \
+    index_buffer = cdata->index_buffer;                                                            \
+                                                                                                   \
+    vert_index =                                                                                   \
+            METAENGINE_Render_BLIT_BUFFER_VERTEX_OFFSET +                                          \
+            cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;     \
+    color_index =                                                                                  \
+            METAENGINE_Render_BLIT_BUFFER_COLOR_OFFSET +                                           \
+            cdata->blit_buffer_num_vertices * METAENGINE_Render_BLIT_BUFFER_FLOATS_PER_VERTEX;     \
+                                                                                                   \
+    if (target->use_color) {                                                                       \
+        r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, color.r);                       \
+        g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, color.g);                       \
+        b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, color.b);                       \
+        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(color));     \
+    } else {                                                                                       \
+        r = color.r / 255.0f;                                                                      \
+        g = color.g / 255.0f;                                                                      \
+        b = color.b / 255.0f;                                                                      \
+        a = GET_ALPHA(color) / 255.0f;                                                             \
+    }                                                                                              \
+    blit_buffer_starting_index = cdata->blit_buffer_num_vertices;                                  \
     (void) blit_buffer_starting_index;
-
 
 #define METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR 0.625f
 
-
-#define CALCULATE_CIRCLE_DT_AND_SEGMENTS(radius)                                                                                     \
-    dt = METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(radius); /* s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good */ \
-    numSegments = (int) (2 * PI / dt) + 1;                                                                                           \
-                                                                                                                                     \
-    if (numSegments < 16) {                                                                                                          \
-        numSegments = 16;                                                                                                            \
-        dt = 2 * PI / (numSegments - 1);                                                                                             \
+#define CALCULATE_CIRCLE_DT_AND_SEGMENTS(radius)                                                   \
+    dt = METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR /                                           \
+         sqrtf(radius); /* s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good */               \
+    numSegments = (int) (2 * PI / dt) + 1;                                                         \
+                                                                                                   \
+    if (numSegments < 16) {                                                                        \
+        numSegments = 16;                                                                          \
+        dt = 2 * PI / (numSegments - 1);                                                           \
     }
-
 
 static float SetLineThickness(METAENGINE_Render_Renderer *renderer, float thickness) {
     float old;
 
-    if (renderer->current_context_target == NULL)
-        return 1.0f;
+    if (renderer->current_context_target == NULL) return 1.0f;
 
     old = renderer->current_context_target->context->line_thickness;
-    if (old != thickness)
-        renderer->impl->FlushBlitBuffer(renderer);
+    if (old != thickness) renderer->impl->FlushBlitBuffer(renderer);
 
     renderer->current_context_target->context->line_thickness = thickness;
 #ifndef METAENGINE_Render_SKIP_LINE_WIDTH
@@ -6382,13 +6636,15 @@ static float GetLineThickness(METAENGINE_Render_Renderer *renderer) {
     return renderer->current_context_target->context->line_thickness;
 }
 
-static void Pixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, SDL_Color color) {
+static void Pixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
+                  float y, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_Pixel", GL_POINTS, 1, 1);
 
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
 }
 
-static void Line(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color) {
+static void Line(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1,
+                 float y1, float x2, float y2, SDL_Color color) {
     float thickness = GetLineThickness(renderer);
 
     float t = thickness / 2;
@@ -6408,9 +6664,11 @@ static void Line(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target 
 }
 
 // Arc() might call Circle()
-static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color);
+static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
+                   float y, float radius, SDL_Color color);
 
-static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color) {
+static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
+                float y, float radius, float start_angle, float end_angle, SDL_Color color) {
     float dx, dy;
     int i;
 
@@ -6424,16 +6682,14 @@ static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *
     float tempx;
     float c, s;
 
-    if (inner_radius < 0.0f)
-        inner_radius = 0.0f;
+    if (inner_radius < 0.0f) inner_radius = 0.0f;
 
     if (start_angle > end_angle) {
         float swapa = end_angle;
         end_angle = start_angle;
         start_angle = swapa;
     }
-    if (start_angle == end_angle)
-        return;
+    if (start_angle == end_angle) return;
 
     // Big angle
     if (end_angle - start_angle >= 360) {
@@ -6451,15 +6707,16 @@ static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *
         end_angle -= 360;
     }
 
-
-    dt = ((end_angle - start_angle) / 360) * (METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius));// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
+    dt = ((end_angle - start_angle) / 360) *
+         (METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR /
+          sqrtf(outer_radius));// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
 
     numSegments = (int) ((fabs(end_angle - start_angle) * PI / 180) / dt);
-    if (numSegments == 0)
-        return;
+    if (numSegments == 0) return;
 
     {
-        BEGIN_UNTEXTURED("METAENGINE_Render_Arc", GL_TRIANGLES, 2 * (numSegments), 6 * (numSegments));
+        BEGIN_UNTEXTURED("METAENGINE_Render_Arc", GL_TRIANGLES, 2 * (numSegments),
+                         6 * (numSegments));
 
         c = cosf(dt);
         s = sinf(dt);
@@ -6469,27 +6726,33 @@ static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *
         dx = cosf(start_angle);
         dy = sinf(start_angle);
 
-        BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+        BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy,
+                                  x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
 
         for (i = 1; i < numSegments; i++) {
             tempx = c * dx - s * dy;
             dy = s * dx + c * dy;
             dx = tempx;
-            SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+            SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy,
+                                    x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
         }
 
         // Last point
         end_angle *= RAD_PER_DEG;
         dx = cosf(end_angle);
         dy = sinf(end_angle);
-        END_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+        END_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx,
+                                y + outer_radius * dy, r, g, b, a);
     }
 }
 
 // ArcFilled() might call CircleFilled()
-static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color);
+static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                         float x, float y, float radius, SDL_Color color);
 
-static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, float start_angle, float end_angle, SDL_Color color) {
+static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                      float x, float y, float radius, float start_angle, float end_angle,
+                      SDL_Color color) {
     float dx, dy;
     int i;
 
@@ -6504,8 +6767,7 @@ static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
         end_angle = start_angle;
         start_angle = swapa;
     }
-    if (start_angle == end_angle)
-        return;
+    if (start_angle == end_angle) return;
 
     // Big angle
     if (end_angle - start_angle >= 360) {
@@ -6523,14 +6785,16 @@ static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
         end_angle -= 360;
     }
 
-    dt = ((end_angle - start_angle) / 360) * (METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(radius));// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
+    dt = ((end_angle - start_angle) / 360) *
+         (METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR /
+          sqrtf(radius));// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
 
     numSegments = (int) ((fabs(end_angle - start_angle) * RAD_PER_DEG) / dt);
-    if (numSegments == 0)
-        return;
+    if (numSegments == 0) return;
 
     {
-        BEGIN_UNTEXTURED("METAENGINE_Render_ArcFilled", GL_TRIANGLES, 3 + (numSegments - 1) + 1, 3 + (numSegments - 1) * 3 + 3);
+        BEGIN_UNTEXTURED("METAENGINE_Render_ArcFilled", GL_TRIANGLES, 3 + (numSegments - 1) + 1,
+                         3 + (numSegments - 1) * 3 + 3);
 
         c = cosf(dt);
         s = sinf(dt);
@@ -6568,12 +6832,12 @@ static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
     }
 }
 
-
 /*
 Incremental rotation circle algorithm
 */
 
-static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color) {
+static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
+                   float y, float radius, SDL_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6589,28 +6853,31 @@ static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targe
     float c = cosf(dt);
     float s = sinf(dt);
 
-    BEGIN_UNTEXTURED("METAENGINE_Render_Circle", GL_TRIANGLES, 2 * (numSegments), 6 * (numSegments));
+    BEGIN_UNTEXTURED("METAENGINE_Render_Circle", GL_TRIANGLES, 2 * (numSegments),
+                     6 * (numSegments));
 
-    if (inner_radius < 0.0f)
-        inner_radius = 0.0f;
+    if (inner_radius < 0.0f) inner_radius = 0.0f;
 
     dx = 1.0f;
     dy = 0.0f;
 
-    BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+    BEGIN_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx,
+                              y + outer_radius * dy, r, g, b, a);
 
     for (i = 1; i < numSegments; i++) {
         tempx = c * dx - s * dy;
         dy = s * dx + c * dy;
         dx = tempx;
 
-        SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+        SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx,
+                                y + outer_radius * dy, r, g, b, a);
     }
 
     LOOP_UNTEXTURED_SEGMENTS();// back to the beginning
 }
 
-static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float radius, SDL_Color color) {
+static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                         float x, float y, float radius, SDL_Color color) {
     float dt;
     float dx, dy;
     int numSegments;
@@ -6622,7 +6889,8 @@ static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render
     float c = cosf(dt);
     float s = sinf(dt);
 
-    BEGIN_UNTEXTURED("METAENGINE_Render_CircleFilled", GL_TRIANGLES, 3 + (numSegments - 2), 3 + (numSegments - 2) * 3 + 3);
+    BEGIN_UNTEXTURED("METAENGINE_Render_CircleFilled", GL_TRIANGLES, 3 + (numSegments - 2),
+                     3 + (numSegments - 2) * 3 + 3);
 
     // First triangle
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);// Center
@@ -6650,7 +6918,8 @@ static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render
     SET_INDEXED_VERTEX(1);// first point
 }
 
-static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float rx, float ry, float degrees, SDL_Color color) {
+static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
+                    float y, float rx, float ry, float degrees, SDL_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6664,7 +6933,8 @@ static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
     float dt;
     int numSegments;
 
-    CALCULATE_CIRCLE_DT_AND_SEGMENTS(outer_radius_x > outer_radius_y ? outer_radius_x : outer_radius_y);
+    CALCULATE_CIRCLE_DT_AND_SEGMENTS(outer_radius_x > outer_radius_y ? outer_radius_x
+                                                                     : outer_radius_y);
 
     float tempx;
     float c = cosf(dt);
@@ -6672,12 +6942,11 @@ static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
     float inner_trans_x, inner_trans_y;
     float outer_trans_x, outer_trans_y;
 
-    BEGIN_UNTEXTURED("METAENGINE_Render_Ellipse", GL_TRIANGLES, 2 * (numSegments), 6 * (numSegments));
+    BEGIN_UNTEXTURED("METAENGINE_Render_Ellipse", GL_TRIANGLES, 2 * (numSegments),
+                     6 * (numSegments));
 
-    if (inner_radius_x < 0.0f)
-        inner_radius_x = 0.0f;
-    if (inner_radius_y < 0.0f)
-        inner_radius_y = 0.0f;
+    if (inner_radius_x < 0.0f) inner_radius_x = 0.0f;
+    if (inner_radius_y < 0.0f) inner_radius_y = 0.0f;
 
     dx = 1.0f;
     dy = 0.0f;
@@ -6686,7 +6955,8 @@ static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
     inner_trans_y = rot_y * inner_radius_x * dx + rot_x * inner_radius_y * dy;
     outer_trans_x = rot_x * outer_radius_x * dx - rot_y * outer_radius_y * dy;
     outer_trans_y = rot_y * outer_radius_x * dx + rot_x * outer_radius_y * dy;
-    BEGIN_UNTEXTURED_SEGMENTS(x + inner_trans_x, y + inner_trans_y, x + outer_trans_x, y + outer_trans_y, r, g, b, a);
+    BEGIN_UNTEXTURED_SEGMENTS(x + inner_trans_x, y + inner_trans_y, x + outer_trans_x,
+                              y + outer_trans_y, r, g, b, a);
 
     for (i = 1; i < numSegments; i++) {
         tempx = c * dx - s * dy;
@@ -6697,13 +6967,15 @@ static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
         inner_trans_y = rot_y * inner_radius_x * dx + rot_x * inner_radius_y * dy;
         outer_trans_x = rot_x * outer_radius_x * dx - rot_y * outer_radius_y * dy;
         outer_trans_y = rot_y * outer_radius_x * dx + rot_x * outer_radius_y * dy;
-        SET_UNTEXTURED_SEGMENTS(x + inner_trans_x, y + inner_trans_y, x + outer_trans_x, y + outer_trans_y, r, g, b, a);
+        SET_UNTEXTURED_SEGMENTS(x + inner_trans_x, y + inner_trans_y, x + outer_trans_x,
+                                y + outer_trans_y, r, g, b, a);
     }
 
     LOOP_UNTEXTURED_SEGMENTS();// back to the beginning
 }
 
-static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float rx, float ry, float degrees, SDL_Color color) {
+static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                          float x, float y, float rx, float ry, float degrees, SDL_Color color) {
     float dx, dy;
     int i;
     float rot_x = cosf(degrees * RAD_PER_DEG);
@@ -6717,7 +6989,8 @@ static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Rende
     float s = sinf(dt);
     float trans_x, trans_y;
 
-    BEGIN_UNTEXTURED("METAENGINE_Render_EllipseFilled", GL_TRIANGLES, 3 + (numSegments - 2), 3 + (numSegments - 2) * 3 + 3);
+    BEGIN_UNTEXTURED("METAENGINE_Render_EllipseFilled", GL_TRIANGLES, 3 + (numSegments - 2),
+                     3 + (numSegments - 2) * 3 + 3);
 
     // First triangle
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);// Center
@@ -6754,14 +7027,14 @@ static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Rende
     SET_INDEXED_VERTEX(1);// first point
 }
 
-static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color) {
+static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
+                   float y, float inner_radius, float outer_radius, float start_angle,
+                   float end_angle, SDL_Color color) {
     METAENGINE_Render_bool circled;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
 
-    if (inner_radius < 0.0f)
-        inner_radius = 0.0f;
-    if (outer_radius < 0.0f)
-        outer_radius = 0.0f;
+    if (inner_radius < 0.0f) inner_radius = 0.0f;
+    if (outer_radius < 0.0f) outer_radius = 0.0f;
 
     if (inner_radius > outer_radius) {
         float s = inner_radius;
@@ -6774,8 +7047,7 @@ static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targe
         end_angle = start_angle;
         start_angle = swapa;
     }
-    if (start_angle == end_angle)
-        return;
+    if (start_angle == end_angle) return;
 
     if (inner_radius == outer_radius) {
         Arc(renderer, target, x, y, inner_radius, start_angle, end_angle, color);
@@ -6805,17 +7077,17 @@ static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targe
     }
 }
 
-static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, SDL_Color color) {
+static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                         float x, float y, float inner_radius, float outer_radius,
+                         float start_angle, float end_angle, SDL_Color color) {
     float t;
     float dt;
     float dx, dy;
 
     int numSegments;
 
-    if (inner_radius < 0.0f)
-        inner_radius = 0.0f;
-    if (outer_radius < 0.0f)
-        outer_radius = 0.0f;
+    if (inner_radius < 0.0f) inner_radius = 0.0f;
+    if (outer_radius < 0.0f) outer_radius = 0.0f;
 
     if (inner_radius > outer_radius) {
         float s = inner_radius;
@@ -6828,30 +7100,28 @@ static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render
         return;
     }
 
-
     if (start_angle > end_angle) {
         float swapa = end_angle;
         end_angle = start_angle;
         start_angle = swapa;
     }
-    if (start_angle == end_angle)
-        return;
+    if (start_angle == end_angle) return;
 
-    if (end_angle - start_angle >= 360)
-        end_angle = start_angle + 360;
-
+    if (end_angle - start_angle >= 360) end_angle = start_angle + 360;
 
     t = start_angle;
-    dt = ((end_angle - start_angle) / 360) * (METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius)) * DEG_PER_RAD;// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
+    dt = ((end_angle - start_angle) / 360) *
+         (METAENGINE_Render_CIRCLE_SEGMENT_ANGLE_FACTOR / sqrtf(outer_radius)) *
+         DEG_PER_RAD;// s = rA, so dA = ds/r.  ds of 1.25*sqrt(radius) is good, use A in degrees.
 
     numSegments = (int) (fabs(end_angle - start_angle) / dt);
-    if (numSegments == 0)
-        return;
+    if (numSegments == 0) return;
 
     {
         int i;
         METAENGINE_Render_bool use_inner;
-        BEGIN_UNTEXTURED("METAENGINE_Render_SectorFilled", GL_TRIANGLES, 3 + (numSegments - 1) + 1, 3 + (numSegments - 1) * 3 + 3);
+        BEGIN_UNTEXTURED("METAENGINE_Render_SectorFilled", GL_TRIANGLES, 3 + (numSegments - 1) + 1,
+                         3 + (numSegments - 1) * 3 + 3);
 
         use_inner = METAENGINE_Render_FALSE;// Switches between the radii for the next point
 
@@ -6912,7 +7182,8 @@ static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render
     }
 }
 
-static void Tri(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
+static void Tri(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1,
+                float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_Tri", GL_LINES, 3, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6925,7 +7196,8 @@ static void Tri(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *
     SET_INDEXED_VERTEX(0);
 }
 
-static void TriFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
+static void TriFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                      float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_TriFilled", GL_TRIANGLES, 3, 3);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6933,7 +7205,8 @@ static void TriFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
     SET_UNTEXTURED_VERTEX(x3, y3, r, g, b, a);
 }
 
-static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color) {
+static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                      float x1, float y1, float x2, float y2, SDL_Color color) {
     if (y2 < y1) {
         float y = y1;
         y1 = y2;
@@ -6958,10 +7231,8 @@ static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
         BEGIN_UNTEXTURED("METAENGINE_Render_Rectangle", GL_TRIANGLES, 12, 24);
 
         // Adjust inner thickness offsets to avoid overdraw on narrow/small rects
-        if (x1 + inner_x > x2 - inner_x)
-            inner_x = (x2 - x1) / 2;
-        if (y1 + inner_y > y2 - inner_y)
-            inner_y = (y2 - y1) / 2;
+        if (x1 + inner_x > x2 - inner_x) inner_x = (x2 - x1) / 2;
+        if (y1 + inner_y > y2 - inner_y) inner_y = (y2 - y1) / 2;
 
         // First triangle
         SET_UNTEXTURED_VERTEX(x1 - outer, y1 - outer, r, g, b, a);  // 0
@@ -6998,7 +7269,8 @@ static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
     }
 }
 
-static void RectangleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, SDL_Color color) {
+static void RectangleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                            float x1, float y1, float x2, float y2, SDL_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_RectangleFilled", GL_TRIANGLES, 4, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -7010,13 +7282,14 @@ static void RectangleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);
 }
 
-#define INCREMENT_CIRCLE     \
-    tempx = c * dx - s * dy; \
-    dy = s * dx + c * dy;    \
-    dx = tempx;              \
+#define INCREMENT_CIRCLE                                                                           \
+    tempx = c * dx - s * dy;                                                                       \
+    dy = s * dx + c * dy;                                                                          \
+    dx = tempx;                                                                                    \
     ++i;
 
-static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float radius, SDL_Color color) {
+static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                           float x1, float y1, float x2, float y2, float radius, SDL_Color color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -7028,10 +7301,8 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
         x1 = temp;
     }
 
-    if (radius > (x2 - x1) / 2)
-        radius = (x2 - x1) / 2;
-    if (radius > (y2 - y1) / 2)
-        radius = (y2 - y1) / 2;
+    if (radius > (x2 - x1) / 2) radius = (x2 - x1) / 2;
+    if (radius > (y2 - y1) / 2) radius = (y2 - y1) / 2;
 
     x1 += radius;
     y1 += radius;
@@ -7065,10 +7336,10 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
             float s = sinf(dt);
 
             // Add another 4 for the extra corner vertices
-            BEGIN_UNTEXTURED("METAENGINE_Render_RectangleRound", GL_TRIANGLES, 2 * (numSegments + 4), 6 * (numSegments + 4));
+            BEGIN_UNTEXTURED("METAENGINE_Render_RectangleRound", GL_TRIANGLES,
+                             2 * (numSegments + 4), 6 * (numSegments + 4));
 
-            if (inner_radius < 0.0f)
-                inner_radius = 0.0f;
+            if (inner_radius < 0.0f) inner_radius = 0.0f;
 
             dx = 1.0f;
             dy = 0.0f;
@@ -7079,7 +7350,8 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
             while (i < go_to_second - 1) {
                 INCREMENT_CIRCLE;
 
-                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy,
+                                        x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
             }
             INCREMENT_CIRCLE;
 
@@ -7090,7 +7362,8 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
             while (i < go_to_third - 1) {
                 INCREMENT_CIRCLE;
 
-                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy,
+                                        x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
             }
             INCREMENT_CIRCLE;
 
@@ -7101,7 +7374,8 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
             while (i < go_to_fourth - 1) {
                 INCREMENT_CIRCLE;
 
-                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy,
+                                        x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
             }
             INCREMENT_CIRCLE;
 
@@ -7112,7 +7386,8 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
             while (i < numSegments - 1) {
                 INCREMENT_CIRCLE;
 
-                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy, x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
+                SET_UNTEXTURED_SEGMENTS(x + inner_radius * dx, y + inner_radius * dy,
+                                        x + outer_radius * dx, y + outer_radius * dy, r, g, b, a);
             }
             SET_UNTEXTURED_SEGMENTS(x + inner_radius, y, x + outer_radius, y, r, g, b, a);
 
@@ -7121,7 +7396,9 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
     }
 }
 
-static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2, float radius, SDL_Color color) {
+static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer,
+                                 METAENGINE_Render_Target *target, float x1, float y1, float x2,
+                                 float y2, float radius, SDL_Color color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -7133,66 +7410,75 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer, METAENGIN
         x1 = temp;
     }
 
-    if (radius > (x2 - x1) / 2)
-        radius = (x2 - x1) / 2;
-    if (radius > (y2 - y1) / 2)
-        radius = (y2 - y1) / 2;
+    if (radius > (x2 - x1) / 2) radius = (x2 - x1) / 2;
+    if (radius > (y2 - y1) / 2) radius = (y2 - y1) / 2;
 
     {
         float tau = 2 * PI;
 
         int verts_per_corner = 7;
-        float corner_angle_increment = (tau / 4) / (verts_per_corner - 1);// 0, 15, 30, 45, 60, 75, 90
+        float corner_angle_increment =
+                (tau / 4) / (verts_per_corner - 1);// 0, 15, 30, 45, 60, 75, 90
 
         // Starting angle
         float angle = tau * 0.75f;
         int last_index = 2;
         int i;
 
-        BEGIN_UNTEXTURED("METAENGINE_Render_RectangleRoundFilled", GL_TRIANGLES, 6 + 4 * (verts_per_corner - 1) - 1, 15 + 4 * (verts_per_corner - 1) * 3 - 3);
-
+        BEGIN_UNTEXTURED("METAENGINE_Render_RectangleRoundFilled", GL_TRIANGLES,
+                         6 + 4 * (verts_per_corner - 1) - 1,
+                         15 + 4 * (verts_per_corner - 1) * 3 - 3);
 
         // First triangle
         SET_UNTEXTURED_VERTEX((x2 + x1) / 2, (y2 + y1) / 2, r, g, b, a);// Center
-        SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
+        SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius,
+                              y1 + radius + sinf(angle) * radius, r, g, b, a);
         angle += corner_angle_increment;
-        SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
+        SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius,
+                              y1 + radius + sinf(angle) * radius, r, g, b, a);
         angle += corner_angle_increment;
 
         for (i = 2; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
-            SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
+            SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius,
+                                  y1 + radius + sinf(angle) * radius, r, g, b, a);
             angle += corner_angle_increment;
         }
 
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(last_index++);
-        SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
+        SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius,
+                              y2 - radius + sinf(angle) * radius, r, g, b, a);
         for (i = 1; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
-            SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
+            SET_UNTEXTURED_VERTEX(x2 - radius + cosf(angle) * radius,
+                                  y2 - radius + sinf(angle) * radius, r, g, b, a);
             angle += corner_angle_increment;
         }
 
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(last_index++);
-        SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
+        SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius,
+                              y2 - radius + sinf(angle) * radius, r, g, b, a);
         for (i = 1; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
-            SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y2 - radius + sinf(angle) * radius, r, g, b, a);
+            SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius,
+                                  y2 - radius + sinf(angle) * radius, r, g, b, a);
             angle += corner_angle_increment;
         }
 
         SET_INDEXED_VERTEX(0);
         SET_INDEXED_VERTEX(last_index++);
-        SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
+        SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius,
+                              y1 + radius + sinf(angle) * radius, r, g, b, a);
         for (i = 1; i < verts_per_corner; i++) {
             SET_INDEXED_VERTEX(0);
             SET_INDEXED_VERTEX(last_index++);
-            SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius, y1 + radius + sinf(angle) * radius, r, g, b, a);
+            SET_UNTEXTURED_VERTEX(x1 + radius + cosf(angle) * radius,
+                                  y1 + radius + sinf(angle) * radius, r, g, b, a);
             angle += corner_angle_increment;
         }
 
@@ -7203,9 +7489,9 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer, METAENGIN
     }
 }
 
-static void Polygon(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color) {
-    if (num_vertices < 3)
-        return;
+static void Polygon(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                    unsigned int num_vertices, float *vertices, SDL_Color color) {
+    if (num_vertices < 3) return;
 
     {
         int numSegments = 2 * num_vertices;
@@ -7224,7 +7510,9 @@ static void Polygon(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
     }
 }
 
-static void Polyline(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color, METAENGINE_Render_bool close_loop) {
+static void Polyline(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                     unsigned int num_vertices, float *vertices, SDL_Color color,
+                     METAENGINE_Render_bool close_loop) {
     if (num_vertices < 2) return;
 
     float t = GetLineThickness(renderer) * 0.5f;
@@ -7273,15 +7561,16 @@ static void Polyline(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Tar
     }
 }
 
-static void PolygonFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, unsigned int num_vertices, float *vertices, SDL_Color color) {
-    if (num_vertices < 3)
-        return;
+static void PolygonFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
+                          unsigned int num_vertices, float *vertices, SDL_Color color) {
+    if (num_vertices < 3) return;
 
     {
         int numSegments = 2 * num_vertices;
 
         // Using a fan of triangles assumes that the polygon is convex
-        BEGIN_UNTEXTURED("METAENGINE_Render_PolygonFilled", GL_TRIANGLES, num_vertices, 3 + (num_vertices - 3) * 3);
+        BEGIN_UNTEXTURED("METAENGINE_Render_PolygonFilled", GL_TRIANGLES, num_vertices,
+                         3 + (num_vertices - 3) * 3);
 
         // First triangle
         SET_UNTEXTURED_VERTEX(vertices[0], vertices[1], r, g, b, a);
@@ -7302,11 +7591,11 @@ static void PolygonFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Rende
     }
 }
 
-
-METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE_Render_RendererID request) {
-    METAENGINE_Render_Renderer *renderer = (METAENGINE_Render_Renderer *) SDL_malloc(sizeof(METAENGINE_Render_Renderer));
-    if (renderer == NULL)
-        return NULL;
+METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(
+        METAENGINE_Render_RendererID request) {
+    METAENGINE_Render_Renderer *renderer =
+            (METAENGINE_Render_Renderer *) SDL_malloc(sizeof(METAENGINE_Render_Renderer));
+    if (renderer == NULL) return NULL;
 
     memset(renderer, 0, sizeof(METAENGINE_Render_Renderer));
 
@@ -7321,7 +7610,8 @@ METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE
 
     renderer->current_context_target = NULL;
 
-    renderer->impl = (METAENGINE_Render_RendererImpl *) SDL_malloc(sizeof(METAENGINE_Render_RendererImpl));
+    renderer->impl =
+            (METAENGINE_Render_RendererImpl *) SDL_malloc(sizeof(METAENGINE_Render_RendererImpl));
     memset(renderer->impl, 0, sizeof(METAENGINE_Render_RendererImpl));
     SET_COMMON_FUNCTIONS(renderer->impl);
 
@@ -7329,8 +7619,7 @@ METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(METAENGINE
 }
 
 void METAENGINE_Render_FreeRenderer_OpenGL_3(METAENGINE_Render_Renderer *renderer) {
-    if (renderer == NULL)
-        return;
+    if (renderer == NULL) return;
 
     SDL_free(renderer->impl);
     SDL_free(renderer);

@@ -1,6 +1,5 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Game.hpp"
 #include <iterator>
 #include <regex>
@@ -36,7 +35,6 @@
 
 #include "Game/InEngine.h"
 
-
 const char *logo = R"(
       __  __      _        _____        _   
      |  \/  |    | |      |  __ \      | |  
@@ -47,9 +45,7 @@ const char *logo = R"(
                                              
 )";
 
-
 extern void fuckme();
-
 
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
@@ -104,9 +100,7 @@ int Game::init(int argc, char *argv[]) {
     Networking::init();
     if (Settings::networkMode == NetworkMode::SERVER) {
         int port = Settings::server_port;
-        if (argc >= 3) {
-            port = atoi(argv[2]);
-        }
+        if (argc >= 3) { port = atoi(argv[2]); }
         global.server = Server::start(port);
         SDL_SetWindowTitle(global.platform.window, win_title_server.c_str());
 
@@ -142,7 +136,6 @@ int Game::init(int argc, char *argv[]) {
         SDL_SetWindowTitle(global.platform.window, win_title_client.c_str());
     }
 
-
     global.platform.InitWindow();
 
     // if (Settings::networkMode != NetworkMode::SERVER) {
@@ -176,7 +169,6 @@ int Game::init(int argc, char *argv[]) {
     //     });
     // }
 
-
     // scripting system
     auto loadscript = [&]() {
         METADOT_LOG_SCOPE_FUNCTION(INFO);
@@ -197,10 +189,22 @@ int Game::init(int argc, char *argv[]) {
         METADOT_INFO("Loading backgrounds...");
 
         std::vector<BackgroundLayer> testOverworldLayers = {
-                BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer2.png", SDL_PIXELFORMAT_ARGB8888), 0.125, 0.125, 1, 0),
-                BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer3.png", SDL_PIXELFORMAT_ARGB8888), 0.25, 0.25, 0, 0),
-                BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer4.png", SDL_PIXELFORMAT_ARGB8888), 0.375, 0.375, 4, 0),
-                BackgroundLayer(Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer5.png", SDL_PIXELFORMAT_ARGB8888), 0.5, 0.5, 0, 0)};
+                BackgroundLayer(
+                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer2.png",
+                                              SDL_PIXELFORMAT_ARGB8888),
+                        0.125, 0.125, 1, 0),
+                BackgroundLayer(
+                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer3.png",
+                                              SDL_PIXELFORMAT_ARGB8888),
+                        0.25, 0.25, 0, 0),
+                BackgroundLayer(
+                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer4.png",
+                                              SDL_PIXELFORMAT_ARGB8888),
+                        0.375, 0.375, 4, 0),
+                BackgroundLayer(
+                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer5.png",
+                                              SDL_PIXELFORMAT_ARGB8888),
+                        0.5, 0.5, 0, 0)};
 
         METADOT_NEW(C, backgrounds, Backgrounds);
         METADOT_CREATE(C, bg, Background, 0x7EAFCB, testOverworldLayers);
@@ -222,34 +226,29 @@ int Game::init(int argc, char *argv[]) {
 
     Materials::init();
 
-
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, b2DebugDraw, b2DebugDraw_impl, RenderTarget_.target);
 
-
     //worldInitThread.get();
-
 
     METADOT_INFO("Initializing world...");
     METADOT_NEW(C, world, World);
     world->noSaveLoad = true;
-    world->init(
-            global.GameDir.getWorldPath("mainMenu"),
-            (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-            (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
-            RenderTarget_.target,
-            &global.audioEngine,
-            Settings::networkMode);
-
+    world->init(global.GameDir.getWorldPath("mainMenu"),
+                (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
+                        CHUNK_W * RENDER_C_TEST,
+                (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
+                        CHUNK_H * RENDER_C_TEST,
+                RenderTarget_.target, &global.audioEngine, Settings::networkMode);
 
     if (Settings::networkMode != NetworkMode::SERVER) {
         // set up main menu ui
 
-
         METADOT_INFO("Setting up main menu...");
-        STBTTF_Font *labelFont = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 32);
-        STBTTF_Font *uiFont = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
-
+        STBTTF_Font *labelFont = Drawing::LoadFont(
+                METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 32);
+        STBTTF_Font *uiFont = Drawing::LoadFont(
+                METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
 
         std::string displayMode = "windowed";
 
@@ -268,23 +267,18 @@ int Game::init(int argc, char *argv[]) {
         global.platform.SetMinimizeOnLostFocus(false);
     }
 
-
     // init threadpools
-
 
     METADOT_NEW(C, updateDirtyPool, ThreadPool, 6);
     METADOT_NEW(C, rotateVectorsPool, ThreadPool, 3);
-
 
     if (Settings::networkMode != NetworkMode::SERVER) {
         // load shaders
         global.shaderworker.LoadShaders();
     }
 
-
     return this->run(argc, argv);
 }
-
 
 void Game::createTexture() {
 
@@ -320,11 +314,12 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
                 TexturePack_.loadingTexture = METAENGINE_Render_CreateImage(
-                        TexturePack_.loadingScreenW = (global.platform.WIDTH / 20), TexturePack_.loadingScreenH = (global.platform.HEIGHT / 20),
+                        TexturePack_.loadingScreenW = (global.platform.WIDTH / 20),
+                        TexturePack_.loadingScreenH = (global.platform.HEIGHT / 20),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.loadingTexture, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.loadingTexture,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
@@ -332,18 +327,18 @@ void Game::createTexture() {
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.texture, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.texture,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
                 TexturePack_.worldTexture = METAENGINE_Render_CreateImage(
-                        world->width * Settings::hd_objects_size, world->height * Settings::hd_objects_size,
+                        world->width * Settings::hd_objects_size,
+                        world->height * Settings::hd_objects_size,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.worldTexture, METAENGINE_Render_FILTER_NEAREST);
-
+                METAENGINE_Render_SetImageFilter(TexturePack_.worldTexture,
+                                                 METAENGINE_Render_FILTER_NEAREST);
 
                 METAENGINE_Render_LoadTarget(TexturePack_.worldTexture);
             },
@@ -352,7 +347,8 @@ void Game::createTexture() {
                 TexturePack_.lightingTexture = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.lightingTexture, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.lightingTexture,
+                                                 METAENGINE_Render_FILTER_NEAREST);
                 METAENGINE_Render_LoadTarget(TexturePack_.lightingTexture);
             },
             [&]() {
@@ -360,21 +356,24 @@ void Game::createTexture() {
                 TexturePack_.emissionTexture = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.emissionTexture, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.emissionTexture,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
                 TexturePack_.textureFlow = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureFlow, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureFlow,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
                 TexturePack_.textureFlowSpead = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureFlowSpead, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureFlowSpead,
+                                                 METAENGINE_Render_FILTER_NEAREST);
                 METAENGINE_Render_LoadTarget(TexturePack_.textureFlowSpead);
             },
             [&]() {
@@ -382,14 +381,16 @@ void Game::createTexture() {
                 TexturePack_.textureFire = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureFire, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureFire,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
                 TexturePack_.texture2Fire = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.texture2Fire, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.texture2Fire,
+                                                 METAENGINE_Render_FILTER_NEAREST);
                 METAENGINE_Render_LoadTarget(TexturePack_.texture2Fire);
             },
             [&]() {
@@ -397,21 +398,25 @@ void Game::createTexture() {
                 TexturePack_.textureLayer2 = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureLayer2, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureLayer2,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
                 TexturePack_.textureBackground = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureBackground, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureBackground,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
                 TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjects, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjects,
+                                                 METAENGINE_Render_FILTER_NEAREST);
                 METAENGINE_Render_LoadTarget(TexturePack_.textureObjects);
             },
             [&]() {
@@ -419,15 +424,18 @@ void Game::createTexture() {
                 TexturePack_.textureObjectsLQ = METAENGINE_Render_CreateImage(
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsLQ, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsLQ,
+                                                 METAENGINE_Render_FILTER_NEAREST);
                 METAENGINE_Render_LoadTarget(TexturePack_.textureObjectsLQ);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsBack, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsBack,
+                                                 METAENGINE_Render_FILTER_NEAREST);
                 METAENGINE_Render_LoadTarget(TexturePack_.textureObjectsBack);
             },
             [&]() {
@@ -436,20 +444,20 @@ void Game::createTexture() {
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureParticles, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureParticles,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
                 TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1), world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-
 
                 METAENGINE_Render_LoadTarget(TexturePack_.textureEntities);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureEntities, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureEntities,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
@@ -457,11 +465,10 @@ void Game::createTexture() {
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
                 METAENGINE_Render_LoadTarget(TexturePack_.textureEntitiesLQ);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.textureEntitiesLQ, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.textureEntitiesLQ,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
@@ -469,8 +476,8 @@ void Game::createTexture() {
                         world->width, world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.temperatureMap, METAENGINE_Render_FILTER_NEAREST);
+                METAENGINE_Render_SetImageFilter(TexturePack_.temperatureMap,
+                                                 METAENGINE_Render_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
@@ -478,15 +485,13 @@ void Game::createTexture() {
                         global.platform.WIDTH, global.platform.HEIGHT,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
-
-                METAENGINE_Render_SetImageFilter(TexturePack_.backgroundImage, METAENGINE_Render_FILTER_NEAREST);
-
+                METAENGINE_Render_SetImageFilter(TexturePack_.backgroundImage,
+                                                 METAENGINE_Render_FILTER_NEAREST);
 
                 METAENGINE_Render_LoadTarget(TexturePack_.backgroundImage);
             }};
 
-    for (auto f: Funcs)
-        f();
+    for (auto f: Funcs) f();
 
     // create texture pixel buffers
 
@@ -499,16 +504,21 @@ void Game::createTexture() {
     TexturePack_.pixelsBackground = std::vector<UInt8>(world->width * world->height * 4, 0);
     TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-    TexturePack_.pixelsObjects = std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsObjects =
+            std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-    TexturePack_.pixelsTemp = std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsTemp =
+            std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-    TexturePack_.pixelsParticles = std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsParticles =
+            std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
 
-    TexturePack_.pixelsLoading = std::vector<UInt8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsLoading =
+            std::vector<UInt8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4,
+                               SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
     TexturePack_.pixelsFire = std::vector<UInt8>(world->width * world->height * 4, 0);
@@ -528,7 +538,6 @@ int Game::run(int argc, char *argv[]) {
 
     // start loading chunks
 
-
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < world->width + CHUNK_W * 4; x += CHUNK_W) {
         for (int y = -CHUNK_H * 3; y < world->height + CHUNK_H * 8; y += CHUNK_H) {
@@ -536,9 +545,7 @@ int Game::run(int argc, char *argv[]) {
         }
     }
 
-
     // start game loop
-
 
     METADOT_INFO("Starting game loop...");
 
@@ -572,11 +579,8 @@ int Game::run(int argc, char *argv[]) {
     ofsX = (ofsX - global.platform.WIDTH / 2) / 2 * 3 + global.platform.WIDTH / 2;
     ofsY = (ofsY - global.platform.HEIGHT / 2) / 2 * 3 + global.platform.HEIGHT / 2;
 
-    for (int i = 0; i < frameTimeNum; i++) {
-        frameTime[i] = 0;
-    }
+    for (int i = 0; i < frameTimeNum; i++) { frameTime[i] = 0; }
     METADOT_NEW_ARRAY(C, objectDelete, UInt8, world->width * world->height);
-
 
     fadeInStart = UTime::millis();
     fadeInLength = 250;
@@ -593,28 +597,27 @@ int Game::run(int argc, char *argv[]) {
 
             // handle window events
 
-
             while (SDL_PollEvent(&windowEvent)) {
 
                 if (windowEvent.type == SDL_WINDOWEVENT) {
                     if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
                         //METADOT_INFO("Resizing window...");
-                        METAENGINE_Render_SetWindowResolution(windowEvent.window.data1, windowEvent.window.data2);
+                        METAENGINE_Render_SetWindowResolution(windowEvent.window.data1,
+                                                              windowEvent.window.data2);
                         METAENGINE_Render_ResetProjection(RenderTarget_.realTarget);
-                        global.platform.HandleWindowSizeChange(windowEvent.window.data1, windowEvent.window.data2);
+                        global.platform.HandleWindowSizeChange(windowEvent.window.data1,
+                                                               windowEvent.window.data2);
                     }
                 }
 
-
                 ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
-
-                if (windowEvent.type == SDL_QUIT) {
-                    goto exit;
-                }
+                if (windowEvent.type == SDL_QUIT) { goto exit; }
 
                 if (ImGui::GetIO().WantCaptureMouse) {
-                    if (windowEvent.type == SDL_MOUSEBUTTONDOWN || windowEvent.type == SDL_MOUSEBUTTONUP || windowEvent.type == SDL_MOUSEMOTION || windowEvent.type == SDL_MOUSEWHEEL) {
+                    if (windowEvent.type == SDL_MOUSEBUTTONDOWN ||
+                        windowEvent.type == SDL_MOUSEBUTTONUP ||
+                        windowEvent.type == SDL_MOUSEMOTION || windowEvent.type == SDL_MOUSEWHEEL) {
                         continue;
                     }
                 }
@@ -626,7 +629,6 @@ int Game::run(int argc, char *argv[]) {
                 }
 
                 if (windowEvent.type == SDL_MOUSEWHEEL) {
-
 
                 } else if (windowEvent.type == SDL_MOUSEMOTION) {
                     if (Controls::DEBUG_DRAW->get()) {
@@ -644,10 +646,17 @@ int Game::run(int argc, char *argv[]) {
                             int lineX = index % world->width;
                             int lineY = index / world->width;
 
-                            for (int xx = -GameUI::DebugDrawUI::brushSize / 2; xx < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
-                                for (int yy = -GameUI::DebugDrawUI::brushSize / 2; yy < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); yy++) {
-                                    if (lineX + xx < 0 || lineY + yy < 0 || lineX + xx >= world->width || lineY + yy >= world->height) continue;
-                                    MaterialInstance tp = Tiles::create(GameUI::DebugDrawUI::selectedMaterial, lineX + xx, lineY + yy);
+                            for (int xx = -GameUI::DebugDrawUI::brushSize / 2;
+                                 xx < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
+                                for (int yy = -GameUI::DebugDrawUI::brushSize / 2;
+                                     yy < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0));
+                                     yy++) {
+                                    if (lineX + xx < 0 || lineY + yy < 0 ||
+                                        lineX + xx >= world->width || lineY + yy >= world->height)
+                                        continue;
+                                    MaterialInstance tp =
+                                            Tiles::create(GameUI::DebugDrawUI::selectedMaterial,
+                                                          lineX + xx, lineY + yy);
                                     world->tiles[(lineX + xx) + (lineY + yy) * world->width] = tp;
                                     world->dirty[(lineX + xx) + (lineY + yy) * world->width] = true;
                                 }
@@ -680,16 +689,23 @@ int Game::run(int argc, char *argv[]) {
                             int lineX = index % world->width;
                             int lineY = index / world->width;
 
-                            for (int xx = -GameUI::DebugDrawUI::brushSize / 2; xx < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
-                                for (int yy = -GameUI::DebugDrawUI::brushSize / 2; yy < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); yy++) {
+                            for (int xx = -GameUI::DebugDrawUI::brushSize / 2;
+                                 xx < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
+                                for (int yy = -GameUI::DebugDrawUI::brushSize / 2;
+                                     yy < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0));
+                                     yy++) {
 
-                                    if (abs(xx) + abs(yy) == GameUI::DebugDrawUI::brushSize) continue;
-                                    if (world->getTile(lineX + xx, lineY + yy).mat->physicsType != PhysicsType::AIR) {
+                                    if (abs(xx) + abs(yy) == GameUI::DebugDrawUI::brushSize)
+                                        continue;
+                                    if (world->getTile(lineX + xx, lineY + yy).mat->physicsType !=
+                                        PhysicsType::AIR) {
                                         world->setTile(lineX + xx, lineY + yy, Tiles::NOTHING);
                                         world->lastMeshZone.x--;
                                     }
-                                    if (world->getTileLayer2(lineX + xx, lineY + yy).mat->physicsType != PhysicsType::AIR) {
-                                        world->setTileLayer2(lineX + xx, lineY + yy, Tiles::NOTHING);
+                                    if (world->getTileLayer2(lineX + xx, lineY + yy)
+                                                .mat->physicsType != PhysicsType::AIR) {
+                                        world->setTileLayer2(lineX + xx, lineY + yy,
+                                                             Tiles::NOTHING);
                                     }
                                 }
                             }
@@ -720,10 +736,13 @@ int Game::run(int argc, char *argv[]) {
                                         int ntx = (int) (tx * c - ty * s);
                                         int nty = (int) (tx * s + ty * c);
 
-                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            UInt32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
+                                            nty < cur->surface->h) {
+                                            UInt32 pixel =
+                                                    METADOT_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                METADOT_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
+                                                METADOT_GET_PIXEL(cur->surface, ntx, nty) =
+                                                        0x00000000;
                                                 upd = true;
                                             }
                                         }
@@ -732,14 +751,15 @@ int Game::run(int argc, char *argv[]) {
 
                                 if (upd) {
                                     METAENGINE_Render_FreeImage(cur->texture);
-                                    cur->texture = METAENGINE_Render_CopyImageFromSurface(cur->surface);
-                                    METAENGINE_Render_SetImageFilter(cur->texture, METAENGINE_Render_FILTER_NEAREST);
+                                    cur->texture =
+                                            METAENGINE_Render_CopyImageFromSurface(cur->surface);
+                                    METAENGINE_Render_SetImageFilter(
+                                            cur->texture, METAENGINE_Render_FILTER_NEAREST);
                                     //world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
                             }
                         }
-
 
                     } else {
                         lastEraseMX = 0;
@@ -807,8 +827,10 @@ int Game::run(int argc, char *argv[]) {
                                                 int ntx = (int) (tx * c - ty * s);
                                                 int nty = (int) (tx * s + ty * c);
 
-                                                if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                                    UInt32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                                if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
+                                                    nty < cur->surface->h) {
+                                                    UInt32 pixel = METADOT_GET_PIXEL(cur->surface,
+                                                                                     ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
                                                     }
@@ -830,10 +852,20 @@ int Game::run(int argc, char *argv[]) {
 
                                 float breakSize = world->player->heldItem->breakSize;
 
-                                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x + 10 * (float) cos((world->player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-                                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y + 10 * (float) sin((world->player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                                int x = (int) (world->player->x + world->player->hw / 2.0f +
+                                               world->loadZone.x +
+                                               10 * (float) cos((world->player->holdAngle + 180) *
+                                                                3.1415f / 180.0f) -
+                                               breakSize / 2);
+                                int y = (int) (world->player->y + world->player->hh / 2.0f +
+                                               world->loadZone.y +
+                                               10 * (float) sin((world->player->holdAngle + 180) *
+                                                                3.1415f / 180.0f) -
+                                               breakSize / 2);
 
-                                C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int) breakSize, (int) breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
+                                C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(
+                                        0, (int) breakSize, (int) breakSize, 32,
+                                        SDL_PIXELFORMAT_ARGB8888);
 
                                 int n = 0;
                                 for (int xx = 0; xx < breakSize; xx++) {
@@ -843,9 +875,13 @@ int Game::run(int argc, char *argv[]) {
 
                                         if (cx * cx + cy * cy > 0.25f) continue;
 
-                                        if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType == PhysicsType::SOLID) {
-                                            METADOT_GET_PIXEL(tex, xx, yy) = world->tiles[(x + xx) + (y + yy) * world->width].color;
-                                            world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::NOTHING;
+                                        if (world->tiles[(x + xx) + (y + yy) * world->width]
+                                                    .mat->physicsType == PhysicsType::SOLID) {
+                                            METADOT_GET_PIXEL(tex, xx, yy) =
+                                                    world->tiles[(x + xx) + (y + yy) * world->width]
+                                                            .color;
+                                            world->tiles[(x + xx) + (y + yy) * world->width] =
+                                                    Tiles::NOTHING;
                                             world->dirty[(x + xx) + (y + yy) * world->width] = true;
 
                                             n++;
@@ -857,14 +893,18 @@ int Game::run(int argc, char *argv[]) {
                                     global.audioEngine.PlayEvent("event:/Player/Impact");
                                     b2PolygonShape s;
                                     s.SetAsBox(1, 1);
-                                    RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x, (float) y, 0, s, 1, (float) 0.3, tex);
+                                    RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x,
+                                                                         (float) y, 0, s, 1,
+                                                                         (float) 0.3, tex);
 
                                     b2Filter bf = {};
                                     bf.categoryBits = 0x0001;
                                     bf.maskBits = 0xffff;
                                     rb->body->GetFixtureList()[0].SetFilterData(bf);
 
-                                    rb->body->SetLinearVelocity({(float) ((rand() % 100) / 100.0 - 0.5), (float) ((rand() % 100) / 100.0 - 0.5)});
+                                    rb->body->SetLinearVelocity(
+                                            {(float) ((rand() % 100) / 100.0 - 0.5),
+                                             (float) ((rand() % 100) / 100.0 - 0.5)});
 
                                     world->rigidBodies.push_back(rb);
                                     world->updateRigidBodyHitbox(rb);
@@ -893,8 +933,10 @@ int Game::run(int argc, char *argv[]) {
                                     }
                                 } else if (world->player->heldItem->getFlag(ItemFlags::HAMMER)) {
                                     if (world->player->holdHammer) {
-                                        int x = (int) ((windowEvent.button.x - ofsX - camX) / scale);
-                                        int y = (int) ((windowEvent.button.y - ofsY - camY) / scale);
+                                        int x = (int) ((windowEvent.button.x - ofsX - camX) /
+                                                       scale);
+                                        int y = (int) ((windowEvent.button.y - ofsY - camY) /
+                                                       scale);
 
                                         int dx = world->player->hammerX - x;
                                         int dy = world->player->hammerY - y;
@@ -904,14 +946,17 @@ int Game::run(int argc, char *argv[]) {
 
                                         int ex = world->player->hammerX + dx;
                                         int ey = world->player->hammerY + dy;
-                                        METADOT_BUG("hammer up: {0:d} {0:d} {0:d} {0:d}", ex, ey, dx, dy);
+                                        METADOT_BUG("hammer up: {0:d} {0:d} {0:d} {0:d}", ex, ey,
+                                                    dx, dy);
                                         int endInd = -1;
 
                                         int nSegments = 1 + len / 10;
                                         std::vector<std::tuple<int, int>> points = {};
                                         for (int i = 0; i < nSegments; i++) {
-                                            int sx = world->player->hammerX + (int) ((float) (dx / nSegments) * (i + 1));
-                                            int sy = world->player->hammerY + (int) ((float) (dy / nSegments) * (i + 1));
+                                            int sx = world->player->hammerX +
+                                                     (int) ((float) (dx / nSegments) * (i + 1));
+                                            int sy = world->player->hammerY +
+                                                     (int) ((float) (dy / nSegments) * (i + 1));
                                             sx += rand() % 3 - 1;
                                             sy += rand() % 3 - 1;
                                             points.push_back(std::tuple<int, int>(sx, sy));
@@ -919,28 +964,42 @@ int Game::run(int argc, char *argv[]) {
 
                                         int nTilesChanged = 0;
                                         for (size_t i = 0; i < points.size(); i++) {
-                                            int segSx = i == 0 ? world->player->hammerX : std::get<0>(points[i - 1]);
-                                            int segSy = i == 0 ? world->player->hammerY : std::get<1>(points[i - 1]);
+                                            int segSx = i == 0 ? world->player->hammerX
+                                                               : std::get<0>(points[i - 1]);
+                                            int segSy = i == 0 ? world->player->hammerY
+                                                               : std::get<1>(points[i - 1]);
                                             int segEx = std::get<0>(points[i]);
                                             int segEy = std::get<1>(points[i]);
 
                                             bool hitSolidYet = false;
                                             bool broke = false;
-                                            world->forLineCornered(segSx, segSy, segEx, segEy, [&](int index) {
-                                                if (world->tiles[index].mat->physicsType != PhysicsType::SOLID) {
-                                                    if (hitSolidYet && (abs((index % world->width) - segSx) + (abs((index / world->width) - segSy)) > 1)) {
-                                                        broke = true;
-                                                        return true;
-                                                    }
-                                                    return false;
-                                                }
-                                                hitSolidYet = true;
-                                                world->tiles[index] = MaterialInstance(&Materials::GENERIC_SAND, Drawing::darkenColor(world->tiles[index].color, 0.5f));
-                                                world->dirty[index] = true;
-                                                endInd = index;
-                                                nTilesChanged++;
-                                                return false;
-                                            });
+                                            world->forLineCornered(
+                                                    segSx, segSy, segEx, segEy, [&](int index) {
+                                                        if (world->tiles[index].mat->physicsType !=
+                                                            PhysicsType::SOLID) {
+                                                            if (hitSolidYet &&
+                                                                (abs((index % world->width) -
+                                                                     segSx) +
+                                                                         (abs((index /
+                                                                               world->width) -
+                                                                              segSy)) >
+                                                                 1)) {
+                                                                broke = true;
+                                                                return true;
+                                                            }
+                                                            return false;
+                                                        }
+                                                        hitSolidYet = true;
+                                                        world->tiles[index] = MaterialInstance(
+                                                                &Materials::GENERIC_SAND,
+                                                                Drawing::darkenColor(
+                                                                        world->tiles[index].color,
+                                                                        0.5f));
+                                                        world->dirty[index] = true;
+                                                        endInd = index;
+                                                        nTilesChanged++;
+                                                        return false;
+                                                    });
 
                                             //world->setTile(segSx, segSy, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
                                             if (broke) break;
@@ -948,15 +1007,25 @@ int Game::run(int argc, char *argv[]) {
 
                                         //world->setTile(ex, ey, MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000ff));
 
-                                        int hx = (world->player->hammerX + (endInd % world->width)) / 2;
-                                        int hy = (world->player->hammerY + (endInd / world->width)) / 2;
+                                        int hx =
+                                                (world->player->hammerX + (endInd % world->width)) /
+                                                2;
+                                        int hy =
+                                                (world->player->hammerY + (endInd / world->width)) /
+                                                2;
 
-                                        if (world->getTile((int) (hx + udy * 2), (int) (hy - udx * 2)).mat->physicsType == PhysicsType::SOLID) {
-                                            world->physicsCheck((int) (hx + udy * 2), (int) (hy - udx * 2));
+                                        if (world->getTile((int) (hx + udy * 2),
+                                                           (int) (hy - udx * 2))
+                                                    .mat->physicsType == PhysicsType::SOLID) {
+                                            world->physicsCheck((int) (hx + udy * 2),
+                                                                (int) (hy - udx * 2));
                                         }
 
-                                        if (world->getTile((int) (hx - udy * 2), (int) (hy + udx * 2)).mat->physicsType == PhysicsType::SOLID) {
-                                            world->physicsCheck((int) (hx - udy * 2), (int) (hy + udx * 2));
+                                        if (world->getTile((int) (hx - udy * 2),
+                                                           (int) (hy + udx * 2))
+                                                    .mat->physicsType == PhysicsType::SOLID) {
+                                            world->physicsCheck((int) (hx - udy * 2),
+                                                                (int) (hy + udx * 2));
                                         }
 
                                         if (nTilesChanged > 0) {
@@ -999,8 +1068,10 @@ int Game::run(int argc, char *argv[]) {
                                         int ntx = (int) (tx * c - ty * s);
                                         int nty = (int) (tx * s + ty * c);
 
-                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            if (((METADOT_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) != 0x00) {
+                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
+                                            nty < cur->surface->h) {
+                                            if (((METADOT_GET_PIXEL(cur->surface, ntx, nty) >> 24) &
+                                                 0xff) != 0x00) {
                                                 connect = true;
                                             }
                                         }
@@ -1010,10 +1081,14 @@ int Game::run(int argc, char *argv[]) {
 
                             if (connect) {
                                 if (world->player) {
-                                    world->player->setItemInHand(Item::makeItem(ItemFlags::RIGIDBODY, cur), world);
+                                    world->player->setItemInHand(
+                                            Item::makeItem(ItemFlags::RIGIDBODY, cur), world);
 
                                     world->b2world->DestroyBody(cur->body);
-                                    world->rigidBodies.erase(std::remove(world->rigidBodies.begin(), world->rigidBodies.end(), cur), world->rigidBodies.end());
+                                    world->rigidBodies.erase(std::remove(world->rigidBodies.begin(),
+                                                                         world->rigidBodies.end(),
+                                                                         cur),
+                                                             world->rigidBodies.end());
 
                                     swapped = true;
                                 }
@@ -1037,7 +1112,6 @@ int Game::run(int argc, char *argv[]) {
             }
         }
 
-
         if (Settings::networkMode == NetworkMode::SERVER) {
             global.server->tick();
         } else if (Settings::networkMode == NetworkMode::CLIENT) {
@@ -1051,26 +1125,21 @@ int Game::run(int argc, char *argv[]) {
         }
 
         while (game_timestate.now - game_timestate.lastTick > game_timestate.mspt) {
-            if (Settings::tick_world && Settings::networkMode != NetworkMode::CLIENT)
-                tick();
+            if (Settings::tick_world && Settings::networkMode != NetworkMode::CLIENT) tick();
             RenderTarget_.target = RenderTarget_.realTarget;
             game_timestate.lastTick = game_timestate.now;
             tickTime++;
         }
 
         if (Settings::networkMode != NetworkMode::SERVER) {
-            if (Settings::tick_world)
-                updateFrameLate();
+            if (Settings::tick_world) updateFrameLate();
         }
-
 
         if (Settings::networkMode != NetworkMode::SERVER) {
             // render
 
-
             RenderTarget_.target = RenderTarget_.realTarget;
             METAENGINE_Render_Clear(RenderTarget_.target);
-
 
             renderEarly();
             RenderTarget_.target = RenderTarget_.realTarget;
@@ -1078,9 +1147,9 @@ int Game::run(int argc, char *argv[]) {
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
 
-
             auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
-            METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200, 1.0f, 1.0f);
+            METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
+                                        1.0f, 1.0f);
 
             // render ImGui
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
@@ -1090,9 +1159,7 @@ int Game::run(int argc, char *argv[]) {
             global.ImGuiLayer->Render();
 
             if (ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginMenu(ICON_FA_SYNC " 系统")) {
-                    ImGui::EndMenu();
-                }
+                if (ImGui::BeginMenu(ICON_FA_SYNC " 系统")) { ImGui::EndMenu(); }
                 if (ImGui::BeginMenu(ICON_FA_ARCHIVE " 工具")) {
                     if (ImGui::MenuItem("八个雅鹿", "CTRL+A")) {}
                     ImGui::Separator();
@@ -1108,14 +1175,14 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::SameLine(ImGui::GetWindowWidth() - 390);
 
                 ImGui::Separator();
-                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, game_timestate.feelsLikeFps, (int) GC::C_Count);
+                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)",
+                            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
+                            game_timestate.feelsLikeFps, (int) GC::C_Count);
 
                 ImGui::EndMainMenuBar();
             }
 
-            if (Settings::ui_console) {
-                terminal_log->show();
-            }
+            if (Settings::ui_console) { terminal_log->show(); }
 
             if (Settings::draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1144,7 +1211,8 @@ int Game::run(int argc, char *argv[]) {
                                 int ntx = (int) (tx * c - ty * s);
                                 int nty = (int) (tx * s + ty * c);
 
-                                if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
+                                if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
+                                    nty < cur->surface->h) {
                                     tile = cur->tiles[ntx + nty * cur->matWidth];
                                 }
                             }
@@ -1170,17 +1238,28 @@ int Game::run(int argc, char *argv[]) {
                                 for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
                                     if (tile.mat->nInteractions[i] > 0) {
                                         char buff2[40];
-                                        snprintf(buff2, sizeof(buff2), "    %s", Materials::MATERIALS[i]->name.c_str());
+                                        snprintf(buff2, sizeof(buff2), "    %s",
+                                                 Materials::MATERIALS[i]->name.c_str());
                                         //Drawing::drawText(target, buff2, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
                                         ImGui::Text("%s", buff2);
 
                                         for (int j = 0; j < tile.mat->nInteractions[i]; j++) {
-                                            MaterialInteraction inter = tile.mat->interactions[i][j];
+                                            MaterialInteraction inter =
+                                                    tile.mat->interactions[i][j];
                                             char buff1[40];
                                             if (inter.type == INTERACT_TRANSFORM_MATERIAL) {
-                                                snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", Materials::MATERIALS[inter.data1]->name.c_str(), inter.data2, inter.ofsX, inter.ofsY);
+                                                snprintf(buff1, sizeof(buff1),
+                                                         "        %s %s r=%d x=%d y=%d",
+                                                         "TRANSFORM",
+                                                         Materials::MATERIALS[inter.data1]
+                                                                 ->name.c_str(),
+                                                         inter.data2, inter.ofsX, inter.ofsY);
                                             } else if (inter.type == INTERACT_SPAWN_MATERIAL) {
-                                                snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", Materials::MATERIALS[inter.data1]->name.c_str(), inter.data2, inter.ofsX, inter.ofsY);
+                                                snprintf(buff1, sizeof(buff1),
+                                                         "        %s %s r=%d x=%d y=%d", "SPAWN",
+                                                         Materials::MATERIALS[inter.data1]
+                                                                 ->name.c_str(),
+                                                         inter.data2, inter.ofsX, inter.ofsY);
                                             }
                                             //Drawing::drawText(target, buff1, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
                                             ImGui::Text("%s", buff1);
@@ -1199,24 +1278,25 @@ int Game::run(int argc, char *argv[]) {
 
             global.ImGuiLayer->end();
 
-
             // render fade in/out
             if (fadeInWaitFrames > 0) {
                 fadeInWaitFrames--;
                 fadeInStart = game_timestate.now;
-                METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, 255});
+                METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
+                                                  global.platform.HEIGHT, {0, 0, 0, 255});
             } else if (fadeInStart > 0 && fadeInLength > 0) {
 
                 float thru = 1 - (float) (game_timestate.now - fadeInStart) / fadeInLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
+                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0,
+                                                      global.platform.WIDTH, global.platform.HEIGHT,
+                                                      {0, 0, 0, (uint8) (thru * 255)});
                 } else {
                     fadeInStart = 0;
                     fadeInLength = 0;
                 }
             }
-
 
             if (fadeOutWaitFrames > 0) {
                 fadeOutWaitFrames--;
@@ -1226,15 +1306,18 @@ int Game::run(int argc, char *argv[]) {
                 float thru = (float) (game_timestate.now - fadeOutStart) / fadeOutLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
+                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0,
+                                                      global.platform.WIDTH, global.platform.HEIGHT,
+                                                      {0, 0, 0, (uint8) (thru * 255)});
                 } else {
-                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH, global.platform.HEIGHT, {0, 0, 0, 255});
+                    METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0,
+                                                      global.platform.WIDTH, global.platform.HEIGHT,
+                                                      {0, 0, 0, 255});
                     fadeOutStart = 0;
                     fadeOutLength = 0;
                     fadeOutCallback();
                 }
             }
-
 
             METAENGINE_Render_Flip(RenderTarget_.target);
         }
@@ -1246,7 +1329,6 @@ int Game::run(int argc, char *argv[]) {
         //            sleep((2 - (Time::millis() - now)) / 1000.0f);
         //#endif
         //        }
-
 
         frames++;
         if (game_timestate.now - lastFPS >= 1000) {
@@ -1275,16 +1357,13 @@ int Game::run(int argc, char *argv[]) {
             dt_feelsLikeFps.w = -1;
         }
 
-        for (int i = 1; i < frameTimeNum; i++) {
-            frameTime[i - 1] = frameTime[i];
-        }
+        for (int i = 1; i < frameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
         frameTime[frameTimeNum - 1] = (uint16_t) (UTime::millis() - game_timestate.now);
 
         game_timestate.lastTime = game_timestate.now;
     }
 
 exit:
-
 
     METADOT_INFO("Shutting down...");
 
@@ -1302,11 +1381,7 @@ exit:
         }
     }
 
-
-    for (int i = 0; i < results.size(); i++) {
-        results[i].get();
-    }
-
+    for (int i = 0; i < results.size(); i++) { results[i].get(); }
 
     // TODO CppScript
 
@@ -1349,9 +1424,7 @@ exit:
 
 void Game::updateFrameEarly() {
 
-
     // handle controls
-
 
     if (Controls::DEBUG_UI->get()) {
         GameUI::DebugDrawUI::visible ^= true;
@@ -1377,7 +1450,6 @@ void Game::updateFrameEarly() {
         }
     }
 
-
     if (Controls::DEBUG_REFRESH->get()) {
         for (int x = 0; x < world->width; x++) {
             for (int y = 0; y < world->height; y++) {
@@ -1402,23 +1474,29 @@ void Game::updateFrameEarly() {
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
                         if (tt.mat->id != Materials::GENERIC_AIR.id) {
-                            if (world->tiles[tx + ty * world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            if (world->tiles[tx + ty * world->width].mat->id ==
+                                Materials::GENERIC_AIR.id) {
                                 world->tiles[tx + ty * world->width] = tt;
                                 world->dirty[tx + ty * world->width] = true;
-                            } else if (world->tiles[(tx + 1) + ty * world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (world->tiles[(tx + 1) + ty * world->width].mat->id ==
+                                       Materials::GENERIC_AIR.id) {
                                 world->tiles[(tx + 1) + ty * world->width] = tt;
                                 world->dirty[(tx + 1) + ty * world->width] = true;
-                            } else if (world->tiles[(tx - 1) + ty * world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (world->tiles[(tx - 1) + ty * world->width].mat->id ==
+                                       Materials::GENERIC_AIR.id) {
                                 world->tiles[(tx - 1) + ty * world->width] = tt;
                                 world->dirty[(tx - 1) + ty * world->width] = true;
-                            } else if (world->tiles[tx + (ty + 1) * world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (world->tiles[tx + (ty + 1) * world->width].mat->id ==
+                                       Materials::GENERIC_AIR.id) {
                                 world->tiles[tx + (ty + 1) * world->width] = tt;
                                 world->dirty[tx + (ty + 1) * world->width] = true;
-                            } else if (world->tiles[tx + (ty - 1) * world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (world->tiles[tx + (ty - 1) * world->width].mat->id ==
+                                       Materials::GENERIC_AIR.id) {
                                 world->tiles[tx + (ty - 1) * world->width] = tt;
                                 world->dirty[tx + (ty - 1) * world->width] = true;
                             } else {
-                                world->tiles[tx + ty * world->width] = Tiles::createObsidian(tx, ty);
+                                world->tiles[tx + ty * world->width] =
+                                        Tiles::createObsidian(tx, ty);
                                 world->dirty[tx + ty * world->width] = true;
                             }
                         }
@@ -1428,7 +1506,8 @@ void Game::updateFrameEarly() {
                 if (upd) {
                     METAENGINE_Render_FreeImage(cur->texture);
                     cur->texture = METAENGINE_Render_CopyImageFromSurface(cur->surface);
-                    METAENGINE_Render_SetImageFilter(cur->texture, METAENGINE_Render_FILTER_NEAREST);
+                    METAENGINE_Render_SetImageFilter(cur->texture,
+                                                     METAENGINE_Render_FILTER_NEAREST);
                     //world->updateRigidBodyHitbox(cur);
                     cur->needsUpdate = true;
                 }
@@ -1439,9 +1518,7 @@ void Game::updateFrameEarly() {
         world->rigidBodies.clear();
     }
 
-    if (Controls::DEBUG_UPDATE_WORLD_MESH->get()) {
-        world->updateWorldMesh();
-    }
+    if (Controls::DEBUG_UPDATE_WORLD_MESH->get()) { world->updateWorldMesh(); }
 
     if (Controls::DEBUG_EXPLODE->get()) {
         int x = (int) ((mx - ofsX - camX) / scale);
@@ -1461,8 +1538,10 @@ void Game::updateFrameEarly() {
         for (int xx = 0; xx < 32; xx++) {
             for (int yy = 0; yy < 32; yy++) {
 
-                if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType == PhysicsType::SOLID) {
-                    METADOT_GET_PIXEL(tex, xx, yy) = world->tiles[(x + xx) + (y + yy) * world->width].color;
+                if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType ==
+                    PhysicsType::SOLID) {
+                    METADOT_GET_PIXEL(tex, xx, yy) =
+                            world->tiles[(x + xx) + (y + yy) * world->width].color;
                     world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::NOTHING;
                     world->dirty[(x + xx) + (y + yy) * world->width] = true;
                     n++;
@@ -1472,7 +1551,8 @@ void Game::updateFrameEarly() {
         if (n > 0) {
             b2PolygonShape s;
             s.SetAsBox(1, 1);
-            RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x, (float) y, 0, s, 1, (float) 0.3, tex);
+            RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x, (float) y, 0, s, 1,
+                                                 (float) 0.3, tex);
             for (int tx = 0; tx < tex->w; tx++) {
                 b2Filter bf = {};
                 bf.categoryBits = 0x0002;
@@ -1487,18 +1567,24 @@ void Game::updateFrameEarly() {
     }
 
     if (Controls::DEBUG_BRUSHSIZE_INC->get()) {
-        GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize < 50 ? GameUI::DebugDrawUI::brushSize + 1 : GameUI::DebugDrawUI::brushSize;
+        GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize < 50
+                                                 ? GameUI::DebugDrawUI::brushSize + 1
+                                                 : GameUI::DebugDrawUI::brushSize;
     }
 
     if (Controls::DEBUG_BRUSHSIZE_DEC->get()) {
-        GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize > 1 ? GameUI::DebugDrawUI::brushSize - 1 : GameUI::DebugDrawUI::brushSize;
+        GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize > 1
+                                                 ? GameUI::DebugDrawUI::brushSize - 1
+                                                 : GameUI::DebugDrawUI::brushSize;
     }
 
     if (Controls::DEBUG_TOGGLE_PLAYER->get()) {
         if (world->player) {
             freeCamX = world->player->x + world->player->hw / 2.0f;
             freeCamY = world->player->y - world->player->hh / 2.0f;
-            world->entities.erase(std::remove(world->entities.begin(), world->entities.end(), world->player), world->entities.end());
+            world->entities.erase(
+                    std::remove(world->entities.begin(), world->entities.end(), world->player),
+                    world->entities.end());
             world->b2world->DestroyBody(world->player->rb->body);
             delete world->player;
             world->player = nullptr;
@@ -1512,7 +1598,8 @@ void Game::updateFrameEarly() {
             e->hh = 20;
             b2PolygonShape sh;
             sh.SetAsBox(e->hw / 2.0f + 1, e->hh / 2.0f);
-            e->rb = world->makeRigidBody(b2BodyType::b2_kinematicBody, e->x + e->hw / 2.0f - 0.5, e->y + e->hh / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            e->rb = world->makeRigidBody(b2BodyType::b2_kinematicBody, e->x + e->hw / 2.0f - 0.5,
+                                         e->y + e->hh / 2.0f - 0.5, 0, sh, 1, 1, NULL);
             e->rb->body->SetGravityScale(0);
             e->rb->body->SetLinearDamping(0);
             e->rb->body->SetAngularDamping(0);
@@ -1545,32 +1632,47 @@ void Game::updateFrameEarly() {
         }
     }
 
-
     global.audioEngine.Update();
-
 
     if (state == LOADING) {
 
     } else {
         global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
-        if (world->player && world->player->heldItem != NULL && world->player->heldItem->getFlag(ItemFlags::FLUID_CONTAINER)) {
+        if (world->player && world->player->heldItem != NULL &&
+            world->player->heldItem->getFlag(ItemFlags::FLUID_CONTAINER)) {
             if (Controls::lmouse && world->player->heldItem->carry.size() > 0) {
                 // shoot fluid from container
 
-                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x + 10 * (float) cos((world->player->holdAngle + 180) * 3.1415f / 180.0f));
-                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y + 10 * (float) sin((world->player->holdAngle + 180) * 3.1415f / 180.0f));
+                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x +
+                               10 * (float) cos((world->player->holdAngle + 180) * 3.1415f /
+                                                180.0f));
+                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y +
+                               10 * (float) sin((world->player->holdAngle + 180) * 3.1415f /
+                                                180.0f));
 
-                MaterialInstance mat = world->player->heldItem->carry[world->player->heldItem->carry.size() - 1];
+                MaterialInstance mat =
+                        world->player->heldItem->carry[world->player->heldItem->carry.size() - 1];
                 world->player->heldItem->carry.pop_back();
-                world->addParticle(new Particle(mat, (float) x, (float) y, (float) (world->player->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (float) cos((world->player->holdAngle + 180) * 3.1415f / 180.0f)), (float) (world->player->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (float) sin((world->player->holdAngle + 180) * 3.1415f / 180.0f)), 0, (float) 0.1));
+                world->addParticle(
+                        new Particle(mat, (float) x, (float) y,
+                                     (float) (world->player->vx / 2 + (rand() % 10 - 5) / 10.0f +
+                                              1.5f * (float) cos((world->player->holdAngle + 180) *
+                                                                 3.1415f / 180.0f)),
+                                     (float) (world->player->vy / 2 + -(rand() % 5 + 5) / 10.0f +
+                                              1.5f * (float) sin((world->player->holdAngle + 180) *
+                                                                 3.1415f / 180.0f)),
+                                     0, (float) 0.1));
 
                 int i = (int) world->player->heldItem->carry.size();
-                i = (int) ((i / (float) world->player->heldItem->capacity) * world->player->heldItem->fill.size());
+                i = (int) ((i / (float) world->player->heldItem->capacity) *
+                           world->player->heldItem->fill.size());
                 UInt16Point pt = world->player->heldItem->fill[i];
                 METADOT_GET_PIXEL(world->player->heldItem->surface, pt.x, pt.y) = 0x00;
 
-                world->player->heldItem->texture = METAENGINE_Render_CopyImageFromSurface(world->player->heldItem->surface);
-                METAENGINE_Render_SetImageFilter(world->player->heldItem->texture, METAENGINE_Render_FILTER_NEAREST);
+                world->player->heldItem->texture =
+                        METAENGINE_Render_CopyImageFromSurface(world->player->heldItem->surface);
+                METAENGINE_Render_SetImageFilter(world->player->heldItem->texture,
+                                                 METAENGINE_Render_FILTER_NEAREST);
 
                 global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
 
@@ -1579,29 +1681,48 @@ void Game::updateFrameEarly() {
 
                 float breakSize = world->player->heldItem->breakSize;
 
-                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x + 10 * (float) cos((world->player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y + 10 * (float) sin((world->player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x +
+                               10 * (float) cos((world->player->holdAngle + 180) * 3.1415f /
+                                                180.0f) -
+                               breakSize / 2);
+                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y +
+                               10 * (float) sin((world->player->holdAngle + 180) * 3.1415f /
+                                                180.0f) -
+                               breakSize / 2);
 
                 int n = 0;
                 for (int xx = 0; xx < breakSize; xx++) {
                     for (int yy = 0; yy < breakSize; yy++) {
-                        if (world->player->heldItem->capacity == 0 || (world->player->heldItem->carry.size() < world->player->heldItem->capacity)) {
+                        if (world->player->heldItem->capacity == 0 ||
+                            (world->player->heldItem->carry.size() <
+                             world->player->heldItem->capacity)) {
                             float cx = (float) ((xx / breakSize) - 0.5);
                             float cy = (float) ((yy / breakSize) - 0.5);
 
                             if (cx * cx + cy * cy > 0.25f) continue;
 
-                            if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType == PhysicsType::SAND || world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType == PhysicsType::SOUP) {
-                                world->player->heldItem->carry.push_back(world->tiles[(x + xx) + (y + yy) * world->width]);
+                            if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType ==
+                                        PhysicsType::SAND ||
+                                world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType ==
+                                        PhysicsType::SOUP) {
+                                world->player->heldItem->carry.push_back(
+                                        world->tiles[(x + xx) + (y + yy) * world->width]);
 
                                 int i = (int) world->player->heldItem->carry.size() - 1;
-                                i = (int) ((i / (float) world->player->heldItem->capacity) * world->player->heldItem->fill.size());
+                                i = (int) ((i / (float) world->player->heldItem->capacity) *
+                                           world->player->heldItem->fill.size());
                                 UInt16Point pt = world->player->heldItem->fill[i];
                                 UInt32 c = world->tiles[(x + xx) + (y + yy) * world->width].color;
-                                METADOT_GET_PIXEL(world->player->heldItem->surface, pt.x, pt.y) = (world->tiles[(x + xx) + (y + yy) * world->width].mat->alpha << 24) + c;
+                                METADOT_GET_PIXEL(world->player->heldItem->surface, pt.x, pt.y) =
+                                        (world->tiles[(x + xx) + (y + yy) * world->width].mat->alpha
+                                         << 24) +
+                                        c;
 
-                                world->player->heldItem->texture = METAENGINE_Render_CopyImageFromSurface(world->player->heldItem->surface);
-                                METAENGINE_Render_SetImageFilter(world->player->heldItem->texture, METAENGINE_Render_FILTER_NEAREST);
+                                world->player->heldItem->texture =
+                                        METAENGINE_Render_CopyImageFromSurface(
+                                                world->player->heldItem->surface);
+                                METAENGINE_Render_SetImageFilter(world->player->heldItem->texture,
+                                                                 METAENGINE_Render_FILTER_NEAREST);
 
                                 world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::NOTHING;
                                 world->dirty[(x + xx) + (y + yy) * world->width] = true;
@@ -1611,14 +1732,11 @@ void Game::updateFrameEarly() {
                     }
                 }
 
-                if (n > 0) {
-                    global.audioEngine.PlayEvent("event:/Player/Impact");
-                }
+                if (n > 0) { global.audioEngine.PlayEvent("event:/Player/Impact"); }
             }
         }
 
         // rigidbody hover
-
 
         int x = (int) ((mx - ofsX - camX) / scale);
         int y = (int) ((my - ofsY - camY) / scale);
@@ -1653,8 +1771,10 @@ void Game::updateFrameEarly() {
                         int nty = (int) (tx * s + ty * c);
 
                         if (cur->surface != nullptr) {
-                            if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                if (((METADOT_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) != 0x00) {
+                            if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
+                                nty < cur->surface->h) {
+                                if (((METADOT_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) !=
+                                    0x00) {
                                     connect = true;
                                 }
                             }
@@ -1674,10 +1794,10 @@ void Game::updateFrameEarly() {
             }
         }
 
-
         // update world->tickZone
 
-        world->tickZone = {CHUNK_W, CHUNK_H, world->width - CHUNK_W * 2, world->height - CHUNK_H * 2};
+        world->tickZone = {CHUNK_W, CHUNK_H, world->width - CHUNK_W * 2,
+                           world->height - CHUNK_H * 2};
         if (world->tickZone.x + world->tickZone.w > world->width) {
             world->tickZone.x = world->width - world->tickZone.w;
         }
@@ -1689,7 +1809,6 @@ void Game::updateFrameEarly() {
 }
 
 void Game::tick() {
-
 
     //METADOT_BUG("{0:d} {0:d}", accLoadX, accLoadY);
     if (state == LOADING) {
@@ -1728,19 +1847,17 @@ void Game::tick() {
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_Clear(TexturePack_.textureObjectsBack->target);
 
-        if (Settings::tick_world && world->readyToMerge.size() == 0) {
-            world->tickChunks();
-        }
+        if (Settings::tick_world && world->readyToMerge.size() == 0) { world->tickChunks(); }
 
         // render objects
 
-
         memset(objectDelete, false, (size_t) world->width * world->height * sizeof(bool));
 
-
         METAENGINE_Render_SetBlendMode(TexturePack_.textureObjects, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsLQ, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsBack, METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsLQ,
+                                       METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsBack,
+                                       METAENGINE_Render_BLEND_NORMAL);
 
         for (size_t i = 0; i < world->rigidBodies.size(); i++) {
             RigidBody *cur = world->rigidBodies[i];
@@ -1753,41 +1870,46 @@ void Game::tick() {
 
             // draw
 
-            METAENGINE_Render_Target *tgt = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjects->target;
-            METAENGINE_Render_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
+            METAENGINE_Render_Target *tgt = cur->back ? TexturePack_.textureObjectsBack->target
+                                                      : TexturePack_.textureObjects->target;
+            METAENGINE_Render_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target
+                                                        : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex = Settings::hd_objects ? Settings::hd_objects_size : 1;
 
-            METAENGINE_Render_Rect r = {x * scaleObjTex, y * scaleObjTex, (float) cur->surface->w * scaleObjTex, (float) cur->surface->h * scaleObjTex};
+            METAENGINE_Render_Rect r = {x * scaleObjTex, y * scaleObjTex,
+                                        (float) cur->surface->w * scaleObjTex,
+                                        (float) cur->surface->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
-                if (cur->texture != nullptr) {
-                    METAENGINE_Render_FreeImage(cur->texture);
-                }
+                if (cur->texture != nullptr) { METAENGINE_Render_FreeImage(cur->texture); }
                 cur->texture = METAENGINE_Render_CopyImageFromSurface(cur->surface);
                 METAENGINE_Render_SetImageFilter(cur->texture, METAENGINE_Render_FILTER_NEAREST);
                 cur->texNeedsUpdate = false;
             }
 
-            METAENGINE_Render_BlitRectX(cur->texture, NULL, tgt, &r, cur->body->GetAngle() * 180 / (float) M_PI, 0, 0, METAENGINE_Render_FLIP_NONE);
-
+            METAENGINE_Render_BlitRectX(cur->texture, NULL, tgt, &r,
+                                        cur->body->GetAngle() * 180 / (float) M_PI, 0, 0,
+                                        METAENGINE_Render_FLIP_NONE);
 
             // draw outline
 
             UInt8 outlineAlpha = (UInt8) (cur->hover * 255);
             if (outlineAlpha > 0) {
                 SDL_Color col = {0xff, 0xff, 0x80, outlineAlpha};
-                METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL_FACTOR_ALPHA);// SDL_BLENDMODE_BLEND
+                METAENGINE_Render_SetShapeBlendMode(
+                        METAENGINE_Render_BLEND_NORMAL_FACTOR_ALPHA);// SDL_BLENDMODE_BLEND
                 for (auto &l: cur->outline) {
                     b2Vec2 *vec = new b2Vec2[l.GetNumPoints()];
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(float) l.GetPoint(j).x / scale, (float) l.GetPoint(j).y / scale};
                     }
-                    Drawing::drawPolygon(tgtLQ, col, vec, (int) x, (int) y, scale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
+                    Drawing::drawPolygon(tgtLQ, col, vec, (int) x, (int) y, scale, l.GetNumPoints(),
+                                         cur->body->GetAngle(), 0, 0);
                     delete[] vec;
                 }
-                METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);// SDL_BLENDMODE_NONE
+                METAENGINE_Render_SetShapeBlendMode(
+                        METAENGINE_Render_BLEND_NORMAL);// SDL_BLENDMODE_NONE
             }
-
 
             // displace fluids
 
@@ -1809,27 +1931,43 @@ void Game::tick() {
                         int wxd = wx + dir.first;
                         int wyd = wy + dir.second;
 
-                        if (wxd < 0 || wyd < 0 || wxd >= world->width || wyd >= world->height) continue;
-                        if (world->tiles[wxd + wyd * world->width].mat->physicsType == PhysicsType::AIR) {
+                        if (wxd < 0 || wyd < 0 || wxd >= world->width || wyd >= world->height)
+                            continue;
+                        if (world->tiles[wxd + wyd * world->width].mat->physicsType ==
+                            PhysicsType::AIR) {
                             world->tiles[wxd + wyd * world->width] = rmat;
                             world->dirty[wxd + wyd * world->width] = true;
                             //objectDelete[wxd + wyd * world->width] = true;
                             break;
-                        } else if (world->tiles[wxd + wyd * world->width].mat->physicsType == PhysicsType::SAND) {
-                            world->addParticle(new Particle(world->tiles[wxd + wyd * world->width], (float) wxd, (float) (wyd - 3), (float) ((rand() % 10 - 5) / 10.0f), (float) (-(rand() % 5 + 5) / 10.0f), 0, (float) 0.1));
+                        } else if (world->tiles[wxd + wyd * world->width].mat->physicsType ==
+                                   PhysicsType::SAND) {
+                            world->addParticle(new Particle(
+                                    world->tiles[wxd + wyd * world->width], (float) wxd,
+                                    (float) (wyd - 3), (float) ((rand() % 10 - 5) / 10.0f),
+                                    (float) (-(rand() % 5 + 5) / 10.0f), 0, (float) 0.1));
                             world->tiles[wxd + wyd * world->width] = rmat;
                             //objectDelete[wxd + wyd * world->width] = true;
                             world->dirty[wxd + wyd * world->width] = true;
-                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (float) 0.99, cur->body->GetLinearVelocity().y * (float) 0.99});
-                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (float) 0.98);
+                            cur->body->SetLinearVelocity(
+                                    {cur->body->GetLinearVelocity().x * (float) 0.99,
+                                     cur->body->GetLinearVelocity().y * (float) 0.99});
+                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() *
+                                                          (float) 0.98);
                             break;
-                        } else if (world->tiles[wxd + wyd * world->width].mat->physicsType == PhysicsType::SOUP) {
-                            world->addParticle(new Particle(world->tiles[wxd + wyd * world->width], (float) wxd, (float) (wyd - 3), (float) ((rand() % 10 - 5) / 10.0f), (float) (-(rand() % 5 + 5) / 10.0f), 0, (float) 0.1));
+                        } else if (world->tiles[wxd + wyd * world->width].mat->physicsType ==
+                                   PhysicsType::SOUP) {
+                            world->addParticle(new Particle(
+                                    world->tiles[wxd + wyd * world->width], (float) wxd,
+                                    (float) (wyd - 3), (float) ((rand() % 10 - 5) / 10.0f),
+                                    (float) (-(rand() % 5 + 5) / 10.0f), 0, (float) 0.1));
                             world->tiles[wxd + wyd * world->width] = rmat;
                             //objectDelete[wxd + wyd * world->width] = true;
                             world->dirty[wxd + wyd * world->width] = true;
-                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (float) 0.998, cur->body->GetLinearVelocity().y * (float) 0.998});
-                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (float) 0.99);
+                            cur->body->SetLinearVelocity(
+                                    {cur->body->GetLinearVelocity().x * (float) 0.998,
+                                     cur->body->GetLinearVelocity().y * (float) 0.998});
+                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() *
+                                                          (float) 0.99);
                             break;
                         }
                     }
@@ -1837,9 +1975,7 @@ void Game::tick() {
             }
         }
 
-
         // render entities
-
 
         if (lastReadyToMergeSize == 0) {
             world->tickEntities(TexturePack_.textureEntities->target);
@@ -1848,12 +1984,13 @@ void Game::tick() {
                 if (world->player->holdHammer) {
                     int x = (int) ((mx - ofsX - camX) / scale);
                     int y = (int) ((my - ofsY - camY) / scale);
-                    METAENGINE_Render_Line(TexturePack_.textureEntitiesLQ->target, x, y, world->player->hammerX, world->player->hammerY, {0xff, 0xff, 0x00, 0xff});
+                    METAENGINE_Render_Line(TexturePack_.textureEntitiesLQ->target, x, y,
+                                           world->player->hammerX, world->player->hammerY,
+                                           {0xff, 0xff, 0x00, 0xff});
                 }
             }
         }
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);// SDL_BLENDMODE_NONE
-
 
         // entity fluid displacement & make solid
 
@@ -1869,8 +2006,15 @@ void Game::tick() {
                     if (world->tiles[wx + wy * world->width].mat->physicsType == PhysicsType::AIR) {
                         world->tiles[wx + wy * world->width] = Tiles::OBJECT;
                         objectDelete[wx + wy * world->width] = true;
-                    } else if (world->tiles[wx + wy * world->width].mat->physicsType == PhysicsType::SAND || world->tiles[wx + wy * world->width].mat->physicsType == PhysicsType::SOUP) {
-                        world->addParticle(new Particle(world->tiles[wx + wy * world->width], (float) (wx + rand() % 3 - 1 - cur.vx), (float) (wy - abs(cur.vy)), (float) (-cur.vx / 4 + (rand() % 10 - 5) / 5.0f), (float) (-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (float) 0.1));
+                    } else if (world->tiles[wx + wy * world->width].mat->physicsType ==
+                                       PhysicsType::SAND ||
+                               world->tiles[wx + wy * world->width].mat->physicsType ==
+                                       PhysicsType::SOUP) {
+                        world->addParticle(new Particle(
+                                world->tiles[wx + wy * world->width],
+                                (float) (wx + rand() % 3 - 1 - cur.vx), (float) (wy - abs(cur.vy)),
+                                (float) (-cur.vx / 4 + (rand() % 10 - 5) / 5.0f),
+                                (float) (-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (float) 0.1));
                         world->tiles[wx + wy * world->width] = Tiles::OBJECT;
                         objectDelete[wx + wy * world->width] = true;
                         world->dirty[wx + wy * world->width] = true;
@@ -1879,15 +2023,9 @@ void Game::tick() {
             }
         }
 
+        if (Settings::tick_world && world->readyToMerge.size() == 0) { world->tick(); }
 
-        if (Settings::tick_world && world->readyToMerge.size() == 0) {
-            world->tick();
-        }
-
-        if (Controls::DEBUG_TICK->get()) {
-            world->tick();
-        }
-
+        if (Controls::DEBUG_TICK->get()) { world->tick(); }
 
         // Tick Cam zoom
 
@@ -1900,18 +2038,18 @@ void Game::tick() {
             scale += deltaScale;
             if (scale < 1) scale = 1;
 
-            ofsX = (ofsX - global.platform.WIDTH / 2) / oldScale * scale + global.platform.WIDTH / 2;
-            ofsY = (ofsY - global.platform.HEIGHT / 2) / oldScale * scale + global.platform.HEIGHT / 2;
+            ofsX = (ofsX - global.platform.WIDTH / 2) / oldScale * scale +
+                   global.platform.WIDTH / 2;
+            ofsY = (ofsY - global.platform.HEIGHT / 2) / oldScale * scale +
+                   global.platform.HEIGHT / 2;
         } else {
         }
-
 
         // player movement
         tickPlayer();
 
         // update particles, tickObjects, update dirty
         // TODO: this is not entirely thread safe since tickParticles changes World::tiles and World::dirty
-
 
         bool hadDirty = false;
         bool hadLayer2Dirty = false;
@@ -1942,16 +2080,10 @@ void Game::tick() {
         }));
 
         if (world->readyToMerge.size() == 0) {
-            results.push_back(updateDirtyPool->push([&](int id) {
-                world->tickObjectBounds();
-            }));
+            results.push_back(updateDirtyPool->push([&](int id) { world->tickObjectBounds(); }));
         }
 
-
-        for (int i = 0; i < results.size(); i++) {
-            results[i].get();
-        }
-
+        for (int i = 0; i < results.size(); i++) { results[i].get(); }
 
         for (size_t i = 0; i < world->rigidBodies.size(); i++) {
             RigidBody *cur = world->rigidBodies[i];
@@ -1980,9 +2112,11 @@ void Game::tick() {
                         int wxd = wx + dir.first;
                         int wyd = wy + dir.second;
 
-                        if (wxd < 0 || wyd < 0 || wxd >= world->width || wyd >= world->height) continue;
+                        if (wxd < 0 || wyd < 0 || wxd >= world->width || wyd >= world->height)
+                            continue;
                         if (world->tiles[wxd + wyd * world->width] == rmat) {
-                            cur->tiles[tx + ty * cur->matWidth] = world->tiles[wxd + wyd * world->width];
+                            cur->tiles[tx + ty * cur->matWidth] =
+                                    world->tiles[wxd + wyd * world->width];
                             world->tiles[wxd + wyd * world->width] = Tiles::NOTHING;
                             world->dirty[wxd + wyd * world->width] = true;
                             found = true;
@@ -2010,13 +2144,13 @@ void Game::tick() {
                             //    dpixels_ar[offset + 3] = 0xff;    // a
                             //}
 
-
                             break;
                         }
                     }
 
                     if (!found) {
-                        if (world->tiles[wx + wy * world->width].mat->id == Materials::GENERIC_AIR.id) {
+                        if (world->tiles[wx + wy * world->width].mat->id ==
+                            Materials::GENERIC_AIR.id) {
                             cur->tiles[tx + ty * cur->matWidth] = Tiles::NOTHING;
                         }
                     }
@@ -2029,7 +2163,8 @@ void Game::tick() {
                     if (mat.mat->id == Materials::GENERIC_AIR.id) {
                         METADOT_GET_PIXEL(cur->surface, tx, ty) = 0x00000000;
                     } else {
-                        METADOT_GET_PIXEL(cur->surface, tx, ty) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
+                        METADOT_GET_PIXEL(cur->surface, tx, ty) =
+                                (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
                     }
                 }
             }
@@ -2098,14 +2233,38 @@ void Game::tick() {
                         }
                         if (world->tiles[i].mat->physicsType == PhysicsType::SOUP) {
 
-                            float newFlowX = world->prevFlowX[i] + (world->flowX[i] - world->prevFlowX[i]) * 0.25;
-                            float newFlowY = world->prevFlowY[i] + (world->flowY[i] - world->prevFlowY[i]) * 0.25;
+                            float newFlowX = world->prevFlowX[i] +
+                                             (world->flowX[i] - world->prevFlowX[i]) * 0.25;
+                            float newFlowY = world->prevFlowY[i] +
+                                             (world->flowY[i] - world->prevFlowY[i]) * 0.25;
                             if (newFlowY < 0) newFlowY *= 0.5;
 
-                            dpixelsFlow_ar[offset + 2] = 0;                                                                                                       // b
-                            dpixelsFlow_ar[offset + 1] = std::min(std::max(newFlowY * (3.0 / world->tiles[i].mat->iterations + 0.5) / 4.0 + 0.5, 0.0), 1.0) * 255;// g
-                            dpixelsFlow_ar[offset + 0] = std::min(std::max(newFlowX * (3.0 / world->tiles[i].mat->iterations + 0.5) / 4.0 + 0.5, 0.0), 1.0) * 255;// r
-                            dpixelsFlow_ar[offset + 3] = 0xff;                                                                                                    // a
+                            dpixelsFlow_ar[offset + 2] = 0;// b
+                            dpixelsFlow_ar[offset + 1] =
+                                    std::min(
+                                            std::max(newFlowY *
+                                                                     (3.0 / world->tiles[i]
+                                                                                      .mat
+                                                                                      ->iterations +
+                                                                      0.5) /
+                                                                     4.0 +
+                                                             0.5,
+                                                     0.0),
+                                            1.0) *
+                                    255;// g
+                            dpixelsFlow_ar[offset + 0] =
+                                    std::min(
+                                            std::max(newFlowX *
+                                                                     (3.0 / world->tiles[i]
+                                                                                      .mat
+                                                                                      ->iterations +
+                                                                      0.5) /
+                                                                     4.0 +
+                                                             0.5,
+                                                     0.0),
+                                            1.0) *
+                                    255;                      // r
+                            dpixelsFlow_ar[offset + 3] = 0xff;// a
                             hadFlow = true;
                             world->prevFlowX[i] = newFlowX;
                             world->prevFlowY[i] = newFlowY;
@@ -2179,105 +2338,68 @@ void Game::tick() {
             }
         }));
 
-
         for (int i = 0; i < world->width * world->height; i++) {
             /*for (int x = 0; x < world->width; x++) {
                 for (int y = 0; y < world->height; y++) {*/
             //const unsigned int i = x + y * world->width;
             const unsigned int offset = i * 4;
 
-            if (objectDelete[i]) {
-                world->tiles[i] = Tiles::NOTHING;
-            }
+            if (objectDelete[i]) { world->tiles[i] = Tiles::NOTHING; }
         }
-
 
         //results.push_back(updateDirtyPool->push([&](int id) {
 
         //}));
 
-        for (int i = 0; i < results.size(); i++) {
-            results[i].get();
-        }
-
+        for (int i = 0; i < results.size(); i++) { results[i].get(); }
 
         updateMaterialSounds();
 
-
-        METAENGINE_Render_UpdateImageBytes(
-                TexturePack_.textureParticles,
-                NULL,
-                &TexturePack_.pixelsParticles_ar[0],
-                world->width * 4);
-
+        METAENGINE_Render_UpdateImageBytes(TexturePack_.textureParticles, NULL,
+                                           &TexturePack_.pixelsParticles_ar[0], world->width * 4);
 
         if (hadDirty) memset(world->dirty, false, (size_t) world->width * world->height);
-        if (hadLayer2Dirty) memset(world->layer2Dirty, false, (size_t) world->width * world->height);
-        if (hadBackgroundDirty) memset(world->backgroundDirty, false, (size_t) world->width * world->height);
+        if (hadLayer2Dirty)
+            memset(world->layer2Dirty, false, (size_t) world->width * world->height);
+        if (hadBackgroundDirty)
+            memset(world->backgroundDirty, false, (size_t) world->width * world->height);
 
-
-        if (Settings::tick_temperature && tickTime % 4 == 2) {
-            world->tickTemperature();
-        }
-        if (Settings::draw_temperature_map && tickTime % 4 == 0) {
-            renderTemperatureMap(world);
-        }
-
+        if (Settings::tick_temperature && tickTime % 4 == 2) { world->tickTemperature(); }
+        if (Settings::draw_temperature_map && tickTime % 4 == 0) { renderTemperatureMap(world); }
 
         if (hadDirty) {
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.texture,
-                    NULL,
-                    &TexturePack_.pixels[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0],
+                                               world->width * 4);
 
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.emissionTexture,
-                    NULL,
-                    &TexturePack_.pixelsEmission[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.emissionTexture, NULL,
+                                               &TexturePack_.pixelsEmission[0], world->width * 4);
         }
 
         if (hadLayer2Dirty) {
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.textureLayer2,
-                    NULL,
-                    &TexturePack_.pixelsLayer2[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.textureLayer2, NULL,
+                                               &TexturePack_.pixelsLayer2[0], world->width * 4);
         }
 
         if (hadBackgroundDirty) {
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.textureBackground,
-                    NULL,
-                    &TexturePack_.pixelsBackground[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.textureBackground, NULL,
+                                               &TexturePack_.pixelsBackground[0], world->width * 4);
         }
 
         if (hadFlow) {
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.textureFlow,
-                    NULL,
-                    &TexturePack_.pixelsFlow[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFlow, NULL,
+                                               &TexturePack_.pixelsFlow[0], world->width * 4);
 
             global.shaderworker.waterFlowPassShader->dirty = true;
         }
 
         if (hadFire) {
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.textureFire,
-                    NULL,
-                    &TexturePack_.pixelsFire[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFire, NULL,
+                                               &TexturePack_.pixelsFire[0], world->width * 4);
         }
 
         if (Settings::draw_temperature_map) {
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.temperatureMap,
-                    NULL,
-                    &TexturePack_.pixelsTemp[0],
-                    world->width * 4);
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.temperatureMap, NULL,
+                                               &TexturePack_.pixelsTemp[0], world->width * 4);
         }
 
         /*METAENGINE_Render_UpdateImageBytes(
@@ -2287,13 +2409,11 @@ void Game::tick() {
             world->width * 4
         );*/
 
-
         if (Settings::tick_box2d && tickTime % 4 == 0) world->updateWorldMesh();
     }
 }
 
 void Game::tickChunkLoading() {
-
 
     // if need to load chunks
     if ((abs(accLoadX) > CHUNK_W / 2 || abs(accLoadY) > CHUNK_H / 2)) {
@@ -2304,14 +2424,13 @@ void Game::tickChunkLoading() {
 
         //iterate
 
-
         for (int i = 0; i < world->width * world->height; i++) {
             const unsigned int offset = i * 4;
 
-#define UCH_SET_PIXEL(pix_ar, ofs, c_r, c_g, c_b, c_a) \
-    pix_ar[ofs + 0] = c_b;                             \
-    pix_ar[ofs + 1] = c_g;                             \
-    pix_ar[ofs + 2] = c_r;                             \
+#define UCH_SET_PIXEL(pix_ar, ofs, c_r, c_g, c_b, c_a)                                             \
+    pix_ar[ofs + 0] = c_b;                                                                         \
+    pix_ar[ofs + 1] = c_g;                                                                         \
+    pix_ar[ofs + 2] = c_r;                                                                         \
     pix_ar[ofs + 3] = c_a;
 
             if (world->dirty[i]) {
@@ -2320,8 +2439,11 @@ void Game::tickChunkLoading() {
                 } else {
                     UInt32 color = world->tiles[i].color;
                     UInt32 emit = world->tiles[i].mat->emitColor;
-                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, world->tiles[i].mat->alpha);
-                    UCH_SET_PIXEL(TexturePack_.pixelsEmission_ar, offset, (emit >> 0) & 0xff, (emit >> 8) & 0xff, (emit >> 16) & 0xff, (emit >> 24) & 0xff);
+                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff,
+                                  (color >> 8) & 0xff, (color >> 16) & 0xff,
+                                  world->tiles[i].mat->alpha);
+                    UCH_SET_PIXEL(TexturePack_.pixelsEmission_ar, offset, (emit >> 0) & 0xff,
+                                  (emit >> 8) & 0xff, (emit >> 16) & 0xff, (emit >> 24) & 0xff);
                 }
             }
 
@@ -2329,28 +2451,31 @@ void Game::tickChunkLoading() {
                 if (world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                     if (Settings::draw_background_grid) {
                         UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
-                        UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
+                        UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff,
+                                      (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
                     } else {
-                        UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+                        UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, 0, 0, 0,
+                                      SDL_ALPHA_TRANSPARENT);
                     }
                     continue;
                 }
                 UInt32 color = world->layer2[i].color;
-                UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, world->layer2[i].mat->alpha);
+                UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff,
+                              (color >> 8) & 0xff, (color >> 16) & 0xff,
+                              world->layer2[i].mat->alpha);
             }
 
             if (world->backgroundDirty[i]) {
                 UInt32 color = world->background[i];
-                UCH_SET_PIXEL(TexturePack_.pixelsBackground_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, (color >> 24) & 0xff);
+                UCH_SET_PIXEL(TexturePack_.pixelsBackground_ar, offset, (color >> 0) & 0xff,
+                              (color >> 8) & 0xff, (color >> 16) & 0xff, (color >> 24) & 0xff);
             }
 #undef UCH_SET_PIXEL
         }
 
-
         memset(world->dirty, false, (size_t) world->width * world->height);
         memset(world->layer2Dirty, false, (size_t) world->width * world->height);
         memset(world->backgroundDirty, false, (size_t) world->width * world->height);
-
 
         while ((abs(accLoadX) > CHUNK_W / 2 || abs(accLoadY) > CHUNK_H / 2)) {
             int subX = std::fmax(std::fmin(accLoadX, CHUNK_W / 2), -CHUNK_W / 2);
@@ -2366,91 +2491,114 @@ void Game::tickChunkLoading() {
             std::vector<std::future<void>> results = {};
             if (delta > 0) {
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[world->width * world->height * 4]) - delta, &(TexturePack_.pixels_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixels_ar[0]),
+                                &(TexturePack_.pixels_ar[world->width * world->height * 4]) - delta,
+                                &(TexturePack_.pixels_ar[world->width * world->height * 4]));
                     //rotate(pixels.begin(), pixels.end() - delta, pixels.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsLayer2_ar[0]), &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]) - delta, &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsLayer2_ar[0]),
+                                &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]) -
+                                        delta,
+                                &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]));
                     //rotate(pixelsLayer2.begin(), pixelsLayer2.end() - delta, pixelsLayer2.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsBackground_ar[0]), &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]) - delta, &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]));
+                    std::rotate(
+                            &(TexturePack_.pixelsBackground_ar[0]),
+                            &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]) -
+                                    delta,
+                            &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]));
                     //rotate(pixelsBackground.begin(), pixelsBackground.end() - delta, pixelsBackground.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsFire_ar[0]), &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]) - delta, &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsFire_ar[0]),
+                                &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]) -
+                                        delta,
+                                &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]));
                     //rotate(pixelsFire_ar.begin(), pixelsFire_ar.end() - delta, pixelsFire_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsFlow_ar[0]), &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]) - delta, &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsFlow_ar[0]),
+                                &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]) -
+                                        delta,
+                                &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]));
                     //rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.end() - delta, pixelsFlow_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsEmission_ar[0]), &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]) - delta, &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]));
+                    std::rotate(
+                            &(TexturePack_.pixelsEmission_ar[0]),
+                            &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]) -
+                                    delta,
+                            &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]));
                     //rotate(pixelsEmission_ar.begin(), pixelsEmission_ar.end() - delta, pixelsEmission_ar.end());
                 }));
             } else if (delta < 0) {
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[0]) - delta, &(TexturePack_.pixels_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[0]) - delta,
+                                &(TexturePack_.pixels_ar[world->width * world->height * 4]));
                     //rotate(pixels.begin(), pixels.begin() - delta, pixels.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsLayer2_ar[0]), &(TexturePack_.pixelsLayer2_ar[0]) - delta, &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsLayer2_ar[0]),
+                                &(TexturePack_.pixelsLayer2_ar[0]) - delta,
+                                &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]));
                     //rotate(pixelsLayer2.begin(), pixelsLayer2.begin() - delta, pixelsLayer2.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsBackground_ar[0]), &(TexturePack_.pixelsBackground_ar[0]) - delta, &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]));
+                    std::rotate(
+                            &(TexturePack_.pixelsBackground_ar[0]),
+                            &(TexturePack_.pixelsBackground_ar[0]) - delta,
+                            &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]));
                     //rotate(pixelsBackground.begin(), pixelsBackground.begin() - delta, pixelsBackground.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsFire_ar[0]), &(TexturePack_.pixelsFire_ar[0]) - delta, &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsFire_ar[0]),
+                                &(TexturePack_.pixelsFire_ar[0]) - delta,
+                                &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]));
                     //rotate(pixelsFire_ar.begin(), pixelsFire_ar.begin() - delta, pixelsFire_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsFlow_ar[0]), &(TexturePack_.pixelsFlow_ar[0]) - delta, &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsFlow_ar[0]),
+                                &(TexturePack_.pixelsFlow_ar[0]) - delta,
+                                &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]));
                     //rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.begin() - delta, pixelsFlow_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsEmission_ar[0]), &(TexturePack_.pixelsEmission_ar[0]) - delta, &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]));
+                    std::rotate(
+                            &(TexturePack_.pixelsEmission_ar[0]),
+                            &(TexturePack_.pixelsEmission_ar[0]) - delta,
+                            &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]));
                     //rotate(pixelsEmission_ar.begin(), pixelsEmission_ar.begin() - delta, pixelsEmission_ar.end());
                 }));
             }
 
-            for (auto &v: results) {
-                v.get();
-            }
+            for (auto &v: results) { v.get(); }
 
-
-#define CLEARPIXEL(pixels, ofs)                                 \
-    pixels[ofs + 0] = pixels[ofs + 1] = pixels[ofs + 2] = 0xff; \
+#define CLEARPIXEL(pixels, ofs)                                                                    \
+    pixels[ofs + 0] = pixels[ofs + 1] = pixels[ofs + 2] = 0xff;                                    \
     pixels[ofs + 3] = SDL_ALPHA_TRANSPARENT
 
-#define CLEARPIXEL_C(offset)                              \
-    CLEARPIXEL(TexturePack_.pixels_ar, offset);           \
-    CLEARPIXEL(TexturePack_.pixelsLayer2_ar, offset);     \
-    CLEARPIXEL(TexturePack_.pixelsObjects_ar, offset);    \
-    CLEARPIXEL(TexturePack_.pixelsBackground_ar, offset); \
-    CLEARPIXEL(TexturePack_.pixelsFire_ar, offset);       \
-    CLEARPIXEL(TexturePack_.pixelsFlow_ar, offset);       \
+#define CLEARPIXEL_C(offset)                                                                       \
+    CLEARPIXEL(TexturePack_.pixels_ar, offset);                                                    \
+    CLEARPIXEL(TexturePack_.pixelsLayer2_ar, offset);                                              \
+    CLEARPIXEL(TexturePack_.pixelsObjects_ar, offset);                                             \
+    CLEARPIXEL(TexturePack_.pixelsBackground_ar, offset);                                          \
+    CLEARPIXEL(TexturePack_.pixelsFire_ar, offset);                                                \
+    CLEARPIXEL(TexturePack_.pixelsFlow_ar, offset);                                                \
     CLEARPIXEL(TexturePack_.pixelsEmission_ar, offset)
-
 
             for (int x = 0; x < abs(subX); x++) {
                 for (int y = 0; y < world->height; y++) {
                     const unsigned int offset = (world->width * 4 * y) + x * 4;
-                    if (offset < world->width * world->height * 4) {
-                        CLEARPIXEL_C(offset);
-                    }
+                    if (offset < world->width * world->height * 4) { CLEARPIXEL_C(offset); }
                 }
             }
-
 
             for (int y = 0; y < abs(subY); y++) {
                 for (int x = 0; x < world->width; x++) {
                     const unsigned int offset = (world->width * 4 * y) + x * 4;
-                    if (offset < world->width * world->height * 4) {
-                        CLEARPIXEL_C(offset);
-                    }
+                    if (offset < world->width * world->height * 4) { CLEARPIXEL_C(offset); }
                 }
             }
 
@@ -2463,7 +2611,6 @@ void Game::tickChunkLoading() {
             ofsX -= subX * scale;
             ofsY -= subY * scale;
         }
-
 
         world->tickChunks();
         world->updateWorldMesh();
@@ -2478,7 +2625,6 @@ void Game::tickChunkLoading() {
 
 void Game::tickPlayer() {
 
-
     if (world->player) {
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
             if (world->player->ground) {
@@ -2487,11 +2633,22 @@ void Game::tickPlayer() {
             }
         }
 
-        world->player->vy += (float) (((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) ? (world->player->vy > -1 ? -0.8 : -0.35) : 0) + (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
+        world->player->vy += (float) (((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get())
+                                               ? (world->player->vy > -1 ? -0.8 : -0.35)
+                                               : 0) +
+                                      (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
-                Particle *p = new Particle(Tiles::createLava(), (float) (world->player->x + world->loadZone.x + world->player->hw / 2 + rand() % 5 - 2 + world->player->vx), (float) (world->player->y + world->loadZone.y + world->player->hh + world->player->vy), (float) ((rand() % 10 - 5) / 10.0f + world->player->vx / 2.0f), (float) ((rand() % 10) / 10.0f + 1 + world->player->vy / 2.0f), 0, (float) 0.025);
+                Particle *p = new Particle(
+                        Tiles::createLava(),
+                        (float) (world->player->x + world->loadZone.x + world->player->hw / 2 +
+                                 rand() % 5 - 2 + world->player->vx),
+                        (float) (world->player->y + world->loadZone.y + world->player->hh +
+                                 world->player->vy),
+                        (float) ((rand() % 10 - 5) / 10.0f + world->player->vx / 2.0f),
+                        (float) ((rand() % 10) / 10.0f + 1 + world->player->vy / 2.0f), 0,
+                        (float) 0.025);
                 p->temporary = true;
                 p->lifetime = 120;
                 world->addParticle(p);
@@ -2501,23 +2658,29 @@ void Game::tickPlayer() {
         }
 
         if (world->player->vy > 0) {
-            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", (float) (world->player->vy / 12.0));
+            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind",
+                                                 (float) (world->player->vy / 12.0));
         } else {
             global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
-        world->player->vx += (float) ((Controls::PLAYER_LEFT->get() ? (world->player->vx > 0 ? -0.4 : -0.2) : 0) + (Controls::PLAYER_RIGHT->get() ? (world->player->vx < 0 ? 0.4 : 0.2) : 0));
-        if (!Controls::PLAYER_LEFT->get() && !Controls::PLAYER_RIGHT->get()) world->player->vx *= (float) (world->player->ground ? 0.85 : 0.96);
+        world->player->vx +=
+                (float) ((Controls::PLAYER_LEFT->get() ? (world->player->vx > 0 ? -0.4 : -0.2)
+                                                       : 0) +
+                         (Controls::PLAYER_RIGHT->get() ? (world->player->vx < 0 ? 0.4 : 0.2) : 0));
+        if (!Controls::PLAYER_LEFT->get() && !Controls::PLAYER_RIGHT->get())
+            world->player->vx *= (float) (world->player->ground ? 0.85 : 0.96);
         if (world->player->vx > 4.5) world->player->vx = 4.5;
         if (world->player->vx < -4.5) world->player->vx = -4.5;
     } else {
         if (state == INGAME) {
-            freeCamX += (float) ((Controls::PLAYER_LEFT->get() ? -5 : 0) + (Controls::PLAYER_RIGHT->get() ? 5 : 0));
-            freeCamY += (float) ((Controls::PLAYER_UP->get() ? -5 : 0) + (Controls::PLAYER_DOWN->get() ? 5 : 0));
+            freeCamX += (float) ((Controls::PLAYER_LEFT->get() ? -5 : 0) +
+                                 (Controls::PLAYER_RIGHT->get() ? 5 : 0));
+            freeCamY += (float) ((Controls::PLAYER_UP->get() ? -5 : 0) +
+                                 (Controls::PLAYER_DOWN->get() ? 5 : 0));
         } else {
         }
     }
-
 
     if (world->player) {
         desCamX = (float) (-(mx - (global.platform.WIDTH / 2)) / 4);
@@ -2531,7 +2694,6 @@ void Game::tickPlayer() {
         desCamX = 0;
         desCamY = 0;
     }
-
 
     if (world->player) {
         if (world->player->heldItem) {
@@ -2562,7 +2724,9 @@ void Game::tickPlayer() {
                                 inObject = false;
                             }
 
-                            if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID || world->tiles[ind].mat->physicsType == PhysicsType::SAND || world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
+                            if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID ||
+                                world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
+                                world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
                                 sind = ind;
                                 return true;
                             }
@@ -2572,31 +2736,33 @@ void Game::tickPlayer() {
                         int x = sind == -1 ? wmx : sind % world->width;
                         int y = sind == -1 ? wmy : sind / world->width;
 
-                        std::function<void(MaterialInstance, int, int)> makeParticle = [&](MaterialInstance tile, int xPos, int yPos) {
-                            Particle *par = new Particle(tile, xPos, yPos, 0, 0, 0, (float) 0.01f);
-                            par->vx = (rand() % 10 - 5) / 5.0f * 1.0f;
-                            par->vy = (rand() % 10 - 5) / 5.0f * 1.0f;
-                            par->ax = -par->vx / 10.0f;
-                            par->ay = -par->vy / 10.0f;
-                            if (par->ay == 0 && par->ax == 0) par->ay = 0.01f;
+                        std::function<void(MaterialInstance, int, int)> makeParticle =
+                                [&](MaterialInstance tile, int xPos, int yPos) {
+                                    Particle *par =
+                                            new Particle(tile, xPos, yPos, 0, 0, 0, (float) 0.01f);
+                                    par->vx = (rand() % 10 - 5) / 5.0f * 1.0f;
+                                    par->vy = (rand() % 10 - 5) / 5.0f * 1.0f;
+                                    par->ax = -par->vx / 10.0f;
+                                    par->ay = -par->vy / 10.0f;
+                                    if (par->ay == 0 && par->ax == 0) par->ay = 0.01f;
 
-                            //par->targetX = world->player->x + world->player->hw / 2 + world->loadZone.x;
-                            //par->targetY = world->player->y + world->player->hh / 2 + world->loadZone.y;
-                            //par->targetForce = 0.35f;
+                                    //par->targetX = world->player->x + world->player->hw / 2 + world->loadZone.x;
+                                    //par->targetY = world->player->y + world->player->hh / 2 + world->loadZone.y;
+                                    //par->targetForce = 0.35f;
 
-                            par->lifetime = 6;
+                                    par->lifetime = 6;
 
-                            par->phase = true;
+                                    par->phase = true;
 
-                            world->player->heldItem->vacuumParticles.push_back(par);
+                                    world->player->heldItem->vacuumParticles.push_back(par);
 
-                            par->killCallback = [&]() {
-                                auto &v = world->player->heldItem->vacuumParticles;
-                                v.erase(std::remove(v.begin(), v.end(), par), v.end());
-                            };
+                                    par->killCallback = [&]() {
+                                        auto &v = world->player->heldItem->vacuumParticles;
+                                        v.erase(std::remove(v.begin(), v.end(), par), v.end());
+                                    };
 
-                            world->addParticle(par);
-                        };
+                                    world->addParticle(par);
+                                };
 
                         int rad = 5;
                         int clipRadSq = rad * rad;
@@ -2608,58 +2774,74 @@ void Game::tickPlayer() {
                                     continue;
                                 }
 
-                                MaterialInstance tile = world->tiles[(x + xx) + (y + yy) * world->width];
-                                if (tile.mat->physicsType == PhysicsType::SOLID || tile.mat->physicsType == PhysicsType::SAND || tile.mat->physicsType == PhysicsType::SOUP) {
+                                MaterialInstance tile =
+                                        world->tiles[(x + xx) + (y + yy) * world->width];
+                                if (tile.mat->physicsType == PhysicsType::SOLID ||
+                                    tile.mat->physicsType == PhysicsType::SAND ||
+                                    tile.mat->physicsType == PhysicsType::SOUP) {
                                     makeParticle(tile, x + xx, y + yy);
-                                    world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::NOTHING;
+                                    world->tiles[(x + xx) + (y + yy) * world->width] =
+                                            Tiles::NOTHING;
                                     //world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::createFire();
                                     world->dirty[(x + xx) + (y + yy) * world->width] = true;
                                 }
                             }
                         }
 
-                        world->particles.erase(std::remove_if(world->particles.begin(), world->particles.end(), [&](Particle *cur) {
-                                                   if (cur->targetForce == 0 && !cur->phase) {
-                                                       int rad = 5;
-                                                       for (int xx = -rad; xx <= rad; xx++) {
-                                                           for (int yy = -rad; yy <= rad; yy++) {
-                                                               if ((yy == -rad || yy == rad) && (xx == -rad || x == rad)) continue;
+                        world->particles.erase(
+                                std::remove_if(
+                                        world->particles.begin(), world->particles.end(),
+                                        [&](Particle *cur) {
+                                            if (cur->targetForce == 0 && !cur->phase) {
+                                                int rad = 5;
+                                                for (int xx = -rad; xx <= rad; xx++) {
+                                                    for (int yy = -rad; yy <= rad; yy++) {
+                                                        if ((yy == -rad || yy == rad) &&
+                                                            (xx == -rad || x == rad))
+                                                            continue;
 
-                                                               if (((int) (cur->x) == (x + xx)) && ((int) (cur->y) == (y + yy))) {
+                                                        if (((int) (cur->x) == (x + xx)) &&
+                                                            ((int) (cur->y) == (y + yy))) {
 
-                                                                   cur->vx = (rand() % 10 - 5) / 5.0f * 1.0f;
-                                                                   cur->vy = (rand() % 10 - 5) / 5.0f * 1.0f;
-                                                                   cur->ax = -cur->vx / 10.0f;
-                                                                   cur->ay = -cur->vy / 10.0f;
-                                                                   if (cur->ay == 0 && cur->ax == 0) cur->ay = 0.01f;
+                                                            cur->vx =
+                                                                    (rand() % 10 - 5) / 5.0f * 1.0f;
+                                                            cur->vy =
+                                                                    (rand() % 10 - 5) / 5.0f * 1.0f;
+                                                            cur->ax = -cur->vx / 10.0f;
+                                                            cur->ay = -cur->vy / 10.0f;
+                                                            if (cur->ay == 0 && cur->ax == 0)
+                                                                cur->ay = 0.01f;
 
-                                                                   //par->targetX = world->player->x + world->player->hw / 2 + world->loadZone.x;
-                                                                   //par->targetY = world->player->y + world->player->hh / 2 + world->loadZone.y;
-                                                                   //par->targetForce = 0.35f;
+                                                            //par->targetX = world->player->x + world->player->hw / 2 + world->loadZone.x;
+                                                            //par->targetY = world->player->y + world->player->hh / 2 + world->loadZone.y;
+                                                            //par->targetForce = 0.35f;
 
-                                                                   cur->lifetime = 6;
+                                                            cur->lifetime = 6;
 
-                                                                   cur->phase = true;
+                                                            cur->phase = true;
 
-                                                                   world->player->heldItem->vacuumParticles.push_back(cur);
+                                                            world->player->heldItem->vacuumParticles
+                                                                    .push_back(cur);
 
-                                                                   cur->killCallback = [&]() {
-                                                                       auto &v = world->player->heldItem->vacuumParticles;
-                                                                       v.erase(std::remove(v.begin(), v.end(), cur), v.end());
-                                                                   };
+                                                            cur->killCallback = [&]() {
+                                                                auto &v = world->player->heldItem
+                                                                                  ->vacuumParticles;
+                                                                v.erase(std::remove(v.begin(),
+                                                                                    v.end(), cur),
+                                                                        v.end());
+                                                            };
 
-                                                                   return false;
-                                                               }
-                                                           }
-                                                       }
-                                                   }
+                                                            return false;
+                                                        }
+                                                    }
+                                                }
+                                            }
 
-                                                   return false;
-                                               }),
-                                               world->particles.end());
+                                            return false;
+                                        }),
+                                world->particles.end());
 
                         std::vector<RigidBody *> rbs = world->rigidBodies;
-
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
@@ -2670,7 +2852,8 @@ void Game::tickPlayer() {
                                 bool upd = false;
                                 for (int xx = -rad; xx <= rad; xx++) {
                                     for (int yy = -rad; yy <= rad; yy++) {
-                                        if ((yy == -rad || yy == rad) && (xx == -rad || x == rad)) continue;
+                                        if ((yy == -rad || yy == rad) && (xx == -rad || x == rad))
+                                            continue;
                                         // rotate point
 
                                         float tx = x + xx - cur->body->GetPosition().x;
@@ -2679,13 +2862,19 @@ void Game::tickPlayer() {
                                         int ntx = (int) (tx * c - ty * s);
                                         int nty = (int) (tx * s + ty * c);
 
-                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            UInt32 pixel = METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
+                                            nty < cur->surface->h) {
+                                            UInt32 pixel =
+                                                    METADOT_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                METADOT_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
+                                                METADOT_GET_PIXEL(cur->surface, ntx, nty) =
+                                                        0x00000000;
                                                 upd = true;
 
-                                                makeParticle(MaterialInstance(&Materials::GENERIC_SOLID, pixel), (x + xx), (y + yy));
+                                                makeParticle(
+                                                        MaterialInstance(&Materials::GENERIC_SOLID,
+                                                                         pixel),
+                                                        (x + xx), (y + yy));
                                             }
                                         }
                                     }
@@ -2693,8 +2882,10 @@ void Game::tickPlayer() {
 
                                 if (upd) {
                                     METAENGINE_Render_FreeImage(cur->texture);
-                                    cur->texture = METAENGINE_Render_CopyImageFromSurface(cur->surface);
-                                    METAENGINE_Render_SetImageFilter(cur->texture, METAENGINE_Render_FILTER_NEAREST);
+                                    cur->texture =
+                                            METAENGINE_Render_CopyImageFromSurface(cur->surface);
+                                    METAENGINE_Render_SetImageFilter(
+                                            cur->texture, METAENGINE_Render_FILTER_NEAREST);
                                     //world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
@@ -2704,28 +2895,35 @@ void Game::tickPlayer() {
                 }
 
                 if (world->player->heldItem->vacuumParticles.size() > 0) {
-                    world->player->heldItem->vacuumParticles.erase(std::remove_if(world->player->heldItem->vacuumParticles.begin(), world->player->heldItem->vacuumParticles.end(), [&](Particle *cur) {
-                                                                       if (cur->lifetime <= 0) {
-                                                                           cur->targetForce = 0.45f;
-                                                                           cur->targetX = world->player->x + world->player->hw / 2.0f + world->loadZone.x;
-                                                                           cur->targetY = world->player->y + world->player->hh / 2.0f + world->loadZone.y;
-                                                                           cur->ax = 0;
-                                                                           cur->ay = 0.01f;
-                                                                       }
+                    world->player->heldItem->vacuumParticles.erase(
+                            std::remove_if(world->player->heldItem->vacuumParticles.begin(),
+                                           world->player->heldItem->vacuumParticles.end(),
+                                           [&](Particle *cur) {
+                                               if (cur->lifetime <= 0) {
+                                                   cur->targetForce = 0.45f;
+                                                   cur->targetX = world->player->x +
+                                                                  world->player->hw / 2.0f +
+                                                                  world->loadZone.x;
+                                                   cur->targetY = world->player->y +
+                                                                  world->player->hh / 2.0f +
+                                                                  world->loadZone.y;
+                                                   cur->ax = 0;
+                                                   cur->ay = 0.01f;
+                                               }
 
-                                                                       float tdx = cur->targetX - cur->x;
-                                                                       float tdy = cur->targetY - cur->y;
+                                               float tdx = cur->targetX - cur->x;
+                                               float tdy = cur->targetY - cur->y;
 
-                                                                       if (tdx * tdx + tdy * tdy < 10 * 10) {
-                                                                           cur->temporary = true;
-                                                                           cur->lifetime = 0;
-                                                                           //METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
-                                                                           return true;
-                                                                       }
+                                               if (tdx * tdx + tdy * tdy < 10 * 10) {
+                                                   cur->temporary = true;
+                                                   cur->lifetime = 0;
+                                                   //METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
+                                                   return true;
+                                               }
 
-                                                                       return false;
-                                                                   }),
-                                                                   world->player->heldItem->vacuumParticles.end());
+                                               return false;
+                                           }),
+                            world->player->heldItem->vacuumParticles.end());
                 }
             }
         }
@@ -2746,7 +2944,8 @@ void Game::updateFrameLate() {
         if (world->player) {
 
             if (game_timestate.now - game_timestate.lastTick <= game_timestate.mspt) {
-                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) / (double) game_timestate.mspt);
+                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) /
+                                          (double) game_timestate.mspt);
 
                 plPosX = world->player->x + (int) (world->player->vx * thruTick);
                 plPosY = world->player->y + (int) (world->player->vy * thruTick);
@@ -2758,14 +2957,18 @@ void Game::updateFrameLate() {
             //plPosX = (float)(plPosX + (world->player->x - plPosX) / 25.0);
             //plPosY = (float)(plPosY + (world->player->y - plPosY) / 25.0);
 
-            nofsX = (int) (-((int) plPosX + world->player->hw / 2 + world->loadZone.x) * scale + global.platform.WIDTH / 2);
-            nofsY = (int) (-((int) plPosY + world->player->hh / 2 + world->loadZone.y) * scale + global.platform.HEIGHT / 2);
+            nofsX = (int) (-((int) plPosX + world->player->hw / 2 + world->loadZone.x) * scale +
+                           global.platform.WIDTH / 2);
+            nofsY = (int) (-((int) plPosY + world->player->hh / 2 + world->loadZone.y) * scale +
+                           global.platform.HEIGHT / 2);
         } else {
             plPosX = (float) (plPosX + (freeCamX - plPosX) / 50.0f);
             plPosY = (float) (plPosY + (freeCamY - plPosY) / 50.0f);
 
-            nofsX = (int) (-(plPosX + 0 + world->loadZone.x) * scale + global.platform.WIDTH / 2.0f);
-            nofsY = (int) (-(plPosY + 0 + world->loadZone.y) * scale + global.platform.HEIGHT / 2.0f);
+            nofsX = (int) (-(plPosX + 0 + world->loadZone.x) * scale +
+                           global.platform.WIDTH / 2.0f);
+            nofsY = (int) (-(plPosY + 0 + world->loadZone.y) * scale +
+                           global.platform.HEIGHT / 2.0f);
         }
 
         accLoadX += (nofsX - ofsX) / (float) scale;
@@ -2776,9 +2979,10 @@ void Game::updateFrameLate() {
         ofsX += (nofsX - ofsX);
         ofsY += (nofsY - ofsY);
 
-
-        camX = (float) (camX + (desCamX - camX) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
-        camY = (float) (camY + (desCamY - camY) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
+        camX = (float) (camX +
+                        (desCamX - camX) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
+        camY = (float) (camY +
+                        (desCamY - camY) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
     }
 }
 
@@ -2787,7 +2991,6 @@ void Game::renderEarly() {
     if (state == LOADING) {
         if (game_timestate.now - game_timestate.lastLoadingTick > 20) {
             // render loading screen
-
 
             unsigned int *ldPixels = (unsigned int *) TexturePack_.pixelsLoading_ar;
             bool anyFalse = false;
@@ -2803,9 +3006,7 @@ void Game::renderEarly() {
                     //newState = rand() % 2;
 
                     if (!state && y == 0) {
-                        if (rand() % 6 == 0) {
-                            newState = true;
-                        }
+                        if (rand() % 6 == 0) { newState = true; }
                         /*if (x >= drop - 1 && x <= drop + 1) {
                             newState = true;
                         }else if (x >= drop2 - 1 && x <= drop2 + 1) {
@@ -2814,23 +3015,33 @@ void Game::renderEarly() {
                     }
 
                     if (state && y < TexturePack_.loadingScreenH - 1) {
-                        if (ldPixels[(x + (y + 1) * TexturePack_.loadingScreenW)] == loadingOffColor) {
+                        if (ldPixels[(x + (y + 1) * TexturePack_.loadingScreenW)] ==
+                            loadingOffColor) {
                             ldPixels[(x + (y + 1) * TexturePack_.loadingScreenW)] = loadingOnColor;
                             newState = false;
                         } else {
-                            bool canLeft = x > 0 && ldPixels[((x - 1) + (y + 1) * TexturePack_.loadingScreenW)] == loadingOffColor;
-                            bool canRight = x < TexturePack_.loadingScreenW - 1 && ldPixels[((x + 1) + (y + 1) * TexturePack_.loadingScreenW)] == loadingOffColor;
+                            bool canLeft =
+                                    x > 0 &&
+                                    ldPixels[((x - 1) + (y + 1) * TexturePack_.loadingScreenW)] ==
+                                            loadingOffColor;
+                            bool canRight =
+                                    x < TexturePack_.loadingScreenW - 1 &&
+                                    ldPixels[((x + 1) + (y + 1) * TexturePack_.loadingScreenW)] ==
+                                            loadingOffColor;
                             if (canLeft && !(canRight && (rand() % 2 == 0))) {
-                                ldPixels[((x - 1) + (y + 1) * TexturePack_.loadingScreenW)] = loadingOnColor;
+                                ldPixels[((x - 1) + (y + 1) * TexturePack_.loadingScreenW)] =
+                                        loadingOnColor;
                                 newState = false;
                             } else if (canRight) {
-                                ldPixels[((x + 1) + (y + 1) * TexturePack_.loadingScreenW)] = loadingOnColor;
+                                ldPixels[((x + 1) + (y + 1) * TexturePack_.loadingScreenW)] =
+                                        loadingOnColor;
                                 newState = false;
                             }
                         }
                     }
 
-                    ldPixels[(x + y * TexturePack_.loadingScreenW)] = (newState ? loadingOnColor : loadingOffColor);
+                    ldPixels[(x + y * TexturePack_.loadingScreenW)] =
+                            (newState ? loadingOnColor : loadingOffColor);
                     int sx = global.platform.WIDTH / TexturePack_.loadingScreenW;
                     int sy = global.platform.HEIGHT / TexturePack_.loadingScreenH;
                     //METAENGINE_Render_RectangleFilled(target, x * sx, y * sy, x * sx + sx, y * sy + sy, state ? SDL_Color{ 0xff, 0, 0, 0xff } : SDL_Color{ 0, 0xff, 0, 0xff });
@@ -2842,12 +3053,9 @@ void Game::renderEarly() {
                 loadingOffColor = tmp;
             }
 
-            METAENGINE_Render_UpdateImageBytes(
-                    TexturePack_.loadingTexture,
-                    NULL,
-                    &TexturePack_.pixelsLoading_ar[0],
-                    TexturePack_.loadingScreenW * 4);
-
+            METAENGINE_Render_UpdateImageBytes(TexturePack_.loadingTexture, NULL,
+                                               &TexturePack_.pixelsLoading_ar[0],
+                                               TexturePack_.loadingScreenW * 4);
 
             game_timestate.lastLoadingTick = game_timestate.now;
         } else {
@@ -2860,9 +3068,12 @@ void Game::renderEarly() {
         METAENGINE_Render_ActivateShaderProgram(0, NULL);
         METAENGINE_Render_BlitRect(TexturePack_.loadingTexture, NULL, RenderTarget_.target, NULL);
         if (dt_loading.w == -1) {
-            dt_loading = Drawing::drawTextParams(RenderTarget_.target, "Loading...", font64, global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32, 255, 255, 255, ALIGN_CENTER);
+            dt_loading = Drawing::drawTextParams(
+                    RenderTarget_.target, "Loading...", font64, global.platform.WIDTH / 2,
+                    global.platform.HEIGHT / 2 - 32, 255, 255, 255, ALIGN_CENTER);
         }
-        Drawing::drawText(RenderTarget_.target, dt_loading, global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32, ALIGN_CENTER);
+        Drawing::drawText(RenderTarget_.target, dt_loading, global.platform.WIDTH / 2,
+                          global.platform.HEIGHT / 2 - 32, ALIGN_CENTER);
     } else {
         // render entities with LERP
 
@@ -2870,15 +3081,22 @@ void Game::renderEarly() {
             METAENGINE_Render_Clear(TexturePack_.textureEntities->target);
             METAENGINE_Render_Clear(TexturePack_.textureEntitiesLQ->target);
             if (world->player) {
-                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) / (double) game_timestate.mspt);
+                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) /
+                                          (double) game_timestate.mspt);
 
-                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities, METAENGINE_Render_BLEND_ADD);
-                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ, METAENGINE_Render_BLEND_ADD);
+                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities,
+                                               METAENGINE_Render_BLEND_ADD);
+                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ,
+                                               METAENGINE_Render_BLEND_ADD);
                 int scaleEnt = Settings::hd_objects ? Settings::hd_objects_size : 1;
 
                 for (auto &v: world->entities) {
-                    v->renderLQ(TexturePack_.textureEntitiesLQ->target, world->loadZone.x + (int) (v->vx * thruTick), world->loadZone.y + (int) (v->vy * thruTick));
-                    v->render(TexturePack_.textureEntities->target, world->loadZone.x + (int) (v->vx * thruTick), world->loadZone.y + (int) (v->vy * thruTick));
+                    v->renderLQ(TexturePack_.textureEntitiesLQ->target,
+                                world->loadZone.x + (int) (v->vx * thruTick),
+                                world->loadZone.y + (int) (v->vy * thruTick));
+                    v->render(TexturePack_.textureEntities->target,
+                              world->loadZone.x + (int) (v->vx * thruTick),
+                              world->loadZone.y + (int) (v->vy * thruTick));
                 }
 
                 if (world->player && world->player->heldItem != NULL) {
@@ -2895,23 +3113,30 @@ void Game::renderEarly() {
                                 dy = dy / len * 40;
                             }
 
-                            METAENGINE_Render_Line(TexturePack_.textureEntitiesLQ->target, world->player->hammerX + dx, world->player->hammerY + dy, world->player->hammerX, world->player->hammerY, {0xff, 0xff, 0x00, 0xff});
+                            METAENGINE_Render_Line(TexturePack_.textureEntitiesLQ->target,
+                                                   world->player->hammerX + dx,
+                                                   world->player->hammerY + dy,
+                                                   world->player->hammerX, world->player->hammerY,
+                                                   {0xff, 0xff, 0x00, 0xff});
                         } else {
                             int startInd = getAimSolidSurface(64);
 
                             if (startInd != -1) {
                                 int x = startInd % world->width;
                                 int y = startInd / world->width;
-                                METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target, x - 1, y - 1, x + 1, y + 1, {0xff, 0xff, 0x00, 0xE0});
+                                METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target,
+                                                            x - 1, y - 1, x + 1, y + 1,
+                                                            {0xff, 0xff, 0x00, 0xE0});
                             }
                         }
                     }
                 }
-                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities, METAENGINE_Render_BLEND_NORMAL);
-                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ, METAENGINE_Render_BLEND_NORMAL);
+                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities,
+                                               METAENGINE_Render_BLEND_NORMAL);
+                METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ,
+                                               METAENGINE_Render_BLEND_NORMAL);
             }
         }
-
 
         if (Controls::mmouse) {
             int x = (int) ((mx - ofsX - camX) / scale);
@@ -2923,13 +3148,12 @@ void Game::renderEarly() {
                     x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
                     y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
                     {0xff, 0x40, 0x40, 0x90});
-            METAENGINE_Render_Rectangle(
-                    TexturePack_.textureEntitiesLQ->target,
-                    x - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                    y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                    {0xff, 0x40, 0x40, 0xE0});
+            METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target,
+                                        x - GameUI::DebugDrawUI::brushSize / 2.0f,
+                                        y - GameUI::DebugDrawUI::brushSize / 2.0f,
+                                        x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                                        y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                                        {0xff, 0x40, 0x40, 0xE0});
         } else if (Controls::DEBUG_DRAW->get()) {
             int x = (int) ((mx - ofsX - camX) / scale);
             int y = (int) ((my - ofsY - camY) / scale);
@@ -2940,19 +3164,17 @@ void Game::renderEarly() {
                     x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
                     y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
                     {0x00, 0xff, 0xB0, 0x80});
-            METAENGINE_Render_Rectangle(
-                    TexturePack_.textureEntitiesLQ->target,
-                    x - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                    y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                    {0x00, 0xff, 0xB0, 0xE0});
+            METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target,
+                                        x - GameUI::DebugDrawUI::brushSize / 2.0f,
+                                        y - GameUI::DebugDrawUI::brushSize / 2.0f,
+                                        x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                                        y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                                        {0x00, 0xff, 0xB0, 0xE0});
         }
     }
 }
 
 void Game::renderLate() {
-
 
     RenderTarget_.target = TexturePack_.backgroundImage->target;
     METAENGINE_Render_Clear(RenderTarget_.target);
@@ -2962,11 +3184,13 @@ void Game::renderLate() {
     } else {
         // draw backgrounds
 
-
         Background *bg = backgrounds->Get("TEST_OVERWORLD");
-        if (Settings::draw_background && scale <= bg->layers[0].surface.size() && world->loadZone.y > -5 * CHUNK_H) {
+        if (Settings::draw_background && scale <= bg->layers[0].surface.size() &&
+            world->loadZone.y > -5 * CHUNK_H) {
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_SET);
-            SDL_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff), static_cast<UInt8>((bg->solid >> 8) & 0xff), static_cast<UInt8>((bg->solid >> 0) & 0xff), 0xff};
+            SDL_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff),
+                             static_cast<UInt8>((bg->solid >> 8) & 0xff),
+                             static_cast<UInt8>((bg->solid >> 0) & 0xff), 0xff};
             METAENGINE_Render_ClearColor(RenderTarget_.target, col);
 
             METAENGINE_Render_Rect *dst = nullptr;
@@ -3000,8 +3224,13 @@ void Game::renderLate() {
                     src->w = tw;
                     src->h = th;
 
-                    dst->x = (((ofsX + camX) + world->loadZone.x * scale) + n * tw / cur.parralaxX) * cur.parralaxX + world->width / 2.0f * scale - tw / 2.0f;
-                    dst->y = ((ofsY + camY) + world->loadZone.y * scale) * cur.parralaxY + world->height / 2.0f * scale - th / 2.0f - global.platform.HEIGHT / 3.0f * (scale - 1);
+                    dst->x =
+                            (((ofsX + camX) + world->loadZone.x * scale) + n * tw / cur.parralaxX) *
+                                    cur.parralaxX +
+                            world->width / 2.0f * scale - tw / 2.0f;
+                    dst->y = ((ofsY + camY) + world->loadZone.y * scale) * cur.parralaxY +
+                             world->height / 2.0f * scale - th / 2.0f -
+                             global.platform.HEIGHT / 3.0f * (scale - 1);
                     dst->w = (float) tw;
                     dst->h = (float) th;
 
@@ -3044,16 +3273,20 @@ void Game::renderLate() {
             METADOT_DELETE(C, src, METAENGINE_Render_Rect);
         }
 
-
-        METAENGINE_Render_Rect r1 = METAENGINE_Render_Rect{(float) (ofsX + camX), (float) (ofsY + camY), (float) (world->width * scale), (float) (world->height * scale)};
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureBackground, METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_Rect r1 = METAENGINE_Render_Rect{
+                (float) (ofsX + camX), (float) (ofsY + camY), (float) (world->width * scale),
+                (float) (world->height * scale)};
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureBackground,
+                                       METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_BlitRect(TexturePack_.textureBackground, NULL, RenderTarget_.target, &r1);
 
         METAENGINE_Render_SetBlendMode(TexturePack_.textureLayer2, METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_BlitRect(TexturePack_.textureLayer2, NULL, RenderTarget_.target, &r1);
 
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsBack, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_BlitRect(TexturePack_.textureObjectsBack, NULL, RenderTarget_.target, &r1);
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsBack,
+                                       METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_BlitRect(TexturePack_.textureObjectsBack, NULL, RenderTarget_.target,
+                                   &r1);
 
         // shader
 
@@ -3063,16 +3296,21 @@ void Game::renderLate() {
 
                 global.shaderworker.waterFlowPassShader->activate();
                 global.shaderworker.waterFlowPassShader->update(world->width, world->height);
-                METAENGINE_Render_SetBlendMode(TexturePack_.textureFlow, METAENGINE_Render_BLEND_SET);
-                METAENGINE_Render_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target, NULL);
-
+                METAENGINE_Render_SetBlendMode(TexturePack_.textureFlow,
+                                               METAENGINE_Render_BLEND_SET);
+                METAENGINE_Render_BlitRect(TexturePack_.textureFlow, NULL,
+                                           TexturePack_.textureFlowSpead->target, NULL);
 
                 global.shaderworker.waterFlowPassShader->dirty = false;
             }
 
             global.shaderworker.waterShader->activate();
             float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
-            global.shaderworker.waterShader->update(t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead, Settings::water_overlay, Settings::water_showFlow, Settings::water_pixelated);
+            global.shaderworker.waterShader->update(
+                    t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale,
+                    TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale,
+                    TexturePack_.textureFlowSpead, Settings::water_overlay,
+                    Settings::water_showFlow, Settings::water_pixelated);
         }
 
         RenderTarget_.target = RenderTarget_.realTarget;
@@ -3082,30 +3320,37 @@ void Game::renderLate() {
         METAENGINE_Render_SetBlendMode(TexturePack_.texture, METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_ActivateShaderProgram(0, NULL);
 
-
         // done shader
-
 
         int lmsx = (int) ((mx - ofsX - camX) / scale);
         int lmsy = (int) ((my - ofsY - camY) / scale);
 
         METAENGINE_Render_Clear(TexturePack_.worldTexture->target);
 
-        METAENGINE_Render_BlitRect(TexturePack_.texture, NULL, TexturePack_.worldTexture->target, NULL);
+        METAENGINE_Render_BlitRect(TexturePack_.texture, NULL, TexturePack_.worldTexture->target,
+                                   NULL);
 
         METAENGINE_Render_SetBlendMode(TexturePack_.textureObjects, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_BlitRect(TexturePack_.textureObjects, NULL, TexturePack_.worldTexture->target, NULL);
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsLQ, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_BlitRect(TexturePack_.textureObjectsLQ, NULL, TexturePack_.worldTexture->target, NULL);
+        METAENGINE_Render_BlitRect(TexturePack_.textureObjects, NULL,
+                                   TexturePack_.worldTexture->target, NULL);
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsLQ,
+                                       METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_BlitRect(TexturePack_.textureObjectsLQ, NULL,
+                                   TexturePack_.worldTexture->target, NULL);
 
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureParticles, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_BlitRect(TexturePack_.textureParticles, NULL, TexturePack_.worldTexture->target, NULL);
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureParticles,
+                                       METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_BlitRect(TexturePack_.textureParticles, NULL,
+                                   TexturePack_.worldTexture->target, NULL);
 
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_BlitRect(TexturePack_.textureEntitiesLQ, NULL, TexturePack_.worldTexture->target, NULL);
-        METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities, METAENGINE_Render_BLEND_NORMAL);
-        METAENGINE_Render_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
-
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ,
+                                       METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_BlitRect(TexturePack_.textureEntitiesLQ, NULL,
+                                   TexturePack_.worldTexture->target, NULL);
+        METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities,
+                                       METAENGINE_Render_BLEND_NORMAL);
+        METAENGINE_Render_BlitRect(TexturePack_.textureEntities, NULL,
+                                   TexturePack_.worldTexture->target, NULL);
 
         if (Settings::draw_shaders) global.shaderworker.newLightingShader->activate();
 
@@ -3125,15 +3370,20 @@ void Game::renderLate() {
             float lightTy;
 
             if (world->player) {
-                lightTx = (world->loadZone.x + world->player->x + world->player->hw / 2.0f) / (float) world->width;
-                lightTy = (world->loadZone.y + world->player->y + world->player->hh / 2.0f) / (float) world->height;
+                lightTx = (world->loadZone.x + world->player->x + world->player->hw / 2.0f) /
+                          (float) world->width;
+                lightTy = (world->loadZone.y + world->player->y + world->player->hh / 2.0f) /
+                          (float) world->height;
             } else {
                 lightTx = lmsx / (float) world->width;
                 lightTy = lmsy / (float) world->height;
             }
 
-            if (global.shaderworker.newLightingShader->lastLx != lightTx || global.shaderworker.newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->update(TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
+            if (global.shaderworker.newLightingShader->lastLx != lightTx ||
+                global.shaderworker.newLightingShader->lastLy != lightTy)
+                needToRerenderLighting = true;
+            global.shaderworker.newLightingShader->update(
+                    TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
             if (global.shaderworker.newLightingShader->lastQuality != Settings::lightingQuality) {
                 needToRerenderLighting = true;
             }
@@ -3141,55 +3391,75 @@ void Game::renderLate() {
 
             int nBg = 0;
             int range = 64;
-            for (int xx = std::max(0, (int) (lightTx * world->width) - range); xx <= std::min((int) (lightTx * world->width) + range, world->width - 1); xx++) {
-                for (int yy = std::max(0, (int) (lightTy * world->height) - range); yy <= std::min((int) (lightTy * world->height) + range, world->height - 1); yy++) {
-                    if (world->background[xx + yy * world->width] != 0x00) {
-                        nBg++;
-                    }
+            for (int xx = std::max(0, (int) (lightTx * world->width) - range);
+                 xx <= std::min((int) (lightTx * world->width) + range, world->width - 1); xx++) {
+                for (int yy = std::max(0, (int) (lightTy * world->height) - range);
+                     yy <= std::min((int) (lightTy * world->height) + range, world->height - 1);
+                     yy++) {
+                    if (world->background[xx + yy * world->width] != 0x00) { nBg++; }
                 }
             }
 
-            global.shaderworker.newLightingShader_insideDes = std::min(std::max(0.0f, (float) nBg / ((range * 2) * (range * 2))), 1.0f);
-            global.shaderworker.newLightingShader_insideCur += (global.shaderworker.newLightingShader_insideDes - global.shaderworker.newLightingShader_insideCur) / 2.0f * (game_timestate.deltaTime / 1000.0f);
+            global.shaderworker.newLightingShader_insideDes =
+                    std::min(std::max(0.0f, (float) nBg / ((range * 2) * (range * 2))), 1.0f);
+            global.shaderworker.newLightingShader_insideCur +=
+                    (global.shaderworker.newLightingShader_insideDes -
+                     global.shaderworker.newLightingShader_insideCur) /
+                    2.0f * (game_timestate.deltaTime / 1000.0f);
 
-            float ins = global.shaderworker.newLightingShader_insideCur < 0.05 ? 0.0 : global.shaderworker.newLightingShader_insideCur;
-            if (global.shaderworker.newLightingShader->lastInside != ins) needToRerenderLighting = true;
+            float ins = global.shaderworker.newLightingShader_insideCur < 0.05
+                                ? 0.0
+                                : global.shaderworker.newLightingShader_insideCur;
+            if (global.shaderworker.newLightingShader->lastInside != ins)
+                needToRerenderLighting = true;
             global.shaderworker.newLightingShader->setInside(ins);
-            global.shaderworker.newLightingShader->setBounds(world->tickZone.x * Settings::hd_objects_size, world->tickZone.y * Settings::hd_objects_size, (world->tickZone.x + world->tickZone.w) * Settings::hd_objects_size, (world->tickZone.y + world->tickZone.h) * Settings::hd_objects_size);
+            global.shaderworker.newLightingShader->setBounds(
+                    world->tickZone.x * Settings::hd_objects_size,
+                    world->tickZone.y * Settings::hd_objects_size,
+                    (world->tickZone.x + world->tickZone.w) * Settings::hd_objects_size,
+                    (world->tickZone.y + world->tickZone.h) * Settings::hd_objects_size);
 
-            if (global.shaderworker.newLightingShader->lastSimpleMode != Settings::simpleLighting) needToRerenderLighting = true;
+            if (global.shaderworker.newLightingShader->lastSimpleMode != Settings::simpleLighting)
+                needToRerenderLighting = true;
             global.shaderworker.newLightingShader->setSimpleMode(Settings::simpleLighting);
 
-            if (global.shaderworker.newLightingShader->lastEmissionEnabled != Settings::lightingEmission) needToRerenderLighting = true;
+            if (global.shaderworker.newLightingShader->lastEmissionEnabled !=
+                Settings::lightingEmission)
+                needToRerenderLighting = true;
             global.shaderworker.newLightingShader->setEmissionEnabled(Settings::lightingEmission);
 
-            if (global.shaderworker.newLightingShader->lastDitheringEnabled != Settings::lightingDithering) needToRerenderLighting = true;
+            if (global.shaderworker.newLightingShader->lastDitheringEnabled !=
+                Settings::lightingDithering)
+                needToRerenderLighting = true;
             global.shaderworker.newLightingShader->setDitheringEnabled(Settings::lightingDithering);
         }
 
         if (Settings::draw_shaders && needToRerenderLighting) {
             METAENGINE_Render_Clear(TexturePack_.lightingTexture->target);
-            METAENGINE_Render_BlitRect(TexturePack_.worldTexture, NULL, TexturePack_.lightingTexture->target, NULL);
+            METAENGINE_Render_BlitRect(TexturePack_.worldTexture, NULL,
+                                       TexturePack_.lightingTexture->target, NULL);
         }
         if (Settings::draw_shaders) METAENGINE_Render_ActivateShaderProgram(0, NULL);
-
 
         METAENGINE_Render_BlitRect(TexturePack_.worldTexture, NULL, RenderTarget_.target, &r1);
 
         if (Settings::draw_shaders) {
-            METAENGINE_Render_SetBlendMode(TexturePack_.lightingTexture, Settings::draw_light_overlay ? METAENGINE_Render_BLEND_NORMAL : METAENGINE_Render_BLEND_MULTIPLY);
-            METAENGINE_Render_BlitRect(TexturePack_.lightingTexture, NULL, RenderTarget_.target, &r1);
+            METAENGINE_Render_SetBlendMode(TexturePack_.lightingTexture,
+                                           Settings::draw_light_overlay
+                                                   ? METAENGINE_Render_BLEND_NORMAL
+                                                   : METAENGINE_Render_BLEND_MULTIPLY);
+            METAENGINE_Render_BlitRect(TexturePack_.lightingTexture, NULL, RenderTarget_.target,
+                                       &r1);
         }
-
 
         if (Settings::draw_shaders) {
             METAENGINE_Render_Clear(TexturePack_.texture2Fire->target);
 
             global.shaderworker.fireShader->activate();
             global.shaderworker.fireShader->update(TexturePack_.textureFire);
-            METAENGINE_Render_BlitRect(TexturePack_.textureFire, NULL, TexturePack_.texture2Fire->target, NULL);
+            METAENGINE_Render_BlitRect(TexturePack_.textureFire, NULL,
+                                       TexturePack_.texture2Fire->target, NULL);
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
-
 
             global.shaderworker.fire2Shader->activate();
             global.shaderworker.fire2Shader->update(TexturePack_.texture2Fire);
@@ -3205,21 +3475,24 @@ void Game::renderLate() {
 
 void Game::renderOverlays() {
 
-
-    METAENGINE_Render_Rect r1 = METAENGINE_Render_Rect{(float) (ofsX + camX), (float) (ofsY + camY), (float) (world->width * scale), (float) (world->height * scale)};
-    METAENGINE_Render_Rect r2 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale), (float) (ofsY + camY + world->tickZone.y * scale), (float) (world->tickZone.w * scale), (float) (world->tickZone.h * scale)};
+    METAENGINE_Render_Rect r1 =
+            METAENGINE_Render_Rect{(float) (ofsX + camX), (float) (ofsY + camY),
+                                   (float) (world->width * scale), (float) (world->height * scale)};
+    METAENGINE_Render_Rect r2 = METAENGINE_Render_Rect{
+            (float) (ofsX + camX + world->tickZone.x * scale),
+            (float) (ofsY + camY + world->tickZone.y * scale), (float) (world->tickZone.w * scale),
+            (float) (world->tickZone.h * scale)};
 
     if (Settings::draw_temperature_map) {
         METAENGINE_Render_SetBlendMode(TexturePack_.temperatureMap, METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_BlitRect(TexturePack_.temperatureMap, NULL, RenderTarget_.target, &r1);
     }
 
-
     if (Settings::draw_load_zones) {
-        METAENGINE_Render_Rect r2m = METAENGINE_Render_Rect{(float) (ofsX + camX + world->meshZone.x * scale),
-                                                            (float) (ofsY + camY + world->meshZone.y * scale),
-                                                            (float) (world->meshZone.w * scale),
-                                                            (float) (world->meshZone.h * scale)};
+        METAENGINE_Render_Rect r2m = METAENGINE_Render_Rect{
+                (float) (ofsX + camX + world->meshZone.x * scale),
+                (float) (ofsY + camY + world->meshZone.y * scale),
+                (float) (world->meshZone.w * scale), (float) (world->meshZone.h * scale)};
 
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r2m, {0x00, 0xff, 0xff, 0xff});
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r2, {0xff, 0x00, 0x00, 0xff});
@@ -3230,20 +3503,41 @@ void Game::renderOverlays() {
         SDL_Color col = {0xff, 0x00, 0x00, 0x20};
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
-        METAENGINE_Render_Rect r3 = METAENGINE_Render_Rect{(float) (0), (float) (0), (float) ((ofsX + camX + world->tickZone.x * scale)), (float) (global.platform.HEIGHT)};
+        METAENGINE_Render_Rect r3 = METAENGINE_Render_Rect{
+                (float) (0), (float) (0), (float) ((ofsX + camX + world->tickZone.x * scale)),
+                (float) (global.platform.HEIGHT)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
-        METAENGINE_Render_Rect r4 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale), (float) (0), (float) ((global.platform.WIDTH) - (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale)), (float) (global.platform.HEIGHT)};
+        METAENGINE_Render_Rect r4 = METAENGINE_Render_Rect{
+                (float) (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale),
+                (float) (0),
+                (float) ((global.platform.WIDTH) -
+                         (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale)),
+                (float) (global.platform.HEIGHT)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
-        METAENGINE_Render_Rect r5 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale), (float) (0), (float) (world->tickZone.w * scale), (float) (ofsY + camY + world->tickZone.y * scale)};
+        METAENGINE_Render_Rect r5 =
+                METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale),
+                                       (float) (0), (float) (world->tickZone.w * scale),
+                                       (float) (ofsY + camY + world->tickZone.y * scale)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
-        METAENGINE_Render_Rect r6 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale), (float) (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale), (float) (world->tickZone.w * scale), (float) (global.platform.HEIGHT - (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale))};
+        METAENGINE_Render_Rect r6 = METAENGINE_Render_Rect{
+                (float) (ofsX + camX + world->tickZone.x * scale),
+                (float) (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale),
+                (float) (world->tickZone.w * scale),
+                (float) (global.platform.HEIGHT -
+                         (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale))};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        METAENGINE_Render_Rect r7 = METAENGINE_Render_Rect{(float) (ofsX + camX + world->width / 2 * scale - (global.platform.WIDTH / 3 * scale / 2)), (float) (ofsY + camY + world->height / 2 * scale - (global.platform.HEIGHT / 3 * scale / 2)), (float) (global.platform.WIDTH / 3 * scale), (float) (global.platform.HEIGHT / 3 * scale)};
+        METAENGINE_Render_Rect r7 =
+                METAENGINE_Render_Rect{(float) (ofsX + camX + world->width / 2 * scale -
+                                                (global.platform.WIDTH / 3 * scale / 2)),
+                                       (float) (ofsY + camY + world->height / 2 * scale -
+                                                (global.platform.HEIGHT / 3 * scale / 2)),
+                                       (float) (global.platform.WIDTH / 3 * scale),
+                                       (float) (global.platform.HEIGHT / 3 * scale)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r7, col);
     }
 
@@ -3350,8 +3644,10 @@ void Game::renderOverlays() {
 
         int minChX = (int) floor((world->meshZone.x - world->loadZone.x) / CHUNK_W);
         int minChY = (int) floor((world->meshZone.y - world->loadZone.y) / CHUNK_H);
-        int maxChX = (int) ceil((world->meshZone.x + world->meshZone.w - world->loadZone.x) / CHUNK_W);
-        int maxChY = (int) ceil((world->meshZone.y + world->meshZone.h - world->loadZone.y) / CHUNK_H);
+        int maxChX =
+                (int) ceil((world->meshZone.x + world->meshZone.w - world->loadZone.x) / CHUNK_W);
+        int maxChY =
+                (int) ceil((world->meshZone.y + world->meshZone.h - world->loadZone.y) / CHUNK_H);
 
         for (int cx = minChX; cx <= maxChX; cx++) {
             for (int cy = minChY; cy <= maxChY; cy++) {
@@ -3361,7 +3657,8 @@ void Game::renderOverlays() {
                 float x = ((ch->x * CHUNK_W + world->loadZone.x) * scale + ofsX + camX);
                 float y = ((ch->y * CHUNK_H + world->loadZone.y) * scale + ofsY + camY);
 
-                METAENGINE_Render_Rectangle(RenderTarget_.target, x, y, x + CHUNK_W * scale, y + CHUNK_H * scale, {50, 50, 0, 255});
+                METAENGINE_Render_Rectangle(RenderTarget_.target, x, y, x + CHUNK_W * scale,
+                                            y + CHUNK_H * scale, {50, 50, 0, 255});
 
                 //for(int i = 0; i < ch->polys.size(); i++) {
                 //    Drawing::drawPolygon(target, col, ch->polys[i].m_vertices, (int)x, (int)y, scale, ch->polys[i].m_count, 0/* + fmod((Time::millis() / 1000.0), 360)*/, 0, 0);
@@ -3384,28 +3681,30 @@ void Game::renderOverlays() {
         world->b2world->DebugDraw();
     }
 
-
     if (dt_fps.w == -1) {
         char buffFps[20];
         snprintf(buffFps, sizeof(buffFps), "%d FPS", game_timestate.fps);
         //if (dt_fps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t1);
         //if (dt_fps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t2);
-        dt_fps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16, global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
+        dt_fps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16,
+                                         global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff,
+                                         ALIGN_RIGHT);
     }
 
     Drawing::drawText(RenderTarget_.target, dt_fps, global.platform.WIDTH - 4, 2, ALIGN_RIGHT);
-
 
     if (dt_feelsLikeFps.w == -1) {
         char buffFps[22];
         snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS", game_timestate.feelsLikeFps);
         //if (dt_feelsLikeFps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t1);
         //if (dt_feelsLikeFps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t2);
-        dt_feelsLikeFps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16, global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff, ALIGN_RIGHT);
+        dt_feelsLikeFps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16,
+                                                  global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff,
+                                                  ALIGN_RIGHT);
     }
 
-    Drawing::drawText(RenderTarget_.target, dt_feelsLikeFps, global.platform.WIDTH - 4, 2 + 14, ALIGN_RIGHT);
-
+    Drawing::drawText(RenderTarget_.target, dt_feelsLikeFps, global.platform.WIDTH - 4, 2 + 14,
+                      ALIGN_RIGHT);
 
     if (Settings::draw_chunk_state) {
 
@@ -3414,7 +3713,6 @@ void Game::renderOverlays() {
         int centerX = global.platform.WIDTH / 2;
         int centerY = CHUNK_UNLOAD_DIST * chSize + 10;
 
-
         int pposX = plPosX;
         int pposY = plPosY;
         int pchx = (int) ((pposX / CHUNK_W) * chSize);
@@ -3422,7 +3720,11 @@ void Game::renderOverlays() {
         int pchxf = (int) (((float) pposX / CHUNK_W) * chSize);
         int pchyf = (int) (((float) pposY / CHUNK_H) * chSize);
 
-        METAENGINE_Render_Rectangle(RenderTarget_.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize, centerY - chSize * CHUNK_UNLOAD_DIST + chSize, centerX + chSize * CHUNK_UNLOAD_DIST + chSize, centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
+        METAENGINE_Render_Rectangle(
+                RenderTarget_.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize,
+                centerY - chSize * CHUNK_UNLOAD_DIST + chSize,
+                centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
+                centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
         METAENGINE_Render_Rect r = {0, 0, (float) chSize, (float) chSize};
         for (auto &p: world->chunkCache) {
@@ -3460,9 +3762,13 @@ void Game::renderOverlays() {
 
         int loadx2 = (int) (((float) (-world->loadZone.x + world->loadZone.w) / CHUNK_W) * chSize);
         int loady2 = (int) (((float) (-world->loadZone.y + world->loadZone.h) / CHUNK_H) * chSize);
-        METAENGINE_Render_Rectangle(RenderTarget_.target, centerX - pchx + loadx, centerY - pchy + loady, centerX - pchx + loadx2, centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
+        METAENGINE_Render_Rectangle(RenderTarget_.target, centerX - pchx + loadx,
+                                    centerY - pchy + loady, centerX - pchx + loadx2,
+                                    centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
 
-        METAENGINE_Render_Rectangle(RenderTarget_.target, centerX - pchx + pchxf, centerY - pchy + pchyf, centerX + 1 - pchx + pchxf, centerY + 1 - pchy + pchyf, {0x00, 0xff, 0x00, 0xff});
+        METAENGINE_Render_Rectangle(RenderTarget_.target, centerX - pchx + pchxf,
+                                    centerY - pchy + pchyf, centerX + 1 - pchx + pchxf,
+                                    centerY + 1 - pchy + pchyf, {0x00, 0xff, 0x00, 0xff});
     }
 
     if (Settings::draw_debug_stats) {
@@ -3476,28 +3782,40 @@ void Game::renderOverlays() {
 
         snprintf(buff1, sizeof(buff1), "XY: %.2f / %.2f", plPosX, plPosY);
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
-        snprintf(buff1, sizeof(buff1), "V: %.3f / %.3f", world->player ? world->player->vx : 0, world->player ? world->player->vy : 0);
+        snprintf(buff1, sizeof(buff1), "V: %.3f / %.3f", world->player ? world->player->vx : 0,
+                 world->player ? world->player->vy : 0);
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         snprintf(buff1, sizeof(buff1), "Particles: %d", (int) world->particles.size());
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         snprintf(buff1, sizeof(buff1), "Entities: %d", (int) world->entities.size());
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         int rbCt = 0;
         for (auto &r: world->rigidBodies) {
             if (r->body->IsEnabled()) rbCt++;
         }
 
-        snprintf(buff1, sizeof(buff1), "RigidBodies: %d/%d O, %d W", rbCt, (int) world->rigidBodies.size(), (int) world->worldRigidBodies.size());
+        snprintf(buff1, sizeof(buff1), "RigidBodies: %d/%d O, %d W", rbCt,
+                 (int) world->rigidBodies.size(), (int) world->worldRigidBodies.size());
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         int rbTriACt = 0;
         int rbTriCt = 0;
@@ -3523,21 +3841,23 @@ void Game::renderOverlays() {
 
         int minChX = (int) floor((world->meshZone.x - world->loadZone.x) / CHUNK_W);
         int minChY = (int) floor((world->meshZone.y - world->loadZone.y) / CHUNK_H);
-        int maxChX = (int) ceil((world->meshZone.x + world->meshZone.w - world->loadZone.x) / CHUNK_W);
-        int maxChY = (int) ceil((world->meshZone.y + world->meshZone.h - world->loadZone.y) / CHUNK_H);
+        int maxChX =
+                (int) ceil((world->meshZone.x + world->meshZone.w - world->loadZone.x) / CHUNK_W);
+        int maxChY =
+                (int) ceil((world->meshZone.y + world->meshZone.h - world->loadZone.y) / CHUNK_H);
 
         for (int cx = minChX; cx <= maxChX; cx++) {
             for (int cy = minChY; cy <= maxChY; cy++) {
                 Chunk *ch = world->getChunk(cx, cy);
-                for (int i = 0; i < ch->polys.size(); i++) {
-                    rbTriWCt++;
-                }
+                for (int i = 0; i < ch->polys.size(); i++) { rbTriWCt++; }
             }
         }
 
         snprintf(buff1, sizeof(buff1), "Tris: %d/%d O, %d W", rbTriACt, rbTriCt, rbTriWCt);
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         int chCt = 0;
         for (auto &p: world->chunkCache) {
@@ -3551,26 +3871,39 @@ void Game::renderOverlays() {
 
         snprintf(buff1, sizeof(buff1), "Cached Chunks: %d", chCt);
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
-        snprintf(buff1, sizeof(buff1), "world->readyToReadyToMerge (%d)", (int) world->readyToReadyToMerge.size());
+        snprintf(buff1, sizeof(buff1), "world->readyToReadyToMerge (%d)",
+                 (int) world->readyToReadyToMerge.size());
         buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         for (size_t i = 0; i < world->readyToReadyToMerge.size(); i++) {
             char buff[10];
             snprintf(buff, sizeof(buff), "    #%d", (int) i);
             std::string buffAsStdStr = buff;
-            Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+            Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
+                                2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                                {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         }
         char buff2[30];
-        snprintf(buff2, sizeof(buff2), "world->readyToMerge (%d)", (int) world->readyToMerge.size());
+        snprintf(buff2, sizeof(buff2), "world->readyToMerge (%d)",
+                 (int) world->readyToMerge.size());
         std::string buffAsStdStr2 = buff2;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr2.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr2.c_str(), font16, 4,
+                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         for (size_t i = 0; i < world->readyToMerge.size(); i++) {
             char buff[20];
-            snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i, world->readyToMerge[i]->x, world->readyToMerge[i]->y);
+            snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i, world->readyToMerge[i]->x,
+                     world->readyToMerge[i]->y);
             std::string buffAsStdStr = buff;
-            Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4, 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff, {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+            Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
+                                2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+                                {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         }
     }
 
@@ -3583,11 +3916,18 @@ void Game::renderOverlays() {
                 std::string buffAsStdStr = buff;
                 //if (dt_frameGraph[i].t1 != nullptr) METAENGINE_Render_FreeImage(dt_frameGraph[i].t1);
                 //if (dt_frameGraph[i].t2 != nullptr) METAENGINE_Render_FreeImage(dt_frameGraph[i].t2);
-                dt_frameGraph[i] = Drawing::drawTextParams(RenderTarget_.target, buffAsStdStr.c_str(), font14, global.platform.WIDTH - 20, global.platform.HEIGHT - 15 - (i * 25) - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
+                dt_frameGraph[i] = Drawing::drawTextParams(
+                        RenderTarget_.target, buffAsStdStr.c_str(), font14,
+                        global.platform.WIDTH - 20, global.platform.HEIGHT - 15 - (i * 25) - 2,
+                        0xff, 0xff, 0xff, ALIGN_LEFT);
             }
 
-            Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20, global.platform.HEIGHT - 15 - (i * 25) - 2, ALIGN_LEFT);
-            METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5, global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25, global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
+            Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
+                              global.platform.HEIGHT - 15 - (i * 25) - 2, ALIGN_LEFT);
+            METAENGINE_Render_Line(
+                    RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+                    global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25,
+                    global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
         }
         /*for (int i = 0; i <= 100; i += 25) {
             char buff[20];
@@ -3613,12 +3953,24 @@ void Game::renderOverlays() {
                 col = {0xff, 0x00, 0x00, 0xff};
             }
 
-            METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - frameTimeNum - 30 + i, global.platform.HEIGHT - 10 - h, global.platform.WIDTH - frameTimeNum - 30 + i, global.platform.HEIGHT - 10, col);
+            METAENGINE_Render_Line(
+                    RenderTarget_.target, global.platform.WIDTH - frameTimeNum - 30 + i,
+                    global.platform.HEIGHT - 10 - h, global.platform.WIDTH - frameTimeNum - 30 + i,
+                    global.platform.HEIGHT - 10, col);
             //SDL_RenderDrawLine(renderer, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), global.platform.WIDTH - 25, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps), {0x00, 0xff, 0xff, 0xff});
-        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), global.platform.WIDTH - 25, global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
+        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+                               global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps),
+                               global.platform.WIDTH - 25,
+                               global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps),
+                               {0x00, 0xff, 0xff, 0xff});
+        METAENGINE_Render_Line(
+                RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+                global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps),
+                global.platform.WIDTH - 25,
+                global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps),
+                {0xff, 0x00, 0xff, 0xff});
     }
 
     METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
@@ -3668,7 +4020,6 @@ void Game::renderOverlays() {
 
 void Game::renderTemperatureMap(World *world) {
 
-
     for (int x = 0; x < world->width; x++) {
         for (int y = 0; y < world->height; y++) {
             auto t = world->tiles[x + y * world->width];
@@ -3703,7 +4054,9 @@ int Game::getAimSurface(int dist) {
 
     int startInd = -1;
     world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-        if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID || world->tiles[ind].mat->physicsType == PhysicsType::SAND || world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
+        if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID ||
+            world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
+            world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
             startInd = ind;
             return true;
         }
@@ -3714,7 +4067,6 @@ int Game::getAimSurface(int dist) {
 }
 
 void Game::quitToMainMenu() {
-
 
     if (state == LOADING) return;
 
@@ -3737,14 +4089,12 @@ void Game::quitToMainMenu() {
 
     METADOT_NEW(C, world, World);
     world->noSaveLoad = true;
-    world->init(
-            wpStr,
-            (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-            (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST,
-            RenderTarget_.target,
-            &global.audioEngine,
-            Settings::networkMode, generator);
-
+    world->init(wpStr,
+                (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
+                        CHUNK_W * RENDER_C_TEST,
+                (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
+                        CHUNK_H * RENDER_C_TEST,
+                RenderTarget_.target, &global.audioEngine, Settings::networkMode, generator);
 
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < world->width + CHUNK_W * 4; x += CHUNK_W) {
@@ -3752,7 +4102,6 @@ void Game::quitToMainMenu() {
             world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
         }
     }
-
 
     std::fill(TexturePack_.pixels.begin(), TexturePack_.pixels.end(), 0);
     std::fill(TexturePack_.pixelsBackground.begin(), TexturePack_.pixelsBackground.end(), 0);
@@ -3762,48 +4111,26 @@ void Game::quitToMainMenu() {
     std::fill(TexturePack_.pixelsEmission.begin(), TexturePack_.pixelsEmission.end(), 0);
     std::fill(TexturePack_.pixelsParticles.begin(), TexturePack_.pixelsParticles.end(), 0);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.texture,
-            NULL,
-            &TexturePack_.pixels[0],
-            world->width * 4);
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0],
+                                       world->width * 4);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.textureBackground,
-            NULL,
-            &TexturePack_.pixelsBackground[0],
-            world->width * 4);
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.textureBackground, NULL,
+                                       &TexturePack_.pixelsBackground[0], world->width * 4);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.textureLayer2,
-            NULL,
-            &TexturePack_.pixelsLayer2[0],
-            world->width * 4);
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.textureLayer2, NULL,
+                                       &TexturePack_.pixelsLayer2[0], world->width * 4);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.textureFire,
-            NULL,
-            &TexturePack_.pixelsFire[0],
-            world->width * 4);
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFire, NULL, &TexturePack_.pixelsFire[0],
+                                       world->width * 4);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.textureFlow,
-            NULL,
-            &TexturePack_.pixelsFlow[0],
-            world->width * 4);
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFlow, NULL, &TexturePack_.pixelsFlow[0],
+                                       world->width * 4);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.emissionTexture,
-            NULL,
-            &TexturePack_.pixelsEmission[0],
-            world->width * 4);
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.emissionTexture, NULL,
+                                       &TexturePack_.pixelsEmission[0], world->width * 4);
 
-    METAENGINE_Render_UpdateImageBytes(
-            TexturePack_.textureParticles,
-            NULL,
-            &TexturePack_.pixelsParticles[0],
-            world->width * 4);
-
+    METAENGINE_Render_UpdateImageBytes(TexturePack_.textureParticles, NULL,
+                                       &TexturePack_.pixelsParticles[0], world->width * 4);
 
     GameUI::MainMenuUI::visible = true;
 }

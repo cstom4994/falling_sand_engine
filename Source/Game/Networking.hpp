@@ -21,7 +21,6 @@ public:
 
 class Client {
 public:
-
     ~Client();
 
     static Client *start();
@@ -34,7 +33,6 @@ public:
 
 class Server {
 public:
-
     ~Server();
 
     static Server *start(UInt16 port);

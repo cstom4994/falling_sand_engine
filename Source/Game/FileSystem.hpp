@@ -1,16 +1,16 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #ifndef _METADOT_FILESYSTEM_HPP_
 #define _METADOT_FILESYSTEM_HPP_
 
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
-#include "Game/InEngine.h"
 #include "Core/Macros.hpp"
+#include "Game/InEngine.h"
 #include "Game/Utils.hpp"
 
-#define FUTIL_ASSERT_EXIST(stringPath) METADOT_ASSERT(FUtil::exists(stringPath), Utils::Format("FILE: {0} does not exist", stringPath))
+#define FUTIL_ASSERT_EXIST(stringPath)                                                             \
+    METADOT_ASSERT(FUtil::exists(stringPath), Utils::Format("FILE: {0} does not exist", stringPath))
 
 class Resource {
 private:
@@ -32,21 +32,18 @@ class GameDir {
     std::string gameDir;
 
 public:
-    GameDir(std::string gameDir) {
-        this->gameDir = gameDir;
-    }
+    GameDir(std::string gameDir) { this->gameDir = gameDir; }
 
-    GameDir() {
-        gameDir = "";
-    }
+    GameDir() { gameDir = ""; }
 
     std::string getPath(std::string filePathRel);
     std::string getWorldPath(std::string worldName);
 };
 
-
 namespace FUtil {
-    inline bool exists(std::string_view path) { return std::filesystem::exists(METADOT_RESLOC(path)); }
+    inline bool exists(std::string_view path) {
+        return std::filesystem::exists(METADOT_RESLOC(path));
+    }
 
     //inline void assertFileExists(std::string_view path) {
     //	ASSERT(FUtil::exists(ND_RESLOC(path)), "FILE: {0} does not exist", path);
@@ -67,7 +64,8 @@ namespace FUtil {
         FileSearchFlags_Oldest = 1 << 4,
     };
 
-    std::vector<std::string> fileList(std::string_view folder_path, FileSearchFlags flags = FileSearchFlags_None);
+    std::vector<std::string> fileList(std::string_view folder_path,
+                                      FileSearchFlags flags = FileSearchFlags_None);
 
     // absolute path of fileName in the same folder as executable
     // or "" if filename doesn't exist
@@ -81,10 +79,8 @@ namespace FUtil {
         return out;
     }
 
-
     inline void removeSuffix(std::string &s) {
-        if (s.find_last_of('.') != std::string::npos)
-            s = s.substr(0, s.find_last_of('.'));
+        if (s.find_last_of('.') != std::string::npos) s = s.substr(0, s.find_last_of('.'));
     }
 
     inline std::string removeSuffixConst(std::string_view s) {

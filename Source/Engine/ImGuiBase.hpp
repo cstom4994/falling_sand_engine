@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #ifndef _METADOT_IMGUIBASE_HPP_
 #define _METADOT_IMGUIBASE_HPP_
 

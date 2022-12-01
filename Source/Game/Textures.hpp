@@ -3,11 +3,10 @@
 #ifndef _METADOT_TEXTURES_HPP_
 #define _METADOT_TEXTURES_HPP_
 
-#include "Engine/SDLWrapper.hpp"
 #include "Core/Core.hpp"
+#include "Engine/SDLWrapper.hpp"
 
 #include <iostream>
-
 
 #define INC_Textures
 
@@ -15,7 +14,7 @@ struct ase_t;
 
 struct Aseprite
 {
-    ase_t *ase;     // Pointer to the cute_aseprite data.
+    ase_t *ase;// Pointer to the cute_aseprite data.
 };
 
 class Textures {

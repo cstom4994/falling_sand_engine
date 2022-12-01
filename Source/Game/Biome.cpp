@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Biome.hpp"
 #include "Game/InEngine.h"
 

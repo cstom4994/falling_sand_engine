@@ -22,20 +22,14 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 /* Polyline Simplification Algorithm */
 
-void DouglasPeucker::simplify_section(const std::vector<b2Vec2> &pts,
-                                      float tolerance,
-                                      size_t i, size_t j,
-                                      std::vector<bool> *mark_map,
-                                      size_t omitted) {
+void DouglasPeucker::simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i,
+                                      size_t j, std::vector<bool> *mark_map, size_t omitted) {
     /* make sure we always return 2 points. */
-    if (pts.size() - omitted <= 2)
-        return;
+    if (pts.size() - omitted <= 2) return;
 
     assert(mark_map && mark_map->size() == pts.size());
 
-    if ((i + 1) == j) {
-        return;
-    }
+    if ((i + 1) == j) { return; }
 
     float max_distance = -1.0f;
     size_t max_index = i;
@@ -60,7 +54,6 @@ void DouglasPeucker::simplify_section(const std::vector<b2Vec2> &pts,
     }
 }
 
-
 std::vector<b2Vec2> DouglasPeucker::simplify(const std::vector<b2Vec2> &vertices, float tolerance) {
     std::vector<bool> mark_map(vertices.size(), true);
 
@@ -68,9 +61,7 @@ std::vector<b2Vec2> DouglasPeucker::simplify(const std::vector<b2Vec2> &vertices
 
     std::vector<b2Vec2> result;
     for (size_t i = 0; i != vertices.size(); ++i) {
-        if (mark_map[i]) {
-            result.push_back(vertices[i]);
-        }
+        if (mark_map[i]) { result.push_back(vertices[i]); }
     }
 
     return result;

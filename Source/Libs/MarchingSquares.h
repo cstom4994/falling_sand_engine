@@ -29,9 +29,7 @@ namespace MarchingSquares {
         int y;
     };
 
-    bool operator==(const Direction &a, const Direction &b) {
-        return a.x == b.x && a.y == b.y;
-    }
+    bool operator==(const Direction &a, const Direction &b) { return a.x == b.x && a.y == b.y; }
 
     Direction operator*(const Direction &direction, int multiplier) {
         return Direction(direction.x * multiplier, direction.y * multiplier);
@@ -58,11 +56,9 @@ namespace MarchingSquares {
     Direction South() { return MakeDirection(0, -1); }
     Direction Southeast() { return MakeDirection(1, -1); }
 
-
     bool isSet(int x, int y, int width, int height, unsigned char *data) {
-        return x <= 0 || x > width || y <= 0 || y > height
-                       ? false
-                       : data[(y - 1) * width + (x - 1)] != 0;
+        return x <= 0 || x > width || y <= 0 || y > height ? false
+                                                           : data[(y - 1) * width + (x - 1)] != 0;
     }
 
     int value(int x, int y, int width, int height, unsigned char *data) {
@@ -119,7 +115,8 @@ namespace MarchingSquares {
         int initialValue = value(initialX, initialY, width, height, data);
         if (initialValue == 0 || initialValue == 15) {
             std::ostringstream error;
-            error << "Supplied initial coordinates (" << initialX << ", " << initialY << ") do not lie on a perimeter.";
+            error << "Supplied initial coordinates (" << initialX << ", " << initialY
+                  << ") do not lie on a perimeter.";
             //throw std::runtime_error(error.str());
             Result result;
             return result;
@@ -208,9 +205,7 @@ namespace MarchingSquares {
     Result FindPerimeter(int width, int height, unsigned char *data) {
         int size = width * height;
         for (int i = 0; i < size; i++) {
-            if (data[i] != 0) {
-                return FindPerimeter(i % width, i / width, width, height, data);
-            }
+            if (data[i] != 0) { return FindPerimeter(i % width, i / width, width, height, data); }
         }
         Result result;
         return result;
@@ -234,9 +229,7 @@ namespace MarchingSquares {
             if (data[i] != 0) {
                 //std::cout << (i%width) << " " << (i / width) << std::endl;
                 int val = value(i % width, i / width, width, height, data);
-                if (val != 0 && val != 15) {
-                    return {i % width, i / width};
-                }
+                if (val != 0 && val != 15) { return {i % width, i / width}; }
             }
         }
         return {-1, -1};

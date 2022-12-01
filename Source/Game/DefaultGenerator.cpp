@@ -17,24 +17,26 @@ class DefaultGenerator : public WorldGenerator {
 
     int getBaseHeight(World *world, int x, Chunk *ch) {
 
-        if (nullptr == ch) {
-            return 0;
-        }
+        if (nullptr == ch) { return 0; }
 
         Biome *b = world->getBiomeAt(ch, x, ch->y * CHUNK_H);
 
         if (b->id == Biomes::DEFAULT.id) {
             //return 0;
-            return (int) (world->height / 2 + ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 100);
+            return (int) (world->height / 2 +
+                          ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 100);
         } else if (b->id == Biomes::PLAINS.id) {
             //return 10;
-            return (int) (world->height / 2 + ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 25);
+            return (int) (world->height / 2 +
+                          ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 25);
         } else if (b->id == Biomes::FOREST.id) {
             //return 20;
-            return (int) (world->height / 2 + ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 100);
+            return (int) (world->height / 2 +
+                          ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 100);
         } else if (b->id == Biomes::MOUNTAINS.id) {
             //return 30;
-            return (int) (world->height / 2 + ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 250);
+            return (int) (world->height / 2 +
+                          ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 250);
         }
 
         return 0;
@@ -47,13 +49,18 @@ class DefaultGenerator : public WorldGenerator {
         Biome *b = world->getBiomeAt(x, 0);
 
         if (b->id == Biomes::DEFAULT.id) {
-            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 15 + (((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) + 0.5) - 0.5) * 2);
+            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 15 +
+                            (((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) + 0.5) - 0.5) *
+                                    2);
         } else if (b->id == Biomes::PLAINS.id) {
-            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 6 + ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 2);
+            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 6 +
+                            ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 2);
         } else if (b->id == Biomes::FOREST.id) {
-            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 15 + ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 2);
+            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 15 +
+                            ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 2);
         } else if (b->id == Biomes::MOUNTAINS.id) {
-            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 20 + ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 4);
+            baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 20 +
+                            ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 4);
         }
 
         return baseH;
@@ -115,17 +122,33 @@ class DefaultGenerator : public WorldGenerator {
 
                 if (b->id == Biomes::DEFAULT.id) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->w)) % Textures::caveBG->w;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        background[x + y * CHUNK_W] = METADOT_GET_PIXEL(Textures::caveBG, tx % Textures::caveBG->w, ty % Textures::caveBG->h);
+                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->w)) %
+                                 Textures::caveBG->w;
+                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
+                        background[x + y * CHUNK_W] =
+                                METADOT_GET_PIXEL(Textures::caveBG, tx % Textures::caveBG->w,
+                                                  ty % Textures::caveBG->h);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
-                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
-                        double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) -
+                                   0.1;
+                        double n2 =
+                                ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) *
+                                         0.9 +
+                                 (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) *
+                                         0.1) -
+                                0.1;
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5
+                                                        ? Tiles::createSmoothStone(px, py)
+                                                        : Tiles::createSmoothDirt(px, py);
                     } else if (py > surf - 64) {
-                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : Tiles::createSoftDirt(px, py);
+                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) +
+                                    0.4) /
+                                   2.0;
+                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0
+                                                        ? Tiles::createSmoothDirt(px, py)
+                                                        : Tiles::createSoftDirt(px, py);
                     } else if (py > surf - 65) {
                         if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
                     } else {
@@ -135,65 +158,111 @@ class DefaultGenerator : public WorldGenerator {
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
                 } else if (b->id == Biomes::PLAINS.id) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
+                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
+                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
                         UInt8 *pixel = (UInt8 *) Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(UInt32));
+                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) +
+                                 ((tx % Textures::caveBG->w) * sizeof(UInt32));
                         background[x + y * CHUNK_W] = *((UInt32 *) pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
-                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
-                        double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) -
+                                   0.1;
+                        double n2 =
+                                ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) *
+                                         0.9 +
+                                 (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) *
+                                         0.1) -
+                                0.1;
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5
+                                                        ? Tiles::createSmoothStone(px, py)
+                                                        : Tiles::createSmoothDirt(px, py);
                     } else if (py > surf - 64) {
-                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
+                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) +
+                                    0.4) /
+                                   2.0;
+                        prop[x + y * CHUNK_W] =
+                                n < abs((surf - 64) - py) / 64.0
+                                        ? Tiles::createSmoothDirt(px, py)
+                                        : MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
                     } else if (py > surf - 65) {
                         if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
                     } else {
                         prop[x + y * CHUNK_W] = Tiles::NOTHING;
                     }
-
 
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
                 } else if (b->id == Biomes::MOUNTAINS.id) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
+                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
+                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
                         UInt8 *pixel = (UInt8 *) Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(UInt32));
+                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) +
+                                 ((tx % Textures::caveBG->w) * sizeof(UInt32));
                         background[x + y * CHUNK_W] = *((UInt32 *) pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
-                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
-                        double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) -
+                                   0.1;
+                        double n2 =
+                                ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) *
+                                         0.9 +
+                                 (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) *
+                                         0.1) -
+                                0.1;
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5
+                                                        ? Tiles::createSmoothStone(px, py)
+                                                        : Tiles::createSmoothDirt(px, py);
                     } else if (py > surf - 64) {
-                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00);
+                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) +
+                                    0.4) /
+                                   2.0;
+                        prop[x + y * CHUNK_W] =
+                                n < abs((surf - 64) - py) / 64.0
+                                        ? Tiles::createSmoothDirt(px, py)
+                                        : MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00);
                     } else if (py > surf - 65) {
                         if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
                     } else {
                         prop[x + y * CHUNK_W] = Tiles::NOTHING;
                     }
 
-
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
                 } else if (b->id == Biomes::FOREST.id) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
+                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
+                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) %
+                                 Textures::caveBG->h;
                         UInt8 *pixel = (UInt8 *) Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(UInt32));
+                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) +
+                                 ((tx % Textures::caveBG->w) * sizeof(UInt32));
                         background[x + y * CHUNK_W] = *((UInt32 *) pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
-                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
-                        double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) -
+                                   0.1;
+                        double n2 =
+                                ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) *
+                                         0.9 +
+                                 (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) *
+                                         0.1) -
+                                0.1;
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5
+                                                        ? Tiles::createSmoothStone(px, py)
+                                                        : Tiles::createSmoothDirt(px, py);
                     } else if (py > surf - 64) {
-                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0x0000ff);
+                        double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) +
+                                    0.4) /
+                                   2.0;
+                        prop[x + y * CHUNK_W] =
+                                n < abs((surf - 64) - py) / 64.0
+                                        ? Tiles::createSmoothDirt(px, py)
+                                        : MaterialInstance(&Materials::GENERIC_SOLID, 0x0000ff);
                     } else if (py > surf - 65) {
                         if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
                     } else {
@@ -212,8 +281,7 @@ class DefaultGenerator : public WorldGenerator {
 
     std::vector<Populator *> getPopulators() override {
         return {
-                new CavePopulator(),
-                new OrePopulator(),
+                new CavePopulator(), new OrePopulator(),
                 new CobblePopulator()//,
                                      //new TreePopulator()
         };

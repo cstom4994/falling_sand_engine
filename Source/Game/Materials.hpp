@@ -7,7 +7,6 @@
 
 #include "Core/Core.hpp"
 
-
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -22,7 +21,6 @@ enum PhysicsType {
     PASSABLE = 5,
     OBJECT = 5,
 };
-
 
 #define INTERACT_NONE 0
 #define INTERACT_TRANSFORM_MATERIAL 1// id, radius
@@ -65,13 +63,20 @@ public:
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor, UInt32 color);
-    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations, int emit, UInt32 emitColor) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
-    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
-    Material(int id, std::string name, int physicsType, int slipperyness, float density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
+    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha,
+             float density, int iterations, int emit, UInt32 emitColor, UInt32 color);
+    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha,
+             float density, int iterations, int emit, UInt32 emitColor)
+        : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor,
+                   0xffffffff){};
+    Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha,
+             float density, int iterations)
+        : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
+    Material(int id, std::string name, int physicsType, int slipperyness, float density,
+             int iterations)
+        : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
     Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
 };
-
 
 #define INC_Materials
 
@@ -116,7 +121,6 @@ public:
     static void init();
 };
 
-
 #define INC_MaterialInstance
 
 class MaterialInstance {
@@ -138,7 +142,6 @@ public:
     bool operator==(const MaterialInstance &other);
 };
 
-
 #define INC_Tiles
 
 class Tiles {
@@ -157,7 +160,6 @@ public:
     static MaterialInstance createStone(int x, int y);
     static MaterialInstance createGrass();
     static MaterialInstance createDirt();
-
 
     static MaterialInstance createSmoothStone(int x, int y);
     static MaterialInstance createCobbleStone(int x, int y);

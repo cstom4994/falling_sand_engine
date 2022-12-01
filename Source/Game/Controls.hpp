@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #include "Engine/SDLWrapper.hpp"
 
 #include <cstdio>

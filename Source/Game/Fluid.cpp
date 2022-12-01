@@ -2,13 +2,7 @@
 
 #include <cmath>// std::floor
 
-Fluid::Fluid()
-    : s{0.0f},
-      density{0.0f},
-      Vx{0.0f},
-      Vy{0.0f},
-      Vx0{0.0f},
-      Vy0{0.0f} {
+Fluid::Fluid() : s{0.0f}, density{0.0f}, Vx{0.0f}, Vy{0.0f}, Vx0{0.0f}, Vy0{0.0f} {
 #if 0
     this->s = new float[N * N];
     this->density = new float[N * N];
@@ -45,9 +39,7 @@ void Fluid::Update() noexcept {
     Advect(0, density.data(), s.data(), Vx.data(), Vy.data(), MOTION_SPEED);
 }
 
-void Fluid::AddDensity(int x, int y, float amount) noexcept {
-    this->density[IX(x, y)] += amount;
-}
+void Fluid::AddDensity(int x, int y, float amount) noexcept { this->density[IX(x, y)] += amount; }
 
 void Fluid::AddVelocity(int x, int y, float amountX, float amountY) noexcept {
     const int index = IX(x, y);
@@ -66,8 +58,9 @@ void Fluid::LinearSolve(int b, float *x, float *x0, float a, float c) noexcept {
     for (int k = 0; k < ITERATIONS; k++) {
         for (int j = 1; j < N - 1; j++) {
             for (int i = 1; i < N - 1; i++) {
-                x[IX(i, j)] =
-                        (x0[IX(i, j)] + a * (x[IX(i + 1, j)] + x[IX(i - 1, j)] + x[IX(i, j + 1)] + x[IX(i, j - 1)])) * cRecip;
+                x[IX(i, j)] = (x0[IX(i, j)] + a * (x[IX(i + 1, j)] + x[IX(i - 1, j)] +
+                                                   x[IX(i, j + 1)] + x[IX(i, j - 1)])) *
+                              cRecip;
             }
         }
 
@@ -94,7 +87,10 @@ void Fluid::SetBoundary(int b, float *x) noexcept {
 void Fluid::Project(float *velocX, float *velocY, float *p, float *div) noexcept {
     for (int j = 1; j < N - 1; j++) {
         for (int i = 1; i < N - 1; i++) {
-            div[IX(i, j)] = -0.5f * (velocX[IX(i + 1, j)] - velocX[IX(i - 1, j)] + velocY[IX(i, j + 1)] - velocY[IX(i, j - 1)]) / N;
+            div[IX(i, j)] = -0.5f *
+                            (velocX[IX(i + 1, j)] - velocX[IX(i - 1, j)] + velocY[IX(i, j + 1)] -
+                             velocY[IX(i, j - 1)]) /
+                            N;
             p[IX(i, j)] = 0;
         }
     }
@@ -145,21 +141,18 @@ void Fluid::Advect(int b, float *d, float *d0, float *velocX, float *velocY, flo
             j0 = std::floor(y);
             j1 = j0 + 1.0f;
 
-
             s1 = x - i0;
             s0 = 1.0f - s1;
             t1 = y - j0;
             t0 = 1.0f - t1;
-
 
             int i0i = static_cast<int>(i0);
             int i1i = static_cast<int>(i1);
             int j0i = static_cast<int>(j0);
             int j1i = static_cast<int>(j1);
 
-            d[index] =
-                    s0 * (t0 * d0[IX(i0i, j0i)] + t1 * d0[IX(i0i, j1i)]) +
-                    s1 * (t0 * d0[IX(i1i, j0i)] + t1 * d0[IX(i1i, j1i)]);
+            d[index] = s0 * (t0 * d0[IX(i0i, j0i)] + t1 * d0[IX(i0i, j1i)]) +
+                       s1 * (t0 * d0[IX(i1i, j0i)] + t1 * d0[IX(i1i, j1i)]);
         }
     }
     SetBoundary(b, d);

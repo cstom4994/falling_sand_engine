@@ -40,7 +40,8 @@
 
 #define METADOT_STRUCT VISITABLE_STRUCT
 
-#define METADOT_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
+#define METADOT_CALLABLE(func_name)                                                                \
+    [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
 
 #define METADOT_OK 0
 #define METADOT_FAILED -1
@@ -82,14 +83,10 @@ template class SizeChecker<UInt8, 1>;
 
 namespace MetaEngine {
 
-    static inline UInt16 swapuint16(UInt16 x) {
-        return (x >> 8) | (x << 8);
-    }
+    static inline UInt16 swapuint16(UInt16 x) { return (x >> 8) | (x << 8); }
 
     static inline UInt32 swapuint32(UInt32 x) {
-        return ((x & 0x000000FF) << 24) |
-               ((x & 0x0000FF00) << 8) |
-               ((x & 0x00FF0000) >> 8) |
+        return ((x & 0x000000FF) << 24) | ((x & 0x0000FF00) << 8) | ((x & 0x00FF0000) >> 8) |
                ((x & 0xFF000000) >> 24);
     }
 
@@ -100,7 +97,6 @@ namespace MetaEngine {
                ((x >> 40) & 0x000000000000FF00ULL) | ((x >> 56) & 0x00000000000000FFULL);
     }
 
-
     // Function types
 
     template<typename T>
@@ -110,7 +106,6 @@ namespace MetaEngine {
 
 }// namespace MetaEngine
 
-
 // ImGuiData Types
 
 struct MarkdownData
@@ -118,7 +113,6 @@ struct MarkdownData
     std::string data;
 };
 METADOT_STRUCT(MarkdownData, data);
-
 
 #if defined(IGNORE_DEPRECATED_WARNING)
 #define _METADOT_DEPRECATED_

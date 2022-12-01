@@ -3,7 +3,6 @@
 #include "Core/Core.hpp"
 #include <string>
 
-
 // --------------------------------------- expressionImplementation
 
 namespace MuDSL {
@@ -19,11 +18,10 @@ namespace MuDSL {
         return nullptr;
     }
 
-    ValueRef MuDSLInterpreter::needsToReturn(const vector<ExpressionRef> &subexpressions, ScopeRef scope, Class *classs) {
+    ValueRef MuDSLInterpreter::needsToReturn(const vector<ExpressionRef> &subexpressions,
+                                             ScopeRef scope, Class *classs) {
         for (auto &&sub: subexpressions) {
-            if (auto returnVal = needsToReturn(sub, scope, classs)) {
-                return returnVal;
-            }
+            if (auto returnVal = needsToReturn(sub, scope, classs)) { return returnVal; }
         }
         return nullptr;
     }
@@ -44,11 +42,16 @@ namespace MuDSL {
                 return make_shared<Expression>(varr, ExpressionType::Value);
             } break;
             case ExpressionType::ResolveVar:
-                return make_shared<Expression>(resolveVariable(get<ResolveVar>(exp->expression).name, scope), ExpressionType::Value);
+                return make_shared<Expression>(
+                        resolveVariable(get<ResolveVar>(exp->expression).name, scope),
+                        ExpressionType::Value);
             case ExpressionType::MemberVariable: {
                 auto &expr = get<MemberVariable>(exp->expression);
-                auto classToUse = expr.object ? getValue(expr.object, scope, classs)->getClass().get() : classs;
-                return make_shared<Expression>(resolveVariable(expr.name, classToUse, scope), ExpressionType::Value);
+                auto classToUse = expr.object
+                                          ? getValue(expr.object, scope, classs)->getClass().get()
+                                          : classs;
+                return make_shared<Expression>(resolveVariable(expr.name, classToUse, scope),
+                                               ExpressionType::Value);
             }
             case ExpressionType::MemberFunctionCall: {
                 auto &expr = get<MemberFunctionCall>(exp->expression);
@@ -59,13 +62,21 @@ namespace MuDSL {
                 auto val = getValue(expr.object, scope, classs);
                 if (val->getType() != Type::Class) {
                     args.insert(args.begin(), val);
-                    return make_shared<Expression>(callFunction(resolveVariable(expr.functionName, scope)->getFunction(), scope, args, classs), ExpressionType::Value);
+                    return make_shared<Expression>(
+                            callFunction(resolveVariable(expr.functionName, scope)->getFunction(),
+                                         scope, args, classs),
+                            ExpressionType::Value);
                 }
                 auto owningClass = val->getClass();
-                return make_shared<Expression>(callFunction(resolveFunction(expr.functionName, owningClass.get(), scope), scope, args, owningClass), ExpressionType::Value);
+                return make_shared<Expression>(
+                        callFunction(resolveFunction(expr.functionName, owningClass.get(), scope),
+                                     scope, args, owningClass),
+                        ExpressionType::Value);
             }
             case ExpressionType::Return:
-                return make_shared<Expression>(getValue(get<Return>(exp->expression).expression, scope, classs), ExpressionType::Value);
+                return make_shared<Expression>(
+                        getValue(get<Return>(exp->expression).expression, scope, classs),
+                        ExpressionType::Value);
                 break;
             case ExpressionType::FunctionCall: {
                 List args;
@@ -78,16 +89,17 @@ namespace MuDSL {
                 if (funcExpr.function->getType() == Type::String) {
                     funcExpr.function = resolveVariable(funcExpr.function->getString(), scope);
                 }
-                return make_shared<Expression>(callFunction(funcExpr.function->getFunction(), scope, args, classs), ExpressionType::Value);
+                return make_shared<Expression>(
+                        callFunction(funcExpr.function->getFunction(), scope, args, classs),
+                        ExpressionType::Value);
             } break;
             case ExpressionType::Loop: {
                 scope = newScope("loop", scope);
                 auto &loopexp = get<Loop>(exp->expression);
-                if (loopexp.initExpression) {
-                    getValue(loopexp.initExpression, scope, classs);
-                }
+                if (loopexp.initExpression) { getValue(loopexp.initExpression, scope, classs); }
                 ValueRef returnVal = nullptr;
-                while (returnVal == nullptr && getValue(loopexp.testExpression, scope, classs)->getBool()) {
+                while (returnVal == nullptr &&
+                       getValue(loopexp.testExpression, scope, classs)->getBool()) {
                     returnVal = needsToReturn(loopexp.subexpressions, scope, classs);
                     if (returnVal == nullptr && loopexp.iterateExpression) {
                         getValue(loopexp.iterateExpression, scope, classs);
@@ -156,7 +168,8 @@ namespace MuDSL {
             case ExpressionType::IfElse: {
                 ValueRef returnVal = nullptr;
                 for (auto &express: get<IfElse>(exp->expression)) {
-                    if (!express.testExpression || getValue(express.testExpression, scope, classs)->getBool()) {
+                    if (!express.testExpression ||
+                        getValue(express.testExpression, scope, classs)->getBool()) {
                         scope = newScope("ifelse", scope);
                         returnVal = needsToReturn(express.subexpressions, scope, classs);
                         closeScope(scope);
@@ -176,7 +189,8 @@ namespace MuDSL {
     }
 
     // evaluate an expression from tokens
-    ValueRef MuDSLInterpreter::getValue(const vector<string_view> &strings, ScopeRef scope, Class *classs) {
+    ValueRef MuDSLInterpreter::getValue(const vector<string_view> &strings, ScopeRef scope,
+                                        Class *classs) {
         return getValue(getExpression(strings, scope, classs), scope, classs);
     }
 
@@ -217,11 +231,9 @@ namespace MuDSL {
         return false;
     }
 
-// --------------------------------------- expressionImplementation
+    // --------------------------------------- expressionImplementation
 
-
-// --------------------------------------- functionImplementation
-
+    // --------------------------------------- functionImplementation
 
     ValueRef MuDSLInterpreter::callFunction(const string &name, ScopeRef scope, const List &args) {
         return callFunction(resolveFunction(name, scope), scope, args);
@@ -229,24 +241,22 @@ namespace MuDSL {
 
     void each(ExpressionRef collection, function<void(ExpressionRef)> func) {
         func(collection);
-        for (auto &&ex: *collection) {
-            each(ex, func);
-        }
+        for (auto &&ex: *collection) { each(ex, func); }
     }
 
-    ValueRef MuDSLInterpreter::callFunction(FunctionRef fnc, ScopeRef scope, const List &args, Class *classs) {
+    ValueRef MuDSLInterpreter::callFunction(FunctionRef fnc, ScopeRef scope, const List &args,
+                                            Class *classs) {
         switch (fnc->getBodyType()) {
             case FunctionBodyType::Subexpressions: {
                 auto &subexpressions = get<vector<ExpressionRef>>(fnc->body);
                 // get function scope
-                scope = fnc->type == FunctionType::constructor ? resolveScope(fnc->name, scope) : newScope(fnc->name, scope);
+                scope = fnc->type == FunctionType::constructor ? resolveScope(fnc->name, scope)
+                                                               : newScope(fnc->name, scope);
                 auto limit = min(args.size(), fnc->argNames.size());
                 vector<string> newVars;
                 for (size_t i = 0; i < limit; ++i) {
                     auto &ref = scope->variables[fnc->argNames[i]];
-                    if (ref == nullptr) {
-                        newVars.push_back(fnc->argNames[i]);
-                    }
+                    if (ref == nullptr) { newVars.push_back(fnc->argNames[i]); }
                     ref = args[i];
                 }
 
@@ -301,7 +311,8 @@ namespace MuDSL {
                     get<ClassLambda>(fnc->body)(returnVal->getClass().get(), scope, args);
                     closeScope(scope);
                     return returnVal;
-                } else if (fnc->type == FunctionType::free && args.size() >= 2 && args[1]->getType() == Type::Class) {
+                } else if (fnc->type == FunctionType::free && args.size() >= 2 &&
+                           args[1]->getType() == Type::Class) {
                     // apply function
                     classs = args[1]->getClass().get();
                 }
@@ -315,7 +326,8 @@ namespace MuDSL {
         return make_shared<Value>();
     }
 
-    FunctionRef MuDSLInterpreter::newFunction(const string &name, ScopeRef scope, FunctionRef func) {
+    FunctionRef MuDSLInterpreter::newFunction(const string &name, ScopeRef scope,
+                                              FunctionRef func) {
         auto &ref = scope->functions[name];
         ref = func;
         if (ref->type == FunctionType::free && scope->isClassScope) {
@@ -326,14 +338,13 @@ namespace MuDSL {
         return ref;
     }
 
-    FunctionRef MuDSLInterpreter::newFunction(
-            const string &name,
-            ScopeRef scope,
-            const vector<string> &argNames) {
+    FunctionRef MuDSLInterpreter::newFunction(const string &name, ScopeRef scope,
+                                              const vector<string> &argNames) {
         return newFunction(name, scope, make_shared<Function>(name, argNames));
     }
 
-    FunctionRef MuDSLInterpreter::newConstructor(const string &name, ScopeRef scope, FunctionRef func) {
+    FunctionRef MuDSLInterpreter::newConstructor(const string &name, ScopeRef scope,
+                                                 FunctionRef func) {
         auto &ref = scope->functions[name];
         ref = func;
         ref->type = FunctionType::constructor;
@@ -342,22 +353,22 @@ namespace MuDSL {
         return ref;
     }
 
-    FunctionRef MuDSLInterpreter::newConstructor(
-            const string &name,
-            ScopeRef scope,
-            const vector<string> &argNames) {
+    FunctionRef MuDSLInterpreter::newConstructor(const string &name, ScopeRef scope,
+                                                 const vector<string> &argNames) {
         return newConstructor(name, scope, make_shared<Function>(name, argNames));
     }
 
-    FunctionRef MuDSLInterpreter::newClass(const string &name, ScopeRef scope, const unordered_map<string, ValueRef> &variables, const ClassLambda &constructor, const unordered_map<string, ClassLambda> &functions) {
+    FunctionRef MuDSLInterpreter::newClass(const string &name, ScopeRef scope,
+                                           const unordered_map<string, ValueRef> &variables,
+                                           const ClassLambda &constructor,
+                                           const unordered_map<string, ClassLambda> &functions) {
         scope = newClassScope(name, scope);
 
         scope->variables = variables;
-        FunctionRef ret = newConstructor(name, scope->parent, make_shared<Function>(name, constructor));
+        FunctionRef ret =
+                newConstructor(name, scope->parent, make_shared<Function>(name, constructor));
 
-        for (auto &func: functions) {
-            newFunction(func.first, scope, func.second);
-        }
+        for (auto &func: functions) { newFunction(func.first, scope, func.second); }
 
         closeScope(scope);
 
@@ -378,9 +389,7 @@ namespace MuDSL {
         if (!scope) {
             for (auto m: modules) {
                 auto iter = m.scope->variables.find(name);
-                if (iter != m.scope->variables.end()) {
-                    return iter->second;
-                }
+                if (iter != m.scope->variables.end()) { return iter->second; }
             }
         }
         return initialScope->insertVar(name, make_shared<Value>());
@@ -388,17 +397,14 @@ namespace MuDSL {
 
     ValueRef &MuDSLInterpreter::resolveVariable(const string &name, Class *classs, ScopeRef scope) {
         auto iter = classs->variables.find(name);
-        if (iter != classs->variables.end()) {
-            return iter->second;
-        }
+        if (iter != classs->variables.end()) { return iter->second; }
         return resolveVariable(name, scope);
     }
 
-    FunctionRef MuDSLInterpreter::resolveFunction(const string &name, Class *classs, ScopeRef scope) {
+    FunctionRef MuDSLInterpreter::resolveFunction(const string &name, Class *classs,
+                                                  ScopeRef scope) {
         auto iter = classs->functionScope->functions.find(name);
-        if (iter != classs->functionScope->functions.end()) {
-            return iter->second;
-        }
+        if (iter != classs->functionScope->functions.end()) { return iter->second; }
         return resolveFunction(name, scope);
     }
 
@@ -426,9 +432,7 @@ namespace MuDSL {
                 return iter->second;
             } else {
                 if (!scope->parent) {
-                    if (scope->name == name) {
-                        return scope;
-                    }
+                    if (scope->name == name) { return scope; }
                 }
                 scope = scope->parent;
             }
@@ -436,31 +440,27 @@ namespace MuDSL {
         return initialScope->insertScope(make_shared<Scope>(name, initialScope));
     }
 
-// --------------------------------------- functionImplementation
+    // --------------------------------------- functionImplementation
 
+    // --------------------------------------- modulesImplementation
 
-// --------------------------------------- modulesImplementation
-
-    ScopeRef MuDSLInterpreter::newModule(const string &name, ModulePrivilegeFlags flags, const unordered_map<string, Lambda> &functions) {
+    ScopeRef MuDSLInterpreter::newModule(const string &name, ModulePrivilegeFlags flags,
+                                         const unordered_map<string, Lambda> &functions) {
         auto &modSource = flags ? optionalModules : modules;
         modSource.emplace_back(flags, make_shared<Scope>(name, this));
         auto scope = modSource.back().scope;
 
-        for (auto &funcPair: functions) {
-            newFunction(funcPair.first, scope, funcPair.second);
-        }
+        for (auto &funcPair: functions) { newFunction(funcPair.first, scope, funcPair.second); }
 
         return modSource.back().scope;
     }
 
     Module *MuDSLInterpreter::getOptionalModule(const string &name) {
-        auto iter = std::find_if(optionalModules.begin(), optionalModules.end(), [&name](const auto &mod) { return mod.scope->name == name; });
-        if (iter != optionalModules.end()) {
-            return &*iter;
-        }
+        auto iter = std::find_if(optionalModules.begin(), optionalModules.end(),
+                                 [&name](const auto &mod) { return mod.scope->name == name; });
+        if (iter != optionalModules.end()) { return &*iter; }
         return nullptr;
     }
-
 
     // Example functions
 
@@ -477,7 +477,6 @@ namespace MuDSL {
         std::cout << "int: " << i << ", float: " << f << ", string: " << d << std::endl;
     }
 
-
     // Example variable
 
     int some_variable = 1337;
@@ -488,46 +487,36 @@ namespace MuDSL {
     {
         double vec_sum(std::vector<double> v) {
             double s = 0;
-            for (double n: v)
-                s += n;
+            for (double n: v) s += n;
             return s;
         }
     };
-
 
     void MuDSLInterpreter::createStandardLibrary() {
 
         // register compiled functions and standard library:
         newModule(
-                "StandardLib"s,
-                0,
+                "StandardLib"s, 0,
                 {
                         // math operators
-                        {"=", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("=");
-                             }
-                             if (args.size() == 1) {
-                                 return args[0];
-                             }
+                        {"=",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("="); }
+                             if (args.size() == 1) { return args[0]; }
                              *args[0] = *args[1];
                              return args[0];
                          }},
 
-                        {"+", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("+");
-                             }
-                             if (args.size() == 1) {
-                                 return args[0];
-                             }
+                        {"+",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("+"); }
+                             if (args.size() == 1) { return args[0]; }
                              return make_shared<Value>(*args[0] + *args[1]);
                          }},
 
-                        {"-", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("-");
-                             }
+                        {"-",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("-"); }
                              if (args.size() == 1) {
                                  auto zero = Value(Int(0));
                                  upconvert(*args[0], zero);
@@ -536,80 +525,58 @@ namespace MuDSL {
                              return make_shared<Value>(*args[0] - *args[1]);
                          }},
 
-                        {"*", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("*");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>();
-                             }
+                        {"*",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("*"); }
+                             if (args.size() < 2) { return make_shared<Value>(); }
                              return make_shared<Value>(*args[0] * *args[1]);
                          }},
 
-                        {"/", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("/");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>();
-                             }
+                        {"/",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("/"); }
+                             if (args.size() < 2) { return make_shared<Value>(); }
                              return make_shared<Value>(*args[0] / *args[1]);
                          }},
 
-                        {"%", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("%");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>();
-                             }
+                        {"%",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("%"); }
+                             if (args.size() < 2) { return make_shared<Value>(); }
                              return make_shared<Value>(*args[0] % *args[1]);
                          }},
 
-                        {"==", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("==");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"==",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("=="); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] == *args[1]));
                          }},
 
-                        {"!=", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("!=");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"!=",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("!="); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] != *args[1]));
                          }},
 
-                        {"||", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("||");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(1));
-                             }
+                        {"||",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("||"); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(1)); }
                              return make_shared<Value>((Int) (*args[0] || *args[1]));
                          }},
 
-                        {"&&", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("&&");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"&&",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("&&"); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] && *args[1]));
                          }},
 
-                        {"++", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"++",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              auto i = args.size() - 1;
                              if (i) {
                                  // prefix
@@ -623,10 +590,9 @@ namespace MuDSL {
                              }
                          }},
 
-                        {"--", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"--",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              auto i = args.size() - 1;
                              if (i) {
                                  // prefix
@@ -640,100 +606,73 @@ namespace MuDSL {
                              }
                          }},
 
-                        {"+=", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
-                             if (args.size() == 1) {
-                                 return args[0];
-                             }
+                        {"+=",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
+                             if (args.size() == 1) { return args[0]; }
                              *args[0] += *args[1];
                              return args[0];
                          }},
 
-                        {"-=", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
-                             if (args.size() == 1) {
-                                 return args[0];
-                             }
+                        {"-=",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
+                             if (args.size() == 1) { return args[0]; }
                              *args[0] -= *args[1];
                              return args[0];
                          }},
 
-                        {"*=", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
-                             if (args.size() == 1) {
-                                 return args[0];
-                             }
+                        {"*=",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
+                             if (args.size() == 1) { return args[0]; }
                              *args[0] *= *args[1];
                              return args[0];
                          }},
 
-                        {"/=", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
-                             if (args.size() == 1) {
-                                 return args[0];
-                             }
+                        {"/=",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
+                             if (args.size() == 1) { return args[0]; }
                              *args[0] /= *args[1];
                              return args[0];
                          }},
 
-                        {">", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable(">");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {">",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable(">"); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] > *args[1]));
                          }},
 
-                        {"<", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("<");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"<",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("<"); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] < *args[1]));
                          }},
 
-                        {">=", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable(">=");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {">=",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable(">="); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] >= *args[1]));
                          }},
 
-                        {"<=", [this](const List &args) {
-                             if (args.size() == 0) {
-                                 return resolveVariable("<=");
-                             }
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"<=",
+                         [this](const List &args) {
+                             if (args.size() == 0) { return resolveVariable("<="); }
+                             if (args.size() < 2) { return make_shared<Value>(Int(0)); }
                              return make_shared<Value>((Int) (*args[0] <= *args[1]));
                          }},
 
-                        {"!", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"!",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(Int(0)); }
                              if (args.size() == 1) {
                                  if (args[0]->getType() != Type::Int) return make_shared<Value>();
                                  auto val = Int(1);
-                                 for (auto i = Int(1); i <= args[0]->getInt(); ++i) {
-                                     val *= i;
-                                 }
+                                 for (auto i = Int(1); i <= args[0]->getInt(); ++i) { val *= i; }
                                  return make_shared<Value>(val);
                              }
                              if (args.size() == 2) {
@@ -743,28 +682,26 @@ namespace MuDSL {
                          }},
 
                         // aliases
-                        {"identity", [](List args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"identity",
+                         [](List args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              return args[0];
                          }},
 
-                        {"copy", [](List args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"copy",
+                         [](List args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              if (args[0]->getType() == Type::Class) {
-                                 return make_shared<Value>(make_shared<Class>(*args[0]->getClass()));
+                                 return make_shared<Value>(
+                                         make_shared<Class>(*args[0]->getClass()));
                              }
                              return make_shared<Value>(args[0]->value);
                          }},
 
-                        {"listindex", [](List args) {
+                        {"listindex",
+                         [](List args) {
                              if (args.size() > 0) {
-                                 if (args.size() == 1) {
-                                     return args[0];
-                                 }
+                                 if (args.size() == 1) { return args[0]; }
 
                                  auto var = args[0];
                                  if (args[1]->getType() != Type::Int) {
@@ -776,23 +713,31 @@ namespace MuDSL {
                                          auto ival = args[1]->getInt();
                                          auto &arr = var->getArray();
                                          if (ival < 0 || ival >= (Int) arr.size()) {
-                                             throw Exception("Out of bounds array access index "s + std::to_string(ival) + ", array length " + std::to_string(arr.size()));
+                                             throw Exception("Out of bounds array access index "s +
+                                                             std::to_string(ival) +
+                                                             ", array length " +
+                                                             std::to_string(arr.size()));
                                          } else {
                                              switch (arr.getType()) {
                                                  case Type::Int:
-                                                     return make_shared<Value>(get<vector<Int>>(arr.value)[ival]);
+                                                     return make_shared<Value>(
+                                                             get<vector<Int>>(arr.value)[ival]);
                                                      break;
                                                  case Type::Float:
-                                                     return make_shared<Value>(get<vector<Float>>(arr.value)[ival]);
+                                                     return make_shared<Value>(
+                                                             get<vector<Float>>(arr.value)[ival]);
                                                      break;
                                                  case Type::Vec3:
-                                                     return make_shared<Value>(get<vector<vec3>>(arr.value)[ival]);
+                                                     return make_shared<Value>(
+                                                             get<vector<vec3>>(arr.value)[ival]);
                                                      break;
                                                  case Type::String:
-                                                     return make_shared<Value>(get<vector<string>>(arr.value)[ival]);
+                                                     return make_shared<Value>(
+                                                             get<vector<string>>(arr.value)[ival]);
                                                      break;
                                                  default:
-                                                     throw Exception("Attempting to access array of illegal type");
+                                                     throw Exception("Attempting to access array "
+                                                                     "of illegal type");
                                                      break;
                                              }
                                          }
@@ -806,7 +751,10 @@ namespace MuDSL {
 
                                          auto &list = var->getList();
                                          if (ival < 0 || ival >= (Int) list.size()) {
-                                             throw Exception("Out of bounds list access index "s + std::to_string(ival) + ", list length " + std::to_string(list.size()));
+                                             throw Exception("Out of bounds list access index "s +
+                                                             std::to_string(ival) +
+                                                             ", list length " +
+                                                             std::to_string(list.size()));
                                          } else {
                                              return list[ival];
                                          }
@@ -816,7 +764,9 @@ namespace MuDSL {
                                          auto &struc = var->getClass();
                                          auto iter = struc->variables.find(strval);
                                          if (iter == struc->variables.end()) {
-                                             throw Exception("Class `"s + struc->name + "` does not contain member `" + strval + "`");
+                                             throw Exception("Class `"s + struc->name +
+                                                             "` does not contain member `" +
+                                                             strval + "`");
                                          } else {
                                              return iter->second;
                                          }
@@ -824,9 +774,7 @@ namespace MuDSL {
                                      case Type::Dictionary: {
                                          auto &dict = var->getDictionary();
                                          auto &ref = (*dict)[args[1]->getHash()];
-                                         if (ref == nullptr) {
-                                             ref = make_shared<Value>();
-                                         }
+                                         if (ref == nullptr) { ref = make_shared<Value>(); }
                                          return ref;
                                      } break;
                                  }
@@ -834,38 +782,34 @@ namespace MuDSL {
                              return make_shared<Value>();
                          }},
                         // casting
-                        {"bool", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"bool",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(Int(0)); }
                              auto val = *args[0];
                              val.hardconvert(Type::Int);
                              val.value = (Int) args[0]->getBool();
                              return make_shared<Value>(val);
                          }},
 
-                        {"int", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(Int(0));
-                             }
+                        {"int",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(Int(0)); }
                              auto val = *args[0];
                              val.hardconvert(Type::Int);
                              return make_shared<Value>(val);
                          }},
 
-                        {"float", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(Float(0.0));
-                             }
+                        {"float",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(Float(0.0)); }
                              auto val = *args[0];
                              val.hardconvert(Type::Float);
                              return make_shared<Value>(val);
                          }},
 
-                        {"vec3", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(vec3());
-                             }
+                        {"vec3",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(vec3()); }
                              if (args.size() < 3) {
                                  auto val = *args[0];
                                  val.hardconvert(Type::Float);
@@ -877,35 +821,35 @@ namespace MuDSL {
                              y.hardconvert(Type::Float);
                              auto z = *args[2];
                              z.hardconvert(Type::Float);
-                             return make_shared<Value>(vec3((float) x.getFloat(), (float) y.getFloat(), (float) z.getFloat()));
+                             return make_shared<Value>(vec3((float) x.getFloat(),
+                                                            (float) y.getFloat(),
+                                                            (float) z.getFloat()));
                          }},
 
-                        {"string", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(""s);
-                             }
+                        {"string",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(""s); }
                              auto val = *args[0];
                              val.hardconvert(Type::String);
                              return make_shared<Value>(val);
                          }},
 
-                        {"array", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(Array());
-                             }
+                        {"array",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(Array()); }
                              auto list = make_shared<Value>(args);
                              list->hardconvert(Type::Array);
                              return list;
                          }},
 
-                        {"list", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(List());
-                             }
+                        {"list",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(List()); }
                              return make_shared<Value>(args);
                          }},
 
-                        {"dictionary", [](const List &args) {
+                        {"dictionary",
+                         [](const List &args) {
                              if (args.size() == 0) {
                                  return make_shared<Value>(make_shared<Dictionary>());
                              }
@@ -923,80 +867,71 @@ namespace MuDSL {
                              return dict;
                          }},
 
-                        {"toarray", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(Array());
-                             }
+                        {"toarray",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(Array()); }
                              auto val = *args[0];
                              val.hardconvert(Type::Array);
                              return make_shared<Value>(val);
                          }},
 
-                        {"tolist", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>(List());
-                             }
+                        {"tolist",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(List()); }
                              auto val = *args[0];
                              val.hardconvert(Type::List);
                              return make_shared<Value>(val);
                          }},
 
                         // runtime inspect
-                        {"inspect", [](List args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"inspect",
+                         [](List args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              return make_shared<Value>(args[0]);
                          }},
 
                         // overal stdlib
-                        {"typeof", [](List args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"typeof",
+                         [](List args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              return make_shared<Value>(getTypeName(args[0]->getType()));
                          }},
 
-                        {"sqrt", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"sqrt",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              auto val = *args[0];
                              val.hardconvert(Type::Float);
                              return make_shared<Value>(sqrt(val.getFloat()));
                          }},
 
-                        {"sin", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"sin",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              auto val = *args[0];
                              val.hardconvert(Type::Float);
                              return make_shared<Value>(sin(val.getFloat()));
                          }},
 
-                        {"cos", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"cos",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              auto val = *args[0];
                              val.hardconvert(Type::Float);
                              return make_shared<Value>(cos(val.getFloat()));
                          }},
 
-                        {"tan", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"tan",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              auto val = *args[0];
                              val.hardconvert(Type::Float);
                              return make_shared<Value>(tan(val.getFloat()));
                          }},
 
-                        {"pow", [](const List &args) {
-                             if (args.size() < 2) {
-                                 return make_shared<Value>(Float(0));
-                             }
+                        {"pow",
+                         [](const List &args) {
+                             if (args.size() < 2) { return make_shared<Value>(Float(0)); }
                              auto val = *args[0];
                              val.hardconvert(Type::Float);
                              auto val2 = *args[1];
@@ -1004,10 +939,9 @@ namespace MuDSL {
                              return make_shared<Value>(pow(val.getFloat(), val2.getFloat()));
                          }},
 
-                        {"abs", [](const List &args) {
-                             if (args.size() == 0) {
-                                 return make_shared<Value>();
-                             }
+                        {"abs",
+                         [](const List &args) {
+                             if (args.size() == 0) { return make_shared<Value>(); }
                              switch (args[0]->getType()) {
                                  case Type::Int:
                                      return make_shared<Value>(Int(abs(args[0]->getInt())));
@@ -1021,36 +955,29 @@ namespace MuDSL {
                              }
                          }},
 
-                        {"min", [](const List &args) {
-                             if (args.size() < 2) {
-                                 return make_shared<Value>();
-                             }
+                        {"min",
+                         [](const List &args) {
+                             if (args.size() < 2) { return make_shared<Value>(); }
                              auto val = *args[0];
                              auto val2 = *args[1];
                              upconvertThrowOnNonNumberToNumberCompare(val, val2);
-                             if (val > val2) {
-                                 return make_shared<Value>(val2.value);
-                             }
+                             if (val > val2) { return make_shared<Value>(val2.value); }
                              return make_shared<Value>(val.value);
                          }},
 
-                        {"max", [](const List &args) {
-                             if (args.size() < 2) {
-                                 return make_shared<Value>();
-                             }
+                        {"max",
+                         [](const List &args) {
+                             if (args.size() < 2) { return make_shared<Value>(); }
                              auto val = *args[0];
                              auto val2 = *args[1];
                              upconvertThrowOnNonNumberToNumberCompare(val, val2);
-                             if (val < val2) {
-                                 return make_shared<Value>(val2.value);
-                             }
+                             if (val < val2) { return make_shared<Value>(val2.value); }
                              return make_shared<Value>(val.value);
                          }},
 
-                        {"swap", [](const List &args) {
-                             if (args.size() < 2) {
-                                 return make_shared<Value>();
-                             }
+                        {"swap",
+                         [](const List &args) {
+                             if (args.size() < 2) { return make_shared<Value>(); }
                              auto v = *args[0];
                              *args[0] = *args[1];
                              *args[1] = v;
@@ -1058,26 +985,25 @@ namespace MuDSL {
                              return make_shared<Value>();
                          }},
 
-                        {"print", [](const List &args) {
+                        {"print",
+                         [](const List &args) {
                              auto s = std::string{"[MU] "};
-                             for (auto &&arg: args) {
-                                 s += arg->getPrintString();
-                             }
+                             for (auto &&arg: args) { s += arg->getPrintString(); }
                              METADOT_INFO("{0}", s);
                              return make_shared<Value>();
                          }},
 
-                        {"getline", [](const List &args) {
+                        {"getline",
+                         [](const List &args) {
                              string s;
                              // blocking calls are fine
                              getline(std::cin, s);
-                             if (args.size() > 0) {
-                                 args[0]->value = s;
-                             }
+                             if (args.size() > 0) { args[0]->value = s; }
                              return make_shared<Value>(s);
                          }},
 
-                        {"map", [this](const List &args) {
+                        {"map",
+                         [this](const List &args) {
                              if (args.size() < 2 || args[1]->getType() != Type::Function) {
                                  return make_shared<Value>();
                              }
@@ -1100,7 +1026,8 @@ namespace MuDSL {
                              return ret;
                          }},
 
-                        {"fold", [this](const List &args) {
+                        {"fold",
+                         [this](const List &args) {
                              if (args.size() < 3 || args[1]->getType() != Type::Function) {
                                  return make_shared<Value>();
                              }
@@ -1123,31 +1050,44 @@ namespace MuDSL {
                              return iter;
                          }},
 
-                        {"clock", [](const List &) {
-                             return make_shared<Value>(Int(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+                        {"clock",
+                         [](const List &) {
+                             return make_shared<Value>(Int(std::chrono::high_resolution_clock::now()
+                                                                   .time_since_epoch()
+                                                                   .count()));
                          }},
 
-                        {"getduration", [](const List &args) {
-                             if (args.size() == 2 && args[0]->getType() == Type::Int && args[1]->getType() == Type::Int) {
-                                 std::chrono::duration<double> duration = std::chrono::high_resolution_clock::time_point(std::chrono::nanoseconds(args[1]->getInt())) -
-                                                                          std::chrono::high_resolution_clock::time_point(std::chrono::nanoseconds(args[0]->getInt()));
+                        {"getduration",
+                         [](const List &args) {
+                             if (args.size() == 2 && args[0]->getType() == Type::Int &&
+                                 args[1]->getType() == Type::Int) {
+                                 std::chrono::duration<double> duration =
+                                         std::chrono::high_resolution_clock::time_point(
+                                                 std::chrono::nanoseconds(args[1]->getInt())) -
+                                         std::chrono::high_resolution_clock::time_point(
+                                                 std::chrono::nanoseconds(args[0]->getInt()));
                                  return make_shared<Value>(Float(duration.count()));
                              }
                              return make_shared<Value>();
                          }},
 
-                        {"timesince", [](const List &args) {
+                        {"timesince",
+                         [](const List &args) {
                              if (args.size() == 1 && args[0]->getType() == Type::Int) {
-                                 std::chrono::duration<double> duration = std::chrono::high_resolution_clock::now() -
-                                                                          std::chrono::high_resolution_clock::time_point(std::chrono::nanoseconds(args[0]->getInt()));
+                                 std::chrono::duration<double> duration =
+                                         std::chrono::high_resolution_clock::now() -
+                                         std::chrono::high_resolution_clock::time_point(
+                                                 std::chrono::nanoseconds(args[0]->getInt()));
                                  return make_shared<Value>(Float(duration.count()));
                              }
                              return make_shared<Value>();
                          }},
 
                         // collection functions
-                        {"length", [](const List &args) {
-                             if (args.size() == 0 || (int) args[0]->getType() < (int) Type::String) {
+                        {"length",
+                         [](const List &args) {
+                             if (args.size() == 0 ||
+                                 (int) args[0]->getType() < (int) Type::String) {
                                  return make_shared<Value>(Int(0));
                              }
                              if (args[0]->getType() == Type::String) {
@@ -1159,7 +1099,8 @@ namespace MuDSL {
                              return make_shared<Value>((Int) args[0]->getList().size());
                          }},
 
-                        {"find", [](const List &args) {
+                        {"find",
+                         [](const List &args) {
                              if (args.size() < 2 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
@@ -1168,7 +1109,8 @@ namespace MuDSL {
                                      switch (args[0]->getArray().getType()) {
                                          case Type::Int: {
                                              auto &arry = args[0]->getStdVector<Int>();
-                                             auto iter = find(arry.begin(), arry.end(), args[1]->getInt());
+                                             auto iter = find(arry.begin(), arry.end(),
+                                                              args[1]->getInt());
                                              if (iter == arry.end()) {
                                                  return make_shared<Value>();
                                              }
@@ -1176,7 +1118,8 @@ namespace MuDSL {
                                          } break;
                                          case Type::Float: {
                                              auto &arry = args[0]->getStdVector<Float>();
-                                             auto iter = find(arry.begin(), arry.end(), args[1]->getFloat());
+                                             auto iter = find(arry.begin(), arry.end(),
+                                                              args[1]->getFloat());
                                              if (iter == arry.end()) {
                                                  return make_shared<Value>();
                                              }
@@ -1184,7 +1127,8 @@ namespace MuDSL {
                                          } break;
                                          case Type::Vec3: {
                                              auto &arry = args[0]->getStdVector<vec3>();
-                                             auto iter = find(arry.begin(), arry.end(), args[1]->getVec3());
+                                             auto iter = find(arry.begin(), arry.end(),
+                                                              args[1]->getVec3());
                                              if (iter == arry.end()) {
                                                  return make_shared<Value>();
                                              }
@@ -1192,7 +1136,8 @@ namespace MuDSL {
                                          } break;
                                          case Type::String: {
                                              auto &arry = args[0]->getStdVector<string>();
-                                             auto iter = find(arry.begin(), arry.end(), args[1]->getString());
+                                             auto iter = find(arry.begin(), arry.end(),
+                                                              args[1]->getString());
                                              if (iter == arry.end()) {
                                                  return make_shared<Value>();
                                              }
@@ -1200,7 +1145,8 @@ namespace MuDSL {
                                          } break;
                                          case Type::Function: {
                                              auto &arry = args[0]->getStdVector<FunctionRef>();
-                                             auto iter = find(arry.begin(), arry.end(), args[1]->getFunction());
+                                             auto iter = find(arry.begin(), arry.end(),
+                                                              args[1]->getFunction());
                                              if (iter == arry.end()) {
                                                  return make_shared<Value>();
                                              }
@@ -1214,45 +1160,57 @@ namespace MuDSL {
                              }
                              auto &list = args[0]->getList();
                              for (size_t i = 0; i < list.size(); ++i) {
-                                 if (*list[i] == *args[1]) {
-                                     return make_shared<Value>((Int) i);
-                                 }
+                                 if (*list[i] == *args[1]) { return make_shared<Value>((Int) i); }
                              }
                              return make_shared<Value>();
                          }},
 
-                        {"erase", [](const List &args) {
-                             if (args.size() < 2 || (int) args[0]->getType() < (int) Type::Array || args[1]->getType() != Type::Int) {
+                        {"erase",
+                         [](const List &args) {
+                             if (args.size() < 2 || (int) args[0]->getType() < (int) Type::Array ||
+                                 args[1]->getType() != Type::Int) {
                                  return make_shared<Value>();
                              }
 
                              if (args[0]->getType() == Type::Array) {
                                  switch (args[0]->getArray().getType()) {
                                      case Type::Int:
-                                         args[0]->getStdVector<Int>().erase(args[0]->getStdVector<Int>().begin() + args[1]->getInt());
+                                         args[0]->getStdVector<Int>().erase(
+                                                 args[0]->getStdVector<Int>().begin() +
+                                                 args[1]->getInt());
                                          break;
                                      case Type::Float:
-                                         args[0]->getStdVector<Float>().erase(args[0]->getStdVector<Float>().begin() + args[1]->getInt());
+                                         args[0]->getStdVector<Float>().erase(
+                                                 args[0]->getStdVector<Float>().begin() +
+                                                 args[1]->getInt());
                                          break;
                                      case Type::Vec3:
-                                         args[0]->getStdVector<vec3>().erase(args[0]->getStdVector<vec3>().begin() + args[1]->getInt());
+                                         args[0]->getStdVector<vec3>().erase(
+                                                 args[0]->getStdVector<vec3>().begin() +
+                                                 args[1]->getInt());
                                          break;
                                      case Type::String:
-                                         args[0]->getStdVector<string>().erase(args[0]->getStdVector<string>().begin() + args[1]->getInt());
+                                         args[0]->getStdVector<string>().erase(
+                                                 args[0]->getStdVector<string>().begin() +
+                                                 args[1]->getInt());
                                          break;
                                      case Type::Function:
-                                         args[0]->getStdVector<FunctionRef>().erase(args[0]->getStdVector<FunctionRef>().begin() + args[1]->getInt());
+                                         args[0]->getStdVector<FunctionRef>().erase(
+                                                 args[0]->getStdVector<FunctionRef>().begin() +
+                                                 args[1]->getInt());
                                          break;
                                      default:
                                          break;
                                  }
                              } else {
-                                 args[0]->getList().erase(args[0]->getList().begin() + args[1]->getInt());
+                                 args[0]->getList().erase(args[0]->getList().begin() +
+                                                          args[1]->getInt());
                              }
                              return make_shared<Value>();
                          }},
 
-                        {"pushback", [](const List &args) {
+                        {"pushback",
+                         [](const List &args) {
                              if (args.size() < 2 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
@@ -1261,19 +1219,24 @@ namespace MuDSL {
                                  if (args[0]->getArray().getType() == args[1]->getType()) {
                                      switch (args[0]->getArray().getType()) {
                                          case Type::Int:
-                                             args[0]->getStdVector<Int>().push_back(args[1]->getInt());
+                                             args[0]->getStdVector<Int>().push_back(
+                                                     args[1]->getInt());
                                              break;
                                          case Type::Float:
-                                             args[0]->getStdVector<Float>().push_back(args[1]->getFloat());
+                                             args[0]->getStdVector<Float>().push_back(
+                                                     args[1]->getFloat());
                                              break;
                                          case Type::Vec3:
-                                             args[0]->getStdVector<vec3>().push_back(args[1]->getVec3());
+                                             args[0]->getStdVector<vec3>().push_back(
+                                                     args[1]->getVec3());
                                              break;
                                          case Type::String:
-                                             args[0]->getStdVector<string>().push_back(args[1]->getString());
+                                             args[0]->getStdVector<string>().push_back(
+                                                     args[1]->getString());
                                              break;
                                          case Type::Function:
-                                             args[0]->getStdVector<FunctionRef>().push_back(args[1]->getFunction());
+                                             args[0]->getStdVector<FunctionRef>().push_back(
+                                                     args[1]->getFunction());
                                              break;
                                          default:
                                              break;
@@ -1285,7 +1248,8 @@ namespace MuDSL {
                              return make_shared<Value>();
                          }},
 
-                        {"popback", [](const List &args) {
+                        {"popback",
+                         [](const List &args) {
                              if (args.size() < 1 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
@@ -1297,7 +1261,8 @@ namespace MuDSL {
                              return make_shared<Value>();
                          }},
 
-                        {"popfront", [](const List &args) {
+                        {"popfront",
+                         [](const List &args) {
                              if (args.size() < 1 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
@@ -1335,22 +1300,28 @@ namespace MuDSL {
                              return make_shared<Value>();
                          }},
 
-                        {"front", [](const List &args) {
+                        {"front",
+                         [](const List &args) {
                              if (args.size() < 1 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
                              if (args[0]->getType() == Type::Array) {
                                  switch (args[0]->getArray().getType()) {
                                      case Type::Int:
-                                         return make_shared<Value>(args[0]->getStdVector<Int>().front());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<Int>().front());
                                      case Type::Float:
-                                         return make_shared<Value>(args[0]->getStdVector<Float>().front());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<Float>().front());
                                      case Type::Vec3:
-                                         return make_shared<Value>(args[0]->getStdVector<vec3>().front());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<vec3>().front());
                                      case Type::Function:
-                                         return make_shared<Value>(args[0]->getStdVector<FunctionRef>().front());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<FunctionRef>().front());
                                      case Type::String:
-                                         return make_shared<Value>(args[0]->getStdVector<string>().front());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<string>().front());
                                      default:
                                          break;
                                  }
@@ -1360,22 +1331,28 @@ namespace MuDSL {
                              }
                          }},
 
-                        {"back", [](const List &args) {
+                        {"back",
+                         [](const List &args) {
                              if (args.size() < 1 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
                              if (args[0]->getType() == Type::Array) {
                                  switch (args[0]->getArray().getType()) {
                                      case Type::Int:
-                                         return make_shared<Value>(args[0]->getStdVector<Int>().back());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<Int>().back());
                                      case Type::Float:
-                                         return make_shared<Value>(args[0]->getStdVector<Float>().back());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<Float>().back());
                                      case Type::Vec3:
-                                         return make_shared<Value>(args[0]->getStdVector<vec3>().back());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<vec3>().back());
                                      case Type::Function:
-                                         return make_shared<Value>(args[0]->getStdVector<FunctionRef>().back());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<FunctionRef>().back());
                                      case Type::String:
-                                         return make_shared<Value>(args[0]->getStdVector<string>().back());
+                                         return make_shared<Value>(
+                                                 args[0]->getStdVector<string>().back());
                                      default:
                                          break;
                                  }
@@ -1385,7 +1362,8 @@ namespace MuDSL {
                              }
                          }},
 
-                        {"reverse", [](const List &args) {
+                        {"reverse",
+                         [](const List &args) {
                              if (args.size() < 1 || (int) args[0]->getType() < (int) Type::String) {
                                  return make_shared<Value>();
                              }
@@ -1433,7 +1411,8 @@ namespace MuDSL {
                              return make_shared<Value>();
                          }},
 
-                        {"range", [](const List &args) {
+                        {"range",
+                         [](const List &args) {
                              if (args.size() == 2 && args[0]->getType() == args[1]->getType()) {
                                  if (args[0]->getType() == Type::Int) {
                                      auto ret = make_shared<Value>(Array(vector<Int>{}));
@@ -1442,14 +1421,10 @@ namespace MuDSL {
                                      auto b = args[1]->getInt();
                                      if (b > a) {
                                          arry.reserve(b - a);
-                                         for (Int i = a; i <= b; i++) {
-                                             arry.push_back(i);
-                                         }
+                                         for (Int i = a; i <= b; i++) { arry.push_back(i); }
                                      } else {
                                          arry.reserve(a - b);
-                                         for (Int i = a; i >= b; i--) {
-                                             arry.push_back(i);
-                                         }
+                                         for (Int i = a; i >= b; i--) { arry.push_back(i); }
                                      }
                                      return ret;
                                  } else if (args[0]->getType() == Type::Float) {
@@ -1459,14 +1434,10 @@ namespace MuDSL {
                                      Float b = args[1]->getFloat();
                                      if (b > a) {
                                          arry.reserve((Int) (b - a));
-                                         for (Float i = a; i <= b; i++) {
-                                             arry.push_back(i);
-                                         }
+                                         for (Float i = a; i <= b; i++) { arry.push_back(i); }
                                      } else {
                                          arry.reserve((Int) (a - b));
-                                         for (Float i = a; i >= b; i--) {
-                                             arry.push_back(i);
-                                         }
+                                         for (Float i = a; i >= b; i--) { arry.push_back(i); }
                                      }
                                      return ret;
                                  }
@@ -1482,37 +1453,62 @@ namespace MuDSL {
                              auto intdexB = indexB.getInt();
 
                              if (args[0]->getType() == Type::String) {
-                                 return make_shared<Value>(args[0]->getString().substr(intdexA, intdexB));
+                                 return make_shared<Value>(
+                                         args[0]->getString().substr(intdexA, intdexB));
                              } else if (args[0]->getType() == Type::Array) {
                                  if (args[0]->getArray().getType() == args[1]->getType()) {
                                      switch (args[0]->getArray().getType()) {
                                          case Type::Int:
-                                             return make_shared<Value>(Array(vector<Int>(args[0]->getStdVector<Int>().begin() + intdexA, args[0]->getStdVector<Int>().begin() + intdexB)));
+                                             return make_shared<Value>(Array(vector<Int>(
+                                                     args[0]->getStdVector<Int>().begin() + intdexA,
+                                                     args[0]->getStdVector<Int>().begin() +
+                                                             intdexB)));
                                              break;
                                          case Type::Float:
-                                             return make_shared<Value>(Array(vector<Float>(args[0]->getStdVector<Float>().begin() + intdexA, args[0]->getStdVector<Float>().begin() + intdexB)));
+                                             return make_shared<Value>(Array(vector<Float>(
+                                                     args[0]->getStdVector<Float>().begin() +
+                                                             intdexA,
+                                                     args[0]->getStdVector<Float>().begin() +
+                                                             intdexB)));
                                              break;
                                          case Type::Vec3:
-                                             return make_shared<Value>(Array(vector<vec3>(args[0]->getStdVector<vec3>().begin() + intdexA, args[0]->getStdVector<vec3>().begin() + intdexB)));
+                                             return make_shared<Value>(Array(vector<vec3>(
+                                                     args[0]->getStdVector<vec3>().begin() +
+                                                             intdexA,
+                                                     args[0]->getStdVector<vec3>().begin() +
+                                                             intdexB)));
                                              break;
                                          case Type::String:
-                                             return make_shared<Value>(Array(vector<string>(args[0]->getStdVector<string>().begin() + intdexA, args[0]->getStdVector<string>().begin() + intdexB)));
+                                             return make_shared<Value>(Array(vector<string>(
+                                                     args[0]->getStdVector<string>().begin() +
+                                                             intdexA,
+                                                     args[0]->getStdVector<string>().begin() +
+                                                             intdexB)));
                                              break;
                                          case Type::Function:
-                                             return make_shared<Value>(Array(vector<FunctionRef>(args[0]->getStdVector<FunctionRef>().begin() + intdexA, args[0]->getStdVector<FunctionRef>().begin() + intdexB)));
+                                             return make_shared<Value>(Array(vector<FunctionRef>(
+                                                     args[0]->getStdVector<FunctionRef>().begin() +
+                                                             intdexA,
+                                                     args[0]->getStdVector<FunctionRef>().begin() +
+                                                             intdexB)));
                                              break;
                                          default:
                                              break;
                                      }
                                  }
                              } else {
-                                 return make_shared<Value>(List(args[0]->getList().begin() + intdexA, args[0]->getList().begin() + intdexB));
+                                 return make_shared<Value>(
+                                         List(args[0]->getList().begin() + intdexA,
+                                              args[0]->getList().begin() + intdexB));
                              }
                              return make_shared<Value>();
                          }},
 
-                        {"replace", [](const List &args) {
-                             if (args.size() < 3 || args[0]->getType() != Type::String || args[1]->getType() != Type::String || args[2]->getType() != Type::String) {
+                        {"replace",
+                         [](const List &args) {
+                             if (args.size() < 3 || args[0]->getType() != Type::String ||
+                                 args[1]->getType() != Type::String ||
+                                 args[2]->getType() != Type::String) {
                                  return make_shared<Value>();
                              }
 
@@ -1529,21 +1525,28 @@ namespace MuDSL {
                              return make_shared<Value>(input);
                          }},
 
-                        {"startswith", [](const List &args) {
-                             if (args.size() < 2 || args[0]->getType() != Type::String || args[1]->getType() != Type::String) {
+                        {"startswith",
+                         [](const List &args) {
+                             if (args.size() < 2 || args[0]->getType() != Type::String ||
+                                 args[1]->getType() != Type::String) {
                                  return make_shared<Value>();
                              }
-                             return make_shared<Value>(Int(startswith(args[0]->getString(), args[1]->getString())));
+                             return make_shared<Value>(
+                                     Int(startswith(args[0]->getString(), args[1]->getString())));
                          }},
 
-                        {"endswith", [](const List &args) {
-                             if (args.size() < 2 || args[0]->getType() != Type::String || args[1]->getType() != Type::String) {
+                        {"endswith",
+                         [](const List &args) {
+                             if (args.size() < 2 || args[0]->getType() != Type::String ||
+                                 args[1]->getType() != Type::String) {
                                  return make_shared<Value>();
                              }
-                             return make_shared<Value>(Int(endswith(args[0]->getString(), args[1]->getString())));
+                             return make_shared<Value>(
+                                     Int(endswith(args[0]->getString(), args[1]->getString())));
                          }},
 
-                        {"contains", [](const List &args) {
+                        {"contains",
+                         [](const List &args) {
                              if (args.size() < 2 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>(Int(0));
                              }
@@ -1552,16 +1555,21 @@ namespace MuDSL {
                                  switch (args[0]->getArray().getType()) {
                                      case Type::Int:
                                          item.hardconvert(Type::Int);
-                                         return make_shared<Value>((Int) contains(args[0]->getStdVector<Int>(), item.getInt()));
+                                         return make_shared<Value>((Int) contains(
+                                                 args[0]->getStdVector<Int>(), item.getInt()));
                                      case Type::Float:
                                          item.hardconvert(Type::Float);
-                                         return make_shared<Value>((Int) contains(args[0]->getStdVector<Float>(), item.getFloat()));
+                                         return make_shared<Value>((Int) contains(
+                                                 args[0]->getStdVector<Float>(), item.getFloat()));
                                      case Type::Vec3:
                                          item.hardconvert(Type::Vec3);
-                                         return make_shared<Value>((Int) contains(args[0]->getStdVector<vec3>(), item.getVec3()));
+                                         return make_shared<Value>((Int) contains(
+                                                 args[0]->getStdVector<vec3>(), item.getVec3()));
                                      case Type::String:
                                          item.hardconvert(Type::String);
-                                         return make_shared<Value>((Int) contains(args[0]->getStdVector<string>(), item.getString()));
+                                         return make_shared<Value>(
+                                                 (Int) contains(args[0]->getStdVector<string>(),
+                                                                item.getString()));
                                      default:
                                          break;
                                  }
@@ -1569,14 +1577,13 @@ namespace MuDSL {
                              }
                              auto &list = args[0]->getList();
                              for (size_t i = 0; i < list.size(); ++i) {
-                                 if (*list[i] == *args[1]) {
-                                     return make_shared<Value>(Int(1));
-                                 }
+                                 if (*list[i] == *args[1]) { return make_shared<Value>(Int(1)); }
                              }
                              return make_shared<Value>(Int(0));
                          }},
 
-                        {"split", [](const List &args) {
+                        {"split",
+                         [](const List &args) {
                              if (args.size() > 0 && args[0]->getType() == Type::String) {
                                  if (args.size() == 1) {
                                      vector<string> chars;
@@ -1585,12 +1592,14 @@ namespace MuDSL {
                                      }
                                      return make_shared<Value>(Array(chars));
                                  }
-                                 return make_shared<Value>(Array(split(args[0]->getString(), args[1]->getPrintString())));
+                                 return make_shared<Value>(Array(
+                                         split(args[0]->getString(), args[1]->getPrintString())));
                              }
                              return make_shared<Value>();
                          }},
 
-                        {"sort", [](const List &args) {
+                        {"sort",
+                         [](const List &args) {
                              if (args.size() < 1 || (int) args[0]->getType() < (int) Type::Array) {
                                  return make_shared<Value>();
                              }
@@ -1610,7 +1619,10 @@ namespace MuDSL {
                                      } break;
                                      case Type::Vec3: {
                                          auto &arry = args[0]->getStdVector<vec3>();
-                                         std::sort(arry.begin(), arry.end(), [](const vec3 &a, const vec3 &b) { return a.x < b.x; });
+                                         std::sort(arry.begin(), arry.end(),
+                                                   [](const vec3 &a, const vec3 &b) {
+                                                       return a.x < b.x;
+                                                   });
                                      } break;
                                      default:
                                          break;
@@ -1618,13 +1630,19 @@ namespace MuDSL {
                                  return args[0];
                              }
                              auto &list = args[0]->getList();
-                             std::sort(list.begin(), list.end(), [](const ValueRef &a, const ValueRef &b) { return *a < *b; });
+                             std::sort(
+                                     list.begin(), list.end(),
+                                     [](const ValueRef &a, const ValueRef &b) { return *a < *b; });
                              return args[0];
                          }},
-                        {"applyfunction", [this](List args) {
+                        {"applyfunction",
+                         [this](List args) {
                              if (args.size() < 2 || args[1]->getType() != Type::Class) {
-                                 auto func = args[0]->getType() == Type::Function ? args[0] : args[0]->getType() == Type::String ? resolveVariable(args[0]->getString())
-                                                                                                                                 : throw Exception("Cannot call non existant function: null");
+                                 auto func = args[0]->getType() == Type::Function ? args[0]
+                                             : args[0]->getType() == Type::String
+                                                     ? resolveVariable(args[0]->getString())
+                                                     : throw Exception("Cannot call non existant "
+                                                                       "function: null");
                                  auto list = List();
                                  for (size_t i = 1; i < args.size(); ++i) {
                                      list.push_back(args[i]);
@@ -1639,66 +1657,63 @@ namespace MuDSL {
         identityFunctionVarLocation = resolveVariable("identity", modules.back().scope);
     }
 
+    // --------------------------------------- modulesImplementation
 
-// --------------------------------------- modulesImplementation
-
-
-// --------------------------------------- optionalModules
+    // --------------------------------------- optionalModules
 
     void MuDSLInterpreter::createOptionalModules() {
-        newModule(
-                "file",
-                ModulePrivilege::fileSystemRead | ModulePrivilege::fileSystemWrite,
-                {
-                        {"saveFile", [](const List &args) {
-                             if (args.size() == 2 && args[0]->getType() == Type::String && args[1]->getType() == Type::String) {
-                                 auto t = std::ofstream(args[1]->getString(), std::ofstream::out);
-                                 t << args[0]->getString();
-                                 t.flush();
-                                 return make_shared<Value>(true);
-                             }
-                             return make_shared<Value>(false);
-                         }},
-                        {"readFile", [](const List &args) {
-                             if (args.size() == 1 && args[0]->getType() == Type::String) {
-                                 std::stringstream buffer;
-                                 buffer << std::ifstream(args[0]->getString()).rdbuf();
-                                 return make_shared<Value>(buffer.str());
-                             }
-                             return make_shared<Value>();
-                         }},
-                });
+        newModule("file", ModulePrivilege::fileSystemRead | ModulePrivilege::fileSystemWrite,
+                  {
+                          {"saveFile",
+                           [](const List &args) {
+                               if (args.size() == 2 && args[0]->getType() == Type::String &&
+                                   args[1]->getType() == Type::String) {
+                                   auto t = std::ofstream(args[1]->getString(), std::ofstream::out);
+                                   t << args[0]->getString();
+                                   t.flush();
+                                   return make_shared<Value>(true);
+                               }
+                               return make_shared<Value>(false);
+                           }},
+                          {"readFile",
+                           [](const List &args) {
+                               if (args.size() == 1 && args[0]->getType() == Type::String) {
+                                   std::stringstream buffer;
+                                   buffer << std::ifstream(args[0]->getString()).rdbuf();
+                                   return make_shared<Value>(buffer.str());
+                               }
+                               return make_shared<Value>();
+                           }},
+                  });
 
         // currently this kinda works, but the whole scoping system is too state based and it breaks down
-        newModule(
-                "thread",
-                ModulePrivilege::fileSystemRead | ModulePrivilege::experimental,
-                {
-                        {"newThread", [this](const List &args) {
-                             if (args.size() == 1 && args[0]->getType() == Type::Function) {
-                                 auto func = args[0]->getFunction();
-                                 auto ptr = new std::thread([this, func]() {
-                                     callFunction(func, {});
-                                 });
-                                 return make_shared<Value>(ptr);
-                             }
-                             return make_shared<Value>();
-                         }},
-                        {"joinThread", [](const List &args) {
-                             if (args.size() == 1 && args[0]->getType() == Type::UserPointer) {
-                                 std::thread *ptr = (std::thread *) args[0]->getPointer();
-                                 ptr->join();
-                                 delete ptr;
-                             }
-                             return make_shared<Value>();
-                         }},
-                });
+        newModule("thread", ModulePrivilege::fileSystemRead | ModulePrivilege::experimental,
+                  {
+                          {"newThread",
+                           [this](const List &args) {
+                               if (args.size() == 1 && args[0]->getType() == Type::Function) {
+                                   auto func = args[0]->getFunction();
+                                   auto ptr = new std::thread(
+                                           [this, func]() { callFunction(func, {}); });
+                                   return make_shared<Value>(ptr);
+                               }
+                               return make_shared<Value>();
+                           }},
+                          {"joinThread",
+                           [](const List &args) {
+                               if (args.size() == 1 && args[0]->getType() == Type::UserPointer) {
+                                   std::thread *ptr = (std::thread *) args[0]->getPointer();
+                                   ptr->join();
+                                   delete ptr;
+                               }
+                               return make_shared<Value>();
+                           }},
+                  });
     }
 
-// --------------------------------------- optionalModules
+    // --------------------------------------- optionalModules
 
-
-// --------------------------------------- parsing
+    // --------------------------------------- parsing
 
     // tokenizer special characters
     const std::string WhitespaceChars = " \t\n"s;
@@ -1718,7 +1733,8 @@ namespace MuDSL {
         while ((pos = input.find_first_of(GrammarChars, lpos)) != string::npos) {
             size_t len = pos - lpos;
             // differentiate between decimals and dot syntax for function calls
-            if (input[pos] == '.' && pos + 1 < input.size() && contains(NumericChars, input[pos + 1])) {
+            if (input[pos] == '.' && pos + 1 < input.size() &&
+                contains(NumericChars, input[pos + 1])) {
                 pos = input.find_first_of(GrammarChars, pos + 1);
                 ret.push_back(input.substr(lpos, pos - lpos));
                 lpos = pos;
@@ -1736,7 +1752,8 @@ namespace MuDSL {
                     while (loop) {
                         pos = input.find('\"', testpos);
                         if (pos == string::npos) {
-                            throw Exception("Quote mismatch at "s + string(input.substr(lpos, input.size() - lpos)));
+                            throw Exception("Quote mismatch at "s +
+                                            string(input.substr(lpos, input.size() - lpos)));
                         }
                         loop = (input[pos - 1] == '\\');
                         testpos = ++pos;
@@ -1748,9 +1765,11 @@ namespace MuDSL {
                 }
             }
             // special case for negative numbers
-            if (input[pos] == '-' && contains(NumericChars, input[pos + 1]) && (ret.size() == 0 || contains(MultiCharTokenStartChars, ret.back().back()))) {
+            if (input[pos] == '-' && contains(NumericChars, input[pos + 1]) &&
+                (ret.size() == 0 || contains(MultiCharTokenStartChars, ret.back().back()))) {
                 pos = input.find_first_of(GrammarChars, pos + 1);
-                if (input[pos] == '.' && pos + 1 < input.size() && contains(NumericChars, input[pos + 1])) {
+                if (input[pos] == '.' && pos + 1 < input.size() &&
+                    contains(NumericChars, input[pos + 1])) {
                     pos = input.find_first_of(GrammarChars, pos + 1);
                 }
                 ret.push_back(input.substr(lpos, pos - lpos));
@@ -1758,7 +1777,8 @@ namespace MuDSL {
             } else if (!contains(WhitespaceChars, input[pos])) {
                 // process multicharacter special tokens like ++, //, -=, etc
                 auto stride = 1;
-                if (contains(MultiCharTokenStartChars, input[pos]) && pos + 1 < input.size() && contains(MultiCharTokenStartChars, input[pos + 1])) {
+                if (contains(MultiCharTokenStartChars, input[pos]) && pos + 1 < input.size() &&
+                    contains(MultiCharTokenStartChars, input[pos + 1])) {
                     if (input[pos] == '/' && input[pos + 1] == '/') {
                         exitFromComment = true;
                         break;
@@ -1779,13 +1799,9 @@ namespace MuDSL {
 
     // functions for figuring out the type of token
 
-    bool isStringLiteral(string_view test) {
-        return (test.size() > 1 && test[0] == '\"');
-    }
+    bool isStringLiteral(string_view test) { return (test.size() > 1 && test[0] == '\"'); }
 
-    bool isFloatLiteral(string_view test) {
-        return (test.size() > 1 && contains(test, '.'));
-    }
+    bool isFloatLiteral(string_view test) { return (test.size() > 1 && contains(test, '.')); }
 
     bool isVarOrFuncToken(string_view test) {
         return (test.size() > 0 && !contains(DisallowedIdentifierStartChars, test[0]));
@@ -1797,9 +1813,7 @@ namespace MuDSL {
     }
 
     bool isMathOperator(string_view test) {
-        if (test.size() == 1) {
-            return contains("+-*/%<>=!"s, test[0]);
-        }
+        if (test.size() == 1) { return contains("+-*/%<>=!"s, test[0]); }
         if (test.size() == 2) {
             return contains("=+-&|"s, test[1]) && contains(MultiCharTokenStartChars, test[0]);
         }
@@ -1807,19 +1821,13 @@ namespace MuDSL {
     }
 
     bool isUnaryMathOperator(string_view test) {
-        if (test.size() == 1) {
-            return '!' == test[0];
-        }
-        if (test.size() == 2) {
-            return contains("+-"s, test[1]) && test[1] == test[0];
-        }
+        if (test.size() == 1) { return '!' == test[0]; }
+        if (test.size() == 2) { return contains("+-"s, test[1]) && test[1] == test[0]; }
         return false;
     }
 
     bool isMemberCall(string_view test) {
-        if (test.size() == 1) {
-            return '.' == test[0];
-        }
+        if (test.size() == 1) { return '.' == test[0]; }
         return false;
     }
 
@@ -1832,7 +1840,9 @@ namespace MuDSL {
     }
 
     bool needsUnaryPlacementFix(const vector<string_view> &strings, size_t i) {
-        return (isUnaryMathOperator(strings[i]) && (i == 0 || !(isClosingBracketOrParen(strings[i - 1]) || isVarOrFuncToken(strings[i - 1]) || isNumeric(strings[i - 1]))));
+        return (isUnaryMathOperator(strings[i]) &&
+                (i == 0 || !(isClosingBracketOrParen(strings[i - 1]) ||
+                             isVarOrFuncToken(strings[i - 1]) || isNumeric(strings[i - 1]))));
     }
 
     bool checkPrecedence(OperatorPrecedence curr, OperatorPrecedence neww) {
@@ -1848,29 +1858,39 @@ namespace MuDSL {
     }
 
     // recursively build an expression tree from a list of tokens
-    ExpressionRef MuDSLInterpreter::getExpression(const vector<string_view> &strings, ScopeRef scope, Class *classs) {
+    ExpressionRef MuDSLInterpreter::getExpression(const vector<string_view> &strings,
+                                                  ScopeRef scope, Class *classs) {
         ExpressionRef root = nullptr;
         size_t i = 0;
         while (i < strings.size()) {
             if (isMathOperator(strings[i])) {
                 auto prev = root;
-                root = make_shared<Expression>(resolveVariable(string(strings[i]), modules[0].scope));
+                root = make_shared<Expression>(
+                        resolveVariable(string(strings[i]), modules[0].scope));
                 auto curr = prev;
                 if (curr) {
                     // find operations of lesser precedence
                     if (curr->type == ExpressionType::FunctionCall) {
                         auto &rootExpression = get<FunctionExpression>(root->expression);
-                        auto curfunc = get<FunctionExpression>(curr->expression).function->getFunction();
+                        auto curfunc =
+                                get<FunctionExpression>(curr->expression).function->getFunction();
                         auto newfunc = rootExpression.function->getFunction();
-                        if (curfunc && checkPrecedence(curfunc->opPrecedence, newfunc->opPrecedence)) {
-                            while (get<FunctionExpression>(curr->expression).subexpressions.back()->type == ExpressionType::FunctionCall) {
-                                auto fnc = get<FunctionExpression>(get<FunctionExpression>(curr->expression).subexpressions.back()->expression).function;
-                                if (fnc->getType() != Type::Function) {
-                                    break;
-                                }
+                        if (curfunc &&
+                            checkPrecedence(curfunc->opPrecedence, newfunc->opPrecedence)) {
+                            while (get<FunctionExpression>(curr->expression)
+                                           .subexpressions.back()
+                                           ->type == ExpressionType::FunctionCall) {
+                                auto fnc = get<FunctionExpression>(
+                                                   get<FunctionExpression>(curr->expression)
+                                                           .subexpressions.back()
+                                                           ->expression)
+                                                   .function;
+                                if (fnc->getType() != Type::Function) { break; }
                                 curfunc = fnc->getFunction();
-                                if (curfunc && checkPrecedence(curfunc->opPrecedence, newfunc->opPrecedence)) {
-                                    curr = get<FunctionExpression>(curr->expression).subexpressions.back();
+                                if (curfunc &&
+                                    checkPrecedence(curfunc->opPrecedence, newfunc->opPrecedence)) {
+                                    curr = get<FunctionExpression>(curr->expression)
+                                                   .subexpressions.back();
                                 } else {
                                     break;
                                 }
@@ -1878,9 +1898,12 @@ namespace MuDSL {
                             auto &currExpression = get<FunctionExpression>(curr->expression);
                             // swap values around to correct the otherwise incorect order of operations (except unary)
                             if (needsUnaryPlacementFix(strings, i)) {
-                                rootExpression.subexpressions.insert(rootExpression.subexpressions.begin(), make_shared<Expression>(make_shared<Value>(), root));
+                                rootExpression.subexpressions.insert(
+                                        rootExpression.subexpressions.begin(),
+                                        make_shared<Expression>(make_shared<Value>(), root));
                             } else {
-                                rootExpression.subexpressions.push_back(currExpression.subexpressions.back());
+                                rootExpression.subexpressions.push_back(
+                                        currExpression.subexpressions.back());
                                 currExpression.subexpressions.pop_back();
                             }
 
@@ -1893,7 +1916,8 @@ namespace MuDSL {
                                     checkstr = strings[i][0];
                                 }
                                 // list index or function call
-                                else if (strings.size() > i + 1 && isOpeningBracketOrParen(strings[i + 1])) {
+                                else if (strings.size() > i + 1 &&
+                                         isOpeningBracketOrParen(strings[i + 1])) {
                                     ++i;
                                     checkstr = strings[i][0];
                                     minisub.push_back(strings[i]);
@@ -1912,7 +1936,8 @@ namespace MuDSL {
                                         }
                                         minisub.push_back(strings[i]);
                                         if (nestLayers == 0) {
-                                            if (i + 1 < strings.size() && isOpeningBracketOrParen(strings[i + 1])) {
+                                            if (i + 1 < strings.size() &&
+                                                isOpeningBracketOrParen(strings[i + 1])) {
                                                 ++nestLayers;
                                                 checkstr = strings[++i][0];
                                                 endstr = checkstr == '[' ? ']' : ')';
@@ -1920,7 +1945,8 @@ namespace MuDSL {
                                         }
                                     }
                                 }
-                                rootExpression.subexpressions.push_back(getExpression(move(minisub), scope, classs));
+                                rootExpression.subexpressions.push_back(
+                                        getExpression(move(minisub), scope, classs));
                             }
                             currExpression.subexpressions.push_back(root);
                             root = prev;
@@ -1933,14 +1959,17 @@ namespace MuDSL {
                 } else {
                     if (needsUnaryPlacementFix(strings, i)) {
                         auto &rootExpression = get<FunctionExpression>(root->expression);
-                        rootExpression.subexpressions.insert(rootExpression.subexpressions.begin(), make_shared<Expression>(make_shared<Value>(), root));
+                        rootExpression.subexpressions.insert(
+                                rootExpression.subexpressions.begin(),
+                                make_shared<Expression>(make_shared<Value>(), root));
                     }
                 }
             } else if (isStringLiteral(strings[i])) {
                 // trim quotation marks
                 auto val = string(strings[i].substr(1, strings[i].size() - 2));
                 replaceWhitespaceLiterals(val);
-                auto newExpr = make_shared<Expression>(make_shared<Value>(val), ExpressionType::Value);
+                auto newExpr =
+                        make_shared<Expression>(make_shared<Value>(val), ExpressionType::Value);
                 if (root) {
                     get<FunctionExpression>(root->expression).subexpressions.push_back(newExpr);
                 } else {
@@ -1953,26 +1982,37 @@ namespace MuDSL {
                     if (strings[i] == "(") {
                         if (root) {
                             if (root->type == ExpressionType::FunctionCall) {
-                                if (get<FunctionExpression>(root->expression).function->getFunction()->opPrecedence == OperatorPrecedence::func) {
+                                if (get<FunctionExpression>(root->expression)
+                                            .function->getFunction()
+                                            ->opPrecedence == OperatorPrecedence::func) {
                                     cur = make_shared<Expression>(make_shared<Value>());
-                                    get<FunctionExpression>(cur->expression).subexpressions.push_back(root);
+                                    get<FunctionExpression>(cur->expression)
+                                            .subexpressions.push_back(root);
                                     root = cur;
                                 } else {
-                                    get<FunctionExpression>(root->expression).subexpressions.push_back(make_shared<Expression>(identityFunctionVarLocation));
-                                    cur = get<FunctionExpression>(root->expression).subexpressions.back();
+                                    get<FunctionExpression>(root->expression)
+                                            .subexpressions.push_back(make_shared<Expression>(
+                                                    identityFunctionVarLocation));
+                                    cur = get<FunctionExpression>(root->expression)
+                                                  .subexpressions.back();
                                 }
                             } else {
-                                get<MemberFunctionCall>(root->expression).subexpressions.push_back(make_shared<Expression>(identityFunctionVarLocation));
-                                cur = get<MemberFunctionCall>(root->expression).subexpressions.back();
+                                get<MemberFunctionCall>(root->expression)
+                                        .subexpressions.push_back(make_shared<Expression>(
+                                                identityFunctionVarLocation));
+                                cur = get<MemberFunctionCall>(root->expression)
+                                              .subexpressions.back();
                             }
                         } else {
                             root = make_shared<Expression>(identityFunctionVarLocation);
                             cur = root;
                         }
                     } else {
-                        auto funccall = make_shared<Expression>(make_shared<Value>(string(strings[i])));
+                        auto funccall =
+                                make_shared<Expression>(make_shared<Value>(string(strings[i])));
                         if (root) {
-                            get<FunctionExpression>(root->expression).subexpressions.push_back(funccall);
+                            get<FunctionExpression>(root->expression)
+                                    .subexpressions.push_back(funccall);
                             cur = get<FunctionExpression>(root->expression).subexpressions.back();
                         } else {
                             root = funccall;
@@ -1985,7 +2025,9 @@ namespace MuDSL {
                     while (nestLayers > 0 && ++i < strings.size()) {
                         if (nestLayers == 1 && strings[i] == ",") {
                             if (minisub.size()) {
-                                get<FunctionExpression>(cur->expression).subexpressions.push_back(getExpression(move(minisub), scope, classs));
+                                get<FunctionExpression>(cur->expression)
+                                        .subexpressions.push_back(
+                                                getExpression(move(minisub), scope, classs));
                                 minisub.clear();
                             }
                         } else if (isClosingBracketOrParen(strings[i])) {
@@ -1993,23 +2035,23 @@ namespace MuDSL {
                                 minisub.push_back(strings[i]);
                             } else {
                                 if (minisub.size()) {
-                                    get<FunctionExpression>(cur->expression).subexpressions.push_back(getExpression(move(minisub), scope, classs));
+                                    get<FunctionExpression>(cur->expression)
+                                            .subexpressions.push_back(
+                                                    getExpression(move(minisub), scope, classs));
                                     minisub.clear();
                                 }
                             }
-                        } else if (isOpeningBracketOrParen(strings[i]) || !(strings[i].size() == 1 && contains("+-*%/"s, strings[i][0])) && i + 2 < strings.size() && strings[i + 1] == "(") {
+                        } else if (isOpeningBracketOrParen(strings[i]) ||
+                                   !(strings[i].size() == 1 && contains("+-*%/"s, strings[i][0])) &&
+                                           i + 2 < strings.size() && strings[i + 1] == "(") {
                             ++nestLayers;
                             if (strings[i] == "(") {
                                 minisub.push_back(strings[i]);
                             } else {
                                 minisub.push_back(strings[i]);
                                 ++i;
-                                if (isClosingBracketOrParen(strings[i])) {
-                                    --nestLayers;
-                                }
-                                if (nestLayers > 0) {
-                                    minisub.push_back(strings[i]);
-                                }
+                                if (isClosingBracketOrParen(strings[i])) { --nestLayers; }
+                                if (nestLayers > 0) { minisub.push_back(strings[i]); }
                             }
                         } else {
                             minisub.push_back(strings[i]);
@@ -2018,15 +2060,20 @@ namespace MuDSL {
 
                 } else if (strings[i] == "[" || i + 2 < strings.size() && strings[i + 1] == "[") {
                     // list
-                    bool indexOfIndex = i > 0 && (isClosingBracketOrParen(strings[i - 1]) || strings[i - 1].back() == '\"') || (i > 1 && strings[i - 2] == ".");
+                    bool indexOfIndex = i > 0 && (isClosingBracketOrParen(strings[i - 1]) ||
+                                                  strings[i - 1].back() == '\"') ||
+                                        (i > 1 && strings[i - 2] == ".");
                     ExpressionRef cur = nullptr;
                     if (!indexOfIndex && strings[i] == "[") {
                         // list literal / collection literal
                         if (root) {
-                            get<FunctionExpression>(root->expression).subexpressions.push_back(make_shared<Expression>(make_shared<Value>(List()), ExpressionType::Value));
+                            get<FunctionExpression>(root->expression)
+                                    .subexpressions.push_back(make_shared<Expression>(
+                                            make_shared<Value>(List()), ExpressionType::Value));
                             cur = get<FunctionExpression>(root->expression).subexpressions.back();
                         } else {
-                            root = make_shared<Expression>(make_shared<Value>(List()), ExpressionType::Value);
+                            root = make_shared<Expression>(make_shared<Value>(List()),
+                                                           ExpressionType::Value);
                             cur = root;
                         }
                         vector<string_view> minisub;
@@ -2035,7 +2082,9 @@ namespace MuDSL {
                             if (nestLayers == 1 && strings[i] == ",") {
                                 if (minisub.size()) {
                                     auto val = *getValue(move(minisub), scope, classs);
-                                    get<ValueRef>(cur->expression)->getList().push_back(make_shared<Value>(val.value));
+                                    get<ValueRef>(cur->expression)
+                                            ->getList()
+                                            .push_back(make_shared<Value>(val.value));
                                     minisub.clear();
                                 }
                             } else if (isClosingBracketOrParen(strings[i])) {
@@ -2044,7 +2093,9 @@ namespace MuDSL {
                                 } else {
                                     if (minisub.size()) {
                                         auto val = *getValue(move(minisub), scope, classs);
-                                        get<ValueRef>(cur->expression)->getList().push_back(make_shared<Value>(val.value));
+                                        get<ValueRef>(cur->expression)
+                                                ->getList()
+                                                .push_back(make_shared<Value>(val.value));
                                         minisub.clear();
                                     }
                                 }
@@ -2060,7 +2111,8 @@ namespace MuDSL {
                             bool canBeArray = true;
                             auto type = list[0]->getType();
                             for (auto &val: list) {
-                                if (val->getType() == Type::Null || val->getType() != type || (int) val->getType() >= (int) Type::Array) {
+                                if (val->getType() == Type::Null || val->getType() != type ||
+                                    (int) val->getType() >= (int) Type::Array) {
                                     canBeArray = false;
                                     break;
                                 }
@@ -2075,28 +2127,42 @@ namespace MuDSL {
                         if (indexOfIndex) {
                             cur = root;
                             auto parent = root;
-                            while (cur->type == ExpressionType::FunctionCall && get<FunctionExpression>(cur->expression).function->getType() == Type::Function && get<FunctionExpression>(cur->expression).function->getFunction()->opPrecedence != OperatorPrecedence::func) {
+                            while (cur->type == ExpressionType::FunctionCall &&
+                                   get<FunctionExpression>(cur->expression).function->getType() ==
+                                           Type::Function &&
+                                   get<FunctionExpression>(cur->expression)
+                                                   .function->getFunction()
+                                                   ->opPrecedence != OperatorPrecedence::func) {
                                 parent = cur;
-                                cur = get<FunctionExpression>(cur->expression).subexpressions.back();
+                                cur = get<FunctionExpression>(cur->expression)
+                                              .subexpressions.back();
                             }
-                            get<FunctionExpression>(indexexpr->expression).subexpressions.push_back(cur);
+                            get<FunctionExpression>(indexexpr->expression)
+                                    .subexpressions.push_back(cur);
                             if (cur == root) {
                                 root = indexexpr;
                                 cur = indexexpr;
                             } else {
-                                get<FunctionExpression>(parent->expression).subexpressions.pop_back();
-                                get<FunctionExpression>(parent->expression).subexpressions.push_back(indexexpr);
-                                cur = get<FunctionExpression>(parent->expression).subexpressions.back();
+                                get<FunctionExpression>(parent->expression)
+                                        .subexpressions.pop_back();
+                                get<FunctionExpression>(parent->expression)
+                                        .subexpressions.push_back(indexexpr);
+                                cur = get<FunctionExpression>(parent->expression)
+                                              .subexpressions.back();
                             }
                         } else {
                             if (root) {
-                                get<FunctionExpression>(root->expression).subexpressions.push_back(indexexpr);
-                                cur = get<FunctionExpression>(root->expression).subexpressions.back();
+                                get<FunctionExpression>(root->expression)
+                                        .subexpressions.push_back(indexexpr);
+                                cur = get<FunctionExpression>(root->expression)
+                                              .subexpressions.back();
                             } else {
                                 root = indexexpr;
                                 cur = root;
                             }
-                            get<FunctionExpression>(cur->expression).subexpressions.push_back(getResolveVarExpression(string(strings[i]), parseScope->isClassScope));
+                            get<FunctionExpression>(cur->expression)
+                                    .subexpressions.push_back(getResolveVarExpression(
+                                            string(strings[i]), parseScope->isClassScope));
                             ++i;
                         }
 
@@ -2108,7 +2174,9 @@ namespace MuDSL {
                                     minisub.push_back(strings[i]);
                                 } else {
                                     if (minisub.size()) {
-                                        get<FunctionExpression>(cur->expression).subexpressions.push_back(getExpression(move(minisub), scope, classs));
+                                        get<FunctionExpression>(cur->expression)
+                                                .subexpressions.push_back(getExpression(
+                                                        move(minisub), scope, classs));
                                         minisub.clear();
                                     }
                                 }
@@ -2124,20 +2192,27 @@ namespace MuDSL {
                     // variable
                     ExpressionRef newExpr;
                     if (strings[i] == "true") {
-                        newExpr = make_shared<Expression>(make_shared<Value>(Int(1)), ExpressionType::Value);
+                        newExpr = make_shared<Expression>(make_shared<Value>(Int(1)),
+                                                          ExpressionType::Value);
                     } else if (strings[i] == "false") {
-                        newExpr = make_shared<Expression>(make_shared<Value>(Int(0)), ExpressionType::Value);
+                        newExpr = make_shared<Expression>(make_shared<Value>(Int(0)),
+                                                          ExpressionType::Value);
                     } else if (strings[i] == "null") {
-                        newExpr = make_shared<Expression>(make_shared<Value>(), ExpressionType::Value);
+                        newExpr = make_shared<Expression>(make_shared<Value>(),
+                                                          ExpressionType::Value);
                     } else {
-                        newExpr = getResolveVarExpression(string(strings[i]), parseScope->isClassScope);
+                        newExpr = getResolveVarExpression(string(strings[i]),
+                                                          parseScope->isClassScope);
                     }
 
                     if (root) {
-                        if (root->type == ExpressionType::ResolveVar || root->type == ExpressionType::MemberVariable) {
-                            throw Exception("Syntax Error: unexpected series of values at "s + string(strings[i]) + ", possible missing `,`");
+                        if (root->type == ExpressionType::ResolveVar ||
+                            root->type == ExpressionType::MemberVariable) {
+                            throw Exception("Syntax Error: unexpected series of values at "s +
+                                            string(strings[i]) + ", possible missing `,`");
                         } else {
-                            get<FunctionExpression>(root->expression).subexpressions.push_back(newExpr);
+                            get<FunctionExpression>(root->expression)
+                                    .subexpressions.push_back(newExpr);
                         }
                     } else {
                         root = newExpr;
@@ -2149,12 +2224,17 @@ namespace MuDSL {
                 if (isfunc) {
                     ExpressionRef expr;
                     {
-                        if (root->type == ExpressionType::FunctionCall && get<FunctionExpression>(root->expression).subexpressions.size()) {
-                            expr = make_shared<Expression>(get<FunctionExpression>(root->expression).subexpressions.back(), string(strings[++i]), vector<ExpressionRef>());
+                        if (root->type == ExpressionType::FunctionCall &&
+                            get<FunctionExpression>(root->expression).subexpressions.size()) {
+                            expr = make_shared<Expression>(
+                                    get<FunctionExpression>(root->expression).subexpressions.back(),
+                                    string(strings[++i]), vector<ExpressionRef>());
                             get<FunctionExpression>(root->expression).subexpressions.pop_back();
-                            get<FunctionExpression>(root->expression).subexpressions.push_back(expr);
+                            get<FunctionExpression>(root->expression)
+                                    .subexpressions.push_back(expr);
                         } else {
-                            expr = make_shared<Expression>(root, string(strings[++i]), vector<ExpressionRef>());
+                            expr = make_shared<Expression>(root, string(strings[++i]),
+                                                           vector<ExpressionRef>());
                             root = expr;
                         }
                     }
@@ -2166,7 +2246,9 @@ namespace MuDSL {
                     while (nestLayers > 0 && ++i < strings.size()) {
                         if (nestLayers == 1 && strings[i] == ",") {
                             if (minisub.size()) {
-                                get<MemberFunctionCall>(expr->expression).subexpressions.push_back(getExpression(move(minisub), scope, classs));
+                                get<MemberFunctionCall>(expr->expression)
+                                        .subexpressions.push_back(
+                                                getExpression(move(minisub), scope, classs));
                                 minisub.clear();
                                 addedArgs = true;
                             }
@@ -2175,7 +2257,9 @@ namespace MuDSL {
                                 minisub.push_back(strings[i]);
                             } else {
                                 if (minisub.size()) {
-                                    get<MemberFunctionCall>(expr->expression).subexpressions.push_back(getExpression(move(minisub), scope, classs));
+                                    get<MemberFunctionCall>(expr->expression)
+                                            .subexpressions.push_back(
+                                                    getExpression(move(minisub), scope, classs));
                                     minisub.clear();
                                     addedArgs = true;
                                 }
@@ -2187,12 +2271,13 @@ namespace MuDSL {
                             minisub.push_back(strings[i]);
                         }
                     }
-                    if (!addedArgs) {
-                        i = previ;
-                    }
+                    if (!addedArgs) { i = previ; }
                 } else {
-                    if (root->type == ExpressionType::FunctionCall && get<FunctionExpression>(root->expression).subexpressions.size()) {
-                        auto expr = make_shared<Expression>(get<FunctionExpression>(root->expression).subexpressions.back(), string(strings[++i]));
+                    if (root->type == ExpressionType::FunctionCall &&
+                        get<FunctionExpression>(root->expression).subexpressions.size()) {
+                        auto expr = make_shared<Expression>(
+                                get<FunctionExpression>(root->expression).subexpressions.back(),
+                                string(strings[++i]));
                         get<FunctionExpression>(root->expression).subexpressions.pop_back();
                         get<FunctionExpression>(root->expression).subexpressions.push_back(expr);
                     } else {
@@ -2203,7 +2288,9 @@ namespace MuDSL {
                 // number
                 auto val = fromChars(strings[i]);
                 bool isFloat = contains(strings[i], '.');
-                auto newExpr = make_shared<Expression>(ValueRef(isFloat ? new Value((Float) val) : new Value((Int) val)), ExpressionType::Value);
+                auto newExpr = make_shared<Expression>(
+                        ValueRef(isFloat ? new Value((Float) val) : new Value((Int) val)),
+                        ExpressionType::Value);
                 if (root) {
                     get<FunctionExpression>(root->expression).subexpressions.push_back(newExpr);
                 } else {
@@ -2265,8 +2352,13 @@ namespace MuDSL {
                     parseScope = newScope("__anon"s, parseScope);
                     clearParseStacks();
                 } else if (token == "}") {
-                    wasElse = !currentExpression || currentExpression->type != ExpressionType::IfElse;
-                    bool wasFreefunc = !currentExpression || (currentExpression->type == ExpressionType::FunctionDef && get<FunctionExpression>(currentExpression->expression).function->getFunction()->type == FunctionType::free);
+                    wasElse =
+                            !currentExpression || currentExpression->type != ExpressionType::IfElse;
+                    bool wasFreefunc = !currentExpression ||
+                                       (currentExpression->type == ExpressionType::FunctionDef &&
+                                        get<FunctionExpression>(currentExpression->expression)
+                                                        .function->getFunction()
+                                                        ->type == FunctionType::free);
                     closedExpr = closeCurrentExpression();
                     if (!closedExpr && wasFreefunc || parseScope->name == "__anon") {
                         closeScope(parseScope);
@@ -2283,10 +2375,14 @@ namespace MuDSL {
                     parseState = ParseState::readLine;
                     parseStrings.push_back(token);
                 }
-                if (!closedExpr && (closedScope && lastStatementClosedScope || (!lastStatementWasElse && !wasElse && lastTokenEndCurlBraket))) {
-                    bool wasIfExpr = currentExpression && currentExpression->type == ExpressionType::IfElse;
+                if (!closedExpr &&
+                    (closedScope && lastStatementClosedScope ||
+                     (!lastStatementWasElse && !wasElse && lastTokenEndCurlBraket))) {
+                    bool wasIfExpr =
+                            currentExpression && currentExpression->type == ExpressionType::IfElse;
                     closeDanglingIfExpression();
-                    if (closedScope && wasIfExpr && currentExpression->type != ExpressionType::IfElse) {
+                    if (closedScope && wasIfExpr &&
+                        currentExpression->type != ExpressionType::IfElse) {
                         closeCurrentExpression();
                         closedScope = false;
                     }
@@ -2314,14 +2410,18 @@ namespace MuDSL {
                                 break;
                             case 2:
                                 loop.testExpression = getExpression(exprs[0], parseScope, nullptr);
-                                loop.iterateExpression = getExpression(exprs[1], parseScope, nullptr);
+                                loop.iterateExpression =
+                                        getExpression(exprs[1], parseScope, nullptr);
                                 break;
                             case 3: {
                                 auto name = exprs[0].front();
                                 exprs[0].erase(exprs[0].begin(), exprs[0].begin() + 2);
-                                loop.initExpression = make_shared<Expression>(DefineVar(string(name), getExpression(exprs[0], parseScope, nullptr)));
+                                loop.initExpression = make_shared<Expression>(
+                                        DefineVar(string(name),
+                                                  getExpression(exprs[0], parseScope, nullptr)));
                                 loop.testExpression = getExpression(exprs[1], parseScope, nullptr);
-                                loop.iterateExpression = getExpression(exprs[2], parseScope, nullptr);
+                                loop.iterateExpression =
+                                        getExpression(exprs[2], parseScope, nullptr);
                             } break;
                             default:
                                 break;
@@ -2333,9 +2433,7 @@ namespace MuDSL {
                         parseStrings.push_back(token);
                     }
                 } else if (token == "(") {
-                    if (++outerNestLayer > 1) {
-                        parseStrings.push_back(token);
-                    }
+                    if (++outerNestLayer > 1) { parseStrings.push_back(token); }
                 } else {
                     parseStrings.push_back(token);
                 }
@@ -2354,13 +2452,16 @@ namespace MuDSL {
                         }
                         if (exprs.size() != 2) {
                             clearParseStacks();
-                            throw Exception("Syntax error, `foreach` requires 2 statements, "s + std::to_string(exprs.size()) + " statements supplied instead");
+                            throw Exception("Syntax error, `foreach` requires 2 statements, "s +
+                                            std::to_string(exprs.size()) +
+                                            " statements supplied instead");
                         }
 
                         auto name = string(exprs[0][0]);
                         resolveVariable(name, parseScope);
                         get<Foreach>(currentExpression->expression).iterateName = move(name);
-                        get<Foreach>(currentExpression->expression).listExpression = getExpression(exprs[1], parseScope, nullptr);
+                        get<Foreach>(currentExpression->expression).listExpression =
+                                getExpression(exprs[1], parseScope, nullptr);
 
                         clearParseStacks();
                         outerNestLayer = 0;
@@ -2368,9 +2469,7 @@ namespace MuDSL {
                         parseStrings.push_back(token);
                     }
                 } else if (token == "(") {
-                    if (++outerNestLayer > 1) {
-                        parseStrings.push_back(token);
-                    }
+                    if (++outerNestLayer > 1) { parseStrings.push_back(token); }
                 } else {
                     parseStrings.push_back(token);
                 }
@@ -2379,15 +2478,14 @@ namespace MuDSL {
                 if (token == ")") {
                     if (--outerNestLayer <= 0) {
                         currentExpression->push_back(If());
-                        get<IfElse>(currentExpression->expression).back().testExpression = getExpression(move(parseStrings), parseScope, nullptr);
+                        get<IfElse>(currentExpression->expression).back().testExpression =
+                                getExpression(move(parseStrings), parseScope, nullptr);
                         clearParseStacks();
                     } else {
                         parseStrings.push_back(token);
                     }
                 } else if (token == "(") {
-                    if (++outerNestLayer > 1) {
-                        parseStrings.push_back(token);
-                    }
+                    if (++outerNestLayer > 1) { parseStrings.push_back(token); }
                 } else {
                     parseStrings.push_back(token);
                 }
@@ -2410,7 +2508,8 @@ namespace MuDSL {
             case ParseState::returnLine:
                 if (token == ";") {
                     if (currentExpression) {
-                        currentExpression->push_back(make_shared<Expression>(Return(getExpression(move(parseStrings), parseScope, nullptr))));
+                        currentExpression->push_back(make_shared<Expression>(
+                                Return(getExpression(move(parseStrings), parseScope, nullptr))));
                     }
                     clearParseStacks();
                 } else {
@@ -2427,13 +2526,15 @@ namespace MuDSL {
                     clearParseStacks();
                 } else {
                     clearParseStacks();
-                    throw Exception("Malformed Syntax: Incorrect token `" + string(token) + "` following `else` keyword");
+                    throw Exception("Malformed Syntax: Incorrect token `" + string(token) +
+                                    "` following `else` keyword");
                 }
                 break;
             case ParseState::defineVar:
                 if (token == ";") {
                     if (parseStrings.size() == 0) {
-                        throw Exception("Malformed Syntax: `var` keyword must be followed by user supplied name");
+                        throw Exception("Malformed Syntax: `var` keyword must be followed by user "
+                                        "supplied name");
                     }
                     auto name = parseStrings.front();
                     ExpressionRef defineExpr = nullptr;
@@ -2443,9 +2544,11 @@ namespace MuDSL {
                         defineExpr = getExpression(move(parseStrings), parseScope, nullptr);
                     }
                     if (currentExpression) {
-                        currentExpression->push_back(make_shared<Expression>(DefineVar(string(name), defineExpr)));
+                        currentExpression->push_back(
+                                make_shared<Expression>(DefineVar(string(name), defineExpr)));
                     } else {
-                        getValue(make_shared<Expression>(DefineVar(string(name), defineExpr)), parseScope, nullptr);
+                        getValue(make_shared<Expression>(DefineVar(string(name), defineExpr)),
+                                 parseScope, nullptr);
                     }
                     clearParseStacks();
                 } else {
@@ -2461,15 +2564,19 @@ namespace MuDSL {
                 if (token == ",") {
                     if (parseStrings.size()) {
                         auto otherscope = resolveScope(string(parseStrings.back()), parseScope);
-                        parseScope->variables.insert(otherscope->variables.begin(), otherscope->variables.end());
-                        parseScope->functions.insert(otherscope->functions.begin(), otherscope->functions.end());
+                        parseScope->variables.insert(otherscope->variables.begin(),
+                                                     otherscope->variables.end());
+                        parseScope->functions.insert(otherscope->functions.begin(),
+                                                     otherscope->functions.end());
                         parseStrings.clear();
                     }
                 } else if (token == "{") {
                     if (parseStrings.size()) {
                         auto otherscope = resolveScope(string(parseStrings.back()), parseScope);
-                        parseScope->variables.insert(otherscope->variables.begin(), otherscope->variables.end());
-                        parseScope->functions.insert(otherscope->functions.begin(), otherscope->functions.end());
+                        parseScope->variables.insert(otherscope->variables.begin(),
+                                                     otherscope->variables.end());
+                        parseScope->functions.insert(otherscope->functions.begin(),
+                                                     otherscope->functions.end());
                     }
                     clearParseStacks();
                 } else {
@@ -2488,14 +2595,17 @@ namespace MuDSL {
                     clearParseStacks();
                 } else {
                     auto modName = string(token);
-                    auto iter = std::find_if(modules.begin(), modules.end(), [&modName](auto &mod) { return mod.scope->name == modName; });
+                    auto iter = std::find_if(modules.begin(), modules.end(), [&modName](auto &mod) {
+                        return mod.scope->name == modName;
+                    });
                     if (iter == modules.end()) {
                         auto newMod = getOptionalModule(modName);
                         if (newMod) {
                             if (shouldAllow(allowedModulePrivileges, newMod->requiredPermissions)) {
                                 modules.emplace_back(newMod->requiredPermissions, newMod->scope);
                             } else {
-                                throw Exception("Error: Cannot import restricted module: "s + modName);
+                                throw Exception("Error: Cannot import restricted module: "s +
+                                                modName);
                             }
                         }
                     }
@@ -2509,11 +2619,11 @@ namespace MuDSL {
                     parseStrings.erase(parseStrings.begin());
                     vector<string> args;
                     args.reserve(parseStrings.size());
-                    for (auto parseString: parseStrings) {
-                        args.emplace_back(parseString);
-                    }
+                    for (auto parseString: parseStrings) { args.emplace_back(parseString); }
                     auto isConstructor = parseScope->isClassScope && parseScope->name == fncName;
-                    auto newfunc = isConstructor ? newConstructor(string(fncName), parseScope->parent, args) : newFunction(string(fncName), parseScope, args);
+                    auto newfunc = isConstructor ? newConstructor(string(fncName),
+                                                                  parseScope->parent, args)
+                                                 : newFunction(string(fncName), parseScope, args);
                     if (currentExpression) {
                         auto newexpr = make_shared<Expression>(newfunc, currentExpression);
                         currentExpression->push_back(newexpr);
@@ -2546,9 +2656,13 @@ namespace MuDSL {
             }
         } catch (Exception e) {
 #if defined MuDSL_DO_INTERNAL_PRINT
-            callFunctionWithArgs(resolveFunction("print"), "Error at line "s + std::to_string(currentLine) + ", at: " + std::to_string(tokenCount) + string(tokens[tokenCount]) + ": " + e.wh + "\n");
+            callFunctionWithArgs(resolveFunction("print"),
+                                 "Error at line "s + std::to_string(currentLine) +
+                                         ", at: " + std::to_string(tokenCount) +
+                                         string(tokens[tokenCount]) + ": " + e.wh + "\n");
 #else
-            printf("Error at line %llu at %i: %s : %s\n", currentLine, tokenCount, string(tokens[tokenCount]).c_str(), e.wh.c_str());
+            printf("Error at line %llu at %i: %s : %s\n", currentLine, tokenCount,
+                   string(tokens[tokenCount]).c_str(), e.wh.c_str());
 #endif
             clearParseStacks();
             parseScope = globalScope;
@@ -2556,9 +2670,13 @@ namespace MuDSL {
             didExcept = true;
         } catch (std::exception &e) {
 #if defined MuDSL_DO_INTERNAL_PRINT
-            callFunctionWithArgs(resolveFunction("print"), "Error at line "s + std::to_string(currentLine) + ", at: " + std::to_string(tokenCount) + string(tokens[tokenCount]) + ": " + e.what() + "\n");
+            callFunctionWithArgs(resolveFunction("print"),
+                                 "Error at line "s + std::to_string(currentLine) +
+                                         ", at: " + std::to_string(tokenCount) +
+                                         string(tokens[tokenCount]) + ": " + e.what() + "\n");
 #else
-            printf("Error at line %llu at %i: %s : %s\n", currentLine, tokenCount, string(tokens[tokenCount]).c_str(), e.what());
+            printf("Error at line %llu at %i: %s : %s\n", currentLine, tokenCount,
+                   string(tokens[tokenCount]).c_str(), e.what());
 #endif
             clearParseStacks();
             parseScope = globalScope;
@@ -2570,9 +2688,7 @@ namespace MuDSL {
 
     bool MuDSLInterpreter::evaluate(string_view script) {
         for (auto &line: split(script, '\n')) {
-            if (readLine(line)) {
-                return true;
-            }
+            if (readLine(line)) { return true; }
         }
         // close any dangling if-expressions that may exist
         return readLine(";"s);
@@ -2586,9 +2702,7 @@ namespace MuDSL {
             s.reserve(file.tellg());
             file.seekg(0, std::ios::beg);
             // bash kata scripts have a header line we need to skip
-            if (endswith(path, ".sh")) {
-                getline(file, s);
-            }
+            if (endswith(path, ".sh")) { getline(file, s); }
             s.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
             return evaluate(s);
         } else {
@@ -2623,9 +2737,7 @@ namespace MuDSL {
 
     void ClearScope(ScopeRef s) {
         s->parent = nullptr;
-        for (auto &&c: s->scopes) {
-            ClearScope(c.second);
-        }
+        for (auto &&c: s->scopes) { ClearScope(c.second); }
         s->scopes.clear();
     }
 
@@ -2635,9 +2747,7 @@ namespace MuDSL {
         globalScope = make_shared<Scope>(this);
         parseScope = globalScope;
         currentExpression = nullptr;
-        if (modules.size() > 1) {
-            modules.erase(modules.begin() + 1, modules.end());
-        }
+        if (modules.size() > 1) { modules.erase(modules.begin() + 1, modules.end()); }
     }
 
     // general purpose clear to reset state machine for next statement
@@ -2647,10 +2757,9 @@ namespace MuDSL {
         outerNestLayer = 0;
     }
 
-// --------------------------------------- parsing
+    // --------------------------------------- parsing
 
-
-// --------------------------------------- scopeImplementation
+    // --------------------------------------- scopeImplementation
 
     // scope control lets you have object lifetimes
     ScopeRef MuDSLInterpreter::newScope(const string &name, ScopeRef scope) {
@@ -2689,7 +2798,7 @@ namespace MuDSL {
         return ref;
     }
 
-// --------------------------------------- scopeImplementation
+    // --------------------------------------- scopeImplementation
 
     template<typename T>
     vector<T> &Array::getStdVector() {
@@ -2702,15 +2811,11 @@ namespace MuDSL {
     }
 
     Class::Class(const Class &o) : name(o.name), functionScope(o.functionScope) {
-        for (auto &&v: o.variables) {
-            variables[v.first] = make_shared<Value>(v.second->value);
-        }
+        for (auto &&v: o.variables) { variables[v.first] = make_shared<Value>(v.second->value); }
     }
 
     Class::Class(const ScopeRef &o) : name(o->name), functionScope(o) {
-        for (auto &&v: o->variables) {
-            variables[v.first] = make_shared<Value>(v.second->value);
-        }
+        for (auto &&v: o->variables) { variables[v.first] = make_shared<Value>(v.second->value); }
     }
 
     Class::~Class() {
@@ -2732,7 +2837,8 @@ namespace MuDSL {
                 hash = std::hash<Float>{}(getFloat());
                 break;
             case Type::Vec3:
-                hash = std::hash<float>{}(getVec3().x) ^ std::hash<float>{}(getVec3().y) ^ std::hash<float>{}(getVec3().z);
+                hash = std::hash<float>{}(getVec3().x) ^ std::hash<float>{}(getVec3().y) ^
+                       std::hash<float>{}(getVec3().z);
                 break;
             case Type::Function:
                 hash = std::hash<size_t>{}((size_t) getFunction().get());
@@ -2749,7 +2855,8 @@ namespace MuDSL {
         if (newType > getType()) {
             switch (newType) {
                 default:
-                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) +
+                                    "` to `" + getTypeName(newType) + "`");
                     break;
                 case Type::Int:
                     value = Int(0);
@@ -2757,7 +2864,9 @@ namespace MuDSL {
                 case Type::Float:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Null:
                             value = 0.f;
@@ -2771,7 +2880,9 @@ namespace MuDSL {
                 case Type::Vec3:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Null:
                             value = vec3();
@@ -2787,7 +2898,9 @@ namespace MuDSL {
                 case Type::String:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Null:
                             value = "null"s;
@@ -2800,7 +2913,8 @@ namespace MuDSL {
                             break;
                         case Type::Vec3: {
                             auto &vec = getVec3();
-                            value = std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " + std::to_string(vec.z);
+                            value = std::to_string(vec.x) + ", " + std::to_string(vec.y) + ", " +
+                                    std::to_string(vec.z);
                             break;
                         }
                         case Type::Function:
@@ -2811,7 +2925,9 @@ namespace MuDSL {
                 case Type::Array:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Null:
                             value = Array();
@@ -2830,16 +2946,16 @@ namespace MuDSL {
                             auto str = getString();
                             value = Array(vector<string>{});
                             auto &arry = getStdVector<string>();
-                            for (auto &&ch: str) {
-                                arry.push_back(""s + ch);
-                            }
+                            for (auto &&ch: str) { arry.push_back(""s + ch); }
                         } break;
                     }
                     break;
                 case Type::List:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Null:
                         case Type::Int:
@@ -2851,9 +2967,7 @@ namespace MuDSL {
                             auto str = getString();
                             value = List();
                             auto &list = getList();
-                            for (auto &&ch: str) {
-                                list.push_back(make_shared<Value>(""s + ch));
-                            }
+                            for (auto &&ch: str) { list.push_back(make_shared<Value>(""s + ch)); }
                         } break;
                         case Type::Array:
                             Array arr = getArray();
@@ -2881,7 +2995,9 @@ namespace MuDSL {
                                     }
                                     break;
                                 default:
-                                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                                    throw Exception("Conversion not defined for types `"s +
+                                                    getTypeName(getType()) + "` to `" +
+                                                    getTypeName(newType) + "`");
                                     break;
                             }
                             break;
@@ -2890,7 +3006,9 @@ namespace MuDSL {
                 case Type::Dictionary:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Null:
                         case Type::Int:
@@ -2927,7 +3045,9 @@ namespace MuDSL {
                                     }
                                     break;
                                 default:
-                                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                                    throw Exception("Conversion not defined for types `"s +
+                                                    getTypeName(getType()) + "` to `" +
+                                                    getTypeName(newType) + "`");
                                     break;
                             }
                         } break;
@@ -2937,9 +3057,7 @@ namespace MuDSL {
                             value = make_shared<Dictionary>();
                             auto &dict = getDictionary();
                             size_t index = 0;
-                            for (auto &&item: list) {
-                                (*dict)[index++ ^ hashbits] = item;
-                            }
+                            for (auto &&item: list) { (*dict)[index++ ^ hashbits] = item; }
                         } break;
                     }
                     break;
@@ -2954,7 +3072,8 @@ namespace MuDSL {
         } else {
             switch (newType) {
                 default:
-                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) +
+                                    "` to `" + getTypeName(newType) + "`");
                     break;
                 case Type::Null:
                     value = Int(0);
@@ -2980,7 +3099,9 @@ namespace MuDSL {
                 case Type::Float:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::String:
                             value = (Float) fromChars(getString());
@@ -2996,7 +3117,9 @@ namespace MuDSL {
                 case Type::String:
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Array: {
                             string newval;
@@ -3023,7 +3146,9 @@ namespace MuDSL {
                                     }
                                     break;
                                 default:
-                                    throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                                    throw Exception("Conversion not defined for types `"s +
+                                                    getTypeName(getType()) + "` to `" +
+                                                    getTypeName(newType) + "`");
                                     break;
                             }
                             if (arr.size()) {
@@ -3035,9 +3160,7 @@ namespace MuDSL {
                         case Type::List: {
                             string newval;
                             auto &list = getList();
-                            for (auto val: list) {
-                                newval += val->getPrintString() + ", ";
-                            }
+                            for (auto val: list) { newval += val->getPrintString() + ", "; }
                             if (newval.size()) {
                                 newval.pop_back();
                                 newval.pop_back();
@@ -3048,7 +3171,8 @@ namespace MuDSL {
                             string newval;
                             auto &dict = getDictionary();
                             for (auto &&val: *dict) {
-                                newval += "`"s + std::to_string(val.first) + ": " + val.second->getPrintString() + "`, ";
+                                newval += "`"s + std::to_string(val.first) + ": " +
+                                          val.second->getPrintString() + "`, ";
                             }
                             if (newval.size()) {
                                 newval.pop_back();
@@ -3060,7 +3184,8 @@ namespace MuDSL {
                             auto &strct = getClass();
                             string newval = strct->name + ":\n"s;
                             for (auto &&val: strct->variables) {
-                                newval += "`"s + val.first + ": " + val.second->getPrintString() + "`\n";
+                                newval += "`"s + val.first + ": " + val.second->getPrintString() +
+                                          "`\n";
                             }
                             value = newval;
                         } break;
@@ -3069,7 +3194,9 @@ namespace MuDSL {
                 case Type::Array: {
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Dictionary: {
                             Array arr;
@@ -3182,13 +3309,13 @@ namespace MuDSL {
                 case Type::List: {
                     switch (getType()) {
                         default:
-                            throw Exception("Conversion not defined for types `"s + getTypeName(getType()) + "` to `" + getTypeName(newType) + "`");
+                            throw Exception("Conversion not defined for types `"s +
+                                            getTypeName(getType()) + "` to `" +
+                                            getTypeName(newType) + "`");
                             break;
                         case Type::Dictionary: {
                             List list;
-                            for (auto &&item: *getDictionary()) {
-                                list.push_back(item.second);
-                            }
+                            for (auto &&item: *getDictionary()) { list.push_back(item.second); }
                             value = list;
                         } break;
                         case Type::Class:
@@ -3199,7 +3326,8 @@ namespace MuDSL {
                 case Type::Dictionary: {
                     Dictionary dict;
                     for (auto &&item: getClass()->variables) {
-                        dict[std::hash<string>()(item.first) ^ typeHashBits(Type::String)] = item.second;
+                        dict[std::hash<string>()(item.first) ^ typeHashBits(Type::String)] =
+                                item.second;
                     }
                 }
             }

@@ -1,6 +1,5 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-
 #ifndef INC_Item
 #include "Item.hpp"
 #endif// !INC_Item
@@ -46,8 +45,7 @@ UInt32 getpixel(C_Surface *surface, int x, int y) {
             break;
 
         case 3:
-            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-                return p[0] << 16 | p[1] << 8 | p[2];
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN) return p[0] << 16 | p[1] << 8 | p[2];
             else
                 return p[0] | p[1] << 8 | p[2] << 16;
             break;
@@ -60,7 +58,6 @@ UInt32 getpixel(C_Surface *surface, int x, int y) {
             return 0; /* shouldn't happen, but avoids warnings */
     }
 }
-
 
 void Item::loadFillTexture(C_Surface *tex) {
     fill.resize(capacity);

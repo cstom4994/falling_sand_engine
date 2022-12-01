@@ -13,24 +13,17 @@
 #include <iostream>
 #endif
 
-CAllocator::CAllocator()
-    : Allocator(0) {
-}
+CAllocator::CAllocator() : Allocator(0) {}
 
-void CAllocator::Init() {
-}
+void CAllocator::Init() {}
 
-CAllocator::~CAllocator() {
-}
+CAllocator::~CAllocator() {}
 
 void *CAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
     return gc_malloc(&gc, size);
 }
 
-void CAllocator::Free(void *ptr) {
-    gc_free(&gc, ptr);
-}
-
+void CAllocator::Free(void *ptr) { gc_free(&gc, ptr); }
 
 FreeListAllocator::FreeListAllocator(const std::size_t totalSize, const PlacementPolicy pPolicy)
     : Allocator(totalSize) {
@@ -60,11 +53,9 @@ void *FreeListAllocator::Allocate(const std::size_t size, const std::size_t alig
 
     // Search through the free list for a free block that has enough space to allocate our data
     std::size_t padding;
-    Node *affectedNode,
-            *previousNode;
+    Node *affectedNode, *previousNode;
     this->Find(size, alignment, padding, previousNode, affectedNode);
     assert(affectedNode != nullptr && "Not enough memory");
-
 
     const std::size_t alignmentPadding = padding - allocationHeaderSize;
     const std::size_t requiredSize = size + padding;
@@ -90,13 +81,17 @@ void *FreeListAllocator::Allocate(const std::size_t size, const std::size_t alig
 
 #ifdef _DEBUG
     std::cout << "A"
-              << "\t@H " << (void *) headerAddress << "\tD@ " << (void *) dataAddress << "\tS " << ((FreeListAllocator::AllocationHeader *) headerAddress)->blockSize << "\tAP " << alignmentPadding << "\tP " << padding << "\tM " << m_used << "\tR " << rest << std::endl;
+              << "\t@H " << (void *) headerAddress << "\tD@ " << (void *) dataAddress << "\tS "
+              << ((FreeListAllocator::AllocationHeader *) headerAddress)->blockSize << "\tAP "
+              << alignmentPadding << "\tP " << padding << "\tM " << m_used << "\tR " << rest
+              << std::endl;
 #endif
 
     return (void *) dataAddress;
 }
 
-void FreeListAllocator::Find(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode) {
+void FreeListAllocator::Find(const std::size_t size, const std::size_t alignment,
+                             std::size_t &padding, Node *&previousNode, Node *&foundNode) {
     switch (m_pPolicy) {
         case FIND_FIRST:
             FindFirst(size, alignment, padding, previousNode, foundNode);
@@ -107,17 +102,16 @@ void FreeListAllocator::Find(const std::size_t size, const std::size_t alignment
     }
 }
 
-void FreeListAllocator::FindFirst(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode) {
+void FreeListAllocator::FindFirst(const std::size_t size, const std::size_t alignment,
+                                  std::size_t &padding, Node *&previousNode, Node *&foundNode) {
     //Iterate list and return the first free block with a size >= than given size
-    Node *it = m_freeList.head,
-         *itPrev = nullptr;
+    Node *it = m_freeList.head, *itPrev = nullptr;
 
     while (it != nullptr) {
-        padding = AllocatorUtils::CalculatePaddingWithHeader((std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
+        padding = AllocatorUtils::CalculatePaddingWithHeader(
+                (std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
         const std::size_t requiredSpace = size + padding;
-        if (it->data.blockSize >= requiredSpace) {
-            break;
-        }
+        if (it->data.blockSize >= requiredSpace) { break; }
         itPrev = it;
         it = it->next;
     }
@@ -125,16 +119,18 @@ void FreeListAllocator::FindFirst(const std::size_t size, const std::size_t alig
     foundNode = it;
 }
 
-void FreeListAllocator::FindBest(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode) {
+void FreeListAllocator::FindBest(const std::size_t size, const std::size_t alignment,
+                                 std::size_t &padding, Node *&previousNode, Node *&foundNode) {
     // Iterate WHOLE list keeping a pointer to the best fit
     std::size_t smallestDiff = std::numeric_limits<std::size_t>::max();
     Node *bestBlock = nullptr;
-    Node *it = m_freeList.head,
-         *itPrev = nullptr;
+    Node *it = m_freeList.head, *itPrev = nullptr;
     while (it != nullptr) {
-        padding = AllocatorUtils::CalculatePaddingWithHeader((std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
+        padding = AllocatorUtils::CalculatePaddingWithHeader(
+                (std::size_t) it, alignment, sizeof(FreeListAllocator::AllocationHeader));
         const std::size_t requiredSpace = size + padding;
-        if (it->data.blockSize >= requiredSpace && (it->data.blockSize - requiredSpace < smallestDiff)) {
+        if (it->data.blockSize >= requiredSpace &&
+            (it->data.blockSize - requiredSpace < smallestDiff)) {
             bestBlock = it;
         }
         itPrev = it;
@@ -148,7 +144,8 @@ void FreeListAllocator::Free(void *ptr) {
     // Insert it in a sorted position by the address number
     const std::size_t currentAddress = (std::size_t) ptr;
     const std::size_t headerAddress = currentAddress - sizeof(FreeListAllocator::AllocationHeader);
-    const FreeListAllocator::AllocationHeader *allocationHeader{(FreeListAllocator::AllocationHeader *) headerAddress};
+    const FreeListAllocator::AllocationHeader *allocationHeader{
+            (FreeListAllocator::AllocationHeader *) headerAddress};
 
     Node *freeNode = (Node *) (headerAddress);
     freeNode->data.blockSize = allocationHeader->blockSize + allocationHeader->padding;
@@ -172,7 +169,8 @@ void FreeListAllocator::Free(void *ptr) {
 
 #ifdef _DEBUG
     std::cout << "F"
-              << "\t@ptr " << ptr << "\tH@ " << (void *) freeNode << "\tS " << freeNode->data.blockSize << "\tM " << m_used << std::endl;
+              << "\t@ptr " << ptr << "\tH@ " << (void *) freeNode << "\tS "
+              << freeNode->data.blockSize << "\tM " << m_used << std::endl;
 #endif
 }
 
@@ -182,7 +180,8 @@ void FreeListAllocator::Coalescence(Node *previousNode, Node *freeNode) {
         freeNode->data.blockSize += freeNode->next->data.blockSize;
         m_freeList.remove(freeNode, freeNode->next);
 #ifdef _DEBUG
-        std::cout << "\tMerging(n) " << (void *) freeNode << " & " << (void *) freeNode->next << "\tS " << freeNode->data.blockSize << std::endl;
+        std::cout << "\tMerging(n) " << (void *) freeNode << " & " << (void *) freeNode->next
+                  << "\tS " << freeNode->data.blockSize << std::endl;
 #endif
     }
 
@@ -191,7 +190,8 @@ void FreeListAllocator::Coalescence(Node *previousNode, Node *freeNode) {
         previousNode->data.blockSize += freeNode->data.blockSize;
         m_freeList.remove(previousNode, freeNode);
 #ifdef _DEBUG
-        std::cout << "\tMerging(p) " << (void *) previousNode << " & " << (void *) freeNode << "\tS " << previousNode->data.blockSize << std::endl;
+        std::cout << "\tMerging(p) " << (void *) previousNode << " & " << (void *) freeNode
+                  << "\tS " << previousNode->data.blockSize << std::endl;
 #endif
     }
 }
@@ -206,15 +206,10 @@ void FreeListAllocator::Reset() {
     m_freeList.insert(nullptr, firstNode);
 }
 
-
-LinearAllocator::LinearAllocator(const std::size_t totalSize)
-    : Allocator(totalSize) {
-}
+LinearAllocator::LinearAllocator(const std::size_t totalSize) : Allocator(totalSize) {}
 
 void LinearAllocator::Init() {
-    if (m_start_ptr != nullptr) {
-        gc_free(&gc, m_start_ptr);
-    }
+    if (m_start_ptr != nullptr) { gc_free(&gc, m_start_ptr); }
     m_start_ptr = gc_malloc(&gc, m_totalSize);
     m_offset = 0;
 }
@@ -234,9 +229,7 @@ void *LinearAllocator::Allocate(const std::size_t size, const std::size_t alignm
         padding = AllocatorUtils::CalculatePadding(currentAddress, alignment);
     }
 
-    if (m_offset + padding + size > m_totalSize) {
-        return nullptr;
-    }
+    if (m_offset + padding + size > m_totalSize) { return nullptr; }
 
     m_offset += padding;
     const std::size_t nextAddress = currentAddress + padding;
@@ -244,7 +237,8 @@ void *LinearAllocator::Allocate(const std::size_t size, const std::size_t alignm
 
 #ifdef _DEBUG
     std::cout << "A"
-              << "\t@C " << (void *) currentAddress << "\t@R " << (void *) nextAddress << "\tO " << m_offset << "\tP " << padding << std::endl;
+              << "\t@C " << (void *) currentAddress << "\t@R " << (void *) nextAddress << "\tO "
+              << m_offset << "\tP " << padding << std::endl;
 #endif
 
     m_used = m_offset;
@@ -253,16 +247,13 @@ void *LinearAllocator::Allocate(const std::size_t size, const std::size_t alignm
     return (void *) nextAddress;
 }
 
-void LinearAllocator::Free(void *ptr) {
-    assert(false && "Use Reset() method");
-}
+void LinearAllocator::Free(void *ptr) { assert(false && "Use Reset() method"); }
 
 void LinearAllocator::Reset() {
     m_offset = 0;
     m_used = 0;
     m_peak = 0;
 }
-
 
 PoolAllocator::PoolAllocator(const std::size_t totalSize, const std::size_t chunkSize)
     : Allocator(totalSize) {
@@ -276,9 +267,7 @@ void PoolAllocator::Init() {
     this->Reset();
 }
 
-PoolAllocator::~PoolAllocator() {
-    gc_free(&gc, m_start_ptr);
-}
+PoolAllocator::~PoolAllocator() { gc_free(&gc, m_start_ptr); }
 
 void *PoolAllocator::Allocate(const std::size_t allocationSize, const std::size_t alignment) {
     assert(allocationSize == this->m_chunkSize && "Allocation size must be equal to chunk size");
@@ -291,7 +280,8 @@ void *PoolAllocator::Allocate(const std::size_t allocationSize, const std::size_
     m_peak = std::max(m_peak, m_used);
 #ifdef _DEBUG
     std::cout << "A"
-              << "\t@S " << m_start_ptr << "\t@R " << (void *) freePosition << "\tM " << m_used << std::endl;
+              << "\t@S " << m_start_ptr << "\t@R " << (void *) freePosition << "\tM " << m_used
+              << std::endl;
 #endif
 
     return (void *) freePosition;
@@ -319,15 +309,10 @@ void PoolAllocator::Reset() {
     }
 }
 
-
-StackAllocator::StackAllocator(const std::size_t totalSize)
-    : Allocator(totalSize) {
-}
+StackAllocator::StackAllocator(const std::size_t totalSize) : Allocator(totalSize) {}
 
 void StackAllocator::Init() {
-    if (m_start_ptr != nullptr) {
-        gc_free(&gc, m_start_ptr);
-    }
+    if (m_start_ptr != nullptr) { gc_free(&gc, m_start_ptr); }
     m_start_ptr = gc_malloc(&gc, m_totalSize);
     m_offset = 0;
 }
@@ -340,11 +325,10 @@ StackAllocator::~StackAllocator() {
 void *StackAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
     const std::size_t currentAddress = (std::size_t) m_start_ptr + m_offset;
 
-    std::size_t padding = AllocatorUtils::CalculatePaddingWithHeader(currentAddress, alignment, sizeof(AllocationHeader));
+    std::size_t padding = AllocatorUtils::CalculatePaddingWithHeader(currentAddress, alignment,
+                                                                     sizeof(AllocationHeader));
 
-    if (m_offset + padding + size > m_totalSize) {
-        return nullptr;
-    }
+    if (m_offset + padding + size > m_totalSize) { return nullptr; }
     m_offset += padding;
 
     const std::size_t nextAddress = currentAddress + padding;
@@ -357,7 +341,8 @@ void *StackAllocator::Allocate(const std::size_t size, const std::size_t alignme
 
 #ifdef _DEBUG
     std::cout << "A"
-              << "\t@C " << (void *) currentAddress << "\t@R " << (void *) nextAddress << "\tO " << m_offset << "\tP " << padding << std::endl;
+              << "\t@C " << (void *) currentAddress << "\t@R " << (void *) nextAddress << "\tO "
+              << m_offset << "\tP " << padding << std::endl;
 #endif
     m_used = m_offset;
     m_peak = std::max(m_peak, m_used);
@@ -376,7 +361,8 @@ void StackAllocator::Free(void *ptr) {
 
 #ifdef _DEBUG
     std::cout << "F"
-              << "\t@C " << (void *) currentAddress << "\t@F " << (void *) ((char *) m_start_ptr + m_offset) << "\tO " << m_offset << std::endl;
+              << "\t@C " << (void *) currentAddress << "\t@F "
+              << (void *) ((char *) m_start_ptr + m_offset) << "\tO " << m_offset << std::endl;
 #endif
 }
 

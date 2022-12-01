@@ -73,7 +73,6 @@ ImMarkdown::ImMarkdown() {
     };
 }
 
-
 void ImMarkdown::BLOCK_UL(const MD_BLOCK_UL_DETAIL *d, bool e) {
     if (e) {
         m_list_stack.push_back(list_info{false, d->mark, 0});
@@ -143,16 +142,12 @@ void ImMarkdown::BLOCK_H(const MD_BLOCK_H_DETAIL *d, bool e) {
     }
 }
 
-void ImMarkdown::BLOCK_DOC(bool) {
-}
+void ImMarkdown::BLOCK_DOC(bool) {}
 
-void ImMarkdown::BLOCK_QUOTE(bool) {
-}
-void ImMarkdown::BLOCK_CODE(const MD_BLOCK_CODE_DETAIL *, bool) {
-}
+void ImMarkdown::BLOCK_QUOTE(bool) {}
+void ImMarkdown::BLOCK_CODE(const MD_BLOCK_CODE_DETAIL *, bool) {}
 
-void ImMarkdown::BLOCK_HTML(bool) {
-}
+void ImMarkdown::BLOCK_HTML(bool) {}
 
 void ImMarkdown::BLOCK_P(bool) {
     if (!m_list_stack.empty()) return;
@@ -178,13 +173,9 @@ void ImMarkdown::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL *, bool e) {
         const float wx = wp.x + sp.x / 2;
         const float wy = wp.y - sp.y / 2 - ImGui::GetScrollY();
 
-        for (int i = 0; i < m_table_col_pos.size(); ++i) {
-            m_table_col_pos[i] += wx;
-        }
+        for (int i = 0; i < m_table_col_pos.size(); ++i) { m_table_col_pos[i] += wx; }
 
-        for (int i = 0; i < m_table_row_pos.size(); ++i) {
-            m_table_row_pos[i] += wy;
-        }
+        for (int i = 0; i < m_table_row_pos.size(); ++i) { m_table_row_pos[i] += wy; }
 
         const ImColor c = ImGui::GetStyle().Colors[ImGuiCol_Separator];
         ////////////////////////////////////////////////////////////////////////
@@ -212,9 +203,7 @@ void ImMarkdown::BLOCK_THEAD(bool e) {
     set_font(e);
 }
 
-void ImMarkdown::BLOCK_TBODY(bool e) {
-    m_is_table_body = e;
-}
+void ImMarkdown::BLOCK_TBODY(bool e) { m_is_table_body = e; }
 
 void ImMarkdown::BLOCK_TR(bool e) {
     ImGui::SetCursorPosY(m_table_last_pos.y);
@@ -226,9 +215,7 @@ void ImMarkdown::BLOCK_TR(bool e) {
     }
 }
 
-void ImMarkdown::BLOCK_TH(const MD_BLOCK_TD_DETAIL *d, bool e) {
-    BLOCK_TD(d, e);
-}
+void ImMarkdown::BLOCK_TH(const MD_BLOCK_TD_DETAIL *d, bool e) { BLOCK_TD(d, e); }
 
 void ImMarkdown::BLOCK_TD(const MD_BLOCK_TD_DETAIL *, bool e) {
     if (e) {
@@ -284,9 +271,7 @@ void ImMarkdown::line(ImColor c, bool under) {
     ImVec2 mi = ImGui::GetItemRectMin();
     ImVec2 ma = ImGui::GetItemRectMax();
 
-    if (!under) {
-        ma.y -= ImGui::GetFontSize() / 2;
-    }
+    if (!under) { ma.y -= ImGui::GetFontSize() / 2; }
 
     mi.y = ma.y;
 
@@ -298,7 +283,6 @@ void ImMarkdown::SPAN_A(const MD_SPAN_A_DETAIL *d, bool e) {
     set_color(e);
 }
 
-
 void ImMarkdown::SPAN_EM(bool e) {
     m_is_em = e;
     set_font(e);
@@ -308,7 +292,6 @@ void ImMarkdown::SPAN_STRONG(bool e) {
     m_is_strong = e;
     set_font(e);
 }
-
 
 void ImMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL *d, bool e) {
     m_is_image = e;
@@ -323,7 +306,6 @@ void ImMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL *d, bool e) {
             const float scale = ImGui::GetIO().FontGlobalScale;
             nfo.size.x *= scale;
             nfo.size.y *= scale;
-
 
             ImVec2 const csz = ImGui::GetContentRegionAvail();
             if (nfo.size.x > csz.x) {
@@ -340,34 +322,23 @@ void ImMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL *d, bool e) {
                 //	ImGui::SetTooltip("%.*s", (int)d->title.size, d->title.text);
                 //}
 
-                if (ImGui::IsMouseReleased(0)) {
-                    open_url();
-                }
+                if (ImGui::IsMouseReleased(0)) { open_url(); }
             }
         }
     }
 }
 
-void ImMarkdown::SPAN_CODE(bool) {
-}
+void ImMarkdown::SPAN_CODE(bool) {}
 
+void ImMarkdown::SPAN_LATEXMATH(bool) {}
 
-void ImMarkdown::SPAN_LATEXMATH(bool) {
-}
+void ImMarkdown::SPAN_LATEXMATH_DISPLAY(bool) {}
 
-void ImMarkdown::SPAN_LATEXMATH_DISPLAY(bool) {
-}
+void ImMarkdown::SPAN_WIKILINK(const MD_SPAN_WIKILINK_DETAIL *, bool) {}
 
-void ImMarkdown::SPAN_WIKILINK(const MD_SPAN_WIKILINK_DETAIL *, bool) {
-}
+void ImMarkdown::SPAN_U(bool e) { m_is_underline = e; }
 
-void ImMarkdown::SPAN_U(bool e) {
-    m_is_underline = e;
-}
-
-void ImMarkdown::SPAN_DEL(bool e) {
-    m_is_strikethrough = e;
-}
+void ImMarkdown::SPAN_DEL(bool e) { m_is_strikethrough = e; }
 
 void ImMarkdown::render_text(const char *str, const char *str_end) {
     const float scale = ImGui::GetIO().FontGlobalScale;
@@ -382,16 +353,16 @@ void ImMarkdown::render_text(const char *str, const char *str_end) {
             float wl = ImGui::GetContentRegionAvail().x;
 
             if (m_is_table_body) {
-                wl = (m_table_next_column < m_table_col_pos.size() ? m_table_col_pos[m_table_next_column] : m_table_last_pos.x);
+                wl = (m_table_next_column < m_table_col_pos.size()
+                              ? m_table_col_pos[m_table_next_column]
+                              : m_table_last_pos.x);
                 wl -= ImGui::GetCursorPosX();
             }
 
-            te = ImGui::GetFont()->CalcWordWrapPositionA(
-                    scale, str, str_end, wl);
+            te = ImGui::GetFont()->CalcWordWrapPositionA(scale, str, str_end, wl);
 
             if (te == str) ++te;
         }
-
 
         ImGui::TextUnformatted(str, te);
 
@@ -403,30 +374,22 @@ void ImMarkdown::render_text(const char *str, const char *str_end) {
                 ImGui::SetTooltip("%s", m_href.c_str());
 
                 c = s.Colors[ImGuiCol_ButtonHovered];
-                if (ImGui::IsMouseReleased(0)) {
-                    open_url();
-                }
+                if (ImGui::IsMouseReleased(0)) { open_url(); }
             } else {
                 c = s.Colors[ImGuiCol_Button];
             }
             line(c, true);
         }
-        if (m_is_underline) {
-            line(s.Colors[ImGuiCol_Text], true);
-        }
-        if (m_is_strikethrough) {
-            line(s.Colors[ImGuiCol_Text], false);
-        }
+        if (m_is_underline) { line(s.Colors[ImGuiCol_Text], true); }
+        if (m_is_strikethrough) { line(s.Colors[ImGuiCol_Text], false); }
 
         str = te;
 
         while (str < str_end && *str == ' ') ++str;
     }
 
-
     ImGui::SameLine(0.0f, 0.0f);
 }
-
 
 bool ImMarkdown::render_entity(const char *str, const char *str_end) {
     const size_t sz = str_end - str;
@@ -460,7 +423,6 @@ bool ImMarkdown::render_html(const char *str, const char *str_end) {
     return false;
 }
 
-
 int ImMarkdown::text(MD_TEXTTYPE type, const char *str, const char *str_end) {
     switch (type) {
         case MD_TEXT_NORMAL:
@@ -478,14 +440,10 @@ int ImMarkdown::text(MD_TEXTTYPE type, const char *str, const char *str_end) {
             soft_break();
             break;
         case MD_TEXT_ENTITY:
-            if (!render_entity(str, str_end)) {
-                render_text(str, str_end);
-            };
+            if (!render_entity(str, str_end)) { render_text(str, str_end); };
             break;
         case MD_TEXT_HTML:
-            if (!render_html(str, str_end)) {
-                render_text(str, str_end);
-            }
+            if (!render_html(str, str_end)) { render_text(str, str_end); }
             break;
         case MD_TEXT_LATEXMATH:
             render_text(str, str_end);
@@ -628,12 +586,9 @@ ImFont *ImMarkdown::get_font() const {
 };
 
 ImVec4 ImMarkdown::get_color() const {
-    if (!m_href.empty()) {
-        return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
-    }
+    if (!m_href.empty()) { return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]; }
     return ImGui::GetStyle().Colors[ImGuiCol_Text];
 }
-
 
 bool ImMarkdown::get_image(image_info &nfo) const {
     nfo.texture_id = ImGui::GetIO().Fonts->TexID;
@@ -683,7 +638,9 @@ void ImMarkdown::soft_break() {
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#pragma comment(linker, "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+#pragma comment(                                                                                   \
+        linker,                                                                                    \
+        "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #pragma comment(lib, "comctl32.lib")
 
@@ -693,7 +650,6 @@ void ImGUIIMMCommunication::operator()() {
     static ImVec2 window_pos = ImVec2();
     static ImVec2 window_pos_pivot = ImVec2();
 
-
     static ImGuiID candidate_window_root_id = 0;
 
     static ImGuiWindow *lastTextInputNavWindow = nullptr;
@@ -701,7 +657,9 @@ void ImGUIIMMCommunication::operator()() {
     static ImGuiID lastTextInputFocusId = 0;
 
     if (!(candidate_window_root_id &&
-          ((ImGui::GetCurrentContext()->NavWindow ? ImGui::GetCurrentContext()->NavWindow->RootWindow->ID : 0u) == candidate_window_root_id))) {
+          ((ImGui::GetCurrentContext()->NavWindow
+                    ? ImGui::GetCurrentContext()->NavWindow->RootWindow->ID
+                    : 0u) == candidate_window_root_id))) {
 
         window_pos = ImVec2(ImGui::GetCurrentContext()->PlatformImeData.InputPos.x + 1.0f,
                             ImGui::GetCurrentContext()->PlatformImeData.InputPos.y);//
@@ -711,7 +669,9 @@ void ImGUIIMMCommunication::operator()() {
         IM_ASSERT(currentContext || !"ImGui::GetCurrentContext() return nullptr.");
         if (currentContext) {
             if (!ImGui::IsMouseClicked(0)) {
-                if ((currentContext->WantTextInputNextFrame != -1) ? (!!(currentContext->WantTextInputNextFrame)) : false) {
+                if ((currentContext->WantTextInputNextFrame != -1)
+                            ? (!!(currentContext->WantTextInputNextFrame))
+                            : false) {
                     if ((!!currentContext->NavWindow) &&
                         (currentContext->NavWindow->RootWindow->ID != candidate_window_root_id) &&
                         (ImGui::GetActiveID() != lastTextInputActiveId)) {
@@ -742,10 +702,8 @@ void ImGUIIMMCommunication::operator()() {
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         if (ImGui::Begin("IME Composition Window", nullptr,
-                         ImGuiWindowFlags_Tooltip |
-                                 ImGuiWindowFlags_NoNav |
-                                 ImGuiWindowFlags_NoDecoration |
-                                 ImGuiWindowFlags_NoInputs |
+                         ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoNav |
+                                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
                                  ImGuiWindowFlags_AlwaysAutoResize |
                                  ImGuiWindowFlags_NoSavedSettings)) {
 
@@ -755,7 +713,8 @@ void ImGUIIMMCommunication::operator()() {
 
             if (static_cast<bool>(comp_target_utf8)) {
                 ImGui::SameLine(0.0f, 0.0f);
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.203125f, 0.91796875f, 0.35546875f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_Text,
+                                      ImVec4(0.203125f, 0.91796875f, 0.35546875f, 1.0f));
 
                 target_screen_pos = ImGui::GetCursorScreenPos();
                 target_screen_pos.y += ImGui::GetTextLineHeightWithSpacing();
@@ -800,13 +759,11 @@ void ImGUIIMMCommunication::operator()() {
             }
 
             std::for_each(begin_ite, end_ite,
-                          [&](auto &item) {
-                              listbox_items.push_back(item.c_str());
-                          });
+                          [&](auto &item) { listbox_items.push_back(item.c_str()); });
 
-            const float candidate_window_height =
-                    ((ImGui::GetStyle().FramePadding.y * 2) +
-                     ((ImGui::GetTextLineHeightWithSpacing()) * ((int) std::size(listbox_items) + 2)));
+            const float candidate_window_height = ((ImGui::GetStyle().FramePadding.y * 2) +
+                                                   ((ImGui::GetTextLineHeightWithSpacing()) *
+                                                    ((int) std::size(listbox_items) + 2)));
 
             if (io.DisplaySize.y < (target_screen_pos.y + candidate_window_height)) {
                 target_screen_pos.y -=
@@ -815,12 +772,9 @@ void ImGUIIMMCommunication::operator()() {
 
             ImGui::SetNextWindowPos(target_screen_pos, ImGuiCond_Always, window_pos_pivot);
 
-            if (ImGui::Begin("##Overlay-IME-Candidate-List-Window",
-                             &show_ime_candidate_list,
-                             ImGuiWindowFlags_NoMove |
-                                     ImGuiWindowFlags_NoDecoration |
-                                     ImGuiWindowFlags_AlwaysAutoResize |
-                                     ImGuiWindowFlags_NoInputs |
+            if (ImGui::Begin("##Overlay-IME-Candidate-List-Window", &show_ime_candidate_list,
+                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
+                                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs |
                                      ImGuiWindowFlags_NoSavedSettings |
                                      ImGuiWindowFlags_NoFocusOnAppearing |
                                      ImGuiWindowFlags_NoNav)) {
@@ -835,10 +789,10 @@ void ImGUIIMMCommunication::operator()() {
                             /* candidate list selection */
 
                             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-                                !ImGui::IsAnyItemActive() &&
-                                !ImGui::IsMouseClicked(0)) {
+                                !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)) {
                                 if (lastTextInputActiveId && lastTextInputFocusId) {
-                                    ImGui::SetActiveID(lastTextInputActiveId, lastTextInputNavWindow);
+                                    ImGui::SetActiveID(lastTextInputActiveId,
+                                                       lastTextInputNavWindow);
                                     ImGui::SetFocusID(lastTextInputFocusId, lastTextInputNavWindow);
                                 }
                             }
@@ -865,7 +819,8 @@ void ImGUIIMMCommunication::operator()() {
                                     OutputDebugStringW(L"complete\n");
                                     this->request_candidate_list_str_commit = 1;
                                 } else {
-                                    const BYTE nVirtualKey = (candidate_selection < i) ? VK_DOWN : VK_UP;
+                                    const BYTE nVirtualKey =
+                                            (candidate_selection < i) ? VK_DOWN : VK_UP;
                                     const size_t nNumToHit = abs(candidate_selection - i);
                                     for (size_t hit = 0; hit < nNumToHit; ++hit) {
                                         keybd_event(nVirtualKey, 0, 0, 0);
@@ -879,8 +834,8 @@ void ImGUIIMMCommunication::operator()() {
                     }
                     ImGui::ListBoxFooter();
                 }
-                ImGui::Text("%d/%d",
-                            candidate_list.selection + 1, static_cast<int>(std::size(candidate_list.list_utf8)));
+                ImGui::Text("%d/%d", candidate_list.selection + 1,
+                            static_cast<int>(std::size(candidate_list.list_utf8)));
 #if defined(_DEBUG)
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "%s",
@@ -936,26 +891,23 @@ void ImGUIIMMCommunication::operator()() {
 
               Passing HIMC appropriately when using IACE_DEFAULT causes an error and returns to 0
             */
-            VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), HIMC(0), IACE_DEFAULT));
+            VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), HIMC(0),
+                                         IACE_DEFAULT));
         }
     }
 
     return;
 }
 
-ImGUIIMMCommunication::IMMCandidateList
-ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST *const src, const size_t src_size) {
+ImGUIIMMCommunication::IMMCandidateList ImGUIIMMCommunication::IMMCandidateList::cocreate(
+        const CANDIDATELIST *const src, const size_t src_size) {
     IM_ASSERT(nullptr != src);
     IM_ASSERT(sizeof(CANDIDATELIST) <= src->dwSize);
     IM_ASSERT(src->dwSelection < src->dwCount);
 
     IMMCandidateList dst{};
-    if (!(sizeof(CANDIDATELIST) < src->dwSize)) {
-        return dst;
-    }
-    if (!(src->dwSelection < src->dwCount)) {
-        return dst;
-    }
+    if (!(sizeof(CANDIDATELIST) < src->dwSize)) { return dst; }
+    if (!(src->dwSelection < src->dwCount)) { return dst; }
     const char *const baseaddr = reinterpret_cast<const char *>(src);
 
     for (size_t i = 0; i < src->dwCount; ++i) {
@@ -963,7 +915,8 @@ ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST *const src
         const int require_byte = WideCharToMultiByte(CP_UTF8, 0, item, -1, nullptr, 0, NULL, NULL);
         if (0 < require_byte) {
             std::unique_ptr<char[]> utf8buf{new char[require_byte]};
-            if (require_byte == WideCharToMultiByte(CP_UTF8, 0, item, -1, utf8buf.get(), require_byte, NULL, NULL)) {
+            if (require_byte == WideCharToMultiByte(CP_UTF8, 0, item, -1, utf8buf.get(),
+                                                    require_byte, NULL, NULL)) {
                 dst.list_utf8.emplace_back(utf8buf.get());
                 continue;
             }
@@ -986,10 +939,14 @@ bool ImGUIIMMCommunication::update_candidate_window(HWND hWnd) {
             if (sizeof(CANDIDATELIST) <= dwSize) {
 
                 std::vector<char> candidatelist((size_t) dwSize);
-                if ((DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) == ImmGetCandidateListW(hImc, 0,
-                                                                                                                                      reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
-                                                                                                                                      (DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
-                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                if ((DWORD) (std::size(candidatelist) *
+                             sizeof(typename decltype(candidatelist)::value_type)) ==
+                    ImmGetCandidateListW(
+                            hImc, 0, reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
+                            (DWORD) (std::size(candidatelist) *
+                                     sizeof(typename decltype(candidatelist)::value_type)))) {
+                    const CANDIDATELIST *const cl =
+                            reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
                     candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
                     result = true;
 #if 0  /* for IMM candidate window debug BEGIN*/
@@ -1019,42 +976,42 @@ bool ImGUIIMMCommunication::update_candidate_window(HWND hWnd) {
 }
 
 LRESULT
-ImGUIIMMCommunication::imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-                                                      UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+ImGUIIMMCommunication::imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                                      LPARAM lParam, UINT_PTR uIdSubclass,
+                                                      DWORD_PTR dwRefData) {
     switch (uMsg) {
         case WM_DESTROY: {
             VERIFY(ImmAssociateContextEx(hWnd, HIMC(0), IACE_DEFAULT));
-            if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass), uIdSubclass)) {
+            if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass),
+                                      uIdSubclass)) {
                 IM_ASSERT(!"RemoveWindowSubclass() failed\n");
             }
         } break;
         default:
             if (dwRefData) {
-                return imm_communication_subClassProc_implement(hWnd, uMsg, wParam, lParam,
-                                                                uIdSubclass, *reinterpret_cast<ImGUIIMMCommunication *>(dwRefData));
+                return imm_communication_subClassProc_implement(
+                        hWnd, uMsg, wParam, lParam, uIdSubclass,
+                        *reinterpret_cast<ImGUIIMMCommunication *>(dwRefData));
             }
     }
     return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT
-ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-                                                                UINT_PTR uIdSubclass, ImGUIIMMCommunication &comm) {
+ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam,
+                                                                LPARAM lParam, UINT_PTR uIdSubclass,
+                                                                ImGUIIMMCommunication &comm) {
     switch (uMsg) {
         case WM_KEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
-            if (comm.is_open) {
-                return 0;
-            }
+            if (comm.is_open) { return 0; }
             break;
 
         case WM_IME_SETCONTEXT: { /* 各ビットを落とす */
-            lParam &= ~(ISC_SHOWUICOMPOSITIONWINDOW |
-                        (ISC_SHOWUICANDIDATEWINDOW) |
-                        (ISC_SHOWUICANDIDATEWINDOW << 1) |
-                        (ISC_SHOWUICANDIDATEWINDOW << 2) |
+            lParam &= ~(ISC_SHOWUICOMPOSITIONWINDOW | (ISC_SHOWUICANDIDATEWINDOW) |
+                        (ISC_SHOWUICANDIDATEWINDOW << 1) | (ISC_SHOWUICANDIDATEWINDOW << 2) |
                         (ISC_SHOWUICANDIDATEWINDOW << 3));
         }
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -1082,25 +1039,31 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                 }
                 if (lParam & GCS_COMPSTR) {
 
-                    const LONG compstr_length_in_byte = ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
+                    const LONG compstr_length_in_byte =
+                            ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
                     switch (compstr_length_in_byte) {
                         case IMM_ERROR_NODATA:
                         case IMM_ERROR_GENERAL:
                             break;
                         default: {
-                            size_t const buf_length_in_wchar = (size_t(compstr_length_in_byte) / sizeof(wchar_t)) + 1;
+                            size_t const buf_length_in_wchar =
+                                    (size_t(compstr_length_in_byte) / sizeof(wchar_t)) + 1;
                             IM_ASSERT(0 < buf_length_in_wchar);
                             std::unique_ptr<wchar_t[]> buf{new wchar_t[buf_length_in_wchar]};
                             if (buf) {
                                 //std::fill( &buf[0] , &buf[buf_length_in_wchar-1] , L'\0' );
-                                const LONG buf_length_in_byte = LONG(buf_length_in_wchar * sizeof(wchar_t));
+                                const LONG buf_length_in_byte =
+                                        LONG(buf_length_in_wchar * sizeof(wchar_t));
                                 const DWORD l = ImmGetCompositionStringW(hImc, GCS_COMPSTR,
-                                                                         (LPVOID) (buf.get()), buf_length_in_byte);
+                                                                         (LPVOID) (buf.get()),
+                                                                         buf_length_in_byte);
 
-                                const DWORD attribute_size = ImmGetCompositionStringW(hImc, GCS_COMPATTR, NULL, 0);
+                                const DWORD attribute_size =
+                                        ImmGetCompositionStringW(hImc, GCS_COMPATTR, NULL, 0);
                                 std::vector<char> attribute_vec(attribute_size, 0);
-                                const DWORD attribute_end =
-                                        ImmGetCompositionStringW(hImc, GCS_COMPATTR, attribute_vec.data(), (DWORD) std::size(attribute_vec));
+                                const DWORD attribute_end = ImmGetCompositionStringW(
+                                        hImc, GCS_COMPATTR, attribute_vec.data(),
+                                        (DWORD) std::size(attribute_vec));
                                 IM_ASSERT(attribute_end == (DWORD) (std::size(attribute_vec)));
                                 {
                                     std::wstring comp_converted;
@@ -1148,11 +1111,14 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                                 将 std::wstring 转换为 std::unique_ptr <char[]> 作为 UTF - 8 空终止字符串
                                 如果参数是空字符串，则输入 nullptr
                                 */
-                                    auto to_utf8_pointer = [](const std::wstring &arg) -> std::unique_ptr<char[]> {
+                                    auto to_utf8_pointer =
+                                            [](const std::wstring &arg) -> std::unique_ptr<char[]> {
                                         if (arg.empty()) {
                                             return std::unique_ptr<char[]>(nullptr);
                                         }
-                                        const int require_byte = WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, nullptr, 0, NULL, NULL);
+                                        const int require_byte =
+                                                WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1,
+                                                                    nullptr, 0, NULL, NULL);
                                         if (0 == require_byte) {
                                             const DWORD lastError = GetLastError();
                                             (void) (lastError);
@@ -1168,8 +1134,9 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 
                                         std::unique_ptr<char[]> utf8buf{new char[require_byte]};
 
-                                        const int conversion_result =
-                                                WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, utf8buf.get(), require_byte, NULL, NULL);
+                                        const int conversion_result = WideCharToMultiByte(
+                                                CP_UTF8, 0, arg.c_str(), -1, utf8buf.get(),
+                                                require_byte, NULL, NULL);
                                         if (conversion_result == 0) {
                                             const DWORD lastError = GetLastError();
                                             (void) (lastError);
@@ -1211,11 +1178,10 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                 VERIFY(ImmReleaseContext(hWnd, hImc));
             }
 
-
         }// end of WM_IME_COMPOSITION
 
 #if defined(UNICODE)
-        // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
+            // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
             // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
 #else
@@ -1244,26 +1210,32 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 #endif
 
                     // Google IME BEGIN 的代码 有关详细信息，请参阅有关 IMN_OPENCANDIDATE 的评论
-                    if (!comm.show_ime_candidate_list) {
-                        comm.show_ime_candidate_list = true;
-                    }
+                    if (!comm.show_ime_candidate_list) { comm.show_ime_candidate_list = true; }
                     // 谷歌输入法结束代码
-
 
                     HIMC const hImc = ImmGetContext(hWnd);
                     if (hImc) {
                         DWORD dwSize = ImmGetCandidateListW(hImc, 0, NULL, 0);
                         if (dwSize) {
                             IM_ASSERT(sizeof(CANDIDATELIST) <= dwSize);
-                            if (sizeof(CANDIDATELIST) <= dwSize) {// dwSize は最低でも struct CANDIDATELIST より大きくなければならない
+                            if (sizeof(CANDIDATELIST) <=
+                                dwSize) {// dwSize は最低でも struct CANDIDATELIST より大きくなければならない
 
                                 (void) (lParam);
                                 std::vector<char> candidatelist((size_t) dwSize);
-                                if ((DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) == ImmGetCandidateListW(hImc, 0,
-                                                                                                                                                      reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
-                                                                                                                                                      (DWORD) (std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
-                                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
-                                    comm.candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
+                                if ((DWORD) (std::size(candidatelist) *
+                                             sizeof(typename decltype(candidatelist)::
+                                                            value_type)) ==
+                                    ImmGetCandidateListW(
+                                            hImc, 0,
+                                            reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
+                                            (DWORD) (std::size(candidatelist) *
+                                                     sizeof(typename decltype(candidatelist)::
+                                                                    value_type)))) {
+                                    const CANDIDATELIST *const cl =
+                                            reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                                    comm.candidate_list =
+                                            std::move(IMMCandidateList::cocreate(cl, dwSize));
 
 #if 0  /* for IMM candidate window debug BEGIN*/
                             {
@@ -1294,7 +1266,8 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                     IM_ASSERT(0 <= comm.request_candidate_list_str_commit);
                     if (comm.request_candidate_list_str_commit) {
                         if (comm.request_candidate_list_str_commit == 1) {
-                            VERIFY(PostMessage(hWnd, WM_IMGUI_IMM32_COMMAND, WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, 0));
+                            VERIFY(PostMessage(hWnd, WM_IMGUI_IMM32_COMMAND,
+                                               WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, 0));
                         }
                         --(comm.request_candidate_list_str_commit);
                     }
@@ -1324,7 +1297,8 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                     ImGuiIO &io = ImGui::GetIO();
                     if (io.ImeWindowHandle) {
                         IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-                        VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
+                        VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr,
+                                                     IACE_IGNORENOCONTEXT));
                     }
                 }
                     return 1;
@@ -1391,9 +1365,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 
 BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
     IM_ASSERT(IsWindow(hWnd));
-    if (!IsWindow(hWnd)) {
-        return FALSE;
-    }
+    if (!IsWindow(hWnd)) { return FALSE; }
 
     /* 在 imgui_imm32_onthespot 中进行 IME 控制，
             因为当 TextWidget 失去焦点时 io.WantTextInput 变为 true-> off
@@ -1406,9 +1378,10 @@ BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
             但是，这种方法不好，因为当有多个目标操作系统窗口时它会崩溃。
     */
     ImGui::GetIO().ImeWindowHandle = static_cast<void *>(hWnd);
-    if (::SetWindowSubclass(hWnd, ImGUIIMMCommunication::imm_communication_subClassProc,
-                            reinterpret_cast<UINT_PTR>(ImGUIIMMCommunication::imm_communication_subClassProc),
-                            reinterpret_cast<DWORD_PTR>(this))) {
+    if (::SetWindowSubclass(
+                hWnd, ImGUIIMMCommunication::imm_communication_subClassProc,
+                reinterpret_cast<UINT_PTR>(ImGUIIMMCommunication::imm_communication_subClassProc),
+                reinterpret_cast<DWORD_PTR>(this))) {
         /*
            I want to close IME once by calling imgex::imm_associate_context_disable()
 
@@ -1422,22 +1395,13 @@ BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
 
 #endif
 
-ImString::ImString()
-    : mData(0), mRefCount(0) {
-}
+ImString::ImString() : mData(0), mRefCount(0) {}
 
-ImString::ImString(size_t len)
-    : mData(0), mRefCount(0) {
-    reserve(len);
-}
+ImString::ImString(size_t len) : mData(0), mRefCount(0) { reserve(len); }
 
-ImString::ImString(char *string)
-    : mData(string), mRefCount(0) {
-    ref();
-}
+ImString::ImString(char *string) : mData(string), mRefCount(0) { ref(); }
 
-ImString::ImString(const char *string)
-    : mData(0), mRefCount(0) {
+ImString::ImString(const char *string) : mData(0), mRefCount(0) {
     if (string) {
         mData = ImStrdup(string);
         ref();
@@ -1450,43 +1414,29 @@ ImString::ImString(const ImString &other) {
     ref();
 }
 
-ImString::~ImString() {
-    unref();
-}
+ImString::~ImString() { unref(); }
 
-char &ImString::operator[](size_t pos) {
-    return mData[pos];
-}
+char &ImString::operator[](size_t pos) { return mData[pos]; }
 
 ImString::operator char *() { return mData; }
 
-bool ImString::operator==(const char *string) {
-    return strcmp(string, mData) == 0;
-}
+bool ImString::operator==(const char *string) { return strcmp(string, mData) == 0; }
 
-bool ImString::operator!=(const char *string) {
-    return strcmp(string, mData) != 0;
-}
+bool ImString::operator!=(const char *string) { return strcmp(string, mData) != 0; }
 
-bool ImString::operator==(const ImString &string) {
-    return strcmp(string.c_str(), mData) == 0;
-}
+bool ImString::operator==(const ImString &string) { return strcmp(string.c_str(), mData) == 0; }
 
-bool ImString::operator!=(const ImString &string) {
-    return strcmp(string.c_str(), mData) != 0;
-}
+bool ImString::operator!=(const ImString &string) { return strcmp(string.c_str(), mData) != 0; }
 
 ImString &ImString::operator=(const char *string) {
-    if (mData)
-        unref();
+    if (mData) unref();
     mData = ImStrdup(string);
     ref();
     return *this;
 }
 
 ImString &ImString::operator=(const ImString &other) {
-    if (mData && mData != other.mData)
-        unref();
+    if (mData && mData != other.mData) unref();
     mRefCount = other.mRefCount;
     mData = other.mData;
     ref();
@@ -1494,28 +1444,19 @@ ImString &ImString::operator=(const ImString &other) {
 }
 
 void ImString::reserve(size_t len) {
-    if (mData)
-        unref();
+    if (mData) unref();
     mData = (char *) ImGui::MemAlloc(len + 1);
     mData[len] = '\0';
     ref();
 }
 
-char *ImString::get() {
-    return mData;
-}
+char *ImString::get() { return mData; }
 
-const char *ImString::c_str() const {
-    return mData;
-}
+const char *ImString::c_str() const { return mData; }
 
-bool ImString::empty() const {
-    return mData == 0 || mData[0] == '\0';
-}
+bool ImString::empty() const { return mData == 0 || mData[0] == '\0'; }
 
-int ImString::refcount() const {
-    return *mRefCount;
-}
+int ImString::refcount() const { return *mRefCount; }
 
 void ImString::ref() {
     if (!mRefCount) {

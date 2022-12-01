@@ -6,6 +6,4 @@
 
 Global global;
 
-void Global::tick() {
-    
-}
+void Global::tick() {}

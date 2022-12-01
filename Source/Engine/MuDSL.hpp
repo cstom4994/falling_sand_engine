@@ -67,16 +67,12 @@ namespace MuDSL {
     }
 
     inline bool endswith(const string &v, const string &end) {
-        if (end.size() > v.size()) {
-            return false;
-        }
+        if (end.size() > v.size()) { return false; }
         return equal(end.rbegin(), end.rend(), v.rbegin());
     }
 
     inline bool startswith(const string &v, const string &start) {
-        if (start.size() > v.size()) {
-            return false;
-        }
+        if (start.size() > v.size()) { return false; }
         return equal(start.begin(), start.end(), v.begin());
     }
 
@@ -90,9 +86,7 @@ namespace MuDSL {
             ret.push_back(input.substr(lpos, pos - lpos));
             lpos = pos + dlen;
         }
-        if (lpos < input.length()) {
-            ret.push_back(input.substr(lpos, input.length()));
-        }
+        if (lpos < input.length()) { ret.push_back(input.substr(lpos, input.length())); }
         return ret;
     }
 
@@ -208,9 +202,7 @@ namespace MuDSL {
         }
     }
 
-    inline size_t typeHashBits(Type type) {
-        return ((size_t) INT32_MAX << ((size_t) type));
-    }
+    inline size_t typeHashBits(Type type) { return ((size_t) INT32_MAX << ((size_t) type)); }
 
     // vec3 type is compatible with glm::vec3
     struct vec3
@@ -308,83 +300,43 @@ namespace MuDSL {
         }
     };
     // static vec3 operators
-    inline vec3 operator+(vec3 const &v) {
-        return v;
-    }
-    inline vec3 operator-(vec3 const &v) {
-        return vec3(-v.x, -v.y, -v.z);
-    }
+    inline vec3 operator+(vec3 const &v) { return v; }
+    inline vec3 operator-(vec3 const &v) { return vec3(-v.x, -v.y, -v.z); }
     inline vec3 operator+(vec3 const &v, float scalar) {
-        return vec3(
-                v.x + scalar,
-                v.y + scalar,
-                v.z + scalar);
+        return vec3(v.x + scalar, v.y + scalar, v.z + scalar);
     }
     inline vec3 operator+(float scalar, vec3 const &v) {
-        return vec3(
-                v.x + scalar,
-                v.y + scalar,
-                v.z + scalar);
+        return vec3(v.x + scalar, v.y + scalar, v.z + scalar);
     }
     inline vec3 operator+(vec3 const &v1, vec3 const &v2) {
-        return vec3(
-                v1.x + v2.x,
-                v1.y + v2.y,
-                v1.z + v2.z);
+        return vec3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
     }
     inline vec3 operator-(vec3 const &v, float scalar) {
-        return vec3(
-                v.x - scalar,
-                v.y - scalar,
-                v.z - scalar);
+        return vec3(v.x - scalar, v.y - scalar, v.z - scalar);
     }
     inline vec3 operator-(float scalar, vec3 const &v) {
-        return vec3(
-                v.x - scalar,
-                v.y - scalar,
-                v.z - scalar);
+        return vec3(v.x - scalar, v.y - scalar, v.z - scalar);
     }
     inline vec3 operator-(vec3 const &v1, vec3 const &v2) {
-        return vec3(
-                v1.x - v2.x,
-                v1.y - v2.y,
-                v1.z - v2.z);
+        return vec3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
     }
     inline vec3 operator*(vec3 const &v, float scalar) {
-        return vec3(
-                v.x * scalar,
-                v.y * scalar,
-                v.z * scalar);
+        return vec3(v.x * scalar, v.y * scalar, v.z * scalar);
     }
     inline vec3 operator*(float scalar, vec3 const &v) {
-        return vec3(
-                v.x * scalar,
-                v.y * scalar,
-                v.z * scalar);
+        return vec3(v.x * scalar, v.y * scalar, v.z * scalar);
     }
     inline vec3 operator*(vec3 const &v1, vec3 const &v2) {
-        return vec3(
-                v1.x * v2.x,
-                v1.y * v2.y,
-                v1.z * v2.z);
+        return vec3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
     }
     inline vec3 operator/(vec3 const &v, float scalar) {
-        return vec3(
-                v.x / scalar,
-                v.y / scalar,
-                v.z / scalar);
+        return vec3(v.x / scalar, v.y / scalar, v.z / scalar);
     }
     inline vec3 operator/(float scalar, vec3 const &v) {
-        return vec3(
-                v.x / scalar,
-                v.y / scalar,
-                v.z / scalar);
+        return vec3(v.x / scalar, v.y / scalar, v.z / scalar);
     }
     inline vec3 operator/(vec3 const &v1, vec3 const &v2) {
-        return vec3(
-                v1.x / v2.x,
-                v1.y / v2.y,
-                v1.z / v2.z);
+        return vec3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
     }
     inline bool operator==(vec3 const &v1, vec3 const &v2) {
         return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
@@ -411,14 +363,8 @@ namespace MuDSL {
     using FunctionRef = shared_ptr<Function>;
 
     // variant allows us to have a union with a little more safety and ease
-    using ArrayVariant =
-            variant<
-                    vector<Int>,
-                    vector<Float>,
-                    vector<vec3>,
-                    vector<FunctionRef>,
-                    vector<void *>,
-                    vector<string>>;
+    using ArrayVariant = variant<vector<Int>, vector<Float>, vector<vec3>, vector<FunctionRef>,
+                                 vector<void *>, vector<string>>;
 
     inline Type getArrayType(const ArrayVariant arr) {
         switch (arr.index()) {
@@ -454,55 +400,41 @@ namespace MuDSL {
         Array(vector<string> a) : value(a) {}
         Array(ArrayVariant a) : value(a) {}
 
-        Type getType() const {
-            return getArrayType(value);
-        }
+        Type getType() const { return getArrayType(value); }
 
         template<typename T>
         vector<T> &getStdVector();
 
         bool operator==(const Array &o) const {
-            if (size() != o.size()) {
-                return false;
-            }
-            if (getType() != o.getType()) {
-                return false;
-            }
+            if (size() != o.size()) { return false; }
+            if (getType() != o.getType()) { return false; }
             switch (getType()) {
                 case Type::Int: {
                     auto &aarr = get<vector<Int>>(value);
                     auto &barr = get<vector<Int>>(o.value);
                     for (size_t i = 0; i < size(); ++i) {
-                        if (aarr[i] != barr[i]) {
-                            return false;
-                        }
+                        if (aarr[i] != barr[i]) { return false; }
                     }
                 } break;
                 case Type::Float: {
                     auto &aarr = get<vector<Float>>(value);
                     auto &barr = get<vector<Float>>(o.value);
                     for (size_t i = 0; i < size(); ++i) {
-                        if (aarr[i] != barr[i]) {
-                            return false;
-                        }
+                        if (aarr[i] != barr[i]) { return false; }
                     }
                 } break;
                 case Type::Vec3: {
                     auto &aarr = get<vector<vec3>>(value);
                     auto &barr = get<vector<vec3>>(o.value);
                     for (size_t i = 0; i < size(); ++i) {
-                        if (aarr[i] != barr[i]) {
-                            return false;
-                        }
+                        if (aarr[i] != barr[i]) { return false; }
                     }
                 } break;
                 case Type::String: {
                     auto &aarr = get<vector<string>>(value);
                     auto &barr = get<vector<string>>(o.value);
                     for (size_t i = 0; i < size(); ++i) {
-                        if (aarr[i] != barr[i]) {
-                            return false;
-                        }
+                        if (aarr[i] != barr[i]) { return false; }
                     }
                 } break;
                 default:
@@ -511,9 +443,7 @@ namespace MuDSL {
             return true;
         }
 
-        bool operator!=(const Array &o) const {
-            return !(operator==(o));
-        }
+        bool operator!=(const Array &o) const { return !(operator==(o)); }
 
         // doing these switches is tedious
         // so ideally they all get burried beneath template functions
@@ -708,7 +638,8 @@ namespace MuDSL {
 #endif
 
         Class(const string &name_) : name(name_) {}
-        Class(const string &name_, const unordered_map<string, ValueRef> &variables_) : name(name_), variables(variables_) {}
+        Class(const string &name_, const unordered_map<string, ValueRef> &variables_)
+            : name(name_), variables(variables_) {}
         Class(const Class &o);
         Class(const ScopeRef &o);
         ~Class();
@@ -752,12 +683,7 @@ namespace MuDSL {
         member,
     };
 
-    using FunctionBodyVariant =
-            variant<
-                    vector<ExpressionRef>,
-                    Lambda,
-                    ScopedLambda,
-                    ClassLambda>;
+    using FunctionBodyVariant = variant<vector<ExpressionRef>, Lambda, ScopedLambda, ClassLambda>;
 
     enum class FunctionBodyType : uint8_t {
         Subexpressions,
@@ -776,32 +702,16 @@ namespace MuDSL {
 
         FunctionBodyVariant body;
 
-        FunctionBodyType getBodyType() {
-            return static_cast<FunctionBodyType>(body.index());
-        }
+        FunctionBodyType getBodyType() { return static_cast<FunctionBodyType>(body.index()); }
 
         static OperatorPrecedence getPrecedence(const string &n) {
-            if (n.size() > 2) {
-                return OperatorPrecedence::func;
-            }
-            if (n == "||" || n == "&&") {
-                return OperatorPrecedence::boolean;
-            }
-            if (n == "++" || n == "--") {
-                return OperatorPrecedence::incdec;
-            }
-            if (contains("!<>|&"s, n[0]) || n == "==") {
-                return OperatorPrecedence::compare;
-            }
-            if (contains(n, '=')) {
-                return OperatorPrecedence::assign;
-            }
-            if (contains("/*%"s, n[0])) {
-                return OperatorPrecedence::muldiv;
-            }
-            if (contains("-+"s, n[0])) {
-                return OperatorPrecedence::addsub;
-            }
+            if (n.size() > 2) { return OperatorPrecedence::func; }
+            if (n == "||" || n == "&&") { return OperatorPrecedence::boolean; }
+            if (n == "++" || n == "--") { return OperatorPrecedence::incdec; }
+            if (contains("!<>|&"s, n[0]) || n == "==") { return OperatorPrecedence::compare; }
+            if (contains(n, '=')) { return OperatorPrecedence::assign; }
+            if (contains("/*%"s, n[0])) { return OperatorPrecedence::muldiv; }
+            if (contains("-+"s, n[0])) { return OperatorPrecedence::addsub; }
             return OperatorPrecedence::func;
         }
 
@@ -813,12 +723,14 @@ namespace MuDSL {
             : name(name_), opPrecedence(getPrecedence(name_)), body(l) {}
         // when using a MuDSL function body
         // the operator precedence will always be "func" level (aka the highest)
-        Function(const string &name_, const vector<string> &argNames_, const vector<ExpressionRef> &body_)
-            : name(name_), body(body_), argNames(argNames_), opPrecedence(OperatorPrecedence::func) {}
-        Function(const string &name_, const vector<string> &argNames_) : Function(name_, argNames_, {}) {}
+        Function(const string &name_, const vector<string> &argNames_,
+                 const vector<ExpressionRef> &body_)
+            : name(name_), body(body_), argNames(argNames_),
+              opPrecedence(OperatorPrecedence::func) {}
+        Function(const string &name_, const vector<string> &argNames_)
+            : Function(name_, argNames_, {}) {}
         // default constructor makes a function with no args that returns void
-        Function(const string &name)
-            : Function(name, [](List) { return make_shared<Value>(); }) {}
+        Function(const string &name) : Function(name, [](List) { return make_shared<Value>(); }) {}
         Function() : name("__anon") {}
         Function(const Function &o) = default;
     };
@@ -827,19 +739,8 @@ namespace MuDSL {
     {
     };
     // Now that we have our collection types defined, we can finally define our value variant
-    using ValueVariant =
-            variant<
-                    Null,
-                    Int,
-                    Float,
-                    vec3,
-                    FunctionRef,
-                    void *,
-                    string,
-                    Array,
-                    List,
-                    DictionaryRef,
-                    ClassRef>;
+    using ValueVariant = variant<Null, Int, Float, vec3, FunctionRef, void *, string, Array, List,
+                                 DictionaryRef, ClassRef>;
 
     // our basic Object/Value type
     struct Value
@@ -864,9 +765,7 @@ namespace MuDSL {
         explicit Value(ValueRef o) : value(o->value) {}
         ~Value(){};
 
-        Type getType() const {
-            return static_cast<Type>(value.index());
-        }
+        Type getType() const { return static_cast<Type>(value.index()); }
 
         // get a string that represents this value
         string getPrintString() const {
@@ -876,56 +775,36 @@ namespace MuDSL {
         }
 
         // get this value as an int
-        Int &getInt() {
-            return get<Int>(value);
-        }
+        Int &getInt() { return get<Int>(value); }
 
         // get this value as a float
-        Float &getFloat() {
-            return get<Float>(value);
-        }
+        Float &getFloat() { return get<Float>(value); }
 
         // get this value as a vec3
-        vec3 &getVec3() {
-            return get<vec3>(value);
-        }
+        vec3 &getVec3() { return get<vec3>(value); }
 
         // get this value as a function
-        FunctionRef &getFunction() {
-            return get<FunctionRef>(value);
-        }
+        FunctionRef &getFunction() { return get<FunctionRef>(value); }
 
         // get this value as a function
-        void *&getPointer() {
-            return get<void *>(value);
-        }
+        void *&getPointer() { return get<void *>(value); }
 
         // get this value as a string
-        string &getString() {
-            return get<string>(value);
-        }
+        string &getString() { return get<string>(value); }
 
         // get this value as an array
-        Array &getArray() {
-            return get<Array>(value);
-        }
+        Array &getArray() { return get<Array>(value); }
 
         // get this value as an std::vector<T>
         template<typename T>
         vector<T> &getStdVector();
 
         // get this value as a list
-        List &getList() {
-            return get<List>(value);
-        }
+        List &getList() { return get<List>(value); }
 
-        DictionaryRef &getDictionary() {
-            return get<DictionaryRef>(value);
-        }
+        DictionaryRef &getDictionary() { return get<DictionaryRef>(value); }
 
-        ClassRef &getClass() {
-            return get<ClassRef>(value);
-        }
+        ClassRef &getClass() { return get<ClassRef>(value); }
 
         // get a boolean representing the truthiness of this value
         bool getBool() {
@@ -1019,8 +898,9 @@ namespace MuDSL {
     inline void upconvertThrowOnNonNumberToNumberCompare(Value &a, Value &b) {
         if (a.getType() != b.getType()) {
             if (max((int) a.getType(), (int) b.getType()) > (int) Type::Vec3) {
-                throw Exception(
-                        "Types `"s + getTypeName(a.getType()) + " " + a.getPrintString() + "` and `" + getTypeName(b.getType()) + " " + b.getPrintString() + "` are incompatible for this operation");
+                throw Exception("Types `"s + getTypeName(a.getType()) + " " + a.getPrintString() +
+                                "` and `" + getTypeName(b.getType()) + " " + b.getPrintString() +
+                                "` are incompatible for this operation");
             }
             if (a.getType() < b.getType()) {
                 a.upconvert(b.getType());
@@ -1063,7 +943,8 @@ namespace MuDSL {
                 return Value{list};
             } break;
             default:
-                throw Exception("Operator + not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator + not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
     }
@@ -1081,7 +962,8 @@ namespace MuDSL {
                 return Value{a.getVec3() - b.getVec3()};
                 break;
             default:
-                throw Exception("Operator - not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator - not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
     }
@@ -1099,7 +981,8 @@ namespace MuDSL {
                 return Value{a.getVec3() * b.getVec3()};
                 break;
             default:
-                throw Exception("Operator * not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator * not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
     }
@@ -1117,15 +1000,14 @@ namespace MuDSL {
                 return Value{a.getVec3() / b.getVec3()};
                 break;
             default:
-                throw Exception("Operator / not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator / not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
     }
 
     inline Value operator+=(Value &a, Value b) {
-        if ((int) a.getType() < (int) Type::Array || b.getType() == Type::List) {
-            upconvert(a, b);
-        }
+        if ((int) a.getType() < (int) Type::Array || b.getType() == Type::List) { upconvert(a, b); }
         switch (a.getType()) {
             case Type::Int:
                 a.getInt() += b.getInt();
@@ -1142,7 +1024,8 @@ namespace MuDSL {
                 break;
             case Type::Array: {
                 auto &arr = a.getArray();
-                if (arr.getType() == b.getType() || (b.getType() == Type::Array && b.getArray().getType() == arr.getType())) {
+                if (arr.getType() == b.getType() ||
+                    (b.getType() == Type::Array && b.getArray().getType() == arr.getType())) {
                     switch (b.getType()) {
                         case Type::Int:
                             arr.push_back(b.getInt());
@@ -1195,7 +1078,8 @@ namespace MuDSL {
                 dict->merge(*b.getDictionary());
             } break;
             default:
-                throw Exception("Operator += not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator += not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
         return a;
@@ -1214,7 +1098,8 @@ namespace MuDSL {
                 a.getVec3() -= b.getVec3();
                 break;
             default:
-                throw Exception("Operator -= not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator -= not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
         return a;
@@ -1233,7 +1118,8 @@ namespace MuDSL {
                 a.getVec3() *= b.getVec3();
                 break;
             default:
-                throw Exception("Operator *= not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator *= not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
         return a;
@@ -1252,7 +1138,8 @@ namespace MuDSL {
                 a.getVec3() /= b.getVec3();
                 break;
             default:
-                throw Exception("Operator /= not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator /= not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
         return a;
@@ -1268,7 +1155,8 @@ namespace MuDSL {
                 return Value{std::fmod(a.getFloat(), b.getFloat())};
                 break;
             default:
-                throw Exception("Operator %% not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator %% not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
     }
@@ -1276,9 +1164,7 @@ namespace MuDSL {
     // comparison operators
     bool operator!=(Value a, Value b);
     inline bool operator==(Value a, Value b) {
-        if (a.getType() != b.getType()) {
-            return false;
-        }
+        if (a.getType() != b.getType()) { return false; }
         switch (a.getType()) {
             case Type::Null:
                 return true;
@@ -1300,27 +1186,22 @@ namespace MuDSL {
             case Type::List: {
                 auto &alist = a.getList();
                 auto &blist = b.getList();
-                if (alist.size() != blist.size()) {
-                    return false;
-                }
+                if (alist.size() != blist.size()) { return false; }
                 for (size_t i = 0; i < alist.size(); ++i) {
-                    if (*alist[i] != *blist[i]) {
-                        return false;
-                    }
+                    if (*alist[i] != *blist[i]) { return false; }
                 }
                 return true;
             } break;
             default:
-                throw Exception("Operator == not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator == not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
         return true;
     }
 
     inline bool operator!=(Value a, Value b) {
-        if (a.getType() != b.getType()) {
-            return true;
-        }
+        if (a.getType() != b.getType()) { return true; }
         switch (a.getType()) {
             case Type::Null:
                 return false;
@@ -1341,19 +1222,16 @@ namespace MuDSL {
                 return !(a == b);
                 break;
             default:
-                throw Exception("Operator != not defined for type `"s + getTypeName(a.getType()) + "`");
+                throw Exception("Operator != not defined for type `"s + getTypeName(a.getType()) +
+                                "`");
                 break;
         }
         return false;
     }
 
-    inline bool operator||(Value &a, Value &b) {
-        return a.getBool() || b.getBool();
-    }
+    inline bool operator||(Value &a, Value &b) { return a.getBool() || b.getBool(); }
 
-    inline bool operator&&(Value &a, Value &b) {
-        return a.getBool() && b.getBool();
-    }
+    inline bool operator&&(Value &a, Value &b) { return a.getBool() && b.getBool(); }
 
     inline bool operator<(Value a, Value b) {
         upconvertThrowOnNonNumberToNumberCompare(a, b);
@@ -1481,13 +1359,9 @@ namespace MuDSL {
         FunctionExpression(ValueRef fncvalue) : function(fncvalue) {}
         FunctionExpression() {}
 
-        void clear() {
-            subexpressions.clear();
-        }
+        void clear() { subexpressions.clear(); }
 
-        ~FunctionExpression() {
-            clear();
-        }
+        ~FunctionExpression() { clear(); }
     };
 
     struct MemberVariable
@@ -1516,17 +1390,14 @@ namespace MuDSL {
                 subexpressions.push_back(make_shared<Expression>(*sub));
             }
         }
-        MemberFunctionCall(ExpressionRef ob, const string &fncvalue, const vector<ExpressionRef> &sub)
+        MemberFunctionCall(ExpressionRef ob, const string &fncvalue,
+                           const vector<ExpressionRef> &sub)
             : object(ob), functionName(fncvalue), subexpressions(sub) {}
         MemberFunctionCall() {}
 
-        void clear() {
-            subexpressions.clear();
-        }
+        void clear() { subexpressions.clear(); }
 
-        ~MemberFunctionCall() {
-            clear();
-        }
+        ~MemberFunctionCall() { clear(); }
     };
 
     struct Return
@@ -1546,7 +1417,8 @@ namespace MuDSL {
         vector<ExpressionRef> subexpressions;
 
         If(const If &o) {
-            testExpression = o.testExpression ? make_shared<Expression>(*o.testExpression) : nullptr;
+            testExpression =
+                    o.testExpression ? make_shared<Expression>(*o.testExpression) : nullptr;
             for (auto sub: o.subexpressions) {
                 subexpressions.push_back(make_shared<Expression>(*sub));
             }
@@ -1564,9 +1436,12 @@ namespace MuDSL {
         vector<ExpressionRef> subexpressions;
 
         Loop(const Loop &o) {
-            initExpression = o.initExpression ? make_shared<Expression>(*o.initExpression) : nullptr;
-            testExpression = o.testExpression ? make_shared<Expression>(*o.testExpression) : nullptr;
-            iterateExpression = o.iterateExpression ? make_shared<Expression>(*o.iterateExpression) : nullptr;
+            initExpression =
+                    o.initExpression ? make_shared<Expression>(*o.initExpression) : nullptr;
+            testExpression =
+                    o.testExpression ? make_shared<Expression>(*o.testExpression) : nullptr;
+            iterateExpression =
+                    o.iterateExpression ? make_shared<Expression>(*o.iterateExpression) : nullptr;
             for (auto sub: o.subexpressions) {
                 subexpressions.push_back(make_shared<Expression>(*sub));
             }
@@ -1581,7 +1456,8 @@ namespace MuDSL {
         vector<ExpressionRef> subexpressions;
 
         Foreach(const Foreach &o) {
-            listExpression = o.listExpression ? make_shared<Expression>(*o.listExpression) : nullptr;
+            listExpression =
+                    o.listExpression ? make_shared<Expression>(*o.listExpression) : nullptr;
             iterateName = o.iterateName;
             for (auto sub: o.subexpressions) {
                 subexpressions.push_back(make_shared<Expression>(*sub));
@@ -1594,9 +1470,7 @@ namespace MuDSL {
     {
         string name;
 
-        ResolveVar(const ResolveVar &o) {
-            name = o.name;
-        }
+        ResolveVar(const ResolveVar &o) { name = o.name; }
         ResolveVar() {}
         ResolveVar(const string &n) : name(n) {}
     };
@@ -1608,7 +1482,8 @@ namespace MuDSL {
 
         DefineVar(const DefineVar &o) {
             name = o.name;
-            defineExpression = o.defineExpression ? make_shared<Expression>(*o.defineExpression) : nullptr;
+            defineExpression =
+                    o.defineExpression ? make_shared<Expression>(*o.defineExpression) : nullptr;
         }
         DefineVar() {}
         DefineVar(const string &n) : name(n) {}
@@ -1630,17 +1505,8 @@ namespace MuDSL {
     };
 
     using ExpressionVariant =
-            variant<
-                    ValueRef,
-                    ResolveVar,
-                    DefineVar,
-                    FunctionExpression,
-                    MemberFunctionCall,
-                    MemberVariable,
-                    Return,
-                    Loop,
-                    Foreach,
-                    IfElse>;
+            variant<ValueRef, ResolveVar, DefineVar, FunctionExpression, MemberFunctionCall,
+                    MemberVariable, Return, Loop, Foreach, IfElse>;
 
     // forward declare so we can use the parser to process functions
     class MuDSLInterpreter;
@@ -1653,12 +1519,15 @@ namespace MuDSL {
         ExpressionRef parent = nullptr;
 
         Expression(ValueRef val)
-            : type(ExpressionType::FunctionCall), expression(FunctionExpression(val)), parent(nullptr) {}
+            : type(ExpressionType::FunctionCall), expression(FunctionExpression(val)),
+              parent(nullptr) {}
 
         Expression(ExpressionRef obj, const string &name)
-            : type(ExpressionType::MemberVariable), expression(MemberVariable(obj, name)), parent(nullptr) {}
+            : type(ExpressionType::MemberVariable), expression(MemberVariable(obj, name)),
+              parent(nullptr) {}
         Expression(ExpressionRef obj, const string &name, const vector<ExpressionRef> subs)
-            : type(ExpressionType::MemberFunctionCall), expression(MemberFunctionCall(obj, name, subs)), parent(nullptr) {}
+            : type(ExpressionType::MemberFunctionCall),
+              expression(MemberFunctionCall(obj, name, subs)), parent(nullptr) {}
         Expression(FunctionRef val, ExpressionRef par)
             : type(ExpressionType::FunctionDef), expression(FunctionExpression(val)), parent(par) {}
         Expression(ValueRef val, ExpressionRef par)
@@ -1676,13 +1545,15 @@ namespace MuDSL {
         Expression(DefineVar val, ExpressionRef par = nullptr)
             : type(ExpressionType::DefineVar), expression(val), parent(par) {}
 
-        Expression(ExpressionVariant val, ExpressionType ty)
-            : type(ty), expression(val) {}
+        Expression(ExpressionVariant val, ExpressionType ty) : type(ty), expression(val) {}
 
         ExpressionRef back() {
             switch (type) {
                 case ExpressionType::FunctionDef:
-                    return get<vector<ExpressionRef>>(get<FunctionExpression>(expression).function->getFunction()->body).back();
+                    return get<vector<ExpressionRef>>(get<FunctionExpression>(expression)
+                                                              .function->getFunction()
+                                                              ->body)
+                            .back();
                     break;
                 case ExpressionType::FunctionCall:
                     return get<FunctionExpression>(expression).subexpressions.back();
@@ -1708,7 +1579,10 @@ namespace MuDSL {
                     return get<FunctionExpression>(expression).subexpressions.begin();
                     break;
                 case ExpressionType::FunctionDef:
-                    return get<vector<ExpressionRef>>(get<FunctionExpression>(expression).function->getFunction()->body).begin();
+                    return get<vector<ExpressionRef>>(get<FunctionExpression>(expression)
+                                                              .function->getFunction()
+                                                              ->body)
+                            .begin();
                     break;
                 case ExpressionType::Loop:
                     return get<Loop>(expression).subexpressions.begin();
@@ -1731,7 +1605,10 @@ namespace MuDSL {
                     return get<FunctionExpression>(expression).subexpressions.end();
                     break;
                 case ExpressionType::FunctionDef:
-                    return get<vector<ExpressionRef>>(get<FunctionExpression>(expression).function->getFunction()->body).end();
+                    return get<vector<ExpressionRef>>(get<FunctionExpression>(expression)
+                                                              .function->getFunction()
+                                                              ->body)
+                            .end();
                     break;
                 case ExpressionType::Loop:
                     return get<Loop>(expression).subexpressions.end();
@@ -1754,7 +1631,9 @@ namespace MuDSL {
                     get<FunctionExpression>(expression).subexpressions.push_back(ref);
                     break;
                 case ExpressionType::FunctionDef:
-                    get<vector<ExpressionRef>>(get<FunctionExpression>(expression).function->getFunction()->body).push_back(ref);
+                    get<vector<ExpressionRef>>(
+                            get<FunctionExpression>(expression).function->getFunction()->body)
+                            .push_back(ref);
                     break;
                 case ExpressionType::Loop:
                     get<Loop>(expression).subexpressions.push_back(ref);
@@ -1808,19 +1687,23 @@ namespace MuDSL {
         return static_cast<ModulePrivilegeFlags>(ours) & static_cast<ModulePrivilegeFlags>(other);
     }
 
-    inline ModulePrivilegeFlags operator|(const ModulePrivilege ours, const ModulePrivilegeFlags other) {
+    inline ModulePrivilegeFlags operator|(const ModulePrivilege ours,
+                                          const ModulePrivilegeFlags other) {
         return static_cast<ModulePrivilegeFlags>(ours) | other;
     }
 
-    inline ModulePrivilegeFlags operator^(const ModulePrivilege ours, const ModulePrivilegeFlags other) {
+    inline ModulePrivilegeFlags operator^(const ModulePrivilege ours,
+                                          const ModulePrivilegeFlags other) {
         return static_cast<ModulePrivilegeFlags>(ours) ^ other;
     }
 
-    inline ModulePrivilegeFlags operator&(const ModulePrivilege ours, const ModulePrivilegeFlags other) {
+    inline ModulePrivilegeFlags operator&(const ModulePrivilege ours,
+                                          const ModulePrivilegeFlags other) {
         return static_cast<ModulePrivilegeFlags>(ours) & other;
     }
 
-    inline bool shouldAllow(const ModulePrivilegeFlags allowPolicy, const ModulePrivilegeFlags requiredPermissions) {
+    inline bool shouldAllow(const ModulePrivilegeFlags allowPolicy,
+                            const ModulePrivilegeFlags requiredPermissions) {
         return 0 == ((!allowPolicy) & requiredPermissions);
     }
 
@@ -1865,16 +1748,22 @@ namespace MuDSL {
             return val;
         }
 
-        Scope(MuDSLInterpreter *interpereter) : name("global"), parent(nullptr), host(interpereter) {}
-        Scope(const string &name_, MuDSLInterpreter *interpereter) : name(name_), parent(nullptr), host(interpereter) {}
-        Scope(const string &name_, ScopeRef scope) : name(name_), parent(scope), host(scope->host) {}
-        Scope(const Scope &o) : name(o.name), parent(o.parent), scopes(o.scopes), functions(o.functions), host(o.host) {
+        Scope(MuDSLInterpreter *interpereter)
+            : name("global"), parent(nullptr), host(interpereter) {}
+        Scope(const string &name_, MuDSLInterpreter *interpereter)
+            : name(name_), parent(nullptr), host(interpereter) {}
+        Scope(const string &name_, ScopeRef scope)
+            : name(name_), parent(scope), host(scope->host) {}
+        Scope(const Scope &o)
+            : name(o.name), parent(o.parent), scopes(o.scopes), functions(o.functions),
+              host(o.host) {
             // copy vars by value when cloning a scope
             for (auto &&v: o.variables) {
                 variables[v.first] = make_shared<Value>(v.second->value);
             }
         }
-        Scope(const string &name_, const unordered_map<string, ValueRef> &variables_) : name(name_), variables(variables_) {}
+        Scope(const string &name_, const unordered_map<string, ValueRef> &variables_)
+            : name(name_), variables(variables_) {}
     };
 
     // state enum for state machine for token by token parsing
@@ -1916,11 +1805,13 @@ namespace MuDSL {
         ModulePrivilegeFlags allowedModulePrivileges;
 
         ValueRef needsToReturn(ExpressionRef expr, ScopeRef scope, Class *classs);
-        ValueRef needsToReturn(const vector<ExpressionRef> &subexpressions, ScopeRef scope, Class *classs);
+        ValueRef needsToReturn(const vector<ExpressionRef> &subexpressions, ScopeRef scope,
+                               Class *classs);
         ExpressionRef consolidated(ExpressionRef exp, ScopeRef scope, Class *classs);
 
         ExpressionRef getResolveVarExpression(const string &name, bool classScope);
-        ExpressionRef getExpression(const vector<string_view> &strings, ScopeRef scope, Class *classs);
+        ExpressionRef getExpression(const vector<string_view> &strings, ScopeRef scope,
+                                    Class *classs);
         ValueRef getValue(const vector<string_view> &strings, ScopeRef scope, Class *classs);
         ValueRef getValue(ExpressionRef expr, ScopeRef scope, Class *classs);
 
@@ -1934,7 +1825,8 @@ namespace MuDSL {
         FunctionRef newFunction(const string &name, ScopeRef scope, FunctionRef func);
         FunctionRef newFunction(const string &name, ScopeRef scope, const vector<string> &argNames);
         FunctionRef newConstructor(const string &name, ScopeRef scope, FunctionRef func);
-        FunctionRef newConstructor(const string &name, ScopeRef scope, const vector<string> &argNames);
+        FunctionRef newConstructor(const string &name, ScopeRef scope,
+                                   const vector<string> &argNames);
         Module *getOptionalModule(const string &name);
         void createStandardLibrary();
         void createOptionalModules();
@@ -1944,19 +1836,44 @@ namespace MuDSL {
         ScopeRef newScope(const string &name, ScopeRef scope);
         ScopeRef newScope(const string &name) { return newScope(name, globalScope); }
         ScopeRef insertScope(ScopeRef existing) { return insertScope(existing, globalScope); }
-        FunctionRef newClass(const string &name, ScopeRef scope, const unordered_map<string, ValueRef> &variables, const ClassLambda &constructor, const unordered_map<string, ClassLambda> &functions);
-        FunctionRef newClass(const string &name, const unordered_map<string, ValueRef> &variables, const ClassLambda &constructor, const unordered_map<string, ClassLambda> &functions) { return newClass(name, globalScope, variables, constructor, functions); }
-        FunctionRef newFunction(const string &name, ScopeRef scope, const Lambda &lam) { return newFunction(name, scope, make_shared<Function>(name, lam)); }
-        FunctionRef newFunction(const string &name, const Lambda &lam) { return newFunction(name, globalScope, lam); }
-        FunctionRef newFunction(const string &name, ScopeRef scope, const ScopedLambda &lam) { return newFunction(name, scope, make_shared<Function>(name, lam)); }
-        FunctionRef newFunction(const string &name, const ScopedLambda &lam) { return newFunction(name, globalScope, lam); }
-        FunctionRef newFunction(const string &name, ScopeRef scope, const ClassLambda &lam) { return newFunction(name, scope, make_shared<Function>(name, lam)); }
-        ScopeRef newModule(const string &name, ModulePrivilegeFlags flags, const unordered_map<string, Lambda> &functions);
+        FunctionRef newClass(const string &name, ScopeRef scope,
+                             const unordered_map<string, ValueRef> &variables,
+                             const ClassLambda &constructor,
+                             const unordered_map<string, ClassLambda> &functions);
+        FunctionRef newClass(const string &name, const unordered_map<string, ValueRef> &variables,
+                             const ClassLambda &constructor,
+                             const unordered_map<string, ClassLambda> &functions) {
+            return newClass(name, globalScope, variables, constructor, functions);
+        }
+        FunctionRef newFunction(const string &name, ScopeRef scope, const Lambda &lam) {
+            return newFunction(name, scope, make_shared<Function>(name, lam));
+        }
+        FunctionRef newFunction(const string &name, const Lambda &lam) {
+            return newFunction(name, globalScope, lam);
+        }
+        FunctionRef newFunction(const string &name, ScopeRef scope, const ScopedLambda &lam) {
+            return newFunction(name, scope, make_shared<Function>(name, lam));
+        }
+        FunctionRef newFunction(const string &name, const ScopedLambda &lam) {
+            return newFunction(name, globalScope, lam);
+        }
+        FunctionRef newFunction(const string &name, ScopeRef scope, const ClassLambda &lam) {
+            return newFunction(name, scope, make_shared<Function>(name, lam));
+        }
+        ScopeRef newModule(const string &name, ModulePrivilegeFlags flags,
+                           const unordered_map<string, Lambda> &functions);
         ValueRef callFunction(const string &name, ScopeRef scope, const List &args);
-        ValueRef callFunction(FunctionRef fnc, ScopeRef scope, const List &args, Class *classs = nullptr);
-        ValueRef callFunction(FunctionRef fnc, ScopeRef scope, const List &args, ClassRef classs) { return callFunction(fnc, scope, args, classs.get()); }
-        ValueRef callFunction(const string &name, const List &args = List()) { return callFunction(name, globalScope, args); }
-        ValueRef callFunction(FunctionRef fnc, const List &args) { return callFunction(fnc, globalScope, args); }
+        ValueRef callFunction(FunctionRef fnc, ScopeRef scope, const List &args,
+                              Class *classs = nullptr);
+        ValueRef callFunction(FunctionRef fnc, ScopeRef scope, const List &args, ClassRef classs) {
+            return callFunction(fnc, scope, args, classs.get());
+        }
+        ValueRef callFunction(const string &name, const List &args = List()) {
+            return callFunction(name, globalScope, args);
+        }
+        ValueRef callFunction(FunctionRef fnc, const List &args) {
+            return callFunction(fnc, globalScope, args);
+        }
         template<typename... Ts>
         ValueRef callFunctionWithArgs(FunctionRef fnc, ScopeRef scope, Ts... args) {
             List argsList = {make_shared<Value>(args)...};
@@ -1975,7 +1892,9 @@ namespace MuDSL {
         ScopeRef resolveScope(const string &name, ScopeRef scope);
 
         ValueRef resolveVariable(const string &name) { return resolveVariable(name, globalScope); }
-        FunctionRef resolveFunction(const string &name) { return resolveFunction(name, globalScope); }
+        FunctionRef resolveFunction(const string &name) {
+            return resolveFunction(name, globalScope);
+        }
         ScopeRef resolveScope(const string &name) { return resolveScope(name, globalScope); }
 
         bool readLine(string_view text);
@@ -1989,7 +1908,8 @@ namespace MuDSL {
             createStandardLibrary();
             if (priv) { createOptionalModules(); }
         }
-        MuDSLInterpreter(ModulePrivilege priv) : MuDSLInterpreter(static_cast<ModulePrivilegeFlags>(priv)) {}
+        MuDSLInterpreter(ModulePrivilege priv)
+            : MuDSLInterpreter(static_cast<ModulePrivilegeFlags>(priv)) {}
         MuDSLInterpreter() : MuDSLInterpreter(ModulePrivilegeFlags()) {}
     };
 }// namespace MuDSL
