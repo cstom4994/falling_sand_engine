@@ -1,17 +1,20 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "Textures.hpp"
-
+#include "GameResources.hpp"
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
+#include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
+#include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/InEngine.h"
-
-#include "Engine/RendererGPU.h"
 #include "Libs/Ase_Loader.h"
 #include "Libs/external/stb_image.h"
+#include "LuaWrapper.hpp"
+#include "Scripting.hpp"
+#include <string>
 
 C_Surface *Textures::testTexture = nullptr;
 C_Surface *Textures::dirt1Texture = nullptr;
@@ -161,4 +164,21 @@ C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
     METADOT_DELETE(C, dstR, C_Rect);
 
     return dest;
+}
+
+void I18N::Init() {
+    auto L = global.scripts->LuaMap["LuaCore"];
+    METADOT_ASSERT(L, "Can't load I18N when luacore is invaild");
+
+    Load("zh");
+}
+
+void I18N::Load(std::string lang) {
+    auto L = global.scripts->LuaMap["LuaCore"];
+    (*L->GetWrapper())["setlocale"](lang);
+}
+
+std::string I18N::Get(std::string text) {
+    auto L = global.scripts->LuaMap["LuaCore"];
+    return (*L->GetWrapper())["translate"](text);
 }

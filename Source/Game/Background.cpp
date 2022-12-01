@@ -5,7 +5,7 @@
 #include "Engine/Memory.hpp"
 #include "Game/Game.hpp"
 #include "Game/InEngine.h"
-#include "Game/Textures.hpp"
+#include "Game/GameResources.hpp"
 
 #include <algorithm>
 

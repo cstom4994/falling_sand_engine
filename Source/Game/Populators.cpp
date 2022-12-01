@@ -7,7 +7,7 @@
 #include "Structures.hpp"
 
 #ifndef INC_Textures
-#include "Game/Textures.hpp"
+#include "Game/GameResources.hpp"
 #endif// !INC_Textures
 
 #include "Game/InEngine.h"

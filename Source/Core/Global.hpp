@@ -9,6 +9,7 @@
 #include "Engine/Refl.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/Shaders.hpp"
+#include "Game/GameResources.hpp"
 
 #include <map>
 
@@ -33,6 +34,7 @@ struct Global
     CAudioEngine audioEngine;
     GameDir GameDir;
     Platform platform;
+    I18N I18N;
 
     Client *client = nullptr;
     Server *server = nullptr;

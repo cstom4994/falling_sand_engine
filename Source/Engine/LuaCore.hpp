@@ -16,7 +16,7 @@ private:
 
 public:
     lua_State *getLuaState() { return m_L; }
-    LuaWrapper::State *getState() { return &s_lua; }
+    LuaWrapper::State *GetWrapper() { return &s_lua; }
     void RunScriptInConsole(lua_State *L, const char *c);
 
     void RunScriptFromFile(const std::string &filePath);
@@ -26,7 +26,7 @@ public:
 
     struct
     {
-        LuaWrapper::LuaFunction Lang;
+        // LuaWrapper::LuaFunction Lang;
     } Func_;
 };
 

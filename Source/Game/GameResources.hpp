@@ -1,12 +1,15 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_TEXTURES_HPP_
-#define _METADOT_TEXTURES_HPP_
+#ifndef _METADOT_GAMERESOURCES_HPP_
+#define _METADOT_GAMERESOURCES_HPP_
 
 #include "Core/Core.hpp"
 #include "Engine/SDLWrapper.hpp"
+#include "LuaWrapper.hpp"
 
 #include <iostream>
+#include <string>
+#include <string_view>
 
 #define INC_Textures
 
@@ -49,6 +52,13 @@ public:
     static C_Surface *loadAseprite(std::string path);
 
     static C_Surface *scaleTexture(C_Surface *, float x, float y);
+};
+
+struct I18N
+{
+    void Init();
+    void Load(std::string lang);
+    std::string Get(std::string text);
 };
 
 #endif

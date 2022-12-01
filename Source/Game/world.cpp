@@ -16,7 +16,7 @@
 #include "Core/Core.hpp"
 #include "DefaultGenerator.cpp"
 #include "Game/FileSystem.hpp"
-#include "Game/Textures.hpp"
+#include "Game/GameResources.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/MarchingSquares.h"
 #include "Libs/polygon-simplify.hh"
@@ -3657,9 +3657,9 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     if (!FUtil::exists(metaFile)) { meta.save(worldFileName); }
 
-    L->getState()->dofile(metaFile);
+    L->GetWrapper()->dofile(metaFile);
 
-    LuaWrapper::LuaFunction LoadWorldMeta = (*L->getState())["LoadWorldMeta"];
+    LuaWrapper::LuaFunction LoadWorldMeta = (*L->GetWrapper())["LoadWorldMeta"];
     LuaWrapper::LuaTable a = LoadWorldMeta();
 
     if (!a.isNilref()) {

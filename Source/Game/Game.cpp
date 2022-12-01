@@ -21,10 +21,10 @@
 #include "Engine/gc.h"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/GameResources.hpp"
 #include "Game/GameUI.hpp"
 #include "Game/ImGuiLayer.hpp"
 #include "Game/Settings.hpp"
-#include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
 #include "MaterialTestGenerator.cpp"
 
@@ -177,6 +177,8 @@ int Game::init(int argc, char *argv[]) {
         global.scripts->Init();
     };
     loadscript();
+
+    global.I18N.Init();
 
     if (Settings::networkMode != NetworkMode::SERVER) { GameIsolate_.backgrounds->Load(); }
 

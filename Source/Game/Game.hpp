@@ -22,13 +22,13 @@
 #endif
 #include "Background.hpp"
 #include "Controls.hpp"
+#include "Core/Const.hpp"
 #include "Engine/SDLWrapper.hpp"
+#include "Game/GameResources.hpp"
 #include "Game/Settings.hpp"
-#include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/sparsehash/sparse_hash_map.h"
 #include "box2d/b2_distance_joint.h"
-#include "Core/Const.hpp"
 
 #include <algorithm>
 #include <chrono>

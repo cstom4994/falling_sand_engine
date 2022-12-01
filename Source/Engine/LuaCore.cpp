@@ -182,10 +182,6 @@ void LuaCore::Attach() {
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
     RunScriptFromFile("data/lua/startup.lua");
-
-    //RunScriptFromFile("data/lua/lang.lua");
-
-    Func_.Lang = s_lua["translate"];
 }
 
 void LuaCore::Detach() {}

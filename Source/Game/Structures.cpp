@@ -5,7 +5,7 @@
 #include "world.hpp"
 
 #ifndef INC_Textures
-#include "Game/Textures.hpp"
+#include "Game/GameResources.hpp"
 #endif
 
 #include <algorithm>

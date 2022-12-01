@@ -8,15 +8,15 @@
 #include "Engine/ImGuiBase.hpp"
 #include "Engine/ImGuiHelper.hpp"
 #include "Engine/Memory.hpp"
+#include "Engine/Scripting.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameResources.hpp"
 #include "Game/GameUI.hpp"
 #include "Game/InEngine.h"
 #include "Game/Networking.hpp"
-#include "Game/Textures.hpp"
 #include "Game/Utils.hpp"
 #include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
-#include "Engine/Scripting.hpp"
 #include "Settings.hpp"
 
 #include "glew.h"
@@ -27,7 +27,7 @@
 
 #include <imgui/IconsFontAwesome5.h>
 
-#define LANG(_c) global.scripts->LuaMap["LuaCore"]->Func_.Lang(_c)
+#define LANG(_c) global.I18N.Get(_c).c_str()
 
 extern void ShowAutoTestWindow();
 

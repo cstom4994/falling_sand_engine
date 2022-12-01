@@ -18,8 +18,9 @@ i18n.load({
     }
 })
 
-i18n.setLocale('zh')
+function translate(str) return i18n.translate(str) end
 
-function translate(str)
-    return i18n.translate(str)
+function setlocale(loc)
+    i18n.setLocale(loc)
+    METADOT_INFO("Using Language " .. loc)
 end
