@@ -178,11 +178,6 @@ int Game::init(int argc, char *argv[]) {
     };
     loadscript();
 
-    // init the world
-    // worldInitThread = worldInitThreadPool->push([&](int id) {
-    //     fuckme();
-    // });
-
     if (Settings::networkMode != NetworkMode::SERVER) {
         // init the background
 
@@ -206,10 +201,10 @@ int Game::init(int argc, char *argv[]) {
                                               SDL_PIXELFORMAT_ARGB8888),
                         0.5, 0.5, 0, 0)};
 
-        METADOT_NEW(C, backgrounds, Backgrounds);
+        METADOT_NEW(C, GameIsolate_.backgrounds, Backgrounds);
         METADOT_CREATE(C, bg, Background, 0x7EAFCB, testOverworldLayers);
-        backgrounds->Push("TEST_OVERWORLD", bg);
-        backgrounds->Get("TEST_OVERWORLD")->init();
+        GameIsolate_.backgrounds->Push("TEST_OVERWORLD", bg);
+        GameIsolate_.backgrounds->Get("TEST_OVERWORLD")->init();
     }
 
     // init the rng
@@ -232,14 +227,15 @@ int Game::init(int argc, char *argv[]) {
     //worldInitThread.get();
 
     METADOT_INFO("Initializing world...");
-    METADOT_NEW(C, world, World);
-    world->noSaveLoad = true;
-    world->init(global.GameDir.getWorldPath("mainMenu"),
-                (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
-                        CHUNK_W * RENDER_C_TEST,
-                (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
-                        CHUNK_H * RENDER_C_TEST,
-                RenderTarget_.target, &global.audioEngine, Settings::networkMode);
+    METADOT_NEW(C, GameIsolate_.world, World);
+    GameIsolate_.world->noSaveLoad = true;
+    GameIsolate_.world->init(
+            global.GameDir.getWorldPath("mainMenu"),
+            (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
+                    CHUNK_W * RENDER_C_TEST,
+            (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
+                    CHUNK_H * RENDER_C_TEST,
+            RenderTarget_.target, &global.audioEngine, Settings::networkMode);
 
     if (Settings::networkMode != NetworkMode::SERVER) {
         // set up main menu ui
@@ -324,7 +320,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
                 TexturePack_.texture = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_SetImageFilter(TexturePack_.texture,
@@ -333,8 +329,8 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
                 TexturePack_.worldTexture = METAENGINE_Render_CreateImage(
-                        world->width * Settings::hd_objects_size,
-                        world->height * Settings::hd_objects_size,
+                        GameIsolate_.world->width * Settings::hd_objects_size,
+                        GameIsolate_.world->height * Settings::hd_objects_size,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_SetImageFilter(TexturePack_.worldTexture,
@@ -345,7 +341,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
                 TexturePack_.lightingTexture = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.lightingTexture,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -354,7 +350,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
                 TexturePack_.emissionTexture = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.emissionTexture,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -362,7 +358,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
                 TexturePack_.textureFlow = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureFlow,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -370,7 +366,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
                 TexturePack_.textureFlowSpead = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureFlowSpead,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -379,7 +375,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFire");
                 TexturePack_.textureFire = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureFire,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -387,7 +383,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
                 TexturePack_.texture2Fire = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.texture2Fire,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -396,7 +392,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
                 TexturePack_.textureLayer2 = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureLayer2,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -404,7 +400,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
                 TexturePack_.textureBackground = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureBackground,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -412,8 +408,10 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
                 TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                        world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->width *
+                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->height *
+                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureObjects,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -422,7 +420,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
                 TexturePack_.textureObjectsLQ = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsLQ,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -431,8 +429,10 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                        world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->width *
+                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->height *
+                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsBack,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -441,7 +441,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureParticles");
                 TexturePack_.textureParticles = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureParticles,
@@ -450,8 +450,10 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
                 TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                        world->width * (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                        world->height * (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->width *
+                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->height *
+                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_LoadTarget(TexturePack_.textureEntities);
@@ -462,7 +464,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
                 TexturePack_.textureEntitiesLQ = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_LoadTarget(TexturePack_.textureEntitiesLQ);
@@ -473,7 +475,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
                 TexturePack_.temperatureMap = METAENGINE_Render_CreateImage(
-                        world->width, world->height,
+                        GameIsolate_.world->width, GameIsolate_.world->height,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_SetImageFilter(TexturePack_.temperatureMap,
@@ -495,25 +497,28 @@ void Game::createTexture() {
 
     // create texture pixel buffers
 
-    TexturePack_.pixels = std::vector<UInt8>(world->width * world->height * 4, 0);
+    TexturePack_.pixels =
+            std::vector<UInt8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixels_ar = &TexturePack_.pixels[0];
 
-    TexturePack_.pixelsLayer2 = std::vector<UInt8>(world->width * world->height * 4, 0);
+    TexturePack_.pixelsLayer2 =
+            std::vector<UInt8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
 
-    TexturePack_.pixelsBackground = std::vector<UInt8>(world->width * world->height * 4, 0);
+    TexturePack_.pixelsBackground =
+            std::vector<UInt8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-    TexturePack_.pixelsObjects =
-            std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsObjects = std::vector<UInt8>(
+            GameIsolate_.world->width * GameIsolate_.world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-    TexturePack_.pixelsTemp =
-            std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsTemp = std::vector<UInt8>(
+            GameIsolate_.world->width * GameIsolate_.world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-    TexturePack_.pixelsParticles =
-            std::vector<UInt8>(world->width * world->height * 4, SDL_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsParticles = std::vector<UInt8>(
+            GameIsolate_.world->width * GameIsolate_.world->height * 4, SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
 
     TexturePack_.pixelsLoading =
@@ -521,27 +526,30 @@ void Game::createTexture() {
                                SDL_ALPHA_TRANSPARENT);
     TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
-    TexturePack_.pixelsFire = std::vector<UInt8>(world->width * world->height * 4, 0);
+    TexturePack_.pixelsFire =
+            std::vector<UInt8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
-    TexturePack_.pixelsFlow = std::vector<UInt8>(world->width * world->height * 4, 0);
+    TexturePack_.pixelsFlow =
+            std::vector<UInt8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
 
-    TexturePack_.pixelsEmission = std::vector<UInt8>(world->width * world->height * 4, 0);
+    TexturePack_.pixelsEmission =
+            std::vector<UInt8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
 
     METADOT_INFO("Creating world textures done");
 }
 
 int Game::run(int argc, char *argv[]) {
-    game_timestate.startTime = UTime::millis();
+    GameIsolate_.game_timestate.startTime = UTime::millis();
 
     // start loading chunks
 
     METADOT_INFO("Queueing chunk loading...");
-    for (int x = -CHUNK_W * 4; x < world->width + CHUNK_W * 4; x += CHUNK_W) {
-        for (int y = -CHUNK_H * 3; y < world->height + CHUNK_H * 8; y += CHUNK_H) {
-            world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
+    for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
+        for (int y = -CHUNK_H * 3; y < GameIsolate_.world->height + CHUNK_H * 8; y += CHUNK_H) {
+            GameIsolate_.world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
         }
     }
 
@@ -549,11 +557,11 @@ int Game::run(int argc, char *argv[]) {
 
     METADOT_INFO("Starting game loop...");
 
-    freeCamX = world->width / 2.0f - CHUNK_W / 2;
-    freeCamY = world->height / 2.0f - (int) (CHUNK_H * 0.75);
-    if (world->player) {
-        plPosX = world->player->x;
-        plPosY = world->player->y;
+    freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2;
+    freeCamY = GameIsolate_.world->height / 2.0f - (int) (CHUNK_H * 0.75);
+    if (GameIsolate_.world->player) {
+        plPosX = GameIsolate_.world->player->x;
+        plPosY = GameIsolate_.world->player->y;
     } else {
         plPosX = freeCamX;
         plPosY = freeCamY;
@@ -563,13 +571,13 @@ int Game::run(int argc, char *argv[]) {
 
     long long lastFPS = UTime::millis();
     int frames = 0;
-    game_timestate.fps = 0;
+    GameIsolate_.game_timestate.fps = 0;
 
-    game_timestate.lastTime = UTime::millis();
-    game_timestate.lastTick = game_timestate.lastTime;
-    long long lastTickPhysics = game_timestate.lastTime;
+    GameIsolate_.game_timestate.lastTime = UTime::millis();
+    GameIsolate_.game_timestate.lastTick = GameIsolate_.game_timestate.lastTime;
+    long long lastTickPhysics = GameIsolate_.game_timestate.lastTime;
 
-    game_timestate.mspt = 33;
+    GameIsolate_.game_timestate.mspt = 33;
     long msptPhysics = 16;
 
     scale = 3;
@@ -580,7 +588,8 @@ int Game::run(int argc, char *argv[]) {
     ofsY = (ofsY - global.platform.HEIGHT / 2) / 2 * 3 + global.platform.HEIGHT / 2;
 
     for (int i = 0; i < frameTimeNum; i++) { frameTime[i] = 0; }
-    METADOT_NEW_ARRAY(C, objectDelete, UInt8, world->width * world->height);
+    METADOT_NEW_ARRAY(C, objectDelete, UInt8,
+                      GameIsolate_.world->width * GameIsolate_.world->height);
 
     fadeInStart = UTime::millis();
     fadeInLength = 250;
@@ -590,8 +599,9 @@ int Game::run(int argc, char *argv[]) {
 
     while (this->running) {
 
-        game_timestate.now = UTime::millis();
-        game_timestate.deltaTime = game_timestate.now - game_timestate.lastTime;
+        GameIsolate_.game_timestate.now = UTime::millis();
+        GameIsolate_.game_timestate.deltaTime =
+                GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTime;
 
         if (Settings::networkMode != NetworkMode::SERVER) {
 
@@ -642,9 +652,9 @@ int Game::run(int argc, char *argv[]) {
                             lastDrawMY = y;
                         }
 
-                        world->forLine(lastDrawMX, lastDrawMY, x, y, [&](int index) {
-                            int lineX = index % world->width;
-                            int lineY = index / world->width;
+                        GameIsolate_.world->forLine(lastDrawMX, lastDrawMY, x, y, [&](int index) {
+                            int lineX = index % GameIsolate_.world->width;
+                            int lineY = index / GameIsolate_.world->width;
 
                             for (int xx = -GameUI::DebugDrawUI::brushSize / 2;
                                  xx < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
@@ -652,13 +662,19 @@ int Game::run(int argc, char *argv[]) {
                                      yy < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0));
                                      yy++) {
                                     if (lineX + xx < 0 || lineY + yy < 0 ||
-                                        lineX + xx >= world->width || lineY + yy >= world->height)
+                                        lineX + xx >= GameIsolate_.world->width ||
+                                        lineY + yy >= GameIsolate_.world->height)
                                         continue;
                                     MaterialInstance tp =
                                             Tiles::create(GameUI::DebugDrawUI::selectedMaterial,
                                                           lineX + xx, lineY + yy);
-                                    world->tiles[(lineX + xx) + (lineY + yy) * world->width] = tp;
-                                    world->dirty[(lineX + xx) + (lineY + yy) * world->width] = true;
+                                    GameIsolate_.world
+                                            ->tiles[(lineX + xx) +
+                                                    (lineY + yy) * GameIsolate_.world->width] = tp;
+                                    GameIsolate_.world
+                                            ->dirty[(lineX + xx) +
+                                                    (lineY + yy) * GameIsolate_.world->width] =
+                                            true;
                                 }
                             }
 
@@ -685,9 +701,9 @@ int Game::run(int argc, char *argv[]) {
                             lastEraseMY = y;
                         }
 
-                        world->forLine(lastEraseMX, lastEraseMY, x, y, [&](int index) {
-                            int lineX = index % world->width;
-                            int lineY = index / world->width;
+                        GameIsolate_.world->forLine(lastEraseMX, lastEraseMY, x, y, [&](int index) {
+                            int lineX = index % GameIsolate_.world->width;
+                            int lineY = index / GameIsolate_.world->width;
 
                             for (int xx = -GameUI::DebugDrawUI::brushSize / 2;
                                  xx < (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
@@ -697,15 +713,16 @@ int Game::run(int argc, char *argv[]) {
 
                                     if (abs(xx) + abs(yy) == GameUI::DebugDrawUI::brushSize)
                                         continue;
-                                    if (world->getTile(lineX + xx, lineY + yy).mat->physicsType !=
-                                        PhysicsType::AIR) {
-                                        world->setTile(lineX + xx, lineY + yy, Tiles::NOTHING);
-                                        world->lastMeshZone.x--;
-                                    }
-                                    if (world->getTileLayer2(lineX + xx, lineY + yy)
+                                    if (GameIsolate_.world->getTile(lineX + xx, lineY + yy)
                                                 .mat->physicsType != PhysicsType::AIR) {
-                                        world->setTileLayer2(lineX + xx, lineY + yy,
-                                                             Tiles::NOTHING);
+                                        GameIsolate_.world->setTile(lineX + xx, lineY + yy,
+                                                                    Tiles::NOTHING);
+                                        GameIsolate_.world->lastMeshZone.x--;
+                                    }
+                                    if (GameIsolate_.world->getTileLayer2(lineX + xx, lineY + yy)
+                                                .mat->physicsType != PhysicsType::AIR) {
+                                        GameIsolate_.world->setTileLayer2(lineX + xx, lineY + yy,
+                                                                          Tiles::NOTHING);
                                     }
                                 }
                             }
@@ -717,7 +734,7 @@ int Game::run(int argc, char *argv[]) {
 
                         // erase from rigidbodies
                         // this copies the vector
-                        std::vector<RigidBody *> rbs = world->rigidBodies;
+                        std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
@@ -755,7 +772,7 @@ int Game::run(int argc, char *argv[]) {
                                             METAENGINE_Render_CopyImageFromSurface(cur->surface);
                                     METAENGINE_Render_SetImageFilter(
                                             cur->texture, METAENGINE_Render_FILTER_NEAREST);
-                                    //world->updateRigidBodyHitbox(cur);
+                                    //GameIsolate_.world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
                             }
@@ -775,39 +792,45 @@ int Game::run(int argc, char *argv[]) {
                     if (windowEvent.button.button == SDL_BUTTON_LEFT) {
                         Controls::lmouse = true;
 
-                        if (world->player && world->player->heldItem != NULL) {
-                            if (world->player->heldItem->getFlag(ItemFlags::VACUUM)) {
-                                world->player->holdVacuum = true;
-                            } else if (world->player->heldItem->getFlag(ItemFlags::HAMMER)) {
+                        if (GameIsolate_.world->player &&
+                            GameIsolate_.world->player->heldItem != NULL) {
+                            if (GameIsolate_.world->player->heldItem->getFlag(ItemFlags::VACUUM)) {
+                                GameIsolate_.world->player->holdVacuum = true;
+                            } else if (GameIsolate_.world->player->heldItem->getFlag(
+                                               ItemFlags::HAMMER)) {
                                 //#define HAMMER_DEBUG_PHYSICS
 #ifdef HAMMER_DEBUG_PHYSICS
                                 int x = (int) ((windowEvent.button.x - ofsX - camX) / scale);
                                 int y = (int) ((windowEvent.button.y - ofsY - camY) / scale);
 
-                                world->physicsCheck(x, y);
+                                GameIsolate_.world->physicsCheck(x, y);
 #else
                                 mx = windowEvent.button.x;
                                 my = windowEvent.button.y;
                                 int startInd = getAimSolidSurface(64);
 
                                 if (startInd != -1) {
-                                    //world->player->hammerX = x;
-                                    //world->player->hammerY = y;
-                                    world->player->hammerX = startInd % world->width;
-                                    world->player->hammerY = startInd / world->width;
-                                    world->player->holdHammer = true;
-                                    //METADOT_BUG("hammer down: {0:d} {0:d} {0:d} {0:d} {0:d}", x, y, startInd, startInd % world->width, startInd / world->width);
-                                    //world->setTile(world->player->hammerX, world->player->hammerY, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
+                                    //GameIsolate_.world->player->hammerX = x;
+                                    //GameIsolate_.world->player->hammerY = y;
+                                    GameIsolate_.world->player->hammerX =
+                                            startInd % GameIsolate_.world->width;
+                                    GameIsolate_.world->player->hammerY =
+                                            startInd / GameIsolate_.world->width;
+                                    GameIsolate_.world->player->holdHammer = true;
+                                    //METADOT_BUG("hammer down: {0:d} {0:d} {0:d} {0:d} {0:d}", x, y, startInd, startInd % GameIsolate_.world->width, startInd / GameIsolate_.world->width);
+                                    //GameIsolate_.world->setTile(GameIsolate_.world->player->hammerX, GameIsolate_.world->player->hammerY, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
                                 }
 #endif
 #undef HAMMER_DEBUG_PHYSICS
-                            } else if (world->player->heldItem->getFlag(ItemFlags::CHISEL)) {
+                            } else if (GameIsolate_.world->player->heldItem->getFlag(
+                                               ItemFlags::CHISEL)) {
                                 // if hovering rigidbody, open in chisel
 
                                 int x = (int) ((mx - ofsX - camX) / scale);
                                 int y = (int) ((my - ofsY - camY) / scale);
 
-                                std::vector<RigidBody *> rbs = world->rigidBodies;// copy
+                                std::vector<RigidBody *> rbs =
+                                        GameIsolate_.world->rigidBodies;// copy
                                 for (size_t i = 0; i < rbs.size(); i++) {
                                     RigidBody *cur = rbs[i];
 
@@ -847,20 +870,27 @@ int Game::run(int argc, char *argv[]) {
                                     }
                                 }
 
-                            } else if (world->player->heldItem->getFlag(ItemFlags::TOOL)) {
+                            } else if (GameIsolate_.world->player->heldItem->getFlag(
+                                               ItemFlags::TOOL)) {
                                 // break with pickaxe
 
-                                float breakSize = world->player->heldItem->breakSize;
+                                float breakSize = GameIsolate_.world->player->heldItem->breakSize;
 
-                                int x = (int) (world->player->x + world->player->hw / 2.0f +
-                                               world->loadZone.x +
-                                               10 * (float) cos((world->player->holdAngle + 180) *
-                                                                3.1415f / 180.0f) -
+                                int x = (int) (GameIsolate_.world->player->x +
+                                               GameIsolate_.world->player->hw / 2.0f +
+                                               GameIsolate_.world->loadZone.x +
+                                               10 * (float) cos(
+                                                            (GameIsolate_.world->player->holdAngle +
+                                                             180) *
+                                                            3.1415f / 180.0f) -
                                                breakSize / 2);
-                                int y = (int) (world->player->y + world->player->hh / 2.0f +
-                                               world->loadZone.y +
-                                               10 * (float) sin((world->player->holdAngle + 180) *
-                                                                3.1415f / 180.0f) -
+                                int y = (int) (GameIsolate_.world->player->y +
+                                               GameIsolate_.world->player->hh / 2.0f +
+                                               GameIsolate_.world->loadZone.y +
+                                               10 * (float) sin(
+                                                            (GameIsolate_.world->player->holdAngle +
+                                                             180) *
+                                                            3.1415f / 180.0f) -
                                                breakSize / 2);
 
                                 C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(
@@ -875,14 +905,24 @@ int Game::run(int argc, char *argv[]) {
 
                                         if (cx * cx + cy * cy > 0.25f) continue;
 
-                                        if (world->tiles[(x + xx) + (y + yy) * world->width]
+                                        if (GameIsolate_.world
+                                                    ->tiles[(x + xx) +
+                                                            (y + yy) * GameIsolate_.world->width]
                                                     .mat->physicsType == PhysicsType::SOLID) {
                                             METADOT_GET_PIXEL(tex, xx, yy) =
-                                                    world->tiles[(x + xx) + (y + yy) * world->width]
+                                                    GameIsolate_.world
+                                                            ->tiles[(x + xx) +
+                                                                    (y + yy) * GameIsolate_.world
+                                                                                       ->width]
                                                             .color;
-                                            world->tiles[(x + xx) + (y + yy) * world->width] =
+                                            GameIsolate_.world
+                                                    ->tiles[(x + xx) +
+                                                            (y + yy) * GameIsolate_.world->width] =
                                                     Tiles::NOTHING;
-                                            world->dirty[(x + xx) + (y + yy) * world->width] = true;
+                                            GameIsolate_.world
+                                                    ->dirty[(x + xx) +
+                                                            (y + yy) * GameIsolate_.world->width] =
+                                                    true;
 
                                             n++;
                                         }
@@ -893,9 +933,9 @@ int Game::run(int argc, char *argv[]) {
                                     global.audioEngine.PlayEvent("event:/Player/Impact");
                                     b2PolygonShape s;
                                     s.SetAsBox(1, 1);
-                                    RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x,
-                                                                         (float) y, 0, s, 1,
-                                                                         (float) 0.3, tex);
+                                    RigidBody *rb = GameIsolate_.world->makeRigidBody(
+                                            b2_dynamicBody, (float) x, (float) y, 0, s, 1,
+                                            (float) 0.3, tex);
 
                                     b2Filter bf = {};
                                     bf.categoryBits = 0x0001;
@@ -906,18 +946,19 @@ int Game::run(int argc, char *argv[]) {
                                             {(float) ((rand() % 100) / 100.0 - 0.5),
                                              (float) ((rand() % 100) / 100.0 - 0.5)});
 
-                                    world->rigidBodies.push_back(rb);
-                                    world->updateRigidBodyHitbox(rb);
+                                    GameIsolate_.world->rigidBodies.push_back(rb);
+                                    GameIsolate_.world->updateRigidBodyHitbox(rb);
 
-                                    world->lastMeshLoadZone.x--;
-                                    world->updateWorldMesh();
+                                    GameIsolate_.world->lastMeshLoadZone.x--;
+                                    GameIsolate_.world->updateWorldMesh();
                                 }
                             }
                         }
 
                     } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
                         Controls::rmouse = true;
-                        if (world->player) world->player->startThrow = UTime::millis();
+                        if (GameIsolate_.world->player)
+                            GameIsolate_.world->player->startThrow = UTime::millis();
                     } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
                         Controls::mmouse = true;
                     }
@@ -925,27 +966,29 @@ int Game::run(int argc, char *argv[]) {
                     if (windowEvent.button.button == SDL_BUTTON_LEFT) {
                         Controls::lmouse = false;
 
-                        if (world->player) {
-                            if (world->player->heldItem) {
-                                if (world->player->heldItem->getFlag(ItemFlags::VACUUM)) {
-                                    if (world->player->holdVacuum) {
-                                        world->player->holdVacuum = false;
+                        if (GameIsolate_.world->player) {
+                            if (GameIsolate_.world->player->heldItem) {
+                                if (GameIsolate_.world->player->heldItem->getFlag(
+                                            ItemFlags::VACUUM)) {
+                                    if (GameIsolate_.world->player->holdVacuum) {
+                                        GameIsolate_.world->player->holdVacuum = false;
                                     }
-                                } else if (world->player->heldItem->getFlag(ItemFlags::HAMMER)) {
-                                    if (world->player->holdHammer) {
+                                } else if (GameIsolate_.world->player->heldItem->getFlag(
+                                                   ItemFlags::HAMMER)) {
+                                    if (GameIsolate_.world->player->holdHammer) {
                                         int x = (int) ((windowEvent.button.x - ofsX - camX) /
                                                        scale);
                                         int y = (int) ((windowEvent.button.y - ofsY - camY) /
                                                        scale);
 
-                                        int dx = world->player->hammerX - x;
-                                        int dy = world->player->hammerY - y;
+                                        int dx = GameIsolate_.world->player->hammerX - x;
+                                        int dy = GameIsolate_.world->player->hammerY - y;
                                         float len = sqrtf(dx * dx + dy * dy);
                                         float udx = dx / len;
                                         float udy = dy / len;
 
-                                        int ex = world->player->hammerX + dx;
-                                        int ey = world->player->hammerY + dy;
+                                        int ex = GameIsolate_.world->player->hammerX + dx;
+                                        int ey = GameIsolate_.world->player->hammerY + dy;
                                         METADOT_BUG("hammer up: {0:d} {0:d} {0:d} {0:d}", ex, ey,
                                                     dx, dy);
                                         int endInd = -1;
@@ -953,9 +996,9 @@ int Game::run(int argc, char *argv[]) {
                                         int nSegments = 1 + len / 10;
                                         std::vector<std::tuple<int, int>> points = {};
                                         for (int i = 0; i < nSegments; i++) {
-                                            int sx = world->player->hammerX +
+                                            int sx = GameIsolate_.world->player->hammerX +
                                                      (int) ((float) (dx / nSegments) * (i + 1));
-                                            int sy = world->player->hammerY +
+                                            int sy = GameIsolate_.world->player->hammerY +
                                                      (int) ((float) (dy / nSegments) * (i + 1));
                                             sx += rand() % 3 - 1;
                                             sy += rand() % 3 - 1;
@@ -964,24 +1007,27 @@ int Game::run(int argc, char *argv[]) {
 
                                         int nTilesChanged = 0;
                                         for (size_t i = 0; i < points.size(); i++) {
-                                            int segSx = i == 0 ? world->player->hammerX
+                                            int segSx = i == 0 ? GameIsolate_.world->player->hammerX
                                                                : std::get<0>(points[i - 1]);
-                                            int segSy = i == 0 ? world->player->hammerY
+                                            int segSy = i == 0 ? GameIsolate_.world->player->hammerY
                                                                : std::get<1>(points[i - 1]);
                                             int segEx = std::get<0>(points[i]);
                                             int segEy = std::get<1>(points[i]);
 
                                             bool hitSolidYet = false;
                                             bool broke = false;
-                                            world->forLineCornered(
+                                            GameIsolate_.world->forLineCornered(
                                                     segSx, segSy, segEx, segEy, [&](int index) {
-                                                        if (world->tiles[index].mat->physicsType !=
+                                                        if (GameIsolate_.world->tiles[index]
+                                                                    .mat->physicsType !=
                                                             PhysicsType::SOLID) {
                                                             if (hitSolidYet &&
-                                                                (abs((index % world->width) -
+                                                                (abs((index %
+                                                                      GameIsolate_.world->width) -
                                                                      segSx) +
                                                                          (abs((index /
-                                                                               world->width) -
+                                                                               GameIsolate_.world
+                                                                                       ->width) -
                                                                               segSy)) >
                                                                  1)) {
                                                                 broke = true;
@@ -990,53 +1036,58 @@ int Game::run(int argc, char *argv[]) {
                                                             return false;
                                                         }
                                                         hitSolidYet = true;
-                                                        world->tiles[index] = MaterialInstance(
+                                                        GameIsolate_.world
+                                                                ->tiles[index] = MaterialInstance(
                                                                 &Materials::GENERIC_SAND,
                                                                 Drawing::darkenColor(
-                                                                        world->tiles[index].color,
+                                                                        GameIsolate_.world
+                                                                                ->tiles[index]
+                                                                                .color,
                                                                         0.5f));
-                                                        world->dirty[index] = true;
+                                                        GameIsolate_.world->dirty[index] = true;
                                                         endInd = index;
                                                         nTilesChanged++;
                                                         return false;
                                                     });
 
-                                            //world->setTile(segSx, segSy, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
+                                            //GameIsolate_.world->setTile(segSx, segSy, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
                                             if (broke) break;
                                         }
 
-                                        //world->setTile(ex, ey, MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000ff));
+                                        //GameIsolate_.world->setTile(ex, ey, MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000ff));
 
-                                        int hx =
-                                                (world->player->hammerX + (endInd % world->width)) /
-                                                2;
-                                        int hy =
-                                                (world->player->hammerY + (endInd / world->width)) /
-                                                2;
+                                        int hx = (GameIsolate_.world->player->hammerX +
+                                                  (endInd % GameIsolate_.world->width)) /
+                                                 2;
+                                        int hy = (GameIsolate_.world->player->hammerY +
+                                                  (endInd / GameIsolate_.world->width)) /
+                                                 2;
 
-                                        if (world->getTile((int) (hx + udy * 2),
-                                                           (int) (hy - udx * 2))
+                                        if (GameIsolate_.world
+                                                    ->getTile((int) (hx + udy * 2),
+                                                              (int) (hy - udx * 2))
                                                     .mat->physicsType == PhysicsType::SOLID) {
-                                            world->physicsCheck((int) (hx + udy * 2),
-                                                                (int) (hy - udx * 2));
+                                            GameIsolate_.world->physicsCheck((int) (hx + udy * 2),
+                                                                             (int) (hy - udx * 2));
                                         }
 
-                                        if (world->getTile((int) (hx - udy * 2),
-                                                           (int) (hy + udx * 2))
+                                        if (GameIsolate_.world
+                                                    ->getTile((int) (hx - udy * 2),
+                                                              (int) (hy + udx * 2))
                                                     .mat->physicsType == PhysicsType::SOLID) {
-                                            world->physicsCheck((int) (hx - udy * 2),
-                                                                (int) (hy + udx * 2));
+                                            GameIsolate_.world->physicsCheck((int) (hx - udy * 2),
+                                                                             (int) (hy + udx * 2));
                                         }
 
                                         if (nTilesChanged > 0) {
                                             global.audioEngine.PlayEvent("event:/Player/Impact");
                                         }
 
-                                        //world->setTile((int)(hx), (int)(hy), MaterialInstance(&Materials::GENERIC_SOLID, 0xffffffff));
-                                        //world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&Materials::GENERIC_SOLID, 0xffff00ff));
-                                        //world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&Materials::GENERIC_SOLID, 0x00ffffff));
+                                        //GameIsolate_.world->setTile((int)(hx), (int)(hy), MaterialInstance(&Materials::GENERIC_SOLID, 0xffffffff));
+                                        //GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&Materials::GENERIC_SOLID, 0xffff00ff));
+                                        //GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&Materials::GENERIC_SOLID, 0x00ffffff));
                                     }
-                                    world->player->holdHammer = false;
+                                    GameIsolate_.world->player->holdHammer = false;
                                 }
                             }
                         }
@@ -1048,7 +1099,7 @@ int Game::run(int argc, char *argv[]) {
                         int y = (int) ((my - ofsY - camY) / scale);
 
                         bool swapped = false;
-                        std::vector<RigidBody *> rbs = world->rigidBodies;// copy;
+                        std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;// copy;
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
 
@@ -1080,15 +1131,16 @@ int Game::run(int argc, char *argv[]) {
                             }
 
                             if (connect) {
-                                if (world->player) {
-                                    world->player->setItemInHand(
-                                            Item::makeItem(ItemFlags::RIGIDBODY, cur), world);
+                                if (GameIsolate_.world->player) {
+                                    GameIsolate_.world->player->setItemInHand(
+                                            Item::makeItem(ItemFlags::RIGIDBODY, cur),
+                                            GameIsolate_.world);
 
-                                    world->b2world->DestroyBody(cur->body);
-                                    world->rigidBodies.erase(std::remove(world->rigidBodies.begin(),
-                                                                         world->rigidBodies.end(),
-                                                                         cur),
-                                                             world->rigidBodies.end());
+                                    GameIsolate_.world->b2world->DestroyBody(cur->body);
+                                    GameIsolate_.world->rigidBodies.erase(
+                                            std::remove(GameIsolate_.world->rigidBodies.begin(),
+                                                        GameIsolate_.world->rigidBodies.end(), cur),
+                                            GameIsolate_.world->rigidBodies.end());
 
                                     swapped = true;
                                 }
@@ -1097,7 +1149,8 @@ int Game::run(int argc, char *argv[]) {
                         }
 
                         if (!swapped) {
-                            if (world->player) world->player->setItemInHand(NULL, world);
+                            if (GameIsolate_.world->player)
+                                GameIsolate_.world->player->setItemInHand(NULL, GameIsolate_.world);
                         }
 
                     } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
@@ -1124,10 +1177,11 @@ int Game::run(int argc, char *argv[]) {
             global.scripts->Update();
         }
 
-        while (game_timestate.now - game_timestate.lastTick > game_timestate.mspt) {
+        while (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick >
+               GameIsolate_.game_timestate.mspt) {
             if (Settings::tick_world && Settings::networkMode != NetworkMode::CLIENT) tick();
             RenderTarget_.target = RenderTarget_.realTarget;
-            game_timestate.lastTick = game_timestate.now;
+            GameIsolate_.game_timestate.lastTick = GameIsolate_.game_timestate.now;
             tickTime++;
         }
 
@@ -1177,7 +1231,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::Separator();
                 ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)",
                             1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
-                            game_timestate.feelsLikeFps, (int) GC::C_Count);
+                            GameIsolate_.game_timestate.feelsLikeFps, (int) GC::C_Count);
 
                 ImGui::EndMainMenuBar();
             }
@@ -1191,12 +1245,13 @@ int Game::run(int argc, char *argv[]) {
 
                 MaterialInstance tile;
 
-                if (msx >= 0 && msy >= 0 && msx < world->width && msy < world->height) {
-                    tile = world->tiles[msx + msy * world->width];
+                if (msx >= 0 && msy >= 0 && msx < GameIsolate_.world->width &&
+                    msy < GameIsolate_.world->height) {
+                    tile = GameIsolate_.world->tiles[msx + msy * GameIsolate_.world->width];
                     //Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
                     if (tile.mat->id == Materials::GENERIC_AIR.id) {
-                        std::vector<RigidBody *> rbs = world->rigidBodies;
+                        std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
@@ -1281,12 +1336,13 @@ int Game::run(int argc, char *argv[]) {
             // render fade in/out
             if (fadeInWaitFrames > 0) {
                 fadeInWaitFrames--;
-                fadeInStart = game_timestate.now;
+                fadeInStart = GameIsolate_.game_timestate.now;
                 METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
                                                   global.platform.HEIGHT, {0, 0, 0, 255});
             } else if (fadeInStart > 0 && fadeInLength > 0) {
 
-                float thru = 1 - (float) (game_timestate.now - fadeInStart) / fadeInLength;
+                float thru =
+                        1 - (float) (GameIsolate_.game_timestate.now - fadeInStart) / fadeInLength;
 
                 if (thru >= 0 && thru <= 1) {
                     METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0,
@@ -1300,10 +1356,11 @@ int Game::run(int argc, char *argv[]) {
 
             if (fadeOutWaitFrames > 0) {
                 fadeOutWaitFrames--;
-                fadeOutStart = game_timestate.now;
+                fadeOutStart = GameIsolate_.game_timestate.now;
             } else if (fadeOutStart > 0 && fadeOutLength > 0) {
 
-                float thru = (float) (game_timestate.now - fadeOutStart) / fadeOutLength;
+                float thru =
+                        (float) (GameIsolate_.game_timestate.now - fadeOutStart) / fadeOutLength;
 
                 if (thru >= 0 && thru <= 1) {
                     METAENGINE_Render_RectangleFilled(RenderTarget_.target, 0, 0,
@@ -1331,13 +1388,13 @@ int Game::run(int argc, char *argv[]) {
         //        }
 
         frames++;
-        if (game_timestate.now - lastFPS >= 1000) {
-            lastFPS = game_timestate.now;
+        if (GameIsolate_.game_timestate.now - lastFPS >= 1000) {
+            lastFPS = GameIsolate_.game_timestate.now;
             //METADOT_INFO("{0:d} FPS", frames);
             if (Settings::networkMode == NetworkMode::SERVER) {
                 //METADOT_BUG("{0:d} peers connected.", server->server->connectedPeers);
             }
-            game_timestate.fps = frames;
+            GameIsolate_.game_timestate.fps = frames;
             dt_fps.w = -1;
             frames = 0;
 
@@ -1352,15 +1409,16 @@ int Game::run(int argc, char *argv[]) {
                 num += weight;
             }
 
-            game_timestate.feelsLikeFps = 1000 / (sum / num);
+            GameIsolate_.game_timestate.feelsLikeFps = 1000 / (sum / num);
 
             dt_feelsLikeFps.w = -1;
         }
 
         for (int i = 1; i < frameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
-        frameTime[frameTimeNum - 1] = (uint16_t) (UTime::millis() - game_timestate.now);
+        frameTime[frameTimeNum - 1] =
+                (uint16_t) (UTime::millis() - GameIsolate_.game_timestate.now);
 
-        game_timestate.lastTime = game_timestate.now;
+        GameIsolate_.game_timestate.lastTime = GameIsolate_.game_timestate.now;
     }
 
 exit:
@@ -1369,14 +1427,14 @@ exit:
 
     std::vector<std::future<void>> results = {};
 
-    for (auto &p: world->chunkCache) {
+    for (auto &p: GameIsolate_.world->chunkCache) {
         if (p.first == INT_MIN) continue;
         for (auto &p2: p.second) {
             if (p2.first == INT_MIN) continue;
 
             results.push_back(updateDirtyPool->push([&](int id) {
                 Chunk *m = p2.second;
-                world->unloadChunk(m);
+                GameIsolate_.world->unloadChunk(m);
             }));
         }
     }
@@ -1394,7 +1452,7 @@ exit:
     METADOT_DELETE(C, global.ImGuiLayer, ImGuiLayer);
 
     METADOT_DELETE(C, objectDelete, UInt8);
-    METADOT_DELETE(C, backgrounds, Backgrounds);
+    METADOT_DELETE(C, GameIsolate_.backgrounds, Backgrounds);
 
     METADOT_DELETE_EX(C, terminal_log, terminal, ImTerm::terminal<terminal_commands>);
 
@@ -1406,9 +1464,9 @@ exit:
     METADOT_DELETE(C, updateDirtyPool, ThreadPool);
     METADOT_DELETE(C, rotateVectorsPool, ThreadPool);
 
-    if (world) {
-        METADOT_DELETE(C, world, World);
-        world = nullptr;
+    if (GameIsolate_.world) {
+        METADOT_DELETE(C, GameIsolate_.world, World);
+        GameIsolate_.world = nullptr;
     }
 
     if (Settings::networkMode != NetworkMode::SERVER) {
@@ -1451,17 +1509,17 @@ void Game::updateFrameEarly() {
     }
 
     if (Controls::DEBUG_REFRESH->get()) {
-        for (int x = 0; x < world->width; x++) {
-            for (int y = 0; y < world->height; y++) {
-                world->dirty[x + y * world->width] = true;
-                world->layer2Dirty[x + y * world->width] = true;
-                world->backgroundDirty[x + y * world->width] = true;
+        for (int x = 0; x < GameIsolate_.world->width; x++) {
+            for (int y = 0; y < GameIsolate_.world->height; y++) {
+                GameIsolate_.world->dirty[x + y * GameIsolate_.world->width] = true;
+                GameIsolate_.world->layer2Dirty[x + y * GameIsolate_.world->width] = true;
+                GameIsolate_.world->backgroundDirty[x + y * GameIsolate_.world->width] = true;
             }
         }
     }
 
     if (Controls::DEBUG_RIGID->get()) {
-        for (auto &cur: world->rigidBodies) {
+        for (auto &cur: GameIsolate_.world->rigidBodies) {
             if (cur->body->IsEnabled()) {
                 float s = sin(cur->body->GetAngle());
                 float c = cos(cur->body->GetAngle());
@@ -1474,30 +1532,44 @@ void Game::updateFrameEarly() {
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
                         if (tt.mat->id != Materials::GENERIC_AIR.id) {
-                            if (world->tiles[tx + ty * world->width].mat->id ==
-                                Materials::GENERIC_AIR.id) {
-                                world->tiles[tx + ty * world->width] = tt;
-                                world->dirty[tx + ty * world->width] = true;
-                            } else if (world->tiles[(tx + 1) + ty * world->width].mat->id ==
-                                       Materials::GENERIC_AIR.id) {
-                                world->tiles[(tx + 1) + ty * world->width] = tt;
-                                world->dirty[(tx + 1) + ty * world->width] = true;
-                            } else if (world->tiles[(tx - 1) + ty * world->width].mat->id ==
-                                       Materials::GENERIC_AIR.id) {
-                                world->tiles[(tx - 1) + ty * world->width] = tt;
-                                world->dirty[(tx - 1) + ty * world->width] = true;
-                            } else if (world->tiles[tx + (ty + 1) * world->width].mat->id ==
-                                       Materials::GENERIC_AIR.id) {
-                                world->tiles[tx + (ty + 1) * world->width] = tt;
-                                world->dirty[tx + (ty + 1) * world->width] = true;
-                            } else if (world->tiles[tx + (ty - 1) * world->width].mat->id ==
-                                       Materials::GENERIC_AIR.id) {
-                                world->tiles[tx + (ty - 1) * world->width] = tt;
-                                world->dirty[tx + (ty - 1) * world->width] = true;
+                            if (GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width]
+                                        .mat->id == Materials::GENERIC_AIR.id) {
+                                GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width] = tt;
+                                GameIsolate_.world->dirty[tx + ty * GameIsolate_.world->width] =
+                                        true;
+                            } else if (GameIsolate_.world
+                                               ->tiles[(tx + 1) + ty * GameIsolate_.world->width]
+                                               .mat->id == Materials::GENERIC_AIR.id) {
+                                GameIsolate_.world
+                                        ->tiles[(tx + 1) + ty * GameIsolate_.world->width] = tt;
+                                GameIsolate_.world
+                                        ->dirty[(tx + 1) + ty * GameIsolate_.world->width] = true;
+                            } else if (GameIsolate_.world
+                                               ->tiles[(tx - 1) + ty * GameIsolate_.world->width]
+                                               .mat->id == Materials::GENERIC_AIR.id) {
+                                GameIsolate_.world
+                                        ->tiles[(tx - 1) + ty * GameIsolate_.world->width] = tt;
+                                GameIsolate_.world
+                                        ->dirty[(tx - 1) + ty * GameIsolate_.world->width] = true;
+                            } else if (GameIsolate_.world
+                                               ->tiles[tx + (ty + 1) * GameIsolate_.world->width]
+                                               .mat->id == Materials::GENERIC_AIR.id) {
+                                GameIsolate_.world
+                                        ->tiles[tx + (ty + 1) * GameIsolate_.world->width] = tt;
+                                GameIsolate_.world
+                                        ->dirty[tx + (ty + 1) * GameIsolate_.world->width] = true;
+                            } else if (GameIsolate_.world
+                                               ->tiles[tx + (ty - 1) * GameIsolate_.world->width]
+                                               .mat->id == Materials::GENERIC_AIR.id) {
+                                GameIsolate_.world
+                                        ->tiles[tx + (ty - 1) * GameIsolate_.world->width] = tt;
+                                GameIsolate_.world
+                                        ->dirty[tx + (ty - 1) * GameIsolate_.world->width] = true;
                             } else {
-                                world->tiles[tx + ty * world->width] =
+                                GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width] =
                                         Tiles::createObsidian(tx, ty);
-                                world->dirty[tx + ty * world->width] = true;
+                                GameIsolate_.world->dirty[tx + ty * GameIsolate_.world->width] =
+                                        true;
                             }
                         }
                     }
@@ -1508,22 +1580,22 @@ void Game::updateFrameEarly() {
                     cur->texture = METAENGINE_Render_CopyImageFromSurface(cur->surface);
                     METAENGINE_Render_SetImageFilter(cur->texture,
                                                      METAENGINE_Render_FILTER_NEAREST);
-                    //world->updateRigidBodyHitbox(cur);
+                    //GameIsolate_.world->updateRigidBodyHitbox(cur);
                     cur->needsUpdate = true;
                 }
             }
 
-            world->b2world->DestroyBody(cur->body);
+            GameIsolate_.world->b2world->DestroyBody(cur->body);
         }
-        world->rigidBodies.clear();
+        GameIsolate_.world->rigidBodies.clear();
     }
 
-    if (Controls::DEBUG_UPDATE_WORLD_MESH->get()) { world->updateWorldMesh(); }
+    if (Controls::DEBUG_UPDATE_WORLD_MESH->get()) { GameIsolate_.world->updateWorldMesh(); }
 
     if (Controls::DEBUG_EXPLODE->get()) {
         int x = (int) ((mx - ofsX - camX) / scale);
         int y = (int) ((my - ofsY - camY) / scale);
-        world->explosion(x, y, 30);
+        GameIsolate_.world->explosion(x, y, 30);
     }
 
     if (Controls::DEBUG_CARVE->get()) {
@@ -1538,12 +1610,16 @@ void Game::updateFrameEarly() {
         for (int xx = 0; xx < 32; xx++) {
             for (int yy = 0; yy < 32; yy++) {
 
-                if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType ==
-                    PhysicsType::SOLID) {
+                if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]
+                            .mat->physicsType == PhysicsType::SOLID) {
                     METADOT_GET_PIXEL(tex, xx, yy) =
-                            world->tiles[(x + xx) + (y + yy) * world->width].color;
-                    world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::NOTHING;
-                    world->dirty[(x + xx) + (y + yy) * world->width] = true;
+                            GameIsolate_.world
+                                    ->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]
+                                    .color;
+                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] =
+                            Tiles::NOTHING;
+                    GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] =
+                            true;
                     n++;
                 }
             }
@@ -1551,18 +1627,18 @@ void Game::updateFrameEarly() {
         if (n > 0) {
             b2PolygonShape s;
             s.SetAsBox(1, 1);
-            RigidBody *rb = world->makeRigidBody(b2_dynamicBody, (float) x, (float) y, 0, s, 1,
-                                                 (float) 0.3, tex);
+            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (float) x, (float) y,
+                                                              0, s, 1, (float) 0.3, tex);
             for (int tx = 0; tx < tex->w; tx++) {
                 b2Filter bf = {};
                 bf.categoryBits = 0x0002;
                 bf.maskBits = 0x0001;
                 rb->body->GetFixtureList()[0].SetFilterData(bf);
             }
-            world->rigidBodies.push_back(rb);
-            world->updateRigidBodyHitbox(rb);
+            GameIsolate_.world->rigidBodies.push_back(rb);
+            GameIsolate_.world->updateRigidBodyHitbox(rb);
 
-            world->updateWorldMesh();
+            GameIsolate_.world->updateWorldMesh();
         }
     }
 
@@ -1579,27 +1655,31 @@ void Game::updateFrameEarly() {
     }
 
     if (Controls::DEBUG_TOGGLE_PLAYER->get()) {
-        if (world->player) {
-            freeCamX = world->player->x + world->player->hw / 2.0f;
-            freeCamY = world->player->y - world->player->hh / 2.0f;
-            world->entities.erase(
-                    std::remove(world->entities.begin(), world->entities.end(), world->player),
-                    world->entities.end());
-            world->b2world->DestroyBody(world->player->rb->body);
-            delete world->player;
-            world->player = nullptr;
+        if (GameIsolate_.world->player) {
+            freeCamX = GameIsolate_.world->player->x + GameIsolate_.world->player->hw / 2.0f;
+            freeCamY = GameIsolate_.world->player->y - GameIsolate_.world->player->hh / 2.0f;
+            GameIsolate_.world->entities.erase(std::remove(GameIsolate_.world->entities.begin(),
+                                                           GameIsolate_.world->entities.end(),
+                                                           GameIsolate_.world->player),
+                                               GameIsolate_.world->entities.end());
+            GameIsolate_.world->b2world->DestroyBody(GameIsolate_.world->player->rb->body);
+            delete GameIsolate_.world->player;
+            GameIsolate_.world->player = nullptr;
         } else {
             Player *e = new Player();
-            e->x = -world->loadZone.x + world->tickZone.x + world->tickZone.w / 2.0f;
-            e->y = -world->loadZone.y + world->tickZone.y + world->tickZone.h / 2.0f;
+            e->x = -GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x +
+                   GameIsolate_.world->tickZone.w / 2.0f;
+            e->y = -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y +
+                   GameIsolate_.world->tickZone.h / 2.0f;
             e->vx = 0;
             e->vy = 0;
             e->hw = 10;
             e->hh = 20;
             b2PolygonShape sh;
             sh.SetAsBox(e->hw / 2.0f + 1, e->hh / 2.0f);
-            e->rb = world->makeRigidBody(b2BodyType::b2_kinematicBody, e->x + e->hw / 2.0f - 0.5,
-                                         e->y + e->hh / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            e->rb = GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody,
+                                                      e->x + e->hw / 2.0f - 0.5,
+                                                      e->y + e->hh / 2.0f - 0.5, 0, sh, 1, 1, NULL);
             e->rb->body->SetGravityScale(0);
             e->rb->body->SetLinearDamping(0);
             e->rb->body->SetAngularDamping(0);
@@ -1611,15 +1691,15 @@ void Game::updateFrameEarly() {
             i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
             METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
             i3->pivotX = 6;
-            e->setItemInHand(i3, world);
+            e->setItemInHand(i3, GameIsolate_.world);
 
             b2Filter bf = {};
             bf.categoryBits = 0x0001;
             //bf.maskBits = 0x0000;
             e->rb->body->GetFixtureList()[0].SetFilterData(bf);
 
-            world->entities.push_back(e);
-            world->player = e;
+            GameIsolate_.world->entities.push_back(e);
+            GameIsolate_.world->player = e;
 
             /*accLoadX = 0;
             accLoadY = 0;*/
@@ -1638,40 +1718,46 @@ void Game::updateFrameEarly() {
 
     } else {
         global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
-        if (world->player && world->player->heldItem != NULL &&
-            world->player->heldItem->getFlag(ItemFlags::FLUID_CONTAINER)) {
-            if (Controls::lmouse && world->player->heldItem->carry.size() > 0) {
+        if (GameIsolate_.world->player && GameIsolate_.world->player->heldItem != NULL &&
+            GameIsolate_.world->player->heldItem->getFlag(ItemFlags::FLUID_CONTAINER)) {
+            if (Controls::lmouse && GameIsolate_.world->player->heldItem->carry.size() > 0) {
                 // shoot fluid from container
 
-                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x +
-                               10 * (float) cos((world->player->holdAngle + 180) * 3.1415f /
-                                                180.0f));
-                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y +
-                               10 * (float) sin((world->player->holdAngle + 180) * 3.1415f /
-                                                180.0f));
+                int x = (int) (GameIsolate_.world->player->x +
+                               GameIsolate_.world->player->hw / 2.0f +
+                               GameIsolate_.world->loadZone.x +
+                               10 * (float) cos((GameIsolate_.world->player->holdAngle + 180) *
+                                                3.1415f / 180.0f));
+                int y = (int) (GameIsolate_.world->player->y +
+                               GameIsolate_.world->player->hh / 2.0f +
+                               GameIsolate_.world->loadZone.y +
+                               10 * (float) sin((GameIsolate_.world->player->holdAngle + 180) *
+                                                3.1415f / 180.0f));
 
                 MaterialInstance mat =
-                        world->player->heldItem->carry[world->player->heldItem->carry.size() - 1];
-                world->player->heldItem->carry.pop_back();
-                world->addParticle(
-                        new Particle(mat, (float) x, (float) y,
-                                     (float) (world->player->vx / 2 + (rand() % 10 - 5) / 10.0f +
-                                              1.5f * (float) cos((world->player->holdAngle + 180) *
-                                                                 3.1415f / 180.0f)),
-                                     (float) (world->player->vy / 2 + -(rand() % 5 + 5) / 10.0f +
-                                              1.5f * (float) sin((world->player->holdAngle + 180) *
-                                                                 3.1415f / 180.0f)),
-                                     0, (float) 0.1));
+                        GameIsolate_.world->player->heldItem
+                                ->carry[GameIsolate_.world->player->heldItem->carry.size() - 1];
+                GameIsolate_.world->player->heldItem->carry.pop_back();
+                GameIsolate_.world->addParticle(new Particle(
+                        mat, (float) x, (float) y,
+                        (float) (GameIsolate_.world->player->vx / 2 + (rand() % 10 - 5) / 10.0f +
+                                 1.5f * (float) cos((GameIsolate_.world->player->holdAngle + 180) *
+                                                    3.1415f / 180.0f)),
+                        (float) (GameIsolate_.world->player->vy / 2 + -(rand() % 5 + 5) / 10.0f +
+                                 1.5f * (float) sin((GameIsolate_.world->player->holdAngle + 180) *
+                                                    3.1415f / 180.0f)),
+                        0, (float) 0.1));
 
-                int i = (int) world->player->heldItem->carry.size();
-                i = (int) ((i / (float) world->player->heldItem->capacity) *
-                           world->player->heldItem->fill.size());
-                UInt16Point pt = world->player->heldItem->fill[i];
-                METADOT_GET_PIXEL(world->player->heldItem->surface, pt.x, pt.y) = 0x00;
+                int i = (int) GameIsolate_.world->player->heldItem->carry.size();
+                i = (int) ((i / (float) GameIsolate_.world->player->heldItem->capacity) *
+                           GameIsolate_.world->player->heldItem->fill.size());
+                UInt16Point pt = GameIsolate_.world->player->heldItem->fill[i];
+                METADOT_GET_PIXEL(GameIsolate_.world->player->heldItem->surface, pt.x, pt.y) = 0x00;
 
-                world->player->heldItem->texture =
-                        METAENGINE_Render_CopyImageFromSurface(world->player->heldItem->surface);
-                METAENGINE_Render_SetImageFilter(world->player->heldItem->texture,
+                GameIsolate_.world->player->heldItem->texture =
+                        METAENGINE_Render_CopyImageFromSurface(
+                                GameIsolate_.world->player->heldItem->surface);
+                METAENGINE_Render_SetImageFilter(GameIsolate_.world->player->heldItem->texture,
                                                  METAENGINE_Render_FILTER_NEAREST);
 
                 global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
@@ -1679,53 +1765,77 @@ void Game::updateFrameEarly() {
             } else {
                 // pick up fluid into container
 
-                float breakSize = world->player->heldItem->breakSize;
+                float breakSize = GameIsolate_.world->player->heldItem->breakSize;
 
-                int x = (int) (world->player->x + world->player->hw / 2.0f + world->loadZone.x +
-                               10 * (float) cos((world->player->holdAngle + 180) * 3.1415f /
-                                                180.0f) -
+                int x = (int) (GameIsolate_.world->player->x +
+                               GameIsolate_.world->player->hw / 2.0f +
+                               GameIsolate_.world->loadZone.x +
+                               10 * (float) cos((GameIsolate_.world->player->holdAngle + 180) *
+                                                3.1415f / 180.0f) -
                                breakSize / 2);
-                int y = (int) (world->player->y + world->player->hh / 2.0f + world->loadZone.y +
-                               10 * (float) sin((world->player->holdAngle + 180) * 3.1415f /
-                                                180.0f) -
+                int y = (int) (GameIsolate_.world->player->y +
+                               GameIsolate_.world->player->hh / 2.0f +
+                               GameIsolate_.world->loadZone.y +
+                               10 * (float) sin((GameIsolate_.world->player->holdAngle + 180) *
+                                                3.1415f / 180.0f) -
                                breakSize / 2);
 
                 int n = 0;
                 for (int xx = 0; xx < breakSize; xx++) {
                     for (int yy = 0; yy < breakSize; yy++) {
-                        if (world->player->heldItem->capacity == 0 ||
-                            (world->player->heldItem->carry.size() <
-                             world->player->heldItem->capacity)) {
+                        if (GameIsolate_.world->player->heldItem->capacity == 0 ||
+                            (GameIsolate_.world->player->heldItem->carry.size() <
+                             GameIsolate_.world->player->heldItem->capacity)) {
                             float cx = (float) ((xx / breakSize) - 0.5);
                             float cy = (float) ((yy / breakSize) - 0.5);
 
                             if (cx * cx + cy * cy > 0.25f) continue;
 
-                            if (world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType ==
-                                        PhysicsType::SAND ||
-                                world->tiles[(x + xx) + (y + yy) * world->width].mat->physicsType ==
-                                        PhysicsType::SOUP) {
-                                world->player->heldItem->carry.push_back(
-                                        world->tiles[(x + xx) + (y + yy) * world->width]);
+                            if (GameIsolate_.world
+                                                ->tiles[(x + xx) +
+                                                        (y + yy) * GameIsolate_.world->width]
+                                                .mat->physicsType == PhysicsType::SAND ||
+                                GameIsolate_.world
+                                                ->tiles[(x + xx) +
+                                                        (y + yy) * GameIsolate_.world->width]
+                                                .mat->physicsType == PhysicsType::SOUP) {
+                                GameIsolate_.world->player->heldItem->carry.push_back(
+                                        GameIsolate_.world
+                                                ->tiles[(x + xx) +
+                                                        (y + yy) * GameIsolate_.world->width]);
 
-                                int i = (int) world->player->heldItem->carry.size() - 1;
-                                i = (int) ((i / (float) world->player->heldItem->capacity) *
-                                           world->player->heldItem->fill.size());
-                                UInt16Point pt = world->player->heldItem->fill[i];
-                                UInt32 c = world->tiles[(x + xx) + (y + yy) * world->width].color;
-                                METADOT_GET_PIXEL(world->player->heldItem->surface, pt.x, pt.y) =
-                                        (world->tiles[(x + xx) + (y + yy) * world->width].mat->alpha
+                                int i = (int) GameIsolate_.world->player->heldItem->carry.size() -
+                                        1;
+                                i = (int) ((i / (float) GameIsolate_.world->player->heldItem
+                                                        ->capacity) *
+                                           GameIsolate_.world->player->heldItem->fill.size());
+                                UInt16Point pt = GameIsolate_.world->player->heldItem->fill[i];
+                                UInt32 c = GameIsolate_.world
+                                                   ->tiles[(x + xx) +
+                                                           (y + yy) * GameIsolate_.world->width]
+                                                   .color;
+                                METADOT_GET_PIXEL(GameIsolate_.world->player->heldItem->surface,
+                                                  pt.x, pt.y) =
+                                        (GameIsolate_.world
+                                                 ->tiles[(x + xx) +
+                                                         (y + yy) * GameIsolate_.world->width]
+                                                 .mat->alpha
                                          << 24) +
                                         c;
 
-                                world->player->heldItem->texture =
+                                GameIsolate_.world->player->heldItem->texture =
                                         METAENGINE_Render_CopyImageFromSurface(
-                                                world->player->heldItem->surface);
-                                METAENGINE_Render_SetImageFilter(world->player->heldItem->texture,
-                                                                 METAENGINE_Render_FILTER_NEAREST);
+                                                GameIsolate_.world->player->heldItem->surface);
+                                METAENGINE_Render_SetImageFilter(
+                                        GameIsolate_.world->player->heldItem->texture,
+                                        METAENGINE_Render_FILTER_NEAREST);
 
-                                world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::NOTHING;
-                                world->dirty[(x + xx) + (y + yy) * world->width] = true;
+                                GameIsolate_.world
+                                        ->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] =
+                                        Tiles::NOTHING;
+                                GameIsolate_.world
+                                        ->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] =
+                                        true;
                                 n++;
                             }
                         }
@@ -1742,10 +1852,10 @@ void Game::updateFrameEarly() {
         int y = (int) ((my - ofsY - camY) / scale);
 
         bool swapped = false;
-        float hoverDelta = 10.0 * game_timestate.deltaTime / 1000.0;
+        float hoverDelta = 10.0 * GameIsolate_.game_timestate.deltaTime / 1000.0;
 
         // this copies the vector
-        std::vector<RigidBody *> rbs = world->rigidBodies;
+        std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
 
@@ -1794,16 +1904,20 @@ void Game::updateFrameEarly() {
             }
         }
 
-        // update world->tickZone
+        // update GameIsolate_.world->tickZone
 
-        world->tickZone = {CHUNK_W, CHUNK_H, world->width - CHUNK_W * 2,
-                           world->height - CHUNK_H * 2};
-        if (world->tickZone.x + world->tickZone.w > world->width) {
-            world->tickZone.x = world->width - world->tickZone.w;
+        GameIsolate_.world->tickZone = {CHUNK_W, CHUNK_H, GameIsolate_.world->width - CHUNK_W * 2,
+                                        GameIsolate_.world->height - CHUNK_H * 2};
+        if (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w >
+            GameIsolate_.world->width) {
+            GameIsolate_.world->tickZone.x =
+                    GameIsolate_.world->width - GameIsolate_.world->tickZone.w;
         }
 
-        if (world->tickZone.y + world->tickZone.h > world->height) {
-            world->tickZone.y = world->height - world->tickZone.h;
+        if (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h >
+            GameIsolate_.world->height) {
+            GameIsolate_.world->tickZone.y =
+                    GameIsolate_.world->height - GameIsolate_.world->tickZone.h;
         }
     }
 }
@@ -1812,14 +1926,14 @@ void Game::tick() {
 
     //METADOT_BUG("{0:d} {0:d}", accLoadX, accLoadY);
     if (state == LOADING) {
-        if (world) {
+        if (GameIsolate_.world) {
             // tick chunkloading
-            world->frame();
-            if (world->readyToMerge.size() == 0 && fadeOutStart == 0) {
-                fadeOutStart = game_timestate.now;
+            GameIsolate_.world->frame();
+            if (GameIsolate_.world->readyToMerge.size() == 0 && fadeOutStart == 0) {
+                fadeOutStart = GameIsolate_.game_timestate.now;
                 fadeOutLength = 250;
                 fadeOutCallback = [&]() {
-                    fadeInStart = game_timestate.now;
+                    fadeInStart = GameIsolate_.game_timestate.now;
                     fadeInLength = 500;
                     fadeInWaitFrames = 4;
                     state = stateAfterLoad;
@@ -1830,12 +1944,12 @@ void Game::tick() {
         }
     } else {
 
-        int lastReadyToMergeSize = (int) world->readyToMerge.size();
+        int lastReadyToMergeSize = (int) GameIsolate_.world->readyToMerge.size();
 
         // check chunk loading
         tickChunkLoading();
 
-        if (world->needToTickGeneration) world->tickChunkGeneration();
+        if (GameIsolate_.world->needToTickGeneration) GameIsolate_.world->tickChunkGeneration();
 
         // clear objects
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
@@ -1847,11 +1961,14 @@ void Game::tick() {
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_Clear(TexturePack_.textureObjectsBack->target);
 
-        if (Settings::tick_world && world->readyToMerge.size() == 0) { world->tickChunks(); }
+        if (Settings::tick_world && GameIsolate_.world->readyToMerge.size() == 0) {
+            GameIsolate_.world->tickChunks();
+        }
 
         // render objects
 
-        memset(objectDelete, false, (size_t) world->width * world->height * sizeof(bool));
+        memset(objectDelete, false,
+               (size_t) GameIsolate_.world->width * GameIsolate_.world->height * sizeof(bool));
 
         METAENGINE_Render_SetBlendMode(TexturePack_.textureObjects, METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsLQ,
@@ -1859,8 +1976,8 @@ void Game::tick() {
         METAENGINE_Render_SetBlendMode(TexturePack_.textureObjectsBack,
                                        METAENGINE_Render_BLEND_NORMAL);
 
-        for (size_t i = 0; i < world->rigidBodies.size(); i++) {
-            RigidBody *cur = world->rigidBodies[i];
+        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+            RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->surface == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
@@ -1931,38 +2048,43 @@ void Game::tick() {
                         int wxd = wx + dir.first;
                         int wyd = wy + dir.second;
 
-                        if (wxd < 0 || wyd < 0 || wxd >= world->width || wyd >= world->height)
+                        if (wxd < 0 || wyd < 0 || wxd >= GameIsolate_.world->width ||
+                            wyd >= GameIsolate_.world->height)
                             continue;
-                        if (world->tiles[wxd + wyd * world->width].mat->physicsType ==
-                            PhysicsType::AIR) {
-                            world->tiles[wxd + wyd * world->width] = rmat;
-                            world->dirty[wxd + wyd * world->width] = true;
-                            //objectDelete[wxd + wyd * world->width] = true;
+                        if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width]
+                                    .mat->physicsType == PhysicsType::AIR) {
+                            GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
+                            GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
+                            //objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             break;
-                        } else if (world->tiles[wxd + wyd * world->width].mat->physicsType ==
-                                   PhysicsType::SAND) {
-                            world->addParticle(new Particle(
-                                    world->tiles[wxd + wyd * world->width], (float) wxd,
-                                    (float) (wyd - 3), (float) ((rand() % 10 - 5) / 10.0f),
+                        } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width]
+                                           .mat->physicsType == PhysicsType::SAND) {
+                            GameIsolate_.world->addParticle(new Particle(
+                                    GameIsolate_.world
+                                            ->tiles[wxd + wyd * GameIsolate_.world->width],
+                                    (float) wxd, (float) (wyd - 3),
+                                    (float) ((rand() % 10 - 5) / 10.0f),
                                     (float) (-(rand() % 5 + 5) / 10.0f), 0, (float) 0.1));
-                            world->tiles[wxd + wyd * world->width] = rmat;
-                            //objectDelete[wxd + wyd * world->width] = true;
-                            world->dirty[wxd + wyd * world->width] = true;
+                            GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
+                            //objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
+                            GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
                             cur->body->SetLinearVelocity(
                                     {cur->body->GetLinearVelocity().x * (float) 0.99,
                                      cur->body->GetLinearVelocity().y * (float) 0.99});
                             cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() *
                                                           (float) 0.98);
                             break;
-                        } else if (world->tiles[wxd + wyd * world->width].mat->physicsType ==
-                                   PhysicsType::SOUP) {
-                            world->addParticle(new Particle(
-                                    world->tiles[wxd + wyd * world->width], (float) wxd,
-                                    (float) (wyd - 3), (float) ((rand() % 10 - 5) / 10.0f),
+                        } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width]
+                                           .mat->physicsType == PhysicsType::SOUP) {
+                            GameIsolate_.world->addParticle(new Particle(
+                                    GameIsolate_.world
+                                            ->tiles[wxd + wyd * GameIsolate_.world->width],
+                                    (float) wxd, (float) (wyd - 3),
+                                    (float) ((rand() % 10 - 5) / 10.0f),
                                     (float) (-(rand() % 5 + 5) / 10.0f), 0, (float) 0.1));
-                            world->tiles[wxd + wyd * world->width] = rmat;
-                            //objectDelete[wxd + wyd * world->width] = true;
-                            world->dirty[wxd + wyd * world->width] = true;
+                            GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
+                            //objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
+                            GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
                             cur->body->SetLinearVelocity(
                                     {cur->body->GetLinearVelocity().x * (float) 0.998,
                                      cur->body->GetLinearVelocity().y * (float) 0.998});
@@ -1978,14 +2100,15 @@ void Game::tick() {
         // render entities
 
         if (lastReadyToMergeSize == 0) {
-            world->tickEntities(TexturePack_.textureEntities->target);
+            GameIsolate_.world->tickEntities(TexturePack_.textureEntities->target);
 
-            if (world->player) {
-                if (world->player->holdHammer) {
+            if (GameIsolate_.world->player) {
+                if (GameIsolate_.world->player->holdHammer) {
                     int x = (int) ((mx - ofsX - camX) / scale);
                     int y = (int) ((my - ofsY - camY) / scale);
                     METAENGINE_Render_Line(TexturePack_.textureEntitiesLQ->target, x, y,
-                                           world->player->hammerX, world->player->hammerY,
+                                           GameIsolate_.world->player->hammerX,
+                                           GameIsolate_.world->player->hammerY,
                                            {0xff, 0xff, 0x00, 0xff});
                 }
             }
@@ -1994,38 +2117,45 @@ void Game::tick() {
 
         // entity fluid displacement & make solid
 
-        for (size_t i = 0; i < world->entities.size(); i++) {
-            Entity cur = *world->entities[i];
+        for (size_t i = 0; i < GameIsolate_.world->entities.size(); i++) {
+            Entity cur = *GameIsolate_.world->entities[i];
 
             for (int tx = 0; tx < cur.hw; tx++) {
                 for (int ty = 0; ty < cur.hh; ty++) {
 
-                    int wx = (int) (tx + cur.x + world->loadZone.x);
-                    int wy = (int) (ty + cur.y + world->loadZone.y);
-                    if (wx < 0 || wy < 0 || wx >= world->width || wy >= world->height) continue;
-                    if (world->tiles[wx + wy * world->width].mat->physicsType == PhysicsType::AIR) {
-                        world->tiles[wx + wy * world->width] = Tiles::OBJECT;
-                        objectDelete[wx + wy * world->width] = true;
-                    } else if (world->tiles[wx + wy * world->width].mat->physicsType ==
-                                       PhysicsType::SAND ||
-                               world->tiles[wx + wy * world->width].mat->physicsType ==
-                                       PhysicsType::SOUP) {
-                        world->addParticle(new Particle(
-                                world->tiles[wx + wy * world->width],
+                    int wx = (int) (tx + cur.x + GameIsolate_.world->loadZone.x);
+                    int wy = (int) (ty + cur.y + GameIsolate_.world->loadZone.y);
+                    if (wx < 0 || wy < 0 || wx >= GameIsolate_.world->width ||
+                        wy >= GameIsolate_.world->height)
+                        continue;
+                    if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width]
+                                .mat->physicsType == PhysicsType::AIR) {
+                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] =
+                                Tiles::OBJECT;
+                        objectDelete[wx + wy * GameIsolate_.world->width] = true;
+                    } else if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width]
+                                               .mat->physicsType == PhysicsType::SAND ||
+                               GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width]
+                                               .mat->physicsType == PhysicsType::SOUP) {
+                        GameIsolate_.world->addParticle(new Particle(
+                                GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width],
                                 (float) (wx + rand() % 3 - 1 - cur.vx), (float) (wy - abs(cur.vy)),
                                 (float) (-cur.vx / 4 + (rand() % 10 - 5) / 5.0f),
                                 (float) (-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (float) 0.1));
-                        world->tiles[wx + wy * world->width] = Tiles::OBJECT;
-                        objectDelete[wx + wy * world->width] = true;
-                        world->dirty[wx + wy * world->width] = true;
+                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] =
+                                Tiles::OBJECT;
+                        objectDelete[wx + wy * GameIsolate_.world->width] = true;
+                        GameIsolate_.world->dirty[wx + wy * GameIsolate_.world->width] = true;
                     }
                 }
             }
         }
 
-        if (Settings::tick_world && world->readyToMerge.size() == 0) { world->tick(); }
+        if (Settings::tick_world && GameIsolate_.world->readyToMerge.size() == 0) {
+            GameIsolate_.world->tick();
+        }
 
-        if (Controls::DEBUG_TICK->get()) { world->tick(); }
+        if (Controls::DEBUG_TICK->get()) { GameIsolate_.world->tick(); }
 
         // Tick Cam zoom
 
@@ -2071,22 +2201,24 @@ void Game::tick() {
             //SDL_SetRenderTarget(renderer, textureParticles);
             void *particlePixels = TexturePack_.pixelsParticles_ar;
 
-            memset(particlePixels, 0, (size_t) world->width * world->height * 4);
+            memset(particlePixels, 0,
+                   (size_t) GameIsolate_.world->width * GameIsolate_.world->height * 4);
 
-            world->renderParticles((UInt8 **) &particlePixels);
-            world->tickParticles();
+            GameIsolate_.world->renderParticles((UInt8 **) &particlePixels);
+            GameIsolate_.world->tickParticles();
 
             //SDL_SetRenderTarget(renderer, NULL);
         }));
 
-        if (world->readyToMerge.size() == 0) {
-            results.push_back(updateDirtyPool->push([&](int id) { world->tickObjectBounds(); }));
+        if (GameIsolate_.world->readyToMerge.size() == 0) {
+            results.push_back(
+                    updateDirtyPool->push([&](int id) { GameIsolate_.world->tickObjectBounds(); }));
         }
 
         for (int i = 0; i < results.size(); i++) { results[i].get(); }
 
-        for (size_t i = 0; i < world->rigidBodies.size(); i++) {
-            RigidBody *cur = world->rigidBodies[i];
+        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+            RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->surface == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
@@ -2112,32 +2244,36 @@ void Game::tick() {
                         int wxd = wx + dir.first;
                         int wyd = wy + dir.second;
 
-                        if (wxd < 0 || wyd < 0 || wxd >= world->width || wyd >= world->height)
+                        if (wxd < 0 || wyd < 0 || wxd >= GameIsolate_.world->width ||
+                            wyd >= GameIsolate_.world->height)
                             continue;
-                        if (world->tiles[wxd + wyd * world->width] == rmat) {
+                        if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] ==
+                            rmat) {
                             cur->tiles[tx + ty * cur->matWidth] =
-                                    world->tiles[wxd + wyd * world->width];
-                            world->tiles[wxd + wyd * world->width] = Tiles::NOTHING;
-                            world->dirty[wxd + wyd * world->width] = true;
+                                    GameIsolate_.world
+                                            ->tiles[wxd + wyd * GameIsolate_.world->width];
+                            GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] =
+                                    Tiles::NOTHING;
+                            GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
                             found = true;
 
                             //for(int dxx = -1; dxx <= 1; dxx++) {
                             //    for(int dyy = -1; dyy <= 1; dyy++) {
-                            //        if(world->tiles[(wxd + dxx) + (wyd + dyy) * world->width].mat->physicsType == PhysicsType::SAND || world->tiles[(wxd + dxx) + (wyd + dyy) * world->width].mat->physicsType == PhysicsType::SOUP) {
-                            //            uint32_t color = world->tiles[(wxd + dxx) + (wyd + dyy) * world->width].color;
+                            //        if(GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND || GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
+                            //            uint32_t color = GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].color;
 
-                            //            unsigned int offset = ((wxd + dxx) + (wyd + dyy) * world->width) * 4;
+                            //            unsigned int offset = ((wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width) * 4;
 
                             //            dpixels_ar[offset + 2] = ((color >> 0) & 0xff);        // b
                             //            dpixels_ar[offset + 1] = ((color >> 8) & 0xff);        // g
                             //            dpixels_ar[offset + 0] = ((color >> 16) & 0xff);        // r
-                            //            dpixels_ar[offset + 3] = world->tiles[(wxd + dxx) + (wyd + dyy) * world->width].mat->alpha;    // a
+                            //            dpixels_ar[offset + 3] = GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->alpha;    // a
                             //        }
                             //    }
                             //}
 
                             //if(!Settings::draw_load_zones) {
-                            //    unsigned int offset = (wxd + wyd * world->width) * 4;
+                            //    unsigned int offset = (wxd + wyd * GameIsolate_.world->width) * 4;
                             //    dpixels_ar[offset + 2] = 0;        // b
                             //    dpixels_ar[offset + 1] = 0;        // g
                             //    dpixels_ar[offset + 0] = 0xff;        // r
@@ -2149,8 +2285,8 @@ void Game::tick() {
                     }
 
                     if (!found) {
-                        if (world->tiles[wx + wy * world->width].mat->id ==
-                            Materials::GENERIC_AIR.id) {
+                        if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width]
+                                    .mat->id == Materials::GENERIC_AIR.id) {
                             cur->tiles[tx + ty * cur->matWidth] = Tiles::NOTHING;
                         }
                     }
@@ -2176,23 +2312,23 @@ void Game::tick() {
             cur->needsUpdate = true;
         }
 
-        if (world->readyToMerge.size() == 0) {
-            if (Settings::tick_box2d) world->tickObjects();
+        if (GameIsolate_.world->readyToMerge.size() == 0) {
+            if (Settings::tick_box2d) GameIsolate_.world->tickObjects();
         }
 
-        if (tickTime % 10 == 0) world->tickObjectsMesh();
+        if (tickTime % 10 == 0) GameIsolate_.world->tickObjectsMesh();
 
         for (int i = 0; i < Materials::nMaterials; i++) movingTiles[i] = 0;
 
         results.clear();
         results.push_back(updateDirtyPool->push([&](int id) {
-            for (int i = 0; i < world->width * world->height; i++) {
+            for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 const unsigned int offset = i * 4;
 
-                if (world->dirty[i]) {
+                if (GameIsolate_.world->dirty[i]) {
                     hadDirty = true;
-                    movingTiles[world->tiles[i].mat->id]++;
-                    if (world->tiles[i].mat->physicsType == PhysicsType::AIR) {
+                    movingTiles[GameIsolate_.world->tiles[i].mat->id]++;
+                    if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
                         dpixels_ar[offset + 0] = 0;                    // b
                         dpixels_ar[offset + 1] = 0;                    // g
                         dpixels_ar[offset + 2] = 0;                    // r
@@ -2208,42 +2344,48 @@ void Game::tick() {
                         dpixelsEmission_ar[offset + 2] = 0;                    // r
                         dpixelsEmission_ar[offset + 3] = SDL_ALPHA_TRANSPARENT;// a
 
-                        world->flowY[i] = 0;
-                        world->flowX[i] = 0;
+                        GameIsolate_.world->flowY[i] = 0;
+                        GameIsolate_.world->flowX[i] = 0;
                     } else {
-                        UInt32 color = world->tiles[i].color;
-                        UInt32 emit = world->tiles[i].mat->emitColor;
-                        //float br = world->light[i];
-                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);     // b
-                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);     // g
-                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);    // r
-                        dpixels_ar[offset + 3] = world->tiles[i].mat->alpha;// a
+                        UInt32 color = GameIsolate_.world->tiles[i].color;
+                        UInt32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
+                        //float br = GameIsolate_.world->light[i];
+                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                  // b
+                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                  // g
+                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                 // r
+                        dpixels_ar[offset + 3] = GameIsolate_.world->tiles[i].mat->alpha;// a
 
                         dpixelsEmission_ar[offset + 2] = ((emit >> 0) & 0xff); // b
                         dpixelsEmission_ar[offset + 1] = ((emit >> 8) & 0xff); // g
                         dpixelsEmission_ar[offset + 0] = ((emit >> 16) & 0xff);// r
                         dpixelsEmission_ar[offset + 3] = ((emit >> 24) & 0xff);// a
 
-                        if (world->tiles[i].mat->id == Materials::FIRE.id) {
-                            dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);     // b
-                            dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);     // g
-                            dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);    // r
-                            dpixelsFire_ar[offset + 3] = world->tiles[i].mat->alpha;// a
+                        if (GameIsolate_.world->tiles[i].mat->id == Materials::FIRE.id) {
+                            dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff); // b
+                            dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff); // g
+                            dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);// r
+                            dpixelsFire_ar[offset + 3] =
+                                    GameIsolate_.world->tiles[i].mat->alpha;// a
                             hadFire = true;
                         }
-                        if (world->tiles[i].mat->physicsType == PhysicsType::SOUP) {
+                        if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::SOUP) {
 
-                            float newFlowX = world->prevFlowX[i] +
-                                             (world->flowX[i] - world->prevFlowX[i]) * 0.25;
-                            float newFlowY = world->prevFlowY[i] +
-                                             (world->flowY[i] - world->prevFlowY[i]) * 0.25;
+                            float newFlowX = GameIsolate_.world->prevFlowX[i] +
+                                             (GameIsolate_.world->flowX[i] -
+                                              GameIsolate_.world->prevFlowX[i]) *
+                                                     0.25;
+                            float newFlowY = GameIsolate_.world->prevFlowY[i] +
+                                             (GameIsolate_.world->flowY[i] -
+                                              GameIsolate_.world->prevFlowY[i]) *
+                                                     0.25;
                             if (newFlowY < 0) newFlowY *= 0.5;
 
                             dpixelsFlow_ar[offset + 2] = 0;// b
                             dpixelsFlow_ar[offset + 1] =
                                     std::min(
                                             std::max(newFlowY *
-                                                                     (3.0 / world->tiles[i]
+                                                                     (3.0 / GameIsolate_.world
+                                                                                      ->tiles[i]
                                                                                       .mat
                                                                                       ->iterations +
                                                                       0.5) /
@@ -2255,7 +2397,8 @@ void Game::tick() {
                             dpixelsFlow_ar[offset + 0] =
                                     std::min(
                                             std::max(newFlowX *
-                                                                     (3.0 / world->tiles[i]
+                                                                     (3.0 / GameIsolate_.world
+                                                                                      ->tiles[i]
                                                                                       .mat
                                                                                       ->iterations +
                                                                       0.5) /
@@ -2266,13 +2409,13 @@ void Game::tick() {
                                     255;                      // r
                             dpixelsFlow_ar[offset + 3] = 0xff;// a
                             hadFlow = true;
-                            world->prevFlowX[i] = newFlowX;
-                            world->prevFlowY[i] = newFlowY;
-                            world->flowY[i] = 0;
-                            world->flowX[i] = 0;
+                            GameIsolate_.world->prevFlowX[i] = newFlowX;
+                            GameIsolate_.world->prevFlowY[i] = newFlowY;
+                            GameIsolate_.world->flowY[i] = 0;
+                            GameIsolate_.world->flowX[i] = 0;
                         } else {
-                            world->flowY[i] = 0;
-                            world->flowX[i] = 0;
+                            GameIsolate_.world->flowY[i] = 0;
+                            GameIsolate_.world->flowX[i] = 0;
                         }
                     }
                 }
@@ -2283,14 +2426,14 @@ void Game::tick() {
         //UInt8* dpixelsLayer2_ar = (UInt8*)vdpixelsLayer2_ar;
         UInt8 *dpixelsLayer2_ar = TexturePack_.pixelsLayer2_ar;
         results.push_back(updateDirtyPool->push([&](int id) {
-            for (int i = 0; i < world->width * world->height; i++) {
-                /*for (int x = 0; x < world->width; x++) {
-                    for (int y = 0; y < world->height; y++) {*/
-                //const unsigned int i = x + y * world->width;
+            for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
+                /*for (int x = 0; x < GameIsolate_.world->width; x++) {
+                    for (int y = 0; y < GameIsolate_.world->height; y++) {*/
+                //const unsigned int i = x + y * GameIsolate_.world->width;
                 const unsigned int offset = i * 4;
-                if (world->layer2Dirty[i]) {
+                if (GameIsolate_.world->layer2Dirty[i]) {
                     hadLayer2Dirty = true;
-                    if (world->layer2[i].mat->physicsType == PhysicsType::AIR) {
+                    if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                         if (Settings::draw_background_grid) {
                             UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                             dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff; // b
@@ -2306,11 +2449,11 @@ void Game::tick() {
                             continue;
                         }
                     }
-                    UInt32 color = world->layer2[i].color;
-                    dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;        // b
-                    dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;        // g
-                    dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;       // r
-                    dpixelsLayer2_ar[offset + 3] = world->layer2[i].mat->alpha;// a
+                    UInt32 color = GameIsolate_.world->layer2[i].color;
+                    dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;                     // b
+                    dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;                     // g
+                    dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;                    // r
+                    dpixelsLayer2_ar[offset + 3] = GameIsolate_.world->layer2[i].mat->alpha;// a
                 }
             }
         }));
@@ -2319,15 +2462,15 @@ void Game::tick() {
         //UInt8* dpixelsBackground_ar = (UInt8*)vdpixelsBackground_ar;
         UInt8 *dpixelsBackground_ar = TexturePack_.pixelsBackground_ar;
         results.push_back(updateDirtyPool->push([&](int id) {
-            for (int i = 0; i < world->width * world->height; i++) {
-                /*for (int x = 0; x < world->width; x++) {
-                    for (int y = 0; y < world->height; y++) {*/
-                //const unsigned int i = x + y * world->width;
+            for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
+                /*for (int x = 0; x < GameIsolate_.world->width; x++) {
+                    for (int y = 0; y < GameIsolate_.world->height; y++) {*/
+                //const unsigned int i = x + y * GameIsolate_.world->width;
                 const unsigned int offset = i * 4;
 
-                if (world->backgroundDirty[i]) {
+                if (GameIsolate_.world->backgroundDirty[i]) {
                     hadBackgroundDirty = true;
-                    UInt32 color = world->background[i];
+                    UInt32 color = GameIsolate_.world->background[i];
                     dpixelsBackground_ar[offset + 2] = (color >> 0) & 0xff; // b
                     dpixelsBackground_ar[offset + 1] = (color >> 8) & 0xff; // g
                     dpixelsBackground_ar[offset + 0] = (color >> 16) & 0xff;// r
@@ -2338,13 +2481,13 @@ void Game::tick() {
             }
         }));
 
-        for (int i = 0; i < world->width * world->height; i++) {
-            /*for (int x = 0; x < world->width; x++) {
-                for (int y = 0; y < world->height; y++) {*/
-            //const unsigned int i = x + y * world->width;
+        for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
+            /*for (int x = 0; x < GameIsolate_.world->width; x++) {
+                for (int y = 0; y < GameIsolate_.world->height; y++) {*/
+            //const unsigned int i = x + y * GameIsolate_.world->width;
             const unsigned int offset = i * 4;
 
-            if (objectDelete[i]) { world->tiles[i] = Tiles::NOTHING; }
+            if (objectDelete[i]) { GameIsolate_.world->tiles[i] = Tiles::NOTHING; }
         }
 
         //results.push_back(updateDirtyPool->push([&](int id) {
@@ -2356,60 +2499,75 @@ void Game::tick() {
         updateMaterialSounds();
 
         METAENGINE_Render_UpdateImageBytes(TexturePack_.textureParticles, NULL,
-                                           &TexturePack_.pixelsParticles_ar[0], world->width * 4);
+                                           &TexturePack_.pixelsParticles_ar[0],
+                                           GameIsolate_.world->width * 4);
 
-        if (hadDirty) memset(world->dirty, false, (size_t) world->width * world->height);
+        if (hadDirty)
+            memset(GameIsolate_.world->dirty, false,
+                   (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
         if (hadLayer2Dirty)
-            memset(world->layer2Dirty, false, (size_t) world->width * world->height);
+            memset(GameIsolate_.world->layer2Dirty, false,
+                   (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
         if (hadBackgroundDirty)
-            memset(world->backgroundDirty, false, (size_t) world->width * world->height);
+            memset(GameIsolate_.world->backgroundDirty, false,
+                   (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
 
-        if (Settings::tick_temperature && tickTime % 4 == 2) { world->tickTemperature(); }
-        if (Settings::draw_temperature_map && tickTime % 4 == 0) { renderTemperatureMap(world); }
+        if (Settings::tick_temperature && tickTime % 4 == 2) {
+            GameIsolate_.world->tickTemperature();
+        }
+        if (Settings::draw_temperature_map && tickTime % 4 == 0) {
+            renderTemperatureMap(GameIsolate_.world);
+        }
 
         if (hadDirty) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0],
-                                               world->width * 4);
+                                               GameIsolate_.world->width * 4);
 
             METAENGINE_Render_UpdateImageBytes(TexturePack_.emissionTexture, NULL,
-                                               &TexturePack_.pixelsEmission[0], world->width * 4);
+                                               &TexturePack_.pixelsEmission[0],
+                                               GameIsolate_.world->width * 4);
         }
 
         if (hadLayer2Dirty) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.textureLayer2, NULL,
-                                               &TexturePack_.pixelsLayer2[0], world->width * 4);
+                                               &TexturePack_.pixelsLayer2[0],
+                                               GameIsolate_.world->width * 4);
         }
 
         if (hadBackgroundDirty) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.textureBackground, NULL,
-                                               &TexturePack_.pixelsBackground[0], world->width * 4);
+                                               &TexturePack_.pixelsBackground[0],
+                                               GameIsolate_.world->width * 4);
         }
 
         if (hadFlow) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFlow, NULL,
-                                               &TexturePack_.pixelsFlow[0], world->width * 4);
+                                               &TexturePack_.pixelsFlow[0],
+                                               GameIsolate_.world->width * 4);
 
             global.shaderworker.waterFlowPassShader->dirty = true;
         }
 
         if (hadFire) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFire, NULL,
-                                               &TexturePack_.pixelsFire[0], world->width * 4);
+                                               &TexturePack_.pixelsFire[0],
+                                               GameIsolate_.world->width * 4);
         }
 
         if (Settings::draw_temperature_map) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.temperatureMap, NULL,
-                                               &TexturePack_.pixelsTemp[0], world->width * 4);
+                                               &TexturePack_.pixelsTemp[0],
+                                               GameIsolate_.world->width * 4);
         }
 
         /*METAENGINE_Render_UpdateImageBytes(
             textureObjects,
             NULL,
             &pixelsObjects[0],
-            world->width * 4
+            GameIsolate_.world->width * 4
         );*/
 
-        if (Settings::tick_box2d && tickTime % 4 == 0) world->updateWorldMesh();
+        if (Settings::tick_box2d && tickTime % 4 == 0) GameIsolate_.world->updateWorldMesh();
     }
 }
 
@@ -2417,14 +2575,14 @@ void Game::tickChunkLoading() {
 
     // if need to load chunks
     if ((abs(accLoadX) > CHUNK_W / 2 || abs(accLoadY) > CHUNK_H / 2)) {
-        while (world->toLoad.size() > 0) {
+        while (GameIsolate_.world->toLoad.size() > 0) {
             // tick chunkloading
-            world->frame();
+            GameIsolate_.world->frame();
         }
 
         //iterate
 
-        for (int i = 0; i < world->width * world->height; i++) {
+        for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
             const unsigned int offset = i * 4;
 
 #define UCH_SET_PIXEL(pix_ar, ofs, c_r, c_g, c_b, c_a)                                             \
@@ -2433,22 +2591,22 @@ void Game::tickChunkLoading() {
     pix_ar[ofs + 2] = c_r;                                                                         \
     pix_ar[ofs + 3] = c_a;
 
-            if (world->dirty[i]) {
-                if (world->tiles[i].mat->physicsType == PhysicsType::AIR) {
+            if (GameIsolate_.world->dirty[i]) {
+                if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
                     UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
                 } else {
-                    UInt32 color = world->tiles[i].color;
-                    UInt32 emit = world->tiles[i].mat->emitColor;
+                    UInt32 color = GameIsolate_.world->tiles[i].color;
+                    UInt32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
                     UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff,
                                   (color >> 8) & 0xff, (color >> 16) & 0xff,
-                                  world->tiles[i].mat->alpha);
+                                  GameIsolate_.world->tiles[i].mat->alpha);
                     UCH_SET_PIXEL(TexturePack_.pixelsEmission_ar, offset, (emit >> 0) & 0xff,
                                   (emit >> 8) & 0xff, (emit >> 16) & 0xff, (emit >> 24) & 0xff);
                 }
             }
 
-            if (world->layer2Dirty[i]) {
-                if (world->layer2[i].mat->physicsType == PhysicsType::AIR) {
+            if (GameIsolate_.world->layer2Dirty[i]) {
+                if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                     if (Settings::draw_background_grid) {
                         UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff,
@@ -2459,23 +2617,26 @@ void Game::tickChunkLoading() {
                     }
                     continue;
                 }
-                UInt32 color = world->layer2[i].color;
+                UInt32 color = GameIsolate_.world->layer2[i].color;
                 UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff,
                               (color >> 8) & 0xff, (color >> 16) & 0xff,
-                              world->layer2[i].mat->alpha);
+                              GameIsolate_.world->layer2[i].mat->alpha);
             }
 
-            if (world->backgroundDirty[i]) {
-                UInt32 color = world->background[i];
+            if (GameIsolate_.world->backgroundDirty[i]) {
+                UInt32 color = GameIsolate_.world->background[i];
                 UCH_SET_PIXEL(TexturePack_.pixelsBackground_ar, offset, (color >> 0) & 0xff,
                               (color >> 8) & 0xff, (color >> 16) & 0xff, (color >> 24) & 0xff);
             }
 #undef UCH_SET_PIXEL
         }
 
-        memset(world->dirty, false, (size_t) world->width * world->height);
-        memset(world->layer2Dirty, false, (size_t) world->width * world->height);
-        memset(world->backgroundDirty, false, (size_t) world->width * world->height);
+        memset(GameIsolate_.world->dirty, false,
+               (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
+        memset(GameIsolate_.world->layer2Dirty, false,
+               (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
+        memset(GameIsolate_.world->backgroundDirty, false,
+               (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
 
         while ((abs(accLoadX) > CHUNK_W / 2 || abs(accLoadY) > CHUNK_H / 2)) {
             int subX = std::fmax(std::fmin(accLoadX, CHUNK_W / 2), -CHUNK_W / 2);
@@ -2483,92 +2644,109 @@ void Game::tickChunkLoading() {
             int subY = std::fmax(std::fmin(accLoadY, CHUNK_H / 2), -CHUNK_H / 2);
             if (abs(subY) < CHUNK_H / 2) subY = 0;
 
-            world->loadZone.x += subX;
-            world->loadZone.y += subY;
+            GameIsolate_.world->loadZone.x += subX;
+            GameIsolate_.world->loadZone.y += subY;
 
-            int delta = 4 * (subX + subY * world->width);
+            int delta = 4 * (subX + subY * GameIsolate_.world->width);
 
             std::vector<std::future<void>> results = {};
             if (delta > 0) {
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixels_ar[0]),
-                                &(TexturePack_.pixels_ar[world->width * world->height * 4]) - delta,
-                                &(TexturePack_.pixels_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixels_ar[GameIsolate_.world->width *
+                                                         GameIsolate_.world->height * 4]) -
+                                        delta,
+                                &(TexturePack_.pixels_ar[GameIsolate_.world->width *
+                                                         GameIsolate_.world->height * 4]));
                     //rotate(pixels.begin(), pixels.end() - delta, pixels.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsLayer2_ar[0]),
-                                &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]) -
+                                &(TexturePack_.pixelsLayer2_ar[GameIsolate_.world->width *
+                                                               GameIsolate_.world->height * 4]) -
                                         delta,
-                                &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixelsLayer2_ar[GameIsolate_.world->width *
+                                                               GameIsolate_.world->height * 4]));
                     //rotate(pixelsLayer2.begin(), pixelsLayer2.end() - delta, pixelsLayer2.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(
                             &(TexturePack_.pixelsBackground_ar[0]),
-                            &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]) -
+                            &(TexturePack_.pixelsBackground_ar[GameIsolate_.world->width *
+                                                               GameIsolate_.world->height * 4]) -
                                     delta,
-                            &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]));
+                            &(TexturePack_.pixelsBackground_ar[GameIsolate_.world->width *
+                                                               GameIsolate_.world->height * 4]));
                     //rotate(pixelsBackground.begin(), pixelsBackground.end() - delta, pixelsBackground.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFire_ar[0]),
-                                &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]) -
+                                &(TexturePack_.pixelsFire_ar[GameIsolate_.world->width *
+                                                             GameIsolate_.world->height * 4]) -
                                         delta,
-                                &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixelsFire_ar[GameIsolate_.world->width *
+                                                             GameIsolate_.world->height * 4]));
                     //rotate(pixelsFire_ar.begin(), pixelsFire_ar.end() - delta, pixelsFire_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFlow_ar[0]),
-                                &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]) -
+                                &(TexturePack_.pixelsFlow_ar[GameIsolate_.world->width *
+                                                             GameIsolate_.world->height * 4]) -
                                         delta,
-                                &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixelsFlow_ar[GameIsolate_.world->width *
+                                                             GameIsolate_.world->height * 4]));
                     //rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.end() - delta, pixelsFlow_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(
-                            &(TexturePack_.pixelsEmission_ar[0]),
-                            &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]) -
-                                    delta,
-                            &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsEmission_ar[0]),
+                                &(TexturePack_.pixelsEmission_ar[GameIsolate_.world->width *
+                                                                 GameIsolate_.world->height * 4]) -
+                                        delta,
+                                &(TexturePack_.pixelsEmission_ar[GameIsolate_.world->width *
+                                                                 GameIsolate_.world->height * 4]));
                     //rotate(pixelsEmission_ar.begin(), pixelsEmission_ar.end() - delta, pixelsEmission_ar.end());
                 }));
             } else if (delta < 0) {
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[0]) - delta,
-                                &(TexturePack_.pixels_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixels_ar[GameIsolate_.world->width *
+                                                         GameIsolate_.world->height * 4]));
                     //rotate(pixels.begin(), pixels.begin() - delta, pixels.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsLayer2_ar[0]),
                                 &(TexturePack_.pixelsLayer2_ar[0]) - delta,
-                                &(TexturePack_.pixelsLayer2_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixelsLayer2_ar[GameIsolate_.world->width *
+                                                               GameIsolate_.world->height * 4]));
                     //rotate(pixelsLayer2.begin(), pixelsLayer2.begin() - delta, pixelsLayer2.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(
                             &(TexturePack_.pixelsBackground_ar[0]),
                             &(TexturePack_.pixelsBackground_ar[0]) - delta,
-                            &(TexturePack_.pixelsBackground_ar[world->width * world->height * 4]));
+                            &(TexturePack_.pixelsBackground_ar[GameIsolate_.world->width *
+                                                               GameIsolate_.world->height * 4]));
                     //rotate(pixelsBackground.begin(), pixelsBackground.begin() - delta, pixelsBackground.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFire_ar[0]),
                                 &(TexturePack_.pixelsFire_ar[0]) - delta,
-                                &(TexturePack_.pixelsFire_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixelsFire_ar[GameIsolate_.world->width *
+                                                             GameIsolate_.world->height * 4]));
                     //rotate(pixelsFire_ar.begin(), pixelsFire_ar.begin() - delta, pixelsFire_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFlow_ar[0]),
                                 &(TexturePack_.pixelsFlow_ar[0]) - delta,
-                                &(TexturePack_.pixelsFlow_ar[world->width * world->height * 4]));
+                                &(TexturePack_.pixelsFlow_ar[GameIsolate_.world->width *
+                                                             GameIsolate_.world->height * 4]));
                     //rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.begin() - delta, pixelsFlow_ar.end());
                 }));
                 results.push_back(updateDirtyPool->push([&](int id) {
-                    std::rotate(
-                            &(TexturePack_.pixelsEmission_ar[0]),
-                            &(TexturePack_.pixelsEmission_ar[0]) - delta,
-                            &(TexturePack_.pixelsEmission_ar[world->width * world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsEmission_ar[0]),
+                                &(TexturePack_.pixelsEmission_ar[0]) - delta,
+                                &(TexturePack_.pixelsEmission_ar[GameIsolate_.world->width *
+                                                                 GameIsolate_.world->height * 4]));
                     //rotate(pixelsEmission_ar.begin(), pixelsEmission_ar.begin() - delta, pixelsEmission_ar.end());
                 }));
             }
@@ -2589,16 +2767,20 @@ void Game::tickChunkLoading() {
     CLEARPIXEL(TexturePack_.pixelsEmission_ar, offset)
 
             for (int x = 0; x < abs(subX); x++) {
-                for (int y = 0; y < world->height; y++) {
-                    const unsigned int offset = (world->width * 4 * y) + x * 4;
-                    if (offset < world->width * world->height * 4) { CLEARPIXEL_C(offset); }
+                for (int y = 0; y < GameIsolate_.world->height; y++) {
+                    const unsigned int offset = (GameIsolate_.world->width * 4 * y) + x * 4;
+                    if (offset < GameIsolate_.world->width * GameIsolate_.world->height * 4) {
+                        CLEARPIXEL_C(offset);
+                    }
                 }
             }
 
             for (int y = 0; y < abs(subY); y++) {
-                for (int x = 0; x < world->width; x++) {
-                    const unsigned int offset = (world->width * 4 * y) + x * 4;
-                    if (offset < world->width * world->height * 4) { CLEARPIXEL_C(offset); }
+                for (int x = 0; x < GameIsolate_.world->width; x++) {
+                    const unsigned int offset = (GameIsolate_.world->width * 4 * y) + x * 4;
+                    if (offset < GameIsolate_.world->width * GameIsolate_.world->height * 4) {
+                        CLEARPIXEL_C(offset);
+                    }
                 }
             }
 
@@ -2612,66 +2794,72 @@ void Game::tickChunkLoading() {
             ofsY -= subY * scale;
         }
 
-        world->tickChunks();
-        world->updateWorldMesh();
-        world->dirty[0] = true;
-        world->layer2Dirty[0] = true;
-        world->backgroundDirty[0] = true;
+        GameIsolate_.world->tickChunks();
+        GameIsolate_.world->updateWorldMesh();
+        GameIsolate_.world->dirty[0] = true;
+        GameIsolate_.world->layer2Dirty[0] = true;
+        GameIsolate_.world->backgroundDirty[0] = true;
 
     } else {
-        world->frame();
+        GameIsolate_.world->frame();
     }
 }
 
 void Game::tickPlayer() {
 
-    if (world->player) {
+    if (GameIsolate_.world->player) {
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
-            if (world->player->ground) {
-                world->player->vy = -4;
+            if (GameIsolate_.world->player->ground) {
+                GameIsolate_.world->player->vy = -4;
                 global.audioEngine.PlayEvent("event:/Player/Jump");
             }
         }
 
-        world->player->vy += (float) (((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get())
-                                               ? (world->player->vy > -1 ? -0.8 : -0.35)
-                                               : 0) +
-                                      (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
+        GameIsolate_.world->player->vy +=
+                (float) (((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get())
+                                  ? (GameIsolate_.world->player->vy > -1 ? -0.8 : -0.35)
+                                  : 0) +
+                         (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 Particle *p = new Particle(
                         Tiles::createLava(),
-                        (float) (world->player->x + world->loadZone.x + world->player->hw / 2 +
-                                 rand() % 5 - 2 + world->player->vx),
-                        (float) (world->player->y + world->loadZone.y + world->player->hh +
-                                 world->player->vy),
-                        (float) ((rand() % 10 - 5) / 10.0f + world->player->vx / 2.0f),
-                        (float) ((rand() % 10) / 10.0f + 1 + world->player->vy / 2.0f), 0,
-                        (float) 0.025);
+                        (float) (GameIsolate_.world->player->x + GameIsolate_.world->loadZone.x +
+                                 GameIsolate_.world->player->hw / 2 + rand() % 5 - 2 +
+                                 GameIsolate_.world->player->vx),
+                        (float) (GameIsolate_.world->player->y + GameIsolate_.world->loadZone.y +
+                                 GameIsolate_.world->player->hh + GameIsolate_.world->player->vy),
+                        (float) ((rand() % 10 - 5) / 10.0f + GameIsolate_.world->player->vx / 2.0f),
+                        (float) ((rand() % 10) / 10.0f + 1 + GameIsolate_.world->player->vy / 2.0f),
+                        0, (float) 0.025);
                 p->temporary = true;
                 p->lifetime = 120;
-                world->addParticle(p);
+                GameIsolate_.world->addParticle(p);
             }
         } else {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 0);
         }
 
-        if (world->player->vy > 0) {
+        if (GameIsolate_.world->player->vy > 0) {
             global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind",
-                                                 (float) (world->player->vy / 12.0));
+                                                 (float) (GameIsolate_.world->player->vy / 12.0));
         } else {
             global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
-        world->player->vx +=
-                (float) ((Controls::PLAYER_LEFT->get() ? (world->player->vx > 0 ? -0.4 : -0.2)
-                                                       : 0) +
-                         (Controls::PLAYER_RIGHT->get() ? (world->player->vx < 0 ? 0.4 : 0.2) : 0));
+        GameIsolate_.world->player->vx +=
+                (float) ((Controls::PLAYER_LEFT->get()
+                                  ? (GameIsolate_.world->player->vx > 0 ? -0.4 : -0.2)
+                                  : 0) +
+                         (Controls::PLAYER_RIGHT->get()
+                                  ? (GameIsolate_.world->player->vx < 0 ? 0.4 : 0.2)
+                                  : 0));
         if (!Controls::PLAYER_LEFT->get() && !Controls::PLAYER_RIGHT->get())
-            world->player->vx *= (float) (world->player->ground ? 0.85 : 0.96);
-        if (world->player->vx > 4.5) world->player->vx = 4.5;
-        if (world->player->vx < -4.5) world->player->vx = -4.5;
+            GameIsolate_.world->player->vx *=
+                    (float) (GameIsolate_.world->player->ground ? 0.85 : 0.96);
+        if (GameIsolate_.world->player->vx > 4.5) GameIsolate_.world->player->vx = 4.5;
+        if (GameIsolate_.world->player->vx < -4.5) GameIsolate_.world->player->vx = -4.5;
     } else {
         if (state == INGAME) {
             freeCamX += (float) ((Controls::PLAYER_LEFT->get() ? -5 : 0) +
@@ -2682,11 +2870,12 @@ void Game::tickPlayer() {
         }
     }
 
-    if (world->player) {
+    if (GameIsolate_.world->player) {
         desCamX = (float) (-(mx - (global.platform.WIDTH / 2)) / 4);
         desCamY = (float) (-(my - (global.platform.HEIGHT / 2)) / 4);
 
-        world->player->holdAngle = (float) (atan2(desCamY, desCamX) * 180 / (float) M_PI);
+        GameIsolate_.world->player->holdAngle =
+                (float) (atan2(desCamY, desCamX) * 180 / (float) M_PI);
 
         desCamX = 0;
         desCamY = 0;
@@ -2695,10 +2884,10 @@ void Game::tickPlayer() {
         desCamY = 0;
     }
 
-    if (world->player) {
-        if (world->player->heldItem) {
-            if (world->player->heldItem->getFlag(ItemFlags::VACUUM)) {
-                if (world->player->holdVacuum) {
+    if (GameIsolate_.world->player) {
+        if (GameIsolate_.world->player->heldItem) {
+            if (GameIsolate_.world->player->heldItem->getFlag(ItemFlags::VACUUM)) {
+                if (GameIsolate_.world->player->holdVacuum) {
 
                     int wcx = (int) ((global.platform.WIDTH / 2.0f - ofsX - camX) / scale);
                     int wcy = (int) ((global.platform.HEIGHT / 2.0f - ofsY - camY) / scale);
@@ -2714,8 +2903,9 @@ void Game::tickPlayer() {
 
                         int sind = -1;
                         bool inObject = true;
-                        world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-                            if (world->tiles[ind].mat->physicsType == PhysicsType::OBJECT) {
+                        GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
+                            if (GameIsolate_.world->tiles[ind].mat->physicsType ==
+                                PhysicsType::OBJECT) {
                                 if (!inObject) {
                                     sind = ind;
                                     return true;
@@ -2724,17 +2914,20 @@ void Game::tickPlayer() {
                                 inObject = false;
                             }
 
-                            if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID ||
-                                world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
-                                world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
+                            if (GameIsolate_.world->tiles[ind].mat->physicsType ==
+                                        PhysicsType::SOLID ||
+                                GameIsolate_.world->tiles[ind].mat->physicsType ==
+                                        PhysicsType::SAND ||
+                                GameIsolate_.world->tiles[ind].mat->physicsType ==
+                                        PhysicsType::SOUP) {
                                 sind = ind;
                                 return true;
                             }
                             return false;
                         });
 
-                        int x = sind == -1 ? wmx : sind % world->width;
-                        int y = sind == -1 ? wmy : sind / world->width;
+                        int x = sind == -1 ? wmx : sind % GameIsolate_.world->width;
+                        int y = sind == -1 ? wmy : sind / GameIsolate_.world->width;
 
                         std::function<void(MaterialInstance, int, int)> makeParticle =
                                 [&](MaterialInstance tile, int xPos, int yPos) {
@@ -2746,22 +2939,24 @@ void Game::tickPlayer() {
                                     par->ay = -par->vy / 10.0f;
                                     if (par->ay == 0 && par->ax == 0) par->ay = 0.01f;
 
-                                    //par->targetX = world->player->x + world->player->hw / 2 + world->loadZone.x;
-                                    //par->targetY = world->player->y + world->player->hh / 2 + world->loadZone.y;
+                                    //par->targetX = GameIsolate_.world->player->x + GameIsolate_.world->player->hw / 2 + GameIsolate_.world->loadZone.x;
+                                    //par->targetY = GameIsolate_.world->player->y + GameIsolate_.world->player->hh / 2 + GameIsolate_.world->loadZone.y;
                                     //par->targetForce = 0.35f;
 
                                     par->lifetime = 6;
 
                                     par->phase = true;
 
-                                    world->player->heldItem->vacuumParticles.push_back(par);
+                                    GameIsolate_.world->player->heldItem->vacuumParticles.push_back(
+                                            par);
 
                                     par->killCallback = [&]() {
-                                        auto &v = world->player->heldItem->vacuumParticles;
+                                        auto &v = GameIsolate_.world->player->heldItem
+                                                          ->vacuumParticles;
                                         v.erase(std::remove(v.begin(), v.end(), par), v.end());
                                     };
 
-                                    world->addParticle(par);
+                                    GameIsolate_.world->addParticle(par);
                                 };
 
                         int rad = 5;
@@ -2775,22 +2970,29 @@ void Game::tickPlayer() {
                                 }
 
                                 MaterialInstance tile =
-                                        world->tiles[(x + xx) + (y + yy) * world->width];
+                                        GameIsolate_.world
+                                                ->tiles[(x + xx) +
+                                                        (y + yy) * GameIsolate_.world->width];
                                 if (tile.mat->physicsType == PhysicsType::SOLID ||
                                     tile.mat->physicsType == PhysicsType::SAND ||
                                     tile.mat->physicsType == PhysicsType::SOUP) {
                                     makeParticle(tile, x + xx, y + yy);
-                                    world->tiles[(x + xx) + (y + yy) * world->width] =
+                                    GameIsolate_.world
+                                            ->tiles[(x + xx) +
+                                                    (y + yy) * GameIsolate_.world->width] =
                                             Tiles::NOTHING;
-                                    //world->tiles[(x + xx) + (y + yy) * world->width] = Tiles::createFire();
-                                    world->dirty[(x + xx) + (y + yy) * world->width] = true;
+                                    //GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles::createFire();
+                                    GameIsolate_.world
+                                            ->dirty[(x + xx) +
+                                                    (y + yy) * GameIsolate_.world->width] = true;
                                 }
                             }
                         }
 
-                        world->particles.erase(
+                        GameIsolate_.world->particles.erase(
                                 std::remove_if(
-                                        world->particles.begin(), world->particles.end(),
+                                        GameIsolate_.world->particles.begin(),
+                                        GameIsolate_.world->particles.end(),
                                         [&](Particle *cur) {
                                             if (cur->targetForce == 0 && !cur->phase) {
                                                 int rad = 5;
@@ -2812,19 +3014,21 @@ void Game::tickPlayer() {
                                                             if (cur->ay == 0 && cur->ax == 0)
                                                                 cur->ay = 0.01f;
 
-                                                            //par->targetX = world->player->x + world->player->hw / 2 + world->loadZone.x;
-                                                            //par->targetY = world->player->y + world->player->hh / 2 + world->loadZone.y;
+                                                            //par->targetX = GameIsolate_.world->player->x + GameIsolate_.world->player->hw / 2 + GameIsolate_.world->loadZone.x;
+                                                            //par->targetY = GameIsolate_.world->player->y + GameIsolate_.world->player->hh / 2 + GameIsolate_.world->loadZone.y;
                                                             //par->targetForce = 0.35f;
 
                                                             cur->lifetime = 6;
 
                                                             cur->phase = true;
 
-                                                            world->player->heldItem->vacuumParticles
-                                                                    .push_back(cur);
+                                                            GameIsolate_.world->player->heldItem
+                                                                    ->vacuumParticles.push_back(
+                                                                            cur);
 
                                                             cur->killCallback = [&]() {
-                                                                auto &v = world->player->heldItem
+                                                                auto &v = GameIsolate_.world->player
+                                                                                  ->heldItem
                                                                                   ->vacuumParticles;
                                                                 v.erase(std::remove(v.begin(),
                                                                                     v.end(), cur),
@@ -2839,9 +3043,9 @@ void Game::tickPlayer() {
 
                                             return false;
                                         }),
-                                world->particles.end());
+                                GameIsolate_.world->particles.end());
 
-                        std::vector<RigidBody *> rbs = world->rigidBodies;
+                        std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
@@ -2886,7 +3090,7 @@ void Game::tickPlayer() {
                                             METAENGINE_Render_CopyImageFromSurface(cur->surface);
                                     METAENGINE_Render_SetImageFilter(
                                             cur->texture, METAENGINE_Render_FILTER_NEAREST);
-                                    //world->updateRigidBodyHitbox(cur);
+                                    //GameIsolate_.world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
                             }
@@ -2894,36 +3098,37 @@ void Game::tickPlayer() {
                     }
                 }
 
-                if (world->player->heldItem->vacuumParticles.size() > 0) {
-                    world->player->heldItem->vacuumParticles.erase(
-                            std::remove_if(world->player->heldItem->vacuumParticles.begin(),
-                                           world->player->heldItem->vacuumParticles.end(),
-                                           [&](Particle *cur) {
-                                               if (cur->lifetime <= 0) {
-                                                   cur->targetForce = 0.45f;
-                                                   cur->targetX = world->player->x +
-                                                                  world->player->hw / 2.0f +
-                                                                  world->loadZone.x;
-                                                   cur->targetY = world->player->y +
-                                                                  world->player->hh / 2.0f +
-                                                                  world->loadZone.y;
-                                                   cur->ax = 0;
-                                                   cur->ay = 0.01f;
-                                               }
+                if (GameIsolate_.world->player->heldItem->vacuumParticles.size() > 0) {
+                    GameIsolate_.world->player->heldItem->vacuumParticles.erase(
+                            std::remove_if(
+                                    GameIsolate_.world->player->heldItem->vacuumParticles.begin(),
+                                    GameIsolate_.world->player->heldItem->vacuumParticles.end(),
+                                    [&](Particle *cur) {
+                                        if (cur->lifetime <= 0) {
+                                            cur->targetForce = 0.45f;
+                                            cur->targetX = GameIsolate_.world->player->x +
+                                                           GameIsolate_.world->player->hw / 2.0f +
+                                                           GameIsolate_.world->loadZone.x;
+                                            cur->targetY = GameIsolate_.world->player->y +
+                                                           GameIsolate_.world->player->hh / 2.0f +
+                                                           GameIsolate_.world->loadZone.y;
+                                            cur->ax = 0;
+                                            cur->ay = 0.01f;
+                                        }
 
-                                               float tdx = cur->targetX - cur->x;
-                                               float tdy = cur->targetY - cur->y;
+                                        float tdx = cur->targetX - cur->x;
+                                        float tdy = cur->targetY - cur->y;
 
-                                               if (tdx * tdx + tdy * tdy < 10 * 10) {
-                                                   cur->temporary = true;
-                                                   cur->lifetime = 0;
-                                                   //METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
-                                                   return true;
-                                               }
+                                        if (tdx * tdx + tdy * tdy < 10 * 10) {
+                                            cur->temporary = true;
+                                            cur->lifetime = 0;
+                                            //METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
+                                            return true;
+                                        }
 
-                                               return false;
-                                           }),
-                            world->player->heldItem->vacuumParticles.end());
+                                        return false;
+                                    }),
+                            GameIsolate_.world->player->heldItem->vacuumParticles.end());
                 }
             }
         }
@@ -2941,33 +3146,41 @@ void Game::updateFrameLate() {
         int nofsX;
         int nofsY;
 
-        if (world->player) {
+        if (GameIsolate_.world->player) {
 
-            if (game_timestate.now - game_timestate.lastTick <= game_timestate.mspt) {
-                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) /
-                                          (double) game_timestate.mspt);
+            if (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick <=
+                GameIsolate_.game_timestate.mspt) {
+                float thruTick = (float) ((GameIsolate_.game_timestate.now -
+                                           GameIsolate_.game_timestate.lastTick) /
+                                          (double) GameIsolate_.game_timestate.mspt);
 
-                plPosX = world->player->x + (int) (world->player->vx * thruTick);
-                plPosY = world->player->y + (int) (world->player->vy * thruTick);
+                plPosX = GameIsolate_.world->player->x +
+                         (int) (GameIsolate_.world->player->vx * thruTick);
+                plPosY = GameIsolate_.world->player->y +
+                         (int) (GameIsolate_.world->player->vy * thruTick);
             } else {
-                //plPosX = world->player->x;
-                //plPosY = world->player->y;
+                //plPosX = GameIsolate_.world->player->x;
+                //plPosY = GameIsolate_.world->player->y;
             }
 
-            //plPosX = (float)(plPosX + (world->player->x - plPosX) / 25.0);
-            //plPosY = (float)(plPosY + (world->player->y - plPosY) / 25.0);
+            //plPosX = (float)(plPosX + (GameIsolate_.world->player->x - plPosX) / 25.0);
+            //plPosY = (float)(plPosY + (GameIsolate_.world->player->y - plPosY) / 25.0);
 
-            nofsX = (int) (-((int) plPosX + world->player->hw / 2 + world->loadZone.x) * scale +
+            nofsX = (int) (-((int) plPosX + GameIsolate_.world->player->hw / 2 +
+                             GameIsolate_.world->loadZone.x) *
+                                   scale +
                            global.platform.WIDTH / 2);
-            nofsY = (int) (-((int) plPosY + world->player->hh / 2 + world->loadZone.y) * scale +
+            nofsY = (int) (-((int) plPosY + GameIsolate_.world->player->hh / 2 +
+                             GameIsolate_.world->loadZone.y) *
+                                   scale +
                            global.platform.HEIGHT / 2);
         } else {
             plPosX = (float) (plPosX + (freeCamX - plPosX) / 50.0f);
             plPosY = (float) (plPosY + (freeCamY - plPosY) / 50.0f);
 
-            nofsX = (int) (-(plPosX + 0 + world->loadZone.x) * scale +
+            nofsX = (int) (-(plPosX + 0 + GameIsolate_.world->loadZone.x) * scale +
                            global.platform.WIDTH / 2.0f);
-            nofsY = (int) (-(plPosY + 0 + world->loadZone.y) * scale +
+            nofsY = (int) (-(plPosY + 0 + GameIsolate_.world->loadZone.y) * scale +
                            global.platform.HEIGHT / 2.0f);
         }
 
@@ -2979,17 +3192,21 @@ void Game::updateFrameLate() {
         ofsX += (nofsX - ofsX);
         ofsY += (nofsY - ofsY);
 
-        camX = (float) (camX +
-                        (desCamX - camX) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
-        camY = (float) (camY +
-                        (desCamY - camY) * (game_timestate.now - game_timestate.lastTime) / 250.0f);
+        camX = (float) (camX + (desCamX - camX) *
+                                       (GameIsolate_.game_timestate.now -
+                                        GameIsolate_.game_timestate.lastTime) /
+                                       250.0f);
+        camY = (float) (camY + (desCamY - camY) *
+                                       (GameIsolate_.game_timestate.now -
+                                        GameIsolate_.game_timestate.lastTime) /
+                                       250.0f);
     }
 }
 
 void Game::renderEarly() {
 
     if (state == LOADING) {
-        if (game_timestate.now - game_timestate.lastLoadingTick > 20) {
+        if (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastLoadingTick > 20) {
             // render loading screen
 
             unsigned int *ldPixels = (unsigned int *) TexturePack_.pixelsLoading_ar;
@@ -3057,7 +3274,7 @@ void Game::renderEarly() {
                                                &TexturePack_.pixelsLoading_ar[0],
                                                TexturePack_.loadingScreenW * 4);
 
-            game_timestate.lastLoadingTick = game_timestate.now;
+            GameIsolate_.game_timestate.lastLoadingTick = GameIsolate_.game_timestate.now;
         } else {
             //#ifdef _WIN32
             //            Sleep(5);
@@ -3077,12 +3294,14 @@ void Game::renderEarly() {
     } else {
         // render entities with LERP
 
-        if (game_timestate.now - game_timestate.lastTick <= game_timestate.mspt) {
+        if (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick <=
+            GameIsolate_.game_timestate.mspt) {
             METAENGINE_Render_Clear(TexturePack_.textureEntities->target);
             METAENGINE_Render_Clear(TexturePack_.textureEntitiesLQ->target);
-            if (world->player) {
-                float thruTick = (float) ((game_timestate.now - game_timestate.lastTick) /
-                                          (double) game_timestate.mspt);
+            if (GameIsolate_.world->player) {
+                float thruTick = (float) ((GameIsolate_.game_timestate.now -
+                                           GameIsolate_.game_timestate.lastTick) /
+                                          (double) GameIsolate_.game_timestate.mspt);
 
                 METAENGINE_Render_SetBlendMode(TexturePack_.textureEntities,
                                                METAENGINE_Render_BLEND_ADD);
@@ -3090,23 +3309,23 @@ void Game::renderEarly() {
                                                METAENGINE_Render_BLEND_ADD);
                 int scaleEnt = Settings::hd_objects ? Settings::hd_objects_size : 1;
 
-                for (auto &v: world->entities) {
+                for (auto &v: GameIsolate_.world->entities) {
                     v->renderLQ(TexturePack_.textureEntitiesLQ->target,
-                                world->loadZone.x + (int) (v->vx * thruTick),
-                                world->loadZone.y + (int) (v->vy * thruTick));
+                                GameIsolate_.world->loadZone.x + (int) (v->vx * thruTick),
+                                GameIsolate_.world->loadZone.y + (int) (v->vy * thruTick));
                     v->render(TexturePack_.textureEntities->target,
-                              world->loadZone.x + (int) (v->vx * thruTick),
-                              world->loadZone.y + (int) (v->vy * thruTick));
+                              GameIsolate_.world->loadZone.x + (int) (v->vx * thruTick),
+                              GameIsolate_.world->loadZone.y + (int) (v->vy * thruTick));
                 }
 
-                if (world->player && world->player->heldItem != NULL) {
-                    if (world->player->heldItem->getFlag(ItemFlags::HAMMER)) {
-                        if (world->player->holdHammer) {
+                if (GameIsolate_.world->player && GameIsolate_.world->player->heldItem != NULL) {
+                    if (GameIsolate_.world->player->heldItem->getFlag(ItemFlags::HAMMER)) {
+                        if (GameIsolate_.world->player->holdHammer) {
                             int x = (int) ((mx - ofsX - camX) / scale);
                             int y = (int) ((my - ofsY - camY) / scale);
 
-                            int dx = x - world->player->hammerX;
-                            int dy = y - world->player->hammerY;
+                            int dx = x - GameIsolate_.world->player->hammerX;
+                            int dy = y - GameIsolate_.world->player->hammerY;
                             float len = sqrt(dx * dx + dy * dy);
                             if (len > 40) {
                                 dx = dx / len * 40;
@@ -3114,16 +3333,17 @@ void Game::renderEarly() {
                             }
 
                             METAENGINE_Render_Line(TexturePack_.textureEntitiesLQ->target,
-                                                   world->player->hammerX + dx,
-                                                   world->player->hammerY + dy,
-                                                   world->player->hammerX, world->player->hammerY,
+                                                   GameIsolate_.world->player->hammerX + dx,
+                                                   GameIsolate_.world->player->hammerY + dy,
+                                                   GameIsolate_.world->player->hammerX,
+                                                   GameIsolate_.world->player->hammerY,
                                                    {0xff, 0xff, 0x00, 0xff});
                         } else {
                             int startInd = getAimSolidSurface(64);
 
                             if (startInd != -1) {
-                                int x = startInd % world->width;
-                                int y = startInd / world->width;
+                                int x = startInd % GameIsolate_.world->width;
+                                int y = startInd / GameIsolate_.world->width;
                                 METAENGINE_Render_Rectangle(TexturePack_.textureEntitiesLQ->target,
                                                             x - 1, y - 1, x + 1, y + 1,
                                                             {0xff, 0xff, 0x00, 0xE0});
@@ -3184,9 +3404,9 @@ void Game::renderLate() {
     } else {
         // draw backgrounds
 
-        Background *bg = backgrounds->Get("TEST_OVERWORLD");
+        Background *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
         if (Settings::draw_background && scale <= bg->layers[0].surface.size() &&
-            world->loadZone.y > -5 * CHUNK_H) {
+            GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_SET);
             SDL_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff),
                              static_cast<UInt8>((bg->solid >> 8) & 0xff),
@@ -3224,12 +3444,13 @@ void Game::renderLate() {
                     src->w = tw;
                     src->h = th;
 
-                    dst->x =
-                            (((ofsX + camX) + world->loadZone.x * scale) + n * tw / cur.parralaxX) *
-                                    cur.parralaxX +
-                            world->width / 2.0f * scale - tw / 2.0f;
-                    dst->y = ((ofsY + camY) + world->loadZone.y * scale) * cur.parralaxY +
-                             world->height / 2.0f * scale - th / 2.0f -
+                    dst->x = (((ofsX + camX) + GameIsolate_.world->loadZone.x * scale) +
+                              n * tw / cur.parralaxX) *
+                                     cur.parralaxX +
+                             GameIsolate_.world->width / 2.0f * scale - tw / 2.0f;
+                    dst->y = ((ofsY + camY) + GameIsolate_.world->loadZone.y * scale) *
+                                     cur.parralaxY +
+                             GameIsolate_.world->height / 2.0f * scale - th / 2.0f -
                              global.platform.HEIGHT / 3.0f * (scale - 1);
                     dst->w = (float) tw;
                     dst->h = (float) th;
@@ -3273,9 +3494,10 @@ void Game::renderLate() {
             METADOT_DELETE(C, src, METAENGINE_Render_Rect);
         }
 
-        METAENGINE_Render_Rect r1 = METAENGINE_Render_Rect{
-                (float) (ofsX + camX), (float) (ofsY + camY), (float) (world->width * scale),
-                (float) (world->height * scale)};
+        METAENGINE_Render_Rect r1 =
+                METAENGINE_Render_Rect{(float) (ofsX + camX), (float) (ofsY + camY),
+                                       (float) (GameIsolate_.world->width * scale),
+                                       (float) (GameIsolate_.world->height * scale)};
         METAENGINE_Render_SetBlendMode(TexturePack_.textureBackground,
                                        METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_BlitRect(TexturePack_.textureBackground, NULL, RenderTarget_.target, &r1);
@@ -3295,7 +3517,8 @@ void Game::renderLate() {
             if (global.shaderworker.waterFlowPassShader->dirty && Settings::water_showFlow) {
 
                 global.shaderworker.waterFlowPassShader->activate();
-                global.shaderworker.waterFlowPassShader->update(world->width, world->height);
+                global.shaderworker.waterFlowPassShader->update(GameIsolate_.world->width,
+                                                                GameIsolate_.world->height);
                 METAENGINE_Render_SetBlendMode(TexturePack_.textureFlow,
                                                METAENGINE_Render_BLEND_SET);
                 METAENGINE_Render_BlitRect(TexturePack_.textureFlow, NULL,
@@ -3305,7 +3528,8 @@ void Game::renderLate() {
             }
 
             global.shaderworker.waterShader->activate();
-            float t = (game_timestate.now - game_timestate.startTime) / 1000.0;
+            float t = (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.startTime) /
+                      1000.0;
             global.shaderworker.waterShader->update(
                     t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale,
                     TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale,
@@ -3365,18 +3589,20 @@ void Game::renderLate() {
             needToRerenderLighting = true;
         }
 
-        if (Settings::draw_shaders && world) {
+        if (Settings::draw_shaders && GameIsolate_.world) {
             float lightTx;
             float lightTy;
 
-            if (world->player) {
-                lightTx = (world->loadZone.x + world->player->x + world->player->hw / 2.0f) /
-                          (float) world->width;
-                lightTy = (world->loadZone.y + world->player->y + world->player->hh / 2.0f) /
-                          (float) world->height;
+            if (GameIsolate_.world->player) {
+                lightTx = (GameIsolate_.world->loadZone.x + GameIsolate_.world->player->x +
+                           GameIsolate_.world->player->hw / 2.0f) /
+                          (float) GameIsolate_.world->width;
+                lightTy = (GameIsolate_.world->loadZone.y + GameIsolate_.world->player->y +
+                           GameIsolate_.world->player->hh / 2.0f) /
+                          (float) GameIsolate_.world->height;
             } else {
-                lightTx = lmsx / (float) world->width;
-                lightTy = lmsy / (float) world->height;
+                lightTx = lmsx / (float) GameIsolate_.world->width;
+                lightTy = lmsy / (float) GameIsolate_.world->height;
             }
 
             if (global.shaderworker.newLightingShader->lastLx != lightTx ||
@@ -3391,12 +3617,18 @@ void Game::renderLate() {
 
             int nBg = 0;
             int range = 64;
-            for (int xx = std::max(0, (int) (lightTx * world->width) - range);
-                 xx <= std::min((int) (lightTx * world->width) + range, world->width - 1); xx++) {
-                for (int yy = std::max(0, (int) (lightTy * world->height) - range);
-                     yy <= std::min((int) (lightTy * world->height) + range, world->height - 1);
+            for (int xx = std::max(0, (int) (lightTx * GameIsolate_.world->width) - range);
+                 xx <= std::min((int) (lightTx * GameIsolate_.world->width) + range,
+                                GameIsolate_.world->width - 1);
+                 xx++) {
+                for (int yy = std::max(0, (int) (lightTy * GameIsolate_.world->height) - range);
+                     yy <= std::min((int) (lightTy * GameIsolate_.world->height) + range,
+                                    GameIsolate_.world->height - 1);
                      yy++) {
-                    if (world->background[xx + yy * world->width] != 0x00) { nBg++; }
+                    if (GameIsolate_.world->background[xx + yy * GameIsolate_.world->width] !=
+                        0x00) {
+                        nBg++;
+                    }
                 }
             }
 
@@ -3405,7 +3637,7 @@ void Game::renderLate() {
             global.shaderworker.newLightingShader_insideCur +=
                     (global.shaderworker.newLightingShader_insideDes -
                      global.shaderworker.newLightingShader_insideCur) /
-                    2.0f * (game_timestate.deltaTime / 1000.0f);
+                    2.0f * (GameIsolate_.game_timestate.deltaTime / 1000.0f);
 
             float ins = global.shaderworker.newLightingShader_insideCur < 0.05
                                 ? 0.0
@@ -3414,10 +3646,12 @@ void Game::renderLate() {
                 needToRerenderLighting = true;
             global.shaderworker.newLightingShader->setInside(ins);
             global.shaderworker.newLightingShader->setBounds(
-                    world->tickZone.x * Settings::hd_objects_size,
-                    world->tickZone.y * Settings::hd_objects_size,
-                    (world->tickZone.x + world->tickZone.w) * Settings::hd_objects_size,
-                    (world->tickZone.y + world->tickZone.h) * Settings::hd_objects_size);
+                    GameIsolate_.world->tickZone.x * Settings::hd_objects_size,
+                    GameIsolate_.world->tickZone.y * Settings::hd_objects_size,
+                    (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) *
+                            Settings::hd_objects_size,
+                    (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h) *
+                            Settings::hd_objects_size);
 
             if (global.shaderworker.newLightingShader->lastSimpleMode != Settings::simpleLighting)
                 needToRerenderLighting = true;
@@ -3477,11 +3711,13 @@ void Game::renderOverlays() {
 
     METAENGINE_Render_Rect r1 =
             METAENGINE_Render_Rect{(float) (ofsX + camX), (float) (ofsY + camY),
-                                   (float) (world->width * scale), (float) (world->height * scale)};
-    METAENGINE_Render_Rect r2 = METAENGINE_Render_Rect{
-            (float) (ofsX + camX + world->tickZone.x * scale),
-            (float) (ofsY + camY + world->tickZone.y * scale), (float) (world->tickZone.w * scale),
-            (float) (world->tickZone.h * scale)};
+                                   (float) (GameIsolate_.world->width * scale),
+                                   (float) (GameIsolate_.world->height * scale)};
+    METAENGINE_Render_Rect r2 =
+            METAENGINE_Render_Rect{(float) (ofsX + camX + GameIsolate_.world->tickZone.x * scale),
+                                   (float) (ofsY + camY + GameIsolate_.world->tickZone.y * scale),
+                                   (float) (GameIsolate_.world->tickZone.w * scale),
+                                   (float) (GameIsolate_.world->tickZone.h * scale)};
 
     if (Settings::draw_temperature_map) {
         METAENGINE_Render_SetBlendMode(TexturePack_.temperatureMap, METAENGINE_Render_BLEND_NORMAL);
@@ -3490,9 +3726,10 @@ void Game::renderOverlays() {
 
     if (Settings::draw_load_zones) {
         METAENGINE_Render_Rect r2m = METAENGINE_Render_Rect{
-                (float) (ofsX + camX + world->meshZone.x * scale),
-                (float) (ofsY + camY + world->meshZone.y * scale),
-                (float) (world->meshZone.w * scale), (float) (world->meshZone.h * scale)};
+                (float) (ofsX + camX + GameIsolate_.world->meshZone.x * scale),
+                (float) (ofsY + camY + GameIsolate_.world->meshZone.y * scale),
+                (float) (GameIsolate_.world->meshZone.w * scale),
+                (float) (GameIsolate_.world->meshZone.h * scale)};
 
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r2m, {0x00, 0xff, 0xff, 0xff});
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r2, {0xff, 0x00, 0x00, 0xff});
@@ -3504,47 +3741,52 @@ void Game::renderOverlays() {
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
         METAENGINE_Render_Rect r3 = METAENGINE_Render_Rect{
-                (float) (0), (float) (0), (float) ((ofsX + camX + world->tickZone.x * scale)),
+                (float) (0), (float) (0),
+                (float) ((ofsX + camX + GameIsolate_.world->tickZone.x * scale)),
                 (float) (global.platform.HEIGHT)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
         METAENGINE_Render_Rect r4 = METAENGINE_Render_Rect{
-                (float) (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale),
+                (float) (ofsX + camX + GameIsolate_.world->tickZone.x * scale +
+                         GameIsolate_.world->tickZone.w * scale),
                 (float) (0),
                 (float) ((global.platform.WIDTH) -
-                         (ofsX + camX + world->tickZone.x * scale + world->tickZone.w * scale)),
+                         (ofsX + camX + GameIsolate_.world->tickZone.x * scale +
+                          GameIsolate_.world->tickZone.w * scale)),
                 (float) (global.platform.HEIGHT)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
-        METAENGINE_Render_Rect r5 =
-                METAENGINE_Render_Rect{(float) (ofsX + camX + world->tickZone.x * scale),
-                                       (float) (0), (float) (world->tickZone.w * scale),
-                                       (float) (ofsY + camY + world->tickZone.y * scale)};
+        METAENGINE_Render_Rect r5 = METAENGINE_Render_Rect{
+                (float) (ofsX + camX + GameIsolate_.world->tickZone.x * scale), (float) (0),
+                (float) (GameIsolate_.world->tickZone.w * scale),
+                (float) (ofsY + camY + GameIsolate_.world->tickZone.y * scale)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r3, col);
 
         METAENGINE_Render_Rect r6 = METAENGINE_Render_Rect{
-                (float) (ofsX + camX + world->tickZone.x * scale),
-                (float) (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale),
-                (float) (world->tickZone.w * scale),
+                (float) (ofsX + camX + GameIsolate_.world->tickZone.x * scale),
+                (float) (ofsY + camY + GameIsolate_.world->tickZone.y * scale +
+                         GameIsolate_.world->tickZone.h * scale),
+                (float) (GameIsolate_.world->tickZone.w * scale),
                 (float) (global.platform.HEIGHT -
-                         (ofsY + camY + world->tickZone.y * scale + world->tickZone.h * scale))};
+                         (ofsY + camY + GameIsolate_.world->tickZone.y * scale +
+                          GameIsolate_.world->tickZone.h * scale))};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        METAENGINE_Render_Rect r7 =
-                METAENGINE_Render_Rect{(float) (ofsX + camX + world->width / 2 * scale -
-                                                (global.platform.WIDTH / 3 * scale / 2)),
-                                       (float) (ofsY + camY + world->height / 2 * scale -
-                                                (global.platform.HEIGHT / 3 * scale / 2)),
-                                       (float) (global.platform.WIDTH / 3 * scale),
-                                       (float) (global.platform.HEIGHT / 3 * scale)};
+        METAENGINE_Render_Rect r7 = METAENGINE_Render_Rect{
+                (float) (ofsX + camX + GameIsolate_.world->width / 2 * scale -
+                         (global.platform.WIDTH / 3 * scale / 2)),
+                (float) (ofsY + camY + GameIsolate_.world->height / 2 * scale -
+                         (global.platform.HEIGHT / 3 * scale / 2)),
+                (float) (global.platform.WIDTH / 3 * scale),
+                (float) (global.platform.HEIGHT / 3 * scale)};
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r7, col);
     }
 
     if (Settings::draw_physics_debug) {
         //
-        //for(size_t i = 0; i < world->rigidBodies.size(); i++) {
-        //    RigidBody cur = *world->rigidBodies[i];
+        //for(size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+        //    RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
         //    float x = cur.body->GetPosition().x;
         //    float y = cur.body->GetPosition().y;
@@ -3577,8 +3819,8 @@ void Game::renderOverlays() {
         //    }
         //}
 
-        //if(world->player) {
-        //    RigidBody cur = *world->player->rb;
+        //if(GameIsolate_.world->player) {
+        //    RigidBody cur = *GameIsolate_.world->player->rb;
 
         //    float x = cur.body->GetPosition().x;
         //    float y = cur.body->GetPosition().y;
@@ -3606,8 +3848,8 @@ void Game::renderOverlays() {
         //    }
         //}
 
-        //for(size_t i = 0; i < world->worldRigidBodies.size(); i++) {
-        //    RigidBody cur = *world->worldRigidBodies[i];
+        //for(size_t i = 0; i < GameIsolate_.world->worldRigidBodies.size(); i++) {
+        //    RigidBody cur = *GameIsolate_.world->worldRigidBodies[i];
 
         //    float x = cur.body->GetPosition().x;
         //    float y = cur.body->GetPosition().y;
@@ -3642,20 +3884,26 @@ void Game::renderOverlays() {
         //    SDL_RenderDrawPoint(renderer, cur.body->GetLocalCenter().x * scale + ofsX, cur.body->GetLocalCenter().y * scale + ofsY);*/
         //}
 
-        int minChX = (int) floor((world->meshZone.x - world->loadZone.x) / CHUNK_W);
-        int minChY = (int) floor((world->meshZone.y - world->loadZone.y) / CHUNK_H);
-        int maxChX =
-                (int) ceil((world->meshZone.x + world->meshZone.w - world->loadZone.x) / CHUNK_W);
-        int maxChY =
-                (int) ceil((world->meshZone.y + world->meshZone.h - world->loadZone.y) / CHUNK_H);
+        int minChX = (int) floor((GameIsolate_.world->meshZone.x - GameIsolate_.world->loadZone.x) /
+                                 CHUNK_W);
+        int minChY = (int) floor((GameIsolate_.world->meshZone.y - GameIsolate_.world->loadZone.y) /
+                                 CHUNK_H);
+        int maxChX = (int) ceil((GameIsolate_.world->meshZone.x + GameIsolate_.world->meshZone.w -
+                                 GameIsolate_.world->loadZone.x) /
+                                CHUNK_W);
+        int maxChY = (int) ceil((GameIsolate_.world->meshZone.y + GameIsolate_.world->meshZone.h -
+                                 GameIsolate_.world->loadZone.y) /
+                                CHUNK_H);
 
         for (int cx = minChX; cx <= maxChX; cx++) {
             for (int cy = minChY; cy <= maxChY; cy++) {
-                Chunk *ch = world->getChunk(cx, cy);
+                Chunk *ch = GameIsolate_.world->getChunk(cx, cy);
                 SDL_Color col = {255, 0, 0, 255};
 
-                float x = ((ch->x * CHUNK_W + world->loadZone.x) * scale + ofsX + camX);
-                float y = ((ch->y * CHUNK_H + world->loadZone.y) * scale + ofsY + camY);
+                float x =
+                        ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * scale + ofsX + camX);
+                float y =
+                        ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * scale + ofsY + camY);
 
                 METAENGINE_Render_Rectangle(RenderTarget_.target, x, y, x + CHUNK_W * scale,
                                             y + CHUNK_H * scale, {50, 50, 0, 255});
@@ -3668,7 +3916,7 @@ void Game::renderOverlays() {
 
         //
 
-        world->b2world->SetDebugDraw(b2DebugDraw);
+        GameIsolate_.world->b2world->SetDebugDraw(b2DebugDraw);
         b2DebugDraw->scale = scale;
         b2DebugDraw->xOfs = ofsX + camX;
         b2DebugDraw->yOfs = ofsY + camY;
@@ -3678,12 +3926,12 @@ void Game::renderOverlays() {
         if (Settings::draw_b2d_aabb) b2DebugDraw->AppendFlags(b2Draw::e_aabbBit);
         if (Settings::draw_b2d_pair) b2DebugDraw->AppendFlags(b2Draw::e_pairBit);
         if (Settings::draw_b2d_centerMass) b2DebugDraw->AppendFlags(b2Draw::e_centerOfMassBit);
-        world->b2world->DebugDraw();
+        GameIsolate_.world->b2world->DebugDraw();
     }
 
     if (dt_fps.w == -1) {
         char buffFps[20];
-        snprintf(buffFps, sizeof(buffFps), "%d FPS", game_timestate.fps);
+        snprintf(buffFps, sizeof(buffFps), "%d FPS", GameIsolate_.game_timestate.fps);
         //if (dt_fps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t1);
         //if (dt_fps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t2);
         dt_fps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16,
@@ -3695,7 +3943,8 @@ void Game::renderOverlays() {
 
     if (dt_feelsLikeFps.w == -1) {
         char buffFps[22];
-        snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS", game_timestate.feelsLikeFps);
+        snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS",
+                 GameIsolate_.game_timestate.feelsLikeFps);
         //if (dt_feelsLikeFps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t1);
         //if (dt_feelsLikeFps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t2);
         dt_feelsLikeFps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16,
@@ -3727,7 +3976,7 @@ void Game::renderOverlays() {
                 centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
         METAENGINE_Render_Rect r = {0, 0, (float) chSize, (float) chSize};
-        for (auto &p: world->chunkCache) {
+        for (auto &p: GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
             for (auto &p2: p.second) {
@@ -3757,11 +4006,17 @@ void Game::renderOverlays() {
             }
         }
 
-        int loadx = (int) (((float) -world->loadZone.x / CHUNK_W) * chSize);
-        int loady = (int) (((float) -world->loadZone.y / CHUNK_H) * chSize);
+        int loadx = (int) (((float) -GameIsolate_.world->loadZone.x / CHUNK_W) * chSize);
+        int loady = (int) (((float) -GameIsolate_.world->loadZone.y / CHUNK_H) * chSize);
 
-        int loadx2 = (int) (((float) (-world->loadZone.x + world->loadZone.w) / CHUNK_W) * chSize);
-        int loady2 = (int) (((float) (-world->loadZone.y + world->loadZone.h) / CHUNK_H) * chSize);
+        int loadx2 =
+                (int) (((float) (-GameIsolate_.world->loadZone.x + GameIsolate_.world->loadZone.w) /
+                        CHUNK_W) *
+                       chSize);
+        int loady2 =
+                (int) (((float) (-GameIsolate_.world->loadZone.y + GameIsolate_.world->loadZone.h) /
+                        CHUNK_H) *
+                       chSize);
         METAENGINE_Render_Rectangle(RenderTarget_.target, centerX - pchx + loadx,
                                     centerY - pchy + loady, centerX - pchx + loadx2,
                                     centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
@@ -3786,32 +4041,34 @@ void Game::renderOverlays() {
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
-        snprintf(buff1, sizeof(buff1), "V: %.3f / %.3f", world->player ? world->player->vx : 0,
-                 world->player ? world->player->vy : 0);
+        snprintf(buff1, sizeof(buff1), "V: %.3f / %.3f",
+                 GameIsolate_.world->player ? GameIsolate_.world->player->vx : 0,
+                 GameIsolate_.world->player ? GameIsolate_.world->player->vy : 0);
         buffAsStdStr1 = buff1;
         Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
-        snprintf(buff1, sizeof(buff1), "Particles: %d", (int) world->particles.size());
+        snprintf(buff1, sizeof(buff1), "Particles: %d", (int) GameIsolate_.world->particles.size());
         buffAsStdStr1 = buff1;
         Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
-        snprintf(buff1, sizeof(buff1), "Entities: %d", (int) world->entities.size());
+        snprintf(buff1, sizeof(buff1), "Entities: %d", (int) GameIsolate_.world->entities.size());
         buffAsStdStr1 = buff1;
         Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         int rbCt = 0;
-        for (auto &r: world->rigidBodies) {
+        for (auto &r: GameIsolate_.world->rigidBodies) {
             if (r->body->IsEnabled()) rbCt++;
         }
 
         snprintf(buff1, sizeof(buff1), "RigidBodies: %d/%d O, %d W", rbCt,
-                 (int) world->rigidBodies.size(), (int) world->worldRigidBodies.size());
+                 (int) GameIsolate_.world->rigidBodies.size(),
+                 (int) GameIsolate_.world->worldRigidBodies.size());
         buffAsStdStr1 = buff1;
         Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
@@ -3819,8 +4076,8 @@ void Game::renderOverlays() {
 
         int rbTriACt = 0;
         int rbTriCt = 0;
-        for (size_t i = 0; i < world->rigidBodies.size(); i++) {
-            RigidBody cur = *world->rigidBodies[i];
+        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+            RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
             b2Fixture *fix = cur.body->GetFixtureList();
             while (fix) {
@@ -3839,16 +4096,20 @@ void Game::renderOverlays() {
 
         int rbTriWCt = 0;
 
-        int minChX = (int) floor((world->meshZone.x - world->loadZone.x) / CHUNK_W);
-        int minChY = (int) floor((world->meshZone.y - world->loadZone.y) / CHUNK_H);
-        int maxChX =
-                (int) ceil((world->meshZone.x + world->meshZone.w - world->loadZone.x) / CHUNK_W);
-        int maxChY =
-                (int) ceil((world->meshZone.y + world->meshZone.h - world->loadZone.y) / CHUNK_H);
+        int minChX = (int) floor((GameIsolate_.world->meshZone.x - GameIsolate_.world->loadZone.x) /
+                                 CHUNK_W);
+        int minChY = (int) floor((GameIsolate_.world->meshZone.y - GameIsolate_.world->loadZone.y) /
+                                 CHUNK_H);
+        int maxChX = (int) ceil((GameIsolate_.world->meshZone.x + GameIsolate_.world->meshZone.w -
+                                 GameIsolate_.world->loadZone.x) /
+                                CHUNK_W);
+        int maxChY = (int) ceil((GameIsolate_.world->meshZone.y + GameIsolate_.world->meshZone.h -
+                                 GameIsolate_.world->loadZone.y) /
+                                CHUNK_H);
 
         for (int cx = minChX; cx <= maxChX; cx++) {
             for (int cy = minChY; cy <= maxChY; cy++) {
-                Chunk *ch = world->getChunk(cx, cy);
+                Chunk *ch = GameIsolate_.world->getChunk(cx, cy);
                 for (int i = 0; i < ch->polys.size(); i++) { rbTriWCt++; }
             }
         }
@@ -3860,7 +4121,7 @@ void Game::renderOverlays() {
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         int chCt = 0;
-        for (auto &p: world->chunkCache) {
+        for (auto &p: GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
             for (auto &p2: p.second) {
@@ -3875,13 +4136,13 @@ void Game::renderOverlays() {
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
-        snprintf(buff1, sizeof(buff1), "world->readyToReadyToMerge (%d)",
-                 (int) world->readyToReadyToMerge.size());
+        snprintf(buff1, sizeof(buff1), "GameIsolate_.world->readyToReadyToMerge (%d)",
+                 (int) GameIsolate_.world->readyToReadyToMerge.size());
         buffAsStdStr1 = buff1;
         Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-        for (size_t i = 0; i < world->readyToReadyToMerge.size(); i++) {
+        for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
             char buff[10];
             snprintf(buff, sizeof(buff), "    #%d", (int) i);
             std::string buffAsStdStr = buff;
@@ -3890,16 +4151,17 @@ void Game::renderOverlays() {
                                 {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         }
         char buff2[30];
-        snprintf(buff2, sizeof(buff2), "world->readyToMerge (%d)",
-                 (int) world->readyToMerge.size());
+        snprintf(buff2, sizeof(buff2), "GameIsolate_.world->readyToMerge (%d)",
+                 (int) GameIsolate_.world->readyToMerge.size());
         std::string buffAsStdStr2 = buff2;
         Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr2.c_str(), font16, 4,
                             2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
                             {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-        for (size_t i = 0; i < world->readyToMerge.size(); i++) {
+        for (size_t i = 0; i < GameIsolate_.world->readyToMerge.size(); i++) {
             char buff[20];
-            snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i, world->readyToMerge[i]->x,
-                     world->readyToMerge[i]->y);
+            snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i,
+                     GameIsolate_.world->readyToMerge[i]->x,
+                     GameIsolate_.world->readyToMerge[i]->y);
             std::string buffAsStdStr = buff;
             Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
                                 2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
@@ -3960,17 +4222,19 @@ void Game::renderOverlays() {
             //SDL_RenderDrawLine(renderer, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
-                               global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps),
-                               global.platform.WIDTH - 25,
-                               global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.fps),
-                               {0x00, 0xff, 0xff, 0xff});
         METAENGINE_Render_Line(
                 RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
-                global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps),
+                global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
                 global.platform.WIDTH - 25,
-                global.platform.HEIGHT - 10 - (int) (1000.0 / game_timestate.feelsLikeFps),
-                {0xff, 0x00, 0xff, 0xff});
+                global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
+                {0x00, 0xff, 0xff, 0xff});
+        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+                               global.platform.HEIGHT - 10 -
+                                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
+                               global.platform.WIDTH - 25,
+                               global.platform.HEIGHT - 10 -
+                                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
+                               {0xff, 0x00, 0xff, 0xff});
     }
 
     METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
@@ -4020,13 +4284,13 @@ void Game::renderOverlays() {
 
 void Game::renderTemperatureMap(World *world) {
 
-    for (int x = 0; x < world->width; x++) {
-        for (int y = 0; y < world->height; y++) {
-            auto t = world->tiles[x + y * world->width];
+    for (int x = 0; x < GameIsolate_.world->width; x++) {
+        for (int y = 0; y < GameIsolate_.world->height; y++) {
+            auto t = GameIsolate_.world->tiles[x + y * GameIsolate_.world->width];
             int32_t temp = t.temperature;
             UInt32 color = (UInt8) ((temp + 1024) / 2048.0f * 255);
 
-            const unsigned int offset = (world->width * 4 * y) + x * 4;
+            const unsigned int offset = (GameIsolate_.world->width * 4 * y) + x * 4;
             TexturePack_.pixelsTemp_ar[offset + 0] = color;// b
             TexturePack_.pixelsTemp_ar[offset + 1] = color;// g
             TexturePack_.pixelsTemp_ar[offset + 2] = color;// r
@@ -4053,10 +4317,10 @@ int Game::getAimSurface(int dist) {
     int wmy = (int) ((mmy - ofsY - camY) / scale);
 
     int startInd = -1;
-    world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-        if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID ||
-            world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
-            world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
+    GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
+        if (GameIsolate_.world->tiles[ind].mat->physicsType == PhysicsType::SOLID ||
+            GameIsolate_.world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
+            GameIsolate_.world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
             startInd = ind;
             return true;
         }
@@ -4080,26 +4344,27 @@ void Game::quitToMainMenu() {
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
 
-    METADOT_DELETE(C, world, World);
-    world = nullptr;
+    METADOT_DELETE(C, GameIsolate_.world, World);
+    GameIsolate_.world = nullptr;
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
     std::string wpStr = global.GameDir.getWorldPath(wn);
 
-    METADOT_NEW(C, world, World);
-    world->noSaveLoad = true;
-    world->init(wpStr,
-                (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
-                        CHUNK_W * RENDER_C_TEST,
-                (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
-                        CHUNK_H * RENDER_C_TEST,
-                RenderTarget_.target, &global.audioEngine, Settings::networkMode, generator);
+    METADOT_NEW(C, GameIsolate_.world, World);
+    GameIsolate_.world->noSaveLoad = true;
+    GameIsolate_.world->init(
+            wpStr,
+            (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
+                    CHUNK_W * RENDER_C_TEST,
+            (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
+                    CHUNK_H * RENDER_C_TEST,
+            RenderTarget_.target, &global.audioEngine, Settings::networkMode, generator);
 
     METADOT_INFO("Queueing chunk loading...");
-    for (int x = -CHUNK_W * 4; x < world->width + CHUNK_W * 4; x += CHUNK_W) {
-        for (int y = -CHUNK_H * 3; y < world->height + CHUNK_H * 8; y += CHUNK_H) {
-            world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
+    for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
+        for (int y = -CHUNK_H * 3; y < GameIsolate_.world->height + CHUNK_H * 8; y += CHUNK_H) {
+            GameIsolate_.world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
         }
     }
 
@@ -4112,25 +4377,29 @@ void Game::quitToMainMenu() {
     std::fill(TexturePack_.pixelsParticles.begin(), TexturePack_.pixelsParticles.end(), 0);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0],
-                                       world->width * 4);
+                                       GameIsolate_.world->width * 4);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.textureBackground, NULL,
-                                       &TexturePack_.pixelsBackground[0], world->width * 4);
+                                       &TexturePack_.pixelsBackground[0],
+                                       GameIsolate_.world->width * 4);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.textureLayer2, NULL,
-                                       &TexturePack_.pixelsLayer2[0], world->width * 4);
+                                       &TexturePack_.pixelsLayer2[0],
+                                       GameIsolate_.world->width * 4);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFire, NULL, &TexturePack_.pixelsFire[0],
-                                       world->width * 4);
+                                       GameIsolate_.world->width * 4);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.textureFlow, NULL, &TexturePack_.pixelsFlow[0],
-                                       world->width * 4);
+                                       GameIsolate_.world->width * 4);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.emissionTexture, NULL,
-                                       &TexturePack_.pixelsEmission[0], world->width * 4);
+                                       &TexturePack_.pixelsEmission[0],
+                                       GameIsolate_.world->width * 4);
 
     METAENGINE_Render_UpdateImageBytes(TexturePack_.textureParticles, NULL,
-                                       &TexturePack_.pixelsParticles[0], world->width * 4);
+                                       &TexturePack_.pixelsParticles[0],
+                                       GameIsolate_.world->width * 4);
 
     GameUI::MainMenuUI::visible = true;
 }
@@ -4153,8 +4422,8 @@ int Game::getAimSolidSurface(int dist) {
     int wmy = (int) ((mmy - ofsY - camY) / scale);
 
     int startInd = -1;
-    world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-        if (world->tiles[ind].mat->physicsType == PhysicsType::SOLID) {
+    GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
+        if (GameIsolate_.world->tiles[ind].mat->physicsType == PhysicsType::SOLID) {
             startInd = ind;
             return true;
         }

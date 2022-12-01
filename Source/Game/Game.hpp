@@ -100,8 +100,6 @@ private:
 
     int tickTime = 0;
 
-    World *world = nullptr;
-
     int mx = 0;
     int my = 0;
     int lastDrawMX = 0;
@@ -110,10 +108,6 @@ private:
     int lastEraseMY = 0;
 
     UInt8 *objectDelete = nullptr;
-
-    Backgrounds *backgrounds = nullptr;
-
-    GameTimeState game_timestate;
 
     uint32 loadingOnColor = 0;
     uint32 loadingOffColor = 0;
@@ -144,6 +138,13 @@ public:
     long long fadeOutStart = 0;
     long long fadeOutLength = 0;
     std::function<void()> fadeOutCallback = []() {};
+
+    struct
+    {
+        Backgrounds *backgrounds = nullptr;
+        GameTimeState game_timestate;
+        World *world = nullptr;
+    } GameIsolate_;
 
     struct
     {
@@ -204,9 +205,6 @@ public:
     } TexturePack_;
 
 public:
-    World *getWorld() { return world; }
-    void setWorld(World *ptr) { world = ptr; }
-    GameTimeState &getGameTimeState() { return game_timestate; }
     GameState getGameState() const { return state; }
     void setGameState(GameState state, std::optional<GameState> stateal) {
         this->state = state;

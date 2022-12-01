@@ -14,6 +14,8 @@
 #include "Game/Utils.hpp"
 #include "Libs/lua/lua.hpp"
 
+#include "Game/Background.hpp"
+
 #include <cstring>
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
@@ -151,6 +153,7 @@ void LuaCore::Attach() {
     luaopen_base(m_L);
     luaL_openlibs(m_L);
     //luaopen_toml(m_L);
+    luaopen_modulename(m_L);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);

@@ -282,18 +282,18 @@ namespace GameUI {
             METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
 
             game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                    game->getWorld()->width *
+                    game->GameIsolate_.world->width *
                             (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                    game->getWorld()->height *
+                    game->GameIsolate_.world->height *
                             (Settings::hd_objects ? Settings::hd_objects_size : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
             METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
                                              METAENGINE_Render_FILTER_NEAREST);
 
             game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                    game->getWorld()->width *
+                    game->GameIsolate_.world->width *
                             (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                    game->getWorld()->height *
+                    game->GameIsolate_.world->height *
                             (Settings::hd_objects ? Settings::hd_objects_size : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
             METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
@@ -303,9 +303,9 @@ namespace GameUI {
             METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
 
             game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                    game->getWorld()->width *
+                    game->GameIsolate_.world->width *
                             (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                    game->getWorld()->height *
+                    game->GameIsolate_.world->height *
                             (Settings::hd_objects ? Settings::hd_objects_size : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
             METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
@@ -586,13 +586,13 @@ namespace GameUI {
                 METADOT_INFO("Selected world: {}", worldName.c_str());
                 visible = false;
 
-                game->fadeOutStart = game->getGameTimeState().now;
+                game->fadeOutStart = game->GameIsolate_.game_timestate.now;
                 game->fadeOutLength = 250;
                 game->fadeOutCallback = [&, game, worldName]() {
                     game->setGameState(LOADING, INGAME);
 
-                    METADOT_DELETE(C, game->getWorld(), World);
-                    game->setWorld(nullptr);
+                    METADOT_DELETE(C, game->GameIsolate_.world, World);
+                    game->GameIsolate_.world = nullptr;
 
                     //std::thread loadWorldThread([&] () {
 
@@ -615,10 +615,10 @@ namespace GameUI {
                         }
                     }
 
-                    game->setWorld(w);
+                    game->GameIsolate_.world = nullptr;
                     //});
 
-                    game->fadeInStart = game->getGameTimeState().now;
+                    game->fadeInStart = game->GameIsolate_.game_timestate.now;
                     game->fadeInLength = 250;
                     game->fadeInWaitFrames = 4;
                 };
@@ -855,19 +855,23 @@ namespace GameUI {
                 ImGui::Checkbox("Draw Temperature Map", &Settings::draw_temperature_map);
 
                 if (ImGui::Checkbox("Draw Background", &Settings::draw_background)) {
-                    for (int x = 0; x < game->getWorld()->width; x++) {
-                        for (int y = 0; y < game->getWorld()->height; y++) {
-                            game->getWorld()->dirty[x + y * game->getWorld()->width] = true;
-                            game->getWorld()->layer2Dirty[x + y * game->getWorld()->width] = true;
+                    for (int x = 0; x < game->GameIsolate_.world->width; x++) {
+                        for (int y = 0; y < game->GameIsolate_.world->height; y++) {
+                            game->GameIsolate_.world
+                                    ->dirty[x + y * game->GameIsolate_.world->width] = true;
+                            game->GameIsolate_.world
+                                    ->layer2Dirty[x + y * game->GameIsolate_.world->width] = true;
                         }
                     }
                 }
 
                 if (ImGui::Checkbox("Draw Background Grid", &Settings::draw_background_grid)) {
-                    for (int x = 0; x < game->getWorld()->width; x++) {
-                        for (int y = 0; y < game->getWorld()->height; y++) {
-                            game->getWorld()->dirty[x + y * game->getWorld()->width] = true;
-                            game->getWorld()->layer2Dirty[x + y * game->getWorld()->width] = true;
+                    for (int x = 0; x < game->GameIsolate_.world->width; x++) {
+                        for (int y = 0; y < game->GameIsolate_.world->height; y++) {
+                            game->GameIsolate_.world
+                                    ->dirty[x + y * game->GameIsolate_.world->width] = true;
+                            game->GameIsolate_.world
+                                    ->layer2Dirty[x + y * game->GameIsolate_.world->width] = true;
                         }
                     }
                 }
@@ -881,18 +885,18 @@ namespace GameUI {
                     METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
 
                     game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                            game->getWorld()->width *
+                            game->GameIsolate_.world->width *
                                     (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                            game->getWorld()->height *
+                            game->GameIsolate_.world->height *
                                     (Settings::hd_objects ? Settings::hd_objects_size : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                     METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
                                                      METAENGINE_Render_FILTER_NEAREST);
 
                     game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                            game->getWorld()->width *
+                            game->GameIsolate_.world->width *
                                     (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                            game->getWorld()->height *
+                            game->GameIsolate_.world->height *
                                     (Settings::hd_objects ? Settings::hd_objects_size : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                     METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
@@ -902,9 +906,9 @@ namespace GameUI {
                     METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
 
                     game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                            game->getWorld()->width *
+                            game->GameIsolate_.world->width *
                                     (Settings::hd_objects ? Settings::hd_objects_size : 1),
-                            game->getWorld()->height *
+                            game->GameIsolate_.world->height *
                                     (Settings::hd_objects ? Settings::hd_objects_size : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                     METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
@@ -1076,7 +1080,8 @@ namespace GameUI {
 
         if (ImGui::CollapsingHeader("获得物品")) {
             ImGui::Indent();
-            if (game->getWorld() == nullptr || game->getWorld()->player == nullptr) {
+            if (game->GameIsolate_.world == nullptr ||
+                game->GameIsolate_.world->player == nullptr) {
                 ImGui::Text("世界中没有玩家");
             } else {
                 int i = 0;
@@ -1096,7 +1101,7 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 2;
-                    game->getWorld()->player->setItemInHand(i3, game->getWorld());
+                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1117,7 +1122,7 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 2;
-                    game->getWorld()->player->setItemInHand(i3, game->getWorld());
+                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1137,7 +1142,7 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 6;
-                    game->getWorld()->player->setItemInHand(i3, game->getWorld());
+                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1161,7 +1166,7 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 0;
-                    game->getWorld()->player->setItemInHand(i3, game->getWorld());
+                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1328,8 +1333,8 @@ namespace GameUI {
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
-            METADOT_DELETE(C, game->getWorld(), World);
-            game->setWorld(nullptr);
+            METADOT_DELETE(C, game->GameIsolate_.world, World);
+            game->GameIsolate_.world = nullptr;
 
             WorldGenerator *generator;
 
@@ -1344,25 +1349,25 @@ namespace GameUI {
 
             std::string wpStr = global.GameDir.getWorldPath(wn);
 
-            World *w = nullptr;
-            METADOT_NEW(C, w, World);
-            game->setWorld(w);
-            game->getWorld()->init(
+            METADOT_NEW(C, game->GameIsolate_.world, World);
+            game->GameIsolate_.world->init(
                     wpStr,
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                     game->RenderTarget_.target, &global.audioEngine, Settings::networkMode,
                     generator);
-            game->getWorld()->metadata.worldName = std::string(worldNameBuf);
-            game->getWorld()->metadata.lastOpenedTime = UTime::millis() / 1000;
-            game->getWorld()->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
-            game->getWorld()->metadata.save(wpStr);
+            game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
+            game->GameIsolate_.world->metadata.lastOpenedTime = UTime::millis() / 1000;
+            game->GameIsolate_.world->metadata.lastOpenedVersion =
+                    std::to_string(MetaDot_buildnum());
+            game->GameIsolate_.world->metadata.save(wpStr);
 
             METADOT_INFO("Queueing chunk loading...");
-            for (int x = -CHUNK_W * 4; x < game->getWorld()->width + CHUNK_W * 4; x += CHUNK_W) {
-                for (int y = -CHUNK_H * 3; y < game->getWorld()->height + CHUNK_H * 8;
+            for (int x = -CHUNK_W * 4; x < game->GameIsolate_.world->width + CHUNK_W * 4;
+                 x += CHUNK_W) {
+                for (int y = -CHUNK_H * 3; y < game->GameIsolate_.world->height + CHUNK_H * 8;
                      y += CHUNK_H) {
-                    game->getWorld()->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
+                    game->GameIsolate_.world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
                 }
             }
         }

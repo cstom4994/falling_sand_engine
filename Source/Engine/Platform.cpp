@@ -241,11 +241,14 @@ void Platform::HandleWindowSizeChange(int newWidth, int newHeight) {
     global.game->tickChunkLoading();
     METADOT_INFO("Ticking chunk done");
 
-    for (int x = 0; x < global.game->getWorld()->width; x++) {
-        for (int y = 0; y < global.game->getWorld()->height; y++) {
-            global.game->getWorld()->dirty[x + y * global.game->getWorld()->width] = true;
-            global.game->getWorld()->layer2Dirty[x + y * global.game->getWorld()->width] = true;
-            global.game->getWorld()->backgroundDirty[x + y * global.game->getWorld()->width] = true;
+    for (int x = 0; x < global.game->GameIsolate_.world->width; x++) {
+        for (int y = 0; y < global.game->GameIsolate_.world->height; y++) {
+            global.game->GameIsolate_.world->dirty[x + y * global.game->GameIsolate_.world->width] =
+                    true;
+            global.game->GameIsolate_.world
+                    ->layer2Dirty[x + y * global.game->GameIsolate_.world->width] = true;
+            global.game->GameIsolate_.world
+                    ->backgroundDirty[x + y * global.game->GameIsolate_.world->width] = true;
         }
     }
 }
