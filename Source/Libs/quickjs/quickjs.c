@@ -44,7 +44,6 @@
 #include <io.h>
 #include <process.h>
 #include <sys/utime.h>
-#include <WinSock2.h>
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
 typedef SSIZE_T ssize_t;

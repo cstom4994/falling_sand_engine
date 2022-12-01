@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "Core/Macros.hpp"
 #include "Engine/Refl.hpp"
 #include "Libs/lua/lua.hpp"
 #include "Libs/nameof.hpp"
@@ -1009,12 +1010,8 @@ namespace LuaStruct {
 #define METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES 9
 #endif
 
-#ifndef METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE
-#if defined(__GNUC__) || defined(__clang__)
-#define METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE 1
-#else
-#define METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE 0
-#endif
+#if defined(__GNUC__) || defined(__clang__) && (!defined(_MSC_VER) && !defined(METADOT_PLATFORM_WINDOWS))
+#define METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE
 #endif
 
 #ifndef METAENGINE_LUAWRAPPER_USE_SHARED_LUAREF
@@ -1076,6 +1073,9 @@ namespace LuaWrapper {
 #endif
 }// namespace LuaWrapper
 
+#if defined(METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE)
+#include <cxxabi.h>
+#endif
 
 namespace LuaWrapper {
     /// @addtogroup optional
@@ -1529,10 +1529,6 @@ namespace LuaWrapper {
     };
 }// namespace LuaWrapper
 
-
-#if METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE
-#include <cxxabi.h>
-#endif
 
 namespace LuaWrapper {
     // for lua version compatibility
@@ -2316,7 +2312,7 @@ namespace LuaWrapper {
 #endif
 
         inline std::string pretty_name(const std::type_info &t) {
-#if METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE
+#if defined(METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE)
             int status = 0;
             char *demangle_name = abi::__cxa_demangle(t.name(), 0, 0, &status);
             struct deleter

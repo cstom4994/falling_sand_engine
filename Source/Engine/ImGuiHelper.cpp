@@ -6,8 +6,6 @@
 
 #ifdef WIN32
 
-#include "Libs/external/dirent.h"
-
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260

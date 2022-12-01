@@ -3,6 +3,8 @@
 #ifndef _METADOT_MACROS_HPP_
 #define _METADOT_MACROS_HPP_
 
+#if defined(__cplusplus)
+
 #include <string>
 
 #if defined(__cpp_char8_t)
@@ -87,6 +89,8 @@ const char *u8Cpp20(T &&t) noexcept {
 #else
 #define static_inline static inline
 #endif
+#endif
+
 #endif
 
 // Platforms Macros
