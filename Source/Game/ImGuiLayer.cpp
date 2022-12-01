@@ -16,6 +16,7 @@
 #include "Game/Utils.hpp"
 #include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
+#include "Engine/Scripting.hpp"
 #include "Settings.hpp"
 
 #include "glew.h"
@@ -25,6 +26,8 @@
 #include <map>
 
 #include <imgui/IconsFontAwesome5.h>
+
+#define LANG(_c) global.scripts->LuaMap["LuaCore"]->Func_.Lang(_c)
 
 extern void ShowAutoTestWindow();
 
@@ -575,11 +578,11 @@ void ImGuiLayer::Render() {
 
     if (Settings::ui_tweak) {
 
-        ImGui::Begin("MetaEngine Tweaks");
+        ImGui::Begin(LANG("ui_tweaks"));
 
         ImGui::BeginTabBar(U8("协变与逆变"));
 
-        if (ImGui::BeginTabItem(U8("首页"))) {
+        if (ImGui::BeginTabItem(LANG("ui_info"))) {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                         1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
@@ -593,16 +596,7 @@ void ImGuiLayer::Render() {
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem(U8("热更新"))) {
-
-            //game->data.Functions["func_drawInTweak"].invoke({});
-
-            //game->data->draw();
-
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem(U8("测试"))) {
+        if (ImGui::BeginTabItem(LANG("ui_test"))) {
             ImGui::BeginTabBar(U8("测试#haha"));
             if (ImGui::BeginTabItem(U8("自动序列测试"))) {
                 ShowAutoTestWindow();

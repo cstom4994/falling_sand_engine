@@ -1,20 +1,24 @@
-local i18n = require("i18n")
-
-i18n.set('en.welcome', 'welcome to this program')
-i18n.set('zh.welcome', '你好八嘎')
+i18n = require("i18n")
 
 i18n.load({
     en = {
+        welcome = "Welcome to MetaDot",
         loaded_vec = "loaded vec lib",
         age_msg = "your age is %{age}.",
         phone_msg = {
             one = "you have one new message.",
             other = "you have %{count} new messages."
         }
+    },
+    zh = {
+        welcome = "欢迎来到 MetaDot",
+        ui_tweaks = "MetaEngine Tweaks",
+        ui_info = "基本信息",
+        ui_test = "测试"
     }
 })
 
-i18n.setLocale('en') -- English is the default locale anyway
+i18n.setLocale('zh')
 
 function translate(str)
     return i18n.translate(str)

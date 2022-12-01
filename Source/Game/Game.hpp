@@ -28,6 +28,7 @@
 #include "Game/Utils.hpp"
 #include "Libs/sparsehash/sparse_hash_map.h"
 #include "box2d/b2_distance_joint.h"
+#include "Core/Const.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -36,8 +37,6 @@
 #include <iostream>
 #include <thread>
 #include <unordered_map>
-
-#define frameTimeNum 100
 
 enum GameState {
     MAIN_MENU,
@@ -83,7 +82,7 @@ private:
     float freeCamX = 0;
     float freeCamY = 0;
 
-    uint16_t *frameTime = new uint16_t[frameTimeNum];
+    uint16_t *frameTime = new uint16_t[FrameTimeNum];
 
     STBTTF_Font *font64;
     STBTTF_Font *font16;
@@ -115,10 +114,8 @@ private:
     DrawTextParams_t dt_versionInfo1;
     DrawTextParams_t dt_versionInfo2;
     DrawTextParams_t dt_versionInfo3;
-
     DrawTextParams_t dt_fps;
     DrawTextParams_t dt_feelsLikeFps;
-
     DrawTextParams_t dt_frameGraph[5];
     DrawTextParams_t dt_loading;
 

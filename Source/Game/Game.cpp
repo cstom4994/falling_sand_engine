@@ -178,48 +178,18 @@ int Game::init(int argc, char *argv[]) {
     };
     loadscript();
 
-    if (Settings::networkMode != NetworkMode::SERVER) {
-        // init the background
-
-        METADOT_INFO("Loading backgrounds...");
-
-        std::vector<BackgroundLayer> testOverworldLayers = {
-                BackgroundLayer(
-                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer2.png",
-                                              SDL_PIXELFORMAT_ARGB8888),
-                        0.125, 0.125, 1, 0),
-                BackgroundLayer(
-                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer3.png",
-                                              SDL_PIXELFORMAT_ARGB8888),
-                        0.25, 0.25, 0, 0),
-                BackgroundLayer(
-                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer4.png",
-                                              SDL_PIXELFORMAT_ARGB8888),
-                        0.375, 0.375, 4, 0),
-                BackgroundLayer(
-                        Textures::loadTexture("data/assets/backgrounds/TestOverworld/layer5.png",
-                                              SDL_PIXELFORMAT_ARGB8888),
-                        0.5, 0.5, 0, 0)};
-
-        METADOT_NEW(C, GameIsolate_.backgrounds, Backgrounds);
-        METADOT_CREATE(C, bg, Background, 0x7EAFCB, testOverworldLayers);
-        GameIsolate_.backgrounds->Push("TEST_OVERWORLD", bg);
-        GameIsolate_.backgrounds->Get("TEST_OVERWORLD")->init();
-    }
+    if (Settings::networkMode != NetworkMode::SERVER) { GameIsolate_.backgrounds->Load(); }
 
     // init the rng
-
     METADOT_INFO("Seeding RNG...");
     unsigned int seed = (unsigned int) UTime::millis();
     srand(seed);
 
     // register & set up materials
-
     METADOT_INFO("Setting up materials...");
 
-    Textures::initTexture();
-
-    Materials::init();
+    Textures::InitTexture();
+    Materials::Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, b2DebugDraw, b2DebugDraw_impl, RenderTarget_.target);
@@ -257,21 +227,14 @@ int Game::init(int argc, char *argv[]) {
         }
 
         global.platform.SetVSync(true);
-
-        // TODO: load settings from settings file
-        // also note OptionsUI::minimizeOnFocus exists
         global.platform.SetMinimizeOnLostFocus(false);
     }
 
     // init threadpools
-
     METADOT_NEW(C, updateDirtyPool, ThreadPool, 6);
     METADOT_NEW(C, rotateVectorsPool, ThreadPool, 3);
 
-    if (Settings::networkMode != NetworkMode::SERVER) {
-        // load shaders
-        global.shaderworker.LoadShaders();
-    }
+    if (Settings::networkMode != NetworkMode::SERVER) { global.shaderworker.LoadShaders(); }
 
     return this->run(argc, argv);
 }
@@ -545,7 +508,6 @@ int Game::run(int argc, char *argv[]) {
     GameIsolate_.game_timestate.startTime = UTime::millis();
 
     // start loading chunks
-
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
         for (int y = -CHUNK_H * 3; y < GameIsolate_.world->height + CHUNK_H * 8; y += CHUNK_H) {
@@ -554,9 +516,7 @@ int Game::run(int argc, char *argv[]) {
     }
 
     // start game loop
-
     METADOT_INFO("Starting game loop...");
-
     freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2;
     freeCamY = GameIsolate_.world->height / 2.0f - (int) (CHUNK_H * 0.75);
     if (GameIsolate_.world->player) {
@@ -587,7 +547,7 @@ int Game::run(int argc, char *argv[]) {
     ofsX = (ofsX - global.platform.WIDTH / 2) / 2 * 3 + global.platform.WIDTH / 2;
     ofsY = (ofsY - global.platform.HEIGHT / 2) / 2 * 3 + global.platform.HEIGHT / 2;
 
-    for (int i = 0; i < frameTimeNum; i++) { frameTime[i] = 0; }
+    for (int i = 0; i < FrameTimeNum; i++) { frameTime[i] = 0; }
     METADOT_NEW_ARRAY(C, objectDelete, UInt8,
                       GameIsolate_.world->width * GameIsolate_.world->height);
 
@@ -596,7 +556,6 @@ int Game::run(int argc, char *argv[]) {
     fadeInWaitFrames = 5;
 
     // game loop
-
     while (this->running) {
 
         GameIsolate_.game_timestate.now = UTime::millis();
@@ -606,7 +565,6 @@ int Game::run(int argc, char *argv[]) {
         if (Settings::networkMode != NetworkMode::SERVER) {
 
             // handle window events
-
             while (SDL_PollEvent(&windowEvent)) {
 
                 if (windowEvent.type == SDL_WINDOWEVENT) {
@@ -1403,7 +1361,7 @@ int Game::run(int argc, char *argv[]) {
             float sum = 0;
             float num = 0.01;
 
-            for (int i = 0; i < frameTimeNum; i++) {
+            for (int i = 0; i < FrameTimeNum; i++) {
                 float weight = frameTime[i];
                 sum += weight * frameTime[i];
                 num += weight;
@@ -1414,8 +1372,8 @@ int Game::run(int argc, char *argv[]) {
             dt_feelsLikeFps.w = -1;
         }
 
-        for (int i = 1; i < frameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
-        frameTime[frameTimeNum - 1] =
+        for (int i = 1; i < FrameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
+        frameTime[FrameTimeNum - 1] =
                 (uint16_t) (UTime::millis() - GameIsolate_.game_timestate.now);
 
         GameIsolate_.game_timestate.lastTime = GameIsolate_.game_timestate.now;
@@ -1452,7 +1410,7 @@ exit:
     METADOT_DELETE(C, global.ImGuiLayer, ImGuiLayer);
 
     METADOT_DELETE(C, objectDelete, UInt8);
-    METADOT_DELETE(C, GameIsolate_.backgrounds, Backgrounds);
+    GameIsolate_.backgrounds->Unload();
 
     METADOT_DELETE_EX(C, terminal_log, terminal, ImTerm::terminal<terminal_commands>);
 
@@ -1687,7 +1645,7 @@ void Game::updateFrameEarly() {
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::VACUUM);
             i3->vacuumParticles = {};
-            i3->surface = Textures::loadTexture("data/assets/objects/testVacuum.png");
+            i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
             i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
             METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
             i3->pivotX = 6;
@@ -4187,7 +4145,7 @@ void Game::renderOverlays() {
             Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
                               global.platform.HEIGHT - 15 - (i * 25) - 2, ALIGN_LEFT);
             METAENGINE_Render_Line(
-                    RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+                    RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
                     global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25,
                     global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
         }
@@ -4196,10 +4154,10 @@ void Game::renderOverlays() {
             snprintf(buff, sizeof(buff), "%d", i);
             std::string buffAsStdStr = buff;
             Drawing::drawText(renderer, buffAsStdStr.c_str(), font14, WIDTH - 20, HEIGHT - 15 - i - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
-            SDL_RenderDrawLine(renderer, WIDTH - 30 - frameTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
+            SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
         }*/
 
-        for (int i = 0; i < frameTimeNum; i++) {
+        for (int i = 0; i < FrameTimeNum; i++) {
             int h = frameTime[i];
 
             SDL_Color col;
@@ -4216,19 +4174,19 @@ void Game::renderOverlays() {
             }
 
             METAENGINE_Render_Line(
-                    RenderTarget_.target, global.platform.WIDTH - frameTimeNum - 30 + i,
-                    global.platform.HEIGHT - 10 - h, global.platform.WIDTH - frameTimeNum - 30 + i,
+                    RenderTarget_.target, global.platform.WIDTH - FrameTimeNum - 30 + i,
+                    global.platform.HEIGHT - 10 - h, global.platform.WIDTH - FrameTimeNum - 30 + i,
                     global.platform.HEIGHT - 10, col);
-            //SDL_RenderDrawLine(renderer, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - frameTimeNum - 30 + i, HEIGHT - 10);
+            //SDL_RenderDrawLine(renderer, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10);
         }
 
         METAENGINE_Render_Line(
-                RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+                RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
                 global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
                 global.platform.WIDTH - 25,
                 global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
                 {0x00, 0xff, 0xff, 0xff});
-        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - frameTimeNum - 5,
+        METAENGINE_Render_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
                                global.platform.HEIGHT - 10 -
                                        (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
                                global.platform.WIDTH - 25,

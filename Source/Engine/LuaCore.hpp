@@ -24,15 +24,10 @@ public:
     void Attach();
     void Detach();
 
-    // template<typename T>
-    // inline void set_variable(const std::string &name, T value) {
-    //     this->s_lua[name] = value;
-    // }
-
-    // template<typename T>
-    // inline T get_variable(const std::string &name) {
-    //     return this->s_lua.get<T>(name);
-    // }
+    struct
+    {
+        LuaWrapper::LuaFunction Lang;
+    } Func_;
 };
 
 #endif

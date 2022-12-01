@@ -4,14 +4,16 @@
 -- used to load scripts
 local tl = require("tl")
 
-local inspect = require 'inspect'
+local inspect = require "inspect"
+
+require "lang"
 
 assert(inspect({1, 2, 3, 4}) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")
 assert(inspect("Hello") == '"Hello"')
 
 runf("data/lua/vec.lua")
-METADOT_INFO("loaded vec lib")
+METADOT_INFO(i18n("loaded_vec"))
 
 function starts_with(str, start)
     return str:sub(1, #start) == start

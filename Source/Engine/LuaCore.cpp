@@ -152,8 +152,6 @@ void LuaCore::Attach() {
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
-    //luaopen_toml(m_L);
-    luaopen_modulename(m_L);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
@@ -182,15 +180,12 @@ void LuaCore::Attach() {
     //                 FUtil::getExecutableFolderPath()),
     //         s_lua.globalTable());
 
-    RunScriptFromFile("data/lua/lang.lua");
-
-    LuaWrapper::LuaFunction lang = s_lua["translate"];
-    std::string a = lang("welcome");
-
-    // METADOT_INFO(a.c_str());
-
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
     RunScriptFromFile("data/lua/startup.lua");
+
+    //RunScriptFromFile("data/lua/lang.lua");
+
+    Func_.Lang = s_lua["translate"];
 }
 
 void LuaCore::Detach() {}
