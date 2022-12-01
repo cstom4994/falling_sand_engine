@@ -31,6 +31,8 @@ static const std::string win_game = U8("MetaDot");
 // Adjusts flow speed (0.0f - 1.0f)
 #define FLUID_FlowSpeed 1.0f
 
+#define FrameTimeNum 100
+
 #define METADOT_NAME "MetaDot"
 #define METADOT_VERSION_TEXT "0.0.3"
 #define METADOT_VERSION_MAJOR 0

@@ -80,7 +80,7 @@ int Platform::InitWindow() {
             return EXIT_FAILURE;
         }
 
-        // SDL_SetWindowIcon(window, Textures::loadTexture("data/assets/Icon_32x.png"));
+        // SDL_SetWindowIcon(window, Textures::LoadTexture("data/assets/Icon_32x.png"));
 
         // create gpu target
         METADOT_INFO("Creating gpu target...");
@@ -128,7 +128,7 @@ int Platform::InitWindow() {
 
         METAENGINE_Render_Clear(global.game->RenderTarget_.target);
         METAENGINE_Render_Flip(global.game->RenderTarget_.target);
-        C_Surface *splashSurf = Textures::loadTexture("data/assets/title/splash.png");
+        C_Surface *splashSurf = Textures::LoadTexture("data/assets/title/splash.png");
         METAENGINE_Render_Image *splashImg = METAENGINE_Render_CopyImageFromSurface(splashSurf);
         METAENGINE_Render_SetImageFilter(splashImg, METAENGINE_Render_FILTER_NEAREST);
         METAENGINE_Render_BlitRect(splashImg, NULL, global.game->RenderTarget_.target, NULL);

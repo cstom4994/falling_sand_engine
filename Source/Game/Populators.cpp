@@ -130,7 +130,7 @@
 // 		std::string m = "data/assets/objects/cloud_";
 // 		m.append(std::to_string(rand() % 11));
 // 		m.append(".png");
-// 		Structure st = Structure(Textures::loadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
+// 		Structure st = Structure(Textures::LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
 // 		PlacedStructure* ps = new PlacedStructure(st, posX, posY);
 // 		//world.addParticle(new Particle(Tiles::TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 		structs.push_back(*ps);
@@ -497,7 +497,7 @@ public:
                 snprintf(buff, sizeof(buff), "data/assets/objects/tree1.png");
                 //snprintf(buff, sizeof(buff), "data/assets/objects/testTree.png");
                 std::string buffAsStdStr = buff;
-                C_Surface *tex = Textures::loadTexture(buffAsStdStr.c_str());
+                C_Surface *tex = Textures::LoadTexture(buffAsStdStr.c_str());
 
                 px -= tex->w / 2;
                 py -= tex->h - 2;

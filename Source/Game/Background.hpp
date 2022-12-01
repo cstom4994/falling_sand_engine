@@ -1,5 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#ifndef _METADOT_BACKGROUND_HPP_
+#define _METADOT_BACKGROUND_HPP_
+
 #include "Core/Core.hpp"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
@@ -30,15 +33,17 @@ public:
     void init();
 };
 
-class Backgrounds {
-private:
-    std::unordered_map<std::string, Background *> m_backgrounds;
+struct Backgrounds
+{
 
-public:
-    Backgrounds() = default;
-    ~Backgrounds();
+    std::unordered_map<std::string, Background *> m_backgrounds;
 
     void Push(std::string name, Background *bg);
     Background *Get(std::string name);
     //static Background TEST_OVERWORLD;
+
+    void Load();
+    void Unload();
 };
+
+#endif

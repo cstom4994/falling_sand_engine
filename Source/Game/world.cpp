@@ -180,7 +180,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     b2PolygonShape dynamicBox3;
     dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
     RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3,
-                                  Textures::loadTexture("data/assets/objects/testObject3.png"));
+                                  Textures::LoadTexture("data/assets/objects/testObject3.png"));
 
     rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
@@ -927,7 +927,7 @@ found : {};
 
 #pragma endregion
 
-    C_Surface *texture = Textures::loadTexture("data/assets/objects/testObject3.png");
+    C_Surface *texture = Textures::LoadTexture("data/assets/objects/testObject3.png");
 
     if (chunk->rb) {
         delete[] chunk->rb->tiles;

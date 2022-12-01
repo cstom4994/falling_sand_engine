@@ -87,7 +87,8 @@ Material Materials::FLAT_COBBLE_DIRT =
 
 std::vector<Material *> Materials::MATERIALS;
 Material **Materials::MATERIALS_ARRAY;
-void Materials::init() {
+
+void Materials::Init() {
 
     Materials::GENERIC_AIR.conductionSelf = 0.8;
     Materials::GENERIC_AIR.conductionOther = 0.8;

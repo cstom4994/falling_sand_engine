@@ -399,7 +399,7 @@ namespace GameUI {
 
     void MainMenuUI::Setup() {
 
-        C_Surface *logoSfc = Textures::loadTexture("data/assets/ui/logo.png");
+        C_Surface *logoSfc = Textures::LoadTexture("data/assets/ui/logo.png");
         title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
         METAENGINE_Render_SetImageFilter(title, METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(logoSfc);
@@ -615,7 +615,7 @@ namespace GameUI {
                         }
                     }
 
-                    game->GameIsolate_.world = nullptr;
+                    game->GameIsolate_.world = w;
                     //});
 
                     game->fadeInStart = game->GameIsolate_.game_timestate.now;
@@ -1047,19 +1047,19 @@ namespace GameUI {
     void DebugCheatsUI::Setup() {
 
         images = {};
-        C_Surface *sfc = Textures::loadTexture("data/assets/objects/testPickaxe.png");
+        C_Surface *sfc = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
         images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
         METAENGINE_Render_SetImageFilter(images[0], METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
-        sfc = Textures::loadTexture("data/assets/objects/testHammer.png");
+        sfc = Textures::LoadTexture("data/assets/objects/testHammer.png");
         images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
         METAENGINE_Render_SetImageFilter(images[1], METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
-        sfc = Textures::loadTexture("data/assets/objects/testVacuum.png");
+        sfc = Textures::LoadTexture("data/assets/objects/testVacuum.png");
         images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
         METAENGINE_Render_SetImageFilter(images[2], METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
-        sfc = Textures::loadTexture("data/assets/objects/testBucket.png");
+        sfc = Textures::LoadTexture("data/assets/objects/testBucket.png");
         images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
         METAENGINE_Render_SetImageFilter(images[3], METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
@@ -1097,7 +1097,7 @@ namespace GameUI {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::TOOL);
-                    i3->surface = Textures::loadTexture("data/assets/objects/testPickaxe.png");
+                    i3->surface = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 2;
@@ -1118,7 +1118,7 @@ namespace GameUI {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::HAMMER);
-                    i3->surface = Textures::loadTexture("data/assets/objects/testHammer.png");
+                    i3->surface = Textures::LoadTexture("data/assets/objects/testHammer.png");
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 2;
@@ -1138,7 +1138,7 @@ namespace GameUI {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::VACUUM);
-                    i3->surface = Textures::loadTexture("data/assets/objects/testVacuum.png");
+                    i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 6;
@@ -1159,10 +1159,10 @@ namespace GameUI {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::FLUID_CONTAINER);
-                    i3->surface = Textures::loadTexture("data/assets/objects/testBucket.png");
+                    i3->surface = Textures::LoadTexture("data/assets/objects/testBucket.png");
                     i3->capacity = 100;
                     i3->loadFillTexture(
-                            Textures::loadTexture("data/assets/objects/testBucket_fill.png"));
+                            Textures::LoadTexture("data/assets/objects/testBucket_fill.png"));
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 0;
@@ -1191,12 +1191,12 @@ namespace GameUI {
 
     void CreateWorldUI::Setup() {
 
-        C_Surface *logoMT = Textures::loadTexture("data/assets/ui/prev_materialtest.png");
+        C_Surface *logoMT = Textures::LoadTexture("data/assets/ui/prev_materialtest.png");
         materialTestWorld = METAENGINE_Render_CopyImageFromSurface(logoMT);
         METAENGINE_Render_SetImageFilter(materialTestWorld, METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(logoMT);
 
-        C_Surface *logoDef = Textures::loadTexture("data/assets/ui/prev_default.png");
+        C_Surface *logoDef = Textures::LoadTexture("data/assets/ui/prev_default.png");
         defaultWorld = METAENGINE_Render_CopyImageFromSurface(logoDef);
         METAENGINE_Render_SetImageFilter(defaultWorld, METAENGINE_Render_FILTER_NEAREST);
         SDL_FreeSurface(logoDef);

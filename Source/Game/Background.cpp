@@ -1,13 +1,13 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "Game/InEngine.h"
-
 #include "Background.hpp"
-#include "Game/Textures.hpp"
-#include <algorithm>
-
+#include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
+#include "Game/Game.hpp"
 #include "Game/InEngine.h"
+#include "Game/Textures.hpp"
+
+#include <algorithm>
 
 BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX,
                                  float moveY) {
@@ -42,6 +42,33 @@ Background *Backgrounds::Get(std::string name) {
     return m_backgrounds[name];
 }
 
-Backgrounds::~Backgrounds() {
+void Backgrounds::Load() {
+    METADOT_INFO("Loading backgrounds...");
+
+    std::vector<BackgroundLayer> testOverworldLayers = {
+            BackgroundLayer(
+                    Textures::LoadTexture("data/assets/backgrounds/TestOverworld/layer2.png",
+                                          SDL_PIXELFORMAT_ARGB8888),
+                    0.125, 0.125, 1, 0),
+            BackgroundLayer(
+                    Textures::LoadTexture("data/assets/backgrounds/TestOverworld/layer3.png",
+                                          SDL_PIXELFORMAT_ARGB8888),
+                    0.25, 0.25, 0, 0),
+            BackgroundLayer(
+                    Textures::LoadTexture("data/assets/backgrounds/TestOverworld/layer4.png",
+                                          SDL_PIXELFORMAT_ARGB8888),
+                    0.375, 0.375, 4, 0),
+            BackgroundLayer(
+                    Textures::LoadTexture("data/assets/backgrounds/TestOverworld/layer5.png",
+                                          SDL_PIXELFORMAT_ARGB8888),
+                    0.5, 0.5, 0, 0)};
+
+    METADOT_NEW(C, global.game->GameIsolate_.backgrounds, Backgrounds);
+    METADOT_CREATE(C, bg, Background, 0x7EAFCB, testOverworldLayers);
+    global.game->GameIsolate_.backgrounds->Push("TEST_OVERWORLD", bg);
+    global.game->GameIsolate_.backgrounds->Get("TEST_OVERWORLD")->init();
+}
+
+void Backgrounds::Unload() {
     for (auto &[name, bg]: m_backgrounds) METADOT_DELETE(C, bg, Background);
 }

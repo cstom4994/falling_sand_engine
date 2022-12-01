@@ -118,7 +118,7 @@ public:
     static Material FLAT_COBBLE_STONE;
     static Material FLAT_COBBLE_DIRT;
 
-    static void init();
+    static void Init();
 };
 
 #define INC_MaterialInstance
