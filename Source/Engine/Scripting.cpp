@@ -4,8 +4,8 @@
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Engine/Memory.hpp"
-#include "Engine/JsMachine.hpp"
-#include "Engine/LuaMachine.hpp"
+#include "Engine/JsWrapper.hpp"
+#include "Engine/LuaCore.hpp"
 #include "Engine/MuDSL.hpp"
 #include "Game/FileSystem.hpp"
 #include <iostream>
@@ -136,13 +136,13 @@ public:
     std::string member_function(const std::string &s) { return "Hello, " + s; }
 };
 
-void println(JsMachine::rest<std::string> args) {
+void println(JsWrapper::rest<std::string> args) {
     for (auto const &arg: args) METADOT_INFO("{}", arg);
 }
 
 void test_js() {
-    JsMachine::Runtime runtime;
-    JsMachine::Context context(runtime);
+    JsWrapper::Runtime runtime;
+    JsWrapper::Context context(runtime);
     try {
         // export classes as a module
         auto &module = context.addModule("MyModule");
@@ -173,10 +173,10 @@ void test_js() {
         cb("world");
 
         // passing c++ objects to JS
-        auto lambda = context.eval("x=>my.println(x.member_function('lambda'))").as<std::function<void(JsMachine::shared_ptr<MyClass>)>>();
-        auto v3 = JsMachine::make_shared<MyClass>(context.ctx, std::vector{1, 2, 3});
+        auto lambda = context.eval("x=>my.println(x.member_function('lambda'))").as<std::function<void(JsWrapper::shared_ptr<MyClass>)>>();
+        auto v3 = JsWrapper::make_shared<MyClass>(context.ctx, std::vector{1, 2, 3});
         lambda(v3);
-    } catch (JsMachine::exception) {
+    } catch (JsWrapper::exception) {
         auto exc = context.getException();
         std::cerr << (std::string) exc << std::endl;
         if ((bool) exc["stack"])
@@ -214,21 +214,21 @@ void Scripts::LoadMuFuncs() {
     METADOT_ASSERT_E(MuDSL);
 
     auto loadFunc = [&](const MuDSL::List &args) {
-        LuaMachine *LuaCore = nullptr;
-        METADOT_NEW(C, LuaCore, LuaMachine);
-        LuaMap.insert(std::make_pair("LuaCore", LuaCore));
-        LuaCore->Attach();
+        LuaCore *L = nullptr;
+        METADOT_NEW(C, L, LuaCore);
+        LuaMap.insert(std::make_pair("LuaCore", L));
+        L->Attach();
         //LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
         return std::make_shared<MuDSL::Value>();
     };
     auto loadLua = MuDSL->newFunction("loadLua", loadFunc);
 
     auto endFunc = [&](const MuDSL::List &args) {
-        auto LuaCore = LuaMap["LuaCore"];
+        auto L = LuaMap["LuaCore"];
         //LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
-        LuaCore->Detach();
+        L->Detach();
         LuaMap.erase("LuaCore");
-        METADOT_DELETE(C, LuaCore, LuaMachine);
+        METADOT_DELETE(C, L, LuaCore);
         return std::make_shared<MuDSL::Value>();
     };
     auto endLua = MuDSL->newFunction("endLua", endFunc);

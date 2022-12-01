@@ -4,7 +4,7 @@
 #include "Core/Const.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/LuaMachine.hpp"
+#include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
 #include "Engine/LuaWrapper.hpp"

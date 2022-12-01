@@ -14,7 +14,7 @@
 #include "DefaultGenerator.cpp"
 #include "Engine/ImGuiBase.hpp"
 #include "Engine/ImGuiTerminal.hpp"
-#include "Engine/LuaMachine.hpp"
+#include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"

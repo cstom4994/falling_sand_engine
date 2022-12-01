@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 
-class LuaMachine;
+class LuaCore;
 namespace MuDSL {
     class MuDSLInterpreter;
 }
@@ -14,7 +14,7 @@ namespace MuDSL {
 struct Scripts
 {
     MuDSL::MuDSLInterpreter *MuDSL = nullptr;
-    std::map<std::string, LuaMachine*> LuaMap;
+    std::map<std::string, LuaCore*> LuaMap;
 
     void Init();
     void End();

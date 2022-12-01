@@ -77,8 +77,7 @@ set_exceptions("cxx", "objc")
 
 if (is_os("windows")) then
 
-    set_arch("x64")
-
+	set_arch("x64")
     set_toolchains("clang-cl")
 
     add_defines("_WINDOWS")
@@ -100,7 +99,7 @@ if (is_os("windows")) then
 
     add_cxxflags("/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800",
                  "/wd5030", "/wd5222", "/wd4554", "/wd4002", "/utf-8",
-                 "/Zc:__cplusplus", "/EHa", "/Za")
+                 "/Zc:__cplusplus", "/Za")
 
     add_cxflags("/bigobj")
 
@@ -156,14 +155,15 @@ do
     add_rules("c++.unity_build", {batchsize = 0})
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE", "CONFIG_BIGNUM")
+    add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
               "Source/Libs/ImGui/**.c", "Source/Libs/lua/**.c",
               "Source/Libs/fmt/**.cc", "Source/Libs/glew/**.c",
               {unity_group = "libone"})
 
-    add_files("Source/Libs/quickjs/*.c")
+    add_files("Source/Libs/quickjs/**.c")
+    add_files("Source/Libs/quickjs/**.cpp")
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
     add_files("Source/Libs/box2d/**.cpp", {unity_group = "libbox2d"})

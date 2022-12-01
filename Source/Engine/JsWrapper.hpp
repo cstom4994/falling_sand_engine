@@ -1,4 +1,6 @@
-#pragma once
+
+#ifndef _METADOT_JSWRAPPER_HPP_
+#define _METADOT_JSWRAPPER_HPP_
 
 #include "quickjs/quickjs.h"
 
@@ -28,7 +30,7 @@
 #define QJSPP_TYPENAME(...) #__VA_ARGS__
 #endif
 
-namespace JsMachine {
+namespace JsWrapper {
 
     class Context;
     class Value;
@@ -824,7 +826,7 @@ namespace JsMachine {
             ensureCanCastToBase<detail::class_from_member_pointer_t<decltype(M)>>();
         }
 
-        /** Stores offsets to JsMachine::Value members of T.
+        /** Stores offsets to JsWrapper::Value members of T.
      * These values should be marked by class_registrar::mark for QuickJS garbage collector
      * so that the cycle removal algorithm can find the other objects referenced by this object.
      */
@@ -1128,7 +1130,7 @@ namespace JsMachine {
             template<typename T>
             explicit operator T() const { return as<T>(); }
 
-            /** Implicit converion to JsMachine::Value */
+            /** Implicit converion to JsWrapper::Value */
             operator Value() const;// defined later due to Value being incomplete type
 
             /// noncopyable
@@ -1192,7 +1194,7 @@ namespace JsMachine {
  * A wrapper over (JSValue v, JSContext * ctx).
  * Calls JS_FreeValue(ctx, v) on destruction. Can be copied and moved.
  * A JSValue can be released by either JSValue x = std::move(value); or JSValue x = value.release(), then the Value becomes invalid and FreeValue won't be called
- * Can be converted to C++ type, for example: auto string = value.as<std::string>(); JsMachine::exception would be thrown on error
+ * Can be converted to C++ type, for example: auto string = value.as<std::string>(); JsWrapper::exception would be thrown on error
  * Properties can be accessed (read/write): value["property1"] = 1; value[2] = "2";
  */
     class Value {
@@ -1268,7 +1270,7 @@ namespace JsMachine {
         operator JSValue() &&noexcept { return release(); }
 
 
-        /** Access JS properties. Returns proxy type which is implicitly convertible to JsMachine::Value */
+        /** Access JS properties. Returns proxy type which is implicitly convertible to JsWrapper::Value */
         template<typename Key>
         detail::property_proxy<Key> operator[](Key key) {
             assert(ctx && "Trying to access properties of Value with no JSContext");
@@ -1383,7 +1385,7 @@ namespace JsMachine {
             JS_FreeRuntime(rt);
         }
 
-        /// @return pointer to JsMachine::Context of the executed job or nullptr if no job is pending
+        /// @return pointer to JsWrapper::Context of the executed job or nullptr if no job is pending
         Context *executePendingJob();
 
         bool isJobPending() const {
@@ -1432,7 +1434,7 @@ namespace JsMachine {
         JSContext *ctx;
 
         /** Module wrapper
-     * Workaround for lack of opaque pointer for module load function by keeping a list of modules in JsMachine::Context.
+     * Workaround for lack of opaque pointer for module load function by keeping a list of modules in JsWrapper::Context.
      */
         class Module {
             friend class Context;
@@ -1488,7 +1490,7 @@ namespace JsMachine {
          */
             template<auto F>
             Module &function(const char *name) {
-                return add(name, JsMachine::fwrapper<F>{name});
+                return add(name, JsWrapper::fwrapper<F>{name});
             }
 
             /** Add function object f.
@@ -1509,12 +1511,12 @@ namespace JsMachine {
             template<class T>
             class class_registrar {
                 const char *name;
-                JsMachine::Value prototype;
-                JsMachine::Context::Module &module;
-                JsMachine::Context &context;
-                JsMachine::Value ctor;// last added constructor
+                JsWrapper::Value prototype;
+                JsWrapper::Context::Module &module;
+                JsWrapper::Context &context;
+                JsWrapper::Value ctor;// last added constructor
             public:
-                explicit class_registrar(const char *name, JsMachine::Context::Module &module, JsMachine::Context &context) : name(name),
+                explicit class_registrar(const char *name, JsWrapper::Context::Module &module, JsWrapper::Context &context) : name(name),
                                                                                                                               prototype(context.newObject()),
                                                                                                                               module(module),
                                                                                                                               context(context),
@@ -1552,7 +1554,7 @@ namespace JsMachine {
                 template<auto F>
                 class_registrar &static_fun(const char *name) {
                     assert(!JS_IsNull(ctor.v) && "You should call .constructor before .static_fun");
-                    js_traits<JsMachine::shared_ptr<T>>::template ensureCanCastToBase<F>();
+                    js_traits<JsWrapper::shared_ptr<T>>::template ensureCanCastToBase<F>();
                     ctor.add<F>(name);
                     return *this;
                 }
@@ -1580,9 +1582,9 @@ namespace JsMachine {
                 class_registrar &constructor(const char *name = nullptr) {
                     if (!name)
                         name = this->name;
-                    ctor = context.newValue(JsMachine::ctor_wrapper<T, Args...>{name});
+                    ctor = context.newValue(JsWrapper::ctor_wrapper<T, Args...>{name});
                     JS_SetConstructor(context.ctx, ctor.v, prototype.v);
-                    module.add(name, JsMachine::Value{ctor});
+                    module.add(name, JsWrapper::Value{ctor});
                     return *this;
                 }
 
@@ -1602,7 +1604,7 @@ namespace JsMachine {
                     return *this;
                 }
 
-                /** All JsMachine::Value members of T should be marked by mark<> for QuickJS garbage collector
+                /** All JsWrapper::Value members of T should be marked by mark<> for QuickJS garbage collector
              * so that the cycle removal algorithm can find the other objects referenced by this object.
              */
                 template<Value T::*V>
@@ -1623,7 +1625,7 @@ namespace JsMachine {
          */
             template<class T>
             class_registrar<T> class_(const char *name) {
-                return class_registrar<T>{name, *this, JsMachine::Context::get(ctx)};
+                return class_registrar<T>{name, *this, JsWrapper::Context::get(ctx)};
             }
         };
 
@@ -1694,7 +1696,7 @@ namespace JsMachine {
         template<typename T>
         Value newValue(T &&val) { return Value{ctx, std::forward<T>(val)}; }
 
-        /** returns current exception associated with context and clears it. Should be called when JsMachine::exception is caught */
+        /** returns current exception associated with context and clears it. Should be called when JsWrapper::exception is caught */
         Value getException() { return Value{ctx, JS_GetException(ctx)}; }
 
         /** Register class T for conversions to/from std::shared_ptr<T> to work.
@@ -1729,7 +1731,7 @@ namespace JsMachine {
             return Value{ctx, JS_ParseJSON2(ctx, buffer.data(), buffer.size(), filename, flags)};
         }
 
-        /** Get JsMachine::Context from JSContext opaque pointer */
+        /** Get JsWrapper::Context from JSContext opaque pointer */
         static Context &get(JSContext *ctx) {
             void *ptr = JS_GetContextOpaque(ctx);
             assert(ptr);
@@ -1847,7 +1849,7 @@ namespace JsMachine {
         }
     };
 
-    /** Convert from std::vector<T> to Array and vice-versa. If Array holds objects that are non-convertible to T throws JsMachine::exception */
+    /** Convert from std::vector<T> to Array and vice-versa. If Array holds objects that are non-convertible to T throws JsWrapper::exception */
     template<class T>
     struct js_traits<std::vector<T>>
     {
@@ -2051,4 +2053,6 @@ namespace JsMachine {
         }
         return &Context::get(ctx);
     }
-}// namespace JsMachine
+}// namespace JsWrapper
+
+#endif

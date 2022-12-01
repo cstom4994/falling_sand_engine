@@ -1,6 +1,6 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "LuaMachine.hpp"
+#include "LuaCore.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Engine/ImGuiBase.hpp"
@@ -126,7 +126,7 @@ static int ls(lua_State *L) {
     return 1;
 }
 
-void LuaMachine::print_error(lua_State *state) {
+void LuaCore::print_error(lua_State *state) {
     const char *message = lua_tostring(state, -1);
     METADOT_ERROR("LuaScript ERROR:\n  {}", (message ? message : "no message"));
     lua_pop(state, 1);
@@ -149,7 +149,7 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-void LuaMachine::Attach() {
+void LuaCore::Attach() {
     m_L = s_lua.state();
 
     luaopen_base(m_L);
@@ -195,10 +195,10 @@ void LuaMachine::Attach() {
 }
 
 
-void LuaMachine::Detach() {
+void LuaCore::Detach() {
 }
 
-void LuaMachine::RunScriptInConsole(lua_State *L, const char *c) {
+void LuaCore::RunScriptInConsole(lua_State *L, const char *c) {
     luaL_loadstring(m_L, c);
     auto result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
 
@@ -208,7 +208,7 @@ void LuaMachine::RunScriptInConsole(lua_State *L, const char *c) {
     }
 }
 
-void LuaMachine::RunScriptFromFile(const std::string &filePath) {
+void LuaCore::RunScriptFromFile(const std::string &filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
     int result = luaL_loadfile(m_L, METADOT_RESLOC_STR(filePath));
@@ -223,7 +223,7 @@ void LuaMachine::RunScriptFromFile(const std::string &filePath) {
     }
 }
 
-void LuaMachine::Update() {
+void LuaCore::Update() {
     //todo store lua bytecode version instead (dont load it every tick)
     //lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
     //call coroutes

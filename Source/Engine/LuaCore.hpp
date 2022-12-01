@@ -7,7 +7,7 @@
 
 struct lua_State;
 
-struct LuaMachine
+struct LuaCore
 {
 private:
     LuaWrapper::State s_lua;
