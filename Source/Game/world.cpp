@@ -2,14 +2,15 @@
 
 
 #include "Core/Const.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
+#include "Core/ThreadPool.hpp"
 #include "Engine/LuaCore.hpp"
+#include "Engine/LuaWrapper.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
-#include "Engine/LuaWrapper.hpp"
 #include "Game/Materials.hpp"
-#include "Core/ThreadPool.hpp"
 #ifndef INC_World
 #include "world.hpp"
 #endif
@@ -315,6 +316,9 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     C_Surface *texture = rb->surface;
 
+    // if (static_cast<bool>(texture))
+    //     return;
+
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
             MaterialInstance mat = rb->tiles[x + y * texture->w];
@@ -350,15 +354,17 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     SDL_BlitSurface(texture, &src, sf, NULL);
     SDL_FreeSurface(texture);
 
-    rb->surface = sf;
-    texture = rb->surface;
-
-    if (rb->surface != nullptr)
+    if (rb->surface != nullptr) {
         if (rb->surface->w <= 0 || rb->surface->h <= 0) {
             b2world->DestroyBody(rb->body);
             rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
             return;
         }
+        rb->surface = sf;
+        texture = rb->surface;
+    } else {
+        METADOT_ASSERT_E(0);
+    }
 
     float s = sin(rb->body->GetAngle());
     float c = cos(rb->body->GetAngle());
@@ -374,26 +380,28 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     // translate point back:
     rb->body->SetTransform(b2Vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
 
+    if (maxX == 1 || maxY == 1)
+        return;
+
+    if (!static_cast<bool>(texture) &&
+        !static_cast<bool>(rb->surface) &&
+        // !static_cast<bool>(xnew) &&
+        // !static_cast<bool>(ynew) &&
+        1)
+        return;
 
     bool foundAnything = false;
-    for (int x = 0; x < texture->w; x++) {
+    for (int x = 0; x < texture->w; x++)
         for (int y = 0; y < texture->h; y++) {
             bool f = ((METADOT_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             foundAnything = foundAnything || f;
         }
-    }
 
-
-    if (!foundAnything) {
+    if (!foundAnything)
         return;
-    }
-
 
     UInt8 *data = new UInt8[texture->w * texture->h];
-
-
     bool *edgeSeen = new bool[texture->w * texture->h];
-
 
     for (int y = 0; y < texture->h; y++) {
         for (int x = 0; x < texture->w; x++) {
@@ -582,8 +590,6 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     }
 
     if (polys2s.size() > 0) {
-
-
         std::vector<std::future<void>> poolResults = {};
 
         if (texture->w > 10) {
@@ -2302,7 +2308,8 @@ void World::tickObjectsMesh() {
     std::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
-        if (cur->needsUpdate && cur->body->IsEnabled() && NULL != cur->surface->pixels) {
+        if (!static_cast<bool>(cur->surface)) continue;
+        if (cur->needsUpdate && cur->body->IsEnabled()) {
             updateRigidBodyHitbox(cur);
         }
     }

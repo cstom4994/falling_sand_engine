@@ -1133,7 +1133,7 @@ int Game::run(int argc, char *argv[]) {
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
-                            if (cur->body->IsEnabled()) {
+                            if (cur->body->IsEnabled() && static_cast<bool>(cur->surface)) {
                                 float s = sin(-cur->body->GetAngle());
                                 float c = cos(-cur->body->GetAngle());
                                 bool upd = false;
@@ -1659,7 +1659,8 @@ void Game::updateFrameEarly() {
                                 }
                             }
                         } else {
-                            METADOT_ERROR("cur->surface = nullptr");
+                            // METADOT_ERROR("cur->surface = nullptr");
+                            continue;
                         }
                     }
                 }
@@ -2662,7 +2663,7 @@ void Game::tickPlayer() {
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
-                            METADOT_ASSERT(cur->surface, "cur->surface == nullptr");
+                            if (!static_cast<bool>(cur->surface)) continue;
                             if (cur->body->IsEnabled()) {
                                 float s = sin(-cur->body->GetAngle());
                                 float c = cos(-cur->body->GetAngle());
