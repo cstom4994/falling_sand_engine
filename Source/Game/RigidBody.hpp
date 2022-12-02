@@ -4,15 +4,10 @@
 #define _METADOT_RIGIDBODY_HPP_
 
 #define INC_RigidBody
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Materials.hpp"
-#include <box2d/b2_body.h>
-#include <box2d/b2_fixture.h>
-#include <box2d/b2_math.h>
-#include <box2d/b2_polygon_shape.h>
-#include <box2d/b2_shape.h>
-#include <box2d/b2_world.h>
 #include <memory>
 #include <vector>
 

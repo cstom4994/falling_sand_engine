@@ -81,7 +81,7 @@ set_exceptions("cxx", "objc")
 
 if (is_os("windows")) then
 
-	set_arch("x64")
+    set_arch("x64")
     set_toolchains("clang-cl")
 
     add_defines("_WINDOWS")
@@ -146,8 +146,7 @@ end
 
 include_dir_list = {
     "Source", "Source/Engine", "Source/Libs", "Source/Libs/imgui",
-    "Source/Libs/json/include", "Source/Libs/fmt/include",
-    "Source/Libs/box2d/inc", "Source/Libs/glad"
+    "Source/Libs/json/include", "Source/Libs/fmt/include", "Source/Libs/glad"
 }
 
 defines_list = {}
@@ -170,7 +169,6 @@ do
     add_files("Source/Libs/quickjs/**.cpp")
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
-    add_files("Source/Libs/box2d/**.cpp", {unity_group = "libbox2d"})
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
 end

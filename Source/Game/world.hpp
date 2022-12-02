@@ -9,10 +9,9 @@
 
 #include "Core/Macros.hpp"
 
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Networking.hpp"
 #include "Particle.hpp"
-#include <box2d/b2_math.h>
-#include <box2d/b2_world.h>
 #include <deque>
 #include <vector>
 #ifndef INC_RigidBody

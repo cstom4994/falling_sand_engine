@@ -3,10 +3,10 @@
 #ifndef _METADOT_DEBUGIMPL_HPP_
 #define _METADOT_DEBUGIMPL_HPP_
 
-#include "Core/Macros.hpp"
 #include "Core/Core.hpp"
+#include "Core/Macros.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/RendererGPU.h"
-#include <box2d/box2d.h>
 
 int MetaDot_buildnum(void);
 const std::string metadata(void);

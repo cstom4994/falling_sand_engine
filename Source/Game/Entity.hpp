@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "box2d/b2_body.h"
+#include "Engine/Internal/BuiltinBox2d.h"
+
 #define INC_Entity
 
 #ifndef INC_RigidBody

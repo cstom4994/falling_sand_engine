@@ -14,8 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "box2d/b2_math.h"
-#include "box2d/box2d.h"
+#include "Engine/Internal/BuiltinBox2d.h"
 
 void simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i, size_t j,
                       std::vector<bool> *mark_map, size_t omitted = 0);

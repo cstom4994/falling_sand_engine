@@ -2473,10 +2473,10 @@ void Game::tick() {
             memset(GameIsolate_.world->backgroundDirty, false,
                    (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
 
-        if (Settings::tick_temperature && tickTime % 4 == 2) {
+        if (Settings::tick_temperature && tickTime % GameTick == 2) {
             GameIsolate_.world->tickTemperature();
         }
-        if (Settings::draw_temperature_map && tickTime % 4 == 0) {
+        if (Settings::draw_temperature_map && tickTime % GameTick == 0) {
             renderTemperatureMap(GameIsolate_.world);
         }
 
@@ -2528,7 +2528,7 @@ void Game::tick() {
             GameIsolate_.world->width * 4
         );*/
 
-        if (Settings::tick_box2d && tickTime % 4 == 0) GameIsolate_.world->updateWorldMesh();
+        if (Settings::tick_box2d && tickTime % GameTick == 0) GameIsolate_.world->updateWorldMesh();
     }
 }
 

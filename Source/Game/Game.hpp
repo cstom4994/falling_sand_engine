@@ -28,7 +28,7 @@
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/sparsehash/sparse_hash_map.h"
-#include "box2d/b2_distance_joint.h"
+#include "Engine/Internal/BuiltinBox2d.h"
 
 #include <algorithm>
 #include <chrono>

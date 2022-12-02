@@ -16,18 +16,13 @@
 #include "Core/Core.hpp"
 #include "DefaultGenerator.cpp"
 #include "Engine/Math.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Utils.hpp"
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
 #include "fmt/format.h"
-
-#include <box2d/b2_body.h>
-#include <box2d/b2_fixture.h>
-#include <box2d/b2_polygon_shape.h>
-#include <box2d/b2_shape.h>
-#include <box2d/b2_weld_joint.h>
 
 #include <algorithm>
 #include <iostream>

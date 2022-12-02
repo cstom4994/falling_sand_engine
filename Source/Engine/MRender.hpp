@@ -4,9 +4,9 @@
 #define _METADOT_MRENDER_HPP_
 
 #include "Core/Core.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
-#include "box2d/b2_distance_joint.h"
 
 #include <unordered_map>
 

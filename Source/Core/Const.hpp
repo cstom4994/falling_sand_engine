@@ -33,6 +33,8 @@ static const std::string win_game = U8("MetaDot");
 
 #define FrameTimeNum 100
 
+#define GameTick 4
+
 #define METADOT_NAME "MetaDot"
 #define METADOT_VERSION_TEXT "0.0.3"
 #define METADOT_VERSION_MAJOR 0
