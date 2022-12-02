@@ -1,529 +1,507 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Console.hpp"
+#include "Core/Global.hpp"
+#include "Game/GameResources.hpp"
+#include <cstring>
+#include <string>
 
-#include "Game/Utils.hpp"
+#define LANG(_c) global.I18N.Get(_c).c_str()
 
-#include <array>
-#include <charconv>
-#include <optional>
-
-namespace {
-
-    constexpr std::array local_command_list{
-            terminal_commands::command_type{"clear", "清除终端屏幕", terminal_commands::clear,
-                                            terminal_commands::no_completion},
-            terminal_commands::command_type{"configure_terminal", "配置终端行为和外观",
-                                            terminal_commands::configure_term,
-                                            terminal_commands::configure_term_autocomplete},
-            terminal_commands::command_type{"echo", "打印文本", terminal_commands::echo,
-                                            terminal_commands::no_completion},
-            terminal_commands::command_type{"exit", "关闭这个终端", terminal_commands::exit,
-                                            terminal_commands::no_completion},
-            terminal_commands::command_type{"help", "显示帮助列表", terminal_commands::help,
-                                            terminal_commands::no_completion},
-            terminal_commands::command_type{"print", "打印文本", terminal_commands::echo,
-                                            terminal_commands::no_completion},
-            terminal_commands::command_type{"quit", "退出游戏", terminal_commands::quit,
-                                            terminal_commands::no_completion},
+namespace ImGui {
+    struct InputTextCallback_UserData
+    {
+        std::string *Str;
+        ImGuiInputTextCallback ChainCallback;
+        void *ChainCallbackUserData;
     };
 
-    namespace cfg_term {
-        namespace cmds {
-            enum cmds {
-                completion,
-                cpl_disable,
-                cpl_down,
-                cpl_up,
-                colors,
-                col_begin,
-                col_get_value = col_begin,
-                col_list_themes,
-                col_reset_theme,
-                col_set_theme,
-                col_set_value,
-                col_end,
-                csv_begin = col_end,
-                csv_auto_complete_non_selected = csv_begin,
-                csv_auto_complete_selected,
-                csv_auto_complete_separator,
-                csv_border,
-                csv_border_shadow,
-                csv_button,
-                csv_button_active,
-                csv_button_hovered,
-                csv_cmd_backlog,
-                csv_cmd_history_completed,
-                csv_check_mark,
-                csv_filter,
-                csv_filter_match,
-                csv_frame_bg,
-                csv_frame_bg_active,
-                csv_frame_bg_hovered,
-                csv_log_level_drop_down_bg,
-                csv_log_level_active,
-                csv_log_level_hovered,
-                csv_log_level_selected,
-                csv_l_trace,
-                csv_l_debug,
-                csv_l_info,
-                csv_l_warning,
-                csv_l_error,
-                csv_l_critical,
-                csv_message_panel,
-                csv_scrollbar_bg,
-                csv_scrollbar_grab,
-                csv_scrollbar_grab_active,
-                csv_scrollbar_grab_hovered,
-                csv_text,
-                csv_text_selected_bg,
-                csv_title_bg,
-                csv_title_bg_active,
-                csv_title_bg_collapsed,
-                csv_window_bg,
-                csv_end,
-                set_text = csv_end,
-                st_begin,
-                st_autoscroll = st_begin,
-                st_autowrap,
-                st_clear,
-                st_log_level,
-                st_filter,
-                st_optional_end,
-                st_logs = st_optional_end,
-                st_end,
-                count = st_end,
-            };
-        }// namespace cmds
+    static int InputTextCallback(ImGuiInputTextCallbackData *data) {
+        auto *user_data = (InputTextCallback_UserData *) data->UserData;
+        if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
 
-        constexpr std::array<const char *const, cmds::count> strings{
-                "completion",
-                "disable",
-                "to-bottom",
-                "to-top",
-                "colors",
-                "get-value",
-                "list-themes",
-                "reset-theme",
-                "set-theme",
-                "set-value",
-                "auto complete non selected",
-                "auto complete selected",
-                "auto complete separator",
-                "border",
-                "border shadow",
-                "button",
-                "button active",
-                "button hovered",
-                "cmd backlog",
-                "cmd history completed",
-                "check mark",
-                "filter hint",
-                "filter match",
-                "frame bg",
-                "frame bg active",
-                "frame bg hovered",
-                "log level drop down bg",
-                "log level active",
-                "log level hovered",
-                "log level selected",
-                "log trace",
-                "log debug",
-                "log info",
-                "log warning",
-                "log error",
-                "log critical",
-                "message panel",
-                "scrollbar bg",
-                "scrollbar grab",
-                "scrollbar grab active",
-                "scrollbar grab hovered",
-                "text",
-                "text selected bg",
-                "title bg",
-                "title bg active",
-                "title bg collapsed",
-                "window bg",
-                "set-text",
-                "autoscroll",
-                "autowrap",
-                "clear",
-                "log level",
-                "filter hint",
-                "logs",
-        };
-    }// namespace cfg_term
-}// namespace
+            std::string *str = user_data->Str;
+            IM_ASSERT(data->Buf == str->c_str());
+            str->resize(data->BufTextLen);
+            data->Buf = (char *) str->c_str();
+        } else if (user_data->ChainCallback) {
 
-terminal_commands::terminal_commands() {
-    for (const command_type &cmd: local_command_list) { add_command_(cmd); }
-}
-
-void terminal_commands::clear(argument_type &arg) { arg.term.clear(); }
-
-void terminal_commands::configure_term(argument_type &arg) {
-    using namespace cfg_term;
-
-    std::vector<std::string> &cl = arg.command_line;
-    if (cl.size() < 3) { arg.term.add_text_err("Not enough arguments"); }
-    if (cl[1] == strings[cmds::completion] && cl.size() == 3) {
-        if (cl[2] == strings[cmds::cpl_up]) {
-            arg.term.set_autocomplete_pos(ImTerm::position::up);
-        } else if (cl[2] == strings[cmds::cpl_down]) {
-            arg.term.set_autocomplete_pos(ImTerm::position::down);
-        } else if (cl[2] == strings[cmds::cpl_disable]) {
-            arg.term.set_autocomplete_pos(ImTerm::position::nowhere);
-        } else {
-            arg.term.add_text_err(Utils::Format("Unknown completion parameter: {0}", cl[2]));
+            data->UserData = user_data->ChainCallbackUserData;
+            return user_data->ChainCallback(data);
         }
-    } else if (cl[1] == strings[cmds::colors]) {
-        if (cl.size() == 3 && cl[2] == strings[cmds::col_list_themes]) {
-            unsigned long max_size = 0;
-            for (const ImTerm::theme &theme: ImTerm::themes::list) {
-                max_size = std::max(max_size, static_cast<unsigned long>(theme.name.size()));
-            }
-
-            arg.term.add_text("Available styles: ");
-            for (const ImTerm::theme &theme: ImTerm::themes::list) {
-                std::string str("      ");
-                str += theme.name;
-                arg.term.add_text(std::move(str));
-            }
-
-        } else if (cl.size() == 3 && cl[2] == strings[cmds::col_reset_theme]) {
-            arg.term.reset_colors();
-
-        } else if (cl.size() == 4 && cl[2] == strings[cmds::col_set_theme]) {
-
-            for (const ImTerm::theme &theme: ImTerm::themes::list) {
-                if (theme.name == cl[3]) {
-                    arg.term.theme() = theme;
-                    return;
-                }
-            }
-            arg.term.add_text_err(Utils::Format("Unknown theme: {0}", cl[3]));
-
-        } else if (((cl.size() == 8 || cl.size() == 7 || cl.size() == 4) &&
-                    cl[2] == strings[cmds::col_set_value]) ||
-                   ((cl.size() == 4) && cl[2] == strings[cmds::col_get_value])) {
-            auto it = misc::find_first_prefixed(cl[3], strings.begin() + cmds::csv_begin,
-                                                strings.begin() + cmds::csv_end,
-                                                [](auto &&) { return false; });
-
-            if (it == strings.begin() + cmds::csv_end) {
-                arg.term.add_text_err(Utils::Format("Unknown item: {0}", cl[3]));
-                return;
-            }
-
-            std::optional<ImTerm::theme::constexpr_color> *theme_color = nullptr;
-            auto enum_v = static_cast<cmds::cmds>(it - strings.begin());
-            switch (enum_v) {
-                case cmds::csv_text:
-                    theme_color = &arg.term.theme().text;
-                    break;
-                case cmds::csv_window_bg:
-                    theme_color = &arg.term.theme().window_bg;
-                    break;
-                case cmds::csv_border:
-                    theme_color = &arg.term.theme().border;
-                    break;
-                case cmds::csv_border_shadow:
-                    theme_color = &arg.term.theme().border_shadow;
-                    break;
-                case cmds::csv_button:
-                    theme_color = &arg.term.theme().button;
-                    break;
-                case cmds::csv_button_hovered:
-                    theme_color = &arg.term.theme().button_hovered;
-                    break;
-                case cmds::csv_button_active:
-                    theme_color = &arg.term.theme().button_active;
-                    break;
-                case cmds::csv_filter:
-                    theme_color = &arg.term.theme().filter_hint;
-                    break;
-                case cmds::csv_filter_match:
-                    theme_color = &arg.term.theme().matching_text;
-                    break;
-                case cmds::csv_frame_bg:
-                    theme_color = &arg.term.theme().frame_bg;
-                    break;
-                case cmds::csv_frame_bg_hovered:
-                    theme_color = &arg.term.theme().frame_bg_hovered;
-                    break;
-                case cmds::csv_frame_bg_active:
-                    theme_color = &arg.term.theme().frame_bg_active;
-                    break;
-                case cmds::csv_text_selected_bg:
-                    theme_color = &arg.term.theme().text_selected_bg;
-                    break;
-                case cmds::csv_check_mark:
-                    theme_color = &arg.term.theme().check_mark;
-                    break;
-                case cmds::csv_title_bg:
-                    theme_color = &arg.term.theme().title_bg;
-                    break;
-                case cmds::csv_title_bg_active:
-                    theme_color = &arg.term.theme().title_bg_active;
-                    break;
-                case cmds::csv_title_bg_collapsed:
-                    theme_color = &arg.term.theme().title_bg_collapsed;
-                    break;
-                case cmds::csv_message_panel:
-                    theme_color = &arg.term.theme().message_panel;
-                    break;
-                case cmds::csv_auto_complete_selected:
-                    theme_color = &arg.term.theme().auto_complete_selected;
-                    break;
-                case cmds::csv_auto_complete_non_selected:
-                    theme_color = &arg.term.theme().auto_complete_non_selected;
-                    break;
-                case cmds::csv_auto_complete_separator:
-                    theme_color = &arg.term.theme().auto_complete_separator;
-                    break;
-                case cmds::csv_cmd_backlog:
-                    theme_color = &arg.term.theme().cmd_backlog;
-                    break;
-                case cmds::csv_cmd_history_completed:
-                    theme_color = &arg.term.theme().cmd_history_completed;
-                    break;
-                case cmds::csv_log_level_drop_down_bg:
-                    theme_color = &arg.term.theme().log_level_drop_down_list_bg;
-                    break;
-                case cmds::csv_log_level_active:
-                    theme_color = &arg.term.theme().log_level_active;
-                    break;
-                case cmds::csv_log_level_hovered:
-                    theme_color = &arg.term.theme().log_level_hovered;
-                    break;
-                case cmds::csv_log_level_selected:
-                    theme_color = &arg.term.theme().log_level_selected;
-                    break;
-                case cmds::csv_scrollbar_bg:
-                    theme_color = &arg.term.theme().scrollbar_bg;
-                    break;
-                case cmds::csv_scrollbar_grab:
-                    theme_color = &arg.term.theme().scrollbar_grab;
-                    break;
-                case cmds::csv_scrollbar_grab_active:
-                    theme_color = &arg.term.theme().scrollbar_grab_active;
-                    break;
-                case cmds::csv_scrollbar_grab_hovered:
-                    theme_color = &arg.term.theme().scrollbar_grab_hovered;
-                    break;
-                case cmds::csv_l_trace:
-                    [[fallthrough]];
-                case cmds::csv_l_debug:
-                    [[fallthrough]];
-                case cmds::csv_l_info:
-                    [[fallthrough]];
-                case cmds::csv_l_warning:
-                    [[fallthrough]];
-                case cmds::csv_l_error:
-                    [[fallthrough]];
-                case cmds::csv_l_critical:
-                    theme_color = &arg.term.theme().log_level_colors[enum_v - cmds::csv_l_trace];
-                    break;
-                default:
-                    arg.term.add_text_err("Internal error.");
-                    return;
-            }
-
-            if (cl[2] == strings[cmds::col_set_value]) {
-                if (cl.size() == 4) {
-                    theme_color->reset();
-                    return;
-                }
-                auto try_parse = [](std::string_view str, auto &value) {
-                    auto res = std::from_chars(&str[0], &str[str.size() - 1] + 1, value, 10);
-                    return misc::success(res.ec) && res.ptr == (&str[str.size() - 1] + 1);
-                };
-                std::uint8_t r{}, g{}, b{}, a{255};
-                if (!try_parse(cl[4], r) || !try_parse(cl[5], g) || !try_parse(cl[6], b) ||
-                    (cl.size() == 8 && !try_parse(cl[7], a))) {
-                    arg.term.add_text_err("Bad color argument(s)");
-                }
-
-                *theme_color = {static_cast<float>(r) / 255.f, static_cast<float>(g) / 255.f,
-                                static_cast<float>(b) / 255.f, static_cast<float>(a) / 255.f};
-            } else {
-                if (*theme_color) {
-                    auto to_255 = [](float v) { return static_cast<int>(v * 255.f + 0.5f); };
-                    ;
-                    arg.term.add_text(Utils::Format(
-                            "Current value for {0}: [R: {1}] [G: {2}] [B: {3}] [A: {4}]", cl[3],
-                            to_255((**theme_color).r), to_255((**theme_color).g),
-                            to_255((**theme_color).b), to_255((**theme_color).a)));
-                } else {
-                    arg.term.add_text(Utils::Format("Current value for {0}: unset", cl[3]));
-                }
-            }
-        }
-
-    } else if ((cl.size() == 3 || cl.size() == 4 || cl.size() == 10) &&
-               cl[1] == strings[cmds::set_text]) {
-        auto it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_begin,
-                                            strings.begin() + cmds::st_optional_end,
-                                            [](auto &&) { return false; });
-        if (it == strings.begin() + cmds::st_optional_end) {
-            it = misc::find_first_prefixed(cl[2], strings.begin() + cmds::st_optional_end,
-                                           strings.begin() + cmds::st_end,
-                                           [](auto &&) { return false; });
-            if (it == strings.begin() + cmds::st_end) {
-                arg.term.add_text_err(Utils::Format("Unknown text field: {0}", cl[2]));
-            } else if (cl.size() != 10) {
-                arg.term.add_text_err("Not enough/Too much arguments !");
-                arg.term.add_text_err("You should specify, in order: trace text, debug text, info "
-                                      "text, warning text, error text, critical text, none text");
-            } else {
-                arg.term.set_level_list_text(cl[3], cl[4], cl[5], cl[6], cl[7], cl[8], cl[9]);
-            }
-        } else {
-            std::optional<std::string> *str = nullptr;
-            auto enum_v = static_cast<cmds::cmds>(it - strings.begin());
-            switch (enum_v) {
-                case cmds::st_autoscroll:
-                    str = &arg.term.autoscroll_text();
-                    break;
-                case cmds::st_autowrap:
-                    str = &arg.term.autowrap_text();
-                    break;
-                case cmds::st_clear:
-                    str = &arg.term.clear_text();
-                    break;
-                case cmds::st_log_level:
-                    str = &arg.term.log_level_text();
-                    break;
-                case cmds::st_filter:
-                    str = &arg.term.filter_hint();
-                    break;
-                default:
-                    arg.term.add_text_err("Internal error.");
-                    return;
-            }
-            if (cl.size() == 4) {
-                *str = cl[3];
-            } else {
-                str->reset();
-            }
-        }
-
-    } else {
-        arg.term.add_text_err(Utils::Format("Unknown parameter: {0}", cl[1]));
+        return 0;
     }
-}
 
-std::vector<std::string> terminal_commands::configure_term_autocomplete(argument_type &all_args) {
-    using namespace cfg_term;
-    auto &args = all_args.command_line;
+    bool ConsoleInputText(const char *label, std::string *str, ImGuiInputTextFlags flags,
+                          ImGuiInputTextCallback callback, void *user_data) {
+        IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+        flags |= ImGuiInputTextFlags_CallbackResize;
 
-    std::vector<std::string> ans;
-    unsigned int current_subpart = 0u;
-
-    auto try_match_str = [&ans, &args, &current_subpart](std::string_view vs) {
-        std::string &str = args[current_subpart];
-
-        if (str.size() > vs.size()) { return; }
-
-        bool is_prefix = std::equal(str.begin(), str.end(), vs.begin(), [](char c1, char c2) {
-            auto to_upper = [](char c) -> char {
-                return c < 'a' ? c + ('a' - 'A') : c;
-            };// don't care about the locale here
-            return to_upper(c1) == to_upper(c2);
-        });
-        if (is_prefix) { ans.emplace_back(vs.data(), vs.size()); }
-    };
-    auto try_match = [&try_match_str](cmds::cmds cmd) { try_match_str(strings[cmd]); };
-    auto try_match_range = [&try_match](cmds::cmds begin, cmds::cmds end) {
-        for (int i = begin; i < end; ++i) { try_match(static_cast<cmds::cmds>(i)); }
-    };
-
-    if (args.size() == 2) {
-        current_subpart = 1;
-        try_match(cmds::completion);
-        try_match(cmds::colors);
-        try_match(cmds::set_text);
-
-    } else if (args.size() == 3) {
-        current_subpart = 2;
-        if (args[1] == strings[cmds::completion]) {
-            if (all_args.term.get_autocomplete_pos() != ImTerm::position::nowhere) {
-                try_match(cmds::cpl_disable);
-            }
-            if (all_args.term.get_autocomplete_pos() != ImTerm::position::down) {
-                try_match(cmds::cpl_down);
-            }
-            if (all_args.term.get_autocomplete_pos() != ImTerm::position::up) {
-                try_match(cmds::cpl_up);
-            }
-
-        } else if (args[1] == strings[cmds::colors]) {
-            try_match_range(cmds::col_begin, cmds::col_end);
-
-        } else if (args[1] == strings[cmds::set_text]) {
-            try_match_range(cmds::st_begin, cmds::st_end);
-        }
-
-    } else if (args.size() == 4) {
-        if (args[1] == strings[cmds::colors]) {
-            current_subpart = 3;
-            if (args[2] == strings[cmds::col_set_theme]) {
-                for (const ImTerm::theme &theme: ImTerm::themes::list) {
-                    try_match_str(theme.name);
-                }
-            } else if (args[2] == strings[cmds::col_set_value] ||
-                       args[2] == strings[cmds::col_get_value]) {
-                try_match_range(cmds::csv_begin, cmds::csv_end);
-            }
-        }
+        InputTextCallback_UserData cb_user_data;
+        cb_user_data.Str = str;
+        cb_user_data.ChainCallback = callback;
+        cb_user_data.ChainCallbackUserData = user_data;
+        return InputText(label, (char *) str->c_str(), str->capacity() + 1, flags,
+                         InputTextCallback, &cb_user_data);
     }
-    std::sort(ans.begin(), ans.end());
-    return ans;
+}// namespace ImGui
+
+ImGuiConsole::ImGuiConsole(std::string c_name, size_t inputBufferSize)
+    : m_ConsoleName(std::move(c_name)) {
+
+    m_Buffer.resize(inputBufferSize);
+    m_HistoryIndex = std::numeric_limits<size_t>::min();
+
+    InitIniSettings();
+
+    if (!m_LoadedFromIni) { DefaultSettings(); }
+
+    RegisterConsoleCommands();
 }
 
-void terminal_commands::echo(argument_type &arg) {
-    if (arg.command_line.size() < 2) {
-        arg.term.add_text("");
+void ImGuiConsole::Draw() {
+
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, m_WindowAlpha);
+    if (!ImGui::Begin(m_ConsoleName.data(), nullptr, ImGuiWindowFlags_MenuBar)) {
+        ImGui::PopStyleVar();
+        ImGui::End();
         return;
     }
-    if (arg.command_line[1][0] == '-') {
-        if (arg.command_line[1] == "--help" || arg.command_line[1] == "-help") {
-            arg.term.add_text(
-                    Utils::Format("usage: {0} [text to be printed]", arg.command_line[0]));
-        } else {
-            arg.term.add_text_err(Utils::Format("Unknown argument: {0}", arg.command_line[1]));
-        }
-    } else {
-        std::string str{};
-        auto it = std::next(arg.command_line.begin(), 1);
-        while (it != arg.command_line.end() && it->empty()) { ++it; }
-        if (it != arg.command_line.end()) {
-            str = *it;
-            for (++it; it != arg.command_line.end(); ++it) {
-                if (it->empty()) { continue; }
-                str.reserve(str.size() + it->size() + 1);
-                str += ' ';
-                str += *it;
+    ImGui::PopStyleVar();
+
+    MenuBar();
+
+    if (m_FilterBar) { FilterBar(); }
+
+    LogWindow();
+
+    ImGui::Separator();
+
+    InputBar();
+
+    ImGui::End();
+}
+
+Console::System &ImGuiConsole::System() { return m_ConsoleSystem; }
+
+void ImGuiConsole::InitIniSettings() {
+    ImGuiContext &g = *ImGui::GetCurrentContext();
+
+    if (g.Initialized && !g.SettingsLoaded && !m_LoadedFromIni) {
+        ImGuiSettingsHandler console_ini_handler;
+        console_ini_handler.TypeName = "Console";
+        console_ini_handler.TypeHash = ImHashStr("Console");
+        console_ini_handler.ClearAllFn = SettingsHandler_ClearALl;
+        console_ini_handler.ApplyAllFn = SettingsHandler_ApplyAll;
+        console_ini_handler.ReadInitFn = SettingsHandler_ReadInit;
+        console_ini_handler.ReadOpenFn = SettingsHandler_ReadOpen;
+        console_ini_handler.ReadLineFn = SettingsHandler_ReadLine;
+        console_ini_handler.WriteAllFn = SettingsHandler_WriteAll;
+        console_ini_handler.UserData = this;
+        g.SettingsHandlers.push_back(console_ini_handler);
+    }
+}
+
+void ImGuiConsole::DefaultSettings() {
+
+    m_AutoScroll = true;
+    m_ScrollToBottom = false;
+    m_ColoredOutput = true;
+    m_FilterBar = true;
+    m_TimeStamps = true;
+
+    m_WindowAlpha = 1;
+    m_ColorPalette[COL_COMMAND] = ImVec4(1.f, 1.f, 1.f, 1.f);
+    m_ColorPalette[COL_LOG] = ImVec4(1.f, 1.f, 1.f, 0.5f);
+    m_ColorPalette[COL_WARNING] = ImVec4(1.0f, 0.87f, 0.37f, 1.f);
+    m_ColorPalette[COL_ERROR] = ImVec4(1.f, 0.365f, 0.365f, 1.f);
+    m_ColorPalette[COL_INFO] = ImVec4(0.46f, 0.96f, 0.46f, 1.f);
+    m_ColorPalette[COL_TIMESTAMP] = ImVec4(1.f, 1.f, 1.f, 0.5f);
+}
+
+void ImGuiConsole::RegisterConsoleCommands() {
+    m_ConsoleSystem.RegisterCommand("clear", "Clear console log",
+                                    [this]() { m_ConsoleSystem.Items().clear(); });
+
+    m_ConsoleSystem.RegisterCommand(
+            "filter", "Set screen filter",
+            [this](const Console::String &filter) {
+                std::memset(m_TextFilter.InputBuf, '\0', 256);
+
+                std::copy(filter.m_String.c_str(),
+                          filter.m_String.c_str() +
+                                  std::min(static_cast<int>(filter.m_String.length()), 255),
+                          m_TextFilter.InputBuf);
+
+                m_TextFilter.Build();
+            },
+            Console::Arg<Console::String>("filter_str"));
+
+    m_ConsoleSystem.RegisterCommand(
+            "run", "Run given script",
+            [this](const Console::String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
+            Console::Arg<Console::String>("script_name"));
+}
+
+void ImGuiConsole::FilterBar() {
+    m_TextFilter.Draw("Filter", ImGui::GetWindowWidth() * 0.25f);
+    ImGui::Separator();
+}
+
+void ImGuiConsole::LogWindow() {
+    const float footerHeightToReserve =
+            ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+    if (ImGui::BeginChild("ScrollRegion##", ImVec2(0, -footerHeightToReserve), false, 0)) {
+
+        static const float timestamp_width = ImGui::CalcTextSize("00:00:00:0000").x;
+        int count = 0;
+
+        ImGui::PushTextWrapPos();
+
+        for (const auto &item: m_ConsoleSystem.Items()) {
+
+            if (!m_TextFilter.PassFilter(item.Get().c_str())) continue;
+
+            if (item.m_Type == Console::COMMAND) {
+                if (m_TimeStamps) ImGui::PushTextWrapPos(ImGui::GetColumnWidth() - timestamp_width);
+                if (count++ != 0) ImGui::Dummy(ImVec2(-1, ImGui::GetFontSize()));
+            }
+
+            if (m_ColoredOutput) {
+                ImGui::PushStyleColor(ImGuiCol_Text, m_ColorPalette[item.m_Type]);
+                ImGui::TextUnformatted(item.Get().data());
+                ImGui::PopStyleColor();
+            } else {
+                ImGui::TextUnformatted(item.Get().data());
+            }
+
+            if (item.m_Type == Console::COMMAND && m_TimeStamps) {
+
+                ImGui::PopTextWrapPos();
+
+                ImGui::SameLine(ImGui::GetColumnWidth(-1) - timestamp_width);
+
+                ImGui::PushStyleColor(ImGuiCol_Text, m_ColorPalette[COL_TIMESTAMP]);
+                ImGui::Text("%02d:%02d:%02d:%04d", ((item.m_TimeStamp / 1000 / 3600) % 24),
+                            ((item.m_TimeStamp / 1000 / 60) % 60), ((item.m_TimeStamp / 1000) % 60),
+                            item.m_TimeStamp % 1000);
+                ImGui::PopStyleColor();
             }
         }
-        arg.term.add_text(Utils::Format("{0}", str));
+
+        ImGui::PopTextWrapPos();
+
+        if ((m_ScrollToBottom && (ImGui::GetScrollY() >= ImGui::GetScrollMaxY() || m_AutoScroll)))
+            ImGui::SetScrollHereY(1.0f);
+        m_ScrollToBottom = false;
+
+        ImGui::EndChild();
     }
 }
 
-void terminal_commands::exit(argument_type &arg) { arg.term.set_should_close(); }
+void ImGuiConsole::InputBar() {
 
-void terminal_commands::help(argument_type &arg) {
-    constexpr unsigned long list_element_name_max_size =
-            misc::max_size(local_command_list.begin(), local_command_list.end(),
-                           [](const command_type &cmd) { return cmd.name.size(); });
+    ImGuiInputTextFlags inputTextFlags =
+            ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter |
+            ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_EnterReturnsTrue |
+            ImGuiInputTextFlags_CallbackAlways;
 
-    arg.term.add_text("Available commands:");
-    for (const command_type &cmd: local_command_list) {
-        arg.term.add_text(Utils::Format("        {0}:{1} | {2}", cmd.name,
-                                        list_element_name_max_size, cmd.description));
+    bool reclaimFocus = false;
+
+    ImGui::PushItemWidth(-ImGui::GetStyle().ItemSpacing.x * 7);
+    if (ImGui::ConsoleInputText("Input", &m_Buffer, inputTextFlags, InputCallback, this)) {
+
+        if (!m_Buffer.empty()) {
+
+            m_ConsoleSystem.RunCommand(m_Buffer);
+
+            m_ScrollToBottom = true;
+        }
+
+        reclaimFocus = true;
+
+        m_Buffer.clear();
     }
-    arg.term.add_text("");
-    arg.term.add_text("Additional information might be available using \"'command' --help\"");
+    ImGui::PopItemWidth();
+
+    if (ImGui::IsItemEdited() && !m_WasPrevFrameTabCompletion) { m_CmdSuggestions.clear(); }
+    m_WasPrevFrameTabCompletion = false;
+
+    ImGui::SetItemDefaultFocus();
+    if (reclaimFocus) ImGui::SetKeyboardFocusHere(-1);
 }
 
-void terminal_commands::quit(argument_type &arg) { arg.val.should_close = true; }
+void ImGuiConsole::MenuBar() {
+    if (ImGui::BeginMenuBar()) {
+
+        if (ImGui::BeginMenu(LANG("ui_settings"))) {
+
+            ImGui::Checkbox(LANG("ui_color_output"), &m_ColoredOutput);
+            ImGui::SameLine();
+            HelpMaker("Enable colored command output");
+
+            ImGui::Checkbox(LANG("ui_auto_scroll"), &m_AutoScroll);
+            ImGui::SameLine();
+            HelpMaker("Automatically scroll to bottom of console log");
+
+            ImGui::Checkbox(LANG("ui_filter_bar"), &m_FilterBar);
+            ImGui::SameLine();
+            HelpMaker("Enable console filter bar");
+
+            ImGui::Checkbox(LANG("ui_time_stamps"), &m_TimeStamps);
+            ImGui::SameLine();
+            HelpMaker("Display command execution timestamps");
+
+            if (ImGui::Button(LANG("ui_reset_settings"), ImVec2(ImGui::GetColumnWidth(), 0)))
+                ImGui::OpenPopup("Reset Settings?");
+
+            if (ImGui::BeginPopupModal("Reset Settings?", nullptr,
+                                       ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text("All settings will be reset to default.\nThis operation cannot be "
+                            "undone!\n\n");
+                ImGui::Separator();
+
+                if (ImGui::Button(LANG("ui_reset"), ImVec2(120, 0))) {
+                    DefaultSettings();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button(LANG("ui_cancel"), ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu(LANG("ui_appearance"))) {
+
+            ImGuiColorEditFlags flags = ImGuiColorEditFlags_Float |
+                                        ImGuiColorEditFlags_AlphaPreview |
+                                        ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar;
+
+            ImGui::TextUnformatted("Color Palette");
+            ImGui::Indent();
+            ImGui::ColorEdit4("Command##", (float *) &m_ColorPalette[COL_COMMAND], flags);
+            ImGui::ColorEdit4("Log##", (float *) &m_ColorPalette[COL_LOG], flags);
+            ImGui::ColorEdit4("Warning##", (float *) &m_ColorPalette[COL_WARNING], flags);
+            ImGui::ColorEdit4("Error##", (float *) &m_ColorPalette[COL_ERROR], flags);
+            ImGui::ColorEdit4("Info##", (float *) &m_ColorPalette[COL_INFO], flags);
+            ImGui::ColorEdit4("Time Stamp##", (float *) &m_ColorPalette[COL_TIMESTAMP], flags);
+            ImGui::Unindent();
+
+            ImGui::Separator();
+
+            ImGui::TextUnformatted(LANG("ui_background"));
+            ImGui::SliderFloat("Transparency##", &m_WindowAlpha, 0.1f, 1.f);
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu(LANG("ui_scripts"))) {
+
+            for (const auto &scr_pair: m_ConsoleSystem.Scripts()) {
+                if (ImGui::MenuItem(scr_pair.first.c_str())) {
+                    m_ConsoleSystem.RunScript(scr_pair.first);
+                    m_ScrollToBottom = true;
+                }
+            }
+
+            ImGui::Separator();
+            if (ImGui::Button("Reload Scripts", ImVec2(ImGui::GetColumnWidth(), 0))) {
+                for (const auto &scr_pair: m_ConsoleSystem.Scripts()) { scr_pair.second->Reload(); }
+            }
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
+}
+
+void ImGuiConsole::HelpMaker(const char *desc) {
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
+
+    if (data->BufTextLen == 0 && (data->EventFlag != ImGuiInputTextFlags_CallbackHistory)) return 0;
+
+    std::string input_str = data->Buf;
+    std::string trim_str;
+    auto console = static_cast<ImGuiConsole *>(data->UserData);
+
+    size_t startPos = console->m_Buffer.find_first_not_of(' ');
+    size_t endPos = console->m_Buffer.find_last_not_of(' ');
+
+    if (startPos != std::string::npos && endPos != std::string::npos)
+        trim_str = console->m_Buffer.substr(startPos, endPos + 1);
+    else
+        trim_str = console->m_Buffer;
+
+    switch (data->EventFlag) {
+        case ImGuiInputTextFlags_CallbackCompletion: {
+
+            size_t startSubtrPos = trim_str.find_last_of(' ');
+            Console::AutoComplete *console_autocomplete;
+
+            if (startSubtrPos == std::string::npos) {
+                startSubtrPos = 0;
+                console_autocomplete = &console->m_ConsoleSystem.CmdAutocomplete();
+            } else {
+                startSubtrPos += 1;
+                console_autocomplete = &console->m_ConsoleSystem.VarAutocomplete();
+            }
+
+            if (!trim_str.empty()) {
+
+                if (!console->m_CmdSuggestions.empty()) {
+                    console->m_ConsoleSystem.Log(Console::COMMAND)
+                            << "Suggestions: " << Console::endl;
+
+                    for (const auto &suggestion: console->m_CmdSuggestions)
+                        console->m_ConsoleSystem.Log(Console::LOG) << suggestion << Console::endl;
+
+                    console->m_CmdSuggestions.clear();
+                }
+
+                std::string partial = console_autocomplete->Suggestions(
+                        trim_str.substr(startSubtrPos, endPos + 1), console->m_CmdSuggestions);
+
+                if (!console->m_CmdSuggestions.empty() && console->m_CmdSuggestions.size() == 1) {
+                    data->DeleteChars(static_cast<int>(startSubtrPos),
+                                      static_cast<int>(data->BufTextLen - startSubtrPos));
+                    data->InsertChars(static_cast<int>(startSubtrPos),
+                                      console->m_CmdSuggestions[0].data());
+                    console->m_CmdSuggestions.clear();
+                } else {
+
+                    if (!partial.empty()) {
+                        data->DeleteChars(static_cast<int>(startSubtrPos),
+                                          static_cast<int>(data->BufTextLen - startSubtrPos));
+                        data->InsertChars(static_cast<int>(startSubtrPos), partial.data());
+                    }
+                }
+            }
+
+            console->m_WasPrevFrameTabCompletion = true;
+        } break;
+
+        case ImGuiInputTextFlags_CallbackHistory: {
+
+            data->DeleteChars(0, data->BufTextLen);
+
+            if (console->m_HistoryIndex == std::numeric_limits<size_t>::min())
+                console->m_HistoryIndex = console->m_ConsoleSystem.History().GetNewIndex();
+
+            if (data->EventKey == ImGuiKey_UpArrow) {
+                if (console->m_HistoryIndex) --(console->m_HistoryIndex);
+            } else {
+                if (console->m_HistoryIndex < console->m_ConsoleSystem.History().Size())
+                    ++(console->m_HistoryIndex);
+            }
+
+            std::string prevCommand = console->m_ConsoleSystem.History()[console->m_HistoryIndex];
+
+            data->InsertChars(data->CursorPos, prevCommand.data());
+        } break;
+
+        case ImGuiInputTextFlags_CallbackCharFilter:
+        case ImGuiInputTextFlags_CallbackAlways:
+        default:
+            break;
+    }
+    return 0;
+}
+
+void ImGuiConsole::SettingsHandler_ClearALl(ImGuiContext *ctx, ImGuiSettingsHandler *handler) {}
+
+void ImGuiConsole::SettingsHandler_ReadInit(ImGuiContext *ctx, ImGuiSettingsHandler *handler) {}
+
+void *ImGuiConsole::SettingsHandler_ReadOpen(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
+                                             const char *name) {
+    if (!handler->UserData) return nullptr;
+
+    auto console = static_cast<ImGuiConsole *>(handler->UserData);
+
+    if (strcmp(name, console->m_ConsoleName.c_str()) != 0) return nullptr;
+    return (void *) 1;
+}
+
+void ImGuiConsole::SettingsHandler_ReadLine(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
+                                            void *entry, const char *line) {
+    if (!handler->UserData) return;
+
+    auto console = static_cast<ImGuiConsole *>(handler->UserData);
+
+    console->m_LoadedFromIni = true;
+
+#pragma warning(push)
+#pragma warning(disable : 4996)
+
+#define INI_CONSOLE_LOAD_COLOR(type)                                                               \
+    (std::sscanf(line, #type "=%i,%i,%i,%i", &r, &g, &b, &a) == 4) {                               \
+        console->m_ColorPalette[type] = ImColor(r, g, b, a);                                       \
+    }
+#define INI_CONSOLE_LOAD_FLOAT(var)                                                                \
+    (std::sscanf(line, #var "=%f", &f) == 1) { console->var = f; }
+#define INI_CONSOLE_LOAD_BOOL(var)                                                                 \
+    (std::sscanf(line, #var "=%i", &b) == 1) { console->var = b == 1; }
+
+    float f;
+    int r, g, b, a;
+
+    if INI_CONSOLE_LOAD_COLOR (COL_COMMAND)
+        else if INI_CONSOLE_LOAD_COLOR (COL_LOG) else if INI_CONSOLE_LOAD_COLOR (COL_WARNING) else if INI_CONSOLE_LOAD_COLOR (
+                COL_ERROR) else if INI_CONSOLE_LOAD_COLOR (COL_INFO) else if INI_CONSOLE_LOAD_COLOR (COL_TIMESTAMP) else if INI_CONSOLE_LOAD_FLOAT (m_WindowAlpha)
+
+                else if INI_CONSOLE_LOAD_BOOL (m_AutoScroll) else if INI_CONSOLE_LOAD_BOOL (m_ScrollToBottom) else if INI_CONSOLE_LOAD_BOOL (
+                        m_ColoredOutput) else if INI_CONSOLE_LOAD_BOOL (m_FilterBar) else if INI_CONSOLE_LOAD_BOOL (m_TimeStamps)
+
+#pragma warning(pop)
+}
+
+void ImGuiConsole::SettingsHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler) {
+    if (!handler->UserData) return;
+}
+
+void ImGuiConsole::SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
+                                            ImGuiTextBuffer *buf) {
+    if (!handler->UserData) return;
+
+    auto console = static_cast<ImGuiConsole *>(handler->UserData);
+
+#define INI_CONSOLE_SAVE_COLOR(type)                                                               \
+    buf->appendf(#type "=%i,%i,%i,%i\n", (int) (console->m_ColorPalette[type].x * 255),            \
+                 (int) (console->m_ColorPalette[type].y * 255),                                    \
+                 (int) (console->m_ColorPalette[type].z * 255),                                    \
+                 (int) (console->m_ColorPalette[type].w * 255))
+
+#define INI_CONSOLE_SAVE_FLOAT(var) buf->appendf(#var "=%.3f\n", console->var)
+#define INI_CONSOLE_SAVE_BOOL(var) buf->appendf(#var "=%i\n", console->var)
+
+    buf->appendf("[%s][%s]\n", handler->TypeName, console->m_ConsoleName.data());
+
+    INI_CONSOLE_SAVE_BOOL(m_AutoScroll);
+    INI_CONSOLE_SAVE_BOOL(m_ScrollToBottom);
+    INI_CONSOLE_SAVE_BOOL(m_ColoredOutput);
+    INI_CONSOLE_SAVE_BOOL(m_FilterBar);
+    INI_CONSOLE_SAVE_BOOL(m_TimeStamps);
+
+    INI_CONSOLE_SAVE_FLOAT(m_WindowAlpha);
+    INI_CONSOLE_SAVE_COLOR(COL_COMMAND);
+    INI_CONSOLE_SAVE_COLOR(COL_LOG);
+    INI_CONSOLE_SAVE_COLOR(COL_WARNING);
+    INI_CONSOLE_SAVE_COLOR(COL_ERROR);
+    INI_CONSOLE_SAVE_COLOR(COL_INFO);
+    INI_CONSOLE_SAVE_COLOR(COL_TIMESTAMP);
+
+    buf->append("\n");
+}

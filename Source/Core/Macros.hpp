@@ -91,11 +91,13 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))
 #define METADOT_DEBUGBREAK __debugbreak()
 
+#define METADOT_INLINE inline
+
 #ifndef static_inline
 #ifdef _MSC_VER
 #define static_inline static
 #else
-#define static_inline static inline
+#define static_inline static METADOT_INLINE
 #endif
 #endif
 

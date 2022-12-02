@@ -635,7 +635,7 @@ void ImGuiCore::Render() {
         ImGui::Begin("GC");
 #if defined(METADOT_DEBUG)
         for (auto [name, size]: GC::MemoryDebugMap) {
-            ImGui::Text(Utils::Format("{0} {1}", name, size).c_str());
+            ImGui::Text(fmt::format("{0} {1}", name, size).c_str());
         }
 #endif
         ImGui::End();

@@ -69,7 +69,7 @@ int Platform::InitWindow() {
         // create the window
         METADOT_INFO("Creating game window...");
 
-        auto title = Utils::Format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
+        auto title = fmt::format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
 
         global.platform.window =
                 SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,

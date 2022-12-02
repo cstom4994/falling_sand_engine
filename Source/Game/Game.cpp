@@ -12,7 +12,6 @@
 #include "Core/ThreadPool.hpp"
 #include "DefaultGenerator.cpp"
 #include "Engine/ImGuiImplement.hpp"
-#include "Engine/ImGuiTerminal.hpp"
 #include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/RendererGPU.h"
@@ -26,6 +25,7 @@
 #include "Game/ImGuiCore.hpp"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
+#include "Game/console.hpp"
 #include "MaterialTestGenerator.cpp"
 
 #include "Libs/glad/glad.h"
@@ -70,11 +70,23 @@ Game::~Game() {
     //delete data;
 }
 
+Console::ItemLog &operator<<(Console::ItemLog &log, ImVec4 &vec) {
+    log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";
+    return log;
+}
+
+static void imvec4_setter(ImVec4 &my_type, std::vector<int> vec) {
+    if (vec.size() < 4) return;
+
+    my_type.x = vec[0] / 255.f;
+    my_type.y = vec[1] / 255.f;
+    my_type.z = vec[2] / 255.f;
+    my_type.w = vec[3] / 255.f;
+}
+
 int Game::init(int argc, char *argv[]) {
 
     global.platform.ParseRunArgs(argc, argv);
-
-    METADOT_NEW(C, terminal_log, ImTerm::terminal<terminal_commands>, cmd_struct);
 
     Resource::init();
 
@@ -179,6 +191,45 @@ int Game::init(int argc, char *argv[]) {
     loadscript();
 
     global.I18N.Init();
+
+    METADOT_NEW(C, console, ImGuiConsole, global.I18N.Get("ui_console"));
+
+    // Our state
+    ImVec4 clear_color = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+
+    // Register variables
+    console->System().RegisterVariable("background_color", clear_color, imvec4_setter);
+
+    // Register scripts
+    console->System().RegisterScript("test_script", "./console.script");
+
+    // Register custom commands
+    console->System().RegisterCommand("random_background_color",
+                                      "Assigns a random color to the background application",
+                                      [&clear_color]() {
+                                          clear_color.x = (rand() % 256) / 256.f;
+                                          clear_color.y = (rand() % 256) / 256.f;
+                                          clear_color.z = (rand() % 256) / 256.f;
+                                          clear_color.w = (rand() % 256) / 256.f;
+                                      });
+    console->System().RegisterCommand("reset_background_color",
+                                      "Reset background color to its original value",
+                                      [&clear_color, val = clear_color]() { clear_color = val; });
+
+    // Log example information:
+    console->System().Log(Console::ItemType::INFO)
+            << "Welcome to the console!" << Console::endl;
+    console->System().Log(Console::ItemType::INFO)
+            << "The following variables have been exposed to the console:" << Console::endl
+            << Console::endl;
+    console->System().Log(Console::ItemType::INFO)
+            << "\tbackground_color - set: [int int int int]" << Console::endl;
+    console->System().Log(Console::ItemType::INFO)
+            << Console::endl
+            << "Try running the following command:" << Console::endl;
+    console->System().Log(Console::ItemType::INFO)
+            << "\tset background_color [255 0 0 255]" << Console::endl
+            << Console::endl;
 
     if (Settings::networkMode != NetworkMode::SERVER) { GameIsolate_.backgrounds->Load(); }
 
@@ -1197,7 +1248,7 @@ int Game::run(int argc, char *argv[]) {
                 ImGui::EndMainMenuBar();
             }
 
-            if (Settings::ui_console) { terminal_log->show(); }
+            if (Settings::ui_console) { console->Draw(); }
 
             if (Settings::draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1415,7 +1466,7 @@ exit:
     METADOT_DELETE(C, objectDelete, UInt8);
     GameIsolate_.backgrounds->Unload();
 
-    METADOT_DELETE_EX(C, terminal_log, terminal, ImTerm::terminal<terminal_commands>);
+    METADOT_DELETE(C, console, ImGuiConsole);
 
     running = false;
 

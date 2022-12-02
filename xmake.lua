@@ -146,7 +146,7 @@ end
 
 include_dir_list = {
     "Source", "Source/Engine", "Source/Libs", "Source/Libs/imgui",
-    "Source/Libs/json/include", "Source/Libs/fmt/include", "Source/Libs/glad"
+    "Source/Libs/fmt/include", "Source/Libs/glad"
 }
 
 defines_list = {}
@@ -159,14 +159,12 @@ do
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
-    add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
-    add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
-              "Source/Libs/ImGui/**.c", "Source/Libs/lua/**.c",
-              "Source/Libs/fmt/**.cc", "Source/Libs/glad/**.c",
-              {unity_group = "libone"})
+    add_files("Source/Libs/*.cpp")
+    add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
+              "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
+              "Source/Libs/glad/**.c", {unity_group = "invade"})
 
     add_files("Source/Libs/quickjs/**.c")
-    add_files("Source/Libs/quickjs/**.cpp")
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/miniz/**.c")
     add_headerfiles("Source/Libs/**.h")

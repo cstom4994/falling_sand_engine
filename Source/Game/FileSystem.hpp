@@ -10,7 +10,7 @@
 #include "Game/Utils.hpp"
 
 #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
-    METADOT_ASSERT(FUtil::exists(stringPath), Utils::Format("FILE: {0} does not exist", stringPath))
+    METADOT_ASSERT(FUtil::exists(stringPath), fmt::format("FILE: {0} does not exist", stringPath))
 
 class Resource {
 private:

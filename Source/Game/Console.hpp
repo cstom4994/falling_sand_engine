@@ -1,35 +1,83 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef CONSOLE_HPP
-#define CONSOLE_HPP
+#ifndef _METADOT_CONSOLE_HPP_
+#define _METADOT_CONSOLE_HPP_
+
+#include "ConsoleImpl.hpp"
+#include "Engine/ImGuiImplement.hpp"
 
 #include <array>
-#include <cstring>
-#include <mutex>
-#include <string>
-#include <vector>
 
-#include "Engine/ImGuiTerminal.hpp"
-
-struct custom_command_struct
-{
-    bool should_close = false;
-};
-
-class terminal_commands
-    : public ImTerm::basic_terminal_helper<terminal_commands, custom_command_struct> {
+struct ImGuiSettingsHandler;
+class ImGuiConsole {
 public:
-    terminal_commands();
+    explicit ImGuiConsole(std::string c_name = "Console", size_t inputBufferSize = 256);
 
-    static std::vector<std::string> no_completion(argument_type &) { return {}; }
+    void Draw();
 
-    static void clear(argument_type &);
-    static void configure_term(argument_type &);
-    static std::vector<std::string> configure_term_autocomplete(argument_type &);
-    static void echo(argument_type &);
-    static void exit(argument_type &);
-    static void help(argument_type &);
-    static void quit(argument_type &);
+    Console::System &System();
+
+protected:
+    Console::System m_ConsoleSystem;
+    size_t m_HistoryIndex;
+
+    std::string m_Buffer;
+    std::string m_ConsoleName;
+    ImGuiTextFilter m_TextFilter;
+    bool m_AutoScroll;
+    bool m_ColoredOutput;
+    bool m_ScrollToBottom;
+    bool m_FilterBar;
+    bool m_TimeStamps;
+
+    void InitIniSettings();
+    void DefaultSettings();
+    void RegisterConsoleCommands();
+
+    void MenuBar();
+    void FilterBar();
+    void InputBar();
+    void LogWindow();
+
+    static void HelpMaker(const char *desc);
+
+    float m_WindowAlpha;
+
+    enum COLOR_PALETTE {
+
+        COL_COMMAND = 0,
+        COL_LOG,
+        COL_WARNING,
+        COL_ERROR,
+        COL_INFO,
+
+        COL_TIMESTAMP,
+
+        COL_COUNT
+    };
+
+    std::array<ImVec4, COL_COUNT> m_ColorPalette;
+
+    static int InputCallback(ImGuiInputTextCallbackData *data);
+    bool m_WasPrevFrameTabCompletion = false;
+    std::vector<std::string> m_CmdSuggestions;
+
+    bool m_LoadedFromIni = false;
+
+    static void SettingsHandler_ClearALl(ImGuiContext *ctx, ImGuiSettingsHandler *handler);
+
+    static void SettingsHandler_ReadInit(ImGuiContext *ctx, ImGuiSettingsHandler *handler);
+
+    static void *SettingsHandler_ReadOpen(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
+                                          const char *name);
+
+    static void SettingsHandler_ReadLine(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
+                                         void *entry, const char *line);
+
+    static void SettingsHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler);
+
+    static void SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
+                                         ImGuiTextBuffer *buf);
 };
 
-#endif// CONSOLE_HPP
+#endif

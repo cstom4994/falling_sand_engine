@@ -9,7 +9,6 @@
 #include "Core/DebugImpl.hpp"
 #include "Core/Macros.hpp"
 #include "Engine/AudioEngine.h"
-#include "Engine/ImGuiTerminal.hpp"
 #include "Engine/LuaCore.hpp"
 #include "Engine/MRender.hpp"
 #include "Engine/RendererGPU.h"
@@ -23,12 +22,12 @@
 #include "Background.hpp"
 #include "Controls.hpp"
 #include "Core/Const.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/sparsehash/sparse_hash_map.h"
-#include "Engine/Internal/BuiltinBox2d.h"
 
 #include <algorithm>
 #include <chrono>
@@ -64,8 +63,7 @@ private:
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
 
-    custom_command_struct cmd_struct;
-    ImTerm::terminal<terminal_commands> *terminal_log;
+    ImGuiConsole *console;
 
     int ofsX = 0;
     int ofsY = 0;

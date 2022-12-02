@@ -168,13 +168,13 @@ void LuaCore::Attach() {
     s_lua["METADOT_RESLOC"] =
             LuaWrapper::function([](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua.dostring(Utils::Format("package.path = "
+    s_lua.dostring(fmt::format("package.path = "
                                  "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
                                  "?/?.lua;' .. package.path",
                                  METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()),
                    s_lua.globalTable());
     // s_lua.dostring(
-    //         Utils::Format(
+    //         fmt::format(
     //                 "package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath",
     //                 METADOT_RESLOC("data/lua"),
     //                 FUtil::getExecutableFolderPath()),
