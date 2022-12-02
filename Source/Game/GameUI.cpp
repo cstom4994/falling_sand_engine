@@ -12,9 +12,6 @@
 #include <string>
 
 void GameUI::GameUI_Draw(Game *game) {
-    // for (MetaEngine::Module *l: *game->getModuleStack())
-    //     l->onImGuiRender();
-
     DebugDrawUI::Draw(game);
     DebugCheatsUI::Draw(game);
     MainMenuUI::Draw(game);

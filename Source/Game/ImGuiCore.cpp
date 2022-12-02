@@ -104,17 +104,11 @@ static bool s_is_animaiting = false;
 static const int view_size = 256;
 
 ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
-
     if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
-
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowSize(ImGui::GetMainViewport());
-#if defined(METADOT_PLATFORM_APPLE)// macOS retina
-        windowspos /= 4;
-#endif
+        ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowPos(ImGui::GetMainViewport());
         pos += windowspos;
     }
-
     return pos;
 }
 

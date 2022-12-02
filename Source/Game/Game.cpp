@@ -34,8 +34,10 @@
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
+#include <string_view>
 
 #include "Game/InEngine.h"
+#include "fmt/core.h"
 
 const char *logo = R"(
       __  __      _        _____        _   
@@ -215,11 +217,6 @@ int Game::init(int argc, char *argv[]) {
         // set up main menu ui
 
         METADOT_INFO("Setting up main menu...");
-        STBTTF_Font *labelFont = Drawing::LoadFont(
-                METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 32);
-        STBTTF_Font *uiFont = Drawing::LoadFont(
-                METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
-
         std::string displayMode = "windowed";
 
         if (displayMode == "windowed") {
@@ -1169,8 +1166,6 @@ int Game::run(int argc, char *argv[]) {
             renderEarly();
             RenderTarget_.target = RenderTarget_.realTarget;
 
-            global.ImGuiCore->begin();
-
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
 
@@ -1361,11 +1356,9 @@ int Game::run(int argc, char *argv[]) {
                 //METADOT_BUG("{0:d} peers connected.", server->server->connectedPeers);
             }
             GameIsolate_.game_timestate.fps = frames;
-            dt_fps.w = -1;
             frames = 0;
 
             // calculate "feels like" fps
-
             float sum = 0;
             float num = 0.01;
 
@@ -1376,8 +1369,6 @@ int Game::run(int argc, char *argv[]) {
             }
 
             GameIsolate_.game_timestate.feelsLikeFps = 1000 / (sum / num);
-
-            dt_feelsLikeFps.w = -1;
         }
 
         for (int i = 1; i < FrameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
@@ -3179,6 +3170,8 @@ void Game::updateFrameLate() {
 
 void Game::renderEarly() {
 
+    global.ImGuiCore->begin();
+
     if (state == LOADING) {
         if (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastLoadingTick > 20) {
             // render loading screen
@@ -3258,13 +3251,7 @@ void Game::renderEarly() {
         }
         METAENGINE_Render_ActivateShaderProgram(0, NULL);
         METAENGINE_Render_BlitRect(TexturePack_.loadingTexture, NULL, RenderTarget_.target, NULL);
-        if (dt_loading.w == -1) {
-            dt_loading = Drawing::drawTextParams(
-                    RenderTarget_.target, "Loading...", font64, global.platform.WIDTH / 2,
-                    global.platform.HEIGHT / 2 - 32, 255, 255, 255, ALIGN_CENTER);
-        }
-        Drawing::drawText(RenderTarget_.target, dt_loading, global.platform.WIDTH / 2,
-                          global.platform.HEIGHT / 2 - 32, ALIGN_CENTER);
+        Drawing::drawText("loading", "Loading...", global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32);
     } else {
         // render entities with LERP
 
@@ -3907,31 +3894,10 @@ void Game::renderOverlays() {
         GameIsolate_.world->b2world->DebugDraw();
     }
 
-    if (dt_fps.w == -1) {
-        char buffFps[20];
-        snprintf(buffFps, sizeof(buffFps), "%d FPS", GameIsolate_.game_timestate.fps);
-        //if (dt_fps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t1);
-        //if (dt_fps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_fps.t2);
-        dt_fps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16,
-                                         global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff,
-                                         ALIGN_RIGHT);
-    }
-
-    Drawing::drawText(RenderTarget_.target, dt_fps, global.platform.WIDTH - 4, 2, ALIGN_RIGHT);
-
-    if (dt_feelsLikeFps.w == -1) {
-        char buffFps[22];
-        snprintf(buffFps, sizeof(buffFps), "Feels Like: %d FPS",
-                 GameIsolate_.game_timestate.feelsLikeFps);
-        //if (dt_feelsLikeFps.t1 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t1);
-        //if (dt_feelsLikeFps.t2 != nullptr) METAENGINE_Render_FreeImage(dt_feelsLikeFps.t2);
-        dt_feelsLikeFps = Drawing::drawTextParams(RenderTarget_.target, buffFps, font16,
-                                                  global.platform.WIDTH - 4, 2, 0xff, 0xff, 0xff,
-                                                  ALIGN_RIGHT);
-    }
-
-    Drawing::drawText(RenderTarget_.target, dt_feelsLikeFps, global.platform.WIDTH - 4, 2 + 14,
-                      ALIGN_RIGHT);
+    // Drawing::drawText("fps",
+    //                   fmt::format("{} FPS\n Feels Like: {} FPS", GameIsolate_.game_timestate.fps,
+    //                               GameIsolate_.game_timestate.feelsLikeFps),
+    //                   global.platform.WIDTH, 20);
 
     if (Settings::draw_chunk_state) {
 
@@ -4006,58 +3972,17 @@ void Game::renderOverlays() {
 
     if (Settings::draw_debug_stats) {
 
-        int dbgIndex = 1;
-
-        int lineHeight = 16;
-
-        char buff1[32];
-        std::string buffAsStdStr1;
-
-        snprintf(buff1, sizeof(buff1), "XY: %.2f / %.2f", GameData_.plPosX, GameData_.plPosY);
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-
-        snprintf(buff1, sizeof(buff1), "V: %.3f / %.3f",
-                 GameIsolate_.world->player ? GameIsolate_.world->player->vx : 0,
-                 GameIsolate_.world->player ? GameIsolate_.world->player->vy : 0);
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-
-        snprintf(buff1, sizeof(buff1), "Particles: %d", (int) GameIsolate_.world->particles.size());
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-
-        snprintf(buff1, sizeof(buff1), "Entities: %d", (int) GameIsolate_.world->entities.size());
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-
         int rbCt = 0;
         for (auto &r: GameIsolate_.world->rigidBodies) {
             if (r->body->IsEnabled()) rbCt++;
         }
-
-        snprintf(buff1, sizeof(buff1), "RigidBodies: %d/%d O, %d W", rbCt,
-                 (int) GameIsolate_.world->rigidBodies.size(),
-                 (int) GameIsolate_.world->worldRigidBodies.size());
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
 
         int rbTriACt = 0;
         int rbTriCt = 0;
         for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
             RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
-            b2Fixture *fix = cur.body->GetFixtureList();  
+            b2Fixture *fix = cur.body->GetFixtureList();
             while (fix) {
                 b2Shape *shape = fix->GetShape();
 
@@ -4092,12 +4017,6 @@ void Game::renderOverlays() {
             }
         }
 
-        snprintf(buff1, sizeof(buff1), "Tris: %d/%d O, %d W", rbTriACt, rbTriCt, rbTriWCt);
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-
         int chCt = 0;
         for (auto &p: GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
@@ -4108,62 +4027,57 @@ void Game::renderOverlays() {
             }
         }
 
-        snprintf(buff1, sizeof(buff1), "Cached Chunks: %d", chCt);
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        const char* buffAsStdStr1 = R"(
+XY: {:.2f} / {:.2f}
+V: {:.2f} / {:.2f}
+Particles: {}
+Entities: {}
+RigidBodies: {}/{} O, {} W
+Tris: {}/{} O, {} W
+Cached Chunks: {}
+GameIsolate_.world->readyToReadyToMerge ({})
+GameIsolate_.world->readyToMerge ({})
+)";
 
-        snprintf(buff1, sizeof(buff1), "GameIsolate_.world->readyToReadyToMerge (%d)",
-                 (int) GameIsolate_.world->readyToReadyToMerge.size());
-        buffAsStdStr1 = buff1;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr1.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-        for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
-            char buff[10];
-            snprintf(buff, sizeof(buff), "    #%d", (int) i);
-            std::string buffAsStdStr = buff;
-            Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
-                                2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                                {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-        }
-        char buff2[30];
-        snprintf(buff2, sizeof(buff2), "GameIsolate_.world->readyToMerge (%d)",
-                 (int) GameIsolate_.world->readyToMerge.size());
-        std::string buffAsStdStr2 = buff2;
-        Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr2.c_str(), font16, 4,
-                            2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                            {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-        for (size_t i = 0; i < GameIsolate_.world->readyToMerge.size(); i++) {
-            char buff[20];
-            snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i,
-                     GameIsolate_.world->readyToMerge[i]->x,
-                     GameIsolate_.world->readyToMerge[i]->y);
-            std::string buffAsStdStr = buff;
-            Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
-                                2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
-                                {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
-        }
+        Drawing::drawText(
+                "info",
+                fmt::format(buffAsStdStr1, GameData_.plPosX, GameData_.plPosY,
+                            GameIsolate_.world->player ? GameIsolate_.world->player->vx : 0.0f,
+                            GameIsolate_.world->player ? GameIsolate_.world->player->vy : 0.0f,
+                            (int)GameIsolate_.world->particles.size(),
+                            (int)GameIsolate_.world->entities.size(), rbCt,
+                            (int) GameIsolate_.world->rigidBodies.size(),
+                            (int) GameIsolate_.world->worldRigidBodies.size(), rbTriACt, rbTriCt,
+                            rbTriWCt, chCt, (int) GameIsolate_.world->readyToReadyToMerge.size(),
+                            (int) GameIsolate_.world->readyToMerge.size()),
+                4, 12);
+
+        // for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
+        //     char buff[10];
+        //     snprintf(buff, sizeof(buff), "    #%d", (int) i);
+        //     std::string buffAsStdStr = buff;
+        //     Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
+        //                         2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+        //                         {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        // }
+
+        // for (size_t i = 0; i < GameIsolate_.world->readyToMerge.size(); i++) {
+        //     char buff[20];
+        //     snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i,
+        //              GameIsolate_.world->readyToMerge[i]->x,
+        //              GameIsolate_.world->readyToMerge[i]->y);
+        //     std::string buffAsStdStr = buff;
+        //     Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
+        //                         2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
+        //                         {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
+        // }
     }
 
     if (Settings::draw_frame_graph) {
 
         for (int i = 0; i <= 4; i++) {
-            if (dt_frameGraph[i].w == -1) {
-                char buff[20];
-                snprintf(buff, sizeof(buff), "%d", i * 25);
-                std::string buffAsStdStr = buff;
-                //if (dt_frameGraph[i].t1 != nullptr) METAENGINE_Render_FreeImage(dt_frameGraph[i].t1);
-                //if (dt_frameGraph[i].t2 != nullptr) METAENGINE_Render_FreeImage(dt_frameGraph[i].t2);
-                dt_frameGraph[i] = Drawing::drawTextParams(
-                        RenderTarget_.target, buffAsStdStr.c_str(), font14,
-                        global.platform.WIDTH - 20, global.platform.HEIGHT - 15 - (i * 25) - 2,
-                        0xff, 0xff, 0xff, ALIGN_LEFT);
-            }
-
-            Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
-                              global.platform.HEIGHT - 15 - (i * 25) - 2, ALIGN_LEFT);
+            // Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
+            //                   global.platform.HEIGHT - 15 - (i * 25) - 2);
             METAENGINE_Render_Line(
                     RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
                     global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25,

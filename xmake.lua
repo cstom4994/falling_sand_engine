@@ -13,14 +13,15 @@ if (is_os("windows")) then
     add_packages("vcpkg::sdl2")
     add_requires("vcpkg::pthreads")
     add_packages("vcpkg::pthreads")
-    -- add_requires("vcpkg::glew")
-    -- add_packages("vcpkg::glew")
 else
     add_requires("libsdl")
     add_packages("libsdl")
-    -- add_requires("glew")
-    -- add_packages("glew")
 end
+
+option("unity")
+    set_default(false)
+    set_description("Toggle to enable unity build")
+option_end()
 
 -- rule("metadot.uidsl")
 -- set_extensions('.uidsl')
@@ -171,34 +172,25 @@ do
     add_headerfiles("Source/Libs/**.hpp")
 end
 
-target("Engine")
+target("MetaDot")
 do
-    add_rules("c.unity_build", {batchsize = 4})
-    add_rules("c++.unity_build", {batchsize = 4})
-    set_kind("static")
+    if has_config("unity") then
+        add_rules("c.unity_build", {batchsize = 4})
+        add_rules("c++.unity_build", {batchsize = 4})
+    end
+    set_kind("binary")
+    set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
+    add_deps("Libs")
+    add_links(link_list)
+    add_files("Source/Core/**.cpp")
+    add_files("Source/Game/**.cpp")
     add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cpp")
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")
     add_headerfiles("Source/Engine/**.inl")
-    -- add_files('Source/Engine/UserInterface/IMGUI/uidslexpr.lua',
-    --           {rule = 'utils.bin2c'})
-end
-
-target("MetaDot")
-do
-    add_rules("c.unity_build", {batchsize = 4})
-    add_rules("c++.unity_build", {batchsize = 4})
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("Libs", "Engine")
-    add_links(link_list)
-    add_files("Source/Core/**.cpp")
-    add_files("Source/Game/**.cpp")
     add_headerfiles("Source/Game/**.h")
     add_headerfiles("Source/Core/**.hpp")
     add_headerfiles("Source/Game/**.hpp")

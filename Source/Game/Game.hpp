@@ -65,10 +65,6 @@ private:
 
     uint16_t *frameTime = new uint16_t[FrameTimeNum];
 
-    STBTTF_Font *font64;
-    STBTTF_Font *font16;
-    STBTTF_Font *font14;
-
     b2DebugDraw_impl *b2DebugDraw;
 
     int ent_prevLoadZoneX = 0;
@@ -91,14 +87,6 @@ private:
 
     uint32 loadingOnColor = 0;
     uint32 loadingOffColor = 0;
-
-    DrawTextParams_t dt_versionInfo1;
-    DrawTextParams_t dt_versionInfo2;
-    DrawTextParams_t dt_versionInfo3;
-    DrawTextParams_t dt_fps;
-    DrawTextParams_t dt_feelsLikeFps;
-    DrawTextParams_t dt_frameGraph[5];
-    DrawTextParams_t dt_loading;
 
 public:
     bool running = true;
