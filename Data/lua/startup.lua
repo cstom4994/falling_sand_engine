@@ -1,11 +1,9 @@
 -- Copyright(c) 2022, KaoruXun All rights reserved.
 -- runs on start of the engine
 -- used to load scripts
-local tl = require("tl")
-
-local inspect = require "inspect"
-
-require "lang"
+tl = require("tl")
+inspect = require("inspect")
+require("lang")
 
 assert(inspect({1, 2, 3, 4}) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")

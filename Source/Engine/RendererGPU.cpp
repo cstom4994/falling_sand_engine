@@ -933,21 +933,21 @@ void METAENGINE_Render_PushErrorCode(const char *function, METAENGINE_Render_Err
                                      const char *details, ...) {
     gpu_init_error_queue();
 
-    if (METADOT_DEBUG) {
-        // Print the message
-        if (details != NULL) {
-            char buf[METAENGINE_Render_ERROR_DETAILS_STRING_MAX];
-            va_list lst;
-            va_start(lst, details);
-            vsnprintf(buf, METAENGINE_Render_ERROR_DETAILS_STRING_MAX, details, lst);
-            va_end(lst);
+#if defined(METADOT_DEBUG)
+    // Print the message
+    if (details != NULL) {
+        char buf[METAENGINE_Render_ERROR_DETAILS_STRING_MAX];
+        va_list lst;
+        va_start(lst, details);
+        vsnprintf(buf, METAENGINE_Render_ERROR_DETAILS_STRING_MAX, details, lst);
+        va_end(lst);
 
-            METADOT_ERROR("{0}: {1} - {2}", (function == NULL ? "NULL" : function),
-                          METAENGINE_Render_GetErrorString(error), buf);
-        } else
-            METADOT_ERROR("{0}: {1}", (function == NULL ? "NULL" : function),
-                          METAENGINE_Render_GetErrorString(error));
-    }
+        METADOT_ERROR("{0}: {1} - {2}", (function == NULL ? "NULL" : function),
+                      METAENGINE_Render_GetErrorString(error), buf);
+    } else
+        METADOT_ERROR("{0}: {1}", (function == NULL ? "NULL" : function),
+                      METAENGINE_Render_GetErrorString(error));
+#endif
 
     if (_gpu_num_error_codes < _gpu_error_code_queue_size) {
         if (function == NULL) _gpu_error_code_queue[_gpu_num_error_codes].function[0] = '\0';

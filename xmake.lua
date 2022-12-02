@@ -162,17 +162,19 @@ do
     add_files("Source/Libs/*.cpp")
     add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
               "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
-              "Source/Libs/glad/**.c", {unity_group = "invade"})
+              "Source/Libs/glad/**.c", "Source/Libs/miniz/**.c",
+              {unity_group = "invade"})
 
     add_files("Source/Libs/quickjs/**.c")
     add_files("Source/Libs/lz4/**.c")
-    add_files("Source/Libs/miniz/**.c")
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
 end
 
 target("Engine")
 do
+    add_rules("c.unity_build", {batchsize = 4})
+    add_rules("c++.unity_build", {batchsize = 4})
     set_kind("static")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
@@ -187,6 +189,8 @@ end
 
 target("MetaDot")
 do
+    add_rules("c.unity_build", {batchsize = 4})
+    add_rules("c++.unity_build", {batchsize = 4})
     set_kind("binary")
     set_targetdir("./output")
     add_includedirs(include_dir_list)

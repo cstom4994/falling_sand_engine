@@ -20,9 +20,9 @@ const char *u8Cpp20(T &&t) noexcept {
 #endif
 
 #if defined(NDEBUG) && !defined(_DEBUG)
-#define METADOT_RELEASE 1
+#define METADOT_RELEASE
 #else
-#define METADOT_DEBUG 1
+#define METADOT_DEBUG
 #endif
 
 #define METADOT_CONCAT_IMPL(x, y) x##y

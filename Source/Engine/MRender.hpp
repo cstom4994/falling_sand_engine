@@ -91,6 +91,8 @@ struct DrawTextParams_t
     int h = -1;
 };
 
+void TextFuck(std::string text, uint8_t x, uint8_t y);
+
 class Drawing {
 public:
     static bool InitFont(C_GLContext *SDLContext);

@@ -15,10 +15,7 @@
 #include "ImGuiAuto.hpp"
 
 void ShowAutoTestWindow() {
-    if (!ImGui::Begin("ImGui::Auto() Test Window")) {
-        ImGui::End();
-        return;
-    }
+
     auto myCollapsingHeader = [](const char *name) -> bool {
         ImGuiStyle &style = ImGui::GetStyle();
         ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
@@ -435,5 +432,4 @@ Container data, large structs and tuples are hidden by default.
 
         ImGui::Unindent();
     }
-    ImGui::End();
 }

@@ -1,5 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#ifndef _METADOT_CONTROLS_HPP_
+#define _METADOT_CONTROLS_HPP_
+
 #include "Engine/SDLWrapper.hpp"
 
 #include <cstdio>
@@ -104,3 +107,5 @@ public:
 
     static KeyControl *add(KeyControl *c);
 };
+
+#endif

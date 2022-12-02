@@ -12,6 +12,127 @@
 #include <map>
 #include <string>
 
+//####################################################################################
+//####################################################################################
+//####################################################################################
+//##    BEGIN REFLECT IMPLEMENTATION
+//####################################################################################
+//####################################################################################
+//####################################################################################
+#ifdef REGISTER_REFLECTION
+
+// Gloabls
+std::shared_ptr<SnReflect> g_reflect{nullptr};// Meta data singleton
+Functions g_register_list{};                  // Keeps list of registration functions
+
+// ########## General Registration ##########
+// Initializes global reflection object, registers classes with reflection system
+void InitializeReflection() {
+    // Create Singleton
+    g_reflect = std::make_shared<SnReflect>();
+
+    // Register Structs / Classes
+    for (int func = 0; func < g_register_list.size(); ++func) { g_register_list[func](); }
+    g_register_list.clear();// Clean up
+}
+
+// Used in registration macros to automatically create nice display name from class / member variable names
+void CreateTitle(std::string &name) {
+    // Replace underscores, capitalize first letters
+    std::replace(name.begin(), name.end(), '_', ' ');
+    name[0] = toupper(name[0]);
+    for (int c = 1; c < name.length(); c++) {
+        if (name[c - 1] == ' ') name[c] = toupper(name[c]);
+    }
+
+    // Add spaces to seperate words
+    std::string title = "";
+    title += name[0];
+    for (int c = 1; c < name.length(); c++) {
+        if (islower(name[c - 1]) && isupper(name[c])) {
+            title += std::string(" ");
+        } else if ((isalpha(name[c - 1]) && isdigit(name[c]))) {
+            title += std::string(" ");
+        }
+        title += name[c];
+    }
+    name = title;
+}
+
+// ########## Class / Member Registration ##########
+// Update class TypeData
+void RegisterClass(TypeData class_data) { g_reflect->AddClass(class_data); }
+
+// Update member TypeData
+void RegisterMember(TypeData class_data, TypeData member_data) {
+    g_reflect->AddMember(class_data, member_data);
+}
+
+//####################################################################################
+//##    TypeData Fetching
+//####################################################################################
+// ########## Class Data Fetching ##########
+// Class TypeData fetching from passed in class TypeHash
+TypeData &ClassData(TypeHash class_hash) {
+    for (auto &pair: g_reflect->classes) {
+        if (pair.first == class_hash) return pair.second;
+    }
+    return unknown_type;
+}
+// Class TypeData fetching from passed in class name
+TypeData &ClassData(std::string class_name) {
+    for (auto &pair: g_reflect->classes) {
+        if (pair.second.name == class_name) return pair.second;
+    }
+    return unknown_type;
+}
+// Class TypeData fetching from passed in class name
+TypeData &ClassData(const char *class_name) { return ClassData(std::string(class_name)); }
+
+// ########## Member Data Fetching ##########
+// Member TypeData fetching by member variable index and class TypeHash
+TypeData &MemberData(TypeHash class_hash, int member_index) {
+    int count = 0;
+    for (auto &member: g_reflect->members[class_hash]) {
+        if (count == member_index) return member.second;
+        ++count;
+    }
+    return unknown_type;
+}
+// Member TypeData fetching by member variable name and class TypeHash
+TypeData &MemberData(TypeHash class_hash, std::string member_name) {
+    for (auto &member: g_reflect->members[class_hash]) {
+        if (member.second.name == member_name) return member.second;
+    }
+    return unknown_type;
+}
+
+//####################################################################################
+//##    Meta Data (User Info)
+//####################################################################################
+void SetMetaData(TypeData &type_data, int key, std::string data) {
+    if (type_data.type_hash != 0) type_data.meta_int_map[key] = data;
+}
+void SetMetaData(TypeData &type_data, std::string key, std::string data) {
+    if (type_data.type_hash != 0) type_data.meta_string_map[key] = data;
+}
+std::string GetMetaData(TypeData &type_data, int key) {
+    if (type_data.type_hash != 0) {
+        if (type_data.meta_int_map.find(key) != type_data.meta_int_map.end())
+            return type_data.meta_int_map[key];
+    }
+    return "";
+}
+std::string GetMetaData(TypeData &type_data, std::string key) {
+    if (type_data.type_hash != 0) {
+        if (type_data.meta_string_map.find(key) != type_data.meta_string_map.end())
+            return type_data.meta_string_map[key];
+    }
+    return "";
+}
+
+#endif// REGISTER_REFLECTION
+
 namespace reflect {
 
     //--------------------------------------------------------

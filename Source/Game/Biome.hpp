@@ -1,5 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#ifndef _METADOT_BIOME_HPP_
+#define _METADOT_BIOME_HPP_
+
 #include <utility>
 #define INC_Biome
 
@@ -25,3 +28,5 @@ public:
     static Biome MOUNTAINS;
     static Biome FOREST;
 };
+
+#endif

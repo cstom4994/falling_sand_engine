@@ -11,10 +11,10 @@ local currentFilePath = (...):gsub("%.init$", "")
 local plural = require(currentFilePath .. '.plural')
 local interpolate = require(currentFilePath .. '.interpolate')
 local variants = require(currentFilePath .. '.variants')
-local version = require(currentFilePath .. '.version')
+local version = '0.9.2'
 
-i18n.plural, i18n.interpolate, i18n.variants, i18n.version, i18n._VERSION = plural, interpolate, variants, version,
-    version
+i18n.plural, i18n.interpolate, i18n.variants, i18n.version, i18n._VERSION =
+    plural, interpolate, variants, version, version
 
 -- private stuff
 
@@ -31,43 +31,37 @@ local function isPluralTable(t)
     return type(t) == 'table' and type(t.other) == 'string'
 end
 
-local function isPresent(str)
-    return type(str) == 'string' and #str > 0
-end
+local function isPresent(str) return type(str) == 'string' and #str > 0 end
 
 local function assertPresent(functionName, paramName, value)
-    if isPresent(value) then
-        return
-    end
+    if isPresent(value) then return end
 
-    local msg = "i18n.%s requires a non-empty string on its %s. Got %s (a %s value)."
+    local msg =
+        "i18n.%s requires a non-empty string on its %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
 local function assertPresentOrPlural(functionName, paramName, value)
-    if isPresent(value) or isPluralTable(value) then
-        return
-    end
+    if isPresent(value) or isPluralTable(value) then return end
 
-    local msg = "i18n.%s requires a non-empty string or plural-form table on its %s. Got %s (a %s value)."
+    local msg =
+        "i18n.%s requires a non-empty string or plural-form table on its %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
 local function assertPresentOrTable(functionName, paramName, value)
-    if isPresent(value) or type(value) == 'table' then
-        return
-    end
+    if isPresent(value) or type(value) == 'table' then return end
 
-    local msg = "i18n.%s requires a non-empty string or table on its %s. Got %s (a %s value)."
+    local msg =
+        "i18n.%s requires a non-empty string or table on its %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
 local function assertFunctionOrNil(functionName, paramName, value)
-    if value == nil or type(value) == 'function' then
-        return
-    end
+    if value == nil or type(value) == 'function' then return end
 
-    local msg = "i18n.%s requires a function (or nil) on param %s. Got %s (a %s value)."
+    local msg =
+        "i18n.%s requires a function (or nil) on param %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
@@ -95,7 +89,8 @@ end
 local function recursiveLoad(currentContext, data)
     local composedKey
     for k, v in pairs(data) do
-        composedKey = (currentContext and (currentContext .. '.') or "") .. tostring(k)
+        composedKey = (currentContext and (currentContext .. '.') or "") ..
+                          tostring(k)
         assertPresent('load', composedKey, k)
         assertPresentOrTable('load', composedKey, v)
         if type(v) == 'string' then
@@ -112,9 +107,7 @@ local function localizedTranslate(key, loc, data)
 
     for i = 1, length do
         node = node[path[i]]
-        if not node then
-            return nil
-        end
+        if not node then return nil end
     end
 
     return treatNode(node, data)
@@ -148,9 +141,7 @@ function i18n.translate(key, data)
     local fallbacks = variants.fallbacks(usedLocale, fallbackLocale)
     for i = 1, #fallbacks do
         local value = localizedTranslate(key, fallbacks[i], data)
-        if value then
-            return value
-        end
+        if value then return value end
     end
 
     return data.default
@@ -158,7 +149,8 @@ end
 
 function i18n.setLocale(newLocale, newPluralizeFunction)
     assertPresent('setLocale', 'newLocale', newLocale)
-    assertFunctionOrNil('setLocale', 'newPluralizeFunction', newPluralizeFunction)
+    assertFunctionOrNil('setLocale', 'newPluralizeFunction',
+                        newPluralizeFunction)
     locale = newLocale
     pluralizeFunction = newPluralizeFunction or defaultPluralizeFunction
 end
@@ -168,13 +160,9 @@ function i18n.setFallbackLocale(newFallbackLocale)
     fallbackLocale = newFallbackLocale
 end
 
-function i18n.getFallbackLocale()
-    return fallbackLocale
-end
+function i18n.getFallbackLocale() return fallbackLocale end
 
-function i18n.getLocale()
-    return locale
-end
+function i18n.getLocale() return locale end
 
 function i18n.reset()
     store = {}
@@ -183,9 +171,7 @@ function i18n.reset()
     i18n.setFallbackLocale(defaultLocale)
 end
 
-function i18n.load(data)
-    recursiveLoad(nil, data)
-end
+function i18n.load(data) recursiveLoad(nil, data) end
 
 function i18n.loadFile(path)
     local chunk = assert(loadfile(path))
@@ -193,11 +179,7 @@ function i18n.loadFile(path)
     i18n.load(data)
 end
 
-setmetatable(i18n, {
-    __call = function(_, ...)
-        return i18n.translate(...)
-    end
-})
+setmetatable(i18n, {__call = function(_, ...) return i18n.translate(...) end})
 
 i18n.reset()
 

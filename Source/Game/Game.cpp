@@ -27,6 +27,7 @@
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "Game/console.hpp"
+#include "MRender.hpp"
 #include "MaterialTestGenerator.cpp"
 
 #include "Libs/glad/glad.h"
@@ -1168,6 +1169,8 @@ int Game::run(int argc, char *argv[]) {
             renderEarly();
             RenderTarget_.target = RenderTarget_.realTarget;
 
+            global.ImGuiCore->begin();
+
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
 
@@ -1179,7 +1182,6 @@ int Game::run(int argc, char *argv[]) {
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
 
-            global.ImGuiCore->begin();
             global.ImGuiCore->Render();
 
             if (ImGui::BeginMainMenuBar()) {
@@ -4055,7 +4057,7 @@ void Game::renderOverlays() {
         for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
             RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
-            b2Fixture *fix = cur.body->GetFixtureList();
+            b2Fixture *fix = cur.body->GetFixtureList();  
             while (fix) {
                 b2Shape *shape = fix->GetShape();
 

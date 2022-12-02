@@ -5,6 +5,7 @@
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
+#include "Engine/ImGuiAuto.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
@@ -601,6 +602,7 @@ void ImGuiCore::Render() {
             for (auto [name, size]: GC::MemoryDebugMap) {
                 ImGui::Text(fmt::format("   {0} {1}", name, size).c_str());
             }
+            // ImGui::Auto(GC::MemoryDebugMap, "map");
 #endif
             ImGui::EndTabItem();
         }

@@ -2,16 +2,12 @@ local variants = {}
 
 local function reverse(arr, length)
     local result = {}
-    for i = 1, length do
-        result[i] = arr[length - i + 1]
-    end
+    for i = 1, length do result[i] = arr[length - i + 1] end
     return result, length
 end
 
 local function concat(arr1, len1, arr2, len2)
-    for i = 1, len2 do
-        arr1[len1 + i] = arr2[i]
-    end
+    for i = 1, len2 do arr1[len1 + i] = arr2[i] end
     return arr1, len1 + len2
 end
 
@@ -29,9 +25,7 @@ function variants.isParent(parent, child)
     return not not child:match("^" .. parent .. "%-")
 end
 
-function variants.root(locale)
-    return locale:match("[^%-]+")
-end
+function variants.root(locale) return locale:match("[^%-]+") end
 
 function variants.fallbacks(locale, fallbackLocale)
     if locale == fallbackLocale or variants.isParent(fallbackLocale, locale) then

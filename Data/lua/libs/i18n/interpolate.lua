@@ -31,11 +31,13 @@ end
 
 -- matches a string of type %<age>.d
 local function interpolateField(string, variables)
-    return string:gsub("(.?)%%<%s*(.-)%s*>%.([cdEefgGiouXxsq])", function(previous, key, format)
+    return string:gsub("(.?)%%<%s*(.-)%s*>%.([cdEefgGiouXxsq])",
+                       function(previous, key, format)
         if previous == "%" then
             return
         else
-            return previous .. string.format("%" .. format, variables[key] or "nil")
+            return previous ..
+                       string.format("%" .. format, variables[key] or "nil")
         end
     end)
 end
