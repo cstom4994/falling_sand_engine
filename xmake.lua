@@ -13,9 +13,13 @@ if (is_os("windows")) then
     add_packages("vcpkg::sdl2")
     add_requires("vcpkg::pthreads")
     add_packages("vcpkg::pthreads")
+    -- add_requires("vcpkg::glew")
+    -- add_packages("vcpkg::glew")
 else
     add_requires("libsdl")
     add_packages("libsdl")
+    -- add_requires("glew")
+    -- add_packages("glew")
 end
 
 -- rule("metadot.uidsl")
@@ -143,7 +147,7 @@ end
 include_dir_list = {
     "Source", "Source/Engine", "Source/Libs", "Source/Libs/imgui",
     "Source/Libs/json/include", "Source/Libs/fmt/include",
-    "Source/Libs/box2d/inc", "Source/Libs/glew"
+    "Source/Libs/box2d/inc", "Source/Libs/glad"
 }
 
 defines_list = {}
@@ -159,7 +163,7 @@ do
     add_files("Source/Libs/*.cpp", "Source/Libs/*.cc", "Source/Libs/*.c")
     add_files("Source/Libs/FastNoise/**.cpp", "Source/Libs/ImGui/**.cpp",
               "Source/Libs/ImGui/**.c", "Source/Libs/lua/**.c",
-              "Source/Libs/fmt/**.cc", "Source/Libs/glew/**.c",
+              "Source/Libs/fmt/**.cc", "Source/Libs/glad/**.c",
               {unity_group = "libone"})
 
     add_files("Source/Libs/quickjs/**.c")
