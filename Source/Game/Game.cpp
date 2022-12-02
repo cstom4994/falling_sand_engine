@@ -179,7 +179,7 @@ int Game::init(int argc, char *argv[]) {
 
     global.I18N.Init();
 
-    console.Init();
+    GameSystem_.console.Init();
 
     if (Settings::networkMode != NetworkMode::SERVER) { GameIsolate_.backgrounds->Load(); }
 
@@ -1183,16 +1183,12 @@ int Game::run(int argc, char *argv[]) {
             global.ImGuiCore->Render();
 
             if (ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginMenu(ICON_FA_SYNC " 系统")) { ImGui::EndMenu(); }
                 if (ImGui::BeginMenu(ICON_FA_ARCHIVE " 工具")) {
                     if (ImGui::MenuItem("八个雅鹿", "CTRL+A")) {}
                     ImGui::Separator();
                     ImGui::Checkbox("鼠标", &Settings::draw_cursor);
                     ImGui::Checkbox("调整", &Settings::ui_tweak);
                     ImGui::Checkbox("脚本编辑器", &Settings::ui_code_editor);
-                    ImGui::Checkbox("Inspector", &Settings::ui_inspector);
-                    ImGui::Checkbox("内存监测", &Settings::ui_gcmanager);
-                    ImGui::Checkbox("控制台", &Settings::ui_console);
                     ImGui::EndMenu();
                 }
 
@@ -1205,8 +1201,6 @@ int Game::run(int argc, char *argv[]) {
 
                 ImGui::EndMainMenuBar();
             }
-
-            if (Settings::ui_console) { console.DrawUI(); }
 
             if (Settings::draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1424,7 +1418,7 @@ exit:
     METADOT_DELETE(C, objectDelete, UInt8);
     GameIsolate_.backgrounds->Unload();
 
-    console.End();
+    GameSystem_.console.End();
 
     running = false;
 

@@ -63,8 +63,6 @@ private:
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
 
-    Console console;
-
     uint16_t *frameTime = new uint16_t[FrameTimeNum];
 
     STBTTF_Font *font64;
@@ -105,8 +103,6 @@ private:
 public:
     bool running = true;
 
-    //HostData *data;
-
     int scale = 4;
     float accLoadX = 0;
     float accLoadY = 0;
@@ -125,6 +121,11 @@ public:
         GameTimeState game_timestate;
         World *world = nullptr;
     } GameIsolate_;
+
+    struct
+    {
+        Console console;
+    } GameSystem_;
 
     struct
     {

@@ -8,12 +8,14 @@
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
+#include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/GameUI.hpp"
 #include "Game/InEngine.h"
 #include "Game/Networking.hpp"
 #include "Game/Utils.hpp"
+#include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
 #include "Settings.hpp"
 
@@ -189,7 +191,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
     ImGuiIO &io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
@@ -259,10 +261,6 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
     VERIFY(imguiIMMCommunication.subclassify(window));
 #endif
 
-    //registerWindow("NavBar", &dynamic_cast<FakeWindow*>(APwin())->m_enableNavigationBar);
-
-    //	static const char* fileToEdit = "test.cpp";
-
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 
 #if 0
@@ -323,7 +321,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
 #endif
 
-    std::ifstream t(fileToEdit);
+    std::ifstream t(METADOT_RESLOC("data/lua/startup.lua"));
     if (t.good()) {
         std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
         editor.SetText(str);
@@ -568,7 +566,7 @@ void ImGuiCore::Render() {
         ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1,
                     editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
                     editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(),
-                    fileToEdit);
+                    METADOT_RESLOC_STR("data/lua/startup.lua"));
 
         editor.Render("TextEditor");
         ImGui::End();
@@ -576,9 +574,14 @@ void ImGuiCore::Render() {
 
     if (Settings::ui_tweak) {
 
-        ImGui::Begin(LANG("ui_tweaks"));
+        ImGui::Begin(LANG("ui_tweaks"), NULL, ImGuiWindowFlags_MenuBar);
 
         ImGui::BeginTabBar(U8("协变与逆变"));
+
+        if (ImGui::BeginTabItem(LANG("ui_console"))) {
+            global.game->GameSystem_.console.DrawUI();
+            ImGui::EndTabItem();
+        }
 
         if (ImGui::BeginTabItem(LANG("ui_info"))) {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
@@ -589,8 +592,16 @@ void ImGuiCore::Render() {
 
             ImGui::Text("Using renderer: %s (%d.%d)\n", id.name, id.major_version,
                         id.minor_version);
-            ImGui::Text("  Shader versions supported: %d to %d\n\n", renderer->min_shader_version,
+            ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version,
                         renderer->max_shader_version);
+
+#if defined(METADOT_DEBUG)
+            ImGui::Separator();
+            ImGui::Text("GC:\n");
+            for (auto [name, size]: GC::MemoryDebugMap) {
+                ImGui::Text(fmt::format("   {0} {1}", name, size).c_str());
+            }
+#endif
             ImGui::EndTabItem();
         }
 
@@ -626,20 +637,6 @@ void ImGuiCore::Render() {
     }
 
     GameUI::GameUI_Draw(global.game);
-
-    if (Settings::ui_inspector) {
-        //DrawPropertyWindow();
-    }
-
-    if (Settings::ui_gcmanager) {
-        ImGui::Begin("GC");
-#if defined(METADOT_DEBUG)
-        for (auto [name, size]: GC::MemoryDebugMap) {
-            ImGui::Text(fmt::format("{0} {1}", name, size).c_str());
-        }
-#endif
-        ImGui::End();
-    }
 }
 
 void ImGuiCore::registerWindow(std::string_view windowName, bool *opened) {

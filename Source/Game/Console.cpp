@@ -5,6 +5,7 @@
 #include "Engine/Memory.hpp"
 #include "Engine/ReflectionFlat.hpp"
 #include "Game/ConsoleImpl.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameResources.hpp"
 #include <cstring>
 #include <string>
@@ -65,11 +66,11 @@ ImGuiConsole::ImGuiConsole(std::string c_name, size_t inputBufferSize)
 void ImGuiConsole::Draw() {
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, m_WindowAlpha);
-    if (!ImGui::Begin(m_ConsoleName.data(), nullptr, ImGuiWindowFlags_MenuBar)) {
-        ImGui::PopStyleVar();
-        ImGui::End();
-        return;
-    }
+    // if (!ImGui::Begin(m_ConsoleName.data(), nullptr, ImGuiWindowFlags_MenuBar)) {
+    //     ImGui::PopStyleVar();
+    //     ImGui::End();
+    //     return;
+    // }
     ImGui::PopStyleVar();
 
     MenuBar();
@@ -82,7 +83,7 @@ void ImGuiConsole::Draw() {
 
     InputBar();
 
-    ImGui::End();
+    // ImGui::End();
 }
 
 ConsoleImpl::System &ImGuiConsole::System() { return m_ConsoleSystem; }
@@ -525,6 +526,8 @@ void Console::Init() {
 
     console->System().RegisterVariable("plPosX", GameData_.plPosX, ConsoleImpl::Arg<float>(""));
     console->System().RegisterVariable("plPosY", GameData_.plPosY, ConsoleImpl::Arg<float>(""));
+
+    console->System().RegisterVariable("scale", global.game->scale, ConsoleImpl::Arg<int>(""));
 
     // Register scripts
     console->System().RegisterScript("test_script", "./console.script");
