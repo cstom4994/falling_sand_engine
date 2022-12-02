@@ -18,7 +18,7 @@
 #ifndef INC_RigidBody
 #include "RigidBody.hpp"
 #endif
-#include "Libs/FastNoise/FastNoise.h"
+#include "Engine/Noise.h"
 #include "Libs/sparsehash/dense_hash_map.h"
 #include "Structures.hpp"
 #include <future>

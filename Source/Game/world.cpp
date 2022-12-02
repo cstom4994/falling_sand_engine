@@ -15,12 +15,10 @@
 #endif
 #include "Core/Core.hpp"
 #include "DefaultGenerator.cpp"
+#include "Engine/Math.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Utils.hpp"
-#include "Libs/MarchingSquares.h"
-#include "Libs/polygon-simplify.hh"
-#include "Libs/polypartition.h"
 #include "MaterialTestGenerator.cpp"
 #include "Populators.cpp"
 #include "fmt/format.h"
@@ -502,7 +500,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             worldMesh.push_back({lastX, lastY});
         }
 
-        worldMesh = DouglasPeucker::simplify(worldMesh, 1);
+        worldMesh = simplify(worldMesh, 1);
 
         if (worldMesh.size() < 3) {
             // 1x1 that breaks everything
@@ -862,7 +860,7 @@ found : {};
             worldMesh.push_back({lastX, lastY});
         }
 
-        worldMesh = DouglasPeucker::simplify(worldMesh, 1);
+        worldMesh = simplify(worldMesh, 1);
 
         if (worldMesh.size() < 3) {
             // 1x1 pixel that breaks everything

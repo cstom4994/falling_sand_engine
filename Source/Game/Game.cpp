@@ -698,6 +698,7 @@ int Game::run(int argc, char *argv[]) {
 
                         for (size_t i = 0; i < rbs.size(); i++) {
                             RigidBody *cur = rbs[i];
+                            if (!static_cast<bool>(cur->surface)) continue;
                             if (cur->body->IsEnabled()) {
                                 float s = sin(-cur->body->GetAngle());
                                 float c = cos(-cur->body->GetAngle());

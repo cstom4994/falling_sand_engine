@@ -178,5 +178,5 @@ void I18N::Load(std::string lang) {
 }
 
 std::string I18N::Get(std::string text) {
-    (*global.scripts->LuaMap["LuaCore"]->GetWrapper())["translate"](text);
+    return (*global.scripts->LuaMap["LuaCore"]->GetWrapper())["translate"](text);
 }
