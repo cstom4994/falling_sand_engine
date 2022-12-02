@@ -63,22 +63,7 @@ private:
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
 
-    ImGuiConsole *console;
-
-    int ofsX = 0;
-    int ofsY = 0;
-
-    float plPosX = 0;
-    float plPosY = 0;
-
-    float camX = 0;
-    float camY = 0;
-
-    float desCamX = 0;
-    float desCamY = 0;
-
-    float freeCamX = 0;
-    float freeCamY = 0;
+    Console console;
 
     uint16_t *frameTime = new uint16_t[FrameTimeNum];
 

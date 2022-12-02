@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-namespace Console {
+namespace ConsoleImpl {
 
     struct String
     {
@@ -150,7 +150,7 @@ namespace Console {
         }                                                                                          \
     }
 
-    ARG_PARSE_BASE_SPEC(Console::String) {
+    ARG_PARSE_BASE_SPEC(ConsoleImpl::String) {
         m_Value.m_String.clear();
 
         static auto GetWord = [](std::string &str, size_t start, size_t end) {
@@ -1220,7 +1220,7 @@ namespace Console {
     METADOT_INLINE void Script::Load() {
         std::ifstream script_fstream(m_Path);
 
-        if (!script_fstream.good()) throw Console::Exception("Failed to load script", m_Path);
+        if (!script_fstream.good()) throw ConsoleImpl::Exception("Failed to load script", m_Path);
 
         if (script_fstream.good() && script_fstream.is_open()) {
 
@@ -1288,10 +1288,10 @@ namespace Console {
             auto range = name.NextPoi(name_index);
 
             if (m_Commands.find(name.m_String) != m_Commands.end())
-                throw Console::Exception("ERROR: Command already exists");
+                throw ConsoleImpl::Exception("ERROR: Command already exists");
 
             else if (range.first == name.End()) {
-                Log(ERROR) << "Empty command name given" << Console::endl;
+                Log(ERROR) << "Empty command name given" << ConsoleImpl::endl;
                 return;
             }
 
@@ -1299,7 +1299,8 @@ namespace Console {
                     name.m_String.substr(range.first, range.second - range.first);
 
             if (name.NextPoi(name_index).first != name.End())
-                throw Console::Exception("ERROR: Whitespace separated command names are forbidden");
+                throw ConsoleImpl::Exception(
+                        "ERROR: Whitespace separated command names are forbidden");
 
             if (m_RegisterCommandSuggestion) {
                 m_CommandSuggestionTree.Insert(command_name);
@@ -1310,7 +1311,7 @@ namespace Console {
                     std::make_unique<Command<Fn, Args...>>(name, description, function, args...);
 
             auto help = [this, command_name]() {
-                Log(LOG) << m_Commands[command_name]->Help() << Console::endl;
+                Log(LOG) << m_Commands[command_name]->Help() << ConsoleImpl::endl;
             };
 
             m_Commands["help " + command_name] = std::make_unique<Command<decltype(help)>>(
@@ -1361,7 +1362,7 @@ namespace Console {
             size_t name_index = 0;
             auto range = name.NextPoi(name_index);
             if (name.NextPoi(name_index).first != name.End())
-                throw Console::Exception(
+                throw ConsoleImpl::Exception(
                         "ERROR: Whitespace separated variable names are forbidden");
 
             std::string var_name = name.m_String.substr(range.first, range.second - range.first);
@@ -1399,11 +1400,11 @@ namespace Console {
 
         RegisterCommand(s_Help.data(), "指令信息", [this]() {
             Log() << "help [command_name:String] (Optional)\n\t\t- Display command(s) information\n"
-                  << Console::endl;
+                  << ConsoleImpl::endl;
             Log() << "set [variable_name:String] [data]\n\t\t- Assign data to given variable\n"
-                  << Console::endl;
+                  << ConsoleImpl::endl;
             Log() << "get [variable_name:String]\n\t\t- Display data of given variable\n"
-                  << Console::endl;
+                  << ConsoleImpl::endl;
 
             for (const auto &tuple: Commands()) {
 
@@ -1460,7 +1461,7 @@ namespace Console {
 
         if (line.empty()) return;
 
-        Log(Console::ItemType::COMMAND) << line << Console::endl;
+        Log(ConsoleImpl::ItemType::COMMAND) << line << ConsoleImpl::endl;
 
         ParseCommandLine(line);
     }
@@ -1470,16 +1471,17 @@ namespace Console {
         auto script_pair = m_Scripts.find(script_name);
 
         if (script_pair == m_Scripts.end()) {
-            m_ItemLog.log(ERROR) << "Script \"" << script_name << "\" not found" << Console::endl;
+            m_ItemLog.log(ERROR) << "Script \"" << script_name << "\" not found"
+                                 << ConsoleImpl::endl;
             return;
         }
 
-        m_ItemLog.log(INFO) << "Running \"" << script_name << "\"" << Console::endl;
+        m_ItemLog.log(INFO) << "Running \"" << script_name << "\"" << ConsoleImpl::endl;
 
         if (script_pair->second->Data().empty()) {
             try {
                 script_pair->second->Load();
-            } catch (Console::Exception &e) { Log(ERROR) << e.what() << Console::endl; }
+            } catch (ConsoleImpl::Exception &e) { Log(ERROR) << e.what() << ConsoleImpl::endl; }
         }
 
         for (const auto &cmd: script_pair->second->Data()) { RunCommand(cmd); }
@@ -1493,7 +1495,7 @@ namespace Console {
             m_Scripts[name] = std::make_unique<Script>(path, true);
             m_VariableSuggestionTree.Insert(name);
         } else
-            throw Console::Exception("ERROR: Script \'" + name + "\' already registered");
+            throw ConsoleImpl::Exception("ERROR: Script \'" + name + "\' already registered");
     }
 
     METADOT_INLINE void System::UnregisterCommand(const std::string &cmd_name) {
@@ -1601,6 +1603,6 @@ namespace Console {
             if (cmd_out.m_Type != NONE) m_ItemLog.Items().emplace_back(cmd_out);
         }
     }
-}// namespace Console
+}// namespace ConsoleImpl
 
 #endif

@@ -15,10 +15,10 @@ public:
 
     void Draw();
 
-    Console::System &System();
+    ConsoleImpl::System &System();
 
 protected:
-    Console::System m_ConsoleSystem;
+    ConsoleImpl::System m_ConsoleSystem;
     size_t m_HistoryIndex;
 
     std::string m_Buffer;
@@ -78,6 +78,15 @@ protected:
 
     static void SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
                                          ImGuiTextBuffer *buf);
+};
+
+struct Console
+{
+    ImGuiConsole *console;
+
+    void Init();
+    void End();
+    void DrawUI();
 };
 
 #endif
