@@ -3,29 +3,39 @@
 #ifndef _METADOT_CORE_HPP_
 #define _METADOT_CORE_HPP_
 
-#include <memory>
-#include <string>
-#include <type_traits>
-#include <utility>
-
-#include "Core/Macros.hpp"
-#include "Engine/Platform.hpp"
-
+#include <algorithm>
+#include <array>
 #include <bitset>
+#include <cassert>
+#include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <exception>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
+#include <istream>
+#include <iterator>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include "Core/Macros.hpp"
+#include "Engine/Platform.hpp"
 #include "Game/Logging.hpp"
 #include "Libs/VisitStruct.hpp"
 

@@ -15,7 +15,7 @@
 #include "Engine/RendererGPU.h"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
-#include "Game/ImGuiLayer.hpp"
+#include "Game/ImGuiCore.hpp"
 #include "Game/Networking.hpp"
 #ifndef INC_World
 #include "world.hpp"

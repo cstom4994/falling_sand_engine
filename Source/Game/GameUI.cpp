@@ -4,7 +4,7 @@
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
 #include "Game/Game.hpp"
-#include "Game/ImGuiLayer.hpp"
+#include "Game/ImGuiCore.hpp"
 #include "Game/Settings.hpp"
 
 #include "Game/DefaultGenerator.cpp"
@@ -47,7 +47,7 @@ namespace GameUI {
 
         ImGui::SetNextWindowSize(ImVec2(400, 300));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(
+                global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
                         ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
                 ImGuiCond_FirstUseEver);
@@ -117,7 +117,7 @@ namespace GameUI {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
         ImGui::SetNextWindowSize(ImVec2(400, 400));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(
+                global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
                         ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
                 ImGuiCond_FirstUseEver);
@@ -435,7 +435,7 @@ namespace GameUI {
 
         ImGui::SetNextWindowSize(ImVec2(400, 350));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu,
+                global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu,
                                                      ImVec2(global.platform.WIDTH / 2 - 400 / 2,
                                                             global.platform.HEIGHT / 2 - 350 / 2)),
                 ImGuiCond_FirstUseEver);
@@ -530,7 +530,7 @@ namespace GameUI {
 
         ImGui::SetNextWindowSize(ImVec2(400, 425));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(
+                global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
                         ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
                 ImGuiCond_FirstUseEver);
@@ -682,7 +682,7 @@ namespace GameUI {
     void MainMenuUI::DrawMultiplayer(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 500));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(
+                global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
                         ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
                 ImGuiCond_FirstUseEver);
@@ -732,7 +732,7 @@ namespace GameUI {
     void MainMenuUI::DrawCreateWorld(Game *game) {
         ImGui::SetNextWindowSize(ImVec2(400, 360));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(
+                global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
                         ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
                 ImGuiCond_FirstUseEver);
@@ -752,7 +752,7 @@ namespace GameUI {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
         ImGui::SetNextWindowSize(ImVec2(400, 400));
         ImGui::SetNextWindowPos(
-                global.ImGuiLayer->GetNextWindowsPos(
+                global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
                         ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
                 ImGuiCond_FirstUseEver);

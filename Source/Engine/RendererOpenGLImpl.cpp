@@ -3,6 +3,8 @@
 #include "Core/Core.hpp"
 #include "RendererImpl.h"
 
+#include "Libs/glad/glad.h"
+
 // Most of the code pulled in from here...
 #define METAENGINE_Render_USE_OPENGL
 #define METAENGINE_Render_USE_BUFFER_PIPELINE
@@ -134,30 +136,6 @@ static SDL_PixelFormat *AllocFormat(GLenum glFormat);
 static void FreeFormat(SDL_PixelFormat *format);
 
 static char shader_message[256];
-
-static METAENGINE_Render_bool isExtensionSupported(const char *extension_str) {
-#ifdef METAENGINE_Render_USE_OPENGL
-    return glewIsExtensionSupported(extension_str);
-#else
-    // As suggested by Mesa3D.org
-    char *p = (char *) glGetString(GL_EXTENSIONS);
-    char *end;
-    unsigned long extNameLen;
-
-    if (p == NULL) return METAENGINE_Render_FALSE;
-
-    extNameLen = strlen(extension_str);
-    end = p + strlen(p);
-
-    while (p < end) {
-        unsigned long n = strcspn(p, " ");
-        if ((extNameLen == n) && (strncmp(extension_str, p, n) == 0)) return METAENGINE_Render_TRUE;
-
-        p += (n + 1);
-    }
-    return METAENGINE_Render_FALSE;
-#endif
-}
 
 static_inline void fast_upload_texture(const void *pixels, METAENGINE_Render_Rect update_rect,
                                        Uint32 format, int alignment, int row_length) {
@@ -448,12 +426,12 @@ static void init_features(METAENGINE_Render_Renderer *renderer) {
 #endif
 
     // GL texture formats
-    if (isExtensionSupported("GL_EXT_bgr"))
-        renderer->enabled_features |= METAENGINE_Render_FEATURE_GL_BGR;
-    if (isExtensionSupported("GL_EXT_bgra"))
-        renderer->enabled_features |= METAENGINE_Render_FEATURE_GL_BGRA;
-    if (isExtensionSupported("GL_EXT_abgr"))
-        renderer->enabled_features |= METAENGINE_Render_FEATURE_GL_ABGR;
+    // if (isExtensionSupported("GL_EXT_bgr"))
+    //     renderer->enabled_features |= METAENGINE_Render_FEATURE_GL_BGR;
+    // if (isExtensionSupported("GL_EXT_bgra"))
+    //     renderer->enabled_features |= METAENGINE_Render_FEATURE_GL_BGRA;
+    // if (isExtensionSupported("GL_EXT_abgr"))
+    //     renderer->enabled_features |= METAENGINE_Render_FEATURE_GL_ABGR;
 
 // Disable other texture formats for GLES.
 // TODO: Add better (static) checking for format support.  Some GL versions do not report previously non-core features as extensions.
@@ -465,12 +443,9 @@ static void init_features(METAENGINE_Render_Renderer *renderer) {
 
 // Shader support
 #ifndef METAENGINE_Render_DISABLE_SHADERS
-    if (isExtensionSupported("GL_ARB_fragment_shader"))
-        renderer->enabled_features |= METAENGINE_Render_FEATURE_FRAGMENT_SHADER;
-    if (isExtensionSupported("GL_ARB_vertex_shader"))
-        renderer->enabled_features |= METAENGINE_Render_FEATURE_VERTEX_SHADER;
-    if (isExtensionSupported("GL_ARB_geometry_shader4"))
-        renderer->enabled_features |= METAENGINE_Render_FEATURE_GEOMETRY_SHADER;
+    renderer->enabled_features |= METAENGINE_Render_FEATURE_FRAGMENT_SHADER;
+    renderer->enabled_features |= METAENGINE_Render_FEATURE_VERTEX_SHADER;
+    renderer->enabled_features |= METAENGINE_Render_FEATURE_GEOMETRY_SHADER;
 #endif
 #ifdef METAENGINE_Render_ASSUME_SHADERS
     renderer->enabled_features |= METAENGINE_Render_FEATURE_BASIC_SHADERS;
@@ -1441,10 +1416,7 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     cdata->last_depth_write = METAENGINE_Render_TRUE;
 
 #ifdef METAENGINE_Render_USE_OPENGL
-    glewExperimental =
-            GL_TRUE;// Force GLEW to get exported functions instead of checking via extension string
-    err = glewInit();
-    if (GLEW_OK != err) {
+    if (!gladLoadGL()) {
         // Probably don't have the right GL version for this renderer
         METAENGINE_Render_PushErrorCode(
                 "METAENGINE_Render_CreateTargetFromWindow", METAENGINE_Render_ERROR_BACKEND_ERROR,

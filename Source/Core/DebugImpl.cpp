@@ -3,10 +3,6 @@
 #include "DebugImpl.hpp"
 #include "Core/Core.hpp"
 
-#include <cstddef>
-#include <exception>
-#include <string>
-
 static const char *date = __DATE__;
 static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};

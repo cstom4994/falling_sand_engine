@@ -1,7 +1,7 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_REFL_HPP_
-#define _METADOT_REFL_HPP_
+#ifndef _METADOT_CODEREFLECTION_HPP_
+#define _METADOT_CODEREFLECTION_HPP_
 
 #include "Core/Core.hpp"
 #include "Libs/nameof.hpp"

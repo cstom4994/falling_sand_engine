@@ -5,7 +5,7 @@
 
 #include "Core/DebugImpl.hpp"
 #include "Engine/AudioEngine.h"
-#include "Engine/ImGuiBase.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/SDLWrapper.hpp"
 #include "Libs/ImGui/TextEditor.h"
 
@@ -19,7 +19,7 @@ enum ImGuiWindowTags {
     UI_GCManager = 1 << 1,
 };
 
-class ImGuiLayer {
+class ImGuiCore {
 private:
     struct ImGuiWin
     {
@@ -38,8 +38,8 @@ private:
     const char *fileToEdit = "data/lua/vec.lua";
 
 public:
-    ImGuiLayer();
-    ~ImGuiLayer() = default;
+    ImGuiCore();
+    ~ImGuiCore() = default;
     void Init(C_Window *window, void *gl_context);
     void onDetach();
     void begin();
@@ -49,7 +49,7 @@ public:
     ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
     ImGuiContext *getImGuiCtx() {
-        METADOT_ASSERT(m_imgui, "Miss Fucking ImGuiContext");
+        METADOT_ASSERT(m_imgui, "Miss ImGuiContext");
         return m_imgui;
     }
 };

@@ -1,32 +1,77 @@
+// Copyright(c) 2022, KaoruXun
+
+// This source file may include
+// https://github.com/maildrop/DearImGui-with-IMM32 (MIT) by TOGURO Mikito
+// https://github.com/mekhontsev/imgui_md (MIT) by mekhontsev
+// https://github.com/ocornut/imgui (MIT) by Omar Cornut
+
 #ifndef _METADOT_IMGUIHELPER_HPP_
 #define _METADOT_IMGUIHELPER_HPP_
 
 #include <algorithm>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "Engine/ImGuiBase.hpp"
-
-#include "Libs/ImGui/md4c.h"
-
-#include <map>
-#include <string>
-#include <vector>
-
 #include <atomic>
 #include <functional>
 #include <future>
 #include <list>
+#include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
-struct ImMarkdown
+#include "imgui.h"
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+#include "imgui_internal.h"
+
+#if defined(_WIN32)
+#define _METADOT_IMM32
+#else
+#include <sys/stat.h>
+#endif
+
+#include "Core/Core.hpp"
+#include "Libs/ImGui/md4c.h"
+
+// Backend API
+bool ImGui_ImplOpenGL3_Init(const char *glsl_version = nullptr);
+void ImGui_ImplOpenGL3_Shutdown();
+void ImGui_ImplOpenGL3_NewFrame();
+void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data);
+
+// (Optional) Called by Init/NewFrame/Shutdown
+bool ImGui_ImplOpenGL3_CreateFontsTexture();
+void ImGui_ImplOpenGL3_DestroyFontsTexture();
+bool ImGui_ImplOpenGL3_CreateDeviceObjects();
+void ImGui_ImplOpenGL3_DestroyDeviceObjects();
+
+struct SDL_Window;
+struct SDL_Renderer;
+typedef union SDL_Event SDL_Event;
+
+bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window *window, void *sdl_gl_context);
+bool ImGui_ImplSDL2_InitForVulkan(SDL_Window *window);
+bool ImGui_ImplSDL2_InitForD3D(SDL_Window *window);
+bool ImGui_ImplSDL2_InitForMetal(SDL_Window *window);
+bool ImGui_ImplSDL2_InitForSDLRenderer(SDL_Window *window, SDL_Renderer *renderer);
+void ImGui_ImplSDL2_Shutdown();
+void ImGui_ImplSDL2_NewFrame();
+bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event);
+
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) {
+    ImGui_ImplSDL2_NewFrame();
+}// 1.84: removed unnecessary parameter
+#endif
+
+struct ImGuiMarkdown
 {
-    ImMarkdown();
-    virtual ~ImMarkdown(){};
+    ImGuiMarkdown();
+    virtual ~ImGuiMarkdown(){};
 
     int print(const std::string &text);
 
@@ -360,7 +405,7 @@ namespace ImGuiHelper {
 
 }// namespace ImGuiHelper
 
-struct test_markdown : public ImMarkdown
+struct test_markdown : public ImGuiMarkdown
 {
     void open_url() const override { system(std::string("start msedge " + m_href).c_str()); }
 
@@ -434,18 +479,11 @@ namespace imgex {
     }
 }// namespace imgex
 
-#endif /* defined( __cplusplus ) */
-#endif /* !defined( imgex_hpp_HEADER_GUARD_7556619d_62b7_4f3b_b364_f02af36a3bbc ) */
+#endif
+#endif
 
-#if !defined(IMGUI_IMM32_ONTHESPOT_H_UUID_ccfbd514_0a94_4888_a8b8_f065c57c1e70_HEADER_GUARD)
-#define IMGUI_IMM32_ONTHESPOT_H_UUID_ccfbd514_0a94_4888_a8b8_f065c57c1e70_HEADER_GUARD 1
-
-//#include <iostream>
-#include <memory>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <vector>
+#ifndef _IMGUI_IMM32_
+#define _IMGUI_IMM32_
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -575,66 +613,8 @@ inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window)
     return FALSE;
 }
 
-#endif /* defined( _WIN32 ) */
-#endif /* defined( __cplusplus ) */
-
 #endif
-
-#ifndef __IM_STRING__
-#define __IM_STRING__
-
-class ImString {
-
-public:
-    ImString();
-
-    ImString(size_t len);
-
-    ImString(char *string);
-
-    explicit ImString(const char *string);
-
-    ImString(const ImString &other);
-
-    ~ImString();
-
-    char &operator[](size_t pos);
-
-    operator char *();
-
-    bool operator==(const char *string);
-
-    bool operator!=(const char *string);
-
-    bool operator==(const ImString &string);
-
-    bool operator!=(const ImString &string);
-
-    ImString &operator=(const char *string);
-
-    ImString &operator=(const ImString &other);
-
-    inline size_t size() const { return mData ? strlen(mData) + 1 : 0; }
-
-    void reserve(size_t len);
-
-    char *get();
-
-    const char *c_str() const;
-
-    bool empty() const;
-
-    int refcount() const;
-
-    void ref();
-
-    void unref();
-
-private:
-    char *mData;
-    int *mRefCount;
-};
-
+#endif
 #endif
 
 #endif

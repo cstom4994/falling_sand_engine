@@ -11,7 +11,7 @@
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
 #include "DefaultGenerator.cpp"
-#include "Engine/ImGuiBase.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/ImGuiTerminal.hpp"
 #include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
@@ -23,12 +23,12 @@
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/GameUI.hpp"
-#include "Game/ImGuiLayer.hpp"
+#include "Game/ImGuiCore.hpp"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "MaterialTestGenerator.cpp"
 
-#include "glew.h"
+#include "Libs/glad/glad.h"
 
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
@@ -1169,8 +1169,8 @@ int Game::run(int argc, char *argv[]) {
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
 
-            global.ImGuiLayer->begin();
-            global.ImGuiLayer->Render();
+            global.ImGuiCore->begin();
+            global.ImGuiCore->Render();
 
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu(ICON_FA_SYNC " 系统")) { ImGui::EndMenu(); }
@@ -1291,7 +1291,7 @@ int Game::run(int argc, char *argv[]) {
                 }
             }
 
-            global.ImGuiLayer->end();
+            global.ImGuiCore->end();
 
             // render fade in/out
             if (fadeInWaitFrames > 0) {
@@ -1408,8 +1408,8 @@ exit:
     global.scripts->End();
     METADOT_DELETE(C, global.scripts, Scripts);
 
-    global.ImGuiLayer->onDetach();
-    METADOT_DELETE(C, global.ImGuiLayer, ImGuiLayer);
+    global.ImGuiCore->onDetach();
+    METADOT_DELETE(C, global.ImGuiCore, ImGuiCore);
 
     METADOT_DELETE(C, objectDelete, UInt8);
     GameIsolate_.backgrounds->Unload();

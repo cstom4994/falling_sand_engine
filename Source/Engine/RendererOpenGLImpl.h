@@ -9,7 +9,7 @@
 #define _WINGDI_H
 #endif
 
-#include "glew.h"
+#include "Libs/glad/glad.h"
 
 #if defined(GL_EXT_bgr) && !defined(GL_BGR)
 #define GL_BGR GL_BGR_EXT

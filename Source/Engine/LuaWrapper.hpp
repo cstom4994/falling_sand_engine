@@ -9,34 +9,9 @@
 #ifndef _METADOT_LUAWRAPPER_HPP_
 #define _METADOT_LUAWRAPPER_HPP_
 
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <chrono>
-#include <cstdint>
-#include <cstring>
-#include <exception>
-#include <functional>
-#include <initializer_list>
-#include <iostream>
-#include <istream>
-#include <iterator>
-#include <map>
-#include <memory>
-#include <ostream>
-#include <stdexcept>
-#include <string>
-#include <string_view>
-#include <tuple>
-#include <type_traits>
-#include <typeindex>
-#include <typeinfo>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
+#include "Core/Core.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/Refl.hpp"
+#include "Engine/CodeReflection.hpp"
 #include "Libs/lua/lua.hpp"
 #include "Libs/nameof.hpp"
 #include "LuaWrapperFlat.hpp"

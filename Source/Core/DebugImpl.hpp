@@ -3,15 +3,8 @@
 #ifndef _METADOT_DEBUGIMPL_HPP_
 #define _METADOT_DEBUGIMPL_HPP_
 
-#include <cassert>
-#include <cstddef>
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
-
 #include "Core/Macros.hpp"
-
+#include "Core/Core.hpp"
 #include "Engine/RendererGPU.h"
 #include <box2d/box2d.h>
 

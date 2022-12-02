@@ -174,11 +174,9 @@ void I18N::Init() {
 }
 
 void I18N::Load(std::string lang) {
-    auto L = global.scripts->LuaMap["LuaCore"];
-    (*L->GetWrapper())["setlocale"](lang);
+    (*global.scripts->LuaMap["LuaCore"]->GetWrapper())["setlocale"](lang);
 }
 
 std::string I18N::Get(std::string text) {
-    auto L = global.scripts->LuaMap["LuaCore"];
-    return (*L->GetWrapper())["translate"](text);
+    (*global.scripts->LuaMap["LuaCore"]->GetWrapper())["translate"](text);
 }

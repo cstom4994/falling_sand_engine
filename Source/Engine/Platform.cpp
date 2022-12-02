@@ -13,7 +13,7 @@
 #include "Game/Utils.hpp"
 #include "Libs/structopt.hpp"
 
-#include "glew.h"
+#include "Libs/glad/glad.h"
 
 struct Options
 {
@@ -105,7 +105,7 @@ int Platform::InitWindow() {
 
         SDL_GL_MakeCurrent(global.platform.window, gl_context);
 
-        if (GLEW_OK != glewInit()) {
+        if (!gladLoadGL()) {
             std::cout << "Failed to initialize OpenGL loader!" << std::endl;
             return EXIT_FAILURE;
         }
@@ -140,8 +140,8 @@ int Platform::InitWindow() {
         Controls::initKey();
 
         METADOT_INFO("Loading ImGUI");
-        METADOT_NEW(C, global.ImGuiLayer, ImGuiLayer);
-        global.ImGuiLayer->Init(global.platform.window, gl_context);
+        METADOT_NEW(C, global.ImGuiCore, ImGuiCore);
+        global.ImGuiCore->Init(global.platform.window, gl_context);
 
 #if defined(_WIN32)
         SDL_SysWMinfo info{};
@@ -160,7 +160,7 @@ int Platform::InitWindow() {
 #error "GetWindowWMInfo Error"
 #endif
         //this->data->window = window;
-        //this->data->imgui_context = m_ImGuiLayer->getImGuiCtx();
+        //this->data->imgui_context = m_ImGuiCore->getImGuiCtx();
 
         // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
         // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};

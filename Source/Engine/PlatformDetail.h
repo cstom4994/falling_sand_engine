@@ -8,25 +8,29 @@
 #if defined(METADOT_PLATFORM_WINDOWS)
 #include <Windows.h>
 #include <io.h>
-
-#ifdef _WIN32
-//#include <SDL_syswm.h>
 #include <shobjidl.h>
-#endif
 
-#if defined(WIN32) && defined(_MSC_VER)
+#if defined(_MSC_VER)
 #define __func__ __FUNCTION__
 #endif
 
 #undef min
 #undef max
 
+#define PATH_SEP '\\'
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
+
 #elif defined(METADOT_PLATFORM_LINUX)
 #include <bits/types/struct_tm.h>
 #include <bits/types/time_t.h>
+#include <dirent.h>
 #include <limits.h>
 #include <sys/io.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#define PATH_SEP '/'
 #elif defined(METADOT_PLATFORM_APPLE)
 #include <TargetConditionals.h>
 #include <mach-o/dyld.h>

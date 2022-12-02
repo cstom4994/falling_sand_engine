@@ -3,13 +3,14 @@
 #ifndef _METADOT_GLOBAL_HPP_
 #define _METADOT_GLOBAL_HPP_
 
+#include "Core/Core.hpp"
 #include "Engine/AudioEngine.h"
-#include "Engine/ImGuiBase.hpp"
+#include "Engine/CodeReflection.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/Platform.hpp"
-#include "Engine/Refl.hpp"
 #include "Game/FileSystem.hpp"
-#include "Game/Shaders.hpp"
 #include "Game/GameResources.hpp"
+#include "Game/Shaders.hpp"
 
 #include <map>
 
@@ -17,7 +18,7 @@ class Game;
 class Client;
 class Server;
 class Scripts;
-class ImGuiLayer;
+class ImGuiCore;
 
 #define RegisterFunctions(name, func)                                                              \
     MetaEngine::any_function func_log_info{&func};                                                 \
@@ -28,7 +29,7 @@ struct Global
     Game *game = nullptr;
     Scripts *scripts = nullptr;
 
-    ImGuiLayer *ImGuiLayer = nullptr;
+    ImGuiCore *ImGuiCore = nullptr;
 
     ShaderWorker shaderworker;
     CAudioEngine audioEngine;

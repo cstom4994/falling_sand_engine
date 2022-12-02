@@ -1,12 +1,11 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "ImGuiLayer.hpp"
+#include "ImGuiCore.hpp"
 #include "Core/Const.hpp"
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/ImGuiBase.hpp"
-#include "Engine/ImGuiHelper.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
 #include "Game/Game.hpp"
@@ -15,11 +14,10 @@
 #include "Game/InEngine.h"
 #include "Game/Networking.hpp"
 #include "Game/Utils.hpp"
-#include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
 #include "Settings.hpp"
 
-#include "glew.h"
+#include "Libs/glad/glad.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -102,7 +100,7 @@ namespace layout {
 static bool s_is_animaiting = false;
 static const int view_size = 256;
 
-ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
+ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
 
     if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
@@ -117,7 +115,7 @@ ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     return pos;
 }
 
-ImGuiLayer::ImGuiLayer() {}
+ImGuiCore::ImGuiCore() {}
 
 class OpenGL3TextureManager {
 public:
@@ -177,7 +175,7 @@ ImGUIIMMCommunication imguiIMMCommunication{};
 // 	ImGui::End();
 // }
 
-void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
+void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
     window = p_window;
     gl_context = p_gl_context;
 
@@ -334,20 +332,20 @@ void ImGuiLayer::Init(C_Window *p_window, void *p_gl_context) {
     firstRun = true;
 }
 
-void ImGuiLayer::onDetach() {
+void ImGuiCore::onDetach() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImPlot::DestroyContext();
     ImGui::DestroyContext();
 }
 
-void ImGuiLayer::begin() {
+void ImGuiCore::begin() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(window);
     ImGui::NewFrame();
 }
 
-void ImGuiLayer::end() {
+void ImGuiCore::end() {
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
 
@@ -387,7 +385,7 @@ Name &nbsp; &nbsp; &nbsp; &nbsp; | Multiline &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
 :------|:-------------------|:--
 Value-One | Long <br>explanation <br>with \<br\>\'s|1
 ~~Value-Two~~ | __text auto wrapped__\: long explanation here |25 37 43 56 78 90
-**etc** | [~~Some **link**~~](https://github.com/mekhontsev/ImMarkdown)|3
+**etc** | [~~Some **link**~~](https://github.com/mekhontsev/ImGuiMarkdown)|3
 
 # List
 
@@ -404,7 +402,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 5. ~~Item with pluses and strikethrough~~.
    + sub-list 1
    + sub-list 2
-   + [Just a link](https://github.com/mekhontsev/ImMarkdown).
+   + [Just a link](https://github.com/mekhontsev/ImGuiMarkdown).
       * Item with [link1](#link1)
       * Item with bold [**link2**](#link1)
 6. test12345
@@ -413,7 +411,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
 #endif
 
-void ImGuiLayer::Render() {
+void ImGuiCore::Render() {
 
 #if defined(_METADOT_IMM32)
     imguiIMMCommunication();
@@ -500,7 +498,7 @@ void ImGuiLayer::Render() {
                 if (show_demo) {
                     ImGui::ShowDemoWindow();
 
-                    //m_ImGuiLayer->Render();
+                    //m_ImGuiCore->Render();
                 }
 
                 debug_panel_bottom = ImGui::GetWindowSize().y;
@@ -644,7 +642,7 @@ void ImGuiLayer::Render() {
     }
 }
 
-void ImGuiLayer::registerWindow(std::string_view windowName, bool *opened) {
+void ImGuiCore::registerWindow(std::string_view windowName, bool *opened) {
     for (auto &m_win: m_wins)
         if (m_win.name == windowName) return;
     m_wins.push_back({std::string(windowName), opened});
