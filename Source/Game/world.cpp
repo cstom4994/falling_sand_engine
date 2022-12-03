@@ -15,8 +15,8 @@
 #endif
 #include "Core/Core.hpp"
 #include "DefaultGenerator.cpp"
-#include "Engine/Math.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
+#include "Engine/Math.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Utils.hpp"
@@ -34,6 +34,8 @@
 #undef max
 
 #define W_PI 3.14159265358979323846
+
+#define BIOMEGET(_c) global.game->GameSystem_.gsw.BiomeGet(_c)
 
 ThreadPool *World::tickPool = nullptr;
 ThreadPool *World::tickVisitedPool = nullptr;
@@ -2989,7 +2991,7 @@ void World::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
 Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
 
     if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id !=
-        Biomes::DEFAULT.id) {
+        BIOMEGET("DEFAULT")->id) {
         Biome *b = ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
         if (ch->pleaseDelete) delete ch;
         return b;
@@ -3003,7 +3005,7 @@ Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
 }
 
 Biome *World::getBiomeAt(int x, int y) {
-    Biome *ret = &Biomes::DEFAULT;
+    Biome *ret = BIOMEGET("DEFAULT");
     return ret;
 
     if (abs(CHUNK_H * 3 - y) < CHUNK_H * 10) {
@@ -3011,11 +3013,11 @@ Biome *World::getBiomeAt(int x, int y) {
         int biomeCatNum = 3;
         int biomeCat = (int) (v * biomeCatNum);
         if (biomeCat == 0) {
-            ret = &Biomes::PLAINS;
+            ret = BIOMEGET("PLAINS");
         } else if (biomeCat == 1) {
-            ret = &Biomes::MOUNTAINS;
+            ret = BIOMEGET("MOUNTAINS");
         } else if (biomeCat == 2) {
-            ret = &Biomes::FOREST;
+            ret = BIOMEGET("FOREST");
         }
     } else {
         noise.SetCellularDistanceFunction(FastNoise::CellularDistanceFunction::Natural);
@@ -3027,13 +3029,13 @@ Biome *World::getBiomeAt(int x, int y) {
         int biomeCat = (int) (v * biomeCatNum);
 
         if (biomeCat == 0) {
-            ret = v2 >= 0.5 ? &Biomes::TEST_1_2 : &Biomes::TEST_1;
+            ret = v2 >= 0.5 ? BIOMEGET("TEST_1_2") : BIOMEGET("TEST_1");
         } else if (biomeCat == 1) {
-            ret = v2 >= 0.5 ? &Biomes::TEST_2_2 : &Biomes::TEST_2;
+            ret = v2 >= 0.5 ? BIOMEGET("TEST_2_2") : BIOMEGET("TEST_2");
         } else if (biomeCat == 2) {
-            ret = v2 >= 0.5 ? &Biomes::TEST_3_2 : &Biomes::TEST_3;
+            ret = v2 >= 0.5 ? BIOMEGET("TEST_3_2") : BIOMEGET("TEST_3");
         } else if (biomeCat == 3) {
-            ret = v2 >= 0.5 ? &Biomes::TEST_4_2 : &Biomes::TEST_4;
+            ret = v2 >= 0.5 ? BIOMEGET("TEST_4_2") : BIOMEGET("TEST_4");
         }
     }
 
@@ -3106,8 +3108,9 @@ Chunk *World::getChunk(int cx, int cy) {
     Chunk *c = new Chunk(cx, cy, (char *) worldName.c_str());
     c->generationPhase = -1;
     c->pleaseDelete = true;
-    c->biomes = new Biome *[CHUNK_W * CHUNK_H];
-    std::fill_n(c->biomes, CHUNK_W * CHUNK_H, &Biomes::DEFAULT);
+    auto a = BIOMEGET("DEFAULT");
+    c->biomes.resize(CHUNK_W * CHUNK_H);
+    std::fill(c->biomes.begin(), c->biomes.end(), a);
     return c;
 }
 
@@ -3778,3 +3781,5 @@ World::~World() {
     entities.clear();
     //delete player;
 }
+
+#undef BIOMEGET

@@ -21,7 +21,7 @@ Chunk::~Chunk() {
     if (tiles) delete[] tiles;
     if (layer2) delete[] layer2;
     if (background) delete[] background;
-    if (biomes) delete[] biomes;
+    if (!biomes.empty()) biomes.resize(0);
 }
 
 void Chunk::loadMeta() {

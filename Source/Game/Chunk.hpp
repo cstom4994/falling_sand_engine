@@ -19,10 +19,7 @@
 
 #define INC_Chunk
 
-#ifndef INC_Biome
-#include "Biome.hpp"
-#endif// !INC_Biome
-
+#include "GameScriptingWrap.hpp"
 #include "RigidBody.hpp"
 
 typedef struct
@@ -61,8 +58,7 @@ public:
     MaterialInstance *tiles = nullptr;
     MaterialInstance *layer2 = nullptr;
     UInt32 *background = nullptr;
-    Biome **biomes = nullptr;
-
+    std::vector<Biome *> biomes = {nullptr};
     std::vector<b2PolygonShape> polys = {};
     RigidBody *rb = nullptr;
 };

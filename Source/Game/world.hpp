@@ -29,10 +29,7 @@
 #include "Engine/AudioEngine.h"
 
 #include "Engine/RendererGPU.h"
-
-#ifndef INC_Biome
-#include "Biome.hpp"
-#endif// !INC_Biome
+#include "GameScriptingWrap.hpp"
 
 #ifndef INC_WorldGenerator
 #include "WorldGenerator.hpp"

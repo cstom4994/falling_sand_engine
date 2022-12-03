@@ -425,7 +425,7 @@ namespace GameUI {
 
         if (!setup) { Setup(); }
         long long now = UTime::millis();
-        if (now - lastRefresh > 3000) {
+        if (now - lastRefresh > 30000) {
             RefreshWorlds(game);
             lastRefresh = now;
         }

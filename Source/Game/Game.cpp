@@ -1405,6 +1405,8 @@ exit:
     global.scripts->End();
     METADOT_DELETE(C, global.scripts, Scripts);
 
+    ReleaseGameData();
+
     global.ImGuiCore->onDetach();
     METADOT_DELETE(C, global.ImGuiCore, ImGuiCore);
 

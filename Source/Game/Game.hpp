@@ -14,6 +14,7 @@
 #include "Engine/RendererGPU.h"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/GameScriptingWrap.hpp"
 #include "Game/ImGuiCore.hpp"
 #include "Game/Networking.hpp"
 #ifndef INC_World
@@ -113,6 +114,7 @@ public:
     struct
     {
         Console console;
+        GameScriptingWrap gsw;
     } GameSystem_;
 
     struct

@@ -3,6 +3,8 @@
 #ifndef _METADOT_GENERATOR_DEFAULT_CPP_
 #define _METADOT_GENERATOR_DEFAULT_CPP_
 
+#include "Core/Global.hpp"
+#include "Game/Game.hpp"
 #ifndef INC_WorldGenerator
 #include "WorldGenerator.hpp"
 #endif
@@ -13,6 +15,8 @@
 
 #include "Populators.cpp"
 
+#define BIOMEGETID(_c) global.game->GameSystem_.gsw.BiomeGet(_c)->id
+
 class DefaultGenerator : public WorldGenerator {
 
     int getBaseHeight(World *world, int x, Chunk *ch) {
@@ -21,19 +25,19 @@ class DefaultGenerator : public WorldGenerator {
 
         Biome *b = world->getBiomeAt(ch, x, ch->y * CHUNK_H);
 
-        if (b->id == Biomes::DEFAULT.id) {
+        if (b->id == BIOMEGETID("DEFAULT")) {
             //return 0;
             return (int) (world->height / 2 +
                           ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 100);
-        } else if (b->id == Biomes::PLAINS.id) {
+        } else if (b->id == BIOMEGETID("PLAINS")) {
             //return 10;
             return (int) (world->height / 2 +
                           ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 25);
-        } else if (b->id == Biomes::FOREST.id) {
+        } else if (b->id == BIOMEGETID("FOREST")) {
             //return 20;
             return (int) (world->height / 2 +
                           ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 100);
-        } else if (b->id == Biomes::MOUNTAINS.id) {
+        } else if (b->id == BIOMEGETID("MOUNTAINS")) {
             //return 30;
             return (int) (world->height / 2 +
                           ((world->noise.GetPerlin((float) (x / 10.0), 0, 15))) * 250);
@@ -48,17 +52,17 @@ class DefaultGenerator : public WorldGenerator {
 
         Biome *b = world->getBiomeAt(x, 0);
 
-        if (b->id == Biomes::DEFAULT.id) {
+        if (b->id == BIOMEGETID("DEFAULT")) {
             baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 15 +
                             (((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) + 0.5) - 0.5) *
                                     2);
-        } else if (b->id == Biomes::PLAINS.id) {
+        } else if (b->id == BIOMEGETID("PLAINS")) {
             baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 6 +
                             ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 2);
-        } else if (b->id == Biomes::FOREST.id) {
+        } else if (b->id == BIOMEGETID("FOREST")) {
             baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 15 +
                             ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 2);
-        } else if (b->id == Biomes::MOUNTAINS.id) {
+        } else if (b->id == BIOMEGETID("MOUNTAINS")) {
             baseH += (int) (((world->noise.GetPerlin((float) (x * 1), 0, 30) / 2.0) + 0.5) * 20 +
                             ((world->noise.GetPerlin((float) (x * 5), 0, 30) / 2.0) - 0.5) * 4);
         }
@@ -99,28 +103,28 @@ class DefaultGenerator : public WorldGenerator {
                 int py = y + ch->y * CHUNK_W;
                 Biome *b = world->getBiomeAt(px, py);
 
-                if (b->id == Biomes::TEST_1.id) {
+                if (b->id == BIOMEGETID("TEST_1")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xffe00000);
-                } else if (b->id == Biomes::TEST_2.id) {
+                } else if (b->id == BIOMEGETID("TEST_2")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xff00ff00);
-                } else if (b->id == Biomes::TEST_3.id) {
+                } else if (b->id == BIOMEGETID("TEST_3")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000ff);
-                } else if (b->id == Biomes::TEST_4.id) {
+                } else if (b->id == BIOMEGETID("TEST_4")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xffff00ff);
                 }
 
-                if (b->id == Biomes::TEST_1_2.id) {
+                if (b->id == BIOMEGETID("TEST_1_2")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xffFF6600);
-                } else if (b->id == Biomes::TEST_2_2.id) {
+                } else if (b->id == BIOMEGETID("TEST_2_2")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xff00FFBF);
-                } else if (b->id == Biomes::TEST_3_2.id) {
+                } else if (b->id == BIOMEGETID("TEST_3_2")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xff005DFF);
-                } else if (b->id == Biomes::TEST_4_2.id) {
+                } else if (b->id == BIOMEGETID("TEST_4_2")) {
                     prop[x + y * CHUNK_W] = MaterialInstance(&Materials::GENERIC_SOLID, 0xffC200FF);
                 }
                 //continue;
 
-                if (b->id == Biomes::DEFAULT.id) {
+                if (b->id == BIOMEGETID("DEFAULT")) {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->w)) %
                                  Textures::caveBG->w;
@@ -156,7 +160,7 @@ class DefaultGenerator : public WorldGenerator {
                     }
 
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
-                } else if (b->id == Biomes::PLAINS.id) {
+                } else if (b->id == BIOMEGETID("PLAINS")) {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) %
                                  Textures::caveBG->h;
@@ -194,7 +198,7 @@ class DefaultGenerator : public WorldGenerator {
                     }
 
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
-                } else if (b->id == Biomes::MOUNTAINS.id) {
+                } else if (b->id == BIOMEGETID("MOUNTAINS")) {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) %
                                  Textures::caveBG->h;
@@ -232,7 +236,7 @@ class DefaultGenerator : public WorldGenerator {
                     }
 
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
-                } else if (b->id == Biomes::FOREST.id) {
+                } else if (b->id == BIOMEGETID("FOREST")) {
                     if (py > surf) {
                         int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) %
                                  Textures::caveBG->h;
@@ -284,5 +288,7 @@ class DefaultGenerator : public WorldGenerator {
                 new TreePopulator()};
     }
 };
+
+#undef BIOMEGETID
 
 #endif
