@@ -1,12 +1,12 @@
 
 func init()
 {
-    loadLua();
+    // loadLua();
     print("init<<<<");
 }
 
 func end()
 {
-    endLua();
+    // endLua();
     print("end<<<<");
 }

@@ -3,11 +3,14 @@
 #include "Engine/Scripting.hpp"
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
 #include "Engine/JsWrapper.hpp"
 #include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/MuDSL.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/Game.hpp"
+#include "quickjs/quickjs.h"
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -126,80 +129,37 @@ void integrationExample() {
 
 #endif
 
-class MyClass {
-public:
-    MyClass() {}
-    MyClass(std::vector<int>) {}
-
-    double member_variable = 5.5;
-    std::string member_function(const std::string &s) { return "Hello, " + s; }
-};
-
-void println(JsWrapper::rest<std::string> args) {
-    for (auto const &arg: args) METADOT_INFO("{}", arg);
-}
-
-void test_js() {
-    JsWrapper::Runtime runtime;
-    JsWrapper::Context context(runtime);
-    try {
-        // export classes as a module
-        auto &module = context.addModule("MyModule");
-        module.function<&println>("println");
-        module.class_<MyClass>("MyClass")
-                .constructor<>()
-                .constructor<std::vector<int>>("MyClassA")
-                .fun<&MyClass::member_variable>("member_variable")
-                .fun<&MyClass::member_function>("member_function");
-        // import module
-        context.eval(R"xxx(
-            import * as my from 'MyModule';
-            globalThis.my = my;
-        )xxx",
-                     "<import>", JS_EVAL_TYPE_MODULE);
-        // evaluate js code
-        context.eval(R"xxx(
-            let v1 = new my.MyClass();
-            v1.member_variable = 1;
-            let v2 = new my.MyClassA([1,2,3]);
-            function my_callback(str) {
-              my.println("at callback:", v2.member_function(str));
-            }
-        )xxx");
-
-        // callback
-        auto cb = (std::function<void(const std::string &)>) context.eval("my_callback");
-        cb("world");
-
-        // passing c++ objects to JS
-        auto lambda = context.eval("x=>my.println(x.member_function('lambda'))")
-                              .as<std::function<void(JsWrapper::shared_ptr<MyClass>)>>();
-        auto v3 = JsWrapper::make_shared<MyClass>(context.ctx, std::vector{1, 2, 3});
-        lambda(v3);
-    } catch (JsWrapper::exception) {
-        auto exc = context.getException();
-        std::cerr << (std::string) exc << std::endl;
-        if ((bool) exc["stack"]) std::cerr << (std::string) exc["stack"] << std::endl;
-    }
-}
-
 void Scripts::Init() {
     METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);
-
     LoadMuFuncs();
-
     std::string init_src = FUtil::readFileString("data/init.mu");
     MuDSL->evaluate(init_src);
+    // auto end = MuDSL->callFunction("init");
 
-    auto end = MuDSL->callFunction("init");
+    LuaCore *L = nullptr;
+    METADOT_NEW(C, L, LuaCore);
+    LuaMap.insert(std::make_pair("LuaCore", L));
+    L->Attach();
 
-    test_js();
+    METADOT_NEW(C, JsRuntime, JsWrapper::Runtime);
+    METADOT_NEW(C, JsContext, JsWrapper::Context, *this->JsRuntime);
+
+    // test_js();
+    global.game->GameSystem_.gsw.Init();
+    global.game->GameSystem_.gsw.Bind();
 }
 
 void Scripts::End() {
 
-    auto end = MuDSL->callFunction("end");
+    METADOT_DELETE_EX(C, JsContext, Context, JsWrapper::Context);
+    METADOT_DELETE_EX(C, JsRuntime, Runtime, JsWrapper::Runtime);
 
+    auto L = LuaMap["LuaCore"];
+    L->Detach();
+    LuaMap.erase("LuaCore");
+    METADOT_DELETE(C, L, LuaCore);
+
+    auto end = MuDSL->callFunction("end");
     METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
 }
 
@@ -207,27 +167,4 @@ void Scripts::Update() {
     if (auto LuaCore = LuaMap["LuaCore"]) LuaCore->Update();
 }
 
-void Scripts::LoadMuFuncs() {
-
-    METADOT_ASSERT_E(MuDSL);
-
-    auto loadFunc = [&](const MuDSL::List &args) {
-        LuaCore *L = nullptr;
-        METADOT_NEW(C, L, LuaCore);
-        LuaMap.insert(std::make_pair("LuaCore", L));
-        L->Attach();
-        //LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer Inited\')");
-        return std::make_shared<MuDSL::Value>();
-    };
-    auto loadLua = MuDSL->newFunction("loadLua", loadFunc);
-
-    auto endFunc = [&](const MuDSL::List &args) {
-        auto L = LuaMap["LuaCore"];
-        //LuaCore->getSolState()->script("METADOT_INFO(\'LuaLayer End\')");
-        L->Detach();
-        LuaMap.erase("LuaCore");
-        METADOT_DELETE(C, L, LuaCore);
-        return std::make_shared<MuDSL::Value>();
-    };
-    auto endLua = MuDSL->newFunction("endLua", endFunc);
-}
+void Scripts::LoadMuFuncs() { METADOT_ASSERT_E(MuDSL); }

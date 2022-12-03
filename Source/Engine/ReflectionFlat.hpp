@@ -5,6 +5,8 @@
 
 #include "Core/Macros.hpp"
 #include "Game/Console.hpp"
+#include "Game/GameScriptingWrap.hpp"
+#include <array>
 #include <vector>
 
 METADOT_INLINE ConsoleImpl::ItemLog &operator<<(ConsoleImpl::ItemLog &log, ImVec4 &vec) {
@@ -44,7 +46,11 @@ struct GameData
 
     float freeCamX = 0;
     float freeCamY = 0;
+
+    std::vector<Biome *> biome_container;
 };
+
+void ReleaseGameData();
 
 extern GameData GameData_;
 

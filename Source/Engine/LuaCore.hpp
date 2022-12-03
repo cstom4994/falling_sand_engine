@@ -28,6 +28,11 @@ public:
     {
         // LuaWrapper::LuaFunction Lang;
     } Func_;
+
+    struct
+    {
+        LuaWrapper::LuaTable Biome;
+    } Data_;
 };
 
 #endif
