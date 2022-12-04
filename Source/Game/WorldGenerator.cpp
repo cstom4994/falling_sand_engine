@@ -3,17 +3,10 @@
 #ifndef _METADOT_GENERATOR_WORLD_CPP_
 #define _METADOT_GENERATOR_WORLD_CPP_
 
-#ifndef INC_WorldGenerator
-#include "WorldGenerator.hpp"
-#endif
-
-#ifndef INC_Textures
-#include "Game/GameResources.hpp"
-#endif
-
+#include "GameDataStruct.hpp"
 #include "Core/Global.hpp"
 #include "Game/Game.hpp"
-#include "Populators.cpp"
+#include "Game/GameResources.hpp"
 
 #pragma region MaterialTestGenerator
 

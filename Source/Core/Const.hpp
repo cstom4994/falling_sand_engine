@@ -14,26 +14,26 @@ static const std::string win_title_client = U8("MetaDot 少女祈祷中");
 static const std::string win_title_server = U8("MetaDot Server");
 static const std::string win_game = U8("MetaDot");
 
-#define CHUNK_W 128
-#define CHUNK_H 128
-#define CHUNK_UNLOAD_DIST 16
+static const int CHUNK_W = 128;
+static const int CHUNK_H = 128;
+static const int CHUNK_UNLOAD_DIST = 16;
 
-#define FLUID_MaxValue 0.5f
-#define FLUID_MinValue 0.0005f
+static const float FLUID_MaxValue = 0.5f;
+static const float FLUID_MinValue = 0.0005f;
 
 // Extra liquid a cell can store than the cell above it
-#define FLUID_MaxCompression 0.1f
+static const float FLUID_MaxCompression = 0.1f;
 
 // Lowest and highest amount of liquids allowed to flow per iteration
-#define FLUID_MinFlow 0.05f
-#define FLUID_MaxFlow 8.0f
+static const float FLUID_MinFlow = 0.05f;
+static const float FLUID_MaxFlow = 8.0f;
 
 // Adjusts flow speed (0.0f - 1.0f)
-#define FLUID_FlowSpeed 1.0f
+static const float FLUID_FlowSpeed = 1.0f;
 
-#define FrameTimeNum 100
+static const int FrameTimeNum = 100;
 
-#define GameTick 4
+static const int GameTick = 4;
 
 #define METADOT_NAME "MetaDot"
 #define METADOT_VERSION_TEXT "0.0.3"

@@ -5,13 +5,12 @@
 #include "Engine/Platform.hpp"
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
+
+#include "lz4/lz4.h"
+
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "Game/InEngine.h"
-
-#include <lz4/lz4.h>
 
 std::vector<std::string> split(std::string strToSplit, char delimeter);
 std::vector<std::string> string_split(std::string s, const char delimiter);

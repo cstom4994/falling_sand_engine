@@ -78,8 +78,6 @@ public:
     Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
 };
 
-#define INC_Materials
-
 class Materials {
 public:
     static int nMaterials;
@@ -121,8 +119,6 @@ public:
     static void Init();
 };
 
-#define INC_MaterialInstance
-
 class MaterialInstance {
 public:
     static int _curID;
@@ -141,8 +137,6 @@ public:
     MaterialInstance() : MaterialInstance(&Materials::GENERIC_AIR, 0x000000, 0){};
     bool operator==(const MaterialInstance &other);
 };
-
-#define INC_Tiles
 
 class Tiles {
 public:

@@ -15,16 +15,14 @@
 #include "Game/FileSystem.hpp"
 #include "Game/GameScriptingWrap.hpp"
 #include "Game/ImGuiCore.hpp"
-#include "Game/Networking.hpp"
-#ifndef INC_World
+#include "Engine/Networking.hpp"
 #include "world.hpp"
-#endif
 #include "Background.hpp"
 #include "Controls.hpp"
 #include "Core/Const.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Game/GameResources.hpp"
-#include "Game/Settings.hpp"
+#include "Game/GameDataStruct.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/sparsehash/sparse_hash_map.h"
 

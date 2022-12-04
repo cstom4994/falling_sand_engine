@@ -3,7 +3,6 @@
 #ifndef _METADOT_RIGIDBODY_HPP_
 #define _METADOT_RIGIDBODY_HPP_
 
-#define INC_RigidBody
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"

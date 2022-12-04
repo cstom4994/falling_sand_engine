@@ -3,24 +3,15 @@
 #ifndef _METADOT_CHUNK_HPP_
 #define _METADOT_CHUNK_HPP_
 
-#include <utility>
-#ifndef INC_Tiles
+#include "Core/Const.hpp"
+#include "GameDataStruct.hpp"
+#include "GameScriptingWrap.hpp"
 #include "Materials.hpp"
-#endif// !INC_Tiles
-
-#ifndef INC_MaterialInstance
-#include "MaterialInstance.hpp"
-#endif// !INC_MaterialInstance
+#include "RigidBody.hpp"
 
 #include <fstream>
 #include <iostream>
-
-#include "Core/Const.hpp"
-
-#define INC_Chunk
-
-#include "GameScriptingWrap.hpp"
-#include "RigidBody.hpp"
+#include <utility>
 
 typedef struct
 {

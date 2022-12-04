@@ -3,13 +3,11 @@
 #include "Player.hpp"
 #include "Core/Global.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameDataStruct.hpp"
 #include "Game/GameResources.hpp"
-#include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 
 void Player::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
-    Entity::render(target, ofsX, ofsY);
-
     if (heldItem != NULL) {
         int scaleEnt = Settings::hd_objects ? Settings::hd_objects_size : 1;
 
@@ -39,7 +37,12 @@ void Player::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
 }
 
 void Player::renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
-    Entity::renderLQ(target, ofsX, ofsY);
+    METAENGINE_Render_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh,
+                                {0xff, 0xff, 0xff, 0xff});
+
+    auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
+    METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 128, 128, 5.0f,
+                                5.0f);
 }
 
 b2Vec2 rotate_point2(float cx, float cy, float angle, b2Vec2 p);

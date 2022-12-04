@@ -5,7 +5,9 @@
 #include "Engine/Memory.hpp"
 #include "Game/Game.hpp"
 #include "Game/ImGuiCore.hpp"
-#include "Game/Settings.hpp"
+#include "Game/Item.hpp"
+#include "Game/Player.hpp"
+#include "Game/GameDataStruct.hpp"
 
 #include "Game/WorldGenerator.cpp"
 

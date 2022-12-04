@@ -1,25 +1,22 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
+#include "world.hpp"
 #include "Core/Const.hpp"
+#include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/LuaCore.hpp"
 #include "Engine/LuaWrapper.hpp"
+#include "Engine/Math.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
-#include "Game/Materials.hpp"
-#ifndef INC_World
-#include "world.hpp"
-#endif
-#include "Core/Core.hpp"
-#include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/Math.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
+#include "Game/Materials.hpp"
 #include "Game/Utils.hpp"
-#include "Populators.cpp"
 #include "WorldGenerator.cpp"
 #include "fmt/format.h"
 
@@ -28,9 +25,6 @@
 #include <iterator>
 #include <string>
 #include <thread>
-
-#undef min
-#undef max
 
 #define W_PI 3.14159265358979323846
 

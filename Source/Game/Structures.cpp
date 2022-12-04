@@ -3,10 +3,7 @@
 #include "Structures.hpp"
 #include "Core/Macros.hpp"
 #include "world.hpp"
-
-#ifndef INC_Textures
 #include "Game/GameResources.hpp"
-#endif
 
 #include <algorithm>
 

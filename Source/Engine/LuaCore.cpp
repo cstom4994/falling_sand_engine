@@ -10,8 +10,8 @@
 #include "Engine/Memory.hpp"
 #include "Engine/Scripting.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/GameDataStruct.hpp"
 #include "Game/InEngine.h"
-#include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/lua/lua.hpp"
 

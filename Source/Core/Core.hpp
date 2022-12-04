@@ -35,7 +35,7 @@
 #include <vector>
 
 #include "Core/Macros.hpp"
-#include "Game/Logging.hpp"
+#include "Engine/Logging.hpp"
 #include "Libs/VisitStruct.hpp"
 
 #define METADOT_INT8_MAX 0x7F

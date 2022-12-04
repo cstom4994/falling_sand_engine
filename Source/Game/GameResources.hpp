@@ -11,8 +11,6 @@
 #include <string>
 #include <string_view>
 
-#define INC_Textures
-
 struct ase_t;
 
 struct Aseprite

@@ -4,12 +4,12 @@
 #include "Core/Const.hpp"
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
+#include "Engine/Networking.hpp"
 #include "Engine/RendererGPU.h"
 #include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameDataStruct.hpp"
 #include "Game/GameUI.hpp"
-#include "Game/Networking.hpp"
-#include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/structopt.hpp"
 
@@ -181,9 +181,7 @@ int Platform::InitWindow() {
     return 0;
 }
 
-void Platform::EndWindow() {
-    METAENGINE_Render_Quit();
-}
+void Platform::EndWindow() { METAENGINE_Render_Quit(); }
 
 void Platform::SetDisplayMode(DisplayMode mode) {
     switch (mode) {

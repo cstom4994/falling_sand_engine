@@ -1,9 +1,6 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef INC_Item
 #include "Item.hpp"
-#endif// !INC_Item
-
 #include "Core/Macros.hpp"
 
 Item::Item() {}

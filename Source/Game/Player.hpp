@@ -1,15 +1,11 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#define INC_Player
+#ifndef _METADOT_PLAYER_HPP_
+#define _METADOT_PLAYER_HPP_
 
-#ifndef INC_Entity
-#include "Entity.hpp"
-#endif
+#include "GameDataStruct.hpp"
 #include "Item.hpp"
-
-#ifndef INC_World
 #include "world.hpp"
-#endif
 
 class World;
 
@@ -29,3 +25,5 @@ public:
 
     ~Player();
 };
+
+#endif

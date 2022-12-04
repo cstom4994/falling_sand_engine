@@ -1,15 +1,10 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#define INC_Item
+#ifndef _METADOT_ITEM_HPP_
+#define _METADOT_ITEM_HPP_
 
-#ifndef INC_RigidBody
 #include "RigidBody.hpp"
-#endif
-
-#ifndef INC_MaterialInstance
-#include "MaterialInstance.hpp"
-#endif
-
+#include "Materials.hpp"
 #include "GameDataStruct.hpp"
 
 class ItemFlags {
@@ -53,3 +48,5 @@ public:
     static Item *makeItem(uint8_t flags, RigidBody *rb);
     void loadFillTexture(C_Surface *tex);
 };
+
+#endif

@@ -4,38 +4,24 @@
 #define _METADOT_WORLD_HPP_
 
 #include "Chunk.hpp"
-
-#define INC_World
-
+#include "Core/Const.hpp"
 #include "Core/Macros.hpp"
-
-#include "Engine/Internal/BuiltinBox2d.h"
-#include "GameDataStruct.hpp"
-#include "Networking.hpp"
-#include <deque>
-#include <vector>
-#ifndef INC_RigidBody
-#include "RigidBody.hpp"
-#endif
-#include "Engine/Noise.h"
-#include "Libs/sparsehash/dense_hash_map.h"
-#include "Structures.hpp"
-#include <future>
-#include <unordered_map>
-#ifndef INC_Player
-#include "Player.hpp"
-#endif
 #include "Core/ThreadPool.hpp"
 #include "Engine/AudioEngine.h"
-
+#include "Engine/Internal/BuiltinBox2d.h"
+#include "Engine/Noise.h"
 #include "Engine/RendererGPU.h"
+#include "GameDataStruct.hpp"
 #include "GameScriptingWrap.hpp"
+#include "Libs/sparsehash/dense_hash_map.h"
+#include "Networking.hpp"
+#include "RigidBody.hpp"
+#include "Structures.hpp"
 
-#ifndef INC_WorldGenerator
-#include "WorldGenerator.hpp"
-#endif
-
-#include "Core/Const.hpp"
+#include <deque>
+#include <future>
+#include <unordered_map>
+#include <vector>
 
 class Populator;
 class WorldGenerator;
