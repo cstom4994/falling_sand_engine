@@ -3,10 +3,10 @@
 #include "MRender.hpp"
 
 #include "Core/Global.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Game/ImGuiCore.hpp"
 #include "Game/InEngine.h"
-#include "ImGui/imgui.h"
 #include <string>
 
 void Drawing::drawText(std::string name, std::string text, uint8_t x, uint8_t y, ImVec4 col) {
@@ -43,8 +43,8 @@ b2Vec2 Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     return b2Vec2(xnew + cx, ynew + cy);
 }
 
-void Drawing::drawPolygon(METAENGINE_Render_Target *target, SDL_Color col, b2Vec2 *verts, int x,
-                          int y, float scale, int count, float angle, float cx, float cy) {
+void Drawing::drawPolygon(METAENGINE_Render_Target *target, METAENGINE_Color col, b2Vec2 *verts,
+                          int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
     b2Vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {

@@ -94,7 +94,7 @@ b2Vec2 b2DebugDraw_impl::transform(const b2Vec2 &pt) {
     return b2Vec2(x, y);
 }
 
-SDL_Color b2DebugDraw_impl::convertColor(const b2Color &color) {
+METAENGINE_Color b2DebugDraw_impl::convertColor(const b2Color &color) {
     return {(UInt8) (color.r * 255), (UInt8) (color.g * 255), (UInt8) (color.b * 255),
             (UInt8) (color.a * 255)};
 }
@@ -118,7 +118,7 @@ void b2DebugDraw_impl::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCoun
     for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
-    SDL_Color c2 = convertColor(color);
+    METAENGINE_Color c2 = convertColor(color);
     c2.a *= 0.25;
     METAENGINE_Render_PolygonFilled(target, vertexCount, (float *) verts, c2);
     METAENGINE_Render_Polygon(target, vertexCount, (float *) verts, convertColor(color));

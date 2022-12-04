@@ -1,7 +1,8 @@
 
 #include "RendererOpenGLImpl.h"
 #include "Core/Core.hpp"
-#include "RendererImpl.h"
+
+#include "Engine/SDLWrapper.hpp"
 
 #include "Libs/glad/glad.h"
 
@@ -16,6 +17,12 @@
 #define METAENGINE_Render_GLSL_VERSION_CORE 150
 #define METAENGINE_Render_GL_MAJOR_VERSION 3
 #define METAENGINE_Render_ENABLE_CORE_SHADERS
+
+#define ToSDLColor(_c)                                                                             \
+    SDL_Color { _c.r, _c.g, _c.b, _c.a }
+
+#define ToEngineColor(_c)                                                                          \
+    METAENGINE_Color { _c.r, _c.g, _c.b, _c.a }
 
 #if !defined(GLAPIENTRY)
 #if defined(GL_APIENTRY)
@@ -886,12 +893,12 @@ static SDL_Color get_complete_mod_color(METAENGINE_Render_Renderer *renderer,
             GET_ALPHA(color) =
                     MIX_COLOR_COMPONENT(GET_ALPHA(target->color), GET_ALPHA(image->color));
         } else {
-            color = target->color;
+            color = ToSDLColor(target->color);
         }
 
         return color;
     } else if (image != NULL)
-        return image->color;
+        return ToSDLColor(image->color);
     else
         return color;
 }
@@ -1399,7 +1406,7 @@ static METAENGINE_Render_Target *CreateTargetFromWindow(METAENGINE_Render_Render
     target->context->shapes_blend_mode =
             METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
 
-    cdata->last_color = white;
+    cdata->last_color = ToEngineColor(white);
 
     cdata->last_use_texturing = METAENGINE_Render_TRUE;
     cdata->last_shape = GL_TRIANGLES;
@@ -2198,7 +2205,7 @@ static METAENGINE_Render_Image *CreateUninitializedImage(METAENGINE_Render_Rende
     result->anchor_x = renderer->default_image_anchor_x;
     result->anchor_y = renderer->default_image_anchor_y;
 
-    result->color = white;
+    result->color = ToEngineColor(white);
     result->use_blending = METAENGINE_Render_TRUE;
     result->blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
     result->filter_mode = METAENGINE_Render_FILTER_LINEAR;
@@ -2464,7 +2471,7 @@ static METAENGINE_Render_Image *CreateImageUsingTexture(METAENGINE_Render_Render
     result->anchor_x = renderer->default_image_anchor_x;
     result->anchor_y = renderer->default_image_anchor_y;
 
-    result->color = white;
+    result->color = ToEngineColor(white);
     result->use_blending = METAENGINE_Render_TRUE;
     result->blend_mode = METAENGINE_Render_GetBlendModeFromPreset(METAENGINE_Render_BLEND_NORMAL);
     result->snap_mode = METAENGINE_Render_SNAP_POSITION_AND_DIMENSIONS;
@@ -2622,29 +2629,8 @@ static unsigned char *getRawImageData(METAENGINE_Render_Renderer *renderer,
     return data;
 }
 
-static METAENGINE_Render_bool SaveImage(METAENGINE_Render_Renderer *renderer,
-                                        METAENGINE_Render_Image *image, const char *filename,
-                                        METAENGINE_Render_FileFormatEnum format) {
-    METAENGINE_Render_bool result;
-    SDL_Surface *surface;
-
-    if (image == NULL || filename == NULL || image->texture_w < 1 || image->texture_h < 1 ||
-        image->bytes_per_pixel < 1 || image->bytes_per_pixel > 4) {
-        return METAENGINE_Render_FALSE;
-    }
-
-    surface = renderer->impl->CopySurfaceFromImage(renderer, image);
-
-    if (surface == NULL) return METAENGINE_Render_FALSE;
-
-    result = METAENGINE_Render_SaveSurface(surface, filename, format);
-
-    SDL_FreeSurface(surface);
-    return result;
-}
-
-static SDL_Surface *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer,
-                                          METAENGINE_Render_Target *target) {
+static void *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer,
+                                   METAENGINE_Render_Target *target) {
     unsigned char *data;
     SDL_Surface *result;
     SDL_PixelFormat *format;
@@ -2700,8 +2686,8 @@ static SDL_Surface *CopySurfaceFromTarget(METAENGINE_Render_Renderer *renderer,
     return result;
 }
 
-static SDL_Surface *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer,
-                                         METAENGINE_Render_Image *image) {
+static void *CopySurfaceFromImage(METAENGINE_Render_Renderer *renderer,
+                                  METAENGINE_Render_Image *image) {
     unsigned char *data;
     SDL_Surface *result;
     SDL_PixelFormat *format;
@@ -3057,7 +3043,7 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
 
                 {
                     // Clear the color, blending, and filter mode
-                    SDL_Color color = image->color;
+                    SDL_Color color = ToSDLColor(image->color);
                     METAENGINE_Render_bool use_blending = image->use_blending;
                     METAENGINE_Render_FilterEnum filter_mode = image->filter_mode;
                     METAENGINE_Render_bool use_virtual = image->using_virtual_resolution;
@@ -3075,7 +3061,7 @@ static METAENGINE_Render_Image *gpu_copy_image_pixels_only(METAENGINE_Render_Ren
                                          (float) (image->h / 2));
 
                     // Restore the saved settings
-                    METAENGINE_Render_SetColor(image, color);
+                    METAENGINE_Render_SetColor(image, ToEngineColor(color));
                     METAENGINE_Render_SetBlending(image, use_blending);
                     METAENGINE_Render_SetImageFilter(image, filter_mode);
                     if (use_virtual) { METAENGINE_Render_SetImageVirtualResolution(image, w, h); }
@@ -3166,7 +3152,7 @@ static METAENGINE_Render_Image *CopyImage(METAENGINE_Render_Renderer *renderer,
 }
 
 static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
-                        const METAENGINE_Render_Rect *image_rect, SDL_Surface *surface,
+                        const METAENGINE_Render_Rect *image_rect, void *surface,
                         const METAENGINE_Render_Rect *surface_rect) {
     METAENGINE_Render_IMAGE_DATA *data;
     GLenum original_format;
@@ -3182,7 +3168,8 @@ static void UpdateImage(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_
     data = (METAENGINE_Render_IMAGE_DATA *) image->data;
     original_format = data->format;
 
-    newSurface = copySurfaceIfNeeded(renderer, data->format, surface, &original_format);
+    newSurface =
+            copySurfaceIfNeeded(renderer, data->format, (SDL_Surface *) surface, &original_format);
     if (newSurface == NULL) {
         METAENGINE_Render_PushErrorCode("METAENGINE_Render_UpdateImage",
                                         METAENGINE_Render_ERROR_BACKEND_ERROR,
@@ -3324,7 +3311,7 @@ static void UpdateImageBytes(METAENGINE_Render_Renderer *renderer, METAENGINE_Re
 }
 
 static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
-                                           METAENGINE_Render_Image *image, SDL_Surface *surface,
+                                           METAENGINE_Render_Image *image, void *surface,
                                            const METAENGINE_Render_Rect *surface_rect) {
     METAENGINE_Render_IMAGE_DATA *data;
     METAENGINE_Render_Rect sourceRect;
@@ -3349,7 +3336,8 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
     data = (METAENGINE_Render_IMAGE_DATA *) image->data;
     internal_format = data->format;
 
-    newSurface = copySurfaceIfNeeded(renderer, internal_format, surface, &internal_format);
+    newSurface = copySurfaceIfNeeded(renderer, internal_format, (SDL_Surface *) surface,
+                                     &internal_format);
     if (newSurface == NULL) {
         METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
                                         METAENGINE_Render_ERROR_BACKEND_ERROR,
@@ -3376,8 +3364,8 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
     if (surface_rect == NULL) {
         sourceRect.x = 0;
         sourceRect.y = 0;
-        sourceRect.w = (float) surface->w;
-        sourceRect.h = (float) surface->h;
+        sourceRect.w = (float) ((SDL_Surface *) surface)->w;
+        sourceRect.h = (float) ((SDL_Surface *) surface)->h;
     } else
         sourceRect = *surface_rect;
 
@@ -3390,11 +3378,15 @@ static METAENGINE_Render_bool ReplaceImage(METAENGINE_Render_Renderer *renderer,
         sourceRect.h += sourceRect.y;
         sourceRect.y = 0;
     }
-    if (sourceRect.x >= surface->w) sourceRect.x = (float) surface->w - 1;
-    if (sourceRect.y >= surface->h) sourceRect.y = (float) surface->h - 1;
+    if (sourceRect.x >= ((SDL_Surface *) surface)->w)
+        sourceRect.x = (float) ((SDL_Surface *) surface)->w - 1;
+    if (sourceRect.y >= ((SDL_Surface *) surface)->h)
+        sourceRect.y = (float) ((SDL_Surface *) surface)->h - 1;
 
-    if (sourceRect.x + sourceRect.w > surface->w) sourceRect.w = (float) surface->w - sourceRect.x;
-    if (sourceRect.y + sourceRect.h > surface->h) sourceRect.h = (float) surface->h - sourceRect.y;
+    if (sourceRect.x + sourceRect.w > ((SDL_Surface *) surface)->w)
+        sourceRect.w = (float) ((SDL_Surface *) surface)->w - sourceRect.x;
+    if (sourceRect.y + sourceRect.h > ((SDL_Surface *) surface)->h)
+        sourceRect.h = (float) ((SDL_Surface *) surface)->h - sourceRect.y;
 
     if (sourceRect.w <= 0 || sourceRect.h <= 0) {
         METAENGINE_Render_PushErrorCode("METAENGINE_Render_ReplaceImage",
@@ -3529,7 +3521,7 @@ static_inline Uint32 getPixel(SDL_Surface *Surface, int x, int y) {
 }
 
 static METAENGINE_Render_Image *CopyImageFromSurface(METAENGINE_Render_Renderer *renderer,
-                                                     SDL_Surface *surface,
+                                                     void *surface,
                                                      const METAENGINE_Render_Rect *surface_rect) {
     METAENGINE_Render_FormatEnum format;
     METAENGINE_Render_Image *image;
@@ -3540,10 +3532,10 @@ static METAENGINE_Render_Image *CopyImageFromSurface(METAENGINE_Render_Renderer 
                                         METAENGINE_Render_ERROR_NULL_ARGUMENT, "surface");
         return NULL;
     }
-    sw = surface_rect == NULL ? surface->w : surface_rect->w;
-    sh = surface_rect == NULL ? surface->h : surface_rect->h;
+    sw = surface_rect == NULL ? ((SDL_Surface *) surface)->w : ((SDL_Surface *) surface_rect)->w;
+    sh = surface_rect == NULL ? ((SDL_Surface *) surface)->h : ((SDL_Surface *) surface_rect)->h;
 
-    if (surface->w == 0 || surface->h == 0) {
+    if (((SDL_Surface *) surface)->w == 0 || ((SDL_Surface *) surface)->h == 0) {
         METAENGINE_Render_PushErrorCode("METAENGINE_Render_CopyImageFromSurface",
                                         METAENGINE_Render_ERROR_DATA_ERROR,
                                         "Surface has a zero dimension.");
@@ -3551,8 +3543,9 @@ static METAENGINE_Render_Image *CopyImageFromSurface(METAENGINE_Render_Renderer 
     }
 
     // See what the best image format is.
-    if (surface->format->Amask == 0) {
-        if (has_colorkey(surface) || is_alpha_format(surface->format))
+    if (((SDL_Surface *) surface)->format->Amask == 0) {
+        if (has_colorkey((SDL_Surface *) surface) ||
+            is_alpha_format(((SDL_Surface *) surface)->format))
             format = METAENGINE_Render_FORMAT_RGBA;
         else
             format = METAENGINE_Render_FORMAT_RGB;
@@ -3578,7 +3571,8 @@ static METAENGINE_Render_Image *CopyImageFromTarget(METAENGINE_Render_Renderer *
     if (target->image != NULL) {
         result = gpu_copy_image_pixels_only(renderer, target->image);
     } else {
-        SDL_Surface *surface = renderer->impl->CopySurfaceFromTarget(renderer, target);
+        SDL_Surface *surface =
+                (SDL_Surface *) renderer->impl->CopySurfaceFromTarget(renderer, target);
         result = renderer->impl->CopyImageFromSurface(renderer, surface, NULL);
         SDL_FreeSurface(surface);
     }
@@ -4917,12 +4911,12 @@ static void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pi
     }
 }
 
-static SDL_Color GetPixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                          Sint16 x, Sint16 y) {
+static METAENGINE_Color GetPixel(METAENGINE_Render_Renderer *renderer,
+                                 METAENGINE_Render_Target *target, Sint16 x, Sint16 y) {
     SDL_Color result = {0, 0, 0, 0};
-    if (target == NULL) return result;
-    if (renderer != target->renderer) return result;
-    if (x < 0 || y < 0 || x >= target->w || y >= target->h) return result;
+    if (target == NULL) return ToEngineColor(result);
+    if (renderer != target->renderer) return ToEngineColor(result);
+    if (x < 0 || y < 0 || x >= target->w || y >= target->h) return ToEngineColor(result);
 
     if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
     if (SetActiveTarget(renderer, target)) {
@@ -4933,7 +4927,7 @@ static SDL_Color GetPixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Rende
         swizzle_for_format(&result, format, pixels);
     }
 
-    return result;
+    return ToEngineColor(result);
 }
 
 static void SetImageFilter(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Image *image,
@@ -5622,40 +5616,17 @@ static Uint32 compile_shader_source(METAENGINE_Render_ShaderEnum shader_type,
     return shader_object;
 }
 
-static Uint32 CompileShader_RW(METAENGINE_Render_Renderer *renderer,
-                               METAENGINE_Render_ShaderEnum shader_type, SDL_RWops *shader_source,
-                               METAENGINE_Render_bool free_rwops) {
-    // Read in the shader source code
-    Uint32 size = GetShaderSourceSize_RW(shader_source);
-    char *source_string = (char *) SDL_malloc(size + 1);
-    int result = GetShaderSource_RW(shader_source, source_string);
-    Uint32 result2;
-    (void) renderer;
-
-    if (free_rwops) SDL_RWclose(shader_source);
-
-    if (!result) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_CompileShader",
-                                        METAENGINE_Render_ERROR_DATA_ERROR,
-                                        "Failed to read shader source");
-        snprintf(shader_message, 256, "Failed to read shader source.\n");
-        SDL_free(source_string);
-        return 0;
-    }
-
-    result2 = compile_shader_source(shader_type, source_string);
-    SDL_free(source_string);
-
-    return result2;
+static Uint32 CompileShaderInternal(METAENGINE_Render_Renderer *renderer,
+                                    METAENGINE_Render_ShaderEnum shader_type,
+                                    const char *shader_source) {
+    return compile_shader_source(shader_type, shader_source);
 }
 
 static Uint32 CompileShader(METAENGINE_Render_Renderer *renderer,
                             METAENGINE_Render_ShaderEnum shader_type, const char *shader_source) {
     Uint32 size = (Uint32) strlen(shader_source);
-    SDL_RWops *rwops;
     if (size == 0) return 0;
-    rwops = SDL_RWFromConstMem(shader_source, size);
-    return renderer->impl->CompileShader_RW(renderer, shader_type, rwops, 1);
+    return renderer->impl->CompileShaderInternal(renderer, shader_type, shader_source);
 }
 
 static Uint32 CreateShaderProgram(METAENGINE_Render_Renderer *renderer) {
@@ -6412,7 +6383,6 @@ static void SetAttributeSource(METAENGINE_Render_Renderer *renderer, int num_val
     impl->CreateImage = &CreateImage;                                                              \
     impl->CreateImageUsingTexture = &CreateImageUsingTexture;                                      \
     impl->CreateAliasImage = &CreateAliasImage;                                                    \
-    impl->SaveImage = &SaveImage;                                                                  \
     impl->CopyImage = &CopyImage;                                                                  \
     impl->UpdateImage = &UpdateImage;                                                              \
     impl->UpdateImageBytes = &UpdateImageBytes;                                                    \
@@ -6447,7 +6417,7 @@ static void SetAttributeSource(METAENGINE_Render_Renderer *renderer, int num_val
     impl->FlushBlitBuffer = &FlushBlitBuffer;                                                      \
     impl->Flip = &Flip;                                                                            \
                                                                                                    \
-    impl->CompileShader_RW = &CompileShader_RW;                                                    \
+    impl->CompileShaderInternal = &CompileShaderInternal;                                          \
     impl->CompileShader = &CompileShader;                                                          \
     impl->CreateShaderProgram = &CreateShaderProgram;                                              \
     impl->LinkShaderProgram = &LinkShaderProgram;                                                  \
@@ -6609,14 +6579,14 @@ static float GetLineThickness(METAENGINE_Render_Renderer *renderer) {
 }
 
 static void Pixel(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
-                  float y, SDL_Color color) {
+                  float y, METAENGINE_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_Pixel", GL_POINTS, 1, 1);
 
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
 }
 
 static void Line(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1,
-                 float y1, float x2, float y2, SDL_Color color) {
+                 float y1, float x2, float y2, METAENGINE_Color color) {
     float thickness = GetLineThickness(renderer);
 
     float t = thickness / 2;
@@ -6637,10 +6607,10 @@ static void Line(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target 
 
 // Arc() might call Circle()
 static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
-                   float y, float radius, SDL_Color color);
+                   float y, float radius, METAENGINE_Color color);
 
 static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
-                float y, float radius, float start_angle, float end_angle, SDL_Color color) {
+                float y, float radius, float start_angle, float end_angle, METAENGINE_Color color) {
     float dx, dy;
     int i;
 
@@ -6720,11 +6690,11 @@ static void Arc(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *
 
 // ArcFilled() might call CircleFilled()
 static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                         float x, float y, float radius, SDL_Color color);
+                         float x, float y, float radius, METAENGINE_Color color);
 
 static void ArcFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
                       float x, float y, float radius, float start_angle, float end_angle,
-                      SDL_Color color) {
+                      METAENGINE_Color color) {
     float dx, dy;
     int i;
 
@@ -6809,7 +6779,7 @@ Incremental rotation circle algorithm
 */
 
 static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
-                   float y, float radius, SDL_Color color) {
+                   float y, float radius, METAENGINE_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6849,7 +6819,7 @@ static void Circle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targe
 }
 
 static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                         float x, float y, float radius, SDL_Color color) {
+                         float x, float y, float radius, METAENGINE_Color color) {
     float dt;
     float dx, dy;
     int numSegments;
@@ -6891,7 +6861,7 @@ static void CircleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render
 }
 
 static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
-                    float y, float rx, float ry, float degrees, SDL_Color color) {
+                    float y, float rx, float ry, float degrees, METAENGINE_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6947,7 +6917,8 @@ static void Ellipse(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
 }
 
 static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                          float x, float y, float rx, float ry, float degrees, SDL_Color color) {
+                          float x, float y, float rx, float ry, float degrees,
+                          METAENGINE_Color color) {
     float dx, dy;
     int i;
     float rot_x = cosf(degrees * RAD_PER_DEG);
@@ -7001,7 +6972,7 @@ static void EllipseFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Rende
 
 static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x,
                    float y, float inner_radius, float outer_radius, float start_angle,
-                   float end_angle, SDL_Color color) {
+                   float end_angle, METAENGINE_Color color) {
     METAENGINE_Render_bool circled;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
 
@@ -7051,7 +7022,7 @@ static void Sector(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targe
 
 static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
                          float x, float y, float inner_radius, float outer_radius,
-                         float start_angle, float end_angle, SDL_Color color) {
+                         float start_angle, float end_angle, METAENGINE_Color color) {
     float t;
     float dt;
     float dx, dy;
@@ -7155,7 +7126,7 @@ static void SectorFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render
 }
 
 static void Tri(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target, float x1,
-                float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
+                float y1, float x2, float y2, float x3, float y3, METAENGINE_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_Tri", GL_LINES, 3, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -7169,7 +7140,8 @@ static void Tri(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *
 }
 
 static void TriFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                      float x1, float y1, float x2, float y2, float x3, float y3, SDL_Color color) {
+                      float x1, float y1, float x2, float y2, float x3, float y3,
+                      METAENGINE_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_TriFilled", GL_TRIANGLES, 3, 3);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -7178,7 +7150,7 @@ static void TriFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
 }
 
 static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                      float x1, float y1, float x2, float y2, SDL_Color color) {
+                      float x1, float y1, float x2, float y2, METAENGINE_Color color) {
     if (y2 < y1) {
         float y = y1;
         y1 = y2;
@@ -7242,7 +7214,7 @@ static void Rectangle(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Ta
 }
 
 static void RectangleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                            float x1, float y1, float x2, float y2, SDL_Color color) {
+                            float x1, float y1, float x2, float y2, METAENGINE_Color color) {
     BEGIN_UNTEXTURED("METAENGINE_Render_RectangleFilled", GL_TRIANGLES, 4, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -7261,7 +7233,8 @@ static void RectangleFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Ren
     ++i;
 
 static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                           float x1, float y1, float x2, float y2, float radius, SDL_Color color) {
+                           float x1, float y1, float x2, float y2, float radius,
+                           METAENGINE_Color color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -7370,7 +7343,7 @@ static void RectangleRound(METAENGINE_Render_Renderer *renderer, METAENGINE_Rend
 
 static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer,
                                  METAENGINE_Render_Target *target, float x1, float y1, float x2,
-                                 float y2, float radius, SDL_Color color) {
+                                 float y2, float radius, METAENGINE_Color color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -7462,7 +7435,7 @@ static void RectangleRoundFilled(METAENGINE_Render_Renderer *renderer,
 }
 
 static void Polygon(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                    unsigned int num_vertices, float *vertices, SDL_Color color) {
+                    unsigned int num_vertices, float *vertices, METAENGINE_Color color) {
     if (num_vertices < 3) return;
 
     {
@@ -7483,7 +7456,7 @@ static void Polygon(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Targ
 }
 
 static void Polyline(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                     unsigned int num_vertices, float *vertices, SDL_Color color,
+                     unsigned int num_vertices, float *vertices, METAENGINE_Color color,
                      METAENGINE_Render_bool close_loop) {
     if (num_vertices < 2) return;
 
@@ -7534,7 +7507,7 @@ static void Polyline(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Tar
 }
 
 static void PolygonFilled(METAENGINE_Render_Renderer *renderer, METAENGINE_Render_Target *target,
-                          unsigned int num_vertices, float *vertices, SDL_Color color) {
+                          unsigned int num_vertices, float *vertices, METAENGINE_Color color) {
     if (num_vertices < 3) return;
 
     {

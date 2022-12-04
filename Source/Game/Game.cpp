@@ -1974,7 +1974,7 @@ void Game::tick() {
 
             UInt8 outlineAlpha = (UInt8) (cur->hover * 255);
             if (outlineAlpha > 0) {
-                SDL_Color col = {0xff, 0xff, 0x80, outlineAlpha};
+                METAENGINE_Color col = {0xff, 0xff, 0x80, outlineAlpha};
                 METAENGINE_Render_SetShapeBlendMode(
                         METAENGINE_Render_BLEND_NORMAL_FACTOR_ALPHA);// SDL_BLENDMODE_BLEND
                 for (auto &l: cur->outline) {
@@ -3378,9 +3378,9 @@ void Game::renderLate() {
         if (Settings::draw_background && scale <= bg->layers[0].surface.size() &&
             GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_SET);
-            SDL_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff),
-                             static_cast<UInt8>((bg->solid >> 8) & 0xff),
-                             static_cast<UInt8>((bg->solid >> 0) & 0xff), 0xff};
+            METAENGINE_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff),
+                                    static_cast<UInt8>((bg->solid >> 8) & 0xff),
+                                    static_cast<UInt8>((bg->solid >> 0) & 0xff), 0xff};
             METAENGINE_Render_ClearColor(RenderTarget_.target, col);
 
             METAENGINE_Render_Rect *dst = nullptr;
@@ -3710,7 +3710,7 @@ void Game::renderOverlays() {
 
     if (Settings::draw_load_zones) {
 
-        SDL_Color col = {0xff, 0x00, 0x00, 0x20};
+        METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
         METAENGINE_Render_Rect r3 =
@@ -3938,7 +3938,7 @@ void Game::renderOverlays() {
                 Chunk *m = p2.second;
                 r.x = centerX + m->x * chSize - pchx;
                 r.y = centerY + m->y * chSize - pchy;
-                SDL_Color col;
+                METAENGINE_Color col;
                 if (m->generationPhase == -1) {
                     col = {0x60, 0x60, 0x60, 0xff};
                 } else if (m->generationPhase == 0) {
@@ -4105,7 +4105,7 @@ GameIsolate_.world->readyToMerge ({})
         for (int i = 0; i < FrameTimeNum; i++) {
             int h = frameTime[i];
 
-            SDL_Color col;
+            METAENGINE_Color col;
             if (h <= (int) (1000 / 144.0)) {
                 col = {0x00, 0xff, 0x00, 0xff};
             } else if (h <= (int) (1000 / 60.0)) {

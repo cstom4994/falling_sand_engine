@@ -35,7 +35,6 @@
 #include <vector>
 
 #include "Core/Macros.hpp"
-#include "Engine/Platform.hpp"
 #include "Game/Logging.hpp"
 #include "Libs/VisitStruct.hpp"
 

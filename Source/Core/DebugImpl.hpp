@@ -1021,7 +1021,7 @@ public:
 
     b2Vec2 transform(const b2Vec2 &pt);
 
-    SDL_Color convertColor(const b2Color &color);
+    METAENGINE_Color convertColor(const b2Color &color);
 
     void DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color);
 

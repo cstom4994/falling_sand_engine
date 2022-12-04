@@ -3,8 +3,8 @@
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Macros.hpp"
+#include "Engine/SDLWrapper.hpp"
 #include "RendererGPU.h"
-#include "RendererImpl.h"
 
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
@@ -20,15 +20,6 @@
 
 #define RAD_PER_DEG 0.017453293f
 #define DEG_PER_RAD 57.2957795f
-
-// Visual C does not support static inline
-#ifndef static_inline
-#ifdef _MSC_VER
-#define static_inline static
-#else
-#define static_inline static inline
-#endif
-#endif
 
 #define METAENGINE_Render_MAX_ACTIVE_RENDERERS 20
 #define METAENGINE_Render_MAX_REGISTERED_RENDERERS 10
@@ -413,10 +404,6 @@ static METAENGINE_Render_InitFlagEnum _gpu_required_features = 0;
 
 static METAENGINE_Render_bool _gpu_initialized_SDL_core = METAENGINE_Render_FALSE;
 static METAENGINE_Render_bool _gpu_initialized_SDL = METAENGINE_Render_FALSE;
-
-SDL_version METAENGINE_Render_GetLinkedVersion(void) {
-    return METAENGINE_Render_GetCompiledVersion();
-}
 
 void METAENGINE_Render_SetCurrentRenderer(METAENGINE_Render_RendererID id) {
     _gpu_current_renderer = METAENGINE_Render_GetRenderer(id);
@@ -1047,8 +1034,8 @@ METAENGINE_Render_Rect METAENGINE_Render_MakeRect(float x, float y, float w, flo
     return r;
 }
 
-SDL_Color METAENGINE_Render_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    SDL_Color c;
+METAENGINE_Color METAENGINE_Render_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    METAENGINE_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1127,60 +1114,11 @@ METAENGINE_Render_Image *METAENGINE_Render_CreateImageUsingTexture(
                                                                 take_ownership);
 }
 
-METAENGINE_Render_Image *METAENGINE_Render_LoadImage(const char *filename) {
-    return METAENGINE_Render_LoadImage_RW(SDL_RWFromFile(filename, "r"), 1);
-}
-
-METAENGINE_Render_Image *METAENGINE_Render_LoadImage_RW(SDL_RWops *rwops,
-                                                        METAENGINE_Render_bool free_rwops) {
-    METAENGINE_Render_Image *result;
-    SDL_Surface *surface;
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return NULL;
-
-    surface = METAENGINE_Render_LoadSurface_RW(rwops, free_rwops);
-    if (surface == NULL) {
-        METAENGINE_Render_PushErrorCode("METAENGINE_Render_LoadImage_RW",
-                                        METAENGINE_Render_ERROR_DATA_ERROR,
-                                        "Failed to load image data.");
-        return NULL;
-    }
-
-    result =
-            _gpu_current_renderer->impl->CopyImageFromSurface(_gpu_current_renderer, surface, NULL);
-    SDL_FreeSurface(surface);
-
-    return result;
-}
-
 METAENGINE_Render_Image *METAENGINE_Render_CreateAliasImage(METAENGINE_Render_Image *image) {
     if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
     return _gpu_current_renderer->impl->CreateAliasImage(_gpu_current_renderer, image);
-}
-
-METAENGINE_Render_bool METAENGINE_Render_SaveImage(METAENGINE_Render_Image *image,
-                                                   const char *filename,
-                                                   METAENGINE_Render_FileFormatEnum format) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
-
-    return _gpu_current_renderer->impl->SaveImage(_gpu_current_renderer, image, filename, format);
-}
-
-METAENGINE_Render_bool METAENGINE_Render_SaveImage_RW(METAENGINE_Render_Image *image,
-                                                      SDL_RWops *rwops,
-                                                      METAENGINE_Render_bool free_rwops,
-                                                      METAENGINE_Render_FileFormatEnum format) {
-    METAENGINE_Render_bool result;
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
-
-    SDL_Surface *surface = METAENGINE_Render_CopySurfaceFromImage(image);
-    result = METAENGINE_Render_SaveSurface_RW(surface, rwops, free_rwops, format);
-    SDL_FreeSurface(surface);
-    return result;
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CopyImage(METAENGINE_Render_Image *image) {
@@ -1191,7 +1129,7 @@ METAENGINE_Render_Image *METAENGINE_Render_CopyImage(METAENGINE_Render_Image *im
 }
 
 void METAENGINE_Render_UpdateImage(METAENGINE_Render_Image *image,
-                                   const METAENGINE_Render_Rect *image_rect, SDL_Surface *surface,
+                                   const METAENGINE_Render_Rect *image_rect, void *surface,
                                    const METAENGINE_Render_Rect *surface_rect) {
     if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
         return;
@@ -1210,8 +1148,7 @@ void METAENGINE_Render_UpdateImageBytes(METAENGINE_Render_Image *image,
                                                   bytes_per_row);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_ReplaceImage(METAENGINE_Render_Image *image,
-                                                      SDL_Surface *surface,
+METAENGINE_Render_bool METAENGINE_Render_ReplaceImage(METAENGINE_Render_Image *image, void *surface,
                                                       const METAENGINE_Render_Rect *surface_rect) {
     if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
         return METAENGINE_Render_FALSE;
@@ -1291,62 +1228,15 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
         // SDL_CreateRGBSurface has no idea what palette to use, so it uses a blank one.
         // We'll at least create a grayscale one, but it's not ideal...
         // Better would be to get the palette from stbi, but stbi doesn't do that!
-        SDL_Color colors[256];
+        METAENGINE_Color colors[256];
 
         for (i = 0; i < 256; i++) { colors[i].r = colors[i].g = colors[i].b = (Uint8) i; }
 
         /* Set palette */
-        SDL_SetPaletteColors(result->format->palette, colors, 0, 256);
+        SDL_SetPaletteColors(result->format->palette, (SDL_Color *) colors, 0, 256);
     }
 
     return result;
-}
-
-SDL_Surface *METAENGINE_Render_LoadSurface_RW(SDL_RWops *rwops, METAENGINE_Render_bool free_rwops) {
-    int width, height, channels;
-    unsigned char *data;
-    SDL_Surface *result;
-
-    int data_bytes;
-    unsigned char *c_data;
-
-    if (rwops == NULL) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_NULL_ARGUMENT, "rwops");
-        return NULL;
-    }
-
-    // Get count of bytes
-    SDL_RWseek(rwops, 0, SEEK_SET);
-    data_bytes = (int) SDL_RWseek(rwops, 0, SEEK_END);
-    SDL_RWseek(rwops, 0, SEEK_SET);
-
-    // Read in the rwops data
-    c_data = (unsigned char *) SDL_malloc(data_bytes);
-    SDL_RWread(rwops, c_data, 1, data_bytes);
-
-    // Load image
-    data = stbi_load_from_memory(c_data, data_bytes, &width, &height, &channels, 0);
-
-    // Clean up temp data
-    SDL_free(c_data);
-    if (free_rwops) SDL_RWclose(rwops);
-
-    if (data == NULL) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
-                                        "Failed to load from rwops: %s", stbi_failure_reason());
-        return NULL;
-    }
-
-    // Copy into a surface
-    result = gpu_copy_raw_surface_data(data, width, height, channels);
-
-    stbi_image_free(data);
-
-    return result;
-}
-
-SDL_Surface *METAENGINE_Render_LoadSurface(const char *filename) {
-    return METAENGINE_Render_LoadSurface_RW(SDL_RWFromFile(filename, "r"), 1);
 }
 
 // From http://stackoverflow.com/questions/5309471/getting-file-extension-in-c
@@ -1356,107 +1246,7 @@ static const char *get_filename_ext(const char *filename) {
     return dot + 1;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_SaveSurface(SDL_Surface *surface, const char *filename,
-                                                     METAENGINE_Render_FileFormatEnum format) {
-    METAENGINE_Render_bool result;
-    unsigned char *data;
-
-    if (surface == NULL || filename == NULL || surface->w < 1 || surface->h < 1) {
-        return METAENGINE_Render_FALSE;
-    }
-
-    data = (unsigned char *) surface->pixels;
-
-    if (format == METAENGINE_Render_FILE_AUTO) {
-        const char *extension = get_filename_ext(filename);
-        if (gpu_strcasecmp(extension, "png") == 0) format = METAENGINE_Render_FILE_PNG;
-        else if (gpu_strcasecmp(extension, "bmp") == 0)
-            format = METAENGINE_Render_FILE_BMP;
-        else if (gpu_strcasecmp(extension, "tga") == 0)
-            format = METAENGINE_Render_FILE_TGA;
-        else {
-            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
-                                            "Could not detect output file format from file name");
-            return METAENGINE_Render_FALSE;
-        }
-    }
-
-    switch (format) {
-        case METAENGINE_Render_FILE_PNG:
-            result = (stbi_write_png(filename, surface->w, surface->h,
-                                     surface->format->BytesPerPixel,
-                                     (const unsigned char *const) data, 0) > 0);
-            break;
-        case METAENGINE_Render_FILE_BMP:
-            result = (stbi_write_bmp(filename, surface->w, surface->h,
-                                     surface->format->BytesPerPixel, (void *) data) > 0);
-            break;
-        case METAENGINE_Render_FILE_TGA:
-            result = (stbi_write_tga(filename, surface->w, surface->h,
-                                     surface->format->BytesPerPixel, (void *) data) > 0);
-            break;
-        default:
-            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
-                                            "Unsupported output file format");
-            result = METAENGINE_Render_FALSE;
-            break;
-    }
-
-    return result;
-}
-
-static void write_func(void *context, void *data, int size) {
-    SDL_RWwrite((SDL_RWops *) context, data, 1, size);
-}
-
-METAENGINE_Render_bool METAENGINE_Render_SaveSurface_RW(SDL_Surface *surface, SDL_RWops *rwops,
-                                                        METAENGINE_Render_bool free_rwops,
-                                                        METAENGINE_Render_FileFormatEnum format) {
-    METAENGINE_Render_bool result;
-    unsigned char *data;
-
-    if (surface == NULL || rwops == NULL || surface->w < 1 || surface->h < 1) {
-        return METAENGINE_Render_FALSE;
-    }
-
-    data = (unsigned char *) surface->pixels;
-
-    if (format == METAENGINE_Render_FILE_AUTO) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
-                                        "Invalid output file format (METAENGINE_Render_FILE_AUTO)");
-        return METAENGINE_Render_FALSE;
-    }
-
-    // FIXME: The limitations here are not communicated clearly.  BMP and TGA won't support arbitrary row length/pitch.
-    switch (format) {
-        case METAENGINE_Render_FILE_PNG:
-            result =
-                    (stbi_write_png_to_func(write_func, rwops, surface->w, surface->h,
-                                            surface->format->BytesPerPixel,
-                                            (const unsigned char *const) data, surface->pitch) > 0);
-            break;
-        case METAENGINE_Render_FILE_BMP:
-            result = (stbi_write_bmp_to_func(write_func, rwops, surface->w, surface->h,
-                                             surface->format->BytesPerPixel,
-                                             (const unsigned char *const) data) > 0);
-            break;
-        case METAENGINE_Render_FILE_TGA:
-            result = (stbi_write_tga_to_func(write_func, rwops, surface->w, surface->h,
-                                             surface->format->BytesPerPixel,
-                                             (const unsigned char *const) data) > 0);
-            break;
-        default:
-            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
-                                            "Unsupported output file format");
-            result = METAENGINE_Render_FALSE;
-            break;
-    }
-
-    if (result && free_rwops) SDL_RWclose(rwops);
-    return result;
-}
-
-METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurface(SDL_Surface *surface) {
+METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurface(void *surface) {
     if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
@@ -1480,7 +1270,7 @@ METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromTarget(METAENGINE_Render
     return _gpu_current_renderer->impl->CopyImageFromTarget(_gpu_current_renderer, target);
 }
 
-SDL_Surface *METAENGINE_Render_CopySurfaceFromTarget(METAENGINE_Render_Target *target) {
+void *METAENGINE_Render_CopySurfaceFromTarget(METAENGINE_Render_Target *target) {
     if (_gpu_current_renderer == NULL) return NULL;
     MAKE_CURRENT_IF_NONE(target);
     if (_gpu_current_renderer->current_context_target == NULL) return NULL;
@@ -1488,7 +1278,7 @@ SDL_Surface *METAENGINE_Render_CopySurfaceFromTarget(METAENGINE_Render_Target *t
     return _gpu_current_renderer->impl->CopySurfaceFromTarget(_gpu_current_renderer, target);
 }
 
-SDL_Surface *METAENGINE_Render_CopySurfaceFromImage(METAENGINE_Render_Image *image) {
+void *METAENGINE_Render_CopySurfaceFromImage(METAENGINE_Render_Image *image) {
     if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
@@ -1811,14 +1601,14 @@ METAENGINE_Render_bool METAENGINE_Render_IntersectClipRect(METAENGINE_Render_Tar
     return METAENGINE_Render_IntersectRect(target->clip_rect, B, result);
 }
 
-void METAENGINE_Render_SetColor(METAENGINE_Render_Image *image, SDL_Color color) {
+void METAENGINE_Render_SetColor(METAENGINE_Render_Image *image, METAENGINE_Color color) {
     if (image == NULL) return;
 
     image->color = color;
 }
 
 void METAENGINE_Render_SetRGB(METAENGINE_Render_Image *image, Uint8 r, Uint8 g, Uint8 b) {
-    SDL_Color c;
+    METAENGINE_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1830,7 +1620,7 @@ void METAENGINE_Render_SetRGB(METAENGINE_Render_Image *image, Uint8 r, Uint8 g, 
 }
 
 void METAENGINE_Render_SetRGBA(METAENGINE_Render_Image *image, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    SDL_Color c;
+    METAENGINE_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1842,13 +1632,13 @@ void METAENGINE_Render_SetRGBA(METAENGINE_Render_Image *image, Uint8 r, Uint8 g,
 }
 
 void METAENGINE_Render_UnsetColor(METAENGINE_Render_Image *image) {
-    SDL_Color c = {255, 255, 255, 255};
+    METAENGINE_Color c = {255, 255, 255, 255};
     if (image == NULL) return;
 
     image->color = c;
 }
 
-void METAENGINE_Render_SetTargetColor(METAENGINE_Render_Target *target, SDL_Color color) {
+void METAENGINE_Render_SetTargetColor(METAENGINE_Render_Target *target, METAENGINE_Color color) {
     if (target == NULL) return;
 
     target->use_color = 1;
@@ -1856,7 +1646,7 @@ void METAENGINE_Render_SetTargetColor(METAENGINE_Render_Target *target, SDL_Colo
 }
 
 void METAENGINE_Render_SetTargetRGB(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b) {
-    SDL_Color c;
+    METAENGINE_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1870,7 +1660,7 @@ void METAENGINE_Render_SetTargetRGB(METAENGINE_Render_Target *target, Uint8 r, U
 
 void METAENGINE_Render_SetTargetRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b,
                                      Uint8 a) {
-    SDL_Color c;
+    METAENGINE_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1883,7 +1673,7 @@ void METAENGINE_Render_SetTargetRGBA(METAENGINE_Render_Target *target, Uint8 r, 
 }
 
 void METAENGINE_Render_UnsetTargetColor(METAENGINE_Render_Target *target) {
-    SDL_Color c = {255, 255, 255, 255};
+    METAENGINE_Color c = {255, 255, 255, 255};
     if (target == NULL) return;
 
     target->use_color = METAENGINE_Render_FALSE;
@@ -2156,9 +1946,9 @@ METAENGINE_Render_TextureHandle METAENGINE_Render_GetTextureHandle(METAENGINE_Re
     return image->renderer->impl->GetTextureHandle(image->renderer, image);
 }
 
-SDL_Color METAENGINE_Render_GetPixel(METAENGINE_Render_Target *target, Sint16 x, Sint16 y) {
+METAENGINE_Color METAENGINE_Render_GetPixel(METAENGINE_Render_Target *target, Sint16 x, Sint16 y) {
     if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL) {
-        SDL_Color c = {0, 0, 0, 0};
+        METAENGINE_Color c = {0, 0, 0, 0};
         return c;
     }
 
@@ -2173,7 +1963,7 @@ void METAENGINE_Render_Clear(METAENGINE_Render_Target *target) {
     _gpu_current_renderer->impl->ClearRGBA(_gpu_current_renderer, target, 0, 0, 0, 0);
 }
 
-void METAENGINE_Render_ClearColor(METAENGINE_Render_Target *target, SDL_Color color) {
+void METAENGINE_Render_ClearColor(METAENGINE_Render_Target *target, METAENGINE_Color color) {
     if (!CHECK_RENDERER) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
@@ -2221,38 +2011,6 @@ void METAENGINE_Render_Flip(METAENGINE_Render_Target *target) {
 }
 
 // Shader API
-
-Uint32 METAENGINE_Render_CompileShader_RW(METAENGINE_Render_ShaderEnum shader_type,
-                                          SDL_RWops *shader_source,
-                                          METAENGINE_Render_bool free_rwops) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL) {
-        if (free_rwops) SDL_RWclose(shader_source);
-        return METAENGINE_Render_FALSE;
-    }
-
-    return _gpu_current_renderer->impl->CompileShader_RW(_gpu_current_renderer, shader_type,
-                                                         shader_source, free_rwops);
-}
-
-Uint32 METAENGINE_Render_LoadShader(METAENGINE_Render_ShaderEnum shader_type,
-                                    const char *filename) {
-    SDL_RWops *rwops;
-
-    if (filename == NULL) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_NULL_ARGUMENT,
-                                        "filename");
-        return 0;
-    }
-
-    rwops = SDL_RWFromFile(filename, "r");
-    if (rwops == NULL) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_FILE_NOT_FOUND, "%s",
-                                        filename);
-        return 0;
-    }
-
-    return METAENGINE_Render_CompileShader_RW(shader_type, rwops, 1);
-}
 
 Uint32 METAENGINE_Render_CompileShader(METAENGINE_Render_ShaderEnum shader_type,
                                        const char *shader_source) {
@@ -3286,56 +3044,57 @@ float METAENGINE_Render_GetLineThickness(void) {
     return renderer->impl->GetLineThickness(renderer);
 }
 
-void METAENGINE_Render_Pixel(METAENGINE_Render_Target *target, float x, float y, SDL_Color color) {
+void METAENGINE_Render_Pixel(METAENGINE_Render_Target *target, float x, float y,
+                             METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Pixel(renderer, target, x, y, color);
 }
 
 void METAENGINE_Render_Line(METAENGINE_Render_Target *target, float x1, float y1, float x2,
-                            float y2, SDL_Color color) {
+                            float y2, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Line(renderer, target, x1, y1, x2, y2, color);
 }
 
 void METAENGINE_Render_Arc(METAENGINE_Render_Target *target, float x, float y, float radius,
-                           float start_angle, float end_angle, SDL_Color color) {
+                           float start_angle, float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Arc(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
 void METAENGINE_Render_ArcFilled(METAENGINE_Render_Target *target, float x, float y, float radius,
-                                 float start_angle, float end_angle, SDL_Color color) {
+                                 float start_angle, float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->ArcFilled(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
 void METAENGINE_Render_Circle(METAENGINE_Render_Target *target, float x, float y, float radius,
-                              SDL_Color color) {
+                              METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Circle(renderer, target, x, y, radius, color);
 }
 
 void METAENGINE_Render_CircleFilled(METAENGINE_Render_Target *target, float x, float y,
-                                    float radius, SDL_Color color) {
+                                    float radius, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->CircleFilled(renderer, target, x, y, radius, color);
 }
 
 void METAENGINE_Render_Ellipse(METAENGINE_Render_Target *target, float x, float y, float rx,
-                               float ry, float degrees, SDL_Color color) {
+                               float ry, float degrees, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Ellipse(renderer, target, x, y, rx, ry, degrees, color);
 }
 
 void METAENGINE_Render_EllipseFilled(METAENGINE_Render_Target *target, float x, float y, float rx,
-                                     float ry, float degrees, SDL_Color color) {
+                                     float ry, float degrees, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->EllipseFilled(renderer, target, x, y, rx, ry, degrees, color);
 }
 
 void METAENGINE_Render_Sector(METAENGINE_Render_Target *target, float x, float y,
                               float inner_radius, float outer_radius, float start_angle,
-                              float end_angle, SDL_Color color) {
+                              float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Sector(renderer, target, x, y, inner_radius, outer_radius, start_angle,
                            end_angle, color);
@@ -3343,92 +3102,94 @@ void METAENGINE_Render_Sector(METAENGINE_Render_Target *target, float x, float y
 
 void METAENGINE_Render_SectorFilled(METAENGINE_Render_Target *target, float x, float y,
                                     float inner_radius, float outer_radius, float start_angle,
-                                    float end_angle, SDL_Color color) {
+                                    float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->SectorFilled(renderer, target, x, y, inner_radius, outer_radius, start_angle,
                                  end_angle, color);
 }
 
 void METAENGINE_Render_Tri(METAENGINE_Render_Target *target, float x1, float y1, float x2, float y2,
-                           float x3, float y3, SDL_Color color) {
+                           float x3, float y3, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Tri(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
 void METAENGINE_Render_TriFilled(METAENGINE_Render_Target *target, float x1, float y1, float x2,
-                                 float y2, float x3, float y3, SDL_Color color) {
+                                 float y2, float x3, float y3, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->TriFilled(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
 void METAENGINE_Render_Rectangle(METAENGINE_Render_Target *target, float x1, float y1, float x2,
-                                 float y2, SDL_Color color) {
+                                 float y2, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Rectangle(renderer, target, x1, y1, x2, y2, color);
 }
 
 void METAENGINE_Render_Rectangle2(METAENGINE_Render_Target *target, METAENGINE_Render_Rect rect,
-                                  SDL_Color color) {
+                                  METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Rectangle(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h,
                               color);
 }
 
 void METAENGINE_Render_RectangleFilled(METAENGINE_Render_Target *target, float x1, float y1,
-                                       float x2, float y2, SDL_Color color) {
+                                       float x2, float y2, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleFilled(renderer, target, x1, y1, x2, y2, color);
 }
 
 void METAENGINE_Render_RectangleFilled2(METAENGINE_Render_Target *target,
-                                        METAENGINE_Render_Rect rect, SDL_Color color) {
+                                        METAENGINE_Render_Rect rect, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleFilled(renderer, target, rect.x, rect.y, rect.x + rect.w,
                                     rect.y + rect.h, color);
 }
 
 void METAENGINE_Render_RectangleRound(METAENGINE_Render_Target *target, float x1, float y1,
-                                      float x2, float y2, float radius, SDL_Color color) {
+                                      float x2, float y2, float radius, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRound(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
 void METAENGINE_Render_RectangleRound2(METAENGINE_Render_Target *target,
-                                       METAENGINE_Render_Rect rect, float radius, SDL_Color color) {
+                                       METAENGINE_Render_Rect rect, float radius,
+                                       METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRound(renderer, target, rect.x, rect.y, rect.x + rect.w,
                                    rect.y + rect.h, radius, color);
 }
 
 void METAENGINE_Render_RectangleRoundFilled(METAENGINE_Render_Target *target, float x1, float y1,
-                                            float x2, float y2, float radius, SDL_Color color) {
+                                            float x2, float y2, float radius,
+                                            METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRoundFilled(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
 void METAENGINE_Render_RectangleRoundFilled2(METAENGINE_Render_Target *target,
                                              METAENGINE_Render_Rect rect, float radius,
-                                             SDL_Color color) {
+                                             METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRoundFilled(renderer, target, rect.x, rect.y, rect.x + rect.w,
                                          rect.y + rect.h, radius, color);
 }
 
 void METAENGINE_Render_Polygon(METAENGINE_Render_Target *target, unsigned int num_vertices,
-                               float *vertices, SDL_Color color) {
+                               float *vertices, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Polygon(renderer, target, num_vertices, vertices, color);
 }
 
 void METAENGINE_Render_Polyline(METAENGINE_Render_Target *target, unsigned int num_vertices,
-                                float *vertices, SDL_Color color,
+                                float *vertices, METAENGINE_Color color,
                                 METAENGINE_Render_bool close_loop) {
     CHECK_RENDERER();
     renderer->impl->Polyline(renderer, target, num_vertices, vertices, color, close_loop);
 }
 
 void METAENGINE_Render_PolygonFilled(METAENGINE_Render_Target *target, unsigned int num_vertices,
-                                     float *vertices, SDL_Color color) {
+                                     float *vertices, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->PolygonFilled(renderer, target, num_vertices, vertices, color);
 }

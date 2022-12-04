@@ -146,7 +146,7 @@ void main(void)\n\
 
 typedef struct ContextData_OpenGL_3
 {
-    SDL_Color last_color;
+    METAENGINE_Color last_color;
     METAENGINE_Render_bool last_use_texturing;
     unsigned int last_shape;
     METAENGINE_Render_bool last_use_blending;
@@ -182,15 +182,15 @@ typedef struct ImageData_OpenGL_3
 {
     int refcount;
     METAENGINE_Render_bool owns_handle;
-    Uint32 handle;
-    Uint32 format;
+    UInt32 handle;
+    UInt32 format;
 } ImageData_OpenGL_3;
 
 typedef struct TargetData_OpenGL_3
 {
     int refcount;
-    Uint32 handle;
-    Uint32 format;
+    UInt32 handle;
+    UInt32 format;
 } TargetData_OpenGL_3;
 
 #endif
