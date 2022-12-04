@@ -36,22 +36,10 @@
 #include <string>
 #include <type_traits>
 
-#if _MSC_VER == 1900
-#include "boost/pfr/flat/core.hpp"
+#include "Engine/Internal/BuiltinPFR.hpp"
 #include <tuple>
 #include <typeinfo>
-#define METAENGINE_GUI_STRUCT_TO_TUPLE boost::pfr::flat_structure_tie
-#elif _MSC_VER > 1900
-#include "boost/pfr/precise/core.hpp"
-#include <tuple>
-#include <typeinfo>
-#define METAENGINE_GUI_STRUCT_TO_TUPLE boost::pfr::structure_tie
-#endif
-
-#include "boost/pfr/precise/core.hpp"
-#include <tuple>
-#include <typeinfo>
-#define METAENGINE_GUI_STRUCT_TO_TUPLE boost::pfr::structure_tie
+#define METAENGINE_GUI_STRUCT_TO_TUPLE BuiltinPFR::pfr::structure_tie
 
 namespace ImGui {
     //		IMGUI::AUTO()
@@ -145,10 +133,10 @@ namespace ImGui {
                                     std::is_copy_constructible_v<
                                             std::remove_all_extents_t<AnyType>> &&
                                     !std::is_polymorphic_v<AnyType> &&
-                                    boost::pfr::detail::is_aggregate_initializable_n<
+                                    BuiltinPFR::pfr::detail::is_aggregate_initializable_n<
                                             AnyType,
-                                            boost::pfr::detail::detect_fields_count_dispatch<
-                                                    AnyType>(boost::pfr::detail::size_t_<
+                                            BuiltinPFR::pfr::detail::detect_fields_count_dispatch<
+                                                    AnyType>(BuiltinPFR::pfr::detail::size_t_<
                                                                      sizeof(AnyType) * 8>{},
                                                              1L)>::
                                             value,// If the above is not a constexpr expression, you are yousing an invalid type
