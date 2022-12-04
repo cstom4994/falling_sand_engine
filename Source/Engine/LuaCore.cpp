@@ -86,7 +86,7 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_run_lua_file_script(lua_State *L) {
     auto string = lua_tostring(L, 1);
-    auto LuaCore = global.scripts->LuaMap["LuaCore"];
+    auto LuaCore = global.scripts->LuaRuntime;
     METADOT_ASSERT_E(LuaCore);
     LuaCore->RunScriptFromFile(string);
     return 0;

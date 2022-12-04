@@ -3,8 +3,6 @@
 #ifndef _METADOT_PARTICLE_HPP_
 #define _METADOT_PARTICLE_HPP_
 
-#include "Engine/SDLWrapper.hpp"
-
 #ifndef INC_Tiles
 #include "Materials.hpp"
 #endif// !INC_Tiles

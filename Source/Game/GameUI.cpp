@@ -424,11 +424,11 @@ namespace GameUI {
     void MainMenuUI::DrawMainMenu(Game *game) {
 
         if (!setup) { Setup(); }
-        long long now = UTime::millis();
-        if (now - lastRefresh > 30000) {
-            RefreshWorlds(game);
-            lastRefresh = now;
-        }
+        // long long now = UTime::millis();
+        // if (now - lastRefresh > 30000) {
+        //     RefreshWorlds(game);
+        //     lastRefresh = now;
+        // }
 
         ImGui::SetNextWindowSize(ImVec2(400, 350));
         ImGui::SetNextWindowPos(
@@ -519,7 +519,7 @@ namespace GameUI {
 
     void MainMenuUI::DrawSingleplayer(Game *game) {
         long long now = UTime::millis();
-        if (now - lastRefresh > 3000) {
+        if (now - lastRefresh > 30000) {
             RefreshWorlds(game);
             lastRefresh = now;
         }

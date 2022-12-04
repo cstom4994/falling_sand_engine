@@ -4,9 +4,9 @@
 #define _METADOT_PLATFORM_HPP_
 
 #include "Core/Macros.hpp"
-#include "SDLWrapper.hpp"
 
 #include "PlatformDetail.h"
+#include "SDLWrapper.hpp"
 
 #if __cplusplus <= 201402L
 #error "TODO: fix for this compiler! (at least C++14 is required)"

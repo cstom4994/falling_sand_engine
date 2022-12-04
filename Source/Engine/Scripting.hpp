@@ -11,7 +11,7 @@ class LuaCore;
 namespace JsWrapper {
     class Runtime;
     class Context;
-}
+}// namespace JsWrapper
 namespace MuDSL {
     class MuDSLInterpreter;
 }
@@ -19,7 +19,7 @@ namespace MuDSL {
 struct Scripts
 {
     MuDSL::MuDSLInterpreter *MuDSL = nullptr;
-    std::map<std::string, LuaCore *> LuaMap;
+    LuaCore *LuaRuntime;
 
     JsWrapper::Runtime *JsRuntime = nullptr;
     JsWrapper::Context *JsContext = nullptr;

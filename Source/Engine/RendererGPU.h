@@ -8,6 +8,8 @@
 
 #include "Core/Core.hpp"
 
+#include "Libs/glad/glad.h"
+
 typedef struct METAENGINE_Color
 {
     UInt8 r;

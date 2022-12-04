@@ -16,15 +16,14 @@
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
 #include "Engine/Allocator.h"
-#include "Engine/SDLWrapper.hpp"
 #include "Libs/nameof.hpp"
 
-#define METADOT_GC_ALLOC(size) SDL_malloc(size)
-#define METADOT_GC_ALLOC_ALIGNED(size, alignment) SDL_malloc(size)
-#define METADOT_GC_DEALLOC(ptr) SDL_free(ptr)
-#define METADOT_GC_DEALLOC_ALIGNED(ptr) SDL_free(ptr)
-#define METADOT_GC_REALLOC(ptr, size) SDL_realloc(ptr, size)
-#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) SDL_realloc(ptr, size, alignment)
+#define METADOT_GC_ALLOC(size) malloc(size)
+#define METADOT_GC_ALLOC_ALIGNED(size, alignment) malloc(size)
+#define METADOT_GC_DEALLOC(ptr) free(ptr)
+#define METADOT_GC_DEALLOC_ALIGNED(ptr) free(ptr)
+#define METADOT_GC_REALLOC(ptr, size) realloc(ptr, size)
+#define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) realloc(ptr, size, alignment)
 
 #if defined(METADOT_DEBUG)
 #define ADDTODEBUGMAP(_c) GC::MemoryDebugMap.insert(std::make_pair(NAMEOF_TYPE(_c), sizeof(_c)))

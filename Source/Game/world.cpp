@@ -3646,7 +3646,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     WorldMeta meta = WorldMeta();
 
-    auto L = global.scripts->LuaMap["LuaCore"];
+    auto L = global.scripts->LuaRuntime;
 
     char *metaFile = new char[255];
     snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
@@ -3663,8 +3663,8 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
         meta.lastOpenedVersion = a["lastOpenedVersion"].get<std::string>();
         meta.lastOpenedTime = a["lastOpenedTime"].get<int64_t>();
 
-        METADOT_INFO("Load World\n{0} {1} {2}", meta.worldName, meta.lastOpenedVersion,
-                     meta.lastOpenedTime);
+        // METADOT_INFO("Load World\n{0} {1} {2}", meta.worldName, meta.lastOpenedVersion,
+        //              meta.lastOpenedTime);
     } else {
         METADOT_BUG("FP WAS NULL");
     }

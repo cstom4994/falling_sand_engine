@@ -167,16 +167,16 @@ C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
 }
 
 void I18N::Init() {
-    auto L = global.scripts->LuaMap["LuaCore"];
+    auto L = global.scripts->LuaRuntime;
     METADOT_ASSERT(L, "Can't load I18N when luacore is invaild");
 
     Load("zh");
 }
 
 void I18N::Load(std::string lang) {
-    (*global.scripts->LuaMap["LuaCore"]->GetWrapper())["setlocale"](lang);
+    (*global.scripts->LuaRuntime->GetWrapper())["setlocale"](lang);
 }
 
 std::string I18N::Get(std::string text) {
-    return (*global.scripts->LuaMap["LuaCore"]->GetWrapper())["translate"](text);
+    return (*global.scripts->LuaRuntime->GetWrapper())["translate"](text);
 }

@@ -136,10 +136,8 @@ void Scripts::Init() {
     MuDSL->evaluate(init_src);
     // auto end = MuDSL->callFunction("init");
 
-    LuaCore *L = nullptr;
-    METADOT_NEW(C, L, LuaCore);
-    LuaMap.insert(std::make_pair("LuaCore", L));
-    L->Attach();
+    METADOT_NEW(C, LuaRuntime, LuaCore);
+    LuaRuntime->Attach();
 
     METADOT_NEW(C, JsRuntime, JsWrapper::Runtime);
     METADOT_NEW(C, JsContext, JsWrapper::Context, *this->JsRuntime);
@@ -154,17 +152,15 @@ void Scripts::End() {
     METADOT_DELETE_EX(C, JsContext, Context, JsWrapper::Context);
     METADOT_DELETE_EX(C, JsRuntime, Runtime, JsWrapper::Runtime);
 
-    auto L = LuaMap["LuaCore"];
-    L->Detach();
-    LuaMap.erase("LuaCore");
-    METADOT_DELETE(C, L, LuaCore);
+    LuaRuntime->Detach();
+    METADOT_DELETE(C, LuaRuntime, LuaCore);
 
     auto end = MuDSL->callFunction("end");
     METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
 }
 
 void Scripts::Update() {
-    if (auto LuaCore = LuaMap["LuaCore"]) LuaCore->Update();
+    if (LuaRuntime) LuaRuntime->Update();
 }
 
 void Scripts::LoadMuFuncs() { METADOT_ASSERT_E(MuDSL); }

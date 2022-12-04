@@ -597,11 +597,12 @@ public:
 //}
 //#endif
 
-#include "Engine/SDLWrapper.hpp"
-
 #if defined(__cplusplus)
 
 #if defined(_WIN32)
+
+#include "Engine/SDLWrapper.hpp"
+
 template<>
 inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
     SDL_SysWMinfo info{};

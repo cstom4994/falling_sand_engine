@@ -24,7 +24,6 @@
 #include "Controls.hpp"
 #include "Core/Const.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/SDLWrapper.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"

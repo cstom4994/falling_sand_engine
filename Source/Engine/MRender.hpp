@@ -7,7 +7,6 @@
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/RendererGPU.h"
-#include "Engine/SDLWrapper.hpp"
 
 #include <functional>
 #include <unordered_map>
