@@ -1,6 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Player.hpp"
+#include "Core/Global.hpp"
+#include "Game/Game.hpp"
+#include "Game/GameResources.hpp"
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 

@@ -27,6 +27,7 @@
 #include "Game/Settings.hpp"
 #include "Game/Utils.hpp"
 #include "Game/console.hpp"
+#include "ImGui/imgui.h"
 #include "MRender.hpp"
 #include "MaterialTestGenerator.cpp"
 
@@ -3253,7 +3254,13 @@ void Game::renderEarly() {
         }
         METAENGINE_Render_ActivateShaderProgram(0, NULL);
         METAENGINE_Render_BlitRect(TexturePack_.loadingTexture, NULL, RenderTarget_.target, NULL);
-        Drawing::drawText("loading", "Loading...", global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32);
+        Drawing::drawTextEx("loading", global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32,
+                            [&] {
+                                const char *text = "Loading...";
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(176, 176, 176, 255));
+                                ImGui::Text("%s", text);
+                                ImGui::PopStyleColor();
+                            });
     } else {
         // render entities with LERP
 
@@ -4029,7 +4036,8 @@ void Game::renderOverlays() {
             }
         }
 
-        const char* buffAsStdStr1 = R"(
+        const char *buffAsStdStr1 = R"(
+{} {}
 XY: {:.2f} / {:.2f}
 V: {:.2f} / {:.2f}
 Particles: {}
@@ -4043,11 +4051,12 @@ GameIsolate_.world->readyToMerge ({})
 
         Drawing::drawText(
                 "info",
-                fmt::format(buffAsStdStr1, GameData_.plPosX, GameData_.plPosY,
+                fmt::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
+                            GameData_.plPosY,
                             GameIsolate_.world->player ? GameIsolate_.world->player->vx : 0.0f,
                             GameIsolate_.world->player ? GameIsolate_.world->player->vy : 0.0f,
-                            (int)GameIsolate_.world->particles.size(),
-                            (int)GameIsolate_.world->entities.size(), rbCt,
+                            (int) GameIsolate_.world->particles.size(),
+                            (int) GameIsolate_.world->entities.size(), rbCt,
                             (int) GameIsolate_.world->rigidBodies.size(),
                             (int) GameIsolate_.world->worldRigidBodies.size(), rbTriACt, rbTriCt,
                             rbTriWCt, chCt, (int) GameIsolate_.world->readyToReadyToMerge.size(),

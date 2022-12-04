@@ -63,8 +63,6 @@ public:
 
 class Controls {
 public:
-    static const int NUM_CONTROLS = 65535;
-
     static bool lmouse;
     static bool mmouse;
     static bool rmouse;

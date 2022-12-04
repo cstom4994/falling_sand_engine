@@ -292,25 +292,15 @@ namespace ConsoleImpl {
     }
 
     ARG_PARSE_GENERAL_SPEC(short, "signed short", std::stoi)
-
     ARG_PARSE_GENERAL_SPEC(unsigned short, "unsigned short", std::stoul)
-
     ARG_PARSE_GENERAL_SPEC(int, "signed int", std::stoi)
-
     ARG_PARSE_GENERAL_SPEC(unsigned int, "unsigned int", std::stoul)
-
     ARG_PARSE_GENERAL_SPEC(long, "long", std::stol)
-
     ARG_PARSE_GENERAL_SPEC(unsigned long, "unsigned long", std::stoul)
-
     ARG_PARSE_GENERAL_SPEC(long long, "long long", std::stoll)
-
     ARG_PARSE_GENERAL_SPEC(unsigned long long, "unsigned long long", std::stoull)
-
     ARG_PARSE_GENERAL_SPEC(float, "float", std::stof)
-
     ARG_PARSE_GENERAL_SPEC(double, "double", std::stod)
-
     ARG_PARSE_GENERAL_SPEC(long double, "long double", std::stold)
 
     template<typename T>

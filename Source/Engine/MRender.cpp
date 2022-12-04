@@ -9,7 +9,12 @@
 #include "ImGui/imgui.h"
 #include <string>
 
-void Drawing::drawText(std::string name, std::string text, uint8_t x, uint8_t y) {
+void Drawing::drawText(std::string name, std::string text, uint8_t x, uint8_t y, ImVec4 col) {
+    auto func = [&] { ImGui::TextColored(col, "%s", text.c_str()); };
+    drawTextEx(name, x, y, func);
+}
+
+void Drawing::drawTextEx(std::string name, uint8_t x, uint8_t y, std::function<void()> func) {
     ImGui::SetNextWindowPos(
             global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(x, y)));
 
@@ -18,7 +23,7 @@ void Drawing::drawText(std::string name, std::string text, uint8_t x, uint8_t y)
                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar |
                              ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize;
     ImGui::Begin(name.c_str(), NULL, flags);
-    ImGui::Text("%s", text.c_str());
+    func();
     ImGui::End();
 }
 

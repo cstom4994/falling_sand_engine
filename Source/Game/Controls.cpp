@@ -5,7 +5,6 @@
 #include "Controls.hpp"
 
 std::vector<KeyControl *> Controls::keyControls = {};
-//KeyControl** Controls::keyControls = new KeyControl*[NUM_CONTROLS];
 bool Controls::initted = false;
 
 Control *Controls::STATS_DISPLAY = nullptr;
@@ -103,14 +102,10 @@ void Controls::initKey() {
 KeyControl *Controls::add(KeyControl *c) {
 
     if (!initted) {
-        /*for (int i = 0; i < NUM_CONTROLS; i++) {
-            keyControls[i] = NULL;
-        }*/
         keyControls = {};
         initted = true;
     }
 
-    //return keyControls[c->key] = c;
     keyControls.push_back(c);
     return c;
 }
