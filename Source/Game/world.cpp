@@ -14,13 +14,12 @@
 #include "world.hpp"
 #endif
 #include "Core/Core.hpp"
-#include "DefaultGenerator.cpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Math.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Utils.hpp"
-#include "MaterialTestGenerator.cpp"
+#include "WorldGenerator.cpp"
 #include "Populators.cpp"
 #include "fmt/format.h"
 

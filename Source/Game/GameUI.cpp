@@ -7,8 +7,8 @@
 #include "Game/ImGuiCore.hpp"
 #include "Game/Settings.hpp"
 
-#include "Game/DefaultGenerator.cpp"
-#include "Game/MaterialTestGenerator.cpp"
+#include "Game/WorldGenerator.cpp"
+
 #include <string>
 
 void GameUI::GameUI_Draw(Game *game) {

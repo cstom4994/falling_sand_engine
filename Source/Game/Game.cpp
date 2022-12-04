@@ -10,7 +10,6 @@
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
-#include "DefaultGenerator.cpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/LuaCore.hpp"
 #include "Engine/Memory.hpp"
@@ -29,7 +28,8 @@
 #include "Game/console.hpp"
 #include "ImGui/imgui.h"
 #include "MRender.hpp"
-#include "MaterialTestGenerator.cpp"
+
+#include "WorldGenerator.cpp"
 
 #include "Libs/glad/glad.h"
 
@@ -475,20 +475,20 @@ void Game::createTexture() {
     TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
     TexturePack_.pixelsObjects = std::vector<UInt8>(
-            GameIsolate_.world->width * GameIsolate_.world->height * 4, SDL_ALPHA_TRANSPARENT);
+            GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
     TexturePack_.pixelsTemp = std::vector<UInt8>(
-            GameIsolate_.world->width * GameIsolate_.world->height * 4, SDL_ALPHA_TRANSPARENT);
+            GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
     TexturePack_.pixelsParticles = std::vector<UInt8>(
-            GameIsolate_.world->width * GameIsolate_.world->height * 4, SDL_ALPHA_TRANSPARENT);
+            GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
 
     TexturePack_.pixelsLoading =
             std::vector<UInt8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4,
-                               SDL_ALPHA_TRANSPARENT);
+                               METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
     TexturePack_.pixelsFire =
@@ -2294,17 +2294,17 @@ void Game::tick() {
                         dpixels_ar[offset + 0] = 0;                    // b
                         dpixels_ar[offset + 1] = 0;                    // g
                         dpixels_ar[offset + 2] = 0;                    // r
-                        dpixels_ar[offset + 3] = SDL_ALPHA_TRANSPARENT;// a
+                        dpixels_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;// a
 
                         dpixelsFire_ar[offset + 0] = 0;                    // b
                         dpixelsFire_ar[offset + 1] = 0;                    // g
                         dpixelsFire_ar[offset + 2] = 0;                    // r
-                        dpixelsFire_ar[offset + 3] = SDL_ALPHA_TRANSPARENT;// a
+                        dpixelsFire_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;// a
 
                         dpixelsEmission_ar[offset + 0] = 0;                    // b
                         dpixelsEmission_ar[offset + 1] = 0;                    // g
                         dpixelsEmission_ar[offset + 2] = 0;                    // r
-                        dpixelsEmission_ar[offset + 3] = SDL_ALPHA_TRANSPARENT;// a
+                        dpixelsEmission_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;// a
 
                         GameIsolate_.world->flowY[i] = 0;
                         GameIsolate_.world->flowX[i] = 0;
@@ -2342,34 +2342,21 @@ void Game::tick() {
                                                      0.25;
                             if (newFlowY < 0) newFlowY *= 0.5;
 
-                            dpixelsFlow_ar[offset + 2] = 0;// b
-                            dpixelsFlow_ar[offset + 1] =
-                                    std::min(
-                                            std::max(newFlowY *
-                                                                     (3.0 / GameIsolate_.world
-                                                                                      ->tiles[i]
-                                                                                      .mat
-                                                                                      ->iterations +
-                                                                      0.5) /
-                                                                     4.0 +
-                                                             0.5,
-                                                     0.0),
-                                            1.0) *
-                                    255;// g
-                            dpixelsFlow_ar[offset + 0] =
-                                    std::min(
-                                            std::max(newFlowX *
-                                                                     (3.0 / GameIsolate_.world
-                                                                                      ->tiles[i]
-                                                                                      .mat
-                                                                                      ->iterations +
-                                                                      0.5) /
-                                                                     4.0 +
-                                                             0.5,
-                                                     0.0),
-                                            1.0) *
-                                    255;                      // r
-                            dpixelsFlow_ar[offset + 3] = 0xff;// a
+                            double a;
+                            // r g b a
+                            dpixelsFlow_ar[offset + 2] = 0;
+                            a = newFlowY *
+                                        (3.0 / GameIsolate_.world->tiles[i].mat->iterations + 0.5) /
+                                        4.0 +
+                                0.5;
+                            dpixelsFlow_ar[offset + 1] = std::min(std::max(a, 0.0), 1.0) * 255;
+                            a = newFlowX *
+                                        (3.0 / GameIsolate_.world->tiles[i].mat->iterations + 0.5) /
+                                        4.0 +
+                                0.5;
+                            dpixelsFlow_ar[offset + 0] = std::min(std::max(a, 0.0), 1.0) * 255;
+                            dpixelsFlow_ar[offset + 3] = 0xff;
+
                             hadFlow = true;
                             GameIsolate_.world->prevFlowX[i] = newFlowX;
                             GameIsolate_.world->prevFlowY[i] = newFlowY;
@@ -2407,7 +2394,7 @@ void Game::tick() {
                             dpixelsLayer2_ar[offset + 0] = 0;                    // b
                             dpixelsLayer2_ar[offset + 1] = 0;                    // g
                             dpixelsLayer2_ar[offset + 2] = 0;                    // r
-                            dpixelsLayer2_ar[offset + 3] = SDL_ALPHA_TRANSPARENT;// a
+                            dpixelsLayer2_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;// a
                             continue;
                         }
                     }
@@ -2555,7 +2542,7 @@ void Game::tickChunkLoading() {
 
             if (GameIsolate_.world->dirty[i]) {
                 if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
-                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, METAENGINE_ALPHA_TRANSPARENT);
                 } else {
                     UInt32 color = GameIsolate_.world->tiles[i].color;
                     UInt32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
@@ -2575,7 +2562,7 @@ void Game::tickChunkLoading() {
                                       (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
                     } else {
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, 0, 0, 0,
-                                      SDL_ALPHA_TRANSPARENT);
+                                      METAENGINE_ALPHA_TRANSPARENT);
                     }
                     continue;
                 }
@@ -2717,7 +2704,7 @@ void Game::tickChunkLoading() {
 
 #define CLEARPIXEL(pixels, ofs)                                                                    \
     pixels[ofs + 0] = pixels[ofs + 1] = pixels[ofs + 2] = 0xff;                                    \
-    pixels[ofs + 3] = SDL_ALPHA_TRANSPARENT
+    pixels[ofs + 3] = METAENGINE_ALPHA_TRANSPARENT
 
 #define CLEARPIXEL_C(offset)                                                                       \
     CLEARPIXEL(TexturePack_.pixels_ar, offset);                                                    \

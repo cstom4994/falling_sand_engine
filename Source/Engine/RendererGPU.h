@@ -18,6 +18,8 @@ typedef struct METAENGINE_Color
     UInt8 a;
 } METAENGINE_Color;
 
+#define METAENGINE_ALPHA_TRANSPARENT 0
+
 #include <cstdarg>
 #include <cstdio>
 

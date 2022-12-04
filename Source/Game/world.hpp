@@ -11,7 +11,7 @@
 
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Networking.hpp"
-#include "Particle.hpp"
+#include "GameDataStruct.hpp"
 #include <deque>
 #include <vector>
 #ifndef INC_RigidBody

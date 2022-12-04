@@ -10,7 +10,7 @@
 #include "MaterialInstance.hpp"
 #endif
 
-#include "Particle.hpp"
+#include "GameDataStruct.hpp"
 
 class ItemFlags {
 public:

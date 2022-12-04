@@ -9,13 +9,7 @@
 
 #include "Engine/LuaCore.hpp"
 #include "Engine/Scripting.hpp"
-
-class Biome {
-public:
-    int id;
-    std::string name;
-    explicit Biome(std::string name, int id) : name(std::move(name)), id(std::move(id)){};
-};
+#include "GameDataStruct.hpp"
 
 struct GameScriptingWrap
 {

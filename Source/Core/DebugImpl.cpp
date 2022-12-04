@@ -24,7 +24,7 @@ int MetaDot_buildnum(void) {
     b = d + (int) ((y - 1) * 365.25f);
 
     if (((y % 4) == 0) && m > 1) { b += 1; }
-    b -= 7340;
+    b -= 7950;
 
     return b;
 }

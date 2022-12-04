@@ -467,7 +467,7 @@ public:
                                        Chunk **area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk *ch, World *world) {
         if (ch->y < 0 || ch->y > 3) return {};
-        int x = rand() % (CHUNK_W / 2) + (CHUNK_W / 4);
+        int x = (rand() % (CHUNK_W / 2) + (CHUNK_W / 4)) * 2;
         if (area[1 + 2 * 3]->tiles[x + 0 * CHUNK_W].mat->id == Materials::SOFT_DIRT.id) return {};
 
         for (int y = 0; y < CHUNK_H; y++) {
