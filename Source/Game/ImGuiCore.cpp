@@ -316,7 +316,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
 #endif
 
-    std::ifstream t(METADOT_RESLOC("data/lua/startup.lua"));
+    std::ifstream t(METADOT_RESLOC("data/scripts/startup.lua"));
     if (t.good()) {
         std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
         editor.SetText(str);
@@ -561,7 +561,7 @@ void ImGuiCore::Render() {
         ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1,
                     editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
                     editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(),
-                    METADOT_RESLOC_STR("data/lua/startup.lua"));
+                    METADOT_RESLOC_STR("data/scripts/startup.lua"));
 
         editor.Render("TextEditor");
         ImGui::End();

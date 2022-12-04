@@ -4,6 +4,7 @@
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Engine/CodeReflection.hpp"
+#include "Engine/EngineFuncWrap.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/LuaWrapper.hpp"
 #include "Engine/Memory.hpp"
@@ -152,6 +153,7 @@ void LuaCore::Attach() {
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
+    luaopen_miniz(m_L);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
@@ -169,19 +171,19 @@ void LuaCore::Attach() {
             LuaWrapper::function([](const std::string &a) { return METADOT_RESLOC(a); });
 
     s_lua.dostring(fmt::format("package.path = "
-                                 "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
-                                 "?/?.lua;' .. package.path",
-                                 METADOT_RESLOC("data/lua"), FUtil::getExecutableFolderPath()),
+                               "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                               "?/?.lua;' .. package.path",
+                               METADOT_RESLOC("data/scripts"), FUtil::getExecutableFolderPath()),
                    s_lua.globalTable());
     // s_lua.dostring(
     //         fmt::format(
     //                 "package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath",
-    //                 METADOT_RESLOC("data/lua"),
+    //                 METADOT_RESLOC("data/scripts"),
     //                 FUtil::getExecutableFolderPath()),
     //         s_lua.globalTable());
 
-    s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/lua/coroutines.lua"));
-    RunScriptFromFile("data/lua/startup.lua");
+    s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/scripts/coroutines.lua"));
+    RunScriptFromFile("data/scripts/startup.lua");
 }
 
 void LuaCore::Detach() {}

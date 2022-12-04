@@ -12,3 +12,6 @@
 
 #define ASE_LOADER_IMPLEMENTATION
 #include "Ase_Loader.h"
+
+#define MINIZ_IMPL
+#include "miniminiz.h"

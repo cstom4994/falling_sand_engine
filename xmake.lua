@@ -19,8 +19,8 @@ else
 end
 
 option("unity")
-    set_default(false)
-    set_description("Toggle to enable unity build")
+set_default(false)
+set_description("Toggle to enable unity build")
 option_end()
 
 -- rule("metadot.uidsl")
@@ -163,8 +163,7 @@ do
     add_files("Source/Libs/*.cpp")
     add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
               "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
-              "Source/Libs/glad/**.c", "Source/Libs/miniz/**.c",
-              {unity_group = "invade"})
+              "Source/Libs/glad/**.c", {unity_group = "invade"})
 
     add_files("Source/Libs/quickjs/**.c")
     add_files("Source/Libs/lz4/**.c")

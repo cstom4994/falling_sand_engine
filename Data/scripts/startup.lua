@@ -9,8 +9,17 @@ assert(inspect({1, 2, 3, 4}) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")
 assert(inspect("Hello") == '"Hello"')
 
-runf("data/lua/vec.lua")
+runf("data/scripts/vec.lua")
 METADOT_INFO(i18n("loaded_vec"))
+
+content = i18n("welcome")
+
+-- test miniz
+-- print("test miniz")
+-- local data3 = miniz.compress(content)
+-- print(#data3)
+-- local out3 = miniz.decompress(data3)
+-- assert(out3 == content)
 
 function starts_with(str, start) return str:sub(1, #start) == start end
 
