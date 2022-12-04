@@ -3,9 +3,18 @@
 #include "GameDataStruct.hpp"
 #include "Game/Chunk.hpp"
 #include "Game/GameResources.hpp"
+#include "Engine/ReflectionFlat.hpp"
 #include "Game/InEngine.h"
 #include "Structures.hpp"
 #include "world.hpp"
+
+GameData GameData_;
+
+void ReleaseGameData() {
+    for (auto b : GameData_.biome_container) {
+        if(static_cast<bool>(b)) delete b;
+    }
+}
 
 bool SettingsBase::draw_frame_graph = true;
 bool SettingsBase::draw_background = true;

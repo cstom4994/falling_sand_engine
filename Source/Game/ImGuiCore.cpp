@@ -5,7 +5,6 @@
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/ImGuiAuto.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Networking.hpp"
@@ -17,7 +16,6 @@
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
 #include "GameDataStruct.hpp"
-#include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
 
 #include "Libs/glad/glad.h"

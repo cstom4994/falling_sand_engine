@@ -13,7 +13,7 @@
 #include <locale>
 #include <unordered_map>
 
-class UTime {
+class Time {
 public:
     static long long millis();
     static time_t mkgmtime(struct tm *unixdate);

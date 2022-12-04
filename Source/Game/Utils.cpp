@@ -8,14 +8,14 @@
 #include <cstdint>
 #include <ctime>
 
-long long UTime::millis() {
+long long Time::millis() {
     long long ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();
     return ms;
 }
 
-time_t UTime::mkgmtime(struct tm *unixdate) {
+time_t Time::mkgmtime(struct tm *unixdate) {
     assert(unixdate != nullptr);
     time_t fakeUnixtime = mktime(unixdate);
     struct tm *fakeDate = gmtime(&fakeUnixtime);

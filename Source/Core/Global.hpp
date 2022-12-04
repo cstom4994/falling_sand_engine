@@ -52,8 +52,6 @@ struct Global
     } HostData;
 
     Global() {}
-
-    void tick();
 };
 
 extern Global global;

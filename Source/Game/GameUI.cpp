@@ -426,7 +426,7 @@ namespace GameUI {
     void MainMenuUI::DrawMainMenu(Game *game) {
 
         if (!setup) { Setup(); }
-        // long long now = UTime::millis();
+        // long long now = Time::millis();
         // if (now - lastRefresh > 30000) {
         //     RefreshWorlds(game);
         //     lastRefresh = now;
@@ -520,7 +520,7 @@ namespace GameUI {
     }
 
     void MainMenuUI::DrawSingleplayer(Game *game) {
-        long long now = UTime::millis();
+        long long now = Time::millis();
         if (now - lastRefresh > 30000) {
             RefreshWorlds(game);
             lastRefresh = now;
@@ -603,7 +603,7 @@ namespace GameUI {
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
                                     CHUNK_H * 3,
                             game->RenderTarget_.target, &global.audioEngine, Settings::networkMode);
-                    w->metadata.lastOpenedTime = UTime::millis() / 1000;
+                    w->metadata.lastOpenedTime = Time::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
                     w->metadata.save(w->worldName);
 
@@ -632,7 +632,7 @@ namespace GameUI {
             // meta.lastOpenedTime = t_times;
 
             // // convert to local time
-            // time_t time_utc = UTime::mkgmtime(tm_utc);
+            // time_t time_utc = Time::mkgmtime(tm_utc);
             // time_t time_local = mktime(tm_utc);
             // time_local += time_utc - time_local;
             // tm *tm_local = localtime(&time_local);
@@ -1360,7 +1360,7 @@ namespace GameUI {
                     game->RenderTarget_.target, &global.audioEngine, Settings::networkMode,
                     generator);
             game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
-            game->GameIsolate_.world->metadata.lastOpenedTime = UTime::millis() / 1000;
+            game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
             game->GameIsolate_.world->metadata.lastOpenedVersion =
                     std::to_string(MetaDot_buildnum());
             game->GameIsolate_.world->metadata.save(wpStr);

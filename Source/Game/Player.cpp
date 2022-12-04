@@ -72,7 +72,7 @@ void Player::setItemInHand(Item *item, World *world) {
         //270 -> -w/2  h/2
 
         float strength = 10;
-        int time = UTime::millis() - startThrow;
+        int time = Time::millis() - startThrow;
 
         if (time > 1000) time = 1000;
 

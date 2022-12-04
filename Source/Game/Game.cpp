@@ -52,6 +52,8 @@ const char *logo = R"(
 
 extern void fuckme();
 
+Global global;
+
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
 
@@ -189,7 +191,7 @@ int Game::init(int argc, char *argv[]) {
 
     // init the rng
     METADOT_INFO("Seeding RNG...");
-    unsigned int seed = (unsigned int) UTime::millis();
+    unsigned int seed = (unsigned int) Time::millis();
     srand(seed);
 
     // register & set up materials
@@ -511,7 +513,7 @@ void Game::createTexture() {
 }
 
 int Game::run(int argc, char *argv[]) {
-    GameIsolate_.game_timestate.startTime = UTime::millis();
+    GameIsolate_.game_timestate.startTime = Time::millis();
 
     // start loading chunks
     METADOT_INFO("Queueing chunk loading...");
@@ -535,11 +537,11 @@ int Game::run(int argc, char *argv[]) {
 
     SDL_Event windowEvent;
 
-    long long lastFPS = UTime::millis();
+    long long lastFPS = Time::millis();
     int frames = 0;
     GameIsolate_.game_timestate.fps = 0;
 
-    GameIsolate_.game_timestate.lastTime = UTime::millis();
+    GameIsolate_.game_timestate.lastTime = Time::millis();
     GameIsolate_.game_timestate.lastTick = GameIsolate_.game_timestate.lastTime;
     long long lastTickPhysics = GameIsolate_.game_timestate.lastTime;
 
@@ -559,7 +561,7 @@ int Game::run(int argc, char *argv[]) {
     METADOT_NEW_ARRAY(C, objectDelete, UInt8,
                       GameIsolate_.world->width * GameIsolate_.world->height);
 
-    fadeInStart = UTime::millis();
+    fadeInStart = Time::millis();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
 
@@ -570,7 +572,7 @@ int Game::run(int argc, char *argv[]) {
     // game loop
     while (this->running) {
 
-        GameIsolate_.game_timestate.now = UTime::millis();
+        GameIsolate_.game_timestate.now = Time::millis();
         GameIsolate_.game_timestate.deltaTime =
                 GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTime;
 
@@ -936,7 +938,7 @@ int Game::run(int argc, char *argv[]) {
                     } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
                         Controls::rmouse = true;
                         if (GameIsolate_.world->WorldIsolate_.player)
-                            GameIsolate_.world->WorldIsolate_.player->startThrow = UTime::millis();
+                            GameIsolate_.world->WorldIsolate_.player->startThrow = Time::millis();
                     } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
                         Controls::mmouse = true;
                     }
@@ -1411,7 +1413,7 @@ int Game::run(int argc, char *argv[]) {
 
         for (int i = 1; i < FrameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
         frameTime[FrameTimeNum - 1] =
-                (uint16_t) (UTime::millis() - GameIsolate_.game_timestate.now);
+                (uint16_t) (Time::millis() - GameIsolate_.game_timestate.now);
 
         GameIsolate_.game_timestate.lastTime = GameIsolate_.game_timestate.now;
     }
@@ -3528,7 +3530,7 @@ void Game::renderLate() {
             float arX = (float) global.platform.WIDTH / (bg->layers[0].surface[0]->w);
             float arY = (float) global.platform.HEIGHT / (bg->layers[0].surface[0]->h);
 
-            double time = UTime::millis() / 1000.0;
+            double time = Time::millis() / 1000.0;
 
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
 
@@ -3693,7 +3695,7 @@ void Game::renderLate() {
         bool needToRerenderLighting = false;
 
         static long long lastLightingForceRefresh = 0;
-        long long now = UTime::millis();
+        long long now = Time::millis();
         if (now - lastLightingForceRefresh > 100) {
             lastLightingForceRefresh = now;
             needToRerenderLighting = true;
