@@ -519,7 +519,7 @@ public:
                         break;
                     }
                 }
-                world->rigidBodies.push_back(rb);
+                world->WorldIsolate_.rigidBodies.push_back(rb);
                 world->updateRigidBodyHitbox(rb);
 
                 return {};

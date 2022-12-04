@@ -10,8 +10,8 @@
 #include "Core/Macros.hpp"
 
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Networking.hpp"
 #include "GameDataStruct.hpp"
+#include "Networking.hpp"
 #include <deque>
 #include <vector>
 #ifndef INC_RigidBody
@@ -73,6 +73,34 @@ public:
 
     METAENGINE_Render_Target *target = nullptr;
 
+    ~World();
+
+    struct
+    {
+        std::vector<Particle *> particles;
+        std::vector<RigidBody *> rigidBodies;
+        std::vector<std::vector<b2Vec2>> worldMeshes;
+        std::vector<std::vector<b2Vec2>> worldTris;
+        std::vector<RigidBody *> worldRigidBodies;
+
+        std::vector<LoadChunkParams> toLoad;
+        std::vector<std::future<Chunk *>> readyToReadyToMerge;
+        std::deque<Chunk *> readyToMerge;
+
+        std::vector<PlacedStructure> structures;
+        std::vector<b2Vec2> distributedPoints;
+        google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;
+        //std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
+        std::vector<Populator *> populators;
+        std::vector<Entity *> entities;
+        Player *player = nullptr;
+    } WorldIsolate_;
+
+    bool *hasPopulator = nullptr;
+    int highestPopulator = 0;
+    FastNoise noise;
+    CAudioEngine *audioEngine = nullptr;
+
     MaterialInstance *tiles = nullptr;
     float *flowX = nullptr;
     float *flowY = nullptr;
@@ -80,17 +108,8 @@ public:
     float *prevFlowY = nullptr;
     MaterialInstance *layer2 = nullptr;
     UInt32 *background = nullptr;
-    std::vector<Particle *> particles;
     uint16_t width = 0;
     uint16_t height = 0;
-    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
-              CAudioEngine *audioEngine, int netMode, WorldGenerator *generator);
-    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
-              CAudioEngine *audioEngine, int netMode);
-    MaterialInstance getTile(int x, int y);
-    void setTile(int x, int y, MaterialInstance type);
-    MaterialInstance getTileLayer2(int x, int y);
-    void setTileLayer2(int x, int y, MaterialInstance type);
     int tickCt = 0;
     static ThreadPool *tickPool;
     static ThreadPool *tickVisitedPool;
@@ -100,22 +119,9 @@ public:
     METAENGINE_Render_Image *fireTex = nullptr;
     bool *tickVisited1 = nullptr;
     bool *tickVisited2 = nullptr;
-
-    void tick();
-
-    void tickTemperature();
     int32_t *newTemps = nullptr;
-    void frame();
-    void tickParticles();
-    void renderParticles(unsigned char **texture);
-    void tickObjectBounds();
-    void tickObjects();
-    void tickObjectsMesh();
-    void tickChunks();
-    void tickChunkGeneration();
     bool needToTickGeneration = false;
-    void addParticle(Particle *particle);
-    void explosion(int x, int y, int radius);
+
     bool *dirty = nullptr;
     bool *active = nullptr;
     bool *lastActive = nullptr;
@@ -130,25 +136,36 @@ public:
 
     b2Vec2 gravity{};
     b2World *b2world = nullptr;
-    std::vector<RigidBody *> rigidBodies;
     RigidBody *staticBody = nullptr;
 
+    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
+              CAudioEngine *audioEngine, int netMode, WorldGenerator *generator);
+    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
+              CAudioEngine *audioEngine, int netMode);
+    MaterialInstance getTile(int x, int y);
+    void setTile(int x, int y, MaterialInstance type);
+    MaterialInstance getTileLayer2(int x, int y);
+    void setTileLayer2(int x, int y, MaterialInstance type);
+    void tick();
+    void tickTemperature();
+    void frame();
+    void tickParticles();
+    void renderParticles(unsigned char **texture);
+    void tickObjectBounds();
+    void tickObjects();
+    void tickObjectsMesh();
+    void tickChunks();
+    void tickChunkGeneration();
+    void addParticle(Particle *particle);
+    void explosion(int x, int y, int radius);
     RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape,
                              float density, float friction, C_Surface *texture);
     RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle,
                                   std::vector<b2PolygonShape> shape, float density, float friction,
                                   C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
-
-    std::vector<std::vector<b2Vec2>> worldMeshes;
-    std::vector<std::vector<b2Vec2>> worldTris;
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
-    std::vector<RigidBody *> worldRigidBodies;
-
-    std::vector<LoadChunkParams> toLoad;
-    std::vector<std::future<Chunk *>> readyToReadyToMerge;
-    std::deque<Chunk *> readyToMerge;
     void queueLoadChunk(int cx, int cy, bool populate, bool render);
     Chunk *loadChunk(Chunk *, bool populate, bool render);
     void unloadChunk(Chunk *ch);
@@ -158,39 +175,17 @@ public:
     void generateChunk(Chunk *ch);
     Biome *getBiomeAt(int x, int y);
     Biome *getBiomeAt(Chunk *ch, int x, int y);
-
-    FastNoise noise;
-
-    std::vector<PlacedStructure> structures;
     void addStructure(PlacedStructure str);
-
-    std::vector<b2Vec2> distributedPoints;
     b2Vec2 getNearestPoint(float x, float y);
     std::vector<b2Vec2> getPointsWithin(float x, float y, float w, float h);
-
     Chunk *getChunk(int cx, int cy);
-    google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;
-    //std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
-
-    std::vector<Populator *> populators;
-    bool *hasPopulator = nullptr;
-    int highestPopulator = 0;
     void populateChunk(Chunk *ch, int phase, bool render);
-
-    std::vector<Entity *> entities;
-    Player *player = nullptr;
     void tickEntities(METAENGINE_Render_Target *target);
-
-    CAudioEngine *audioEngine = nullptr;
-
     void forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     void forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
-
     RigidBody *physicsCheck(int x, int y);
     void physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *cols, int *minX,
                             int *maxX, int *minY, int *maxY);
-
-    ~World();
 };
 
 #endif

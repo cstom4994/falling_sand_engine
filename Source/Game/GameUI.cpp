@@ -433,8 +433,8 @@ namespace GameUI {
         ImGui::SetNextWindowSize(ImVec2(400, 350));
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu,
-                                                     ImVec2(global.platform.WIDTH / 2 - 400 / 2,
-                                                            global.platform.HEIGHT / 2 - 350 / 2)),
+                                                    ImVec2(global.platform.WIDTH / 2 - 400 / 2,
+                                                           global.platform.HEIGHT / 2 - 350 / 2)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -1078,7 +1078,7 @@ namespace GameUI {
         if (ImGui::CollapsingHeader("获得物品")) {
             ImGui::Indent();
             if (game->GameIsolate_.world == nullptr ||
-                game->GameIsolate_.world->player == nullptr) {
+                game->GameIsolate_.world->WorldIsolate_.player == nullptr) {
                 ImGui::Text("世界中没有玩家");
             } else {
                 int i = 0;
@@ -1098,7 +1098,8 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 2;
-                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
+                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                            i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1119,7 +1120,8 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 2;
-                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
+                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                            i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1139,7 +1141,8 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 6;
-                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
+                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                            i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -1163,7 +1166,8 @@ namespace GameUI {
                     i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
                     METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
                     i3->pivotX = 0;
-                    game->GameIsolate_.world->player->setItemInHand(i3, game->GameIsolate_.world);
+                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                            i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();

@@ -85,7 +85,7 @@ void Player::setItemInHand(Item *item, World *world) {
         r->body->GetFixtureList()[0].SetFilterData(bf);
 
         r->item = heldItem;
-        world->rigidBodies.push_back(r);
+        world->WorldIsolate_.rigidBodies.push_back(r);
         world->updateRigidBodyHitbox(r);
         //SDL_DestroyTexture(heldItem->texture);
     }
