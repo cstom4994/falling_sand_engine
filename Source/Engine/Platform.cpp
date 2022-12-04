@@ -181,6 +181,10 @@ int Platform::InitWindow() {
     return 0;
 }
 
+void Platform::EndWindow() {
+    METAENGINE_Render_Quit();
+}
+
 void Platform::SetDisplayMode(DisplayMode mode) {
     switch (mode) {
         case DisplayMode::WINDOWED:

@@ -10,7 +10,6 @@
 #include "Core/Macros.hpp"
 #include "Engine/AudioEngine.h"
 #include "Engine/LuaCore.hpp"
-#include "Engine/MRender.hpp"
 #include "Engine/RendererGPU.h"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
@@ -87,6 +86,9 @@ private:
 
     uint32 loadingOnColor = 0;
     uint32 loadingOffColor = 0;
+
+    METAENGINE_Render_GLTtext *text1 = nullptr;
+    METAENGINE_Render_GLTtext *text2 = nullptr;
 
 public:
     bool running = true;

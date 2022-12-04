@@ -34,6 +34,7 @@ struct Platform
 
     int ParseRunArgs(int argc, char *argv[]);
     int InitWindow();
+    void EndWindow();
     void SetDisplayMode(DisplayMode mode);
     void HandleWindowSizeChange(int newWidth, int newHeight);
     void SetWindowFlash(WindowFlashAction action, int count, int period);

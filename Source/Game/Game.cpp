@@ -27,7 +27,6 @@
 #include "Game/Utils.hpp"
 #include "Game/console.hpp"
 #include "ImGui/imgui.h"
-#include "MRender.hpp"
 
 #include "WorldGenerator.cpp"
 
@@ -196,6 +195,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Setting up materials...");
 
     Textures::InitTexture();
+    METAENGINE_Render_GLT_Init();
     Materials::Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
@@ -561,6 +561,10 @@ int Game::run(int argc, char *argv[]) {
     fadeInStart = UTime::millis();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
+
+    // Creating text
+    text1 = METAENGINE_Render_GLT_CreateText();
+    text2 = METAENGINE_Render_GLT_CreateText();
 
     // game loop
     while (this->running) {
@@ -1193,14 +1197,22 @@ int Game::run(int argc, char *argv[]) {
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
 
+            METAENGINE_Render_GLT_SetText(text1,
+                                          (win_title_client + " " + METADOT_VERSION_TEXT).c_str());
+
+            METAENGINE_Render_GLT_BeginDraw();
+            METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
+            METAENGINE_Render_GLT_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
+            METAENGINE_Render_GLT_EndDraw();
+
             auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
             METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
                                         1.0f, 1.0f);
 
-            // render ImGui
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
 
+            // render ImGui
             global.ImGuiCore->Render();
 
             if (ImGui::BeginMainMenuBar()) {
@@ -1453,7 +1465,12 @@ exit:
         GameIsolate_.world = nullptr;
     }
 
+    METAENGINE_Render_GLT_DeleteText(text1);
+    METAENGINE_Render_GLT_DeleteText(text2);
+    METAENGINE_Render_GLT_Terminate();
+
     if (Settings::networkMode != NetworkMode::SERVER) {
+        global.platform.EndWindow();
         SDL_DestroyWindow(global.platform.window);
         SDL_Quit();
         global.audioEngine.Shutdown();
@@ -4170,24 +4187,47 @@ ReadyToReadyToMerge ({})
 ReadyToMerge ({})
 )";
 
-        Drawing::drawText(
-                "info",
-                fmt::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
-                            GameData_.plPosY,
-                            GameIsolate_.world->WorldIsolate_.player
-                                    ? GameIsolate_.world->WorldIsolate_.player->vx
-                                    : 0.0f,
-                            GameIsolate_.world->WorldIsolate_.player
-                                    ? GameIsolate_.world->WorldIsolate_.player->vy
-                                    : 0.0f,
-                            (int) GameIsolate_.world->WorldIsolate_.particles.size(),
-                            (int) GameIsolate_.world->WorldIsolate_.entities.size(), rbCt,
-                            (int) GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
-                            (int) GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(),
-                            rbTriACt, rbTriCt, rbTriWCt, chCt,
-                            (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
-                            (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size()),
-                4, 12);
+        // Drawing::drawText(
+        //         "info",
+        //         fmt::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
+        //                     GameData_.plPosY,
+        //                     GameIsolate_.world->WorldIsolate_.player
+        //                             ? GameIsolate_.world->WorldIsolate_.player->vx
+        //                             : 0.0f,
+        //                     GameIsolate_.world->WorldIsolate_.player
+        //                             ? GameIsolate_.world->WorldIsolate_.player->vy
+        //                             : 0.0f,
+        //                     (int) GameIsolate_.world->WorldIsolate_.particles.size(),
+        //                     (int) GameIsolate_.world->WorldIsolate_.entities.size(), rbCt,
+        //                     (int) GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
+        //                     (int) GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(),
+        //                     rbTriACt, rbTriCt, rbTriWCt, chCt,
+        //                     (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
+        //                     (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size()),
+        //         4, 12);
+
+        auto a = fmt::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT,
+                             GameData_.plPosX, GameData_.plPosY,
+                             GameIsolate_.world->WorldIsolate_.player
+                                     ? GameIsolate_.world->WorldIsolate_.player->vx
+                                     : 0.0f,
+                             GameIsolate_.world->WorldIsolate_.player
+                                     ? GameIsolate_.world->WorldIsolate_.player->vy
+                                     : 0.0f,
+                             (int) GameIsolate_.world->WorldIsolate_.particles.size(),
+                             (int) GameIsolate_.world->WorldIsolate_.entities.size(), rbCt,
+                             (int) GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
+                             (int) GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(),
+                             rbTriACt, rbTriCt, rbTriWCt, chCt,
+                             (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
+                             (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size());
+
+        METAENGINE_Render_GLT_SetText(text2, a.c_str());
+
+        METAENGINE_Render_GLT_BeginDraw();
+        METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
+        METAENGINE_Render_GLT_DrawText2D(text2, 4, 12, 1.0f);
+        METAENGINE_Render_GLT_EndDraw();
 
         // for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
         //     char buff[10];

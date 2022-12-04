@@ -1,27 +1,30 @@
+// Copyright(c) 2022, KaoruXun All rights reserved.
+
 #ifndef _METAENGINE_Render_H__
 #define _METAENGINE_Render_H__
+
+#include "Core/Core.hpp"
+#include "Engine/ImGuiImplement.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
+#include "Libs/glad/glad.h"
+#include "external/stb_rect_pack.h"
+#include "external/stb_truetype.h"
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES// So M_PI and company get defined on MSVC when we include math.h
 #endif
 #include <cmath>// Must be included before SDL.h, otherwise both try to define M_PI and we get a warning
 
-#include "Core/Core.hpp"
-
-#include "Libs/glad/glad.h"
-
-typedef struct METAENGINE_Color
-{
-    UInt8 r;
-    UInt8 g;
-    UInt8 b;
-    UInt8 a;
-} METAENGINE_Color;
-
-#define METAENGINE_ALPHA_TRANSPARENT 0
-
 #include <cstdarg>
 #include <cstdio>
+#include <functional>
+#include <unordered_map>
+
+#define ALIGN_LEFT 0
+#define ALIGN_CENTER 1
+#define ALIGN_RIGHT 2
+
+#define METAENGINE_ALPHA_TRANSPARENT 0
 
 // Compile-time version info
 #define METAENGINE_Render_VERSION_MAJOR 0
@@ -100,6 +103,14 @@ typedef struct METAENGINE_Color
 
 #define METAENGINE_Render_FALSE 0
 #define METAENGINE_Render_TRUE 1
+
+typedef struct METAENGINE_Color
+{
+    UInt8 r;
+    UInt8 g;
+    UInt8 b;
+    UInt8 a;
+} METAENGINE_Color;
 
 typedef struct METAENGINE_Render_Renderer METAENGINE_Render_Renderer;
 typedef struct METAENGINE_Render_Target METAENGINE_Render_Target;
@@ -1990,6 +2001,75 @@ void METAENGINE_Render_SetAttributeSource(int num_values, METAENGINE_Render_Attr
 
 // End of ShaderInterface
 /*! @} */
+
+class Drawing {
+public:
+    static void drawText(std::string name, std::string text, uint8_t x, uint8_t y,
+                         ImVec4 col = {1.0f, 1.0f, 1.0f, 1.0f});
+    static void drawTextEx(std::string name, uint8_t x, uint8_t y, std::function<void()> func);
+    static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
+    static void drawPolygon(METAENGINE_Render_Target *renderer, METAENGINE_Color col, b2Vec2 *verts,
+                            int x, int y, float scale, int count, float angle, float cx, float cy);
+    static uint32 darkenColor(uint32 col, float brightness);
+};
+
+#define METAENGINE_Render_GLT_NULL 0
+#define METAENGINE_Render_GLT_NULL_HANDLE 0
+
+#define METAENGINE_Render_GLT_LEFT 0
+#define METAENGINE_Render_GLT_TOP 0
+
+#define METAENGINE_Render_GLT_CENTER 1
+
+#define METAENGINE_Render_GLT_RIGHT 2
+#define METAENGINE_Render_GLT_BOTTOM 2
+
+static GLboolean METAENGINE_Render_GLT_Initialized = GL_FALSE;
+
+typedef struct METAENGINE_Render_GLTtext METAENGINE_Render_GLTtext;
+
+GLboolean METAENGINE_Render_GLT_Init(void);
+void METAENGINE_Render_GLT_Terminate(void);
+
+METAENGINE_Render_GLTtext *METAENGINE_Render_GLT_CreateText(void);
+void METAENGINE_Render_GLT_DeleteText(METAENGINE_Render_GLTtext *text);
+#define METAENGINE_Render_GLT_DestroyText METAENGINE_Render_GLT_DeleteText
+
+bool METAENGINE_Render_GLT_SetText(METAENGINE_Render_GLTtext *text, const char *string);
+const char *METAENGINE_Render_GLT_GetText(METAENGINE_Render_GLTtext *text);
+
+void METAENGINE_Render_GLT_Viewport(GLsizei width, GLsizei height);
+
+void METAENGINE_Render_GLT_BeginDraw();
+void METAENGINE_Render_GLT_EndDraw();
+
+void METAENGINE_Render_GLT_DrawText(METAENGINE_Render_GLTtext *text, const GLfloat mvp[16]);
+
+void METAENGINE_Render_GLT_DrawText2D(METAENGINE_Render_GLTtext *text, GLfloat x, GLfloat y,
+                                      GLfloat scale);
+void METAENGINE_Render_GLT_DrawText2DAligned(METAENGINE_Render_GLTtext *text, GLfloat x, GLfloat y,
+                                             GLfloat scale, int horizontalAlignment,
+                                             int verticalAlignment);
+
+void METAENGINE_Render_GLT_DrawText3D(METAENGINE_Render_GLTtext *text, GLfloat x, GLfloat y,
+                                      GLfloat z, GLfloat scale, GLfloat view[16],
+                                      GLfloat projection[16]);
+
+void METAENGINE_Render_GLT_Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+void METAENGINE_Render_GLT_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a);
+
+GLfloat METAENGINE_Render_GLT_GetLineHeight(GLfloat scale);
+
+GLfloat METAENGINE_Render_GLT_GetTextWidth(const METAENGINE_Render_GLTtext *text, GLfloat scale);
+GLfloat METAENGINE_Render_GLT_GetTextHeight(const METAENGINE_Render_GLTtext *text, GLfloat scale);
+
+GLboolean METAENGINE_Render_GLT_IsCharacterSupported(const char c);
+GLint METAENGINE_Render_GLT_CountSupportedCharacters(const char *str);
+
+GLboolean METAENGINE_Render_GLT_IsCharacterDrawable(const char c);
+GLint METAENGINE_Render_GLT_CountDrawableCharacters(const char *str);
+
+GLint METAENGINE_Render_GLT_CountNewLines(const char *str);
 
 // --------------------------------------------------------------------
 
