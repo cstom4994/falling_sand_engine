@@ -203,7 +203,7 @@ int Game::init(int argc, char *argv[]) {
     Materials::Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
-    METADOT_NEW(C, b2DebugDraw, b2DebugDraw_impl, RenderTarget_.target);
+    METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
 
     //worldInitThread.get();
 
@@ -1457,7 +1457,7 @@ exit:
 
     running = false;
 
-    METADOT_DELETE(C, b2DebugDraw, b2DebugDraw_impl);
+    METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, UInt16);
 
     METADOT_DELETE(C, updateDirtyPool, ThreadPool);
@@ -4031,16 +4031,16 @@ void Game::renderOverlays() {
 
         //
 
-        GameIsolate_.world->b2world->SetDebugDraw(b2DebugDraw);
-        b2DebugDraw->scale = scale;
-        b2DebugDraw->xOfs = GameData_.ofsX + GameData_.camX;
-        b2DebugDraw->yOfs = GameData_.ofsY + GameData_.camY;
-        b2DebugDraw->SetFlags(0);
-        if (Settings::draw_b2d_shape) b2DebugDraw->AppendFlags(b2Draw::e_shapeBit);
-        if (Settings::draw_b2d_joint) b2DebugDraw->AppendFlags(b2Draw::e_jointBit);
-        if (Settings::draw_b2d_aabb) b2DebugDraw->AppendFlags(b2Draw::e_aabbBit);
-        if (Settings::draw_b2d_pair) b2DebugDraw->AppendFlags(b2Draw::e_pairBit);
-        if (Settings::draw_b2d_centerMass) b2DebugDraw->AppendFlags(b2Draw::e_centerOfMassBit);
+        GameIsolate_.world->b2world->SetDebugDraw(debugDraw);
+        debugDraw->scale = scale;
+        debugDraw->xOfs = GameData_.ofsX + GameData_.camX;
+        debugDraw->yOfs = GameData_.ofsY + GameData_.camY;
+        debugDraw->SetFlags(0);
+        if (Settings::draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
+        if (Settings::draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
+        if (Settings::draw_b2d_aabb) debugDraw->AppendFlags(DebugDraw::e_aabbBit);
+        if (Settings::draw_b2d_pair) debugDraw->AppendFlags(DebugDraw::e_pairBit);
+        if (Settings::draw_b2d_centerMass) debugDraw->AppendFlags(DebugDraw::e_centerOfMassBit);
         GameIsolate_.world->b2world->DebugDraw();
     }
 

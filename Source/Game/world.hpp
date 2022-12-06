@@ -7,7 +7,7 @@
 #include "Core/Const.hpp"
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
-#include "Engine/AudioEngine.h"
+#include "Engine/Audio.h"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Noise.h"
 #include "Engine/RendererGPU.h"
@@ -85,7 +85,7 @@ public:
     bool *hasPopulator = nullptr;
     int highestPopulator = 0;
     FastNoise noise;
-    CAudioEngine *audioEngine = nullptr;
+    Audio *audioEngine = nullptr;
 
     MaterialInstance *tiles = nullptr;
     float *flowX = nullptr;
@@ -125,9 +125,9 @@ public:
     RigidBody *staticBody = nullptr;
 
     void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
-              CAudioEngine *audioEngine, int netMode, WorldGenerator *generator);
+              Audio *audioEngine, int netMode, WorldGenerator *generator);
     void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
-              CAudioEngine *audioEngine, int netMode);
+              Audio *audioEngine, int netMode);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);

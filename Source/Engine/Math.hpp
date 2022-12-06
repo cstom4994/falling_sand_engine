@@ -16,6 +16,13 @@
 
 #include "Engine/Internal/BuiltinBox2d.h"
 
+struct Vector3
+{
+    float x;
+    float y;
+    float z;
+};
+
 typedef struct
 {
     uint64_t state;

@@ -80,27 +80,29 @@ const std::string metadata() {
 }
 
 #if 1
-b2DebugDraw_impl::b2DebugDraw_impl(METAENGINE_Render_Target *target) { this->target = target; }
+DebugDraw::DebugDraw(METAENGINE_Render_Target *target) {
+    this->target = target;
+    m_drawFlags = 0;
+}
 
-b2DebugDraw_impl::~b2DebugDraw_impl() {}
+DebugDraw::~DebugDraw() {}
 
-void b2DebugDraw_impl::Create() {}
+void DebugDraw::Create() {}
 
-void b2DebugDraw_impl::Destroy() {}
+void DebugDraw::Destroy() {}
 
-b2Vec2 b2DebugDraw_impl::transform(const b2Vec2 &pt) {
+b2Vec2 DebugDraw::transform(const b2Vec2 &pt) {
     float x = ((pt.x) * scale + xOfs);
     float y = ((pt.y) * scale + yOfs);
     return b2Vec2(x, y);
 }
 
-METAENGINE_Color b2DebugDraw_impl::convertColor(const b2Color &color) {
+METAENGINE_Color DebugDraw::convertColor(const b2Color &color) {
     return {(UInt8) (color.r * 255), (UInt8) (color.g * 255), (UInt8) (color.b * 255),
             (UInt8) (color.a * 255)};
 }
 
-void b2DebugDraw_impl::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount,
-                                   const b2Color &color) {
+void DebugDraw::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
@@ -111,8 +113,7 @@ void b2DebugDraw_impl::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount,
     delete[] verts;
 }
 
-void b2DebugDraw_impl::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount,
-                                        const b2Color &color) {
+void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
@@ -126,24 +127,24 @@ void b2DebugDraw_impl::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCoun
     delete[] verts;
 }
 
-void b2DebugDraw_impl::DrawCircle(const b2Vec2 &center, float radius, const b2Color &color) {
+void DebugDraw::DrawCircle(const b2Vec2 &center, float radius, const b2Color &color) {
     b2Vec2 tr = transform(center);
     METAENGINE_Render_Circle(target, tr.x, tr.y, radius * scale, convertColor(color));
 }
 
-void b2DebugDraw_impl::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
-                                       const b2Color &color) {
+void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
+                                const b2Color &color) {
     b2Vec2 tr = transform(center);
     METAENGINE_Render_CircleFilled(target, tr.x, tr.y, radius * scale, convertColor(color));
 }
 
-void b2DebugDraw_impl::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color) {
+void DebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color) {
     b2Vec2 tr1 = transform(p1);
     b2Vec2 tr2 = transform(p2);
     METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, convertColor(color));
 }
 
-void b2DebugDraw_impl::DrawTransform(const b2Transform &xf) {
+void DebugDraw::DrawTransform(const b2Transform &xf) {
     const float k_axisScale = 8.0f;
     b2Vec2 p1 = xf.p, p2;
     b2Vec2 tr1 = transform(p1), tr2;
@@ -157,16 +158,16 @@ void b2DebugDraw_impl::DrawTransform(const b2Transform &xf) {
     METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
 }
 
-void b2DebugDraw_impl::DrawPoint(const b2Vec2 &p, float size, const b2Color &color) {
+void DebugDraw::DrawPoint(const b2Vec2 &p, float size, const b2Color &color) {
     b2Vec2 tr = transform(p);
     METAENGINE_Render_CircleFilled(target, tr.x, tr.y, 2, convertColor(color));
 }
 
-void b2DebugDraw_impl::DrawString(int x, int y, const char *string, ...) {}
+void DebugDraw::DrawString(int x, int y, const char *string, ...) {}
 
-void b2DebugDraw_impl::DrawString(const b2Vec2 &p, const char *string, ...) {}
+void DebugDraw::DrawString(const b2Vec2 &p, const char *string, ...) {}
 
-void b2DebugDraw_impl::DrawAABB(b2AABB *aabb, const b2Color &color) {
+void DebugDraw::DrawAABB(b2AABB *aabb, const b2Color &color) {
     b2Vec2 tr1 = transform(aabb->lowerBound);
     b2Vec2 tr2 = transform(aabb->upperBound);
     METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, convertColor(color));

@@ -6,14 +6,9 @@
 #include <string>
 #include <vector>
 
-struct Vector3
-{
-    float x;
-    float y;
-    float z;
-};
+#include "Engine/Math.hpp"
 
-class CAudioEngine {
+class Audio {
 public:
     static void Init();
     static void Update();

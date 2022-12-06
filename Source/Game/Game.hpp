@@ -8,7 +8,7 @@
 
 #include "Core/DebugImpl.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/AudioEngine.h"
+#include "Engine/Audio.h"
 #include "Engine/LuaCore.hpp"
 #include "Engine/RendererGPU.h"
 #include "Game/Console.hpp"
@@ -62,7 +62,7 @@ private:
 
     uint16_t *frameTime = new uint16_t[FrameTimeNum];
 
-    b2DebugDraw_impl *b2DebugDraw;
+    DebugDraw *debugDraw;
 
     int ent_prevLoadZoneX = 0;
     int ent_prevLoadZoneY = 0;

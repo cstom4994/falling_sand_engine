@@ -1006,18 +1006,39 @@ namespace METADOT_UNIT {
 #endif
 
 #if 1
-class b2DebugDraw_impl : public b2Draw {
+
+class DebugDraw {
+
+private:
+    uint32 m_drawFlags;
+
 public:
+    enum {
+        e_shapeBit = 0x0001,      ///< draw shapes
+        e_jointBit = 0x0002,      ///< draw joint connections
+        e_aabbBit = 0x0004,       ///< draw axis aligned bounding boxes
+        e_pairBit = 0x0008,       ///< draw broad-phase pairs
+        e_centerOfMassBit = 0x0010///< draw center of mass frame
+    };
+
     METAENGINE_Render_Target *target;
     float xOfs = 0;
     float yOfs = 0;
     float scale = 1;
 
-    b2DebugDraw_impl(METAENGINE_Render_Target *target);
-    ~b2DebugDraw_impl();
+    DebugDraw(METAENGINE_Render_Target *target);
+    ~DebugDraw();
 
     void Create();
     void Destroy();
+
+    void SetFlags(uint32 flags) { m_drawFlags = flags; }
+
+    uint32 GetFlags() const { return m_drawFlags; }
+
+    void AppendFlags(uint32 flags) { m_drawFlags |= flags; }
+
+    void ClearFlags(uint32 flags) { m_drawFlags &= ~flags; }
 
     b2Vec2 transform(const b2Vec2 &pt);
 

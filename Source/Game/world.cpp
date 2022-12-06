@@ -41,12 +41,12 @@ bool is_ready(std::future<R> const &f) {
 }
 
 void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *target,
-                 CAudioEngine *audioEngine, int netMode) {
+                 Audio *audioEngine, int netMode) {
     init(worldPath, w, h, target, audioEngine, netMode, new MaterialTestGenerator());
 }
 
 void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *target,
-                 CAudioEngine *audioEngine, int netMode, WorldGenerator *generator) {
+                 Audio *audioEngine, int netMode, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 

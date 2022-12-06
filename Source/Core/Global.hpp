@@ -4,7 +4,7 @@
 #define _METADOT_GLOBAL_HPP_
 
 #include "Core/Core.hpp"
-#include "Engine/AudioEngine.h"
+#include "Engine/Audio.h"
 #include "Engine/CodeReflection.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Platform.hpp"
@@ -32,7 +32,7 @@ struct Global
     ImGuiCore *ImGuiCore = nullptr;
 
     ShaderWorker shaderworker;
-    CAudioEngine audioEngine;
+    Audio audioEngine;
     GameDir GameDir;
     Platform platform;
     I18N I18N;

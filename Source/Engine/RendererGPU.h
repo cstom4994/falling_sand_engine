@@ -115,26 +115,6 @@ typedef struct METAENGINE_Color
 typedef struct METAENGINE_Render_Renderer METAENGINE_Render_Renderer;
 typedef struct METAENGINE_Render_Target METAENGINE_Render_Target;
 
-/*!
- * \defgroup Initialization Initialization
- * \defgroup Logging Debugging, Logging, and Error Handling
- * \defgroup RendererSetup Renderer Setup
- * \defgroup RendererControls Renderer Controls
- * \defgroup ContextControls Context Controls
- * \defgroup TargetControls Target Controls
- * \defgroup SurfaceControls Surface Controls
- * \defgroup ImageControls Image Controls
- * \defgroup Conversions Surface, Image, and Target Conversions
- * \defgroup Matrix Matrix Controls
- * \defgroup Rendering Rendering
- * \defgroup Shapes Shapes
- * \defgroup ShaderInterface Shader Interface
- */
-
-/*! \ingroup Rendering
- * A struct representing a rectangular area with floating point precision.
- * \see METAENGINE_Render_MakeRect() 
- */
 typedef struct METAENGINE_Render_Rect
 {
     float x, y;
@@ -145,17 +125,7 @@ typedef struct METAENGINE_Render_Rect
 
 typedef UInt32 METAENGINE_Render_RendererEnum;
 static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_UNKNOWN = 0;// invalid value
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_OPENGL_1_BASE = 1;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_OPENGL_1 = 2;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_OPENGL_2 = 3;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_OPENGL_3 = 4;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_OPENGL_4 = 5;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_GLES_1 = 11;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_GLES_2 = 12;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_GLES_3 = 13;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_D3D9 = 21;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_D3D10 = 22;
-static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_D3D11 = 23;
+static const METAENGINE_Render_RendererEnum METAENGINE_Render_RENDERER_OPENGL_3 = 1;
 #define METAENGINE_Render_RENDERER_CUSTOM_0 1000
 
 /*! \ingroup Initialization

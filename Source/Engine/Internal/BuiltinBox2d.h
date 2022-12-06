@@ -150,6 +150,8 @@ struct b2Version
 /// Current version.
 extern b2Version b2_version;
 
+class DebugDraw;
+
 #pragma endregion COMMON
 
 /// @file
@@ -882,62 +884,6 @@ struct b2Color
     float r, g, b, a;
 };
 
-/// Implement and register this class with a b2World to provide debug drawing of physics
-/// entities in your game.
-class b2Draw {
-public:
-    b2Draw();
-
-    virtual ~b2Draw() {}
-
-    enum {
-        e_shapeBit = 0x0001,      ///< draw shapes
-        e_jointBit = 0x0002,      ///< draw joint connections
-        e_aabbBit = 0x0004,       ///< draw axis aligned bounding boxes
-        e_pairBit = 0x0008,       ///< draw broad-phase pairs
-        e_centerOfMassBit = 0x0010///< draw center of mass frame
-    };
-
-    /// Set the drawing flags.
-    void SetFlags(uint32 flags);
-
-    /// Get the drawing flags.
-    uint32 GetFlags() const;
-
-    /// Append flags to the current flags.
-    void AppendFlags(uint32 flags);
-
-    /// Clear flags from the current flags.
-    void ClearFlags(uint32 flags);
-
-    /// Draw a closed polygon provided in CCW order.
-    virtual void DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) = 0;
-
-    /// Draw a solid closed polygon provided in CCW order.
-    virtual void DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount,
-                                  const b2Color &color) = 0;
-
-    /// Draw a circle.
-    virtual void DrawCircle(const b2Vec2 &center, float radius, const b2Color &color) = 0;
-
-    /// Draw a solid circle.
-    virtual void DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
-                                 const b2Color &color) = 0;
-
-    /// Draw a line segment.
-    virtual void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color) = 0;
-
-    /// Draw a transform. Choose your own length scale.
-    /// @param xf a transform.
-    virtual void DrawTransform(const b2Transform &xf) = 0;
-
-    /// Draw a point.
-    virtual void DrawPoint(const b2Vec2 &p, float size, const b2Color &color) = 0;
-
-protected:
-    uint32 m_drawFlags;
-};
-
 #pragma endregion DRAW
 
 #pragma region TIMER
@@ -970,7 +916,6 @@ private:
 #pragma region JOINT
 
 class b2Body;
-class b2Draw;
 class b2Joint;
 struct b2SolverData;
 class b2BlockAllocator;
@@ -1091,7 +1036,7 @@ public:
     virtual void ShiftOrigin(const b2Vec2 &newOrigin) { B2_NOT_USED(newOrigin); }
 
     /// Debug draw this joint
-    virtual void Draw(b2Draw *draw) const;
+    virtual void Draw(DebugDraw *draw) const;
 
 protected:
     friend class b2World;
@@ -2798,7 +2743,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(b2Draw *draw) const override;
+    void Draw(DebugDraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -3385,7 +3330,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(b2Draw *draw) const override;
+    void Draw(DebugDraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -3694,7 +3639,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(b2Draw *draw) const override;
+    void Draw(DebugDraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -3988,7 +3933,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(b2Draw *draw) const override;
+    void Draw(DebugDraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -5018,7 +4963,6 @@ struct b2BodyDef;
 struct b2Color;
 struct b2JointDef;
 class b2Body;
-class b2Draw;
 class b2Fixture;
 class b2Joint;
 
@@ -5050,7 +4994,7 @@ public:
     /// Register a routine for debug drawing. The debug draw functions are called
     /// inside with b2World::DebugDraw method. The debug draw object is owned
     /// by you and must remain in scope.
-    void SetDebugDraw(b2Draw *debugDraw);
+    void SetDebugDraw(DebugDraw *debugDraw);
 
     /// Create a rigid body given a definition. No reference to the definition
     /// is retained.
@@ -5219,7 +5163,7 @@ private:
     bool m_allowSleep;
 
     b2DestructionListener *m_destructionListener;
-    b2Draw *m_debugDraw;
+    class DebugDraw *m_debugDraw;
 
     // This is used to compute the time step ratio to
     // support a variable time step.
@@ -5671,7 +5615,6 @@ public:
 
 #pragma region
 
-class b2Draw;
 struct b2RopeStretch;
 struct b2RopeBend;
 
@@ -5759,7 +5702,7 @@ public:
     void Reset(const b2Vec2 &position);
 
     ///
-    void Draw(b2Draw *draw) const;
+    void Draw(DebugDraw *draw) const;
 
 private:
     void SolveStretch_PBD();

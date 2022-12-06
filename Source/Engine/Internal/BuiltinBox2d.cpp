@@ -27,6 +27,7 @@ SOFTWARE.
 */
 
 #include "BuiltinBox2d.h"
+#include "Core/DebugImpl.hpp"
 
 #include <new>
 #include <stdio.h>
@@ -512,7 +513,7 @@ void b2World::SetContactListener(b2ContactListener *listener) {
     m_contactManager.m_contactListener = listener;
 }
 
-void b2World::SetDebugDraw(b2Draw *debugDraw) { m_debugDraw = debugDraw; }
+void b2World::SetDebugDraw(class DebugDraw *debugDraw) { m_debugDraw = debugDraw; }
 
 b2Body *b2World::CreateBody(const b2BodyDef *def) {
     b2Assert(IsLocked() == false);
@@ -1273,7 +1274,7 @@ void b2World::DebugDraw() {
 
     uint32 flags = m_debugDraw->GetFlags();
 
-    if (flags & b2Draw::e_shapeBit) {
+    if (flags & DebugDraw::e_shapeBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
             const b2Transform &xf = b->GetTransform();
             for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
@@ -1295,11 +1296,11 @@ void b2World::DebugDraw() {
         }
     }
 
-    if (flags & b2Draw::e_jointBit) {
+    if (flags & DebugDraw::e_jointBit) {
         for (b2Joint *j = m_jointList; j; j = j->GetNext()) { j->Draw(m_debugDraw); }
     }
 
-    if (flags & b2Draw::e_pairBit) {
+    if (flags & DebugDraw::e_pairBit) {
         b2Color color(0.3f, 0.9f, 0.9f);
         for (b2Contact *c = m_contactManager.m_contactList; c; c = c->GetNext()) {
             b2Fixture *fixtureA = c->GetFixtureA();
@@ -1313,7 +1314,7 @@ void b2World::DebugDraw() {
         }
     }
 
-    if (flags & b2Draw::e_aabbBit) {
+    if (flags & DebugDraw::e_aabbBit) {
         b2Color color(0.9f, 0.3f, 0.9f);
         b2BroadPhase *bp = &m_contactManager.m_broadPhase;
 
@@ -1336,7 +1337,7 @@ void b2World::DebugDraw() {
         }
     }
 
-    if (flags & b2Draw::e_centerOfMassBit) {
+    if (flags & DebugDraw::e_centerOfMassBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
             b2Transform xf = b->GetTransform();
             xf.p = b->GetWorldCenter();
@@ -1946,7 +1947,7 @@ void b2WheelJoint::Dump() {
 }
 
 ///
-void b2WheelJoint::Draw(b2Draw *draw) const {
+void b2WheelJoint::Draw(DebugDraw *draw) const {
     const b2Transform &xfA = m_bodyA->GetTransform();
     const b2Transform &xfB = m_bodyB->GetTransform();
     b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -2636,7 +2637,7 @@ void b2RevoluteJoint::Dump() {
 }
 
 ///
-void b2RevoluteJoint::Draw(b2Draw *draw) const {
+void b2RevoluteJoint::Draw(DebugDraw *draw) const {
     const b2Transform &xfA = m_bodyA->GetTransform();
     const b2Transform &xfB = m_bodyB->GetTransform();
     b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -3460,7 +3461,7 @@ void b2PrismaticJoint::Dump() {
     b2Dump("  joints[%d] = m_world->CreateJoint(&jd);\n", m_index);
 }
 
-void b2PrismaticJoint::Draw(b2Draw *draw) const {
+void b2PrismaticJoint::Draw(DebugDraw *draw) const {
     const b2Transform &xfA = m_bodyA->GetTransform();
     const b2Transform &xfB = m_bodyB->GetTransform();
     b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -4076,7 +4077,7 @@ b2Joint::b2Joint(const b2JointDef *def) {
 
 bool b2Joint::IsEnabled() const { return m_bodyA->IsEnabled() && m_bodyB->IsEnabled(); }
 
-void b2Joint::Draw(b2Draw *draw) const {
+void b2Joint::Draw(DebugDraw *draw) const {
     const b2Transform &xf1 = m_bodyA->GetTransform();
     const b2Transform &xf2 = m_bodyB->GetTransform();
     b2Vec2 x1 = xf1.p;
@@ -5731,7 +5732,7 @@ void b2DistanceJoint::Dump() {
     b2Dump("  joints[%d] = m_world->CreateJoint(&jd);\n", m_index);
 }
 
-void b2DistanceJoint::Draw(b2Draw *draw) const {
+void b2DistanceJoint::Draw(DebugDraw *draw) const {
     const b2Transform &xfA = m_bodyA->GetTransform();
     const b2Transform &xfB = m_bodyB->GetTransform();
     b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -7628,7 +7629,7 @@ void b2Rope::SolveBend_PBD_Triangle() {
     }
 }
 
-void b2Rope::Draw(b2Draw *draw) const {
+void b2Rope::Draw(DebugDraw *draw) const {
     b2Color c(0.4f, 0.5f, 0.7f);
     b2Color pg(0.1f, 0.8f, 0.1f);
     b2Color pd(0.7f, 0.2f, 0.4f);
@@ -7812,15 +7813,6 @@ void b2BlockAllocator::Clear() {
     memset(m_freeLists, 0, sizeof(m_freeLists));
 }
 
-b2Draw::b2Draw() { m_drawFlags = 0; }
-
-void b2Draw::SetFlags(uint32 flags) { m_drawFlags = flags; }
-
-uint32 b2Draw::GetFlags() const { return m_drawFlags; }
-
-void b2Draw::AppendFlags(uint32 flags) { m_drawFlags |= flags; }
-
-void b2Draw::ClearFlags(uint32 flags) { m_drawFlags &= ~flags; }
 
 const b2Vec2 b2Vec2_zero(0.0f, 0.0f);
 
