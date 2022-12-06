@@ -17,14 +17,15 @@
 #include "Game/GameResources.hpp"
 #include "Game/Materials.hpp"
 #include "Game/Utils.hpp"
+#include "ReflectionFlat.hpp"
 #include "WorldGenerator.cpp"
-#include "fmt/format.h"
 
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <string>
 #include <thread>
+#include <typeinfo>
 
 #define W_PI 3.14159265358979323846
 
@@ -176,7 +177,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
     b2PolygonShape dynamicBox4;
     dynamicBox4.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
     RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3,
-                                  Textures::LoadTexture("data/assets/objects/pumpkin_01.png"));
+                                   Textures::LoadTexture("data/assets/objects/pumpkin_01.png"));
 
     WorldIsolate_.rigidBodies.push_back(rb2);
     updateRigidBodyHitbox(rb2);
@@ -3634,12 +3635,14 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
     LuaWrapper::LuaTable a = LoadWorldMeta();
 
     if (!a.isNilref()) {
-        meta.worldName = a["name"].get<std::string>();
+        meta.worldName = a["worldName"].get<std::string>();
         meta.lastOpenedVersion = a["lastOpenedVersion"].get<std::string>();
-        meta.lastOpenedTime = a["lastOpenedTime"].get<int64_t>();
+        meta.lastOpenedTime = a["lastOpenedTime"].get<long>();
 
-        // METADOT_INFO("Load World\n{0} {1} {2}", meta.worldName, meta.lastOpenedVersion,
-        //              meta.lastOpenedTime);
+        // LoadLuaConfig(meta, &a);
+
+        METADOT_INFO("Load World ({0} {1} {2})", meta.worldName, meta.lastOpenedVersion,
+                     meta.lastOpenedTime);
     } else {
         METADOT_BUG("FP WAS NULL");
     }
@@ -3650,34 +3653,20 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 }
 
 bool WorldMeta::save(std::string worldFileName) {
-
     char *metaFile = new char[255];
     snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
-
     if (this->worldName.empty()) this->worldName = "WorldName";
     if (this->lastOpenedVersion.empty())
         this->lastOpenedVersion = std::to_string(MetaDot_buildnum());
 
-    std::string s = fmt::format(
-            R"(
-LoadWorldMeta = function()
-    mytable = {{}}
-    mytable.name = "{0:s}"
-    mytable.lastOpenedVersion = "{1:s}"
-    mytable.lastOpenedTime = {2}
-    return mytable
-end
-)",
-            this->worldName, this->lastOpenedVersion, this->lastOpenedTime);
+    std::string worldMetaData = "LoadWorldMeta = function()\nmytable = {}\n";
+    SaveLuaConfig(*this, worldMetaData);
+    worldMetaData += "return mytable\nend";
 
-    METADOT_INFO("Save World\n{0}", s.c_str());
-
+    METADOT_INFO("Save World\n{0}", worldMetaData.c_str());
     std::ofstream o(metaFile);
-
-    o << s;
-
+    o << worldMetaData;
     delete[] metaFile;
-
     return true;
 }
 

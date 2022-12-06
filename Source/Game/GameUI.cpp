@@ -4,10 +4,10 @@
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
 #include "Game/Game.hpp"
+#include "Game/GameDataStruct.hpp"
 #include "Game/ImGuiCore.hpp"
 #include "Game/Item.hpp"
 #include "Game/Player.hpp"
-#include "Game/GameDataStruct.hpp"
 
 #include "Game/WorldGenerator.cpp"
 
@@ -386,6 +386,8 @@ namespace GameUI {
 
         for (auto &p: std::filesystem::directory_iterator(global.GameDir.getPath("worlds/"))) {
             std::string worldName = p.path().filename().generic_string();
+
+            if (worldName == ".DS_Store") continue;
 
             WorldMeta meta = WorldMeta::loadWorldMeta(
                     (char *) global.GameDir.getWorldPath(worldName).c_str());

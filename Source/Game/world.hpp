@@ -41,15 +41,16 @@ public:
     }
 };
 
-class WorldMeta {
-public:
+struct WorldMeta
+{
     std::string worldName;
     std::string lastOpenedVersion;
-    int64_t lastOpenedTime = 0;
+    long lastOpenedTime = 0;
 
     static WorldMeta loadWorldMeta(std::string worldFileName);
     bool save(std::string worldFileName);
 };
+METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
 
 class World {
 public:
