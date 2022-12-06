@@ -3,7 +3,7 @@
 #ifndef _METADOT_CONSOLE_HPP_
 #define _METADOT_CONSOLE_HPP_
 
-#include "ConsoleImpl.hpp"
+#include "Engine/DomainLang.hpp"
 #include "Engine/ImGuiImplement.hpp"
 
 #include <array>
@@ -15,10 +15,10 @@ public:
 
     void Draw();
 
-    ConsoleImpl::System &System();
+    CVar::System &System();
 
 protected:
-    ConsoleImpl::System m_ConsoleSystem;
+    CVar::System m_ConsoleSystem;
     size_t m_HistoryIndex;
 
     std::string m_Buffer;

@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "Engine/LuaCore.hpp"
 #include "Engine/Scripting.hpp"
 #include "GameDataStruct.hpp"
 

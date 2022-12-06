@@ -8,7 +8,6 @@
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/LuaCore.hpp"
 #include "Engine/LuaWrapper.hpp"
 #include "Engine/Math.hpp"
 #include "Engine/Memory.hpp"

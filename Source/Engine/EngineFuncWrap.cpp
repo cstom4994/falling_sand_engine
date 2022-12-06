@@ -2,10 +2,10 @@
 
 #include "EngineFuncWrap.hpp"
 #include "Core/Global.hpp"
-#include "Engine/LuaCore.hpp"
 #include "Engine/LuaWrapper.hpp"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
+#include "Engine/Scripting.hpp"
 
 #include <cstdint>
 #include <cstdlib>
@@ -1054,16 +1054,6 @@ int metadot_bind_image(lua_State *L) {
 
 #pragma region BindGPU
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#ifndef CALLBACK
-#if defined(_ARM_)
-#define CALLBACK
-#else
-#define CALLBACK __stdcall
-#endif
-#endif
-
 #define off(o, t) (float) ((o) -TestData::drawOffX), (float) ((t) -TestData::drawOffY)
 
 static int gpu_getColor(lua_State *L, int arg) {
@@ -1361,7 +1351,5 @@ int metadot_bind_gpu(lua_State *L) {
         return 1;
     }
 }
-
-#pragma clang diagnostic pop
 
 #pragma endregion BindGPU

@@ -11,7 +11,6 @@
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
 #include "Engine/ImGuiImplement.hpp"
-#include "Engine/LuaCore.hpp"
 #include "Engine/Math.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/ReflectionFlat.hpp"
@@ -4094,16 +4093,16 @@ void Game::renderOverlays() {
         }
 
         const char *buffAsStdStr1 = R"(
-{} {}
-XY: {:.2f} / {:.2f}
-V: {:.2f} / {:.2f}
-Particles: {}
-Entities: {}
-RigidBodies: {}/{} O, {} W
-Tris: {}/{} O, {} W
-Cached Chunks: {}
-ReadyToReadyToMerge ({})
-ReadyToMerge ({})
+{0} {1}
+XY: {2:.2f} / {3:.2f}
+V: {4:.2f} / {5:.2f}
+Particles: {6}
+Entities: {7}
+RigidBodies: {8}/{9} O, {10} W
+Tris: {11}/{12} O, {13} W
+Cached Chunks: {14}
+ReadyToReadyToMerge ({15})
+ReadyToMerge ({16})
 )";
 
         // Drawing::drawText(

@@ -6,25 +6,25 @@
 //#define b2_maxTranslation 10.0f
 //#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
 
-#include "Core/DebugImpl.hpp"
-#include "Core/Macros.hpp"
-#include "Engine/Audio.h"
-#include "Engine/LuaCore.hpp"
-#include "Engine/RendererGPU.h"
-#include "Game/Console.hpp"
-#include "Game/FileSystem.hpp"
-#include "Game/GameScriptingWrap.hpp"
-#include "Game/ImGuiCore.hpp"
-#include "Engine/Networking.hpp"
-#include "world.hpp"
 #include "Background.hpp"
 #include "Controls.hpp"
 #include "Core/Const.hpp"
+#include "Core/DebugImpl.hpp"
+#include "Core/Macros.hpp"
+#include "Engine/Audio.h"
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Game/GameResources.hpp"
+#include "Engine/Networking.hpp"
+#include "Engine/RendererGPU.h"
+#include "Engine/Scripting.hpp"
+#include "Game/Console.hpp"
+#include "Game/FileSystem.hpp"
 #include "Game/GameDataStruct.hpp"
+#include "Game/GameResources.hpp"
+#include "Game/GameScriptingWrap.hpp"
+#include "Game/ImGuiCore.hpp"
 #include "Game/Utils.hpp"
 #include "Libs/sparsehash/sparse_hash_map.h"
+#include "world.hpp"
 
 #include <algorithm>
 #include <chrono>

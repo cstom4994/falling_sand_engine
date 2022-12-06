@@ -2,9 +2,9 @@
 
 #include "Console.hpp"
 #include "Core/Global.hpp"
+#include "Engine/DomainLang.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/ReflectionFlat.hpp"
-#include "Game/ConsoleImpl.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameResources.hpp"
 #include <cstring>
@@ -86,7 +86,7 @@ void ImGuiConsole::Draw() {
     // ImGui::End();
 }
 
-ConsoleImpl::System &ImGuiConsole::System() { return m_ConsoleSystem; }
+CVar::System &ImGuiConsole::System() { return m_ConsoleSystem; }
 
 void ImGuiConsole::InitIniSettings() {
     ImGuiContext &g = *ImGui::GetCurrentContext();
@@ -129,7 +129,7 @@ void ImGuiConsole::RegisterConsoleCommands() {
 
     m_ConsoleSystem.RegisterCommand(
             "filter", "Set screen filter",
-            [this](const ConsoleImpl::String &filter) {
+            [this](const CVar::String &filter) {
                 std::memset(m_TextFilter.InputBuf, '\0', 256);
 
                 std::copy(filter.m_String.c_str(),
@@ -139,14 +139,12 @@ void ImGuiConsole::RegisterConsoleCommands() {
 
                 m_TextFilter.Build();
             },
-            ConsoleImpl::Arg<ConsoleImpl::String>("filter_str"));
+            CVar::Arg<CVar::String>("filter_str"));
 
     m_ConsoleSystem.RegisterCommand(
             "run", "Run given script",
-            [this](const ConsoleImpl::String &filter) {
-                m_ConsoleSystem.RunScript(filter.m_String);
-            },
-            ConsoleImpl::Arg<ConsoleImpl::String>("script_name"));
+            [this](const CVar::String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
+            CVar::Arg<CVar::String>("script_name"));
 }
 
 void ImGuiConsole::FilterBar() {
@@ -168,7 +166,7 @@ void ImGuiConsole::LogWindow() {
 
             if (!m_TextFilter.PassFilter(item.Get().c_str())) continue;
 
-            if (item.m_Type == ConsoleImpl::COMMAND) {
+            if (item.m_Type == CVar::COMMAND) {
                 if (m_TimeStamps) ImGui::PushTextWrapPos(ImGui::GetColumnWidth() - timestamp_width);
                 if (count++ != 0) ImGui::Dummy(ImVec2(-1, ImGui::GetFontSize()));
             }
@@ -181,7 +179,7 @@ void ImGuiConsole::LogWindow() {
                 ImGui::TextUnformatted(item.Get().data());
             }
 
-            if (item.m_Type == ConsoleImpl::COMMAND && m_TimeStamps) {
+            if (item.m_Type == CVar::COMMAND && m_TimeStamps) {
 
                 ImGui::PopTextWrapPos();
 
@@ -358,7 +356,7 @@ int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
         case ImGuiInputTextFlags_CallbackCompletion: {
 
             size_t startSubtrPos = trim_str.find_last_of(' ');
-            ConsoleImpl::AutoComplete *console_autocomplete;
+            CVar::AutoComplete *console_autocomplete;
 
             if (startSubtrPos == std::string::npos) {
                 startSubtrPos = 0;
@@ -371,12 +369,10 @@ int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
             if (!trim_str.empty()) {
 
                 if (!console->m_CmdSuggestions.empty()) {
-                    console->m_ConsoleSystem.Log(ConsoleImpl::COMMAND)
-                            << "Suggestions: " << ConsoleImpl::endl;
+                    console->m_ConsoleSystem.Log(CVar::COMMAND) << "Suggestions: " << CVar::endl;
 
                     for (const auto &suggestion: console->m_CmdSuggestions)
-                        console->m_ConsoleSystem.Log(ConsoleImpl::LOG)
-                                << suggestion << ConsoleImpl::endl;
+                        console->m_ConsoleSystem.Log(CVar::LOG) << suggestion << CVar::endl;
 
                     console->m_CmdSuggestions.clear();
                 }
@@ -524,10 +520,10 @@ void Console::Init() {
     // Register variables
     console->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    console->System().RegisterVariable("plPosX", GameData_.plPosX, ConsoleImpl::Arg<float>(""));
-    console->System().RegisterVariable("plPosY", GameData_.plPosY, ConsoleImpl::Arg<float>(""));
+    console->System().RegisterVariable("plPosX", GameData_.plPosX, CVar::Arg<float>(""));
+    console->System().RegisterVariable("plPosY", GameData_.plPosY, CVar::Arg<float>(""));
 
-    console->System().RegisterVariable("scale", global.game->scale, ConsoleImpl::Arg<int>(""));
+    console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
 
     // Register scripts
     console->System().RegisterScript("test_script", "./console.script");
@@ -546,19 +542,18 @@ void Console::Init() {
                                       [&clear_color, val = clear_color]() { clear_color = val; });
 
     // Log example information:
-    console->System().Log(ConsoleImpl::ItemType::INFO)
-            << "Welcome to the console!" << ConsoleImpl::endl;
-    console->System().Log(ConsoleImpl::ItemType::INFO)
-            << "The following variables have been exposed to the console:" << ConsoleImpl::endl
-            << ConsoleImpl::endl;
-    console->System().Log(ConsoleImpl::ItemType::INFO)
-            << "\tbackground_color - set: [int int int int]" << ConsoleImpl::endl;
-    console->System().Log(ConsoleImpl::ItemType::INFO)
-            << ConsoleImpl::endl
-            << "Try running the following command:" << ConsoleImpl::endl;
-    console->System().Log(ConsoleImpl::ItemType::INFO)
-            << "\tset background_color [255 0 0 255]" << ConsoleImpl::endl
-            << ConsoleImpl::endl;
+    console->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
+    console->System().Log(CVar::ItemType::INFO)
+            << "The following variables have been exposed to the console:" << CVar::endl
+            << CVar::endl;
+    console->System().Log(CVar::ItemType::INFO)
+            << "\tbackground_color - set: [int int int int]" << CVar::endl;
+    console->System().Log(CVar::ItemType::INFO)
+            << CVar::endl
+            << "Try running the following command:" << CVar::endl;
+    console->System().Log(CVar::ItemType::INFO)
+            << "\tset background_color [255 0 0 255]" << CVar::endl
+            << CVar::endl;
 }
 
 void Console::End() { METADOT_DELETE(C, console, ImGuiConsole); }

@@ -9,7 +9,7 @@
 #include <array>
 #include <vector>
 
-METADOT_INLINE ConsoleImpl::ItemLog &operator<<(ConsoleImpl::ItemLog &log, ImVec4 &vec) {
+METADOT_INLINE CVar::ItemLog &operator<<(CVar::ItemLog &log, ImVec4 &vec) {
     log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";
     return log;
 }
