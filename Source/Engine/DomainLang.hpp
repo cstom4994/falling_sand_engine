@@ -3069,81 +3069,6 @@ namespace CVar {
 
     METADOT_INLINE size_t CommandHistory::Capacity() { return m_History.capacity(); }
 
-    class Script {
-    public:
-        explicit Script(std::string path, bool load_on_init = true);
-
-        explicit Script(const char *path, bool load_on_init = true);
-
-        explicit Script(std::vector<std::string> data);
-
-        Script(Script &&rhs) = default;
-
-        Script(const Script &rhs) = default;
-
-        Script &operator=(Script &&rhs) = default;
-
-        Script &operator=(const Script &rhs) = default;
-
-        void Load();
-
-        void Reload();
-
-        void Unload();
-
-        void SetPath(std::string path);
-
-        const std::vector<std::string> &Data();
-
-    protected:
-        std::vector<std::string> m_Data;
-        std::string m_Path;
-        bool m_FromMemory;
-    };
-
-    METADOT_INLINE Script::Script(std::string path, bool load_on_init)
-        : m_Path(std::move(path)), m_FromMemory(false) {
-
-        if (load_on_init) Load();
-    }
-
-    METADOT_INLINE Script::Script(const char *path, bool load_on_init)
-        : m_Path(path), m_FromMemory(false) {
-
-        if (load_on_init) Load();
-    }
-
-    METADOT_INLINE Script::Script(std::vector<std::string> data)
-        : m_Data(std::move(data)), m_FromMemory(true) {}
-
-    METADOT_INLINE void Script::Load() {
-        std::ifstream script_fstream(m_Path);
-
-        if (!script_fstream.good()) throw CVar::Exception("Failed to load script", m_Path);
-
-        if (script_fstream.good() && script_fstream.is_open()) {
-
-            std::string line_buf;
-
-            while (std::getline(script_fstream, line_buf)) { m_Data.emplace_back(line_buf); }
-
-            script_fstream.close();
-        }
-    }
-
-    METADOT_INLINE void Script::Reload() {
-        if (m_FromMemory) return;
-
-        Unload();
-        Load();
-    }
-
-    METADOT_INLINE void Script::Unload() { m_Data.clear(); }
-
-    METADOT_INLINE void Script::SetPath(std::string path) { m_Path = std::move(path); }
-
-    METADOT_INLINE const std::vector<std::string> &Script::Data() { return m_Data; }
-
     class System {
     public:
         System();
@@ -3168,11 +3093,7 @@ namespace CVar {
 
         ItemLog &Log(ItemType type = ItemType::LOG);
 
-        void RunScript(const std::string &script_name);
-
         std::unordered_map<std::string, std::unique_ptr<CommandBase>> &Commands();
-
-        std::unordered_map<std::string, std::unique_ptr<Script>> &Scripts();
 
         template<typename Fn, typename... Args>
         void RegisterCommand(const String &name, const String &description, Fn function,
@@ -3243,8 +3164,6 @@ namespace CVar {
                             Arg<Types>("")...);
         }
 
-        void RegisterScript(const std::string &name, const std::string &path);
-
         void UnregisterCommand(const std::string &cmd_name);
 
         void UnregisterVariable(const std::string &var_name);
@@ -3283,7 +3202,6 @@ namespace CVar {
         AutoComplete m_VariableSuggestionTree;
         CommandHistory m_CommandHistory;
         ItemLog m_ItemLog;
-        std::unordered_map<std::string, std::unique_ptr<Script>> m_Scripts;
         bool m_RegisterCommandSuggestion = true;
     };
 
@@ -3327,10 +3245,6 @@ namespace CVar {
         for (const auto &pair: rhs.m_Commands) {
             m_Commands[pair.first] = std::unique_ptr<CommandBase>(pair.second->Clone());
         }
-
-        for (const auto &pair: rhs.m_Scripts) {
-            m_Scripts[pair.first] = std::make_unique<Script>(*pair.second);
-        }
     }
 
     METADOT_INLINE System &System::operator=(const System &rhs) {
@@ -3345,10 +3259,6 @@ namespace CVar {
         m_CommandHistory = rhs.m_CommandHistory;
         m_ItemLog = rhs.m_ItemLog;
 
-        for (const auto &pair: rhs.m_Scripts) {
-            m_Scripts[pair.first] = std::make_unique<Script>(*pair.second);
-        }
-
         m_RegisterCommandSuggestion = rhs.m_RegisterCommandSuggestion;
 
         return *this;
@@ -3361,37 +3271,6 @@ namespace CVar {
         Log(CVar::ItemType::COMMAND) << line << CVar::endl;
 
         ParseCommandLine(line);
-    }
-
-    METADOT_INLINE void System::RunScript(const std::string &script_name) {
-
-        auto script_pair = m_Scripts.find(script_name);
-
-        if (script_pair == m_Scripts.end()) {
-            m_ItemLog.log(ERROR) << "Script \"" << script_name << "\" not found" << CVar::endl;
-            return;
-        }
-
-        m_ItemLog.log(INFO) << "Running \"" << script_name << "\"" << CVar::endl;
-
-        if (script_pair->second->Data().empty()) {
-            try {
-                script_pair->second->Load();
-            } catch (CVar::Exception &e) { Log(ERROR) << e.what() << CVar::endl; }
-        }
-
-        for (const auto &cmd: script_pair->second->Data()) { RunCommand(cmd); }
-    }
-
-    METADOT_INLINE void System::RegisterScript(const std::string &name, const std::string &path) {
-
-        auto script = m_Scripts.find(name);
-
-        if (script == m_Scripts.end()) {
-            m_Scripts[name] = std::make_unique<Script>(path, true);
-            m_VariableSuggestionTree.Insert(name);
-        } else
-            throw CVar::Exception("ERROR: Script \'" + name + "\' already registered");
     }
 
     METADOT_INLINE void System::UnregisterCommand(const std::string &cmd_name) {
@@ -3424,18 +3303,6 @@ namespace CVar {
         }
     }
 
-    METADOT_INLINE void System::UnregisterScript(const std::string &script_name) {
-
-        if (script_name.empty()) return;
-
-        auto it = m_Scripts.find(script_name);
-
-        if (it != m_Scripts.end()) {
-            m_VariableSuggestionTree.Remove(script_name);
-            m_Scripts.erase(it);
-        }
-    }
-
     METADOT_INLINE AutoComplete &System::CmdAutocomplete() { return m_CommandSuggestionTree; }
 
     METADOT_INLINE AutoComplete &System::VarAutocomplete() { return m_VariableSuggestionTree; }
@@ -3449,10 +3316,6 @@ namespace CVar {
     METADOT_INLINE std::unordered_map<std::string, std::unique_ptr<CommandBase>>
             &System::Commands() {
         return m_Commands;
-    }
-
-    METADOT_INLINE std::unordered_map<std::string, std::unique_ptr<Script>> &System::Scripts() {
-        return m_Scripts;
     }
 
     METADOT_INLINE void System::ParseCommandLine(const String &line) {

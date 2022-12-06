@@ -141,10 +141,10 @@ void ImGuiConsole::RegisterConsoleCommands() {
             },
             CVar::Arg<CVar::String>("filter_str"));
 
-    m_ConsoleSystem.RegisterCommand(
-            "run", "Run given script",
-            [this](const CVar::String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
-            CVar::Arg<CVar::String>("script_name"));
+    // m_ConsoleSystem.RegisterCommand(
+    //         "run", "Run given script",
+    //         [this](const CVar::String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
+    //         CVar::Arg<CVar::String>("script_name"));
 }
 
 void ImGuiConsole::FilterBar() {
@@ -302,22 +302,6 @@ void ImGuiConsole::MenuBar() {
             ImGui::TextUnformatted(LANG("ui_background"));
             ImGui::SliderFloat("Transparency##", &m_WindowAlpha, 0.1f, 1.f);
 
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu(LANG("ui_scripts"))) {
-
-            for (const auto &scr_pair: m_ConsoleSystem.Scripts()) {
-                if (ImGui::MenuItem(scr_pair.first.c_str())) {
-                    m_ConsoleSystem.RunScript(scr_pair.first);
-                    m_ScrollToBottom = true;
-                }
-            }
-
-            ImGui::Separator();
-            if (ImGui::Button("Reload Scripts", ImVec2(ImGui::GetColumnWidth(), 0))) {
-                for (const auto &scr_pair: m_ConsoleSystem.Scripts()) { scr_pair.second->Reload(); }
-            }
             ImGui::EndMenu();
         }
 
@@ -524,9 +508,6 @@ void Console::Init() {
     console->System().RegisterVariable("plPosY", GameData_.plPosY, CVar::Arg<float>(""));
 
     console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
-
-    // Register scripts
-    console->System().RegisterScript("test_script", "./console.script");
 
     // Register custom commands
     console->System().RegisterCommand("random_background_color",
