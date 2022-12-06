@@ -4,7 +4,6 @@
 #define _METADOT_GAMEDATASTRUCT_HPP_
 
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/Internal/Properties.hpp"
 #include "Engine/RendererGPU.h"
 #include "Materials.hpp"
 #include "Structures.hpp"
@@ -17,18 +16,21 @@ struct Populator;
 struct RigidBody;
 struct World;
 
-struct Biome {
+struct Biome
+{
     int id;
     std::string name;
     explicit Biome(std::string name, int id) : name(std::move(name)), id(std::move(id)){};
 };
 
-struct WorldGenerator {
+struct WorldGenerator
+{
     virtual void generateChunk(World *world, Chunk *ch) = 0;
     virtual std::vector<Populator *> getPopulators() = 0;
 };
 
-struct Particle {
+struct Particle
+{
     MaterialInstance tile{};
     float x = 0;
     float y = 0;
@@ -53,7 +55,8 @@ struct Particle {
           ay(part.ay) {}
 };
 
-struct Entity {
+struct Entity
+{
     float x = 0;
     float y = 0;
     float vx = 0;
@@ -115,15 +118,16 @@ struct SettingsBase
     static int server_port;
 };
 
-struct Settings : SettingsBase, Meta::properties::properties
+struct Settings : SettingsBase
 {
     Settings() {
-        LINK_PROPERTY(ui_tweak, &ui_tweak);
-        LINK_PROPERTY(ui_code_editor, &ui_code_editor);
+        // LINK_PROPERTY(ui_tweak, &ui_tweak);
+        // LINK_PROPERTY(ui_code_editor, &ui_code_editor);
     }
 };
 
-struct Populator {
+struct Populator
+{
     virtual int getPhase() = 0;
     virtual std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                                Chunk **area, bool *dirty, int tx, int ty, int tw,
@@ -132,77 +136,88 @@ struct Populator {
 
 #pragma region Populators
 
-struct TestPhase1Populator : public Populator {
+struct TestPhase1Populator : public Populator
+{
     int getPhase() { return 1; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct TestPhase2Populator : public Populator {
+struct TestPhase2Populator : public Populator
+{
     int getPhase() { return 2; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct TestPhase3Populator : public Populator {
+struct TestPhase3Populator : public Populator
+{
     int getPhase() { return 3; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct TestPhase4Populator : public Populator {
+struct TestPhase4Populator : public Populator
+{
     int getPhase() { return 4; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct TestPhase5Populator : public Populator {
+struct TestPhase5Populator : public Populator
+{
     int getPhase() { return 5; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct TestPhase6Populator : public Populator {
+struct TestPhase6Populator : public Populator
+{
     int getPhase() { return 6; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct TestPhase0Populator : public Populator {
+struct TestPhase0Populator : public Populator
+{
     int getPhase() { return 0; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk *area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk ch, World *world);
 };
 
-struct CavePopulator : public Populator {
+struct CavePopulator : public Populator
+{
     int getPhase() { return 0; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk **area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk *ch, World *world);
 };
 
-struct CobblePopulator : public Populator {
+struct CobblePopulator : public Populator
+{
     int getPhase() { return 1; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk **area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk *ch, World *world);
 };
 
-struct OrePopulator : public Populator {
+struct OrePopulator : public Populator
+{
     int getPhase() { return 0; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk **area, bool *dirty, int tx, int ty, int tw, int th,
                                        Chunk *ch, World *world);
 };
 
-struct TreePopulator : public Populator {
+struct TreePopulator : public Populator
+{
     int getPhase() { return 1; }
     std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2,
                                        Chunk **area, bool *dirty, int tx, int ty, int tw, int th,

@@ -114,7 +114,7 @@ public:
     struct
     {
         Console console;
-        GameScriptingWrap gsw;
+        GameScriptingWrap gameScriptwrap;
     } GameSystem_;
 
     struct

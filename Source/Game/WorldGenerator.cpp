@@ -3,10 +3,10 @@
 #ifndef _METADOT_GENERATOR_WORLD_CPP_
 #define _METADOT_GENERATOR_WORLD_CPP_
 
-#include "GameDataStruct.hpp"
 #include "Core/Global.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameResources.hpp"
+#include "GameDataStruct.hpp"
 
 #pragma region MaterialTestGenerator
 
@@ -66,7 +66,7 @@ class MaterialTestGenerator : public WorldGenerator {
 
 #pragma region DefaultGenerator
 
-#define BIOMEGETID(_c) global.game->GameSystem_.gsw.BiomeGet(_c)->id
+#define BIOMEGETID(_c) global.game->GameSystem_.gameScriptwrap.BiomeGet(_c)->id
 
 class DefaultGenerator : public WorldGenerator {
 

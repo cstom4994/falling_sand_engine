@@ -361,8 +361,8 @@ void Scripts::Init() {
     METADOT_NEW(C, JsContext, JsWrapper::Context, *this->JsRuntime);
 
     // test_js();
-    global.game->GameSystem_.gsw.Init();
-    global.game->GameSystem_.gsw.Bind();
+    global.game->GameSystem_.gameScriptwrap.Init();
+    global.game->GameSystem_.gameScriptwrap.Bind();
 }
 
 void Scripts::End() {

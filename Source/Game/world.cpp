@@ -28,7 +28,7 @@
 
 #define W_PI 3.14159265358979323846
 
-#define BIOMEGET(_c) global.game->GameSystem_.gsw.BiomeGet(_c)
+#define BIOMEGET(_c) global.game->GameSystem_.gameScriptwrap.BiomeGet(_c)
 
 ThreadPool *World::tickPool = nullptr;
 ThreadPool *World::tickVisitedPool = nullptr;
