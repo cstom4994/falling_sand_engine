@@ -6,6 +6,10 @@
 #include "Core/Core.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
+#include "Internal/BuiltinBox2d.h"
+#include "Libs/external/stb_image.h"
+#include "Libs/external/stb_rect_pack.h"
+#include "Libs/external/stb_truetype.h"
 #include "Libs/glad/glad.h"
 #include "external/stb_rect_pack.h"
 #include "external/stb_truetype.h"
@@ -2042,9 +2046,6 @@ GLint METAENGINE_Render_GLT_CountDrawableCharacters(const char *str);
 GLint METAENGINE_Render_GLT_CountNewLines(const char *str);
 
 // --------------------------------------------------------------------
-
-
-
 
 // --------------------------------------------------------------------
 

@@ -3632,12 +3632,12 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
     L->GetWrapper()->dofile(metaFile);
 
     LuaWrapper::LuaFunction LoadWorldMeta = (*L->GetWrapper())["LoadWorldMeta"];
-    LuaWrapper::LuaTable a = LoadWorldMeta();
+    LuaWrapper::LuaTable luat = LoadWorldMeta();
 
-    if (!a.isNilref()) {
-        meta.worldName = a["worldName"].get<std::string>();
-        meta.lastOpenedVersion = a["lastOpenedVersion"].get<std::string>();
-        meta.lastOpenedTime = a["lastOpenedTime"].get<long>();
+    if (!luat.isNilref()) {
+        LoadLuaConfig(meta, luat, worldName);
+        LoadLuaConfig(meta, luat, lastOpenedVersion);
+        LoadLuaConfig(meta, luat, lastOpenedTime);
 
         // LoadLuaConfig(meta, &a);
 

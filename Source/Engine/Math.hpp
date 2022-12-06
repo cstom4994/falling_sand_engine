@@ -23,6 +23,32 @@ struct Vector3
     float z;
 };
 
+#pragma region NewMATH
+
+namespace NewMaths {
+    float clamp(float input, float min, float max);
+    int rand_range(int min, int max);
+    uint64_t rand_XOR();
+    inline double random_double();
+    inline double random_double(double min, double max);
+    struct v2;
+    struct RandState;
+    float v2_distance_2Points(v2 A, v2 B);
+    v2 unitvec_AtoB(v2 A, v2 B);
+    float signed_angle_v2(v2 A, v2 B);
+    v2 Rotate2D(v2 P, float sine, float cosine);
+    v2 Rotate2D(v2 P, float Angle);
+    v2 Rotate2D(v2 p, v2 o, float angle);
+    v2 Reflection2D(v2 P, v2 N);
+    bool PointInRectangle(v2 P, v2 A, v2 B, v2 C);
+    int sign(float x);
+    static float dot(v2 A, v2 B);
+    static float perpdot(v2 A, v2 B);
+    static bool operator==(v2 A, v2 B);
+}// namespace NewMaths
+
+#pragma endregion NewMATH
+
 typedef struct
 {
     uint64_t state;

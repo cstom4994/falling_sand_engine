@@ -153,7 +153,9 @@ void LuaCore::Attach() {
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
-    luaopen_miniz(m_L);
+    metadot_bind_miniz(m_L);
+    metadot_bind_image(m_L);
+    metadot_bind_gpu(m_L);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);

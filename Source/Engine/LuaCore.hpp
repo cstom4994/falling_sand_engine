@@ -43,6 +43,8 @@ void SaveLuaConfig(const T &_struct, std::string &out) {
     });
 }
 
+#define LoadLuaConfig(_struct, _luat, _c) _struct._c = _luat[#_c].get<decltype(_struct._c)>()
+
 // template<typename T>
 // void LoadLuaConfig(const T &_struct, LuaWrapper::LuaTable *luat) {
 //     int idx = 0;

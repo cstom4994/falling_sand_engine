@@ -12,6 +12,232 @@
 #include <string>
 #include <vector>
 
+#pragma region NewMATH
+
+float NewMaths::clamp(float input, float min, float max) {
+    if (input < min) return min;
+    else if (input > max)
+        return max;
+    else
+        return input;
+}
+
+struct NewMaths::RandState
+{
+    uint64_t seed;
+    bool initialized = false;
+};
+NewMaths::RandState RANDSTATE;
+
+uint64_t NewMaths::rand_XOR() {
+    if (!RANDSTATE.initialized) {
+        RANDSTATE.seed = time(NULL);
+        RANDSTATE.initialized = true;
+    }
+    uint64_t x = RANDSTATE.seed;
+    x ^= x << 9;
+    x ^= x >> 5;
+    x ^= x << 15;
+    return RANDSTATE.seed = x;
+}
+int NewMaths::rand_range(int min, int max) {
+    // return min + rand() / (RAND_MAX / (max - min + 1) + 1);
+    return min + NewMaths::rand_XOR() % (max - min + 1);
+    // return (float)rand()/ RAND_MAX * (max - min + 1) + min;
+}
+
+inline double NewMaths::random_double() {
+    // Returns a random real in [0,1).
+    return rand() / (RAND_MAX + 1.0);
+}
+
+inline double NewMaths::random_double(double min, double max) {
+    // Returns a random real in [min,max).
+    return min + (max - min) * random_double();
+}
+struct NewMaths::v2
+{
+    union {
+        float e[2];
+        struct
+        {
+            float x, y;
+        };
+    };
+
+    v2() : e{0, 0} {}
+    v2(float e0, float e1) : e{e0, e1} {}
+
+    NewMaths::v2 operator-() const { return NewMaths::v2(-e[0], -e[1]); }
+    float operator[](int i) const { return e[i]; }
+    float &operator[](int i) { return e[i]; }
+
+    NewMaths::v2 &operator+=(const NewMaths::v2 &v) {
+        e[0] += v.e[0];
+        e[1] += v.e[1];
+        return *this;
+    }
+    NewMaths::v2 &operator-=(const NewMaths::v2 &v) {
+        e[0] -= v.e[0];
+        e[1] -= v.e[1];
+        return *this;
+    }
+
+    NewMaths::v2 &operator*=(const float t) {
+        e[0] *= t;
+        e[1] *= t;
+        return *this;
+    }
+
+    NewMaths::v2 &operator/=(const float t) { return *this *= 1 / t; }
+
+    float length_squared() const { return e[0] * e[0] + e[1] * e[1]; }
+
+    float length() const { return sqrt(length_squared()); }
+
+    NewMaths::v2 normalize() {
+        float lengf = length();
+
+        if (lengf > 0) return NewMaths::v2(x / lengf, y / lengf);
+        else
+            return NewMaths::v2(0, 0);
+    }
+
+    float dot(NewMaths::v2 V) {
+        float result = x * V.x + y * V.y;
+        return result;
+    }
+    NewMaths::v2 perpendicular() { return NewMaths::v2(y, -x); }
+    float perpdot(NewMaths::v2 V) {
+        float result = x * V.y - y * V.x;
+        return result;
+    }
+    float cross(NewMaths::v2 V) {
+        float result = x * V.y - y * V.x;
+        return result;
+    }
+
+    NewMaths::v2 hadamard(NewMaths::v2 V) {
+        NewMaths::v2 result(x * V.x, y * V.y);
+        return result;
+    }
+
+    float angle(NewMaths::v2 V)// returns signed angle in radians
+    {
+        return atan2(x * V.y - y * V.x, x * V.x + y * V.y);
+    }
+};
+NewMaths::v2 operator-(NewMaths::v2 a, NewMaths::v2 b) {
+    NewMaths::v2 tojesus(a.x - b.x, a.y - b.y);
+    return tojesus;
+}
+
+NewMaths::v2 operator+(NewMaths::v2 a, NewMaths::v2 b) {
+    NewMaths::v2 tojesus(a.x + b.x, a.y + b.y);
+    return tojesus;
+}
+NewMaths::v2 operator-(NewMaths::v2 a, float b) {
+    NewMaths::v2 tojesus(a.x - b, a.y - b);
+    return tojesus;
+}
+
+NewMaths::v2 operator+(NewMaths::v2 a, float b) {
+    NewMaths::v2 tojesus(a.x + b, a.y + b);
+    return tojesus;
+}
+
+NewMaths::v2 operator*(NewMaths::v2 a, float b) {
+    NewMaths::v2 tojesus(a.x * b, a.y * b);
+    return tojesus;
+}
+NewMaths::v2 operator*(NewMaths::v2 a, NewMaths::v2 b) {
+    NewMaths::v2 tojesus(a.x * b.x, a.y * b.y);
+    return tojesus;
+}
+
+NewMaths::v2 operator*(float b, NewMaths::v2 a) {
+    NewMaths::v2 tojesus(a.x * b, a.y * b);
+    return tojesus;
+}
+
+NewMaths::v2 operator/(NewMaths::v2 a, float b) {
+    NewMaths::v2 tojesus(a.x / b, a.y / b);
+    return tojesus;
+}
+NewMaths::v2 operator/(NewMaths::v2 a, NewMaths::v2 b) {
+    NewMaths::v2 tojesus(a.x / b.x, a.y / b.y);
+    return tojesus;
+}
+
+float NewMaths::v2_distance_2Points(NewMaths::v2 A, NewMaths::v2 B) {
+    return sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y));
+}
+
+NewMaths::v2 NewMaths::unitvec_AtoB(NewMaths::v2 A, NewMaths::v2 B) {
+    float n = NewMaths::v2_distance_2Points(A, B);
+    return ((B - A) / n);
+}
+
+float NewMaths::signed_angle_v2(NewMaths::v2 A, NewMaths::v2 B) {
+    return atan2(A.x * B.y - A.y * B.x, A.x * B.x + A.y * B.y);
+}
+
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, float sine, float cosine) {
+    return NewMaths::v2(NewMaths::v2(cosine, -sine).dot(P), NewMaths::v2(sine, cosine).dot(P));
+}
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, float Angle) {
+    float sine = sin(Angle);
+    float cosine = cos(Angle);
+    return NewMaths::Rotate2D(P, sine, cosine);
+}
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 p, NewMaths::v2 o, float angle) {
+    // Demonstration: https://www.desmos.com/calculator/8aaegifsba
+    float s = sin(angle);
+    float c = cos(angle);
+
+    float x = (p.x - o.x) * c - (p.y - o.y) * s + o.x;
+    float y = (p.x - o.x) * s + (p.y - o.y) * c + o.y;
+
+    return NewMaths::v2(x, y);
+}
+
+NewMaths::v2 NewMaths::Reflection2D(NewMaths::v2 P, NewMaths::v2 N) { return P - 2 * N.dot(P) * N; }
+
+bool NewMaths::PointInRectangle(NewMaths::v2 P, NewMaths::v2 A, NewMaths::v2 B, NewMaths::v2 C) {
+    NewMaths::v2 M = P;
+    NewMaths::v2 AB = B - A;
+    NewMaths::v2 BC = C - B;
+    NewMaths::v2 AM = M - A;
+    NewMaths::v2 BM = M - B;
+    if (0 <= AB.dot(AM) && AB.dot(AM) <= AB.dot(AB) && 0 <= BC.dot(BM) && BC.dot(BM) <= BC.dot(BC))
+        return true;
+    else
+        return false;
+}
+
+int NewMaths::sign(float x) {
+    if (x > 0) return 1;
+    else if (x < 0)
+        return -1;
+    else
+        return 0;
+}
+
+static float NewMaths::dot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.x + A.y * B.y; }
+
+static float NewMaths::perpdot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.y - A.y * B.x; }
+
+static bool operator==(NewMaths::v2 A, NewMaths::v2 B) { return A.x == B.x && A.y == B.y; }
+
+static float abso(float F) { return F > 0 ? F : -F; };
+
+static NewMaths::v2 rand_vector(float length) {
+    return NewMaths::v2(NewMaths::rand_range(-100, 100) * 0.01f * length,
+                        NewMaths::rand_range(-100, 100) * 0.01f * length);
+}
+
+#pragma endregion NewMATH
+
 #pragma region PCG32
 
 // *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
