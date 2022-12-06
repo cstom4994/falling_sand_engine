@@ -12,6 +12,7 @@
 #include "Core/ThreadPool.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/LuaCore.hpp"
+#include "Engine/Math.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/ReflectionFlat.hpp"
 #include "Engine/RendererGPU.h"
@@ -191,8 +192,8 @@ int Game::init(int argc, char *argv[]) {
 
     // init the rng
     METADOT_INFO("Seeding RNG...");
-    unsigned int seed = (unsigned int) Time::millis();
-    srand(seed);
+    pcg32_random_t rng;
+    unsigned int seed = pcg32_random_r(&rng);
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
@@ -1412,8 +1413,7 @@ int Game::run(int argc, char *argv[]) {
         }
 
         for (int i = 1; i < FrameTimeNum; i++) { frameTime[i - 1] = frameTime[i]; }
-        frameTime[FrameTimeNum - 1] =
-                (uint16_t) (Time::millis() - GameIsolate_.game_timestate.now);
+        frameTime[FrameTimeNum - 1] = (uint16_t) (Time::millis() - GameIsolate_.game_timestate.now);
 
         GameIsolate_.game_timestate.lastTime = GameIsolate_.game_timestate.now;
     }

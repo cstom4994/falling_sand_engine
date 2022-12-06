@@ -16,6 +16,14 @@
 
 #include "Engine/Internal/BuiltinBox2d.h"
 
+typedef struct
+{
+    uint64_t state;
+    uint64_t inc;
+} pcg32_random_t;
+
+uint32_t pcg32_random_r(pcg32_random_t *rng);
+
 void simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i, size_t j,
                       std::vector<bool> *mark_map, size_t omitted = 0);
 std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, float tolerance);

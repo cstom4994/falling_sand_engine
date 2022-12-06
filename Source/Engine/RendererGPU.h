@@ -2073,6 +2073,11 @@ GLint METAENGINE_Render_GLT_CountNewLines(const char *str);
 
 // --------------------------------------------------------------------
 
+
+
+
+// --------------------------------------------------------------------
+
 // Internal API for managing window mappings
 void METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target *target);
 void METAENGINE_Render_RemoveWindowMapping(UInt32 windowID);

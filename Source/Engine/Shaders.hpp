@@ -21,31 +21,36 @@ METAENGINE_Render_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(
         UInt32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
 void METAENGINE_Shaders_FreeShader(UInt32 p);
 
-class Shader {
+class ShaderBase {
 public:
     UInt32 shader;
     METAENGINE_Render_ShaderBlock block;
 
-    Shader(const char *vertex_shader_file, const char *fragment_shader_file) {
+    ShaderBase(const char *vertex_shader_file, const char *fragment_shader_file) {
         shader = 0;
         block = METAENGINE_Shaders_LoadShaderProgram(&shader, vertex_shader_file,
                                                      fragment_shader_file);
     }
 
-    ~Shader() { METAENGINE_Shaders_FreeShader(shader); }
+    ~ShaderBase() { METAENGINE_Shaders_FreeShader(shader); }
 
     virtual void prepare() = 0;
 
     void activate() { METAENGINE_Render_ActivateShaderProgram(shader, &block); }
+
+    template<typename T>
+    void uniform(std::string name, const T u);
+    template<typename T, size_t N>
+    void uniform(std::string name, const T (&u)[N]);
 };
 
-class WaterFlowPassShader : public Shader {
+class WaterFlowPassShader : public ShaderBase {
 public:
     bool dirty = false;
 
     WaterFlowPassShader()
-        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                 METADOT_RESLOC_STR("data/shaders/waterFlow.frag")){};
+        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                     METADOT_RESLOC_STR("data/shaders/waterFlow.frag")){};
 
     void prepare() {}
 
@@ -57,11 +62,11 @@ public:
     }
 };
 
-class WaterShader : public Shader {
+class WaterShader : public ShaderBase {
 public:
     WaterShader()
-        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                 METADOT_RESLOC_STR("data/shaders/water.frag")){};
+        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                     METADOT_RESLOC_STR("data/shaders/water.frag")){};
 
     void prepare() {}
 
@@ -101,7 +106,7 @@ public:
     }
 };
 
-class NewLightingShader : public Shader {
+class NewLightingShader : public ShaderBase {
 public:
     float lastLx = 0.0;
     float lastLy = 0.0;
@@ -112,8 +117,8 @@ public:
     bool lastDitheringEnabled = false;
 
     NewLightingShader()
-        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                 METADOT_RESLOC_STR("data/shaders/newLighting.frag")){};
+        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                     METADOT_RESLOC_STR("data/shaders/newLighting.frag")){};
 
     void prepare() {}
 
@@ -184,11 +189,11 @@ public:
     }
 };
 
-class FireShader : public Shader {
+class FireShader : public ShaderBase {
 public:
     FireShader()
-        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                 METADOT_RESLOC_STR("data/shaders/fire.frag")){};
+        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                     METADOT_RESLOC_STR("data/shaders/fire.frag")){};
 
     void prepare() {}
 
@@ -203,11 +208,11 @@ public:
     }
 };
 
-class Fire2Shader : public Shader {
+class Fire2Shader : public ShaderBase {
 public:
     Fire2Shader()
-        : Shader(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                 METADOT_RESLOC_STR("data/shaders/fire2.frag")){};
+        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
+                     METADOT_RESLOC_STR("data/shaders/fire2.frag")){};
 
     void prepare() {}
 
