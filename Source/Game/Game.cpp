@@ -18,17 +18,15 @@
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Engine/Scripting.hpp"
-#include "Engine/gc.h"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameDataStruct.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/GameUI.hpp"
 #include "Game/ImGuiCore.hpp"
+#include "Game/InEngine.h"
 #include "Game/Player.hpp"
 #include "Game/Utils.hpp"
-#include "Game/console.hpp"
-#include "ImGui/imgui.h"
 
 #include "WorldGenerator.cpp"
 
@@ -37,19 +35,6 @@
 #include <imgui/IconsFontAwesome5.h>
 #include <string>
 #include <string_view>
-
-#include "Game/InEngine.h"
-#include "fmt/core.h"
-
-const char *logo = R"(
-      __  __      _        _____        _   
-     |  \/  |    | |      |  __ \      | |  
-     | \  / | ___| |_ __ _| |  | | ___ | |_ 
-     | |\/| |/ _ \ __/ _` | |  | |/ _ \| __|
-     | |  | |  __/ || (_| | |__| | (_) | |_ 
-     |_|  |_|\___|\__\__,_|_____/ \___/ \__|
-                                             
-)";
 
 extern void fuckme();
 
@@ -111,11 +96,11 @@ int Game::init(int argc, char *argv[]) {
         SDL_SetWindowTitle(global.platform.window, win_title_server.c_str());
 
         /*while (true) {
-            METADOT_BUG("[SERVER] tick {0:d}", server->server->connectedPeers);
-            server->tick();
-            Sleep(500);
-        }
-        return 0;*/
+METADOT_BUG("[SERVER] tick {0:d}", server->server->connectedPeers);
+server->tick();
+Sleep(500);
+}
+return 0;*/
 
     } else {
         global.client = Client::start();
@@ -569,6 +554,7 @@ int Game::run(int argc, char *argv[]) {
     // Creating text
     text1 = METAENGINE_Render_GLT_CreateText();
     text2 = METAENGINE_Render_GLT_CreateText();
+    text3 = METAENGINE_Render_GLT_CreateText();
 
     // game loop
     while (this->running) {
@@ -778,7 +764,7 @@ int Game::run(int argc, char *argv[]) {
                                 GameIsolate_.world->WorldIsolate_.player->holdVacuum = true;
                             } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(
                                                ItemFlags::HAMMER)) {
-                                //#define HAMMER_DEBUG_PHYSICS
+//#define HAMMER_DEBUG_PHYSICS
 #ifdef HAMMER_DEBUG_PHYSICS
                                 int x = (int) ((windowEvent.button.x - ofsX - camX) / scale);
                                 int y = (int) ((windowEvent.button.y - ofsY - camY) / scale);
@@ -1209,6 +1195,17 @@ int Game::run(int argc, char *argv[]) {
             METAENGINE_Render_GLT_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
             METAENGINE_Render_GLT_EndDraw();
 
+            METAENGINE_Render_GLT_SetText(
+                    text3, fmt::format("{:.3f} ms/frame ({:.1f}({}) FPS)",
+                                       1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
+                                       GameIsolate_.game_timestate.feelsLikeFps)
+                                   .c_str());
+
+            METAENGINE_Render_GLT_BeginDraw();
+            METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
+            METAENGINE_Render_GLT_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
+            METAENGINE_Render_GLT_EndDraw();
+
             auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
             METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
                                         1.0f, 1.0f);
@@ -1218,26 +1215,6 @@ int Game::run(int argc, char *argv[]) {
 
             // render ImGui
             global.ImGuiCore->Render();
-
-            if (ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginMenu(ICON_FA_ARCHIVE " 工具")) {
-                    if (ImGui::MenuItem("八个雅鹿", "CTRL+A")) {}
-                    ImGui::Separator();
-                    ImGui::Checkbox("鼠标", &Settings::draw_cursor);
-                    ImGui::Checkbox("调整", &Settings::ui_tweak);
-                    ImGui::Checkbox("脚本编辑器", &Settings::ui_code_editor);
-                    ImGui::EndMenu();
-                }
-
-                ImGui::SameLine(ImGui::GetWindowWidth() - 390);
-
-                ImGui::Separator();
-                ImGui::Text("%.3f ms/frame (%.1f(%d) FPS)(GC %d)",
-                            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
-                            GameIsolate_.game_timestate.feelsLikeFps, (int) GC::C_Count);
-
-                ImGui::EndMainMenuBar();
-            }
 
             if (Settings::draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1470,6 +1447,7 @@ exit:
 
     METAENGINE_Render_GLT_DeleteText(text1);
     METAENGINE_Render_GLT_DeleteText(text2);
+    METAENGINE_Render_GLT_DeleteText(text3);
     METAENGINE_Render_GLT_Terminate();
 
     if (Settings::networkMode != NetworkMode::SERVER) {
@@ -1487,10 +1465,10 @@ exit:
 void Game::updateFrameEarly() {
 
     // handle controls
-
     if (Controls::DEBUG_UI->get()) {
         GameUI::DebugDrawUI::visible ^= true;
         GameUI::DebugCheatsUI::visible ^= true;
+        Settings::ui_tweak ^= true;
     }
 
     if (Settings::draw_frame_graph) {
@@ -1710,7 +1688,7 @@ void Game::updateFrameEarly() {
             GameIsolate_.world->WorldIsolate_.player = e;
 
             /*accLoadX = 0;
-            accLoadY = 0;*/
+accLoadY = 0;*/
         }
     }
 
@@ -2449,7 +2427,7 @@ void Game::tick() {
         results.push_back(updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 /*for (int x = 0; x < GameIsolate_.world->width; x++) {
-                    for (int y = 0; y < GameIsolate_.world->height; y++) {*/
+for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                 //const unsigned int i = x + y * GameIsolate_.world->width;
                 const unsigned int offset = i * 4;
                 if (GameIsolate_.world->layer2Dirty[i]) {
@@ -2485,7 +2463,7 @@ void Game::tick() {
         results.push_back(updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 /*for (int x = 0; x < GameIsolate_.world->width; x++) {
-                    for (int y = 0; y < GameIsolate_.world->height; y++) {*/
+for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                 //const unsigned int i = x + y * GameIsolate_.world->width;
                 const unsigned int offset = i * 4;
 
@@ -2504,7 +2482,7 @@ void Game::tick() {
 
         for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
             /*for (int x = 0; x < GameIsolate_.world->width; x++) {
-                for (int y = 0; y < GameIsolate_.world->height; y++) {*/
+for (int y = 0; y < GameIsolate_.world->height; y++) {*/
             //const unsigned int i = x + y * GameIsolate_.world->width;
             const unsigned int offset = i * 4;
 
@@ -2582,11 +2560,11 @@ void Game::tick() {
         }
 
         /*METAENGINE_Render_UpdateImageBytes(
-            textureObjects,
-            NULL,
-            &pixelsObjects[0],
-            GameIsolate_.world->width * 4
-        );*/
+textureObjects,
+NULL,
+&pixelsObjects[0],
+GameIsolate_.world->width * 4
+);*/
 
         if (Settings::tick_box2d && tickTime % GameTick == 0) GameIsolate_.world->updateWorldMesh();
     }
@@ -3024,117 +3002,55 @@ void Game::tickPlayer() {
                             }
                         }
 
-                        GameIsolate_
-                                .world->WorldIsolate_.particles.erase(std::remove_if(GameIsolate_
-                                                                                             .world
-                                                                                             ->WorldIsolate_
-                                                                                             .particles
-                                                                                             .begin(),
-                                                                                     GameIsolate_
-                                                                                             .world
-                                                                                             ->WorldIsolate_
-                                                                                             .particles
-                                                                                             .end(),
-                                                                                     [&](Particle *
-                                                                                                 cur) {
-                                                                                         if (cur->targetForce ==
-                                                                                                     0 &&
-                                                                                             !cur->phase) {
-                                                                                             int rad =
-                                                                                                     5;
-                                                                                             for (int xx =
-                                                                                                          -rad;
-                                                                                                  xx <=
-                                                                                                  rad;
-                                                                                                  xx++) {
-                                                                                                 for (int yy =
-                                                                                                              -rad;
-                                                                                                      yy <=
-                                                                                                      rad;
-                                                                                                      yy++) {
-                                                                                                     if ((yy == -rad ||
-                                                                                                          yy == rad) &&
-                                                                                                         (xx == -rad ||
-                                                                                                          x == rad))
-                                                                                                         continue;
+                        auto func = [&](Particle *cur) {
+                            if (cur->targetForce == 0 && !cur->phase) {
+                                int rad = 5;
+                                for (int xx = -rad; xx <= rad; xx++) {
+                                    for (int yy = -rad; yy <= rad; yy++) {
+                                        if ((yy == -rad || yy == rad) && (xx == -rad || x == rad))
+                                            continue;
 
-                                                                                                     if (((int) (cur->x) ==
-                                                                                                          (x +
-                                                                                                           xx)) &&
-                                                                                                         ((int) (cur->y) ==
-                                                                                                          (y +
-                                                                                                           yy))) {
+                                        if (((int) (cur->x) == (x + xx)) &&
+                                            ((int) (cur->y) == (y + yy))) {
 
-                                                                                                         cur->vx =
-                                                                                                                 (rand() %
-                                                                                                                          10 -
-                                                                                                                  5) /
-                                                                                                                 5.0f *
-                                                                                                                 1.0f;
-                                                                                                         cur->vy =
-                                                                                                                 (rand() %
-                                                                                                                          10 -
-                                                                                                                  5) /
-                                                                                                                 5.0f *
-                                                                                                                 1.0f;
-                                                                                                         cur->ax =
-                                                                                                                 -cur->vx /
-                                                                                                                 10.0f;
-                                                                                                         cur->ay =
-                                                                                                                 -cur->vy /
-                                                                                                                 10.0f;
-                                                                                                         if (cur->ay ==
-                                                                                                                     0 &&
-                                                                                                             cur->ax ==
-                                                                                                                     0)
-                                                                                                             cur->ay =
-                                                                                                                     0.01f;
+                                            cur->vx = (rand() % 10 - 5) / 5.0f * 1.0f;
+                                            cur->vy = (rand() % 10 - 5) / 5.0f * 1.0f;
+                                            cur->ax = -cur->vx / 10.0f;
+                                            cur->ay = -cur->vy / 10.0f;
+                                            if (cur->ay == 0 && cur->ax == 0) cur->ay = 0.01f;
 
-                                                                                                         //par->targetX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x;
-                                                                                                         //par->targetY = GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y;
-                                                                                                         //par->targetForce = 0.35f;
+                                            //par->targetX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x;
+                                            //par->targetY = GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y;
+                                            //par->targetForce = 0.35f;
 
-                                                                                                         cur->lifetime =
-                                                                                                                 6;
+                                            cur->lifetime = 6;
 
-                                                                                                         cur->phase =
-                                                                                                                 true;
+                                            cur->phase = true;
 
-                                                                                                         GameIsolate_
-                                                                                                                 .world
-                                                                                                                 ->WorldIsolate_
-                                                                                                                 .player
-                                                                                                                 ->heldItem
-                                                                                                                 ->vacuumParticles
-                                                                                                                 .push_back(
-                                                                                                                         cur);
+                                            GameIsolate_.world->WorldIsolate_.player->heldItem
+                                                    ->vacuumParticles.push_back(cur);
 
-                                                                                                         cur->killCallback = [&]() {
-                                                                                                             auto &v =
-                                                                                                                     GameIsolate_
-                                                                                                                             .world
-                                                                                                                             ->WorldIsolate_
-                                                                                                                             .player
-                                                                                                                             ->heldItem
-                                                                                                                             ->vacuumParticles;
-                                                                                                             v.erase(std::remove(
-                                                                                                                             v.begin(),
-                                                                                                                             v.end(),
-                                                                                                                             cur),
-                                                                                                                     v.end());
-                                                                                                         };
+                                            cur->killCallback = [&]() {
+                                                auto &v = GameIsolate_.world->WorldIsolate_.player
+                                                                  ->heldItem->vacuumParticles;
+                                                v.erase(std::remove(v.begin(), v.end(), cur),
+                                                        v.end());
+                                            };
 
-                                                                                                         return false;
-                                                                                                     }
-                                                                                                 }
-                                                                                             }
-                                                                                         }
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
 
-                                                                                         return false;
-                                                                                     }),
-                                                                      GameIsolate_.world
-                                                                              ->WorldIsolate_
-                                                                              .particles.end());
+                            return false;
+                        };
+
+                        GameIsolate_.world->WorldIsolate_.particles.erase(
+                                std::remove_if(GameIsolate_.world->WorldIsolate_.particles.begin(),
+                                               GameIsolate_.world->WorldIsolate_.particles.end(),
+                                               func),
+                                GameIsolate_.world->WorldIsolate_.particles.end());
 
                         std::vector<RigidBody *> *rbs =
                                 &GameIsolate_.world->WorldIsolate_.rigidBodies;
@@ -3331,10 +3247,10 @@ void Game::renderEarly() {
                     if (!state && y == 0) {
                         if (rand() % 6 == 0) { newState = true; }
                         /*if (x >= drop - 1 && x <= drop + 1) {
-                            newState = true;
-                        }else if (x >= drop2 - 1 && x <= drop2 + 1) {
-                            newState = true;
-                        }*/
+newState = true;
+}else if (x >= drop2 - 1 && x <= drop2 + 1) {
+newState = true;
+}*/
                     }
 
                     if (state && y < TexturePack_.loadingScreenH - 1) {
@@ -4264,12 +4180,12 @@ ReadyToMerge ({})
                     global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
         }
         /*for (int i = 0; i <= 100; i += 25) {
-            char buff[20];
-            snprintf(buff, sizeof(buff), "%d", i);
-            std::string buffAsStdStr = buff;
-            Drawing::drawText(renderer, buffAsStdStr.c_str(), font14, WIDTH - 20, HEIGHT - 15 - i - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
-            SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
-        }*/
+char buff[20];
+snprintf(buff, sizeof(buff), "%d", i);
+std::string buffAsStdStr = buff;
+Drawing::drawText(renderer, buffAsStdStr.c_str(), font14, WIDTH - 20, HEIGHT - 15 - i - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
+SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
+}*/
 
         for (int i = 0; i < FrameTimeNum; i++) {
             int h = frameTime[i];
@@ -4314,41 +4230,41 @@ ReadyToMerge ({})
     /*
 
 #ifdef DEVELOPMENT_BUILD
-    if (dt_versionInfo1.w == -1) {
-        char buffDevBuild[40];
-        snprintf(buffDevBuild, sizeof(buffDevBuild), "Development Build");
-        //if (dt_versionInfo1.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo1.t1);
-        //if (dt_versionInfo1.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo1.t2);
-        dt_versionInfo1 = Drawing::drawTextParams(RenderTarget_.target, buffDevBuild, font16, 4, global.platform.HEIGHT - 32 - 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+if (dt_versionInfo1.w == -1) {
+char buffDevBuild[40];
+snprintf(buffDevBuild, sizeof(buffDevBuild), "Development Build");
+//if (dt_versionInfo1.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo1.t1);
+//if (dt_versionInfo1.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo1.t2);
+dt_versionInfo1 = Drawing::drawTextParams(RenderTarget_.target, buffDevBuild, font16, 4, global.platform.HEIGHT - 32 - 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
-        char buffVersion[40];
-        snprintf(buffVersion, sizeof(buffVersion), "Version %s - dev", VERSION);
-        //if (dt_versionInfo2.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo2.t1);
-        //if (dt_versionInfo2.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo2.t2);
-        dt_versionInfo2 = Drawing::drawTextParams(RenderTarget_.target, buffVersion, font16, 4, global.platform.HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
+char buffVersion[40];
+snprintf(buffVersion, sizeof(buffVersion), "Version %s - dev", VERSION);
+//if (dt_versionInfo2.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo2.t1);
+//if (dt_versionInfo2.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo2.t2);
+dt_versionInfo2 = Drawing::drawTextParams(RenderTarget_.target, buffVersion, font16, 4, global.platform.HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
-        char buffBuildDate[40];
-        snprintf(buffBuildDate, sizeof(buffBuildDate), "%s : %s", __DATE__, __TIME__);
-        //if (dt_versionInfo3.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo3.t1);
-        //if (dt_versionInfo3.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo3.t2);
-        dt_versionInfo3 = Drawing::drawTextParams(RenderTarget_.target, buffBuildDate, font16, 4, global.platform.HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
-    }
+char buffBuildDate[40];
+snprintf(buffBuildDate, sizeof(buffBuildDate), "%s : %s", __DATE__, __TIME__);
+//if (dt_versionInfo3.t1 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo3.t1);
+//if (dt_versionInfo3.t2 != nullptr) METAENGINE_Render_FreeImage(dt_versionInfo3.t2);
+dt_versionInfo3 = Drawing::drawTextParams(RenderTarget_.target, buffBuildDate, font16, 4, global.platform.HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+}
 
-    Drawing::drawText(RenderTarget_.target, dt_versionInfo1, 4, global.platform.HEIGHT - 32 - 13, ALIGN_LEFT);
-    Drawing::drawText(RenderTarget_.target, dt_versionInfo2, 4, global.platform.HEIGHT - 32, ALIGN_LEFT);
-    Drawing::drawText(RenderTarget_.target, dt_versionInfo3, 4, global.platform.HEIGHT - 32 + 13, ALIGN_LEFT);
+Drawing::drawText(RenderTarget_.target, dt_versionInfo1, 4, global.platform.HEIGHT - 32 - 13, ALIGN_LEFT);
+Drawing::drawText(RenderTarget_.target, dt_versionInfo2, 4, global.platform.HEIGHT - 32, ALIGN_LEFT);
+Drawing::drawText(RenderTarget_.target, dt_versionInfo3, 4, global.platform.HEIGHT - 32 + 13, ALIGN_LEFT);
 #elif defined ALPHA_BUILD
-    char buffDevBuild[40];
-    snprintf(buffDevBuild, sizeof(buffDevBuild), "Alpha Build");
-    Drawing::drawText(target, buffDevBuild, font16, 4, HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
+char buffDevBuild[40];
+snprintf(buffDevBuild, sizeof(buffDevBuild), "Alpha Build");
+Drawing::drawText(target, buffDevBuild, font16, 4, HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
-    char buffVersion[40];
-    snprintf(buffVersion, sizeof(buffVersion), "Version %s - alpha", VERSION);
-    Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+char buffVersion[40];
+snprintf(buffVersion, sizeof(buffVersion), "Version %s - alpha", VERSION);
+Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 #else
-    char buffVersion[40];
-    snprintf(buffVersion, sizeof(buffVersion), "Version %s", VERSION);
-    Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+char buffVersion[40];
+snprintf(buffVersion, sizeof(buffVersion), "Version %s", VERSION);
+Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 #endif
 
 */

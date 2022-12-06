@@ -172,6 +172,14 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
 
     WorldIsolate_.rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
+
+    b2PolygonShape dynamicBox4;
+    dynamicBox4.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
+    RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3,
+                                  Textures::LoadTexture("data/assets/objects/pumpkin_01.png"));
+
+    WorldIsolate_.rigidBodies.push_back(rb2);
+    updateRigidBodyHitbox(rb2);
 }
 
 RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle,

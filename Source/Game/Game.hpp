@@ -87,6 +87,7 @@ private:
 
     METAENGINE_Render_GLTtext *text1 = nullptr;
     METAENGINE_Render_GLTtext *text2 = nullptr;
+    METAENGINE_Render_GLTtext *text3 = nullptr;
 
 public:
     bool running = true;

@@ -79,16 +79,15 @@ void Controls::initKey() {
     DEBUG_CARVE = add(new KeyControl(SDLK_c, RISING));
     DEBUG_RIGID = add(new KeyControl(SDLK_r, RISING));
 
-    DEBUG_DRAW =
-            new MultiControl(ControlCombine::AND, {add(new KeyControl(SDLK_x, MOMENTARY)),
-                                                   add(new KeyControl(SDLK_LCTRL, MOMENTARY))});
+    DEBUG_DRAW = new MultiControl(ControlCombine::AND,
+                                  {add(new KeyControl(SDLK_x, MOMENTARY)), add(new KeyControl(SDLK_LCTRL, MOMENTARY))});
     DEBUG_BRUSHSIZE_INC = add(new KeyControl(']', TYPE));
     DEBUG_BRUSHSIZE_DEC = add(new KeyControl('[', TYPE));
 
     DEBUG_TOGGLE_PLAYER = add(new KeyControl(SDLK_p, RISING));
 
-    PLAYER_UP = new MultiControl(ControlCombine::OR, {add(new KeyControl(SDLK_w, MOMENTARY)),
-                                                      add(new KeyControl(SDLK_SPACE, MOMENTARY))});
+    PLAYER_UP = new MultiControl(ControlCombine::OR,
+                                 {add(new KeyControl(SDLK_w, MOMENTARY)), add(new KeyControl(SDLK_SPACE, MOMENTARY))});
     PLAYER_LEFT = add(new KeyControl(SDLK_a, MOMENTARY));
     PLAYER_DOWN = add(new KeyControl(SDLK_s, MOMENTARY));
     PLAYER_RIGHT = add(new KeyControl(SDLK_d, MOMENTARY));

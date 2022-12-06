@@ -8,10 +8,6 @@
 #include "PlatformDetail.h"
 #include "SDLWrapper.hpp"
 
-#if __cplusplus <= 201402L
-#error "TODO: fix for this compiler! (at least C++14 is required)"
-#endif
-
 enum DisplayMode {
     WINDOWED,
     BORDERLESS,
@@ -30,7 +26,7 @@ struct Platform
     C_Window *window = nullptr;
 
     int WIDTH = 1024;
-    int HEIGHT = 720;
+    int HEIGHT = 680;
 
     int ParseRunArgs(int argc, char *argv[]);
     int InitWindow();

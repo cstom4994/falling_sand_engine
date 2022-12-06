@@ -19,7 +19,7 @@ void Resource::init() {
             return;
         }
     }
-    METADOT_ERROR("Runtime folder detect failed");
+    METADOT_ERROR("Check runtime folder failed");
 }
 
 const std::string &Resource::getDataPath() { return s_DataPath; }

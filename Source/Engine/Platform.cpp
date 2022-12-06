@@ -2,6 +2,7 @@
 
 #include "Platform.hpp"
 #include "Core/Const.hpp"
+#include "Core/Core.hpp"
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Networking.hpp"
@@ -11,36 +12,22 @@
 #include "Game/GameDataStruct.hpp"
 #include "Game/GameUI.hpp"
 #include "Game/Utils.hpp"
-#include "Libs/structopt.hpp"
 
 #include "Libs/glad/glad.h"
-
-struct Options
-{
-    std::optional<std::string> test;
-    std::optional<std::string> networkmode;
-    std::vector<std::string> files;
-};
-STRUCTOPT(Options, test, files);
+#include <cstring>
 
 int Platform::ParseRunArgs(int argc, char *argv[]) {
     try {
-        auto options = structopt::app(METADOT_NAME).parse<Options>(argc, argv);
+        if (argc > 1) {
 
-        if (!options.networkmode.value_or("").empty()) {
-            if (options.networkmode == "server") Settings::networkMode = NetworkMode::SERVER;
-        } else {
-            Settings::networkMode = NetworkMode::HOST;
+            if (auto v1 = argv[1]) {
+                if (!strcmp(v1, "server")) { Settings::networkMode = NetworkMode::SERVER; }
+            } else {
+                Settings::networkMode = NetworkMode::HOST;
+            }
         }
 
-        if (!options.test.value_or("").empty()) {
-            if (options.test == "test_") { return 0; }
-        }
-
-    } catch (structopt::exception &e) {
-        std::cout << e.what() << "\n";
-        std::cout << e.help();
-    }
+    } catch (std::exception &e) { std::cout << e.what() << "\n"; }
     return 0;
 }
 

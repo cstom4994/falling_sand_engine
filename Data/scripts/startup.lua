@@ -3,7 +3,7 @@
 -- used to load scripts
 tl = require("tl")
 inspect = require("inspect")
-require("lang")
+lang = require("lang")
 
 assert(inspect({1, 2, 3, 4}) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")
