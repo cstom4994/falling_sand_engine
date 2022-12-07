@@ -65,46 +65,6 @@ int Game::init(int argc, char *argv[]) {
 
     global.platform.InitWindow();
 
-    METADOT_NEW(C, audioPool, ThreadPool, 1);
-    std::future<void> AudioInitThread;
-
-    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
-
-        // init fmod
-        AudioInitThread = audioPool->push([&](int id) {
-            METADOT_INFO("Initializing audio engine...");
-
-            global.audioEngine.Init();
-
-#if defined(METADOT_BUILD_AUDIO)
-            global.audioEngine.LoadBank(
-                    METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"),
-                    FMOD_STUDIO_LOAD_BANK_NORMAL);
-            global.audioEngine.LoadBank(
-                    METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"),
-                    FMOD_STUDIO_LOAD_BANK_NORMAL);
-#endif
-
-            global.audioEngine.LoadEvent("event:/Music/Title");
-
-            global.audioEngine.LoadEvent("event:/Player/Jump");
-            global.audioEngine.LoadEvent("event:/Player/Fly");
-            global.audioEngine.LoadEvent("event:/Player/Wind");
-            global.audioEngine.LoadEvent("event:/Player/Impact");
-
-            global.audioEngine.LoadEvent("event:/World/Sand");
-            global.audioEngine.LoadEvent("event:/World/WaterFlow");
-
-            global.audioEngine.LoadEvent("event:/GUI/GUI_Hover");
-            global.audioEngine.LoadEvent("event:/GUI/GUI_Slider");
-
-            global.audioEngine.PlayEvent("event:/Player/Fly");
-            global.audioEngine.PlayEvent("event:/Player/Wind");
-            global.audioEngine.PlayEvent("event:/World/Sand");
-            global.audioEngine.PlayEvent("event:/World/WaterFlow");
-        });
-    }
-
     // scripting system
     auto loadscript = [&]() {
         METADOT_LOG_SCOPE_FUNCTION(INFO);
@@ -149,7 +109,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
 
-    AudioInitThread.get();
+    global.audioEngine.PlayEvent("event:/Music/Background1");
     global.audioEngine.PlayEvent("event:/Music/Title");
     global.audioEngine.Update();
 
@@ -1422,7 +1382,6 @@ exit:
 
     METADOT_DELETE(C, updateDirtyPool, ThreadPool);
     METADOT_DELETE(C, rotateVectorsPool, ThreadPool);
-    METADOT_DELETE(C, audioPool, ThreadPool);
 
     if (GameIsolate_.world) {
         METADOT_DELETE(C, GameIsolate_.world, World);

@@ -8,6 +8,8 @@
 #include "JsWrapper.hpp"
 #include <string>
 
+#pragma region GameScriptingBind_1
+
 static void println(JsWrapper::rest<std::string> args) {
     for (auto const &arg: args) METADOT_INFO("{}", arg);
 }
@@ -17,11 +19,24 @@ static void create_biome(std::string name, int id) {
     GameData_.biome_container.push_back(b);
 }
 
-static void loadLua(std::string luafile) {}
-static void loadScript(std::string scriptfile) {
+static void audio_init() { global.audioEngine.Init(); }
+
+static void audio_load_bank(std::string name, unsigned int type) {
+#if defined(METADOT_BUILD_AUDIO)
+    global.audioEngine.LoadBank(METADOT_RESLOC(name), type);
+#endif
+}
+
+static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(event); }
+static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
+
+static void load_lua(std::string luafile) {}
+static void load_script(std::string scriptfile) {
     auto context = global.scripts->JsContext;
     context->evalFile(METADOT_RESLOC_STR(scriptfile));
 }
+
+#pragma endregion GameScriptingBind_1
 
 void GameScriptingWrap::Init() {}
 
@@ -38,8 +53,12 @@ void GameScriptingWrap::Bind() {
         auto &module = context->addModule("CoreModule");
         module.function<&println>("println");
         module.function<&create_biome>("create_biome");
-        module.function<&loadLua>("load_lua");
-        module.function<&loadScript>("load_script");
+        module.function<&load_lua>("load_lua");
+        module.function<&load_script>("load_script");
+        module.function<&audio_init>("audio_init");
+        module.function<&audio_load_bank>("audio_load_bank");
+        module.function<&audio_load_event>("audio_load_event");
+        module.function<&audio_play_event>("audio_play_event");
 
         // module.class_<Biome>("Biome")
         //         .constructor<std::string, int>("Biome")

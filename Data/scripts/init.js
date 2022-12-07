@@ -1,7 +1,12 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 function OnGameDataLoad() {
+    test.load_script("data/scripts/audio.js");
     test.load_script("data/scripts/biomes.js");
+}
+
+function OnGameEngineLoad() {
+
 }
 
 // function OnWorldInitialized()
