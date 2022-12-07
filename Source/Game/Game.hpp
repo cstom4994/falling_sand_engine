@@ -108,6 +108,7 @@ public:
     {
         Backgrounds *backgrounds = nullptr;
         GameTimeState game_timestate;
+        Profiler profiler;
         World *world = nullptr;
     } GameIsolate_;
 

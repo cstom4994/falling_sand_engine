@@ -5,10 +5,10 @@
 
 #include "Engine/Platform.hpp"
 
-std::string Resource::s_ProjectRootPath;
-std::string Resource::s_DataPath;
+std::string ResourceWorker::s_ProjectRootPath;
+std::string ResourceWorker::s_DataPath;
 
-void Resource::init() {
+void ResourceWorker::init() {
     auto currentDir = std::filesystem::path(FUtil::getExecutableFolderPath());
     for (int i = 0; i < 3; ++i) {
         currentDir = currentDir.parent_path();
@@ -22,9 +22,9 @@ void Resource::init() {
     METADOT_ERROR("Check runtime folder failed");
 }
 
-const std::string &Resource::getDataPath() { return s_DataPath; }
+const std::string &ResourceWorker::getDataPath() { return s_DataPath; }
 
-std::string Resource::getResourceLoc(std::string_view resPath) {
+std::string ResourceWorker::GetResourceLoc(std::string_view resPath) {
     if (s_ProjectRootPath.empty()) {
         std::cout << "Try to load resource when ResourceLoc is unloaded (" << resPath << ")"
                   << std::endl;
@@ -36,7 +36,7 @@ std::string Resource::getResourceLoc(std::string_view resPath) {
     return std::string(resPath);
 }
 
-std::string Resource::getLocalPath(std::string_view resPath) {
+std::string ResourceWorker::GetLocalPath(std::string_view resPath) {
     auto res = std::string(resPath);
     FUtil::cleanPathString(res);
     size_t offset = 0;

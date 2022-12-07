@@ -16,6 +16,7 @@
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
 #include "GameDataStruct.hpp"
+#include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
 
 #include "Libs/glad/glad.h"
@@ -587,6 +588,14 @@ void ImGuiCore::Render() {
                         id.minor_version);
             ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version,
                         renderer->max_shader_version);
+
+            ImGui::Separator();
+
+            auto &entry =
+                    global.game->GameIsolate_.profiler
+                            ._entries[global.game->GameIsolate_.profiler.GetCurrentEntryIndex()];
+            ImGuiWidget::PlotFlame("CPU", &ProfilerValueGetter, &entry, Profiler::_StageCount, 0,
+                                   "Main Thread", FLT_MAX, FLT_MAX, ImVec2(600, 0));
 
 #if defined(METADOT_DEBUG)
             ImGui::Separator();

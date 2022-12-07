@@ -41,32 +41,23 @@ Global global;
 
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
-
     global.game = this;
-
     // init console & print title
     std::cout << logo << std::endl;
     Logging::init(argc, argv);
-
     METADOT_INFO("{} {}", METADOT_NAME, METADOT_VERSION_TEXT);
-
-    //data = new HostData;
 }
 
 Game::~Game() {
-
     global.game = nullptr;
-
     METAENGINE_Memory_End();
-
-    //delete data;
 }
 
 int Game::init(int argc, char *argv[]) {
 
     global.platform.ParseRunArgs(argc, argv);
 
-    Resource::init();
+    ResourceWorker::init();
 
     METADOT_INFO("Starting game...");
 
@@ -562,9 +553,12 @@ int Game::run(int argc, char *argv[]) {
         GameIsolate_.game_timestate.deltaTime =
                 GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTime;
 
+        GameIsolate_.profiler.Frame();
+
         if (Settings::networkMode != NetworkMode::SERVER) {
 
             // handle window events
+            GameIsolate_.profiler.Begin(Profiler::Stage::SdlInput);
             while (SDL_PollEvent(&windowEvent)) {
 
                 if (windowEvent.type == SDL_WINDOWEVENT) {
@@ -1148,6 +1142,7 @@ int Game::run(int argc, char *argv[]) {
                     my = windowEvent.motion.y;
                 }
             }
+            GameIsolate_.profiler.End(Profiler::Stage::SdlInput);
         }
 
         if (Settings::networkMode == NetworkMode::SERVER) {
@@ -1158,8 +1153,10 @@ int Game::run(int argc, char *argv[]) {
 
         if (Settings::networkMode != NetworkMode::SERVER) {
             //if(Settings::tick_world)
+            GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
             updateFrameEarly();
             global.scripts->Update();
+            GameIsolate_.profiler.End(Profiler::Stage::GameTick);
         }
 
         while (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick >
@@ -1176,6 +1173,7 @@ int Game::run(int argc, char *argv[]) {
 
         if (Settings::networkMode != NetworkMode::SERVER) {
             // render
+            GameIsolate_.profiler.Begin(Profiler::Stage::Rendering);
 
             RenderTarget_.target = RenderTarget_.realTarget;
             METAENGINE_Render_Clear(RenderTarget_.target);
@@ -1355,6 +1353,8 @@ int Game::run(int argc, char *argv[]) {
             }
 
             METAENGINE_Render_Flip(RenderTarget_.target);
+
+            GameIsolate_.profiler.End(Profiler::Stage::Rendering);
         }
 
         //        if (Time::millis() - now < 2) {

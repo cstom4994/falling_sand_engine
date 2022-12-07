@@ -12,19 +12,19 @@
 #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
     METADOT_ASSERT(FUtil::exists(stringPath), fmt::format("FILE: {0} does not exist", stringPath))
 
-class Resource {
+class ResourceWorker {
 private:
     static std::string s_ProjectRootPath;
     static std::string s_DataPath;
 
 public:
-    static std::string getResourceLoc(std::string_view resPath);
-    static std::string getLocalPath(std::string_view resPath);
+    static std::string GetResourceLoc(std::string_view resPath);
+    static std::string GetLocalPath(std::string_view resPath);
     static void init();
     static const std::string &getDataPath();
 };
 
-#define METADOT_RESLOC(x) Resource::getResourceLoc(x)
+#define METADOT_RESLOC(x) ResourceWorker::GetResourceLoc(x)
 
 #define METADOT_RESLOC_STR(x) METADOT_RESLOC(x).c_str()
 
