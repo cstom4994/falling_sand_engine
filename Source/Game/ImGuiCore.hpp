@@ -8,6 +8,8 @@
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/SDLWrapper.hpp"
 #include "Libs/ImGui/TextEditor.h"
+#include <string>
+#include <vector>
 
 class Material;
 class WorldMeta;
@@ -27,6 +29,11 @@ private:
         bool *opened;
     };
 
+    struct CodeView
+    {
+        std::string file;
+    };
+
     std::vector<ImGuiWin> m_wins;
 
     C_Window *window;
@@ -34,6 +41,7 @@ private:
 
     ImGuiContext *m_imgui = nullptr;
 
+    std::vector<CodeView> view_file;
     TextEditor editor;
 
 public:

@@ -1410,6 +1410,7 @@ void Game::updateFrameEarly() {
         GameUI::DebugDrawUI::visible ^= true;
         GameUI::DebugCheatsUI::visible ^= true;
         GameIsolate_.settings.ui_tweak ^= true;
+        GameIsolate_.settings.ui_code_editor ^= true;
     }
 
     if (GameIsolate_.settings.draw_frame_graph) {

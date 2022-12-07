@@ -12,6 +12,7 @@ i18n.load({
     },
     zh = {
         welcome = "欢迎来到 MetaDot",
+        test = "测试",
         ui_tweaks = "MetaEngine Tweaks",
         ui_info = "基本信息",
         ui_test = "测试",
@@ -26,7 +27,13 @@ i18n.load({
         ui_cancel = "取消",
         ui_appearance = "外观",
         ui_background = "背景",
-        ui_scripts = "脚本"
+        ui_scripts = "脚本",
+        ui_scripts_editor = "脚本编辑器",
+        ui_file = "文件",
+        ui_open = "打开",
+        ui_save = "保存",
+        ui_edit = "编辑",
+        ui_line = "行"
     }
 })
 

@@ -8,6 +8,7 @@
 #include "Core/Macros.hpp"
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
+#include <filesystem>
 
 #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
     METADOT_ASSERT(FUtil::exists(stringPath), fmt::format("FILE: {0} does not exist", stringPath))
@@ -92,6 +93,11 @@ namespace FUtil {
     inline bool copyFile(std::string_view src, std::string_view dest) {
         std::filesystem::copy(src, dest);
         return true;
+    }
+
+    inline std::string GetFileName(std::string &s) {
+        std::filesystem::path p(s);
+        return p.stem();
     }
 
     std::string readFileString(std::string_view path);

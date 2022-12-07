@@ -316,10 +316,12 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
 #endif
 
-    std::ifstream t(METADOT_RESLOC("data/scripts/startup.lua"));
-    if (t.good()) {
-        std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+    auto fileopen = METADOT_RESLOC("data/scripts/startup.lua");
+    std::ifstream i(fileopen);
+    if (i.good()) {
+        std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
         editor.SetText(str);
+        view_file.push_back(CodeView{.file = fileopen});
     }
 
     firstRun = true;
@@ -504,18 +506,19 @@ void ImGuiCore::Render() {
     if (global.game->GameIsolate_.settings.ui_code_editor) {
 
         auto cpos = editor.GetCursorPosition();
-        ImGui::Begin("脚本编辑器", nullptr,
+        ImGui::Begin(LANG("ui_scripts_editor"), nullptr,
                      ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
         ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
         if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Save")) {
-                    auto textToSave = editor.GetText();
-                    /// save text....
+            if (ImGui::BeginMenu(LANG("ui_file"))) {
+                if (ImGui::MenuItem(LANG("ui_save"))) {
+                    // auto textToSave = editor.GetText();
+                    // std::ofstream o(fileopen);
+                    // o << textToSave;
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::BeginMenu(LANG("ui_edit"))) {
                 bool ro = editor.IsReadOnly();
                 if (ImGui::MenuItem("Read-only mode", nullptr, &ro)) editor.SetReadOnly(ro);
                 ImGui::Separator();
@@ -558,12 +561,22 @@ void ImGuiCore::Render() {
             ImGui::EndMenuBar();
         }
 
-        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1,
-                    editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
-                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(),
-                    METADOT_RESLOC_STR("data/scripts/startup.lua"));
+        ImGui::BeginTabBar("多文件编辑");
 
-        editor.Render("TextEditor");
+        for (auto &code: view_file) {
+            if (ImGui::BeginTabItem(FUtil::GetFileName(code.file).c_str())) {
+                ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1,
+                            cpos.mColumn + 1, editor.GetTotalLines(),
+                            editor.IsOverwrite() ? "Ovr" : "Ins", editor.CanUndo() ? "*" : " ",
+                            editor.GetLanguageDefinition().mName.c_str(),
+                            FUtil::GetFileName(code.file).c_str());
+
+                editor.Render("TextEditor");
+                ImGui::EndTabItem();
+            }
+        }
+
+        ImGui::EndTabBar();
         ImGui::End();
     }
 
