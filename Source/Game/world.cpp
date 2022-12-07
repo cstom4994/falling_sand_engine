@@ -68,7 +68,6 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Rende
         METADOT_NEW(C, updateRigidBodyHitboxPool, ThreadPool, 8);
 
     if (netMode != NetworkMode::SERVER) {
-
         this->audioEngine = audioEngine;
         audioEngine->LoadEvent("event:/World/Explode");
     }

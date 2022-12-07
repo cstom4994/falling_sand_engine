@@ -65,36 +65,45 @@ int Game::init(int argc, char *argv[]) {
 
     global.platform.InitWindow();
 
-    // if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+    METADOT_NEW(C, audioPool, ThreadPool, 1);
+    std::future<void> AudioInitThread;
 
-    //     // init fmod
-    //     initThread = initThreadPool->push([&](int id) {
-    //         METADOT_INFO("Initializing audio engine...");
+    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
 
-    //         audioEngine.Init();
+        // init fmod
+        AudioInitThread = audioPool->push([&](int id) {
+            METADOT_INFO("Initializing audio engine...");
 
-    //         // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
-    //         // audioEngine.LoadBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL);
+            global.audioEngine.Init();
 
-    //         audioEngine.LoadEvent("event:/Music/Title");
+#if defined(METADOT_BUILD_AUDIO)
+            global.audioEngine.LoadBank(
+                    METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"),
+                    FMOD_STUDIO_LOAD_BANK_NORMAL);
+            global.audioEngine.LoadBank(
+                    METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.strings.bank"),
+                    FMOD_STUDIO_LOAD_BANK_NORMAL);
+#endif
 
-    //         audioEngine.LoadEvent("event:/Player/Jump");
-    //         audioEngine.LoadEvent("event:/Player/Fly");
-    //         audioEngine.LoadEvent("event:/Player/Wind");
-    //         audioEngine.LoadEvent("event:/Player/Impact");
+            global.audioEngine.LoadEvent("event:/Music/Title");
 
-    //         audioEngine.LoadEvent("event:/World/Sand");
-    //         audioEngine.LoadEvent("event:/World/WaterFlow");
+            global.audioEngine.LoadEvent("event:/Player/Jump");
+            global.audioEngine.LoadEvent("event:/Player/Fly");
+            global.audioEngine.LoadEvent("event:/Player/Wind");
+            global.audioEngine.LoadEvent("event:/Player/Impact");
 
-    //         audioEngine.LoadEvent("event:/GUI/GUI_Hover");
-    //         audioEngine.LoadEvent("event:/GUI/GUI_Slider");
+            global.audioEngine.LoadEvent("event:/World/Sand");
+            global.audioEngine.LoadEvent("event:/World/WaterFlow");
 
-    //         audioEngine.PlayEvent("event:/Player/Fly");
-    //         audioEngine.PlayEvent("event:/Player/Wind");
-    //         audioEngine.PlayEvent("event:/World/Sand");
-    //         audioEngine.PlayEvent("event:/World/WaterFlow");
-    //     });
-    // }
+            global.audioEngine.LoadEvent("event:/GUI/GUI_Hover");
+            global.audioEngine.LoadEvent("event:/GUI/GUI_Slider");
+
+            global.audioEngine.PlayEvent("event:/Player/Fly");
+            global.audioEngine.PlayEvent("event:/Player/Wind");
+            global.audioEngine.PlayEvent("event:/World/Sand");
+            global.audioEngine.PlayEvent("event:/World/WaterFlow");
+        });
+    }
 
     // scripting system
     auto loadscript = [&]() {
@@ -140,7 +149,9 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
 
-    //worldInitThread.get();
+    AudioInitThread.get();
+    global.audioEngine.PlayEvent("event:/Music/Title");
+    global.audioEngine.Update();
 
     METADOT_INFO("Initializing world...");
     METADOT_NEW(C, GameIsolate_.world, World);
@@ -1411,6 +1422,7 @@ exit:
 
     METADOT_DELETE(C, updateDirtyPool, ThreadPool);
     METADOT_DELETE(C, rotateVectorsPool, ThreadPool);
+    METADOT_DELETE(C, audioPool, ThreadPool);
 
     if (GameIsolate_.world) {
         METADOT_DELETE(C, GameIsolate_.world, World);
@@ -1424,9 +1436,9 @@ exit:
 
     if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
         global.platform.EndWindow();
+        global.audioEngine.Shutdown();
         SDL_DestroyWindow(global.platform.window);
         SDL_Quit();
-        global.audioEngine.Shutdown();
     }
 
     METADOT_INFO("Clean done...");

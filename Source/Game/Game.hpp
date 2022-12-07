@@ -68,6 +68,7 @@ private:
     int ent_prevLoadZoneY = 0;
     ThreadPool *updateDirtyPool = nullptr;
     ThreadPool *rotateVectorsPool = nullptr;
+    ThreadPool *audioPool = nullptr;
 
     UInt16 *movingTiles;
 

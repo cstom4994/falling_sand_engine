@@ -20,6 +20,7 @@
 #include "Libs/ImGui/implot.h"
 
 #include "Libs/glad/glad.h"
+#include "RendererGPU.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -626,6 +627,15 @@ void ImGuiCore::Render() {
         }
         if (ImGui::BeginTabItem(U8("调整"))) {
             if (myCollapsingHeader(U8("遥测"))) { GameUI::DebugUI::Draw(global.game); }
+#define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->shader)
+            if (myCollapsingHeader(U8("GLSL"))) {
+                INSPECTSHADER(newLightingShader);
+                INSPECTSHADER(fireShader);
+                INSPECTSHADER(fire2Shader);
+                INSPECTSHADER(waterShader);
+                INSPECTSHADER(waterFlowPassShader);
+            }
+#undef INSPECTSHADER
             // Call the function in our RCC++ class
             //if (myCollapsingHeader("RCCpp"))
             //    getSystemTable()->pRCCppMainLoopI->MainLoop();

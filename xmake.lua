@@ -18,9 +18,14 @@ else
     add_packages("libsdl")
 end
 
-option("unity")
+option("build_unity")
 set_default(false)
 set_description("Toggle to enable unity build")
+option_end()
+
+option("build_audio")
+set_default(false)
+set_description("Toggle to enable audio module")
 option_end()
 
 -- rule("metadot.uidsl")
@@ -143,6 +148,12 @@ elseif (is_os("macosx")) then
     link_list = {}
 end
 
+if (has_config("build_audio")) then
+    add_defines("METADOT_BUILD_AUDIO")
+    add_linkdirs("output")
+    add_rpathdirs("./")
+end
+
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
@@ -173,7 +184,7 @@ end
 
 target("MetaDot")
 do
-    if has_config("unity") then
+    if (has_config("build_unity")) then
         add_rules("c.unity_build", {batchsize = 4})
         add_rules("c++.unity_build", {batchsize = 4})
     end
@@ -195,4 +206,7 @@ do
     add_headerfiles("Source/Game/**.hpp")
     add_headerfiles("Source/Game/**.inl")
     add_headerfiles("Source/Shared/**.hpp")
+    if (is_os("macosx") and has_config("build_audio")) then
+        add_links("fmod", "fmodstudio")
+    end
 end

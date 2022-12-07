@@ -3,6 +3,7 @@
 #include "Game/GameUI.hpp"
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
+#include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameDataStruct.hpp"
 #include "Game/ImGuiCore.hpp"
@@ -10,6 +11,7 @@
 #include "Game/Player.hpp"
 
 #include "Game/WorldGenerator.cpp"
+#include "ImGui/imgui.h"
 
 #include <string>
 
@@ -134,7 +136,9 @@ namespace GameUI {
         ImGui::PopStyleColor();
     }
 
-    // std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
+#if defined(METADOT_BUILD_AUDIO)
+    std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
+#endif
     int OptionsUI::item_current_idx = 0;
     bool OptionsUI::vsync = false;
     bool OptionsUI::minimizeOnFocus = false;
@@ -335,25 +339,28 @@ namespace GameUI {
     }
 
     void OptionsUI::DrawAudio(Game *game) {
+#if defined(METADOT_BUILD_AUDIO)
         ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Volume");
         ImGui::Indent(4);
 
-        // if (busMap.size() == 0) {
-        //     FMOD::Studio::Bus *busses[20];
-        //     int busCt = 0;
-        //     game->audioEngine.GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))->getBusList(busses, 20, &busCt);
+        if (busMap.size() == 0) {
+            FMOD::Studio::Bus *busses[20];
+            int busCt = 0;
+            global.audioEngine
+                    .GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))
+                    ->getBusList(busses, 20, &busCt);
 
-        //     busMap = {};
+            busMap = {};
 
-        //     for (int i = 0; i < busCt; i++) {
-        //         FMOD::Studio::Bus *b = busses[i];
-        //         char path[100];
-        //         int ctPath = 0;
-        //         b->getPath(path, 100, &ctPath);
+            for (int i = 0; i < busCt; i++) {
+                FMOD::Studio::Bus *b = busses[i];
+                char path[100];
+                int ctPath = 0;
+                b->getPath(path, 100, &ctPath);
 
-        //         busMap[std::string(path)] = b;
-        //     }
-        // }
+                busMap[std::string(path)] = b;
+            }
+        }
 
         std::vector<std::vector<std::string>> disp = {{"bus:/Master", "Master"},
                                                       {"bus:/Master/Underwater/Music", "Music"},
@@ -361,17 +368,20 @@ namespace GameUI {
                                                       {"bus:/Master/Underwater/Player", "Player"},
                                                       {"bus:/Master/Underwater/World", "World"}};
 
-        // for (auto &v: disp) {
-        //     float volume = 0;
-        //     busMap[v[0]]->getVolume(&volume);
-        //     volume *= 100;
-        //     if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
-        //         volume = std::max(0.0f, std::min(volume, 100.0f));
-        //         busMap[v[0]]->setVolume(volume / 100.0f);
-        //     }
-        // }
+        for (auto &v: disp) {
+            float volume = 0;
+            busMap[v[0]]->getVolume(&volume);
+            volume *= 100;
+            if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
+                volume = std::max(0.0f, std::min(volume, 100.0f));
+                busMap[v[0]]->setVolume(volume / 100.0f);
+            }
+        }
 
         ImGui::Unindent(4);
+#else
+        ImGui::Text("此构建版本没有启用音频模块");
+#endif
     }
 
     void OptionsUI::DrawInput(Game *game) {}

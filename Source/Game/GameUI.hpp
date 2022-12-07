@@ -118,7 +118,9 @@ namespace GameUI {
     };
 
     class OptionsUI {
-        // static std::map<std::string, FMOD::Studio::Bus *> busMap;
+#if defined(METADOT_BUILD_AUDIO)
+        static std::map<std::string, FMOD::Studio::Bus *> busMap;
+#endif
 
     public:
         static int item_current_idx;
