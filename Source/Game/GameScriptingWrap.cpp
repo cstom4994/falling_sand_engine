@@ -5,6 +5,8 @@
 #include "Core/Global.hpp"
 #include "Engine/ReflectionFlat.hpp"
 #include "Game/FileSystem.hpp"
+#include "Game/GameResources.hpp"
+#include "Game/Materials.hpp"
 #include "JsWrapper.hpp"
 #include <string>
 
@@ -29,6 +31,10 @@ static void audio_load_bank(std::string name, unsigned int type) {
 
 static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(event); }
 static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
+
+static void textures_init() { Textures::Init(); }
+static void textures_load(std::string name, std::string path) {}
+static void materials_init() { Materials::Init(); }
 
 static void load_lua(std::string luafile) {}
 static void load_script(std::string scriptfile) {
@@ -59,6 +65,9 @@ void GameScriptingWrap::Bind() {
         module.function<&audio_load_bank>("audio_load_bank");
         module.function<&audio_load_event>("audio_load_event");
         module.function<&audio_play_event>("audio_play_event");
+        module.function<&materials_init>("materials_init");
+        module.function<&textures_init>("textures_init");
+        module.function<&textures_load>("textures_load");
 
         // module.class_<Biome>("Biome")
         //         .constructor<std::string, int>("Biome")
@@ -74,6 +83,8 @@ void GameScriptingWrap::Bind() {
         context->evalFile(METADOT_RESLOC_STR("data/scripts/init.js"));
 
         auto OnGameDataLoad = (std::function<void(void)>) context->eval("OnGameDataLoad");
+        auto OnGameEngineLoad = (std::function<void(void)>) context->eval("OnGameEngineLoad");
+        OnGameEngineLoad();
         OnGameDataLoad();
 
     } catch (JsWrapper::exception) {

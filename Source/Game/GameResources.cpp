@@ -35,7 +35,7 @@ C_Surface *Textures::obsidian = nullptr;
 C_Surface *Textures::caveBG = nullptr;
 C_Surface *Textures::testAse = nullptr;
 
-void Textures::InitTexture() {
+void Textures::Init() {
     testTexture = Textures::LoadTexture("data/assets/textures/test.png");
     dirt1Texture = Textures::LoadTexture("data/assets/textures/testDirt.png");
     stone1Texture = Textures::LoadTexture("data/assets/textures/testStone.png");

@@ -43,7 +43,7 @@ public:
 
     static C_Surface *testAse;
 
-    static void InitTexture();
+    static void Init();
 
     static C_Surface *LoadTexture(std::string path);
     static C_Surface *LoadTexture(std::string path, UInt32 pixelFormat);

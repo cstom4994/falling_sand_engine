@@ -102,9 +102,7 @@ int Game::init(int argc, char *argv[]) {
     // register & set up materials
     METADOT_INFO("Setting up materials...");
 
-    Textures::InitTexture();
     METAENGINE_Render_GLT_Init();
-    Materials::Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
