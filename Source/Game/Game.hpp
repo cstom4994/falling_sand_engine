@@ -71,8 +71,6 @@ private:
 
     UInt16 *movingTiles;
 
-    int tickTime = 0;
-
     int mx = 0;
     int my = 0;
     int lastDrawMX = 0;
@@ -92,6 +90,8 @@ private:
 public:
     bool running = true;
 
+    int tickTime = 0;
+
     int scale = 4;
     float accLoadX = 0;
     float accLoadY = 0;
@@ -109,6 +109,7 @@ public:
         Backgrounds *backgrounds = nullptr;
         GameTimeState game_timestate;
         Profiler profiler;
+        Settings settings;
         World *world = nullptr;
     } GameIsolate_;
 

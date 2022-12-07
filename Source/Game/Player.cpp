@@ -9,7 +9,9 @@
 
 void Player::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
-        int scaleEnt = Settings::hd_objects ? Settings::hd_objects_size : 1;
+        int scaleEnt = global.game->GameIsolate_.settings.hd_objects
+                               ? global.game->GameIsolate_.settings.hd_objects_size
+                               : 1;
 
         METAENGINE_Render_Rect *ir = new METAENGINE_Render_Rect{
                 (float) (int) (ofsX + x + hw / 2.0 - heldItem->surface->w),

@@ -3,6 +3,7 @@
 #ifndef _METADOT_GAMEDATASTRUCT_HPP_
 #define _METADOT_GAMEDATASTRUCT_HPP_
 
+#include "Core/Core.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/RendererGPU.h"
 #include "Materials.hpp"
@@ -73,58 +74,62 @@ struct Entity
     ~Entity();
 };
 
-struct SettingsBase
+struct Settings
 {
-    static bool draw_frame_graph;
-    static bool draw_background;
-    static bool draw_background_grid;
-    static bool draw_load_zones;
-    static bool draw_physics_debug;
-    static bool draw_b2d_shape;
-    static bool draw_b2d_joint;
-    static bool draw_b2d_aabb;
-    static bool draw_b2d_pair;
-    static bool draw_b2d_centerMass;
-    static bool draw_chunk_state;
-    static bool draw_debug_stats;
-    static bool draw_material_info;
-    static bool draw_detailed_material_info;
-    static bool draw_uinode_bounds;
-    static bool draw_temperature_map;
-    static bool draw_cursor;
+    bool draw_frame_graph;
+    bool draw_background;
+    bool draw_background_grid;
+    bool draw_load_zones;
+    bool draw_physics_debug;
+    bool draw_b2d_shape;
+    bool draw_b2d_joint;
+    bool draw_b2d_aabb;
+    bool draw_b2d_pair;
+    bool draw_b2d_centerMass;
+    bool draw_chunk_state;
+    bool draw_debug_stats;
+    bool draw_material_info;
+    bool draw_detailed_material_info;
+    bool draw_uinode_bounds;
+    bool draw_temperature_map;
+    bool draw_cursor;
 
-    static bool ui_tweak;
-    static bool ui_code_editor;
+    bool ui_tweak;
+    bool ui_code_editor;
 
-    static bool draw_shaders;
-    static int water_overlay;
-    static bool water_showFlow;
-    static bool water_pixelated;
-    static float lightingQuality;
-    static bool draw_light_overlay;
-    static bool simpleLighting;
-    static bool lightingEmission;
-    static bool lightingDithering;
+    bool draw_shaders;
+    int water_overlay;
+    bool water_showFlow;
+    bool water_pixelated;
+    float lightingQuality;
+    bool draw_light_overlay;
+    bool simpleLighting;
+    bool lightingEmission;
+    bool lightingDithering;
 
-    static bool tick_world;
-    static bool tick_box2d;
-    static bool tick_temperature;
-    static bool hd_objects;
+    bool tick_world;
+    bool tick_box2d;
+    bool tick_temperature;
+    bool hd_objects;
 
-    static int hd_objects_size;
+    int hd_objects_size;
 
-    static int networkMode;
-    static std::string server_ip;
-    static int server_port;
+    int networkMode;
+    std::string server_ip;
+    int server_port;
+
+    void Init(bool openDebugUIs);
+    void Load(std::string setting_file);
+    void Save(std::string setting_file);
 };
-
-struct Settings : SettingsBase
-{
-    Settings() {
-        // LINK_PROPERTY(ui_tweak, &ui_tweak);
-        // LINK_PROPERTY(ui_code_editor, &ui_code_editor);
-    }
-};
+METADOT_STRUCT(Settings, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones,
+               draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
+               draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info,
+               draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor,
+               ui_tweak, ui_code_editor, draw_shaders, water_overlay, water_showFlow,
+               water_pixelated, lightingQuality, draw_light_overlay, simpleLighting,
+               lightingEmission, lightingDithering, tick_world, tick_box2d, tick_temperature,
+               hd_objects, hd_objects_size);
 
 struct Populator
 {

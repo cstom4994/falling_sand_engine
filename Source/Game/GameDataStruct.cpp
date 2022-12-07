@@ -1,61 +1,27 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "GameDataStruct.hpp"
-#include "Game/Chunk.hpp"
-#include "Game/GameResources.hpp"
+#include "Core/Core.hpp"
+#include "Core/DebugImpl.hpp"
+#include "Core/Global.hpp"
 #include "Engine/ReflectionFlat.hpp"
+#include "Game/Chunk.hpp"
+#include "Game/FileSystem.hpp"
+#include "Game/GameResources.hpp"
+#include "Game/GameUI.hpp"
 #include "Game/InEngine.h"
 #include "Structures.hpp"
 #include "world.hpp"
 
+#include <string>
+
 GameData GameData_;
 
 void ReleaseGameData() {
-    for (auto b : GameData_.biome_container) {
-        if(static_cast<bool>(b)) delete b;
+    for (auto b: GameData_.biome_container) {
+        if (static_cast<bool>(b)) delete b;
     }
 }
-
-bool SettingsBase::draw_frame_graph = true;
-bool SettingsBase::draw_background = true;
-bool SettingsBase::draw_background_grid = false;
-bool SettingsBase::draw_load_zones = false;
-bool SettingsBase::draw_physics_debug = false;
-bool SettingsBase::draw_b2d_shape = true;
-bool SettingsBase::draw_b2d_joint = false;
-bool SettingsBase::draw_b2d_aabb = false;
-bool SettingsBase::draw_b2d_pair = false;
-bool SettingsBase::draw_b2d_centerMass = true;
-bool SettingsBase::draw_chunk_state = false;
-bool SettingsBase::draw_debug_stats = false;
-bool SettingsBase::draw_material_info = true;
-bool SettingsBase::draw_detailed_material_info = true;
-bool SettingsBase::draw_temperature_map = false;
-bool SettingsBase::draw_cursor = true;
-
-bool SettingsBase::ui_tweak = false;
-bool SettingsBase::ui_code_editor = false;
-
-bool SettingsBase::draw_shaders = true;
-int SettingsBase::water_overlay = 0;
-bool SettingsBase::water_showFlow = true;
-bool SettingsBase::water_pixelated = false;
-float SettingsBase::lightingQuality = 0.5f;
-bool SettingsBase::draw_light_overlay = false;
-bool SettingsBase::simpleLighting = false;
-bool SettingsBase::lightingEmission = true;
-bool SettingsBase::lightingDithering = false;
-
-bool SettingsBase::tick_world = true;
-bool SettingsBase::tick_box2d = true;
-bool SettingsBase::tick_temperature = true;
-bool SettingsBase::hd_objects = false;
-
-int SettingsBase::hd_objects_size = 3;
-
-int SettingsBase::networkMode = -1;
-std::string SettingsBase::server_ip = "127.0.0.1";
-int SettingsBase::server_port = 25555;
 
 void Entity::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {}
 
@@ -531,3 +497,92 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
     }
     return {};
 }
+void Settings::Save(std::string setting_file) {
+    // std::string settings_data = "SettingsData = function()\nmytable = {}\n";
+    // SaveLuaConfig(*this, settings_data);
+    // settings_data += "return mytable\nend";
+
+    // std::ofstream o(setting_file);
+    // o << settings_data;
+}
+
+void Settings::Init(bool openDebugUIs) {
+
+    std::string setting_file = METADOT_RESLOC("data/scripts/settings.lua");
+
+    auto L = global.scripts->LuaRuntime;
+
+    if (!FUtil::exists(setting_file)) { this->Save(setting_file); }
+
+    L->GetWrapper()->dofile(setting_file);
+
+    LuaWrapper::LuaFunction SettingsData = (*L->GetWrapper())["GetSettingsData"];
+    LuaWrapper::LuaTable luat = SettingsData();
+
+    if (!luat.isNilref()) {
+        LoadLuaConfig((*this), luat, draw_frame_graph);
+        LoadLuaConfig((*this), luat, draw_background);
+        LoadLuaConfig((*this), luat, draw_background_grid);
+        LoadLuaConfig((*this), luat, draw_load_zones);
+        LoadLuaConfig((*this), luat, draw_physics_debug);
+        LoadLuaConfig((*this), luat, draw_b2d_shape);
+        LoadLuaConfig((*this), luat, draw_b2d_joint);
+        LoadLuaConfig((*this), luat, draw_b2d_aabb);
+        LoadLuaConfig((*this), luat, draw_b2d_pair);
+        LoadLuaConfig((*this), luat, draw_b2d_centerMass);
+        LoadLuaConfig((*this), luat, draw_chunk_state);
+        LoadLuaConfig((*this), luat, draw_debug_stats);
+        LoadLuaConfig((*this), luat, draw_material_info);
+        LoadLuaConfig((*this), luat, draw_detailed_material_info);
+        LoadLuaConfig((*this), luat, draw_uinode_bounds);
+        LoadLuaConfig((*this), luat, draw_temperature_map);
+        LoadLuaConfig((*this), luat, draw_cursor);
+
+        LoadLuaConfig((*this), luat, ui_tweak);
+        LoadLuaConfig((*this), luat, ui_code_editor);
+
+        LoadLuaConfig((*this), luat, draw_shaders);
+        LoadLuaConfig((*this), luat, water_overlay);
+        LoadLuaConfig((*this), luat, water_showFlow);
+        LoadLuaConfig((*this), luat, water_pixelated);
+        LoadLuaConfig((*this), luat, lightingQuality);
+        LoadLuaConfig((*this), luat, draw_light_overlay);
+        LoadLuaConfig((*this), luat, simpleLighting);
+        LoadLuaConfig((*this), luat, lightingEmission);
+        LoadLuaConfig((*this), luat, lightingDithering);
+
+        LoadLuaConfig((*this), luat, tick_world);
+        LoadLuaConfig((*this), luat, tick_box2d);
+        LoadLuaConfig((*this), luat, tick_temperature);
+        LoadLuaConfig((*this), luat, hd_objects);
+
+        LoadLuaConfig((*this), luat, hd_objects_size);
+
+        LoadLuaConfig((*this), luat, networkMode);
+        LoadLuaConfig((*this), luat, server_ip);
+        LoadLuaConfig((*this), luat, server_port);
+
+    } else {
+        METADOT_BUG("SettingsData WAS NULL");
+    }
+
+    networkMode = NetworkMode::HOST;// force
+
+    GameUI::DebugCheatsUI::visible = openDebugUIs;
+    GameUI::DebugDrawUI::visible = openDebugUIs;
+    draw_frame_graph = openDebugUIs;
+    if (!openDebugUIs) {
+        draw_background = true;
+        draw_background_grid = false;
+        draw_load_zones = false;
+        draw_physics_debug = false;
+        draw_chunk_state = false;
+        draw_debug_stats = false;
+        draw_detailed_material_info = false;
+        draw_temperature_map = false;
+    }
+
+    METADOT_INFO("SettingsData loaded");
+}
+
+void Settings::Load(std::string setting_file) {}

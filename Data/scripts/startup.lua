@@ -9,7 +9,7 @@ assert(inspect({1, 2, 3, 4}) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")
 assert(inspect("Hello") == '"Hello"')
 
-runf("data/scripts/vec.lua")
+runf("Script:vec.lua")
 METADOT_INFO(i18n("loaded_vec"))
 
 content = i18n("welcome")

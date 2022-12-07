@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -94,9 +95,11 @@ static int catch_panic(lua_State *L) {
 }
 
 static int metadot_run_lua_file_script(lua_State *L) {
-    auto string = lua_tostring(L, 1);
+    std::string string = lua_tostring(L, 1);
     auto LuaCore = global.scripts->LuaRuntime;
     METADOT_ASSERT_E(LuaCore);
+    if (SUtil::startsWith(string, "Script:"))
+        SUtil::replaceWith(string, "Script:", METADOT_RESLOC_STR("data/scripts/"));
     LuaCore->RunScriptFromFile(string);
     return 0;
 }

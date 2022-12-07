@@ -61,65 +61,11 @@ int Game::init(int argc, char *argv[]) {
 
     METADOT_INFO("Starting game...");
 
-    bool openDebugUIs = false;
-    GameUI::DebugCheatsUI::visible = openDebugUIs;
-    GameUI::DebugDrawUI::visible = openDebugUIs;
-    Settings::draw_frame_graph = openDebugUIs;
-    if (!openDebugUIs) {
-        Settings::draw_background = true;
-        Settings::draw_background_grid = false;
-        Settings::draw_load_zones = false;
-        Settings::draw_physics_debug = false;
-        Settings::draw_chunk_state = false;
-        Settings::draw_debug_stats = false;
-        Settings::draw_detailed_material_info = false;
-        Settings::draw_temperature_map = false;
-    }
-
     global.GameDir = GameDir(METADOT_RESLOC("saves/"));
-
-    Networking::init();
-    if (Settings::networkMode == NetworkMode::SERVER) {
-        int port = Settings::server_port;
-        if (argc >= 3) { port = atoi(argv[2]); }
-        global.server = Server::start(port);
-        SDL_SetWindowTitle(global.platform.window, win_title_server.c_str());
-
-        /*while (true) {
-METADOT_BUG("[SERVER] tick {0:d}", server->server->connectedPeers);
-server->tick();
-Sleep(500);
-}
-return 0;*/
-
-    } else {
-        global.client = Client::start();
-        //client->connect(Settings::server_ip.c_str(), Settings::server_port);
-
-        //while (true) {
-        //	METADOT_BUG("[CLIENT] tick");
-
-        //	/* Create a reliable packet of size 7 containing "packet\0" */
-        //	ENetPacket * packet = enet_packet_create("keepalive",
-        //		strlen("keepalive") + 1, 0);
-        //	/* Send the packet to the peer over channel id 0. */
-        //	/* One could also broadcast the packet by         */
-        //	/* enet_host_broadcast (host, 0, packet);         */
-        //	enet_peer_send(client->peer, 0, packet);
-
-        //	for (int i = 0; i < 1000; i++) {
-        //		client->tick();
-        //		Sleep(1);
-        //	}
-        //}
-        //return 0;
-
-        SDL_SetWindowTitle(global.platform.window, win_title_client.c_str());
-    }
 
     global.platform.InitWindow();
 
-    // if (Settings::networkMode != NetworkMode::SERVER) {
+    // if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
 
     //     // init fmod
     //     initThread = initThreadPool->push([&](int id) {
@@ -161,9 +107,23 @@ return 0;*/
 
     global.I18N.Init();
 
+    GameIsolate_.settings.Init(false);
     GameSystem_.console.Init();
 
-    if (Settings::networkMode != NetworkMode::SERVER) { GameIsolate_.backgrounds->Load(); }
+    Networking::init();
+    if (GameIsolate_.settings.networkMode == NetworkMode::SERVER) {
+        int port = GameIsolate_.settings.server_port;
+        if (argc >= 3) { port = atoi(argv[2]); }
+        global.server = Server::start(port);
+        SDL_SetWindowTitle(global.platform.window, win_title_server.c_str());
+    } else {
+        global.client = Client::start();
+        SDL_SetWindowTitle(global.platform.window, win_title_client.c_str());
+    }
+
+    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+        GameIsolate_.backgrounds->Load();
+    }
 
     // init the rng
     METADOT_INFO("Seeding RNG...");
@@ -191,9 +151,9 @@ return 0;*/
                     CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
                     CHUNK_H * RENDER_C_TEST,
-            RenderTarget_.target, &global.audioEngine, Settings::networkMode);
+            RenderTarget_.target, &global.audioEngine, GameIsolate_.settings.networkMode);
 
-    if (Settings::networkMode != NetworkMode::SERVER) {
+    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
         // set up main menu ui
 
         METADOT_INFO("Setting up main menu...");
@@ -215,7 +175,9 @@ return 0;*/
     METADOT_NEW(C, updateDirtyPool, ThreadPool, 6);
     METADOT_NEW(C, rotateVectorsPool, ThreadPool, 3);
 
-    if (Settings::networkMode != NetworkMode::SERVER) { global.shaderworker.LoadShaders(); }
+    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+        global.shaderworker.LoadShaders();
+    }
 
     return this->run(argc, argv);
 }
@@ -273,8 +235,8 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
                 TexturePack_.worldTexture = METAENGINE_Render_CreateImage(
-                        GameIsolate_.world->width * Settings::hd_objects_size,
-                        GameIsolate_.world->height * Settings::hd_objects_size,
+                        GameIsolate_.world->width * GameIsolate_.settings.hd_objects_size,
+                        GameIsolate_.world->height * GameIsolate_.settings.hd_objects_size,
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_SetImageFilter(TexturePack_.worldTexture,
@@ -352,10 +314,13 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
                 TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
-                        GameIsolate_.world->width *
-                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->width * (GameIsolate_.settings.hd_objects
+                                                             ? GameIsolate_.settings.hd_objects_size
+                                                             : 1),
                         GameIsolate_.world->height *
-                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                (GameIsolate_.settings.hd_objects
+                                         ? GameIsolate_.settings.hd_objects_size
+                                         : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureObjects,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -373,10 +338,13 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
-                        GameIsolate_.world->width *
-                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->width * (GameIsolate_.settings.hd_objects
+                                                             ? GameIsolate_.settings.hd_objects_size
+                                                             : 1),
                         GameIsolate_.world->height *
-                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                (GameIsolate_.settings.hd_objects
+                                         ? GameIsolate_.settings.hd_objects_size
+                                         : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                 METAENGINE_Render_SetImageFilter(TexturePack_.textureObjectsBack,
                                                  METAENGINE_Render_FILTER_NEAREST);
@@ -394,10 +362,13 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
                 TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
-                        GameIsolate_.world->width *
-                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                        GameIsolate_.world->width * (GameIsolate_.settings.hd_objects
+                                                             ? GameIsolate_.settings.hd_objects_size
+                                                             : 1),
                         GameIsolate_.world->height *
-                                (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                (GameIsolate_.settings.hd_objects
+                                         ? GameIsolate_.settings.hd_objects_size
+                                         : 1),
                         METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
 
                 METAENGINE_Render_LoadTarget(TexturePack_.textureEntities);
@@ -555,7 +526,8 @@ int Game::run(int argc, char *argv[]) {
 
         GameIsolate_.profiler.Frame();
 
-        if (Settings::networkMode != NetworkMode::SERVER) {
+#pragma region SDL_Input
+        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
 
             // handle window events
             GameIsolate_.profiler.Begin(Profiler::Stage::SdlInput);
@@ -1144,34 +1116,42 @@ int Game::run(int argc, char *argv[]) {
             }
             GameIsolate_.profiler.End(Profiler::Stage::SdlInput);
         }
+#pragma endregion SDL_Input
 
-        if (Settings::networkMode == NetworkMode::SERVER) {
+#pragma region Network_Tick
+        if (GameIsolate_.settings.networkMode == NetworkMode::SERVER) {
             global.server->tick();
-        } else if (Settings::networkMode == NetworkMode::CLIENT) {
+        } else if (GameIsolate_.settings.networkMode == NetworkMode::CLIENT) {
             global.client->tick();
         }
+#pragma endregion Network_Tikc
 
-        if (Settings::networkMode != NetworkMode::SERVER) {
-            //if(Settings::tick_world)
-            GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
+#pragma region GameTick
+        GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
+        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+            //if(GameIsolate_.settings.tick_world)
             updateFrameEarly();
             global.scripts->Update();
-            GameIsolate_.profiler.End(Profiler::Stage::GameTick);
         }
 
         while (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick >
                GameIsolate_.game_timestate.mspt) {
-            if (Settings::tick_world && Settings::networkMode != NetworkMode::CLIENT) tick();
+            if (GameIsolate_.settings.tick_world &&
+                GameIsolate_.settings.networkMode != NetworkMode::CLIENT)
+                tick();
             RenderTarget_.target = RenderTarget_.realTarget;
             GameIsolate_.game_timestate.lastTick = GameIsolate_.game_timestate.now;
             tickTime++;
         }
 
-        if (Settings::networkMode != NetworkMode::SERVER) {
-            if (Settings::tick_world) updateFrameLate();
+        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+            if (GameIsolate_.settings.tick_world) updateFrameLate();
         }
+        GameIsolate_.profiler.End(Profiler::Stage::GameTick);
+#pragma endregion GameTick
 
-        if (Settings::networkMode != NetworkMode::SERVER) {
+#pragma region Render
+        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
             // render
             GameIsolate_.profiler.Begin(Profiler::Stage::Rendering);
 
@@ -1213,7 +1193,7 @@ int Game::run(int argc, char *argv[]) {
             // render ImGui
             global.ImGuiCore->Render();
 
-            if (Settings::draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
+            if (GameIsolate_.settings.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
                 int msx = (int) ((mx - GameData_.ofsX - GameData_.camX) / scale);
                 int msy = (int) ((my - GameData_.ofsY - GameData_.camY) / scale);
@@ -1258,7 +1238,7 @@ int Game::run(int argc, char *argv[]) {
                         ImGui::BeginTooltip();
                         ImGui::Text("%s", tile.mat->name.c_str());
 
-                        if (Settings::draw_detailed_material_info) {
+                        if (GameIsolate_.settings.draw_detailed_material_info) {
 
                             if (tile.mat->physicsType == PhysicsType::SOUP) {
                                 ImGui::Text("fluidAmount = %f", tile.fluidAmount);
@@ -1356,20 +1336,13 @@ int Game::run(int argc, char *argv[]) {
 
             GameIsolate_.profiler.End(Profiler::Stage::Rendering);
         }
-
-        //        if (Time::millis() - now < 2) {
-        //#ifdef _WIN32
-        //            Sleep(2 - (Time::millis() - now));
-        //#else
-        //            sleep((2 - (Time::millis() - now)) / 1000.0f);
-        //#endif
-        //        }
+#pragma endregion Render
 
         frames++;
         if (GameIsolate_.game_timestate.now - lastFPS >= 1000) {
             lastFPS = GameIsolate_.game_timestate.now;
             //METADOT_INFO("{0:d} FPS", frames);
-            if (Settings::networkMode == NetworkMode::SERVER) {
+            if (GameIsolate_.settings.networkMode == NetworkMode::SERVER) {
                 //METADOT_BUG("{0:d} peers connected.", server->server->connectedPeers);
             }
             GameIsolate_.game_timestate.fps = frames;
@@ -1449,7 +1422,7 @@ exit:
     METAENGINE_Render_GLT_DeleteText(text3);
     METAENGINE_Render_GLT_Terminate();
 
-    if (Settings::networkMode != NetworkMode::SERVER) {
+    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
         global.platform.EndWindow();
         SDL_DestroyWindow(global.platform.window);
         SDL_Quit();
@@ -1467,24 +1440,24 @@ void Game::updateFrameEarly() {
     if (Controls::DEBUG_UI->get()) {
         GameUI::DebugDrawUI::visible ^= true;
         GameUI::DebugCheatsUI::visible ^= true;
-        Settings::ui_tweak ^= true;
+        GameIsolate_.settings.ui_tweak ^= true;
     }
 
-    if (Settings::draw_frame_graph) {
+    if (GameIsolate_.settings.draw_frame_graph) {
         if (Controls::STATS_DISPLAY->get()) {
-            Settings::draw_frame_graph = false;
-            Settings::draw_debug_stats = false;
-            Settings::draw_chunk_state = false;
-            Settings::draw_detailed_material_info = false;
+            GameIsolate_.settings.draw_frame_graph = false;
+            GameIsolate_.settings.draw_debug_stats = false;
+            GameIsolate_.settings.draw_chunk_state = false;
+            GameIsolate_.settings.draw_detailed_material_info = false;
         }
     } else {
         if (Controls::STATS_DISPLAY->get()) {
-            Settings::draw_frame_graph = true;
-            Settings::draw_debug_stats = true;
+            GameIsolate_.settings.draw_frame_graph = true;
+            GameIsolate_.settings.draw_debug_stats = true;
 
             if (Controls::STATS_DISPLAY_DETAILED->get()) {
-                Settings::draw_chunk_state = true;
-                Settings::draw_detailed_material_info = true;
+                GameIsolate_.settings.draw_chunk_state = true;
+                GameIsolate_.settings.draw_detailed_material_info = true;
             }
         }
     }
@@ -1972,7 +1945,8 @@ void Game::tick() {
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_Clear(TexturePack_.textureObjectsBack->target);
 
-        if (Settings::tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.settings.tick_world &&
+            GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
             GameIsolate_.world->tickChunks();
         }
 
@@ -2002,7 +1976,8 @@ void Game::tick() {
                                                       : TexturePack_.textureObjects->target;
             METAENGINE_Render_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target
                                                         : TexturePack_.textureObjectsLQ->target;
-            int scaleObjTex = Settings::hd_objects ? Settings::hd_objects_size : 1;
+            int scaleObjTex =
+                    GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1;
 
             METAENGINE_Render_Rect r = {x * scaleObjTex, y * scaleObjTex,
                                         (float) cur->surface->w * scaleObjTex,
@@ -2162,7 +2137,8 @@ void Game::tick() {
             }
         }
 
-        if (Settings::tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.settings.tick_world &&
+            GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
             GameIsolate_.world->tick();
         }
 
@@ -2283,7 +2259,7 @@ void Game::tick() {
                             //    }
                             //}
 
-                            //if(!Settings::draw_load_zones) {
+                            //if(!GameIsolate_.settings.draw_load_zones) {
                             //    unsigned int offset = (wxd + wyd * GameIsolate_.world->width) * 4;
                             //    dpixels_ar[offset + 2] = 0;        // b
                             //    dpixels_ar[offset + 1] = 0;        // g
@@ -2324,7 +2300,7 @@ void Game::tick() {
         }
 
         if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
-            if (Settings::tick_box2d) GameIsolate_.world->tickObjects();
+            if (GameIsolate_.settings.tick_box2d) GameIsolate_.world->tickObjects();
         }
 
         if (tickTime % 10 == 0) GameIsolate_.world->tickObjectsMesh();
@@ -2432,7 +2408,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                 if (GameIsolate_.world->layer2Dirty[i]) {
                     hadLayer2Dirty = true;
                     if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
-                        if (Settings::draw_background_grid) {
+                        if (GameIsolate_.settings.draw_background_grid) {
                             UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                             dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff; // b
                             dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff; // g
@@ -2510,10 +2486,10 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
             memset(GameIsolate_.world->backgroundDirty, false,
                    (size_t) GameIsolate_.world->width * GameIsolate_.world->height);
 
-        if (Settings::tick_temperature && tickTime % GameTick == 2) {
+        if (GameIsolate_.settings.tick_temperature && tickTime % GameTick == 2) {
             GameIsolate_.world->tickTemperature();
         }
-        if (Settings::draw_temperature_map && tickTime % GameTick == 0) {
+        if (GameIsolate_.settings.draw_temperature_map && tickTime % GameTick == 0) {
             renderTemperatureMap(GameIsolate_.world);
         }
 
@@ -2552,7 +2528,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                                                GameIsolate_.world->width * 4);
         }
 
-        if (Settings::draw_temperature_map) {
+        if (GameIsolate_.settings.draw_temperature_map) {
             METAENGINE_Render_UpdateImageBytes(TexturePack_.temperatureMap, NULL,
                                                &TexturePack_.pixelsTemp[0],
                                                GameIsolate_.world->width * 4);
@@ -2565,7 +2541,8 @@ NULL,
 GameIsolate_.world->width * 4
 );*/
 
-        if (Settings::tick_box2d && tickTime % GameTick == 0) GameIsolate_.world->updateWorldMesh();
+        if (GameIsolate_.settings.tick_box2d && tickTime % GameTick == 0)
+            GameIsolate_.world->updateWorldMesh();
     }
 }
 
@@ -2606,7 +2583,7 @@ void Game::tickChunkLoading() {
 
             if (GameIsolate_.world->layer2Dirty[i]) {
                 if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
-                    if (Settings::draw_background_grid) {
+                    if (GameIsolate_.settings.draw_background_grid) {
                         UInt32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff,
                                       (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
@@ -3328,7 +3305,9 @@ newState = true;
                                                METAENGINE_Render_BLEND_ADD);
                 METAENGINE_Render_SetBlendMode(TexturePack_.textureEntitiesLQ,
                                                METAENGINE_Render_BLEND_ADD);
-                int scaleEnt = Settings::hd_objects ? Settings::hd_objects_size : 1;
+                int scaleEnt = GameIsolate_.settings.hd_objects
+                                       ? GameIsolate_.settings.hd_objects_size
+                                       : 1;
 
                 for (auto &v: GameIsolate_.world->WorldIsolate_.entities) {
                     v->renderLQ(TexturePack_.textureEntitiesLQ->target,
@@ -3429,7 +3408,7 @@ void Game::renderLate() {
         // draw backgrounds
 
         Background *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
-        if (Settings::draw_background && scale <= bg->layers[0].surface.size() &&
+        if (GameIsolate_.settings.draw_background && scale <= bg->layers[0].surface.size() &&
             GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_SET);
             METAENGINE_Color col = {static_cast<UInt8>((bg->solid >> 16) & 0xff),
@@ -3539,9 +3518,10 @@ void Game::renderLate() {
 
         // shader
 
-        if (Settings::draw_shaders) {
+        if (GameIsolate_.settings.draw_shaders) {
 
-            if (global.shaderworker.waterFlowPassShader->dirty && Settings::water_showFlow) {
+            if (global.shaderworker.waterFlowPassShader->dirty &&
+                GameIsolate_.settings.water_showFlow) {
 
                 global.shaderworker.waterFlowPassShader->activate();
                 global.shaderworker.waterFlowPassShader->update(GameIsolate_.world->width,
@@ -3560,8 +3540,8 @@ void Game::renderLate() {
             global.shaderworker.waterShader->update(
                     t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale,
                     TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale,
-                    TexturePack_.textureFlowSpead, Settings::water_overlay,
-                    Settings::water_showFlow, Settings::water_pixelated);
+                    TexturePack_.textureFlowSpead, GameIsolate_.settings.water_overlay,
+                    GameIsolate_.settings.water_showFlow, GameIsolate_.settings.water_pixelated);
         }
 
         RenderTarget_.target = RenderTarget_.realTarget;
@@ -3603,7 +3583,7 @@ void Game::renderLate() {
         METAENGINE_Render_BlitRect(TexturePack_.textureEntities, NULL,
                                    TexturePack_.worldTexture->target, NULL);
 
-        if (Settings::draw_shaders) global.shaderworker.newLightingShader->activate();
+        if (GameIsolate_.settings.draw_shaders) global.shaderworker.newLightingShader->activate();
 
         // I use this to only rerender the lighting when a parameter changes or N times per second anyway
         // Doing this massively reduces the GPU load of the shader
@@ -3616,7 +3596,7 @@ void Game::renderLate() {
             needToRerenderLighting = true;
         }
 
-        if (Settings::draw_shaders && GameIsolate_.world) {
+        if (GameIsolate_.settings.draw_shaders && GameIsolate_.world) {
             float lightTx;
             float lightTy;
 
@@ -3639,10 +3619,12 @@ void Game::renderLate() {
                 needToRerenderLighting = true;
             global.shaderworker.newLightingShader->update(
                     TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
-            if (global.shaderworker.newLightingShader->lastQuality != Settings::lightingQuality) {
+            if (global.shaderworker.newLightingShader->lastQuality !=
+                GameIsolate_.settings.lightingQuality) {
                 needToRerenderLighting = true;
             }
-            global.shaderworker.newLightingShader->setQuality(Settings::lightingQuality);
+            global.shaderworker.newLightingShader->setQuality(
+                    GameIsolate_.settings.lightingQuality);
 
             int nBg = 0;
             int range = 64;
@@ -3675,47 +3657,51 @@ void Game::renderLate() {
                 needToRerenderLighting = true;
             global.shaderworker.newLightingShader->setInside(ins);
             global.shaderworker.newLightingShader->setBounds(
-                    GameIsolate_.world->tickZone.x * Settings::hd_objects_size,
-                    GameIsolate_.world->tickZone.y * Settings::hd_objects_size,
+                    GameIsolate_.world->tickZone.x * GameIsolate_.settings.hd_objects_size,
+                    GameIsolate_.world->tickZone.y * GameIsolate_.settings.hd_objects_size,
                     (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) *
-                            Settings::hd_objects_size,
+                            GameIsolate_.settings.hd_objects_size,
                     (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h) *
-                            Settings::hd_objects_size);
+                            GameIsolate_.settings.hd_objects_size);
 
-            if (global.shaderworker.newLightingShader->lastSimpleMode != Settings::simpleLighting)
+            if (global.shaderworker.newLightingShader->lastSimpleMode !=
+                GameIsolate_.settings.simpleLighting)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setSimpleMode(Settings::simpleLighting);
+            global.shaderworker.newLightingShader->setSimpleMode(
+                    GameIsolate_.settings.simpleLighting);
 
             if (global.shaderworker.newLightingShader->lastEmissionEnabled !=
-                Settings::lightingEmission)
+                GameIsolate_.settings.lightingEmission)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setEmissionEnabled(Settings::lightingEmission);
+            global.shaderworker.newLightingShader->setEmissionEnabled(
+                    GameIsolate_.settings.lightingEmission);
 
             if (global.shaderworker.newLightingShader->lastDitheringEnabled !=
-                Settings::lightingDithering)
+                GameIsolate_.settings.lightingDithering)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setDitheringEnabled(Settings::lightingDithering);
+            global.shaderworker.newLightingShader->setDitheringEnabled(
+                    GameIsolate_.settings.lightingDithering);
         }
 
-        if (Settings::draw_shaders && needToRerenderLighting) {
+        if (GameIsolate_.settings.draw_shaders && needToRerenderLighting) {
             METAENGINE_Render_Clear(TexturePack_.lightingTexture->target);
             METAENGINE_Render_BlitRect(TexturePack_.worldTexture, NULL,
                                        TexturePack_.lightingTexture->target, NULL);
         }
-        if (Settings::draw_shaders) METAENGINE_Render_ActivateShaderProgram(0, NULL);
+        if (GameIsolate_.settings.draw_shaders) METAENGINE_Render_ActivateShaderProgram(0, NULL);
 
         METAENGINE_Render_BlitRect(TexturePack_.worldTexture, NULL, RenderTarget_.target, &r1);
 
-        if (Settings::draw_shaders) {
+        if (GameIsolate_.settings.draw_shaders) {
             METAENGINE_Render_SetBlendMode(TexturePack_.lightingTexture,
-                                           Settings::draw_light_overlay
+                                           GameIsolate_.settings.draw_light_overlay
                                                    ? METAENGINE_Render_BLEND_NORMAL
                                                    : METAENGINE_Render_BLEND_MULTIPLY);
             METAENGINE_Render_BlitRect(TexturePack_.lightingTexture, NULL, RenderTarget_.target,
                                        &r1);
         }
 
-        if (Settings::draw_shaders) {
+        if (GameIsolate_.settings.draw_shaders) {
             METAENGINE_Render_Clear(TexturePack_.texture2Fire->target);
 
             global.shaderworker.fireShader->activate();
@@ -3748,12 +3734,12 @@ void Game::renderOverlays() {
             (float) (GameIsolate_.world->tickZone.w * scale),
             (float) (GameIsolate_.world->tickZone.h * scale)};
 
-    if (Settings::draw_temperature_map) {
+    if (GameIsolate_.settings.draw_temperature_map) {
         METAENGINE_Render_SetBlendMode(TexturePack_.temperatureMap, METAENGINE_Render_BLEND_NORMAL);
         METAENGINE_Render_BlitRect(TexturePack_.temperatureMap, NULL, RenderTarget_.target, &r1);
     }
 
-    if (Settings::draw_load_zones) {
+    if (GameIsolate_.settings.draw_load_zones) {
         METAENGINE_Render_Rect r2m = METAENGINE_Render_Rect{
                 (float) (GameData_.ofsX + GameData_.camX + GameIsolate_.world->meshZone.x * scale),
                 (float) (GameData_.ofsY + GameData_.camY + GameIsolate_.world->meshZone.y * scale),
@@ -3764,7 +3750,7 @@ void Game::renderOverlays() {
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r2, {0xff, 0x00, 0x00, 0xff});
     }
 
-    if (Settings::draw_load_zones) {
+    if (GameIsolate_.settings.draw_load_zones) {
 
         METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
         METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BLEND_NORMAL);
@@ -3813,7 +3799,7 @@ void Game::renderOverlays() {
         METAENGINE_Render_Rectangle2(RenderTarget_.target, r7, col);
     }
 
-    if (Settings::draw_physics_debug) {
+    if (GameIsolate_.settings.draw_physics_debug) {
         //
         //for(size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
         //    RigidBody cur = *GameIsolate_.world->WorldIsolate_.rigidBodies[i];
@@ -3951,11 +3937,12 @@ void Game::renderOverlays() {
         debugDraw->xOfs = GameData_.ofsX + GameData_.camX;
         debugDraw->yOfs = GameData_.ofsY + GameData_.camY;
         debugDraw->SetFlags(0);
-        if (Settings::draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
-        if (Settings::draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
-        if (Settings::draw_b2d_aabb) debugDraw->AppendFlags(DebugDraw::e_aabbBit);
-        if (Settings::draw_b2d_pair) debugDraw->AppendFlags(DebugDraw::e_pairBit);
-        if (Settings::draw_b2d_centerMass) debugDraw->AppendFlags(DebugDraw::e_centerOfMassBit);
+        if (GameIsolate_.settings.draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
+        if (GameIsolate_.settings.draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
+        if (GameIsolate_.settings.draw_b2d_aabb) debugDraw->AppendFlags(DebugDraw::e_aabbBit);
+        if (GameIsolate_.settings.draw_b2d_pair) debugDraw->AppendFlags(DebugDraw::e_pairBit);
+        if (GameIsolate_.settings.draw_b2d_centerMass)
+            debugDraw->AppendFlags(DebugDraw::e_centerOfMassBit);
         GameIsolate_.world->b2world->DebugDraw();
     }
 
@@ -3964,7 +3951,7 @@ void Game::renderOverlays() {
     //                               GameIsolate_.game_timestate.feelsLikeFps),
     //                   global.platform.WIDTH, 20);
 
-    if (Settings::draw_chunk_state) {
+    if (GameIsolate_.settings.draw_chunk_state) {
 
         int chSize = 10;
 
@@ -4035,7 +4022,7 @@ void Game::renderOverlays() {
                                     centerY + 1 - pchy + pchyf, {0x00, 0xff, 0x00, 0xff});
     }
 
-    if (Settings::draw_debug_stats) {
+    if (GameIsolate_.settings.draw_debug_stats) {
 
         int rbCt = 0;
         for (auto &r: GameIsolate_.world->WorldIsolate_.rigidBodies) {
@@ -4168,7 +4155,7 @@ ReadyToMerge ({16})
         // }
     }
 
-    if (Settings::draw_frame_graph) {
+    if (GameIsolate_.settings.draw_frame_graph) {
 
         for (int i = 0; i <= 4; i++) {
             // Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
@@ -4346,7 +4333,8 @@ void Game::quitToMainMenu() {
                     CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
                     CHUNK_H * RENDER_C_TEST,
-            RenderTarget_.target, &global.audioEngine, Settings::networkMode, generator);
+            RenderTarget_.target, &global.audioEngine, GameIsolate_.settings.networkMode,
+            generator);
 
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {

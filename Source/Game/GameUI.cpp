@@ -221,7 +221,7 @@ namespace GameUI {
         ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "游戏内容");
         ImGui::Indent(4);
 
-        ImGui::Checkbox("材质工具提示", &Settings::draw_material_info);
+        ImGui::Checkbox("材质工具提示", &global.game->GameIsolate_.settings.draw_material_info);
 
         ImGui::Unindent(4);
     }
@@ -272,7 +272,7 @@ namespace GameUI {
         ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Rendering");
         ImGui::Indent(4);
 
-        if (ImGui::Checkbox("高清贴图", &Settings::hd_objects)) {
+        if (ImGui::Checkbox("高清贴图", &global.game->GameIsolate_.settings.hd_objects)) {
             METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjects->target);
             METAENGINE_Render_FreeImage(game->TexturePack_.textureObjects);
             METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjectsBack->target);
@@ -282,18 +282,26 @@ namespace GameUI {
 
             game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
                     game->GameIsolate_.world->width *
-                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            (global.game->GameIsolate_.settings.hd_objects
+                                     ? global.game->GameIsolate_.settings.hd_objects_size
+                                     : 1),
                     game->GameIsolate_.world->height *
-                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            (global.game->GameIsolate_.settings.hd_objects
+                                     ? global.game->GameIsolate_.settings.hd_objects_size
+                                     : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
             METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
                                              METAENGINE_Render_FILTER_NEAREST);
 
             game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
                     game->GameIsolate_.world->width *
-                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            (global.game->GameIsolate_.settings.hd_objects
+                                     ? global.game->GameIsolate_.settings.hd_objects_size
+                                     : 1),
                     game->GameIsolate_.world->height *
-                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            (global.game->GameIsolate_.settings.hd_objects
+                                     ? global.game->GameIsolate_.settings.hd_objects_size
+                                     : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
             METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
                                              METAENGINE_Render_FILTER_NEAREST);
@@ -303,9 +311,13 @@ namespace GameUI {
 
             game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
                     game->GameIsolate_.world->width *
-                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            (global.game->GameIsolate_.settings.hd_objects
+                                     ? global.game->GameIsolate_.settings.hd_objects_size
+                                     : 1),
                     game->GameIsolate_.world->height *
-                            (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                            (global.game->GameIsolate_.settings.hd_objects
+                                     ? global.game->GameIsolate_.settings.hd_objects_size
+                                     : 1),
                     METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
             METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
                                              METAENGINE_Render_FILTER_NEAREST);
@@ -314,9 +326,10 @@ namespace GameUI {
         }
 
         ImGui::SetNextItemWidth(100);
-        ImGui::SliderFloat("光照质量", &Settings::lightingQuality, 0.0, 1.0, "", 0);
-        ImGui::Checkbox("简单光照", &Settings::simpleLighting);
-        ImGui::Checkbox("抖动光照", &Settings::lightingDithering);
+        ImGui::SliderFloat("光照质量", &global.game->GameIsolate_.settings.lightingQuality, 0.0,
+                           1.0, "", 0);
+        ImGui::Checkbox("简单光照", &global.game->GameIsolate_.settings.simpleLighting);
+        ImGui::Checkbox("抖动光照", &global.game->GameIsolate_.settings.lightingDithering);
 
         ImGui::Unindent(4);
     }
@@ -604,7 +617,8 @@ namespace GameUI {
                                     CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
                                     CHUNK_H * 3,
-                            game->RenderTarget_.target, &global.audioEngine, Settings::networkMode);
+                            game->RenderTarget_.target, &global.audioEngine,
+                            global.game->GameIsolate_.settings.networkMode);
                     w->metadata.lastOpenedTime = Time::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
                     w->metadata.save(w->worldName);
@@ -715,8 +729,9 @@ namespace GameUI {
 
         if (ImGui::Button("连接")) {
             METADOT_INFO("connectButton select");
-            if (global.client->connect(Settings::server_ip.c_str(), Settings::server_port)) {
-                Settings::networkMode = NetworkMode::CLIENT;
+            if (global.client->connect(global.game->GameIsolate_.settings.server_ip.c_str(),
+                                       global.game->GameIsolate_.settings.server_port)) {
+                global.game->GameIsolate_.settings.networkMode = NetworkMode::CLIENT;
                 visible = false;
                 game->setGameState(LOADING, INGAME);
             }
@@ -783,26 +798,32 @@ namespace GameUI {
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         if (ImGui::TreeNode(U8("渲染"))) {
 
-            ImGui::Checkbox(U8("绘制帧率图"), &Settings::draw_frame_graph);
-            ImGui::Checkbox(U8("绘制调试状态"), &Settings::draw_debug_stats);
+            ImGui::Checkbox(U8("绘制帧率图"), &global.game->GameIsolate_.settings.draw_frame_graph);
+            ImGui::Checkbox(U8("绘制调试状态"),
+                            &global.game->GameIsolate_.settings.draw_debug_stats);
 
-            ImGui::Checkbox(U8("绘制区域块状态"), &Settings::draw_chunk_state);
-            ImGui::Checkbox(U8("绘制加载区域"), &Settings::draw_load_zones);
+            ImGui::Checkbox(U8("绘制区域块状态"),
+                            &global.game->GameIsolate_.settings.draw_chunk_state);
+            ImGui::Checkbox(U8("绘制加载区域"),
+                            &global.game->GameIsolate_.settings.draw_load_zones);
 
-            ImGui::Checkbox(U8("材料工具"), &Settings::draw_material_info);
+            ImGui::Checkbox(U8("材料工具"), &global.game->GameIsolate_.settings.draw_material_info);
             ImGui::Indent(10.0f);
-            ImGui::Checkbox(U8("调试材料"), &Settings::draw_detailed_material_info);
+            ImGui::Checkbox(U8("调试材料"),
+                            &global.game->GameIsolate_.settings.draw_detailed_material_info);
             ImGui::Unindent(10.0f);
 
             if (ImGui::TreeNode(U8("物理"))) {
-                ImGui::Checkbox(U8("绘制物理调试"), &Settings::draw_physics_debug);
+                ImGui::Checkbox(U8("绘制物理调试"),
+                                &global.game->GameIsolate_.settings.draw_physics_debug);
 
                 if (ImGui::TreeNode("Box2D")) {
-                    ImGui::Checkbox("shape", &Settings::draw_b2d_shape);
-                    ImGui::Checkbox("joint", &Settings::draw_b2d_joint);
-                    ImGui::Checkbox("aabb", &Settings::draw_b2d_aabb);
-                    ImGui::Checkbox("pair", &Settings::draw_b2d_pair);
-                    ImGui::Checkbox("center of mass", &Settings::draw_b2d_centerMass);
+                    ImGui::Checkbox("shape", &global.game->GameIsolate_.settings.draw_b2d_shape);
+                    ImGui::Checkbox("joint", &global.game->GameIsolate_.settings.draw_b2d_joint);
+                    ImGui::Checkbox("aabb", &global.game->GameIsolate_.settings.draw_b2d_aabb);
+                    ImGui::Checkbox("pair", &global.game->GameIsolate_.settings.draw_b2d_pair);
+                    ImGui::Checkbox("center of mass",
+                                    &global.game->GameIsolate_.settings.draw_b2d_centerMass);
 
                     ImGui::TreePop();
                 }
@@ -812,28 +833,36 @@ namespace GameUI {
 
             if (ImGui::TreeNode(U8("GLSL方法"))) {
                 if (ImGui::Button(U8("重新加载GLSL"))) { global.shaderworker.LoadShaders(); }
-                ImGui::Checkbox(U8("绘制GLSL"), &Settings::draw_shaders);
+                ImGui::Checkbox(U8("绘制GLSL"), &global.game->GameIsolate_.settings.draw_shaders);
 
                 if (ImGui::TreeNode(U8("光照"))) {
                     ImGui::SetNextItemWidth(80);
-                    ImGui::SliderFloat(U8("质量"), &Settings::lightingQuality, 0.0, 1.0, "", 0);
-                    ImGui::Checkbox(U8("覆盖"), &Settings::draw_light_overlay);
-                    ImGui::Checkbox(U8("简单采样"), &Settings::simpleLighting);
-                    ImGui::Checkbox(U8("放射"), &Settings::lightingEmission);
-                    ImGui::Checkbox(U8("抖动"), &Settings::lightingDithering);
+                    ImGui::SliderFloat(U8("质量"),
+                                       &global.game->GameIsolate_.settings.lightingQuality, 0.0,
+                                       1.0, "", 0);
+                    ImGui::Checkbox(U8("覆盖"),
+                                    &global.game->GameIsolate_.settings.draw_light_overlay);
+                    ImGui::Checkbox(U8("简单采样"),
+                                    &global.game->GameIsolate_.settings.simpleLighting);
+                    ImGui::Checkbox(U8("放射"),
+                                    &global.game->GameIsolate_.settings.lightingEmission);
+                    ImGui::Checkbox(U8("抖动"),
+                                    &global.game->GameIsolate_.settings.lightingDithering);
 
                     ImGui::TreePop();
                 }
 
                 if (ImGui::TreeNode(U8("水体"))) {
                     const char *items[] = {"off", "flow map", "distortion"};
-                    const char *combo_label = items[Settings::water_overlay];
+                    const char *combo_label =
+                            items[global.game->GameIsolate_.settings.water_overlay];
                     ImGui::SetNextItemWidth(80 + 24);
                     if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
                         for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-                            const bool is_selected = (Settings::water_overlay == n);
+                            const bool is_selected =
+                                    (global.game->GameIsolate_.settings.water_overlay == n);
                             if (ImGui::Selectable(items[n], is_selected)) {
-                                Settings::water_overlay = n;
+                                global.game->GameIsolate_.settings.water_overlay = n;
                             }
 
                             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -842,8 +871,10 @@ namespace GameUI {
                         ImGui::EndCombo();
                     }
 
-                    ImGui::Checkbox(U8("显示流程"), &Settings::water_showFlow);
-                    ImGui::Checkbox(U8("像素化"), &Settings::water_pixelated);
+                    ImGui::Checkbox(U8("显示流程"),
+                                    &global.game->GameIsolate_.settings.water_showFlow);
+                    ImGui::Checkbox(U8("像素化"),
+                                    &global.game->GameIsolate_.settings.water_pixelated);
 
                     ImGui::TreePop();
                 }
@@ -853,9 +884,11 @@ namespace GameUI {
 
             if (ImGui::TreeNode(U8("世界"))) {
 
-                ImGui::Checkbox("Draw Temperature Map", &Settings::draw_temperature_map);
+                ImGui::Checkbox("Draw Temperature Map",
+                                &global.game->GameIsolate_.settings.draw_temperature_map);
 
-                if (ImGui::Checkbox("Draw Background", &Settings::draw_background)) {
+                if (ImGui::Checkbox("Draw Background",
+                                    &global.game->GameIsolate_.settings.draw_background)) {
                     for (int x = 0; x < game->GameIsolate_.world->width; x++) {
                         for (int y = 0; y < game->GameIsolate_.world->height; y++) {
                             game->GameIsolate_.world
@@ -866,7 +899,8 @@ namespace GameUI {
                     }
                 }
 
-                if (ImGui::Checkbox("Draw Background Grid", &Settings::draw_background_grid)) {
+                if (ImGui::Checkbox("Draw Background Grid",
+                                    &global.game->GameIsolate_.settings.draw_background_grid)) {
                     for (int x = 0; x < game->GameIsolate_.world->width; x++) {
                         for (int y = 0; y < game->GameIsolate_.world->height; y++) {
                             game->GameIsolate_.world
@@ -877,7 +911,7 @@ namespace GameUI {
                     }
                 }
 
-                if (ImGui::Checkbox("HD Objects", &Settings::hd_objects)) {
+                if (ImGui::Checkbox("HD Objects", &global.game->GameIsolate_.settings.hd_objects)) {
                     METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjects->target);
                     METAENGINE_Render_FreeImage(game->TexturePack_.textureObjects);
                     METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjectsBack->target);
@@ -887,18 +921,26 @@ namespace GameUI {
 
                     game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
                             game->GameIsolate_.world->width *
-                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                    (global.game->GameIsolate_.settings.hd_objects
+                                             ? global.game->GameIsolate_.settings.hd_objects_size
+                                             : 1),
                             game->GameIsolate_.world->height *
-                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                    (global.game->GameIsolate_.settings.hd_objects
+                                             ? global.game->GameIsolate_.settings.hd_objects_size
+                                             : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                     METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
                                                      METAENGINE_Render_FILTER_NEAREST);
 
                     game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
                             game->GameIsolate_.world->width *
-                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                    (global.game->GameIsolate_.settings.hd_objects
+                                             ? global.game->GameIsolate_.settings.hd_objects_size
+                                             : 1),
                             game->GameIsolate_.world->height *
-                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                    (global.game->GameIsolate_.settings.hd_objects
+                                             ? global.game->GameIsolate_.settings.hd_objects_size
+                                             : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                     METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
                                                      METAENGINE_Render_FILTER_NEAREST);
@@ -908,9 +950,13 @@ namespace GameUI {
 
                     game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
                             game->GameIsolate_.world->width *
-                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                    (global.game->GameIsolate_.settings.hd_objects
+                                             ? global.game->GameIsolate_.settings.hd_objects_size
+                                             : 1),
                             game->GameIsolate_.world->height *
-                                    (Settings::hd_objects ? Settings::hd_objects_size : 1),
+                                    (global.game->GameIsolate_.settings.hd_objects
+                                             ? global.game->GameIsolate_.settings.hd_objects_size
+                                             : 1),
                             METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
                     METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
                                                      METAENGINE_Render_FILTER_NEAREST);
@@ -926,9 +972,9 @@ namespace GameUI {
 
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         if (ImGui::TreeNode(U8("模拟"))) {
-            ImGui::Checkbox(U8("处理世界"), &Settings::tick_world);
-            ImGui::Checkbox(U8("处理Box2D"), &Settings::tick_box2d);
-            ImGui::Checkbox(U8("处理温度"), &Settings::tick_temperature);
+            ImGui::Checkbox(U8("处理世界"), &global.game->GameIsolate_.settings.tick_world);
+            ImGui::Checkbox(U8("处理Box2D"), &global.game->GameIsolate_.settings.tick_box2d);
+            ImGui::Checkbox(U8("处理温度"), &global.game->GameIsolate_.settings.tick_temperature);
 
             ImGui::TreePop();
         }
@@ -1359,8 +1405,8 @@ namespace GameUI {
                     wpStr,
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                    game->RenderTarget_.target, &global.audioEngine, Settings::networkMode,
-                    generator);
+                    game->RenderTarget_.target, &global.audioEngine,
+                    global.game->GameIsolate_.settings.networkMode, generator);
             game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
             game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
             game->GameIsolate_.world->metadata.lastOpenedVersion =

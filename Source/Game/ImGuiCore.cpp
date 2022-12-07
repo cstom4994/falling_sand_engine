@@ -500,7 +500,7 @@ void ImGuiCore::Render() {
 
 #endif
 
-    if (Settings::ui_code_editor) {
+    if (global.game->GameIsolate_.settings.ui_code_editor) {
 
         auto cpos = editor.GetCursorPosition();
         ImGui::Begin("脚本编辑器", nullptr,
@@ -566,7 +566,7 @@ void ImGuiCore::Render() {
         ImGui::End();
     }
 
-    if (Settings::ui_tweak) {
+    if (global.game->GameIsolate_.settings.ui_tweak) {
 
         ImGui::Begin(LANG("ui_tweaks"), NULL, ImGuiWindowFlags_MenuBar);
 
