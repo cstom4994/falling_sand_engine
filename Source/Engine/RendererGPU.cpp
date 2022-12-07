@@ -1241,9 +1241,6 @@ uint32 Drawing::darkenColor(uint32 color, float brightness) {
 #define RAD_PER_DEG 0.017453293f
 #define DEG_PER_RAD 57.2957795f
 
-#define METAENGINE_Render_MAX_ACTIVE_RENDERERS 20
-#define METAENGINE_Render_MAX_REGISTERED_RENDERERS 10
-
 void gpu_init_renderer_register(void);
 void gpu_free_renderer_register(void);
 
@@ -1254,87 +1251,15 @@ typedef struct METAENGINE_Render_RendererRegistration
     void (*freeFn)(METAENGINE_Render_Renderer *);
 } METAENGINE_Render_RendererRegistration;
 
-static METAENGINE_Render_bool _gpu_renderer_register_is_initialized = METAENGINE_Render_FALSE;
+static bool gpu_renderer_register_is_initialized = false;
 
-static METAENGINE_Render_Renderer *_gpu_renderer_map[METAENGINE_Render_MAX_ACTIVE_RENDERERS];
-static METAENGINE_Render_RendererRegistration
-        _gpu_renderer_register[METAENGINE_Render_MAX_REGISTERED_RENDERERS];
+static METAENGINE_Render_Renderer *gpu_renderer_map;
+static METAENGINE_Render_RendererRegistration gpu_renderer_register;
+static METAENGINE_Render_RendererID gpu_renderer_order;
 
-static int _gpu_renderer_order_size = 0;
-static METAENGINE_Render_RendererID _gpu_renderer_order[METAENGINE_Render_RENDERER_ORDER_MAX];
-
-METAENGINE_Render_RendererEnum METAENGINE_Render_ReserveNextRendererEnum(void) {
-    static METAENGINE_Render_RendererEnum last_enum = METAENGINE_Render_RENDERER_CUSTOM_0;
-    return last_enum++;
-}
-
-int METAENGINE_Render_GetNumActiveRenderers(void) {
-    int count;
-    int i;
-
+METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID() {
     gpu_init_renderer_register();
-
-    count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
-        if (_gpu_renderer_map[i] != NULL) count++;
-    }
-    return count;
-}
-
-void METAENGINE_Render_GetActiveRendererList(METAENGINE_Render_RendererID *renderers_array) {
-    int count;
-    int i;
-
-    gpu_init_renderer_register();
-
-    count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
-        if (_gpu_renderer_map[i] != NULL) {
-            renderers_array[count] = _gpu_renderer_map[i]->id;
-            count++;
-        }
-    }
-}
-
-int METAENGINE_Render_GetNumRegisteredRenderers(void) {
-    int count;
-    int i;
-
-    gpu_init_renderer_register();
-
-    count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        if (_gpu_renderer_register[i].id.renderer != METAENGINE_Render_RENDERER_UNKNOWN) count++;
-    }
-    return count;
-}
-
-void METAENGINE_Render_GetRegisteredRendererList(METAENGINE_Render_RendererID *renderers_array) {
-    int count;
-    int i;
-
-    gpu_init_renderer_register();
-
-    count = 0;
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        if (_gpu_renderer_register[i].id.renderer != METAENGINE_Render_RENDERER_UNKNOWN) {
-            renderers_array[count] = _gpu_renderer_register[i].id;
-            count++;
-        }
-    }
-}
-
-METAENGINE_Render_RendererID METAENGINE_Render_GetRendererID(
-        METAENGINE_Render_RendererEnum renderer) {
-    int i;
-
-    gpu_init_renderer_register();
-
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        if (_gpu_renderer_register[i].id.renderer == renderer) return _gpu_renderer_register[i].id;
-    }
-
-    return METAENGINE_Render_MakeRendererID("Unknown", METAENGINE_Render_RENDERER_UNKNOWN, 0, 0);
+    return gpu_renderer_register.id;
 }
 
 METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer_OpenGL_3(
@@ -1345,15 +1270,7 @@ void METAENGINE_Render_RegisterRenderer(
         METAENGINE_Render_RendererID id,
         METAENGINE_Render_Renderer *(*create_renderer)(METAENGINE_Render_RendererID request),
         void (*free_renderer)(METAENGINE_Render_Renderer *renderer)) {
-    int i = METAENGINE_Render_GetNumRegisteredRenderers();
 
-    if (i >= METAENGINE_Render_MAX_REGISTERED_RENDERERS) return;
-
-    if (id.renderer == METAENGINE_Render_RENDERER_UNKNOWN) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_USER_ERROR,
-                                        "Invalid renderer ID");
-        return;
-    }
     if (create_renderer == NULL) {
         METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_USER_ERROR,
                                         "NULL renderer create callback");
@@ -1365,17 +1282,17 @@ void METAENGINE_Render_RegisterRenderer(
         return;
     }
 
-    _gpu_renderer_register[i].id = id;
-    _gpu_renderer_register[i].createFn = create_renderer;
-    _gpu_renderer_register[i].freeFn = free_renderer;
+    gpu_renderer_register.id = id;
+    gpu_renderer_register.createFn = create_renderer;
+    gpu_renderer_register.freeFn = free_renderer;
 }
 
 void gpu_register_built_in_renderers(void) {
 #ifdef __MACOSX__
     // Depending on OS X version, it might only support core GL 3.3 or 3.2
-    METAENGINE_Render_RegisterRenderer(
-            METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 2),
-            &METAENGINE_Render_CreateRenderer_OpenGL_3, &METAENGINE_Render_FreeRenderer_OpenGL_3);
+    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 3", 3, 2),
+                                       &METAENGINE_Render_CreateRenderer_OpenGL_3,
+                                       &METAENGINE_Render_FreeRenderer_OpenGL_3);
 #else
     METAENGINE_Render_RegisterRenderer(
             METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 0),
@@ -1384,205 +1301,73 @@ void gpu_register_built_in_renderers(void) {
 }
 
 void gpu_init_renderer_register(void) {
-    int i;
 
-    if (_gpu_renderer_register_is_initialized) return;
+    if (gpu_renderer_register_is_initialized) return;
 
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        _gpu_renderer_register[i].id.name = "Unknown";
-        _gpu_renderer_register[i].id.renderer = METAENGINE_Render_RENDERER_UNKNOWN;
-        _gpu_renderer_register[i].createFn = NULL;
-        _gpu_renderer_register[i].freeFn = NULL;
-    }
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) { _gpu_renderer_map[i] = NULL; }
+    gpu_renderer_register.id.name = "Unknown";
+    gpu_renderer_register.createFn = NULL;
+    gpu_renderer_register.freeFn = NULL;
 
-    METAENGINE_Render_GetDefaultRendererOrder(&_gpu_renderer_order_size, _gpu_renderer_order);
+    gpu_renderer_map = NULL;
 
-    _gpu_renderer_register_is_initialized = 1;
+    gpu_renderer_order = METAENGINE_Render_MakeRendererID("OpenGL 3", 3, 2);
+
+    gpu_renderer_register_is_initialized = 1;
 
     gpu_register_built_in_renderers();
 }
 
 void gpu_free_renderer_register(void) {
-    int i;
-
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        _gpu_renderer_register[i].id.name = "Unknown";
-        _gpu_renderer_register[i].id.renderer = METAENGINE_Render_RENDERER_UNKNOWN;
-        _gpu_renderer_register[i].createFn = NULL;
-        _gpu_renderer_register[i].freeFn = NULL;
-    }
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) { _gpu_renderer_map[i] = NULL; }
-
-    _gpu_renderer_register_is_initialized = 0;
-    _gpu_renderer_order_size = 0;
+    gpu_renderer_register.id.name = "Unknown";
+    gpu_renderer_register.createFn = NULL;
+    gpu_renderer_register.freeFn = NULL;
+    gpu_renderer_map = NULL;
+    gpu_renderer_register_is_initialized = 0;
 }
 
 void METAENGINE_Render_GetRendererOrder(int *order_size, METAENGINE_Render_RendererID *order) {
-    if (order_size != NULL) *order_size = _gpu_renderer_order_size;
-
-    if (order != NULL && _gpu_renderer_order_size > 0)
-        memcpy(order, _gpu_renderer_order,
-               _gpu_renderer_order_size * sizeof(METAENGINE_Render_RendererID));
-}
-
-void METAENGINE_Render_SetRendererOrder(int order_size, METAENGINE_Render_RendererID *order) {
-    if (order == NULL) {
-        // Restore the default order
-        int count = 0;
-        METAENGINE_Render_RendererID default_order[METAENGINE_Render_RENDERER_ORDER_MAX];
-        METAENGINE_Render_GetDefaultRendererOrder(&count, default_order);
-        METAENGINE_Render_SetRendererOrder(count,
-                                           default_order);// Call us again with the default order
-        return;
-    }
-
-    if (order_size <= 0) return;
-
-    if (order_size > METAENGINE_Render_RENDERER_ORDER_MAX) {
-        METAENGINE_Render_PushErrorCode(
-                __func__, METAENGINE_Render_ERROR_USER_ERROR,
-                "Given order_size (%d) is greater than METAENGINE_Render_RENDERER_ORDER_MAX (%d)",
-                order_size, METAENGINE_Render_RENDERER_ORDER_MAX);
-        order_size = METAENGINE_Render_RENDERER_ORDER_MAX;
-    }
-
-    memcpy(_gpu_renderer_order, order, order_size * sizeof(METAENGINE_Render_RendererID));
-    _gpu_renderer_order_size = order_size;
-}
-
-void METAENGINE_Render_GetDefaultRendererOrder(int *order_size,
-                                               METAENGINE_Render_RendererID *order) {
-    int count = 0;
-    METAENGINE_Render_RendererID default_order[METAENGINE_Render_RENDERER_ORDER_MAX];
-
-#ifdef __MACOSX__
-    default_order[count++] =
-            METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 2);
-#else
-    default_order[count++] =
-            METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 0);
-#endif
-
-    if (order_size != NULL) *order_size = count;
-
-    if (order != NULL && count > 0)
-        memcpy(order, default_order, count * sizeof(METAENGINE_Render_RendererID));
-}
-
-METAENGINE_Render_Renderer *METAENGINE_Render_CreateRenderer(METAENGINE_Render_RendererID id) {
-    METAENGINE_Render_Renderer *result = NULL;
-    int i;
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        if (_gpu_renderer_register[i].id.renderer == METAENGINE_Render_RENDERER_UNKNOWN) continue;
-
-        if (id.renderer == _gpu_renderer_register[i].id.renderer) {
-            if (_gpu_renderer_register[i].createFn != NULL) {
-                // Use the registered name
-                id.name = _gpu_renderer_register[i].id.name;
-                result = _gpu_renderer_register[i].createFn(id);
-            }
-            break;
-        }
-    }
-
-    if (result == NULL) {
-        METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
-                                        "Renderer was not found in the renderer registry.");
-    }
-    return result;
+    if (order != NULL) memcpy(order, &gpu_renderer_order, sizeof(METAENGINE_Render_RendererID));
 }
 
 // Get a renderer from the map.
 METAENGINE_Render_Renderer *METAENGINE_Render_GetRenderer(METAENGINE_Render_RendererID id) {
-    int i;
     gpu_init_renderer_register();
-
-    // Invalid enum?
-    if (id.renderer == METAENGINE_Render_RENDERER_UNKNOWN) return NULL;
-
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
-        if (_gpu_renderer_map[i] == NULL) continue;
-
-        if (id.renderer == _gpu_renderer_map[i]->id.renderer) return _gpu_renderer_map[i];
-    }
-
-    return NULL;
-}
-
-// Create a new renderer based on a registered id and store it in the map.
-METAENGINE_Render_Renderer *gpu_create_and_add_renderer(METAENGINE_Render_RendererID id) {
-    int i;
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
-        if (_gpu_renderer_map[i] == NULL) {
-            // Create
-            METAENGINE_Render_Renderer *renderer = METAENGINE_Render_CreateRenderer(id);
-            if (renderer == NULL) {
-                METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
-                                                "Failed to create new renderer.");
-                return NULL;
-            }
-
-            // Add
-            _gpu_renderer_map[i] = renderer;
-            // Return
-            return renderer;
-        }
-    }
-
-    METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
-                                    "Couldn't create a new renderer.  Too many active renderers "
-                                    "for METAENGINE_Render_MAX_ACTIVE_RENDERERS (%d).",
-                                    METAENGINE_Render_MAX_ACTIVE_RENDERERS);
-    return NULL;
+    return gpu_renderer_map;
 }
 
 // Free renderer memory according to how the registry instructs
 void gpu_free_renderer_memory(METAENGINE_Render_Renderer *renderer) {
-    int i;
     if (renderer == NULL) return;
-
-    for (i = 0; i < METAENGINE_Render_MAX_REGISTERED_RENDERERS; i++) {
-        if (_gpu_renderer_register[i].id.renderer == METAENGINE_Render_RENDERER_UNKNOWN) continue;
-
-        if (renderer->id.renderer == _gpu_renderer_register[i].id.renderer) {
-            _gpu_renderer_register[i].freeFn(renderer);
-            return;
-        }
-    }
+    gpu_renderer_register.freeFn(renderer);
 }
 
 // Remove a renderer from the active map and free it.
 void METAENGINE_Render_FreeRenderer(METAENGINE_Render_Renderer *renderer) {
-    int i;
     METAENGINE_Render_Renderer *current_renderer;
 
     if (renderer == NULL) return;
 
     current_renderer = METAENGINE_Render_GetCurrentRenderer();
     if (current_renderer == renderer)
-        METAENGINE_Render_SetCurrentRenderer(METAENGINE_Render_MakeRendererID(
-                "Unknown", METAENGINE_Render_RENDERER_UNKNOWN, 0, 0));
+        METAENGINE_Render_SetCurrentRenderer(METAENGINE_Render_MakeRendererID("Unknown", 0, 0));
 
-    for (i = 0; i < METAENGINE_Render_MAX_ACTIVE_RENDERERS; i++) {
-        if (renderer == _gpu_renderer_map[i]) {
-            gpu_free_renderer_memory(renderer);
-            _gpu_renderer_map[i] = NULL;
-            return;
-        }
+    if (renderer == gpu_renderer_map) {
+        gpu_free_renderer_memory(renderer);
+        gpu_renderer_map = NULL;
+        return;
     }
 }
 
 #define GET_ALPHA(sdl_color) ((sdl_color).a)
 
-#define CHECK_RENDERER (_gpu_current_renderer != NULL)
+#define CHECK_RENDERER (gpu_current_renderer != NULL)
 #define MAKE_CURRENT_IF_NONE(target)                                                               \
     do {                                                                                           \
-        if (_gpu_current_renderer->current_context_target == NULL && target != NULL &&             \
+        if (gpu_current_renderer->current_context_target == NULL && target != NULL &&              \
             target->context != NULL)                                                               \
             METAENGINE_Render_MakeCurrent(target, target->context->windowID);                      \
     } while (0)
-#define CHECK_CONTEXT (_gpu_current_renderer->current_context_target != NULL)
+#define CHECK_CONTEXT (gpu_current_renderer->current_context_target != NULL)
 #define RETURN_ERROR(code, details)                                                                \
     do {                                                                                           \
         METAENGINE_Render_PushErrorCode(__func__, code, "%s", details);                            \
@@ -1593,7 +1378,6 @@ int gpu_strcasecmp(const char *s1, const char *s2);
 
 void gpu_init_renderer_register(void);
 void gpu_free_renderer_register(void);
-METAENGINE_Render_Renderer *gpu_create_and_add_renderer(METAENGINE_Render_RendererID id);
 
 /*! A mapping of windowID to a METAENGINE_Render_Target to facilitate METAENGINE_Render_GetWindowTarget(). */
 typedef struct METAENGINE_Render_WindowMapping
@@ -1602,140 +1386,113 @@ typedef struct METAENGINE_Render_WindowMapping
     METAENGINE_Render_Target *target;
 } METAENGINE_Render_WindowMapping;
 
-static METAENGINE_Render_Renderer *_gpu_current_renderer = NULL;
+static METAENGINE_Render_Renderer *gpu_current_renderer = NULL;
 
 #define METAENGINE_Render_DEFAULT_MAX_NUM_ERRORS 20
 #define METAENGINE_Render_ERROR_FUNCTION_STRING_MAX 128
 #define METAENGINE_Render_ERROR_DETAILS_STRING_MAX 512
-static METAENGINE_Render_ErrorObject *_gpu_error_code_queue = NULL;
-static unsigned int _gpu_num_error_codes = 0;
-static unsigned int _gpu_error_code_queue_size = METAENGINE_Render_DEFAULT_MAX_NUM_ERRORS;
-static METAENGINE_Render_ErrorObject _gpu_error_code_result;
+static METAENGINE_Render_ErrorObject *gpu_error_code_queue = NULL;
+static unsigned int gpu_num_error_codes = 0;
+static unsigned int gpu_error_code_queue_size = METAENGINE_Render_DEFAULT_MAX_NUM_ERRORS;
+static METAENGINE_Render_ErrorObject gpu_error_code_result;
 
 #define METAENGINE_Render_INITIAL_WINDOW_MAPPINGS_SIZE 10
-static METAENGINE_Render_WindowMapping *_gpu_window_mappings = NULL;
-static int _gpu_window_mappings_size = 0;
-static int _gpu_num_window_mappings = 0;
+static METAENGINE_Render_WindowMapping *gpu_window_mappings = NULL;
+static int gpu_window_mappings_size = 0;
+static int gpu_num_window_mappings = 0;
 
-static Uint32 _gpu_init_windowID = 0;
+static Uint32 gpu_init_windowID = 0;
 
-static METAENGINE_Render_InitFlagEnum _gpu_preinit_flags = METAENGINE_Render_DEFAULT_INIT_FLAGS;
-static METAENGINE_Render_InitFlagEnum _gpu_required_features = 0;
+static METAENGINE_Render_InitFlagEnum gpu_preinit_flags = METAENGINE_Render_DEFAULT_INIT_FLAGS;
+static METAENGINE_Render_InitFlagEnum gpu_required_features = 0;
 
-static METAENGINE_Render_bool _gpu_initialized_SDL_core = METAENGINE_Render_FALSE;
-static METAENGINE_Render_bool _gpu_initialized_SDL = METAENGINE_Render_FALSE;
+static bool gpu_initialized_SDL_core = false;
+static bool gpu_initialized_SDL = false;
 
 void METAENGINE_Render_SetCurrentRenderer(METAENGINE_Render_RendererID id) {
-    _gpu_current_renderer = METAENGINE_Render_GetRenderer(id);
+    gpu_current_renderer = METAENGINE_Render_GetRenderer(id);
 
-    if (_gpu_current_renderer != NULL)
-        _gpu_current_renderer->impl->SetAsCurrent(_gpu_current_renderer);
+    if (gpu_current_renderer != NULL)
+        gpu_current_renderer->impl->SetAsCurrent(gpu_current_renderer);
 }
 
 void METAENGINE_Render_ResetRendererState(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->ResetRendererState(_gpu_current_renderer);
+    gpu_current_renderer->impl->ResetRendererState(gpu_current_renderer);
 }
 
-void METAENGINE_Render_SetCoordinateMode(METAENGINE_Render_bool use_math_coords) {
-    if (_gpu_current_renderer == NULL) return;
+void METAENGINE_Render_SetCoordinateMode(bool use_math_coords) {
+    if (gpu_current_renderer == NULL) return;
 
-    _gpu_current_renderer->coordinate_mode = use_math_coords;
+    gpu_current_renderer->coordinate_mode = use_math_coords;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_GetCoordinateMode(void) {
-    if (_gpu_current_renderer == NULL) return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_GetCoordinateMode(void) {
+    if (gpu_current_renderer == NULL) return false;
 
-    return _gpu_current_renderer->coordinate_mode;
+    return gpu_current_renderer->coordinate_mode;
 }
 
 METAENGINE_Render_Renderer *METAENGINE_Render_GetCurrentRenderer(void) {
-    return _gpu_current_renderer;
+    return gpu_current_renderer;
 }
 
 Uint32 METAENGINE_Render_GetCurrentShaderProgram(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
-    return _gpu_current_renderer->current_context_target->context->current_shader_program;
+    return gpu_current_renderer->current_context_target->context->current_shader_program;
 }
 
-static METAENGINE_Render_bool gpu_init_SDL(void) {
-    if (!_gpu_initialized_SDL) {
-        if (!_gpu_initialized_SDL_core && !SDL_WasInit(SDL_INIT_EVERYTHING)) {
-            // Nothing has been set up, so init SDL and the video subsystem.
-            if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-                METAENGINE_Render_PushErrorCode("METAENGINE_Render_Init",
-                                                METAENGINE_Render_ERROR_BACKEND_ERROR,
-                                                "Failed to initialize SDL video subsystem");
-                return METAENGINE_Render_FALSE;
-            }
-            _gpu_initialized_SDL_core = METAENGINE_Render_TRUE;
-        }
+void METAENGINE_Render_SetInitWindow(Uint32 windowID) { gpu_init_windowID = windowID; }
 
-        // SDL is definitely ready now, but we're going to init the video subsystem to be sure that SDL_gpu keeps it available until METAENGINE_Render_Quit().
-        if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-            METAENGINE_Render_PushErrorCode("METAENGINE_Render_Init",
-                                            METAENGINE_Render_ERROR_BACKEND_ERROR,
-                                            "Failed to initialize SDL video subsystem");
-            return METAENGINE_Render_FALSE;
-        }
-        _gpu_initialized_SDL = METAENGINE_Render_TRUE;
-    }
-    return METAENGINE_Render_TRUE;
-}
-
-void METAENGINE_Render_SetInitWindow(Uint32 windowID) { _gpu_init_windowID = windowID; }
-
-Uint32 METAENGINE_Render_GetInitWindow(void) { return _gpu_init_windowID; }
+Uint32 METAENGINE_Render_GetInitWindow(void) { return gpu_init_windowID; }
 
 void METAENGINE_Render_SetPreInitFlags(METAENGINE_Render_InitFlagEnum METAENGINE_Render_flags) {
-    _gpu_preinit_flags = METAENGINE_Render_flags;
+    gpu_preinit_flags = METAENGINE_Render_flags;
 }
 
-METAENGINE_Render_InitFlagEnum METAENGINE_Render_GetPreInitFlags(void) {
-    return _gpu_preinit_flags;
-}
+METAENGINE_Render_InitFlagEnum METAENGINE_Render_GetPreInitFlags(void) { return gpu_preinit_flags; }
 
 void METAENGINE_Render_SetRequiredFeatures(METAENGINE_Render_FeatureEnum features) {
-    _gpu_required_features = features;
+    gpu_required_features = features;
 }
 
 METAENGINE_Render_FeatureEnum METAENGINE_Render_GetRequiredFeatures(void) {
-    return _gpu_required_features;
+    return gpu_required_features;
 }
 
 static void gpu_init_error_queue(void) {
-    if (_gpu_error_code_queue == NULL) {
+    if (gpu_error_code_queue == NULL) {
         unsigned int i;
-        _gpu_error_code_queue = (METAENGINE_Render_ErrorObject *) SDL_malloc(
-                sizeof(METAENGINE_Render_ErrorObject) * _gpu_error_code_queue_size);
+        gpu_error_code_queue = (METAENGINE_Render_ErrorObject *) SDL_malloc(
+                sizeof(METAENGINE_Render_ErrorObject) * gpu_error_code_queue_size);
 
-        for (i = 0; i < _gpu_error_code_queue_size; i++) {
-            _gpu_error_code_queue[i].function =
+        for (i = 0; i < gpu_error_code_queue_size; i++) {
+            gpu_error_code_queue[i].function =
                     (char *) SDL_malloc(METAENGINE_Render_ERROR_FUNCTION_STRING_MAX + 1);
-            _gpu_error_code_queue[i].error = METAENGINE_Render_ERROR_NONE;
-            _gpu_error_code_queue[i].details =
+            gpu_error_code_queue[i].error = METAENGINE_Render_ERROR_NONE;
+            gpu_error_code_queue[i].details =
                     (char *) SDL_malloc(METAENGINE_Render_ERROR_DETAILS_STRING_MAX + 1);
         }
-        _gpu_num_error_codes = 0;
+        gpu_num_error_codes = 0;
 
-        _gpu_error_code_result.function =
+        gpu_error_code_result.function =
                 (char *) SDL_malloc(METAENGINE_Render_ERROR_FUNCTION_STRING_MAX + 1);
-        _gpu_error_code_result.error = METAENGINE_Render_ERROR_NONE;
-        _gpu_error_code_result.details =
+        gpu_error_code_result.error = METAENGINE_Render_ERROR_NONE;
+        gpu_error_code_result.details =
                 (char *) SDL_malloc(METAENGINE_Render_ERROR_DETAILS_STRING_MAX + 1);
     }
 }
 
 static void gpu_init_window_mappings(void) {
-    if (_gpu_window_mappings == NULL) {
-        _gpu_window_mappings_size = METAENGINE_Render_INITIAL_WINDOW_MAPPINGS_SIZE;
-        _gpu_window_mappings = (METAENGINE_Render_WindowMapping *) SDL_malloc(
-                _gpu_window_mappings_size * sizeof(METAENGINE_Render_WindowMapping));
-        _gpu_num_window_mappings = 0;
+    if (gpu_window_mappings == NULL) {
+        gpu_window_mappings_size = METAENGINE_Render_INITIAL_WINDOW_MAPPINGS_SIZE;
+        gpu_window_mappings = (METAENGINE_Render_WindowMapping *) SDL_malloc(
+                gpu_window_mappings_size * sizeof(METAENGINE_Render_WindowMapping));
+        gpu_num_window_mappings = 0;
     }
 }
 
@@ -1743,7 +1500,7 @@ void METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target *target) {
     Uint32 windowID;
     int i;
 
-    if (_gpu_window_mappings == NULL) gpu_init_window_mappings();
+    if (gpu_window_mappings == NULL) gpu_init_window_mappings();
 
     if (target == NULL || target->context == NULL) return;
 
@@ -1752,9 +1509,9 @@ void METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target *target) {
         return;
 
     // Check for duplicates
-    for (i = 0; i < _gpu_num_window_mappings; i++) {
-        if (_gpu_window_mappings[i].windowID == windowID) {
-            if (_gpu_window_mappings[i].target != target)
+    for (i = 0; i < gpu_num_window_mappings; i++) {
+        if (gpu_window_mappings[i].windowID == windowID) {
+            if (gpu_window_mappings[i].target != target)
                 METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_DATA_ERROR,
                                                 "WindowID %u already has a mapping.", windowID);
             return;
@@ -1763,15 +1520,15 @@ void METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target *target) {
     }
 
     // Check if list is big enough to hold another
-    if (_gpu_num_window_mappings >= _gpu_window_mappings_size) {
+    if (gpu_num_window_mappings >= gpu_window_mappings_size) {
         METAENGINE_Render_WindowMapping *new_array;
-        _gpu_window_mappings_size *= 2;
+        gpu_window_mappings_size *= 2;
         new_array = (METAENGINE_Render_WindowMapping *) SDL_malloc(
-                _gpu_window_mappings_size * sizeof(METAENGINE_Render_WindowMapping));
-        memcpy(new_array, _gpu_window_mappings,
-               _gpu_num_window_mappings * sizeof(METAENGINE_Render_WindowMapping));
-        SDL_free(_gpu_window_mappings);
-        _gpu_window_mappings = new_array;
+                gpu_window_mappings_size * sizeof(METAENGINE_Render_WindowMapping));
+        memcpy(new_array, gpu_window_mappings,
+               gpu_num_window_mappings * sizeof(METAENGINE_Render_WindowMapping));
+        SDL_free(gpu_window_mappings);
+        gpu_window_mappings = new_array;
     }
 
     // Add to end of list
@@ -1779,32 +1536,32 @@ void METAENGINE_Render_AddWindowMapping(METAENGINE_Render_Target *target) {
         METAENGINE_Render_WindowMapping m;
         m.windowID = windowID;
         m.target = target;
-        _gpu_window_mappings[_gpu_num_window_mappings] = m;
+        gpu_window_mappings[gpu_num_window_mappings] = m;
     }
-    _gpu_num_window_mappings++;
+    gpu_num_window_mappings++;
 }
 
 void METAENGINE_Render_RemoveWindowMapping(Uint32 windowID) {
     int i;
 
-    if (_gpu_window_mappings == NULL) gpu_init_window_mappings();
+    if (gpu_window_mappings == NULL) gpu_init_window_mappings();
 
     if (windowID == 0)// Invalid window ID
         return;
 
     // Find the occurrence
-    for (i = 0; i < _gpu_num_window_mappings; i++) {
-        if (_gpu_window_mappings[i].windowID == windowID) {
+    for (i = 0; i < gpu_num_window_mappings; i++) {
+        if (gpu_window_mappings[i].windowID == windowID) {
             int num_to_move;
 
             // Unset the target's window
-            _gpu_window_mappings[i].target->context->windowID = 0;
+            gpu_window_mappings[i].target->context->windowID = 0;
 
             // Move the remaining entries to replace the removed one
-            _gpu_num_window_mappings--;
-            num_to_move = _gpu_num_window_mappings - i;
+            gpu_num_window_mappings--;
+            num_to_move = gpu_num_window_mappings - i;
             if (num_to_move > 0)
-                memmove(&_gpu_window_mappings[i], &_gpu_window_mappings[i + 1],
+                memmove(&gpu_window_mappings[i], &gpu_window_mappings[i + 1],
                         num_to_move * sizeof(METAENGINE_Render_WindowMapping));
             return;
         }
@@ -1815,7 +1572,7 @@ void METAENGINE_Render_RemoveWindowMappingByTarget(METAENGINE_Render_Target *tar
     Uint32 windowID;
     int i;
 
-    if (_gpu_window_mappings == NULL) gpu_init_window_mappings();
+    if (gpu_window_mappings == NULL) gpu_init_window_mappings();
 
     if (target == NULL || target->context == NULL) return;
 
@@ -1827,14 +1584,14 @@ void METAENGINE_Render_RemoveWindowMappingByTarget(METAENGINE_Render_Target *tar
     target->context->windowID = 0;
 
     // Find the occurrences
-    for (i = 0; i < _gpu_num_window_mappings; ++i) {
-        if (_gpu_window_mappings[i].target == target) {
+    for (i = 0; i < gpu_num_window_mappings; ++i) {
+        if (gpu_window_mappings[i].target == target) {
             // Move the remaining entries to replace the removed one
             int num_to_move;
-            _gpu_num_window_mappings--;
-            num_to_move = _gpu_num_window_mappings - i;
+            gpu_num_window_mappings--;
+            num_to_move = gpu_num_window_mappings - i;
             if (num_to_move > 0)
-                memmove(&_gpu_window_mappings[i], &_gpu_window_mappings[i + 1],
+                memmove(&gpu_window_mappings[i], &gpu_window_mappings[i + 1],
                         num_to_move * sizeof(METAENGINE_Render_WindowMapping));
             return;
         }
@@ -1844,14 +1601,14 @@ void METAENGINE_Render_RemoveWindowMappingByTarget(METAENGINE_Render_Target *tar
 METAENGINE_Render_Target *METAENGINE_Render_GetWindowTarget(Uint32 windowID) {
     int i;
 
-    if (_gpu_window_mappings == NULL) gpu_init_window_mappings();
+    if (gpu_window_mappings == NULL) gpu_init_window_mappings();
 
     if (windowID == 0)// Invalid window ID
         return NULL;
 
     // Find the occurrence
-    for (i = 0; i < _gpu_num_window_mappings; ++i) {
-        if (_gpu_window_mappings[i].windowID == windowID) return _gpu_window_mappings[i].target;
+    for (i = 0; i < gpu_num_window_mappings; ++i) {
+        if (gpu_window_mappings[i].windowID == windowID) return gpu_window_mappings[i].target;
     }
 
     return NULL;
@@ -1859,25 +1616,17 @@ METAENGINE_Render_Target *METAENGINE_Render_GetWindowTarget(Uint32 windowID) {
 
 METAENGINE_Render_Target *METAENGINE_Render_Init(Uint16 w, Uint16 h,
                                                  METAENGINE_Render_WindowFlagEnum SDL_flags) {
-    int renderer_order_size;
-    int i;
-    METAENGINE_Render_RendererID renderer_order[METAENGINE_Render_RENDERER_ORDER_MAX];
+    METAENGINE_Render_RendererID renderer_order;
 
     gpu_init_error_queue();
-
     gpu_init_renderer_register();
 
-    if (!gpu_init_SDL()) return NULL;
+    int renderer_order_size = 1;
+    METAENGINE_Render_GetRendererOrder(&renderer_order_size, &renderer_order);
 
-    renderer_order_size = 0;
-    METAENGINE_Render_GetRendererOrder(&renderer_order_size, renderer_order);
-
-    // Init the renderers in order
-    for (i = 0; i < renderer_order_size; i++) {
-        METAENGINE_Render_Target *screen =
-                METAENGINE_Render_InitRendererByID(renderer_order[i], w, h, SDL_flags);
-        if (screen != NULL) return screen;
-    }
+    METAENGINE_Render_Target *screen =
+            METAENGINE_Render_InitRendererByID(renderer_order, w, h, SDL_flags);
+    if (screen != NULL) return screen;
 
     METAENGINE_Render_PushErrorCode("METAENGINE_Render_Init", METAENGINE_Render_ERROR_BACKEND_ERROR,
                                     "No renderer out of %d was able to initialize properly",
@@ -1886,11 +1635,8 @@ METAENGINE_Render_Target *METAENGINE_Render_Init(Uint16 w, Uint16 h,
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_InitRenderer(
-        METAENGINE_Render_RendererEnum renderer_enum, Uint16 w, Uint16 h,
-        METAENGINE_Render_WindowFlagEnum SDL_flags) {
-    // Search registry for this renderer and use that id
-    return METAENGINE_Render_InitRendererByID(METAENGINE_Render_GetRendererID(renderer_enum), w, h,
-                                              SDL_flags);
+        Uint16 w, Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags) {
+    return METAENGINE_Render_InitRendererByID(METAENGINE_Render_GetRendererID(), w, h, SDL_flags);
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(
@@ -1902,9 +1648,25 @@ METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(
     gpu_init_error_queue();
     gpu_init_renderer_register();
 
-    if (!gpu_init_SDL()) return NULL;
+    if (gpu_renderer_map == NULL) {
+        // Create
+        METAENGINE_Render_Renderer *renderer = nullptr;
 
-    renderer = gpu_create_and_add_renderer(renderer_request);
+        if (gpu_renderer_register.createFn != NULL) {
+            // Use the registered name
+            renderer_request.name = gpu_renderer_register.id.name;
+            renderer = gpu_renderer_register.createFn(renderer_request);
+        }
+
+        if (renderer == nullptr) {
+            METAENGINE_Render_PushErrorCode(__func__, METAENGINE_Render_ERROR_BACKEND_ERROR,
+                                            "Failed to create new renderer.");
+            return nullptr;
+        }
+
+        gpu_renderer_map = renderer;
+    }
+
     if (renderer == NULL) return NULL;
 
     METAENGINE_Render_SetCurrentRenderer(renderer->id);
@@ -1916,25 +1678,24 @@ METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(
                 "Renderer %s failed to initialize properly", renderer->id.name);
         // Init failed, destroy the renderer...
         // Erase the window mappings
-        _gpu_num_window_mappings = 0;
+        gpu_num_window_mappings = 0;
         METAENGINE_Render_CloseCurrentRenderer();
     } else
         METAENGINE_Render_SetInitWindow(0);
     return screen;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_IsFeatureEnabled(METAENGINE_Render_FeatureEnum feature) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_IsFeatureEnabled(METAENGINE_Render_FeatureEnum feature) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
+        return false;
 
-    return ((_gpu_current_renderer->enabled_features & feature) == feature);
+    return ((gpu_current_renderer->enabled_features & feature) == feature);
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_CreateTargetFromWindow(Uint32 windowID) {
-    if (_gpu_current_renderer == NULL) return NULL;
+    if (gpu_current_renderer == NULL) return NULL;
 
-    return _gpu_current_renderer->impl->CreateTargetFromWindow(_gpu_current_renderer, windowID,
-                                                               NULL);
+    return gpu_current_renderer->impl->CreateTargetFromWindow(gpu_current_renderer, windowID, NULL);
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_CreateAliasTarget(METAENGINE_Render_Target *target) {
@@ -1942,27 +1703,26 @@ METAENGINE_Render_Target *METAENGINE_Render_CreateAliasTarget(METAENGINE_Render_
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) return NULL;
 
-    return _gpu_current_renderer->impl->CreateAliasTarget(_gpu_current_renderer, target);
+    return gpu_current_renderer->impl->CreateAliasTarget(gpu_current_renderer, target);
 }
 
 void METAENGINE_Render_MakeCurrent(METAENGINE_Render_Target *target, Uint32 windowID) {
-    if (_gpu_current_renderer == NULL) return;
+    if (gpu_current_renderer == NULL) return;
 
-    _gpu_current_renderer->impl->MakeCurrent(_gpu_current_renderer, target, windowID);
+    gpu_current_renderer->impl->MakeCurrent(gpu_current_renderer, target, windowID);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_SetFullscreen(
-        METAENGINE_Render_bool enable_fullscreen, METAENGINE_Render_bool use_desktop_resolution) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_SetFullscreen(bool enable_fullscreen, bool use_desktop_resolution) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
+        return false;
 
-    return _gpu_current_renderer->impl->SetFullscreen(_gpu_current_renderer, enable_fullscreen,
-                                                      use_desktop_resolution);
+    return gpu_current_renderer->impl->SetFullscreen(gpu_current_renderer, enable_fullscreen,
+                                                     use_desktop_resolution);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_GetFullscreen(void) {
+bool METAENGINE_Render_GetFullscreen(void) {
     METAENGINE_Render_Target *target = METAENGINE_Render_GetContextTarget();
-    if (target == NULL) return METAENGINE_Render_FALSE;
+    if (target == NULL) return false;
     return (SDL_GetWindowFlags(SDL_GetWindowFromID(target->context->windowID)) &
             (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
@@ -1974,27 +1734,25 @@ METAENGINE_Render_Target *METAENGINE_Render_GetActiveTarget(void) {
     return context_target->context->active_target;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_SetActiveTarget(METAENGINE_Render_Target *target) {
-    if (_gpu_current_renderer == NULL) return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_SetActiveTarget(METAENGINE_Render_Target *target) {
+    if (gpu_current_renderer == NULL) return false;
 
-    return _gpu_current_renderer->impl->SetActiveTarget(_gpu_current_renderer, target);
+    return gpu_current_renderer->impl->SetActiveTarget(gpu_current_renderer, target);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_AddDepthBuffer(METAENGINE_Render_Target *target) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL ||
+bool METAENGINE_Render_AddDepthBuffer(METAENGINE_Render_Target *target) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL ||
         target == NULL)
-        return METAENGINE_Render_FALSE;
+        return false;
 
-    return _gpu_current_renderer->impl->AddDepthBuffer(_gpu_current_renderer, target);
+    return gpu_current_renderer->impl->AddDepthBuffer(gpu_current_renderer, target);
 }
 
-void METAENGINE_Render_SetDepthTest(METAENGINE_Render_Target *target,
-                                    METAENGINE_Render_bool enable) {
+void METAENGINE_Render_SetDepthTest(METAENGINE_Render_Target *target, bool enable) {
     if (target != NULL) target->use_depth_test = enable;
 }
 
-void METAENGINE_Render_SetDepthWrite(METAENGINE_Render_Target *target,
-                                     METAENGINE_Render_bool enable) {
+void METAENGINE_Render_SetDepthWrite(METAENGINE_Render_Target *target, bool enable) {
     if (target != NULL) target->use_depth_write = enable;
 }
 
@@ -2003,12 +1761,12 @@ void METAENGINE_Render_SetDepthFunction(METAENGINE_Render_Target *target,
     if (target != NULL) target->depth_function = compare_operation;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_SetWindowResolution(Uint16 w, Uint16 h) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL ||
+bool METAENGINE_Render_SetWindowResolution(Uint16 w, Uint16 h) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL ||
         w == 0 || h == 0)
-        return METAENGINE_Render_FALSE;
+        return false;
 
-    return _gpu_current_renderer->impl->SetWindowResolution(_gpu_current_renderer, w, h);
+    return gpu_current_renderer->impl->SetWindowResolution(gpu_current_renderer, w, h);
 }
 
 void METAENGINE_Render_GetVirtualResolution(METAENGINE_Render_Target *target, Uint16 *w,
@@ -2029,7 +1787,7 @@ void METAENGINE_Render_SetVirtualResolution(METAENGINE_Render_Target *target, Ui
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
     if (w == 0 || h == 0) return;
 
-    _gpu_current_renderer->impl->SetVirtualResolution(_gpu_current_renderer, target, w, h);
+    gpu_current_renderer->impl->SetVirtualResolution(gpu_current_renderer, target, w, h);
 }
 
 void METAENGINE_Render_UnsetVirtualResolution(METAENGINE_Render_Target *target) {
@@ -2037,12 +1795,12 @@ void METAENGINE_Render_UnsetVirtualResolution(METAENGINE_Render_Target *target) 
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
 
-    _gpu_current_renderer->impl->UnsetVirtualResolution(_gpu_current_renderer, target);
+    gpu_current_renderer->impl->UnsetVirtualResolution(gpu_current_renderer, target);
 }
 
 void METAENGINE_Render_SetImageVirtualResolution(METAENGINE_Render_Image *image, Uint16 w,
                                                  Uint16 h) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL ||
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL ||
         w == 0 || h == 0)
         return;
 
@@ -2055,7 +1813,7 @@ void METAENGINE_Render_SetImageVirtualResolution(METAENGINE_Render_Image *image,
 }
 
 void METAENGINE_Render_UnsetImageVirtualResolution(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
     if (image == NULL) return;
@@ -2069,20 +1827,20 @@ void METAENGINE_Render_UnsetImageVirtualResolution(METAENGINE_Render_Image *imag
 void gpu_free_error_queue(void) {
     unsigned int i;
     // Free the error queue
-    for (i = 0; i < _gpu_error_code_queue_size; i++) {
-        SDL_free(_gpu_error_code_queue[i].function);
-        _gpu_error_code_queue[i].function = NULL;
-        SDL_free(_gpu_error_code_queue[i].details);
-        _gpu_error_code_queue[i].details = NULL;
+    for (i = 0; i < gpu_error_code_queue_size; i++) {
+        SDL_free(gpu_error_code_queue[i].function);
+        gpu_error_code_queue[i].function = NULL;
+        SDL_free(gpu_error_code_queue[i].details);
+        gpu_error_code_queue[i].details = NULL;
     }
-    SDL_free(_gpu_error_code_queue);
-    _gpu_error_code_queue = NULL;
-    _gpu_num_error_codes = 0;
+    SDL_free(gpu_error_code_queue);
+    gpu_error_code_queue = NULL;
+    gpu_num_error_codes = 0;
 
-    SDL_free(_gpu_error_code_result.function);
-    _gpu_error_code_result.function = NULL;
-    SDL_free(_gpu_error_code_result.details);
-    _gpu_error_code_result.details = NULL;
+    SDL_free(gpu_error_code_result.function);
+    gpu_error_code_result.function = NULL;
+    SDL_free(gpu_error_code_result.details);
+    gpu_error_code_result.details = NULL;
 }
 
 // Deletes all existing errors
@@ -2090,48 +1848,48 @@ void METAENGINE_Render_SetErrorQueueMax(unsigned int max) {
     gpu_free_error_queue();
 
     // Reallocate with new size
-    _gpu_error_code_queue_size = max;
+    gpu_error_code_queue_size = max;
     gpu_init_error_queue();
 }
 
 void METAENGINE_Render_CloseCurrentRenderer(void) {
-    if (_gpu_current_renderer == NULL) return;
+    if (gpu_current_renderer == NULL) return;
 
-    _gpu_current_renderer->impl->Quit(_gpu_current_renderer);
-    METAENGINE_Render_FreeRenderer(_gpu_current_renderer);
+    gpu_current_renderer->impl->Quit(gpu_current_renderer);
+    METAENGINE_Render_FreeRenderer(gpu_current_renderer);
 }
 
 void METAENGINE_Render_Quit(void) {
-    if (_gpu_num_error_codes > 0)
-        METADOT_ERROR("METAENGINE_Render_Quit: {} uncleared error{}.", _gpu_num_error_codes,
-                      (_gpu_num_error_codes > 1 ? "s" : ""));
+    if (gpu_num_error_codes > 0)
+        METADOT_ERROR("METAENGINE_Render_Quit: {} uncleared error{}.", gpu_num_error_codes,
+                      (gpu_num_error_codes > 1 ? "s" : ""));
 
     gpu_free_error_queue();
 
-    if (_gpu_current_renderer == NULL) return;
+    if (gpu_current_renderer == NULL) return;
 
-    _gpu_current_renderer->impl->Quit(_gpu_current_renderer);
-    METAENGINE_Render_FreeRenderer(_gpu_current_renderer);
+    gpu_current_renderer->impl->Quit(gpu_current_renderer);
+    METAENGINE_Render_FreeRenderer(gpu_current_renderer);
     // FIXME: Free all renderers
-    _gpu_current_renderer = NULL;
+    gpu_current_renderer = NULL;
 
-    _gpu_init_windowID = 0;
+    gpu_init_windowID = 0;
 
     // Free window mappings
-    SDL_free(_gpu_window_mappings);
-    _gpu_window_mappings = NULL;
-    _gpu_window_mappings_size = 0;
-    _gpu_num_window_mappings = 0;
+    SDL_free(gpu_window_mappings);
+    gpu_window_mappings = NULL;
+    gpu_window_mappings_size = 0;
+    gpu_num_window_mappings = 0;
 
     gpu_free_renderer_register();
 
-    if (_gpu_initialized_SDL) {
+    if (gpu_initialized_SDL) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
-        _gpu_initialized_SDL = 0;
+        gpu_initialized_SDL = 0;
 
-        if (_gpu_initialized_SDL_core) {
+        if (gpu_initialized_SDL_core) {
             SDL_Quit();
-            _gpu_initialized_SDL_core = 0;
+            gpu_initialized_SDL_core = 0;
         }
     }
 }
@@ -2156,24 +1914,24 @@ void METAENGINE_Render_PushErrorCode(const char *function, METAENGINE_Render_Err
                       METAENGINE_Render_GetErrorString(error));
 #endif
 
-    if (_gpu_num_error_codes < _gpu_error_code_queue_size) {
-        if (function == NULL) _gpu_error_code_queue[_gpu_num_error_codes].function[0] = '\0';
+    if (gpu_num_error_codes < gpu_error_code_queue_size) {
+        if (function == NULL) gpu_error_code_queue[gpu_num_error_codes].function[0] = '\0';
         else {
-            strncpy(_gpu_error_code_queue[_gpu_num_error_codes].function, function,
+            strncpy(gpu_error_code_queue[gpu_num_error_codes].function, function,
                     METAENGINE_Render_ERROR_FUNCTION_STRING_MAX);
-            _gpu_error_code_queue[_gpu_num_error_codes]
+            gpu_error_code_queue[gpu_num_error_codes]
                     .function[METAENGINE_Render_ERROR_FUNCTION_STRING_MAX] = '\0';
         }
-        _gpu_error_code_queue[_gpu_num_error_codes].error = error;
-        if (details == NULL) _gpu_error_code_queue[_gpu_num_error_codes].details[0] = '\0';
+        gpu_error_code_queue[gpu_num_error_codes].error = error;
+        if (details == NULL) gpu_error_code_queue[gpu_num_error_codes].details[0] = '\0';
         else {
             va_list lst;
             va_start(lst, details);
-            vsnprintf(_gpu_error_code_queue[_gpu_num_error_codes].details,
+            vsnprintf(gpu_error_code_queue[gpu_num_error_codes].details,
                       METAENGINE_Render_ERROR_DETAILS_STRING_MAX, details, lst);
             va_end(lst);
         }
-        _gpu_num_error_codes++;
+        gpu_num_error_codes++;
     }
 }
 
@@ -2183,22 +1941,22 @@ METAENGINE_Render_ErrorObject METAENGINE_Render_PopErrorCode(void) {
 
     gpu_init_error_queue();
 
-    if (_gpu_num_error_codes <= 0) return result;
+    if (gpu_num_error_codes <= 0) return result;
 
     // Pop the oldest
-    strcpy(_gpu_error_code_result.function, _gpu_error_code_queue[0].function);
-    _gpu_error_code_result.error = _gpu_error_code_queue[0].error;
-    strcpy(_gpu_error_code_result.details, _gpu_error_code_queue[0].details);
+    strcpy(gpu_error_code_result.function, gpu_error_code_queue[0].function);
+    gpu_error_code_result.error = gpu_error_code_queue[0].error;
+    strcpy(gpu_error_code_result.details, gpu_error_code_queue[0].details);
 
     // We'll be returning that one
-    result = _gpu_error_code_result;
+    result = gpu_error_code_result;
 
     // Move the rest down
-    _gpu_num_error_codes--;
-    for (i = 0; i < _gpu_num_error_codes; i++) {
-        strcpy(_gpu_error_code_queue[i].function, _gpu_error_code_queue[i + 1].function);
-        _gpu_error_code_queue[i].error = _gpu_error_code_queue[i + 1].error;
-        strcpy(_gpu_error_code_queue[i].details, _gpu_error_code_queue[i + 1].details);
+    gpu_num_error_codes--;
+    for (i = 0; i < gpu_num_error_codes; i++) {
+        strcpy(gpu_error_code_queue[i].function, gpu_error_code_queue[i + 1].function);
+        gpu_error_code_queue[i].error = gpu_error_code_queue[i + 1].error;
+        strcpy(gpu_error_code_queue[i].details, gpu_error_code_queue[i + 1].details);
     }
     return result;
 }
@@ -2225,7 +1983,7 @@ const char *METAENGINE_Render_GetErrorString(METAENGINE_Render_ErrorEnum error) 
 
 void METAENGINE_Render_GetVirtualCoords(METAENGINE_Render_Target *target, float *x, float *y,
                                         float displayX, float displayY) {
-    if (target == NULL || _gpu_current_renderer == NULL) return;
+    if (target == NULL || gpu_current_renderer == NULL) return;
 
     // Scale from raw window/image coords to the virtual scale
     if (target->context != NULL) {
@@ -2241,7 +1999,7 @@ void METAENGINE_Render_GetVirtualCoords(METAENGINE_Render_Target *target, float 
     }
 
     // Invert coordinates to math coords
-    if (_gpu_current_renderer->coordinate_mode) *y = target->h - *y;
+    if (gpu_current_renderer->coordinate_mode) *y = target->h - *y;
 }
 
 METAENGINE_Render_Rect METAENGINE_Render_MakeRect(float x, float y, float w, float h) {
@@ -2264,12 +2022,10 @@ METAENGINE_Color METAENGINE_Render_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     return c;
 }
 
-METAENGINE_Render_RendererID METAENGINE_Render_MakeRendererID(
-        const char *name, METAENGINE_Render_RendererEnum renderer, int major_version,
-        int minor_version) {
+METAENGINE_Render_RendererID METAENGINE_Render_MakeRendererID(const char *name, int major_version,
+                                                              int minor_version) {
     METAENGINE_Render_RendererID r;
     r.name = name;
-    r.renderer = renderer;
     r.major_version = major_version;
     r.minor_version = minor_version;
 
@@ -2297,84 +2053,83 @@ METAENGINE_Render_Camera METAENGINE_Render_GetCamera(METAENGINE_Render_Target *t
 
 METAENGINE_Render_Camera METAENGINE_Render_SetCamera(METAENGINE_Render_Target *target,
                                                      METAENGINE_Render_Camera *cam) {
-    if (_gpu_current_renderer == NULL) return METAENGINE_Render_GetDefaultCamera();
+    if (gpu_current_renderer == NULL) return METAENGINE_Render_GetDefaultCamera();
     MAKE_CURRENT_IF_NONE(target);
-    if (_gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer->current_context_target == NULL)
         return METAENGINE_Render_GetDefaultCamera();
     // TODO: Remove from renderer and flush here
-    return _gpu_current_renderer->impl->SetCamera(_gpu_current_renderer, target, cam);
+    return gpu_current_renderer->impl->SetCamera(gpu_current_renderer, target, cam);
 }
 
-void METAENGINE_Render_EnableCamera(METAENGINE_Render_Target *target,
-                                    METAENGINE_Render_bool use_camera) {
+void METAENGINE_Render_EnableCamera(METAENGINE_Render_Target *target, bool use_camera) {
     if (target == NULL) return;
     // TODO: Flush here
     target->use_camera = use_camera;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_IsCameraEnabled(METAENGINE_Render_Target *target) {
-    if (target == NULL) return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_IsCameraEnabled(METAENGINE_Render_Target *target) {
+    if (target == NULL) return false;
     return target->use_camera;
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CreateImage(Uint16 w, Uint16 h,
                                                        METAENGINE_Render_FormatEnum format) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CreateImage(_gpu_current_renderer, w, h, format);
+    return gpu_current_renderer->impl->CreateImage(gpu_current_renderer, w, h, format);
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CreateImageUsingTexture(
-        METAENGINE_Render_TextureHandle handle, METAENGINE_Render_bool take_ownership) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+        METAENGINE_Render_TextureHandle handle, bool take_ownership) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CreateImageUsingTexture(_gpu_current_renderer, handle,
-                                                                take_ownership);
+    return gpu_current_renderer->impl->CreateImageUsingTexture(gpu_current_renderer, handle,
+                                                               take_ownership);
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CreateAliasImage(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CreateAliasImage(_gpu_current_renderer, image);
+    return gpu_current_renderer->impl->CreateAliasImage(gpu_current_renderer, image);
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CopyImage(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CopyImage(_gpu_current_renderer, image);
+    return gpu_current_renderer->impl->CopyImage(gpu_current_renderer, image);
 }
 
 void METAENGINE_Render_UpdateImage(METAENGINE_Render_Image *image,
                                    const METAENGINE_Render_Rect *image_rect, void *surface,
                                    const METAENGINE_Render_Rect *surface_rect) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->UpdateImage(_gpu_current_renderer, image, image_rect, surface,
-                                             surface_rect);
+    gpu_current_renderer->impl->UpdateImage(gpu_current_renderer, image, image_rect, surface,
+                                            surface_rect);
 }
 
 void METAENGINE_Render_UpdateImageBytes(METAENGINE_Render_Image *image,
                                         const METAENGINE_Render_Rect *image_rect,
                                         const unsigned char *bytes, int bytes_per_row) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->UpdateImageBytes(_gpu_current_renderer, image, image_rect, bytes,
-                                                  bytes_per_row);
+    gpu_current_renderer->impl->UpdateImageBytes(gpu_current_renderer, image, image_rect, bytes,
+                                                 bytes_per_row);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_ReplaceImage(METAENGINE_Render_Image *image, void *surface,
-                                                      const METAENGINE_Render_Rect *surface_rect) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_ReplaceImage(METAENGINE_Render_Image *image, void *surface,
+                                    const METAENGINE_Render_Rect *surface_rect) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
+        return false;
 
-    return _gpu_current_renderer->impl->ReplaceImage(_gpu_current_renderer, image, surface,
-                                                     surface_rect);
+    return gpu_current_renderer->impl->ReplaceImage(gpu_current_renderer, image, surface,
+                                                    surface_rect);
 }
 
 static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, int height,
@@ -2467,55 +2222,55 @@ static const char *get_filename_ext(const char *filename) {
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurface(void *surface) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CopyImageFromSurface(_gpu_current_renderer, surface, NULL);
+    return gpu_current_renderer->impl->CopyImageFromSurface(gpu_current_renderer, surface, NULL);
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromSurfaceRect(
         SDL_Surface *surface, METAENGINE_Render_Rect *surface_rect) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CopyImageFromSurface(_gpu_current_renderer, surface,
-                                                             surface_rect);
+    return gpu_current_renderer->impl->CopyImageFromSurface(gpu_current_renderer, surface,
+                                                            surface_rect);
 }
 
 METAENGINE_Render_Image *METAENGINE_Render_CopyImageFromTarget(METAENGINE_Render_Target *target) {
-    if (_gpu_current_renderer == NULL) return NULL;
+    if (gpu_current_renderer == NULL) return NULL;
     MAKE_CURRENT_IF_NONE(target);
-    if (_gpu_current_renderer->current_context_target == NULL) return NULL;
+    if (gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return _gpu_current_renderer->impl->CopyImageFromTarget(_gpu_current_renderer, target);
+    return gpu_current_renderer->impl->CopyImageFromTarget(gpu_current_renderer, target);
 }
 
 void *METAENGINE_Render_CopySurfaceFromTarget(METAENGINE_Render_Target *target) {
-    if (_gpu_current_renderer == NULL) return NULL;
+    if (gpu_current_renderer == NULL) return NULL;
     MAKE_CURRENT_IF_NONE(target);
-    if (_gpu_current_renderer->current_context_target == NULL) return NULL;
+    if (gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return _gpu_current_renderer->impl->CopySurfaceFromTarget(_gpu_current_renderer, target);
+    return gpu_current_renderer->impl->CopySurfaceFromTarget(gpu_current_renderer, target);
 }
 
 void *METAENGINE_Render_CopySurfaceFromImage(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->CopySurfaceFromImage(_gpu_current_renderer, image);
+    return gpu_current_renderer->impl->CopySurfaceFromImage(gpu_current_renderer, image);
 }
 
 void METAENGINE_Render_FreeImage(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->FreeImage(_gpu_current_renderer, image);
+    gpu_current_renderer->impl->FreeImage(gpu_current_renderer, image);
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_GetContextTarget(void) {
-    if (_gpu_current_renderer == NULL) return NULL;
+    if (gpu_current_renderer == NULL) return NULL;
 
-    return _gpu_current_renderer->current_context_target;
+    return gpu_current_renderer->current_context_target;
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_LoadTarget(METAENGINE_Render_Image *image) {
@@ -2527,16 +2282,16 @@ METAENGINE_Render_Target *METAENGINE_Render_LoadTarget(METAENGINE_Render_Image *
 }
 
 METAENGINE_Render_Target *METAENGINE_Render_GetTarget(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->GetTarget(_gpu_current_renderer, image);
+    return gpu_current_renderer->impl->GetTarget(gpu_current_renderer, image);
 }
 
 void METAENGINE_Render_FreeTarget(METAENGINE_Render_Target *target) {
-    if (_gpu_current_renderer == NULL) return;
+    if (gpu_current_renderer == NULL) return;
 
-    _gpu_current_renderer->impl->FreeTarget(_gpu_current_renderer, target);
+    gpu_current_renderer->impl->FreeTarget(gpu_current_renderer, target);
 }
 
 void METAENGINE_Render_Blit(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
@@ -2548,7 +2303,7 @@ void METAENGINE_Render_Blit(METAENGINE_Render_Image *image, METAENGINE_Render_Re
     if (image == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
 
-    _gpu_current_renderer->impl->Blit(_gpu_current_renderer, image, src_rect, target, x, y);
+    gpu_current_renderer->impl->Blit(gpu_current_renderer, image, src_rect, target, x, y);
 }
 
 void METAENGINE_Render_BlitRotate(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
@@ -2561,8 +2316,8 @@ void METAENGINE_Render_BlitRotate(METAENGINE_Render_Image *image, METAENGINE_Ren
     if (image == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
 
-    _gpu_current_renderer->impl->BlitRotate(_gpu_current_renderer, image, src_rect, target, x, y,
-                                            degrees);
+    gpu_current_renderer->impl->BlitRotate(gpu_current_renderer, image, src_rect, target, x, y,
+                                           degrees);
 }
 
 void METAENGINE_Render_BlitScale(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
@@ -2575,8 +2330,8 @@ void METAENGINE_Render_BlitScale(METAENGINE_Render_Image *image, METAENGINE_Rend
     if (image == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
 
-    _gpu_current_renderer->impl->BlitScale(_gpu_current_renderer, image, src_rect, target, x, y,
-                                           scaleX, scaleY);
+    gpu_current_renderer->impl->BlitScale(gpu_current_renderer, image, src_rect, target, x, y,
+                                          scaleX, scaleY);
 }
 
 void METAENGINE_Render_BlitTransform(METAENGINE_Render_Image *image,
@@ -2590,8 +2345,8 @@ void METAENGINE_Render_BlitTransform(METAENGINE_Render_Image *image,
     if (image == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
 
-    _gpu_current_renderer->impl->BlitTransform(_gpu_current_renderer, image, src_rect, target, x, y,
-                                               degrees, scaleX, scaleY);
+    gpu_current_renderer->impl->BlitTransform(gpu_current_renderer, image, src_rect, target, x, y,
+                                              degrees, scaleX, scaleY);
 }
 
 void METAENGINE_Render_BlitTransformX(METAENGINE_Render_Image *image,
@@ -2606,8 +2361,8 @@ void METAENGINE_Render_BlitTransformX(METAENGINE_Render_Image *image,
     if (image == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(METAENGINE_Render_ERROR_NULL_ARGUMENT, "target");
 
-    _gpu_current_renderer->impl->BlitTransformX(_gpu_current_renderer, image, src_rect, target, x,
-                                                y, pivot_x, pivot_y, degrees, scaleX, scaleY);
+    gpu_current_renderer->impl->BlitTransformX(gpu_current_renderer, image, src_rect, target, x, y,
+                                               pivot_x, pivot_y, degrees, scaleX, scaleY);
 }
 
 void METAENGINE_Render_BlitRect(METAENGINE_Render_Image *image, METAENGINE_Render_Rect *src_rect,
@@ -2722,59 +2477,57 @@ void METAENGINE_Render_PrimitiveBatchV(METAENGINE_Render_Image *image,
 
     if (num_vertices == 0) return;
 
-    _gpu_current_renderer->impl->PrimitiveBatchV(_gpu_current_renderer, image, target,
-                                                 primitive_type, num_vertices, values, num_indices,
-                                                 indices, flags);
+    gpu_current_renderer->impl->PrimitiveBatchV(gpu_current_renderer, image, target, primitive_type,
+                                                num_vertices, values, num_indices, indices, flags);
 }
 
 void METAENGINE_Render_GenerateMipmaps(METAENGINE_Render_Image *image) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->GenerateMipmaps(_gpu_current_renderer, image);
+    gpu_current_renderer->impl->GenerateMipmaps(gpu_current_renderer, image);
 }
 
 METAENGINE_Render_Rect METAENGINE_Render_SetClipRect(METAENGINE_Render_Target *target,
                                                      METAENGINE_Render_Rect rect) {
-    if (target == NULL || _gpu_current_renderer == NULL ||
-        _gpu_current_renderer->current_context_target == NULL) {
+    if (target == NULL || gpu_current_renderer == NULL ||
+        gpu_current_renderer->current_context_target == NULL) {
         METAENGINE_Render_Rect r = {0, 0, 0, 0};
         return r;
     }
 
-    return _gpu_current_renderer->impl->SetClip(_gpu_current_renderer, target, (Sint16) rect.x,
-                                                (Sint16) rect.y, (Uint16) rect.w, (Uint16) rect.h);
+    return gpu_current_renderer->impl->SetClip(gpu_current_renderer, target, (Sint16) rect.x,
+                                               (Sint16) rect.y, (Uint16) rect.w, (Uint16) rect.h);
 }
 
 METAENGINE_Render_Rect METAENGINE_Render_SetClip(METAENGINE_Render_Target *target, Sint16 x,
                                                  Sint16 y, Uint16 w, Uint16 h) {
-    if (target == NULL || _gpu_current_renderer == NULL ||
-        _gpu_current_renderer->current_context_target == NULL) {
+    if (target == NULL || gpu_current_renderer == NULL ||
+        gpu_current_renderer->current_context_target == NULL) {
         METAENGINE_Render_Rect r = {0, 0, 0, 0};
         return r;
     }
 
-    return _gpu_current_renderer->impl->SetClip(_gpu_current_renderer, target, x, y, w, h);
+    return gpu_current_renderer->impl->SetClip(gpu_current_renderer, target, x, y, w, h);
 }
 
 void METAENGINE_Render_UnsetClip(METAENGINE_Render_Target *target) {
-    if (target == NULL || _gpu_current_renderer == NULL ||
-        _gpu_current_renderer->current_context_target == NULL)
+    if (target == NULL || gpu_current_renderer == NULL ||
+        gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->UnsetClip(_gpu_current_renderer, target);
+    gpu_current_renderer->impl->UnsetClip(gpu_current_renderer, target);
 }
 
 /* Adapted from SDL_IntersectRect() */
-METAENGINE_Render_bool METAENGINE_Render_IntersectRect(METAENGINE_Render_Rect A,
-                                                       METAENGINE_Render_Rect B,
-                                                       METAENGINE_Render_Rect *result) {
-    METAENGINE_Render_bool has_horiz_intersection = METAENGINE_Render_FALSE;
+bool METAENGINE_Render_IntersectRect(METAENGINE_Render_Rect A, METAENGINE_Render_Rect B,
+                                     METAENGINE_Render_Rect *result) {
+    bool has_horiz_intersection = false;
     float Amin, Amax, Bmin, Bmax;
     METAENGINE_Render_Rect intersection;
 
     // Special case for empty rects
-    if (A.w <= 0.0f || A.h <= 0.0f || B.w <= 0.0f || B.h <= 0.0f) return METAENGINE_Render_FALSE;
+    if (A.w <= 0.0f || A.h <= 0.0f || B.w <= 0.0f || B.h <= 0.0f) return false;
 
     // Horizontal intersection
     Amin = A.x;
@@ -2802,15 +2555,14 @@ METAENGINE_Render_bool METAENGINE_Render_IntersectRect(METAENGINE_Render_Rect A,
 
     if (has_horiz_intersection && Amax > Amin) {
         if (result != NULL) *result = intersection;
-        return METAENGINE_Render_TRUE;
+        return true;
     } else
-        return METAENGINE_Render_FALSE;
+        return false;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_IntersectClipRect(METAENGINE_Render_Target *target,
-                                                           METAENGINE_Render_Rect B,
-                                                           METAENGINE_Render_Rect *result) {
-    if (target == NULL) return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_IntersectClipRect(METAENGINE_Render_Target *target, METAENGINE_Render_Rect B,
+                                         METAENGINE_Render_Rect *result) {
+    if (target == NULL) return false;
 
     if (!target->use_clip_rect) {
         METAENGINE_Render_Rect A = {0, 0, static_cast<float>(target->w),
@@ -2896,27 +2648,27 @@ void METAENGINE_Render_UnsetTargetColor(METAENGINE_Render_Target *target) {
     METAENGINE_Color c = {255, 255, 255, 255};
     if (target == NULL) return;
 
-    target->use_color = METAENGINE_Render_FALSE;
+    target->use_color = false;
     target->color = c;
 }
 
-METAENGINE_Render_bool METAENGINE_Render_GetBlending(METAENGINE_Render_Image *image) {
-    if (image == NULL) return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_GetBlending(METAENGINE_Render_Image *image) {
+    if (image == NULL) return false;
 
     return image->use_blending;
 }
 
-void METAENGINE_Render_SetBlending(METAENGINE_Render_Image *image, METAENGINE_Render_bool enable) {
+void METAENGINE_Render_SetBlending(METAENGINE_Render_Image *image, bool enable) {
     if (image == NULL) return;
 
     image->use_blending = enable;
 }
 
-void METAENGINE_Render_SetShapeBlending(METAENGINE_Render_bool enable) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+void METAENGINE_Render_SetShapeBlending(bool enable) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->current_context_target->context->shapes_use_blending = enable;
+    gpu_current_renderer->current_context_target->context->shapes_use_blending = enable;
 }
 
 METAENGINE_Render_BlendMode METAENGINE_Render_GetBlendModeFromPreset(
@@ -3064,10 +2816,10 @@ void METAENGINE_Render_SetShapeBlendFunction(METAENGINE_Render_BlendFuncEnum sou
                                              METAENGINE_Render_BlendFuncEnum source_alpha,
                                              METAENGINE_Render_BlendFuncEnum dest_alpha) {
     METAENGINE_Render_Context *context;
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    context = _gpu_current_renderer->current_context_target->context;
+    context = gpu_current_renderer->current_context_target->context;
 
     context->shapes_blend_mode.source_color = source_color;
     context->shapes_blend_mode.dest_color = dest_color;
@@ -3078,10 +2830,10 @@ void METAENGINE_Render_SetShapeBlendFunction(METAENGINE_Render_BlendFuncEnum sou
 void METAENGINE_Render_SetShapeBlendEquation(METAENGINE_Render_BlendEqEnum color_equation,
                                              METAENGINE_Render_BlendEqEnum alpha_equation) {
     METAENGINE_Render_Context *context;
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    context = _gpu_current_renderer->current_context_target->context;
+    context = gpu_current_renderer->current_context_target->context;
 
     context->shapes_blend_mode.color_equation = color_equation;
     context->shapes_blend_mode.alpha_equation = alpha_equation;
@@ -3089,7 +2841,7 @@ void METAENGINE_Render_SetShapeBlendEquation(METAENGINE_Render_BlendEqEnum color
 
 void METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BlendPresetEnum preset) {
     METAENGINE_Render_BlendMode b;
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
     b = METAENGINE_Render_GetBlendModeFromPreset(preset);
@@ -3100,26 +2852,26 @@ void METAENGINE_Render_SetShapeBlendMode(METAENGINE_Render_BlendPresetEnum prese
 
 void METAENGINE_Render_SetImageFilter(METAENGINE_Render_Image *image,
                                       METAENGINE_Render_FilterEnum filter) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
     if (image == NULL) return;
 
-    _gpu_current_renderer->impl->SetImageFilter(_gpu_current_renderer, image, filter);
+    gpu_current_renderer->impl->SetImageFilter(gpu_current_renderer, image, filter);
 }
 
 void METAENGINE_Render_SetDefaultAnchor(float anchor_x, float anchor_y) {
-    if (_gpu_current_renderer == NULL) return;
+    if (gpu_current_renderer == NULL) return;
 
-    _gpu_current_renderer->default_image_anchor_x = anchor_x;
-    _gpu_current_renderer->default_image_anchor_y = anchor_y;
+    gpu_current_renderer->default_image_anchor_x = anchor_x;
+    gpu_current_renderer->default_image_anchor_y = anchor_y;
 }
 
 void METAENGINE_Render_GetDefaultAnchor(float *anchor_x, float *anchor_y) {
-    if (_gpu_current_renderer == NULL) return;
+    if (gpu_current_renderer == NULL) return;
 
-    if (anchor_x != NULL) *anchor_x = _gpu_current_renderer->default_image_anchor_x;
+    if (anchor_x != NULL) *anchor_x = gpu_current_renderer->default_image_anchor_x;
 
-    if (anchor_y != NULL) *anchor_y = _gpu_current_renderer->default_image_anchor_y;
+    if (anchor_y != NULL) *anchor_y = gpu_current_renderer->default_image_anchor_y;
 }
 
 void METAENGINE_Render_SetAnchor(METAENGINE_Render_Image *image, float anchor_x, float anchor_y) {
@@ -3153,12 +2905,11 @@ void METAENGINE_Render_SetSnapMode(METAENGINE_Render_Image *image,
 void METAENGINE_Render_SetWrapMode(METAENGINE_Render_Image *image,
                                    METAENGINE_Render_WrapEnum wrap_mode_x,
                                    METAENGINE_Render_WrapEnum wrap_mode_y) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
     if (image == NULL) return;
 
-    _gpu_current_renderer->impl->SetWrapMode(_gpu_current_renderer, image, wrap_mode_x,
-                                             wrap_mode_y);
+    gpu_current_renderer->impl->SetWrapMode(gpu_current_renderer, image, wrap_mode_x, wrap_mode_y);
 }
 
 METAENGINE_Render_TextureHandle METAENGINE_Render_GetTextureHandle(METAENGINE_Render_Image *image) {
@@ -3167,12 +2918,12 @@ METAENGINE_Render_TextureHandle METAENGINE_Render_GetTextureHandle(METAENGINE_Re
 }
 
 METAENGINE_Color METAENGINE_Render_GetPixel(METAENGINE_Render_Target *target, Sint16 x, Sint16 y) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         METAENGINE_Color c = {0, 0, 0, 0};
         return c;
     }
 
-    return _gpu_current_renderer->impl->GetPixel(_gpu_current_renderer, target, x, y);
+    return gpu_current_renderer->impl->GetPixel(gpu_current_renderer, target, x, y);
 }
 
 void METAENGINE_Render_Clear(METAENGINE_Render_Target *target) {
@@ -3180,7 +2931,7 @@ void METAENGINE_Render_Clear(METAENGINE_Render_Target *target) {
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
 
-    _gpu_current_renderer->impl->ClearRGBA(_gpu_current_renderer, target, 0, 0, 0, 0);
+    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, 0, 0, 0, 0);
 }
 
 void METAENGINE_Render_ClearColor(METAENGINE_Render_Target *target, METAENGINE_Color color) {
@@ -3188,8 +2939,8 @@ void METAENGINE_Render_ClearColor(METAENGINE_Render_Target *target, METAENGINE_C
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
 
-    _gpu_current_renderer->impl->ClearRGBA(_gpu_current_renderer, target, color.r, color.g, color.b,
-                                           GET_ALPHA(color));
+    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, color.r, color.g, color.b,
+                                          GET_ALPHA(color));
 }
 
 void METAENGINE_Render_ClearRGB(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b) {
@@ -3197,7 +2948,7 @@ void METAENGINE_Render_ClearRGB(METAENGINE_Render_Target *target, Uint8 r, Uint8
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
 
-    _gpu_current_renderer->impl->ClearRGBA(_gpu_current_renderer, target, r, g, b, 255);
+    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, r, g, b, 255);
 }
 
 void METAENGINE_Render_ClearRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint8 g, Uint8 b,
@@ -3206,53 +2957,53 @@ void METAENGINE_Render_ClearRGBA(METAENGINE_Render_Target *target, Uint8 r, Uint
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
 
-    _gpu_current_renderer->impl->ClearRGBA(_gpu_current_renderer, target, r, g, b, a);
+    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, r, g, b, a);
 }
 
 void METAENGINE_Render_FlushBlitBuffer(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->FlushBlitBuffer(_gpu_current_renderer);
+    gpu_current_renderer->impl->FlushBlitBuffer(gpu_current_renderer);
 }
 
 void METAENGINE_Render_Flip(METAENGINE_Render_Target *target) {
     if (!CHECK_RENDERER) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL renderer");
 
     if (target != NULL && target->context == NULL) {
-        _gpu_current_renderer->impl->FlushBlitBuffer(_gpu_current_renderer);
+        gpu_current_renderer->impl->FlushBlitBuffer(gpu_current_renderer);
         return;
     }
 
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(METAENGINE_Render_ERROR_USER_ERROR, "NULL context");
 
-    _gpu_current_renderer->impl->Flip(_gpu_current_renderer, target);
+    gpu_current_renderer->impl->Flip(gpu_current_renderer, target);
 }
 
 // Shader API
 
 Uint32 METAENGINE_Render_CompileShader(METAENGINE_Render_ShaderEnum shader_type,
                                        const char *shader_source) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
-    return _gpu_current_renderer->impl->CompileShader(_gpu_current_renderer, shader_type,
-                                                      shader_source);
+    return gpu_current_renderer->impl->CompileShader(gpu_current_renderer, shader_type,
+                                                     shader_source);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_LinkShaderProgram(Uint32 program_object) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
+bool METAENGINE_Render_LinkShaderProgram(Uint32 program_object) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
+        return false;
 
-    return _gpu_current_renderer->impl->LinkShaderProgram(_gpu_current_renderer, program_object);
+    return gpu_current_renderer->impl->LinkShaderProgram(gpu_current_renderer, program_object);
 }
 
 Uint32 METAENGINE_Render_CreateShaderProgram(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
-    return _gpu_current_renderer->impl->CreateShaderProgram(_gpu_current_renderer);
+    return gpu_current_renderer->impl->CreateShaderProgram(gpu_current_renderer);
 }
 
 Uint32 METAENGINE_Render_LinkShaders(Uint32 shader_object1, Uint32 shader_object2) {
@@ -3266,99 +3017,98 @@ Uint32 METAENGINE_Render_LinkManyShaders(Uint32 *shader_objects, int count) {
     Uint32 p;
     int i;
 
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
-    if ((_gpu_current_renderer->enabled_features & METAENGINE_Render_FEATURE_BASIC_SHADERS) !=
+    if ((gpu_current_renderer->enabled_features & METAENGINE_Render_FEATURE_BASIC_SHADERS) !=
         METAENGINE_Render_FEATURE_BASIC_SHADERS)
         return 0;
 
-    p = _gpu_current_renderer->impl->CreateShaderProgram(_gpu_current_renderer);
+    p = gpu_current_renderer->impl->CreateShaderProgram(gpu_current_renderer);
 
     for (i = 0; i < count; i++)
-        _gpu_current_renderer->impl->AttachShader(_gpu_current_renderer, p, shader_objects[i]);
+        gpu_current_renderer->impl->AttachShader(gpu_current_renderer, p, shader_objects[i]);
 
-    if (_gpu_current_renderer->impl->LinkShaderProgram(_gpu_current_renderer, p)) return p;
+    if (gpu_current_renderer->impl->LinkShaderProgram(gpu_current_renderer, p)) return p;
 
-    _gpu_current_renderer->impl->FreeShaderProgram(_gpu_current_renderer, p);
+    gpu_current_renderer->impl->FreeShaderProgram(gpu_current_renderer, p);
     return 0;
 }
 
 void METAENGINE_Render_FreeShader(Uint32 shader_object) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->FreeShader(_gpu_current_renderer, shader_object);
+    gpu_current_renderer->impl->FreeShader(gpu_current_renderer, shader_object);
 }
 
 void METAENGINE_Render_FreeShaderProgram(Uint32 program_object) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->FreeShaderProgram(_gpu_current_renderer, program_object);
+    gpu_current_renderer->impl->FreeShaderProgram(gpu_current_renderer, program_object);
 }
 
 void METAENGINE_Render_AttachShader(Uint32 program_object, Uint32 shader_object) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->AttachShader(_gpu_current_renderer, program_object, shader_object);
+    gpu_current_renderer->impl->AttachShader(gpu_current_renderer, program_object, shader_object);
 }
 
 void METAENGINE_Render_DetachShader(Uint32 program_object, Uint32 shader_object) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->DetachShader(_gpu_current_renderer, program_object, shader_object);
+    gpu_current_renderer->impl->DetachShader(gpu_current_renderer, program_object, shader_object);
 }
 
-METAENGINE_Render_bool METAENGINE_Render_IsDefaultShaderProgram(Uint32 program_object) {
+bool METAENGINE_Render_IsDefaultShaderProgram(Uint32 program_object) {
     METAENGINE_Render_Context *context;
 
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
-        return METAENGINE_Render_FALSE;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
+        return false;
 
-    context = _gpu_current_renderer->current_context_target->context;
+    context = gpu_current_renderer->current_context_target->context;
     return (program_object == context->default_textured_shader_program ||
             program_object == context->default_untextured_shader_program);
 }
 
 void METAENGINE_Render_ActivateShaderProgram(Uint32 program_object,
                                              METAENGINE_Render_ShaderBlock *block) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->ActivateShaderProgram(_gpu_current_renderer, program_object,
-                                                       block);
+    gpu_current_renderer->impl->ActivateShaderProgram(gpu_current_renderer, program_object, block);
 }
 
 void METAENGINE_Render_DeactivateShaderProgram(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->DeactivateShaderProgram(_gpu_current_renderer);
+    gpu_current_renderer->impl->DeactivateShaderProgram(gpu_current_renderer);
 }
 
 const char *METAENGINE_Render_GetShaderMessage(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
-    return _gpu_current_renderer->impl->GetShaderMessage(_gpu_current_renderer);
+    return gpu_current_renderer->impl->GetShaderMessage(gpu_current_renderer);
 }
 
 int METAENGINE_Render_GetAttributeLocation(Uint32 program_object, const char *attrib_name) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
-    return _gpu_current_renderer->impl->GetAttributeLocation(_gpu_current_renderer, program_object,
-                                                             attrib_name);
+    return gpu_current_renderer->impl->GetAttributeLocation(gpu_current_renderer, program_object,
+                                                            attrib_name);
 }
 
 METAENGINE_Render_AttributeFormat METAENGINE_Render_MakeAttributeFormat(
-        int num_elems_per_vertex, METAENGINE_Render_TypeEnum type, METAENGINE_Render_bool normalize,
-        int stride_bytes, int offset_bytes) {
+        int num_elems_per_vertex, METAENGINE_Render_TypeEnum type, bool normalize, int stride_bytes,
+        int offset_bytes) {
     METAENGINE_Render_AttributeFormat f;
-    f.is_per_sprite = METAENGINE_Render_FALSE;
+    f.is_per_sprite = false;
     f.num_elems_per_value = num_elems_per_vertex;
     f.type = type;
     f.normalize = normalize;
@@ -3377,11 +3127,11 @@ METAENGINE_Render_Attribute METAENGINE_Render_MakeAttribute(
 }
 
 int METAENGINE_Render_GetUniformLocation(Uint32 program_object, const char *uniform_name) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
-    return _gpu_current_renderer->impl->GetUniformLocation(_gpu_current_renderer, program_object,
-                                                           uniform_name);
+    return gpu_current_renderer->impl->GetUniformLocation(gpu_current_renderer, program_object,
+                                                          uniform_name);
 }
 
 METAENGINE_Render_ShaderBlock METAENGINE_Render_LoadShaderBlock(Uint32 program_object,
@@ -3389,7 +3139,7 @@ METAENGINE_Render_ShaderBlock METAENGINE_Render_LoadShaderBlock(Uint32 program_o
                                                                 const char *texcoord_name,
                                                                 const char *color_name,
                                                                 const char *modelViewMatrix_name) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         METAENGINE_Render_ShaderBlock b;
         b.position_loc = -1;
         b.texcoord_loc = -1;
@@ -3398,20 +3148,20 @@ METAENGINE_Render_ShaderBlock METAENGINE_Render_LoadShaderBlock(Uint32 program_o
         return b;
     }
 
-    return _gpu_current_renderer->impl->LoadShaderBlock(_gpu_current_renderer, program_object,
-                                                        position_name, texcoord_name, color_name,
-                                                        modelViewMatrix_name);
+    return gpu_current_renderer->impl->LoadShaderBlock(gpu_current_renderer, program_object,
+                                                       position_name, texcoord_name, color_name,
+                                                       modelViewMatrix_name);
 }
 
 void METAENGINE_Render_SetShaderBlock(METAENGINE_Render_ShaderBlock block) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->current_context_target->context->current_shader_block = block;
+    gpu_current_renderer->current_context_target->context->current_shader_block = block;
 }
 
 METAENGINE_Render_ShaderBlock METAENGINE_Render_GetShaderBlock(void) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         METAENGINE_Render_ShaderBlock b;
         b.position_loc = -1;
         b.texcoord_loc = -1;
@@ -3420,158 +3170,155 @@ METAENGINE_Render_ShaderBlock METAENGINE_Render_GetShaderBlock(void) {
         return b;
     }
 
-    return _gpu_current_renderer->current_context_target->context->current_shader_block;
+    return gpu_current_renderer->current_context_target->context->current_shader_block;
 }
 
 void METAENGINE_Render_SetShaderImage(METAENGINE_Render_Image *image, int location,
                                       int image_unit) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetShaderImage(_gpu_current_renderer, image, location, image_unit);
+    gpu_current_renderer->impl->SetShaderImage(gpu_current_renderer, image, location, image_unit);
 }
 
 void METAENGINE_Render_GetUniformiv(Uint32 program_object, int location, int *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->GetUniformiv(_gpu_current_renderer, program_object, location,
-                                              values);
+    gpu_current_renderer->impl->GetUniformiv(gpu_current_renderer, program_object, location,
+                                             values);
 }
 
 void METAENGINE_Render_SetUniformi(int location, int value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformi(_gpu_current_renderer, location, value);
+    gpu_current_renderer->impl->SetUniformi(gpu_current_renderer, location, value);
 }
 
 void METAENGINE_Render_SetUniformiv(int location, int num_elements_per_value, int num_values,
                                     int *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformiv(_gpu_current_renderer, location,
-                                              num_elements_per_value, num_values, values);
+    gpu_current_renderer->impl->SetUniformiv(gpu_current_renderer, location, num_elements_per_value,
+                                             num_values, values);
 }
 
 void METAENGINE_Render_GetUniformuiv(Uint32 program_object, int location, unsigned int *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->GetUniformuiv(_gpu_current_renderer, program_object, location,
-                                               values);
+    gpu_current_renderer->impl->GetUniformuiv(gpu_current_renderer, program_object, location,
+                                              values);
 }
 
 void METAENGINE_Render_SetUniformui(int location, unsigned int value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformui(_gpu_current_renderer, location, value);
+    gpu_current_renderer->impl->SetUniformui(gpu_current_renderer, location, value);
 }
 
 void METAENGINE_Render_SetUniformuiv(int location, int num_elements_per_value, int num_values,
                                      unsigned int *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformuiv(_gpu_current_renderer, location,
-                                               num_elements_per_value, num_values, values);
+    gpu_current_renderer->impl->SetUniformuiv(gpu_current_renderer, location,
+                                              num_elements_per_value, num_values, values);
 }
 
 void METAENGINE_Render_GetUniformfv(Uint32 program_object, int location, float *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->GetUniformfv(_gpu_current_renderer, program_object, location,
-                                              values);
+    gpu_current_renderer->impl->GetUniformfv(gpu_current_renderer, program_object, location,
+                                             values);
 }
 
 void METAENGINE_Render_SetUniformf(int location, float value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformf(_gpu_current_renderer, location, value);
+    gpu_current_renderer->impl->SetUniformf(gpu_current_renderer, location, value);
 }
 
 void METAENGINE_Render_SetUniformfv(int location, int num_elements_per_value, int num_values,
                                     float *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformfv(_gpu_current_renderer, location,
-                                              num_elements_per_value, num_values, values);
+    gpu_current_renderer->impl->SetUniformfv(gpu_current_renderer, location, num_elements_per_value,
+                                             num_values, values);
 }
 
 // Same as METAENGINE_Render_GetUniformfv()
 void METAENGINE_Render_GetUniformMatrixfv(Uint32 program_object, int location, float *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->GetUniformfv(_gpu_current_renderer, program_object, location,
-                                              values);
+    gpu_current_renderer->impl->GetUniformfv(gpu_current_renderer, program_object, location,
+                                             values);
 }
 
 void METAENGINE_Render_SetUniformMatrixfv(int location, int num_matrices, int num_rows,
-                                          int num_columns, METAENGINE_Render_bool transpose,
-                                          float *values) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+                                          int num_columns, bool transpose, float *values) {
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetUniformMatrixfv(_gpu_current_renderer, location, num_matrices,
-                                                    num_rows, num_columns, transpose, values);
+    gpu_current_renderer->impl->SetUniformMatrixfv(gpu_current_renderer, location, num_matrices,
+                                                   num_rows, num_columns, transpose, values);
 }
 
 void METAENGINE_Render_SetAttributef(int location, float value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributef(_gpu_current_renderer, location, value);
+    gpu_current_renderer->impl->SetAttributef(gpu_current_renderer, location, value);
 }
 
 void METAENGINE_Render_SetAttributei(int location, int value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributei(_gpu_current_renderer, location, value);
+    gpu_current_renderer->impl->SetAttributei(gpu_current_renderer, location, value);
 }
 
 void METAENGINE_Render_SetAttributeui(int location, unsigned int value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributeui(_gpu_current_renderer, location, value);
+    gpu_current_renderer->impl->SetAttributeui(gpu_current_renderer, location, value);
 }
 
 void METAENGINE_Render_SetAttributefv(int location, int num_elements, float *value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributefv(_gpu_current_renderer, location, num_elements,
-                                                value);
+    gpu_current_renderer->impl->SetAttributefv(gpu_current_renderer, location, num_elements, value);
 }
 
 void METAENGINE_Render_SetAttributeiv(int location, int num_elements, int *value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributeiv(_gpu_current_renderer, location, num_elements,
-                                                value);
+    gpu_current_renderer->impl->SetAttributeiv(gpu_current_renderer, location, num_elements, value);
 }
 
 void METAENGINE_Render_SetAttributeuiv(int location, int num_elements, unsigned int *value) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributeuiv(_gpu_current_renderer, location, num_elements,
-                                                 value);
+    gpu_current_renderer->impl->SetAttributeuiv(gpu_current_renderer, location, num_elements,
+                                                value);
 }
 
 void METAENGINE_Render_SetAttributeSource(int num_values, METAENGINE_Render_Attribute source) {
-    if (_gpu_current_renderer == NULL || _gpu_current_renderer->current_context_target == NULL)
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
-    _gpu_current_renderer->impl->SetAttributeSource(_gpu_current_renderer, num_values, source);
+    gpu_current_renderer->impl->SetAttributeSource(gpu_current_renderer, num_values, source);
 }
 
 // gpu_strcasecmp()
@@ -3692,7 +3439,7 @@ void METAENGINE_Render_ClearMatrixStack(METAENGINE_Render_MatrixStack *stack) {
 void METAENGINE_Render_ResetProjection(METAENGINE_Render_Target *target) {
     if (target == NULL) return;
 
-    METAENGINE_Render_bool invert = (target->image != NULL);
+    bool invert = (target->image != NULL);
 
     // Set up default projection
     float *projection_matrix = METAENGINE_Render_GetTopMatrix(&target->projection_matrix);
@@ -4402,8 +4149,7 @@ void METAENGINE_Render_Polygon(METAENGINE_Render_Target *target, unsigned int nu
 }
 
 void METAENGINE_Render_Polyline(METAENGINE_Render_Target *target, unsigned int num_vertices,
-                                float *vertices, METAENGINE_Color color,
-                                METAENGINE_Render_bool close_loop) {
+                                float *vertices, METAENGINE_Color color, bool close_loop) {
     CHECK_RENDERER();
     renderer->impl->Polyline(renderer, target, num_vertices, vertices, color, close_loop);
 }

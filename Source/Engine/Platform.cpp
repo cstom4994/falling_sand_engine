@@ -57,6 +57,18 @@ int Platform::InitWindow() {
     // create the window
     METADOT_INFO("Creating game window...");
 
+    // configs
+    constexpr int gl_major_version = 4;
+    constexpr int gl_minor_version = 1;
+    constexpr bool gl_debug = true;
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_version);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_version);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
     auto title = fmt::format("{0} Build {1} - {2}", win_title_client, __DATE__, __TIME__);
 
     global.platform.window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED,
@@ -96,6 +108,11 @@ int Platform::InitWindow() {
         std::cout << "Failed to initialize OpenGL loader!" << std::endl;
         return EXIT_FAILURE;
     }
+
+    const GLubyte *renderer = glGetString(GL_RENDERER);// get renderer string
+    const GLubyte *version = glGetString(GL_VERSION);  // version as a string
+    printf("Renderer: %s\n", renderer);
+    printf("OpenGL version supported %s\n", version);
 
     // METADOT_INFO("Initializing InitFont...");
     // if (!Drawing::InitFont(&gl_context)) {

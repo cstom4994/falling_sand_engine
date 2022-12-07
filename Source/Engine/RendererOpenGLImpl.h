@@ -147,16 +147,16 @@ void main(void)\n\
 typedef struct ContextData_OpenGL_3
 {
     METAENGINE_Color last_color;
-    METAENGINE_Render_bool last_use_texturing;
+    bool last_use_texturing;
     unsigned int last_shape;
-    METAENGINE_Render_bool last_use_blending;
+    bool last_use_blending;
     METAENGINE_Render_BlendMode last_blend_mode;
     METAENGINE_Render_Rect last_viewport;
     METAENGINE_Render_Camera last_camera;
-    METAENGINE_Render_bool last_camera_inverted;
+    bool last_camera_inverted;
 
-    METAENGINE_Render_bool last_depth_test;
-    METAENGINE_Render_bool last_depth_write;
+    bool last_depth_test;
+    bool last_depth_write;
     METAENGINE_Render_ComparisonEnum last_depth_function;
 
     METAENGINE_Render_Image *last_image;
@@ -172,7 +172,7 @@ typedef struct ContextData_OpenGL_3
     unsigned int blit_VAO;
     unsigned int blit_VBO[2];// For double-buffering
     unsigned int blit_IBO;
-    METAENGINE_Render_bool blit_VBO_flop;
+    bool blit_VBO_flop;
 
     METAENGINE_Render_AttributeSource shader_attributes[16];
     unsigned int attribute_VBO[16];
@@ -181,7 +181,7 @@ typedef struct ContextData_OpenGL_3
 typedef struct ImageData_OpenGL_3
 {
     int refcount;
-    METAENGINE_Render_bool owns_handle;
+    bool owns_handle;
     UInt32 handle;
     UInt32 format;
 } ImageData_OpenGL_3;
