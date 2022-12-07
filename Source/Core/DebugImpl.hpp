@@ -5,8 +5,9 @@
 
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/RendererGPU.h"
+#include "fmt/format.h"
 
 int MetaDot_buildnum(void);
 const std::string metadata(void);
@@ -38,10 +39,10 @@ inline void _better_assert(const char *condition, const std::string &message,
 #define METADOT_ASSERT(condition, message) static_cast<void>(0)
 #define METADOT_ASSERT_E(condition) static_cast<void>(0)
 #else
-#define METADOT_ASSERT(condition, message)                                                         \
-    static_cast<bool>(condition)                                                                   \
-            ? static_cast<void>(0)                                                                 \
-            : _better_assert(#condition, message, __FILE__ ":" METADOT_STRING(__LINE__))
+#define METADOT_ASSERT(condition, ...)                                                             \
+    static_cast<bool>(condition) ? static_cast<void>(0)                                            \
+                                 : _better_assert(#condition, fmt::format(__VA_ARGS__),            \
+                                                  __FILE__ ":" METADOT_STRING(__LINE__))
 #define METADOT_ASSERT_E(condition) METADOT_ASSERT(condition, "unknown")
 #endif
 
@@ -1003,68 +1004,6 @@ namespace METADOT_UNIT {
         METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
     };
 }// namespace METADOT_UNIT
-#endif
-
-#if 1
-
-class DebugDraw {
-
-private:
-    uint32 m_drawFlags;
-
-public:
-    enum {
-        e_shapeBit = 0x0001,      ///< draw shapes
-        e_jointBit = 0x0002,      ///< draw joint connections
-        e_aabbBit = 0x0004,       ///< draw axis aligned bounding boxes
-        e_pairBit = 0x0008,       ///< draw broad-phase pairs
-        e_centerOfMassBit = 0x0010///< draw center of mass frame
-    };
-
-    METAENGINE_Render_Target *target;
-    float xOfs = 0;
-    float yOfs = 0;
-    float scale = 1;
-
-    DebugDraw(METAENGINE_Render_Target *target);
-    ~DebugDraw();
-
-    void Create();
-    void Destroy();
-
-    void SetFlags(uint32 flags) { m_drawFlags = flags; }
-
-    uint32 GetFlags() const { return m_drawFlags; }
-
-    void AppendFlags(uint32 flags) { m_drawFlags |= flags; }
-
-    void ClearFlags(uint32 flags) { m_drawFlags &= ~flags; }
-
-    b2Vec2 transform(const b2Vec2 &pt);
-
-    METAENGINE_Color convertColor(const b2Color &color);
-
-    void DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color);
-
-    void DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color);
-
-    void DrawCircle(const b2Vec2 &center, float radius, const b2Color &color);
-
-    void DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
-                         const b2Color &color);
-
-    void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color);
-
-    void DrawTransform(const b2Transform &xf);
-
-    void DrawPoint(const b2Vec2 &p, float size, const b2Color &color);
-
-    void DrawString(int x, int y, const char *string, ...);
-
-    void DrawString(const b2Vec2 &p, const char *string, ...);
-
-    void DrawAABB(b2AABB *aabb, const b2Color &color);
-};
 #endif
 
 class Profiler {

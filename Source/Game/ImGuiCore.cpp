@@ -584,7 +584,9 @@ void ImGuiCore::Render() {
             METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
             METAENGINE_Render_RendererID id = renderer->id;
 
-            ImGui::Text("Using renderer: %s (%d.%d)\n", id.name, id.major_version,
+            ImGui::Text("Using renderer: %s", glGetString(GL_RENDERER));
+            ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));
+            ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version,
                         id.minor_version);
             ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version,
                         renderer->max_shader_version);

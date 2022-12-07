@@ -1290,9 +1290,10 @@ void METAENGINE_Render_RegisterRenderer(
 void gpu_register_built_in_renderers(void) {
 #ifdef __MACOSX__
     // Depending on OS X version, it might only support core GL 3.3 or 3.2
-    METAENGINE_Render_RegisterRenderer(METAENGINE_Render_MakeRendererID("OpenGL 3", 3, 2),
-                                       &METAENGINE_Render_CreateRenderer_OpenGL_3,
-                                       &METAENGINE_Render_FreeRenderer_OpenGL_3);
+    METAENGINE_Render_RegisterRenderer(
+            METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_GL_VERSION_MAJOR,
+                                             METAENGINE_Render_GL_VERSION_MINOR),
+            &METAENGINE_Render_CreateRenderer_OpenGL_3, &METAENGINE_Render_FreeRenderer_OpenGL_3);
 #else
     METAENGINE_Render_RegisterRenderer(
             METAENGINE_Render_MakeRendererID("OpenGL 3", METAENGINE_Render_RENDERER_OPENGL_3, 3, 0),
@@ -1310,7 +1311,8 @@ void gpu_init_renderer_register(void) {
 
     gpu_renderer_map = NULL;
 
-    gpu_renderer_order = METAENGINE_Render_MakeRendererID("OpenGL 3", 3, 2);
+    gpu_renderer_order = METAENGINE_Render_MakeRendererID(
+            "OpenGL 3", METAENGINE_Render_GL_VERSION_MAJOR, METAENGINE_Render_GL_VERSION_MINOR);
 
     gpu_renderer_register_is_initialized = 1;
 
@@ -1636,6 +1638,7 @@ METAENGINE_Render_Target *METAENGINE_Render_Init(Uint16 w, Uint16 h,
 
 METAENGINE_Render_Target *METAENGINE_Render_InitRenderer(
         Uint16 w, Uint16 h, METAENGINE_Render_WindowFlagEnum SDL_flags) {
+    // Search registry for this renderer and use that id
     return METAENGINE_Render_InitRendererByID(METAENGINE_Render_GetRendererID(), w, h, SDL_flags);
 }
 
@@ -1650,7 +1653,6 @@ METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(
 
     if (gpu_renderer_map == NULL) {
         // Create
-        METAENGINE_Render_Renderer *renderer = nullptr;
 
         if (gpu_renderer_register.createFn != NULL) {
             // Use the registered name
@@ -1667,6 +1669,7 @@ METAENGINE_Render_Target *METAENGINE_Render_InitRendererByID(
         gpu_renderer_map = renderer;
     }
 
+    // renderer = gpu_create_and_add_renderer(renderer_request);
     if (renderer == NULL) return NULL;
 
     METAENGINE_Render_SetCurrentRenderer(renderer->id);
@@ -4158,4 +4161,613 @@ void METAENGINE_Render_PolygonFilled(METAENGINE_Render_Target *target, unsigned 
                                      float *vertices, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->PolygonFilled(renderer, target, num_vertices, vertices, color);
+}
+
+#define METAENGINE_Render_TO_STRING_GENERATOR(x)                                                   \
+    case x:                                                                                        \
+        return #x;                                                                                 \
+        break;
+
+const char *METAENGINE::GLEnumToString(GLenum e) {
+    switch (e) {
+        // shader:
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_VERTEX_SHADER);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_GEOMETRY_SHADER);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FRAGMENT_SHADER);
+
+        // buffer usage:
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STREAM_DRAW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STREAM_READ);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STREAM_COPY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STATIC_DRAW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STATIC_READ);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STATIC_COPY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_DYNAMIC_DRAW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_DYNAMIC_READ);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_DYNAMIC_COPY);
+
+        // errors:
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_NO_ERROR);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INVALID_ENUM);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INVALID_VALUE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INVALID_OPERATION);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INVALID_FRAMEBUFFER_OPERATION);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_OUT_OF_MEMORY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STACK_UNDERFLOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_STACK_OVERFLOW);
+
+        // types:
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_BYTE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_BYTE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SHORT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_SHORT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_VEC2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_VEC3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_VEC4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_VEC2);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_VEC3);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_VEC4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_VEC2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_VEC3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_VEC4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_VEC2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_VEC3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_VEC4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_BOOL);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_BOOL_VEC2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_BOOL_VEC3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_BOOL_VEC4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT2x3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT2x4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT3x2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT3x4);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT4x2);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_FLOAT_MAT4x3);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT2);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT3);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT4);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT2x3);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT2x4);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT3x2);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT3x4);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT4x2);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_DOUBLE_MAT4x3);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_1D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_3D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_CUBE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_1D_SHADOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_SHADOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_1D_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_1D_ARRAY_SHADOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_ARRAY_SHADOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_MULTISAMPLE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_MULTISAMPLE_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_CUBE_SHADOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_BUFFER);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_RECT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_SAMPLER_2D_RECT_SHADOW);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_1D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_2D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_3D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_CUBE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_1D_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_2D_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_2D_MULTISAMPLE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_BUFFER);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_SAMPLER_2D_RECT);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_1D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_2D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_3D);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_CUBE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_1D_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_2D_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_BUFFER);
+        METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_2D_RECT);
+
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_1D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_2D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_3D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_2D_RECT);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_CUBE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_BUFFER);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_1D_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_2D_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_2D_MULTISAMPLE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_IMAGE_2D_MULTISAMPLE_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_1D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_2D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_3D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_RECT);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_CUBE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_BUFFER);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_1D_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_MULTISAMPLE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_1D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_3D);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_RECT);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_CUBE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_BUFFER);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_1D_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY);
+        // METAENGINE_Render_TO_STRING_GENERATOR(GL_UNSIGNED_INT_ATOMIC_COUNTER);
+    }
+
+    static char buffer[32];
+    std::sprintf(buffer, "Unknown GLenum: (0x%04x)", e);
+    return buffer;
+}
+#undef METAENGINE_Render_TO_STRING_GENERATOR
+
+void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, const char *name,
+                                               GLint location) {
+    static bool is_color = false;
+    switch (type) {
+        case GL_FLOAT:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLfloat, 1, GL_FLOAT, glGetUniformfv, glProgramUniform1fv, ImGui::DragFloat);
+            break;
+
+        case GL_FLOAT_VEC2:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLfloat, 2, GL_FLOAT_VEC2, glGetUniformfv, glProgramUniform2fv,
+                    ImGui::DragFloat2);
+            break;
+
+        case GL_FLOAT_VEC3: {
+            ImGui::Checkbox("##is_color", &is_color);
+            ImGui::SameLine();
+            ImGui::Text("GL_FLOAT_VEC3 %s", name);
+            ImGui::SameLine();
+            float value[3];
+            glGetUniformfv(program, location, &value[0]);
+            if ((!is_color && ImGui::DragFloat3("", &value[0])) ||
+                (is_color && ImGui::ColorEdit3("Color", &value[0], ImGuiColorEditFlags_NoLabel)))
+                glProgramUniform3fv(program, location, 1, &value[0]);
+        } break;
+
+        case GL_FLOAT_VEC4: {
+            ImGui::Checkbox("##is_color", &is_color);
+            ImGui::SameLine();
+            ImGui::Text("GL_FLOAT_VEC4 %s", name);
+            ImGui::SameLine();
+            float value[4];
+            glGetUniformfv(program, location, &value[0]);
+            if ((!is_color && ImGui::DragFloat4("", &value[0])) ||
+                (is_color &&
+                 ImGui::ColorEdit4("Color", &value[0],
+                                   ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar |
+                                           ImGuiColorEditFlags_AlphaPreviewHalf)))
+                glProgramUniform4fv(program, location, 1, &value[0]);
+        } break;
+
+        case GL_INT:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLint, 1, GL_INT, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
+            break;
+
+        case GL_INT_VEC2:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLint, 2, GL_INT, glGetUniformiv, glProgramUniform2iv, ImGui::DragInt2);
+            break;
+
+        case GL_INT_VEC3:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLint, 3, GL_INT, glGetUniformiv, glProgramUniform3iv, ImGui::DragInt3);
+            break;
+
+        case GL_INT_VEC4:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLint, 4, GL_INT, glGetUniformiv, glProgramUniform4iv, ImGui::DragInt4);
+            break;
+
+        case GL_SAMPLER_2D:
+            METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER(
+                    GLint, 1, GL_SAMPLER_2D, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
+            break;
+
+        case GL_FLOAT_MAT2:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 2, 2, GL_FLOAT_MAT2, glGetUniformfv, glProgramUniformMatrix2fv,
+                    ImGui::DragFloat2);
+            break;
+
+        case GL_FLOAT_MAT3:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 3, 3, GL_FLOAT_MAT3, glGetUniformfv, glProgramUniformMatrix3fv,
+                    ImGui::DragFloat3);
+            break;
+
+        case GL_FLOAT_MAT4:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 4, 4, GL_FLOAT_MAT4, glGetUniformfv, glProgramUniformMatrix4fv,
+                    ImGui::DragFloat4);
+            break;
+
+        case GL_FLOAT_MAT2x3:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 3, 2, GL_FLOAT_MAT2x3, glGetUniformfv, glProgramUniformMatrix2x3fv,
+                    ImGui::DragFloat3);
+            break;
+
+        case GL_FLOAT_MAT2x4:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 4, 2, GL_FLOAT_MAT2x4, glGetUniformfv, glProgramUniformMatrix2x4fv,
+                    ImGui::DragFloat4);
+            break;
+
+        case GL_FLOAT_MAT3x2:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 2, 3, GL_FLOAT_MAT3x2, glGetUniformfv, glProgramUniformMatrix3x2fv,
+                    ImGui::DragFloat2);
+            break;
+
+        case GL_FLOAT_MAT3x4:
+            METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER(
+                    GLfloat, 4, 3, GL_FLOAT_MAT3x4, glGetUniformfv, glProgramUniformMatrix3x2fv,
+                    ImGui::DragFloat4);
+            break;
+
+        default:
+            ImGui::Text("%s has type %s, which isn't supported yet!", name, GLEnumToString(type));
+            break;
+    }
+}
+
+#undef METAENGINE_Render_INTROSPECTION_GENERATE_VARIABLE_RENDER
+#undef METAENGINE_Render_INTROSPECTION_GENERATE_MATRIX_RENDER
+
+float METAENGINE::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeight() * 16; }
+
+void METAENGINE::IntrospectShader(const char *label, GLuint program) {
+    METADOT_ASSERT(label != nullptr, "The label supplied with program: {} is nullptr", program);
+    METADOT_ASSERT(glIsProgram(program), "The program: {} is not a valid shader program", program);
+
+    ImGui::PushID(label);
+    if (ImGui::CollapsingHeader(label)) {
+        // Uniforms
+        ImGui::Indent();
+        if (ImGui::CollapsingHeader("Uniforms", ImGuiTreeNodeFlags_DefaultOpen)) {
+            GLint uniform_count;
+            glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniform_count);
+
+            // Read the length of the longest active uniform.
+            GLint max_name_length;
+            glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
+
+            static std::vector<char> name;
+            name.resize(max_name_length);
+
+            for (int i = 0; i < uniform_count; i++) {
+                GLint ignored;
+                GLenum type;
+                glGetActiveUniform(program, i, max_name_length, nullptr, &ignored, &type,
+                                   name.data());
+
+                const auto location = glGetUniformLocation(program, name.data());
+                ImGui::Indent();
+                ImGui::PushID(i);
+                ImGui::PushItemWidth(-1.0f);
+                Detail::RenderUniformVariable(program, type, name.data(), location);
+                ImGui::PopItemWidth();
+                ImGui::PopID();
+                ImGui::Unindent();
+            }
+        }
+        ImGui::Unindent();
+
+        // Shaders
+        ImGui::Indent();
+        if (ImGui::CollapsingHeader("Shaders")) {
+            GLint shader_count;
+            glGetProgramiv(program, GL_ATTACHED_SHADERS, &shader_count);
+
+            static std::vector<GLuint> attached_shaders;
+            attached_shaders.resize(shader_count);
+            glGetAttachedShaders(program, shader_count, nullptr, attached_shaders.data());
+
+            for (const auto &shader: attached_shaders) {
+                GLint source_length = 0;
+                glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &source_length);
+                static std::vector<char> source;
+                source.resize(source_length);
+                glGetShaderSource(shader, source_length, nullptr, source.data());
+
+                GLint type = 0;
+                glGetShaderiv(shader, GL_SHADER_TYPE, &type);
+
+                ImGui::Indent();
+                auto string_type = GLEnumToString(type);
+                ImGui::PushID(string_type);
+                if (ImGui::CollapsingHeader(string_type)) {
+                    auto y_size = std::min(ImGui::CalcTextSize(source.data()).y,
+                                           Detail::GetScrollableHeight());
+                    ImGui::InputTextMultiline("", source.data(), source.size(),
+                                              ImVec2(-1.0f, y_size), ImGuiInputTextFlags_ReadOnly);
+                }
+                ImGui::PopID();
+                ImGui::Unindent();
+            }
+        }
+        ImGui::Unindent();
+    }
+    ImGui::PopID();
+}
+
+void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
+    METADOT_ASSERT(label != nullptr, "The label supplied with VAO: %u is nullptr", vao);
+    METADOT_ASSERT(glIsVertexArray(vao), "The VAO: %u is not a valid vertex array object", vao);
+
+    ImGui::PushID(label);
+    if (ImGui::CollapsingHeader(label)) {
+        ImGui::Indent();
+
+        // Get current bound vertex buffer object so we can reset it back once we are finished.
+        GLint current_vbo = 0;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &current_vbo);
+
+        // Get current bound vertex array object so we can reset it back once we are finished.
+        GLint current_vao = 0;
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current_vao);
+        glBindVertexArray(vao);
+
+        // Get the maximum number of vertex attributes,
+        // minimum is 4, I have 16, means that whatever number of attributes is here, it should be reasonable to iterate over.
+        GLint max_vertex_attribs = 0;
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+
+        GLint ebo = 0;
+        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &ebo);
+
+        // EBO Visualization
+        char buffer[128];
+        std::sprintf(buffer, "Element Array Buffer: %d", ebo);
+        ImGui::PushID(buffer);
+        if (ImGui::CollapsingHeader(buffer)) {
+            ImGui::Indent();
+            // Assuming unsigned int atm, as I have not found a way to get out the type of the element array buffer.
+            int size = 0;
+            glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+            size /= sizeof(GLuint);
+            ImGui::Text("Size: %d", size);
+
+            if (ImGui::TreeNode("Buffer Contents")) {
+                // TODO: Find a better way to put this out on screen, because this solution will probably not scale good when we get a lot of indices.
+                //       Possible solution: Make it into columns, like the VBO's, and present the indices as triangles.
+                auto ptr = (GLuint *) glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_ONLY);
+                for (int i = 0; i < size; i++) {
+                    ImGui::Text("%u", ptr[i]);
+                    ImGui::SameLine();
+                    if ((i + 1) % 3 == 0) ImGui::NewLine();
+                }
+
+                glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::Unindent();
+        }
+        ImGui::PopID();
+
+        // VBO Visualization
+        for (intptr_t i = 0; i < max_vertex_attribs; i++) {
+            GLint enabled = 0;
+            glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled);
+
+            if (!enabled) continue;
+
+            std::sprintf(buffer, "Attribute: %" PRIdPTR "", i);
+            ImGui::PushID(buffer);
+            if (ImGui::CollapsingHeader(buffer)) {
+                ImGui::Indent();
+                // Display meta data
+                GLint buffer = 0;
+                glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &buffer);
+                ImGui::Text("Buffer: %d", buffer);
+
+                GLint type = 0;
+                glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &type);
+                ImGui::Text("Type: %s", GLEnumToString(type));
+
+                GLint dimensions = 0;
+                glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &dimensions);
+                ImGui::Text("Dimensions: %d", dimensions);
+
+                // Need to bind buffer to get access to parameteriv, and for mapping later
+                glBindBuffer(GL_ARRAY_BUFFER, buffer);
+
+                GLint size = 0;
+                glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+                ImGui::Text("Size in bytes: %d", size);
+
+                GLint stride = 0;
+                glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &stride);
+                ImGui::Text("Stride in bytes: %d", stride);
+
+                GLvoid *offset = nullptr;
+                glGetVertexAttribPointerv(i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &offset);
+                ImGui::Text("Offset in bytes: %" PRIdPTR "", (intptr_t) offset);
+
+                GLint usage = 0;
+                glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_USAGE, &usage);
+                ImGui::Text("Usage: %s", GLEnumToString(usage));
+
+                // Create table with indexes and actual contents
+                if (ImGui::TreeNode("Buffer Contents")) {
+                    ImGui::BeginChild(ImGui::GetID("vbo contents"),
+                                      ImVec2(-1.0f, Detail::GetScrollableHeight()), true,
+                                      ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    ImGui::Columns(dimensions + 1);
+                    const char *descriptors[] = {"index", "x", "y", "z", "w"};
+                    for (int j = 0; j < dimensions + 1; j++) {
+                        ImGui::Text("%s", descriptors[j]);
+                        ImGui::NextColumn();
+                    }
+                    ImGui::Separator();
+
+                    auto ptr =
+                            (char *) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY) + (intptr_t) offset;
+                    for (int j = 0, c = 0; j < size; j += stride, c++) {
+                        ImGui::Text("%d", c);
+                        ImGui::NextColumn();
+                        for (int k = 0; k < dimensions; k++) {
+                            switch (type) {
+                                case GL_BYTE:
+                                    ImGui::Text("% d", *(GLbyte *) &ptr[j + k * sizeof(GLbyte)]);
+                                    break;
+                                case GL_UNSIGNED_BYTE:
+                                    ImGui::Text("%u", *(GLubyte *) &ptr[j + k * sizeof(GLubyte)]);
+                                    break;
+                                case GL_SHORT:
+                                    ImGui::Text("% d", *(GLshort *) &ptr[j + k * sizeof(GLshort)]);
+                                    break;
+                                case GL_UNSIGNED_SHORT:
+                                    ImGui::Text("%u", *(GLushort *) &ptr[j + k * sizeof(GLushort)]);
+                                    break;
+                                case GL_INT:
+                                    ImGui::Text("% d", *(GLint *) &ptr[j + k * sizeof(GLint)]);
+                                    break;
+                                case GL_UNSIGNED_INT:
+                                    ImGui::Text("%u", *(GLuint *) &ptr[j + k * sizeof(GLuint)]);
+                                    break;
+                                case GL_FLOAT:
+                                    ImGui::Text("% f", *(GLfloat *) &ptr[j + k * sizeof(GLfloat)]);
+                                    break;
+                                case GL_DOUBLE:
+                                    ImGui::Text("% f",
+                                                *(GLdouble *) &ptr[j + k * sizeof(GLdouble)]);
+                                    break;
+                            }
+                            ImGui::NextColumn();
+                        }
+                    }
+                    glUnmapBuffer(GL_ARRAY_BUFFER);
+                    ImGui::EndChild();
+                    ImGui::TreePop();
+                }
+                ImGui::Unindent();
+            }
+            ImGui::PopID();
+        }
+
+        // Cleanup
+        glBindVertexArray(current_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, current_vbo);
+
+        ImGui::Unindent();
+    }
+    ImGui::PopID();
+}
+
+DebugDraw::DebugDraw(METAENGINE_Render_Target *target) {
+    this->target = target;
+    m_drawFlags = 0;
+}
+
+DebugDraw::~DebugDraw() {}
+
+void DebugDraw::Create() {}
+
+void DebugDraw::Destroy() {}
+
+b2Vec2 DebugDraw::transform(const b2Vec2 &pt) {
+    float x = ((pt.x) * scale + xOfs);
+    float y = ((pt.y) * scale + yOfs);
+    return b2Vec2(x, y);
+}
+
+METAENGINE_Color DebugDraw::convertColor(const b2Color &color) {
+    return {(UInt8) (color.r * 255), (UInt8) (color.g * 255), (UInt8) (color.b * 255),
+            (UInt8) (color.a * 255)};
+}
+
+void DebugDraw::DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {
+    b2Vec2 *verts = new b2Vec2[vertexCount];
+
+    for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
+
+    // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
+    METAENGINE_Render_Polygon(target, vertexCount, (float *) verts, convertColor(color));
+
+    delete[] verts;
+}
+
+void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color) {
+    b2Vec2 *verts = new b2Vec2[vertexCount];
+
+    for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
+
+    // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
+    METAENGINE_Color c2 = convertColor(color);
+    c2.a *= 0.25;
+    METAENGINE_Render_PolygonFilled(target, vertexCount, (float *) verts, c2);
+    METAENGINE_Render_Polygon(target, vertexCount, (float *) verts, convertColor(color));
+
+    delete[] verts;
+}
+
+void DebugDraw::DrawCircle(const b2Vec2 &center, float radius, const b2Color &color) {
+    b2Vec2 tr = transform(center);
+    METAENGINE_Render_Circle(target, tr.x, tr.y, radius * scale, convertColor(color));
+}
+
+void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
+                                const b2Color &color) {
+    b2Vec2 tr = transform(center);
+    METAENGINE_Render_CircleFilled(target, tr.x, tr.y, radius * scale, convertColor(color));
+}
+
+void DebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color) {
+    b2Vec2 tr1 = transform(p1);
+    b2Vec2 tr2 = transform(p2);
+    METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, convertColor(color));
+}
+
+void DebugDraw::DrawTransform(const b2Transform &xf) {
+    const float k_axisScale = 8.0f;
+    b2Vec2 p1 = xf.p, p2;
+    b2Vec2 tr1 = transform(p1), tr2;
+
+    p2 = p1 + k_axisScale * xf.q.GetXAxis();
+    tr2 = transform(p2);
+    METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0xff, 0x00, 0x00, 0xcc});
+
+    p2 = p1 + k_axisScale * xf.q.GetYAxis();
+    tr2 = transform(p2);
+    METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
+}
+
+void DebugDraw::DrawPoint(const b2Vec2 &p, float size, const b2Color &color) {
+    b2Vec2 tr = transform(p);
+    METAENGINE_Render_CircleFilled(target, tr.x, tr.y, 2, convertColor(color));
+}
+
+void DebugDraw::DrawString(int x, int y, const char *string, ...) {}
+
+void DebugDraw::DrawString(const b2Vec2 &p, const char *string, ...) {}
+
+void DebugDraw::DrawAABB(b2AABB *aabb, const b2Color &color) {
+    b2Vec2 tr1 = transform(aabb->lowerBound);
+    b2Vec2 tr2 = transform(aabb->upperBound);
+    METAENGINE_Render_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, convertColor(color));
+    METAENGINE_Render_Line(target, tr2.x, tr1.y, tr2.x, tr2.y, convertColor(color));
+    METAENGINE_Render_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, convertColor(color));
+    METAENGINE_Render_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, convertColor(color));
 }

@@ -27,7 +27,7 @@ SOFTWARE.
 */
 
 #include "BuiltinBox2d.h"
-#include "Core/DebugImpl.hpp"
+#include "Engine/RendererGPU.h"
 
 #include <new>
 #include <stdio.h>
@@ -7812,7 +7812,6 @@ void b2BlockAllocator::Clear() {
     memset(m_chunks, 0, m_chunkSpace * sizeof(b2Chunk));
     memset(m_freeLists, 0, sizeof(m_freeLists));
 }
-
 
 const b2Vec2 b2Vec2_zero(0.0f, 0.0f);
 
