@@ -23,6 +23,10 @@ function OnImGuiUpdate() {
     runImGui();
 }
 
+function OnGameTickUpdate() {
+
+}
+
 // function OnWorldInitialized()
 // function OnWorldPreUpdate()
 // function OnWorldPostUpdate()

@@ -1127,35 +1127,19 @@ int Game::run(int argc, char *argv[]) {
             RenderTarget_.target = RenderTarget_.realTarget;
             METAENGINE_Render_Clear(RenderTarget_.target);
 
+            GameIsolate_.profiler.Begin(Profiler::Stage::RenderEarly);
             renderEarly();
             RenderTarget_.target = RenderTarget_.realTarget;
+            GameIsolate_.profiler.End(Profiler::Stage::RenderEarly);
 
+            GameIsolate_.profiler.Begin(Profiler::Stage::RenderLate);
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
+            GameIsolate_.profiler.End(Profiler::Stage::RenderLate);
 
-            METAENGINE_Render_GLT_SetText(text1,
-                                          (win_title_client + " " + METADOT_VERSION_TEXT).c_str());
-
-            METAENGINE_Render_GLT_BeginDraw();
-            METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
-            METAENGINE_Render_GLT_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
-            METAENGINE_Render_GLT_EndDraw();
-
-            METAENGINE_Render_GLT_SetText(
-                    text3,
-                    MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
-                                       1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
-                                       GameIsolate_.game_timestate.feelsLikeFps)
-                            .c_str());
-
-            METAENGINE_Render_GLT_BeginDraw();
-            METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
-            METAENGINE_Render_GLT_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
-            METAENGINE_Render_GLT_EndDraw();
-
-            auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
-            METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
-                                        1.0f, 1.0f);
+            // auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
+            // METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
+            //                             1.0f, 1.0f);
 
             METAENGINE_Render_ActivateShaderProgram(0, NULL);
             METAENGINE_Render_FlushBlitBuffer();
@@ -3693,6 +3677,24 @@ void Game::renderLate() {
 }
 
 void Game::renderOverlays() {
+
+    METAENGINE_Render_GLT_SetText(text1, (win_title_client + " " + METADOT_VERSION_TEXT).c_str());
+
+    METAENGINE_Render_GLT_BeginDraw();
+    METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
+    METAENGINE_Render_GLT_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
+    METAENGINE_Render_GLT_EndDraw();
+
+    METAENGINE_Render_GLT_SetText(
+            text3, MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
+                                      1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
+                                      GameIsolate_.game_timestate.feelsLikeFps)
+                           .c_str());
+
+    METAENGINE_Render_GLT_BeginDraw();
+    METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
+    METAENGINE_Render_GLT_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
+    METAENGINE_Render_GLT_EndDraw();
 
     METAENGINE_Render_Rect r1 = METAENGINE_Render_Rect{
             (float) (GameData_.ofsX + GameData_.camX), (float) (GameData_.ofsY + GameData_.camY),

@@ -1012,6 +1012,8 @@ public:
         SdlInput,
         GameTick,
         Rendering,
+        RenderEarly,
+        RenderLate,
 
         _StageCount,
     };
@@ -1071,6 +1073,8 @@ static const std::array<const char *, Profiler::_StageCount> stageNames = {
         "SDL Input",
         "Game Tick",
         "Rendering",
+        "Render Early",
+        "Render Late",
 };
 
 static void ProfilerValueGetter(float *startTimestamp, float *endTimestamp, ImU8 *level,

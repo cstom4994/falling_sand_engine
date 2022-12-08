@@ -382,7 +382,10 @@ void Scripts::End() {
 }
 
 void Scripts::Update() {
-    if (LuaRuntime) LuaRuntime->Update();
+    METADOT_ASSERT_E(JsContext && LuaRuntime);
+    LuaRuntime->Update();
+    auto OnGameTickUpdate = (std::function<void(void)>) JsContext->eval("OnGameTickUpdate");
+    OnGameTickUpdate();
 }
 
 void Scripts::LoadMuFuncs() { METADOT_ASSERT_E(MuDSL); }
