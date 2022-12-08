@@ -16,13 +16,13 @@ struct lua_State;
 
 template<typename T>
 METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key, const T &value) {
-    s += fmt::format("{0}.{1} = {2}\n", table, key, value);
+    s += MetaEngine::Format("{0}.{1} = {2}\n", table, key, value);
 }
 
 template<>
 METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key,
                               const std::string &value) {
-    s += fmt::format("{0}.{1} = \"{2:s}\"\n", table, key, value);
+    s += MetaEngine::Format("{0}.{1} = \"{2:s}\"\n", table, key, value);
 }
 
 #pragma endregion struct_as

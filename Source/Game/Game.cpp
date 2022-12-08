@@ -1142,10 +1142,11 @@ int Game::run(int argc, char *argv[]) {
             METAENGINE_Render_GLT_EndDraw();
 
             METAENGINE_Render_GLT_SetText(
-                    text3, fmt::format("{:.3f} ms/frame ({:.1f}({}) FPS)",
+                    text3,
+                    MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
                                        1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
                                        GameIsolate_.game_timestate.feelsLikeFps)
-                                   .c_str());
+                            .c_str());
 
             METAENGINE_Render_GLT_BeginDraw();
             METAENGINE_Render_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -3917,7 +3918,7 @@ void Game::renderOverlays() {
     }
 
     // Drawing::drawText("fps",
-    //                   fmt::format("{} FPS\n Feels Like: {} FPS", GameIsolate_.game_timestate.fps,
+    //                   MetaEngine::Format("{} FPS\n Feels Like: {} FPS", GameIsolate_.game_timestate.fps,
     //                               GameIsolate_.game_timestate.feelsLikeFps),
     //                   global.platform.WIDTH, 20);
 
@@ -4064,7 +4065,7 @@ ReadyToMerge ({16})
 
         // Drawing::drawText(
         //         "info",
-        //         fmt::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
+        //         MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
         //                     GameData_.plPosY,
         //                     GameIsolate_.world->WorldIsolate_.player
         //                             ? GameIsolate_.world->WorldIsolate_.player->vx
@@ -4081,21 +4082,21 @@ ReadyToMerge ({16})
         //                     (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size()),
         //         4, 12);
 
-        auto a = fmt::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT,
-                             GameData_.plPosX, GameData_.plPosY,
-                             GameIsolate_.world->WorldIsolate_.player
-                                     ? GameIsolate_.world->WorldIsolate_.player->vx
-                                     : 0.0f,
-                             GameIsolate_.world->WorldIsolate_.player
-                                     ? GameIsolate_.world->WorldIsolate_.player->vy
-                                     : 0.0f,
-                             (int) GameIsolate_.world->WorldIsolate_.particles.size(),
-                             (int) GameIsolate_.world->WorldIsolate_.entities.size(), rbCt,
-                             (int) GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
-                             (int) GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(),
-                             rbTriACt, rbTriCt, rbTriWCt, chCt,
-                             (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
-                             (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size());
+        auto a = MetaEngine::Format(
+                buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
+                GameData_.plPosY,
+                GameIsolate_.world->WorldIsolate_.player
+                        ? GameIsolate_.world->WorldIsolate_.player->vx
+                        : 0.0f,
+                GameIsolate_.world->WorldIsolate_.player
+                        ? GameIsolate_.world->WorldIsolate_.player->vy
+                        : 0.0f,
+                (int) GameIsolate_.world->WorldIsolate_.particles.size(),
+                (int) GameIsolate_.world->WorldIsolate_.entities.size(), rbCt,
+                (int) GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
+                (int) GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(), rbTriACt, rbTriCt,
+                rbTriWCt, chCt, (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
+                (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size());
 
         METAENGINE_Render_GLT_SetText(text2, a.c_str());
 

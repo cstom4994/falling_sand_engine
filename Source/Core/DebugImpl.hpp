@@ -41,7 +41,7 @@ inline void _better_assert(const char *condition, const std::string &message,
 #else
 #define METADOT_ASSERT(condition, ...)                                                             \
     static_cast<bool>(condition) ? static_cast<void>(0)                                            \
-                                 : _better_assert(#condition, fmt::format(__VA_ARGS__),            \
+                                 : _better_assert(#condition, MetaEngine::Format(__VA_ARGS__),     \
                                                   __FILE__ ":" METADOT_STRING(__LINE__))
 #define METADOT_ASSERT_E(condition) METADOT_ASSERT(condition, "unknown")
 #endif

@@ -527,7 +527,7 @@ void ImGuiCore::Render() {
             ImGui::Separator();
             ImGui::Text("GC:\n");
             for (auto [name, size]: GC::MemoryDebugMap) {
-                ImGui::Text("%s", fmt::format("   {0} {1}", name, size).c_str());
+                ImGui::Text("%s", MetaEngine::Format("   {0} {1}", name, size).c_str());
             }
             // ImGui::Auto(GC::MemoryDebugMap, "map");
 #endif

@@ -11,7 +11,8 @@
 #include <filesystem>
 
 #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
-    METADOT_ASSERT(FUtil::exists(stringPath), fmt::format("FILE: {0} does not exist", stringPath))
+    METADOT_ASSERT(FUtil::exists(stringPath),                                                      \
+                   MetaEngine::Format("FILE: {0} does not exist", stringPath))
 
 class ResourceWorker {
 private:

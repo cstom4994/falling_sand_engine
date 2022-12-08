@@ -115,6 +115,16 @@ namespace MetaEngine {
 
 }// namespace MetaEngine
 
+#include <fmt/format.h>
+#include <fmt/printf.h>
+
+namespace MetaEngine {
+    template<typename S, typename... Args, typename Char = fmt::char_t<S>>
+    inline std::basic_string<Char> Format(const S &formatStr, Args &&...args) {
+        return fmt::format(formatStr, std::forward<Args>(args)...);
+    }
+}// namespace MetaEngine
+
 // ImGuiData Types
 
 struct MarkdownData

@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_IMGUI_JSBIND_HPP_
-#define _METADOT_IMGUI_JSBIND_HPP_
+#ifndef _METADOT_IMGUI_BINDER_HPP_
+#define _METADOT_IMGUI_BINDER_HPP_
 
 struct imgui;
 
@@ -12,14 +12,6 @@ extern "C"
 #include "Libs/quickjs/cutils.h"
 }
 
-#if defined(_WIN32) || defined(__MINGW32__)
-#define VISIBLE __declspec(dllexport)
-#define HIDDEN
-#else
-#define VISIBLE __attribute__((visibility("default")))
-#define HIDDEN __attribute__((visibility("hidden")))
-#endif
-
 #if defined(_Thread_local) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201102L))
 #define thread_local _Thread_local
 #elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_CC) || defined(__IBMCPP__)
@@ -29,8 +21,6 @@ extern "C"
 #else
 #error No TLS implementation found.
 #endif
-
-extern "C" JSModuleDef *js_init_module_imgui(JSContext *, const char *module_name);
 
 template<typename T>
 class JSVal {

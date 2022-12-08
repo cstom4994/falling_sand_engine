@@ -559,7 +559,7 @@ static const JSCFunctionListEntry js_imgui_cond[] = {
 #ifndef _METADOT_IMGUI_JSBIND_PAYLOAD
 #define _METADOT_IMGUI_JSBIND_PAYLOAD
 
-thread_local VISIBLE JSClassID js_imgui_payload_class_id = 0;
+thread_local JSClassID js_imgui_payload_class_id = 0;
 thread_local JSValue imgui_payload_proto = {JS_TAG_UNDEFINED},
                      imgui_payload_ctor = {JS_TAG_UNDEFINED};
 
@@ -652,7 +652,7 @@ static const JSCFunctionListEntry js_imgui_payload_funcs[] = {
 #ifndef _METADOT_IMGUI_JSBIND_IO
 #define _METADOT_IMGUI_JSBIND_IO
 
-thread_local VISIBLE JSClassID js_imgui_io_class_id = 0;
+thread_local JSClassID js_imgui_io_class_id = 0;
 thread_local JSValue imgui_io_proto = {JS_TAG_UNDEFINED}, imgui_io_ctor = {JS_TAG_UNDEFINED};
 
 enum {
@@ -767,7 +767,7 @@ static const JSCFunctionListEntry js_imgui_io_funcs[] = {
 #ifndef _METADOT_IMGUI_JSBIND_IMFONT
 #define _METADOT_IMGUI_JSBIND_IMFONT
 
-thread_local VISIBLE JSClassID js_imfont_class_id = 0;
+thread_local JSClassID js_imfont_class_id = 0;
 thread_local JSValue imfont_proto = {JS_TAG_UNDEFINED}, imfont_ctor = {JS_TAG_UNDEFINED};
 
 enum {
@@ -861,7 +861,7 @@ static const JSCFunctionListEntry js_imfont_funcs[] = {
 #ifndef _METADOT_IMGUI_JSBIND_IMFONTATLAS
 #define _METADOT_IMGUI_JSBIND_IMFONTATLAS
 
-thread_local VISIBLE JSClassID js_imfontatlas_class_id = 0;
+thread_local JSClassID js_imfontatlas_class_id = 0;
 thread_local JSValue imfontatlas_proto = {JS_TAG_UNDEFINED}, imfontatlas_ctor = {JS_TAG_UNDEFINED};
 
 enum {
@@ -1470,7 +1470,7 @@ static void js_imgui_formatargs(JSContext *ctx, int argc, JSValueConst argv[], v
 #ifndef _METADOT_IMGUI_JSBIND_STYLE
 #define _METADOT_IMGUI_JSBIND_STYLE
 
-thread_local VISIBLE JSClassID js_imgui_style_class_id = 0;
+thread_local JSClassID js_imgui_style_class_id = 0;
 thread_local JSValue imgui_style_proto = {JS_TAG_UNDEFINED}, imgui_style_ctor = {JS_TAG_UNDEFINED};
 
 enum {
@@ -4233,7 +4233,7 @@ static const JSCFunctionListEntry js_imgui_static_funcs[] = {
 #ifndef _METADOT_IMGUI_JSBIND_INPUTTEXTCALLBACKDATA
 #define _METADOT_IMGUI_JSBIND_INPUTTEXTCALLBACKDATA
 
-thread_local VISIBLE JSClassID js_imgui_inputtextcallbackdata_class_id = 0;
+thread_local JSClassID js_imgui_inputtextcallbackdata_class_id = 0;
 thread_local JSValue imgui_inputtextcallbackdata_proto = {JS_TAG_UNDEFINED},
                      imgui_inputtextcallbackdata_ctor = {JS_TAG_UNDEFINED};
 
