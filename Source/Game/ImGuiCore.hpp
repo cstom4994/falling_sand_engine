@@ -8,6 +8,7 @@
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/SDLWrapper.hpp"
 #include "Libs/ImGui/TextEditor.h"
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,10 @@ private:
     struct CodeView
     {
         std::string file;
+        std::string content;
+        bool is_edited = false;
+
+        bool operator==(CodeView v) { return (v.file == this->file); }
     };
 
     std::vector<ImGuiWin> m_wins;
@@ -41,8 +46,10 @@ private:
 
     ImGuiContext *m_imgui = nullptr;
 
-    std::vector<CodeView> view_file;
+    std::vector<CodeView> view_contents;
     TextEditor editor;
+    CodeView *view_editing = nullptr;
+    ImGuiWidget::FileBrowser fileDialog;
 
 public:
     ImGuiCore();

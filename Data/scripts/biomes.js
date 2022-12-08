@@ -17,7 +17,7 @@ var biome_modifiers = {
     "PLAINS": { "id": 9 },
     "MOUNTAINS": { "id": 10 },
     "FOREST": { "id": 11 }
-}
+};
 
 for (var b in biome_modifiers) {
     let biome_data = biome_modifiers[b];

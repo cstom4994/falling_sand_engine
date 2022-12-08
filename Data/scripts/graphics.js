@@ -21,7 +21,7 @@ var textures_pack = {
     "obsidian": { "path": "data/assets/textures/obsidian.png" },
     "caveBG": { "path": "data/assets/backgrounds/testCave.png" },
     "testAse": { "path": "data/assets/textures/tests/3.0_one_slice.ase" }
-}
+};
 
 for (var t in textures_pack) {
     let textures_data = textures_pack[t];

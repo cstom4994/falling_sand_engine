@@ -33,6 +33,7 @@ i18n.load({
         ui_open = "打开",
         ui_save = "保存",
         ui_edit = "编辑",
+        ui_close = "关闭",
         ui_line = "行"
     }
 })

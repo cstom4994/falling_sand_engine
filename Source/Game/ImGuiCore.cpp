@@ -24,6 +24,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <iterator>
 #include <map>
 
 #include <imgui/IconsFontAwesome5.h>
@@ -315,14 +316,8 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
         editor.SetErrorMarkers(markers);
 
 #endif
-
-    auto fileopen = METADOT_RESLOC("data/scripts/startup.lua");
-    std::ifstream i(fileopen);
-    if (i.good()) {
-        std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-        editor.SetText(str);
-        view_file.push_back(CodeView{.file = fileopen});
-    }
+    fileDialog.SetTitle("title");
+    fileDialog.SetTypeFilters({".js", ".lua"});
 
     firstRun = true;
 }
@@ -511,10 +506,22 @@ void ImGuiCore::Render() {
         ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu(LANG("ui_file"))) {
+                if (ImGui::MenuItem(LANG("ui_open"))) { fileDialog.Open(); }
                 if (ImGui::MenuItem(LANG("ui_save"))) {
-                    // auto textToSave = editor.GetText();
-                    // std::ofstream o(fileopen);
-                    // o << textToSave;
+                    if (view_editing && view_contents.size()) {
+                        auto textToSave = editor.GetText();
+                        std::ofstream o(view_editing->file);
+                        o << textToSave;
+                    }
+                }
+                if (ImGui::MenuItem(LANG("ui_close"))) {
+                    for (auto &code: view_contents) {
+                        if (code.file == view_editing->file) {
+                            view_contents.erase(std::remove(std::begin(view_contents),
+                                                            std::end(view_contents), code),
+                                                std::end(view_contents));
+                        }
+                    }
                 }
                 ImGui::EndMenu();
             }
@@ -561,19 +568,48 @@ void ImGuiCore::Render() {
             ImGui::EndMenuBar();
         }
 
+        fileDialog.Display();
+
+        if (fileDialog.HasSelected()) {
+            bool shouldopen = true;
+            auto fileopen = fileDialog.GetSelected().string();
+            for (auto code: view_contents)
+                if (code.file == fileopen) shouldopen = false;
+            if (shouldopen) {
+                std::ifstream i(fileopen);
+                if (i.good()) {
+                    std::string str((std::istreambuf_iterator<char>(i)),
+                                    std::istreambuf_iterator<char>());
+                    view_contents.push_back(CodeView{.file = fileopen, .content = str});
+                }
+            }
+            fileDialog.ClearSelected();
+        }
+
         ImGui::BeginTabBar("多文件编辑");
 
-        for (auto &code: view_file) {
+        for (auto &code: view_contents) {
             if (ImGui::BeginTabItem(FUtil::GetFileName(code.file).c_str())) {
-                ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1,
-                            cpos.mColumn + 1, editor.GetTotalLines(),
-                            editor.IsOverwrite() ? "Ovr" : "Ins", editor.CanUndo() ? "*" : " ",
-                            editor.GetLanguageDefinition().mName.c_str(),
-                            FUtil::GetFileName(code.file).c_str());
+                view_editing = &code;
 
-                editor.Render("TextEditor");
+                if (!view_editing->is_edited) {
+                    editor.SetText(view_editing->content);
+                    view_editing->is_edited = true;
+                }
+
                 ImGui::EndTabItem();
+            } else {
+                if (code.is_edited) { code.is_edited = false; }
             }
+        }
+
+        if (view_editing && view_contents.size()) {
+            ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1,
+                        editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
+                        editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(),
+                        FUtil::GetFileName(view_editing->file).c_str());
+
+            editor.Render("TextEditor");
         }
 
         ImGui::EndTabBar();
