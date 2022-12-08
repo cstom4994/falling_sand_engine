@@ -15,6 +15,8 @@ i18n.load({
         test = "测试",
         ui_tweaks = "MetaEngine Tweaks",
         ui_info = "基本信息",
+        ui_debug = "调试",
+        ui_telemetry = "遥测",
         ui_test = "测试",
         ui_console = "控制台",
         ui_settings = "设置",
@@ -34,7 +36,16 @@ i18n.load({
         ui_save = "保存",
         ui_edit = "编辑",
         ui_close = "关闭",
-        ui_line = "行"
+        ui_line = "行",
+        ui_readonly_mode = "只读模式",
+        ui_undo = "撤销",
+        ui_redo = "恢复",
+        ui_copy = "复制",
+        ui_paste = "粘贴",
+        ui_cut = "剪切",
+        ui_delete = "删除",
+        ui_selectall = "全选",
+        ui_view = "查看"
     }
 })
 

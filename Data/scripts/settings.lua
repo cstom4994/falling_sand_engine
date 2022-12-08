@@ -19,7 +19,6 @@ GetSettingsData = function()
     settings_data.draw_cursor = true
 
     settings_data.ui_tweak = false
-    settings_data.ui_code_editor = false
 
     settings_data.draw_shaders = true
     settings_data.water_overlay = 0

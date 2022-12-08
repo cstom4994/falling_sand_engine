@@ -16,6 +16,25 @@
 #include "Libs/nameof.hpp"
 #include "PreprocesserFlat.hpp"
 
+#ifndef n4502
+#define n4502
+
+// See http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4502.pdf.
+template<typename...>
+using void_t = void;
+
+template<typename, template<typename> class, typename = void_t<>>
+struct detect : std::false_type
+{
+};
+
+template<typename T, template<typename> class Op>
+struct detect<T, Op, void_t<Op<T>>> : std::true_type
+{
+};
+
+#endif
+
 template<class T>
 struct TypeIdentity : std::enable_if<true, T>
 {
@@ -9812,6 +9831,1096 @@ namespace LuaWrapper {
         LuaTable scope = detail::scope_stack::instance().current_scope();
         if (scope) { scope[name] = v; }
     }
+
+#pragma region PodBind
+
+    namespace PodBind {
+
+        class LuaException : public std::exception {
+        private:
+            lua_State *m_L;
+            std::string m_what;
+
+        public:
+            //----------------------------------------------------------------------------
+            LuaException(lua_State *L, int /*code*/) : m_L(L) { whatFromStack(); }
+
+            LuaException(std::string what) : m_L(nullptr) { m_what = what; }
+
+            //----------------------------------------------------------------------------
+
+            LuaException(lua_State *L, char const *, char const *, long) : m_L(L) {
+                whatFromStack();
+            }
+
+            //----------------------------------------------------------------------------
+
+            ~LuaException() throw() {}
+
+            //----------------------------------------------------------------------------
+
+            char const *what() const throw() { return m_what.c_str(); }
+
+            //============================================================================
+            /**
+      Throw an exception.
+
+      This centralizes all the exceptions thrown, so that we can set
+      breakpoints before the stack is unwound, or otherwise customize the
+      behavior.
+      */
+            template<class Exception>
+            static void Throw(Exception e) {
+                throw e;
+            }
+
+            //----------------------------------------------------------------------------
+            /**
+      Wrapper for lua_pcall that throws.
+      */
+            static void pcall(lua_State *L, int nargs = 0, int nresults = 0, int msgh = 0) {
+                int code = lua_pcall(L, nargs, nresults, msgh);
+
+                if (code != LUA_OK) Throw(LuaException(L, code));
+            }
+
+            //----------------------------------------------------------------------------
+
+        protected:
+            void whatFromStack() {
+                if (lua_gettop(m_L) > 0) {
+                    char const *s = lua_tostring(m_L, -1);
+                    m_what = s ? s : "";
+                } else {
+                    // stack is empty
+                    m_what = "missing error";
+                }
+            }
+        };
+
+    };// namespace PodBind
+
+    template<bool cond, typename U>
+    using enable_if_t = typename std::enable_if<cond, U>::type;
+
+    namespace PodBind {
+
+        // traits
+
+        // constructor
+        template<typename T>
+        using create_t = decltype(std::declval<T>().create(std::declval<lua_State *>()));
+        template<typename T>
+        using has_create = detect<T, create_t>;
+
+        // members
+        template<typename T>
+        using members_t = decltype(std::declval<T>().members());
+        template<typename T>
+        using has_members = detect<T, members_t>;
+
+        // properties
+        template<typename T>
+        using properties_t = decltype(std::declval<T>().properties());
+        template<typename T>
+        using has_properties = detect<T, properties_t>;
+
+        // any other stuff you might want to add to the metatable.
+        template<typename T>
+        using extras_t = decltype(std::declval<T>().setExtraMeta(std::declval<lua_State *>()));
+        template<typename T>
+        using has_extras = detect<T, extras_t>;
+
+        // helper struct
+        struct bind_properties
+        {
+            const char *name;
+            lua_CFunction getter;
+            lua_CFunction setter;
+        };
+
+        // Called when Lua object is indexed: obj[ndx]
+        int LuaBindingIndex(lua_State *L);
+        // Called whe Lua object index is assigned: obj[ndx] = blah
+        int LuaBindingNewIndex(lua_State *L);
+
+        // Gets the table of extra values assigned to an instance.
+        int LuaBindGetExtraValuesTable(lua_State *L, int index);
+
+        void LuaBindingSetProperties(lua_State *L, bind_properties *properties);
+
+        // If the object at 'index' is a userdata with a metatable containing a __upcast
+        // function, then replaces the userdata at 'index' in the stack with the result
+        // of calling __upcast.
+        // Otherwise the object at index is replaced with nil.
+        int LuaBindingUpCast(lua_State *L, int index);
+
+        // Check the number of arguments are as expected.
+        // Throw an error if not.
+        void CheckArgCount(lua_State *L, int expected);
+
+        // B - the binding class / struct
+        // T - the class you are binding to Lua.
+
+        // Shared pointer version
+        // Use this for classes that need to be shared between C++ and Lua,
+        // or are expensive to copy. Think of it as like "by Reference".
+        template<class B, class T>
+        struct Binding
+        {
+
+            // Push the object on to the Lua stack
+            static void push(lua_State *L, const std::shared_ptr<T> &sp) {
+
+                if (sp == nullptr) {
+                    lua_pushnil(L);
+                    return;
+                }
+
+                void *ud = lua_newuserdata(L, sizeof(std::shared_ptr<T>));
+
+                new (ud) std::shared_ptr<T>(sp);
+
+                luaL_setmetatable(L, B::class_name);
+            }
+
+            static void setMembers(lua_State *L, std::true_type) {
+                luaL_setfuncs(L, B::members(), 0);
+            }
+
+            static void setMembers(lua_State *L, std::false_type) {
+                // Nada.
+            }
+
+            static void setProperties(lua_State *L, std::true_type) {
+                bind_properties *props = B::properties();
+                LuaBindingSetProperties(L, props);
+            }
+
+            static void setProperties(lua_State *L, std::false_type) {
+                // Nada.
+            }
+
+            static void setExtras(lua_State *L, std::true_type) { B::setExtraMeta(L); }
+
+            static void setExtras(lua_State *, std::false_type) {
+                // Nada.
+            }
+
+            static int construct(lua_State *L, std::true_type) {
+                // Remove table from stack.
+                lua_remove(L, 1);
+                // Call create.
+                return B::create(L);
+            }
+
+            static int construct(lua_State *L, std::false_type) {
+                return luaL_error(L, "Can not create an instance of %s.", B::class_name);
+            }
+
+            static int construct(lua_State *L) {
+                has_create<B> createTrait;
+                return construct(L, createTrait);
+            }
+
+            static int pairs(lua_State *L) {
+                lua_getglobal(L, "pairs");
+                luaL_getmetatable(L, B::class_name);
+                lua_pcall(L, 1, LUA_MULTRET, 0);
+                return 3;
+            }
+
+            // Create metatable and register Lua constructor
+            static void register_class(lua_State *L) {
+                has_members<B> membersTrait;
+                has_properties<B> propTrait;
+                has_extras<B> extrasTrait;
+
+                lua_newtable(L);// Class access
+                lua_newtable(L);// Class access metatable
+
+                luaL_newmetatable(L, B::class_name);
+                setMembers(L, membersTrait);
+                lua_pushcfunction(L, LuaBindingIndex);
+                lua_setfield(L, -2, "__index");
+                lua_pushcfunction(L, LuaBindingNewIndex);
+                lua_setfield(L, -2, "__newindex");
+                lua_pushcfunction(L, destroy);
+                lua_setfield(L, -2, "__gc");
+                lua_pushcfunction(L, close);
+                lua_setfield(L, -2, "__close");
+                lua_newtable(L);// __properties
+                setProperties(L, propTrait);
+                lua_setfield(L, -2, "__properties");
+                setExtras(L, extrasTrait);
+
+                lua_setfield(L, -2, "__index");// Set metatable as index table.
+
+                lua_pushcfunction(L, construct);
+                lua_setfield(L, -2, "__call");
+
+                lua_pushcfunction(L, pairs);
+                lua_setfield(L, -2, "__pairs");
+
+                lua_setmetatable(L, -2);
+                lua_setglobal(L, B::class_name);
+            }
+
+            // Called when Lua object is garbage collected.
+            static int destroy(lua_State *L) {
+                void *ud = luaL_checkudata(L, 1, B::class_name);
+
+                auto sp = static_cast<std::shared_ptr<T> *>(ud);
+
+                // Explicitly called, as this was 'placement new'd
+                sp->~shared_ptr();
+
+                return 0;
+            }
+
+            // Called when Lua object goes out of scope with the <close> annotation
+            static int close(lua_State *L) {
+                void *ud = luaL_checkudata(L, 1, B::class_name);
+
+                auto sp = static_cast<std::shared_ptr<T> *>(ud);
+
+                sp->reset();
+
+                return 0;
+            }
+
+            // Grab object shared pointer from the Lua stack
+            static const std::shared_ptr<T> &fromStack(lua_State *L, int index) {
+                void *ud = luaL_checkudata(L, index, B::class_name);
+
+                auto sp = static_cast<std::shared_ptr<T> *>(ud);
+
+                return *sp;
+            }
+
+            static const std::shared_ptr<T> &fromStackThrow(lua_State *L, int index) {
+                void *ud = luaL_testudata(L, index, B::class_name);
+
+                if (ud == nullptr) throw LuaException("Unexpected item on Lua stack.");
+
+                auto sp = static_cast<std::shared_ptr<T> *>(ud);
+
+                return *sp;
+            }
+        };
+
+        // Plain Old Data POD version.
+        // Use this for simpler classes/structures where coping is fairly cheap, and
+        // C++ and Lua do not need to operate on the same instance.
+        // Think of this as "by Value"
+        template<class B, class T>
+        struct PODBinding
+        {
+
+            // Push the object on to the Lua stack
+            static void push(lua_State *L, const T &value) {
+                void *ud = lua_newuserdata(L, sizeof(T));
+
+                new (ud) T(value);
+
+                luaL_setmetatable(L, B::class_name);
+            }
+
+            static void setMembers(lua_State *L, std::true_type) {
+                luaL_setfuncs(L, B::members(), 0);
+            }
+
+            static void setMembers(lua_State *, std::false_type) {
+                // Nada.
+            }
+
+            static void setProperties(lua_State *L, std::true_type) {
+                bind_properties *props = B::properties();
+                LuaBindingSetProperties(L, props);
+            }
+
+            static void setProperties(lua_State *, std::false_type) {
+                // Nada.
+            }
+
+            static void setExtras(lua_State *L, std::true_type) { B::setExtraMeta(L); }
+
+            static void setExtras(lua_State *, std::false_type) {
+                // Nada.
+            }
+
+            static int construct(lua_State *L, std::true_type) {
+                // Remove table from stack.
+                lua_remove(L, 1);
+                // Call create.
+                return B::create(L);
+            }
+
+            static int construct(lua_State *L, std::false_type) {
+                return luaL_error(L, "Can not create an instance of %s.", B::class_name);
+            }
+
+            static int construct(lua_State *L) {
+                has_create<B> createTrait;
+                return construct(L, createTrait);
+            }
+
+            static int pairs(lua_State *L) {
+                lua_getglobal(L, "pairs");
+                luaL_getmetatable(L, B::class_name);
+                lua_pcall(L, 1, LUA_MULTRET, 0);
+                return 3;
+            }
+
+            // Create metatable and register Lua constructor
+            static void register_class(lua_State *L) {
+                has_members<B> membersTrait;
+                has_properties<B> propTrait;
+                has_extras<B> extrasTrait;
+
+                lua_newtable(L);// Class access
+                lua_newtable(L);// Class access metatable
+
+                luaL_newmetatable(L, B::class_name);
+                setMembers(L, membersTrait);
+                lua_pushcfunction(L, LuaBindingIndex);
+                lua_setfield(L, -2, "__index");
+                lua_pushcfunction(L, LuaBindingNewIndex);
+                lua_setfield(L, -2, "__newindex");
+                //lua_pushcfunction( L, destroy );  -- if you need to destruct a POD
+                //lua_setfield( L, -2, "__gc" );    -- set __gc to destory in the members.
+                lua_newtable(L);// __properties
+                setProperties(L, propTrait);
+                lua_setfield(L, -2, "__properties");
+                setExtras(L, extrasTrait);
+
+                lua_setfield(L, -2, "__index");
+
+                lua_pushcfunction(L, construct);
+                lua_setfield(L, -2, "__call");
+
+                lua_pushcfunction(L, pairs);
+                lua_setfield(L, -2, "__pairs");
+
+                lua_setmetatable(L, -2);
+                lua_setglobal(L, B::class_name);
+            }
+
+            // This is still here should a POD really need
+            // destructing. Shouldn't be a common case.
+            static int destroy(lua_State *L) {
+                void *ud = luaL_checkudata(L, 1, B::class_name);
+
+                auto p = static_cast<T *>(ud);
+
+                // Explicitly called, as this was 'placement new'd
+                p->~T();
+
+                return 0;
+            }
+
+            // Grab object pointer from the Lua stack
+            static T &fromStack(lua_State *L, int index) {
+                void *ud = luaL_checkudata(L, index, B::class_name);
+
+                auto p = static_cast<T *>(ud);
+
+                return *p;
+            }
+
+            static T &fromStackThrow(lua_State *L, int index) {
+                void *ud = luaL_testudata(L, index, B::class_name);
+
+                if (ud == nullptr) throw LuaException("Unexpected item on Lua stack.");
+
+                auto p = static_cast<T *>(ud);
+
+                return *p;
+            }
+        };
+
+    };// namespace PodBind
+
+#include <string>
+#include <tuple>// For std::ignore
+
+    namespace PodBind {
+
+        template<typename T>
+        struct LuaStack;
+
+        //------------------------------------------------------------------------------
+        /**
+  Push an object onto the Lua stack.
+  */
+        template<class T>
+        inline void lua_push(lua_State *L, T t) {
+            LuaStack<T>::push(L, t);
+        }
+
+        //------------------------------------------------------------------------------
+        /**
+  Receive the lua_State* as an argument.
+  */
+        template<>
+        struct LuaStack<lua_State *>
+        {
+            static lua_State *get(lua_State *L, int) { return L; }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  Push a lua_CFunction.
+  */
+        template<>
+        struct LuaStack<lua_CFunction>
+        {
+            static void push(lua_State *L, lua_CFunction f) { lua_pushcfunction(L, f); }
+
+            static lua_CFunction get(lua_State *L, int index) { return lua_tocfunction(L, index); }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `int`.
+  */
+        template<>
+        struct LuaStack<int>
+        {
+            static inline void push(lua_State *L, int value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline int get(lua_State *L, int index) {
+                return static_cast<int>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<int const &>
+        {
+            static inline void push(lua_State *L, int value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline int get(lua_State *L, int index) {
+                return static_cast<int>(luaL_checknumber(L, index));
+            }
+        };
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `unsigned int`.
+  */
+        template<>
+        struct LuaStack<unsigned int>
+        {
+            static inline void push(lua_State *L, unsigned int value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline unsigned int get(lua_State *L, int index) {
+                return static_cast<unsigned int>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<unsigned int const &>
+        {
+            static inline void push(lua_State *L, unsigned int value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline unsigned int get(lua_State *L, int index) {
+                return static_cast<unsigned int>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `unsigned char`.
+  */
+        template<>
+        struct LuaStack<unsigned char>
+        {
+            static inline void push(lua_State *L, unsigned char value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline unsigned char get(lua_State *L, int index) {
+                return static_cast<unsigned char>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<unsigned char const &>
+        {
+            static inline void push(lua_State *L, unsigned char value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline unsigned char get(lua_State *L, int index) {
+                return static_cast<unsigned char>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `short`.
+  */
+        template<>
+        struct LuaStack<short>
+        {
+            static inline void push(lua_State *L, short value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline short get(lua_State *L, int index) {
+                return static_cast<short>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<short const &>
+        {
+            static inline void push(lua_State *L, short value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline short get(lua_State *L, int index) {
+                return static_cast<short>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `unsigned short`.
+  */
+        template<>
+        struct LuaStack<unsigned short>
+        {
+            static inline void push(lua_State *L, unsigned short value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline unsigned short get(lua_State *L, int index) {
+                return static_cast<unsigned short>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<unsigned short const &>
+        {
+            static inline void push(lua_State *L, unsigned short value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline unsigned short get(lua_State *L, int index) {
+                return static_cast<unsigned short>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `long`.
+  */
+        template<>
+        struct LuaStack<long>
+        {
+            static inline void push(lua_State *L, long value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline long get(lua_State *L, int index) {
+                return static_cast<long>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<long const &>
+        {
+            static inline void push(lua_State *L, long value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline long get(lua_State *L, int index) {
+                return static_cast<long>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `unsigned long`.
+  */
+        template<>
+        struct LuaStack<unsigned long>
+        {
+            static inline void push(lua_State *L, unsigned long value) {
+                lua_pushinteger(L, static_cast<lua_Integer>(value));
+            }
+
+            static inline unsigned long get(lua_State *L, int index) {
+                return static_cast<unsigned long>(luaL_checkinteger(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<unsigned long const &>
+        {
+            static inline void push(lua_State *L, unsigned long value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline unsigned long get(lua_State *L, int index) {
+                return static_cast<unsigned long>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `float`.
+  */
+        template<>
+        struct LuaStack<float>
+        {
+            static inline void push(lua_State *L, float value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline float get(lua_State *L, int index) {
+                return static_cast<float>(luaL_checknumber(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<float const &>
+        {
+            static inline void push(lua_State *L, float value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline float get(lua_State *L, int index) {
+                return static_cast<float>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `double`.
+  */
+        template<>
+        struct LuaStack<double>
+        {
+            static inline void push(lua_State *L, double value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline double get(lua_State *L, int index) {
+                return static_cast<double>(luaL_checknumber(L, index));
+            }
+        };
+
+        template<>
+        struct LuaStack<double const &>
+        {
+            static inline void push(lua_State *L, double value) {
+                lua_pushnumber(L, static_cast<lua_Number>(value));
+            }
+
+            static inline double get(lua_State *L, int index) {
+                return static_cast<double>(luaL_checknumber(L, index));
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `bool`.
+  */
+        template<>
+        struct LuaStack<bool>
+        {
+            static inline void push(lua_State *L, bool value) { lua_pushboolean(L, value ? 1 : 0); }
+
+            static inline bool get(lua_State *L, int index) {
+                return lua_toboolean(L, index) ? true : false;
+            }
+        };
+
+        template<>
+        struct LuaStack<bool const &>
+        {
+            static inline void push(lua_State *L, bool value) { lua_pushboolean(L, value ? 1 : 0); }
+
+            static inline bool get(lua_State *L, int index) {
+                return lua_toboolean(L, index) ? true : false;
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `char`.
+  */
+        template<>
+        struct LuaStack<char>
+        {
+            static inline void push(lua_State *L, char value) {
+                char str[2] = {value, 0};
+                lua_pushstring(L, str);
+            }
+
+            static inline char get(lua_State *L, int index) {
+                return luaL_checkstring(L, index)[0];
+            }
+        };
+
+        template<>
+        struct LuaStack<char const &>
+        {
+            static inline void push(lua_State *L, char value) {
+                char str[2] = {value, 0};
+                lua_pushstring(L, str);
+            }
+
+            static inline char get(lua_State *L, int index) {
+                return luaL_checkstring(L, index)[0];
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `float`.
+  */
+        template<>
+        struct LuaStack<char const *>
+        {
+            static inline void push(lua_State *L, char const *str) {
+                if (str != 0) lua_pushstring(L, str);
+                else
+                    lua_pushnil(L);
+            }
+
+            static inline char const *get(lua_State *L, int index) {
+                return lua_isnil(L, index) ? 0 : luaL_checkstring(L, index);
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `std::string`.
+  */
+        template<>
+        struct LuaStack<std::string>
+        {
+            static inline void push(lua_State *L, std::string const &str) {
+                lua_pushlstring(L, str.c_str(), str.size());
+            }
+
+            static inline std::string get(lua_State *L, int index) {
+                size_t len;
+                const char *str = luaL_checklstring(L, index, &len);
+                return std::string(str, len);
+            }
+        };
+
+        //------------------------------------------------------------------------------
+        /**
+  LuaStack specialization for `std::string const&`.
+  */
+        template<>
+        struct LuaStack<std::string const &>
+        {
+            static inline void push(lua_State *L, std::string const &str) {
+                lua_pushlstring(L, str.c_str(), str.size());
+            }
+
+            static inline std::string get(lua_State *L, int index) {
+                size_t len;
+                const char *str = luaL_checklstring(L, index, &len);
+                return std::string(str, len);
+            }
+        };
+
+    };// namespace PodBind
+
+    namespace PodBind {
+
+        struct LuaNil
+        {
+        };
+
+        template<>
+        struct LuaStack<LuaNil>
+        {
+            static inline void push(lua_State *L, LuaNil const &nil) { lua_pushnil(L); }
+        };
+
+        class LuaRef;
+
+        class LuaRefBase {
+        protected:
+            lua_State *m_L;
+            int m_ref;
+
+            class StackPopper {
+                lua_State *m_L;
+                int m_count;
+
+            public:
+                StackPopper(lua_State *L, int count = 1) : m_L(L), m_count(count) {}
+                ~StackPopper() { lua_pop(m_L, m_count); }
+            };
+
+            struct FromStack
+            {
+            };
+
+            // These constructors as destructor are protected as this
+            // class should not be used directly.
+
+            LuaRefBase(lua_State *L, FromStack) : m_L(L) {
+                m_ref = luaL_ref(m_L, LUA_REGISTRYINDEX);
+            }
+
+            LuaRefBase(lua_State *L, int ref) : m_L(L), m_ref(ref) {}
+
+            ~LuaRefBase() { luaL_unref(m_L, LUA_REGISTRYINDEX, m_ref); }
+
+        public:
+            virtual void push() const { lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_ref); }
+
+            std::string tostring() const {
+                lua_getglobal(m_L, "tostring");
+                push();
+                lua_call(m_L, 1, 1);
+                const char *str = lua_tostring(m_L, 1);
+                lua_pop(m_L, 1);
+                return std::string(str);
+            }
+
+            int type() const {
+                int result;
+                push();
+                result = lua_type(m_L, -1);
+                lua_pop(m_L, 1);
+                return result;
+            }
+
+            inline bool isNil() const { return type() == LUA_TNIL; }
+            inline bool isNumber() const { return type() == LUA_TNUMBER; }
+            inline bool isString() const { return type() == LUA_TSTRING; }
+            inline bool isTable() const { return type() == LUA_TTABLE; }
+            inline bool isFunction() const { return type() == LUA_TFUNCTION; }
+            inline bool isUserdata() const { return type() == LUA_TUSERDATA; }
+            inline bool isThread() const { return type() == LUA_TTHREAD; }
+            inline bool isLightUserdata() const { return type() == LUA_TLIGHTUSERDATA; }
+            inline bool isBool() const { return type() == LUA_TBOOLEAN; }
+
+            template<typename... Args>
+            inline LuaRef const operator()(Args... args) const;
+
+            template<typename... Args>
+            inline void call(int ret, Args... args) const;
+
+            template<typename T>
+            void append(T v) const {
+                push();
+                LuaStack<T>::push(m_L, v);
+                luaL_ref(m_L, -2);
+                lua_pop(m_L, 1);
+            }
+
+            template<typename T>
+            T cast() {
+                push();
+                return LuaStack<T>::get(m_L, -1);
+            }
+
+            template<typename T>
+            operator T() {
+                return cast<T>();
+            }
+        };
+
+        template<typename K>
+        class LuaTableElement : public LuaRefBase {
+            friend class LuaRef;
+
+        private:
+            K m_key;
+
+            // This constructor has to be public, so that the operator[]
+            // with a differing template type can call it.
+            // I could not find a way to 'friend' it.
+        public:
+            // Expects on the Lua stack
+            // 1 - The table
+            LuaTableElement(lua_State *L, K key) : LuaRefBase(L, FromStack()), m_key(key) {}
+
+            void push() const override {
+                lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_ref);
+                LuaStack<K>::push(m_L, m_key);
+                lua_gettable(m_L, -2);
+                lua_remove(m_L, -2);
+            }
+
+            // Assign a new value to this table/key.
+            template<typename T>
+            LuaTableElement &operator=(T v) {
+                StackPopper p(m_L);
+                lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_ref);
+                LuaStack<K>::push(m_L, m_key);
+                LuaStack<T>::push(m_L, v);
+                lua_settable(m_L, -3);
+                return *this;
+            }
+
+            template<typename NK>
+            LuaTableElement<NK> operator[](NK key) const {
+                push();
+                return LuaTableElement<NK>(m_L, key);
+            }
+        };
+
+        template<typename K>
+        struct LuaStack<LuaTableElement<K>>
+        {
+            static inline void push(lua_State *L, LuaTableElement<K> const &e) { e.push(); }
+        };
+
+        class LuaRef : public LuaRefBase {
+            friend LuaRefBase;
+
+        private:
+            LuaRef(lua_State *L, FromStack fs) : LuaRefBase(L, fs) {}
+
+        public:
+            LuaRef(lua_State *L) : LuaRefBase(L, LUA_REFNIL) {}
+
+            LuaRef(lua_State *L, const std::string &global) : LuaRefBase(L, LUA_REFNIL) {
+                lua_getglobal(m_L, global.c_str());
+                m_ref = luaL_ref(m_L, LUA_REGISTRYINDEX);
+            }
+
+            LuaRef(LuaRef const &other) : LuaRefBase(other.m_L, LUA_REFNIL) {
+                other.push();
+                m_ref = luaL_ref(m_L, LUA_REGISTRYINDEX);
+            }
+
+            LuaRef(LuaRef &&other) noexcept : LuaRefBase(other.m_L, other.m_ref) {
+                other.m_ref = LUA_REFNIL;
+            }
+
+            LuaRef &operator=(LuaRef &&other) noexcept {
+                if (this == &other) return *this;
+
+                std::swap(m_L, other.m_L);
+                std::swap(m_ref, other.m_ref);
+
+                return *this;
+            }
+
+            LuaRef &operator=(LuaRef const &other) {
+                if (this == &other) return *this;
+                luaL_unref(m_L, LUA_REGISTRYINDEX, m_ref);
+                other.push();
+                m_L = other.m_L;
+                m_ref = luaL_ref(m_L, LUA_REGISTRYINDEX);
+                return *this;
+            }
+
+            template<typename K>
+            LuaRef &operator=(LuaTableElement<K> &&other) noexcept {
+                luaL_unref(m_L, LUA_REGISTRYINDEX, m_ref);
+                other.push();
+                m_L = other.m_L;
+                m_ref = luaL_ref(m_L, LUA_REGISTRYINDEX);
+                return *this;
+            }
+
+            template<typename K>
+            LuaRef &operator=(LuaTableElement<K> const &other) {
+                luaL_unref(m_L, LUA_REGISTRYINDEX, m_ref);
+                other.push();
+                m_L = other.m_L;
+                m_ref = luaL_ref(m_L, LUA_REGISTRYINDEX);
+                return *this;
+            }
+
+            template<typename K>
+            LuaTableElement<K> operator[](K key) const {
+                push();
+                return LuaTableElement<K>(m_L, key);
+            }
+
+            static LuaRef fromStack(lua_State *L, int index = -1) {
+                lua_pushvalue(L, index);
+                return LuaRef(L, FromStack());
+            }
+
+            static LuaRef newTable(lua_State *L) {
+                lua_newtable(L);
+                return LuaRef(L, FromStack());
+            }
+
+            static LuaRef getGlobal(lua_State *L, char const *name) {
+                lua_getglobal(L, name);
+                return LuaRef(L, FromStack());
+            }
+        };
+
+        template<>
+        struct LuaStack<LuaRef>
+        {
+            static inline void push(lua_State *L, LuaRef const &r) { r.push(); }
+        };
+
+        template<>
+        inline LuaRef const LuaRefBase::operator()() const {
+            push();
+            LuaException::pcall(m_L, 0, 1);
+            return LuaRef(m_L, FromStack());
+        }
+
+        template<typename... Args>
+        inline LuaRef const LuaRefBase::operator()(Args... args) const {
+            const int n = sizeof...(Args);
+            push();
+            // Initializer expansion trick to call push for each arg.
+            // https://stackoverflow.com/questions/25680461/variadic-template-pack-expansion
+            int dummy[] = {0, ((void) LuaStack<Args>::push(m_L, std::forward<Args>(args)), 0)...};
+            std::ignore = dummy;
+            LuaException::pcall(m_L, n, 1);
+            return LuaRef(m_L, FromStack());
+        }
+
+        template<>
+        inline void LuaRefBase::call(int ret) const {
+            push();
+            LuaException::pcall(m_L, 0, ret);
+            return;// Return values, if any, are left on the Lua stack.
+        }
+
+        template<typename... Args>
+        inline void LuaRefBase::call(int ret, Args... args) const {
+            const int n = sizeof...(Args);
+            push();
+            // Initializer expansion trick to call push for each arg.
+            // https://stackoverflow.com/questions/25680461/variadic-template-pack-expansion
+            int dummy[] = {0, ((void) LuaStack<Args>::push(m_L, std::forward<Args>(args)), 0)...};
+            std::ignore = dummy;
+            LuaException::pcall(m_L, n, ret);
+            return;// Return values, if any, are left on the Lua stack.
+        }
+
+        template<>
+        inline LuaRef LuaRefBase::cast() {
+            push();
+            return LuaRef(m_L, FromStack());
+        }
+
+    };// namespace PodBind
+
+#pragma endregion PodBind
+
 }// namespace LuaWrapper
 
 #endif

@@ -30,7 +30,7 @@ int Platform::ParseRunArgs(int argc, char *argv[]) {
         }
 
     } catch (std::exception &e) { std::cout << e.what() << "\n"; }
-    return 0;
+    return METADOT_OK;
 }
 
 int Platform::InitWindow() {
@@ -164,7 +164,7 @@ int Platform::InitWindow() {
     // global.audioEngine.PlayEvent("event:/Music/Title");
     // global.audioEngine.Update();
 
-    return 0;
+    return METADOT_OK;
 }
 
 void Platform::EndWindow() { METAENGINE_Render_Quit(); }

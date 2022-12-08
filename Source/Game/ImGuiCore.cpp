@@ -305,6 +305,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
         editor.SetErrorMarkers(markers);
 
 #endif
+    fileDialog.SetPwd(METADOT_RESLOC("data/scripts"));
     fileDialog.SetTitle("title");
     fileDialog.SetTypeFilters({".js", ".lua"});
 
@@ -487,14 +488,12 @@ void ImGuiCore::Render() {
 
 #endif
 
-    if (global.game->GameIsolate_.settings.ui_code_editor) {}
     auto cpos = editor.GetCursorPosition();
-
     if (global.game->GameIsolate_.settings.ui_tweak) {
 
         ImGui::Begin(LANG("ui_tweaks"), NULL, ImGuiWindowFlags_MenuBar);
 
-        ImGui::BeginTabBar(U8("协变与逆变"));
+        ImGui::BeginTabBar("ui_tweaks_tabbar");
 
         if (ImGui::BeginTabItem(LANG("ui_console"))) {
             global.game->GameSystem_.console.DrawUI();
@@ -548,8 +547,8 @@ void ImGuiCore::Render() {
             ImGui::EndTabBar();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem(U8("调整"))) {
-            if (myCollapsingHeader(U8("遥测"))) { GameUI::DebugUI::Draw(global.game); }
+        if (ImGui::BeginTabItem(LANG("ui_debug"))) {
+            if (myCollapsingHeader(LANG("ui_telemetry"))) { GameUI::DebugUI::Draw(global.game); }
 #define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->shader)
             if (myCollapsingHeader(U8("GLSL"))) {
                 INSPECTSHADER(newLightingShader);
@@ -586,36 +585,41 @@ void ImGuiCore::Render() {
                 }
                 if (ImGui::BeginMenu(LANG("ui_edit"))) {
                     bool ro = editor.IsReadOnly();
-                    if (ImGui::MenuItem("Read-only mode", nullptr, &ro)) editor.SetReadOnly(ro);
+                    if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro))
+                        editor.SetReadOnly(ro);
                     ImGui::Separator();
 
-                    if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
+                    if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr,
+                                        !ro && editor.CanUndo()))
                         editor.Undo();
-                    if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
+                    if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr,
+                                        !ro && editor.CanRedo()))
                         editor.Redo();
 
                     ImGui::Separator();
 
-                    if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
+                    if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, editor.HasSelection()))
                         editor.Copy();
-                    if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
+                    if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr,
+                                        !ro && editor.HasSelection()))
                         editor.Cut();
-                    if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
+                    if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr,
+                                        !ro && editor.HasSelection()))
                         editor.Delete();
-                    if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr,
+                    if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr,
                                         !ro && ImGui::GetClipboardText() != nullptr))
                         editor.Paste();
 
                     ImGui::Separator();
 
-                    if (ImGui::MenuItem("Select all", nullptr, nullptr))
+                    if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr))
                         editor.SetSelection(TextEditor::Coordinates(),
                                             TextEditor::Coordinates(editor.GetTotalLines(), 0));
 
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu("View")) {
+                if (ImGui::BeginMenu(LANG("ui_view"))) {
                     if (ImGui::MenuItem("Dark palette"))
                         editor.SetPalette(TextEditor::GetDarkPalette());
                     if (ImGui::MenuItem("Light palette"))
@@ -647,7 +651,7 @@ void ImGuiCore::Render() {
                 fileDialog.ClearSelected();
             }
 
-            ImGui::BeginTabBar("多文件编辑");
+            ImGui::BeginTabBar("ViewContents");
 
             for (auto &view: view_contents) {
                 if (ImGui::BeginTabItem(FUtil::GetFileName(view.file).c_str())) {

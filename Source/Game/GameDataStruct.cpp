@@ -539,7 +539,6 @@ void Settings::Init(bool openDebugUIs) {
         LoadLuaConfig((*this), luat, draw_cursor);
 
         LoadLuaConfig((*this), luat, ui_tweak);
-        LoadLuaConfig((*this), luat, ui_code_editor);
 
         LoadLuaConfig((*this), luat, draw_shaders);
         LoadLuaConfig((*this), luat, water_overlay);

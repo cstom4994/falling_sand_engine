@@ -2,6 +2,7 @@
 
 #include "Shaders.hpp"
 
+#include "Core/Core.hpp"
 #include "Engine/Memory.hpp"
 
 UInt32 METAENGINE_Shaders_LoadShader(METAENGINE_Render_ShaderEnum shader_type,
@@ -15,7 +16,7 @@ UInt32 METAENGINE_Shaders_LoadShader(METAENGINE_Render_ShaderEnum shader_type,
     if (source.empty()) {
         METAENGINE_Render_PushErrorCode("load_shader", METAENGINE_Render_ERROR_FILE_NOT_FOUND,
                                         "Shader file \"%s\" not found", filename);
-        return 0;
+        return METADOT_FAILED;
     }
 
     // Compile the shader

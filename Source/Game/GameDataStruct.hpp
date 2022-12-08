@@ -95,7 +95,6 @@ struct Settings
     bool draw_cursor;
 
     bool ui_tweak;
-    bool ui_code_editor;
 
     bool draw_shaders;
     int water_overlay;
@@ -126,10 +125,10 @@ METADOT_STRUCT(Settings, draw_frame_graph, draw_background, draw_background_grid
                draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
                draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info,
                draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor,
-               ui_tweak, ui_code_editor, draw_shaders, water_overlay, water_showFlow,
-               water_pixelated, lightingQuality, draw_light_overlay, simpleLighting,
-               lightingEmission, lightingDithering, tick_world, tick_box2d, tick_temperature,
-               hd_objects, hd_objects_size);
+               ui_tweak, draw_shaders, water_overlay, water_showFlow, water_pixelated,
+               lightingQuality, draw_light_overlay, simpleLighting, lightingEmission,
+               lightingDithering, tick_world, tick_box2d, tick_temperature, hd_objects,
+               hd_objects_size);
 
 struct Populator
 {

@@ -193,10 +193,10 @@ FMOD_VECTOR Audio::VectorToFmod(const Vector3 &vPosition) {
 int Audio::ErrorCheck(FMOD_RESULT result) {
     if (result != FMOD_OK) {
         METADOT_ERROR("FMOD Error: {0:d}", result);
-        return 1;
+        return METADOT_FAILED;
     }
     // cout << "FMOD all good" << endl;
-    return 0;
+    return METADOT_OK;
 }
 
 float Audio::dbToVolume(float dB) { return powf(10.0f, 0.05f * dB); }
