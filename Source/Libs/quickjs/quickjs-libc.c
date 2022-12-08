@@ -613,7 +613,7 @@ JSModuleDef *js_module_loader(JSContext *ctx,
         if (JS_IsException(func_val))
             return NULL;
         /* XXX: could propagate the exception */
-        js_module_set_import_meta(ctx, func_val, TRUE, FALSE);
+        js_module_set_import_meta(ctx, func_val, _TRUE, _FALSE);
         /* the module is already referenced, so we must free it */
         m = JS_VALUE_GET_PTR(func_val);
         JS_FreeValue(ctx, func_val);
@@ -664,7 +664,7 @@ static void setenv(const char *name, const char *value, int overwrite)
 
 static void unsetenv(const char *name)
 {
-    setenv(name, "", TRUE);
+    setenv(name, "", _TRUE);
 }
 #endif /* _WIN32 */
 
@@ -680,7 +680,7 @@ static JSValue js_std_setenv(JSContext *ctx, JSValueConst this_val,
         JS_FreeCString(ctx, name);
         return JS_EXCEPTION;
     }
-    setenv(name, value, TRUE);
+    setenv(name, value, _TRUE);
     JS_FreeCString(ctx, name);
     JS_FreeCString(ctx, value);
     return JS_UNDEFINED;
@@ -773,7 +773,7 @@ static JSValue js_evalScript(JSContext *ctx, JSValueConst this_val,
     size_t len;
     JSValue ret;
     JSValueConst options_obj;
-    BOOL backtrace_barrier = FALSE;
+    BOOL backtrace_barrier = _FALSE;
     int flags;
     
     if (argc >= 2) {
@@ -917,7 +917,7 @@ static JSValue js_std_open(JSContext *ctx, JSValueConst this_val,
     JS_FreeCString(ctx, mode);
     if (!f)
         return JS_NULL;
-    return js_new_std_file(ctx, f, TRUE, FALSE);
+    return js_new_std_file(ctx, f, _TRUE, _FALSE);
  fail:
     JS_FreeCString(ctx, filename);
     JS_FreeCString(ctx, mode);
@@ -953,7 +953,7 @@ static JSValue js_std_popen(JSContext *ctx, JSValueConst this_val,
     JS_FreeCString(ctx, mode);
     if (!f)
         return JS_NULL;
-    return js_new_std_file(ctx, f, TRUE, TRUE);
+    return js_new_std_file(ctx, f, _TRUE, _TRUE);
  fail:
     JS_FreeCString(ctx, filename);
     JS_FreeCString(ctx, mode);
@@ -987,7 +987,7 @@ static JSValue js_std_fdopen(JSContext *ctx, JSValueConst this_val,
     JS_FreeCString(ctx, mode);
     if (!f)
         return JS_NULL;
-    return js_new_std_file(ctx, f, TRUE, FALSE);
+    return js_new_std_file(ctx, f, _TRUE, _FALSE);
  fail:
     JS_FreeCString(ctx, mode);
     return JS_EXCEPTION;
@@ -1002,7 +1002,7 @@ static JSValue js_std_tmpfile(JSContext *ctx, JSValueConst this_val,
         js_set_error_object(ctx, argv[0], f ? 0 : errno);
     if (!f)
         return JS_NULL;
-    return js_new_std_file(ctx, f, TRUE, FALSE);
+    return js_new_std_file(ctx, f, _TRUE, _FALSE);
 }
 
 static JSValue js_std_sprintf(JSContext *ctx, JSValueConst this_val,
@@ -1353,8 +1353,8 @@ static JSValue js_std_urlGet(JSContext *ctx, JSValueConst this_val,
     if (!url)
         return JS_EXCEPTION;
     
-    binary_flag = FALSE;
-    full_flag = FALSE;
+    binary_flag = _FALSE;
+    full_flag = _FALSE;
     
     if (argc >= 2) {
         options_obj = argv[1];
@@ -1568,9 +1568,9 @@ static int js_std_init(JSContext *ctx, JSModuleDef *m)
 
     JS_SetModuleExportList(ctx, m, js_std_funcs,
                            countof(js_std_funcs));
-    JS_SetModuleExport(ctx, m, "in", js_new_std_file(ctx, stdin, FALSE, FALSE));
-    JS_SetModuleExport(ctx, m, "out", js_new_std_file(ctx, stdout, FALSE, FALSE));
-    JS_SetModuleExport(ctx, m, "err", js_new_std_file(ctx, stderr, FALSE, FALSE));
+    JS_SetModuleExport(ctx, m, "in", js_new_std_file(ctx, stdin, _FALSE, _FALSE));
+    JS_SetModuleExport(ctx, m, "out", js_new_std_file(ctx, stdout, _FALSE, _FALSE));
+    JS_SetModuleExport(ctx, m, "err", js_new_std_file(ctx, stderr, _FALSE, _FALSE));
     return 0;
 }
 
@@ -2023,7 +2023,7 @@ static void js_os_timer_finalizer(JSRuntime *rt, JSValue val)
 {
     JSOSTimer *th = JS_GetOpaque(val, js_os_timer_class_id);
     if (th) {
-        th->has_object = FALSE;
+        th->has_object = _FALSE;
         if (!th->link.prev)
             free_timer(rt, th);
     }
@@ -2061,7 +2061,7 @@ static JSValue js_os_setTimeout(JSContext *ctx, JSValueConst this_val,
         JS_FreeValue(ctx, obj);
         return JS_EXCEPTION;
     }
-    th->has_object = TRUE;
+    th->has_object = _TRUE;
     th->timeout = get_time_ms() + delay;
     th->func = JS_DupValue(ctx, func);
     list_add_tail(&th->link, &ts->os_timers);
@@ -2818,7 +2818,7 @@ static int my_execvpe(const char *filename, char **argv, char **envp)
     path = getenv("PATH");
     if (!path)
         path = (char *)"/bin:/usr/bin";
-    eacces_error = FALSE;
+    eacces_error = _FALSE;
     p = path;
     for(p = path; p != NULL; p = p_next) {
         p1 = strchr(p, ':');
@@ -2841,7 +2841,7 @@ static int my_execvpe(const char *filename, char **argv, char **envp)
 
         switch(errno) {
         case EACCES:
-            eacces_error = TRUE;
+            eacces_error = _TRUE;
             break;
         case ENOENT:
         case ENOTDIR:
@@ -2865,7 +2865,7 @@ static JSValue js_os_exec(JSContext *ctx, JSValueConst this_val,
     char **envp = environ;
     uint32_t exec_argc, i;
     int ret, pid, status;
-    BOOL block_flag = TRUE, use_path = TRUE;
+    BOOL block_flag = _TRUE, use_path = _TRUE;
     static const char *std_name[3] = { "stdin", "stdout", "stderr" };
     int std_fds[3];
     uint32_t uid = -1, gid = -1;
@@ -3319,7 +3319,7 @@ static void *worker_func(void *opaque)
         fprintf(stderr, "JS_NewContext failure");
     }
 
-    JS_SetCanBlock(rt, TRUE);
+    JS_SetCanBlock(rt, _TRUE);
 
     js_std_add_helpers(ctx, -1, NULL);
 
@@ -3929,7 +3929,7 @@ void js_std_eval_binary(JSContext *ctx, const uint8_t *buf, size_t buf_len,
         goto exception;
     if (load_only) {
         if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE) {
-            js_module_set_import_meta(ctx, obj, FALSE, FALSE);
+            js_module_set_import_meta(ctx, obj, _FALSE, _FALSE);
         }
     } else {
         if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE) {
@@ -3937,7 +3937,7 @@ void js_std_eval_binary(JSContext *ctx, const uint8_t *buf, size_t buf_len,
                 JS_FreeValue(ctx, obj);
                 goto exception;
             }
-            js_module_set_import_meta(ctx, obj, FALSE, TRUE);
+            js_module_set_import_meta(ctx, obj, _FALSE, _TRUE);
         }
         val = JS_EvalFunction(ctx, obj);
         if (JS_IsException(val)) {

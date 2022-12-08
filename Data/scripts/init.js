@@ -9,6 +9,20 @@ function OnGameEngineLoad() {
     test.load_script("data/scripts/audio.js");
 }
 
+function OnImGuiUpdate() {
+    const runImGui = () => {
+        try {
+            ImGui.Begin("测试中文", null, ImGui.WindowFlags.NoTitleBar);
+            ImGui.Text("Hello MetaDot world!");
+            ImGui.Button("按钮");
+            ImGui.End();
+        } catch (error) {
+            test.println("ImGui drawing error:", error);
+        }
+    };
+    runImGui();
+}
+
 // function OnWorldInitialized()
 // function OnWorldPreUpdate()
 // function OnWorldPostUpdate()

@@ -3,11 +3,13 @@
 #include "GameScriptingWrap.hpp"
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
+#include "Engine/ImGuiBinder.hpp"
 #include "Engine/ReflectionFlat.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Materials.hpp"
 #include "JsWrapper.hpp"
+#include "quickjs/quickjs-libc.h"
 #include <string>
 
 #pragma region GameScriptingBind_1
@@ -69,6 +71,16 @@ void GameScriptingWrap::Bind() {
         module.function<&textures_init>("textures_init");
         module.function<&textures_load>("textures_load");
 
+        js_std_init_handlers(global.scripts->JsRuntime->rt);
+        /* loader for ES6 modules */
+        JS_SetModuleLoaderFunc(global.scripts->JsRuntime->rt, nullptr, js_module_loader, nullptr);
+        js_std_add_helpers(context->ctx, 0, nullptr);
+
+        js_init_module_std(context->ctx, "std");
+        js_init_module_os(context->ctx, "os");
+
+        init_imgui_module(context->ctx, "ImGuiModule");
+
         // module.class_<Biome>("Biome")
         //         .constructor<std::string, int>("Biome")
         //         .fun<&Biome::id>("id")
@@ -77,6 +89,12 @@ void GameScriptingWrap::Bind() {
         context->eval(R"Js(
             import * as test from 'CoreModule';
             globalThis.test = test;
+            import * as ImGui from 'ImGuiModule';
+            globalThis.ImGui = ImGui;
+            import * as std from 'std';
+            globalThis.std = std;
+            import * as os from 'os';
+            globalThis.os = os;
         )Js",
                       "<import>", JS_EVAL_TYPE_MODULE);
 

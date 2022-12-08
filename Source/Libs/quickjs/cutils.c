@@ -113,7 +113,7 @@ int dbuf_realloc(DynBuf *s, size_t new_size)
             new_size = size;
         new_buf = s->realloc_func(s->opaque, s->buf, new_size);
         if (!new_buf) {
-            s->error = TRUE;
+            s->error = _TRUE;
             return -1;
         }
         s->buf = new_buf;

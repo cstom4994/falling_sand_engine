@@ -162,17 +162,6 @@ static bool firstRun = false;
 ImGUIIMMCommunication imguiIMMCommunication{};
 #endif
 
-// void TextFuck(std::string text)
-// {
-
-// 	ImGui::SetNextWindowPos(ImGui::GetMousePos());
-
-// 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-// 	ImGui::Begin("text", NULL, flags);
-// 	ImGui::Text(text.c_str());
-// 	ImGui::End();
-// }
-
 void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
     window = p_window;
     gl_context = p_gl_context;
@@ -498,123 +487,8 @@ void ImGuiCore::Render() {
 
 #endif
 
-    if (global.game->GameIsolate_.settings.ui_code_editor) {
-
-        auto cpos = editor.GetCursorPosition();
-        ImGui::Begin(LANG("ui_scripts_editor"), nullptr,
-                     ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
-        ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-        if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu(LANG("ui_file"))) {
-                if (ImGui::MenuItem(LANG("ui_open"))) { fileDialog.Open(); }
-                if (ImGui::MenuItem(LANG("ui_save"))) {
-                    if (view_editing && view_contents.size()) {
-                        auto textToSave = editor.GetText();
-                        std::ofstream o(view_editing->file);
-                        o << textToSave;
-                    }
-                }
-                if (ImGui::MenuItem(LANG("ui_close"))) {
-                    for (auto &code: view_contents) {
-                        if (code.file == view_editing->file) {
-                            view_contents.erase(std::remove(std::begin(view_contents),
-                                                            std::end(view_contents), code),
-                                                std::end(view_contents));
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu(LANG("ui_edit"))) {
-                bool ro = editor.IsReadOnly();
-                if (ImGui::MenuItem("Read-only mode", nullptr, &ro)) editor.SetReadOnly(ro);
-                ImGui::Separator();
-
-                if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
-                    editor.Undo();
-                if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
-                    editor.Redo();
-
-                ImGui::Separator();
-
-                if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
-                    editor.Copy();
-                if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
-                    editor.Cut();
-                if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
-                    editor.Delete();
-                if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr,
-                                    !ro && ImGui::GetClipboardText() != nullptr))
-                    editor.Paste();
-
-                ImGui::Separator();
-
-                if (ImGui::MenuItem("Select all", nullptr, nullptr))
-                    editor.SetSelection(TextEditor::Coordinates(),
-                                        TextEditor::Coordinates(editor.GetTotalLines(), 0));
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("View")) {
-                if (ImGui::MenuItem("Dark palette"))
-                    editor.SetPalette(TextEditor::GetDarkPalette());
-                if (ImGui::MenuItem("Light palette"))
-                    editor.SetPalette(TextEditor::GetLightPalette());
-                if (ImGui::MenuItem("Retro blue palette"))
-                    editor.SetPalette(TextEditor::GetRetroBluePalette());
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
-
-        fileDialog.Display();
-
-        if (fileDialog.HasSelected()) {
-            bool shouldopen = true;
-            auto fileopen = fileDialog.GetSelected().string();
-            for (auto code: view_contents)
-                if (code.file == fileopen) shouldopen = false;
-            if (shouldopen) {
-                std::ifstream i(fileopen);
-                if (i.good()) {
-                    std::string str((std::istreambuf_iterator<char>(i)),
-                                    std::istreambuf_iterator<char>());
-                    view_contents.push_back(CodeView{.file = fileopen, .content = str});
-                }
-            }
-            fileDialog.ClearSelected();
-        }
-
-        ImGui::BeginTabBar("多文件编辑");
-
-        for (auto &code: view_contents) {
-            if (ImGui::BeginTabItem(FUtil::GetFileName(code.file).c_str())) {
-                view_editing = &code;
-
-                if (!view_editing->is_edited) {
-                    editor.SetText(view_editing->content);
-                    view_editing->is_edited = true;
-                }
-
-                ImGui::EndTabItem();
-            } else {
-                if (code.is_edited) { code.is_edited = false; }
-            }
-        }
-
-        if (view_editing && view_contents.size()) {
-            ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1,
-                        editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
-                        editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(),
-                        FUtil::GetFileName(view_editing->file).c_str());
-
-            editor.Render("TextEditor");
-        }
-
-        ImGui::EndTabBar();
-        ImGui::End();
-    }
+    if (global.game->GameIsolate_.settings.ui_code_editor) {}
+    auto cpos = editor.GetCursorPosition();
 
     if (global.game->GameIsolate_.settings.ui_tweak) {
 
@@ -653,7 +527,7 @@ void ImGuiCore::Render() {
             ImGui::Separator();
             ImGui::Text("GC:\n");
             for (auto [name, size]: GC::MemoryDebugMap) {
-                ImGui::Text(fmt::format("   {0} {1}", name, size).c_str());
+                ImGui::Text("%s", fmt::format("   {0} {1}", name, size).c_str());
             }
             // ImGui::Auto(GC::MemoryDebugMap, "map");
 #endif
@@ -685,22 +559,141 @@ void ImGuiCore::Render() {
                 INSPECTSHADER(waterFlowPassShader);
             }
 #undef INSPECTSHADER
-            // Call the function in our RCC++ class
-            //if (myCollapsingHeader("RCCpp"))
-            //    getSystemTable()->pRCCppMainLoopI->MainLoop();
-
-            //if (myCollapsingHeader("WorldInfo"))
-            //    MetaEngine::App::get().getModuleStack().getInstances("WorldLayer")->onImGuiInnerRender();
-
             ImGui::EndTabItem();
         }
 
-        ImGui::EndTabBar();
+        if (ImGui::BeginTabItem(LANG("ui_scripts_editor"))) {
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu(LANG("ui_file"))) {
+                    if (ImGui::MenuItem(LANG("ui_open"))) { fileDialog.Open(); }
+                    if (ImGui::MenuItem(LANG("ui_save"))) {
+                        if (view_editing && view_contents.size()) {
+                            auto textToSave = editor.GetText();
+                            std::ofstream o(view_editing->file);
+                            o << textToSave;
+                        }
+                    }
+                    if (ImGui::MenuItem(LANG("ui_close"))) {
+                        for (auto &code: view_contents) {
+                            if (code.file == view_editing->file) {
+                                view_contents.erase(std::remove(std::begin(view_contents),
+                                                                std::end(view_contents), code),
+                                                    std::end(view_contents));
+                            }
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu(LANG("ui_edit"))) {
+                    bool ro = editor.IsReadOnly();
+                    if (ImGui::MenuItem("Read-only mode", nullptr, &ro)) editor.SetReadOnly(ro);
+                    ImGui::Separator();
 
+                    if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
+                        editor.Undo();
+                    if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
+                        editor.Redo();
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
+                        editor.Copy();
+                    if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
+                        editor.Cut();
+                    if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
+                        editor.Delete();
+                    if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr,
+                                        !ro && ImGui::GetClipboardText() != nullptr))
+                        editor.Paste();
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem("Select all", nullptr, nullptr))
+                        editor.SetSelection(TextEditor::Coordinates(),
+                                            TextEditor::Coordinates(editor.GetTotalLines(), 0));
+
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("View")) {
+                    if (ImGui::MenuItem("Dark palette"))
+                        editor.SetPalette(TextEditor::GetDarkPalette());
+                    if (ImGui::MenuItem("Light palette"))
+                        editor.SetPalette(TextEditor::GetLightPalette());
+                    if (ImGui::MenuItem("Retro blue palette"))
+                        editor.SetPalette(TextEditor::GetRetroBluePalette());
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
+
+            fileDialog.Display();
+
+            if (fileDialog.HasSelected()) {
+                bool shouldopen = true;
+                auto fileopen = fileDialog.GetSelected().string();
+                for (auto code: view_contents)
+                    if (code.file == fileopen) shouldopen = false;
+                if (shouldopen) {
+                    std::ifstream i(fileopen);
+                    if (i.good()) {
+                        std::string str((std::istreambuf_iterator<char>(i)),
+                                        std::istreambuf_iterator<char>());
+                        view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code,
+                                                           .file = fileopen,
+                                                           .content = str});
+                    }
+                }
+                fileDialog.ClearSelected();
+            }
+
+            ImGui::BeginTabBar("多文件编辑");
+
+            for (auto &view: view_contents) {
+                if (ImGui::BeginTabItem(FUtil::GetFileName(view.file).c_str())) {
+                    view_editing = &view;
+
+                    if (!view_editing->is_edited) {
+                        if (view.tags == EditorTags::Editor_Code)
+                            editor.SetText(view_editing->content);
+                        view_editing->is_edited = true;
+                    }
+
+                    ImGui::EndTabItem();
+                } else {
+                    if (view.is_edited) { view.is_edited = false; }
+                }
+            }
+
+            if (view_editing && view_contents.size()) {
+                switch (view_editing->tags) {
+                    case Editor_Code:
+                        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1,
+                                    cpos.mColumn + 1, editor.GetTotalLines(),
+                                    editor.IsOverwrite() ? "Ovr" : "Ins",
+                                    editor.CanUndo() ? "*" : " ",
+                                    editor.GetLanguageDefinition().mName.c_str(),
+                                    FUtil::GetFileName(view_editing->file).c_str());
+
+                        editor.Render("TextEditor");
+                        break;
+                    case Editor_Markdown:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            ImGui::EndTabBar();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
         ImGui::End();
     }
-
     GameUI::GameUI_Draw(global.game);
+
+    auto context = global.scripts->JsContext;
+    auto OnImGuiUpdate = (std::function<void(void)>) context->eval("OnImGuiUpdate");
+    OnImGuiUpdate();
 }
 
 void ImGuiCore::registerWindow(std::string_view windowName, bool *opened) {

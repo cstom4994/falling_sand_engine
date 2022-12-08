@@ -22,6 +22,11 @@ enum ImGuiWindowTags {
     UI_GCManager = 1 << 1,
 };
 
+enum EditorTags {
+    Editor_Code = 0,
+    Editor_Markdown = 1
+};
+
 class ImGuiCore {
 private:
     struct ImGuiWin
@@ -30,13 +35,15 @@ private:
         bool *opened;
     };
 
-    struct CodeView
+    struct EditorView
     {
+        EditorTags tags;
+
         std::string file;
         std::string content;
         bool is_edited = false;
 
-        bool operator==(CodeView v) { return (v.file == this->file); }
+        bool operator==(EditorView v) { return (v.file == this->file) && (v.tags == this->tags); }
     };
 
     std::vector<ImGuiWin> m_wins;
@@ -46,9 +53,9 @@ private:
 
     ImGuiContext *m_imgui = nullptr;
 
-    std::vector<CodeView> view_contents;
+    std::vector<EditorView> view_contents;
     TextEditor editor;
-    CodeView *view_editing = nullptr;
+    EditorView *view_editing = nullptr;
     ImGuiWidget::FileBrowser fileDialog;
 
 public:
