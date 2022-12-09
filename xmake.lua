@@ -173,13 +173,15 @@ do
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
     add_files("Source/Libs/*.cpp")
     add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
-              "Source/Libs/lua/**.c", "Source/Libs/fmt/**.cc",
-              "Source/Libs/glad/**.c", {unity_group = "invade"})
+              "Source/Libs/fmt/**.cc", "Source/Libs/glad/**.c",
+              {unity_group = "invade"})
 
     add_files("Source/Libs/quickjs/**.c")
     add_files("Source/Libs/lz4/**.c")
+    add_files("Source/Libs/lua/**.c")
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
+    remove_files("Source/Libs/lua/test.c")
 end
 
 target("MetaDot")

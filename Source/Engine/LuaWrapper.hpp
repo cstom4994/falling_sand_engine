@@ -11945,6 +11945,8 @@ namespace LuaWrapper {
 
 #pragma endregion LuaA
 
+    int metadot_preload(lua_State *L, lua_CFunction f, const char *name);
+
 }// namespace LuaWrapper
 
 #endif

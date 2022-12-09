@@ -18,6 +18,7 @@
 #include "Game/GameDataStruct.hpp"
 #include "Game/InEngine.h"
 #include "Game/Utils.hpp"
+#include "Libs/lua/ffi.h"
 #include "quickjs/quickjs.h"
 
 #include <iostream>
@@ -167,6 +168,11 @@ void LuaCore::Attach() {
     metadot_bind_miniz(m_L);
     metadot_bind_image(m_L);
     metadot_bind_gpu(m_L);
+
+    LuaWrapper::metadot_preload(m_L, luaopen_ffi, "ffi");
+    lua_getglobal(m_L, "require");
+    lua_pushstring(m_L, "ffi");
+    lua_call(m_L, 1, 0);
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
