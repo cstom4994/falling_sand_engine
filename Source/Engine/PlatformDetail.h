@@ -39,6 +39,31 @@
 #include <sys/time.h>
 #endif
 
+#ifdef METADOT_PLATFORM_WINDOWS
+#define getFullPath(a, b) GetFullPathName(a, MAX_PATH, b, NULL)
+#define rmdir(a) _rmdir(a)
+#define PATH_SEPARATOR '\\'
+#else
+#define getFullPath(a, b) realpath(a, b)
+#define PATH_SEPARATOR '/'
+#endif
+
+#ifndef MAX_PATH
+#include <limits.h>
+#ifdef PATH_MAX
+#define MAX_PATH PATH_MAX
+#else
+#define MAX_PATH 256
+#endif
+#endif
+
+#if MAX_PATH > 1024
+#undef MAX_PATH
+#define MAX_PATH 1024
+#endif
+
+#define FS_LINE_INCR 256
+
 #include <string>
 
 namespace Platforms {

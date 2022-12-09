@@ -160,14 +160,15 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-void LuaCore::Attach() {
+void LuaCore::Init() {
     m_L = s_lua.state();
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
-    
+
     metadot_bind_image(m_L);
     metadot_bind_gpu(m_L);
+    metadot_bind_fs(m_L);
 
     LuaWrapper::metadot_preload(m_L, luaopen_ffi, "ffi");
     lua_getglobal(m_L, "require");
@@ -208,7 +209,7 @@ void LuaCore::Attach() {
     RunScriptFromFile("data/scripts/startup.lua");
 }
 
-void LuaCore::Detach() {}
+void LuaCore::End() {}
 
 void LuaCore::RunScriptInConsole(lua_State *L, const char *c) {
     luaL_loadstring(m_L, c);
@@ -367,7 +368,7 @@ void Scripts::Init() {
     // auto end = MuDSL->callFunction("init");
 
     METADOT_NEW(C, LuaRuntime, LuaCore);
-    LuaRuntime->Attach();
+    LuaRuntime->Init();
 
     METADOT_NEW(C, JsRuntime, JsWrapper::Runtime);
     METADOT_NEW(C, JsContext, JsWrapper::Context, *this->JsRuntime);
@@ -382,7 +383,7 @@ void Scripts::End() {
     METADOT_DELETE_EX(C, JsContext, Context, JsWrapper::Context);
     METADOT_DELETE_EX(C, JsRuntime, Runtime, JsWrapper::Runtime);
 
-    LuaRuntime->Detach();
+    LuaRuntime->End();
     METADOT_DELETE(C, LuaRuntime, LuaCore);
 
     auto end = MuDSL->callFunction("end");

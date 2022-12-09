@@ -75,8 +75,8 @@ public:
 
     void RunScriptFromFile(const std::string &filePath);
     void Update();
-    void Attach();
-    void Detach();
+    void Init();
+    void End();
 
     struct
     {

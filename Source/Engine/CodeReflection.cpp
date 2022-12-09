@@ -397,7 +397,7 @@ auto fuckme() -> void {
             123353,
     };
 
-    refl_recur_obj(
+    metadot_struct_recur_obj(
             rect,
             [](const char *name, int depth) {
                 std::cout << "field name:" << name << std::endl;
