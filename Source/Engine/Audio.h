@@ -5,8 +5,7 @@
 #include "Engine/Math.hpp"
 
 #if defined(METADOT_BUILD_AUDIO)
-#include "Libs/fmod/inc/fmod.h"
-#include "Libs/fmod/inc/fmod_studio.hpp"
+#include "Engine/Internal/BuiltinFMOD.hpp"
 #endif
 
 #include <iostream>
