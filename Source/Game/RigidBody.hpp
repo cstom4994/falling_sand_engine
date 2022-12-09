@@ -18,7 +18,7 @@ class RigidBody {
 public:
     b2Body *body = nullptr;
     C_Surface *surface = nullptr;
-    METAENGINE_Render_Image *texture = nullptr;
+    R_Image *texture = nullptr;
 
     int matWidth = 0;
     int matHeight = 0;

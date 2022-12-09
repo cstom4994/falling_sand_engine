@@ -504,8 +504,8 @@ void ImGuiCore::Render() {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                         1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-            METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
-            METAENGINE_Render_RendererID id = renderer->id;
+            R_Renderer *renderer = R_GetCurrentRenderer();
+            R_RendererID id = renderer->id;
 
             ImGui::Text("Using renderer: %s", glGetString(GL_RENDERER));
             ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));

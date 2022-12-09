@@ -1,5 +1,5 @@
-#ifndef _METAENGINE_Render_OPENGL_3_H__
-#define _METAENGINE_Render_OPENGL_3_H__
+#ifndef _R_OPENGL_3_H__
+#define _R_OPENGL_3_H__
 
 #include "RendererGPU.h"
 
@@ -21,11 +21,11 @@
 #define GL_ABGR GL_ABGR_EXT
 #endif
 
-#define METAENGINE_Render_CONTEXT_DATA ContextData_OpenGL_3
-#define METAENGINE_Render_IMAGE_DATA ImageData_OpenGL_3
-#define METAENGINE_Render_TARGET_DATA TargetData_OpenGL_3
+#define R_CONTEXT_DATA ContextData_OpenGL_3
+#define R_IMAGE_DATA ImageData_OpenGL_3
+#define R_TARGET_DATA TargetData_OpenGL_3
 
-#define METAENGINE_Render_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE                                    \
+#define R_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE                                    \
     "#version 400\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -43,7 +43,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-#define METAENGINE_Render_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE                                  \
+#define R_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE                                  \
     "#version 400\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -58,7 +58,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-#define METAENGINE_Render_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE                                  \
+#define R_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE                                  \
     "#version 400\n\
 \
 in vec4 color;\n\
@@ -73,7 +73,7 @@ void main(void)\n\
     fragColor = texture(tex, texCoord) * color;\n\
 }"
 
-#define METAENGINE_Render_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE                                \
+#define R_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE                                \
     "#version 400\n\
 \
 in vec4 color;\n\
@@ -91,16 +91,16 @@ typedef struct ContextData_OpenGL_3
     bool last_use_texturing;
     unsigned int last_shape;
     bool last_use_blending;
-    METAENGINE_Render_BlendMode last_blend_mode;
-    METAENGINE_Render_Rect last_viewport;
-    METAENGINE_Render_Camera last_camera;
+    R_BlendMode last_blend_mode;
+    R_Rect last_viewport;
+    R_Camera last_camera;
     bool last_camera_inverted;
 
     bool last_depth_test;
     bool last_depth_write;
-    METAENGINE_Render_ComparisonEnum last_depth_function;
+    R_ComparisonEnum last_depth_function;
 
-    METAENGINE_Render_Image *last_image;
+    R_Image *last_image;
     float *blit_buffer;// Holds sets of 4 vertices, each with interleaved position, tex coords, and colors (e.g. [x0, y0, z0, s0, t0, r0, g0, b0, a0, ...]).
     unsigned short blit_buffer_num_vertices;
     unsigned short blit_buffer_max_num_vertices;
@@ -115,7 +115,7 @@ typedef struct ContextData_OpenGL_3
     unsigned int blit_IBO;
     bool blit_VBO_flop;
 
-    METAENGINE_Render_AttributeSource shader_attributes[16];
+    R_AttributeSource shader_attributes[16];
     unsigned int attribute_VBO[16];
 } ContextData_OpenGL_3;
 

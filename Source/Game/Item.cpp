@@ -6,7 +6,7 @@
 Item::Item() {}
 
 Item::~Item() {
-    METAENGINE_Render_FreeImage(texture);
+    R_FreeImage(texture);
     SDL_FreeSurface(surface);
 }
 

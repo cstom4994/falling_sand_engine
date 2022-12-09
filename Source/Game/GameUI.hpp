@@ -23,7 +23,7 @@ namespace GameUI {
     class DebugCheatsUI {
     public:
         static bool visible;
-        static std::vector<METAENGINE_Render_Image *> images;
+        static std::vector<R_Image *> images;
 
         static void Setup();
 
@@ -34,7 +34,7 @@ namespace GameUI {
     public:
         static bool visible;
         static int selIndex;
-        static std::vector<METAENGINE_Render_Image *> images;
+        static std::vector<R_Image *> images;
 
         static Material *selectedMaterial;
         static uint8 brushSize;
@@ -52,7 +52,7 @@ namespace GameUI {
 
         static bool setup;
 
-        static METAENGINE_Render_Image *title;
+        static R_Image *title;
 
         static bool connectButtonEnabled;
 
@@ -100,8 +100,8 @@ namespace GameUI {
         static bool setup;
         static char worldNameBuf[32];
 
-        static METAENGINE_Render_Image *materialTestWorld;
-        static METAENGINE_Render_Image *defaultWorld;
+        static R_Image *materialTestWorld;
+        static R_Image *defaultWorld;
 
         static bool createWorldButtonEnabled;
 

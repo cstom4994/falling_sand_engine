@@ -19,8 +19,8 @@ public:
     int hammerX = 0;
     int hammerY = 0;
 
-    void render(METAENGINE_Render_Target *target, int ofsX, int ofsY) override;
-    void renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY) override;
+    void render(R_Target *target, int ofsX, int ofsY) override;
+    void renderLQ(R_Target *target, int ofsX, int ofsY) override;
     void setItemInHand(Item *item, World *world);
 
     ~Player();

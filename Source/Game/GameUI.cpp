@@ -277,14 +277,14 @@ namespace GameUI {
         ImGui::Indent(4);
 
         if (ImGui::Checkbox("高清贴图", &global.game->GameIsolate_.settings.hd_objects)) {
-            METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjects->target);
-            METAENGINE_Render_FreeImage(game->TexturePack_.textureObjects);
-            METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjectsBack->target);
-            METAENGINE_Render_FreeImage(game->TexturePack_.textureObjectsBack);
-            METAENGINE_Render_FreeTarget(game->TexturePack_.textureEntities->target);
-            METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
+            R_FreeTarget(game->TexturePack_.textureObjects->target);
+            R_FreeImage(game->TexturePack_.textureObjects);
+            R_FreeTarget(game->TexturePack_.textureObjectsBack->target);
+            R_FreeImage(game->TexturePack_.textureObjectsBack);
+            R_FreeTarget(game->TexturePack_.textureEntities->target);
+            R_FreeImage(game->TexturePack_.textureEntities);
 
-            game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
+            game->TexturePack_.textureObjects = R_CreateImage(
                     game->GameIsolate_.world->width *
                             (global.game->GameIsolate_.settings.hd_objects
                                      ? global.game->GameIsolate_.settings.hd_objects_size
@@ -293,11 +293,11 @@ namespace GameUI {
                             (global.game->GameIsolate_.settings.hd_objects
                                      ? global.game->GameIsolate_.settings.hd_objects_size
                                      : 1),
-                    METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
-                                             METAENGINE_Render_FILTER_NEAREST);
+                    R_FormatEnum::R_FORMAT_RGBA);
+            R_SetImageFilter(game->TexturePack_.textureObjects,
+                                             R_FILTER_NEAREST);
 
-            game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
+            game->TexturePack_.textureObjectsBack = R_CreateImage(
                     game->GameIsolate_.world->width *
                             (global.game->GameIsolate_.settings.hd_objects
                                      ? global.game->GameIsolate_.settings.hd_objects_size
@@ -306,14 +306,14 @@ namespace GameUI {
                             (global.game->GameIsolate_.settings.hd_objects
                                      ? global.game->GameIsolate_.settings.hd_objects_size
                                      : 1),
-                    METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
-                                             METAENGINE_Render_FILTER_NEAREST);
+                    R_FormatEnum::R_FORMAT_RGBA);
+            R_SetImageFilter(game->TexturePack_.textureObjectsBack,
+                                             R_FILTER_NEAREST);
 
-            METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjects);
-            METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
+            R_LoadTarget(game->TexturePack_.textureObjects);
+            R_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-            game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
+            game->TexturePack_.textureEntities = R_CreateImage(
                     game->GameIsolate_.world->width *
                             (global.game->GameIsolate_.settings.hd_objects
                                      ? global.game->GameIsolate_.settings.hd_objects_size
@@ -322,11 +322,11 @@ namespace GameUI {
                             (global.game->GameIsolate_.settings.hd_objects
                                      ? global.game->GameIsolate_.settings.hd_objects_size
                                      : 1),
-                    METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-            METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
-                                             METAENGINE_Render_FILTER_NEAREST);
+                    R_FormatEnum::R_FORMAT_RGBA);
+            R_SetImageFilter(game->TexturePack_.textureEntities,
+                                             R_FILTER_NEAREST);
 
-            METAENGINE_Render_LoadTarget(game->TexturePack_.textureEntities);
+            R_LoadTarget(game->TexturePack_.textureEntities);
         }
 
         ImGui::SetNextItemWidth(100);
@@ -390,7 +390,7 @@ namespace GameUI {
 
     bool MainMenuUI::visible = true;
     bool MainMenuUI::setup = false;
-    METAENGINE_Render_Image *MainMenuUI::title = nullptr;
+    R_Image *MainMenuUI::title = nullptr;
     bool MainMenuUI::connectButtonEnabled = false;
     ImVec2 MainMenuUI::pos = ImVec2(0, 0);
     std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI::worlds = {};
@@ -424,8 +424,8 @@ namespace GameUI {
     void MainMenuUI::Setup() {
 
         C_Surface *logoSfc = Textures::LoadTexture("data/assets/ui/logo.png");
-        title = METAENGINE_Render_CopyImageFromSurface(logoSfc);
-        METAENGINE_Render_SetImageFilter(title, METAENGINE_Render_FILTER_NEAREST);
+        title = R_CopyImageFromSurface(logoSfc);
+        R_SetImageFilter(title, R_FILTER_NEAREST);
         SDL_FreeSurface(logoSfc);
 
         setup = true;
@@ -471,7 +471,7 @@ namespace GameUI {
         }
         pos = ImGui::GetWindowPos();
 
-        ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(title);
+        ImTextureID texId = (ImTextureID) R_GetTextureHandle(title);
 
         ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
         ImVec2 uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
@@ -922,14 +922,14 @@ namespace GameUI {
                 }
 
                 if (ImGui::Checkbox("HD Objects", &global.game->GameIsolate_.settings.hd_objects)) {
-                    METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjects->target);
-                    METAENGINE_Render_FreeImage(game->TexturePack_.textureObjects);
-                    METAENGINE_Render_FreeTarget(game->TexturePack_.textureObjectsBack->target);
-                    METAENGINE_Render_FreeImage(game->TexturePack_.textureObjectsBack);
-                    METAENGINE_Render_FreeTarget(game->TexturePack_.textureEntities->target);
-                    METAENGINE_Render_FreeImage(game->TexturePack_.textureEntities);
+                    R_FreeTarget(game->TexturePack_.textureObjects->target);
+                    R_FreeImage(game->TexturePack_.textureObjects);
+                    R_FreeTarget(game->TexturePack_.textureObjectsBack->target);
+                    R_FreeImage(game->TexturePack_.textureObjectsBack);
+                    R_FreeTarget(game->TexturePack_.textureEntities->target);
+                    R_FreeImage(game->TexturePack_.textureEntities);
 
-                    game->TexturePack_.textureObjects = METAENGINE_Render_CreateImage(
+                    game->TexturePack_.textureObjects = R_CreateImage(
                             game->GameIsolate_.world->width *
                                     (global.game->GameIsolate_.settings.hd_objects
                                              ? global.game->GameIsolate_.settings.hd_objects_size
@@ -938,11 +938,11 @@ namespace GameUI {
                                     (global.game->GameIsolate_.settings.hd_objects
                                              ? global.game->GameIsolate_.settings.hd_objects_size
                                              : 1),
-                            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjects,
-                                                     METAENGINE_Render_FILTER_NEAREST);
+                            R_FormatEnum::R_FORMAT_RGBA);
+                    R_SetImageFilter(game->TexturePack_.textureObjects,
+                                                     R_FILTER_NEAREST);
 
-                    game->TexturePack_.textureObjectsBack = METAENGINE_Render_CreateImage(
+                    game->TexturePack_.textureObjectsBack = R_CreateImage(
                             game->GameIsolate_.world->width *
                                     (global.game->GameIsolate_.settings.hd_objects
                                              ? global.game->GameIsolate_.settings.hd_objects_size
@@ -951,14 +951,14 @@ namespace GameUI {
                                     (global.game->GameIsolate_.settings.hd_objects
                                              ? global.game->GameIsolate_.settings.hd_objects_size
                                              : 1),
-                            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureObjectsBack,
-                                                     METAENGINE_Render_FILTER_NEAREST);
+                            R_FormatEnum::R_FORMAT_RGBA);
+                    R_SetImageFilter(game->TexturePack_.textureObjectsBack,
+                                                     R_FILTER_NEAREST);
 
-                    METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjects);
-                    METAENGINE_Render_LoadTarget(game->TexturePack_.textureObjectsBack);
+                    R_LoadTarget(game->TexturePack_.textureObjects);
+                    R_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-                    game->TexturePack_.textureEntities = METAENGINE_Render_CreateImage(
+                    game->TexturePack_.textureEntities = R_CreateImage(
                             game->GameIsolate_.world->width *
                                     (global.game->GameIsolate_.settings.hd_objects
                                              ? global.game->GameIsolate_.settings.hd_objects_size
@@ -967,11 +967,11 @@ namespace GameUI {
                                     (global.game->GameIsolate_.settings.hd_objects
                                              ? global.game->GameIsolate_.settings.hd_objects_size
                                              : 1),
-                            METAENGINE_Render_FormatEnum::METAENGINE_Render_FORMAT_RGBA);
-                    METAENGINE_Render_SetImageFilter(game->TexturePack_.textureEntities,
-                                                     METAENGINE_Render_FILTER_NEAREST);
+                            R_FormatEnum::R_FORMAT_RGBA);
+                    R_SetImageFilter(game->TexturePack_.textureEntities,
+                                                     R_FILTER_NEAREST);
 
-                    METAENGINE_Render_LoadTarget(game->TexturePack_.textureEntities);
+                    R_LoadTarget(game->TexturePack_.textureEntities);
                 }
 
                 ImGui::TreePop();
@@ -994,7 +994,7 @@ namespace GameUI {
 
     bool DebugDrawUI::visible = true;
     int DebugDrawUI::selIndex = -1;
-    std::vector<METAENGINE_Render_Image *> DebugDrawUI::images = {};
+    std::vector<R_Image *> DebugDrawUI::images = {};
     uint8 DebugDrawUI::brushSize = 5;
     Material *DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
 
@@ -1011,8 +1011,8 @@ namespace GameUI {
                     METADOT_GET_PIXEL(surface, x, y) = m.color + (m.mat->alpha << 24);
                 }
             }
-            images.push_back(METAENGINE_Render_CopyImageFromSurface(surface));
-            METAENGINE_Render_SetImageFilter(images[i], METAENGINE_Render_FILTER_NEAREST);
+            images.push_back(R_CopyImageFromSurface(surface));
+            R_SetImageFilter(images[i], R_FILTER_NEAREST);
             SDL_FreeSurface(surface);
         }
     }
@@ -1067,7 +1067,7 @@ namespace GameUI {
             ImGui::SetCursorScreenPos(ImVec2(selPos.x - 1, selPos.y + (x == 0 ? 1 : 0)));
 
             // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-            ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
+            ImTextureID texId = (ImTextureID) R_GetTextureHandle(images[i]);
 
             ImVec2 pos = ImGui::GetCursorScreenPos();
             ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
@@ -1099,26 +1099,26 @@ namespace GameUI {
     }
 
     bool DebugCheatsUI::visible = true;
-    std::vector<METAENGINE_Render_Image *> DebugCheatsUI::images = {};
+    std::vector<R_Image *> DebugCheatsUI::images = {};
 
     void DebugCheatsUI::Setup() {
 
         images = {};
         C_Surface *sfc = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
-        images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
-        METAENGINE_Render_SetImageFilter(images[0], METAENGINE_Render_FILTER_NEAREST);
+        images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(images[0], R_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
         sfc = Textures::LoadTexture("data/assets/objects/testHammer.png");
-        images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
-        METAENGINE_Render_SetImageFilter(images[1], METAENGINE_Render_FILTER_NEAREST);
+        images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(images[1], R_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
         sfc = Textures::LoadTexture("data/assets/objects/testVacuum.png");
-        images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
-        METAENGINE_Render_SetImageFilter(images[2], METAENGINE_Render_FILTER_NEAREST);
+        images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(images[2], R_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
         sfc = Textures::LoadTexture("data/assets/objects/testBucket.png");
-        images.push_back(METAENGINE_Render_CopyImageFromSurface(sfc));
-        METAENGINE_Render_SetImageFilter(images[3], METAENGINE_Render_FILTER_NEAREST);
+        images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(images[3], R_FILTER_NEAREST);
         SDL_FreeSurface(sfc);
     }
 
@@ -1150,13 +1150,13 @@ namespace GameUI {
                 ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // Black background
                 ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
 
-                ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
+                ImTextureID texId = (ImTextureID) R_GetTextureHandle(images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::TOOL);
                     i3->surface = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
-                    i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
-                    METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
+                    i3->texture = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
                     game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
                             i3, game->GameIsolate_.world);
@@ -1172,13 +1172,13 @@ namespace GameUI {
                 i++;
 
                 ImGui::PushID(i);
-                texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
+                texId = (ImTextureID) R_GetTextureHandle(images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::HAMMER);
                     i3->surface = Textures::LoadTexture("data/assets/objects/testHammer.png");
-                    i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
-                    METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
+                    i3->texture = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
                     game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
                             i3, game->GameIsolate_.world);
@@ -1193,13 +1193,13 @@ namespace GameUI {
                 i++;
 
                 ImGui::PushID(i);
-                texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
+                texId = (ImTextureID) R_GetTextureHandle(images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::VACUUM);
                     i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
-                    i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
-                    METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
+                    i3->texture = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 6;
                     game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
                             i3, game->GameIsolate_.world);
@@ -1215,7 +1215,7 @@ namespace GameUI {
                 i++;
 
                 ImGui::PushID(i);
-                texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(images[i]);
+                texId = (ImTextureID) R_GetTextureHandle(images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::FLUID_CONTAINER);
@@ -1223,8 +1223,8 @@ namespace GameUI {
                     i3->capacity = 100;
                     i3->loadFillTexture(
                             Textures::LoadTexture("data/assets/objects/testBucket_fill.png"));
-                    i3->texture = METAENGINE_Render_CopyImageFromSurface(i3->surface);
-                    METAENGINE_Render_SetImageFilter(i3->texture, METAENGINE_Render_FILTER_NEAREST);
+                    i3->texture = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 0;
                     game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
                             i3, game->GameIsolate_.world);
@@ -1244,8 +1244,8 @@ namespace GameUI {
 
     char CreateWorldUI::worldNameBuf[32] = "";
     bool CreateWorldUI::setup = false;
-    METAENGINE_Render_Image *CreateWorldUI::materialTestWorld = nullptr;
-    METAENGINE_Render_Image *CreateWorldUI::defaultWorld = nullptr;
+    R_Image *CreateWorldUI::materialTestWorld = nullptr;
+    R_Image *CreateWorldUI::defaultWorld = nullptr;
     bool CreateWorldUI::createWorldButtonEnabled = false;
     std::string CreateWorldUI::worldFolderLabel = "";
     int CreateWorldUI::selIndex = 0;
@@ -1253,13 +1253,13 @@ namespace GameUI {
     void CreateWorldUI::Setup() {
 
         C_Surface *logoMT = Textures::LoadTexture("data/assets/ui/prev_materialtest.png");
-        materialTestWorld = METAENGINE_Render_CopyImageFromSurface(logoMT);
-        METAENGINE_Render_SetImageFilter(materialTestWorld, METAENGINE_Render_FILTER_NEAREST);
+        materialTestWorld = R_CopyImageFromSurface(logoMT);
+        R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
         SDL_FreeSurface(logoMT);
 
         C_Surface *logoDef = Textures::LoadTexture("data/assets/ui/prev_default.png");
-        defaultWorld = METAENGINE_Render_CopyImageFromSurface(logoDef);
-        METAENGINE_Render_SetImageFilter(defaultWorld, METAENGINE_Render_FILTER_NEAREST);
+        defaultWorld = R_CopyImageFromSurface(logoDef);
+        R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
         SDL_FreeSurface(logoDef);
 
         setup = true;
@@ -1314,7 +1314,7 @@ namespace GameUI {
         ImGui::SetCursorPos(ImVec2(selPos.x - 1 + 4, selPos.y + 4));
 
         // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-        ImTextureID texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(materialTestWorld);
+        ImTextureID texId = (ImTextureID) R_GetTextureHandle(materialTestWorld);
 
         ImVec2 pos = ImGui::GetCursorPos();
         ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
@@ -1345,7 +1345,7 @@ namespace GameUI {
         ImGui::SetCursorPos(ImVec2(selPos.x - 1 + 4, selPos.y + 4));
 
         // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-        texId = (ImTextureID) METAENGINE_Render_GetTextureHandle(defaultWorld);
+        texId = (ImTextureID) R_GetTextureHandle(defaultWorld);
 
         pos = ImGui::GetCursorPos();
         uv_min = ImVec2(0.0f, 0.0f);              // Top-left

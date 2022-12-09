@@ -23,9 +23,9 @@ void ReleaseGameData() {
     }
 }
 
-void Entity::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {}
+void Entity::render(R_Target *target, int ofsX, int ofsY) {}
 
-void Entity::renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY) {}
+void Entity::renderLQ(R_Target *target, int ofsX, int ofsY) {}
 
 Entity::Entity() {}
 

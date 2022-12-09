@@ -40,12 +40,12 @@ bool is_ready(std::future<R> const &f) {
     return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 }
 
-void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *target,
+void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target,
                  Audio *audioEngine, int netMode) {
     init(worldPath, w, h, target, audioEngine, netMode, new MaterialTestGenerator());
 }
 
-void World::init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *target,
+void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target,
                  Audio *audioEngine, int netMode, WorldGenerator *generator) {
 
     this->worldName = worldPath;
@@ -232,8 +232,8 @@ RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle,
             }
         }*/
 
-        rb->texture = METAENGINE_Render_CopyImageFromSurface(rb->surface);
-        METAENGINE_Render_SetImageFilter(rb->texture, METAENGINE_Render_FILTER_NEAREST);
+        rb->texture = R_CopyImageFromSurface(rb->surface);
+        R_SetImageFilter(rb->texture, R_FILTER_NEAREST);
     }
     //rigidBodies.push_back(rb);
     return rb;
@@ -292,8 +292,8 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float an
             }
         }*/
 
-        rb->texture = METAENGINE_Render_CopyImageFromSurface(rb->surface);
-        METAENGINE_Render_SetImageFilter(rb->texture, METAENGINE_Render_FILTER_NEAREST);
+        rb->texture = R_CopyImageFromSurface(rb->surface);
+        R_SetImageFilter(rb->texture, R_FILTER_NEAREST);
     }
     //rigidBodies.push_back(rb);
     return rb;
@@ -713,7 +713,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             WorldIsolate_.rigidBodies.end());
 
     delete[] rb->tiles;
-    METAENGINE_Render_FreeImage(rb->texture);
+    R_FreeImage(rb->texture);
     SDL_FreeSurface(rb->surface);
     delete rb;
 }
@@ -929,7 +929,7 @@ found : {};
 
     if (chunk->rb) {
         delete[] chunk->rb->tiles;
-        METAENGINE_Render_FreeImage(chunk->rb->texture);
+        R_FreeImage(chunk->rb->texture);
         SDL_FreeSurface(chunk->rb->surface);
         delete chunk->rb;
     }
@@ -3198,7 +3198,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
     }
 }
 
-void World::tickEntities(METAENGINE_Render_Target *t) {
+void World::tickEntities(R_Target *t) {
 
     C_Rect fr = {0, 0, width, height};
 

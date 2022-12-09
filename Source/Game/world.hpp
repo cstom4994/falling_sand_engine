@@ -58,7 +58,7 @@ public:
     WorldMeta metadata{};
     bool noSaveLoad = false;
 
-    METAENGINE_Render_Target *target = nullptr;
+    R_Target *target = nullptr;
 
     ~World();
 
@@ -103,7 +103,7 @@ public:
     static ThreadPool *updateRigidBodyHitboxPool;
     static ThreadPool *loadChunkPool;
 
-    METAENGINE_Render_Image *fireTex = nullptr;
+    R_Image *fireTex = nullptr;
     bool *tickVisited1 = nullptr;
     bool *tickVisited2 = nullptr;
     int32_t *newTemps = nullptr;
@@ -125,9 +125,9 @@ public:
     b2World *b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
-    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
+    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer,
               Audio *audioEngine, int netMode, WorldGenerator *generator);
-    void init(std::string worldPath, uint16_t w, uint16_t h, METAENGINE_Render_Target *renderer,
+    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer,
               Audio *audioEngine, int netMode);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
@@ -167,7 +167,7 @@ public:
     std::vector<b2Vec2> getPointsWithin(float x, float y, float w, float h);
     Chunk *getChunk(int cx, int cy);
     void populateChunk(Chunk *ch, int phase, bool render);
-    void tickEntities(METAENGINE_Render_Target *target);
+    void tickEntities(R_Target *target);
     void forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     void forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     RigidBody *physicsCheck(int x, int y);

@@ -15,7 +15,7 @@
 class BackgroundLayer {
 public:
     std::vector<C_Surface *> surface;
-    std::vector<METAENGINE_Render_Image *> texture;
+    std::vector<R_Image *> texture;
     float parralaxX;
     float parralaxY;
     float moveX;

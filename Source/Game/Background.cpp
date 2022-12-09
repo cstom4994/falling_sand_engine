@@ -20,13 +20,13 @@ BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float para
 }
 
 void BackgroundLayer::init() {
-    this->texture = {METAENGINE_Render_CopyImageFromSurface(this->surface[0]),
-                     METAENGINE_Render_CopyImageFromSurface(this->surface[1]),
-                     METAENGINE_Render_CopyImageFromSurface(this->surface[2])};
+    this->texture = {R_CopyImageFromSurface(this->surface[0]),
+                     R_CopyImageFromSurface(this->surface[1]),
+                     R_CopyImageFromSurface(this->surface[2])};
 
-    METAENGINE_Render_SetImageFilter(this->texture[0], METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_SetImageFilter(this->texture[1], METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_SetImageFilter(this->texture[2], METAENGINE_Render_FILTER_NEAREST);
+    R_SetImageFilter(this->texture[0], R_FILTER_NEAREST);
+    R_SetImageFilter(this->texture[1], R_FILTER_NEAREST);
+    R_SetImageFilter(this->texture[2], R_FILTER_NEAREST);
 }
 
 void Background::init() {

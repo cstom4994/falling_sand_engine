@@ -32,7 +32,7 @@ public:
     bool getFlag(uint8_t f) { return flags & f; }
 
     C_Surface *surface = nullptr;
-    METAENGINE_Render_Image *texture = nullptr;
+    R_Image *texture = nullptr;
     int pivotX = 0;
     int pivotY = 0;
     float breakSize = 16;

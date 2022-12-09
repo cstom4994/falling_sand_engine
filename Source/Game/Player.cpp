@@ -7,13 +7,13 @@
 #include "Game/GameResources.hpp"
 #include "Game/Utils.hpp"
 
-void Player::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
+void Player::render(R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->GameIsolate_.settings.hd_objects
                                ? global.game->GameIsolate_.settings.hd_objects_size
                                : 1;
 
-        METAENGINE_Render_Rect *ir = new METAENGINE_Render_Rect{
+        R_Rect *ir = new R_Rect{
                 (float) (int) (ofsX + x + hw / 2.0 - heldItem->surface->w),
                 (float) (int) (ofsY + y + hh / 2.0 - heldItem->surface->h / 2),
                 (float) heldItem->surface->w, (float) heldItem->surface->h};
@@ -23,27 +23,27 @@ void Player::render(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
         ir->x += heldItem->pivotX;
         fy -= heldItem->pivotY;
         ir->y += heldItem->pivotY;
-        METAENGINE_Render_SetShapeBlendMode(
-                METAENGINE_Render_BlendPresetEnum::METAENGINE_Render_BLEND_ADD);
-        //METAENGINE_Render_BlitTransformX(heldItem->texture, NULL, target, ir->x, ir->y, fp->x, fp->y, holdAngle, 1, 1);
+        R_SetShapeBlendMode(
+                R_BlendPresetEnum::R_BLEND_ADD);
+        //R_BlitTransformX(heldItem->texture, NULL, target, ir->x, ir->y, fp->x, fp->y, holdAngle, 1, 1);
         //SDL_RenderCopyExF(renderer, heldItem->texture, NULL, ir, holdAngle, fp, abs(holdAngle) > 90 ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
         ir->x *= scaleEnt;
         ir->y *= scaleEnt;
         ir->w *= scaleEnt;
         ir->h *= scaleEnt;
-        METAENGINE_Render_BlitRectX(heldItem->texture, NULL, target, ir, holdAngle, fx, fy,
-                                    abs(holdAngle) > 90 ? METAENGINE_Render_FLIP_VERTICAL
-                                                        : METAENGINE_Render_FLIP_NONE);
+        R_BlitRectX(heldItem->texture, NULL, target, ir, holdAngle, fx, fy,
+                                    abs(holdAngle) > 90 ? R_FLIP_VERTICAL
+                                                        : R_FLIP_NONE);
         delete ir;
     }
 }
 
-void Player::renderLQ(METAENGINE_Render_Target *target, int ofsX, int ofsY) {
-    METAENGINE_Render_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh,
+void Player::renderLQ(R_Target *target, int ofsX, int ofsY) {
+    R_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh,
                                 {0xff, 0xff, 0xff, 0xff});
 
-    auto image2 = METAENGINE_Render_CopyImageFromSurface(Textures::testAse);
-    METAENGINE_Render_BlitScale(image2, NULL, global.game->RenderTarget_.target, 128, 128, 5.0f,
+    auto image2 = R_CopyImageFromSurface(Textures::testAse);
+    R_BlitScale(image2, NULL, global.game->RenderTarget_.target, 128, 128, 5.0f,
                                 5.0f);
 }
 

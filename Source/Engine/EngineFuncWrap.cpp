@@ -590,9 +590,9 @@ namespace TestData {
     int pixelScale = DEFAULT_SCALE;
     int setPixelScale = DEFAULT_SCALE;
 
-    METAENGINE_Render_Image *buffer;
-    METAENGINE_Render_Target *renderer;
-    METAENGINE_Render_Target *bufferTarget;
+    R_Image *buffer;
+    R_Target *renderer;
+    R_Target *bufferTarget;
 
     UInt8 palette[COLOR_LIMIT][3] = INIT_COLORS;
 
@@ -625,7 +625,7 @@ namespace TestData {
             drawX = (windowWidth - pixelScale * SCRN_WIDTH) / 2;
             drawY = (windowHeight - pixelScale * SCRN_HEIGHT) / 2;
 
-            METAENGINE_Render_SetWindowResolution(winW, winH);
+            R_SetWindowResolution(winW, winH);
         }
     }
 }// namespace TestData
@@ -647,7 +647,7 @@ struct imageType
     bool remapped;
     char **internalRep;
     SDL_Surface *surface;
-    METAENGINE_Render_Image *texture;
+    R_Image *texture;
 };
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -717,9 +717,9 @@ static int newImage(lua_State *L) {
     // Init to black color
     SDL_FillRect(a->surface, nullptr, SDL_MapRGBA(a->surface->format, 0, 0, 0, 0));
 
-    a->texture = METAENGINE_Render_CopyImageFromSurface(a->surface);
-    METAENGINE_Render_SetImageFilter(a->texture, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_SetSnapMode(a->texture, METAENGINE_Render_SNAP_NONE);
+    a->texture = R_CopyImageFromSurface(a->surface);
+    R_SetImageFilter(a->texture, R_FILTER_NEAREST);
+    R_SetSnapMode(a->texture, R_SNAP_NONE);
 
     return 1;
 }
@@ -728,8 +728,8 @@ static int flushImage(lua_State *L) {
     imageType *data = checkImage(L);
     if (!freeCheck(L, data)) return 0;
 
-    METAENGINE_Render_Rect rect = {0, 0, (float) data->width, (float) data->height};
-    METAENGINE_Render_UpdateImage(data->texture, &rect, data->surface, &rect);
+    R_Rect rect = {0, 0, (float) data->width, (float) data->height};
+    R_UpdateImage(data->texture, &rect, data->surface, &rect);
 
     return 0;
 }
@@ -750,8 +750,8 @@ static int renderImage(lua_State *L) {
             }
         }
 
-        METAENGINE_Render_Rect rect = {0, 0, (float) data->width, (float) data->height};
-        METAENGINE_Render_UpdateImage(data->texture, &rect, data->surface, &rect);
+        R_Rect rect = {0, 0, (float) data->width, (float) data->height};
+        R_UpdateImage(data->texture, &rect, data->surface, &rect);
 
         data->lastRenderNum = TestData::paletteNum;
         data->remapped = false;
@@ -760,11 +760,11 @@ static int renderImage(lua_State *L) {
     int x = luaL_checkinteger(L, 2);
     int y = luaL_checkinteger(L, 3);
 
-    METAENGINE_Render_Rect rect = {off(x, y)};
+    R_Rect rect = {off(x, y)};
 
     int top = lua_gettop(L);
     if (top > 7) {
-        METAENGINE_Render_Rect srcRect = {(float) luaL_checkinteger(L, 4),
+        R_Rect srcRect = {(float) luaL_checkinteger(L, 4),
                                           (float) luaL_checkinteger(L, 5),
                                           clamp(luaL_checkinteger(L, 6), 0, data->width),
                                           clamp(luaL_checkinteger(L, 7), 0, data->height)};
@@ -774,29 +774,29 @@ static int renderImage(lua_State *L) {
         rect.w = srcRect.w * scale;
         rect.h = srcRect.h * scale;
 
-        METAENGINE_Render_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
     } else if (top > 6) {
-        METAENGINE_Render_Rect srcRect = {
+        R_Rect srcRect = {
                 (float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5),
                 (float) luaL_checkinteger(L, 6), (float) luaL_checkinteger(L, 7)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
-        METAENGINE_Render_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
     } else if (top > 3) {
-        METAENGINE_Render_Rect srcRect = {0, 0, (float) luaL_checkinteger(L, 4),
+        R_Rect srcRect = {0, 0, (float) luaL_checkinteger(L, 4),
                                           (float) luaL_checkinteger(L, 5)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
-        METAENGINE_Render_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
     } else {
         rect.w = data->width;
         rect.h = data->height;
 
-        METAENGINE_Render_BlitRect(data->texture, nullptr, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, nullptr, TestData::bufferTarget, &rect);
     }
 
     return 0;
@@ -810,7 +810,7 @@ static int freeImage(lua_State *L) {
     delete data->internalRep;
 
     SDL_FreeSurface(data->surface);
-    METAENGINE_Render_FreeImage(data->texture);
+    R_FreeImage(data->texture);
     data->free = true;
 
     return 0;
@@ -1070,7 +1070,7 @@ static int gpu_draw_pixel(lua_State *L) {
     METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                TestData::palette[color][2], 255};
 
-    METAENGINE_Render_RectangleFilled(TestData::bufferTarget, off(x, y), off(x + 1, y + 1), colorS);
+    R_RectangleFilled(TestData::bufferTarget, off(x, y), off(x + 1, y + 1), colorS);
 
     return 0;
 }
@@ -1081,12 +1081,12 @@ static int gpu_draw_rectangle(lua_State *L) {
     int x = luaL_checkinteger(L, 1);
     int y = luaL_checkinteger(L, 2);
 
-    METAENGINE_Render_Rect rect = {off(x, y), (float) luaL_checkinteger(L, 3),
+    R_Rect rect = {off(x, y), (float) luaL_checkinteger(L, 3),
                                    (float) luaL_checkinteger(L, 4)};
 
     METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                TestData::palette[color][2], 255};
-    METAENGINE_Render_RectangleFilled2(TestData::bufferTarget, rect, colorS);
+    R_RectangleFilled2(TestData::bufferTarget, rect, colorS);
 
     return 0;
 }
@@ -1119,11 +1119,11 @@ static int gpu_blit_pixels(lua_State *L) {
         int xp = (i - 1) % w;
         int yp = (i - 1) / w;
 
-        METAENGINE_Render_Rect rect = {off(x + xp, y + yp), 1, 1};
+        R_Rect rect = {off(x + xp, y + yp), 1, 1};
 
         METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                    TestData::palette[color][2], 255};
-        METAENGINE_Render_RectangleFilled2(TestData::bufferTarget, rect, colorS);
+        R_RectangleFilled2(TestData::bufferTarget, rect, colorS);
 
         lua_pop(L, 1);
     }
@@ -1133,7 +1133,7 @@ static int gpu_blit_pixels(lua_State *L) {
 
 static int gpu_set_clipping(lua_State *L) {
     if (lua_gettop(L) == 0) {
-        METAENGINE_Render_SetClip(TestData::buffer->target, 0, 0, TestData::buffer->w,
+        R_SetClip(TestData::buffer->target, 0, 0, TestData::buffer->w,
                                   TestData::buffer->h);
         return 0;
     }
@@ -1143,7 +1143,7 @@ static int gpu_set_clipping(lua_State *L) {
     auto w = static_cast<UInt16>(luaL_checkinteger(L, 3));
     auto h = static_cast<UInt16>(luaL_checkinteger(L, 4));
 
-    METAENGINE_Render_SetClip(TestData::buffer->target, x, y, w, h);
+    R_SetClip(TestData::buffer->target, x, y, w, h);
 
     return 0;
 }
@@ -1218,7 +1218,7 @@ static int gpu_get_palette(lua_State *L) {
 static int gpu_get_pixel(lua_State *L) {
     auto x = static_cast<Sint16>(luaL_checkinteger(L, 1));
     auto y = static_cast<Sint16>(luaL_checkinteger(L, 2));
-    METAENGINE_Color col = METAENGINE_Render_GetPixel(TestData::buffer->target, x, y);
+    METAENGINE_Color col = R_GetPixel(TestData::buffer->target, x, y);
     for (int i = 0; i < COLOR_LIMIT; i++) {
         UInt8 *pCol = TestData::palette[i];
         if (col.r == pCol[0] && col.g == pCol[1] && col.b == pCol[2]) {
@@ -1236,11 +1236,11 @@ static int gpu_clear(lua_State *L) {
         int color = gpu_getColor(L, 1);
         METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                    TestData::palette[color][2], 255};
-        METAENGINE_Render_ClearColor(TestData::bufferTarget, colorS);
+        R_ClearColor(TestData::bufferTarget, colorS);
     } else {
         METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1],
                                    TestData::palette[0][2], 255};
-        METAENGINE_Render_ClearColor(TestData::bufferTarget, colorS);
+        R_ClearColor(TestData::bufferTarget, colorS);
     }
 
     return 0;
@@ -1289,9 +1289,9 @@ static int gpu_pop(lua_State *L) {
 
 static int gpu_set_fullscreen(lua_State *L) {
     auto fsc = static_cast<bool>(lua_toboolean(L, 1));
-    if (!METAENGINE_Render_SetFullscreen(fsc, true)) {
+    if (!R_SetFullscreen(fsc, true)) {
         TestData::pixelScale = TestData::setPixelScale;
-        METAENGINE_Render_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH,
+        R_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH,
                                               TestData::pixelScale * SCRN_HEIGHT);
 
         SDL_SetWindowPosition(global.platform.window, TestData::lastWindowX, TestData::lastWindowY);
@@ -1305,17 +1305,17 @@ static int gpu_set_fullscreen(lua_State *L) {
 static int gpu_swap(lua_State *L) {
     METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1],
                                TestData::palette[0][2], 255};
-    METAENGINE_Render_ClearColor(TestData::renderer, colorS);
+    R_ClearColor(TestData::renderer, colorS);
 
     //TestData::shader::updateShader();
 
-    METAENGINE_Render_BlitScale(TestData::buffer, nullptr, TestData::renderer,
+    R_BlitScale(TestData::buffer, nullptr, TestData::renderer,
                                 TestData::windowWidth / 2, TestData::windowHeight / 2,
                                 TestData::pixelScale, TestData::pixelScale);
 
-    METAENGINE_Render_Flip(TestData::renderer);
+    R_Flip(TestData::renderer);
 
-    METAENGINE_Render_DeactivateShaderProgram();
+    R_DeactivateShaderProgram();
 
     return 0;
 }

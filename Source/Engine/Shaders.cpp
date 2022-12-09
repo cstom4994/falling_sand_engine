@@ -5,60 +5,60 @@
 #include "Core/Core.hpp"
 #include "Engine/Memory.hpp"
 
-UInt32 METAENGINE_Shaders_LoadShader(METAENGINE_Render_ShaderEnum shader_type,
+UInt32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type,
                                      const char *filename) {
 
     UInt32 shader;
-    METAENGINE_Render_Renderer *renderer = METAENGINE_Render_GetCurrentRenderer();
+    R_Renderer *renderer = R_GetCurrentRenderer();
 
     std::string source = FUtil::readFileString(filename);
 
     if (source.empty()) {
-        METAENGINE_Render_PushErrorCode("load_shader", METAENGINE_Render_ERROR_FILE_NOT_FOUND,
+        R_PushErrorCode("load_shader", R_ERROR_FILE_NOT_FOUND,
                                         "Shader file \"%s\" not found", filename);
         return METADOT_FAILED;
     }
 
     // Compile the shader
-    shader = METAENGINE_Render_CompileShader(shader_type, source.c_str());
+    shader = R_CompileShader(shader_type, source.c_str());
 
     return shader;
 }
 
-METAENGINE_Render_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(
+R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(
         UInt32 *p, const char *vertex_shader_file, const char *fragment_shader_file) {
     UInt32 v, f;
-    v = METAENGINE_Shaders_LoadShader(METAENGINE_Render_VERTEX_SHADER, vertex_shader_file);
+    v = METAENGINE_Shaders_LoadShader(R_VERTEX_SHADER, vertex_shader_file);
 
     if (!v)
         METADOT_ERROR("Failed to load vertex shader ({}): {}", vertex_shader_file,
-                      METAENGINE_Render_GetShaderMessage());
+                      R_GetShaderMessage());
 
-    f = METAENGINE_Shaders_LoadShader(METAENGINE_Render_FRAGMENT_SHADER, fragment_shader_file);
+    f = METAENGINE_Shaders_LoadShader(R_FRAGMENT_SHADER, fragment_shader_file);
 
     if (!f)
         METADOT_ERROR("Failed to load fragment shader ({}): {}", fragment_shader_file,
-                      METAENGINE_Render_GetShaderMessage());
+                      R_GetShaderMessage());
 
-    *p = METAENGINE_Render_LinkShaders(v, f);
+    *p = R_LinkShaders(v, f);
 
     if (!*p) {
-        METAENGINE_Render_ShaderBlock b = {-1, -1, -1, -1};
+        R_ShaderBlock b = {-1, -1, -1, -1};
         METADOT_ERROR("Failed to link shader program ({} + {}): {}", vertex_shader_file,
-                      fragment_shader_file, METAENGINE_Render_GetShaderMessage());
+                      fragment_shader_file, R_GetShaderMessage());
         return b;
     }
 
     {
-        METAENGINE_Render_ShaderBlock block = METAENGINE_Render_LoadShaderBlock(
+        R_ShaderBlock block = R_LoadShaderBlock(
                 *p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
-        METAENGINE_Render_ActivateShaderProgram(*p, &block);
+        R_ActivateShaderProgram(*p, &block);
 
         return block;
     }
 }
 
-void METAENGINE_Shaders_FreeShader(UInt32 p) { METAENGINE_Render_FreeShaderProgram(p); }
+void METAENGINE_Shaders_FreeShader(UInt32 p) { R_FreeShaderProgram(p); }
 
 template<typename T>
 void ShaderBase::uniform(std::string name, T u) {

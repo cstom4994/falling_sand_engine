@@ -48,10 +48,10 @@ int Platform::InitWindow() {
 // Rendering on Catalina with High DPI (retina)
 // https://github.com/grimfang4/sdl-gpu/issues/201
 #if defined(METADOT_ALLOW_HIGHDPI)
-    METAENGINE_Render_WindowFlagEnum SDL_flags =
+    R_WindowFlagEnum SDL_flags =
             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #else
-    METAENGINE_Render_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    R_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 #endif
 
     // create the window
@@ -72,18 +72,18 @@ int Platform::InitWindow() {
     // create gpu target
     METADOT_INFO("Creating gpu target...");
 
-    METAENGINE_Render_SetPreInitFlags(METAENGINE_Render_INIT_DISABLE_VSYNC);
-    METAENGINE_Render_SetInitWindow(SDL_GetWindowID(global.platform.window));
+    R_SetPreInitFlags(R_INIT_DISABLE_VSYNC);
+    R_SetInitWindow(SDL_GetWindowID(global.platform.window));
 
-    global.game->RenderTarget_.target = METAENGINE_Render_Init(WIDTH, HEIGHT, SDL_flags);
+    global.game->RenderTarget_.target = R_Init(WIDTH, HEIGHT, SDL_flags);
 
     if (global.game->RenderTarget_.target == NULL) {
-        METADOT_ERROR("Could not create METAENGINE_Render_Target: {0}", SDL_GetError());
+        METADOT_ERROR("Could not create R_Target: {0}", SDL_GetError());
         return EXIT_FAILURE;
     }
 
 #if defined(METADOT_ALLOW_HIGHDPI)
-    METAENGINE_Render_SetVirtualResolution(RenderTarget_.target, WIDTH * 2, HEIGHT * 2);
+    R_SetVirtualResolution(RenderTarget_.target, WIDTH * 2, HEIGHT * 2);
 #endif
 
     global.game->RenderTarget_.realTarget = global.game->RenderTarget_.target;
@@ -113,15 +113,15 @@ int Platform::InitWindow() {
     // load splash screen
     METADOT_INFO("Loading splash screen...");
 
-    METAENGINE_Render_Clear(global.game->RenderTarget_.target);
-    METAENGINE_Render_Flip(global.game->RenderTarget_.target);
+    R_Clear(global.game->RenderTarget_.target);
+    R_Flip(global.game->RenderTarget_.target);
     C_Surface *splashSurf = Textures::LoadTexture("data/assets/title/splash.png");
-    METAENGINE_Render_Image *splashImg = METAENGINE_Render_CopyImageFromSurface(splashSurf);
-    METAENGINE_Render_SetImageFilter(splashImg, METAENGINE_Render_FILTER_NEAREST);
-    METAENGINE_Render_BlitRect(splashImg, NULL, global.game->RenderTarget_.target, NULL);
-    METAENGINE_Render_FreeImage(splashImg);
+    R_Image *splashImg = R_CopyImageFromSurface(splashSurf);
+    R_SetImageFilter(splashImg, R_FILTER_NEAREST);
+    R_BlitRect(splashImg, NULL, global.game->RenderTarget_.target, NULL);
+    R_FreeImage(splashImg);
     SDL_FreeSurface(splashSurf);
-    METAENGINE_Render_Flip(global.game->RenderTarget_.target);
+    R_Flip(global.game->RenderTarget_.target);
 
     // load key bind
     Controls::initKey();
@@ -167,7 +167,7 @@ int Platform::InitWindow() {
     return METADOT_OK;
 }
 
-void Platform::EndWindow() { METAENGINE_Render_Quit(); }
+void Platform::EndWindow() { R_Quit(); }
 
 void Platform::SetDisplayMode(DisplayMode mode) {
     switch (mode) {
@@ -204,8 +204,8 @@ void Platform::SetDisplayMode(DisplayMode mode) {
     int h;
     SDL_GetWindowSize(global.platform.window, &w, &h);
 
-    METAENGINE_Render_SetWindowResolution(w, h);
-    METAENGINE_Render_ResetProjection(global.game->RenderTarget_.realTarget);
+    R_SetWindowResolution(w, h);
+    R_ResetProjection(global.game->RenderTarget_.realTarget);
 
     HandleWindowSizeChange(w, h);
 }
