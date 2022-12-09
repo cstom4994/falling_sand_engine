@@ -87,6 +87,9 @@ struct Console
     void Init();
     void End();
     void DrawUI();
+
+    // InternalFuncs
+    void PrintAllMethods();
 };
 
 #endif

@@ -509,6 +509,10 @@ void Console::Init() {
 
     console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
 
+    visit_struct::for_each(global.game->GameIsolate_.settings, [&](const char *name, auto &value) {
+        console->System().RegisterVariable(name, value, CVar::Arg<int>(""));
+    });
+
     // Register custom commands
     console->System().RegisterCommand("random_background_color",
                                       "Assigns a random color to the background application",
@@ -522,7 +526,8 @@ void Console::Init() {
                                       "Reset background color to its original value",
                                       [&clear_color, val = clear_color]() { clear_color = val; });
 
-    // Log example information:
+    console->System().RegisterCommand("print_methods", "a", [this]() { PrintAllMethods(); });
+
     console->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
     console->System().Log(CVar::ItemType::INFO)
             << "The following variables have been exposed to the console:" << CVar::endl
@@ -540,3 +545,9 @@ void Console::Init() {
 void Console::End() { METADOT_DELETE(C, console, ImGuiConsole); }
 
 void Console::DrawUI() { console->Draw(); }
+
+void Console::PrintAllMethods() {
+    for (auto &cmds: console->System().Commands()) {
+        console->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
+    }
+}
