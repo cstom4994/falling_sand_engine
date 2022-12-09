@@ -165,7 +165,7 @@ void LuaCore::Attach() {
 
     luaopen_base(m_L);
     luaL_openlibs(m_L);
-    metadot_bind_miniz(m_L);
+    
     metadot_bind_image(m_L);
     metadot_bind_gpu(m_L);
 
@@ -195,12 +195,14 @@ void LuaCore::Attach() {
                                "?/?.lua;' .. package.path",
                                METADOT_RESLOC("data/scripts"), FUtil::getExecutableFolderPath()),
             s_lua.globalTable());
-    // s_lua.dostring(
-    //         MetaEngine::Format(
-    //                 "package.searchpath = '{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/?/?.lua;' .. package.searchpath",
-    //                 METADOT_RESLOC("data/scripts"),
-    //                 FUtil::getExecutableFolderPath()),
-    //         s_lua.globalTable());
+
+    s_lua.dostring(
+            MetaEngine::Format("package.cpath = "
+                               "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
+                               "?/?.{2};' .. package.cpath",
+                               METADOT_RESLOC("data/scripts"), FUtil::getExecutableFolderPath(),
+                               "dylib"),
+            s_lua.globalTable());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/scripts/coroutines.lua"));
     RunScriptFromFile("data/scripts/startup.lua");

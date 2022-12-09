@@ -181,7 +181,6 @@ do
     add_files("Source/Libs/lua/**.c")
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
-    remove_files("Source/Libs/lua/test.c")
 end
 
 target("MetaDot")
@@ -211,4 +210,14 @@ do
     if (is_os("macosx") and has_config("build_audio")) then
         add_links("fmod", "fmodstudio")
     end
+end
+
+target("TestFFI")
+do
+    set_kind("shared")
+    set_targetdir("./output")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_files("Source/Tests/**.c")
+    add_headerfiles("Source/Tests/**.h")
 end

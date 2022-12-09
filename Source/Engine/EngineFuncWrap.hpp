@@ -17,7 +17,6 @@ struct lua_State;
                 {236, 236, 236},                                                                   \
     }
 
-int metadot_bind_miniz(lua_State *L);
 int metadot_bind_image(lua_State *L);
 int metadot_bind_gpu(lua_State *L);
 

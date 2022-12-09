@@ -1,4 +1,5 @@
 
-extern "C" {
+extern "C"
+{
 #include "minilua.h"
 }

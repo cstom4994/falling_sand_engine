@@ -1828,4 +1828,20 @@ namespace LuaWrapper {
         return 0;
     }
 
+    void metadot_load(lua_State *L, const luaL_Reg *l, const char *name) {
+        lua_getglobal(L, name);
+        if (lua_isnil(L, -1)) {
+            lua_pop(L, 1);
+            lua_newtable(L);
+        }
+        luaL_setfuncs(L, l, 0);
+        lua_setglobal(L, name);
+    }
+
+    void metadot_loadover(lua_State *L, const luaL_Reg *l, const char *name) {
+        lua_newtable(L);
+        luaL_setfuncs(L, l, 0);
+        lua_setglobal(L, name);
+    }
+
 }// namespace LuaWrapper

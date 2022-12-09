@@ -1,11 +1,4 @@
--- vim: ts=4 sw=4 sts=4 et tw=78
--- Portions copyright (c) 2015-present, Facebook, Inc. All rights reserved.
--- Portions copyright (c) 2011 James R. McKaskill.
---
--- This source code is licensed under the BSD-style license found in the
--- LICENSE file in the root directory of this source tree. An additional grant
--- of patent rights can be found in the PATENTS file in the same directory.
---
+
 io.stdout:setvbuf('no')
 local ffi = require 'ffi'
 local dlls = {}
@@ -22,9 +15,9 @@ local function loadlib(lib)
 end
 
 if _VERSION == 'Lua 5.1' then
-    dlls.__cdecl = loadlib('ffi/libtest')
+    dlls.__cdecl = loadlib('TestFFI')
 else
-    dlls.__cdecl = ffi.load(package.searchpath('ffi.libtest', package.cpath))
+    dlls.__cdecl = ffi.load(package.searchpath('libTestFFI', package.cpath))
 end
 
 if ffi.arch == 'x86' and ffi.os == 'Windows' then
