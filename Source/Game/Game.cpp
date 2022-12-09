@@ -184,22 +184,20 @@ void Game::createTexture() {
     std::vector<std::function<void(void)>> Funcs = {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
-                TexturePack_.loadingTexture = R_CreateImage(
-                        TexturePack_.loadingScreenW = (global.platform.WIDTH / 20),
-                        TexturePack_.loadingScreenH = (global.platform.HEIGHT / 20),
-                        R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.loadingTexture =
+                        R_CreateImage(TexturePack_.loadingScreenW = (global.platform.WIDTH / 20),
+                                      TexturePack_.loadingScreenH = (global.platform.HEIGHT / 20),
+                                      R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.loadingTexture,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
-                TexturePack_.texture = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.texture =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.texture,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.texture, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
@@ -208,77 +206,68 @@ void Game::createTexture() {
                         GameIsolate_.world->height * GameIsolate_.settings.hd_objects_size,
                         R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.worldTexture,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.worldTexture, R_FILTER_NEAREST);
 
                 R_LoadTarget(TexturePack_.worldTexture);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
-                TexturePack_.lightingTexture = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.lightingTexture,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.lightingTexture =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.lightingTexture, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.lightingTexture);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
-                TexturePack_.emissionTexture = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.emissionTexture,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.emissionTexture =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.emissionTexture, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
-                TexturePack_.textureFlow = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureFlow,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.textureFlow =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.textureFlow, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
-                TexturePack_.textureFlowSpead = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureFlowSpead,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.textureFlowSpead =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.textureFlowSpead, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureFlowSpead);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFire");
-                TexturePack_.textureFire = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureFire,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.textureFire =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.textureFire, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
-                TexturePack_.texture2Fire = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.texture2Fire,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.texture2Fire =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.texture2Fire, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.texture2Fire);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
-                TexturePack_.textureLayer2 = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureLayer2,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.textureLayer2 =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.textureLayer2, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
-                TexturePack_.textureBackground = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureBackground,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.textureBackground =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.textureBackground, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
@@ -291,17 +280,15 @@ void Game::createTexture() {
                                          ? GameIsolate_.settings.hd_objects_size
                                          : 1),
                         R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureObjects,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.textureObjects, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjects);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
-                TexturePack_.textureObjectsLQ = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureObjectsLQ,
-                                                 R_FILTER_NEAREST);
+                TexturePack_.textureObjectsLQ =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
+                R_SetImageFilter(TexturePack_.textureObjectsLQ, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsLQ);
             },
             [&]() {
@@ -315,18 +302,16 @@ void Game::createTexture() {
                                          ? GameIsolate_.settings.hd_objects_size
                                          : 1),
                         R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(TexturePack_.textureObjectsBack,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsBack);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureParticles");
-                TexturePack_.textureParticles = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.textureParticles =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.textureParticles,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.textureParticles, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
@@ -342,37 +327,32 @@ void Game::createTexture() {
 
                 R_LoadTarget(TexturePack_.textureEntities);
 
-                R_SetImageFilter(TexturePack_.textureEntities,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.textureEntities, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
-                TexturePack_.textureEntitiesLQ = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.textureEntitiesLQ =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
 
                 R_LoadTarget(TexturePack_.textureEntitiesLQ);
 
-                R_SetImageFilter(TexturePack_.textureEntitiesLQ,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.textureEntitiesLQ, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
-                TexturePack_.temperatureMap = R_CreateImage(
-                        GameIsolate_.world->width, GameIsolate_.world->height,
-                        R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.temperatureMap =
+                        R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height,
+                                      R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.temperatureMap,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.temperatureMap, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
                 TexturePack_.backgroundImage = R_CreateImage(
-                        global.platform.WIDTH, global.platform.HEIGHT,
-                        R_FormatEnum::R_FORMAT_RGBA);
+                        global.platform.WIDTH, global.platform.HEIGHT, R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.backgroundImage,
-                                                 R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.backgroundImage, R_FILTER_NEAREST);
 
                 R_LoadTarget(TexturePack_.backgroundImage);
             }};
@@ -505,8 +485,7 @@ int Game::run(int argc, char *argv[]) {
                 if (windowEvent.type == SDL_WINDOWEVENT) {
                     if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
                         //METADOT_INFO("Resizing window...");
-                        R_SetWindowResolution(windowEvent.window.data1,
-                                                              windowEvent.window.data2);
+                        R_SetWindowResolution(windowEvent.window.data1, windowEvent.window.data2);
                         R_ResetProjection(RenderTarget_.realTarget);
                         global.platform.HandleWindowSizeChange(windowEvent.window.data1,
                                                                windowEvent.window.data2);
@@ -667,10 +646,8 @@ int Game::run(int argc, char *argv[]) {
 
                                 if (upd) {
                                     R_FreeImage(cur->texture);
-                                    cur->texture =
-                                            R_CopyImageFromSurface(cur->surface);
-                                    R_SetImageFilter(
-                                            cur->texture, R_FILTER_NEAREST);
+                                    cur->texture = R_CopyImageFromSurface(cur->surface);
+                                    R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
                                     //GameIsolate_.world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
@@ -1248,16 +1225,15 @@ int Game::run(int argc, char *argv[]) {
                 fadeInWaitFrames--;
                 fadeInStart = GameIsolate_.game_timestate.now;
                 R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
-                                                  global.platform.HEIGHT, {0, 0, 0, 255});
+                                  global.platform.HEIGHT, {0, 0, 0, 255});
             } else if (fadeInStart > 0 && fadeInLength > 0) {
 
                 float thru =
                         1 - (float) (GameIsolate_.game_timestate.now - fadeInStart) / fadeInLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    R_RectangleFilled(RenderTarget_.target, 0, 0,
-                                                      global.platform.WIDTH, global.platform.HEIGHT,
-                                                      {0, 0, 0, (uint8) (thru * 255)});
+                    R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
+                                      global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
                 } else {
                     fadeInStart = 0;
                     fadeInLength = 0;
@@ -1273,13 +1249,11 @@ int Game::run(int argc, char *argv[]) {
                         (float) (GameIsolate_.game_timestate.now - fadeOutStart) / fadeOutLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    R_RectangleFilled(RenderTarget_.target, 0, 0,
-                                                      global.platform.WIDTH, global.platform.HEIGHT,
-                                                      {0, 0, 0, (uint8) (thru * 255)});
+                    R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
+                                      global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
                 } else {
-                    R_RectangleFilled(RenderTarget_.target, 0, 0,
-                                                      global.platform.WIDTH, global.platform.HEIGHT,
-                                                      {0, 0, 0, 255});
+                    R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
+                                      global.platform.HEIGHT, {0, 0, 0, 255});
                     fadeOutStart = 0;
                     fadeOutLength = 0;
                     fadeOutCallback();
@@ -1385,7 +1359,7 @@ exit:
 
     METADOT_INFO("Clean done...");
 
-    return EXIT_SUCCESS;
+    return METADOT_OK;
 }
 
 void Game::updateFrameEarly() {
@@ -1393,7 +1367,6 @@ void Game::updateFrameEarly() {
     // handle controls
     if (Controls::DEBUG_UI->get()) {
         GameUI::DebugDrawUI::visible ^= true;
-        GameUI::DebugCheatsUI::visible ^= true;
         GameIsolate_.settings.ui_tweak ^= true;
     }
 
@@ -1486,8 +1459,7 @@ void Game::updateFrameEarly() {
                 if (upd) {
                     R_FreeImage(cur->texture);
                     cur->texture = R_CopyImageFromSurface(cur->surface);
-                    R_SetImageFilter(cur->texture,
-                                                     R_FILTER_NEAREST);
+                    R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
                     //GameIsolate_.world->updateRigidBodyHitbox(cur);
                     cur->needsUpdate = true;
                 }
@@ -1685,9 +1657,8 @@ accLoadY = 0;*/
                 GameIsolate_.world->WorldIsolate_.player->heldItem->texture =
                         R_CopyImageFromSurface(
                                 GameIsolate_.world->WorldIsolate_.player->heldItem->surface);
-                R_SetImageFilter(
-                        GameIsolate_.world->WorldIsolate_.player->heldItem->texture,
-                        R_FILTER_NEAREST);
+                R_SetImageFilter(GameIsolate_.world->WorldIsolate_.player->heldItem->texture,
+                                 R_FILTER_NEAREST);
 
                 global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
 
@@ -1761,9 +1732,8 @@ accLoadY = 0;*/
                                         c;
 
                                 GameIsolate_.world->WorldIsolate_.player->heldItem->texture =
-                                        R_CopyImageFromSurface(
-                                                GameIsolate_.world->WorldIsolate_.player->heldItem
-                                                        ->surface);
+                                        R_CopyImageFromSurface(GameIsolate_.world->WorldIsolate_
+                                                                       .player->heldItem->surface);
                                 R_SetImageFilter(
                                         GameIsolate_.world->WorldIsolate_.player->heldItem->texture,
                                         R_FILTER_NEAREST);
@@ -1910,10 +1880,8 @@ void Game::tick() {
                (size_t) GameIsolate_.world->width * GameIsolate_.world->height * sizeof(bool));
 
         R_SetBlendMode(TexturePack_.textureObjects, R_BLEND_NORMAL);
-        R_SetBlendMode(TexturePack_.textureObjectsLQ,
-                                       R_BLEND_NORMAL);
-        R_SetBlendMode(TexturePack_.textureObjectsBack,
-                                       R_BLEND_NORMAL);
+        R_SetBlendMode(TexturePack_.textureObjectsLQ, R_BLEND_NORMAL);
+        R_SetBlendMode(TexturePack_.textureObjectsBack, R_BLEND_NORMAL);
 
         for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
             RigidBody *cur = GameIsolate_.world->WorldIsolate_.rigidBodies[i];
@@ -1927,15 +1895,14 @@ void Game::tick() {
             // draw
 
             R_Target *tgt = cur->back ? TexturePack_.textureObjectsBack->target
-                                                      : TexturePack_.textureObjects->target;
+                                      : TexturePack_.textureObjects->target;
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target
-                                                        : TexturePack_.textureObjectsLQ->target;
+                                        : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex =
                     GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1;
 
-            R_Rect r = {x * scaleObjTex, y * scaleObjTex,
-                                        (float) cur->surface->w * scaleObjTex,
-                                        (float) cur->surface->h * scaleObjTex};
+            R_Rect r = {x * scaleObjTex, y * scaleObjTex, (float) cur->surface->w * scaleObjTex,
+                        (float) cur->surface->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
                 if (cur->texture != nullptr) { R_FreeImage(cur->texture); }
@@ -1944,17 +1911,15 @@ void Game::tick() {
                 cur->texNeedsUpdate = false;
             }
 
-            R_BlitRectX(cur->texture, NULL, tgt, &r,
-                                        cur->body->GetAngle() * 180 / (float) M_PI, 0, 0,
-                                        R_FLIP_NONE);
+            R_BlitRectX(cur->texture, NULL, tgt, &r, cur->body->GetAngle() * 180 / (float) M_PI, 0,
+                        0, R_FLIP_NONE);
 
             // draw outline
 
             UInt8 outlineAlpha = (UInt8) (cur->hover * 255);
             if (outlineAlpha > 0) {
                 METAENGINE_Color col = {0xff, 0xff, 0x80, outlineAlpha};
-                R_SetShapeBlendMode(
-                        R_BLEND_NORMAL_FACTOR_ALPHA);// SDL_BLENDMODE_BLEND
+                R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);// SDL_BLENDMODE_BLEND
                 for (auto &l: cur->outline) {
                     b2Vec2 *vec = new b2Vec2[l.GetNumPoints()];
                     for (int j = 0; j < l.GetNumPoints(); j++) {
@@ -1964,8 +1929,7 @@ void Game::tick() {
                                          cur->body->GetAngle(), 0, 0);
                     delete[] vec;
                 }
-                R_SetShapeBlendMode(
-                        R_BLEND_NORMAL);// SDL_BLENDMODE_NONE
+                R_SetShapeBlendMode(R_BLEND_NORMAL);// SDL_BLENDMODE_NONE
             }
 
             // displace fluids
@@ -2047,9 +2011,9 @@ void Game::tick() {
                     int x = (int) ((mx - GameData_.ofsX - GameData_.camX) / scale);
                     int y = (int) ((my - GameData_.ofsY - GameData_.camY) / scale);
                     R_Line(TexturePack_.textureEntitiesLQ->target, x, y,
-                                           GameIsolate_.world->WorldIsolate_.player->hammerX,
-                                           GameIsolate_.world->WorldIsolate_.player->hammerY,
-                                           {0xff, 0xff, 0x00, 0xff});
+                           GameIsolate_.world->WorldIsolate_.player->hammerX,
+                           GameIsolate_.world->WorldIsolate_.player->hammerY,
+                           {0xff, 0xff, 0x00, 0xff});
                 }
             }
         }
@@ -2426,9 +2390,8 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
 
         updateMaterialSounds();
 
-        R_UpdateImageBytes(TexturePack_.textureParticles, NULL,
-                                           &TexturePack_.pixelsParticles_ar[0],
-                                           GameIsolate_.world->width * 4);
+        R_UpdateImageBytes(TexturePack_.textureParticles, NULL, &TexturePack_.pixelsParticles_ar[0],
+                           GameIsolate_.world->width * 4);
 
         if (hadDirty)
             memset(GameIsolate_.world->dirty, false,
@@ -2449,43 +2412,37 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
 
         if (hadDirty) {
             R_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0],
-                                               GameIsolate_.world->width * 4);
+                               GameIsolate_.world->width * 4);
 
-            R_UpdateImageBytes(TexturePack_.emissionTexture, NULL,
-                                               &TexturePack_.pixelsEmission[0],
-                                               GameIsolate_.world->width * 4);
+            R_UpdateImageBytes(TexturePack_.emissionTexture, NULL, &TexturePack_.pixelsEmission[0],
+                               GameIsolate_.world->width * 4);
         }
 
         if (hadLayer2Dirty) {
-            R_UpdateImageBytes(TexturePack_.textureLayer2, NULL,
-                                               &TexturePack_.pixelsLayer2[0],
-                                               GameIsolate_.world->width * 4);
+            R_UpdateImageBytes(TexturePack_.textureLayer2, NULL, &TexturePack_.pixelsLayer2[0],
+                               GameIsolate_.world->width * 4);
         }
 
         if (hadBackgroundDirty) {
             R_UpdateImageBytes(TexturePack_.textureBackground, NULL,
-                                               &TexturePack_.pixelsBackground[0],
-                                               GameIsolate_.world->width * 4);
+                               &TexturePack_.pixelsBackground[0], GameIsolate_.world->width * 4);
         }
 
         if (hadFlow) {
-            R_UpdateImageBytes(TexturePack_.textureFlow, NULL,
-                                               &TexturePack_.pixelsFlow[0],
-                                               GameIsolate_.world->width * 4);
+            R_UpdateImageBytes(TexturePack_.textureFlow, NULL, &TexturePack_.pixelsFlow[0],
+                               GameIsolate_.world->width * 4);
 
             global.shaderworker.waterFlowPassShader->dirty = true;
         }
 
         if (hadFire) {
-            R_UpdateImageBytes(TexturePack_.textureFire, NULL,
-                                               &TexturePack_.pixelsFire[0],
-                                               GameIsolate_.world->width * 4);
+            R_UpdateImageBytes(TexturePack_.textureFire, NULL, &TexturePack_.pixelsFire[0],
+                               GameIsolate_.world->width * 4);
         }
 
         if (GameIsolate_.settings.draw_temperature_map) {
-            R_UpdateImageBytes(TexturePack_.temperatureMap, NULL,
-                                               &TexturePack_.pixelsTemp[0],
-                                               GameIsolate_.world->width * 4);
+            R_UpdateImageBytes(TexturePack_.temperatureMap, NULL, &TexturePack_.pixelsTemp[0],
+                               GameIsolate_.world->width * 4);
         }
 
         /*R_UpdateImageBytes(
@@ -3024,10 +2981,8 @@ void Game::tickPlayer() {
 
                                 if (upd) {
                                     R_FreeImage(cur->texture);
-                                    cur->texture =
-                                            R_CopyImageFromSurface(cur->surface);
-                                    R_SetImageFilter(
-                                            cur->texture, R_FILTER_NEAREST);
+                                    cur->texture = R_CopyImageFromSurface(cur->surface);
+                                    R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
                                     //GameIsolate_.world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
@@ -3222,9 +3177,8 @@ newState = true;
                 loadingOffColor = tmp;
             }
 
-            R_UpdateImageBytes(TexturePack_.loadingTexture, NULL,
-                                               &TexturePack_.pixelsLoading_ar[0],
-                                               TexturePack_.loadingScreenW * 4);
+            R_UpdateImageBytes(TexturePack_.loadingTexture, NULL, &TexturePack_.pixelsLoading_ar[0],
+                               TexturePack_.loadingScreenW * 4);
 
             GameIsolate_.game_timestate.lastLoadingTick = GameIsolate_.game_timestate.now;
         } else {
@@ -3255,10 +3209,8 @@ newState = true;
                                            GameIsolate_.game_timestate.lastTick) /
                                           (double) GameIsolate_.game_timestate.mspt);
 
-                R_SetBlendMode(TexturePack_.textureEntities,
-                                               R_BLEND_ADD);
-                R_SetBlendMode(TexturePack_.textureEntitiesLQ,
-                                               R_BLEND_ADD);
+                R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_ADD);
+                R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_ADD);
                 int scaleEnt = GameIsolate_.settings.hd_objects
                                        ? GameIsolate_.settings.hd_objects_size
                                        : 1;
@@ -3288,65 +3240,59 @@ newState = true;
                                 dy = dy / len * 40;
                             }
 
-                            R_Line(
-                                    TexturePack_.textureEntitiesLQ->target,
-                                    GameIsolate_.world->WorldIsolate_.player->hammerX + dx,
-                                    GameIsolate_.world->WorldIsolate_.player->hammerY + dy,
-                                    GameIsolate_.world->WorldIsolate_.player->hammerX,
-                                    GameIsolate_.world->WorldIsolate_.player->hammerY,
-                                    {0xff, 0xff, 0x00, 0xff});
+                            R_Line(TexturePack_.textureEntitiesLQ->target,
+                                   GameIsolate_.world->WorldIsolate_.player->hammerX + dx,
+                                   GameIsolate_.world->WorldIsolate_.player->hammerY + dy,
+                                   GameIsolate_.world->WorldIsolate_.player->hammerX,
+                                   GameIsolate_.world->WorldIsolate_.player->hammerY,
+                                   {0xff, 0xff, 0x00, 0xff});
                         } else {
                             int startInd = getAimSolidSurface(64);
 
                             if (startInd != -1) {
                                 int x = startInd % GameIsolate_.world->width;
                                 int y = startInd / GameIsolate_.world->width;
-                                R_Rectangle(TexturePack_.textureEntitiesLQ->target,
-                                                            x - 1, y - 1, x + 1, y + 1,
-                                                            {0xff, 0xff, 0x00, 0xE0});
+                                R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - 1, y - 1,
+                                            x + 1, y + 1, {0xff, 0xff, 0x00, 0xE0});
                             }
                         }
                     }
                 }
-                R_SetBlendMode(TexturePack_.textureEntities,
-                                               R_BLEND_NORMAL);
-                R_SetBlendMode(TexturePack_.textureEntitiesLQ,
-                                               R_BLEND_NORMAL);
+                R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_NORMAL);
+                R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_NORMAL);
             }
         }
 
         if (Controls::mmouse) {
             int x = (int) ((mx - GameData_.ofsX - GameData_.camX) / scale);
             int y = (int) ((my - GameData_.ofsY - GameData_.camY) / scale);
-            R_RectangleFilled(
-                    TexturePack_.textureEntitiesLQ->target,
-                    x - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
-                    y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
-                    {0xff, 0x40, 0x40, 0x90});
+            R_RectangleFilled(TexturePack_.textureEntitiesLQ->target,
+                              x - GameUI::DebugDrawUI::brushSize / 2.0f,
+                              y - GameUI::DebugDrawUI::brushSize / 2.0f,
+                              x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
+                              y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
+                              {0xff, 0x40, 0x40, 0x90});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target,
-                                        x - GameUI::DebugDrawUI::brushSize / 2.0f,
-                                        y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                                        x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                                        y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                                        {0xff, 0x40, 0x40, 0xE0});
+                        x - GameUI::DebugDrawUI::brushSize / 2.0f,
+                        y - GameUI::DebugDrawUI::brushSize / 2.0f,
+                        x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                        y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                        {0xff, 0x40, 0x40, 0xE0});
         } else if (Controls::DEBUG_DRAW->get()) {
             int x = (int) ((mx - GameData_.ofsX - GameData_.camX) / scale);
             int y = (int) ((my - GameData_.ofsY - GameData_.camY) / scale);
-            R_RectangleFilled(
-                    TexturePack_.textureEntitiesLQ->target,
-                    x - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                    x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
-                    y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
-                    {0x00, 0xff, 0xB0, 0x80});
+            R_RectangleFilled(TexturePack_.textureEntitiesLQ->target,
+                              x - GameUI::DebugDrawUI::brushSize / 2.0f,
+                              y - GameUI::DebugDrawUI::brushSize / 2.0f,
+                              x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
+                              y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)),
+                              {0x00, 0xff, 0xB0, 0x80});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target,
-                                        x - GameUI::DebugDrawUI::brushSize / 2.0f,
-                                        y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                                        x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                                        y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
-                                        {0x00, 0xff, 0xB0, 0xE0});
+                        x - GameUI::DebugDrawUI::brushSize / 2.0f,
+                        y - GameUI::DebugDrawUI::brushSize / 2.0f,
+                        x + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                        y + (int) (ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1,
+                        {0x00, 0xff, 0xB0, 0xE0});
         }
     }
 }
@@ -3453,22 +3399,18 @@ void Game::renderLate() {
             METADOT_DELETE(C, src, R_Rect);
         }
 
-        R_Rect r1 =
-                R_Rect{(float) (GameData_.ofsX + GameData_.camX),
-                                       (float) (GameData_.ofsY + GameData_.camY),
-                                       (float) (GameIsolate_.world->width * scale),
-                                       (float) (GameIsolate_.world->height * scale)};
-        R_SetBlendMode(TexturePack_.textureBackground,
-                                       R_BLEND_NORMAL);
+        R_Rect r1 = R_Rect{(float) (GameData_.ofsX + GameData_.camX),
+                           (float) (GameData_.ofsY + GameData_.camY),
+                           (float) (GameIsolate_.world->width * scale),
+                           (float) (GameIsolate_.world->height * scale)};
+        R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, RenderTarget_.target, &r1);
 
         R_SetBlendMode(TexturePack_.textureLayer2, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureLayer2, NULL, RenderTarget_.target, &r1);
 
-        R_SetBlendMode(TexturePack_.textureObjectsBack,
-                                       R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureObjectsBack, NULL, RenderTarget_.target,
-                                   &r1);
+        R_SetBlendMode(TexturePack_.textureObjectsBack, R_BLEND_NORMAL);
+        R_BlitRect(TexturePack_.textureObjectsBack, NULL, RenderTarget_.target, &r1);
 
         // shader
 
@@ -3480,10 +3422,9 @@ void Game::renderLate() {
                 global.shaderworker.waterFlowPassShader->activate();
                 global.shaderworker.waterFlowPassShader->update(GameIsolate_.world->width,
                                                                 GameIsolate_.world->height);
-                R_SetBlendMode(TexturePack_.textureFlow,
-                                               R_BLEND_SET);
-                R_BlitRect(TexturePack_.textureFlow, NULL,
-                                           TexturePack_.textureFlowSpead->target, NULL);
+                R_SetBlendMode(TexturePack_.textureFlow, R_BLEND_SET);
+                R_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target,
+                           NULL);
 
                 global.shaderworker.waterFlowPassShader->dirty = false;
             }
@@ -3512,30 +3453,20 @@ void Game::renderLate() {
 
         R_Clear(TexturePack_.worldTexture->target);
 
-        R_BlitRect(TexturePack_.texture, NULL, TexturePack_.worldTexture->target,
-                                   NULL);
+        R_BlitRect(TexturePack_.texture, NULL, TexturePack_.worldTexture->target, NULL);
 
         R_SetBlendMode(TexturePack_.textureObjects, R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureObjects, NULL,
-                                   TexturePack_.worldTexture->target, NULL);
-        R_SetBlendMode(TexturePack_.textureObjectsLQ,
-                                       R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureObjectsLQ, NULL,
-                                   TexturePack_.worldTexture->target, NULL);
+        R_BlitRect(TexturePack_.textureObjects, NULL, TexturePack_.worldTexture->target, NULL);
+        R_SetBlendMode(TexturePack_.textureObjectsLQ, R_BLEND_NORMAL);
+        R_BlitRect(TexturePack_.textureObjectsLQ, NULL, TexturePack_.worldTexture->target, NULL);
 
-        R_SetBlendMode(TexturePack_.textureParticles,
-                                       R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureParticles, NULL,
-                                   TexturePack_.worldTexture->target, NULL);
+        R_SetBlendMode(TexturePack_.textureParticles, R_BLEND_NORMAL);
+        R_BlitRect(TexturePack_.textureParticles, NULL, TexturePack_.worldTexture->target, NULL);
 
-        R_SetBlendMode(TexturePack_.textureEntitiesLQ,
-                                       R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureEntitiesLQ, NULL,
-                                   TexturePack_.worldTexture->target, NULL);
-        R_SetBlendMode(TexturePack_.textureEntities,
-                                       R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureEntities, NULL,
-                                   TexturePack_.worldTexture->target, NULL);
+        R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_NORMAL);
+        R_BlitRect(TexturePack_.textureEntitiesLQ, NULL, TexturePack_.worldTexture->target, NULL);
+        R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_NORMAL);
+        R_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
         if (GameIsolate_.settings.draw_shaders) global.shaderworker.newLightingShader->activate();
 
@@ -3639,20 +3570,17 @@ void Game::renderLate() {
 
         if (GameIsolate_.settings.draw_shaders && needToRerenderLighting) {
             R_Clear(TexturePack_.lightingTexture->target);
-            R_BlitRect(TexturePack_.worldTexture, NULL,
-                                       TexturePack_.lightingTexture->target, NULL);
+            R_BlitRect(TexturePack_.worldTexture, NULL, TexturePack_.lightingTexture->target, NULL);
         }
         if (GameIsolate_.settings.draw_shaders) R_ActivateShaderProgram(0, NULL);
 
         R_BlitRect(TexturePack_.worldTexture, NULL, RenderTarget_.target, &r1);
 
         if (GameIsolate_.settings.draw_shaders) {
-            R_SetBlendMode(TexturePack_.lightingTexture,
-                                           GameIsolate_.settings.draw_light_overlay
-                                                   ? R_BLEND_NORMAL
-                                                   : R_BLEND_MULTIPLY);
-            R_BlitRect(TexturePack_.lightingTexture, NULL, RenderTarget_.target,
-                                       &r1);
+            R_SetBlendMode(TexturePack_.lightingTexture, GameIsolate_.settings.draw_light_overlay
+                                                                 ? R_BLEND_NORMAL
+                                                                 : R_BLEND_MULTIPLY);
+            R_BlitRect(TexturePack_.lightingTexture, NULL, RenderTarget_.target, &r1);
         }
 
         if (GameIsolate_.settings.draw_shaders) {
@@ -3660,8 +3588,7 @@ void Game::renderLate() {
 
             global.shaderworker.fireShader->activate();
             global.shaderworker.fireShader->update(TexturePack_.textureFire);
-            R_BlitRect(TexturePack_.textureFire, NULL,
-                                       TexturePack_.texture2Fire->target, NULL);
+            R_BlitRect(TexturePack_.textureFire, NULL, TexturePack_.texture2Fire->target, NULL);
             R_ActivateShaderProgram(0, NULL);
 
             global.shaderworker.fire2Shader->activate();
@@ -3685,21 +3612,21 @@ void Game::renderOverlays() {
     R_GLT_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
     R_GLT_EndDraw();
 
-    R_GLT_SetText(
-            text3, MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
-                                      1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
-                                      GameIsolate_.game_timestate.feelsLikeFps)
-                           .c_str());
+    R_GLT_SetText(text3,
+                  MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
+                                     1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
+                                     GameIsolate_.game_timestate.feelsLikeFps)
+                          .c_str());
 
     R_GLT_BeginDraw();
     R_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
     R_GLT_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
     R_GLT_EndDraw();
 
-    R_Rect r1 = R_Rect{
-            (float) (GameData_.ofsX + GameData_.camX), (float) (GameData_.ofsY + GameData_.camY),
-            (float) (GameIsolate_.world->width * scale),
-            (float) (GameIsolate_.world->height * scale)};
+    R_Rect r1 = R_Rect{(float) (GameData_.ofsX + GameData_.camX),
+                       (float) (GameData_.ofsY + GameData_.camY),
+                       (float) (GameIsolate_.world->width * scale),
+                       (float) (GameIsolate_.world->height * scale)};
     R_Rect r2 = R_Rect{
             (float) (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale),
             (float) (GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale),
@@ -3727,11 +3654,10 @@ void Game::renderOverlays() {
         METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        R_Rect r3 =
-                R_Rect{(float) (0), (float) (0),
-                                       (float) ((GameData_.ofsX + GameData_.camX +
-                                                 GameIsolate_.world->tickZone.x * scale)),
-                                       (float) (global.platform.HEIGHT)};
+        R_Rect r3 = R_Rect{(float) (0), (float) (0),
+                           (float) ((GameData_.ofsX + GameData_.camX +
+                                     GameIsolate_.world->tickZone.x * scale)),
+                           (float) (global.platform.HEIGHT)};
         R_Rectangle2(RenderTarget_.target, r3, col);
 
         R_Rect r4 = R_Rect{
@@ -3893,8 +3819,8 @@ void Game::renderOverlays() {
                 float y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * scale +
                            GameData_.ofsY + GameData_.camY);
 
-                R_Rectangle(RenderTarget_.target, x, y, x + CHUNK_W * scale,
-                                            y + CHUNK_H * scale, {50, 50, 0, 255});
+                R_Rectangle(RenderTarget_.target, x, y, x + CHUNK_W * scale, y + CHUNK_H * scale,
+                            {50, 50, 0, 255});
 
                 //for(int i = 0; i < ch->polys.size(); i++) {
                 //    Drawing::drawPolygon(target, col, ch->polys[i].m_vertices, (int)x, (int)y, scale, ch->polys[i].m_count, 0/* + fmod((Time::millis() / 1000.0), 360)*/, 0, 0);
@@ -3937,11 +3863,10 @@ void Game::renderOverlays() {
         int pchxf = (int) (((float) pposX / CHUNK_W) * chSize);
         int pchyf = (int) (((float) pposY / CHUNK_H) * chSize);
 
-        R_Rectangle(
-                RenderTarget_.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize,
-                centerY - chSize * CHUNK_UNLOAD_DIST + chSize,
-                centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
-                centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
+        R_Rectangle(RenderTarget_.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize,
+                    centerY - chSize * CHUNK_UNLOAD_DIST + chSize,
+                    centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
+                    centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
         R_Rect r = {0, 0, (float) chSize, (float) chSize};
         for (auto &p: GameIsolate_.world->WorldIsolate_.chunkCache) {
@@ -3985,13 +3910,12 @@ void Game::renderOverlays() {
                 (int) (((float) (-GameIsolate_.world->loadZone.y + GameIsolate_.world->loadZone.h) /
                         CHUNK_H) *
                        chSize);
-        R_Rectangle(RenderTarget_.target, centerX - pchx + loadx,
-                                    centerY - pchy + loady, centerX - pchx + loadx2,
-                                    centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
+        R_Rectangle(RenderTarget_.target, centerX - pchx + loadx, centerY - pchy + loady,
+                    centerX - pchx + loadx2, centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
 
-        R_Rectangle(RenderTarget_.target, centerX - pchx + pchxf,
-                                    centerY - pchy + pchyf, centerX + 1 - pchx + pchxf,
-                                    centerY + 1 - pchy + pchyf, {0x00, 0xff, 0x00, 0xff});
+        R_Rectangle(RenderTarget_.target, centerX - pchx + pchxf, centerY - pchy + pchyf,
+                    centerX + 1 - pchx + pchxf, centerY + 1 - pchy + pchyf,
+                    {0x00, 0xff, 0x00, 0xff});
     }
 
     if (GameIsolate_.settings.draw_debug_stats) {
@@ -4132,10 +4056,9 @@ ReadyToMerge ({16})
         for (int i = 0; i <= 4; i++) {
             // Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
             //                   global.platform.HEIGHT - 15 - (i * 25) - 2);
-            R_Line(
-                    RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
-                    global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25,
-                    global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
+            R_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
+                   global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25,
+                   global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
         }
         /*for (int i = 0; i <= 100; i += 25) {
 char buff[20];
@@ -4161,26 +4084,24 @@ SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WID
                 col = {0xff, 0x00, 0x00, 0xff};
             }
 
-            R_Line(
-                    RenderTarget_.target, global.platform.WIDTH - FrameTimeNum - 30 + i,
-                    global.platform.HEIGHT - 10 - h, global.platform.WIDTH - FrameTimeNum - 30 + i,
-                    global.platform.HEIGHT - 10, col);
+            R_Line(RenderTarget_.target, global.platform.WIDTH - FrameTimeNum - 30 + i,
+                   global.platform.HEIGHT - 10 - h, global.platform.WIDTH - FrameTimeNum - 30 + i,
+                   global.platform.HEIGHT - 10, col);
             //SDL_RenderDrawLine(renderer, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        R_Line(
-                RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
-                global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
-                global.platform.WIDTH - 25,
-                global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
-                {0x00, 0xff, 0xff, 0xff});
         R_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
-                               global.platform.HEIGHT - 10 -
-                                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
-                               global.platform.WIDTH - 25,
-                               global.platform.HEIGHT - 10 -
-                                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
-                               {0xff, 0x00, 0xff, 0xff});
+               global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
+               global.platform.WIDTH - 25,
+               global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
+               {0x00, 0xff, 0xff, 0xff});
+        R_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
+               global.platform.HEIGHT - 10 -
+                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
+               global.platform.WIDTH - 25,
+               global.platform.HEIGHT - 10 -
+                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
+               {0xff, 0x00, 0xff, 0xff});
     }
 
     R_SetShapeBlendMode(R_BLEND_NORMAL);
@@ -4324,29 +4245,25 @@ void Game::quitToMainMenu() {
     std::fill(TexturePack_.pixelsParticles.begin(), TexturePack_.pixelsParticles.end(), 0);
 
     R_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0],
-                                       GameIsolate_.world->width * 4);
+                       GameIsolate_.world->width * 4);
 
-    R_UpdateImageBytes(TexturePack_.textureBackground, NULL,
-                                       &TexturePack_.pixelsBackground[0],
-                                       GameIsolate_.world->width * 4);
+    R_UpdateImageBytes(TexturePack_.textureBackground, NULL, &TexturePack_.pixelsBackground[0],
+                       GameIsolate_.world->width * 4);
 
-    R_UpdateImageBytes(TexturePack_.textureLayer2, NULL,
-                                       &TexturePack_.pixelsLayer2[0],
-                                       GameIsolate_.world->width * 4);
+    R_UpdateImageBytes(TexturePack_.textureLayer2, NULL, &TexturePack_.pixelsLayer2[0],
+                       GameIsolate_.world->width * 4);
 
     R_UpdateImageBytes(TexturePack_.textureFire, NULL, &TexturePack_.pixelsFire[0],
-                                       GameIsolate_.world->width * 4);
+                       GameIsolate_.world->width * 4);
 
     R_UpdateImageBytes(TexturePack_.textureFlow, NULL, &TexturePack_.pixelsFlow[0],
-                                       GameIsolate_.world->width * 4);
+                       GameIsolate_.world->width * 4);
 
-    R_UpdateImageBytes(TexturePack_.emissionTexture, NULL,
-                                       &TexturePack_.pixelsEmission[0],
-                                       GameIsolate_.world->width * 4);
+    R_UpdateImageBytes(TexturePack_.emissionTexture, NULL, &TexturePack_.pixelsEmission[0],
+                       GameIsolate_.world->width * 4);
 
-    R_UpdateImageBytes(TexturePack_.textureParticles, NULL,
-                                       &TexturePack_.pixelsParticles[0],
-                                       GameIsolate_.world->width * 4);
+    R_UpdateImageBytes(TexturePack_.textureParticles, NULL, &TexturePack_.pixelsParticles[0],
+                       GameIsolate_.world->width * 4);
 
     GameUI::MainMenuUI::visible = true;
 }

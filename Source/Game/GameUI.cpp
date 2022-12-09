@@ -2,6 +2,7 @@
 
 #include "Game/GameUI.hpp"
 #include "Core/Global.hpp"
+#include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
@@ -15,9 +16,10 @@
 
 #include <string>
 
+#define LANG(_c) global.I18N.Get(_c).c_str()
+
 void GameUI::GameUI_Draw(Game *game) {
     DebugDrawUI::Draw(game);
-    DebugCheatsUI::Draw(game);
     MainMenuUI::Draw(game);
     IngameUI::Draw(game);
 }
@@ -294,8 +296,7 @@ namespace GameUI {
                                      ? global.game->GameIsolate_.settings.hd_objects_size
                                      : 1),
                     R_FormatEnum::R_FORMAT_RGBA);
-            R_SetImageFilter(game->TexturePack_.textureObjects,
-                                             R_FILTER_NEAREST);
+            R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
 
             game->TexturePack_.textureObjectsBack = R_CreateImage(
                     game->GameIsolate_.world->width *
@@ -307,8 +308,7 @@ namespace GameUI {
                                      ? global.game->GameIsolate_.settings.hd_objects_size
                                      : 1),
                     R_FormatEnum::R_FORMAT_RGBA);
-            R_SetImageFilter(game->TexturePack_.textureObjectsBack,
-                                             R_FILTER_NEAREST);
+            R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
 
             R_LoadTarget(game->TexturePack_.textureObjects);
             R_LoadTarget(game->TexturePack_.textureObjectsBack);
@@ -323,8 +323,7 @@ namespace GameUI {
                                      ? global.game->GameIsolate_.settings.hd_objects_size
                                      : 1),
                     R_FormatEnum::R_FORMAT_RGBA);
-            R_SetImageFilter(game->TexturePack_.textureEntities,
-                                             R_FILTER_NEAREST);
+            R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
 
             R_LoadTarget(game->TexturePack_.textureEntities);
         }
@@ -939,8 +938,7 @@ namespace GameUI {
                                              ? global.game->GameIsolate_.settings.hd_objects_size
                                              : 1),
                             R_FormatEnum::R_FORMAT_RGBA);
-                    R_SetImageFilter(game->TexturePack_.textureObjects,
-                                                     R_FILTER_NEAREST);
+                    R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
 
                     game->TexturePack_.textureObjectsBack = R_CreateImage(
                             game->GameIsolate_.world->width *
@@ -952,8 +950,7 @@ namespace GameUI {
                                              ? global.game->GameIsolate_.settings.hd_objects_size
                                              : 1),
                             R_FormatEnum::R_FORMAT_RGBA);
-                    R_SetImageFilter(game->TexturePack_.textureObjectsBack,
-                                                     R_FILTER_NEAREST);
+                    R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
 
                     R_LoadTarget(game->TexturePack_.textureObjects);
                     R_LoadTarget(game->TexturePack_.textureObjectsBack);
@@ -968,8 +965,7 @@ namespace GameUI {
                                              ? global.game->GameIsolate_.settings.hd_objects_size
                                              : 1),
                             R_FormatEnum::R_FORMAT_RGBA);
-                    R_SetImageFilter(game->TexturePack_.textureEntities,
-                                                     R_FILTER_NEAREST);
+                    R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
 
                     R_LoadTarget(game->TexturePack_.textureEntities);
                 }
@@ -995,6 +991,7 @@ namespace GameUI {
     bool DebugDrawUI::visible = true;
     int DebugDrawUI::selIndex = -1;
     std::vector<R_Image *> DebugDrawUI::images = {};
+    std::vector<R_Image *> DebugDrawUI::tools_images = {};
     uint8 DebugDrawUI::brushSize = 5;
     Material *DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
 
@@ -1015,6 +1012,24 @@ namespace GameUI {
             R_SetImageFilter(images[i], R_FILTER_NEAREST);
             SDL_FreeSurface(surface);
         }
+
+        tools_images = {};
+        C_Surface *sfc = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
+        tools_images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(tools_images[0], R_FILTER_NEAREST);
+        SDL_FreeSurface(sfc);
+        sfc = Textures::LoadTexture("data/assets/objects/testHammer.png");
+        tools_images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(tools_images[1], R_FILTER_NEAREST);
+        SDL_FreeSurface(sfc);
+        sfc = Textures::LoadTexture("data/assets/objects/testVacuum.png");
+        tools_images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(tools_images[2], R_FILTER_NEAREST);
+        SDL_FreeSurface(sfc);
+        sfc = Textures::LoadTexture("data/assets/objects/testBucket.png");
+        tools_images.push_back(R_CopyImageFromSurface(sfc));
+        R_SetImageFilter(tools_images[3], R_FILTER_NEAREST);
+        SDL_FreeSurface(sfc);
     }
 
     void DebugDrawUI::Draw(Game *game) {
@@ -1029,59 +1044,63 @@ namespace GameUI {
 
         ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
         ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("材料放置测试", NULL, ImGuiWindowFlags_NoResize)) {
+        if (!ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoResize)) {
             ImGui::End();
             return;
         }
 
-        auto a = selIndex == -1 ? "None" : selectedMaterial->name;
-        ImGui::Text("选择: %s", a.c_str());
-        ImGui::Text("放置大小: %d", brushSize);
+        ImGui::BeginTabBar("ui_debugdraw_tabbar");
 
-        ImGui::Separator();
+        if (ImGui::BeginTabItem(LANG("ui_debug_materials"))) {
 
-        ImGui::BeginChild("材料列表", ImVec2(0, 0), false);
-        ImGui::Indent(5);
-        for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
-            int x = (int) (i % width);
-            int y = (int) (i / width);
+            auto a = selIndex == -1 ? "None" : selectedMaterial->name;
+            ImGui::Text("选择: %s", a.c_str());
+            ImGui::Text("放置大小: %d", brushSize);
 
-            if (x > 0) ImGui::SameLine();
-            ImGui::PushID((int) i);
+            ImGui::Separator();
 
-            ImVec2 selPos = ImGui::GetCursorScreenPos();
-            ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y + (x != 0 ? -1 : 0)));
-            if (ImGui::Selectable("", selIndex == i, 0, ImVec2(32, 36))) {
-                selIndex = (int) i;
-                selectedMaterial = Materials::MATERIALS[i];
-            }
+            ImGui::BeginChild("材料列表", ImVec2(0, 0), false);
+            ImGui::Indent(5);
+            for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
+                int x = (int) (i % width);
+                int y = (int) (i / width);
 
-            if (ImGui::IsItemHovered()) {
-                ImGui::BeginTooltip();
-                ImGui::Text("%s", Materials::MATERIALS[i]->name.c_str());
-                ImGui::EndTooltip();
-            }
+                if (x > 0) ImGui::SameLine();
+                ImGui::PushID((int) i);
 
-            ImVec2 prevPos = ImGui::GetCursorScreenPos();
-            ImGuiStyle &style = ImGui::GetStyle();
-            ImGui::SetCursorScreenPos(ImVec2(selPos.x - 1, selPos.y + (x == 0 ? 1 : 0)));
+                ImVec2 selPos = ImGui::GetCursorScreenPos();
+                ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y + (x != 0 ? -1 : 0)));
+                if (ImGui::Selectable("", selIndex == i, 0, ImVec2(32, 36))) {
+                    selIndex = (int) i;
+                    selectedMaterial = Materials::MATERIALS[i];
+                }
 
-            // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-            ImTextureID texId = (ImTextureID) R_GetTextureHandle(images[i]);
+                if (ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+                    ImGui::Text("%s", Materials::MATERIALS[i]->name.c_str());
+                    ImGui::EndTooltip();
+                }
 
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
-            ImVec2 uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
-            ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
-            ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
+                ImVec2 prevPos = ImGui::GetCursorScreenPos();
+                ImGuiStyle &style = ImGui::GetStyle();
+                ImGui::SetCursorScreenPos(ImVec2(selPos.x - 1, selPos.y + (x == 0 ? 1 : 0)));
 
-            ImGui::Image(texId, ImVec2(32, 32), uv_min, uv_max, tint_col, border_col);
+                // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
+                ImTextureID texId = (ImTextureID) R_GetTextureHandle(images[i]);
 
-            ImGui::SetCursorScreenPos(prevPos);
+                ImVec2 pos = ImGui::GetCursorScreenPos();
+                ImVec2 uv_min = ImVec2(0.0f, 0.0f);              // Top-left
+                ImVec2 uv_max = ImVec2(1.0f, 1.0f);              // Lower-right
+                ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
+                ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
 
-            ImGui::PopID();
+                ImGui::Image(texId, ImVec2(32, 32), uv_min, uv_max, tint_col, border_col);
 
-            /*mn->hoverCallback = [hoverMaterialLabel](Material* mat) {
+                ImGui::SetCursorScreenPos(prevPos);
+
+                ImGui::PopID();
+
+                /*mn->hoverCallback = [hoverMaterialLabel](Material* mat) {
             hoverMaterialLabel->text = mat->name;
             hoverMaterialLabel->updateTexture();
         };
@@ -1090,154 +1109,126 @@ namespace GameUI {
             selectMaterialLabel->updateTexture();
             selectedMaterial = mat;
         };*/
-        }
-
-        ImGui::Unindent(5);
-        ImGui::EndChild();
-
-        ImGui::End();
-    }
-
-    bool DebugCheatsUI::visible = true;
-    std::vector<R_Image *> DebugCheatsUI::images = {};
-
-    void DebugCheatsUI::Setup() {
-
-        images = {};
-        C_Surface *sfc = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
-        images.push_back(R_CopyImageFromSurface(sfc));
-        R_SetImageFilter(images[0], R_FILTER_NEAREST);
-        SDL_FreeSurface(sfc);
-        sfc = Textures::LoadTexture("data/assets/objects/testHammer.png");
-        images.push_back(R_CopyImageFromSurface(sfc));
-        R_SetImageFilter(images[1], R_FILTER_NEAREST);
-        SDL_FreeSurface(sfc);
-        sfc = Textures::LoadTexture("data/assets/objects/testVacuum.png");
-        images.push_back(R_CopyImageFromSurface(sfc));
-        R_SetImageFilter(images[2], R_FILTER_NEAREST);
-        SDL_FreeSurface(sfc);
-        sfc = Textures::LoadTexture("data/assets/objects/testBucket.png");
-        images.push_back(R_CopyImageFromSurface(sfc));
-        R_SetImageFilter(images[3], R_FILTER_NEAREST);
-        SDL_FreeSurface(sfc);
-    }
-
-    void DebugCheatsUI::Draw(Game *game) {
-
-        if (images.empty()) Setup();
-
-        if (!visible) return;
-
-        ImGui::SetNextWindowSize(ImVec2(40 * 5 + 16 - 4, 0));
-        ImGui::SetNextWindowPos(ImVec2(15, 450), ImGuiCond_FirstUseEver);
-        if (!ImGui::Begin("上帝箱", NULL, 0)) {
-            ImGui::End();
-            return;
-        }
-
-        if (ImGui::CollapsingHeader("获得物品")) {
-            ImGui::Indent();
-            if (game->GameIsolate_.world == nullptr ||
-                game->GameIsolate_.world->WorldIsolate_.player == nullptr) {
-                ImGui::Text("世界中没有玩家");
-            } else {
-                int i = 0;
-                ImGui::PushID(i);
-                int frame_padding = 4;          // -1 == uses default padding (style.FramePadding)
-                ImVec2 size = ImVec2(48, 48);   // Size of the image we want to make visible
-                ImVec2 uv0 = ImVec2(0.0f, 0.0f);// UV coordinates for lower-left
-                ImVec2 uv1 = ImVec2(1.0f, 1.0f);// UV coordinates for (32,32) in our texture
-                ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // Black background
-                ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
-
-                ImTextureID texId = (ImTextureID) R_GetTextureHandle(images[i]);
-                if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                    Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::TOOL);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
-                    i3->pivotX = 2;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
-                            i3, game->GameIsolate_.world);
-                }
-                if (ImGui::IsItemHovered()) {
-                    ImGui::BeginTooltip();
-                    ImGui::Text("%s", "Pickaxe");
-                    ImGui::EndTooltip();
-                }
-                ImGui::PopID();
-                ImGui::SameLine();
-
-                i++;
-
-                ImGui::PushID(i);
-                texId = (ImTextureID) R_GetTextureHandle(images[i]);
-                if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                    Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::HAMMER);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testHammer.png");
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
-                    i3->pivotX = 2;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
-                            i3, game->GameIsolate_.world);
-                }
-                if (ImGui::IsItemHovered()) {
-                    ImGui::BeginTooltip();
-                    ImGui::Text("%s", "Hammer");
-                    ImGui::EndTooltip();
-                }
-                ImGui::PopID();
-
-                i++;
-
-                ImGui::PushID(i);
-                texId = (ImTextureID) R_GetTextureHandle(images[i]);
-                if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                    Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::VACUUM);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
-                    i3->pivotX = 6;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
-                            i3, game->GameIsolate_.world);
-                }
-                if (ImGui::IsItemHovered()) {
-                    ImGui::BeginTooltip();
-                    ImGui::Text("%s", "Vacuum");
-                    ImGui::EndTooltip();
-                }
-                ImGui::PopID();
-                ImGui::SameLine();
-
-                i++;
-
-                ImGui::PushID(i);
-                texId = (ImTextureID) R_GetTextureHandle(images[i]);
-                if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
-                    Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::FLUID_CONTAINER);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testBucket.png");
-                    i3->capacity = 100;
-                    i3->loadFillTexture(
-                            Textures::LoadTexture("data/assets/objects/testBucket_fill.png"));
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
-                    i3->pivotX = 0;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
-                            i3, game->GameIsolate_.world);
-                }
-                if (ImGui::IsItemHovered()) {
-                    ImGui::BeginTooltip();
-                    ImGui::Text("%s", "Bucket");
-                    ImGui::EndTooltip();
-                }
-                ImGui::PopID();
-                ImGui::SameLine();
             }
+
+            ImGui::Unindent(5);
+            ImGui::EndChild();
+            ImGui::EndTabItem();
         }
+
+        if (ImGui::BeginTabItem(LANG("ui_debug_items"))) {
+
+            if (ImGui::CollapsingHeader("获得物品")) {
+                ImGui::Indent();
+                if (game->GameIsolate_.world == nullptr ||
+                    game->GameIsolate_.world->WorldIsolate_.player == nullptr) {
+                    ImGui::Text("世界中没有玩家");
+                } else {
+                    int i = 0;
+                    ImGui::PushID(i);
+                    int frame_padding = 4;       // -1 == uses default padding (style.FramePadding)
+                    ImVec2 size = ImVec2(48, 48);// Size of the image we want to make visible
+                    ImVec2 uv0 = ImVec2(0.0f, 0.0f);// UV coordinates for lower-left
+                    ImVec2 uv1 = ImVec2(1.0f, 1.0f);// UV coordinates for (32,32) in our texture
+                    ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // Black background
+                    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);// No tint
+
+                    ImTextureID texId = (ImTextureID) R_GetTextureHandle(tools_images[i]);
+                    if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col,
+                                           tint_col)) {
+                        Item *i3 = new Item();
+                        i3->setFlag(ItemFlags::TOOL);
+                        i3->surface = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
+                        i3->texture = R_CopyImageFromSurface(i3->surface);
+                        R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                        i3->pivotX = 2;
+                        game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                                i3, game->GameIsolate_.world);
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", "Pickaxe");
+                        ImGui::EndTooltip();
+                    }
+                    ImGui::PopID();
+                    ImGui::SameLine();
+
+                    i++;
+
+                    ImGui::PushID(i);
+                    texId = (ImTextureID) R_GetTextureHandle(tools_images[i]);
+                    if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col,
+                                           tint_col)) {
+                        Item *i3 = new Item();
+                        i3->setFlag(ItemFlags::HAMMER);
+                        i3->surface = Textures::LoadTexture("data/assets/objects/testHammer.png");
+                        i3->texture = R_CopyImageFromSurface(i3->surface);
+                        R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                        i3->pivotX = 2;
+                        game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                                i3, game->GameIsolate_.world);
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", "Hammer");
+                        ImGui::EndTooltip();
+                    }
+                    ImGui::PopID();
+
+                    i++;
+
+                    ImGui::PushID(i);
+                    texId = (ImTextureID) R_GetTextureHandle(tools_images[i]);
+                    if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col,
+                                           tint_col)) {
+                        Item *i3 = new Item();
+                        i3->setFlag(ItemFlags::VACUUM);
+                        i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
+                        i3->texture = R_CopyImageFromSurface(i3->surface);
+                        R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                        i3->pivotX = 6;
+                        game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                                i3, game->GameIsolate_.world);
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", "Vacuum");
+                        ImGui::EndTooltip();
+                    }
+                    ImGui::PopID();
+                    ImGui::SameLine();
+
+                    i++;
+
+                    ImGui::PushID(i);
+                    texId = (ImTextureID) R_GetTextureHandle(tools_images[i]);
+                    if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col,
+                                           tint_col)) {
+                        Item *i3 = new Item();
+                        i3->setFlag(ItemFlags::FLUID_CONTAINER);
+                        i3->surface = Textures::LoadTexture("data/assets/objects/testBucket.png");
+                        i3->capacity = 100;
+                        i3->loadFillTexture(
+                                Textures::LoadTexture("data/assets/objects/testBucket_fill.png"));
+                        i3->texture = R_CopyImageFromSurface(i3->surface);
+                        R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                        i3->pivotX = 0;
+                        game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(
+                                i3, game->GameIsolate_.world);
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", "Bucket");
+                        ImGui::EndTooltip();
+                    }
+                    ImGui::PopID();
+                    ImGui::SameLine();
+                }
+            }
+
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
 
         ImGui::End();
     }

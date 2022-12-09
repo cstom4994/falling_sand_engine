@@ -6,6 +6,7 @@
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Engine/Scripting.hpp"
+#include "Game/Game.hpp"
 
 #include <cstdint>
 #include <cstdlib>
@@ -591,8 +592,8 @@ namespace TestData {
     int setPixelScale = DEFAULT_SCALE;
 
     R_Image *buffer;
-    R_Target *renderer;
-    R_Target *bufferTarget;
+    // R_Target *renderer;
+    // R_Target *bufferTarget;
 
     UInt8 palette[COLOR_LIMIT][3] = INIT_COLORS;
 
@@ -764,39 +765,36 @@ static int renderImage(lua_State *L) {
 
     int top = lua_gettop(L);
     if (top > 7) {
-        R_Rect srcRect = {(float) luaL_checkinteger(L, 4),
-                                          (float) luaL_checkinteger(L, 5),
-                                          clamp(luaL_checkinteger(L, 6), 0, data->width),
-                                          clamp(luaL_checkinteger(L, 7), 0, data->height)};
+        R_Rect srcRect = {(float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5),
+                          clamp(luaL_checkinteger(L, 6), 0, data->width),
+                          clamp(luaL_checkinteger(L, 7), 0, data->height)};
 
         int scale = luaL_checkinteger(L, 8);
 
         rect.w = srcRect.w * scale;
         rect.h = srcRect.h * scale;
 
-        R_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, &srcRect, global.game->RenderTarget_.target, &rect);
     } else if (top > 6) {
-        R_Rect srcRect = {
-                (float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5),
-                (float) luaL_checkinteger(L, 6), (float) luaL_checkinteger(L, 7)};
+        R_Rect srcRect = {(float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5),
+                          (float) luaL_checkinteger(L, 6), (float) luaL_checkinteger(L, 7)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
-        R_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, &srcRect, global.game->RenderTarget_.target, &rect);
     } else if (top > 3) {
-        R_Rect srcRect = {0, 0, (float) luaL_checkinteger(L, 4),
-                                          (float) luaL_checkinteger(L, 5)};
+        R_Rect srcRect = {0, 0, (float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
-        R_BlitRect(data->texture, &srcRect, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, &srcRect, global.game->RenderTarget_.target, &rect);
     } else {
         rect.w = data->width;
         rect.h = data->height;
 
-        R_BlitRect(data->texture, nullptr, TestData::bufferTarget, &rect);
+        R_BlitRect(data->texture, nullptr, global.game->RenderTarget_.target, &rect);
     }
 
     return 0;
@@ -1070,7 +1068,7 @@ static int gpu_draw_pixel(lua_State *L) {
     METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                TestData::palette[color][2], 255};
 
-    R_RectangleFilled(TestData::bufferTarget, off(x, y), off(x + 1, y + 1), colorS);
+    R_RectangleFilled(global.game->RenderTarget_.target, off(x, y), off(x + 1, y + 1), colorS);
 
     return 0;
 }
@@ -1081,12 +1079,11 @@ static int gpu_draw_rectangle(lua_State *L) {
     int x = luaL_checkinteger(L, 1);
     int y = luaL_checkinteger(L, 2);
 
-    R_Rect rect = {off(x, y), (float) luaL_checkinteger(L, 3),
-                                   (float) luaL_checkinteger(L, 4)};
+    R_Rect rect = {off(x, y), (float) luaL_checkinteger(L, 3), (float) luaL_checkinteger(L, 4)};
 
     METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                TestData::palette[color][2], 255};
-    R_RectangleFilled2(TestData::bufferTarget, rect, colorS);
+    R_RectangleFilled2(global.game->RenderTarget_.target, rect, colorS);
 
     return 0;
 }
@@ -1123,7 +1120,7 @@ static int gpu_blit_pixels(lua_State *L) {
 
         METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                    TestData::palette[color][2], 255};
-        R_RectangleFilled2(TestData::bufferTarget, rect, colorS);
+        R_RectangleFilled2(global.game->RenderTarget_.target, rect, colorS);
 
         lua_pop(L, 1);
     }
@@ -1133,8 +1130,7 @@ static int gpu_blit_pixels(lua_State *L) {
 
 static int gpu_set_clipping(lua_State *L) {
     if (lua_gettop(L) == 0) {
-        R_SetClip(TestData::buffer->target, 0, 0, TestData::buffer->w,
-                                  TestData::buffer->h);
+        R_SetClip(TestData::buffer->target, 0, 0, TestData::buffer->w, TestData::buffer->h);
         return 0;
     }
 
@@ -1236,11 +1232,11 @@ static int gpu_clear(lua_State *L) {
         int color = gpu_getColor(L, 1);
         METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
                                    TestData::palette[color][2], 255};
-        R_ClearColor(TestData::bufferTarget, colorS);
+        R_ClearColor(global.game->RenderTarget_.target, colorS);
     } else {
         METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1],
                                    TestData::palette[0][2], 255};
-        R_ClearColor(TestData::bufferTarget, colorS);
+        R_ClearColor(global.game->RenderTarget_.target, colorS);
     }
 
     return 0;
@@ -1292,7 +1288,7 @@ static int gpu_set_fullscreen(lua_State *L) {
     if (!R_SetFullscreen(fsc, true)) {
         TestData::pixelScale = TestData::setPixelScale;
         R_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH,
-                                              TestData::pixelScale * SCRN_HEIGHT);
+                              TestData::pixelScale * SCRN_HEIGHT);
 
         SDL_SetWindowPosition(global.platform.window, TestData::lastWindowX, TestData::lastWindowY);
     }
@@ -1305,15 +1301,15 @@ static int gpu_set_fullscreen(lua_State *L) {
 static int gpu_swap(lua_State *L) {
     METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1],
                                TestData::palette[0][2], 255};
-    R_ClearColor(TestData::renderer, colorS);
+    R_ClearColor(global.game->RenderTarget_.realTarget, colorS);
 
     //TestData::shader::updateShader();
 
-    R_BlitScale(TestData::buffer, nullptr, TestData::renderer,
-                                TestData::windowWidth / 2, TestData::windowHeight / 2,
-                                TestData::pixelScale, TestData::pixelScale);
+    R_BlitScale(TestData::buffer, nullptr, global.game->RenderTarget_.realTarget,
+                TestData::windowWidth / 2, TestData::windowHeight / 2, TestData::pixelScale,
+                TestData::pixelScale);
 
-    R_Flip(TestData::renderer);
+    R_Flip(global.game->RenderTarget_.realTarget);
 
     R_DeactivateShaderProgram();
 
@@ -1339,6 +1335,8 @@ static const luaL_Reg gpuLib[] = {{"setPaletteColor", gpu_set_palette_color},
 int metadot_bind_gpu(lua_State *L) {
     translateStack = new int[32];
 
+    luaL_Reg libs[] = {{nullptr, nullptr}};
+
     if (luaL_newmetatable(L, "MetaDot.GPU")) {
         luaL_setfuncs(L, gpuLib, 0);
         lua_pushvalue(L, -1);
@@ -1348,8 +1346,11 @@ int metadot_bind_gpu(lua_State *L) {
         lua_setfield(L, -2, "width");
         lua_pushnumber(L, SCRN_HEIGHT);
         lua_setfield(L, -2, "height");
-        return 1;
     }
+    luaL_newlib(L, libs);
+    lua_setglobal(L, "gpu");
+
+    return 1;
 }
 
 #pragma endregion BindGPU

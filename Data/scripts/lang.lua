@@ -1,6 +1,6 @@
 i18n = require("i18n")
 
-i18n.load({
+local lang_pack = {
     en = {
         welcome = "Welcome to MetaDot",
         loaded_vec = "loaded vec lib",
@@ -45,9 +45,13 @@ i18n.load({
         ui_cut = "剪切",
         ui_delete = "删除",
         ui_selectall = "全选",
-        ui_view = "查看"
+        ui_view = "查看",
+        ui_debug_materials = "材质",
+        ui_debug_items = "物品"
     }
-})
+}
+
+i18n.load(lang_pack)
 
 function translate(str) return i18n.translate(str) end
 

@@ -567,7 +567,6 @@ void Settings::Init(bool openDebugUIs) {
 
     networkMode = NetworkMode::HOST;// force
 
-    GameUI::DebugCheatsUI::visible = openDebugUIs;
     GameUI::DebugDrawUI::visible = openDebugUIs;
     draw_frame_graph = openDebugUIs;
     if (!openDebugUIs) {

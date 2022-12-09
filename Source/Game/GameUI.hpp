@@ -20,21 +20,12 @@ namespace GameUI {
         static void Draw(Game *game);
     };
 
-    class DebugCheatsUI {
-    public:
-        static bool visible;
-        static std::vector<R_Image *> images;
-
-        static void Setup();
-
-        static void Draw(Game *game);
-    };
-
     class DebugDrawUI {
     public:
         static bool visible;
         static int selIndex;
         static std::vector<R_Image *> images;
+        static std::vector<R_Image *> tools_images;
 
         static Material *selectedMaterial;
         static uint8 brushSize;
