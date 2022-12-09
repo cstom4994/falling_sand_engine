@@ -406,13 +406,13 @@ namespace GameUI {
 
         worlds = {};
 
-        for (auto &p: std::filesystem::directory_iterator(global.GameDir.getPath("worlds/"))) {
+        for (auto &p: std::filesystem::directory_iterator(METADOT_RESLOC("saves/"))) {
             std::string worldName = p.path().filename().generic_string();
 
             if (worldName == ".DS_Store") continue;
 
             WorldMeta meta = WorldMeta::loadWorldMeta(
-                    (char *) global.GameDir.getWorldPath(worldName).c_str());
+                    METADOT_RESLOC(MetaEngine::Format("saves/{}", worldName)));
 
             worlds.push_back(std::make_tuple(worldName, meta));
         }
@@ -621,7 +621,7 @@ namespace GameUI {
 
                     World *w = nullptr;
                     METADOT_NEW(C, w, World);
-                    w->init(global.GameDir.getWorldPath(worldName),
+                    w->init(METADOT_RESLOC(MetaEngine::Format("saves/{}", worldName)),
                             (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W +
                                     CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
@@ -1381,7 +1381,7 @@ namespace GameUI {
             worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
             METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle,
-                         global.GameDir.getWorldPath(wn));
+                         METADOT_RESLOC(MetaEngine::Format("saves/{}", wn)));
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
@@ -1399,7 +1399,7 @@ namespace GameUI {
                 generator = new MaterialTestGenerator();
             }
 
-            std::string wpStr = global.GameDir.getWorldPath(wn);
+            std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{}", wn));
 
             METADOT_NEW(C, game->GameIsolate_.world, World);
             game->GameIsolate_.world->init(
@@ -1451,7 +1451,7 @@ namespace GameUI {
         std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
 
         std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
-        std::string folder = global.GameDir.getWorldPath(worldFolderName);
+        std::string folder = METADOT_RESLOC(MetaEngine::Format("saves/{}", worldFolderName));
         struct stat buffer;
         bool exists = (stat(folder.c_str(), &buffer) == 0);
 
@@ -1459,7 +1459,7 @@ namespace GameUI {
         int i = 2;
         while (exists) {
             newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
-            folder = global.GameDir.getWorldPath(newWorldFolderName);
+            folder = METADOT_RESLOC(MetaEngine::Format("saves/{}", newWorldFolderName));
 
             exists = (stat(folder.c_str(), &buffer) == 0);
 

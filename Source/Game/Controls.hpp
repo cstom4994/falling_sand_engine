@@ -97,7 +97,7 @@ public:
     static Control *PAUSE;
 
     static std::vector<KeyControl *> keyControls;
-    //static KeyControl** keyControls;
+    
     static bool initted;
 
     static void keyEvent(SDL_KeyboardEvent event);

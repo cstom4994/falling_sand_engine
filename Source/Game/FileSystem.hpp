@@ -30,18 +30,6 @@ public:
 
 #define METADOT_RESLOC_STR(x) METADOT_RESLOC(x).c_str()
 
-class GameDir {
-    std::string gameDir;
-
-public:
-    GameDir(std::string gameDir) { this->gameDir = gameDir; }
-
-    GameDir() { gameDir = ""; }
-
-    std::string getPath(std::string filePathRel);
-    std::string getWorldPath(std::string worldName);
-};
-
 namespace FUtil {
     inline bool exists(std::string_view path) {
         return std::filesystem::exists(METADOT_RESLOC(path));

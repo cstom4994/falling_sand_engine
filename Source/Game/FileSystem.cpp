@@ -51,12 +51,6 @@ std::string ResourceWorker::GetLocalPath(std::string_view resPath) {
     return res.substr(out + 1);
 }
 
-std::string GameDir::getPath(std::string filePathRel) { return this->gameDir + filePathRel; }
-
-std::string GameDir::getWorldPath(std::string worldName) {
-    return this->getPath("worlds/" + worldName);
-}
-
 void FUtil::cleanPathString(std::string &s) {
     SUtil::replaceWith(s, '\\', '/');
     SUtil::replaceWith(s, "//", "/", 2);

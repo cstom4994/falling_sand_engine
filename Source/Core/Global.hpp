@@ -33,7 +33,6 @@ struct Global
 
     ShaderWorker shaderworker;
     Audio audioEngine;
-    GameDir GameDir;
     Platform platform;
     I18N I18N;
 

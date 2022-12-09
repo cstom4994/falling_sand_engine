@@ -123,9 +123,6 @@ int Platform::InitWindow() {
     SDL_FreeSurface(splashSurf);
     R_Flip(global.game->RenderTarget_.target);
 
-    // load key bind
-    Controls::initKey();
-
     METADOT_INFO("Loading ImGUI");
     METADOT_NEW(C, global.ImGuiCore, ImGuiCore);
     global.ImGuiCore->Init(global.platform.window, gl_context);

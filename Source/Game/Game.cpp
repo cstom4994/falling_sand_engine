@@ -61,8 +61,6 @@ int Game::init(int argc, char *argv[]) {
 
     METADOT_INFO("Starting game...");
 
-    global.GameDir = GameDir(METADOT_RESLOC("saves/"));
-
     global.platform.InitWindow();
 
     // scripting system
@@ -115,7 +113,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW(C, GameIsolate_.world, World);
     GameIsolate_.world->noSaveLoad = true;
     GameIsolate_.world->init(
-            global.GameDir.getWorldPath("mainMenu"),
+            METADOT_RESLOC("saves/mainMenu"),
             (int) ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (double) CHUNK_W) * CHUNK_W +
                     CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
@@ -4206,7 +4204,7 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ {0}", global.GameDir.getWorldPath(wn));
+    METADOT_INFO("Loading main menu @ {0}", METADOT_RESLOC(MetaEngine::Format("saves/{}", wn)));
     GameUI::MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -4216,7 +4214,7 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = global.GameDir.getWorldPath(wn);
+    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{}", wn));
 
     METADOT_NEW(C, GameIsolate_.world, World);
     GameIsolate_.world->noSaveLoad = true;

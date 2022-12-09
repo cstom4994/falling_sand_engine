@@ -5,6 +5,7 @@
 #include "Core/Global.hpp"
 #include "Engine/ImGuiBinder.hpp"
 #include "Engine/ReflectionFlat.hpp"
+#include "Game/Controls.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/Materials.hpp"
@@ -37,6 +38,7 @@ static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(e
 static void textures_init() { Textures::Init(); }
 static void textures_load(std::string name, std::string path) {}
 static void materials_init() { Materials::Init(); }
+static void controls_init() { Controls::initKey(); }
 
 static void load_lua(std::string luafile) {}
 static void load_script(std::string scriptfile) {
@@ -70,6 +72,7 @@ void GameScriptingWrap::Bind() {
         module.function<&materials_init>("materials_init");
         module.function<&textures_init>("textures_init");
         module.function<&textures_load>("textures_load");
+        module.function<&controls_init>("controls_init");
 
         js_std_init_handlers(global.scripts->JsRuntime->rt);
         /* loader for ES6 modules */

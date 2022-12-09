@@ -7,6 +7,8 @@ function OnGameDataLoad() {
 function OnGameEngineLoad() {
     test.load_script("data/scripts/graphics.js");
     test.load_script("data/scripts/audio.js");
+
+    test.controls_init();
 }
 
 function OnImGuiUpdate() {
