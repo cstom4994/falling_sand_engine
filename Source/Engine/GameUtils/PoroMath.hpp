@@ -13,7 +13,7 @@
 
 #include <math.h>
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         //=============================================================================
@@ -173,15 +173,15 @@ namespace CEngine {
         };
 
     }// namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 // ---------- types ----------
 namespace types {
-    typedef CEngine::math::CVector2<float> vector2;
-    typedef CEngine::math::CVector2<double> dvector2;
-    typedef CEngine::math::CVector2<int> ivector2;
+    typedef BaseEngine::math::CVector2<float> vector2;
+    typedef BaseEngine::math::CVector2<double> dvector2;
+    typedef BaseEngine::math::CVector2<int> ivector2;
 
-    typedef CEngine::math::CVector2<int> point;
+    typedef BaseEngine::math::CVector2<int> point;
 
 }// end of namespace types
 
@@ -195,7 +195,7 @@ namespace types {
 #include <math.h>
 #include <stdlib.h>
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         // typedef CVector2< float > Vec2;
@@ -277,12 +277,12 @@ namespace CEngine {
         };
 
     }// end of namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 //----------------- types --------------------------------------------
 
 namespace types {
-    typedef CEngine::math::CMat22<float> mat22;
+    typedef BaseEngine::math::CMat22<float> mat22;
 }// end of namespace types
 
 #endif
@@ -290,7 +290,7 @@ namespace types {
 #ifndef INC_CENG_MATH_CXFORM_H
 #define INC_CENG_MATH_CXFORM_H
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         /// A transform contains translation and rotation. It is used to represent
@@ -326,12 +326,12 @@ namespace CEngine {
         };
 
     }// end of namespace math
-}// End of namespace CEngine
+}// End of namespace BaseEngine
 
 // -------------- types --------------------------
 
 namespace types {
-    typedef CEngine::math::CXForm<float> xform;
+    typedef BaseEngine::math::CXForm<float> xform;
 }// end of namespace types
 
 #endif
@@ -339,7 +339,7 @@ namespace types {
 #ifndef INC_MATH_FUNCTIONS_H
 #define INC_MATH_FUNCTIONS_H
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         //=============================================================================
@@ -426,7 +426,7 @@ namespace CEngine {
 		return n;
 	*/
 
-            return CEngine::math::Max(n, -n);
+            return BaseEngine::math::Max(n, -n);
         }
 
         //=============================================================================
@@ -437,7 +437,7 @@ namespace CEngine {
 
         template<typename Type>
         inline Type Clamp(const Type &a, const Type &low, const Type &high) {
-            return CEngine::math::Max(low, CEngine::math::Min(a, high));
+            return BaseEngine::math::Max(low, BaseEngine::math::Min(a, high));
         }
 
         //=============================================================================
@@ -516,11 +516,11 @@ namespace CEngine {
         //=============================================================================
 
     }// end of namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         //-----------------------------------------------------------------------------
@@ -782,21 +782,21 @@ Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
             if (IsPointInsideAABB(point, aabb_min, aabb_max)) return 0;
 
             float lowest = 0;
-            float temp = CEngine::math::DistanceFromLineSquared(
+            float temp = BaseEngine::math::DistanceFromLineSquared(
                     aabb_min, CVector2<PType>(aabb_max.x, aabb_min.y), point);
             if (temp < lowest) lowest = temp;
 
-            temp = CEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_min.y),
+            temp = BaseEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_min.y),
                                                        CVector2<PType>(aabb_max.x, aabb_max.y),
                                                        point);
             if (temp < lowest) lowest = temp;
 
-            temp = CEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_max.y),
+            temp = BaseEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_max.y),
                                                        CVector2<PType>(aabb_min.x, aabb_max.y),
                                                        point);
             if (temp < lowest) lowest = temp;
 
-            temp = CEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_min.x, aabb_max.y),
+            temp = BaseEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_min.x, aabb_max.y),
                                                        CVector2<PType>(aabb_min.x, aabb_min.y),
                                                        point);
             if (temp < lowest) lowest = temp;
@@ -806,12 +806,12 @@ Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 
         // ----------------------------------------------------------------------------
     }// end of namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #ifndef INC_MATH_CAVERAGER_H
 #define INC_MATH_CAVERAGER_H
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         ///////////////////////////////////////////////////////////////////////////////
@@ -857,7 +857,7 @@ namespace CEngine {
         ///////////////////////////////////////////////////////////////////////////////
 
     }// end of namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -868,7 +868,7 @@ namespace CEngine {
 
 struct b2AABB;
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         typedef float PointType;
@@ -912,7 +912,7 @@ namespace CEngine {
         }
 
     }// end of namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -921,7 +921,7 @@ namespace CEngine {
 
 #include <limits>
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         ///////////////////////////////////////////////////////////////////////////////
@@ -958,7 +958,7 @@ namespace CEngine {
         ///////////////////////////////////////////////////////////////////////////////
 
     }// namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -967,7 +967,7 @@ namespace CEngine {
 
 #include <math.h>
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         template<typename T>
@@ -1027,15 +1027,15 @@ namespace CEngine {
         };
 
         template<typename T>
-        const T CAngle<T>::TWO_PI = (T) (2 * CEngine::math::pi);
+        const T CAngle<T>::TWO_PI = (T) (2 * BaseEngine::math::pi);
 
     }// end of namespace math
-}// namespace CEngine
+}// namespace BaseEngine
 
 // ---------------- types ---------------------
 
 namespace types {
-    typedef CEngine::math::CAngle<float> angle;
+    typedef BaseEngine::math::CAngle<float> angle;
 }// end of namespace types
 
 #endif

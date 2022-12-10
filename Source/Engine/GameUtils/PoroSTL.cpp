@@ -1,7 +1,7 @@
 
 #include "PoroSTL.hpp"
 
-namespace CEngine {}
+namespace BaseEngine {}
 
 #include <iostream>
 
@@ -95,7 +95,7 @@ std::string base64_decode(std::string const &encoded_string) {
 // #include "Poro/utils/../config/cengdef.h"
 
 // #include "Poro/utils/../outside resources/memory management/debug_memorymanager.h"
-namespace CEngine {
+namespace BaseEngine {
 
     ///////////////////////////////////////////////////////////////////////////////
 
@@ -512,4 +512,4 @@ namespace CEngine {
     }
 
     ///////////////////////////////////////////////////////////////////////////////
-}// end of namespace CEngine
+}// end of namespace BaseEngine

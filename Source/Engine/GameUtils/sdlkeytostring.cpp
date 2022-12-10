@@ -20,7 +20,7 @@
 
 #include "sdlkeytostring.h"
 
-#include "Engine/Poro/utils/PoroSTL.hpp"
+#include "Engine/GameUtils/PoroSTL.hpp"
 
 #include <map>
 #include <string>
@@ -284,7 +284,7 @@ std::string SDLKeyToString(int sdlkey) {
 int StringToSDLKey(const std::string &s) {
     InitKeymap();
 
-    std::map<std::string, int>::iterator i = keymap.find(CEngine::Lowercase(s));
+    std::map<std::string, int>::iterator i = keymap.find(BaseEngine::Lowercase(s));
     if (i == keymap.end()) return 0;
 
     return i->second;

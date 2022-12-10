@@ -1,10 +1,153 @@
+
+#ifndef INC_CSINGLETON_H
+#define INC_CSINGLETON_H
+
+#include <memory>
+
+namespace BaseEngine {
+
+    template<class T>
+    class CSingleton {
+    public:
+        virtual ~CSingleton() {}
+
+        static T *GetSingletonPtr() {
+            if (myInstance.get() == NULL) {
+                std::shared_ptr<T> t(new T);
+                myInstance = t;
+            }
+
+            return myInstance.get();
+        }
+
+        static T &GetSingleton() { return (*GetSingletonPtr()); }
+
+        static void Delete() {
+            std::shared_ptr<T> t;
+            myInstance = t;
+        }
+
+    protected:
+        CSingleton() {}
+
+        static std::shared_ptr<T> myInstance;
+    };
+
+    template<typename T>
+    std::shared_ptr<T> CSingleton<T>::myInstance;
+
+    //=============================================================================
+
+    template<typename T>
+    class CStaticSingleton {
+    public:
+        virtual ~CStaticSingleton() {}
+
+        static T *GetSingletonPtr() {
+            static T *myInstance = 0;
+            if (myInstance == 0) myInstance = new T;
+
+            return myInstance;
+        }
+
+        static T &GetSingleton() { return (*GetSingletonPtr()); }
+
+    protected:
+        CStaticSingleton() {}
+    };
+
+}// end of namespace BaseEngine
+
+#endif
+
+#ifndef INC_CSINGLETONPTR_H
+#define INC_CSINGLETONPTR_H
+
+#include <memory>
+
+namespace BaseEngine {
+
+    template<typename T>
+    class CSingletonPtr {
+    public:
+        CSingletonPtr() {}
+        ~CSingletonPtr() {}
+
+        static T *GetSingletonPtr() {
+            if (myInstance.get() == NULL) {
+                std::shared_ptr<T> t(::new T);
+                myInstance = t;
+            }
+
+            return myInstance.get();
+        }
+
+        static T &GetSingleton() { return (*GetSingletonPtr()); }
+
+        static void Delete() {
+            std::shared_ptr<T> t;
+            myInstance = t;
+        }
+
+        T *operator->() const { return GetSingletonPtr(); }
+
+        T &operator*() const { return GetSingleton(); }
+
+    private:
+        static std::shared_ptr<T> myInstance;
+    };
+
+    template<typename T>
+    std::shared_ptr<T> CSingletonPtr<T>::myInstance;
+
+    template<typename T>
+    inline T *GetSingletonPtr() {
+        return CSingletonPtr<T>::GetSingletonPtr();
+    }
+
+}// namespace BaseEngine
+
+#endif
+
+#ifndef INC_POINTER_SORTER
+#define INC_POINTER_SORTER
+
+namespace BaseEngine {
+
+    struct pointer_sorter
+    {
+        template<class T>
+        bool operator()(const T *a, const T *b) const {
+            if (a == 0) {
+                return b != 0;
+            } else if (b == 0) {
+                return false;
+            } else {
+                return (*a) < (*b);
+            }
+        }
+
+        template<class T>
+        bool operator()(const T *a, const T *b) {
+            if (a == 0) {
+                return b != 0;
+            } else if (b == 0) {
+                return false;
+            } else {
+                return (*a) < (*b);
+            }
+        }
+    };
+
+}//end of namespace BaseEngine
+#endif
 #ifndef INC_HANDLE_PTR_H
 #define INC_HANDLE_PTR_H
 
 #include "Core/DebugImpl.hpp"
 #include <vector>
 
-namespace CEngine {
+namespace BaseEngine {
 
     //=============================================================================
 
@@ -155,6 +298,6 @@ namespace CEngine {
 
     //-----------------------------------------------------------------------------
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif

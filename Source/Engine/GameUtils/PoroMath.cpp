@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-namespace CEngine {
+namespace BaseEngine {
     namespace math {
 
         ///////////////////////////////////////////////////////////////////////////////
@@ -264,4 +264,4 @@ namespace CEngine {
         ///////////////////////////////////////////////////////////////////////////////
 
     }// end of namespace math
-}// end of namespace CEngine
+}// end of namespace BaseEngine

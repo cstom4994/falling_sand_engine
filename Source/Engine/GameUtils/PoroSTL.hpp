@@ -7,9 +7,8 @@
 // #include <string.h>
 
 #include "Core/DebugImpl.hpp"
-#include "Poro/utils/memcpy/memcpy.h"
 
-namespace CEngine {
+namespace BaseEngine {
 
     template<typename Type, typename SizeType = int>
     class CSafeArray {
@@ -107,7 +106,7 @@ namespace CEngine {
         SizeType _size;
     };
 
-}// namespace CEngine
+}// namespace BaseEngine
 
 #endif
 
@@ -116,7 +115,7 @@ namespace CEngine {
 
 #include "Core/DebugImpl.hpp"
 
-namespace CEngine {
+namespace BaseEngine {
 
     template<class T, int N>
     class CStaticArray {
@@ -155,7 +154,7 @@ namespace CEngine {
         T data[N];
     };
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -164,7 +163,7 @@ namespace CEngine {
 
 #include "Core/DebugImpl.hpp"
 
-namespace CEngine {
+namespace BaseEngine {
 
     template<class T, int N>
     class StaticArray {
@@ -203,7 +202,7 @@ namespace CEngine {
         T data[N];
     };
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -217,7 +216,7 @@ namespace CEngine {
 // #include <vector>
 // #include <memory>
 
-namespace CEngine {
+namespace BaseEngine {
 
     // #include "Poro/utils/../../config/cengdef.h"
     // __CENG_BEGIN
@@ -480,7 +479,7 @@ namespace CEngine {
         // std::vector< _Ty > myDataArray;
     };
 
-}// namespace CEngine
+}// namespace BaseEngine
 // __CENG_END
 
 #endif
@@ -491,7 +490,7 @@ namespace CEngine {
 #include <algorithm>
 #include <list>
 
-namespace CEngine {
+namespace BaseEngine {
 
     template<class T>
     class CAutoListInsertOperation {
@@ -544,7 +543,7 @@ namespace CEngine {
     template<class T>
     std::list<T *> *CAutoList<T>::myAutoListPointerList = NULL;
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 #endif
 
 #include <string>
@@ -569,7 +568,7 @@ std::string base64_decode(std::string const &s);
 
 //-----------------------------------------------------------------------------
 
-namespace CEngine {
+namespace BaseEngine {
     namespace bitmask {
         namespace types {
 
@@ -579,7 +578,7 @@ namespace CEngine {
 
         }// end of namespace types
     }    // end of namespace bitmask
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 //-----------------------------------------------------------------------------
 
@@ -588,7 +587,7 @@ namespace CEngine {
 #ifndef INC_CBITMASK_MATH_H
 #define INC_CBITMASK_MATH_H
 
-namespace CEngine {
+namespace BaseEngine {
     namespace bitmask {
 
         struct PointMatrix;
@@ -880,11 +879,11 @@ namespace CEngine {
         //-----------------------------------------------------------------------------
 
     }// end of namespace bitmask
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
-namespace CEngine {
+namespace BaseEngine {
 
     template<typename T>
     class CBitMask {
@@ -962,7 +961,7 @@ namespace CEngine {
         std::map<Pos, T> mData;
     };
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -974,7 +973,7 @@ namespace CEngine {
 
 #include "Core/DebugImpl.hpp"
 
-namespace CEngine {
+namespace BaseEngine {
 
     //! This is a map that can contain multiple elements under one key
     template<class T1, class T2, class PR = std::less<T1>>
@@ -1104,7 +1103,7 @@ namespace CEngine {
         }                                                                                          \
     }
 
-}// namespace CEngine
+}// namespace BaseEngine
 
 #endif
 
@@ -1119,7 +1118,7 @@ namespace CEngine {
 #pragma warning(disable : 4503)
 #endif
 
-namespace CEngine {
+namespace BaseEngine {
 
     template<class T>
     struct CMapHelperSorter
@@ -1261,7 +1260,7 @@ namespace CEngine {
         typename std::list<T2>::iterator myListIterator;
     };
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 
 #endif
 
@@ -1304,7 +1303,7 @@ namespace CEngine {
 
 #include <string>
 
-namespace CEngine {
+namespace BaseEngine {
 
     // Infrastructure.
 
@@ -1328,7 +1327,7 @@ namespace CEngine {
         list(FROM_STRING_CASE) return name(); /* assert? throw? */                                 \
     }
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 #endif
 
 #ifndef INC_STRING_H
@@ -1343,7 +1342,7 @@ namespace CEngine {
 #include <string>
 #include <vector>
 
-namespace CEngine {
+namespace BaseEngine {
     // #include "Poro/utils/../config/cengdef.h"
     // __CENG_BEGIN	// NAMESPACE?
 
@@ -1469,7 +1468,7 @@ namespace CEngine {
 
     //-----------------------------------------------------------------------------
 
-}// end of namespace CEngine
+}// end of namespace BaseEngine
 #endif
 
 #ifndef INC_VECTOR_UTILS_H
@@ -1482,7 +1481,7 @@ namespace CEngine {
 #include <string>
 #include <vector>
 
-namespace CEngine {
+namespace BaseEngine {
 
     // adds an element to the vector if it doesn't exist in the container
     // returns true if the element was added
@@ -1637,6 +1636,6 @@ namespace CEngine {
 
     //-----------------------------------------------------------------------------
 
-}//end of namespace CEngine
+}//end of namespace BaseEngine
 
 #endif

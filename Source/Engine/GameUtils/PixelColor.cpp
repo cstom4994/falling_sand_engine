@@ -1,32 +1,88 @@
-/***************************************************************************
- *
- * Copyright (c) 2003 - 2011 Petri Purho
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- ***************************************************************************/
+#include "PixelColor.h"
 
-#include "color_utils.h"
+#include "Engine/GameUtils/PoroMath.hpp"
 
-#include "Poro/utils/PoroMath.hpp"
+#include <SDL2/SDL.h>
 
-namespace CEngine {
-    namespace {}// namespace
-    // ----------------------------------------------------------------------------
+namespace BaseEngine {
 
-    // ----------------------------------------------------------------------------
+    bool CColorUint8::masks_initialized = false;
+    CColorUint8::uint32 CColorUint8::RMask;
+    CColorUint8::uint32 CColorUint8::GMask;
+    CColorUint8::uint32 CColorUint8::BMask;
+    CColorUint8::uint32 CColorUint8::AMask;
+
+    CColorUint8::uint8 CColorUint8::RShift;
+    CColorUint8::uint8 CColorUint8::GShift;
+    CColorUint8::uint8 CColorUint8::BShift;
+    CColorUint8::uint8 CColorUint8::AShift;
+
+    void CColorUint8::InitMasks() {
+
+        if (masks_initialized == false) {
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            RMask = (0xFF000000);
+            GMask = (0x00FF0000);
+            BMask = (0x0000FF00), AMask = (0x000000FF);
+            RShift = (24);
+            GShift = (16);
+            BShift = (8);
+            AShift = (0);
+#else
+            RMask = (0x000000FF);
+            GMask = (0x0000FF00);
+            BMask = (0x00FF0000);
+            AMask = (0xFF000000);
+            RShift = (0);
+            GShift = (8);
+            BShift = (16);
+            AShift = (24);
+#endif
+
+            masks_initialized = true;
+        }
+    }
+
+    // ---------------
+
+    bool CColorFloat::masks_initialized = false;
+    CColorFloat::uint32 CColorFloat::RMask;
+    CColorFloat::uint32 CColorFloat::GMask;
+    CColorFloat::uint32 CColorFloat::BMask;
+    CColorFloat::uint32 CColorFloat::AMask;
+
+    CColorFloat::uint8 CColorFloat::RShift;
+    CColorFloat::uint8 CColorFloat::GShift;
+    CColorFloat::uint8 CColorFloat::BShift;
+    CColorFloat::uint8 CColorFloat::AShift;
+
+    void CColorFloat::InitMasks() {
+
+        if (masks_initialized == false) {
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            RMask = (0xFF000000);
+            GMask = (0x00FF0000);
+            BMask = (0x0000FF00), AMask = (0x000000FF);
+            RShift = (24);
+            GShift = (16);
+            BShift = (8);
+            AShift = (0);
+#else
+            RMask = (0x000000FF);
+            GMask = (0x0000FF00);
+            BMask = (0x00FF0000);
+            AMask = (0xFF000000);
+            RShift = (0);
+            GShift = (8);
+            BShift = (16);
+            AShift = (24);
+#endif
+
+            masks_initialized = true;
+        }
+    }
 
     types::color GetColorFromHex(types::uint32 color) {
         types::uint32 r32, g32, b32;
@@ -114,9 +170,9 @@ namespace CEngine {
     // ----------------------------------------------------------------------------
 
     float ColorDistance(const types::fcolor &c1, const types::fcolor &c2) {
-        float t = (float) (CEngine::math::Absolute(c1.GetR() - c2.GetR()) +
-                           CEngine::math::Absolute(c1.GetG() - c2.GetG()) +
-                           CEngine::math::Absolute(c1.GetB() - c2.GetB()));
+        float t = (float) (BaseEngine::math::Absolute(c1.GetR() - c2.GetR()) +
+                           BaseEngine::math::Absolute(c1.GetG() - c2.GetG()) +
+                           BaseEngine::math::Absolute(c1.GetB() - c2.GetB()));
 
         return t / 3.f;
     }
@@ -124,9 +180,9 @@ namespace CEngine {
     // ----------------------------------------------------------------------------
 
     float ColorDistance(const types::color &c1, const types::color &c2) {
-        float t = (float) (CEngine::math::Absolute(c1.GetR() - c2.GetR()) +
-                           CEngine::math::Absolute(c1.GetG() - c2.GetG()) +
-                           CEngine::math::Absolute(c1.GetB() - c2.GetB()));
+        float t = (float) (BaseEngine::math::Absolute(c1.GetR() - c2.GetR()) +
+                           BaseEngine::math::Absolute(c1.GetG() - c2.GetG()) +
+                           BaseEngine::math::Absolute(c1.GetB() - c2.GetB()));
 
         return t / (255.f * 3);
     }
@@ -160,4 +216,4 @@ namespace CEngine {
 
     //-----------------------------------------------------------------------------
 
-}// namespace CEngine
+}// namespace BaseEngine
