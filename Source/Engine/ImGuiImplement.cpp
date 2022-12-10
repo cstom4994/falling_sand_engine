@@ -9,12 +9,14 @@
 #include "Core/Core.hpp"
 #include "Engine/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
+#include "Game/FileSystem.hpp"
 #include "ImGuiImplement.hpp"
 
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <stdio.h>
+#include <string>
 #include <utility>
 
 #pragma region ImGuiImplementGL3
@@ -117,7 +119,7 @@ struct ImGui_ImplOpenGL3_VtxAttribState
 #endif
 
 // Functions
-bool ImGui_ImplOpenGL3_Init(const char *glsl_version) {
+bool ImGui_ImplOpenGL3_Init() {
     ImGuiIO &io = ImGui::GetIO();
     IM_ASSERT(io.BackendRendererUserData == nullptr && "Already initialized a renderer backend!");
 
@@ -175,19 +177,7 @@ bool ImGui_ImplOpenGL3_Init(const char *glsl_version) {
     io.BackendFlags |=
             ImGuiBackendFlags_RendererHasViewports;// We can create multi-viewports on the Renderer side (optional)
 
-    // Store GLSL version string so we can refer to it later in case we recreate shaders.
-    // Note: GLSL version is NOT the same as GL version. Leave this to nullptr if unsure.
-    if (glsl_version == nullptr) {
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-        glsl_version = "#version 100";
-#elif defined(IMGUI_IMPL_OPENGL_ES3)
-        glsl_version = "#version 300 es";
-#elif defined(__APPLE__)
-        glsl_version = "#version 150";
-#else
-        glsl_version = "#version 130";
-#endif
-    }
+    const char *glsl_version = "#version 330";
     IM_ASSERT((int) strlen(glsl_version) + 2 < IM_ARRAYSIZE(bd->GlslVersionString));
     strcpy(bd->GlslVersionString, glsl_version);
     strcat(bd->GlslVersionString, "\n");
@@ -638,130 +628,22 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
     int glsl_version = 130;
     sscanf(bd->GlslVersionString, "#version %d", &glsl_version);
 
-    const GLchar *vertex_shader_glsl_120 = "uniform mat4 ProjMtx;\n"
-                                           "attribute vec2 Position;\n"
-                                           "attribute vec2 UV;\n"
-                                           "attribute vec4 Color;\n"
-                                           "varying vec2 Frag_UV;\n"
-                                           "varying vec4 Frag_Color;\n"
-                                           "void main()\n"
-                                           "{\n"
-                                           "    Frag_UV = UV;\n"
-                                           "    Frag_Color = Color;\n"
-                                           "    gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-                                           "}\n";
+    std::string vertex_shader =
+            FUtil::readFileString(METADOT_RESLOC_STR("data/shaders/imgui_common.vert"));
+    std::string fragment_shader =
+            FUtil::readFileString(METADOT_RESLOC_STR("data/shaders/imgui_common.frag"));
 
-    const GLchar *vertex_shader_glsl_130 = "uniform mat4 ProjMtx;\n"
-                                           "in vec2 Position;\n"
-                                           "in vec2 UV;\n"
-                                           "in vec4 Color;\n"
-                                           "out vec2 Frag_UV;\n"
-                                           "out vec4 Frag_Color;\n"
-                                           "void main()\n"
-                                           "{\n"
-                                           "    Frag_UV = UV;\n"
-                                           "    Frag_Color = Color;\n"
-                                           "    gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-                                           "}\n";
-
-    const GLchar *vertex_shader_glsl_300_es = "precision highp float;\n"
-                                              "layout (location = 0) in vec2 Position;\n"
-                                              "layout (location = 1) in vec2 UV;\n"
-                                              "layout (location = 2) in vec4 Color;\n"
-                                              "uniform mat4 ProjMtx;\n"
-                                              "out vec2 Frag_UV;\n"
-                                              "out vec4 Frag_Color;\n"
-                                              "void main()\n"
-                                              "{\n"
-                                              "    Frag_UV = UV;\n"
-                                              "    Frag_Color = Color;\n"
-                                              "    gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-                                              "}\n";
-
-    const GLchar *vertex_shader_glsl_410_core =
-            "layout (location = 0) in vec2 Position;\n"
-            "layout (location = 1) in vec2 UV;\n"
-            "layout (location = 2) in vec4 Color;\n"
-            "uniform mat4 ProjMtx;\n"
-            "out vec2 Frag_UV;\n"
-            "out vec4 Frag_Color;\n"
-            "void main()\n"
-            "{\n"
-            "    Frag_UV = UV;\n"
-            "    Frag_Color = Color;\n"
-            "    gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-            "}\n";
-
-    const GLchar *fragment_shader_glsl_120 =
-            "#ifdef GL_ES\n"
-            "    precision mediump float;\n"
-            "#endif\n"
-            "uniform sampler2D Texture;\n"
-            "varying vec2 Frag_UV;\n"
-            "varying vec4 Frag_Color;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_FragColor = Frag_Color * texture2D(Texture, Frag_UV.st);\n"
-            "}\n";
-
-    const GLchar *fragment_shader_glsl_130 =
-            "uniform sampler2D Texture;\n"
-            "in vec2 Frag_UV;\n"
-            "in vec4 Frag_Color;\n"
-            "out vec4 Out_Color;\n"
-            "void main()\n"
-            "{\n"
-            "    Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-            "}\n";
-
-    const GLchar *fragment_shader_glsl_300_es =
-            "precision mediump float;\n"
-            "uniform sampler2D Texture;\n"
-            "in vec2 Frag_UV;\n"
-            "in vec4 Frag_Color;\n"
-            "layout (location = 0) out vec4 Out_Color;\n"
-            "void main()\n"
-            "{\n"
-            "    Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-            "}\n";
-
-    const GLchar *fragment_shader_glsl_410_core =
-            "in vec2 Frag_UV;\n"
-            "in vec4 Frag_Color;\n"
-            "uniform sampler2D Texture;\n"
-            "layout (location = 0) out vec4 Out_Color;\n"
-            "void main()\n"
-            "{\n"
-            "    Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-            "}\n";
-
-    // Select shaders matching our GLSL versions
-    const GLchar *vertex_shader = nullptr;
-    const GLchar *fragment_shader = nullptr;
-    if (glsl_version < 130) {
-        vertex_shader = vertex_shader_glsl_120;
-        fragment_shader = fragment_shader_glsl_120;
-    } else if (glsl_version >= 410) {
-        vertex_shader = vertex_shader_glsl_410_core;
-        fragment_shader = fragment_shader_glsl_410_core;
-    } else if (glsl_version == 300) {
-        vertex_shader = vertex_shader_glsl_300_es;
-        fragment_shader = fragment_shader_glsl_300_es;
-    } else {
-        vertex_shader = vertex_shader_glsl_130;
-        fragment_shader = fragment_shader_glsl_130;
-    }
+    const char *vertbuffer = vertex_shader.c_str();
+    const char *fragbuffer = fragment_shader.c_str();
 
     // Create shaders
-    const GLchar *vertex_shader_with_version[2] = {bd->GlslVersionString, vertex_shader};
     GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert_handle, 2, vertex_shader_with_version, nullptr);
+    glShaderSource(vert_handle, 1, &vertbuffer, nullptr);
     glCompileShader(vert_handle);
     CheckShader(vert_handle, "vertex shader");
 
-    const GLchar *fragment_shader_with_version[2] = {bd->GlslVersionString, fragment_shader};
     GLuint frag_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag_handle, 2, fragment_shader_with_version, nullptr);
+    glShaderSource(frag_handle, 1, &fragbuffer, nullptr);
     glCompileShader(frag_handle);
     CheckShader(frag_handle, "fragment shader");
 
@@ -3113,12 +2995,11 @@ BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
 #endif
 
 void ImGuiWidget::PlotFlame(const char *label,
-                                      void (*values_getter)(float *start, float *end, ImU8 *level,
-                                                            const char **caption, const void *data,
-                                                            int idx),
-                                      const void *data, int values_count, int values_offset,
-                                      const char *overlay_text, float scale_min, float scale_max,
-                                      ImVec2 graph_size) {
+                            void (*values_getter)(float *start, float *end, ImU8 *level,
+                                                  const char **caption, const void *data, int idx),
+                            const void *data, int values_count, int values_offset,
+                            const char *overlay_text, float scale_min, float scale_max,
+                            ImVec2 graph_size) {
     ImGuiWindow *window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return;
 

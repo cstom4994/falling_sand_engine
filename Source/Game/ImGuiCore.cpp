@@ -234,8 +234,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 
-    const char *glsl_version = "#version 330 core";
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplOpenGL3_Init();
 
     style.ScaleAllSizes(scale);
 

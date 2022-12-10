@@ -44,7 +44,7 @@
 #include "Libs/ImGui/md4c.h"
 
 // Backend API
-bool ImGui_ImplOpenGL3_Init(const char *glsl_version = nullptr);
+bool ImGui_ImplOpenGL3_Init();
 void ImGui_ImplOpenGL3_Shutdown();
 void ImGui_ImplOpenGL3_NewFrame();
 void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data);
