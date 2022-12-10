@@ -109,6 +109,7 @@ const char *u8Cpp20(T &&t) noexcept {
 #elif defined(__linux)
 #define METADOT_PLATFORM_LINUX
 #elif defined(__APPLE__)
+#include "TargetConditionals.h"
 #define METADOT_PLATFORM_APPLE
 #if defined(__METADOT_ARCH_ARM)
 #define METADOT_PLATFORM_APPLE_ARM
