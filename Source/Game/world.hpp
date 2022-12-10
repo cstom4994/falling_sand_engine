@@ -7,7 +7,7 @@
 #include "Core/Const.hpp"
 #include "Core/Macros.hpp"
 #include "Core/ThreadPool.hpp"
-#include "Engine/Audio.h"
+#include "Engine/Audio.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Noise.h"
 #include "Engine/RendererGPU.h"

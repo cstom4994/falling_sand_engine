@@ -1,22 +1,92 @@
-#include "Audio.h"
+// Copyright(c) 2022, KaoruXun All rights reserved.
+
+#include "Audio.hpp"
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
 
 #if defined(METADOT_BUILD_AUDIO)
 
-Implementation::Implementation() {
-    mpStudioSystem = NULL;
-    Audio::ErrorCheck(FMOD::Studio::System::create(&mpStudioSystem));
-    Audio::ErrorCheck(mpStudioSystem->initialize(32, FMOD_STUDIO_INIT_LIVEUPDATE,
-                                                 FMOD_INIT_PROFILE_ENABLE, NULL));
+void event_instance::start() { assert(false && "Unimpl"); }
 
-    mpSystem = NULL;
-    Audio::ErrorCheck(mpStudioSystem->getCoreSystem(&mpSystem));
+void event_instance::stop() { assert(false && "Unimpl"); }
+
+event_instance event::instance() { assert(false && "Unimpl"); }
+
+bank::bank(FMOD::Studio::Bank *fmod_bank) : fmod_bank(fmod_bank) {
+    int num_events;
+    check_err(fmod_bank->getEventCount(&num_events));
+    std::cout << "Num events = " << num_events << std::endl;
+    if (num_events > 0) {
+        std::vector<FMOD::Studio::EventDescription *> event_descriptions(num_events);
+        check_err(fmod_bank->getEventList(event_descriptions.data(), num_events, &num_events));
+
+        for (int ii = 0; ii < num_events; ++ii) {
+            // Get the event name
+            int name_len;
+            check_err(event_descriptions[ii]->getPath(nullptr, 0, &name_len));
+            char *name_chars = new char[name_len];
+            check_err(event_descriptions[ii]->getPath(name_chars, name_len, nullptr));
+            std::string name(name_chars);
+            delete[] name_chars;
+            std::cout << "Event name = " << name << std::endl;
+            event_map.insert(std::make_pair(name, event{event_descriptions[ii], name}));
+        }
+    }
 }
 
+event *bank::load_event(const char *path) {
+    const auto cached = event_map.find(path);
+    return (cached != event_map.end()) ? &cached->second : nullptr;
+}
+
+bank_manager *bank_manager_instance = nullptr;
+
+bank_manager::bank_manager() {}
+
+bank_manager &bank_manager::instance() {
+    if (!bank_manager_instance) { bank_manager_instance = new bank_manager(); }
+    return *bank_manager_instance;
+}
+
+bank *bank_manager::load(const char *path) {
+    const auto cached = bank_map.find(path);
+    if (cached != bank_map.end()) { return &cached->second; }
+    const auto system = get_fmod_system();
+    FMOD::Studio::Bank *fmod_bank = nullptr;
+    check_err(system->loadBankFile(path, FMOD_STUDIO_LOAD_BANK_NORMAL, &fmod_bank));
+
+    // make the bank & insert
+    bank b{fmod_bank};
+    return &bank_map.insert(std::make_pair(std::string(path), std::move(b))).first->second;
+}
+
+FMOD::Studio::System *fmod_system = nullptr;
+FMOD::System *lowLevelSystem = nullptr;
+
+void init_fmod_system() {
+    check_err(FMOD::Studio::System::create(&fmod_system));
+
+    check_err(fmod_system->getCoreSystem(&lowLevelSystem));
+    check_err(lowLevelSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_5POINT1, 0));
+
+    check_err(fmod_system->initialize(512, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, 0));
+}
+
+FMOD::Studio::System *get_fmod_system() {
+    assert(fmod_system != nullptr);
+    return fmod_system;
+}
+
+FMOD::System *get_fmod_core_system() {
+    assert(lowLevelSystem != nullptr);
+    return lowLevelSystem;
+}
+
+Implementation::Implementation() { init_fmod_system(); }
+
 Implementation::~Implementation() {
-    Audio::ErrorCheck(mpStudioSystem->unloadAll());
-    Audio::ErrorCheck(mpStudioSystem->release());
+    Audio::ErrorCheck(get_fmod_system()->unloadAll());
+    Audio::ErrorCheck(get_fmod_system()->release());
 }
 
 void Implementation::Update() {
@@ -27,7 +97,7 @@ void Implementation::Update() {
         if (!bIsPlaying) { pStoppedChannels.push_back(it); }
     }
     for (auto &it: pStoppedChannels) { mChannels.erase(it); }
-    Audio::ErrorCheck(mpStudioSystem->update());
+    Audio::ErrorCheck(get_fmod_system()->update());
 }
 
 Implementation *sgpImplementation = nullptr;
@@ -44,8 +114,8 @@ void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, 
     eMode |= bLooping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
     eMode |= bStream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
     FMOD::Sound *pSound = nullptr;
-    Audio::ErrorCheck(sgpImplementation->mpSystem->createSound(strSoundName.c_str(), eMode, nullptr,
-                                                               &pSound));
+    Audio::ErrorCheck(
+            get_fmod_core_system()->createSound(strSoundName.c_str(), eMode, nullptr, &pSound));
     if (pSound) { sgpImplementation->mSounds[strSoundName] = pSound; }
 }
 
@@ -66,7 +136,7 @@ int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition,
     }
     FMOD::Channel *pChannel = nullptr;
     Audio::ErrorCheck(
-            sgpImplementation->mpSystem->playSound(tFoundIt->second, nullptr, true, &pChannel));
+            get_fmod_core_system()->playSound(tFoundIt->second, nullptr, true, &pChannel));
     if (pChannel) {
         FMOD_MODE currMode;
         tFoundIt->second->getMode(&currMode);
@@ -100,8 +170,7 @@ void Audio::LoadBank(const std::string &strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS
     auto tFoundIt = sgpImplementation->mBanks.find(strBankName);
     if (tFoundIt != sgpImplementation->mBanks.end()) return;
     FMOD::Studio::Bank *pBank;
-    Audio::ErrorCheck(
-            sgpImplementation->mpStudioSystem->loadBankFile(strBankName.c_str(), flags, &pBank));
+    Audio::ErrorCheck(get_fmod_system()->loadBankFile(strBankName.c_str(), flags, &pBank));
     if (pBank) { sgpImplementation->mBanks[strBankName] = pBank; }
 }
 
@@ -113,8 +182,7 @@ void Audio::LoadEvent(const std::string &strEventName) {
     auto tFoundit = sgpImplementation->mEvents.find(strEventName);
     if (tFoundit != sgpImplementation->mEvents.end()) return;
     FMOD::Studio::EventDescription *pEventDescription = NULL;
-    Audio::ErrorCheck(
-            sgpImplementation->mpStudioSystem->getEvent(strEventName.c_str(), &pEventDescription));
+    Audio::ErrorCheck(get_fmod_system()->getEvent(strEventName.c_str(), &pEventDescription));
     if (pEventDescription) {
         FMOD::Studio::EventInstance *pEventInstance = NULL;
         Audio::ErrorCheck(pEventDescription->createInstance(&pEventInstance));
@@ -175,11 +243,11 @@ void Audio::SetEventParameter(const std::string &strEventName, const std::string
 }
 
 void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue) {
-    sgpImplementation->mpStudioSystem->setParameterByName(strParameterName.c_str(), fValue);
+    get_fmod_system()->setParameterByName(strParameterName.c_str(), fValue);
 }
 
 void Audio::GetGlobalParameter(const std::string &strParameterName, float *parameter) {
-    sgpImplementation->mpStudioSystem->getParameterByName(strParameterName.c_str(), parameter);
+    get_fmod_system()->getParameterByName(strParameterName.c_str(), parameter);
 }
 
 FMOD_VECTOR Audio::VectorToFmod(const Vector3 &vPosition) {
@@ -207,18 +275,15 @@ void Audio::Shutdown() { delete sgpImplementation; }
 
 #else
 
-
 void Audio::Init() {}
 
 void Audio::Update() {}
 
-void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping,
-                             bool bStream) {}
+void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, bool bStream) {}
 
 void Audio::UnLoadSound(const std::string &strSoundName) {}
 
-int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition,
-                             float fVolumedB) {
+int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition, float fVolumedB) {
     return 1;
 }
 
@@ -234,11 +299,11 @@ void Audio::StopEvent(const std::string &strEventName, bool bImmediate) {}
 
 bool Audio::IsEventPlaying(const std::string &strEventName) const { return false; }
 
-void Audio::GetEventParameter(const std::string &strEventName,
-                                     const std::string &strParameterName, float *parameter) {}
+void Audio::GetEventParameter(const std::string &strEventName, const std::string &strParameterName,
+                              float *parameter) {}
 
-void Audio::SetEventParameter(const std::string &strEventName,
-                                     const std::string &strParameterName, float fValue) {}
+void Audio::SetEventParameter(const std::string &strEventName, const std::string &strParameterName,
+                              float fValue) {}
 
 void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue) {}
 

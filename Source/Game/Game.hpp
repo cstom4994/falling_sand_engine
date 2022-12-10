@@ -11,7 +11,7 @@
 #include "Core/Const.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Macros.hpp"
-#include "Engine/Audio.h"
+#include "Engine/Audio.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Networking.hpp"
 #include "Engine/RendererGPU.h"
