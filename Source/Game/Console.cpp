@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Console.hpp"
+#include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Engine/DomainLang.hpp"
 #include "Engine/Memory.hpp"
@@ -544,9 +545,13 @@ void Console::Init() {
 
 void Console::End() { METADOT_DELETE(C, console, ImGuiConsole); }
 
-void Console::DrawUI() { console->Draw(); }
+void Console::DrawUI() {
+    METADOT_ASSERT_E(console);
+    console->Draw();
+}
 
 void Console::PrintAllMethods() {
+    METADOT_ASSERT_E(console);
     for (auto &cmds: console->System().Commands()) {
         console->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
     }

@@ -3,7 +3,7 @@
 #ifndef _METADOT_CONSOLE_HPP_
 #define _METADOT_CONSOLE_HPP_
 
-#include "Engine/DomainLang.hpp"
+#include "Engine/CVar.hpp"
 #include "Engine/ImGuiImplement.hpp"
 
 #include <array>

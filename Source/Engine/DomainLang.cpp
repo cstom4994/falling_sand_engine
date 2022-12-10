@@ -332,7 +332,7 @@ namespace MuDSL {
                                               FunctionRef func) {
         auto &ref = scope->functions[name];
         ref = func;
-        if (ref->type == FunctionType::free && scope->isClassScope) {
+        if (ref->type == FunctionType::free && scope->isStructScope) {
             ref->type = FunctionType::member;
         }
         auto funcvar = resolveVariable(name, scope);
@@ -364,7 +364,7 @@ namespace MuDSL {
                                            const unordered_map<string, ValueRef> &variables,
                                            const ClassLambda &constructor,
                                            const unordered_map<string, ClassLambda> &functions) {
-        scope = newClassScope(name, scope);
+        scope = newStructScope(name, scope);
 
         scope->variables = variables;
         FunctionRef ret =
@@ -2164,7 +2164,7 @@ namespace MuDSL {
                             }
                             get<FunctionExpression>(cur->expression)
                                     .subexpressions.push_back(getResolveVarExpression(
-                                            string(strings[i]), parseScope->isClassScope));
+                                            string(strings[i]), parseScope->isStructScope));
                             ++i;
                         }
 
@@ -2204,7 +2204,7 @@ namespace MuDSL {
                                                           ExpressionType::Value);
                     } else {
                         newExpr = getResolveVarExpression(string(strings[i]),
-                                                          parseScope->isClassScope);
+                                                          parseScope->isStructScope);
                     }
 
                     if (root) {
@@ -2348,8 +2348,8 @@ namespace MuDSL {
                 } else if (token == "else") {
                     parseState = ParseState::expectIfEnd;
                     wasElse = true;
-                } else if (token == "class") {
-                    parseState = ParseState::defineClass;
+                } else if (token == "struct") {
+                    parseState = ParseState::defineStruct;
                 } else if (token == "{") {
                     parseScope = newScope("__anon"s, parseScope);
                     clearParseStacks();
@@ -2557,8 +2557,8 @@ namespace MuDSL {
                     parseStrings.push_back(token);
                 }
                 break;
-            case ParseState::defineClass:
-                parseScope = newClassScope(string(token), parseScope);
+            case ParseState::defineStruct:
+                parseScope = newStructScope(string(token), parseScope);
                 parseState = ParseState::classArgs;
                 parseStrings.clear();
                 break;
@@ -2622,7 +2622,7 @@ namespace MuDSL {
                     vector<string> args;
                     args.reserve(parseStrings.size());
                     for (auto parseString: parseStrings) { args.emplace_back(parseString); }
-                    auto isConstructor = parseScope->isClassScope && parseScope->name == fncName;
+                    auto isConstructor = parseScope->isStructScope && parseScope->name == fncName;
                     auto newfunc = isConstructor ? newConstructor(string(fncName),
                                                                   parseScope->parent, args)
                                                  : newFunction(string(fncName), parseScope, args);
@@ -2781,7 +2781,7 @@ namespace MuDSL {
 
     void MuDSLInterpreter::closeScope(ScopeRef &scope) {
         if (scope->parent) {
-            if (scope->isClassScope) {
+            if (scope->isStructScope) {
                 scope = scope->parent;
             } else {
                 auto name = scope->name;
@@ -2794,9 +2794,9 @@ namespace MuDSL {
         }
     }
 
-    ScopeRef MuDSLInterpreter::newClassScope(const string &name, ScopeRef scope) {
+    ScopeRef MuDSLInterpreter::newStructScope(const string &name, ScopeRef scope) {
         auto ref = newScope(name, scope);
-        ref->isClassScope = true;
+        ref->isStructScope = true;
         return ref;
     }
 

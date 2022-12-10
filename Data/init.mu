@@ -11,7 +11,7 @@ func end()
     print("end<<<<");
 }
 
-class test {
+struct test {
 	var x = 1;
 	var y = "MuScript";
 	func test() {
