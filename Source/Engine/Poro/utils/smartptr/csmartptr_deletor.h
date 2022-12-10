@@ -22,7 +22,7 @@
 #ifndef INC_CSMARTPTR_DELETOR_H
 #define INC_CSMARTPTR_DELETOR_H
 
-namespace ceng {
+namespace CEngine {
 
 template< class T >
 struct CSmartPtrDefaultDeletor

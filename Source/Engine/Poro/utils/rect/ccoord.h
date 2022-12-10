@@ -23,7 +23,7 @@
 #define INC_CCOORD_H
 
 #include "cpoint.h"
-namespace ceng {
+namespace CEngine {
 //! 2d coordination class. Basic POD class
 /*
 class CCoord

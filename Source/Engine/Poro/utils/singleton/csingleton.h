@@ -39,7 +39,7 @@
 
 #include <memory>
 
-namespace ceng {
+namespace CEngine {
 
 template < class T >
 class CSingleton
@@ -101,6 +101,6 @@ protected:
 };
 
 
-} // end of namespace ceng
+} // end of namespace CEngine
 
 #endif

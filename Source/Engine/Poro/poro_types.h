@@ -58,7 +58,7 @@ namespace poro {
         };
 
         typedef std::string string;
-        typedef ceng::StaticArray<Float32, 4> fcolor;
+        typedef CEngine::StaticArray<Float32, 4> fcolor;
         typedef Vec2 vec2;
         typedef Vec3 vec3;
 

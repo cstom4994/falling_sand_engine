@@ -72,7 +72,7 @@
 #endif
 
 #ifdef CENG_TEMPLATE_FUNCTION_PROTOTYPE
-namespace ceng {
+namespace CEngine {
 
 
 //! Creates a empty rect
@@ -142,7 +142,7 @@ void	RectFindCrossPoints( const TRect& first, const TRect& second, std::vector< 
 /*!
 	Works only with straight lines. Used by CRectFindCrossPoints(),
 	and this is a quite delicate piece of coding, the first has to first.
-	Í mean it has to be with lower x and y values then the end. Doesn't
+	ï¿½ mean it has to be with lower x and y values then the end. Doesn't
 	bother me cause, every line that comes from CRectFindCrossPoints
 	is sorted this way, but if you want use this generally i expect
 	you to sort things out. Or code a max in front of things. But

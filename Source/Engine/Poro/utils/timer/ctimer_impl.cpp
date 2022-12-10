@@ -22,10 +22,10 @@
 
 #include <SDL.h>
 
-namespace ceng {
+namespace CEngine {
     namespace impl {
 
         types::ticks GetTime() { return (types::ticks) SDL_GetTicks(); }
 
     }// end of namespace impl
-}// end of namespace ceng
+}// end of namespace CEngine

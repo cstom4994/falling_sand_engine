@@ -23,7 +23,7 @@
 
 #include <memory>
 
-namespace ceng {
+namespace CEngine {
 
     template<typename T>
     class CSingletonPtr {
@@ -63,6 +63,6 @@ namespace ceng {
         return CSingletonPtr<T>::GetSingletonPtr();
     }
 
-}// namespace ceng
+}// namespace CEngine
 
 #endif

@@ -3,10 +3,10 @@
 
 #include "Poro/utils/math/cvector2.h"
 
-namespace ceng {
+namespace CEngine {
 namespace types {
 
-	typedef ceng::math::CVector2< int > ivector2;
+	typedef CEngine::math::CVector2< int > ivector2;
 
 	typedef signed int			int32;
 	typedef unsigned int		uint32;
@@ -23,7 +23,7 @@ namespace types {
 
 
 } // end of types
-} // end of ceng
+} // end of CEngine
 
 #endif
 

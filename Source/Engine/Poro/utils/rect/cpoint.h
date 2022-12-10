@@ -34,7 +34,7 @@
 #ifndef INC_CPOINT_H
 #define INC_CPOINT_H
 
-namespace ceng {
+namespace CEngine {
 ///////////////////////////////////////////////////////////////////////////////
 
 //! 2d coordination class. Basic POD class
@@ -138,6 +138,6 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-} // end of namespace ceng
+} // end of namespace CEngine
 
 #endif

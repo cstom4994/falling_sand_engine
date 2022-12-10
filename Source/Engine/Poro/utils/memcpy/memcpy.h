@@ -38,7 +38,6 @@ collide with actual memcpy. Petri Purho - March 2012
  ** Includes for size_t definition
  *******************************************************************/
 
-
 /********************************************************************
  **
  ** void *memcpy(void *dest, const void *src, size_t count)
@@ -55,13 +54,14 @@ collide with actual memcpy. Petri Purho - March 2012
  *******************************************************************/
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void *fast_memcpy(void *dest, const void *src, size_t count);
+    void *fast_memcpy(void *dest, const void *src, size_t count);
 
-void X_aligned_memcpy_sse2(void* dest, const void* src, const unsigned long size_t);
-	
+    void X_aligned_memcpy_sse2(void *dest, const void *src, const unsigned long size_t);
+
 #ifdef __cplusplus
 }
 #endif

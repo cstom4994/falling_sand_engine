@@ -42,13 +42,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace ceng {
+namespace CEngine {
 
 	
 template< class _Ty >
 _Ty AnyCast( const CAnyContainer& container )
 {
-	return ceng::CAnyContainerCast< _Ty >( container );
+	return CEngine::CAnyContainerCast< _Ty >( container );
 }
 
 template<>
@@ -191,6 +191,6 @@ private:
 };
 
 
-} // end of namespace ceng
+} // end of namespace CEngine
 
 #endif

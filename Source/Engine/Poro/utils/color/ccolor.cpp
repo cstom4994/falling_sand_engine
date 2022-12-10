@@ -2,90 +2,84 @@
 
 #include <sdl.h>
 
-namespace ceng {
+namespace CEngine {
 
-bool CColorUint8::masks_initialized = false;
-CColorUint8::uint32	CColorUint8::RMask;
-CColorUint8::uint32	CColorUint8::GMask;
-CColorUint8::uint32	CColorUint8::BMask;
-CColorUint8::uint32	CColorUint8::AMask;
-					
-CColorUint8::uint8 	CColorUint8::RShift;
-CColorUint8::uint8 	CColorUint8::GShift;
-CColorUint8::uint8 	CColorUint8::BShift;
-CColorUint8::uint8 	CColorUint8::AShift;
+    bool CColorUint8::masks_initialized = false;
+    CColorUint8::uint32 CColorUint8::RMask;
+    CColorUint8::uint32 CColorUint8::GMask;
+    CColorUint8::uint32 CColorUint8::BMask;
+    CColorUint8::uint32 CColorUint8::AMask;
 
-void CColorUint8::InitMasks()
-{
+    CColorUint8::uint8 CColorUint8::RShift;
+    CColorUint8::uint8 CColorUint8::GShift;
+    CColorUint8::uint8 CColorUint8::BShift;
+    CColorUint8::uint8 CColorUint8::AShift;
 
-	if( masks_initialized == false ) {
+    void CColorUint8::InitMasks() {
 
-#		if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		RMask = ( 0xFF000000 );
-		GMask = ( 0x00FF0000 );
-		BMask = ( 0x0000FF00 ),
-		AMask = ( 0x000000FF );
-		RShift = ( 24 );
-		GShift = ( 16 );
-		BShift = ( 8 );
-		AShift = ( 0 );
-#		else
-		RMask = ( 0x000000FF );
-		GMask = ( 0x0000FF00 );
-		BMask = ( 0x00FF0000 );
-		AMask = ( 0xFF000000 );
-		RShift = ( 0 );
-		GShift = ( 8 );
-		BShift = ( 16 );
-		AShift = ( 24 );
-#		endif
+        if (masks_initialized == false) {
 
-		masks_initialized = true;
-	}
-}
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            RMask = (0xFF000000);
+            GMask = (0x00FF0000);
+            BMask = (0x0000FF00), AMask = (0x000000FF);
+            RShift = (24);
+            GShift = (16);
+            BShift = (8);
+            AShift = (0);
+#else
+            RMask = (0x000000FF);
+            GMask = (0x0000FF00);
+            BMask = (0x00FF0000);
+            AMask = (0xFF000000);
+            RShift = (0);
+            GShift = (8);
+            BShift = (16);
+            AShift = (24);
+#endif
 
-// ---------------
+            masks_initialized = true;
+        }
+    }
 
-bool CColorFloat::masks_initialized = false;
-CColorFloat::uint32	CColorFloat::RMask;
-CColorFloat::uint32	CColorFloat::GMask;
-CColorFloat::uint32	CColorFloat::BMask;
-CColorFloat::uint32	CColorFloat::AMask;
-					
-CColorFloat::uint8 	CColorFloat::RShift;
-CColorFloat::uint8 	CColorFloat::GShift;
-CColorFloat::uint8 	CColorFloat::BShift;
-CColorFloat::uint8 	CColorFloat::AShift;
+    // ---------------
 
-void CColorFloat::InitMasks()
-{
+    bool CColorFloat::masks_initialized = false;
+    CColorFloat::uint32 CColorFloat::RMask;
+    CColorFloat::uint32 CColorFloat::GMask;
+    CColorFloat::uint32 CColorFloat::BMask;
+    CColorFloat::uint32 CColorFloat::AMask;
 
-	if( masks_initialized == false ) {
+    CColorFloat::uint8 CColorFloat::RShift;
+    CColorFloat::uint8 CColorFloat::GShift;
+    CColorFloat::uint8 CColorFloat::BShift;
+    CColorFloat::uint8 CColorFloat::AShift;
 
-#		if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		RMask = ( 0xFF000000 );
-		GMask = ( 0x00FF0000 );
-		BMask = ( 0x0000FF00 ),
-		AMask = ( 0x000000FF );
-		RShift = ( 24 );
-		GShift = ( 16 );
-		BShift = ( 8 );
-		AShift = ( 0 );
-#		else
-		RMask = ( 0x000000FF );
-		GMask = ( 0x0000FF00 );
-		BMask = ( 0x00FF0000 );
-		AMask = ( 0xFF000000 );
-		RShift = ( 0 );
-		GShift = ( 8 );
-		BShift = ( 16 );
-		AShift = ( 24 );
-#		endif
+    void CColorFloat::InitMasks() {
 
-		masks_initialized = true;
-	}
+        if (masks_initialized == false) {
 
-}
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            RMask = (0xFF000000);
+            GMask = (0x00FF0000);
+            BMask = (0x0000FF00), AMask = (0x000000FF);
+            RShift = (24);
+            GShift = (16);
+            BShift = (8);
+            AShift = (0);
+#else
+            RMask = (0x000000FF);
+            GMask = (0x0000FF00);
+            BMask = (0x00FF0000);
+            AMask = (0xFF000000);
+            RShift = (0);
+            GShift = (8);
+            BShift = (16);
+            AShift = (24);
+#endif
 
+            masks_initialized = true;
+        }
+    }
 
-} // end of namespace ceng
+}// end of namespace CEngine

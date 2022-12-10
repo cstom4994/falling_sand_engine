@@ -21,6 +21,6 @@
 
 #include "csingleton.h"
 
-namespace ceng {
+namespace CEngine {
 
 }

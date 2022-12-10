@@ -23,7 +23,7 @@
 
 #include "crect_functions.h"
 
-namespace ceng {
+namespace CEngine {
 /*
 template< class T >
 bool CRect< T >::operator <=( const CRect< T >& other ) const

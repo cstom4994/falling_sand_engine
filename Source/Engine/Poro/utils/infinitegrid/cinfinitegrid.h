@@ -8,7 +8,7 @@
 
 //=============================================================================
 
-namespace ceng {
+namespace CEngine {
 
 template< class ArrayGridTypes  >
 class CInfiniteGrid
@@ -16,9 +16,9 @@ class CInfiniteGrid
 public:
 
 	typedef typename ArrayGridTypes									T;
-	typedef typename ceng::CArray2D< typename ArrayGridTypes >		Array2D;
+	typedef typename CEngine::CArray2D< typename ArrayGridTypes >		Array2D;
 	typedef typename CGridPoint< int >								GPoint;
-	typedef typename ceng::math::CVector2< int >					Point2D;
+	typedef typename CEngine::math::CVector2< int >					Point2D;
 	typedef typename std::map< typename GPoint, typename Array2D* >	GridMap;
 
 	//-------------------------------------------------------------------------
@@ -237,7 +237,7 @@ private:
 	//-------------------------------------------------------------------------
 };
 
-} // end of namespace ceng
+} // end of namespace CEngine
 //=============================================================================
 
 #endif

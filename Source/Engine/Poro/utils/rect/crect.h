@@ -38,7 +38,7 @@
 
 // #include "Poro/utils/../config/cengtypes.h"
 
-namespace ceng {
+namespace CEngine {
 
 
 /*
@@ -194,13 +194,13 @@ Ty CRectCast( const CRect< Tx >& other )
 	return tmp;
 }
 
-} // end of namespace ceng
+} // end of namespace CEngine
 
 // ---------- types -------------------------
 
 namespace types {
-	typedef ceng::CRect< float >			rect;
-	typedef ceng::CRect< int >				irect;
+	typedef CEngine::CRect< float >			rect;
+	typedef CEngine::CRect< int >				irect;
 } // end of namespace types
 
 #endif

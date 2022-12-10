@@ -22,7 +22,7 @@
 #ifndef INC_POINTER_SORTER
 #define INC_POINTER_SORTER
 
-namespace ceng {
+namespace CEngine {
 
 struct pointer_sorter
 {
@@ -62,5 +62,5 @@ struct pointer_sorter
 
 };
 
-} //end of namespace ceng
+} //end of namespace CEngine
 #endif

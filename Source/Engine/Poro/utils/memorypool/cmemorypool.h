@@ -35,7 +35,7 @@
 #include "Poro/utils/singleton/csingletonptr.h"
 #include <vector>
 
-namespace ceng {
+namespace CEngine {
 
     typedef std::size_t size_type;
 
@@ -223,7 +223,7 @@ namespace ceng {
                 objects_count += myPools[i]->GetNumOfAllocatedObjects();
             }
 
-            // ceng::logger_debug << "CMemoryPool Dump: " << myPools.size() << " / " << objects_count << std::endl;
+            // CEngine::logger_debug << "CMemoryPool Dump: " << myPools.size() << " / " << objects_count << std::endl;
         }
 
         std::vector<PoolType *> myPools;
@@ -239,15 +239,15 @@ namespace ceng {
         virtual ~CMemoryPoolObject() {}
 
         void *operator new(size_type sizeo) {
-            return ceng::GetSingletonPtr<ceng::CMemoryPoolForObjects<T, size_o_pool>>()->GetMem(
+            return CEngine::GetSingletonPtr<CEngine::CMemoryPoolForObjects<T, size_o_pool>>()->GetMem(
                     sizeo);
         }
 
         void operator delete(void *pointer) {
-            ceng::GetSingletonPtr<ceng::CMemoryPoolForObjects<T, size_o_pool>>()->Free(pointer);
+            CEngine::GetSingletonPtr<CEngine::CMemoryPoolForObjects<T, size_o_pool>>()->Free(pointer);
         }
     };
 
-}// namespace ceng
+}// namespace CEngine
 
 #endif

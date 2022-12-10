@@ -24,7 +24,7 @@
 // CTimer requires METADOT_ASSERT_E assert, that can be found in here
 #include "Core/DebugImpl.hpp"
 
-namespace ceng {
+namespace CEngine {
     namespace impl {
         namespace types {
 
@@ -44,6 +44,6 @@ namespace ceng {
         types::ticks GetTime();
 
     }// end of namespace impl
-}// end of namespace ceng
+}// end of namespace CEngine
 
 #endif

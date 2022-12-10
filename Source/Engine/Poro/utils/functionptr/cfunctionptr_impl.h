@@ -26,7 +26,7 @@
 #include "functionptr_libraries.h"
 
 
-namespace ceng {
+namespace CEngine {
 namespace impl {
 
 template<typename T> struct remove_const_ref			{ typedef T type; };
@@ -537,6 +537,6 @@ IGenericFunctionPtr* CreateFunctionPointer( Class* object, Return (Class::*func)
 
 } // end of namespace impl
 ///////////////////////////////////////////////////////////////////////////////
-} // end of namespace ceng
+} // end of namespace CEngine
 
 #endif

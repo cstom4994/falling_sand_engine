@@ -37,7 +37,7 @@
 #include "Poro/utils/singleton/csingleton.h"
 #include "Poro/utils/maphelper/cmaphelper.h"
 
-namespace ceng {
+namespace CEngine {
 ///////////////////////////////////////////////////////////////////////////////
 
 template< class T, class Deletor >
@@ -83,5 +83,5 @@ private:
 
 };
 ///////////////////////////////////////////////////////////////////////////////
-} // end of namespace ceng
+} // end of namespace CEngine
 #endif

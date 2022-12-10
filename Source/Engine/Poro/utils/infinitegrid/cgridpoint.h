@@ -20,7 +20,7 @@
 
 #include "infinite_types.h"
 
-namespace ceng {
+namespace CEngine {
 
 //-----------------------------------------------------------------------------
 
@@ -135,5 +135,5 @@ private:
 
 //-----------------------------------------------------------------------------
 
-} // end of namespace ceng
+} // end of namespace CEngine
 #endif

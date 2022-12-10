@@ -62,7 +62,7 @@
 
 #include "ctimer_impl.h"
 
-namespace ceng {
+namespace CEngine {
 
     //! Basic timer class
     /*!
@@ -126,6 +126,6 @@ namespace ceng {
         Ticks myLastUpdate;
     };
 
-}// end of namespace ceng
+}// end of namespace CEngine
 
 #endif

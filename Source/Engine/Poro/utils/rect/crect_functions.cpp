@@ -28,7 +28,7 @@
 #include <assert.h>
 
 
-namespace ceng {
+namespace CEngine {
 
 namespace {
 template< class TRect >
