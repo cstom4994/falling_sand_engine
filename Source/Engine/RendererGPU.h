@@ -5,6 +5,7 @@
 
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
+#include "Engine/GameUtils/PixelColor.h"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Internal/BuiltinBox2d.h"
@@ -103,13 +104,7 @@
 #define R_PAD_7_TO_64 char _padding[7];
 #endif
 
-typedef struct METAENGINE_Color
-{
-    UInt8 r;
-    UInt8 g;
-    UInt8 b;
-    UInt8 a;
-} METAENGINE_Color;
+typedef BaseEngine::CColorUint8 METAENGINE_Color;
 
 typedef struct R_Renderer R_Renderer;
 typedef struct R_Target R_Target;
@@ -467,8 +462,7 @@ static const R_FeatureEnum R_FEATURE_NON_POWER_OF_TWO = 0x1;
 static const R_FeatureEnum R_FEATURE_RENDER_TARGETS = 0x2;
 static const R_FeatureEnum R_FEATURE_BLEND_EQUATIONS = 0x4;
 static const R_FeatureEnum R_FEATURE_BLEND_FUNC_SEPARATE = 0x8;
-static const R_FeatureEnum R_FEATURE_BLEND_EQUATIONS_SEPARATE =
-        0x10;
+static const R_FeatureEnum R_FEATURE_BLEND_EQUATIONS_SEPARATE = 0x10;
 static const R_FeatureEnum R_FEATURE_GL_BGR = 0x20;
 static const R_FeatureEnum R_FEATURE_GL_BGRA = 0x40;
 static const R_FeatureEnum R_FEATURE_GL_ABGR = 0x80;
@@ -477,21 +471,15 @@ static const R_FeatureEnum R_FEATURE_FRAGMENT_SHADER = 0x200;
 static const R_FeatureEnum R_FEATURE_PIXEL_SHADER = 0x200;
 static const R_FeatureEnum R_FEATURE_GEOMETRY_SHADER = 0x400;
 static const R_FeatureEnum R_FEATURE_WRAP_REPEAT_MIRRORED = 0x800;
-static const R_FeatureEnum R_FEATURE_CORE_FRAMEBUFFER_OBJECTS =
-        0x1000;
+static const R_FeatureEnum R_FEATURE_CORE_FRAMEBUFFER_OBJECTS = 0x1000;
 
 /*! Combined feature flags */
 #define R_FEATURE_ALL_BASE R_FEATURE_RENDER_TARGETS
-#define R_FEATURE_ALL_BLEND_PRESETS                                                \
-    (R_FEATURE_BLEND_EQUATIONS | R_FEATURE_BLEND_FUNC_SEPARATE)
-#define R_FEATURE_ALL_GL_FORMATS                                                   \
-    (R_FEATURE_GL_BGR | R_FEATURE_GL_BGRA |                        \
-     R_FEATURE_GL_ABGR)
-#define R_FEATURE_BASIC_SHADERS                                                    \
-    (R_FEATURE_FRAGMENT_SHADER | R_FEATURE_VERTEX_SHADER)
-#define R_FEATURE_ALL_SHADERS                                                      \
-    (R_FEATURE_FRAGMENT_SHADER | R_FEATURE_VERTEX_SHADER |         \
-     R_FEATURE_GEOMETRY_SHADER)
+#define R_FEATURE_ALL_BLEND_PRESETS (R_FEATURE_BLEND_EQUATIONS | R_FEATURE_BLEND_FUNC_SEPARATE)
+#define R_FEATURE_ALL_GL_FORMATS (R_FEATURE_GL_BGR | R_FEATURE_GL_BGRA | R_FEATURE_GL_ABGR)
+#define R_FEATURE_BASIC_SHADERS (R_FEATURE_FRAGMENT_SHADER | R_FEATURE_VERTEX_SHADER)
+#define R_FEATURE_ALL_SHADERS                                                                      \
+    (R_FEATURE_FRAGMENT_SHADER | R_FEATURE_VERTEX_SHADER | R_FEATURE_GEOMETRY_SHADER)
 
 typedef UInt32 R_WindowFlagEnum;
 
@@ -505,14 +493,10 @@ typedef UInt32 R_InitFlagEnum;
 static const R_InitFlagEnum R_INIT_ENABLE_VSYNC = 0x1;
 static const R_InitFlagEnum R_INIT_DISABLE_VSYNC = 0x2;
 static const R_InitFlagEnum R_INIT_DISABLE_DOUBLE_BUFFER = 0x4;
-static const R_InitFlagEnum R_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION =
-        0x8;
-static const R_InitFlagEnum R_INIT_REQUEST_COMPATIBILITY_PROFILE =
-        0x10;
-static const R_InitFlagEnum
-        R_INIT_USE_ROW_BY_ROW_TEXTURE_UPLOAD_FALLBACK = 0x20;
-static const R_InitFlagEnum
-        R_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK = 0x40;
+static const R_InitFlagEnum R_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION = 0x8;
+static const R_InitFlagEnum R_INIT_REQUEST_COMPATIBILITY_PROFILE = 0x10;
+static const R_InitFlagEnum R_INIT_USE_ROW_BY_ROW_TEXTURE_UPLOAD_FALLBACK = 0x20;
+static const R_InitFlagEnum R_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK = 0x40;
 
 #define R_DEFAULT_INIT_FLAGS 0
 
@@ -552,23 +536,15 @@ static const R_BatchFlagEnum R_BATCH_RGBA8 = 0x40;
 #define R_BATCH_XY_RGB (R_BATCH_XY | R_BATCH_RGB)
 #define R_BATCH_XYZ_RGB (R_BATCH_XYZ | R_BATCH_RGB)
 #define R_BATCH_XY_RGBA (R_BATCH_XY | R_BATCH_RGBA)
-#define R_BATCH_XYZ_RGBA                                                           \
-    (R_BATCH_XYZ | R_BATCH_RGBA)
-#define R_BATCH_XY_ST_RGBA                                                         \
-    (R_BATCH_XY | R_BATCH_ST | R_BATCH_RGBA)
-#define R_BATCH_XYZ_ST_RGBA                                                        \
-    (R_BATCH_XYZ | R_BATCH_ST | R_BATCH_RGBA)
+#define R_BATCH_XYZ_RGBA (R_BATCH_XYZ | R_BATCH_RGBA)
+#define R_BATCH_XY_ST_RGBA (R_BATCH_XY | R_BATCH_ST | R_BATCH_RGBA)
+#define R_BATCH_XYZ_ST_RGBA (R_BATCH_XYZ | R_BATCH_ST | R_BATCH_RGBA)
 #define R_BATCH_XY_RGB8 (R_BATCH_XY | R_BATCH_RGB8)
-#define R_BATCH_XYZ_RGB8                                                           \
-    (R_BATCH_XYZ | R_BATCH_RGB8)
-#define R_BATCH_XY_RGBA8                                                           \
-    (R_BATCH_XY | R_BATCH_RGBA8)
-#define R_BATCH_XYZ_RGBA8                                                          \
-    (R_BATCH_XYZ | R_BATCH_RGBA8)
-#define R_BATCH_XY_ST_RGBA8                                                        \
-    (R_BATCH_XY | R_BATCH_ST | R_BATCH_RGBA8)
-#define R_BATCH_XYZ_ST_RGBA8                                                       \
-    (R_BATCH_XYZ | R_BATCH_ST | R_BATCH_RGBA8)
+#define R_BATCH_XYZ_RGB8 (R_BATCH_XYZ | R_BATCH_RGB8)
+#define R_BATCH_XY_RGBA8 (R_BATCH_XY | R_BATCH_RGBA8)
+#define R_BATCH_XYZ_RGBA8 (R_BATCH_XYZ | R_BATCH_RGBA8)
+#define R_BATCH_XY_ST_RGBA8 (R_BATCH_XY | R_BATCH_ST | R_BATCH_RGBA8)
+#define R_BATCH_XYZ_ST_RGBA8 (R_BATCH_XYZ | R_BATCH_ST | R_BATCH_RGBA8)
 
 /*! Bit flags for blitting into a rectangular region.
  * \see R_BlitRect
@@ -616,8 +592,7 @@ typedef enum {
 typedef struct R_AttributeFormat
 {
     int num_elems_per_value;
-    R_TypeEnum
-            type;// R_TYPE_FLOAT, R_TYPE_INT, R_TYPE_UNSIGNED_INT, etc.
+    R_TypeEnum type;   // R_TYPE_FLOAT, R_TYPE_INT, R_TYPE_UNSIGNED_INT, etc.
     int stride_bytes;  // Number of bytes between two vertex specifications
     int offset_bytes;  // Number of bytes to skip at the beginning of 'values'
     bool is_per_sprite;// Per-sprite values are expanded to 4 vertices
@@ -755,20 +730,17 @@ void R_GetRendererOrder(int *order_size, R_RendererID *order);
  * \see R_InitRendererByID()
  * \see R_PushErrorCode()
  */
-R_Target *R_Init(UInt16 w, UInt16 h,
-                                                 R_WindowFlagEnum SDL_flags);
+R_Target *R_Init(UInt16 w, UInt16 h, R_WindowFlagEnum SDL_flags);
 
 /*! Initializes SDL and SDL_gpu.  Creates a window and the requested renderer context. */
-R_Target *R_InitRenderer(
-        UInt16 w, UInt16 h, R_WindowFlagEnum SDL_flags);
+R_Target *R_InitRenderer(UInt16 w, UInt16 h, R_WindowFlagEnum SDL_flags);
 
 /*! Initializes SDL and SDL_gpu.  Creates a window and the requested renderer context.
  * By requesting a renderer via ID, you can specify the major and minor versions of an individual renderer backend.
  * \see R_MakeRendererID
  */
-R_Target *R_InitRendererByID(
-        R_RendererID renderer_request, UInt16 w, UInt16 h,
-        R_WindowFlagEnum SDL_flags);
+R_Target *R_InitRendererByID(R_RendererID renderer_request, UInt16 w, UInt16 h,
+                             R_WindowFlagEnum SDL_flags);
 
 /*! Checks for important GPU features which may not be supported depending on a device's extension support.  Feature flags (R_FEATURE_*) can be bitwise OR'd together.
  * \return 1 if all of the passed features are enabled/supported
@@ -790,8 +762,7 @@ void R_Quit(void);
  * \param error The error code to push on the error queue
  * \param details Additional information string, can be NULL.
  */
-void R_PushErrorCode(const char *function, R_ErrorEnum error,
-                                     const char *details, ...);
+void R_PushErrorCode(const char *function, R_ErrorEnum error, const char *details, ...);
 
 /*! Pops an error object from the error queue and returns it.  If the error queue is empty, it returns an error object with NULL function, R_ERROR_NONE error, and NULL details. */
 R_ErrorObject R_PopErrorCode(void);
@@ -809,16 +780,13 @@ void R_SetErrorQueueMax(unsigned int max);
  *  @{ */
 
 /*! Returns an initialized R_RendererID. */
-R_RendererID R_MakeRendererID(const char *name, int major_version,
-                                                              int minor_version);
+R_RendererID R_MakeRendererID(const char *name, int major_version, int minor_version);
 
 R_RendererID R_GetRendererID();
 
 /*! Prepares a renderer for use by SDL_gpu. */
-void R_RegisterRenderer(
-        R_RendererID id,
-        R_Renderer *(*create_renderer)(R_RendererID request),
-        void (*free_renderer)(R_Renderer *renderer));
+void R_RegisterRenderer(R_RendererID id, R_Renderer *(*create_renderer)(R_RendererID request),
+                        void (*free_renderer)(R_Renderer *renderer));
 
 // End of RendererSetup
 /*! @} */
@@ -901,18 +869,14 @@ bool R_SetActiveTarget(R_Target *target);
 void R_SetShapeBlending(bool enable);
 
 /*! Translates a blend preset into a blend mode. */
-R_BlendMode R_GetBlendModeFromPreset(
-        R_BlendPresetEnum preset);
+R_BlendMode R_GetBlendModeFromPreset(R_BlendPresetEnum preset);
 
 /*! Sets the blending component functions for shape rendering. */
-void R_SetShapeBlendFunction(R_BlendFuncEnum source_color,
-                                             R_BlendFuncEnum dest_color,
-                                             R_BlendFuncEnum source_alpha,
-                                             R_BlendFuncEnum dest_alpha);
+void R_SetShapeBlendFunction(R_BlendFuncEnum source_color, R_BlendFuncEnum dest_color,
+                             R_BlendFuncEnum source_alpha, R_BlendFuncEnum dest_alpha);
 
 /*! Sets the blending component equations for shape rendering. */
-void R_SetShapeBlendEquation(R_BlendEqEnum color_equation,
-                                             R_BlendEqEnum alpha_equation);
+void R_SetShapeBlendEquation(R_BlendEqEnum color_equation, R_BlendEqEnum alpha_equation);
 
 /*! Sets the blending mode for shape rendering on the current window, if supported by the renderer. */
 void R_SetShapeBlendMode(R_BlendPresetEnum mode);
@@ -952,8 +916,7 @@ void R_SetVirtualResolution(R_Target *target, UInt16 w, UInt16 h);
 void R_GetVirtualResolution(R_Target *target, UInt16 *w, UInt16 *h);
 
 /*! Converts screen space coordinates (such as from mouse input) to logical drawing coordinates.  This interacts with R_SetCoordinateMode() when the y-axis is flipped (screen space is assumed to be inverted: (0,0) in the upper-left corner). */
-void R_GetVirtualCoords(R_Target *target, float *x, float *y,
-                                        float displayX, float displayY);
+void R_GetVirtualCoords(R_Target *target, float *x, float *y, float displayX, float displayY);
 
 /*! Reset the logical size of the given target to its original value. */
 void R_UnsetVirtualResolution(R_Target *target);
@@ -965,8 +928,7 @@ R_Rect R_MakeRect(float x, float y, float w, float h);
 METAENGINE_Color R_MakeColor(UInt8 r, UInt8 g, UInt8 b, UInt8 a);
 
 /*! Sets the given target's viewport. */
-void R_SetViewport(R_Target *target,
-                                   R_Rect viewport);
+void R_SetViewport(R_Target *target, R_Rect viewport);
 
 /*! Resets the given target's viewport to the entire target area. */
 void R_UnsetViewport(R_Target *target);
@@ -981,8 +943,7 @@ R_Camera R_GetCamera(R_Target *target);
  * \param target A pointer to the target that will copy this camera.
  * \param cam A pointer to the camera data to use or NULL to use the default camera.
  * \return The old camera. */
-R_Camera R_SetCamera(R_Target *target,
-                                                     R_Camera *cam);
+R_Camera R_SetCamera(R_Target *target, R_Camera *cam);
 
 /*! Enables or disables using the built-in camera matrix transforms. */
 void R_EnableCamera(R_Target *target, bool use_camera);
@@ -1004,32 +965,27 @@ void R_SetDepthTest(R_Target *target, bool enable);
 void R_SetDepthWrite(R_Target *target, bool enable);
 
 /*! Sets the operation to perform when depth testing. */
-void R_SetDepthFunction(R_Target *target,
-                                        R_ComparisonEnum compare_operation);
+void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation);
 
 /*! \return The RGBA color of a pixel. */
 METAENGINE_Color R_GetPixel(R_Target *target, Int16 x, Int16 y);
 
 /*! Sets the clipping rect for the given render target. */
-R_Rect R_SetClipRect(R_Target *target,
-                                                     R_Rect rect);
+R_Rect R_SetClipRect(R_Target *target, R_Rect rect);
 
 /*! Sets the clipping rect for the given render target. */
-R_Rect R_SetClip(R_Target *target, Int16 x, Int16 y,
-                                                 UInt16 w, UInt16 h);
+R_Rect R_SetClip(R_Target *target, Int16 x, Int16 y, UInt16 w, UInt16 h);
 
 /*! Turns off clipping for the given target. */
 void R_UnsetClip(R_Target *target);
 
 /*! Returns true if the given rects A and B overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the intersection. */
-bool R_IntersectRect(R_Rect A, R_Rect B,
-                                     R_Rect *result);
+bool R_IntersectRect(R_Rect A, R_Rect B, R_Rect *result);
 
 /*! Returns true if the given target's clip rect and the given B rect overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the intersection.
  * If the target doesn't have a clip rect enabled, this uses the whole target area.
  */
-bool R_IntersectClipRect(R_Target *target, R_Rect B,
-                                         R_Rect *result);
+bool R_IntersectClipRect(R_Target *target, R_Rect B, R_Rect *result);
 
 /*! Sets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has a cumulative effect with the image coloring functions.
@@ -1050,8 +1006,7 @@ void R_SetTargetRGB(R_Target *target, UInt8 r, UInt8 g, UInt8 b);
  *  e.g. R_SetRGB(image, 255, 128, 0); R_SetTargetRGB(target, 128, 128, 128);
  *  Would make the image draw with color of roughly (128, 64, 0).
  */
-void R_SetTargetRGBA(R_Target *target, UInt8 r, UInt8 g, UInt8 b,
-                                     UInt8 a);
+void R_SetTargetRGBA(R_Target *target, UInt8 r, UInt8 g, UInt8 b, UInt8 a);
 
 /*! Unsets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has the same effect as coloring with pure opaque white (255, 255, 255, 255).
@@ -1069,12 +1024,10 @@ void R_UnsetTargetColor(R_Target *target);
 	 * \param h Image height in pixels
 	 * \param format Format of color channels.
 	 */
-R_Image *R_CreateImage(UInt16 w, UInt16 h,
-                                                       R_FormatEnum format);
+R_Image *R_CreateImage(UInt16 w, UInt16 h, R_FormatEnum format);
 
 /*! Create a new image that uses the given native texture handle as the image texture. */
-R_Image *R_CreateImageUsingTexture(
-        R_TextureHandle handle, bool take_ownership);
+R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, bool take_ownership);
 
 /*! Creates an image that aliases the given image.  Aliases can be used to store image settings (e.g. modulation color) for easy switching.
  * R_FreeImage() frees the alias's memory, but does not affect the original. */
@@ -1087,25 +1040,21 @@ R_Image *R_CopyImage(R_Image *image);
 void R_FreeImage(R_Image *image);
 
 /*! Change the logical size of the given image.  Rendering this image will scaled it as if the dimensions were actually the ones given. */
-void R_SetImageVirtualResolution(R_Image *image, UInt16 w,
-                                                 UInt16 h);
+void R_SetImageVirtualResolution(R_Image *image, UInt16 w, UInt16 h);
 
 /*! Reset the logical size of the given image to its original value. */
 void R_UnsetImageVirtualResolution(R_Image *image);
 
 /*! Update an image from surface data.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-void R_UpdateImage(R_Image *image,
-                                   const R_Rect *image_rect, void *surface,
-                                   const R_Rect *surface_rect);
+void R_UpdateImage(R_Image *image, const R_Rect *image_rect, void *surface,
+                   const R_Rect *surface_rect);
 
 /*! Update an image from an array of pixel data.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-void R_UpdateImageBytes(R_Image *image,
-                                        const R_Rect *image_rect,
-                                        const unsigned char *bytes, int bytes_per_row);
+void R_UpdateImageBytes(R_Image *image, const R_Rect *image_rect, const unsigned char *bytes,
+                        int bytes_per_row);
 
 /*! Update an image from surface data, replacing its underlying texture to allow for size changes.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-bool R_ReplaceImage(R_Image *image, void *surface,
-                                    const R_Rect *surface_rect);
+bool R_ReplaceImage(R_Image *image, void *surface, const R_Rect *surface_rect);
 
 /*! Loads mipmaps for the given image, if supported by the renderer. */
 void R_GenerateMipmaps(R_Image *image);
@@ -1130,24 +1079,17 @@ bool R_GetBlending(R_Image *image);
 void R_SetBlending(R_Image *image, bool enable);
 
 /*! Sets the blending component functions. */
-void R_SetBlendFunction(R_Image *image,
-                                        R_BlendFuncEnum source_color,
-                                        R_BlendFuncEnum dest_color,
-                                        R_BlendFuncEnum source_alpha,
-                                        R_BlendFuncEnum dest_alpha);
+void R_SetBlendFunction(R_Image *image, R_BlendFuncEnum source_color, R_BlendFuncEnum dest_color,
+                        R_BlendFuncEnum source_alpha, R_BlendFuncEnum dest_alpha);
 
 /*! Sets the blending component equations. */
-void R_SetBlendEquation(R_Image *image,
-                                        R_BlendEqEnum color_equation,
-                                        R_BlendEqEnum alpha_equation);
+void R_SetBlendEquation(R_Image *image, R_BlendEqEnum color_equation, R_BlendEqEnum alpha_equation);
 
 /*! Sets the blending mode, if supported by the renderer. */
-void R_SetBlendMode(R_Image *image,
-                                    R_BlendPresetEnum mode);
+void R_SetBlendMode(R_Image *image, R_BlendPresetEnum mode);
 
 /*! Sets the image filtering mode, if supported by the renderer. */
-void R_SetImageFilter(R_Image *image,
-                                      R_FilterEnum filter);
+void R_SetImageFilter(R_Image *image, R_FilterEnum filter);
 
 /*! Sets the image anchor, which is the point about which the image is blitted.  The default is to blit the image on-center (0.5, 0.5).  The anchor is in normalized coordinates (0.0-1.0). */
 void R_SetAnchor(R_Image *image, float anchor_x, float anchor_y);
@@ -1162,9 +1104,7 @@ R_SnapEnum R_GetSnapMode(R_Image *image);
 void R_SetSnapMode(R_Image *image, R_SnapEnum mode);
 
 /*! Sets the image wrapping mode, if supported by the renderer. */
-void R_SetWrapMode(R_Image *image,
-                                   R_WrapEnum wrap_mode_x,
-                                   R_WrapEnum wrap_mode_y);
+void R_SetWrapMode(R_Image *image, R_WrapEnum wrap_mode_x, R_WrapEnum wrap_mode_y);
 
 /*! Returns the backend-specific texture handle associated with the given image.  Note that SDL_gpu will be unaware of changes made to the texture.  */
 R_TextureHandle R_GetTextureHandle(R_Image *image);
@@ -1180,8 +1120,7 @@ R_TextureHandle R_GetTextureHandle(R_Image *image);
 R_Image *R_CopyImageFromSurface(void *surface);
 
 /*! Like R_CopyImageFromSurface but enable to copy only part of the surface.*/
-R_Image *R_CopyImageFromSurfaceRect(
-        void *surface, R_Rect *surface_rect);
+R_Image *R_CopyImageFromSurfaceRect(void *surface, R_Rect *surface_rect);
 
 /*! Copy R_Target data into a new R_Image.  Don't forget to R_FreeImage() the image.*/
 R_Image *R_CopyImageFromTarget(R_Target *target);
@@ -1230,21 +1169,19 @@ void R_MatrixCopy(float *result, const float *A);
 void R_MatrixIdentity(float *result);
 
 /*! Multiplies an orthographic projection matrix into the given matrix. */
-void R_MatrixOrtho(float *result, float left, float right, float bottom, float top,
-                                   float z_near, float z_far);
+void R_MatrixOrtho(float *result, float left, float right, float bottom, float top, float z_near,
+                   float z_far);
 
 /*! Multiplies a perspective projection matrix into the given matrix. */
-void R_MatrixFrustum(float *result, float left, float right, float bottom,
-                                     float top, float z_near, float z_far);
+void R_MatrixFrustum(float *result, float left, float right, float bottom, float top, float z_near,
+                     float z_far);
 
 /*! Multiplies a perspective projection matrix into the given matrix. */
-void R_MatrixPerspective(float *result, float fovy, float aspect, float z_near,
-                                         float z_far);
+void R_MatrixPerspective(float *result, float fovy, float aspect, float z_near, float z_far);
 
 /*! Multiplies a view matrix into the given matrix. */
-void R_MatrixLookAt(float *matrix, float eye_x, float eye_y, float eye_z,
-                                    float target_x, float target_y, float target_z, float up_x,
-                                    float up_y, float up_z);
+void R_MatrixLookAt(float *matrix, float eye_x, float eye_y, float eye_z, float target_x,
+                    float target_y, float target_z, float up_x, float up_y, float up_z);
 
 /*! Adds a translation into the given matrix. */
 void R_MatrixTranslate(float *result, float x, float y, float z);
@@ -1298,8 +1235,7 @@ void R_FreeMatrixStack(R_MatrixStack *stack);
 void R_InitMatrixStack(R_MatrixStack *stack);
 
 /*! Copies matrices from one stack to another. */
-void R_CopyMatrixStack(const R_MatrixStack *source,
-                                       R_MatrixStack *dest);
+void R_CopyMatrixStack(const R_MatrixStack *source, R_MatrixStack *dest);
 
 /*! Deletes matrices in the given stack. */
 void R_ClearMatrixStack(R_MatrixStack *stack);
@@ -1341,19 +1277,17 @@ void R_LoadIdentity(void);
 void R_LoadMatrix(const float *matrix4x4);
 
 /*! Multiplies an orthographic projection matrix into the current matrix. */
-void R_Ortho(float left, float right, float bottom, float top, float z_near,
-                             float z_far);
+void R_Ortho(float left, float right, float bottom, float top, float z_near, float z_far);
 
 /*! Multiplies a perspective projection matrix into the current matrix. */
-void R_Frustum(float left, float right, float bottom, float top, float z_near,
-                               float z_far);
+void R_Frustum(float left, float right, float bottom, float top, float z_near, float z_far);
 
 /*! Multiplies a perspective projection matrix into the current matrix. */
 void R_Perspective(float fovy, float aspect, float z_near, float z_far);
 
 /*! Multiplies a view matrix into the current matrix. */
-void R_LookAt(float eye_x, float eye_y, float eye_z, float target_x, float target_y,
-                              float target_z, float up_x, float up_y, float up_z);
+void R_LookAt(float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z,
+              float up_x, float up_y, float up_z);
 
 /*! Adds a translation into the current matrix. */
 void R_Translate(float x, float y, float z);
@@ -1383,24 +1317,21 @@ void R_ClearColor(R_Target *target, METAENGINE_Color color);
 void R_ClearRGB(R_Target *target, UInt8 r, UInt8 g, UInt8 b);
 
 /*! Fills the given render target with a color. */
-void R_ClearRGBA(R_Target *target, UInt8 r, UInt8 g, UInt8 b,
-                                 UInt8 a);
+void R_ClearRGBA(R_Target *target, UInt8 r, UInt8 g, UInt8 b, UInt8 a);
 
 /*! Draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
     * \param x Destination x-position
     * \param y Destination y-position */
-void R_Blit(R_Image *image, R_Rect *src_rect,
-                            R_Target *target, float x, float y);
+void R_Blit(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y);
 
 /*! Rotates and draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
     * \param x Destination x-position
     * \param y Destination y-position
     * \param degrees Rotation angle (in degrees) */
-void R_BlitRotate(R_Image *image, R_Rect *src_rect,
-                                  R_Target *target, float x, float y,
-                                  float degrees);
+void R_BlitRotate(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y,
+                  float degrees);
 
 /*! Scales and draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1408,9 +1339,8 @@ void R_BlitRotate(R_Image *image, R_Rect *src_rect,
     * \param y Destination y-position
     * \param scaleX Horizontal stretch factor
     * \param scaleY Vertical stretch factor */
-void R_BlitScale(R_Image *image, R_Rect *src_rect,
-                                 R_Target *target, float x, float y, float scaleX,
-                                 float scaleY);
+void R_BlitScale(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y, float scaleX,
+                 float scaleY);
 
 /*! Scales, rotates, and draws the given image to the given render target.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1419,10 +1349,8 @@ void R_BlitScale(R_Image *image, R_Rect *src_rect,
     * \param degrees Rotation angle (in degrees)
     * \param scaleX Horizontal stretch factor
     * \param scaleY Vertical stretch factor */
-void R_BlitTransform(R_Image *image,
-                                     R_Rect *src_rect,
-                                     R_Target *target, float x, float y,
-                                     float degrees, float scaleX, float scaleY);
+void R_BlitTransform(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y,
+                     float degrees, float scaleX, float scaleY);
 
 /*! Scales, rotates around a pivot point, and draws the given image to the given render target.  The drawing point (x, y) coincides with the pivot point on the src image (pivot_x, pivot_y).
 	* \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1433,19 +1361,14 @@ void R_BlitTransform(R_Image *image,
 	* \param degrees Rotation angle (in degrees)
 	* \param scaleX Horizontal stretch factor
 	* \param scaleY Vertical stretch factor */
-void R_BlitTransformX(R_Image *image,
-                                      R_Rect *src_rect,
-                                      R_Target *target, float x, float y,
-                                      float pivot_x, float pivot_y, float degrees, float scaleX,
-                                      float scaleY);
+void R_BlitTransformX(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y,
+                      float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
 
 /*! Draws the given image to the given render target, scaling it to fit the destination region.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
     * \param dest_rect The region of the destination target image to draw upon.  Pass NULL for the entire target.
     */
-void R_BlitRect(R_Image *image, R_Rect *src_rect,
-                                R_Target *target,
-                                R_Rect *dest_rect);
+void R_BlitRect(R_Image *image, R_Rect *src_rect, R_Target *target, R_Rect *dest_rect);
 
 /*! Draws the given image to the given render target, scaling it to fit the destination region.
     * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1455,32 +1378,24 @@ void R_BlitRect(R_Image *image, R_Rect *src_rect,
 	* \param pivot_y Pivot y-position (in image coordinates)
 	* \param flip_direction A R_FlipEnum value (or bitwise OR'd combination) that specifies which direction the image should be flipped.
     */
-void R_BlitRectX(R_Image *image, R_Rect *src_rect,
-                                 R_Target *target,
-                                 R_Rect *dest_rect, float degrees, float pivot_x,
-                                 float pivot_y, R_FlipEnum flip_direction);
+void R_BlitRectX(R_Image *image, R_Rect *src_rect, R_Target *target, R_Rect *dest_rect,
+                 float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction);
 
 /*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already normalized to 0.0 - 1.0.  Pass NULL to render with only custom shader attributes.
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void R_TriangleBatch(R_Image *image,
-                                     R_Target *target, unsigned short num_vertices,
-                                     float *values, unsigned int num_indices,
-                                     unsigned short *indices,
-                                     R_BatchFlagEnum flags);
+void R_TriangleBatch(R_Image *image, R_Target *target, unsigned short num_vertices, float *values,
+                     unsigned int num_indices, unsigned short *indices, R_BatchFlagEnum flags);
 
 /*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already normalized to 0.0 - 1.0 (or 0 - 255 for 8-bit color components).  Pass NULL to render with only custom shader attributes.
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void R_TriangleBatchX(R_Image *image,
-                                      R_Target *target, unsigned short num_vertices,
-                                      void *values, unsigned int num_indices,
-                                      unsigned short *indices,
-                                      R_BatchFlagEnum flags);
+void R_TriangleBatchX(R_Image *image, R_Target *target, unsigned short num_vertices, void *values,
+                      unsigned int num_indices, unsigned short *indices, R_BatchFlagEnum flags);
 
 /*! Renders primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param primitive_type The kind of primitive to render.
@@ -1488,12 +1403,9 @@ void R_TriangleBatchX(R_Image *image,
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void R_PrimitiveBatch(R_Image *image,
-                                      R_Target *target,
-                                      R_PrimitiveEnum primitive_type,
-                                      unsigned short num_vertices, float *values,
-                                      unsigned int num_indices, unsigned short *indices,
-                                      R_BatchFlagEnum flags);
+void R_PrimitiveBatch(R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type,
+                      unsigned short num_vertices, float *values, unsigned int num_indices,
+                      unsigned short *indices, R_BatchFlagEnum flags);
 
 /*! Renders primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param primitive_type The kind of primitive to render.
@@ -1501,12 +1413,9 @@ void R_PrimitiveBatch(R_Image *image,
  * \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the vertices in the 'values' array).
  * \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
-void R_PrimitiveBatchV(R_Image *image,
-                                       R_Target *target,
-                                       R_PrimitiveEnum primitive_type,
-                                       unsigned short num_vertices, void *values,
-                                       unsigned int num_indices, unsigned short *indices,
-                                       R_BatchFlagEnum flags);
+void R_PrimitiveBatchV(R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type,
+                       unsigned short num_vertices, void *values, unsigned int num_indices,
+                       unsigned short *indices, R_BatchFlagEnum flags);
 
 /*! Send all buffered blitting data to the current context target. */
 void R_FlushBlitBuffer(void);
@@ -1526,8 +1435,7 @@ void R_Flip(R_Target *target);
  * \param y y-coord of the point
  * \param color The color of the shape to render
  */
-void R_Pixel(R_Target *target, float x, float y,
-                             METAENGINE_Color color);
+void R_Pixel(R_Target *target, float x, float y, METAENGINE_Color color);
 
 /*! Renders a colored line.
  * \param target The destination render target
@@ -1537,8 +1445,7 @@ void R_Pixel(R_Target *target, float x, float y,
  * \param y2 y-coord of ending point
  * \param color The color of the shape to render
  */
-void R_Line(R_Target *target, float x1, float y1, float x2,
-                            float y2, METAENGINE_Color color);
+void R_Line(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color);
 
 /*! Renders a colored arc curve (circle segment).
  * \param target The destination render target
@@ -1549,8 +1456,8 @@ void R_Line(R_Target *target, float x1, float y1, float x2,
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_Arc(R_Target *target, float x, float y, float radius,
-                           float start_angle, float end_angle, METAENGINE_Color color);
+void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle,
+           METAENGINE_Color color);
 
 /*! Renders a colored filled arc (circle segment / pie piece).
  * \param target The destination render target
@@ -1561,8 +1468,8 @@ void R_Arc(R_Target *target, float x, float y, float radius,
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_ArcFilled(R_Target *target, float x, float y, float radius,
-                                 float start_angle, float end_angle, METAENGINE_Color color);
+void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle,
+                 float end_angle, METAENGINE_Color color);
 
 /*! Renders a colored circle outline.
  * \param target The destination render target
@@ -1571,8 +1478,7 @@ void R_ArcFilled(R_Target *target, float x, float y, float radius,
  * \param radius The radius of the circle / distance from the center point that rendering will occur
  * \param color The color of the shape to render
  */
-void R_Circle(R_Target *target, float x, float y, float radius,
-                              METAENGINE_Color color);
+void R_Circle(R_Target *target, float x, float y, float radius, METAENGINE_Color color);
 
 /*! Renders a colored filled circle.
  * \param target The destination render target
@@ -1581,8 +1487,7 @@ void R_Circle(R_Target *target, float x, float y, float radius,
  * \param radius The radius of the circle / distance from the center point that rendering will occur
  * \param color The color of the shape to render
  */
-void R_CircleFilled(R_Target *target, float x, float y,
-                                    float radius, METAENGINE_Color color);
+void R_CircleFilled(R_Target *target, float x, float y, float radius, METAENGINE_Color color);
 
 /*! Renders a colored ellipse outline.
  * \param target The destination render target
@@ -1593,8 +1498,8 @@ void R_CircleFilled(R_Target *target, float x, float y,
  * \param degrees The angle to rotate the ellipse
  * \param color The color of the shape to render
  */
-void R_Ellipse(R_Target *target, float x, float y, float rx,
-                               float ry, float degrees, METAENGINE_Color color);
+void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees,
+               METAENGINE_Color color);
 
 /*! Renders a colored filled ellipse.
  * \param target The destination render target
@@ -1605,8 +1510,8 @@ void R_Ellipse(R_Target *target, float x, float y, float rx,
  * \param degrees The angle to rotate the ellipse
  * \param color The color of the shape to render
  */
-void R_EllipseFilled(R_Target *target, float x, float y, float rx,
-                                     float ry, float degrees, METAENGINE_Color color);
+void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees,
+                     METAENGINE_Color color);
 
 /*! Renders a colored annular sector outline (ring segment).
  * \param target The destination render target
@@ -1618,9 +1523,8 @@ void R_EllipseFilled(R_Target *target, float x, float y, float rx,
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_Sector(R_Target *target, float x, float y,
-                              float inner_radius, float outer_radius, float start_angle,
-                              float end_angle, METAENGINE_Color color);
+void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius,
+              float start_angle, float end_angle, METAENGINE_Color color);
 
 /*! Renders a colored filled annular sector (ring segment).
  * \param target The destination render target
@@ -1632,9 +1536,8 @@ void R_Sector(R_Target *target, float x, float y,
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_SectorFilled(R_Target *target, float x, float y,
-                                    float inner_radius, float outer_radius, float start_angle,
-                                    float end_angle, METAENGINE_Color color);
+void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius,
+                    float start_angle, float end_angle, METAENGINE_Color color);
 
 /*! Renders a colored triangle outline.
  * \param target The destination render target
@@ -1646,8 +1549,8 @@ void R_SectorFilled(R_Target *target, float x, float y,
  * \param y3 y-coord of third point
  * \param color The color of the shape to render
  */
-void R_Tri(R_Target *target, float x1, float y1, float x2, float y2,
-                           float x3, float y3, METAENGINE_Color color);
+void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3,
+           METAENGINE_Color color);
 
 /*! Renders a colored filled triangle.
  * \param target The destination render target
@@ -1659,8 +1562,8 @@ void R_Tri(R_Target *target, float x1, float y1, float x2, float y2,
  * \param y3 y-coord of third point
  * \param color The color of the shape to render
  */
-void R_TriFilled(R_Target *target, float x1, float y1, float x2,
-                                 float y2, float x3, float y3, METAENGINE_Color color);
+void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3,
+                 METAENGINE_Color color);
 
 /*! Renders a colored rectangle outline.
  * \param target The destination render target
@@ -1670,16 +1573,14 @@ void R_TriFilled(R_Target *target, float x1, float y1, float x2,
  * \param y2 y-coord of bottom-right corner
  * \param color The color of the shape to render
  */
-void R_Rectangle(R_Target *target, float x1, float y1, float x2,
-                                 float y2, METAENGINE_Color color);
+void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color);
 
 /*! Renders a colored rectangle outline.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void R_Rectangle2(R_Target *target, R_Rect rect,
-                                  METAENGINE_Color color);
+void R_Rectangle2(R_Target *target, R_Rect rect, METAENGINE_Color color);
 
 /*! Renders a colored filled rectangle.
  * \param target The destination render target
@@ -1689,16 +1590,15 @@ void R_Rectangle2(R_Target *target, R_Rect rect,
  * \param y2 y-coord of bottom-right corner
  * \param color The color of the shape to render
  */
-void R_RectangleFilled(R_Target *target, float x1, float y1,
-                                       float x2, float y2, METAENGINE_Color color);
+void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2,
+                       METAENGINE_Color color);
 
 /*! Renders a colored filled rectangle.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void R_RectangleFilled2(R_Target *target,
-                                        R_Rect rect, METAENGINE_Color color);
+void R_RectangleFilled2(R_Target *target, R_Rect rect, METAENGINE_Color color);
 
 /*! Renders a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1709,8 +1609,8 @@ void R_RectangleFilled2(R_Target *target,
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRound(R_Target *target, float x1, float y1,
-                                      float x2, float y2, float radius, METAENGINE_Color color);
+void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius,
+                      METAENGINE_Color color);
 
 /*! Renders a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1718,9 +1618,7 @@ void R_RectangleRound(R_Target *target, float x1, float y1,
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRound2(R_Target *target,
-                                       R_Rect rect, float radius,
-                                       METAENGINE_Color color);
+void R_RectangleRound2(R_Target *target, R_Rect rect, float radius, METAENGINE_Color color);
 
 /*! Renders a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1731,9 +1629,8 @@ void R_RectangleRound2(R_Target *target,
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRoundFilled(R_Target *target, float x1, float y1,
-                                            float x2, float y2, float radius,
-                                            METAENGINE_Color color);
+void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius,
+                            METAENGINE_Color color);
 
 /*! Renders a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1741,9 +1638,7 @@ void R_RectangleRoundFilled(R_Target *target, float x1, float y1,
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRoundFilled2(R_Target *target,
-                                             R_Rect rect, float radius,
-                                             METAENGINE_Color color);
+void R_RectangleRoundFilled2(R_Target *target, R_Rect rect, float radius, METAENGINE_Color color);
 
 /*! Renders a colored polygon outline.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1751,8 +1646,8 @@ void R_RectangleRoundFilled2(R_Target *target,
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
  * \param color The color of the shape to render
  */
-void R_Polygon(R_Target *target, unsigned int num_vertices,
-                               float *vertices, METAENGINE_Color color);
+void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices,
+               METAENGINE_Color color);
 
 /*! Renders a colored sequence of line segments.
  * \param target The destination render target
@@ -1761,8 +1656,8 @@ void R_Polygon(R_Target *target, unsigned int num_vertices,
  * \param color The color of the shape to render
  * \param close_loop Make a closed polygon by drawing a line at the end back to the start point
  */
-void R_Polyline(R_Target *target, unsigned int num_vertices,
-                                float *vertices, METAENGINE_Color color, bool close_loop);
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices,
+                METAENGINE_Color color, bool close_loop);
 
 /*! Renders a colored filled polygon.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1770,8 +1665,8 @@ void R_Polyline(R_Target *target, unsigned int num_vertices,
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
  * \param color The color of the shape to render
  */
-void R_PolygonFilled(R_Target *target, unsigned int num_vertices,
-                                     float *vertices, METAENGINE_Color color);
+void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices,
+                     METAENGINE_Color color);
 
 // End of Shapes
 /*! @} */
@@ -1789,8 +1684,7 @@ UInt32 R_CreateShaderProgram(void);
 void R_FreeShaderProgram(UInt32 program_object);
 
 /*! Compiles shader source and returns the new shader object. */
-UInt32 R_CompileShader(R_ShaderEnum shader_type,
-                                       const char *shader_source);
+UInt32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source);
 
 /*! Creates and links a shader program with the given shader objects. */
 UInt32 R_LinkShaders(UInt32 shader_object1, UInt32 shader_object2);
@@ -1817,8 +1711,7 @@ UInt32 R_GetCurrentShaderProgram(void);
 bool R_IsDefaultShaderProgram(UInt32 program_object);
 
 /*! Activates the given shader program.  Passing NULL for 'block' will disable the built-in shader variables for custom shaders until a R_ShaderBlock is set again. */
-void R_ActivateShaderProgram(UInt32 program_object,
-                                             R_ShaderBlock *block);
+void R_ActivateShaderProgram(UInt32 program_object, R_ShaderBlock *block);
 
 /*! Deactivates the current shader program (activates program 0). */
 void R_DeactivateShaderProgram(void);
@@ -1830,23 +1723,19 @@ const char *R_GetShaderMessage(void);
 int R_GetAttributeLocation(UInt32 program_object, const char *attrib_name);
 
 /*! Returns a filled R_AttributeFormat object. */
-R_AttributeFormat R_MakeAttributeFormat(
-        int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes,
-        int offset_bytes);
+R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize,
+                                        int stride_bytes, int offset_bytes);
 
 /*! Returns a filled R_Attribute object. */
-R_Attribute R_MakeAttribute(
-        int location, void *values, R_AttributeFormat format);
+R_Attribute R_MakeAttribute(int location, void *values, R_AttributeFormat format);
 
 /*! Returns an integer representing the location of the specified uniform shader variable. */
 int R_GetUniformLocation(UInt32 program_object, const char *uniform_name);
 
 /*! Loads the given shader program's built-in attribute and uniform locations. */
-R_ShaderBlock R_LoadShaderBlock(UInt32 program_object,
-                                                                const char *position_name,
-                                                                const char *texcoord_name,
-                                                                const char *color_name,
-                                                                const char *modelViewMatrix_name);
+R_ShaderBlock R_LoadShaderBlock(UInt32 program_object, const char *position_name,
+                                const char *texcoord_name, const char *color_name,
+                                const char *modelViewMatrix_name);
 
 /*! Sets the current shader block to use the given attribute and uniform locations. */
 void R_SetShaderBlock(R_ShaderBlock block);
@@ -1868,8 +1757,7 @@ void R_GetUniformiv(UInt32 program_object, int location, int *values);
 void R_SetUniformi(int location, int value);
 
 /*! Sets the value of the integer uniform shader variable at the given location. */
-void R_SetUniformiv(int location, int num_elements_per_value, int num_values,
-                                    int *values);
+void R_SetUniformiv(int location, int num_elements_per_value, int num_values, int *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
 void R_GetUniformuiv(UInt32 program_object, int location, unsigned int *values);
@@ -1880,7 +1768,7 @@ void R_SetUniformui(int location, unsigned int value);
 
 /*! Sets the value of the unsigned integer uniform shader variable at the given location. */
 void R_SetUniformuiv(int location, int num_elements_per_value, int num_values,
-                                     unsigned int *values);
+                     unsigned int *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
 void R_GetUniformfv(UInt32 program_object, int location, float *values);
@@ -1890,15 +1778,14 @@ void R_GetUniformfv(UInt32 program_object, int location, float *values);
 void R_SetUniformf(int location, float value);
 
 /*! Sets the value of the floating point uniform shader variable at the given location. */
-void R_SetUniformfv(int location, int num_elements_per_value, int num_values,
-                                    float *values);
+void R_SetUniformfv(int location, int num_elements_per_value, int num_values, float *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location.  The results are identical to calling R_GetUniformfv().  Matrices are gotten in column-major order. */
 void R_GetUniformMatrixfv(UInt32 program_object, int location, float *values);
 
 /*! Sets the value of the matrix uniform shader variable at the given location.  The size of the matrices sent is specified by num_rows and num_columns.  Rows and columns must be between 2 and 4. */
-void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows,
-                                          int num_columns, bool transpose, float *values);
+void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns,
+                          bool transpose, float *values);
 
 /*! Sets a constant-value shader attribute that will be used for each rendered vertex. */
 void R_SetAttributef(int location, float value);
@@ -1930,8 +1817,8 @@ public:
                          ImVec4 col = {1.0f, 1.0f, 1.0f, 1.0f});
     static void drawTextEx(std::string name, uint8_t x, uint8_t y, std::function<void()> func);
     static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
-    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts,
-                            int x, int y, float scale, int count, float angle, float cx, float cy);
+    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts, int x, int y,
+                            float scale, int count, float angle, float cx, float cy);
     static uint32 darkenColor(uint32 col, float brightness);
 };
 
@@ -1967,15 +1854,12 @@ void R_GLT_EndDraw();
 
 void R_GLT_DrawText(R_GLTtext *text, const GLfloat mvp[16]);
 
-void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y,
-                                      GLfloat scale);
-void R_GLT_DrawText2DAligned(R_GLTtext *text, GLfloat x, GLfloat y,
-                                             GLfloat scale, int horizontalAlignment,
-                                             int verticalAlignment);
+void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale);
+void R_GLT_DrawText2DAligned(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale,
+                             int horizontalAlignment, int verticalAlignment);
 
-void R_GLT_DrawText3D(R_GLTtext *text, GLfloat x, GLfloat y,
-                                      GLfloat z, GLfloat scale, GLfloat view[16],
-                                      GLfloat projection[16]);
+void R_GLT_DrawText3D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat z, GLfloat scale,
+                      GLfloat view[16], GLfloat projection[16]);
 
 void R_GLT_Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
 void R_GLT_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a);
@@ -2009,26 +1893,21 @@ typedef struct R_RendererImpl
 	 *  \see R_InitRenderer()
 	 *  \see R_InitRendererByID()
 	 */
-    R_Target *(*Init)(R_Renderer *renderer,
-                                      R_RendererID renderer_request, UInt16 w,
-                                      UInt16 h, R_WindowFlagEnum SDL_flags);
+    R_Target *(*Init)(R_Renderer *renderer, R_RendererID renderer_request, UInt16 w, UInt16 h,
+                      R_WindowFlagEnum SDL_flags);
 
     /*! \see R_CreateTargetFromWindow
      * The extra parameter is used internally to reuse/reinit a target. */
-    R_Target *(*CreateTargetFromWindow)(R_Renderer *renderer,
-                                                        UInt32 windowID,
-                                                        R_Target *target);
+    R_Target *(*CreateTargetFromWindow)(R_Renderer *renderer, UInt32 windowID, R_Target *target);
 
     /*! \see R_SetActiveTarget() */
     bool (*SetActiveTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_CreateAliasTarget() */
-    R_Target *(*CreateAliasTarget)(R_Renderer *renderer,
-                                                   R_Target *target);
+    R_Target *(*CreateAliasTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_MakeCurrent */
-    void (*MakeCurrent)(R_Renderer *renderer, R_Target *target,
-                        UInt32 windowID);
+    void (*MakeCurrent)(R_Renderer *renderer, R_Target *target, UInt32 windowID);
 
     /*! Sets up this renderer to act as the current renderer.  Called automatically by R_SetCurrentRenderer(). */
     void (*SetAsCurrent)(R_Renderer *renderer);
@@ -2043,12 +1922,10 @@ typedef struct R_RendererImpl
     bool (*SetWindowResolution)(R_Renderer *renderer, UInt16 w, UInt16 h);
 
     /*! \see R_SetVirtualResolution() */
-    void (*SetVirtualResolution)(R_Renderer *renderer,
-                                 R_Target *target, UInt16 w, UInt16 h);
+    void (*SetVirtualResolution)(R_Renderer *renderer, R_Target *target, UInt16 w, UInt16 h);
 
     /*! \see R_UnsetVirtualResolution() */
-    void (*UnsetVirtualResolution)(R_Renderer *renderer,
-                                   R_Target *target);
+    void (*UnsetVirtualResolution)(R_Renderer *renderer, R_Target *target);
 
     /*! Clean up the renderer state. */
     void (*Quit)(R_Renderer *renderer);
@@ -2058,132 +1935,106 @@ typedef struct R_RendererImpl
                           bool use_desktop_resolution);
 
     /*! \see R_SetCamera() */
-    R_Camera (*SetCamera)(R_Renderer *renderer,
-                                          R_Target *target,
-                                          R_Camera *cam);
+    R_Camera (*SetCamera)(R_Renderer *renderer, R_Target *target, R_Camera *cam);
 
     /*! \see R_CreateImage() */
-    R_Image *(*CreateImage)(R_Renderer *renderer, UInt16 w,
-                                            UInt16 h, R_FormatEnum format);
+    R_Image *(*CreateImage)(R_Renderer *renderer, UInt16 w, UInt16 h, R_FormatEnum format);
 
     /*! \see R_CreateImageUsingTexture() */
-    R_Image *(*CreateImageUsingTexture)(R_Renderer *renderer,
-                                                        R_TextureHandle handle,
-                                                        bool take_ownership);
+    R_Image *(*CreateImageUsingTexture)(R_Renderer *renderer, R_TextureHandle handle,
+                                        bool take_ownership);
 
     /*! \see R_CreateAliasImage() */
-    R_Image *(*CreateAliasImage)(R_Renderer *renderer,
-                                                 R_Image *image);
+    R_Image *(*CreateAliasImage)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_CopyImage() */
-    R_Image *(*CopyImage)(R_Renderer *renderer,
-                                          R_Image *image);
+    R_Image *(*CopyImage)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_UpdateImage */
-    void (*UpdateImage)(R_Renderer *renderer, R_Image *image,
-                        const R_Rect *image_rect, void *surface,
-                        const R_Rect *surface_rect);
+    void (*UpdateImage)(R_Renderer *renderer, R_Image *image, const R_Rect *image_rect,
+                        void *surface, const R_Rect *surface_rect);
 
     /*! \see R_UpdateImageBytes */
-    void (*UpdateImageBytes)(R_Renderer *renderer, R_Image *image,
-                             const R_Rect *image_rect, const unsigned char *bytes,
-                             int bytes_per_row);
+    void (*UpdateImageBytes)(R_Renderer *renderer, R_Image *image, const R_Rect *image_rect,
+                             const unsigned char *bytes, int bytes_per_row);
 
     /*! \see R_ReplaceImage */
-    bool (*ReplaceImage)(R_Renderer *renderer, R_Image *image,
-                         void *surface, const R_Rect *surface_rect);
+    bool (*ReplaceImage)(R_Renderer *renderer, R_Image *image, void *surface,
+                         const R_Rect *surface_rect);
 
     /*! \see R_CopyImageFromSurface() */
-    R_Image *(*CopyImageFromSurface)(R_Renderer *renderer,
-                                                     void *surface,
-                                                     const R_Rect *surface_rect);
+    R_Image *(*CopyImageFromSurface)(R_Renderer *renderer, void *surface,
+                                     const R_Rect *surface_rect);
 
     /*! \see R_CopyImageFromTarget() */
-    R_Image *(*CopyImageFromTarget)(R_Renderer *renderer,
-                                                    R_Target *target);
+    R_Image *(*CopyImageFromTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_CopySurfaceFromTarget() */
-    void *(*CopySurfaceFromTarget)(R_Renderer *renderer,
-                                   R_Target *target);
+    void *(*CopySurfaceFromTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_CopySurfaceFromImage() */
-    void *(*CopySurfaceFromImage)(R_Renderer *renderer,
-                                  R_Image *image);
+    void *(*CopySurfaceFromImage)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_FreeImage() */
     void (*FreeImage)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_GetTarget() */
-    R_Target *(*GetTarget)(R_Renderer *renderer,
-                                           R_Image *image);
+    R_Target *(*GetTarget)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_FreeTarget() */
     void (*FreeTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_Blit() */
-    void (*Blit)(R_Renderer *renderer, R_Image *image,
-                 R_Rect *src_rect, R_Target *target, float x,
+    void (*Blit)(R_Renderer *renderer, R_Image *image, R_Rect *src_rect, R_Target *target, float x,
                  float y);
 
     /*! \see R_BlitRotate() */
-    void (*BlitRotate)(R_Renderer *renderer, R_Image *image,
-                       R_Rect *src_rect, R_Target *target, float x,
-                       float y, float degrees);
+    void (*BlitRotate)(R_Renderer *renderer, R_Image *image, R_Rect *src_rect, R_Target *target,
+                       float x, float y, float degrees);
 
     /*! \see R_BlitScale() */
-    void (*BlitScale)(R_Renderer *renderer, R_Image *image,
-                      R_Rect *src_rect, R_Target *target, float x,
-                      float y, float scaleX, float scaleY);
+    void (*BlitScale)(R_Renderer *renderer, R_Image *image, R_Rect *src_rect, R_Target *target,
+                      float x, float y, float scaleX, float scaleY);
 
     /*! \see R_BlitTransform */
-    void (*BlitTransform)(R_Renderer *renderer, R_Image *image,
-                          R_Rect *src_rect, R_Target *target,
+    void (*BlitTransform)(R_Renderer *renderer, R_Image *image, R_Rect *src_rect, R_Target *target,
                           float x, float y, float degrees, float scaleX, float scaleY);
 
     /*! \see R_BlitTransformX() */
-    void (*BlitTransformX)(R_Renderer *renderer, R_Image *image,
-                           R_Rect *src_rect, R_Target *target,
+    void (*BlitTransformX)(R_Renderer *renderer, R_Image *image, R_Rect *src_rect, R_Target *target,
                            float x, float y, float pivot_x, float pivot_y, float degrees,
                            float scaleX, float scaleY);
 
     /*! \see R_PrimitiveBatchV() */
-    void (*PrimitiveBatchV)(R_Renderer *renderer, R_Image *image,
-                            R_Target *target,
-                            R_PrimitiveEnum primitive_type,
-                            unsigned short num_vertices, void *values, unsigned int num_indices,
-                            unsigned short *indices, R_BatchFlagEnum flags);
+    void (*PrimitiveBatchV)(R_Renderer *renderer, R_Image *image, R_Target *target,
+                            R_PrimitiveEnum primitive_type, unsigned short num_vertices,
+                            void *values, unsigned int num_indices, unsigned short *indices,
+                            R_BatchFlagEnum flags);
 
     /*! \see R_GenerateMipmaps() */
     void (*GenerateMipmaps)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_SetClip() */
-    R_Rect (*SetClip)(R_Renderer *renderer,
-                                      R_Target *target, Int16 x, Int16 y, UInt16 w,
-                                      UInt16 h);
+    R_Rect (*SetClip)(R_Renderer *renderer, R_Target *target, Int16 x, Int16 y, UInt16 w, UInt16 h);
 
     /*! \see R_UnsetClip() */
     void (*UnsetClip)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_GetPixel() */
-    METAENGINE_Color (*GetPixel)(R_Renderer *renderer,
-                                 R_Target *target, Int16 x, Int16 y);
+    METAENGINE_Color (*GetPixel)(R_Renderer *renderer, R_Target *target, Int16 x, Int16 y);
 
     /*! \see R_SetImageFilter() */
-    void (*SetImageFilter)(R_Renderer *renderer, R_Image *image,
-                           R_FilterEnum filter);
+    void (*SetImageFilter)(R_Renderer *renderer, R_Image *image, R_FilterEnum filter);
 
     /*! \see R_SetWrapMode() */
-    void (*SetWrapMode)(R_Renderer *renderer, R_Image *image,
-                        R_WrapEnum wrap_mode_x,
+    void (*SetWrapMode)(R_Renderer *renderer, R_Image *image, R_WrapEnum wrap_mode_x,
                         R_WrapEnum wrap_mode_y);
 
     /*! \see R_GetTextureHandle() */
-    R_TextureHandle (*GetTextureHandle)(R_Renderer *renderer,
-                                                        R_Image *image);
+    R_TextureHandle (*GetTextureHandle)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_ClearRGBA() */
-    void (*ClearRGBA)(R_Renderer *renderer, R_Target *target,
-                      UInt8 r, UInt8 g, UInt8 b, UInt8 a);
+    void (*ClearRGBA)(R_Renderer *renderer, R_Target *target, UInt8 r, UInt8 g, UInt8 b, UInt8 a);
     /*! \see R_FlushBlitBuffer() */
     void (*FlushBlitBuffer)(R_Renderer *renderer);
     /*! \see R_Flip() */
@@ -2195,24 +2046,21 @@ typedef struct R_RendererImpl
     /*! \see R_FreeShaderProgram() */
     void (*FreeShaderProgram)(R_Renderer *renderer, UInt32 program_object);
 
-    UInt32 (*CompileShaderInternal)(R_Renderer *renderer,
-                                    R_ShaderEnum shader_type,
+    UInt32 (*CompileShaderInternal)(R_Renderer *renderer, R_ShaderEnum shader_type,
                                     const char *shader_source);
 
     /*! \see R_CompileShader() */
-    UInt32 (*CompileShader)(R_Renderer *renderer,
-                            R_ShaderEnum shader_type, const char *shader_source);
+    UInt32 (*CompileShader)(R_Renderer *renderer, R_ShaderEnum shader_type,
+                            const char *shader_source);
 
     /*! \see R_FreeShader() */
     void (*FreeShader)(R_Renderer *renderer, UInt32 shader_object);
 
     /*! \see R_AttachShader() */
-    void (*AttachShader)(R_Renderer *renderer, UInt32 program_object,
-                         UInt32 shader_object);
+    void (*AttachShader)(R_Renderer *renderer, UInt32 program_object, UInt32 shader_object);
 
     /*! \see R_DetachShader() */
-    void (*DetachShader)(R_Renderer *renderer, UInt32 program_object,
-                         UInt32 shader_object);
+    void (*DetachShader)(R_Renderer *renderer, UInt32 program_object, UInt32 shader_object);
 
     /*! \see R_LinkShaderProgram() */
     bool (*LinkShaderProgram)(R_Renderer *renderer, UInt32 program_object);
@@ -2236,28 +2084,25 @@ typedef struct R_RendererImpl
                               const char *uniform_name);
 
     /*! \see R_LoadShaderBlock() */
-    R_ShaderBlock (*LoadShaderBlock)(
-            R_Renderer *renderer, UInt32 program_object, const char *position_name,
-            const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name);
+    R_ShaderBlock (*LoadShaderBlock)(R_Renderer *renderer, UInt32 program_object,
+                                     const char *position_name, const char *texcoord_name,
+                                     const char *color_name, const char *modelViewMatrix_name);
 
     /*! \see R_SetShaderBlock() */
-    void (*SetShaderBlock)(R_Renderer *renderer,
-                           R_ShaderBlock block);
+    void (*SetShaderBlock)(R_Renderer *renderer, R_ShaderBlock block);
 
     /*! \see R_SetShaderImage() */
-    void (*SetShaderImage)(R_Renderer *renderer, R_Image *image,
-                           int location, int image_unit);
+    void (*SetShaderImage)(R_Renderer *renderer, R_Image *image, int location, int image_unit);
 
     /*! \see R_GetUniformiv() */
-    void (*GetUniformiv)(R_Renderer *renderer, UInt32 program_object, int location,
-                         int *values);
+    void (*GetUniformiv)(R_Renderer *renderer, UInt32 program_object, int location, int *values);
 
     /*! \see R_SetUniformi() */
     void (*SetUniformi)(R_Renderer *renderer, int location, int value);
 
     /*! \see R_SetUniformiv() */
-    void (*SetUniformiv)(R_Renderer *renderer, int location,
-                         int num_elements_per_value, int num_values, int *values);
+    void (*SetUniformiv)(R_Renderer *renderer, int location, int num_elements_per_value,
+                         int num_values, int *values);
 
     /*! \see R_GetUniformuiv() */
     void (*GetUniformuiv)(R_Renderer *renderer, UInt32 program_object, int location,
@@ -2267,23 +2112,22 @@ typedef struct R_RendererImpl
     void (*SetUniformui)(R_Renderer *renderer, int location, unsigned int value);
 
     /*! \see R_SetUniformuiv() */
-    void (*SetUniformuiv)(R_Renderer *renderer, int location,
-                          int num_elements_per_value, int num_values, unsigned int *values);
+    void (*SetUniformuiv)(R_Renderer *renderer, int location, int num_elements_per_value,
+                          int num_values, unsigned int *values);
 
     /*! \see R_GetUniformfv() */
-    void (*GetUniformfv)(R_Renderer *renderer, UInt32 program_object, int location,
-                         float *values);
+    void (*GetUniformfv)(R_Renderer *renderer, UInt32 program_object, int location, float *values);
 
     /*! \see R_SetUniformf() */
     void (*SetUniformf)(R_Renderer *renderer, int location, float value);
 
     /*! \see R_SetUniformfv() */
-    void (*SetUniformfv)(R_Renderer *renderer, int location,
-                         int num_elements_per_value, int num_values, float *values);
+    void (*SetUniformfv)(R_Renderer *renderer, int location, int num_elements_per_value,
+                         int num_values, float *values);
 
     /*! \see R_SetUniformMatrixfv() */
-    void (*SetUniformMatrixfv)(R_Renderer *renderer, int location, int num_matrices,
-                               int num_rows, int num_columns, bool transpose, float *values);
+    void (*SetUniformMatrixfv)(R_Renderer *renderer, int location, int num_matrices, int num_rows,
+                               int num_columns, bool transpose, float *values);
 
     /*! \see R_SetAttributef() */
     void (*SetAttributef)(R_Renderer *renderer, int location, float value);
@@ -2295,20 +2139,17 @@ typedef struct R_RendererImpl
     void (*SetAttributeui)(R_Renderer *renderer, int location, unsigned int value);
 
     /*! \see R_SetAttributefv() */
-    void (*SetAttributefv)(R_Renderer *renderer, int location, int num_elements,
-                           float *value);
+    void (*SetAttributefv)(R_Renderer *renderer, int location, int num_elements, float *value);
 
     /*! \see R_SetAttributeiv() */
-    void (*SetAttributeiv)(R_Renderer *renderer, int location, int num_elements,
-                           int *value);
+    void (*SetAttributeiv)(R_Renderer *renderer, int location, int num_elements, int *value);
 
     /*! \see R_SetAttributeuiv() */
     void (*SetAttributeuiv)(R_Renderer *renderer, int location, int num_elements,
                             unsigned int *value);
 
     /*! \see R_SetAttributeSource() */
-    void (*SetAttributeSource)(R_Renderer *renderer, int num_values,
-                               R_Attribute source);
+    void (*SetAttributeSource)(R_Renderer *renderer, int num_values, R_Attribute source);
 
     // Shapes
 
@@ -2319,88 +2160,80 @@ typedef struct R_RendererImpl
     float (*GetLineThickness)(R_Renderer *renderer);
 
     /*! \see R_Pixel() */
-    void (*Pixel)(R_Renderer *renderer, R_Target *target, float x,
-                  float y, METAENGINE_Color color);
+    void (*Pixel)(R_Renderer *renderer, R_Target *target, float x, float y, METAENGINE_Color color);
 
     /*! \see R_Line() */
-    void (*Line)(R_Renderer *renderer, R_Target *target, float x1,
-                 float y1, float x2, float y2, METAENGINE_Color color);
+    void (*Line)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2,
+                 METAENGINE_Color color);
 
     /*! \see R_Arc() */
-    void (*Arc)(R_Renderer *renderer, R_Target *target, float x,
-                float y, float radius, float start_angle, float end_angle, METAENGINE_Color color);
+    void (*Arc)(R_Renderer *renderer, R_Target *target, float x, float y, float radius,
+                float start_angle, float end_angle, METAENGINE_Color color);
 
     /*! \see R_ArcFilled() */
-    void (*ArcFilled)(R_Renderer *renderer, R_Target *target,
-                      float x, float y, float radius, float start_angle, float end_angle,
-                      METAENGINE_Color color);
+    void (*ArcFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float radius,
+                      float start_angle, float end_angle, METAENGINE_Color color);
 
     /*! \see R_Circle() */
-    void (*Circle)(R_Renderer *renderer, R_Target *target, float x,
-                   float y, float radius, METAENGINE_Color color);
+    void (*Circle)(R_Renderer *renderer, R_Target *target, float x, float y, float radius,
+                   METAENGINE_Color color);
 
     /*! \see R_CircleFilled() */
-    void (*CircleFilled)(R_Renderer *renderer, R_Target *target,
-                         float x, float y, float radius, METAENGINE_Color color);
+    void (*CircleFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float radius,
+                         METAENGINE_Color color);
 
     /*! \see R_Ellipse() */
-    void (*Ellipse)(R_Renderer *renderer, R_Target *target, float x,
-                    float y, float rx, float ry, float degrees, METAENGINE_Color color);
+    void (*Ellipse)(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry,
+                    float degrees, METAENGINE_Color color);
 
     /*! \see R_EllipseFilled() */
-    void (*EllipseFilled)(R_Renderer *renderer, R_Target *target,
-                          float x, float y, float rx, float ry, float degrees,
-                          METAENGINE_Color color);
+    void (*EllipseFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float rx,
+                          float ry, float degrees, METAENGINE_Color color);
 
     /*! \see R_Sector() */
-    void (*Sector)(R_Renderer *renderer, R_Target *target, float x,
-                   float y, float inner_radius, float outer_radius, float start_angle,
-                   float end_angle, METAENGINE_Color color);
+    void (*Sector)(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius,
+                   float outer_radius, float start_angle, float end_angle, METAENGINE_Color color);
 
     /*! \see R_SectorFilled() */
-    void (*SectorFilled)(R_Renderer *renderer, R_Target *target,
-                         float x, float y, float inner_radius, float outer_radius,
-                         float start_angle, float end_angle, METAENGINE_Color color);
+    void (*SectorFilled)(R_Renderer *renderer, R_Target *target, float x, float y,
+                         float inner_radius, float outer_radius, float start_angle, float end_angle,
+                         METAENGINE_Color color);
 
     /*! \see R_Tri() */
-    void (*Tri)(R_Renderer *renderer, R_Target *target, float x1,
-                float y1, float x2, float y2, float x3, float y3, METAENGINE_Color color);
+    void (*Tri)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2,
+                float x3, float y3, METAENGINE_Color color);
 
     /*! \see R_TriFilled() */
-    void (*TriFilled)(R_Renderer *renderer, R_Target *target,
-                      float x1, float y1, float x2, float y2, float x3, float y3,
-                      METAENGINE_Color color);
+    void (*TriFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2,
+                      float y2, float x3, float y3, METAENGINE_Color color);
 
     /*! \see R_Rectangle() */
-    void (*Rectangle)(R_Renderer *renderer, R_Target *target,
-                      float x1, float y1, float x2, float y2, METAENGINE_Color color);
+    void (*Rectangle)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2,
+                      float y2, METAENGINE_Color color);
 
     /*! \see R_RectangleFilled() */
-    void (*RectangleFilled)(R_Renderer *renderer, R_Target *target,
-                            float x1, float y1, float x2, float y2, METAENGINE_Color color);
+    void (*RectangleFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2,
+                            float y2, METAENGINE_Color color);
 
     /*! \see R_RectangleRound() */
-    void (*RectangleRound)(R_Renderer *renderer, R_Target *target,
-                           float x1, float y1, float x2, float y2, float radius,
-                           METAENGINE_Color color);
+    void (*RectangleRound)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2,
+                           float y2, float radius, METAENGINE_Color color);
 
     /*! \see R_RectangleRoundFilled() */
-    void (*RectangleRoundFilled)(R_Renderer *renderer,
-                                 R_Target *target, float x1, float y1, float x2,
-                                 float y2, float radius, METAENGINE_Color color);
+    void (*RectangleRoundFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1,
+                                 float x2, float y2, float radius, METAENGINE_Color color);
 
     /*! \see R_Polygon() */
-    void (*Polygon)(R_Renderer *renderer, R_Target *target,
-                    unsigned int num_vertices, float *vertices, METAENGINE_Color color);
+    void (*Polygon)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices,
+                    float *vertices, METAENGINE_Color color);
 
     /*! \see R_Polyline() */
-    void (*Polyline)(R_Renderer *renderer, R_Target *target,
-                     unsigned int num_vertices, float *vertices, METAENGINE_Color color,
-                     bool close_loop);
+    void (*Polyline)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices,
+                     float *vertices, METAENGINE_Color color, bool close_loop);
 
     /*! \see R_PolygonFilled() */
-    void (*PolygonFilled)(R_Renderer *renderer, R_Target *target,
-                          unsigned int num_vertices, float *vertices, METAENGINE_Color color);
+    void (*PolygonFilled)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices,
+                          float *vertices, METAENGINE_Color color);
 
 } R_RendererImpl;
 
@@ -2418,8 +2251,8 @@ namespace METAENGINE {
 
     namespace Detail {
 // Generator macro to avoid duplicating code all the time.
-#define R_INTROSPECTION_GENERATE_VARIABLE_RENDER(cputype, count, gltype, glread,   \
-                                                                 glwrite, imguifunc)               \
+#define R_INTROSPECTION_GENERATE_VARIABLE_RENDER(cputype, count, gltype, glread, glwrite,          \
+                                                 imguifunc)                                        \
     {                                                                                              \
         ImGui::Text(#gltype " %s:", name);                                                         \
         cputype value[count];                                                                      \
@@ -2427,8 +2260,8 @@ namespace METAENGINE {
         if (imguifunc("", &value[0], 0.25f)) glwrite(program, location, 1, &value[0]);             \
     }
 
-#define R_INTROSPECTION_GENERATE_MATRIX_RENDER(cputype, rows, columns, gltype,     \
-                                                               glread, glwrite, imguifunc)         \
+#define R_INTROSPECTION_GENERATE_MATRIX_RENDER(cputype, rows, columns, gltype, glread, glwrite,    \
+                                               imguifunc)                                          \
     {                                                                                              \
         ImGui::Text(#gltype " %s:", name);                                                         \
         cputype value[rows * columns];                                                             \
@@ -2445,8 +2278,8 @@ namespace METAENGINE {
 
         void RenderUniformVariable(GLuint program, GLenum type, const char *name, GLint location);
 
-// #undef R_INTROSPECTION_GENERATE_VARIABLE_RENDER
-// #undef R_INTROSPECTION_GENERATE_MATRIX_RENDER
+        // #undef R_INTROSPECTION_GENERATE_VARIABLE_RENDER
+        // #undef R_INTROSPECTION_GENERATE_MATRIX_RENDER
 
         float GetScrollableHeight();
     }// namespace Detail

@@ -19,6 +19,64 @@ public:
     static time_t mkgmtime(struct tm *unixdate);
 };
 
+class Timer {
+public:
+    typedef ticks Ticks;
+
+    Timer();
+    virtual ~Timer();
+
+    virtual Timer &operator=(const Timer &other);
+    virtual Timer operator-(const Timer &other);
+    virtual Timer operator-(Ticks time);
+    virtual Timer &operator-=(const Timer &other);
+    virtual Timer &operator-=(Ticks time);
+
+    //! Returns the time in ms (int)
+    virtual Ticks GetTime() const;
+
+    //! Returns the time in seconds (float)
+    virtual float GetSeconds() const;
+
+    //! Returns a time the time step, between the moment now and the last
+    //! time Updated was called
+    //! returns ms ( int )
+    /*!
+		This is useful in some 
+	*/
+    virtual Ticks GetDerivate() const;
+
+    //! Returns the same thing as GetDerivate \sa GetDerivate()
+    virtual float GetDerivateSeconds() const;
+
+    //! called to reset the last updated, used with
+    //! GetDerivate() and GetDerivateInSeconds()
+    //! \sa GetDerivate()
+    //! \sa GetDerivateInSeconds()
+    virtual void Updated();
+
+    //! Pauses the timer, so nothing is runnning
+    virtual void Pause();
+
+    //! Resumes the timer from a pause
+    virtual void Resume();
+
+    //! Resets the timer, starting from 0 ms
+    virtual void Reset();
+
+    //! Sets the time to the given time
+    virtual void SetTime(Ticks time);
+
+    //! tells us if something is paused
+    virtual bool IsPaused() const { return myPause; }
+
+protected:
+    Int64 myOffSet;
+    Int64 myPauseTime;
+    bool myPause;
+    Ticks myLastUpdate;
+};
+
 namespace SUtil {
     typedef std::string Stringo;
     typedef std::string_view Viewo;

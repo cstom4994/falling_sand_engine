@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Game/Utils.hpp"
+#include "Core/Global.hpp"
 #include "Engine/CodeReflection.hpp"
 #include "Engine/Memory.hpp"
 
@@ -23,6 +24,115 @@ time_t Time::mkgmtime(struct tm *unixdate) {
     int32_t nOffSet = fakeDate->tm_hour - unixdate->tm_hour;
     if (nOffSet > 12) { nOffSet = 24 - nOffSet; }
     return fakeUnixtime - nOffSet * 3600;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Timer::Timer()
+    : myOffSet(global.platform.GetTime()), myPause(false), myPauseTime(0), myLastUpdate(0) {
+    METADOT_ASSERT_E(sizeof(Int64) == 8);
+}
+
+//.............................................................................
+
+Timer::~Timer() {}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Timer &Timer::operator=(const Timer &other) {
+    // BUGBUG	Does not work because the myBaseTimer might be different from
+    //			the one where these where copied
+    myOffSet = other.myOffSet;
+    myPause = other.myPause;
+    myPauseTime = other.myPauseTime;
+    myLastUpdate = other.myLastUpdate;
+
+    return *this;
+}
+
+//=============================================================================
+
+Timer Timer::operator-(const Timer &other) { return (Timer(*this) -= (other)); }
+
+//=============================================================================
+
+Timer Timer::operator-(Timer::Ticks time) { return (Timer(*this) -= (time)); }
+
+//=============================================================================
+
+Timer &Timer::operator-=(const Timer &other) { return operator-=(other.GetTime()); }
+
+//=============================================================================
+
+Timer &Timer::operator-=(Timer::Ticks time) {
+    myOffSet += time;
+    myPauseTime -= time;
+    return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void Timer::SetTime(Timer::Ticks time) {
+    myOffSet = (Int64) global.platform.GetTime() - (Int64) time;
+    myPauseTime = time;
+}
+
+//=============================================================================
+
+Timer::Ticks Timer::GetTime() const {
+    if (myPause) {
+        if (myPauseTime < 0) return 0;
+
+        return (Timer::Ticks) myPauseTime;
+    }
+
+    if ((unsigned) myOffSet > global.platform.GetTime()) return 0;
+
+    return (global.platform.GetTime() - (Timer::Ticks) myOffSet);
+}
+
+//.............................................................................
+
+float Timer::GetSeconds() const { return ((float) GetTime() / 1000.0f); }
+
+//.............................................................................
+
+Timer::Ticks Timer::GetDerivate() const { return (GetTime() - myLastUpdate); }
+
+//.............................................................................
+
+float Timer::GetDerivateSeconds() const { return ((float) GetDerivate() / 1000.0f); }
+
+//.............................................................................
+
+void Timer::Updated() { myLastUpdate = GetTime(); }
+
+//.............................................................................
+
+void Timer::Pause() {
+    if (myPause == false) {
+        myPauseTime = GetTime();
+        myPause = true;
+    }
+}
+
+//.............................................................................
+
+void Timer::Resume() {
+    if (myPause == true) {
+        myPause = false;
+        SetTime((Timer::Ticks) myPauseTime);
+        // myOffSet += ( GetTime() - myPauseTime );
+    }
+}
+
+//.............................................................................
+
+void Timer::Reset() {
+    // myPause = false;
+    myPauseTime = 0;
+    myOffSet = global.platform.GetTime();
+    myLastUpdate = 0;
 }
 
 namespace SUtil {

@@ -3,6 +3,7 @@
 #ifndef _METADOT_PLATFORM_HPP_
 #define _METADOT_PLATFORM_HPP_
 
+#include "Core/Core.hpp"
 #include "Core/Macros.hpp"
 
 #include "PlatformDetail.h"
@@ -21,6 +22,8 @@ enum WindowFlashAction {
     STOP
 };
 
+typedef UInt32 ticks;
+
 struct Platform
 {
     C_Window *window = nullptr;
@@ -36,6 +39,7 @@ struct Platform
     void SetWindowFlash(WindowFlashAction action, int count, int period);
     void SetVSync(bool vsync);
     void SetMinimizeOnLostFocus(bool minimize);
+    ticks GetTime() { return (ticks) SDL_GetTicks(); }
 };
 
 #endif
