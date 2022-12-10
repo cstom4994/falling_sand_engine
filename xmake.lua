@@ -188,6 +188,9 @@ do
     if (has_config("build_unity")) then
         add_rules("c.unity_build", {batchsize = 4})
         add_rules("c++.unity_build", {batchsize = 4})
+    else
+        add_rules("c.unity_build", {batchsize = 0})
+        add_rules("c++.unity_build", {batchsize = 0})
     end
     set_kind("binary")
     set_targetdir("./output")
@@ -199,6 +202,7 @@ do
     add_files("Source/Game/**.cpp")
     add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cpp")
+    add_files("Source/Engine/Poro/**.cpp", {unity_group = "Poro"})
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")
     add_headerfiles("Source/Engine/**.inl")

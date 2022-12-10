@@ -884,6 +884,11 @@ private:
     MD_PARSER m_md;
 };
 
+METAENGINE_GUI_DEFINE_BEGIN(template<>, MarkdownData)
+ImGuiMarkdown markdown;
+markdown.print(var.data);
+METAENGINE_GUI_DEFINE_END
+
 namespace ImGuiHelper {
 
     inline void init_style(const float pixel_ratio, const float dpi_scaling) {

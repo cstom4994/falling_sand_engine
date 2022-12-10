@@ -25,8 +25,7 @@
 
 #define _R_GLT_TEXT2D_POSITION_SIZE 2
 #define _R_GLT_TEXT2D_TEXCOORD_SIZE 2
-#define _R_GLT_TEXT2D_VERTEX_SIZE                                                  \
-    (_R_GLT_TEXT2D_POSITION_SIZE + _R_GLT_TEXT2D_TEXCOORD_SIZE)
+#define _R_GLT_TEXT2D_VERTEX_SIZE (_R_GLT_TEXT2D_POSITION_SIZE + _R_GLT_TEXT2D_TEXCOORD_SIZE)
 
 #define _R_GLT_TEXT2D_POSITION_OFFSET 0
 #define _R_GLT_TEXT2D_TEXCOORD_OFFSET _R_GLT_TEXT2D_POSITION_SIZE
@@ -66,13 +65,10 @@ typedef struct _R_GLTglyphdata
     uint16_t dataWidth, dataHeight;
 } _R_GLTglyphdata;
 
-static _R_GLTglyph
-        _R_GLT_FontGlyphs[_R_GLT_FontGlyphCount];
+static _R_GLTglyph _R_GLT_FontGlyphs[_R_GLT_FontGlyphCount];
 
-#define _R_GLT_FontGlyphLength                                                     \
-    (_R_GLT_FontGlyphMaxChar - _R_GLT_FontGlyphMinChar + 1)
-static _R_GLTglyph
-        _R_GLT_FontGlyphs2[_R_GLT_FontGlyphLength];
+#define _R_GLT_FontGlyphLength (_R_GLT_FontGlyphMaxChar - _R_GLT_FontGlyphMinChar + 1)
+static _R_GLTglyph _R_GLT_FontGlyphs2[_R_GLT_FontGlyphLength];
 
 static GLuint _R_GLT_Text2DShader = R_GLT_NULL_HANDLE;
 static GLuint _R_GLT_Text2DFontTexture = R_GLT_NULL_HANDLE;
@@ -100,8 +96,7 @@ struct R_GLTtext
 
 void _R_GLT_GetViewportSize(GLint *width, GLint *height);
 
-void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16],
-                                     GLfloat result[16]);
+void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16], GLfloat result[16]);
 
 void _R_GLT_UpdateBuffers(R_GLTtext *text);
 
@@ -109,8 +104,7 @@ GLboolean _R_GLT_CreateText2DShader(void);
 GLboolean _R_GLT_CreateText2DFontTexture(void);
 
 R_GLTtext *R_GLT_CreateText(void) {
-    R_GLTtext *text =
-            (R_GLTtext *) calloc(1, sizeof(R_GLTtext));
+    R_GLTtext *text = (R_GLTtext *) calloc(1, sizeof(R_GLTtext));
 
     METADOT_ASSERT_E(text);
 
@@ -132,18 +126,14 @@ R_GLTtext *R_GLT_CreateText(void) {
     glBindBuffer(GL_ARRAY_BUFFER, text->_vbo);
 
     glEnableVertexAttribArray(_R_GLT_TEXT2D_POSITION_LOCATION);
-    glVertexAttribPointer(
-            _R_GLT_TEXT2D_POSITION_LOCATION,
-            _R_GLT_TEXT2D_POSITION_SIZE, GL_FLOAT, GL_FALSE,
-            (_R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
-            (const void *) (_R_GLT_TEXT2D_POSITION_OFFSET * sizeof(GLfloat)));
+    glVertexAttribPointer(_R_GLT_TEXT2D_POSITION_LOCATION, _R_GLT_TEXT2D_POSITION_SIZE, GL_FLOAT,
+                          GL_FALSE, (_R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
+                          (const void *) (_R_GLT_TEXT2D_POSITION_OFFSET * sizeof(GLfloat)));
 
     glEnableVertexAttribArray(_R_GLT_TEXT2D_TEXCOORD_LOCATION);
-    glVertexAttribPointer(
-            _R_GLT_TEXT2D_TEXCOORD_LOCATION,
-            _R_GLT_TEXT2D_TEXCOORD_SIZE, GL_FLOAT, GL_FALSE,
-            (_R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
-            (const void *) (_R_GLT_TEXT2D_TEXCOORD_OFFSET * sizeof(GLfloat)));
+    glVertexAttribPointer(_R_GLT_TEXT2D_TEXCOORD_LOCATION, _R_GLT_TEXT2D_TEXCOORD_SIZE, GL_FLOAT,
+                          GL_FALSE, (_R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
+                          (const void *) (_R_GLT_TEXT2D_TEXCOORD_OFFSET * sizeof(GLfloat)));
 
     glBindVertexArray(0);
 
@@ -266,8 +256,8 @@ void R_GLT_EndDraw() {
     glUseProgram(_R_GLT_SwayShader);
 }
 
-#define _R_GLT_DrawText()                                                          \
-    glUniformMatrix4fv(_R_GLT_Text2DShaderMVPUniformLocation, 1, GL_FALSE, mvp);   \
+#define _R_GLT_DrawText()                                                                          \
+    glUniformMatrix4fv(_R_GLT_Text2DShaderMVPUniformLocation, 1, GL_FALSE, mvp);                   \
                                                                                                    \
     glBindVertexArray(text->_vao);                                                                 \
     glDrawArrays(GL_TRIANGLES, 0, text->vertexCount);
@@ -282,8 +272,7 @@ void R_GLT_DrawText(R_GLTtext *text, const GLfloat mvp[16]) {
     _R_GLT_DrawText();
 }
 
-void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y,
-                                      GLfloat scale) {
+void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale) {
     if (!text) return;
 
     if (text->_dirty) _R_GLT_UpdateBuffers(text);
@@ -307,31 +296,27 @@ void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y,
     _R_GLT_DrawText();
 }
 
-void R_GLT_DrawText2DAligned(R_GLTtext *text, GLfloat x, GLfloat y,
-                                             GLfloat scale, int horizontalAlignment,
-                                             int verticalAlignment) {
+void R_GLT_DrawText2DAligned(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale,
+                             int horizontalAlignment, int verticalAlignment) {
     if (!text) return;
 
     if (text->_dirty) _R_GLT_UpdateBuffers(text);
 
     if (!text->vertexCount) return;
 
-    if (horizontalAlignment == R_GLT_CENTER)
-        x -= R_GLT_GetTextWidth(text, scale) * 0.5f;
+    if (horizontalAlignment == R_GLT_CENTER) x -= R_GLT_GetTextWidth(text, scale) * 0.5f;
     else if (horizontalAlignment == R_GLT_RIGHT)
         x -= R_GLT_GetTextWidth(text, scale);
 
-    if (verticalAlignment == R_GLT_CENTER)
-        y -= R_GLT_GetTextHeight(text, scale) * 0.5f;
+    if (verticalAlignment == R_GLT_CENTER) y -= R_GLT_GetTextHeight(text, scale) * 0.5f;
     else if (verticalAlignment == R_GLT_RIGHT)
         y -= R_GLT_GetTextHeight(text, scale);
 
     R_GLT_DrawText2D(text, x, y, scale);
 }
 
-void R_GLT_DrawText3D(R_GLTtext *text, GLfloat x, GLfloat y,
-                                      GLfloat z, GLfloat scale, GLfloat view[16],
-                                      GLfloat projection[16]) {
+void R_GLT_DrawText3D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat z, GLfloat scale,
+                      GLfloat view[16], GLfloat projection[16]) {
     if (!text) return;
 
     if (text->_dirty) _R_GLT_UpdateBuffers(text);
@@ -339,13 +324,8 @@ void R_GLT_DrawText3D(R_GLTtext *text, GLfloat x, GLfloat y,
     if (!text->vertexCount) return;
 
     const GLfloat model[16] = {
-            scale, 0.0f,
-            0.0f,  0.0f,
-            0.0f,  -scale,
-            0.0f,  0.0f,
-            0.0f,  0.0f,
-            scale, 0.0f,
-            x,     y + (GLfloat) _R_GLT_FontGlyphHeight * scale,
+            scale, 0.0f, 0.0f, 0.0f,  0.0f, -scale, 0.0f,
+            0.0f,  0.0f, 0.0f, scale, 0.0f, x,      y + (GLfloat) _R_GLT_FontGlyphHeight * scale,
             z,     1.0f,
     };
 
@@ -364,8 +344,7 @@ void R_GLT_Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
 
 void R_GLT_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a) {
     GLfloat color[4];
-    glGetUniformfv(_R_GLT_Text2DShader,
-                   _R_GLT_Text2DShaderColorUniformLocation, color);
+    glGetUniformfv(_R_GLT_Text2DShader, _R_GLT_Text2DShaderColorUniformLocation, color);
 
     if (r) (*r) = color[0];
     if (g) (*g) = color[1];
@@ -373,9 +352,7 @@ void R_GLT_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a) {
     if (a) (*a) = color[3];
 }
 
-GLfloat R_GLT_GetLineHeight(GLfloat scale) {
-    return (GLfloat) _R_GLT_FontGlyphHeight * scale;
-}
+GLfloat R_GLT_GetLineHeight(GLfloat scale) { return (GLfloat) _R_GLT_FontGlyphHeight * scale; }
 
 GLfloat R_GLT_GetTextWidth(const R_GLTtext *text, GLfloat scale) {
     if (!text || !text->_text) return 0.0f;
@@ -420,8 +397,7 @@ GLfloat R_GLT_GetTextWidth(const R_GLTtext *text, GLfloat scale) {
 GLfloat R_GLT_GetTextHeight(const R_GLTtext *text, GLfloat scale) {
     if (!text || !text->_text) return 0.0f;
 
-    return (GLfloat) (R_GLT_CountNewLines(text->_text) + 1) *
-           R_GLT_GetLineHeight(scale);
+    return (GLfloat) (R_GLT_CountNewLines(text->_text) + 1) * R_GLT_GetLineHeight(scale);
 }
 
 GLboolean R_GLT_IsCharacterSupported(const char c) {
@@ -455,8 +431,7 @@ GLboolean R_GLT_IsCharacterDrawable(const char c) {
     if (c < _R_GLT_FontGlyphMinChar) return GL_FALSE;
     if (c > _R_GLT_FontGlyphMaxChar) return GL_FALSE;
 
-    if (_R_GLT_FontGlyphs2[c - _R_GLT_FontGlyphMinChar].drawable)
-        return GL_TRUE;
+    if (_R_GLT_FontGlyphs2[c - _R_GLT_FontGlyphMinChar].drawable) return GL_TRUE;
 
     return GL_FALSE;
 }
@@ -494,8 +469,7 @@ void _R_GLT_GetViewportSize(GLint *width, GLint *height) {
     if (height) (*height) = dimensions[3];
 }
 
-void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16],
-                                     GLfloat result[16]) {
+void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16], GLfloat result[16]) {
     int c, r, i;
 
     for (c = 0; c < 4; c++) {
@@ -504,8 +478,7 @@ void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16],
 
             for (i = 0; i < 4; i++)
                 result[_R_GLT_MAT4_INDEX(r, c)] +=
-                        lhs[_R_GLT_MAT4_INDEX(r, i)] *
-                        rhs[_R_GLT_MAT4_INDEX(i, c)];
+                        lhs[_R_GLT_MAT4_INDEX(r, i)] * rhs[_R_GLT_MAT4_INDEX(i, c)];
         }
     }
 }
@@ -621,8 +594,7 @@ void _R_GLT_UpdateBuffers(R_GLTtext *text) {
     text->_vertices = vertices;
 
     glBindBuffer(GL_ARRAY_BUFFER, text->_vbo);
-    glBufferData(GL_ARRAY_BUFFER,
-                 vertexCount * _R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat),
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * _R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat),
                  vertices, GL_DYNAMIC_DRAW);
 
     text->_dirty = GL_FALSE;
@@ -772,10 +744,8 @@ GLboolean _R_GLT_CreateText2DShader(void) {
     glAttachShader(_R_GLT_Text2DShader, vertexShader);
     glAttachShader(_R_GLT_Text2DShader, fragmentShader);
 
-    glBindAttribLocation(_R_GLT_Text2DShader,
-                         _R_GLT_TEXT2D_POSITION_LOCATION, "position");
-    glBindAttribLocation(_R_GLT_Text2DShader,
-                         _R_GLT_TEXT2D_TEXCOORD_LOCATION, "texCoord");
+    glBindAttribLocation(_R_GLT_Text2DShader, _R_GLT_TEXT2D_POSITION_LOCATION, "position");
+    glBindAttribLocation(_R_GLT_Text2DShader, _R_GLT_TEXT2D_TEXCOORD_LOCATION, "texCoord");
 
     glBindFragDataLocation(_R_GLT_Text2DShader, 0, "fragColor");
 
@@ -819,10 +789,8 @@ GLboolean _R_GLT_CreateText2DShader(void) {
 
     glUseProgram(_R_GLT_Text2DShader);
 
-    _R_GLT_Text2DShaderMVPUniformLocation =
-            glGetUniformLocation(_R_GLT_Text2DShader, "mvp");
-    _R_GLT_Text2DShaderColorUniformLocation =
-            glGetUniformLocation(_R_GLT_Text2DShader, "color");
+    _R_GLT_Text2DShaderMVPUniformLocation = glGetUniformLocation(_R_GLT_Text2DShader, "mvp");
+    _R_GLT_Text2DShaderColorUniformLocation = glGetUniformLocation(_R_GLT_Text2DShader, "color");
 
     glUniform1i(glGetUniformLocation(_R_GLT_Text2DShader, "diffuse"), 0);
 
@@ -831,22 +799,19 @@ GLboolean _R_GLT_CreateText2DShader(void) {
     return GL_TRUE;
 }
 
-static const uint64_t _R_GLT_FontGlyphRects[_R_GLT_FontGlyphCount] =
-        {
-                0x1100040000, 0x304090004, 0x30209000D, 0x304090016, 0x30209001F, 0x304090028,
-                0x302090031,  0x409003A,   0x302090043, 0x30109004C, 0x1080055,   0x30209005D,
-                0x302090066,  0x3040A006F, 0x304090079, 0x304090082, 0x409008B,   0x4090094,
-                0x30409009D,  0x3040900A6, 0x3020900AF, 0x3040900B8, 0x3040900C1, 0x3040A00CA,
-                0x3040900D4,  0x40A00DD,   0x3040900E7, 0x3020900F0, 0x3020900F9, 0x302090102,
-                0x30209010B,  0x302090114, 0x30209011D, 0x302090126, 0x30209012F, 0x302070138,
-                0x30209013F,  0x302090148, 0x302090151, 0x3020A015A, 0x3020A0164, 0x30209016E,
-                0x302090177,  0x102090180, 0x302090189, 0x302090192, 0x30209019B, 0x3020901A4,
-                0x3020901AD,  0x3020A01B6, 0x3020901C0, 0x3020901C9, 0x3020901D2, 0x3020901DB,
-                0x3020901E4,  0x3020901ED, 0x3020901F6, 0x3020A01FF, 0x302090209, 0x302090212,
-                0x30209021B,  0x302090224, 0x30209022D, 0x309060236, 0x10906023C, 0x302070242,
-                0x302090249,  0x706090252, 0x50409025B, 0x202090264, 0x10207026D, 0x102070274,
-                0x30406027B,  0x104060281, 0x2010B0287, 0x3020A0292, 0xB0007029C, 0x5040A02AA,
-                0x3020A02B4,  0x6050902BE, 0x20702C7,   0x20702CE,   0xB010902D5,
+static const uint64_t _R_GLT_FontGlyphRects[_R_GLT_FontGlyphCount] = {
+        0x1100040000, 0x304090004, 0x30209000D, 0x304090016, 0x30209001F, 0x304090028, 0x302090031,
+        0x409003A,    0x302090043, 0x30109004C, 0x1080055,   0x30209005D, 0x302090066, 0x3040A006F,
+        0x304090079,  0x304090082, 0x409008B,   0x4090094,   0x30409009D, 0x3040900A6, 0x3020900AF,
+        0x3040900B8,  0x3040900C1, 0x3040A00CA, 0x3040900D4, 0x40A00DD,   0x3040900E7, 0x3020900F0,
+        0x3020900F9,  0x302090102, 0x30209010B, 0x302090114, 0x30209011D, 0x302090126, 0x30209012F,
+        0x302070138,  0x30209013F, 0x302090148, 0x302090151, 0x3020A015A, 0x3020A0164, 0x30209016E,
+        0x302090177,  0x102090180, 0x302090189, 0x302090192, 0x30209019B, 0x3020901A4, 0x3020901AD,
+        0x3020A01B6,  0x3020901C0, 0x3020901C9, 0x3020901D2, 0x3020901DB, 0x3020901E4, 0x3020901ED,
+        0x3020901F6,  0x3020A01FF, 0x302090209, 0x302090212, 0x30209021B, 0x302090224, 0x30209022D,
+        0x309060236,  0x10906023C, 0x302070242, 0x302090249, 0x706090252, 0x50409025B, 0x202090264,
+        0x10207026D,  0x102070274, 0x30406027B, 0x104060281, 0x2010B0287, 0x3020A0292, 0xB0007029C,
+        0x5040A02AA,  0x3020A02B4, 0x6050902BE, 0x20702C7,   0x20702CE,   0xB010902D5,
 };
 
 #define _R_GLT_FONT_GLYPH_DATA_TYPE uint64_t
@@ -854,90 +819,87 @@ static const uint64_t _R_GLT_FontGlyphRects[_R_GLT_FontGlyphCount] =
 
 #define _R_GLT_FontGlyphDataCount 387
 
-static const _R_GLT_FONT_GLYPH_DATA_TYPE
-        _R_GLT_FontGlyphData[_R_GLT_FontGlyphDataCount] = {
-                0x551695416A901554, 0x569695A5A56AA55A, 0x555554155545AA9,  0x916AA41569005A40,
-                0xA5A569695A5A5696, 0x51555556AA569695, 0x696916A941554155, 0x69155A55569555A5,
-                0x15541555456A9569, 0xA9569545A4005500, 0x569695A5A569695A, 0x5545AA9569695A5A,
-                0x916A941554555415, 0x55A56AA95A5A5696, 0x40555416A9555695, 0x55A45AA505550155,
-                0xA55AAA455A555691, 0x169005A45569155,  0xA945554015400554, 0x569695A5A569695A,
-                0x9545AA9569695A5A, 0x4555555AA95A5556, 0x55A4016900154555, 0xA569695A5A45AA90,
-                0x69695A5A569695A5, 0x9001541555455555, 0x5AA4155505A4016,  0xA40169005A501695,
-                0x155555AAA4569505, 0x5A405A4015405555, 0x5A505A545AA45554, 0x5A405A405A405A40,
-                0x555556A95A555A40, 0x569005A400551554, 0x9569A569695A5A45, 0xA5A56969169A556A,
-                0xA405555555155555, 0x169005A50169505A, 0x9505A40169005A40, 0x5555155555AAA456,
-                0x95A66916AA905555, 0x695A6695A6695A66, 0x154555555A5695A6, 0x5696916AA4155555,
-                0x9695A5A569695A5A, 0x45555155555A5A56, 0xA5A5696916A94155, 0x9569695A5A569695,
-                0x155515541555456A, 0x695A5A5696916AA4, 0x56AA569695A5A569, 0x5540169155A55569,
-                0x56AA515550015400, 0x9695A5A569695A5A, 0x5A5516AA55A5A56,  0x500155005A401695,
-                0xA56A695A5A455555, 0x169015A55569556,  0x54005500155005A4, 0x555A555695AA9455,
-                0xAA569555A5505AA5, 0x15415551555556,   0x5A55AAA455A50169, 0x40169005A4556915,
-                0x550155505AA5055A, 0xA569695A5A455555, 0x69695A5A569695A5, 0x555554155545AA95,
-                0x5A5A569695A5A455, 0xA515AA55A5A56969, 0x1545505500555055, 0x95A6695A6695A569,
-                0xA4569A55A6695A66, 0x5551555015554569, 0x456A9569695A5A45, 0xA5A5696916A95569,
-                0x4155545555155555, 0xA45A5A45A5A45A5A, 0xA945A5A45A5A45A5, 0x56A915A555695056,
-                0x4555501554055551, 0x6945695169555AAA, 0x55AAA45569156955, 0x5A50055055551555,
-                0xA569695A5A45AA50, 0x69695A5A56AA95A5, 0x555555155555A5A5, 0x5A5A5696916AA415,
-                0x5A5696956AA56969, 0x1555556AA569695A, 0x96916A9415541555, 0x9555A555695A5A56,
-                0x6A9569695A5A4556, 0xA405551554155545, 0x69695A5A45A6905A, 0x695A5A569695A5A5,
-                0x5550555555AA55A,  0x5A555695AAA45555, 0x4556916AA4156955, 0x5555AAA45569155A,
-                0x95AAA45555555515, 0x6AA41569555A5556, 0xA40169155A455691, 0x1554005500155005,
-                0x695A5A5696916A94, 0x5A5A56A69555A555, 0x54155545AA956969, 0x569695A5A4555555,
-                0x9695AAA569695A5A, 0x55A5A569695A5A56, 0x55AA455555551555, 0x5A416905A456915A,
-                0x515555AA45A51690, 0x169005A400550055, 0x9555A40169005A40, 0x456A9569695A5A56,
-                0xA5A4555515541555, 0xA55A69569A569695, 0x6969169A45A6915A, 0x555555155555A5A5,
-                0x5A40169005A400,   0x5A40169005A40169, 0x155555AAA4556900, 0x695A569154555555,
-                0x6695A6695A9A95A5, 0xA5695A5695A6695A, 0x55154555555A5695, 0x95A5695A56915455,
-                0x695AA695A6A95A5A, 0x5695A5695A5695A9, 0x155455154555555A, 0x695A5A5696916A94,
-                0x5A5A569695A5A569, 0x541555456A956969, 0x5696916AA4155515, 0x56956AA569695A5A,
-                0x5005A40169155A55, 0x6A94155400550015, 0xA569695A5A569691, 0x69695A5A569695A5,
-                0x5A5415A5456A95,   0x16AA415555500155, 0xAA569695A5A56969, 0x569695A5A55A6956,
-                0x5545555155555A5A, 0x5555A5696916A941, 0xA5545A5005A5155A, 0x41555456A9569695,
-                0x56955AAA45555155, 0x9005A40169055A51, 0x5A40169005A4016,  0x5A45555055001550,
-                0x569695A5A569695A, 0x9695A5A569695A5A, 0x515541555456A956, 0xA5A569695A5A4555,
-                0xA569695A5A569695, 0x555055A515AA55A5, 0x95A5691545505500, 0x695A6695A5695A56,
-                0x9A4569A55A6695A6, 0x555015554169A456, 0x9569695A5A455551, 0x5A6515A515694566,
-                0x555A5A569695A5A4, 0x5A5A455555555155, 0xA9569695A5A56969, 0x169015A41569456,
-                0x55505500155005A4, 0x5A55169555AAA45,  0x55A455A555A515A5, 0x5155555AAA455690,
-                0x696916A941554555, 0xA95A5A56A695A9A5, 0x56A9569695A6A569, 0x9401540155415554,
-                0x5A5516AA45A9516,  0xA40169005A401695, 0x4154005540169005, 0xA5A5696916A94155,
-                0x9556945695169555, 0x55555AAA45569156, 0x6916A94155455551, 0x56A5169555A5A569,
-                0xA9569695A5A56955, 0x15415541555456,   0x4169A4055A4005A4, 0xA916969169A5169A,
-                0x50056954569555AA, 0x5AAA455551540015, 0xAA41569555A55569, 0x55A555A551695516,
-                0x55005550555555AA, 0x915694569416A401, 0xA5A569695A5A45AA, 0x41555456A9569695,
-                0x69555AAA45555155, 0x9415A415A5056951, 0x169015A40569056,  0xA941554015400554,
-                0x569A95A5A5696916, 0x9695A5A56A6956A9, 0x415541555456A956, 0xA5A5696916A94155,
-                0x516AA55A5A569695, 0x155415A915694569, 0x555A95A915505540, 0x5A55A95A91555545,
-                0x1694154154555569, 0xA456956A95AA56A9, 0x55416905A415515,  0x696916A941554154,
-                0x9055A515A555A5A5, 0x5A4016900554056,  0xAA45555055001550, 0x5505555155555A,
-                0x6955AAA4569505A4, 0x5500155055A515,   0x690169405A400550, 0x90569415A415A505,
-                0x569015A415A5056,  0x6941540015400554, 0xA456915A55A55691, 0x16905A505A416905,
-                0x6901555405541694, 0x16905A505A416941, 0x6955A45A516905A4, 0xA455415415545695,
-                0x6A45555515556A56, 0x56A45555515556A5, 0xA56A45555515556A, 0x5505515555A56956,
-                0x690569A4016A5001, 0x4056954169A9459A, 0x416A690156941569, 0x15A9505A695169A6,
-                0x4015505540055540, 0x94169A4169A405A9, 0x5A56A9A4555A415A, 0x555169A955A5A55A,
-                0x6945A90555555415, 0x1555154055416941, 0x56AAA456A545A690, 0x40555515A69156A5,
-                0x6945A69015550555, 0xA6915A6956AAA45A, 0x5A6956AAA45A6955, 0x455540555515A691,
-                0xAA9555556AA91555, 0xA915555554555556, 0x416905A556955A56, 0x5A416905A416905A,
-                0x555515555AA45690, 0x6905A516955AA455, 0x416905A416905A41, 0x55556A95A556905A,
-                0xA5A5696915555554, 0x5555155555,
+static const _R_GLT_FONT_GLYPH_DATA_TYPE _R_GLT_FontGlyphData[_R_GLT_FontGlyphDataCount] = {
+        0x551695416A901554, 0x569695A5A56AA55A, 0x555554155545AA9,  0x916AA41569005A40,
+        0xA5A569695A5A5696, 0x51555556AA569695, 0x696916A941554155, 0x69155A55569555A5,
+        0x15541555456A9569, 0xA9569545A4005500, 0x569695A5A569695A, 0x5545AA9569695A5A,
+        0x916A941554555415, 0x55A56AA95A5A5696, 0x40555416A9555695, 0x55A45AA505550155,
+        0xA55AAA455A555691, 0x169005A45569155,  0xA945554015400554, 0x569695A5A569695A,
+        0x9545AA9569695A5A, 0x4555555AA95A5556, 0x55A4016900154555, 0xA569695A5A45AA90,
+        0x69695A5A569695A5, 0x9001541555455555, 0x5AA4155505A4016,  0xA40169005A501695,
+        0x155555AAA4569505, 0x5A405A4015405555, 0x5A505A545AA45554, 0x5A405A405A405A40,
+        0x555556A95A555A40, 0x569005A400551554, 0x9569A569695A5A45, 0xA5A56969169A556A,
+        0xA405555555155555, 0x169005A50169505A, 0x9505A40169005A40, 0x5555155555AAA456,
+        0x95A66916AA905555, 0x695A6695A6695A66, 0x154555555A5695A6, 0x5696916AA4155555,
+        0x9695A5A569695A5A, 0x45555155555A5A56, 0xA5A5696916A94155, 0x9569695A5A569695,
+        0x155515541555456A, 0x695A5A5696916AA4, 0x56AA569695A5A569, 0x5540169155A55569,
+        0x56AA515550015400, 0x9695A5A569695A5A, 0x5A5516AA55A5A56,  0x500155005A401695,
+        0xA56A695A5A455555, 0x169015A55569556,  0x54005500155005A4, 0x555A555695AA9455,
+        0xAA569555A5505AA5, 0x15415551555556,   0x5A55AAA455A50169, 0x40169005A4556915,
+        0x550155505AA5055A, 0xA569695A5A455555, 0x69695A5A569695A5, 0x555554155545AA95,
+        0x5A5A569695A5A455, 0xA515AA55A5A56969, 0x1545505500555055, 0x95A6695A6695A569,
+        0xA4569A55A6695A66, 0x5551555015554569, 0x456A9569695A5A45, 0xA5A5696916A95569,
+        0x4155545555155555, 0xA45A5A45A5A45A5A, 0xA945A5A45A5A45A5, 0x56A915A555695056,
+        0x4555501554055551, 0x6945695169555AAA, 0x55AAA45569156955, 0x5A50055055551555,
+        0xA569695A5A45AA50, 0x69695A5A56AA95A5, 0x555555155555A5A5, 0x5A5A5696916AA415,
+        0x5A5696956AA56969, 0x1555556AA569695A, 0x96916A9415541555, 0x9555A555695A5A56,
+        0x6A9569695A5A4556, 0xA405551554155545, 0x69695A5A45A6905A, 0x695A5A569695A5A5,
+        0x5550555555AA55A,  0x5A555695AAA45555, 0x4556916AA4156955, 0x5555AAA45569155A,
+        0x95AAA45555555515, 0x6AA41569555A5556, 0xA40169155A455691, 0x1554005500155005,
+        0x695A5A5696916A94, 0x5A5A56A69555A555, 0x54155545AA956969, 0x569695A5A4555555,
+        0x9695AAA569695A5A, 0x55A5A569695A5A56, 0x55AA455555551555, 0x5A416905A456915A,
+        0x515555AA45A51690, 0x169005A400550055, 0x9555A40169005A40, 0x456A9569695A5A56,
+        0xA5A4555515541555, 0xA55A69569A569695, 0x6969169A45A6915A, 0x555555155555A5A5,
+        0x5A40169005A400,   0x5A40169005A40169, 0x155555AAA4556900, 0x695A569154555555,
+        0x6695A6695A9A95A5, 0xA5695A5695A6695A, 0x55154555555A5695, 0x95A5695A56915455,
+        0x695AA695A6A95A5A, 0x5695A5695A5695A9, 0x155455154555555A, 0x695A5A5696916A94,
+        0x5A5A569695A5A569, 0x541555456A956969, 0x5696916AA4155515, 0x56956AA569695A5A,
+        0x5005A40169155A55, 0x6A94155400550015, 0xA569695A5A569691, 0x69695A5A569695A5,
+        0x5A5415A5456A95,   0x16AA415555500155, 0xAA569695A5A56969, 0x569695A5A55A6956,
+        0x5545555155555A5A, 0x5555A5696916A941, 0xA5545A5005A5155A, 0x41555456A9569695,
+        0x56955AAA45555155, 0x9005A40169055A51, 0x5A40169005A4016,  0x5A45555055001550,
+        0x569695A5A569695A, 0x9695A5A569695A5A, 0x515541555456A956, 0xA5A569695A5A4555,
+        0xA569695A5A569695, 0x555055A515AA55A5, 0x95A5691545505500, 0x695A6695A5695A56,
+        0x9A4569A55A6695A6, 0x555015554169A456, 0x9569695A5A455551, 0x5A6515A515694566,
+        0x555A5A569695A5A4, 0x5A5A455555555155, 0xA9569695A5A56969, 0x169015A41569456,
+        0x55505500155005A4, 0x5A55169555AAA45,  0x55A455A555A515A5, 0x5155555AAA455690,
+        0x696916A941554555, 0xA95A5A56A695A9A5, 0x56A9569695A6A569, 0x9401540155415554,
+        0x5A5516AA45A9516,  0xA40169005A401695, 0x4154005540169005, 0xA5A5696916A94155,
+        0x9556945695169555, 0x55555AAA45569156, 0x6916A94155455551, 0x56A5169555A5A569,
+        0xA9569695A5A56955, 0x15415541555456,   0x4169A4055A4005A4, 0xA916969169A5169A,
+        0x50056954569555AA, 0x5AAA455551540015, 0xAA41569555A55569, 0x55A555A551695516,
+        0x55005550555555AA, 0x915694569416A401, 0xA5A569695A5A45AA, 0x41555456A9569695,
+        0x69555AAA45555155, 0x9415A415A5056951, 0x169015A40569056,  0xA941554015400554,
+        0x569A95A5A5696916, 0x9695A5A56A6956A9, 0x415541555456A956, 0xA5A5696916A94155,
+        0x516AA55A5A569695, 0x155415A915694569, 0x555A95A915505540, 0x5A55A95A91555545,
+        0x1694154154555569, 0xA456956A95AA56A9, 0x55416905A415515,  0x696916A941554154,
+        0x9055A515A555A5A5, 0x5A4016900554056,  0xAA45555055001550, 0x5505555155555A,
+        0x6955AAA4569505A4, 0x5500155055A515,   0x690169405A400550, 0x90569415A415A505,
+        0x569015A415A5056,  0x6941540015400554, 0xA456915A55A55691, 0x16905A505A416905,
+        0x6901555405541694, 0x16905A505A416941, 0x6955A45A516905A4, 0xA455415415545695,
+        0x6A45555515556A56, 0x56A45555515556A5, 0xA56A45555515556A, 0x5505515555A56956,
+        0x690569A4016A5001, 0x4056954169A9459A, 0x416A690156941569, 0x15A9505A695169A6,
+        0x4015505540055540, 0x94169A4169A405A9, 0x5A56A9A4555A415A, 0x555169A955A5A55A,
+        0x6945A90555555415, 0x1555154055416941, 0x56AAA456A545A690, 0x40555515A69156A5,
+        0x6945A69015550555, 0xA6915A6956AAA45A, 0x5A6956AAA45A6955, 0x455540555515A691,
+        0xAA9555556AA91555, 0xA915555554555556, 0x416905A556955A56, 0x5A416905A416905A,
+        0x555515555AA45690, 0x6905A516955AA455, 0x416905A416905A41, 0x55556A95A556905A,
+        0xA5A5696915555554, 0x5555155555,
 };
 
 GLboolean _R_GLT_CreateText2DFontTexture(void) {
     if (R_GLT_Initialized) return GL_TRUE;
 
-    memset(_R_GLT_FontGlyphs, 0,
-           _R_GLT_FontGlyphCount * sizeof(_R_GLTglyph));
-    memset(_R_GLT_FontGlyphs2, 0,
-           _R_GLT_FontGlyphLength * sizeof(_R_GLTglyph));
+    memset(_R_GLT_FontGlyphs, 0, _R_GLT_FontGlyphCount * sizeof(_R_GLTglyph));
+    memset(_R_GLT_FontGlyphs2, 0, _R_GLT_FontGlyphLength * sizeof(_R_GLTglyph));
 
     GLsizei texWidth = 0;
     GLsizei texHeight = 0;
 
     GLsizei drawableGlyphCount = 0;
 
-    _R_GLTglyphdata *glyphsData = (_R_GLTglyphdata *) calloc(
-            _R_GLT_FontGlyphCount, sizeof(_R_GLTglyphdata));
+    _R_GLTglyphdata *glyphsData =
+            (_R_GLTglyphdata *) calloc(_R_GLT_FontGlyphCount, sizeof(_R_GLTglyphdata));
 
     uint64_t glyphPacked;
     uint32_t glyphMarginPacked;
@@ -1032,20 +994,18 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
     for (texPixelIndex = 0; texPixelIndex < (texAreaSize * texPixelComponents); texPixelIndex++)
         texData[texPixelIndex] = 0;
 
-#define _R_GLT_TEX_PIXEL_INDEX(x, y)                                               \
-    ((y) *texWidth * texPixelComponents + (x) *texPixelComponents)
+#define _R_GLT_TEX_PIXEL_INDEX(x, y) ((y) *texWidth * texPixelComponents + (x) *texPixelComponents)
 
-#define _R_GLT_TEX_SET_PIXEL(x, y, r, g, b, a)                                     \
+#define _R_GLT_TEX_SET_PIXEL(x, y, r, g, b, a)                                                     \
     {                                                                                              \
-        texPixelIndex = _R_GLT_TEX_PIXEL_INDEX(x, y);                              \
+        texPixelIndex = _R_GLT_TEX_PIXEL_INDEX(x, y);                                              \
         texData[texPixelIndex + 0] = r;                                                            \
         texData[texPixelIndex + 1] = g;                                                            \
         texData[texPixelIndex + 2] = b;                                                            \
         texData[texPixelIndex + 3] = a;                                                            \
     }
 
-    const int glyphDataTypeSizeBits =
-            sizeof(_R_GLT_FONT_GLYPH_DATA_TYPE) * 8;// 8 bits in a byte
+    const int glyphDataTypeSizeBits = sizeof(_R_GLT_FONT_GLYPH_DATA_TYPE) * 8;// 8 bits in a byte
 
     int data0Index = 0;
     int data1Index = 0;
@@ -1153,8 +1113,7 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
     for (i = 0; i < _R_GLT_FontGlyphCount; i++) {
         glyph = &_R_GLT_FontGlyphs[i];
 
-        _R_GLT_FontGlyphs2[glyph->c - _R_GLT_FontGlyphMinChar] =
-                *glyph;
+        _R_GLT_FontGlyphs2[glyph->c - _R_GLT_FontGlyphMinChar] = *glyph;
     }
 
 #undef _R_GLT_TEX_PIXEL_INDEX
@@ -1213,14 +1172,14 @@ b2Vec2 Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     return b2Vec2(xnew + cx, ynew + cy);
 }
 
-void Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts,
-                          int x, int y, float scale, int count, float angle, float cx, float cy) {
+void Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts, int x, int y,
+                          float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
     b2Vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
         b2Vec2 rot = rotate_point(cx, cy, angle, verts[i]);
-        R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale,
-                               y + rot.y * scale, col);
+        R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale, y + rot.y * scale,
+               col);
         last = rot;
     }
 }
@@ -1253,7 +1212,7 @@ typedef struct R_RendererRegistration
 
 static bool gpu_renderer_register_is_initialized = false;
 
-static R_Renderer *gpu_renderer_map;
+static R_Renderer *gpu_renderer;
 static R_RendererRegistration gpu_renderer_register;
 static R_RendererID gpu_renderer_order;
 
@@ -1262,23 +1221,18 @@ R_RendererID R_GetRendererID() {
     return gpu_renderer_register.id;
 }
 
-R_Renderer *R_CreateRenderer_OpenGL_3(
-        R_RendererID request);
+R_Renderer *R_CreateRenderer_OpenGL_3(R_RendererID request);
 void R_FreeRenderer_OpenGL_3(R_Renderer *renderer);
 
-void R_RegisterRenderer(
-        R_RendererID id,
-        R_Renderer *(*create_renderer)(R_RendererID request),
-        void (*free_renderer)(R_Renderer *renderer)) {
+void R_RegisterRenderer(R_RendererID id, R_Renderer *(*create_renderer)(R_RendererID request),
+                        void (*free_renderer)(R_Renderer *renderer)) {
 
     if (create_renderer == NULL) {
-        R_PushErrorCode(__func__, R_ERROR_USER_ERROR,
-                                        "NULL renderer create callback");
+        R_PushErrorCode(__func__, R_ERROR_USER_ERROR, "NULL renderer create callback");
         return;
     }
     if (free_renderer == NULL) {
-        R_PushErrorCode(__func__, R_ERROR_USER_ERROR,
-                                        "NULL renderer free callback");
+        R_PushErrorCode(__func__, R_ERROR_USER_ERROR, "NULL renderer free callback");
         return;
     }
 
@@ -1290,14 +1244,11 @@ void R_RegisterRenderer(
 void gpu_register_built_in_renderers(void) {
 #ifdef __MACOSX__
     // Depending on OS X version, it might only support core GL 3.3 or 3.2
-    R_RegisterRenderer(
-            R_MakeRendererID("OpenGL 3", R_GL_VERSION_MAJOR,
-                                             R_GL_VERSION_MINOR),
-            &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
+    R_RegisterRenderer(R_MakeRendererID("OpenGL 3", R_GL_VERSION_MAJOR, R_GL_VERSION_MINOR),
+                       &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
 #else
-    R_RegisterRenderer(
-            R_MakeRendererID("OpenGL 3", R_RENDERER_OPENGL_3, 3, 0),
-            &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
+    R_RegisterRenderer(R_MakeRendererID("OpenGL 3", R_RENDERER_OPENGL_3, 3, 0),
+                       &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
 #endif
 }
 
@@ -1309,10 +1260,9 @@ void gpu_init_renderer_register(void) {
     gpu_renderer_register.createFn = NULL;
     gpu_renderer_register.freeFn = NULL;
 
-    gpu_renderer_map = NULL;
+    gpu_renderer = NULL;
 
-    gpu_renderer_order = R_MakeRendererID(
-            "OpenGL 3", R_GL_VERSION_MAJOR, R_GL_VERSION_MINOR);
+    gpu_renderer_order = R_MakeRendererID("OpenGL 3", R_GL_VERSION_MAJOR, R_GL_VERSION_MINOR);
 
     gpu_renderer_register_is_initialized = 1;
 
@@ -1323,7 +1273,7 @@ void gpu_free_renderer_register(void) {
     gpu_renderer_register.id.name = "Unknown";
     gpu_renderer_register.createFn = NULL;
     gpu_renderer_register.freeFn = NULL;
-    gpu_renderer_map = NULL;
+    gpu_renderer = NULL;
     gpu_renderer_register_is_initialized = 0;
 }
 
@@ -1334,7 +1284,7 @@ void R_GetRendererOrder(int *order_size, R_RendererID *order) {
 // Get a renderer from the map.
 R_Renderer *R_GetRenderer(R_RendererID id) {
     gpu_init_renderer_register();
-    return gpu_renderer_map;
+    return gpu_renderer;
 }
 
 // Free renderer memory according to how the registry instructs
@@ -1350,12 +1300,11 @@ void R_FreeRenderer(R_Renderer *renderer) {
     if (renderer == NULL) return;
 
     current_renderer = R_GetCurrentRenderer();
-    if (current_renderer == renderer)
-        R_SetCurrentRenderer(R_MakeRendererID("Unknown", 0, 0));
+    if (current_renderer == renderer) R_SetCurrentRenderer(R_MakeRendererID("Unknown", 0, 0));
 
-    if (renderer == gpu_renderer_map) {
+    if (renderer == gpu_renderer) {
         gpu_free_renderer_memory(renderer);
-        gpu_renderer_map = NULL;
+        gpu_renderer = NULL;
         return;
     }
 }
@@ -1367,12 +1316,12 @@ void R_FreeRenderer(R_Renderer *renderer) {
     do {                                                                                           \
         if (gpu_current_renderer->current_context_target == NULL && target != NULL &&              \
             target->context != NULL)                                                               \
-            R_MakeCurrent(target, target->context->windowID);                      \
+            R_MakeCurrent(target, target->context->windowID);                                      \
     } while (0)
 #define CHECK_CONTEXT (gpu_current_renderer->current_context_target != NULL)
 #define RETURN_ERROR(code, details)                                                                \
     do {                                                                                           \
-        R_PushErrorCode(__func__, code, "%s", details);                            \
+        R_PushErrorCode(__func__, code, "%s", details);                                            \
         return;                                                                                    \
     } while (0)
 
@@ -1437,9 +1386,7 @@ bool R_GetCoordinateMode(void) {
     return gpu_current_renderer->coordinate_mode;
 }
 
-R_Renderer *R_GetCurrentRenderer(void) {
-    return gpu_current_renderer;
-}
+R_Renderer *R_GetCurrentRenderer(void) { return gpu_current_renderer; }
 
 Uint32 R_GetCurrentShaderProgram(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
@@ -1452,48 +1399,38 @@ void R_SetInitWindow(Uint32 windowID) { gpu_init_windowID = windowID; }
 
 Uint32 R_GetInitWindow(void) { return gpu_init_windowID; }
 
-void R_SetPreInitFlags(R_InitFlagEnum R_flags) {
-    gpu_preinit_flags = R_flags;
-}
+void R_SetPreInitFlags(R_InitFlagEnum R_flags) { gpu_preinit_flags = R_flags; }
 
 R_InitFlagEnum R_GetPreInitFlags(void) { return gpu_preinit_flags; }
 
-void R_SetRequiredFeatures(R_FeatureEnum features) {
-    gpu_required_features = features;
-}
+void R_SetRequiredFeatures(R_FeatureEnum features) { gpu_required_features = features; }
 
-R_FeatureEnum R_GetRequiredFeatures(void) {
-    return gpu_required_features;
-}
+R_FeatureEnum R_GetRequiredFeatures(void) { return gpu_required_features; }
 
 static void gpu_init_error_queue(void) {
     if (gpu_error_code_queue == NULL) {
         unsigned int i;
-        gpu_error_code_queue = (R_ErrorObject *) SDL_malloc(
-                sizeof(R_ErrorObject) * gpu_error_code_queue_size);
+        gpu_error_code_queue =
+                (R_ErrorObject *) SDL_malloc(sizeof(R_ErrorObject) * gpu_error_code_queue_size);
 
         for (i = 0; i < gpu_error_code_queue_size; i++) {
-            gpu_error_code_queue[i].function =
-                    (char *) SDL_malloc(R_ERROR_FUNCTION_STRING_MAX + 1);
+            gpu_error_code_queue[i].function = (char *) SDL_malloc(R_ERROR_FUNCTION_STRING_MAX + 1);
             gpu_error_code_queue[i].error = R_ERROR_NONE;
-            gpu_error_code_queue[i].details =
-                    (char *) SDL_malloc(R_ERROR_DETAILS_STRING_MAX + 1);
+            gpu_error_code_queue[i].details = (char *) SDL_malloc(R_ERROR_DETAILS_STRING_MAX + 1);
         }
         gpu_num_error_codes = 0;
 
-        gpu_error_code_result.function =
-                (char *) SDL_malloc(R_ERROR_FUNCTION_STRING_MAX + 1);
+        gpu_error_code_result.function = (char *) SDL_malloc(R_ERROR_FUNCTION_STRING_MAX + 1);
         gpu_error_code_result.error = R_ERROR_NONE;
-        gpu_error_code_result.details =
-                (char *) SDL_malloc(R_ERROR_DETAILS_STRING_MAX + 1);
+        gpu_error_code_result.details = (char *) SDL_malloc(R_ERROR_DETAILS_STRING_MAX + 1);
     }
 }
 
 static void gpu_init_window_mappings(void) {
     if (gpu_window_mappings == NULL) {
         gpu_window_mappings_size = R_INITIAL_WINDOW_MAPPINGS_SIZE;
-        gpu_window_mappings = (R_WindowMapping *) SDL_malloc(
-                gpu_window_mappings_size * sizeof(R_WindowMapping));
+        gpu_window_mappings =
+                (R_WindowMapping *) SDL_malloc(gpu_window_mappings_size * sizeof(R_WindowMapping));
         gpu_num_window_mappings = 0;
     }
 }
@@ -1514,8 +1451,8 @@ void R_AddWindowMapping(R_Target *target) {
     for (i = 0; i < gpu_num_window_mappings; i++) {
         if (gpu_window_mappings[i].windowID == windowID) {
             if (gpu_window_mappings[i].target != target)
-                R_PushErrorCode(__func__, R_ERROR_DATA_ERROR,
-                                                "WindowID %u already has a mapping.", windowID);
+                R_PushErrorCode(__func__, R_ERROR_DATA_ERROR, "WindowID %u already has a mapping.",
+                                windowID);
             return;
         }
         // Don't check the target because it's okay for a single target to be used with multiple windows
@@ -1525,10 +1462,9 @@ void R_AddWindowMapping(R_Target *target) {
     if (gpu_num_window_mappings >= gpu_window_mappings_size) {
         R_WindowMapping *new_array;
         gpu_window_mappings_size *= 2;
-        new_array = (R_WindowMapping *) SDL_malloc(
-                gpu_window_mappings_size * sizeof(R_WindowMapping));
-        memcpy(new_array, gpu_window_mappings,
-               gpu_num_window_mappings * sizeof(R_WindowMapping));
+        new_array =
+                (R_WindowMapping *) SDL_malloc(gpu_window_mappings_size * sizeof(R_WindowMapping));
+        memcpy(new_array, gpu_window_mappings, gpu_num_window_mappings * sizeof(R_WindowMapping));
         SDL_free(gpu_window_mappings);
         gpu_window_mappings = new_array;
     }
@@ -1616,8 +1552,7 @@ R_Target *R_GetWindowTarget(Uint32 windowID) {
     return NULL;
 }
 
-R_Target *R_Init(Uint16 w, Uint16 h,
-                                                 R_WindowFlagEnum SDL_flags) {
+R_Target *R_Init(Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
     R_RendererID renderer_order;
 
     gpu_init_error_queue();
@@ -1626,32 +1561,28 @@ R_Target *R_Init(Uint16 w, Uint16 h,
     int renderer_order_size = 1;
     R_GetRendererOrder(&renderer_order_size, &renderer_order);
 
-    R_Target *screen =
-            R_InitRendererByID(renderer_order, w, h, SDL_flags);
+    R_Target *screen = R_InitRendererByID(renderer_order, w, h, SDL_flags);
     if (screen != NULL) return screen;
 
     R_PushErrorCode("R_Init", R_ERROR_BACKEND_ERROR,
-                                    "No renderer out of %d was able to initialize properly",
-                                    renderer_order_size);
+                    "No renderer out of %d was able to initialize properly", renderer_order_size);
     return NULL;
 }
 
-R_Target *R_InitRenderer(
-        Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
+R_Target *R_InitRenderer(Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
     // Search registry for this renderer and use that id
     return R_InitRendererByID(R_GetRendererID(), w, h, SDL_flags);
 }
 
-R_Target *R_InitRendererByID(
-        R_RendererID renderer_request, Uint16 w, Uint16 h,
-        R_WindowFlagEnum SDL_flags) {
+R_Target *R_InitRendererByID(R_RendererID renderer_request, Uint16 w, Uint16 h,
+                             R_WindowFlagEnum SDL_flags) {
     R_Renderer *renderer;
     R_Target *screen;
 
     gpu_init_error_queue();
     gpu_init_renderer_register();
 
-    if (gpu_renderer_map == NULL) {
+    if (gpu_renderer == NULL) {
         // Create
 
         if (gpu_renderer_register.createFn != NULL) {
@@ -1661,12 +1592,11 @@ R_Target *R_InitRendererByID(
         }
 
         if (renderer == nullptr) {
-            R_PushErrorCode(__func__, R_ERROR_BACKEND_ERROR,
-                                            "Failed to create new renderer.");
+            R_PushErrorCode(__func__, R_ERROR_BACKEND_ERROR, "Failed to create new renderer.");
             return nullptr;
         }
 
-        gpu_renderer_map = renderer;
+        gpu_renderer = renderer;
     }
 
     // renderer = gpu_create_and_add_renderer(renderer_request);
@@ -1676,9 +1606,8 @@ R_Target *R_InitRendererByID(
 
     screen = renderer->impl->Init(renderer, renderer_request, w, h, SDL_flags);
     if (screen == NULL) {
-        R_PushErrorCode(
-                "R_InitRendererByID", R_ERROR_BACKEND_ERROR,
-                "Renderer %s failed to initialize properly", renderer->id.name);
+        R_PushErrorCode("R_InitRendererByID", R_ERROR_BACKEND_ERROR,
+                        "Renderer %s failed to initialize properly", renderer->id.name);
         // Init failed, destroy the renderer...
         // Erase the window mappings
         gpu_num_window_mappings = 0;
@@ -1759,8 +1688,7 @@ void R_SetDepthWrite(R_Target *target, bool enable) {
     if (target != NULL) target->use_depth_write = enable;
 }
 
-void R_SetDepthFunction(R_Target *target,
-                                        R_ComparisonEnum compare_operation) {
+void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation) {
     if (target != NULL) target->depth_function = compare_operation;
 }
 
@@ -1772,8 +1700,7 @@ bool R_SetWindowResolution(Uint16 w, Uint16 h) {
     return gpu_current_renderer->impl->SetWindowResolution(gpu_current_renderer, w, h);
 }
 
-void R_GetVirtualResolution(R_Target *target, Uint16 *w,
-                                            Uint16 *h) {
+void R_GetVirtualResolution(R_Target *target, Uint16 *w, Uint16 *h) {
     // No checking here for NULL w or h...  Should we?
     if (target == NULL) {
         *w = 0;
@@ -1801,8 +1728,7 @@ void R_UnsetVirtualResolution(R_Target *target) {
     gpu_current_renderer->impl->UnsetVirtualResolution(gpu_current_renderer, target);
 }
 
-void R_SetImageVirtualResolution(R_Image *image, Uint16 w,
-                                                 Uint16 h) {
+void R_SetImageVirtualResolution(R_Image *image, Uint16 w, Uint16 h) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL ||
         w == 0 || h == 0)
         return;
@@ -1897,8 +1823,7 @@ void R_Quit(void) {
     }
 }
 
-void R_PushErrorCode(const char *function, R_ErrorEnum error,
-                                     const char *details, ...) {
+void R_PushErrorCode(const char *function, R_ErrorEnum error, const char *details, ...) {
     gpu_init_error_queue();
 
 #if defined(METADOT_DEBUG)
@@ -1913,8 +1838,7 @@ void R_PushErrorCode(const char *function, R_ErrorEnum error,
         METADOT_ERROR("{0}: {1} - {2}", (function == NULL ? "NULL" : function),
                       R_GetErrorString(error), buf);
     } else
-        METADOT_ERROR("{0}: {1}", (function == NULL ? "NULL" : function),
-                      R_GetErrorString(error));
+        METADOT_ERROR("{0}: {1}", (function == NULL ? "NULL" : function), R_GetErrorString(error));
 #endif
 
     if (gpu_num_error_codes < gpu_error_code_queue_size) {
@@ -1922,16 +1846,15 @@ void R_PushErrorCode(const char *function, R_ErrorEnum error,
         else {
             strncpy(gpu_error_code_queue[gpu_num_error_codes].function, function,
                     R_ERROR_FUNCTION_STRING_MAX);
-            gpu_error_code_queue[gpu_num_error_codes]
-                    .function[R_ERROR_FUNCTION_STRING_MAX] = '\0';
+            gpu_error_code_queue[gpu_num_error_codes].function[R_ERROR_FUNCTION_STRING_MAX] = '\0';
         }
         gpu_error_code_queue[gpu_num_error_codes].error = error;
         if (details == NULL) gpu_error_code_queue[gpu_num_error_codes].details[0] = '\0';
         else {
             va_list lst;
             va_start(lst, details);
-            vsnprintf(gpu_error_code_queue[gpu_num_error_codes].details,
-                      R_ERROR_DETAILS_STRING_MAX, details, lst);
+            vsnprintf(gpu_error_code_queue[gpu_num_error_codes].details, R_ERROR_DETAILS_STRING_MAX,
+                      details, lst);
             va_end(lst);
         }
         gpu_num_error_codes++;
@@ -1984,8 +1907,7 @@ const char *R_GetErrorString(R_ErrorEnum error) {
     return "UNKNOWN ERROR";
 }
 
-void R_GetVirtualCoords(R_Target *target, float *x, float *y,
-                                        float displayX, float displayY) {
+void R_GetVirtualCoords(R_Target *target, float *x, float *y, float displayX, float displayY) {
     if (target == NULL || gpu_current_renderer == NULL) return;
 
     // Scale from raw window/image coords to the virtual scale
@@ -2025,8 +1947,7 @@ METAENGINE_Color R_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     return c;
 }
 
-R_RendererID R_MakeRendererID(const char *name, int major_version,
-                                                              int minor_version) {
+R_RendererID R_MakeRendererID(const char *name, int major_version, int minor_version) {
     R_RendererID r;
     r.name = name;
     r.major_version = major_version;
@@ -2035,8 +1956,7 @@ R_RendererID R_MakeRendererID(const char *name, int major_version,
     return r;
 }
 
-void R_SetViewport(R_Target *target,
-                                   R_Rect viewport) {
+void R_SetViewport(R_Target *target, R_Rect viewport) {
     if (target != NULL) target->viewport = viewport;
 }
 
@@ -2054,12 +1974,10 @@ R_Camera R_GetCamera(R_Target *target) {
     return target->camera;
 }
 
-R_Camera R_SetCamera(R_Target *target,
-                                                     R_Camera *cam) {
+R_Camera R_SetCamera(R_Target *target, R_Camera *cam) {
     if (gpu_current_renderer == NULL) return R_GetDefaultCamera();
     MAKE_CURRENT_IF_NONE(target);
-    if (gpu_current_renderer->current_context_target == NULL)
-        return R_GetDefaultCamera();
+    if (gpu_current_renderer->current_context_target == NULL) return R_GetDefaultCamera();
     // TODO: Remove from renderer and flush here
     return gpu_current_renderer->impl->SetCamera(gpu_current_renderer, target, cam);
 }
@@ -2075,16 +1993,14 @@ bool R_IsCameraEnabled(R_Target *target) {
     return target->use_camera;
 }
 
-R_Image *R_CreateImage(Uint16 w, Uint16 h,
-                                                       R_FormatEnum format) {
+R_Image *R_CreateImage(Uint16 w, Uint16 h, R_FormatEnum format) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
     return gpu_current_renderer->impl->CreateImage(gpu_current_renderer, w, h, format);
 }
 
-R_Image *R_CreateImageUsingTexture(
-        R_TextureHandle handle, bool take_ownership) {
+R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, bool take_ownership) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
@@ -2106,9 +2022,8 @@ R_Image *R_CopyImage(R_Image *image) {
     return gpu_current_renderer->impl->CopyImage(gpu_current_renderer, image);
 }
 
-void R_UpdateImage(R_Image *image,
-                                   const R_Rect *image_rect, void *surface,
-                                   const R_Rect *surface_rect) {
+void R_UpdateImage(R_Image *image, const R_Rect *image_rect, void *surface,
+                   const R_Rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -2116,9 +2031,8 @@ void R_UpdateImage(R_Image *image,
                                             surface_rect);
 }
 
-void R_UpdateImageBytes(R_Image *image,
-                                        const R_Rect *image_rect,
-                                        const unsigned char *bytes, int bytes_per_row) {
+void R_UpdateImageBytes(R_Image *image, const R_Rect *image_rect, const unsigned char *bytes,
+                        int bytes_per_row) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -2126,8 +2040,7 @@ void R_UpdateImageBytes(R_Image *image,
                                                  bytes_per_row);
 }
 
-bool R_ReplaceImage(R_Image *image, void *surface,
-                                    const R_Rect *surface_rect) {
+bool R_ReplaceImage(R_Image *image, void *surface, const R_Rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return false;
 
@@ -2142,8 +2055,7 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
     SDL_Surface *result;
 
     if (data == NULL) {
-        R_PushErrorCode(__func__, R_ERROR_DATA_ERROR,
-                                        "Got NULL data");
+        R_PushErrorCode(__func__, R_ERROR_DATA_ERROR, "Got NULL data");
         return NULL;
     }
 
@@ -2181,8 +2093,8 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
             break;
         default:
             Rmask = Gmask = Bmask = 0;
-            R_PushErrorCode(__func__, R_ERROR_DATA_ERROR,
-                                            "Invalid number of channels: %d", channels);
+            R_PushErrorCode(__func__, R_ERROR_DATA_ERROR, "Invalid number of channels: %d",
+                            channels);
             return NULL;
             break;
     }
@@ -2191,8 +2103,8 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
                                   Amask);
     //result = SDL_CreateRGBSurfaceFrom(data, width, height, channels * 8, width * channels, Rmask, Gmask, Bmask, Amask);
     if (result == NULL) {
-        R_PushErrorCode(__func__, R_ERROR_DATA_ERROR,
-                                        "Failed to create new %dx%d surface", width, height);
+        R_PushErrorCode(__func__, R_ERROR_DATA_ERROR, "Failed to create new %dx%d surface", width,
+                        height);
         return NULL;
     }
 
@@ -2231,8 +2143,7 @@ R_Image *R_CopyImageFromSurface(void *surface) {
     return gpu_current_renderer->impl->CopyImageFromSurface(gpu_current_renderer, surface, NULL);
 }
 
-R_Image *R_CopyImageFromSurfaceRect(
-        SDL_Surface *surface, R_Rect *surface_rect) {
+R_Image *R_CopyImageFromSurfaceRect(SDL_Surface *surface, R_Rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return NULL;
 
@@ -2297,8 +2208,7 @@ void R_FreeTarget(R_Target *target) {
     gpu_current_renderer->impl->FreeTarget(gpu_current_renderer, target);
 }
 
-void R_Blit(R_Image *image, R_Rect *src_rect,
-                            R_Target *target, float x, float y) {
+void R_Blit(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2309,9 +2219,8 @@ void R_Blit(R_Image *image, R_Rect *src_rect,
     gpu_current_renderer->impl->Blit(gpu_current_renderer, image, src_rect, target, x, y);
 }
 
-void R_BlitRotate(R_Image *image, R_Rect *src_rect,
-                                  R_Target *target, float x, float y,
-                                  float degrees) {
+void R_BlitRotate(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y,
+                  float degrees) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2323,9 +2232,8 @@ void R_BlitRotate(R_Image *image, R_Rect *src_rect,
                                            degrees);
 }
 
-void R_BlitScale(R_Image *image, R_Rect *src_rect,
-                                 R_Target *target, float x, float y, float scaleX,
-                                 float scaleY) {
+void R_BlitScale(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y, float scaleX,
+                 float scaleY) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2337,10 +2245,8 @@ void R_BlitScale(R_Image *image, R_Rect *src_rect,
                                           scaleX, scaleY);
 }
 
-void R_BlitTransform(R_Image *image,
-                                     R_Rect *src_rect,
-                                     R_Target *target, float x, float y,
-                                     float degrees, float scaleX, float scaleY) {
+void R_BlitTransform(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y,
+                     float degrees, float scaleX, float scaleY) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2352,11 +2258,8 @@ void R_BlitTransform(R_Image *image,
                                               degrees, scaleX, scaleY);
 }
 
-void R_BlitTransformX(R_Image *image,
-                                      R_Rect *src_rect,
-                                      R_Target *target, float x, float y,
-                                      float pivot_x, float pivot_y, float degrees, float scaleX,
-                                      float scaleY) {
+void R_BlitTransformX(R_Image *image, R_Rect *src_rect, R_Target *target, float x, float y,
+                      float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2368,9 +2271,7 @@ void R_BlitTransformX(R_Image *image,
                                                pivot_x, pivot_y, degrees, scaleX, scaleY);
 }
 
-void R_BlitRect(R_Image *image, R_Rect *src_rect,
-                                R_Target *target,
-                                R_Rect *dest_rect) {
+void R_BlitRect(R_Image *image, R_Rect *src_rect, R_Target *target, R_Rect *dest_rect) {
     float w = 0.0f;
     float h = 0.0f;
 
@@ -2384,14 +2285,11 @@ void R_BlitRect(R_Image *image, R_Rect *src_rect,
         h = src_rect->h;
     }
 
-    R_BlitRectX(image, src_rect, target, dest_rect, 0.0f, w * 0.5f, h * 0.5f,
-                                R_FLIP_NONE);
+    R_BlitRectX(image, src_rect, target, dest_rect, 0.0f, w * 0.5f, h * 0.5f, R_FLIP_NONE);
 }
 
-void R_BlitRectX(R_Image *image, R_Rect *src_rect,
-                                 R_Target *target,
-                                 R_Rect *dest_rect, float degrees, float pivot_x,
-                                 float pivot_y, R_FlipEnum flip_direction) {
+void R_BlitRectX(R_Image *image, R_Rect *src_rect, R_Target *target, R_Rect *dest_rect,
+                 float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction) {
     float w, h;
     float dx, dy;
     float dw, dh;
@@ -2433,45 +2331,32 @@ void R_BlitRectX(R_Image *image, R_Rect *src_rect,
         pivot_y = h - pivot_y;
     }
 
-    R_BlitTransformX(image, src_rect, target, dx + pivot_x * scale_x,
-                                     dy + pivot_y * scale_y, pivot_x, pivot_y, degrees, scale_x,
-                                     scale_y);
+    R_BlitTransformX(image, src_rect, target, dx + pivot_x * scale_x, dy + pivot_y * scale_y,
+                     pivot_x, pivot_y, degrees, scale_x, scale_y);
 }
 
-void R_TriangleBatch(R_Image *image,
-                                     R_Target *target, unsigned short num_vertices,
-                                     float *values, unsigned int num_indices,
-                                     unsigned short *indices,
-                                     R_BatchFlagEnum flags) {
-    R_PrimitiveBatchV(image, target, R_TRIANGLES, num_vertices,
-                                      (void *) values, num_indices, indices, flags);
+void R_TriangleBatch(R_Image *image, R_Target *target, unsigned short num_vertices, float *values,
+                     unsigned int num_indices, unsigned short *indices, R_BatchFlagEnum flags) {
+    R_PrimitiveBatchV(image, target, R_TRIANGLES, num_vertices, (void *) values, num_indices,
+                      indices, flags);
 }
 
-void R_TriangleBatchX(R_Image *image,
-                                      R_Target *target, unsigned short num_vertices,
-                                      void *values, unsigned int num_indices,
-                                      unsigned short *indices,
-                                      R_BatchFlagEnum flags) {
-    R_PrimitiveBatchV(image, target, R_TRIANGLES, num_vertices,
-                                      values, num_indices, indices, flags);
+void R_TriangleBatchX(R_Image *image, R_Target *target, unsigned short num_vertices, void *values,
+                      unsigned int num_indices, unsigned short *indices, R_BatchFlagEnum flags) {
+    R_PrimitiveBatchV(image, target, R_TRIANGLES, num_vertices, values, num_indices, indices,
+                      flags);
 }
 
-void R_PrimitiveBatch(R_Image *image,
-                                      R_Target *target,
-                                      R_PrimitiveEnum primitive_type,
-                                      unsigned short num_vertices, float *values,
-                                      unsigned int num_indices, unsigned short *indices,
-                                      R_BatchFlagEnum flags) {
-    R_PrimitiveBatchV(image, target, primitive_type, num_vertices, (void *) values,
-                                      num_indices, indices, flags);
+void R_PrimitiveBatch(R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type,
+                      unsigned short num_vertices, float *values, unsigned int num_indices,
+                      unsigned short *indices, R_BatchFlagEnum flags) {
+    R_PrimitiveBatchV(image, target, primitive_type, num_vertices, (void *) values, num_indices,
+                      indices, flags);
 }
 
-void R_PrimitiveBatchV(R_Image *image,
-                                       R_Target *target,
-                                       R_PrimitiveEnum primitive_type,
-                                       unsigned short num_vertices, void *values,
-                                       unsigned int num_indices, unsigned short *indices,
-                                       R_BatchFlagEnum flags) {
+void R_PrimitiveBatchV(R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type,
+                       unsigned short num_vertices, void *values, unsigned int num_indices,
+                       unsigned short *indices, R_BatchFlagEnum flags) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2491,8 +2376,7 @@ void R_GenerateMipmaps(R_Image *image) {
     gpu_current_renderer->impl->GenerateMipmaps(gpu_current_renderer, image);
 }
 
-R_Rect R_SetClipRect(R_Target *target,
-                                                     R_Rect rect) {
+R_Rect R_SetClipRect(R_Target *target, R_Rect rect) {
     if (target == NULL || gpu_current_renderer == NULL ||
         gpu_current_renderer->current_context_target == NULL) {
         R_Rect r = {0, 0, 0, 0};
@@ -2503,8 +2387,7 @@ R_Rect R_SetClipRect(R_Target *target,
                                                (Sint16) rect.y, (Uint16) rect.w, (Uint16) rect.h);
 }
 
-R_Rect R_SetClip(R_Target *target, Sint16 x,
-                                                 Sint16 y, Uint16 w, Uint16 h) {
+R_Rect R_SetClip(R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
     if (target == NULL || gpu_current_renderer == NULL ||
         gpu_current_renderer->current_context_target == NULL) {
         R_Rect r = {0, 0, 0, 0};
@@ -2523,8 +2406,7 @@ void R_UnsetClip(R_Target *target) {
 }
 
 /* Adapted from SDL_IntersectRect() */
-bool R_IntersectRect(R_Rect A, R_Rect B,
-                                     R_Rect *result) {
+bool R_IntersectRect(R_Rect A, R_Rect B, R_Rect *result) {
     bool has_horiz_intersection = false;
     float Amin, Amax, Bmin, Bmax;
     R_Rect intersection;
@@ -2563,13 +2445,11 @@ bool R_IntersectRect(R_Rect A, R_Rect B,
         return false;
 }
 
-bool R_IntersectClipRect(R_Target *target, R_Rect B,
-                                         R_Rect *result) {
+bool R_IntersectClipRect(R_Target *target, R_Rect B, R_Rect *result) {
     if (target == NULL) return false;
 
     if (!target->use_clip_rect) {
-        R_Rect A = {0, 0, static_cast<float>(target->w),
-                                    static_cast<float>(target->h)};
+        R_Rect A = {0, 0, static_cast<float>(target->w), static_cast<float>(target->h)};
         return R_IntersectRect(A, B, result);
     }
 
@@ -2633,8 +2513,7 @@ void R_SetTargetRGB(R_Target *target, Uint8 r, Uint8 g, Uint8 b) {
     target->color = c;
 }
 
-void R_SetTargetRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b,
-                                     Uint8 a) {
+void R_SetTargetRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     METAENGINE_Color c;
     c.r = r;
     c.g = g;
@@ -2674,118 +2553,93 @@ void R_SetShapeBlending(bool enable) {
     gpu_current_renderer->current_context_target->context->shapes_use_blending = enable;
 }
 
-R_BlendMode R_GetBlendModeFromPreset(
-        R_BlendPresetEnum preset) {
+R_BlendMode R_GetBlendModeFromPreset(R_BlendPresetEnum preset) {
     switch (preset) {
         case R_BLEND_NORMAL: {
-            R_BlendMode b = {
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_EQ_ADD,         R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_EQ_ADD,         R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_PREMULTIPLIED_ALPHA: {
-            R_BlendMode b = {
-                    R_FUNC_ONE, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_FUNC_ONE, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_EQ_ADD,   R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_ONE, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_FUNC_ONE, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_EQ_ADD,   R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_MULTIPLY: {
-            R_BlendMode b = {
-                    R_FUNC_DST_COLOR, R_FUNC_ZERO,
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_EQ_ADD,         R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_DST_COLOR,           R_FUNC_ZERO, R_FUNC_SRC_ALPHA,
+                             R_FUNC_ONE_MINUS_SRC_ALPHA, R_EQ_ADD,    R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_ADD: {
-            R_BlendMode b = {
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE,
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE,
-                    R_EQ_ADD,         R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_SRC_ALPHA, R_FUNC_ONE, R_FUNC_SRC_ALPHA,
+                             R_FUNC_ONE,       R_EQ_ADD,   R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_SUBTRACT:
             // FIXME: Use src alpha for source components?
             {
-                R_BlendMode b = {
-                        R_FUNC_ONE,    R_FUNC_ONE,
-                        R_FUNC_ONE,    R_FUNC_ONE,
-                        R_EQ_SUBTRACT, R_EQ_SUBTRACT};
+                R_BlendMode b = {R_FUNC_ONE, R_FUNC_ONE,    R_FUNC_ONE,
+                                 R_FUNC_ONE, R_EQ_SUBTRACT, R_EQ_SUBTRACT};
                 return b;
             }
             break;
         case R_BLEND_MOD_ALPHA:
             // Don't disturb the colors, but multiply the dest alpha by the src alpha
             {
-                R_BlendMode b = {
-                        R_FUNC_ZERO, R_FUNC_ONE,
-                        R_FUNC_ZERO, R_FUNC_SRC_ALPHA,
-                        R_EQ_ADD,    R_EQ_ADD};
+                R_BlendMode b = {R_FUNC_ZERO,      R_FUNC_ONE, R_FUNC_ZERO,
+                                 R_FUNC_SRC_ALPHA, R_EQ_ADD,   R_EQ_ADD};
                 return b;
             }
             break;
         case R_BLEND_SET_ALPHA:
             // Don't disturb the colors, but set the alpha to the src alpha
             {
-                R_BlendMode b = {
-                        R_FUNC_ZERO, R_FUNC_ONE,
-                        R_FUNC_ONE,  R_FUNC_ZERO,
-                        R_EQ_ADD,    R_EQ_ADD};
+                R_BlendMode b = {R_FUNC_ZERO, R_FUNC_ONE, R_FUNC_ONE,
+                                 R_FUNC_ZERO, R_EQ_ADD,   R_EQ_ADD};
                 return b;
             }
             break;
         case R_BLEND_SET: {
-            R_BlendMode b = {
-                    R_FUNC_ONE, R_FUNC_ZERO,
-                    R_FUNC_ONE, R_FUNC_ZERO,
-                    R_EQ_ADD,   R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_ONE, R_FUNC_ZERO, R_FUNC_ONE, R_FUNC_ZERO, R_EQ_ADD, R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_NORMAL_KEEP_ALPHA: {
-            R_BlendMode b = {
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_FUNC_ZERO,      R_FUNC_ONE,
-                    R_EQ_ADD,         R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_FUNC_ZERO,      R_FUNC_ONE,
+                             R_EQ_ADD,         R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_NORMAL_ADD_ALPHA: {
-            R_BlendMode b = {
-                    R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
-                    R_FUNC_ONE,       R_FUNC_ONE,
-                    R_EQ_ADD,         R_EQ_ADD};
+            R_BlendMode b = {R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_FUNC_ONE,       R_FUNC_ONE,
+                             R_EQ_ADD,         R_EQ_ADD};
             return b;
         } break;
         case R_BLEND_NORMAL_FACTOR_ALPHA: {
             R_BlendMode b = {R_FUNC_SRC_ALPHA,
-                                             R_FUNC_ONE_MINUS_SRC_ALPHA,
-                                             R_FUNC_ONE_MINUS_DST_ALPHA,
-                                             R_FUNC_ONE,
-                                             R_EQ_ADD,
-                                             R_EQ_ADD};
+                             R_FUNC_ONE_MINUS_SRC_ALPHA,
+                             R_FUNC_ONE_MINUS_DST_ALPHA,
+                             R_FUNC_ONE,
+                             R_EQ_ADD,
+                             R_EQ_ADD};
             return b;
         } break;
         default:
-            R_PushErrorCode(__func__, R_ERROR_USER_ERROR,
-                                            "Blend preset not supported: %d", preset);
+            R_PushErrorCode(__func__, R_ERROR_USER_ERROR, "Blend preset not supported: %d", preset);
             {
-                R_BlendMode b = {R_FUNC_SRC_ALPHA,
-                                                 R_FUNC_ONE_MINUS_SRC_ALPHA,
-                                                 R_FUNC_SRC_ALPHA,
-                                                 R_FUNC_ONE_MINUS_SRC_ALPHA,
-                                                 R_EQ_ADD,
-                                                 R_EQ_ADD};
+                R_BlendMode b = {R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                                 R_FUNC_SRC_ALPHA, R_FUNC_ONE_MINUS_SRC_ALPHA,
+                                 R_EQ_ADD,         R_EQ_ADD};
                 return b;
             }
             break;
     }
 }
 
-void R_SetBlendFunction(R_Image *image,
-                                        R_BlendFuncEnum source_color,
-                                        R_BlendFuncEnum dest_color,
-                                        R_BlendFuncEnum source_alpha,
-                                        R_BlendFuncEnum dest_alpha) {
+void R_SetBlendFunction(R_Image *image, R_BlendFuncEnum source_color, R_BlendFuncEnum dest_color,
+                        R_BlendFuncEnum source_alpha, R_BlendFuncEnum dest_alpha) {
     if (image == NULL) return;
 
     image->blend_mode.source_color = source_color;
@@ -2794,30 +2648,25 @@ void R_SetBlendFunction(R_Image *image,
     image->blend_mode.dest_alpha = dest_alpha;
 }
 
-void R_SetBlendEquation(R_Image *image,
-                                        R_BlendEqEnum color_equation,
-                                        R_BlendEqEnum alpha_equation) {
+void R_SetBlendEquation(R_Image *image, R_BlendEqEnum color_equation,
+                        R_BlendEqEnum alpha_equation) {
     if (image == NULL) return;
 
     image->blend_mode.color_equation = color_equation;
     image->blend_mode.alpha_equation = alpha_equation;
 }
 
-void R_SetBlendMode(R_Image *image,
-                                    R_BlendPresetEnum preset) {
+void R_SetBlendMode(R_Image *image, R_BlendPresetEnum preset) {
     R_BlendMode b;
     if (image == NULL) return;
 
     b = R_GetBlendModeFromPreset(preset);
-    R_SetBlendFunction(image, b.source_color, b.dest_color, b.source_alpha,
-                                       b.dest_alpha);
+    R_SetBlendFunction(image, b.source_color, b.dest_color, b.source_alpha, b.dest_alpha);
     R_SetBlendEquation(image, b.color_equation, b.alpha_equation);
 }
 
-void R_SetShapeBlendFunction(R_BlendFuncEnum source_color,
-                                             R_BlendFuncEnum dest_color,
-                                             R_BlendFuncEnum source_alpha,
-                                             R_BlendFuncEnum dest_alpha) {
+void R_SetShapeBlendFunction(R_BlendFuncEnum source_color, R_BlendFuncEnum dest_color,
+                             R_BlendFuncEnum source_alpha, R_BlendFuncEnum dest_alpha) {
     R_Context *context;
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
@@ -2830,8 +2679,7 @@ void R_SetShapeBlendFunction(R_BlendFuncEnum source_color,
     context->shapes_blend_mode.dest_alpha = dest_alpha;
 }
 
-void R_SetShapeBlendEquation(R_BlendEqEnum color_equation,
-                                             R_BlendEqEnum alpha_equation) {
+void R_SetShapeBlendEquation(R_BlendEqEnum color_equation, R_BlendEqEnum alpha_equation) {
     R_Context *context;
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
@@ -2848,13 +2696,11 @@ void R_SetShapeBlendMode(R_BlendPresetEnum preset) {
         return;
 
     b = R_GetBlendModeFromPreset(preset);
-    R_SetShapeBlendFunction(b.source_color, b.dest_color, b.source_alpha,
-                                            b.dest_alpha);
+    R_SetShapeBlendFunction(b.source_color, b.dest_color, b.source_alpha, b.dest_alpha);
     R_SetShapeBlendEquation(b.color_equation, b.alpha_equation);
 }
 
-void R_SetImageFilter(R_Image *image,
-                                      R_FilterEnum filter) {
+void R_SetImageFilter(R_Image *image, R_FilterEnum filter) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
     if (image == NULL) return;
@@ -2898,16 +2744,13 @@ R_SnapEnum R_GetSnapMode(R_Image *image) {
     return image->snap_mode;
 }
 
-void R_SetSnapMode(R_Image *image,
-                                   R_SnapEnum mode) {
+void R_SetSnapMode(R_Image *image, R_SnapEnum mode) {
     if (image == NULL) return;
 
     image->snap_mode = mode;
 }
 
-void R_SetWrapMode(R_Image *image,
-                                   R_WrapEnum wrap_mode_x,
-                                   R_WrapEnum wrap_mode_y) {
+void R_SetWrapMode(R_Image *image, R_WrapEnum wrap_mode_x, R_WrapEnum wrap_mode_y) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
     if (image == NULL) return;
@@ -2954,8 +2797,7 @@ void R_ClearRGB(R_Target *target, Uint8 r, Uint8 g, Uint8 b) {
     gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, r, g, b, 255);
 }
 
-void R_ClearRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b,
-                                 Uint8 a) {
+void R_ClearRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2986,8 +2828,7 @@ void R_Flip(R_Target *target) {
 
 // Shader API
 
-Uint32 R_CompileShader(R_ShaderEnum shader_type,
-                                       const char *shader_source) {
+Uint32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return 0;
 
@@ -3077,8 +2918,7 @@ bool R_IsDefaultShaderProgram(Uint32 program_object) {
             program_object == context->default_untextured_shader_program);
 }
 
-void R_ActivateShaderProgram(Uint32 program_object,
-                                             R_ShaderBlock *block) {
+void R_ActivateShaderProgram(Uint32 program_object, R_ShaderBlock *block) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -3107,9 +2947,8 @@ int R_GetAttributeLocation(Uint32 program_object, const char *attrib_name) {
                                                             attrib_name);
 }
 
-R_AttributeFormat R_MakeAttributeFormat(
-        int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes,
-        int offset_bytes) {
+R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize,
+                                        int stride_bytes, int offset_bytes) {
     R_AttributeFormat f;
     f.is_per_sprite = false;
     f.num_elems_per_value = num_elems_per_vertex;
@@ -3120,8 +2959,7 @@ R_AttributeFormat R_MakeAttributeFormat(
     return f;
 }
 
-R_Attribute R_MakeAttribute(
-        int location, void *values, R_AttributeFormat format) {
+R_Attribute R_MakeAttribute(int location, void *values, R_AttributeFormat format) {
     R_Attribute a;
     a.location = location;
     a.values = values;
@@ -3137,11 +2975,9 @@ int R_GetUniformLocation(Uint32 program_object, const char *uniform_name) {
                                                           uniform_name);
 }
 
-R_ShaderBlock R_LoadShaderBlock(Uint32 program_object,
-                                                                const char *position_name,
-                                                                const char *texcoord_name,
-                                                                const char *color_name,
-                                                                const char *modelViewMatrix_name) {
+R_ShaderBlock R_LoadShaderBlock(Uint32 program_object, const char *position_name,
+                                const char *texcoord_name, const char *color_name,
+                                const char *modelViewMatrix_name) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         R_ShaderBlock b;
         b.position_loc = -1;
@@ -3176,8 +3012,7 @@ R_ShaderBlock R_GetShaderBlock(void) {
     return gpu_current_renderer->current_context_target->context->current_shader_block;
 }
 
-void R_SetShaderImage(R_Image *image, int location,
-                                      int image_unit) {
+void R_SetShaderImage(R_Image *image, int location, int image_unit) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -3199,8 +3034,7 @@ void R_SetUniformi(int location, int value) {
     gpu_current_renderer->impl->SetUniformi(gpu_current_renderer, location, value);
 }
 
-void R_SetUniformiv(int location, int num_elements_per_value, int num_values,
-                                    int *values) {
+void R_SetUniformiv(int location, int num_elements_per_value, int num_values, int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -3224,7 +3058,7 @@ void R_SetUniformui(int location, unsigned int value) {
 }
 
 void R_SetUniformuiv(int location, int num_elements_per_value, int num_values,
-                                     unsigned int *values) {
+                     unsigned int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -3247,8 +3081,7 @@ void R_SetUniformf(int location, float value) {
     gpu_current_renderer->impl->SetUniformf(gpu_current_renderer, location, value);
 }
 
-void R_SetUniformfv(int location, int num_elements_per_value, int num_values,
-                                    float *values) {
+void R_SetUniformfv(int location, int num_elements_per_value, int num_values, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -3265,8 +3098,8 @@ void R_GetUniformMatrixfv(Uint32 program_object, int location, float *values) {
                                              values);
 }
 
-void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows,
-                                          int num_columns, bool transpose, float *values) {
+void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns,
+                          bool transpose, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL)
         return;
 
@@ -3388,8 +3221,7 @@ int gpu_strcasecmp(const char *s1, const char *s2) {
 #endif
 
 R_MatrixStack *R_CreateMatrixStack(void) {
-    R_MatrixStack *stack =
-            (R_MatrixStack *) SDL_malloc(sizeof(R_MatrixStack));
+    R_MatrixStack *stack = (R_MatrixStack *) SDL_malloc(sizeof(R_MatrixStack));
     stack->matrix = NULL;
     stack->size = 0;
     stack->storage_size = 0;
@@ -3415,8 +3247,7 @@ void R_InitMatrixStack(R_MatrixStack *stack) {
     R_MatrixIdentity(stack->matrix[0]);
 }
 
-void R_CopyMatrixStack(const R_MatrixStack *source,
-                                       R_MatrixStack *dest) {
+void R_CopyMatrixStack(const R_MatrixStack *source, R_MatrixStack *dest) {
     unsigned int i;
     unsigned int matrix_size = sizeof(float) * 16;
     if (source == NULL || dest == NULL) return;
@@ -3449,8 +3280,8 @@ void R_ResetProjection(R_Target *target) {
     R_MatrixIdentity(projection_matrix);
 
     if (!invert ^ R_GetCoordinateMode())
-        R_MatrixOrtho(projection_matrix, 0, target->w, target->h, 0,
-                                      target->camera.z_near, target->camera.z_far);
+        R_MatrixOrtho(projection_matrix, 0, target->w, target->h, 0, target->camera.z_near,
+                      target->camera.z_far);
     else
         R_MatrixOrtho(
                 projection_matrix, 0, target->w, 0, target->h, target->camera.z_near,
@@ -3544,17 +3375,15 @@ void R_Vector4ApplyMatrix(float *vec4, const float *matrix_4x4) {
     A[14] = a14;                                                                                   \
     A[15] = a15;
 
-void R_MatrixCopy(float *result, const float *A) {
-    memcpy(result, A, 16 * sizeof(float));
-}
+void R_MatrixCopy(float *result, const float *A) { memcpy(result, A, 16 * sizeof(float)); }
 
 void R_MatrixIdentity(float *result) {
     memset(result, 0, 16 * sizeof(float));
     result[0] = result[5] = result[10] = result[15] = 1;
 }
 
-void R_MatrixOrtho(float *result, float left, float right, float bottom, float top,
-                                   float z_near, float z_far) {
+void R_MatrixOrtho(float *result, float left, float right, float bottom, float top, float z_near,
+                   float z_far) {
     if (result == NULL) return;
 
     {
@@ -3574,8 +3403,8 @@ void R_MatrixOrtho(float *result, float left, float right, float bottom, float t
     }
 }
 
-void R_MatrixFrustum(float *result, float left, float right, float bottom,
-                                     float top, float z_near, float z_far) {
+void R_MatrixFrustum(float *result, float left, float right, float bottom, float top, float z_near,
+                     float z_far) {
     if (result == NULL) return;
 
     {
@@ -3589,8 +3418,7 @@ void R_MatrixFrustum(float *result, float left, float right, float bottom,
     }
 }
 
-void R_MatrixPerspective(float *result, float fovy, float aspect, float z_near,
-                                         float z_far) {
+void R_MatrixPerspective(float *result, float fovy, float aspect, float z_near, float z_far) {
     float fW, fH;
 
     // Make it left-handed?
@@ -3602,9 +3430,8 @@ void R_MatrixPerspective(float *result, float fovy, float aspect, float z_near,
     R_MatrixFrustum(result, -fW, fW, -fH, fH, z_near, z_far);
 }
 
-void R_MatrixLookAt(float *matrix, float eye_x, float eye_y, float eye_z,
-                                    float target_x, float target_y, float target_z, float up_x,
-                                    float up_y, float up_z) {
+void R_MatrixLookAt(float *matrix, float eye_x, float eye_y, float eye_z, float target_x,
+                    float target_y, float target_z, float up_x, float up_y, float up_z) {
     float forward[3] = {target_x - eye_x, target_y - eye_y, target_z - eye_z};
     float up[3] = {up_x, up_y, up_z};
     float side[3];
@@ -3835,9 +3662,7 @@ void R_PushMatrix(void) {
             new_stack[i] = (float *) SDL_malloc(sizeof(float) * 16);
         }
         // Copy old one
-        for (i = 0; i < stack->size; ++i) {
-            R_MatrixCopy(new_stack[i], stack->matrix[i]);
-        }
+        for (i = 0; i < stack->size; ++i) { R_MatrixCopy(new_stack[i], stack->matrix[i]); }
         // Free old one
         for (i = 0; i < stack->storage_size; ++i) { SDL_free(stack->matrix[i]); }
         SDL_free(stack->matrix);
@@ -3866,11 +3691,9 @@ void R_PopMatrix(void) {
         stack = &target->projection_matrix;
 
     if (stack->size == 0) {
-        R_PushErrorCode(__func__, R_ERROR_USER_ERROR,
-                                        "Matrix stack is empty.");
+        R_PushErrorCode(__func__, R_ERROR_USER_ERROR, "Matrix stack is empty.");
     } else if (stack->size == 1) {
-        R_PushErrorCode(__func__, R_ERROR_USER_ERROR,
-                                        "Matrix stack would become empty!");
+        R_PushErrorCode(__func__, R_ERROR_USER_ERROR, "Matrix stack would become empty!");
     } else
         stack->size--;
 }
@@ -3940,31 +3763,26 @@ void R_LoadMatrix(const float *A) {
     R_MatrixCopy(result, A);
 }
 
-void R_Ortho(float left, float right, float bottom, float top, float z_near,
-                             float z_far) {
+void R_Ortho(float left, float right, float bottom, float top, float z_near, float z_far) {
     R_FlushBlitBuffer();
-    R_MatrixOrtho(R_GetCurrentMatrix(), left, right, bottom, top,
-                                  z_near, z_far);
+    R_MatrixOrtho(R_GetCurrentMatrix(), left, right, bottom, top, z_near, z_far);
 }
 
-void R_Frustum(float left, float right, float bottom, float top, float z_near,
-                               float z_far) {
+void R_Frustum(float left, float right, float bottom, float top, float z_near, float z_far) {
     R_FlushBlitBuffer();
-    R_MatrixFrustum(R_GetCurrentMatrix(), left, right, bottom, top,
-                                    z_near, z_far);
+    R_MatrixFrustum(R_GetCurrentMatrix(), left, right, bottom, top, z_near, z_far);
 }
 
 void R_Perspective(float fovy, float aspect, float z_near, float z_far) {
     R_FlushBlitBuffer();
-    R_MatrixPerspective(R_GetCurrentMatrix(), fovy, aspect, z_near,
-                                        z_far);
+    R_MatrixPerspective(R_GetCurrentMatrix(), fovy, aspect, z_near, z_far);
 }
 
-void R_LookAt(float eye_x, float eye_y, float eye_z, float target_x, float target_y,
-                              float target_z, float up_x, float up_y, float up_z) {
+void R_LookAt(float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z,
+              float up_x, float up_y, float up_z) {
     R_FlushBlitBuffer();
-    R_MatrixLookAt(R_GetCurrentMatrix(), eye_x, eye_y, eye_z,
-                                   target_x, target_y, target_z, up_x, up_y, up_z);
+    R_MatrixLookAt(R_GetCurrentMatrix(), eye_x, eye_y, eye_z, target_x, target_y, target_z, up_x,
+                   up_y, up_z);
 }
 
 void R_Translate(float x, float y, float z) {
@@ -3991,17 +3809,16 @@ void R_MultMatrix(const float *A) {
 
 void R_GetModelViewProjection(float *result) {
     // MVP = P * V * M
-    R_MatrixMultiply(result, R_GetProjection(),
-                                     R_GetView());
+    R_MatrixMultiply(result, R_GetProjection(), R_GetView());
     R_MultiplyAndAssign(result, R_GetModel());
 }
 
 #define CHECK_RENDERER()                                                                           \
-    R_Renderer *renderer = R_GetCurrentRenderer();                 \
+    R_Renderer *renderer = R_GetCurrentRenderer();                                                 \
     if (renderer == NULL) return;
 
 #define CHECK_RENDERER_1(ret)                                                                      \
-    R_Renderer *renderer = R_GetCurrentRenderer();                 \
+    R_Renderer *renderer = R_GetCurrentRenderer();                                                 \
     if (renderer == NULL) return ret;
 
 float R_SetLineThickness(float thickness) {
@@ -4014,156 +3831,142 @@ float R_GetLineThickness(void) {
     return renderer->impl->GetLineThickness(renderer);
 }
 
-void R_Pixel(R_Target *target, float x, float y,
-                             METAENGINE_Color color) {
+void R_Pixel(R_Target *target, float x, float y, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Pixel(renderer, target, x, y, color);
 }
 
-void R_Line(R_Target *target, float x1, float y1, float x2,
-                            float y2, METAENGINE_Color color) {
+void R_Line(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Line(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Arc(R_Target *target, float x, float y, float radius,
-                           float start_angle, float end_angle, METAENGINE_Color color) {
+void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle,
+           METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Arc(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
-void R_ArcFilled(R_Target *target, float x, float y, float radius,
-                                 float start_angle, float end_angle, METAENGINE_Color color) {
+void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle,
+                 float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->ArcFilled(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
-void R_Circle(R_Target *target, float x, float y, float radius,
-                              METAENGINE_Color color) {
+void R_Circle(R_Target *target, float x, float y, float radius, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Circle(renderer, target, x, y, radius, color);
 }
 
-void R_CircleFilled(R_Target *target, float x, float y,
-                                    float radius, METAENGINE_Color color) {
+void R_CircleFilled(R_Target *target, float x, float y, float radius, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->CircleFilled(renderer, target, x, y, radius, color);
 }
 
-void R_Ellipse(R_Target *target, float x, float y, float rx,
-                               float ry, float degrees, METAENGINE_Color color) {
+void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees,
+               METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Ellipse(renderer, target, x, y, rx, ry, degrees, color);
 }
 
-void R_EllipseFilled(R_Target *target, float x, float y, float rx,
-                                     float ry, float degrees, METAENGINE_Color color) {
+void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees,
+                     METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->EllipseFilled(renderer, target, x, y, rx, ry, degrees, color);
 }
 
-void R_Sector(R_Target *target, float x, float y,
-                              float inner_radius, float outer_radius, float start_angle,
-                              float end_angle, METAENGINE_Color color) {
+void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius,
+              float start_angle, float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Sector(renderer, target, x, y, inner_radius, outer_radius, start_angle,
                            end_angle, color);
 }
 
-void R_SectorFilled(R_Target *target, float x, float y,
-                                    float inner_radius, float outer_radius, float start_angle,
-                                    float end_angle, METAENGINE_Color color) {
+void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius,
+                    float start_angle, float end_angle, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->SectorFilled(renderer, target, x, y, inner_radius, outer_radius, start_angle,
                                  end_angle, color);
 }
 
-void R_Tri(R_Target *target, float x1, float y1, float x2, float y2,
-                           float x3, float y3, METAENGINE_Color color) {
+void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3,
+           METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Tri(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
-void R_TriFilled(R_Target *target, float x1, float y1, float x2,
-                                 float y2, float x3, float y3, METAENGINE_Color color) {
+void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3,
+                 METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->TriFilled(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
-void R_Rectangle(R_Target *target, float x1, float y1, float x2,
-                                 float y2, METAENGINE_Color color) {
+void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Rectangle(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Rectangle2(R_Target *target, R_Rect rect,
-                                  METAENGINE_Color color) {
+void R_Rectangle2(R_Target *target, R_Rect rect, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Rectangle(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h,
                               color);
 }
 
-void R_RectangleFilled(R_Target *target, float x1, float y1,
-                                       float x2, float y2, METAENGINE_Color color) {
+void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2,
+                       METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleFilled(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_RectangleFilled2(R_Target *target,
-                                        R_Rect rect, METAENGINE_Color color) {
+void R_RectangleFilled2(R_Target *target, R_Rect rect, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleFilled(renderer, target, rect.x, rect.y, rect.x + rect.w,
                                     rect.y + rect.h, color);
 }
 
-void R_RectangleRound(R_Target *target, float x1, float y1,
-                                      float x2, float y2, float radius, METAENGINE_Color color) {
+void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius,
+                      METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRound(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRound2(R_Target *target,
-                                       R_Rect rect, float radius,
-                                       METAENGINE_Color color) {
+void R_RectangleRound2(R_Target *target, R_Rect rect, float radius, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRound(renderer, target, rect.x, rect.y, rect.x + rect.w,
                                    rect.y + rect.h, radius, color);
 }
 
-void R_RectangleRoundFilled(R_Target *target, float x1, float y1,
-                                            float x2, float y2, float radius,
-                                            METAENGINE_Color color) {
+void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius,
+                            METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRoundFilled(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRoundFilled2(R_Target *target,
-                                             R_Rect rect, float radius,
-                                             METAENGINE_Color color) {
+void R_RectangleRoundFilled2(R_Target *target, R_Rect rect, float radius, METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->RectangleRoundFilled(renderer, target, rect.x, rect.y, rect.x + rect.w,
                                          rect.y + rect.h, radius, color);
 }
 
-void R_Polygon(R_Target *target, unsigned int num_vertices,
-                               float *vertices, METAENGINE_Color color) {
+void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices,
+               METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->Polygon(renderer, target, num_vertices, vertices, color);
 }
 
-void R_Polyline(R_Target *target, unsigned int num_vertices,
-                                float *vertices, METAENGINE_Color color, bool close_loop) {
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices,
+                METAENGINE_Color color, bool close_loop) {
     CHECK_RENDERER();
     renderer->impl->Polyline(renderer, target, num_vertices, vertices, color, close_loop);
 }
 
-void R_PolygonFilled(R_Target *target, unsigned int num_vertices,
-                                     float *vertices, METAENGINE_Color color) {
+void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices,
+                     METAENGINE_Color color) {
     CHECK_RENDERER();
     renderer->impl->PolygonFilled(renderer, target, num_vertices, vertices, color);
 }
 
-#define R_TO_STRING_GENERATOR(x)                                                   \
+#define R_TO_STRING_GENERATOR(x)                                                                   \
     case x:                                                                                        \
         return #x;                                                                                 \
         break;
@@ -4320,14 +4123,13 @@ void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
     static bool is_color = false;
     switch (type) {
         case GL_FLOAT:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLfloat, 1, GL_FLOAT, glGetUniformfv, glProgramUniform1fv, ImGui::DragFloat);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLfloat, 1, GL_FLOAT, glGetUniformfv,
+                                                     glProgramUniform1fv, ImGui::DragFloat);
             break;
 
         case GL_FLOAT_VEC2:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLfloat, 2, GL_FLOAT_VEC2, glGetUniformfv, glProgramUniform2fv,
-                    ImGui::DragFloat2);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLfloat, 2, GL_FLOAT_VEC2, glGetUniformfv,
+                                                     glProgramUniform2fv, ImGui::DragFloat2);
             break;
 
         case GL_FLOAT_VEC3: {
@@ -4358,70 +4160,63 @@ void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
         } break;
 
         case GL_INT:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLint, 1, GL_INT, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_INT, glGetUniformiv,
+                                                     glProgramUniform1iv, ImGui::DragInt);
             break;
 
         case GL_INT_VEC2:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLint, 2, GL_INT, glGetUniformiv, glProgramUniform2iv, ImGui::DragInt2);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 2, GL_INT, glGetUniformiv,
+                                                     glProgramUniform2iv, ImGui::DragInt2);
             break;
 
         case GL_INT_VEC3:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLint, 3, GL_INT, glGetUniformiv, glProgramUniform3iv, ImGui::DragInt3);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 3, GL_INT, glGetUniformiv,
+                                                     glProgramUniform3iv, ImGui::DragInt3);
             break;
 
         case GL_INT_VEC4:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLint, 4, GL_INT, glGetUniformiv, glProgramUniform4iv, ImGui::DragInt4);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 4, GL_INT, glGetUniformiv,
+                                                     glProgramUniform4iv, ImGui::DragInt4);
             break;
 
         case GL_SAMPLER_2D:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(
-                    GLint, 1, GL_SAMPLER_2D, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_SAMPLER_2D, glGetUniformiv,
+                                                     glProgramUniform1iv, ImGui::DragInt);
             break;
 
         case GL_FLOAT_MAT2:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 2, 2, GL_FLOAT_MAT2, glGetUniformfv, glProgramUniformMatrix2fv,
-                    ImGui::DragFloat2);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 2, 2, GL_FLOAT_MAT2, glGetUniformfv,
+                                                   glProgramUniformMatrix2fv, ImGui::DragFloat2);
             break;
 
         case GL_FLOAT_MAT3:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 3, 3, GL_FLOAT_MAT3, glGetUniformfv, glProgramUniformMatrix3fv,
-                    ImGui::DragFloat3);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 3, 3, GL_FLOAT_MAT3, glGetUniformfv,
+                                                   glProgramUniformMatrix3fv, ImGui::DragFloat3);
             break;
 
         case GL_FLOAT_MAT4:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 4, 4, GL_FLOAT_MAT4, glGetUniformfv, glProgramUniformMatrix4fv,
-                    ImGui::DragFloat4);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 4, GL_FLOAT_MAT4, glGetUniformfv,
+                                                   glProgramUniformMatrix4fv, ImGui::DragFloat4);
             break;
 
         case GL_FLOAT_MAT2x3:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 3, 2, GL_FLOAT_MAT2x3, glGetUniformfv, glProgramUniformMatrix2x3fv,
-                    ImGui::DragFloat3);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 3, 2, GL_FLOAT_MAT2x3, glGetUniformfv,
+                                                   glProgramUniformMatrix2x3fv, ImGui::DragFloat3);
             break;
 
         case GL_FLOAT_MAT2x4:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 4, 2, GL_FLOAT_MAT2x4, glGetUniformfv, glProgramUniformMatrix2x4fv,
-                    ImGui::DragFloat4);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 2, GL_FLOAT_MAT2x4, glGetUniformfv,
+                                                   glProgramUniformMatrix2x4fv, ImGui::DragFloat4);
             break;
 
         case GL_FLOAT_MAT3x2:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 2, 3, GL_FLOAT_MAT3x2, glGetUniformfv, glProgramUniformMatrix3x2fv,
-                    ImGui::DragFloat2);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 2, 3, GL_FLOAT_MAT3x2, glGetUniformfv,
+                                                   glProgramUniformMatrix3x2fv, ImGui::DragFloat2);
             break;
 
         case GL_FLOAT_MAT3x4:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(
-                    GLfloat, 4, 3, GL_FLOAT_MAT3x4, glGetUniformfv, glProgramUniformMatrix3x2fv,
-                    ImGui::DragFloat4);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 3, GL_FLOAT_MAT3x4, glGetUniformfv,
+                                                   glProgramUniformMatrix3x2fv, ImGui::DragFloat4);
             break;
 
         default:
