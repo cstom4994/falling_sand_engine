@@ -169,6 +169,7 @@ void LuaCore::Init() {
     metadot_bind_image(m_L);
     metadot_bind_gpu(m_L);
     metadot_bind_fs(m_L);
+    metadot_bind_lz4(m_L);
 
     LuaWrapper::metadot_preload(m_L, luaopen_ffi, "ffi");
     lua_getglobal(m_L, "require");

@@ -97,6 +97,36 @@ extern "C" {
 #  define LZ4LIB_API LZ4LIB_VISIBILITY
 #endif
 
+/*! LZ4_FREESTANDING :
+ *  When this macro is set to 1, it enables "freestanding mode" that is
+ *  suitable for typical freestanding environment which doesn't support
+ *  standard C library.
+ *
+ *  - LZ4_FREESTANDING is a compile-time switch.
+ *  - It requires the following macros to be defined:
+ *    LZ4_memcpy, LZ4_memmove, LZ4_memset.
+ *  - It only enables LZ4/HC functions which don't use heap.
+ *    All LZ4F_* functions are not supported.
+ *  - See tests/freestanding.c to check its basic setup.
+ */
+#if defined(LZ4_FREESTANDING) && (LZ4_FREESTANDING == 1)
+#  define LZ4_HEAPMODE 0
+#  define LZ4HC_HEAPMODE 0
+#  define LZ4_STATIC_LINKING_ONLY_DISABLE_MEMORY_ALLOCATION 1
+#  if !defined(LZ4_memcpy)
+#    error "LZ4_FREESTANDING requires macro 'LZ4_memcpy'."
+#  endif
+#  if !defined(LZ4_memset)
+#    error "LZ4_FREESTANDING requires macro 'LZ4_memset'."
+#  endif
+#  if !defined(LZ4_memmove)
+#    error "LZ4_FREESTANDING requires macro 'LZ4_memmove'."
+#  endif
+#elif ! defined(LZ4_FREESTANDING)
+#  define LZ4_FREESTANDING 0
+#endif
+
+
 /*------   Version   ------*/
 #define LZ4_VERSION_MAJOR    1    /* for breaking interface changes  */
 #define LZ4_VERSION_MINOR    9    /* for new (non-breaking) interface capabilities */
@@ -159,8 +189,9 @@ LZ4LIB_API const char* LZ4_versionString (void);   /**< library version string; 
 LZ4LIB_API int LZ4_compress_default(const char* src, char* dst, int srcSize, int dstCapacity);
 
 /*! LZ4_decompress_safe() :
- *  compressedSize : is the exact complete size of the compressed block.
- *  dstCapacity : is the size of destination buffer (which must be already allocated), presumed an upper bound of decompressed size.
+ * @compressedSize : is the exact complete size of the compressed block.
+ * @dstCapacity : is the size of destination buffer (which must be already allocated),
+ *                is an upper bound of decompressed size.
  * @return : the number of bytes decompressed into destination buffer (necessarily <= dstCapacity)
  *           If destination buffer is not large enough, decoding will stop and output an error code (negative value).
  *           If the source stream is detected malformed, the function will stop decoding and return a negative result.
@@ -281,8 +312,25 @@ LZ4LIB_API int LZ4_decompress_safe_partial (const char* src, char* dst, int srcS
 ***********************************************/
 typedef union LZ4_stream_u LZ4_stream_t;  /* incomplete type (defined later) */
 
+/**
+ Note about RC_INVOKED
+
+ - RC_INVOKED is predefined symbol of rc.exe (the resource compiler which is part of MSVC/Visual Studio).
+   https://docs.microsoft.com/en-us/windows/win32/menurc/predefined-macros
+
+ - Since rc.exe is a legacy compiler, it truncates long symbol (> 30 chars)
+   and reports warning "RC4011: identifier truncated".
+
+ - To eliminate the warning, we surround long preprocessor symbol with
+   "#if !defined(RC_INVOKED) ... #endif" block that means
+   "skip this block when rc.exe is trying to read it".
+*/
+#if !defined(RC_INVOKED) /* https://docs.microsoft.com/en-us/windows/win32/menurc/predefined-macros */
+#if !defined(LZ4_STATIC_LINKING_ONLY_DISABLE_MEMORY_ALLOCATION)
 LZ4LIB_API LZ4_stream_t* LZ4_createStream(void);
 LZ4LIB_API int           LZ4_freeStream (LZ4_stream_t* streamPtr);
+#endif /* !defined(LZ4_STATIC_LINKING_ONLY_DISABLE_MEMORY_ALLOCATION) */
+#endif
 
 /*! LZ4_resetStream_fast() : v1.9.0+
  *  Use this to prepare an LZ4_stream_t for a new chain of dependent blocks
@@ -366,8 +414,12 @@ typedef union LZ4_streamDecode_u LZ4_streamDecode_t;   /* tracking context */
  *  creation / destruction of streaming decompression tracking context.
  *  A tracking context can be re-used multiple times.
  */
+#if !defined(RC_INVOKED) /* https://docs.microsoft.com/en-us/windows/win32/menurc/predefined-macros */
+#if !defined(LZ4_STATIC_LINKING_ONLY_DISABLE_MEMORY_ALLOCATION)
 LZ4LIB_API LZ4_streamDecode_t* LZ4_createStreamDecode(void);
 LZ4LIB_API int                 LZ4_freeStreamDecode (LZ4_streamDecode_t* LZ4_stream);
+#endif /* !defined(LZ4_STATIC_LINKING_ONLY_DISABLE_MEMORY_ALLOCATION) */
+#endif
 
 /*! LZ4_setStreamDecode() :
  *  An LZ4_streamDecode_t context can be allocated once and re-used multiple times.
@@ -392,11 +444,24 @@ LZ4LIB_API int LZ4_setStreamDecode (LZ4_streamDecode_t* LZ4_streamDecode, const 
 LZ4LIB_API int LZ4_decoderRingBufferSize(int maxBlockSize);
 #define LZ4_DECODER_RING_BUFFER_SIZE(maxBlockSize) (65536 + 14 + (maxBlockSize))  /* for static allocation; maxBlockSize presumed valid */
 
-/*! LZ4_decompress_*_continue() :
- *  These decoding functions allow decompression of consecutive blocks in "streaming" mode.
- *  A block is an unsplittable entity, it must be presented entirely to a decompression function.
- *  Decompression functions only accepts one block at a time.
- *  The last 64KB of previously decoded data *must* remain available and unmodified at the memory position where they were decoded.
+/*! LZ4_decompress_safe_continue() :
+ *  This decoding function allows decompression of consecutive blocks in "streaming" mode.
+ *  The difference with the usual independent blocks is that
+ *  new blocks are allowed to find references into former blocks.
+ *  A block is an unsplittable entity, and must be presented entirely to the decompression function.
+ *  LZ4_decompress_safe_continue() only accepts one block at a time.
+ *  It's modeled after `LZ4_decompress_safe()` and behaves similarly.
+ *
+ * @LZ4_streamDecode : decompression state, tracking the position in memory of past data
+ * @compressedSize : exact complete size of one compressed block.
+ * @dstCapacity : size of destination buffer (which must be already allocated),
+ *                must be an upper bound of decompressed size.
+ * @return : number of bytes decompressed into destination buffer (necessarily <= dstCapacity)
+ *           If destination buffer is not large enough, decoding will stop and output an error code (negative value).
+ *           If the source stream is detected malformed, the function will stop decoding and return a negative result.
+ *
+ *  The last 64KB of previously decoded data *must* remain available and unmodified
+ *  at the memory position where they were previously decoded.
  *  If less than 64KB of data has been decoded, all the data must be present.
  *
  *  Special : if decompression side sets a ring buffer, it must respect one of the following conditions :
@@ -423,10 +488,10 @@ LZ4_decompress_safe_continue (LZ4_streamDecode_t* LZ4_streamDecode,
                         int srcSize, int dstCapacity);
 
 
-/*! LZ4_decompress_*_usingDict() :
- *  These decoding functions work the same as
- *  a combination of LZ4_setStreamDecode() followed by LZ4_decompress_*_continue()
- *  They are stand-alone, and don't need an LZ4_streamDecode_t structure.
+/*! LZ4_decompress_safe_usingDict() :
+ *  Works the same as
+ *  a combination of LZ4_setStreamDecode() followed by LZ4_decompress_safe_continue()
+ *  However, it's stateless: it doesn't need any LZ4_streamDecode_t state.
  *  Dictionary is presumed stable : it must remain accessible and unmodified during decompression.
  *  Performance tip : Decompression speed can be substantially increased
  *                    when dst == dictStart + dictSize.
@@ -436,6 +501,12 @@ LZ4_decompress_safe_usingDict(const char* src, char* dst,
                               int srcSize, int dstCapacity,
                               const char* dictStart, int dictSize);
 
+/*! LZ4_decompress_safe_partial_usingDict() :
+ *  Behaves the same as LZ4_decompress_safe_partial()
+ *  with the added ability to specify a memory segment for past data.
+ *  Performance tip : Decompression speed can be substantially increased
+ *                    when dst == dictStart + dictSize.
+ */
 LZ4LIB_API int
 LZ4_decompress_safe_partial_usingDict(const char* src, char* dst,
                                       int compressedSize,

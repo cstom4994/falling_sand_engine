@@ -41,10 +41,6 @@ void Player::render(R_Target *target, int ofsX, int ofsY) {
 void Player::renderLQ(R_Target *target, int ofsX, int ofsY) {
     R_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh,
                                 {0xff, 0xff, 0xff, 0xff});
-
-    auto image2 = R_CopyImageFromSurface(Textures::testAse);
-    R_BlitScale(image2, NULL, global.game->RenderTarget_.target, 128, 128, 5.0f,
-                                5.0f);
 }
 
 b2Vec2 rotate_point2(float cx, float cy, float angle, b2Vec2 p);

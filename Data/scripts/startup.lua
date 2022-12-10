@@ -14,6 +14,8 @@ METADOT_INFO(i18n("loaded_vec"))
 
 content = i18n("welcome")
 
+-- runf("Script:test_lz4.lua")
+
 function starts_with(str, start) return str:sub(1, #start) == start end
 
 function ends_with(str, ending)
