@@ -255,7 +255,7 @@ bool ImGui::detail::AutoContainerTreeNode(const std::string &name, Container &co
     std::size_t size = cont.size();
     if (ImGui::CollapsingHeader(name.c_str())) {
         size_t elemsize = sizeof(decltype(*std::begin(cont)));
-        ImGui::Text("size = %d, non dynamic elemsize = %d bytes", size, elemsize);
+        ImGui::Text("size = %d, non dynamic elemsize = %d bytes", (int) size, (int) elemsize);
         return true;
     } else {
         float label_width = CalcTextSize(name.c_str()).x + ImGui::GetTreeNodeToLabelSpacing() + 5;
@@ -774,6 +774,62 @@ METAENGINE_GUI_DEFINE_INLINE(template<>, const std::add_pointer_t<void()>,
 #pragma endregion
 
 #pragma endregion ImGuiAuto
+
+#pragma region ImString
+
+class ImString {
+
+public:
+    ImString();
+
+    ImString(size_t len);
+
+    ImString(char *string);
+
+    explicit ImString(const char *string);
+
+    ImString(const ImString &other);
+
+    ~ImString();
+
+    char &operator[](size_t pos);
+
+    operator char *();
+
+    bool operator==(const char *string);
+
+    bool operator!=(const char *string);
+
+    bool operator==(ImString &string);
+
+    bool operator!=(const ImString &string);
+
+    ImString &operator=(const char *string);
+
+    ImString &operator=(const ImString &other);
+
+    inline size_t size() const { return mData ? strlen(mData) + 1 : 0; }
+
+    void reserve(size_t len);
+
+    char *get();
+
+    const char *c_str() const;
+
+    bool empty() const;
+
+    int refcount() const;
+
+    void ref();
+
+    void unref();
+
+private:
+    char *mData;
+    int *mRefCount;
+};
+
+#pragma endregion ImString
 
 struct ImGuiMarkdown
 {

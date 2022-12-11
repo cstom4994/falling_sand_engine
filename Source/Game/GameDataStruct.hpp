@@ -4,8 +4,7 @@
 #define _METADOT_GAMEDATASTRUCT_HPP_
 
 #include "Core/Core.hpp"
-#include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/RendererGPU.h"
+#include "Engine/EntityComponents/EntityComponents.hpp"
 #include "Materials.hpp"
 #include "Structures.hpp"
 
@@ -54,24 +53,6 @@ struct Particle
     Particle(const Particle &part)
         : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax),
           ay(part.ay) {}
-};
-
-struct Entity
-{
-    float x = 0;
-    float y = 0;
-    float vx = 0;
-    float vy = 0;
-    int hw = 14;
-    int hh = 26;
-    bool ground = false;
-    RigidBody *rb = nullptr;
-    b2Body *body = nullptr;
-
-    virtual void render(R_Target *target, int ofsX, int ofsY);
-    virtual void renderLQ(R_Target *target, int ofsX, int ofsY);
-    Entity();
-    ~Entity();
 };
 
 struct Settings

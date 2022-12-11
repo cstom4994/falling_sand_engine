@@ -1658,6 +1658,93 @@ static void ImGui_ImplSDL2_ShutdownPlatformInterface() { ImGui::DestroyPlatformW
 
 #pragma endregion ImGuiImplementSDL
 
+#pragma region ImString
+
+ImString::ImString() : mData(0), mRefCount(0) {}
+
+ImString::ImString(size_t len) : mData(0), mRefCount(0) { reserve(len); }
+
+ImString::ImString(char *string) : mData(string), mRefCount(0) { ref(); }
+
+ImString::ImString(const char *string) : mData(0), mRefCount(0) {
+    if (string) {
+        mData = ImStrdup(string);
+        ref();
+    }
+}
+
+ImString::ImString(const ImString &other) {
+    mRefCount = other.mRefCount;
+    mData = other.mData;
+    ref();
+}
+
+ImString::~ImString() { unref(); }
+
+char &ImString::operator[](size_t pos) { return mData[pos]; }
+
+ImString::operator char *() { return mData; }
+
+bool ImString::operator==(const char *string) { return strcmp(string, mData) == 0; }
+
+bool ImString::operator!=(const char *string) { return strcmp(string, mData) != 0; }
+
+bool ImString::operator==(ImString &string) { return strcmp(string.c_str(), mData) == 0; }
+
+bool ImString::operator!=(const ImString &string) { return strcmp(string.c_str(), mData) != 0; }
+
+ImString &ImString::operator=(const char *string) {
+    if (mData) unref();
+    mData = ImStrdup(string);
+    ref();
+    return *this;
+}
+
+ImString &ImString::operator=(const ImString &other) {
+    if (mData && mData != other.mData) unref();
+    mRefCount = other.mRefCount;
+    mData = other.mData;
+    ref();
+    return *this;
+}
+
+void ImString::reserve(size_t len) {
+    if (mData) unref();
+    mData = (char *) ImGui::MemAlloc(len + 1);
+    mData[len] = '\0';
+    ref();
+}
+
+char *ImString::get() { return mData; }
+
+const char *ImString::c_str() const { return mData; }
+
+bool ImString::empty() const { return mData == 0 || mData[0] == '\0'; }
+
+int ImString::refcount() const { return *mRefCount; }
+
+void ImString::ref() {
+    if (!mRefCount) {
+        mRefCount = new int();
+        (*mRefCount) = 0;
+    }
+    (*mRefCount)++;
+}
+
+void ImString::unref() {
+    if (mRefCount) {
+        (*mRefCount)--;
+        if (*mRefCount == 0) {
+            ImGui::MemFree(mData);
+            mData = 0;
+            delete mRefCount;
+        }
+        mRefCount = 0;
+    }
+}
+
+#pragma endregion ImString
+
 ImGuiMarkdown::ImGuiMarkdown() {
 
     m_table_last_pos = ImVec2(0, 0);
@@ -2780,7 +2867,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
         }// end of WM_IME_COMPOSITION
 
 #if defined(UNICODE)
-            // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
+        // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
             // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
 #else

@@ -40,7 +40,8 @@ typedef unsigned int uint32;
 
 #pragma region COMMON
 
-#include <assert.h>
+#include "Core/DebugImpl.hpp"
+
 #include <cmath>
 #include <float.h>
 #include <stddef.h>
@@ -51,7 +52,6 @@ typedef unsigned int uint32;
 #endif
 
 #define B2_NOT_USED(x) ((void) (x))
-#define b2Assert(A) assert(A)
 
 #define b2_maxFloat FLT_MAX
 #define b2_epsilon FLT_EPSILON
@@ -844,7 +844,7 @@ inline void b2Sweep::GetTransform(b2Transform *xf, float beta) const {
 }
 
 inline void b2Sweep::Advance(float alpha) {
-    b2Assert(alpha0 < 1.0f);
+    METADOT_ASSERT_E(alpha0 < 1.0f);
     float beta = (alpha - alpha0) / (1.0f - alpha0);
     c0 += beta * (c - c0);
     a0 += beta * (a - a0);
@@ -2315,7 +2315,7 @@ inline b2Fixture *b2Fixture::GetNext() { return m_next; }
 inline const b2Fixture *b2Fixture::GetNext() const { return m_next; }
 
 inline void b2Fixture::SetDensity(float density) {
-    b2Assert(b2IsValid(density) && density >= 0.0f);
+    METADOT_ASSERT_E(b2IsValid(density) && density >= 0.0f);
     m_density = density;
 }
 
@@ -2349,7 +2349,7 @@ inline void b2Fixture::GetMassData(b2MassData *massData) const {
 }
 
 inline const b2AABB &b2Fixture::GetAABB(int32 childIndex) const {
-    b2Assert(0 <= childIndex && childIndex < m_proxyCount);
+    METADOT_ASSERT_E(0 <= childIndex && childIndex < m_proxyCount);
     return m_proxies[childIndex].aabb;
 }
 
@@ -4274,7 +4274,7 @@ public:
     }
 
     T Pop() {
-        b2Assert(m_count > 0);
+        METADOT_ASSERT_E(m_count > 0);
         --m_count;
         return m_stack[m_count];
     }
@@ -4420,22 +4420,22 @@ private:
 };
 
 inline void *b2DynamicTree::GetUserData(int32 proxyId) const {
-    b2Assert(0 <= proxyId && proxyId < m_nodeCapacity);
+    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].userData;
 }
 
 inline bool b2DynamicTree::WasMoved(int32 proxyId) const {
-    b2Assert(0 <= proxyId && proxyId < m_nodeCapacity);
+    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].moved;
 }
 
 inline void b2DynamicTree::ClearMoved(int32 proxyId) {
-    b2Assert(0 <= proxyId && proxyId < m_nodeCapacity);
+    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     m_nodes[proxyId].moved = false;
 }
 
 inline const b2AABB &b2DynamicTree::GetFatAABB(int32 proxyId) const {
-    b2Assert(0 <= proxyId && proxyId < m_nodeCapacity);
+    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].aabb;
 }
 
@@ -4467,7 +4467,7 @@ inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) con
     b2Vec2 p1 = input.p1;
     b2Vec2 p2 = input.p2;
     b2Vec2 r = p2 - p1;
-    b2Assert(r.LengthSquared() > 0.0f);
+    METADOT_ASSERT_E(r.LengthSquared() > 0.0f);
     r.Normalize();
 
     // v is perpendicular to the segment.
@@ -5245,19 +5245,19 @@ public:
     void SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiIndexB);
 
     void Add(b2Body *body) {
-        b2Assert(m_bodyCount < m_bodyCapacity);
+        METADOT_ASSERT_E(m_bodyCount < m_bodyCapacity);
         body->m_islandIndex = m_bodyCount;
         m_bodies[m_bodyCount] = body;
         ++m_bodyCount;
     }
 
     void Add(b2Contact *contact) {
-        b2Assert(m_contactCount < m_contactCapacity);
+        METADOT_ASSERT_E(m_contactCount < m_contactCapacity);
         m_contacts[m_contactCount++] = contact;
     }
 
     void Add(b2Joint *joint) {
-        b2Assert(m_jointCount < m_jointCapacity);
+        METADOT_ASSERT_E(m_jointCount < m_jointCapacity);
         m_joints[m_jointCount++] = joint;
     }
 
@@ -5508,7 +5508,7 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input);
 inline int32 b2DistanceProxy::GetVertexCount() const { return m_count; }
 
 inline const b2Vec2 &b2DistanceProxy::GetVertex(int32 index) const {
-    b2Assert(0 <= index && index < m_count);
+    METADOT_ASSERT_E(0 <= index && index < m_count);
     return m_vertices[index];
 }
 

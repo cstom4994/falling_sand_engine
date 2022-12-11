@@ -6,7 +6,6 @@
 #include "Core/Core.hpp"
 #include "Core/Macros.hpp"
 #include "Engine/ImGuiImplement.hpp"
-#include "Engine/Internal/BuiltinBox2d.h"
 #include "fmt/format.h"
 
 int MetaDot_buildnum(void);

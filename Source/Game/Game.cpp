@@ -105,7 +105,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
 
-    global.audioEngine.PlayEvent("event:/Music/Background1");
+    // global.audioEngine.PlayEvent("event:/Music/Background1");
     global.audioEngine.PlayEvent("event:/Music/Title");
     global.audioEngine.Update();
 

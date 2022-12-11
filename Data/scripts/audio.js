@@ -12,7 +12,7 @@ test.audio_load_bank("data/assets/audio/fmod/Build/Desktop/Master.bank", 0);
 test.audio_load_bank("data/assets/audio/fmod/Build/Desktop/Master.strings.bank", 0);
 
 var audio_event = [
-    "event:/Music/Background1",
+    // "event:/Music/Background1",
     "event:/Music/Title",
     "event:/Player/Jump",
     "event:/Player/Fly",

@@ -23,6 +23,7 @@ public:
     void renderLQ(R_Target *target, int ofsX, int ofsY) override;
     void setItemInHand(Item *item, World *world);
 
+    Player();
     ~Player();
 };
 

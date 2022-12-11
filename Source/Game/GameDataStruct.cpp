@@ -23,13 +23,6 @@ void ReleaseGameData() {
     }
 }
 
-void Entity::render(R_Target *target, int ofsX, int ofsY) {}
-
-void Entity::renderLQ(R_Target *target, int ofsX, int ofsY) {}
-
-Entity::Entity() {}
-
-Entity::~Entity() {}
 
 // #include "Populator.hpp"
 // #include "Game/Textures.hpp"

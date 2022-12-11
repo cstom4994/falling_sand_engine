@@ -150,8 +150,10 @@ end
 
 if (has_config("build_audio")) then
     add_defines("METADOT_BUILD_AUDIO")
-    add_linkdirs("output")
-    add_rpathdirs("./")
+    if (is_os("macosx")) then
+        add_linkdirs("output")
+        add_rpathdirs("./")
+    end
 end
 
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
@@ -202,7 +204,6 @@ do
     add_files("Source/Game/**.cpp")
     add_files("Source/Engine/**.c")
     add_files("Source/Engine/**.cpp")
-    add_files("Source/Engine/Poro/**.cpp", {unity_group = "Poro"})
     add_headerfiles("Source/Engine/**.h")
     add_headerfiles("Source/Engine/**.hpp")
     add_headerfiles("Source/Engine/**.inl")

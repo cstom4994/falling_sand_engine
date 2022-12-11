@@ -13,18 +13,16 @@ void Player::render(R_Target *target, int ofsX, int ofsY) {
                                ? global.game->GameIsolate_.settings.hd_objects_size
                                : 1;
 
-        R_Rect *ir = new R_Rect{
-                (float) (int) (ofsX + x + hw / 2.0 - heldItem->surface->w),
-                (float) (int) (ofsY + y + hh / 2.0 - heldItem->surface->h / 2),
-                (float) heldItem->surface->w, (float) heldItem->surface->h};
+        R_Rect *ir = new R_Rect{(float) (int) (ofsX + x + hw / 2.0 - heldItem->surface->w),
+                                (float) (int) (ofsY + y + hh / 2.0 - heldItem->surface->h / 2),
+                                (float) heldItem->surface->w, (float) heldItem->surface->h};
         float fx = (float) (int) (-ir->x + ofsX + x + hw / 2.0);
         float fy = (float) (int) (-ir->y + ofsY + y + hh / 2.0);
         fx -= heldItem->pivotX;
         ir->x += heldItem->pivotX;
         fy -= heldItem->pivotY;
         ir->y += heldItem->pivotY;
-        R_SetShapeBlendMode(
-                R_BlendPresetEnum::R_BLEND_ADD);
+        R_SetShapeBlendMode(R_BlendPresetEnum::R_BLEND_ADD);
         //R_BlitTransformX(heldItem->texture, NULL, target, ir->x, ir->y, fp->x, fp->y, holdAngle, 1, 1);
         //SDL_RenderCopyExF(renderer, heldItem->texture, NULL, ir, holdAngle, fp, abs(holdAngle) > 90 ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
         ir->x *= scaleEnt;
@@ -32,15 +30,13 @@ void Player::render(R_Target *target, int ofsX, int ofsY) {
         ir->w *= scaleEnt;
         ir->h *= scaleEnt;
         R_BlitRectX(heldItem->texture, NULL, target, ir, holdAngle, fx, fy,
-                                    abs(holdAngle) > 90 ? R_FLIP_VERTICAL
-                                                        : R_FLIP_NONE);
+                    abs(holdAngle) > 90 ? R_FLIP_VERTICAL : R_FLIP_NONE);
         delete ir;
     }
 }
 
 void Player::renderLQ(R_Target *target, int ofsX, int ofsY) {
-    R_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh,
-                                {0xff, 0xff, 0xff, 0xff});
+    R_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh, {0xff, 0xff, 0xff, 0xff});
 }
 
 b2Vec2 rotate_point2(float cx, float cy, float angle, b2Vec2 p);
@@ -93,6 +89,8 @@ void Player::setItemInHand(Item *item, World *world) {
     auto a = 7;
     heldItem = item;
 }
+
+Player::Player() : Entity(true) {}
 
 Player::~Player() {
     if (heldItem) delete heldItem;
