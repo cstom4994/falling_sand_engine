@@ -1,4 +1,4 @@
-#include "Engine/Renderer/Render.h"
+#include "Engine/Renderer/RendererUtils.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -212,7 +212,7 @@ R_public R_base64_output R_decode_base64(const unsigned char *input, R_allocator
 
     R_base64_output result;
     result.size = R_get_size_base64(input);
-    result.buffer = R_alloc(allocator, result.size);
+    result.buffer = (unsigned char *) R_alloc(allocator, result.size);
 
     for (R_int i = 0; i < result.size / 3; i++) {
         unsigned char a = R_base64_table[(int) input[4 * i + 0]];
@@ -1729,8 +1729,8 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
         // Codepoints after U+10ffff are invalid
         const int valid = code > 0x10ffff;
 
-        return (R_decoded_rune){valid ? RF_INVALID_CODEPOINT : code, .bytes_processed = 1,
-                                .valid = valid};
+        return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
+                                .bytes_processed = 1, .valid = valid};
     } else if ((byte & 0xe0) == 0xc0) {
         if (size < 2) {
             return (R_decoded_rune){
@@ -1754,8 +1754,8 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
             // Codepoints after U+10ffff are invalid
             const int valid = code > 0x10ffff;
 
-            return (R_decoded_rune){valid ? RF_INVALID_CODEPOINT : code, .bytes_processed = 2,
-                                    .valid = valid};
+            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
+                                    .bytes_processed = 2, .valid = valid};
         }
     } else if ((byte & 0xf0) == 0xe0) {
         if (size < 2) { return (R_decoded_rune){RF_INVALID_CODEPOINT, .bytes_processed = 1}; }
@@ -1791,8 +1791,8 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
 
             // Codepoints after U+10ffff are invalid
             const int valid = code > 0x10ffff;
-            return (R_decoded_rune){valid ? RF_INVALID_CODEPOINT : code, .bytes_processed = 3,
-                                    .valid = valid};
+            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
+                                    .bytes_processed = 3, .valid = valid};
         }
     } else if ((byte & 0xf8) == 0xf0) {
         // Four bytes
@@ -1839,8 +1839,8 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
 
             // Codepoints after U+10ffff are invalid
             const int valid = code > 0x10ffff;
-            return (R_decoded_rune){valid ? RF_INVALID_CODEPOINT : code, .bytes_processed = 4,
-                                    .valid = valid};
+            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
+                                    .bytes_processed = 4, .valid = valid};
         }
     }
 
@@ -1921,7 +1921,7 @@ R_public R_decoded_string R_decode_utf8_to_buffer(const char *src, R_int size, R
 R_public R_decoded_string R_decode_utf8(const char *src, R_int size, R_allocator allocator) {
     R_decoded_string result = {0};
 
-    R_rune *dst = R_alloc(allocator, sizeof(R_rune) * size);
+    R_rune *dst = (R_rune *) R_alloc(allocator, (R_int) sizeof(R_rune) * size);
 
     result = R_decode_utf8_to_buffer(src, size, dst, size);
 
@@ -2014,7 +2014,7 @@ R_public R_strbuf R_strbuf_make_ex(R_int initial_amount, R_allocator allocator) 
     void *data = R_alloc(allocator, initial_amount);
 
     if (data) {
-        result.data = data;
+        result.data = (char *) data;
         result.capacity = initial_amount;
         result.allocator = allocator;
         result.valid = 1;
@@ -2052,8 +2052,8 @@ R_public R_int R_strbuf_remaining_capacity(const R_strbuf *this_buf) {
 
 R_public void R_strbuf_reserve(R_strbuf *this_buf, R_int new_capacity) {
     if (new_capacity > this_buf->capacity) {
-        char *new_buf =
-                R_realloc(this_buf->allocator, this_buf->data, new_capacity, this_buf->capacity);
+        char *new_buf = (char *) R_realloc(this_buf->allocator, this_buf->data, new_capacity,
+                                           this_buf->capacity);
         if (new_buf) {
             this_buf->data = new_buf;
             this_buf->valid = 1;
@@ -2353,7 +2353,7 @@ R_public R_arr(void) R_arr_ensure_capacity_impl(R_arr_header *header, R_int size
     if (cap > header->capacity) {
         R_int arr_cur_size = sizeof(R_arr_header) + (size_of_t * header->capacity);
         R_int arr_new_size = sizeof(R_arr_header) + (size_of_t * cap);
-        header = R_realloc(header->allocator, header, arr_new_size, arr_cur_size);
+        header = (R_arr_header *) R_realloc(header->allocator, header, arr_new_size, arr_cur_size);
     }
 
     return result;
