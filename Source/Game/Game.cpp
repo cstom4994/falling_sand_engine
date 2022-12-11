@@ -100,7 +100,7 @@ int Game::init(int argc, char *argv[]) {
     // register & set up materials
     METADOT_INFO("Setting up materials...");
 
-    R_GLT_Init();
+    R_Text_Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, UInt16, Materials::nMaterials);
     METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
@@ -460,9 +460,9 @@ int Game::run(int argc, char *argv[]) {
     fadeInWaitFrames = 5;
 
     // Creating text
-    text1 = R_GLT_CreateText();
-    text2 = R_GLT_CreateText();
-    text3 = R_GLT_CreateText();
+    text1 = R_Text_CreateText();
+    text2 = R_Text_CreateText();
+    text3 = R_Text_CreateText();
 
     // game loop
     while (this->running) {
@@ -1075,7 +1075,7 @@ int Game::run(int argc, char *argv[]) {
         if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
             //if(GameIsolate_.settings.tick_world)
             updateFrameEarly();
-            global.scripts->Update();
+            global.scripts->UpdateTick();
         }
 
         while (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick >
@@ -1111,6 +1111,8 @@ int Game::run(int argc, char *argv[]) {
             renderLate();
             RenderTarget_.target = RenderTarget_.realTarget;
             GameIsolate_.profiler.End(Profiler::Stage::RenderLate);
+
+            global.scripts->UpdateRender();
 
             // auto image2 = R_CopyImageFromSurface(Textures::testAse);
             // R_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
@@ -1343,10 +1345,10 @@ exit:
         GameIsolate_.world = nullptr;
     }
 
-    R_GLT_DeleteText(text1);
-    R_GLT_DeleteText(text2);
-    R_GLT_DeleteText(text3);
-    R_GLT_Terminate();
+    R_Text_DeleteText(text1);
+    R_Text_DeleteText(text2);
+    R_Text_DeleteText(text3);
+    R_Text_Terminate();
 
     if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
         global.platform.EndWindow();
@@ -3603,23 +3605,23 @@ void Game::renderLate() {
 
 void Game::renderOverlays() {
 
-    R_GLT_SetText(text1, (win_title_client + " " + METADOT_VERSION_TEXT).c_str());
+    R_Text_SetText(text1, (win_title_client + " " + METADOT_VERSION_TEXT).c_str());
 
-    R_GLT_BeginDraw();
-    R_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
-    R_GLT_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
-    R_GLT_EndDraw();
+    R_Text_BeginDraw();
+    R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
+    R_Text_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
+    R_Text_EndDraw();
 
-    R_GLT_SetText(text3,
-                  MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
-                                     1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
-                                     GameIsolate_.game_timestate.feelsLikeFps)
-                          .c_str());
+    R_Text_SetText(text3,
+                   MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
+                                      1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
+                                      GameIsolate_.game_timestate.feelsLikeFps)
+                           .c_str());
 
-    R_GLT_BeginDraw();
-    R_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
-    R_GLT_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
-    R_GLT_EndDraw();
+    R_Text_BeginDraw();
+    R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
+    R_Text_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
+    R_Text_EndDraw();
 
     R_Rect r1 = R_Rect{(float) (GameData_.ofsX + GameData_.camX),
                        (float) (GameData_.ofsY + GameData_.camY),
@@ -4021,12 +4023,12 @@ ReadyToMerge ({16})
                 rbTriWCt, chCt, (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
                 (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size());
 
-        R_GLT_SetText(text2, a.c_str());
+        R_Text_SetText(text2, a.c_str());
 
-        R_GLT_BeginDraw();
-        R_GLT_Color(1.0f, 1.0f, 1.0f, 1.0f);
-        R_GLT_DrawText2D(text2, 4, 12, 1.0f);
-        R_GLT_EndDraw();
+        R_Text_BeginDraw();
+        R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
+        R_Text_DrawText2D(text2, 4, 12, 1.0f);
+        R_Text_EndDraw();
 
         // for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
         //     char buff[10];

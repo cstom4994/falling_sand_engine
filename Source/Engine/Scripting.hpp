@@ -103,7 +103,8 @@ struct Scripts
 
     void Init();
     void End();
-    void Update();
+    void UpdateRender();
+    void UpdateTick();
     void LoadMuFuncs();
 };
 

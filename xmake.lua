@@ -223,6 +223,6 @@ do
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_files("Source/Tests/**.c")
+    add_files("Source/Tests/TestFFI.c")
     add_headerfiles("Source/Tests/**.h")
 end

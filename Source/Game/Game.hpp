@@ -83,9 +83,9 @@ private:
     uint32 loadingOnColor = 0;
     uint32 loadingOffColor = 0;
 
-    R_GLTtext *text1 = nullptr;
-    R_GLTtext *text2 = nullptr;
-    R_GLTtext *text3 = nullptr;
+    R_Texttext *text1 = nullptr;
+    R_Texttext *text2 = nullptr;
+    R_Texttext *text3 = nullptr;
 
 public:
     bool running = true;

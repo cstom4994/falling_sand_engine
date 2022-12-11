@@ -5,7 +5,6 @@
 #include "Engine/SDLWrapper.hpp"
 
 #include "Libs/glad/glad.h"
-#include "SDL_video.h"
 
 // Most of the code pulled in from here...
 #define R_USE_OPENGL

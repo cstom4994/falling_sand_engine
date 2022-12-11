@@ -20,28 +20,28 @@
 #include <cstdlib>
 #include <string>
 
-#define _R_GLT_TEXT2D_POSITION_LOCATION 0
-#define _R_GLT_TEXT2D_TEXCOORD_LOCATION 1
+#define _R_Text_TEXT2D_POSITION_LOCATION 0
+#define _R_Text_TEXT2D_TEXCOORD_LOCATION 1
 
-#define _R_GLT_TEXT2D_POSITION_SIZE 2
-#define _R_GLT_TEXT2D_TEXCOORD_SIZE 2
-#define _R_GLT_TEXT2D_VERTEX_SIZE (_R_GLT_TEXT2D_POSITION_SIZE + _R_GLT_TEXT2D_TEXCOORD_SIZE)
+#define _R_Text_TEXT2D_POSITION_SIZE 2
+#define _R_Text_TEXT2D_TEXCOORD_SIZE 2
+#define _R_Text_TEXT2D_VERTEX_SIZE (_R_Text_TEXT2D_POSITION_SIZE + _R_Text_TEXT2D_TEXCOORD_SIZE)
 
-#define _R_GLT_TEXT2D_POSITION_OFFSET 0
-#define _R_GLT_TEXT2D_TEXCOORD_OFFSET _R_GLT_TEXT2D_POSITION_SIZE
+#define _R_Text_TEXT2D_POSITION_OFFSET 0
+#define _R_Text_TEXT2D_TEXCOORD_OFFSET _R_Text_TEXT2D_POSITION_SIZE
 
-#define _R_GLT_MAT4_INDEX(row, column) ((row) + (column) *4)
+#define _R_Text_MAT4_INDEX(row, column) ((row) + (column) *4)
 
-static const char *_R_GLT_FontGlyphCharacters =
+static const char *_R_Text_FontGlyphCharacters =
         " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`*#=[]\"";
-#define _R_GLT_FontGlyphCount 83
+#define _R_Text_FontGlyphCount 83
 
-#define _R_GLT_FontGlyphMinChar ' '
-#define _R_GLT_FontGlyphMaxChar 'z'
+#define _R_Text_FontGlyphMinChar ' '
+#define _R_Text_FontGlyphMaxChar 'z'
 
-static const int _R_GLT_FontGlyphHeight = 17;
+static const int _R_Text_FontGlyphHeight = 17;
 
-typedef struct _R_GLTglyph
+typedef struct _R_Textglyph
 {
     char c;
 
@@ -52,9 +52,9 @@ typedef struct _R_GLTglyph
     GLfloat u2, v2;
 
     GLboolean drawable;
-} _R_GLTglyph;
+} _R_Textglyph;
 
-typedef struct _R_GLTglyphdata
+typedef struct _R_Textglyphdata
 {
     uint32_t x, y;
     uint32_t w, h;
@@ -63,24 +63,24 @@ typedef struct _R_GLTglyphdata
     uint32_t marginRight, marginBottom;
 
     uint16_t dataWidth, dataHeight;
-} _R_GLTglyphdata;
+} _R_Textglyphdata;
 
-static _R_GLTglyph _R_GLT_FontGlyphs[_R_GLT_FontGlyphCount];
+static _R_Textglyph _R_Text_FontGlyphs[_R_Text_FontGlyphCount];
 
-#define _R_GLT_FontGlyphLength (_R_GLT_FontGlyphMaxChar - _R_GLT_FontGlyphMinChar + 1)
-static _R_GLTglyph _R_GLT_FontGlyphs2[_R_GLT_FontGlyphLength];
+#define _R_Text_FontGlyphLength (_R_Text_FontGlyphMaxChar - _R_Text_FontGlyphMinChar + 1)
+static _R_Textglyph _R_Text_FontGlyphs2[_R_Text_FontGlyphLength];
 
-static GLuint _R_GLT_Text2DShader = R_GLT_NULL_HANDLE;
-static GLuint _R_GLT_Text2DFontTexture = R_GLT_NULL_HANDLE;
+static GLuint _R_Text_Text2DShader = R_Text_NULL_HANDLE;
+static GLuint _R_Text_Text2DFontTexture = R_Text_NULL_HANDLE;
 
-static GLint _R_GLT_Text2DShaderMVPUniformLocation = -1;
-static GLint _R_GLT_Text2DShaderColorUniformLocation = -1;
+static GLint _R_Text_Text2DShaderMVPUniformLocation = -1;
+static GLint _R_Text_Text2DShaderColorUniformLocation = -1;
 
-static GLfloat _R_GLT_Text2DProjectionMatrix[16];
+static GLfloat _R_Text_Text2DProjectionMatrix[16];
 
-static GLint _R_GLT_SwayShader = R_GLT_NULL_HANDLE;
+static GLint _R_Text_SwayShader = R_Text_NULL_HANDLE;
 
-struct R_GLTtext
+struct R_Texttext
 {
     char *_text;
     GLsizei _textLength;
@@ -94,21 +94,21 @@ struct R_GLTtext
     GLuint _vbo;
 };
 
-void _R_GLT_GetViewportSize(GLint *width, GLint *height);
+void _R_Text_GetViewportSize(GLint *width, GLint *height);
 
-void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16], GLfloat result[16]);
+void _R_Text_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16], GLfloat result[16]);
 
-void _R_GLT_UpdateBuffers(R_GLTtext *text);
+void _R_Text_UpdateBuffers(R_Texttext *text);
 
-GLboolean _R_GLT_CreateText2DShader(void);
-GLboolean _R_GLT_CreateText2DFontTexture(void);
+GLboolean _R_Text_CreateText2DShader(void);
+GLboolean _R_Text_CreateText2DFontTexture(void);
 
-R_GLTtext *R_GLT_CreateText(void) {
-    R_GLTtext *text = (R_GLTtext *) calloc(1, sizeof(R_GLTtext));
+R_Texttext *R_Text_CreateText(void) {
+    R_Texttext *text = (R_Texttext *) calloc(1, sizeof(R_Texttext));
 
     METADOT_ASSERT_E(text);
 
-    if (!text) return R_GLT_NULL;
+    if (!text) return R_Text_NULL;
 
     glGenVertexArrays(1, &text->_vao);
     glGenBuffers(1, &text->_vbo);
@@ -117,40 +117,40 @@ R_GLTtext *R_GLT_CreateText(void) {
     METADOT_ASSERT_E(text->_vbo);
 
     if (!text->_vao || !text->_vbo) {
-        R_GLT_DeleteText(text);
-        return R_GLT_NULL;
+        R_Text_DeleteText(text);
+        return R_Text_NULL;
     }
 
     glBindVertexArray(text->_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, text->_vbo);
 
-    glEnableVertexAttribArray(_R_GLT_TEXT2D_POSITION_LOCATION);
-    glVertexAttribPointer(_R_GLT_TEXT2D_POSITION_LOCATION, _R_GLT_TEXT2D_POSITION_SIZE, GL_FLOAT,
-                          GL_FALSE, (_R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
-                          (const void *) (_R_GLT_TEXT2D_POSITION_OFFSET * sizeof(GLfloat)));
+    glEnableVertexAttribArray(_R_Text_TEXT2D_POSITION_LOCATION);
+    glVertexAttribPointer(_R_Text_TEXT2D_POSITION_LOCATION, _R_Text_TEXT2D_POSITION_SIZE, GL_FLOAT,
+                          GL_FALSE, (_R_Text_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
+                          (const void *) (_R_Text_TEXT2D_POSITION_OFFSET * sizeof(GLfloat)));
 
-    glEnableVertexAttribArray(_R_GLT_TEXT2D_TEXCOORD_LOCATION);
-    glVertexAttribPointer(_R_GLT_TEXT2D_TEXCOORD_LOCATION, _R_GLT_TEXT2D_TEXCOORD_SIZE, GL_FLOAT,
-                          GL_FALSE, (_R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
-                          (const void *) (_R_GLT_TEXT2D_TEXCOORD_OFFSET * sizeof(GLfloat)));
+    glEnableVertexAttribArray(_R_Text_TEXT2D_TEXCOORD_LOCATION);
+    glVertexAttribPointer(_R_Text_TEXT2D_TEXCOORD_LOCATION, _R_Text_TEXT2D_TEXCOORD_SIZE, GL_FLOAT,
+                          GL_FALSE, (_R_Text_TEXT2D_VERTEX_SIZE * sizeof(GLfloat)),
+                          (const void *) (_R_Text_TEXT2D_TEXCOORD_OFFSET * sizeof(GLfloat)));
 
     glBindVertexArray(0);
 
     return text;
 }
 
-void R_GLT_DeleteText(R_GLTtext *text) {
+void R_Text_DeleteText(R_Texttext *text) {
     if (!text) return;
 
     if (text->_vao) {
         glDeleteVertexArrays(1, &text->_vao);
-        text->_vao = R_GLT_NULL_HANDLE;
+        text->_vao = R_Text_NULL_HANDLE;
     }
 
     if (text->_vbo) {
         glDeleteBuffers(1, &text->_vbo);
-        text->_vbo = R_GLT_NULL_HANDLE;
+        text->_vbo = R_Text_NULL_HANDLE;
     }
 
     if (text->_text) free(text->_text);
@@ -160,7 +160,7 @@ void R_GLT_DeleteText(R_GLTtext *text) {
     free(text);
 }
 
-bool R_GLT_SetText(R_GLTtext *text, const char *string) {
+bool R_Text_SetText(R_Texttext *text, const char *string) {
     if (!text) return 0;
 
     int strLength = 0;
@@ -172,7 +172,7 @@ bool R_GLT_SetText(R_GLTtext *text, const char *string) {
             if (strcmp(string, text->_text) == 0) return GL_TRUE;
 
             free(text->_text);
-            text->_text = R_GLT_NULL;
+            text->_text = R_Text_NULL;
         }
 
         text->_text = (char *) malloc((strLength + 1) * sizeof(char));
@@ -188,7 +188,7 @@ bool R_GLT_SetText(R_GLTtext *text, const char *string) {
     } else {
         if (text->_text) {
             free(text->_text);
-            text->_text = R_GLT_NULL;
+            text->_text = R_Text_NULL;
         } else {
             return 1;
         }
@@ -202,13 +202,13 @@ bool R_GLT_SetText(R_GLTtext *text, const char *string) {
     return 0;
 }
 
-const char *R_GLT_GetText(R_GLTtext *text) {
+const char *R_Text_GetText(R_Texttext *text) {
     if (text && text->_text) return text->_text;
 
     return "\0";
 }
 
-void R_GLT_Viewport(GLsizei width, GLsizei height) {
+void R_Text_Viewport(GLsizei width, GLsizei height) {
     METADOT_ASSERT_E(width > 0);
     METADOT_ASSERT_E(height > 0);
 
@@ -239,50 +239,50 @@ void R_GLT_Viewport(GLsizei width, GLsizei height) {
             1.0f,
     };
 
-    memcpy(_R_GLT_Text2DProjectionMatrix, projection, 16 * sizeof(GLfloat));
+    memcpy(_R_Text_Text2DProjectionMatrix, projection, 16 * sizeof(GLfloat));
 }
 
-void R_GLT_BeginDraw() {
-    glGetIntegerv(GL_CURRENT_PROGRAM, &_R_GLT_SwayShader);
+void R_Text_BeginDraw() {
+    glGetIntegerv(GL_CURRENT_PROGRAM, &_R_Text_SwayShader);
 
-    glUseProgram(_R_GLT_Text2DShader);
+    glUseProgram(_R_Text_Text2DShader);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _R_GLT_Text2DFontTexture);
+    glBindTexture(GL_TEXTURE_2D, _R_Text_Text2DFontTexture);
 }
 
-void R_GLT_EndDraw() {
+void R_Text_EndDraw() {
     glBindTexture(GL_TEXTURE_2D, 0);
-    glUseProgram(_R_GLT_SwayShader);
+    glUseProgram(_R_Text_SwayShader);
 }
 
-#define _R_GLT_DrawText()                                                                          \
-    glUniformMatrix4fv(_R_GLT_Text2DShaderMVPUniformLocation, 1, GL_FALSE, mvp);                   \
+#define _R_Text_DrawText()                                                                         \
+    glUniformMatrix4fv(_R_Text_Text2DShaderMVPUniformLocation, 1, GL_FALSE, mvp);                  \
                                                                                                    \
     glBindVertexArray(text->_vao);                                                                 \
     glDrawArrays(GL_TRIANGLES, 0, text->vertexCount);
 
-void R_GLT_DrawText(R_GLTtext *text, const GLfloat mvp[16]) {
+void R_Text_DrawText(R_Texttext *text, const GLfloat mvp[16]) {
     if (!text) return;
 
-    if (text->_dirty) _R_GLT_UpdateBuffers(text);
+    if (text->_dirty) _R_Text_UpdateBuffers(text);
 
     if (!text->vertexCount) return;
 
-    _R_GLT_DrawText();
+    _R_Text_DrawText();
 }
 
-void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale) {
+void R_Text_DrawText2D(R_Texttext *text, GLfloat x, GLfloat y, GLfloat scale) {
     if (!text) return;
 
-    if (text->_dirty) _R_GLT_UpdateBuffers(text);
+    if (text->_dirty) _R_Text_UpdateBuffers(text);
 
     if (!text->vertexCount) return;
 
-#ifndef R_GLT_MANUAL_VIEWPORT
+#ifndef R_Text_MANUAL_VIEWPORT
     GLint viewportWidth, viewportHeight;
-    _R_GLT_GetViewportSize(&viewportWidth, &viewportHeight);
-    R_GLT_Viewport(viewportWidth, viewportHeight);
+    _R_Text_GetViewportSize(&viewportWidth, &viewportHeight);
+    R_Text_Viewport(viewportWidth, viewportHeight);
 #endif
 
     const GLfloat model[16] = {
@@ -291,60 +291,60 @@ void R_GLT_DrawText2D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale) {
     };
 
     GLfloat mvp[16];
-    _R_GLT_Mat4Mult(_R_GLT_Text2DProjectionMatrix, model, mvp);
+    _R_Text_Mat4Mult(_R_Text_Text2DProjectionMatrix, model, mvp);
 
-    _R_GLT_DrawText();
+    _R_Text_DrawText();
 }
 
-void R_GLT_DrawText2DAligned(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat scale,
-                             int horizontalAlignment, int verticalAlignment) {
+void R_Text_DrawText2DAligned(R_Texttext *text, GLfloat x, GLfloat y, GLfloat scale,
+                              int horizontalAlignment, int verticalAlignment) {
     if (!text) return;
 
-    if (text->_dirty) _R_GLT_UpdateBuffers(text);
+    if (text->_dirty) _R_Text_UpdateBuffers(text);
 
     if (!text->vertexCount) return;
 
-    if (horizontalAlignment == R_GLT_CENTER) x -= R_GLT_GetTextWidth(text, scale) * 0.5f;
-    else if (horizontalAlignment == R_GLT_RIGHT)
-        x -= R_GLT_GetTextWidth(text, scale);
+    if (horizontalAlignment == R_Text_CENTER) x -= R_Text_GetTextWidth(text, scale) * 0.5f;
+    else if (horizontalAlignment == R_Text_RIGHT)
+        x -= R_Text_GetTextWidth(text, scale);
 
-    if (verticalAlignment == R_GLT_CENTER) y -= R_GLT_GetTextHeight(text, scale) * 0.5f;
-    else if (verticalAlignment == R_GLT_RIGHT)
-        y -= R_GLT_GetTextHeight(text, scale);
+    if (verticalAlignment == R_Text_CENTER) y -= R_Text_GetTextHeight(text, scale) * 0.5f;
+    else if (verticalAlignment == R_Text_RIGHT)
+        y -= R_Text_GetTextHeight(text, scale);
 
-    R_GLT_DrawText2D(text, x, y, scale);
+    R_Text_DrawText2D(text, x, y, scale);
 }
 
-void R_GLT_DrawText3D(R_GLTtext *text, GLfloat x, GLfloat y, GLfloat z, GLfloat scale,
-                      GLfloat view[16], GLfloat projection[16]) {
+void R_Text_DrawText3D(R_Texttext *text, GLfloat x, GLfloat y, GLfloat z, GLfloat scale,
+                       GLfloat view[16], GLfloat projection[16]) {
     if (!text) return;
 
-    if (text->_dirty) _R_GLT_UpdateBuffers(text);
+    if (text->_dirty) _R_Text_UpdateBuffers(text);
 
     if (!text->vertexCount) return;
 
     const GLfloat model[16] = {
             scale, 0.0f, 0.0f, 0.0f,  0.0f, -scale, 0.0f,
-            0.0f,  0.0f, 0.0f, scale, 0.0f, x,      y + (GLfloat) _R_GLT_FontGlyphHeight * scale,
+            0.0f,  0.0f, 0.0f, scale, 0.0f, x,      y + (GLfloat) _R_Text_FontGlyphHeight * scale,
             z,     1.0f,
     };
 
     GLfloat mvp[16];
     GLfloat vp[16];
 
-    _R_GLT_Mat4Mult(projection, view, vp);
-    _R_GLT_Mat4Mult(vp, model, mvp);
+    _R_Text_Mat4Mult(projection, view, vp);
+    _R_Text_Mat4Mult(vp, model, mvp);
 
-    _R_GLT_DrawText();
+    _R_Text_DrawText();
 }
 
-void R_GLT_Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-    glUniform4f(_R_GLT_Text2DShaderColorUniformLocation, r, g, b, a);
+void R_Text_Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    glUniform4f(_R_Text_Text2DShaderColorUniformLocation, r, g, b, a);
 }
 
-void R_GLT_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a) {
+void R_Text_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a) {
     GLfloat color[4];
-    glGetUniformfv(_R_GLT_Text2DShader, _R_GLT_Text2DShaderColorUniformLocation, color);
+    glGetUniformfv(_R_Text_Text2DShader, _R_Text_Text2DShaderColorUniformLocation, color);
 
     if (r) (*r) = color[0];
     if (g) (*g) = color[1];
@@ -352,15 +352,15 @@ void R_GLT_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a) {
     if (a) (*a) = color[3];
 }
 
-GLfloat R_GLT_GetLineHeight(GLfloat scale) { return (GLfloat) _R_GLT_FontGlyphHeight * scale; }
+GLfloat R_Text_GetLineHeight(GLfloat scale) { return (GLfloat) _R_Text_FontGlyphHeight * scale; }
 
-GLfloat R_GLT_GetTextWidth(const R_GLTtext *text, GLfloat scale) {
+GLfloat R_Text_GetTextWidth(const R_Texttext *text, GLfloat scale) {
     if (!text || !text->_text) return 0.0f;
 
     GLfloat maxWidth = 0.0f;
     GLfloat width = 0.0f;
 
-    _R_GLTglyph glyph;
+    _R_Textglyph glyph;
 
     char c;
     int i;
@@ -375,16 +375,16 @@ GLfloat R_GLT_GetTextWidth(const R_GLTtext *text, GLfloat scale) {
             continue;
         }
 
-        if (!R_GLT_IsCharacterSupported(c)) {
-#ifdef R_GLT_UNKNOWN_CHARACTER
-            c = R_GLT_UNKNOWN_CHARACTER;
-            if (!R_GLT_IsCharacterSupported(c)) continue;
+        if (!R_Text_IsCharacterSupported(c)) {
+#ifdef R_Text_UNKNOWN_CHARACTER
+            c = R_Text_UNKNOWN_CHARACTER;
+            if (!R_Text_IsCharacterSupported(c)) continue;
 #else
             continue;
 #endif
         }
 
-        glyph = _R_GLT_FontGlyphs2[c - _R_GLT_FontGlyphMinChar];
+        glyph = _R_Text_FontGlyphs2[c - _R_Text_FontGlyphMinChar];
 
         width += (GLfloat) glyph.w;
     }
@@ -394,32 +394,32 @@ GLfloat R_GLT_GetTextWidth(const R_GLTtext *text, GLfloat scale) {
     return maxWidth * scale;
 }
 
-GLfloat R_GLT_GetTextHeight(const R_GLTtext *text, GLfloat scale) {
+GLfloat R_Text_GetTextHeight(const R_Texttext *text, GLfloat scale) {
     if (!text || !text->_text) return 0.0f;
 
-    return (GLfloat) (R_GLT_CountNewLines(text->_text) + 1) * R_GLT_GetLineHeight(scale);
+    return (GLfloat) (R_Text_CountNewLines(text->_text) + 1) * R_Text_GetLineHeight(scale);
 }
 
-GLboolean R_GLT_IsCharacterSupported(const char c) {
+GLboolean R_Text_IsCharacterSupported(const char c) {
     if (c == '\t') return GL_TRUE;
     if (c == '\n') return GL_TRUE;
     if (c == '\r') return GL_TRUE;
 
     int i;
-    for (i = 0; i < _R_GLT_FontGlyphCount; i++) {
-        if (_R_GLT_FontGlyphCharacters[i] == c) return GL_TRUE;
+    for (i = 0; i < _R_Text_FontGlyphCount; i++) {
+        if (_R_Text_FontGlyphCharacters[i] == c) return GL_TRUE;
     }
 
     return GL_FALSE;
 }
 
-GLint R_GLT_CountSupportedCharacters(const char *str) {
+GLint R_Text_CountSupportedCharacters(const char *str) {
     if (!str) return 0;
 
     GLint count = 0;
 
     while ((*str) != '\0') {
-        if (R_GLT_IsCharacterSupported(*str)) count++;
+        if (R_Text_IsCharacterSupported(*str)) count++;
 
         str++;
     }
@@ -427,22 +427,22 @@ GLint R_GLT_CountSupportedCharacters(const char *str) {
     return count;
 }
 
-GLboolean R_GLT_IsCharacterDrawable(const char c) {
-    if (c < _R_GLT_FontGlyphMinChar) return GL_FALSE;
-    if (c > _R_GLT_FontGlyphMaxChar) return GL_FALSE;
+GLboolean R_Text_IsCharacterDrawable(const char c) {
+    if (c < _R_Text_FontGlyphMinChar) return GL_FALSE;
+    if (c > _R_Text_FontGlyphMaxChar) return GL_FALSE;
 
-    if (_R_GLT_FontGlyphs2[c - _R_GLT_FontGlyphMinChar].drawable) return GL_TRUE;
+    if (_R_Text_FontGlyphs2[c - _R_Text_FontGlyphMinChar].drawable) return GL_TRUE;
 
     return GL_FALSE;
 }
 
-GLint R_GLT_CountDrawableCharacters(const char *str) {
+GLint R_Text_CountDrawableCharacters(const char *str) {
     if (!str) return 0;
 
     GLint count = 0;
 
     while ((*str) != '\0') {
-        if (R_GLT_IsCharacterDrawable(*str)) count++;
+        if (R_Text_IsCharacterDrawable(*str)) count++;
 
         str++;
     }
@@ -450,7 +450,7 @@ GLint R_GLT_CountDrawableCharacters(const char *str) {
     return count;
 }
 
-GLint R_GLT_CountNewLines(const char *str) {
+GLint R_Text_CountNewLines(const char *str) {
     GLint count = 0;
 
     while ((str = strchr(str, '\n')) != NULL) {
@@ -461,7 +461,7 @@ GLint R_GLT_CountNewLines(const char *str) {
     return count;
 }
 
-void _R_GLT_GetViewportSize(GLint *width, GLint *height) {
+void _R_Text_GetViewportSize(GLint *width, GLint *height) {
     GLint dimensions[4];
     glGetIntegerv(GL_VIEWPORT, dimensions);
 
@@ -469,28 +469,28 @@ void _R_GLT_GetViewportSize(GLint *width, GLint *height) {
     if (height) (*height) = dimensions[3];
 }
 
-void _R_GLT_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16], GLfloat result[16]) {
+void _R_Text_Mat4Mult(const GLfloat lhs[16], const GLfloat rhs[16], GLfloat result[16]) {
     int c, r, i;
 
     for (c = 0; c < 4; c++) {
         for (r = 0; r < 4; r++) {
-            result[_R_GLT_MAT4_INDEX(r, c)] = 0.0f;
+            result[_R_Text_MAT4_INDEX(r, c)] = 0.0f;
 
             for (i = 0; i < 4; i++)
-                result[_R_GLT_MAT4_INDEX(r, c)] +=
-                        lhs[_R_GLT_MAT4_INDEX(r, i)] * rhs[_R_GLT_MAT4_INDEX(i, c)];
+                result[_R_Text_MAT4_INDEX(r, c)] +=
+                        lhs[_R_Text_MAT4_INDEX(r, i)] * rhs[_R_Text_MAT4_INDEX(i, c)];
         }
     }
 }
 
-void _R_GLT_UpdateBuffers(R_GLTtext *text) {
+void _R_Text_UpdateBuffers(R_Texttext *text) {
     if (!text || !text->_dirty) return;
 
     if (text->_vertices) {
         text->vertexCount = 0;
 
         free(text->_vertices);
-        text->_vertices = R_GLT_NULL;
+        text->_vertices = R_Text_NULL;
     }
 
     if (!text->_text || !text->_textLength) {
@@ -498,7 +498,7 @@ void _R_GLT_UpdateBuffers(R_GLTtext *text) {
         return;
     }
 
-    const GLsizei countDrawable = R_GLT_CountDrawableCharacters(text->_text);
+    const GLsizei countDrawable = R_Text_CountDrawableCharacters(text->_text);
 
     if (!countDrawable) {
         text->_dirty = GL_FALSE;
@@ -508,7 +508,7 @@ void _R_GLT_UpdateBuffers(R_GLTtext *text) {
     const GLsizei vertexCount =
             countDrawable * 2 * 3;// 3 vertices in a triangle, 2 triangles in a quad
 
-    const GLsizei vertexSize = _R_GLT_TEXT2D_VERTEX_SIZE;
+    const GLsizei vertexSize = _R_Text_TEXT2D_VERTEX_SIZE;
     GLfloat *vertices = (GLfloat *) malloc(vertexCount * vertexSize * sizeof(GLfloat));
 
     if (!vertices) return;
@@ -519,12 +519,12 @@ void _R_GLT_UpdateBuffers(R_GLTtext *text) {
     GLfloat glyphY = 0.0f;
 
     GLfloat glyphWidth;
-    const GLfloat glyphHeight = (GLfloat) _R_GLT_FontGlyphHeight;
+    const GLfloat glyphHeight = (GLfloat) _R_Text_FontGlyphHeight;
 
     const GLfloat glyphAdvanceX = 0.0f;
     const GLfloat glyphAdvanceY = 0.0f;
 
-    _R_GLTglyph glyph;
+    _R_Textglyph glyph;
 
     char c;
     int i;
@@ -542,16 +542,16 @@ void _R_GLT_UpdateBuffers(R_GLTtext *text) {
             continue;
         }
 
-        if (!R_GLT_IsCharacterSupported(c)) {
-#ifdef R_GLT_UNKNOWN_CHARACTER
-            c = R_GLT_UNKNOWN_CHARACTER;
-            if (!R_GLT_IsCharacterSupported(c)) continue;
+        if (!R_Text_IsCharacterSupported(c)) {
+#ifdef R_Text_UNKNOWN_CHARACTER
+            c = R_Text_UNKNOWN_CHARACTER;
+            if (!R_Text_IsCharacterSupported(c)) continue;
 #else
             continue;
 #endif
         }
 
-        glyph = _R_GLT_FontGlyphs2[c - _R_GLT_FontGlyphMinChar];
+        glyph = _R_Text_FontGlyphs2[c - _R_Text_FontGlyphMinChar];
 
         glyphWidth = (GLfloat) glyph.w;
 
@@ -594,38 +594,38 @@ void _R_GLT_UpdateBuffers(R_GLTtext *text) {
     text->_vertices = vertices;
 
     glBindBuffer(GL_ARRAY_BUFFER, text->_vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * _R_GLT_TEXT2D_VERTEX_SIZE * sizeof(GLfloat),
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * _R_Text_TEXT2D_VERTEX_SIZE * sizeof(GLfloat),
                  vertices, GL_DYNAMIC_DRAW);
 
     text->_dirty = GL_FALSE;
 }
 
-GLboolean R_GLT_Init(void) {
-    if (R_GLT_Initialized) return GL_TRUE;
+GLboolean R_Text_Init(void) {
+    if (R_Text_Initialized) return GL_TRUE;
 
-    if (!_R_GLT_CreateText2DShader()) return GL_FALSE;
+    if (!_R_Text_CreateText2DShader()) return GL_FALSE;
 
-    if (!_R_GLT_CreateText2DFontTexture()) return GL_FALSE;
+    if (!_R_Text_CreateText2DFontTexture()) return GL_FALSE;
 
-    R_GLT_Initialized = GL_TRUE;
+    R_Text_Initialized = GL_TRUE;
     return GL_TRUE;
 }
 
-void R_GLT_Terminate(void) {
-    if (_R_GLT_Text2DShader != R_GLT_NULL_HANDLE) {
-        glDeleteProgram(_R_GLT_Text2DShader);
-        _R_GLT_Text2DShader = R_GLT_NULL_HANDLE;
+void R_Text_Terminate(void) {
+    if (_R_Text_Text2DShader != R_Text_NULL_HANDLE) {
+        glDeleteProgram(_R_Text_Text2DShader);
+        _R_Text_Text2DShader = R_Text_NULL_HANDLE;
     }
 
-    if (_R_GLT_Text2DFontTexture != R_GLT_NULL_HANDLE) {
-        glDeleteTextures(1, &_R_GLT_Text2DFontTexture);
-        _R_GLT_Text2DFontTexture = R_GLT_NULL_HANDLE;
+    if (_R_Text_Text2DFontTexture != R_Text_NULL_HANDLE) {
+        glDeleteTextures(1, &_R_Text_Text2DFontTexture);
+        _R_Text_Text2DFontTexture = R_Text_NULL_HANDLE;
     }
 
-    R_GLT_Initialized = GL_FALSE;
+    R_Text_Initialized = GL_FALSE;
 }
 
-static const GLchar *_R_GLT_Text2DVertexShaderSource =
+static const GLchar *_R_Text_Text2DVertexShaderSource =
         "#version 330 core\n"
         "\n"
         "in vec2 position;\n"
@@ -642,7 +642,7 @@ static const GLchar *_R_GLT_Text2DVertexShaderSource =
         "	gl_Position = mvp * vec4(position, 0.0, 1.0);\n"
         "}\n";
 
-static const GLchar *_R_GLT_Text2DFragmentShaderSource =
+static const GLchar *_R_Text_Text2DFragmentShaderSource =
         "#version 330 core\n"
         "\n"
         "out vec4 fragColor;\n"
@@ -658,24 +658,24 @@ static const GLchar *_R_GLT_Text2DFragmentShaderSource =
         "	fragColor = texture(diffuse, fTexCoord) * color;\n"
         "}\n";
 
-GLboolean _R_GLT_CreateText2DShader(void) {
+GLboolean _R_Text_CreateText2DShader(void) {
     GLuint vertexShader, fragmentShader;
     GLint compileStatus, linkStatus;
 
-#ifdef R_GLT_DEBUG_PRINT
+#ifdef R_Text_DEBUG_PRINT
     GLint infoLogLength;
     GLsizei infoLogSize;
     GLchar *infoLog;
 #endif
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &_R_GLT_Text2DVertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &_R_Text_Text2DVertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compileStatus);
 
     if (compileStatus != GL_TRUE) {
-#ifdef R_GLT_DEBUG_PRINT
+#ifdef R_Text_DEBUG_PRINT
         glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
         // If no information log exists 0 is returned or 1 for a
@@ -693,9 +693,9 @@ GLboolean _R_GLT_CreateText2DShader(void) {
 #endif
 
         glDeleteShader(vertexShader);
-        R_GLT_Terminate();
+        R_Text_Terminate();
 
-#ifdef R_GLT_DEBUG
+#ifdef R_Text_DEBUG
         METADOT_ASSERT_E(compileStatus == GL_TRUE);
         return GL_FALSE;
 #else
@@ -704,13 +704,13 @@ GLboolean _R_GLT_CreateText2DShader(void) {
     }
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &_R_GLT_Text2DFragmentShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &_R_Text_Text2DFragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
 
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &compileStatus);
 
     if (compileStatus != GL_TRUE) {
-#ifdef R_GLT_DEBUG_PRINT
+#ifdef R_Text_DEBUG_PRINT
         glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
         // If no information log exists 0 is returned or 1 for a
@@ -729,9 +729,9 @@ GLboolean _R_GLT_CreateText2DShader(void) {
 
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
-        R_GLT_Terminate();
+        R_Text_Terminate();
 
-#ifdef R_GLT_DEBUG
+#ifdef R_Text_DEBUG
         METADOT_ASSERT_E(compileStatus == GL_TRUE);
         return GL_FALSE;
 #else
@@ -739,29 +739,29 @@ GLboolean _R_GLT_CreateText2DShader(void) {
 #endif
     }
 
-    _R_GLT_Text2DShader = glCreateProgram();
+    _R_Text_Text2DShader = glCreateProgram();
 
-    glAttachShader(_R_GLT_Text2DShader, vertexShader);
-    glAttachShader(_R_GLT_Text2DShader, fragmentShader);
+    glAttachShader(_R_Text_Text2DShader, vertexShader);
+    glAttachShader(_R_Text_Text2DShader, fragmentShader);
 
-    glBindAttribLocation(_R_GLT_Text2DShader, _R_GLT_TEXT2D_POSITION_LOCATION, "position");
-    glBindAttribLocation(_R_GLT_Text2DShader, _R_GLT_TEXT2D_TEXCOORD_LOCATION, "texCoord");
+    glBindAttribLocation(_R_Text_Text2DShader, _R_Text_TEXT2D_POSITION_LOCATION, "position");
+    glBindAttribLocation(_R_Text_Text2DShader, _R_Text_TEXT2D_TEXCOORD_LOCATION, "texCoord");
 
-    glBindFragDataLocation(_R_GLT_Text2DShader, 0, "fragColor");
+    glBindFragDataLocation(_R_Text_Text2DShader, 0, "fragColor");
 
-    glLinkProgram(_R_GLT_Text2DShader);
+    glLinkProgram(_R_Text_Text2DShader);
 
-    glDetachShader(_R_GLT_Text2DShader, vertexShader);
+    glDetachShader(_R_Text_Text2DShader, vertexShader);
     glDeleteShader(vertexShader);
 
-    glDetachShader(_R_GLT_Text2DShader, fragmentShader);
+    glDetachShader(_R_Text_Text2DShader, fragmentShader);
     glDeleteShader(fragmentShader);
 
-    glGetProgramiv(_R_GLT_Text2DShader, GL_LINK_STATUS, &linkStatus);
+    glGetProgramiv(_R_Text_Text2DShader, GL_LINK_STATUS, &linkStatus);
 
     if (linkStatus != GL_TRUE) {
-#ifdef R_GLT_DEBUG_PRINT
-        glGetProgramiv(_R_GLT_Text2DShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+#ifdef R_Text_DEBUG_PRINT
+        glGetProgramiv(_R_Text_Text2DShader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
         // If no information log exists 0 is returned or 1 for a
         // string only containing the null termination char.
@@ -769,17 +769,17 @@ GLboolean _R_GLT_CreateText2DShader(void) {
             infoLogSize = infoLogLength * sizeof(GLchar);
             infoLog = (GLchar *) malloc(infoLogSize);
 
-            glGetProgramInfoLog(_R_GLT_Text2DShader, infoLogSize, NULL, infoLog);
+            glGetProgramInfoLog(_R_Text_Text2DShader, infoLogSize, NULL, infoLog);
 
-            printf("Program #%u <Info Log>:\n%s\n", _R_GLT_Text2DShader, infoLog);
+            printf("Program #%u <Info Log>:\n%s\n", _R_Text_Text2DShader, infoLog);
 
             free(infoLog);
         }
 #endif
 
-        R_GLT_Terminate();
+        R_Text_Terminate();
 
-#ifdef R_GLT_DEBUG
+#ifdef R_Text_DEBUG
         METADOT_ASSERT_E(linkStatus == GL_TRUE);
         return GL_FALSE;
 #else
@@ -787,19 +787,19 @@ GLboolean _R_GLT_CreateText2DShader(void) {
 #endif
     }
 
-    glUseProgram(_R_GLT_Text2DShader);
+    glUseProgram(_R_Text_Text2DShader);
 
-    _R_GLT_Text2DShaderMVPUniformLocation = glGetUniformLocation(_R_GLT_Text2DShader, "mvp");
-    _R_GLT_Text2DShaderColorUniformLocation = glGetUniformLocation(_R_GLT_Text2DShader, "color");
+    _R_Text_Text2DShaderMVPUniformLocation = glGetUniformLocation(_R_Text_Text2DShader, "mvp");
+    _R_Text_Text2DShaderColorUniformLocation = glGetUniformLocation(_R_Text_Text2DShader, "color");
 
-    glUniform1i(glGetUniformLocation(_R_GLT_Text2DShader, "diffuse"), 0);
+    glUniform1i(glGetUniformLocation(_R_Text_Text2DShader, "diffuse"), 0);
 
     glUseProgram(0);
 
     return GL_TRUE;
 }
 
-static const uint64_t _R_GLT_FontGlyphRects[_R_GLT_FontGlyphCount] = {
+static const uint64_t _R_Text_FontGlyphRects[_R_Text_FontGlyphCount] = {
         0x1100040000, 0x304090004, 0x30209000D, 0x304090016, 0x30209001F, 0x304090028, 0x302090031,
         0x409003A,    0x302090043, 0x30109004C, 0x1080055,   0x30209005D, 0x302090066, 0x3040A006F,
         0x304090079,  0x304090082, 0x409008B,   0x4090094,   0x30409009D, 0x3040900A6, 0x3020900AF,
@@ -814,12 +814,12 @@ static const uint64_t _R_GLT_FontGlyphRects[_R_GLT_FontGlyphCount] = {
         0x5040A02AA,  0x3020A02B4, 0x6050902BE, 0x20702C7,   0x20702CE,   0xB010902D5,
 };
 
-#define _R_GLT_FONT_GLYPH_DATA_TYPE uint64_t
-#define _R_GLT_FONT_PIXEL_SIZE_BITS 2
+#define _R_Text_FONT_GLYPH_DATA_TYPE uint64_t
+#define _R_Text_FONT_PIXEL_SIZE_BITS 2
 
-#define _R_GLT_FontGlyphDataCount 387
+#define _R_Text_FontGlyphDataCount 387
 
-static const _R_GLT_FONT_GLYPH_DATA_TYPE _R_GLT_FontGlyphData[_R_GLT_FontGlyphDataCount] = {
+static const _R_Text_FONT_GLYPH_DATA_TYPE _R_Text_FontGlyphData[_R_Text_FontGlyphDataCount] = {
         0x551695416A901554, 0x569695A5A56AA55A, 0x555554155545AA9,  0x916AA41569005A40,
         0xA5A569695A5A5696, 0x51555556AA569695, 0x696916A941554155, 0x69155A55569555A5,
         0x15541555456A9569, 0xA9569545A4005500, 0x569695A5A569695A, 0x5545AA9569695A5A,
@@ -887,19 +887,19 @@ static const _R_GLT_FONT_GLYPH_DATA_TYPE _R_GLT_FontGlyphData[_R_GLT_FontGlyphDa
         0xA5A5696915555554, 0x5555155555,
 };
 
-GLboolean _R_GLT_CreateText2DFontTexture(void) {
-    if (R_GLT_Initialized) return GL_TRUE;
+GLboolean _R_Text_CreateText2DFontTexture(void) {
+    if (R_Text_Initialized) return GL_TRUE;
 
-    memset(_R_GLT_FontGlyphs, 0, _R_GLT_FontGlyphCount * sizeof(_R_GLTglyph));
-    memset(_R_GLT_FontGlyphs2, 0, _R_GLT_FontGlyphLength * sizeof(_R_GLTglyph));
+    memset(_R_Text_FontGlyphs, 0, _R_Text_FontGlyphCount * sizeof(_R_Textglyph));
+    memset(_R_Text_FontGlyphs2, 0, _R_Text_FontGlyphLength * sizeof(_R_Textglyph));
 
     GLsizei texWidth = 0;
     GLsizei texHeight = 0;
 
     GLsizei drawableGlyphCount = 0;
 
-    _R_GLTglyphdata *glyphsData =
-            (_R_GLTglyphdata *) calloc(_R_GLT_FontGlyphCount, sizeof(_R_GLTglyphdata));
+    _R_Textglyphdata *glyphsData =
+            (_R_Textglyphdata *) calloc(_R_Text_FontGlyphCount, sizeof(_R_Textglyphdata));
 
     uint64_t glyphPacked;
     uint32_t glyphMarginPacked;
@@ -912,23 +912,23 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
     glyphMarginLeft = 0;
     glyphMarginRight = 0;
 
-    _R_GLTglyph *glyph;
-    _R_GLTglyphdata *glyphData;
+    _R_Textglyph *glyph;
+    _R_Textglyphdata *glyphData;
 
     char c;
     int i;
     int x, y;
 
-    for (i = 0; i < _R_GLT_FontGlyphCount; i++) {
-        c = _R_GLT_FontGlyphCharacters[i];
+    for (i = 0; i < _R_Text_FontGlyphCount; i++) {
+        c = _R_Text_FontGlyphCharacters[i];
 
-        glyphPacked = _R_GLT_FontGlyphRects[i];
+        glyphPacked = _R_Text_FontGlyphRects[i];
 
         glyphX = (glyphPacked >> (uint64_t) (8 * 0)) & 0xFFFF;
         glyphWidth = (glyphPacked >> (uint64_t) (8 * 2)) & 0xFF;
 
         glyphY = 0;
-        glyphHeight = _R_GLT_FontGlyphHeight;
+        glyphHeight = _R_Text_FontGlyphHeight;
 
         glyphMarginPacked = (glyphPacked >> (uint64_t) (8 * 3)) & 0xFFFF;
 
@@ -938,7 +938,7 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
         glyphDataWidth = glyphWidth;
         glyphDataHeight = glyphHeight - (glyphMarginTop + glyphMarginBottom);
 
-        glyph = &_R_GLT_FontGlyphs[i];
+        glyph = &_R_Text_FontGlyphs[i];
 
         glyph->c = c;
 
@@ -994,18 +994,18 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
     for (texPixelIndex = 0; texPixelIndex < (texAreaSize * texPixelComponents); texPixelIndex++)
         texData[texPixelIndex] = 0;
 
-#define _R_GLT_TEX_PIXEL_INDEX(x, y) ((y) *texWidth * texPixelComponents + (x) *texPixelComponents)
+#define _R_Text_TEX_PIXEL_INDEX(x, y) ((y) *texWidth * texPixelComponents + (x) *texPixelComponents)
 
-#define _R_GLT_TEX_SET_PIXEL(x, y, r, g, b, a)                                                     \
+#define _R_Text_TEX_SET_PIXEL(x, y, r, g, b, a)                                                    \
     {                                                                                              \
-        texPixelIndex = _R_GLT_TEX_PIXEL_INDEX(x, y);                                              \
+        texPixelIndex = _R_Text_TEX_PIXEL_INDEX(x, y);                                             \
         texData[texPixelIndex + 0] = r;                                                            \
         texData[texPixelIndex + 1] = g;                                                            \
         texData[texPixelIndex + 2] = b;                                                            \
         texData[texPixelIndex + 3] = a;                                                            \
     }
 
-    const int glyphDataTypeSizeBits = sizeof(_R_GLT_FONT_GLYPH_DATA_TYPE) * 8;// 8 bits in a byte
+    const int glyphDataTypeSizeBits = sizeof(_R_Text_FONT_GLYPH_DATA_TYPE) * 8;// 8 bits in a byte
 
     int data0Index = 0;
     int data1Index = 0;
@@ -1026,8 +1026,8 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
 
     texX += textureGlyphPadding;
 
-    for (i = 0; i < _R_GLT_FontGlyphCount; i++) {
-        glyph = &_R_GLT_FontGlyphs[i];
+    for (i = 0; i < _R_Text_FontGlyphCount; i++) {
+        glyph = &_R_Text_FontGlyphs[i];
         glyphData = &glyphsData[i];
 
         if (!glyph->drawable) continue;
@@ -1066,8 +1066,8 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
 
         for (y = 0; y < glyphDataHeight; y++) {
             for (x = 0; x < glyphDataWidth; x++) {
-                c0 = (_R_GLT_FontGlyphData[data0Index] >> bit0Index) & 1;
-                c1 = (_R_GLT_FontGlyphData[data1Index] >> bit1Index) & 1;
+                c0 = (_R_Text_FontGlyphData[data0Index] >> bit0Index) & 1;
+                c1 = (_R_Text_FontGlyphData[data1Index] >> bit1Index) & 1;
 
                 if ((c0 == 0) && (c1 == 0)) {
                     r = 0;
@@ -1086,10 +1086,10 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
                     a = 255;
                 }
 
-                _R_GLT_TEX_SET_PIXEL(texX + x, texY + y, r, g, b, a);
+                _R_Text_TEX_SET_PIXEL(texX + x, texY + y, r, g, b, a);
 
-                bit0Index += _R_GLT_FONT_PIXEL_SIZE_BITS;
-                bit1Index += _R_GLT_FONT_PIXEL_SIZE_BITS;
+                bit0Index += _R_Text_FONT_PIXEL_SIZE_BITS;
+                bit1Index += _R_Text_FONT_PIXEL_SIZE_BITS;
 
                 if (bit0Index >= glyphDataTypeSizeBits) {
                     bit0Index = bit0Index % glyphDataTypeSizeBits;
@@ -1110,17 +1110,17 @@ GLboolean _R_GLT_CreateText2DFontTexture(void) {
         texX += textureGlyphSpacing;
     }
 
-    for (i = 0; i < _R_GLT_FontGlyphCount; i++) {
-        glyph = &_R_GLT_FontGlyphs[i];
+    for (i = 0; i < _R_Text_FontGlyphCount; i++) {
+        glyph = &_R_Text_FontGlyphs[i];
 
-        _R_GLT_FontGlyphs2[glyph->c - _R_GLT_FontGlyphMinChar] = *glyph;
+        _R_Text_FontGlyphs2[glyph->c - _R_Text_FontGlyphMinChar] = *glyph;
     }
 
-#undef _R_GLT_TEX_PIXEL_INDEX
-#undef _R_GLT_TEX_SET_PIXEL
+#undef _R_Text_TEX_PIXEL_INDEX
+#undef _R_Text_TEX_SET_PIXEL
 
-    glGenTextures(1, &_R_GLT_Text2DFontTexture);
-    glBindTexture(GL_TEXTURE_2D, _R_GLT_Text2DFontTexture);
+    glGenTextures(1, &_R_Text_Text2DFontTexture);
+    glBindTexture(GL_TEXTURE_2D, _R_Text_Text2DFontTexture);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  texData);
@@ -3817,17 +3817,17 @@ void R_GetModelViewProjection(float *result) {
     R_Renderer *renderer = R_GetCurrentRenderer();                                                 \
     if (renderer == NULL) return;
 
-#define CHECK_RENDERER_1(ret)                                                                      \
+#define CHECK_RENDERER_RETURN(ret)                                                                      \
     R_Renderer *renderer = R_GetCurrentRenderer();                                                 \
     if (renderer == NULL) return ret;
 
 float R_SetLineThickness(float thickness) {
-    CHECK_RENDERER_1(1.0f);
+    CHECK_RENDERER_RETURN(1.0f);
     return renderer->impl->SetLineThickness(renderer, thickness);
 }
 
 float R_GetLineThickness(void) {
-    CHECK_RENDERER_1(1.0f);
+    CHECK_RENDERER_RETURN(1.0f);
     return renderer->impl->GetLineThickness(renderer);
 }
 

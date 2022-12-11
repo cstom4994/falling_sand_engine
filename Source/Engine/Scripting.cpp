@@ -391,9 +391,13 @@ void Scripts::End() {
     METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
 }
 
-void Scripts::Update() {
+void Scripts::UpdateRender() {
     METADOT_ASSERT_E(JsContext && LuaRuntime);
     LuaRuntime->Update();
+}
+
+void Scripts::UpdateTick() {
+    METADOT_ASSERT_E(JsContext && LuaRuntime);
     auto OnGameTickUpdate = (std::function<void(void)>) JsContext->eval("OnGameTickUpdate");
     OnGameTickUpdate();
 }
