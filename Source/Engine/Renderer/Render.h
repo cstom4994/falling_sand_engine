@@ -687,4 +687,50 @@ R_public R_base64_output R_decode_base64(const unsigned char *input, R_allocator
 
 #pragma endregion Math
 
+#pragma region ARRAY
+
+typedef struct R_arr_header
+{
+    R_int size;
+    R_int capacity;
+    R_allocator allocator;
+} R_arr_header;
+
+#define R_arr(T) T *
+#define R_arr_internals(arr) ((R_arr_header *) ((arr) - sizeof(R_arr_header)))
+#define R_arr_size(arr) (R_arr_internals(arr)->size)
+#define R_arr_capacity(arr) (R_arr_internals(arr)->capacity)
+#define R_arr_allocator(arr) (R_arr_internals(arr)->allocator)
+#define R_arr_begin(arr) (arr)
+#define R_arr_end(arr) ((arr) + R_arr_internals(arr)->size)
+#define R_arr_first(arr) ((arr)[0])
+#define R_arr_last(arr) ((arr)[R_arr_size(arr) - 1])
+#define R_arr_is_valid_index(arr, i) (((i) >= 0) && ((i) < R_arr_size(arr)))
+#define R_arr_has_space_for(arr, n) (R_arr_size(arr) < (R_arr_capacity(arr) - n))
+#define R_arr_add(arr, item)                                                                       \
+    ((arr = R_arr_ensure_capacity(                                                                 \
+              (arr), R_arr_has_space_for(arr, 1) ? 1 : ceilf(R_arr_size(arr) * 1.5f)),             \
+      (arr)[R_arr_size++] = (item) : 0))
+#define R_arr_remove_unordered(arr, i) ((arr)[i] = (arr)[R_arr_size(arr)--])
+#define R_arr_remove_ordered(arr, i)                                                               \
+    (R_arr_remove_ordered_impl(R_arr_internals(arr), sizeof(arr[0]), i))
+#define R_arr_ensure_capacity(arr, cap)                                                            \
+    (R_arr_ensure_capacity_impl(R_arr_internals(arr), sizeof(arr[0]), cap))
+
+R_public R_arr(void) R_arr_ensure_capacity_impl(R_arr_header *header, R_int size_of_t, R_int cap) {
+    R_arr(void) result = header;
+
+    if (cap > header->capacity) {
+        R_int arr_cur_size = sizeof(R_arr_header) + (size_of_t * header->capacity);
+        R_int arr_new_size = sizeof(R_arr_header) + (size_of_t * cap);
+        header = R_realloc(header->allocator, header, arr_new_size, arr_cur_size);
+    }
+
+    return result;
+}
+
+// R_public R_arr(void)
+
+#pragma endregion ARRAY
+
 #endif
