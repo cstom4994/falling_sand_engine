@@ -2346,4 +2346,17 @@ R_public R_rune R_utf8_char_to_rune(R_utf8_char src) {
     result = r.codepoint;
     return result;
 }
+
+R_public R_arr(void) R_arr_ensure_capacity_impl(R_arr_header *header, R_int size_of_t, R_int cap) {
+    R_arr(void) result = header;
+
+    if (cap > header->capacity) {
+        R_int arr_cur_size = sizeof(R_arr_header) + (size_of_t * header->capacity);
+        R_int arr_new_size = sizeof(R_arr_header) + (size_of_t * cap);
+        header = R_realloc(header->allocator, header, arr_new_size, arr_cur_size);
+    }
+
+    return result;
+}
+
 #pragma endregion
