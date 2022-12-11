@@ -4,7 +4,7 @@
 #define _METADOT_BACKGROUND_HPP_
 
 #include "Core/Core.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 
 #include <string>

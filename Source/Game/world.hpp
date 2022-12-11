@@ -10,7 +10,7 @@
 #include "Engine/Audio.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Noise.h"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "GameDataStruct.hpp"
 #include "GameScriptingWrap.hpp"
 #include "Libs/sparsehash/dense_hash_map.h"

@@ -5,7 +5,7 @@
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Engine/Scripting.hpp"
 #include "Game/FileSystem.hpp"

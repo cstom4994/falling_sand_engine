@@ -163,7 +163,7 @@ include_dir_list = {
     "Source/Libs/fmt/include", "Source/Libs/glad"
 }
 
-defines_list = {}
+defines_list = {"METADOT_BACKEND_GL"}
 
 target("Libs")
 do

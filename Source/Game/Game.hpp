@@ -14,7 +14,7 @@
 #include "Engine/Audio.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Networking.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Engine/Scripting.hpp"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"

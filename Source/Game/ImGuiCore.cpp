@@ -20,7 +20,7 @@
 #include "Libs/ImGui/implot.h"
 
 #include "Libs/glad/glad.h"
-#include "RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 
 #include <cstddef>
 #include <cstdio>

@@ -6,7 +6,7 @@
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Networking.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameDataStruct.hpp"

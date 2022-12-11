@@ -4,7 +4,7 @@
 #define _METADOT_GAMEUI_HPP_
 
 #include "Engine/ImGuiImplement.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Game/Materials.hpp"
 #include "Game/World.hpp"
 

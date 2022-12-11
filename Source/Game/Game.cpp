@@ -14,7 +14,7 @@
 #include "Engine/Math.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/ReflectionFlat.hpp"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Engine/Scripting.hpp"
 #include "Game/Console.hpp"

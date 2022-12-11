@@ -4,7 +4,7 @@
 #include "Core/Global.hpp"
 #include "Engine/LuaWrapper.hpp"
 #include "Engine/PlatformDetail.h"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Engine/Scripting.hpp"
 #include "Game/Game.hpp"

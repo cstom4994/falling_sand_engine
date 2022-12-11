@@ -4,7 +4,7 @@
 #define _METADOT_RIGIDBODY_HPP_
 
 #include "Engine/Internal/BuiltinBox2d.h"
-#include "Engine/RendererGPU.h"
+#include "Engine/Renderer/RendererGPU.h"
 #include "Engine/SDLWrapper.hpp"
 #include "Materials.hpp"
 #include <memory>
