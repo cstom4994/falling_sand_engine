@@ -31,7 +31,6 @@
 
 #include "Libs/glad/glad.h"
 
-#include <imgui/IconsFontAwesome5.h>
 #include <string>
 #include <string_view>
 

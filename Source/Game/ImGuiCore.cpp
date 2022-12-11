@@ -19,15 +19,13 @@
 #include "ImGui/imgui.h"
 #include "Libs/ImGui/implot.h"
 
-#include "Libs/glad/glad.h"
 #include "Engine/Renderer/RendererGPU.h"
+#include "Libs/glad/glad.h"
 
 #include <cstddef>
 #include <cstdio>
 #include <iterator>
 #include <map>
-
-#include <imgui/IconsFontAwesome5.h>
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -211,17 +209,8 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
     io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
 #else
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/FZXIANGSU12.ttf").c_str(), 22.0f,
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf").c_str(), 22.0f,
                                  &config, io.Fonts->GetGlyphRangesChineseFull());
-
-    config.MergeMode = true;
-    config.GlyphMinAdvanceX = 10.0f;
-
-    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa_solid_900.ttf").c_str(),
-                                 18.0f, &config, icon_ranges);
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/Silver.ttf").c_str(), 32.0f,
-                                 &config);
 
 #endif
 
