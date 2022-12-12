@@ -128,17 +128,14 @@ bool KeyControl::get() {
 }
 
 bool MultiControl::get() {
-    if (this->combine == ControlCombine::OR) {
-        for (auto &v: this->controls) {
+    for (auto &v: this->controls) {
+        if (this->combine == ControlCombine::OR) {
             if (v->get()) return true;
-        }
-        return false;
-    } else if (this->combine == ControlCombine::AND) {
-        for (auto &v: this->controls) {
+            return false;
+        } else {
             if (!v->get()) return false;
+            return true;
         }
-        return true;
     }
-
     return false;
 }

@@ -138,8 +138,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    METADOT_NEW(C, updateDirtyPool, ThreadPool, 6);
-    METADOT_NEW(C, rotateVectorsPool, ThreadPool, 3);
+    METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 6);
+    METADOT_NEW(C, GameIsolate_.rotateVectorsPool, ThreadPool, 3);
 
     if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
         global.shaderworker.LoadShaders();
@@ -1298,21 +1298,7 @@ exit:
 
     METADOT_INFO("Shutting down...");
 
-    std::vector<std::future<void>> results = {};
-
-    for (auto &p: GameIsolate_.world->WorldIsolate_.chunkCache) {
-        if (p.first == INT_MIN) continue;
-        for (auto &p2: p.second) {
-            if (p2.first == INT_MIN) continue;
-
-            results.push_back(updateDirtyPool->push([&](int id) {
-                Chunk *m = p2.second;
-                GameIsolate_.world->unloadChunk(m);
-            }));
-        }
-    }
-
-    for (int i = 0; i < results.size(); i++) { results[i].get(); }
+    GameIsolate_.world->saveWorld();
 
     // TODO CppScript
 
@@ -1336,8 +1322,8 @@ exit:
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, UInt16);
 
-    METADOT_DELETE(C, updateDirtyPool, ThreadPool);
-    METADOT_DELETE(C, rotateVectorsPool, ThreadPool);
+    METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
+    METADOT_DELETE(C, GameIsolate_.rotateVectorsPool, ThreadPool);
 
     if (GameIsolate_.world) {
         METADOT_DELETE(C, GameIsolate_.world, World);
@@ -2101,7 +2087,7 @@ void Game::tick() {
 
         std::vector<std::future<void>> results = {};
 
-        results.push_back(updateDirtyPool->push([&](int id) {
+        results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
             //SDL_SetRenderTarget(renderer, textureParticles);
             void *particlePixels = TexturePack_.pixelsParticles_ar;
 
@@ -2115,8 +2101,8 @@ void Game::tick() {
         }));
 
         if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
-            results.push_back(
-                    updateDirtyPool->push([&](int id) { GameIsolate_.world->tickObjectBounds(); }));
+            results.push_back(GameIsolate_.updateDirtyPool->push(
+                    [&](int id) { GameIsolate_.world->tickObjectBounds(); }));
         }
 
         for (int i = 0; i < results.size(); i++) { results[i].get(); }
@@ -2225,7 +2211,7 @@ void Game::tick() {
         for (int i = 0; i < Materials::nMaterials; i++) movingTiles[i] = 0;
 
         results.clear();
-        results.push_back(updateDirtyPool->push([&](int id) {
+        results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 const unsigned int offset = i * 4;
 
@@ -2316,7 +2302,7 @@ void Game::tick() {
         //void* vdpixelsLayer2_ar = textureLayer2->data;
         //UInt8* dpixelsLayer2_ar = (UInt8*)vdpixelsLayer2_ar;
         UInt8 *dpixelsLayer2_ar = TexturePack_.pixelsLayer2_ar;
-        results.push_back(updateDirtyPool->push([&](int id) {
+        results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 /*for (int x = 0; x < GameIsolate_.world->width; x++) {
 for (int y = 0; y < GameIsolate_.world->height; y++) {*/
@@ -2352,7 +2338,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
         //void* vdpixelsBackground_ar = textureBackground->data;
         //UInt8* dpixelsBackground_ar = (UInt8*)vdpixelsBackground_ar;
         UInt8 *dpixelsBackground_ar = TexturePack_.pixelsBackground_ar;
-        results.push_back(updateDirtyPool->push([&](int id) {
+        results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 /*for (int x = 0; x < GameIsolate_.world->width; x++) {
 for (int y = 0; y < GameIsolate_.world->height; y++) {*/
@@ -2537,7 +2523,7 @@ void Game::tickChunkLoading() {
 
             std::vector<std::future<void>> results = {};
             if (delta > 0) {
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixels_ar[0]),
                                 &(TexturePack_.pixels_ar[GameIsolate_.world->width *
                                                          GameIsolate_.world->height * 4]) -
@@ -2546,7 +2532,7 @@ void Game::tickChunkLoading() {
                                                          GameIsolate_.world->height * 4]));
                     //rotate(pixels.begin(), pixels.end() - delta, pixels.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsLayer2_ar[0]),
                                 &(TexturePack_.pixelsLayer2_ar[GameIsolate_.world->width *
                                                                GameIsolate_.world->height * 4]) -
@@ -2555,7 +2541,7 @@ void Game::tickChunkLoading() {
                                                                GameIsolate_.world->height * 4]));
                     //rotate(pixelsLayer2.begin(), pixelsLayer2.end() - delta, pixelsLayer2.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(
                             &(TexturePack_.pixelsBackground_ar[0]),
                             &(TexturePack_.pixelsBackground_ar[GameIsolate_.world->width *
@@ -2565,7 +2551,7 @@ void Game::tickChunkLoading() {
                                                                GameIsolate_.world->height * 4]));
                     //rotate(pixelsBackground.begin(), pixelsBackground.end() - delta, pixelsBackground.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFire_ar[0]),
                                 &(TexturePack_.pixelsFire_ar[GameIsolate_.world->width *
                                                              GameIsolate_.world->height * 4]) -
@@ -2574,7 +2560,7 @@ void Game::tickChunkLoading() {
                                                              GameIsolate_.world->height * 4]));
                     //rotate(pixelsFire_ar.begin(), pixelsFire_ar.end() - delta, pixelsFire_ar.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFlow_ar[0]),
                                 &(TexturePack_.pixelsFlow_ar[GameIsolate_.world->width *
                                                              GameIsolate_.world->height * 4]) -
@@ -2583,7 +2569,7 @@ void Game::tickChunkLoading() {
                                                              GameIsolate_.world->height * 4]));
                     //rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.end() - delta, pixelsFlow_ar.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsEmission_ar[0]),
                                 &(TexturePack_.pixelsEmission_ar[GameIsolate_.world->width *
                                                                  GameIsolate_.world->height * 4]) -
@@ -2593,20 +2579,20 @@ void Game::tickChunkLoading() {
                     //rotate(pixelsEmission_ar.begin(), pixelsEmission_ar.end() - delta, pixelsEmission_ar.end());
                 }));
             } else if (delta < 0) {
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[0]) - delta,
                                 &(TexturePack_.pixels_ar[GameIsolate_.world->width *
                                                          GameIsolate_.world->height * 4]));
                     //rotate(pixels.begin(), pixels.begin() - delta, pixels.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsLayer2_ar[0]),
                                 &(TexturePack_.pixelsLayer2_ar[0]) - delta,
                                 &(TexturePack_.pixelsLayer2_ar[GameIsolate_.world->width *
                                                                GameIsolate_.world->height * 4]));
                     //rotate(pixelsLayer2.begin(), pixelsLayer2.begin() - delta, pixelsLayer2.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(
                             &(TexturePack_.pixelsBackground_ar[0]),
                             &(TexturePack_.pixelsBackground_ar[0]) - delta,
@@ -2614,21 +2600,21 @@ void Game::tickChunkLoading() {
                                                                GameIsolate_.world->height * 4]));
                     //rotate(pixelsBackground.begin(), pixelsBackground.begin() - delta, pixelsBackground.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFire_ar[0]),
                                 &(TexturePack_.pixelsFire_ar[0]) - delta,
                                 &(TexturePack_.pixelsFire_ar[GameIsolate_.world->width *
                                                              GameIsolate_.world->height * 4]));
                     //rotate(pixelsFire_ar.begin(), pixelsFire_ar.begin() - delta, pixelsFire_ar.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsFlow_ar[0]),
                                 &(TexturePack_.pixelsFlow_ar[0]) - delta,
                                 &(TexturePack_.pixelsFlow_ar[GameIsolate_.world->width *
                                                              GameIsolate_.world->height * 4]));
                     //rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.begin() - delta, pixelsFlow_ar.end());
                 }));
-                results.push_back(updateDirtyPool->push([&](int id) {
+                results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixelsEmission_ar[0]),
                                 &(TexturePack_.pixelsEmission_ar[0]) - delta,
                                 &(TexturePack_.pixelsEmission_ar[GameIsolate_.world->width *
@@ -4200,7 +4186,7 @@ void Game::quitToMainMenu() {
 
     if (state == LOADING) return;
 
-    std::string pref = "Saved in: ";
+    GameIsolate_.world->saveWorld();
 
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();

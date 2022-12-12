@@ -66,8 +66,6 @@ private:
 
     int ent_prevLoadZoneX = 0;
     int ent_prevLoadZoneY = 0;
-    ThreadPool *updateDirtyPool = nullptr;
-    ThreadPool *rotateVectorsPool = nullptr;
 
     UInt16 *movingTiles;
 
@@ -111,6 +109,9 @@ public:
         Profiler profiler;
         Settings settings;
         World *world = nullptr;
+        
+        ThreadPool *updateDirtyPool = nullptr;
+        ThreadPool *rotateVectorsPool = nullptr;
     } GameIsolate_;
 
     struct

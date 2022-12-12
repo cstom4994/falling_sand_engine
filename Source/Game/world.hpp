@@ -125,10 +125,10 @@ public:
     b2World *b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
-    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer,
-              Audio *audioEngine, int netMode, WorldGenerator *generator);
-    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer,
-              Audio *audioEngine, int netMode);
+    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer, Audio *audioEngine,
+              int netMode, WorldGenerator *generator);
+    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer, Audio *audioEngine,
+              int netMode);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);
@@ -173,6 +173,7 @@ public:
     RigidBody *physicsCheck(int x, int y);
     void physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *cols, int *minX,
                             int *maxX, int *minY, int *maxY);
+    void saveWorld();
 };
 
 #endif

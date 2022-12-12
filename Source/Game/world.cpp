@@ -3616,6 +3616,27 @@ void World::physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *
     }
 }
 
+void World::saveWorld() {
+
+    this->metadata.save(this->worldName);
+
+    std::vector<std::future<void>> results = {};
+
+    for (auto &p: this->WorldIsolate_.chunkCache) {
+        if (p.first == INT_MIN) continue;
+        for (auto &p2: p.second) {
+            if (p2.first == INT_MIN) continue;
+
+            results.push_back(global.game->GameIsolate_.updateDirtyPool->push([&](int id) {
+                Chunk *m = p2.second;
+                this->unloadChunk(m);
+            }));
+        }
+    }
+
+    for (int i = 0; i < results.size(); i++) { results[i].get(); }
+}
+
 WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     WorldMeta meta = WorldMeta();
