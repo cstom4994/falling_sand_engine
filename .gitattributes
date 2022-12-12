@@ -1,5 +1,6 @@
 # Properly detect languages on Github
-*.h linguist-language=cpp
+*.h linguist-language=c
+*.hpp linguist-language=cpp
 *.inc linguist-language=cpp
 
 # And some test files where the EOL matters

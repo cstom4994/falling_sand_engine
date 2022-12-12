@@ -4,7 +4,7 @@
 #define _METADOT_GAMERESOURCES_HPP_
 
 #include "Core/Core.hpp"
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 #include "LuaWrapper.hpp"
 
 #include <iostream>

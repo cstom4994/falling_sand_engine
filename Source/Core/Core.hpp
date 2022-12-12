@@ -34,40 +34,15 @@
 #include <utility>
 #include <vector>
 
+#include "Core/Core.h"
 #include "Core/Macros.h"
 #include "Engine/Logging.hpp"
 #include "Libs/VisitStruct.hpp"
-
-#define METADOT_INT8_MAX 0x7F
-#define METADOT_UINT8_MAX 0xFF
-#define METADOT_INT16_MAX 0x7FFF
-#define METADOT_UINT16_MAX 0xFFFF
-#define METADOT_INT32_MAX 0x7FFFFFFF
-#define METADOT_UINT32_MAX 0xFFFFFFFF
-#define METADOT_INT64_MAX 0x7FFFFFFFFFFFFFFF
-#define METADOT_UINT64_MAX 0xFFFFFFFFFFFFFFFF
 
 #define METADOT_STRUCT VISITABLE_STRUCT
 
 #define METADOT_CALLABLE(func_name)                                                                \
     [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
-
-#define METADOT_OK 0
-#define METADOT_FAILED -1
-
-// Num types
-typedef int8_t Int8;
-typedef uint8_t UInt8;
-typedef int16_t Int16;
-typedef uint16_t UInt16;
-typedef int32_t Int32;
-typedef uint32_t UInt32;
-typedef int64_t Int64;
-typedef uint64_t UInt64;
-typedef float Float32;
-typedef double Float64;
-
-typedef unsigned char Byte;
 
 template<typename T, size_t Size>
 class SizeChecker {
@@ -145,6 +120,19 @@ METADOT_STRUCT(MarkdownData, data);
 
 #define _METADOT_OVERRIDE_ override
 
+namespace MetaEngine {
+
+    template<class T>
+    using Ref = std::shared_ptr<T>;
+
+    template<class _Ty, class... _Types>
+    Ref<_Ty> MakeRef(_Types &&..._Args) {
+        // make a shared_ptr
+        return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
+    }
+
+}// namespace MetaEngine
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 // MEMORY FUNCTIONS USED BY LIBRARY
 
@@ -170,18 +158,5 @@ METADOT_STRUCT(MarkdownData, data);
 #define METADOT_ERROR(...) LOG_F(ERROR, __VA_ARGS__)
 #define METADOT_LOG_SCOPE_FUNCTION(_c) LOG_SCOPE_FUNCTION(_c)
 #define METADOT_LOG_SCOPE_F(...) LOG_SCOPE_F(__VA_ARGS__)
-
-namespace MetaEngine {
-
-    template<class T>
-    using Ref = std::shared_ptr<T>;
-
-    template<class _Ty, class... _Types>
-    Ref<_Ty> MakeRef(_Types &&..._Args) {
-        // make a shared_ptr
-        return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
-    }
-
-}// namespace MetaEngine
 
 #endif// !_CORE_H

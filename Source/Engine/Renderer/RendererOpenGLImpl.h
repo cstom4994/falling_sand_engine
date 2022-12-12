@@ -1,7 +1,14 @@
 #ifndef _R_OPENGL_3_H__
 #define _R_OPENGL_3_H__
 
+#include "Engine/SDLWrapper.h"
 #include "RendererGPU.h"
+
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Hacks to fix compile errors due to polluted namespace
 #ifdef _WIN32
@@ -20,6 +27,12 @@
 #if defined(GL_EXT_abgr) && !defined(GL_ABGR)
 #define GL_ABGR GL_ABGR_EXT
 #endif
+
+#define ToSDLColor(_c)                                                                             \
+    (SDL_Color) { _c.r, _c.g, _c.b, _c.a }
+
+#define ToEngineColor(_c)                                                                          \
+    (METAENGINE_Color) { _c.r, _c.g, _c.b, _c.a }
 
 #define R_CONTEXT_DATA ContextData_OpenGL_3
 #define R_IMAGE_DATA ImageData_OpenGL_3
@@ -85,6 +98,11 @@ void main(void)\n\
     fragColor = color;\n\
 }"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct ContextData_OpenGL_3
 {
     METAENGINE_Color last_color;
@@ -133,5 +151,9 @@ typedef struct TargetData_OpenGL_3
     UInt32 handle;
     UInt32 format;
 } TargetData_OpenGL_3;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

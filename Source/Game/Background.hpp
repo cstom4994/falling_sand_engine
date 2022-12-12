@@ -5,7 +5,7 @@
 
 #include "Core/Core.hpp"
 #include "Engine/Renderer/RendererGPU.h"
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 
 #include <string>
 #include <unordered_map>

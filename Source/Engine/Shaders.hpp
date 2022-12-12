@@ -3,7 +3,7 @@
 #ifndef _METADOT_SHADERS_HPP_
 #define _METADOT_SHADERS_HPP_
 
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 
 #include "Engine/Renderer/RendererGPU.h"
 #include "Game/FileSystem.hpp"

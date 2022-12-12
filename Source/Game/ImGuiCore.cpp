@@ -8,6 +8,8 @@
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Memory.hpp"
 #include "Engine/Networking.hpp"
+#include "Engine/Renderer/RendererGPU.h"
+#include "Engine/Renderer/gpu.hpp"
 #include "Engine/Scripting.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
@@ -17,9 +19,8 @@
 #include "Game/Utils.hpp"
 #include "GameDataStruct.hpp"
 #include "ImGui/imgui.h"
-#include "Libs/ImGui/implot.h"
 
-#include "Engine/Renderer/RendererGPU.h"
+#include "Libs/ImGui/implot.h"
 #include "Libs/glad/glad.h"
 
 #include <cstddef>

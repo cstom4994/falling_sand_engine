@@ -3,7 +3,7 @@
 #ifndef _METADOT_CONTROLS_HPP_
 #define _METADOT_CONTROLS_HPP_
 
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 
 #include <cstdio>
 #include <vector>

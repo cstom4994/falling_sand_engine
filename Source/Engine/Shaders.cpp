@@ -3,10 +3,10 @@
 #include "Shaders.hpp"
 
 #include "Core/Core.hpp"
+#include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Memory.hpp"
 
-UInt32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type,
-                                     const char *filename) {
+UInt32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename) {
 
     UInt32 shader;
     R_Renderer *renderer = R_GetCurrentRenderer();
@@ -14,8 +14,8 @@ UInt32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type,
     std::string source = FUtil::readFileString(filename);
 
     if (source.empty()) {
-        R_PushErrorCode("load_shader", R_ERROR_FILE_NOT_FOUND,
-                                        "Shader file \"%s\" not found", filename);
+        R_PushErrorCode("load_shader", R_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found",
+                        filename);
         return METADOT_FAILED;
     }
 
@@ -25,8 +25,8 @@ UInt32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type,
     return shader;
 }
 
-R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(
-        UInt32 *p, const char *vertex_shader_file, const char *fragment_shader_file) {
+R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(UInt32 *p, const char *vertex_shader_file,
+                                                   const char *fragment_shader_file) {
     UInt32 v, f;
     v = METAENGINE_Shaders_LoadShader(R_VERTEX_SHADER, vertex_shader_file);
 
@@ -50,8 +50,8 @@ R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(
     }
 
     {
-        R_ShaderBlock block = R_LoadShaderBlock(
-                *p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
+        R_ShaderBlock block = R_LoadShaderBlock(*p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color",
+                                                "gpu_ModelViewProjectionMatrix");
         R_ActivateShaderProgram(*p, &block);
 
         return block;

@@ -27,7 +27,7 @@ SOFTWARE.
 */
 
 #include "BuiltinBox2d.h"
-#include "Engine/Renderer/RendererGPU.h"
+#include "Engine/Renderer/gpu.hpp"
 
 #include <new>
 #include <stdio.h>

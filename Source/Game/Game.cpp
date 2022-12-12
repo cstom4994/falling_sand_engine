@@ -15,7 +15,8 @@
 #include "Engine/Memory.hpp"
 #include "Engine/ReflectionFlat.hpp"
 #include "Engine/Renderer/RendererGPU.h"
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/Renderer/gpu.hpp"
+#include "Engine/SDLWrapper.h"
 #include "Engine/Scripting.hpp"
 #include "Game/Console.hpp"
 #include "Game/FileSystem.hpp"
@@ -630,11 +631,9 @@ int Game::run(int argc, char *argv[]) {
 
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                             nty < cur->surface->h) {
-                                            UInt32 pixel =
-                                                    R_GET_PIXEL(cur->surface, ntx, nty);
+                                            UInt32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                R_GET_PIXEL(cur->surface, ntx, nty) =
-                                                        0x00000000;
+                                                R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
                                             }
                                         }
@@ -726,8 +725,8 @@ int Game::run(int argc, char *argv[]) {
 
                                                 if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                                     nty < cur->surface->h) {
-                                                    UInt32 pixel = R_GET_PIXEL(cur->surface,
-                                                                                     ntx, nty);
+                                                    UInt32 pixel =
+                                                            R_GET_PIXEL(cur->surface, ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
                                                     }
@@ -1637,7 +1636,7 @@ accLoadY = 0;*/
                            GameIsolate_.world->WorldIsolate_.player->heldItem->fill.size());
                 UInt16Point pt = GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
                 R_GET_PIXEL(GameIsolate_.world->WorldIsolate_.player->heldItem->surface, pt.x,
-                                  pt.y) = 0x00;
+                            pt.y) = 0x00;
 
                 GameIsolate_.world->WorldIsolate_.player->heldItem->texture =
                         R_CopyImageFromSurface(
@@ -1776,8 +1775,7 @@ accLoadY = 0;*/
                         if (cur->surface != nullptr) {
                             if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                 nty < cur->surface->h) {
-                                if (((R_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) !=
-                                    0x00) {
+                                if (((R_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) != 0x00) {
                                     connect = true;
                                 }
                             }
@@ -2948,11 +2946,9 @@ void Game::tickPlayer() {
 
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                             nty < cur->surface->h) {
-                                            UInt32 pixel =
-                                                    R_GET_PIXEL(cur->surface, ntx, nty);
+                                            UInt32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                R_GET_PIXEL(cur->surface, ntx, nty) =
-                                                        0x00000000;
+                                                R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
 
                                                 makeParticle(

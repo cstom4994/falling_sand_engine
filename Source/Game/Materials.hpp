@@ -3,7 +3,7 @@
 #ifndef _METADOT_MATERIALS_HPP_
 #define _METADOT_MATERIALS_HPP_
 
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 
 #include "Core/Core.hpp"
 

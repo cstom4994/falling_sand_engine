@@ -7,7 +7,7 @@
 #include "Core/Macros.h"
 
 #include "PlatformDetail.h"
-#include "SDLWrapper.hpp"
+#include "SDLWrapper.h"
 
 enum DisplayMode {
     WINDOWED,

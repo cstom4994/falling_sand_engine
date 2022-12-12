@@ -8,7 +8,7 @@
 #include "ImGuiImplement.hpp"
 #include "Core/Core.hpp"
 #include "Engine/Renderer/RendererGPU.h"
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 #include "Game/FileSystem.hpp"
 #include "ImGuiImplement.hpp"
 

@@ -5,7 +5,7 @@
 
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Renderer/RendererGPU.h"
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 #include "Materials.hpp"
 #include <memory>
 #include <vector>

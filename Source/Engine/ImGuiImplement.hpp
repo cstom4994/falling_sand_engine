@@ -1318,7 +1318,7 @@ public:
 
 #if defined(_WIN32)
 
-#include "Engine/SDLWrapper.hpp"
+#include "Engine/SDLWrapper.h"
 
 template<>
 inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {

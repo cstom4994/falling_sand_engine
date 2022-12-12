@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_SDLWRAPPER_HPP_
-#define _METADOT_SDLWRAPPER_HPP_
+#ifndef _METADOT_SDLWRAPPER_H_
+#define _METADOT_SDLWRAPPER_H_
 
 // SDL 2.0.5+
 #include <SDL2/SDL.h>
@@ -31,11 +31,11 @@
 static const Uint32 SDL_WINDOW_VULKAN = 0x10000000;
 #endif
 
-using C_Surface = SDL_Surface;
-using C_Window = SDL_Window;
-using C_Renderer = SDL_Renderer;
-using C_Rect = SDL_Rect;
-using C_Cursor = SDL_Cursor;
-using C_GLContext = SDL_GLContext;
+typedef SDL_Surface C_Surface;
+typedef SDL_Window C_Window;
+typedef SDL_Renderer C_Renderer;
+typedef SDL_Rect C_Rect;
+typedef SDL_Cursor C_Cursor;
+typedef SDL_GLContext C_GLContext;
 
 #endif
