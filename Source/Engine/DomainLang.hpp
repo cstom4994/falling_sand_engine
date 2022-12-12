@@ -4,7 +4,7 @@
 #ifndef _METADOT_DSL_HPP_
 #define _METADOT_DSL_HPP_
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 #include <algorithm>
 #include <cctype>

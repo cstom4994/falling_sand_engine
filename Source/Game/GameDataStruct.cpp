@@ -5,6 +5,7 @@
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
 #include "Engine/ReflectionFlat.hpp"
+#include "Engine/Renderer/RendererUtils.h"
 #include "Game/Chunk.hpp"
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
@@ -22,7 +23,6 @@ void ReleaseGameData() {
         if (static_cast<bool>(b)) delete b;
     }
 }
-
 
 // #include "Populator.hpp"
 // #include "Game/Textures.hpp"
@@ -476,7 +476,7 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
                 bf.categoryBits = 0x0002;
                 bf.maskBits = 0x0001;
                 rb->body->GetFixtureList()[0].SetFilterData(bf);
-                if (((METADOT_GET_PIXEL(tex, texX, tex->h - 1) >> 24) & 0xff) != 0x00) {
+                if (((R_GET_PIXEL(tex, texX, tex->h - 1) >> 24) & 0xff) != 0x00) {
                     rb->weldX = texX;
                     rb->weldY = tex->h - 1;
                     break;

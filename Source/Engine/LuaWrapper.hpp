@@ -10,7 +10,7 @@
 #define _METADOT_LUAWRAPPER_HPP_
 
 #include "Core/Core.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Engine/CodeReflection.hpp"
 #include "Libs/lua/lua.hpp"
 #include "Libs/nameof.hpp"

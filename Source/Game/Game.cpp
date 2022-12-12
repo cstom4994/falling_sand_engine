@@ -8,7 +8,7 @@
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Core/ThreadPool.hpp"
 #include "Engine/ImGuiImplement.hpp"
 #include "Engine/Math.hpp"
@@ -631,9 +631,9 @@ int Game::run(int argc, char *argv[]) {
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                             nty < cur->surface->h) {
                                             UInt32 pixel =
-                                                    METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                                    R_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                METADOT_GET_PIXEL(cur->surface, ntx, nty) =
+                                                R_GET_PIXEL(cur->surface, ntx, nty) =
                                                         0x00000000;
                                                 upd = true;
                                             }
@@ -726,7 +726,7 @@ int Game::run(int argc, char *argv[]) {
 
                                                 if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                                     nty < cur->surface->h) {
-                                                    UInt32 pixel = METADOT_GET_PIXEL(cur->surface,
+                                                    UInt32 pixel = R_GET_PIXEL(cur->surface,
                                                                                      ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
@@ -784,7 +784,7 @@ int Game::run(int argc, char *argv[]) {
                                                     ->tiles[(x + xx) +
                                                             (y + yy) * GameIsolate_.world->width]
                                                     .mat->physicsType == PhysicsType::SOLID) {
-                                            METADOT_GET_PIXEL(tex, xx, yy) =
+                                            R_GET_PIXEL(tex, xx, yy) =
                                                     GameIsolate_.world
                                                             ->tiles[(x + xx) +
                                                                     (y + yy) * GameIsolate_.world
@@ -1011,7 +1011,7 @@ int Game::run(int argc, char *argv[]) {
 
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                             nty < cur->surface->h) {
-                                            if (((METADOT_GET_PIXEL(cur->surface, ntx, nty) >> 24) &
+                                            if (((R_GET_PIXEL(cur->surface, ntx, nty) >> 24) &
                                                  0xff) != 0x00) {
                                                 connect = true;
                                             }
@@ -1477,7 +1477,7 @@ void Game::updateFrameEarly() {
 
                 if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]
                             .mat->physicsType == PhysicsType::SOLID) {
-                    METADOT_GET_PIXEL(tex, xx, yy) =
+                    R_GET_PIXEL(tex, xx, yy) =
                             GameIsolate_.world
                                     ->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]
                                     .color;
@@ -1636,7 +1636,7 @@ accLoadY = 0;*/
                             (float) GameIsolate_.world->WorldIsolate_.player->heldItem->capacity) *
                            GameIsolate_.world->WorldIsolate_.player->heldItem->fill.size());
                 UInt16Point pt = GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
-                METADOT_GET_PIXEL(GameIsolate_.world->WorldIsolate_.player->heldItem->surface, pt.x,
+                R_GET_PIXEL(GameIsolate_.world->WorldIsolate_.player->heldItem->surface, pt.x,
                                   pt.y) = 0x00;
 
                 GameIsolate_.world->WorldIsolate_.player->heldItem->texture =
@@ -1706,7 +1706,7 @@ accLoadY = 0;*/
                                                    ->tiles[(x + xx) +
                                                            (y + yy) * GameIsolate_.world->width]
                                                    .color;
-                                METADOT_GET_PIXEL(
+                                R_GET_PIXEL(
                                         GameIsolate_.world->WorldIsolate_.player->heldItem->surface,
                                         pt.x, pt.y) =
                                         (GameIsolate_.world
@@ -1776,7 +1776,7 @@ accLoadY = 0;*/
                         if (cur->surface != nullptr) {
                             if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                 nty < cur->surface->h) {
-                                if (((METADOT_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) !=
+                                if (((R_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) !=
                                     0x00) {
                                     connect = true;
                                 }
@@ -2187,9 +2187,9 @@ void Game::tick() {
                 for (int ty = 0; ty < cur->surface->h; ty++) {
                     MaterialInstance mat = cur->tiles[tx + ty * cur->surface->w];
                     if (mat.mat->id == Materials::GENERIC_AIR.id) {
-                        METADOT_GET_PIXEL(cur->surface, tx, ty) = 0x00000000;
+                        R_GET_PIXEL(cur->surface, tx, ty) = 0x00000000;
                     } else {
-                        METADOT_GET_PIXEL(cur->surface, tx, ty) =
+                        R_GET_PIXEL(cur->surface, tx, ty) =
                                 (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
                     }
                 }
@@ -2949,9 +2949,9 @@ void Game::tickPlayer() {
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                             nty < cur->surface->h) {
                                             UInt32 pixel =
-                                                    METADOT_GET_PIXEL(cur->surface, ntx, nty);
+                                                    R_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                METADOT_GET_PIXEL(cur->surface, ntx, nty) =
+                                                R_GET_PIXEL(cur->surface, ntx, nty) =
                                                         0x00000000;
                                                 upd = true;
 

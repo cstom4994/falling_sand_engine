@@ -1,9 +1,10 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Structures.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "world.hpp"
 #include "Game/GameResources.hpp"
+#include "Engine/Renderer/RendererUtils.h"
 
 #include <algorithm>
 
@@ -17,7 +18,7 @@ Structure::Structure(C_Surface *texture, Material mat) {
     MaterialInstance *tiles = new MaterialInstance[texture->w * texture->h];
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
-            UInt32 color = METADOT_GET_PIXEL(texture, x, y);
+            UInt32 color = R_GET_PIXEL(texture, x, y);
             int alpha = 255;
             if (texture->format->format == SDL_PIXELFORMAT_ARGB8888) {
                 alpha = (color >> 24) & 0xff;

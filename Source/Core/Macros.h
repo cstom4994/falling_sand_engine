@@ -1,28 +1,36 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_MACROS_HPP_
-#define _METADOT_MACROS_HPP_
-
-#if defined(__cplusplus)
-
-#include <string>
-
-#if defined(__cpp_char8_t)
-template<typename T>
-const char *u8Cpp20(T &&t) noexcept {
-#pragma warning(disable : 26490)
-    return reinterpret_cast<const char *>(t);
-#pragma warning(default : 26490)
-}
-#define U8(x) u8Cpp20(u8##x)
-#else
-#define U8(x) u8##x
-#endif
+#ifndef _METADOT_MACROS_H_
+#define _METADOT_MACROS_H_
 
 #if defined(NDEBUG) && !defined(_DEBUG)
 #define METADOT_RELEASE
 #else
 #define METADOT_DEBUG
+#endif
+
+#define METADOT_INLINE inline
+
+#ifndef static_inline
+#ifdef _MSC_VER
+#define static_inline static
+#else
+#define static_inline static METADOT_INLINE
+#endif
+#endif
+
+// VS2013 doesn't support alignof
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+#define METADOT_ALIGNOF(x) __alignof(x)
+#else
+#define METADOT_ALIGNOF(x) alignof(x)
+#endif
+
+#define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
+
+// Preferably, and ironically, this macro should go unused.
+#ifndef METADOT_UNUSED
+#define METADOT_UNUSED(x) (void) sizeof(x)
 #endif
 
 #define METADOT_CONCAT_IMPL(x, y) x##y
@@ -42,6 +50,57 @@ const char *u8Cpp20(T &&t) noexcept {
 
 #define METADOT_MAKE_INTERNAL_TAG(tag) ("!" tag)
 #define METADOT_INTERNAL_TAG_SYMBOL '!'
+
+// Platforms Macros
+#if defined(_WIN32) || defined(_WINDOWS)
+#define METADOT_PLATFORM_WINDOWS
+#elif defined(__linux)
+#define METADOT_PLATFORM_LINUX
+#elif defined(__APPLE__)
+#include "TargetConditionals.h"
+#define METADOT_PLATFORM_APPLE
+#if defined(__METADOT_ARCH_ARM)
+#define METADOT_PLATFORM_APPLE_ARM
+#elif defined(__METADOT_ARCH_x86)
+#define METADOT_PLATFORM_APPLE_64
+#endif
+#endif
+
+#if defined(_MSC_VER)
+#define METADOT_COMPILER_MSVC
+#elif defined(__clang__)
+#define METADOT_COMPILER_CLANG
+#elif defined(__GNUC__)
+#define METADOT_COMPILER_GCC
+#endif
+
+#if __cplusplus >= 201103L
+#define METADOT_THREADLOCAL thread_local
+#elif __STDC_VERSION_ >= 201112L
+#define METADOT_THREADLOCAL _Thread_local
+#elif defined(METADOT_COMPILER_GCC) || defined(METADOT_COMPILER_CLANG)
+#define METADOT_THREADLOCAL __thread
+#elif defined(METADOT_COMPILER_MSVC)
+#define METADOT_THREADLOCAL __declspec(thread)
+#endif
+
+#pragma region Cpp
+
+#if defined(__cplusplus)
+
+#include <string>
+
+#if defined(__cpp_char8_t)
+template<typename T>
+const char *u8Cpp20(T &&t) noexcept {
+#pragma warning(disable : 26490)
+    return reinterpret_cast<const char *>(t);
+#pragma warning(default : 26490)
+}
+#define U8(x) u8Cpp20(u8##x)
+#else
+#define U8(x) u8##x
+#endif
 
 #define METADOT_MAKE_MOVEONLY(class_name)                                                          \
     class_name() = default;                                                                        \
@@ -68,72 +127,14 @@ const char *u8Cpp20(T &&t) noexcept {
         };                                                                                         \
     }
 
-// VS2013 doesn't support alignof
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-#define METADOT_ALIGNOF(x) __alignof(x)
-#else
-#define METADOT_ALIGNOF(x) alignof(x)
-#endif
-
-#define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
-
-// Preferably, and ironically, this macro should go unused.
-#ifndef METADOT_UNUSED
-#define METADOT_UNUSED(x) (void) sizeof(x)
-#endif
-
 #define METADOT_NODISCARD [[nodiscard]]
-
-#define METADOT_GET_PIXEL(surface, x, y)                                                           \
-    *((UInt32 *) ((UInt8 *) surface->pixels + ((y) *surface->pitch) + ((x) * sizeof(UInt32))))
 
 #define METADOT_OPTMIZE_OFF __pragma(optimize("", off))
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))
 #define METADOT_DEBUGBREAK __debugbreak()
 
-#define METADOT_INLINE inline
+#endif// end cplusplus
 
-#ifndef static_inline
-#ifdef _MSC_VER
-#define static_inline static
-#else
-#define static_inline static METADOT_INLINE
-#endif
-#endif
-
-#endif
-
-// Platforms Macros
-#if defined(_WIN32) || defined(_WINDOWS)
-#define METADOT_PLATFORM_WINDOWS
-#elif defined(__linux)
-#define METADOT_PLATFORM_LINUX
-#elif defined(__APPLE__)
-#include "TargetConditionals.h"
-#define METADOT_PLATFORM_APPLE
-#if defined(__METADOT_ARCH_ARM)
-#define METADOT_PLATFORM_APPLE_ARM
-#elif defined(__METADOT_ARCH_x86)
-#define METADOT_PLATFORM_APPLE_64
-#endif
-#endif
-
-#if defined(_MSC_VER)
-#define METADOT_COMPILER_MSVC
-#elif defined(__clang__)
-#define METADOT_COMPILER_CLANG
-#elif defined(__GNUC__)
-#define METADOT_COMPILER_GCC
-#endif
-
-#if defined(_Thread_local) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201102L))
-#define METADOT_THREADLOCAL _Thread_local
-#elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_CC) || defined(__IBMCPP__)
-#define METADOT_THREADLOCAL __thread
-#elif defined(_WIN32)
-#define METADOT_THREADLOCAL __declspec(thread)
-#else
-#error No TLS implementation found.
-#endif
+#pragma endregion Cpp
 
 #endif

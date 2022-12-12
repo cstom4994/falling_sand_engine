@@ -7,6 +7,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameResources.hpp"
 #include "GameDataStruct.hpp"
+#include "Engine/Renderer/RendererUtils.h"
 
 #pragma region MaterialTestGenerator
 
@@ -182,7 +183,7 @@ class DefaultGenerator : public WorldGenerator {
                         int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) %
                                  Textures::caveBG->h;
                         background[x + y * CHUNK_W] =
-                                METADOT_GET_PIXEL(Textures::caveBG, tx % Textures::caveBG->w,
+                                R_GET_PIXEL(Textures::caveBG, tx % Textures::caveBG->w,
                                                   ty % Textures::caveBG->h);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 

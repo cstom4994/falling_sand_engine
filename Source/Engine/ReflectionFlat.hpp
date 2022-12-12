@@ -3,7 +3,7 @@
 #ifndef _METADOT_REFLECTIONFLAT_HPP_
 #define _METADOT_REFLECTIONFLAT_HPP_
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Game/Console.hpp"
 #include "Game/GameScriptingWrap.hpp"
 #include <array>

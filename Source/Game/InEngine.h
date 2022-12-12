@@ -5,7 +5,7 @@
 
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Game/Utils.hpp"
 
 // STL

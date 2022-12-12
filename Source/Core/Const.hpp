@@ -3,7 +3,7 @@
 #ifndef _METADOT_CONST_HPP_
 #define _METADOT_CONST_HPP_
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 static const int WINDOWS_MAX_WIDTH = 1920;
 static const int WINDOWS_MAX_HEIGHT = 1080;

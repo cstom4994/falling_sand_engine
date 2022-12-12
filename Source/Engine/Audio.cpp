@@ -2,7 +2,7 @@
 
 #include "Audio.hpp"
 #include "Core/Core.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 #if defined(METADOT_BUILD_AUDIO)
 

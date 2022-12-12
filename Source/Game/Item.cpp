@@ -1,7 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Item.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
+#include "Engine/Renderer/RendererUtils.h"
 
 Item::Item() {}
 
@@ -62,7 +63,7 @@ void Item::loadFillTexture(C_Surface *tex) {
     for (uint16_t x = 0; x < tex->w; x++) {
         for (uint16_t y = 0; y < tex->h; y++) {
 
-            uint32_t color = METADOT_GET_PIXEL(tex, x, y);
+            uint32_t color = R_GET_PIXEL(tex, x, y);
 
             // SDL_Color rgb;
             // UInt32 data = getpixel(tex, x, y);

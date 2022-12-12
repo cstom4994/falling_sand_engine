@@ -7,7 +7,7 @@
 
 #pragma region error
 
-R_thread_local R_recorded_error R__last_error;
+METADOT_THREADLOCAL R_recorded_error R__last_error;
 
 R_public R_recorded_error R_get_last_recorded_error() { return R__last_error; }
 
@@ -15,7 +15,7 @@ R_public R_recorded_error R_get_last_recorded_error() { return R__last_error; }
 
 #pragma region allocator
 
-R_thread_local R_allocator R__global_allocator_for_dependencies;
+METADOT_THREADLOCAL R_allocator R__global_allocator_for_dependencies;
 
 R_public void *R_calloc_wrapper(R_allocator allocator, R_int amount, R_int size) {
     void *ptr = R_alloc(allocator, amount * size);

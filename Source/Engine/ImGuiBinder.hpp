@@ -6,7 +6,7 @@
 struct imgui;
 
 #include "Libs/quickjs/quickjs.h"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 extern "C"
 {

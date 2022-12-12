@@ -1,8 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Materials.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Game/GameResources.hpp"
+#include "Engine/Renderer/RendererUtils.h"
 
 Material::Material(int id, std::string name, int physicsType, int slipperyness, UInt8 alpha,
                    float density, int iterations, int emit, UInt32 emitColor, UInt32 color) {
@@ -273,7 +274,7 @@ MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
     return MaterialInstance(&Materials::TEST_TEXTURED_SAND, rgb);
 }
 
@@ -318,7 +319,7 @@ MaterialInstance Tiles::createSmoothStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::SMOOTH_STONE, rgb);
 }
@@ -329,7 +330,7 @@ MaterialInstance Tiles::createCobbleStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::COBBLE_STONE, rgb);
 }
@@ -340,7 +341,7 @@ MaterialInstance Tiles::createSmoothDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::SMOOTH_DIRT, rgb);
 }
@@ -351,7 +352,7 @@ MaterialInstance Tiles::createCobbleDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::COBBLE_DIRT, rgb);
 }
@@ -362,7 +363,7 @@ MaterialInstance Tiles::createSoftDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::SOFT_DIRT, rgb);
 }
@@ -385,7 +386,7 @@ MaterialInstance Tiles::createCloud(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::CLOUD, rgb);
 }
@@ -396,7 +397,7 @@ MaterialInstance Tiles::createGold(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::GOLD_ORE, rgb);
 }
@@ -407,7 +408,7 @@ MaterialInstance Tiles::createIron(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::IRON_ORE, rgb);
 }
@@ -418,7 +419,7 @@ MaterialInstance Tiles::createObsidian(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+    UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&Materials::OBSIDIAN, rgb);
 }
@@ -471,7 +472,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::GOLD_MOLTEN, rgb);
     } else if (mat->id == Materials::GOLD_SOLID.id) {
@@ -480,7 +481,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::GOLD_SOLID, rgb);
     } else if (mat->id == Materials::IRON_ORE.id) {
@@ -497,7 +498,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::FLAT_COBBLE_STONE, rgb);
     } else if (mat->id == Materials::FLAT_COBBLE_DIRT.id) {
@@ -506,7 +507,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        UInt32 rgb = METADOT_GET_PIXEL(tex, tx, ty);
+        UInt32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&Materials::FLAT_COBBLE_DIRT, rgb);
     }

@@ -4,7 +4,7 @@
 #define _METADOT_PLATFORM_HPP_
 
 #include "Core/Core.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 #include "PlatformDetail.h"
 #include "SDLWrapper.hpp"

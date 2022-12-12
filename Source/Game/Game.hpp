@@ -10,7 +10,7 @@
 #include "Controls.hpp"
 #include "Core/Const.hpp"
 #include "Core/DebugImpl.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Engine/Audio.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Networking.hpp"

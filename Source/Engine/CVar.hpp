@@ -3,7 +3,7 @@
 #ifndef _METADOT_CVAR_HPP_
 #define _METADOT_CVAR_HPP_
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 #include <iostream>
 #include <string>

@@ -5,7 +5,7 @@
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Core/ThreadPool.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/LuaWrapper.hpp"
@@ -206,7 +206,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle,
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                uint32 pixel = METADOT_GET_PIXEL(rb->surface, xx, yy);
+                uint32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = Tiles::create(rand() % 250 == -1 ? &Materials::FIRE
                                                                              : &Materials::OBSIDIAN,
@@ -225,9 +225,9 @@ RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle,
             for (int y = 0; y < rb->surface->h; y++) {
                 MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
                 if (mat.mat->id == Materials::GENERIC_AIR.id) {
-                    METADOT_GET_PIXEL(rb->surface, x, y) = 0x00000000;
+                    R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
                 } else {
-                    METADOT_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
+                    R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
                 }
             }
         }*/
@@ -266,7 +266,7 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float an
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                uint32 pixel = METADOT_GET_PIXEL(rb->surface, xx, yy);
+                uint32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = Tiles::create(rand() % 250 == -1 ? &Materials::FIRE
                                                                              : &Materials::OBSIDIAN,
@@ -285,9 +285,9 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float an
             for (int y = 0; y < rb->surface->h; y++) {
                 MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
                 if (mat.mat->id == Materials::GENERIC_AIR.id) {
-                    METADOT_GET_PIXEL(rb->surface, x, y) = 0x00000000;
+                    R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
                 } else {
-                    METADOT_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
+                    R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
                 }
             }
         }*/
@@ -310,9 +310,9 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         for (int y = 0; y < texture->h; y++) {
             MaterialInstance mat = rb->tiles[x + y * texture->w];
             if (mat.mat->id == Materials::GENERIC_AIR.id) {
-                METADOT_GET_PIXEL(texture, x, y) = 0x00000000;
+                R_GET_PIXEL(texture, x, y) = 0x00000000;
             } else {
-                METADOT_GET_PIXEL(texture, x, y) =
+                R_GET_PIXEL(texture, x, y) =
                         (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
             }
         }
@@ -324,7 +324,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     int maxY = 0;
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
-            if (((METADOT_GET_PIXEL(texture, x, y) >> 24) & 0xff) != 0x00) {
+            if (((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) != 0x00) {
                 if (x < minX) minX = x;
                 if (x > maxX) maxX = x;
                 if (y < minY) minY = y;
@@ -385,7 +385,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     bool foundAnything = false;
     for (int x = 0; x < texture->w; x++)
         for (int y = 0; y < texture->h; y++) {
-            bool f = ((METADOT_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+            bool f = ((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             foundAnything = foundAnything || f;
         }
 
@@ -397,7 +397,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     for (int y = 0; y < texture->h; y++) {
         for (int x = 0; x < texture->w; x++) {
             data[x + y * texture->w] =
-                    ((METADOT_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+                    ((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             edgeSeen[x + y * texture->w] = false;
         }
     }
@@ -593,7 +593,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
                     for (int x = stx; x < enx; x++) {
                         for (int y = 0; y < texture->h; y++) {
-                            if (((METADOT_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00) continue;
+                            if (((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00) continue;
 
                             int nb = 0;
 
@@ -612,8 +612,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                                 }
                             }
 
-                            METADOT_GET_PIXEL(polys2sSfcs[nb], x, y) =
-                                    METADOT_GET_PIXEL(texture, x, y);
+                            R_GET_PIXEL(polys2sSfcs[nb], x, y) =
+                                    R_GET_PIXEL(texture, x, y);
                             if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                         }
                     }
@@ -623,7 +623,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         } else {
             for (int x = 0; x < texture->w; x++) {
                 for (int y = 0; y < texture->h; y++) {
-                    if (((METADOT_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00) continue;
+                    if (((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00) continue;
 
                     int nb = 0;
 
@@ -642,7 +642,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                         }
                     }
 
-                    METADOT_GET_PIXEL(polys2sSfcs[nb], x, y) = METADOT_GET_PIXEL(texture, x, y);
+                    R_GET_PIXEL(polys2sSfcs[nb], x, y) = R_GET_PIXEL(texture, x, y);
                     if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                 }
             }
@@ -3540,7 +3540,7 @@ RigidBody *World::physicsCheck(int x, int y) {
             for (int yy = minY; yy <= maxY; yy++) {
                 for (int xx = minX; xx <= maxX; xx++) {
                     if (visited[xx + yy * width]) {
-                        METADOT_GET_PIXEL(tex, (unsigned long long) (xx) -minX, yy - minY) =
+                        R_GET_PIXEL(tex, (unsigned long long) (xx) -minX, yy - minY) =
                                 cols[xx + yy * width];
                         tiles[xx + yy * width] = Tiles::NOTHING;
                         dirty[xx + yy * width] = true;

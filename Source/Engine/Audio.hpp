@@ -3,7 +3,7 @@
 #ifndef _AUDIO_ENGINE_H_
 #define _AUDIO_ENGINE_H_
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 #include "Engine/Math.hpp"
 
 #if defined(METADOT_BUILD_AUDIO)

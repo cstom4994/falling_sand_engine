@@ -1005,7 +1005,7 @@ namespace GameUI {
             for (int x = 0; x < surface->w; x++) {
                 for (int y = 0; y < surface->h; y++) {
                     MaterialInstance m = Tiles::create(mat, x, y);
-                    METADOT_GET_PIXEL(surface, x, y) = m.color + (m.mat->alpha << 24);
+                    R_GET_PIXEL(surface, x, y) = m.color + (m.mat->alpha << 24);
                 }
             }
             images.push_back(R_CopyImageFromSurface(surface));

@@ -10,9 +10,12 @@
 typedef ptrdiff_t R_int;
 typedef int R_bool;
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 #pragma region internal flags and macros
+
+#define R_GET_PIXEL(surface, x, y)                                                           \
+    *((UInt32 *) ((UInt8 *) surface->pixels + ((y) *surface->pitch) + ((x) * sizeof(UInt32))))
 
 #define R_assert(x)
 
@@ -53,18 +56,6 @@ typedef int R_bool;
 #define R_lit(type) type
 #else
 #define R_lit(type) (type)
-#endif
-
-#ifndef R_thread_local
-#if __cplusplus >= 201103L
-#define R_thread_local thread_local
-#elif __STDC_VERSION_ >= 201112L
-#define R_thread_local _Thread_local
-#elif defined(METADOT_COMPILER_GCC) || defined(METADOT_COMPILER_CLANG)
-#define R_thread_local __thread
-#elif defined(METADOT_COMPILER_MSVC)
-#define R_thread_local __declspec(thread)
-#endif
 #endif
 
 #define R_concat_impl(a, b) a##b
@@ -148,7 +139,7 @@ R_public void *R_libc_allocator_wrapper(R_allocator *this_allocator,
                                         R_source_location source_location, R_allocator_mode mode,
                                         R_allocator_args args);
 
-R_public R_thread_local R_allocator R__global_allocator_for_dependencies;
+R_public METADOT_THREADLOCAL R_allocator R__global_allocator_for_dependencies;
 #define R_set_global_dependencies_allocator(allocator)                                             \
     R__global_allocator_for_dependencies = (allocator)
 #pragma endregion
@@ -197,7 +188,7 @@ typedef struct R_recorded_error
 
 R_public R_recorded_error R_get_last_recorded_error();
 
-R_public R_thread_local R_recorded_error R__last_error;
+R_public METADOT_THREADLOCAL R_recorded_error R__last_error;
 #pragma endregion
 
 #pragma region logger

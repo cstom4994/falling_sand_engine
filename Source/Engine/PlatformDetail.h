@@ -3,7 +3,7 @@
 #ifndef _METADOT_PLATFORMDETAIL_H_
 #define _METADOT_PLATFORMDETAIL_H_
 
-#include "Core/Macros.hpp"
+#include "Core/Macros.h"
 
 #if defined(METADOT_PLATFORM_WINDOWS)
 #include <Windows.h>
