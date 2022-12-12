@@ -44,8 +44,7 @@ Game::Game(int argc, char *argv[]) {
     global.game = this;
     // init console & print title
     std::cout << logo << std::endl;
-    Logging::init(argc, argv);
-    METADOT_INFO("{} {}", METADOT_NAME, METADOT_VERSION_TEXT);
+    METADOT_INFO("%s %s", METADOT_NAME, METADOT_VERSION_TEXT);
 }
 
 Game::~Game() {
@@ -870,8 +869,7 @@ int Game::run(int argc, char *argv[]) {
                                                  dx;
                                         int ey = GameIsolate_.world->WorldIsolate_.player->hammerY +
                                                  dy;
-                                        METADOT_BUG("hammer up: {0:d} {0:d} {0:d} {0:d}", ex, ey,
-                                                    dx, dy);
+                                        METADOT_BUG("hammer up: %d %d %d %d", ex, ey, dx, dy);
                                         int endInd = -1;
 
                                         int nSegments = 1 + len / 10;
@@ -4187,7 +4185,7 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ {0}", METADOT_RESLOC(MetaEngine::Format("saves/{}", wn)));
+    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC_STR(MetaEngine::Format("saves/{}", wn)));
     GameUI::MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;

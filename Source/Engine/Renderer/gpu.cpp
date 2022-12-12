@@ -324,8 +324,9 @@ void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
 float METAENGINE::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeight() * 16; }
 
 void METAENGINE::IntrospectShader(const char *label, GLuint program) {
-    METADOT_ASSERT(label != nullptr, "The label supplied with program: {} is nullptr", program);
-    METADOT_ASSERT(glIsProgram(program), "The program: {} is not a valid shader program", program);
+    METADOT_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
+    METADOT_ASSERT(glIsProgram(program),
+                   ("The program: {} is not a valid shader program", program));
 
     ImGui::PushID(label);
     if (ImGui::CollapsingHeader(label)) {
@@ -399,8 +400,8 @@ void METAENGINE::IntrospectShader(const char *label, GLuint program) {
 }
 
 void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
-    METADOT_ASSERT(label != nullptr, "The label supplied with VAO: %u is nullptr", vao);
-    METADOT_ASSERT(glIsVertexArray(vao), "The VAO: %u is not a valid vertex array object", vao);
+    METADOT_ASSERT(label != nullptr, ("The label supplied with VAO: %u is nullptr", vao));
+    METADOT_ASSERT(glIsVertexArray(vao), ("The VAO: %u is not a valid vertex array object", vao));
 
     ImGui::PushID(label);
     if (ImGui::CollapsingHeader(label)) {
@@ -659,8 +660,6 @@ void DebugDraw::DrawAABB(b2AABB *aabb, const b2Color &color) {
     R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, convertColor(color));
     R_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, convertColor(color));
 }
-
-
 
 namespace SurfaceBase {
 

@@ -7,7 +7,7 @@
 #include "Engine/Math.hpp"
 
 #if defined(METADOT_BUILD_AUDIO)
-#include "Engine/Internal/BuiltinFMOD.hpp"
+#include "Engine/Internal/BuiltinFMOD.h"
 #endif
 
 #include <iostream>

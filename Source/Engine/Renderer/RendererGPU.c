@@ -15,9 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO
-#define METADOT_ASSERT_E(x)
-
 #define _R_Text_TEXT2D_POSITION_LOCATION 0
 #define _R_Text_TEXT2D_TEXCOORD_LOCATION 1
 
@@ -1733,7 +1730,7 @@ void R_CloseCurrentRenderer(void) {
 
 void R_Quit(void) {
     if (gpu_num_error_codes > 0)
-        METADOT_ERROR("R_Quit: {} uncleared error{}.", gpu_num_error_codes,
+        METADOT_ERROR("R_Quit: %d uncleared error%s.", gpu_num_error_codes,
                       (gpu_num_error_codes > 1 ? "s" : ""));
 
     gpu_free_error_queue();
@@ -1778,10 +1775,10 @@ void R_PushErrorCode(const char *function, R_ErrorEnum error, const char *detail
         vsnprintf(buf, R_ERROR_DETAILS_STRING_MAX, details, lst);
         va_end(lst);
 
-        METADOT_ERROR("{0}: {1} - {2}", (function == NULL ? "NULL" : function),
+        METADOT_ERROR("%s: %s - %s", (function == NULL ? "NULL" : function),
                       R_GetErrorString(error), buf);
     } else
-        METADOT_ERROR("{0}: {1}", (function == NULL ? "NULL" : function), R_GetErrorString(error));
+        METADOT_ERROR("%s: %s", (function == NULL ? "NULL" : function), R_GetErrorString(error));
 #endif
 
     if (gpu_num_error_codes < gpu_error_code_queue_size) {

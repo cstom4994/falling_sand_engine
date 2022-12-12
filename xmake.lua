@@ -108,8 +108,8 @@ if (is_os("windows")) then
     end
 
     add_cxxflags("/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800",
-                 "/wd5030", "/wd5222", "/wd4554", "/wd4002", "/utf-8",
-                 "/Zc:__cplusplus", "/Za")
+        "/wd5030", "/wd5222", "/wd4554", "/wd4002", "/utf-8",
+        "/Zc:__cplusplus", "/Za")
 
     add_cxflags("/bigobj")
 
@@ -163,20 +163,20 @@ include_dir_list = {
     "Source/Libs/fmt/include", "Source/Libs/glad"
 }
 
-defines_list = {"METADOT_BACKEND_GL"}
+defines_list = { "METADOT_BACKEND_GL" }
 
 target("Libs")
 do
     set_kind("static")
-    add_rules("c.unity_build", {batchsize = 0})
-    add_rules("c++.unity_build", {batchsize = 0})
+    add_rules("c.unity_build", { batchsize = 0 })
+    add_rules("c++.unity_build", { batchsize = 0 })
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
     add_files("Source/Libs/*.cpp")
     add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
-              "Source/Libs/fmt/**.cc", "Source/Libs/glad/**.c",
-              {unity_group = "invade"})
+        "Source/Libs/fmt/**.cc", "Source/Libs/glad/**.c",
+        { unity_group = "invade" })
 
     add_files("Source/Libs/quickjs/**.c")
     add_files("Source/Libs/lz4/**.c")
@@ -188,11 +188,11 @@ end
 target("MetaDot")
 do
     if (has_config("build_unity")) then
-        add_rules("c.unity_build", {batchsize = 4})
-        add_rules("c++.unity_build", {batchsize = 4})
+        add_rules("c.unity_build", { batchsize = 4 })
+        add_rules("c++.unity_build", { batchsize = 4 })
     else
-        add_rules("c.unity_build", {batchsize = 0})
-        add_rules("c++.unity_build", {batchsize = 0})
+        add_rules("c.unity_build", { batchsize = 0 })
+        add_rules("c++.unity_build", { batchsize = 0 })
     end
     set_kind("binary")
     set_targetdir("./output")
@@ -200,6 +200,7 @@ do
     add_defines(defines_list)
     add_deps("Libs")
     add_links(link_list)
+    add_files("Source/Core/**.c")
     add_files("Source/Core/**.cpp")
     add_files("Source/Game/**.cpp")
     add_files("Source/Engine/**.c")

@@ -104,65 +104,6 @@ R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filena
 
 #pragma endregion
 
-#pragma region logger
-
-R_internal R_log_type R__log_filter;
-R_internal R_logger R__logger;
-
-R_public void R_set_logger(R_logger logger) { R__logger = logger; }
-R_public void R_set_logger_filter(R_log_type filter) { R__log_filter = filter; }
-
-R_public R_logger R_get_logger() { return R__logger; }
-R_public R_log_type R_get_log_filter() { return R__log_filter; }
-
-R_public void R__internal_log(R_source_location source_location, R_log_type log_type,
-                              const char *msg, ...) {
-    if (!(log_type & R__log_filter)) return;
-
-    va_list args;
-
-    va_start(args, msg);
-
-    R_error_type error_type = R_no_error;
-
-    // If the log type is an error then the error type must be the first arg
-    if (log_type == R_log_type_error) { error_type = va_arg(args, R_error_type); }
-
-    if (R__logger.log_proc) {
-        R__logger.log_proc(&R__logger, source_location, log_type, msg, error_type, args);
-    }
-
-    va_end(args);
-}
-
-R_public const char *R_log_type_string(R_log_type log_type) {
-    switch (log_type) {
-        case R_log_type_none:
-            return "NONE";
-        case R_log_type_debug:
-            return "DEBUG";
-        case R_log_type_info:
-            return "INFO";
-        case R_log_type_warning:
-            return "WARNING";
-        case R_log_type_error:
-            return "ERROR";
-        default:
-            return "METADOT_RENDER_LOG_TYPE_UNKNOWN";
-    }
-}
-
-R_public void R_libc_printf_logger(struct R_logger *logger, R_source_location source_location,
-                                   R_log_type log_type, const char *msg, R_error_type error_type,
-                                   va_list args) {
-    ((void) logger);// unused
-    printf("[MetaDot Renderer %s]: ", R_log_type_string(log_type));
-    vprintf(msg, args);
-    printf("\n");
-}
-
-#pragma endregion
-
 #pragma region misc
 
 R_public float R_next_pot(float it) { return powf(2, ceilf(logf(it) / logf(2))); }

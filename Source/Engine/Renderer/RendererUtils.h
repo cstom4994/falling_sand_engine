@@ -191,58 +191,6 @@ R_public R_recorded_error R_get_last_recorded_error();
 R_public METADOT_THREADLOCAL R_recorded_error R__last_error;
 #pragma endregion
 
-#pragma region logger
-
-/*
- Note(LucaSas): MSVC, clang and gcc all deal with __VA_ARGS__ differently.
- Normally you would expect that __VA_ARGS__ consume a trailing comma but it doesn't, this is why we must ##__VA_ARGS__.
- ##__VA_ARGS__ is a preprocessor black magic which achieves this goal, it's not standard but every compiler supports it, if
- this causes issues on some compiler just disable logs with RF_DISABLE_LOGGER.
- Also bear in mind that ##__VA_ARGS__ still works differently between compilers but this code seems to work on all major compilers.
-*/
-#define R_default_logger (R_lit(R_logger){0, R_libc_printf_logger})
-#define R_log(log_type, msg, ...)                                                                  \
-    (R__internal_log(R_current_source_location, (log_type), (msg), ##__VA_ARGS__))
-#define R_log_error(error_type, msg, ...)                                                          \
-    (R_log(R_log_type_error, (msg), (error_type), ##__VA_ARGS__),                                  \
-     R__last_error = R_make_recorded_error(error_type))
-
-typedef enum R_log_type {
-    R_log_type_none = 0,
-    R_log_type_debug = 0x1,  // Useful mostly to devs
-    R_log_type_info = 0x2,   // Information
-    R_log_type_warning = 0x4,// Warnings about things to be careful about
-    R_log_type_error = 0x8,// Errors that prevented functions from doing everything they advertised
-    R_log_type_all = R_log_type_debug | R_log_type_info | R_log_type_warning | R_log_type_error,
-} R_log_type;
-
-struct R_logger;
-
-typedef void (*R_log_proc)(struct R_logger *logger, R_source_location source_location,
-                           R_log_type log_type, const char *msg, R_error_type error_type,
-                           va_list args);
-
-typedef struct R_logger
-{
-    void *user_data;
-    R_log_proc log_proc;
-} R_logger;
-
-R_public const char *R_log_type_string(R_log_type);
-
-R_public void R_set_logger(R_logger logger);
-R_public void R_set_logger_filter(R_log_type);
-
-R_public R_logger R_get_logger();
-R_public R_log_type R_get_log_filter();
-
-R_public void R_libc_printf_logger(struct R_logger *logger, R_source_location source_location,
-                                   R_log_type log_type, const char *msg, R_error_type error_type,
-                                   va_list args);
-R_public void R__internal_log(R_source_location source_location, R_log_type log_type,
-                              const char *msg, ...);
-#pragma endregion
-
 #pragma region rng
 #define R_default_rand_proc (R_libc_rand_wrapper)
 

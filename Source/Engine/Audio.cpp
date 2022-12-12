@@ -260,7 +260,7 @@ FMOD_VECTOR Audio::VectorToFmod(const Vector3 &vPosition) {
 
 int Audio::ErrorCheck(FMOD_RESULT result) {
     if (result != FMOD_OK) {
-        METADOT_ERROR("FMOD Error: {0:d}", result);
+        METADOT_ERROR("FMOD Error: %d", result);
         return METADOT_FAILED;
     }
     // cout << "FMOD all good" << endl;

@@ -120,10 +120,10 @@ void Chunk::read() {
         // basically, if either of these checks trigger, the chunk is unreadable, either due to miswriting it or corruption
         // TODO: have the chunk regenerate on corruption (maybe save copies of corrupt chunks as well?)
         if (decompressed_size < 0) {
-            METADOT_ERROR("Error decompressing chunk tile data @ {},{} (err {}).", this->x, this->y,
+            METADOT_ERROR("Error decompressing chunk tile data @ %d,%d (err %d).", this->x, this->y,
                           decompressed_size);
         } else if (decompressed_size != src_size) {
-            METADOT_ERROR("Decompressed chunk tile data is corrupt! @ {},{} (was {}, expected {}).",
+            METADOT_ERROR("Decompressed chunk tile data is corrupt! @ %d,%d (was %d, expected %d).",
                           this->x, this->y, decompressed_size, src_size);
         }
 
@@ -163,11 +163,11 @@ void Chunk::read() {
         free(compressed_data2);
 
         if (decompressed_size2 < 0) {
-            METADOT_ERROR("Error decompressing chunk background data @ {},{} (err {}).", this->x,
+            METADOT_ERROR("Error decompressing chunk background data @ %d,%d (err %d).", this->x,
                           this->y, decompressed_size2);
         } else if (decompressed_size2 != src_size2) {
             METADOT_ERROR(
-                    "Decompressed chunk background data is corrupt! @ {},{} (was {}, expected {}).",
+                    "Decompressed chunk background data is corrupt! @ %d,%d (was %d, expected %d).",
                     this->x, this->y, decompressed_size2, src_size2);
         }
 
@@ -219,7 +219,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, UInt32 *bac
             LZ4_compress_fast(src, compressed_data, src_size, max_dst_size, 10);
 
     if (compressed_data_size <= 0) {
-        METADOT_ERROR("Failed to compress chunk tile data @ {},{} (err {})", this->x, this->y,
+        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", this->x, this->y,
                       compressed_data_size);
     }
 
@@ -244,7 +244,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, UInt32 *bac
             LZ4_compress_fast(src2, compressed_data2, src_size2, max_dst_size2, 10);
 
     if (compressed_data_size2 <= 0) {
-        METADOT_ERROR("Failed to compress chunk tile data @ {},{} (err {})", this->x, this->y,
+        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", this->x, this->y,
                       compressed_data_size2);
     }
 

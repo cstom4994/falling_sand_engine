@@ -70,28 +70,28 @@ static std::string proxy_print(lua_State *L, const char *channel) {
 }
 
 static int metadot_info(lua_State *L) {
-    METADOT_INFO("[LUA] {0}", proxy_print(L, LUACON_INFO_PREF).c_str());
+    METADOT_INFO("[LUA] %s", proxy_print(L, LUACON_INFO_PREF).c_str());
     return 0;
 }
 
 static int metadot_trace(lua_State *L) {
-    METADOT_TRACE("[LUA] {0}", proxy_print(L, LUACON_TRACE_PREF).c_str());
+    METADOT_TRACE("[LUA] %s", proxy_print(L, LUACON_TRACE_PREF).c_str());
     return 0;
 }
 
 static int metadot_error(lua_State *L) {
-    METADOT_ERROR("[LUA] {0}", proxy_print(L, LUACON_ERROR_PREF).c_str());
+    METADOT_ERROR("[LUA] %s", proxy_print(L, LUACON_ERROR_PREF).c_str());
     return 0;
 }
 
 static int metadot_warn(lua_State *L) {
-    METADOT_WARN("[LUA] {0}", proxy_print(L, LUACON_WARN_PREF).c_str());
+    METADOT_WARN("[LUA] %s", proxy_print(L, LUACON_WARN_PREF).c_str());
     return 0;
 }
 
 static int catch_panic(lua_State *L) {
     auto message = lua_tostring(L, -1);
-    METADOT_ERROR("[LUA] PANIC ERROR: {}", message);
+    METADOT_ERROR("[LUA] PANIC ERROR: %s", message);
     return 0;
 }
 
@@ -118,7 +118,7 @@ static int ls(lua_State *L) {
     }
     auto string = lua_tostring(L, 1);
     if (!std::filesystem::is_directory(string)) {
-        METADOT_WARN("{} is not directory", string);
+        METADOT_WARN("%d is not directory", string);
         return 0;
     }
 
@@ -141,7 +141,7 @@ static int ls(lua_State *L) {
 
 void LuaCore::print_error(lua_State *state) {
     const char *message = lua_tostring(state, -1);
-    METADOT_ERROR("LuaScript ERROR:\n  {}", (message ? message : "no message"));
+    METADOT_ERROR("LuaScript ERROR:\n  %s", (message ? message : "no message"));
     lua_pop(state, 1);
 }
 

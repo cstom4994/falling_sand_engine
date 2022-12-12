@@ -31,20 +31,20 @@ R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(UInt32 *p, const char *vertex
     v = METAENGINE_Shaders_LoadShader(R_VERTEX_SHADER, vertex_shader_file);
 
     if (!v)
-        METADOT_ERROR("Failed to load vertex shader ({}): {}", vertex_shader_file,
+        METADOT_ERROR("Failed to load vertex shader (%s): %s", vertex_shader_file,
                       R_GetShaderMessage());
 
     f = METAENGINE_Shaders_LoadShader(R_FRAGMENT_SHADER, fragment_shader_file);
 
     if (!f)
-        METADOT_ERROR("Failed to load fragment shader ({}): {}", fragment_shader_file,
+        METADOT_ERROR("Failed to load fragment shader (%s): %s", fragment_shader_file,
                       R_GetShaderMessage());
 
     *p = R_LinkShaders(v, f);
 
     if (!*p) {
         R_ShaderBlock b = {-1, -1, -1, -1};
-        METADOT_ERROR("Failed to link shader program ({} + {}): {}", vertex_shader_file,
+        METADOT_ERROR("Failed to link shader program (%s + %s): %s", vertex_shader_file,
                       fragment_shader_file, R_GetShaderMessage());
         return b;
     }

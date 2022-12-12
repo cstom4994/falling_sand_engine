@@ -11,46 +11,6 @@
 int MetaDot_buildnum(void);
 const std::string metadata(void);
 
-namespace Meko {
-    namespace utils {
-        struct exception : public std::exception
-        {
-            const char *m_what;
-            exception(const char *what) : m_what(what) {}
-            const char *what() const throw() { return m_what; }
-        };
-    }// namespace utils
-}// namespace Meko
-
-inline void _better_assert(const char *condition, const char *message, const char *fileline) {
-    std::cout << "\n\n[" << fileline << "] "
-              << "Assertion `" << condition << "` failed.\n"
-              << message << std::endl;
-    std::abort();
-}
-
-inline void _better_assert(const char *condition, const std::string &message,
-                           const char *fileline) {
-    _better_assert(condition, message.c_str(), fileline);
-}
-
-#ifdef NDEBUG
-#define METADOT_ASSERT(condition, message) static_cast<void>(0)
-#define METADOT_ASSERT_E(condition) static_cast<void>(0)
-#else
-#define METADOT_ASSERT(condition, ...)                                                             \
-    static_cast<bool>(condition) ? static_cast<void>(0)                                            \
-                                 : _better_assert(#condition, MetaEngine::Format(__VA_ARGS__),     \
-                                                  __FILE__ ":" METADOT_STRING(__LINE__))
-#define METADOT_ASSERT_E(condition) METADOT_ASSERT(condition, "unknown")
-#endif
-
-#define METADOT_THROW(msg)                                                                         \
-    {                                                                                              \
-        console.error("throw exception: ", msg, "\t\t at ", __FILE__, ":", __LINE__, "\n");        \
-        throw Meko::utils::exception(msg);                                                         \
-    }
-
 #ifndef DBG_MACRO_DBG_H
 #define DBG_MACRO_DBG_H
 
@@ -1069,11 +1029,7 @@ private:
 };
 
 static const std::array<const char *, Profiler::_StageCount> stageNames = {
-        "SDL Input",
-        "Game Tick",
-        "Rendering",
-        "Render Early",
-        "Render Late",
+        "SDL Input", "Game Tick", "Rendering", "Render Early", "Render Late",
 };
 
 static void ProfilerValueGetter(float *startTimestamp, float *endTimestamp, ImU8 *level,

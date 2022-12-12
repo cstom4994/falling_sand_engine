@@ -15,7 +15,7 @@ void ResourceWorker::init() {
         if (std::filesystem::exists(currentDir.string() + "/data")) {
             s_ProjectRootPath = currentDir.string() + "/";
             s_DataPath = s_ProjectRootPath + "data";
-            METADOT_INFO("Runtime folder detected: {0}", s_ProjectRootPath.c_str());
+            METADOT_INFO("Runtime folder detected: %s", s_ProjectRootPath.c_str());
             return;
         }
     }
@@ -62,7 +62,7 @@ std::string FUtil::readFileString(std::string_view path) {
     const std::ifstream input_stream(p, std::ios_base::in);
 
     if (input_stream.fail()) {
-        METADOT_ERROR("Failed to open file {}", p);
+        METADOT_ERROR("Failed to open file %s", p.c_str());
         return "";
     }
 

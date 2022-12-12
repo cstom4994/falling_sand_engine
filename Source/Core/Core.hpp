@@ -36,7 +36,6 @@
 
 #include "Core/Core.h"
 #include "Core/Macros.h"
-#include "Engine/Logging.hpp"
 #include "Libs/VisitStruct.hpp"
 
 #define METADOT_STRUCT VISITABLE_STRUCT
@@ -147,16 +146,5 @@ namespace MetaEngine {
 #ifndef METAENGINE_REALLOC
 #define METAENGINE_REALLOC(p, s) METADOT_GC_REALLOC(p, s)
 #endif
-
-//--------------------------------------------------------------------------------------------------------------------------------//
-// LOGGING FUNCTIONS
-
-#define METADOT_BUG(...) DLOG_F(1, __VA_ARGS__)
-#define METADOT_TRACE(...) LOG_F(2, __VA_ARGS__)
-#define METADOT_INFO(...) LOG_F(INFO, __VA_ARGS__)
-#define METADOT_WARN(...) LOG_F(WARNING, __VA_ARGS__)
-#define METADOT_ERROR(...) LOG_F(ERROR, __VA_ARGS__)
-#define METADOT_LOG_SCOPE_FUNCTION(_c) LOG_SCOPE_FUNCTION(_c)
-#define METADOT_LOG_SCOPE_F(...) LOG_SCOPE_F(__VA_ARGS__)
 
 #endif// !_CORE_H

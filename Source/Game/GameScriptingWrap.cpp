@@ -16,7 +16,7 @@
 #pragma region GameScriptingBind_1
 
 static void println(JsWrapper::rest<std::string> args) {
-    for (auto const &arg: args) METADOT_INFO("{}", arg);
+    for (auto const &arg: args) METADOT_INFO("%s", arg.c_str());
 }
 
 static void create_biome(std::string name, int id) {

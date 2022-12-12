@@ -606,7 +606,7 @@ namespace GameUI {
             selPos = ImGui::GetCursorScreenPos();
             ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
             if (ImGui::Button("", ImVec2(mainMenuButtonsWidth, 50))) {
-                METADOT_INFO("Selected world: {}", worldName.c_str());
+                METADOT_INFO("Selected world: %s", worldName.c_str());
                 visible = false;
 
                 game->fadeOutStart = game->GameIsolate_.game_timestate.now;
@@ -1380,8 +1380,8 @@ namespace GameUI {
             std::regex trimWhitespaceRegex("^ *(.+?) *$");
             worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
-            METADOT_INFO("Creating world named \"{}\" at \"{}\"", worldTitle,
-                         METADOT_RESLOC(MetaEngine::Format("saves/{}", wn)));
+            METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(),
+                         METADOT_RESLOC_STR(MetaEngine::Format("saves/{}", wn)));
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 

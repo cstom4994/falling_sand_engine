@@ -1,8 +1,12 @@
+// Copyright(c) 2022, KaoruXun All rights reserved.
 
 #ifndef _METADOT_CORE_H_
 #define _METADOT_CORE_H_
 
 #include <stdint.h>
+#include <assert.h>
+
+#include "Engine/Logging.h"
 
 #define METADOT_INT8_MAX 0x7F
 #define METADOT_UINT8_MAX 0xFF
@@ -30,12 +34,18 @@ typedef double Float64;
 
 typedef unsigned char Byte;
 
-#define METADOT_BUG(...)
-#define METADOT_TRACE(...)
-#define METADOT_INFO(...)
-#define METADOT_WARN(...)
-#define METADOT_ERROR(...)
+//--------------------------------------------------------------------------------------------------------------------------------//
+// LOGGING FUNCTIONS
+
+#define METADOT_BUG(...) log_debug(__VA_ARGS__)
+#define METADOT_TRACE(...) log_trace(__VA_ARGS__)
+#define METADOT_INFO(...) log_info(__VA_ARGS__)
+#define METADOT_WARN(...) log_warn(__VA_ARGS__)
+#define METADOT_ERROR(...) log_error(__VA_ARGS__)
 #define METADOT_LOG_SCOPE_FUNCTION(_c)
 #define METADOT_LOG_SCOPE_F(...)
+
+#define METADOT_ASSERT(x, _c) assert(x)
+#define METADOT_ASSERT_E(x) assert(x)
 
 #endif

@@ -1,7 +1,7 @@
 // Metadot audio engine is based on FMOD
 
 /* ======================================================================================== */
-/* FMOD API - C++ header file.                                                              */
+/* FMOD API - C/C++ header file.                                                              */
 /* Copyright (c), Firelight Technologies Pty, Ltd. 2004-2022.                               */
 /*                                                                                          */
 /* Use this header in conjunction with fmod_common.h (which contains all the constants /    */
@@ -11,8 +11,8 @@
 /* https://fmod.com/docs/2.02/api/core-api.html                                             */
 /* ======================================================================================== */
 
-#ifndef _FMOD_HPP
-#define _FMOD_HPP
+#ifndef _FMOD_H_
+#define _FMOD_H_
 
 /*
     Library import helpers
@@ -3997,11 +3997,6 @@ namespace FMOD {
     };
 }// namespace FMOD
 
-#endif
-
-#ifndef FMOD_STUDIO_HPP
-#define FMOD_STUDIO_HPP
-
 /*
     FMOD Studio types.
 */
@@ -5203,4 +5198,4 @@ namespace FMOD {
 
 }// namespace FMOD
 
-#endif//FMOD_STUDIO_HPP
+#endif

@@ -312,8 +312,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             if (mat.mat->id == Materials::GENERIC_AIR.id) {
                 R_GET_PIXEL(texture, x, y) = 0x00000000;
             } else {
-                R_GET_PIXEL(texture, x, y) =
-                        (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
+                R_GET_PIXEL(texture, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
             }
         }
     }
@@ -396,8 +395,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     for (int y = 0; y < texture->h; y++) {
         for (int x = 0; x < texture->w; x++) {
-            data[x + y * texture->w] =
-                    ((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+            data[x + y * texture->w] = ((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             edgeSeen[x + y * texture->w] = false;
         }
     }
@@ -612,8 +610,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                                 }
                             }
 
-                            R_GET_PIXEL(polys2sSfcs[nb], x, y) =
-                                    R_GET_PIXEL(texture, x, y);
+                            R_GET_PIXEL(polys2sSfcs[nb], x, y) = R_GET_PIXEL(texture, x, y);
                             if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                         }
                     }
@@ -3660,8 +3657,8 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
         // LoadLuaConfig(meta, &a);
 
-        METADOT_INFO("Load World ({0} {1} {2})", meta.worldName, meta.lastOpenedVersion,
-                     meta.lastOpenedTime);
+        METADOT_INFO("Load World (%s %s %d)", meta.worldName.c_str(),
+                     meta.lastOpenedVersion.c_str(), meta.lastOpenedTime);
     } else {
         METADOT_BUG("FP WAS NULL");
     }
@@ -3682,7 +3679,7 @@ bool WorldMeta::save(std::string worldFileName) {
     SaveLuaConfig(*this, worldMetaData);
     worldMetaData += "return mytable\nend";
 
-    METADOT_INFO("Save World\n{0}", worldMetaData.c_str());
+    METADOT_INFO("Save World\n%s", worldMetaData.c_str());
     std::ofstream o(metaFile);
     o << worldMetaData;
     delete[] metaFile;

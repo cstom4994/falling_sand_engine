@@ -991,7 +991,7 @@ namespace MuDSL {
                          [](const List &args) {
                              auto s = std::string{"[MU] "};
                              for (auto &&arg: args) { s += arg->getPrintString(); }
-                             METADOT_INFO("{0}", s);
+                             METADOT_INFO("%s", s.c_str());
                              return make_shared<Value>();
                          }},
 
