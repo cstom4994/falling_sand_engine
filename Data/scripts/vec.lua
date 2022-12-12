@@ -4,7 +4,7 @@ local rawset = rawset
 local rawget = rawget
 
 -- Vector2====================================================================
-vec2 = {x = 0, y = 0, class = "vec2"}
+vec2 = { x = 0, y = 0, class = "vec2" }
 
 setmetatable(vec2, vec2)
 
@@ -23,7 +23,7 @@ vec2.__index = function(t, k)
 end
 
 function vec2.new(x, y)
-    local v = {x = x or 0, y = y or 0}
+    local v = { x = x or 0, y = y or 0 }
     setmetatable(v, vec2)
     return v
 end
@@ -62,7 +62,7 @@ function vec2.dot(lhs, rhs) return lhs.x * rhs.x + lhs.y * rhs.y end
 
 function vec2.angle(from, to)
     return acos(clamp(vec2.dot(from:normalize(), to:normalize()), -1, 1)) *
-               57.29578
+        57.29578
 end
 
 function vec2.magnitude(v2) return sqrt(v2.x * v2.x + v2.y * v2.y) end
@@ -108,7 +108,7 @@ end
 function vec2:glm() return glmvec2(self.x, self.y) end
 
 vec2.__tostring =
-    function(self) return string.format("[%f,%f]", self.x, self.y) end
+function(self) return string.format("[%f,%f]", self.x, self.y) end
 
 vec2.__div = function(va, d)
     if type(d) == "number" then
@@ -167,7 +167,7 @@ vec3.__index = function(t, k)
 end
 
 function vec3.new(x, y, z)
-    local v = {x = x or 0, y = y or 0, z = z or 0}
+    local v = { x = x or 0, y = y or 0, z = z or 0 }
     setmetatable(v, vec3)
     return v
 end
@@ -209,7 +209,7 @@ function vec3.dot(lhs, rhs) return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
 
 function vec3.angle(from, to)
     return acos(clamp(vec3.dot(from:normalize(), to:normalize()), -1, 1)) *
-               57.29578
+        57.29578
 end
 
 function vec3.magnitude(v2) return sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z) end
@@ -281,15 +281,15 @@ vec3.__mul = function(va, d)
 end
 
 vec3.__add =
-    function(va, d) return vec3.new(va.x + d.x, va.y + d.y, va.z + d.z) end
+function(va, d) return vec3.new(va.x + d.x, va.y + d.y, va.z + d.z) end
 
 vec3.__sub =
-    function(va, d) return vec3.new(va.x - d.x, va.y - d.y, va.z - d.z) end
+function(va, d) return vec3.new(va.x - d.x, va.y - d.y, va.z - d.z) end
 
 vec3.__unm = function(va) return vec3.new(-va.x, -va.y, -va.z) end
 
 vec3.__eq =
-    function(va, d) return va.x == d.x and va.y == d.y and va.z == d.z end
+function(va, d) return va.x == d.x and va.y == d.y and va.z == d.z end
 function VEC3(x, y, z) return vec3.new(x, y, z) end
 
 fields.magnitude = vec3.magnitude
@@ -321,7 +321,7 @@ vec4.__index = function(t, k)
 end
 
 function vec4.new(x, y, z, w)
-    local v = {x = x or 0, y = y or 0, z = z or 0, w = w or 0}
+    local v = { x = x or 0, y = y or 0, z = z or 0, w = w or 0 }
     setmetatable(v, vec4)
     return v
 end
@@ -366,7 +366,7 @@ end
 
 function vec4.angle(from, to)
     return acos(clamp(vec4.dot(from:normalize(), to:normalize()), -1, 1)) *
-               57.29578
+        57.29578
 end
 
 function vec4.magnitude(v2)
@@ -463,4 +463,3 @@ function VEC4(x, y, z, w) return vec4.new(x, y, z, w) end
 fields.magnitude = vec4.magnitude
 fields.normalized = vec4.normalize
 fields.sqrMagnitude = vec4.sqrMagnitude
-

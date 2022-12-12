@@ -5,7 +5,7 @@ tl = require("tl")
 inspect = require("inspect")
 lang = require("lang")
 
-assert(inspect({1, 2, 3, 4}) == "{ 1, 2, 3, 4 }")
+assert(inspect({ 1, 2, 3, 4 }) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")
 assert(inspect("Hello") == '"Hello"')
 
@@ -19,7 +19,7 @@ content = i18n("welcome")
 function starts_with(str, start) return str:sub(1, #start) == start end
 
 function ends_with(str, ending)
-    return ending == "" or str:sub(-#ending) == ending
+    return ending == "" or str:sub(- #ending) == ending
 end
 
 corouts = {}
@@ -29,7 +29,7 @@ corouts = {}
 -- coroutine.yield(-1) to stop immediately
 function registerCoroutine(func, ticksToWait)
     ticksToWait = ticksToWait or 0
-    c = {corou = coroutine.create(func), sleepy_ticks = ticksToWait}
+    c = { corou = coroutine.create(func), sleepy_ticks = ticksToWait }
     table.insert(corouts, c)
 end
 
@@ -54,4 +54,3 @@ function dump(o)
         return tostring(o)
     end
 end
-

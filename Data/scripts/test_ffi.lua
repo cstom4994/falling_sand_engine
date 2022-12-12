@@ -1,4 +1,3 @@
-
 io.stdout:setvbuf('no')
 local ffi = require 'ffi'
 local dlls = {}
@@ -293,8 +292,8 @@ local test_values = {
     uint64_t = 12345678901234,
     bool = true,
     _Bool = false,
-    ['float complex'] = 3.1+4.2*i,
-    ['double complex'] = 5.1+6.2*i,
+    ['float complex'] = 3.1 + 4.2 * i,
+    ['double complex'] = 5.1 + 6.2 * i,
     ['enum e8'] = ffi.C.FOO8,
     ['enum e16'] = ffi.C.FOO16,
     ['enum e32'] = ffi.C.FOO32,
@@ -326,7 +325,8 @@ end
 local function checkalign(type, v, ret)
     --print(v)
     local str = tostring(test_values[type]):gsub('^cdata%b<>: ', '')
-    check(ffi.string(buf), ('size %d offset %d align %d value %s'):format(ffi.sizeof(v), ffi.offsetof(v, 'v'), ffi.alignof(v, 'v'), str))
+    check(ffi.string(buf),
+        ('size %d offset %d align %d value %s'):format(ffi.sizeof(v), ffi.offsetof(v, 'v'), ffi.alignof(v, 'v'), str))
     check(ret, #str)
 end
 
@@ -335,14 +335,14 @@ local i64 = ffi.typeof('int64_t')
 
 local first = true
 
-for convention,c in pairs(dlls) do
-    check(c.add_i8(1,1), 2)
-    check(c.add_i8(256,1), 1)
-    check(c.add_i8(127,1), -128)
-    check(c.add_i8(-120,120), 0)
-    check(c.add_u8(255,1), 0)
-    check(c.add_u8(120,120), 240)
-    check(c.add_i16(2000,4000), 6000)
+for convention, c in pairs(dlls) do
+    check(c.add_i8(1, 1), 2)
+    check(c.add_i8(256, 1), 1)
+    check(c.add_i8(127, 1), -128)
+    check(c.add_i8(-120, 120), 0)
+    check(c.add_u8(255, 1), 0)
+    check(c.add_u8(120, 120), 240)
+    check(c.add_i16(2000, 4000), 6000)
     check(c.add_d(20, 12), 32)
     check(c.add_f(40, 32), 72)
     check(c.not_b(true), false)
@@ -355,18 +355,18 @@ for convention,c in pairs(dlls) do
     check(c.ret_fp2(c.g_fp), c.g_fp)
 
     if c.have_complex() then
-        check(c.add_dc(3+4*i, 4+5*i), 7+9*i)
-        check(c.add_fc(2+4*i, 6+8*i), 8+12*i)
+        check(c.add_dc(3 + 4 * i, 4 + 5 * i), 7 + 9 * i)
+        check(c.add_fc(2 + 4 * i, 6 + 8 * i), 8 + 12 * i)
         types.dc = 'double complex'
         types.fc = 'float complex'
     else
         types.dc = nil
         types.fc = nil
     end
-    check((3+4*i).re, 3)
-    check((3+4*i).im, 4)
-    check(ffi.new('complex float', 2+8*i).re, 2)
-    check(ffi.new('complex float', 5+6*i).im, 6)
+    check((3 + 4 * i).re, 3)
+    check((3 + 4 * i).im, 4)
+    check(ffi.new('complex float', 2 + 8 * i).re, 2)
+    check(ffi.new('complex float', 5 + 6 * i).im, 6)
 
     check(c.have_complex(), c.have_complex2())
     check(c.is_msvc, c.is_msvc2)
@@ -383,8 +383,8 @@ for convention,c in pairs(dlls) do
     check(c.g_f, 3)
     check(c.g_d, 5)
     if c.have_complex() then
-        check(c.g_dc, 7 + 8*i)
-        check(c.g_fc, 6 + 9*i)
+        check(c.g_dc, 7 + 8 * i)
+        check(c.g_fc, 6 + 9 * i)
     end
     check(ffi.cast('void*', c.g_fp), c.g_p)
     check(c.g_s, 'g_s')
@@ -397,26 +397,44 @@ for convention,c in pairs(dlls) do
     check(c.g_date.nMonth, 3)
     check(c.g_date.nYear, 4)
 
-    c.g_b = false; check(c.g_b, false)
-    c.g_i8 = -108; check(c.g_i8, -108)
-    c.g_i16 = -1016; check(c.g_i16, -1016)
-    c.g_i32 = -1032; check(c.g_i32, -1032)
-    c.g_i64 = -1064; check(c.g_i64, i64(-1064))
-    c.g_u8 = 208; check(c.g_u8, 208)
-    c.g_u16 = 2016; check(c.g_u16, 2016)
-    c.g_u32 = 2032; check(c.g_u32, 2032)
-    c.g_u64 = 2064; check(c.g_u64, u64(2064))
-    c.g_f = 13; check(c.g_f, 13)
-    c.g_d = 15; check(c.g_d, 15)
+    c.g_b = false;
+    check(c.g_b, false)
+    c.g_i8 = -108;
+    check(c.g_i8, -108)
+    c.g_i16 = -1016;
+    check(c.g_i16, -1016)
+    c.g_i32 = -1032;
+    check(c.g_i32, -1032)
+    c.g_i64 = -1064;
+    check(c.g_i64, i64(-1064))
+    c.g_u8 = 208;
+    check(c.g_u8, 208)
+    c.g_u16 = 2016;
+    check(c.g_u16, 2016)
+    c.g_u32 = 2032;
+    check(c.g_u32, 2032)
+    c.g_u64 = 2064;
+    check(c.g_u64, u64(2064))
+    c.g_f = 13;
+    check(c.g_f, 13)
+    c.g_d = 15;
+    check(c.g_d, 15)
     if c.have_complex() then
-        c.g_dc = 17+18*i; check(c.g_dc, 17+18*i)
-        c.g_fc = 16+19*i; check(c.g_fc, 16+19*i)
+        c.g_dc = 17 + 18 * i;
+        check(c.g_dc, 17 + 18 * i)
+        c.g_fc = 16 + 19 * i;
+        check(c.g_fc, 16 + 19 * i)
     end
-    c.g_sp = 'foo'; check(c.g_sp, 'foo')
-    c.g_e8 = c.BAR8; check(c.g_e8, c.BAR8)
-    c.g_e16 = c.BAR16; check(c.g_e16, c.BAR16)
-    c.g_e32 = c.BAR32; check(c.g_e32, c.BAR32)
-    c.g_date.nWeekDay = 3; check(c.g_date.nWeekDay, 3)
+    c.g_sp = 'foo';
+    check(c.g_sp, 'foo')
+    c.g_e8 = c.BAR8;
+    check(c.g_e8, c.BAR8)
+    c.g_e16 = c.BAR16;
+    check(c.g_e16, c.BAR16)
+    c.g_e32 = c.BAR32;
+    check(c.g_e32, c.BAR32)
+    c.g_date.nWeekDay = 3;
+    check(c.g_date.nWeekDay, 3)
 
     local align_attr = c.is_msvc and [[
         struct align_attr_ALIGN_SUFFIX {
@@ -443,10 +461,10 @@ for convention,c in pairs(dlls) do
             ffi.cdef(align:gsub('SUFFIX', suffix):gsub('TYPE', type):gsub('ALIGN', 0))
         end
 
-        local v = ffi.new('struct align_0_' .. suffix, {0, test})
+        local v = ffi.new('struct align_0_' .. suffix, { 0, test })
         checkalign(type, v, c['print_align_0_' .. suffix](buf, v))
 
-        for _,align in ipairs{1,2,4,8,16} do
+        for _, align in ipairs { 1, 2, 4, 8, 16 } do
             if align > c.max_alignment() then
                 break
             end
@@ -456,12 +474,12 @@ for convention,c in pairs(dlls) do
                 ffi.cdef(align_attr:gsub('SUFFIX', suffix):gsub('TYPE', type):gsub('ALIGN', align))
             end
 
-            local v = ffi.new('struct align_' .. align .. '_' .. suffix, {0, test})
+            local v = ffi.new('struct align_' .. align .. '_' .. suffix, { 0, test })
             checkalign(type, v, c['print_align_' .. align .. '_' .. suffix](buf, v))
 
             -- MSVC doesn't support aligned attributes on enums
             if not type:match('^enum e[0-9]*$') or not c.is_msvc then
-                local v2 = ffi.new('struct align_attr_' .. align .. '_' .. suffix, {0, test})
+                local v2 = ffi.new('struct align_attr_' .. align .. '_' .. suffix, { 0, test })
                 checkalign(type, v2, c['print_align_attr_' .. align .. '_' .. suffix](buf, v2))
             end
         end
@@ -478,7 +496,7 @@ for convention,c in pairs(dlls) do
                 ffi.cdef(h:gsub('SUFFIX', suffix):gsub('TYPE', type))
             end
 
-            local v = ffi.new('struct align_attr_def_' .. suffix, {0, test})
+            local v = ffi.new('struct align_attr_def_' .. suffix, { 0, test })
             -- print(type)
             -- print("Align " .. c['print_align_attr_def_' .. suffix](buf, v))
             -- print(ffi.string(buf))
@@ -496,46 +514,48 @@ for convention,c in pairs(dlls) do
         check(test, ffi.string(buf))
     end
 
-    for _, tnum in ipairs{8, 16, 32, 64} do
+    for _, tnum in ipairs { 8, 16, 32, 64 } do
         if first then
-            ffi.cdef(bitfields:gsub('TNUM',tnum))
+            ffi.cdef(bitfields:gsub('TNUM', tnum))
         end
 
-        check_align('struct bc'..tnum, '1 2', c['print_bc'..tnum](psz, palign, buf, {1,2}))
-        check_align('struct blz'..tnum, '1 2', c['print_blz'..tnum](psz, palign, buf, {1,2}))
+        check_align('struct bc' .. tnum, '1 2', c['print_bc' .. tnum](psz, palign, buf, { 1, 2 }))
+        check_align('struct blz' .. tnum, '1 2', c['print_blz' .. tnum](psz, palign, buf, { 1, 2 }))
 
-        for _, znum in ipairs{8, 16, 32, 64} do
-            for _, bnum in ipairs{7, 15, 31, 63} do
+        for _, znum in ipairs { 8, 16, 32, 64 } do
+            for _, bnum in ipairs { 7, 15, 31, 63 } do
                 if bnum > znum then
                     break
                 end
                 if first then
-                    ffi.cdef(bitzero:gsub('TNUM',tnum):gsub('ZNUM',znum):gsub('BNUM', bnum))
+                    ffi.cdef(bitzero:gsub('TNUM', tnum):gsub('ZNUM', znum):gsub('BNUM', bnum))
                 end
-                check_align('struct bz_'..tnum..'_'..znum..'_'..bnum, '1 2 3', c['print_bz_'..tnum..'_'..znum..'_'..bnum](psz, palign, buf, {1,2,3}))
+                check_align('struct bz_' .. tnum .. '_' .. znum .. '_' .. bnum, '1 2 3',
+                    c['print_bz_' .. tnum .. '_' .. znum .. '_' .. bnum](psz, palign, buf, { 1, 2, 3 }))
             end
         end
 
-        for _, bnum in ipairs{7, 15, 31, 63} do
+        for _, bnum in ipairs { 7, 15, 31, 63 } do
             if bnum > tnum then
                 break
             end
             if first then
-                ffi.cdef(bitalign:gsub('TNUM',tnum):gsub('BNUM',bnum))
+                ffi.cdef(bitalign:gsub('TNUM', tnum):gsub('BNUM', bnum))
             end
-            check_align('struct ba_'..tnum..'_'..bnum, '1 2', c['print_ba_'..tnum..'_'..bnum](psz, palign, buf, {1,2}))
+            check_align('struct ba_' .. tnum .. '_' .. bnum, '1 2',
+                c['print_ba_' .. tnum .. '_' .. bnum](psz, palign, buf, { 1, 2 }))
         end
     end
 
-    check_align('struct Date', '1 2 3 4', c.print_date(psz, palign, buf, {1,2,3,4}))
-    check_align('struct Date2', '1 2 3 4', c.print_date2(psz, palign, buf, {1,2,3,4}))
-    check_align('struct sysv1', '1 2 3', c.print_sysv1(psz, palign, buf, {1,2,3}))
-    check_align('struct sysv2', '1 2 3 4 5 6', c.print_sysv2(psz, palign, buf, {1,2,3,4,5,6}))
-    check_align('struct sysv3', '1 2', c.print_sysv3(psz, palign, buf, {1,2}))
-    check_align('union sysv4', '1', c.print_sysv4(psz, palign, buf, {1}))
-    check_align('struct sysv5', '1 2 3', c.print_sysv5(psz, palign, buf, {1,2,3}))
-    check_align('struct sysv6', '1 2 3', c.print_sysv6(psz, palign, buf, {1,2,3}))
-    check_align('struct sysv7', '1 2 3 4 5', c.print_sysv7(psz, palign, buf, {1,2,3,4,5}))
+    check_align('struct Date', '1 2 3 4', c.print_date(psz, palign, buf, { 1, 2, 3, 4 }))
+    check_align('struct Date2', '1 2 3 4', c.print_date2(psz, palign, buf, { 1, 2, 3, 4 }))
+    check_align('struct sysv1', '1 2 3', c.print_sysv1(psz, palign, buf, { 1, 2, 3 }))
+    check_align('struct sysv2', '1 2 3 4 5 6', c.print_sysv2(psz, palign, buf, { 1, 2, 3, 4, 5, 6 }))
+    check_align('struct sysv3', '1 2', c.print_sysv3(psz, palign, buf, { 1, 2 }))
+    check_align('union sysv4', '1', c.print_sysv4(psz, palign, buf, { 1 }))
+    check_align('struct sysv5', '1 2 3', c.print_sysv5(psz, palign, buf, { 1, 2, 3 }))
+    check_align('struct sysv6', '1 2 3', c.print_sysv6(psz, palign, buf, { 1, 2, 3 }))
+    check_align('struct sysv7', '1 2 3 4 5', c.print_sysv7(psz, palign, buf, { 1, 2, 3, 4, 5 }))
 
     local cbs = [[
     typedef const char* (*__cdecl sfunc)(const char*);
@@ -554,9 +574,9 @@ for convention,c in pairs(dlls) do
     ffi.cdef(cbs:gsub('__cdecl', convention))
 
     local u3 = ffi.new('uint64_t', 3)
-    check(c.call_i(function(a) return 2*a end, 3), 6)
-    assert(math.abs(c.call_d(function(a) return 2*a end, 3.2) - 6.4) < 0.0000000001)
-    assert(math.abs(c.call_f(function(a) return 2*a end, 3.2) - 6.4) < 0.000001)
+    check(c.call_i(function(a) return 2 * a end, 3), 6)
+    assert(math.abs(c.call_d(function(a) return 2 * a end, 3.2) - 6.4) < 0.0000000001)
+    assert(math.abs(c.call_f(function(a) return 2 * a end, 3.2) - 6.4) < 0.000001)
     check(ffi.string(c.call_s(function(s) return s + u3 end, 'foobar')), 'bar')
     check(c.call_b(function(v) return not v end, true), false)
     check(c.call_e8(function(v) return v + 1 end, c.FOO8), c.BAR8)
@@ -564,8 +584,8 @@ for convention,c in pairs(dlls) do
     check(c.call_e32(function(v) return v + 1 end, c.FOO32), c.BAR32)
 
     if c.have_complex() then
-        check(c.call_dc(function(v) return v + 2+3*i end, 4+6*i), 6+9*i)
-        check(c.call_fc(function(v) return v + 1+2*i end, 7+4*i), 8+6*i)
+        check(c.call_dc(function(v) return v + 2 + 3 * i end, 4 + 6 * i), 6 + 9 * i)
+        check(c.call_fc(function(v) return v + 1 + 2 * i end, 7 + 4 * i), 8 + 6 * i)
     end
 
     local u2 = ffi.new('uint64_t', 2)
@@ -577,14 +597,14 @@ for convention,c in pairs(dlls) do
 
     local fp = ffi.new('struct fptr')
     assert(fp.p == ffi.C.NULL)
-    fp.p = function(a) return 2*a end
+    fp.p = function(a) return 2 * a end
     assert(fp.p ~= ffi.C.NULL)
     check(c.call_fptr(fp, 4), 8)
     local suc, err = pcall(function() fp.p:set(function() end) end)
     assert(not suc)
-    check(err:gsub('^.*: ',''), "can't set the function for a non-lua callback")
+    check(err:gsub('^.*: ', ''), "can't set the function for a non-lua callback")
 
-    check(c.call_fptr({function(a) return 3*a end}, 5), 15)
+    check(c.call_fptr({ function(a) return 3 * a end }, 5), 15)
 
     local suc, err = pcall(c.call_s, function(s) error(ffi.string(s), 0) end, 'my error')
     check(suc, false)
@@ -657,10 +677,10 @@ assert(ffi.sizeof('struct vls2') == 4)
 ffi.cdef [[ static const int DUMMY = 8 << 2; ]]
 assert(ffi.C.DUMMY == 32)
 
-ffi.new('struct {const char* foo;}', {'foo'})
+ffi.new('struct {const char* foo;}', { 'foo' })
 
 assert(not pcall(function()
-    ffi.new('struct {char* foo;}', {'ff'})
+    ffi.new('struct {char* foo;}', { 'ff' })
 end))
 
 local mt = {}
@@ -697,7 +717,7 @@ mt.__pow = function(vls, a) return vls.d.a ^ a end
 mt.__eq = function(vls, a) return u64(vls.d.a) == a end
 mt.__lt = function(vls, a) return u64(vls.d.a) < a end
 mt.__le = function(vls, a) return u64(vls.d.a) <= a end
-mt.__call = function(vls, a, b) return '__call', vls.d.a .. a .. (b or 'nil')  end
+mt.__call = function(vls, a, b) return '__call', vls.d.a .. a .. (b or 'nil') end
 mt.__unm = function(vls) return -vls.d.a end
 mt.__concat = function(vls, a) return vls.d.a .. a end
 mt.__len = function(vls) return vls.d.a end
@@ -720,7 +740,7 @@ check(vls <= u64(4), false)
 check(vls <= u64(5), true)
 check(vls <= u64(6), true)
 check(-vls, -5)
-local a,b = vls('6')
+local a, b = vls('6')
 check(a, '__call')
 check(b, '56nil')
 check(tostring(vls), 'string 5')
@@ -730,9 +750,9 @@ if _VERSION ~= 'Lua 5.1' then
     check(#vls, 5)
 end
 
-check(tostring(1.1+3.2*i), '1.1+3.2i')
-check((1+3*i)*(2+4*i), -10+10*i)
-check((3+2*i)*(3-2*i), 13+0*i)
+check(tostring(1.1 + 3.2 * i), '1.1+3.2i')
+check((1 + 3 * i) * (2 + 4 * i), -10 + 10 * i)
+check((3 + 2 * i) * (3 - 2 * i), 13 + 0 * i)
 
 -- Should ignore unknown attributes
 ffi.cdef [[
@@ -745,12 +765,12 @@ check(ffi.sizeof('struct {char foo[alignof(uint64_t)];}'), ffi.alignof('uint64_t
 -- Check native number type for int64_t/uint64_t function args/returns in Lua 5.3
 if _VERSION == "Lua 5.3" then
     local native_7F = 0x7FFFFFFFFFFFFFFF
-    local cdata_long_7F =  ffi.new("int64_t",  0x7FFFFFFFFFFFFFFF)
+    local cdata_long_7F = ffi.new("int64_t", 0x7FFFFFFFFFFFFFFF)
     local cdata_ulong_7F = ffi.new("uint64_t", 0x7FFFFFFFFFFFFFFF)
 
     local native_80 = 0x8000000000000000
 
-    for _, func in ipairs{ffi.C.add_i64, ffi.C.add_u64} do
+    for _, func in ipairs { ffi.C.add_i64, ffi.C.add_u64 } do
         -- 0x7FFFFFFFFFFFFFFF (native)         + 1 == 0x8000000000000000 (native)
         local res = func(native_7F, 1)
         assert(type(res) == "number", "native_7F: returned value not a number")
@@ -825,18 +845,18 @@ assert(not pcall(function() ffi.new('long', ffi.C.NULL) end))
 
 -- ffi.new and ffi.cast allow unpacked struct/arrays
 assert(ffi.new('int[3]', 1)[0] == 1)
-assert(ffi.new('int[3]', {1})[0] == 1)
+assert(ffi.new('int[3]', { 1 })[0] == 1)
 assert(ffi.new('int[3]', 1, 2)[1] == 2)
-assert(ffi.new('int[3]', {1, 2})[1] == 2)
+assert(ffi.new('int[3]', { 1, 2 })[1] == 2)
 
-ffi.cdef[[
+ffi.cdef [[
 struct var {
     char ch[?];
 };
 ]]
 local d = ffi.new('char[4]')
 local v = ffi.cast('struct var*', d)
-v.ch = {1,2,3,4}
+v.ch = { 1, 2, 3, 4 }
 assert(v.ch[3] == 4)
 v.ch = "bar"
 assert(v.ch[3] == 0)
@@ -849,7 +869,7 @@ ffi.cast('char*', 1)
 ffi.copy(d, 'bar')
 
 -- unsigned should be ignored for pointer rules
-ffi.cdef[[
+ffi.cdef [[
 int strncmp(const signed char *s1, const unsigned char *s2, size_t n);
 ]]
 assert(ffi.C.strncmp("two", "three", 3) ~= 0)
@@ -860,7 +880,7 @@ ffi.fill(d, 3)
 assert(d[2] == 0)
 
 -- tests for __new
-ffi.cdef[[
+ffi.cdef [[
 struct newtest {
     int a;
     int b;
@@ -868,26 +888,26 @@ struct newtest {
 };
 ]]
 
-local tp = ffi.metatype("struct newtest", {__new =
-  function(tp, x, y, z)
+local tp = ffi.metatype("struct newtest", { __new =
+function(tp, x, y, z)
     tp = ffi.new(tp)
     tp.a, tp.b, tp.c = x, y, z
     return tp
-  end})
+end })
 local v = tp(1, 2, 3)
 assert(v.a == 1 and v.b == 2 and v.c == 3)
 
-local tp = ffi.metatype("struct newtest", {__new =
-  function(tp, x, y, z)
-    tp = ffi.new(tp, {a = x, b = y, c = z})
+local tp = ffi.metatype("struct newtest", { __new =
+function(tp, x, y, z)
+    tp = ffi.new(tp, { a = x, b = y, c = z })
     return tp
-  end})
+end })
 local v = tp(1, 2, 3)
 assert(v.a == 1 and v.b == 2 and v.c == 3)
 
 -- tests for __pairs and __ipairs; not iterating just testing what is returned
 local tp = ffi.metatype("struct newtest",
-  {__pairs = function(tp) return tp.a, tp.b end, __ipairs = function(tp) return tp.b, tp.c end}
+    { __pairs = function(tp) return tp.a, tp.b end, __ipairs = function(tp) return tp.b, tp.c end }
 )
 if _VERSION ~= 'Lua 5.1' then
     local v = tp(1, 2, 3)
@@ -899,7 +919,7 @@ end
 
 -- test for pointer to struct having same metamethods
 local st = ffi.cdef "struct ptest {int a, b;};"
-local tp = ffi.metatype("struct ptest", {__index = function(s, k) return k end, __len = function(s) return 3 end})
+local tp = ffi.metatype("struct ptest", { __index = function(s, k) return k end, __len = function(s) return 3 end })
 
 local a = tp(1, 2)
 assert(a.banana == "banana")
@@ -944,11 +964,12 @@ assert(ffi.C.buf == "0x1 0x2 0x3 0x4 0x5 6 7 8 9.5 10 11")
 
 
 local function callback(i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
-    local t = {i1, i2, i3, i4, i5, i6, i7, i8, i9, i10}
+    local t = { i1, i2, i3, i4, i5, i6, i7, i8, i9, i10 }
     for i, v in ipairs(t) do
         assert(i == v)
     end
 end
+
 ffi.C.test_callback_cccccccccc(callback)
 
 local sum = ffi.C.add_dc(ffi.new('complex', 1, 2), ffi.new('complex', 3, 5))
@@ -969,12 +990,12 @@ struct ArrayOfArrays {
 
 local struct = ffi.new('struct Arrays')
 local structOfStructs = ffi.new('struct ArrayOfArrays')
-for i=0,2 do
+for i = 0, 2 do
     struct.ints[i] = i
     struct.uints[i] = i
     structOfStructs.arrays[0].ints[i] = i
 end
-for i=0,2 do
+for i = 0, 2 do
     assert(struct.ints[i] == i)
     assert(struct.uints[i] == i)
     assert(structOfStructs.arrays[0].ints[i] == i)

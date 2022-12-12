@@ -14,7 +14,7 @@ local variants = require(currentFilePath .. '.variants')
 local version = '0.9.2'
 
 i18n.plural, i18n.interpolate, i18n.variants, i18n.version, i18n._VERSION =
-    plural, interpolate, variants, version, version
+plural, interpolate, variants, version, version
 
 -- private stuff
 
@@ -37,7 +37,7 @@ local function assertPresent(functionName, paramName, value)
     if isPresent(value) then return end
 
     local msg =
-        "i18n.%s requires a non-empty string on its %s. Got %s (a %s value)."
+    "i18n.%s requires a non-empty string on its %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
@@ -45,7 +45,7 @@ local function assertPresentOrPlural(functionName, paramName, value)
     if isPresent(value) or isPluralTable(value) then return end
 
     local msg =
-        "i18n.%s requires a non-empty string or plural-form table on its %s. Got %s (a %s value)."
+    "i18n.%s requires a non-empty string or plural-form table on its %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
@@ -53,7 +53,7 @@ local function assertPresentOrTable(functionName, paramName, value)
     if isPresent(value) or type(value) == 'table' then return end
 
     local msg =
-        "i18n.%s requires a non-empty string or table on its %s. Got %s (a %s value)."
+    "i18n.%s requires a non-empty string or table on its %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
@@ -61,7 +61,7 @@ local function assertFunctionOrNil(functionName, paramName, value)
     if value == nil or type(value) == 'function' then return end
 
     local msg =
-        "i18n.%s requires a function (or nil) on param %s. Got %s (a %s value)."
+    "i18n.%s requires a function (or nil) on param %s. Got %s (a %s value)."
     error(msg:format(functionName, paramName, tostring(value), type(value)))
 end
 
@@ -90,7 +90,7 @@ local function recursiveLoad(currentContext, data)
     local composedKey
     for k, v in pairs(data) do
         composedKey = (currentContext and (currentContext .. '.') or "") ..
-                          tostring(k)
+            tostring(k)
         assertPresent('load', composedKey, k)
         assertPresentOrTable('load', composedKey, v)
         if type(v) == 'string' then
@@ -150,7 +150,7 @@ end
 function i18n.setLocale(newLocale, newPluralizeFunction)
     assertPresent('setLocale', 'newLocale', newLocale)
     assertFunctionOrNil('setLocale', 'newPluralizeFunction',
-                        newPluralizeFunction)
+        newPluralizeFunction)
     locale = newLocale
     pluralizeFunction = newPluralizeFunction or defaultPluralizeFunction
 end
@@ -179,7 +179,7 @@ function i18n.loadFile(path)
     i18n.load(data)
 end
 
-setmetatable(i18n, {__call = function(_, ...) return i18n.translate(...) end})
+setmetatable(i18n, { __call = function(_, ...) return i18n.translate(...) end })
 
 i18n.reset()
 

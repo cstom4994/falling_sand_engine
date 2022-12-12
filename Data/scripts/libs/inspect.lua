@@ -6,7 +6,7 @@ end
 local math = _tl_compat and _tl_compat.math or math;
 local string = _tl_compat and _tl_compat.string or string;
 local table = _tl_compat and _tl_compat.table or table
-local inspect = {Options = {}}
+local inspect = { Options = {} }
 
 inspect._VERSION = 'inspect.lua 3.1.0'
 inspect._URL = 'http://github.com/kikito/inspect.lua'
@@ -36,7 +36,7 @@ inspect._LICENSE = [[
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 inspect.KEY = setmetatable({},
-                           {__tostring = function() return 'inspect.KEY' end})
+    { __tostring = function() return 'inspect.KEY' end })
 inspect.METATABLE = setmetatable({}, {
     __tostring = function() return 'inspect.METATABLE' end
 })
@@ -65,7 +65,7 @@ local shortControlCharEscapes = {
     ["\v"] = "\\v",
     ["\127"] = "\\127"
 }
-local longControlCharEscapes = {["\127"] = "\127"}
+local longControlCharEscapes = { ["\127"] = "\127" }
 for i = 0, 31 do
     local ch = char(i)
     if not shortControlCharEscapes[ch] then
@@ -76,7 +76,7 @@ end
 
 local function escape(str)
     return (gsub(gsub(gsub(str, "\\", "\\\\"), "(%c)%f[0-9]",
-                      longControlCharEscapes), "%c", shortControlCharEscapes))
+        longControlCharEscapes), "%c", shortControlCharEscapes))
 end
 
 local function isIdentifier(str)
@@ -86,7 +86,7 @@ end
 local flr = math.floor
 local function isSequenceKey(k, sequenceLength)
     return type(k) == "number" and flr(k) == k and 1 <= (k) and k <=
-               sequenceLength
+        sequenceLength
 end
 
 local defaultTypeOrders = {
@@ -165,17 +165,17 @@ local function processRecursive(process, item, path, visited)
 
         for k, v in rawpairs(processed) do
             processedKey = processRecursive(process, k,
-                                            makePath(path, k, inspect.KEY),
-                                            visited)
+                makePath(path, k, inspect.KEY),
+                visited)
             if processedKey ~= nil then
                 processedCopy[processedKey] =
-                    processRecursive(process, v, makePath(path, processedKey),
-                                     visited)
+                processRecursive(process, v, makePath(path, processedKey),
+                    visited)
             end
         end
 
         local mt = processRecursive(process, getmetatable(processed),
-                                    makePath(path, inspect.METATABLE), visited)
+            makePath(path, inspect.METATABLE), visited)
         if type(mt) ~= 'table' then mt = nil end
         setmetatable(processedCopy, mt)
         processed = processedCopy
@@ -190,11 +190,11 @@ end
 
 local Inspector = {}
 
-local Inspector_mt = {__index = Inspector}
+local Inspector_mt = { __index = Inspector }
 
 local function tabify(inspector)
     puts(inspector.buf,
-         inspector.newline .. rep(inspector.indent, inspector.level))
+        inspector.newline .. rep(inspector.indent, inspector.level))
 end
 
 function Inspector:getId(v)
@@ -291,7 +291,7 @@ function inspect.inspect(root, options)
     countCycles(root, cycles)
 
     local inspector = setmetatable({
-        buf = {n = 0},
+        buf = { n = 0 },
         ids = {},
         cycles = cycles,
         depth = depth,

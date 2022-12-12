@@ -126,4 +126,14 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_COMPILER_GCC
 #endif
 
+#if defined(_Thread_local) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201102L))
+#define METADOT_THREADLOCAL _Thread_local
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_CC) || defined(__IBMCPP__)
+#define METADOT_THREADLOCAL __thread
+#elif defined(_WIN32)
+#define METADOT_THREADLOCAL __declspec(thread)
+#else
+#error No TLS implementation found.
+#endif
+
 #endif

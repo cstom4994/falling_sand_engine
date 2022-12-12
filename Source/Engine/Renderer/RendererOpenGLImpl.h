@@ -25,7 +25,7 @@
 #define R_IMAGE_DATA ImageData_OpenGL_3
 #define R_TARGET_DATA TargetData_OpenGL_3
 
-#define R_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE                                    \
+#define R_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE                                                    \
     "#version 400\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -43,7 +43,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-#define R_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE                                  \
+#define R_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE                                                  \
     "#version 400\n\
 \
 in vec2 gpu_Vertex;\n\
@@ -58,7 +58,7 @@ void main(void)\n\
 	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
-#define R_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE                                  \
+#define R_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE                                                  \
     "#version 400\n\
 \
 in vec4 color;\n\
@@ -73,7 +73,7 @@ void main(void)\n\
     fragColor = texture(tex, texCoord) * color;\n\
 }"
 
-#define R_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE                                \
+#define R_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE                                                \
     "#version 400\n\
 \
 in vec4 color;\n\
