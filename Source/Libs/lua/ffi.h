@@ -22,11 +22,15 @@
 #ifdef __cplusplus
 extern "C"
 {
-#include "Libs/lua/minilua.h"
+#include "Libs/lua/host/lauxlib.h"
+#include "Libs/lua/host/lua.h"
+#include "Libs/lua/host/lualib.h"
 }
 #define EXTERN_C extern "C"
 #else
-#include "Libs/lua/minilua.h"
+#include "Libs/lua/host/lauxlib.h"
+#include "Libs/lua/host/lua.h"
+#include "Libs/lua/host/lualib.h"
 #define EXTERN_C extern
 #endif
 
