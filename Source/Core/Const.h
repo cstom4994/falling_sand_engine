@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CONST_HPP_
-#define _METADOT_CONST_HPP_
+#ifndef _METADOT_CONST_H_
+#define _METADOT_CONST_H_
 
 #include "Core/Macros.h"
 
@@ -20,9 +20,9 @@ __  __      _        _____        _
 
 )";
 
-static const std::string win_title_client = U8("MetaDot 少女祈祷中");
-static const std::string win_title_server = U8("MetaDot Server");
-static const std::string win_game = U8("MetaDot");
+static const char *win_title_client = U8("MetaDot 少女祈祷中");
+static const char *win_title_server = U8("MetaDot Server");
+static const char *win_game = U8("MetaDot");
 
 static const int CHUNK_W = 128;
 static const int CHUNK_H = 128;

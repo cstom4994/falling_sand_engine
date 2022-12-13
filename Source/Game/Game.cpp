@@ -5,7 +5,7 @@
 #include <iterator>
 #include <regex>
 
-#include "Core/Const.hpp"
+#include "Core/Const.h"
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
@@ -82,10 +82,10 @@ int Game::init(int argc, char *argv[]) {
         int port = GameIsolate_.settings.server_port;
         if (argc >= 3) { port = atoi(argv[2]); }
         global.server = Server::start(port);
-        SDL_SetWindowTitle(global.platform.window, win_title_server.c_str());
+        SDL_SetWindowTitle(global.platform.window, win_title_server);
     } else {
         global.client = Client::start();
-        SDL_SetWindowTitle(global.platform.window, win_title_client.c_str());
+        SDL_SetWindowTitle(global.platform.window, win_title_client);
     }
 
     if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
@@ -2102,11 +2102,11 @@ void Game::tick() {
 
         int i = 1;
         metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ParticlePixels,
-                        (void *) (uintptr_t) i);
+                               (void *) (uintptr_t) i);
 
         if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
             metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ObjectBounds,
-                            (void *) (uintptr_t) i);
+                                   (void *) (uintptr_t) i);
         }
 
         for (int i = 0; i < results.size(); i++) { results[i].get(); }
@@ -3594,7 +3594,8 @@ void Game::renderLate() {
 
 void Game::renderOverlays() {
 
-    R_Text_SetText(text1, (win_title_client + " " + METADOT_VERSION_TEXT).c_str());
+    R_Text_SetText(text1,
+                   MetaEngine::Format("{0} {1}", win_title_client, METADOT_VERSION_TEXT).c_str());
 
     R_Text_BeginDraw();
     R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);

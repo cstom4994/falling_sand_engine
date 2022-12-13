@@ -3,7 +3,7 @@
 #ifndef _METADOT_CHUNK_HPP_
 #define _METADOT_CHUNK_HPP_
 
-#include "Core/Const.hpp"
+#include "Core/Const.h"
 #include "GameDataStruct.hpp"
 #include "GameScriptingWrap.hpp"
 #include "Materials.hpp"

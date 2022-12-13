@@ -21,6 +21,11 @@
 #define METADOT_OK 0
 #define METADOT_FAILED -1
 
+typedef int R_bool;
+#define R_false 0
+#define R_true 1
+#define R_null NULL
+
 // Num types
 typedef int8_t Int8;
 typedef uint8_t UInt8;

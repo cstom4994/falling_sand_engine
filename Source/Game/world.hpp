@@ -4,7 +4,7 @@
 #define _METADOT_WORLD_HPP_
 
 #include "Chunk.hpp"
-#include "Core/Const.hpp"
+#include "Core/Const.h"
 #include "Core/Macros.h"
 #include "Core/ThreadPool.hpp"
 #include "Engine/Audio.hpp"

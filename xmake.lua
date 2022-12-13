@@ -179,6 +179,10 @@ do
         { unity_group = "invade" })
 
     add_files("Source/Libs/quickjs/**.c")
+    add_files("Source/Libs/physfs/**.c")
+    if is_os("macosx") then
+        add_files("Source/Libs/physfs/**.m")
+    end
     add_files("Source/Libs/lz4/**.c")
     add_files("Source/Libs/lua/**.c")
     add_headerfiles("Source/Libs/**.h")

@@ -102,11 +102,6 @@ extern "C"
 #define R_PAD_7_TO_64 char _padding[7];
 #endif
 
-typedef int R_bool;
-#define R_false 0
-#define R_true 1
-#define R_null NULL
-
 typedef struct
 {
     UInt8 r;

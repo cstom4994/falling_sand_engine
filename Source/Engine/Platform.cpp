@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Platform.hpp"
-#include "Core/Const.hpp"
+#include "Core/Const.h"
 #include "Core/Core.hpp"
 #include "Core/Global.hpp"
 #include "Engine/Memory.hpp"

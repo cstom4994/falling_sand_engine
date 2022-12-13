@@ -16,6 +16,7 @@
 #include <exception>
 #include <functional>
 #include <initializer_list>
+#include <iomanip>
 #include <iostream>
 #include <istream>
 #include <iterator>
@@ -33,7 +34,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <iomanip>
 
 #include "Core/Core.h"
 #include "Core/Macros.h"

@@ -84,12 +84,8 @@
 #define METADOT_THREADLOCAL __declspec(thread)
 #endif
 
-#pragma region Cpp
-
 #if defined(__cplusplus)
-
 #include <string>
-
 #if defined(__cpp_char8_t)
 template<typename T>
 const char *u8Cpp20(T &&t) noexcept {
@@ -101,6 +97,13 @@ const char *u8Cpp20(T &&t) noexcept {
 #else
 #define U8(x) u8##x
 #endif
+#else
+#define U8(x) x
+#endif
+
+#pragma region Cpp
+
+#if defined(__cplusplus)
 
 #define METADOT_MAKE_MOVEONLY(class_name)                                                          \
     class_name() = default;                                                                        \

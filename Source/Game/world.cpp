@@ -1,7 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "world.hpp"
-#include "Core/Const.hpp"
+#include "Core/Const.h"
 #include "Core/Core.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Global.hpp"
