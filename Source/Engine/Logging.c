@@ -27,7 +27,7 @@ static const char *level_colors[] = {"\x1b[94m", "\x1b[36m", "\x1b[32m",
                                      "\x1b[33m", "\x1b[31m", "\x1b[35m"};
 #endif
 
-static void stdout_callback(log_Event *ev) {
+static void stdout_callback(LogEvent *ev) {
     char buf[16];
     buf[strftime(buf, sizeof(buf), "%H:%M:%S", ev->time)] = '\0';
 #ifdef LOG_USE_COLOR
@@ -41,7 +41,7 @@ static void stdout_callback(log_Event *ev) {
     fflush(ev->udata);
 }
 
-static void file_callback(log_Event *ev) {
+static void file_callback(LogEvent *ev) {
     char buf[64];
     buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", ev->time)] = '\0';
     fprintf(ev->udata, "%s %-5s %s:%d: ", buf, level_strings[ev->level], ev->file, ev->line);
@@ -79,9 +79,11 @@ int metadot_log_addcallback(LogFn fn, void *udata, int level) {
     return -1;
 }
 
-int metadot_log_addfp(FILE *fp, int level) { return metadot_log_addcallback(file_callback, fp, level); }
+int metadot_log_addfp(FILE *fp, int level) {
+    return metadot_log_addcallback(file_callback, fp, level);
+}
 
-static void init_event(log_Event *ev, void *udata) {
+static void init_event(LogEvent *ev, void *udata) {
     if (!ev->time) {
         time_t t = time(NULL);
         ev->time = localtime(&t);
@@ -90,7 +92,7 @@ static void init_event(log_Event *ev, void *udata) {
 }
 
 void metadot_log(int level, const char *file, int line, const char *fmt, ...) {
-    log_Event ev = {
+    LogEvent ev = {
             .fmt = fmt,
             .file = file,
             .line = line,

@@ -23,6 +23,8 @@ struct Vector3
     float z;
 };
 
+float math_perlin(float x, float y, float z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
+
 #pragma region NewMATH
 
 namespace NewMaths {

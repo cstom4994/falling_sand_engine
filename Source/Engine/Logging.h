@@ -22,9 +22,9 @@ extern "C"
         void *udata;
         int line;
         int level;
-    } log_Event;
+    } LogEvent;
 
-    typedef void (*LogFn)(log_Event *ev);
+    typedef void (*LogFn)(LogEvent *ev);
     typedef void (*LogLockFn)(bool lock, void *udata);
 
     enum {

@@ -11,6 +11,7 @@
 #include "Core/Const.hpp"
 #include "Core/DebugImpl.hpp"
 #include "Core/Macros.h"
+#include "Core/ThreadPool.h"
 #include "Engine/Audio.hpp"
 #include "Engine/Internal/BuiltinBox2d.h"
 #include "Engine/Networking.hpp"
@@ -54,7 +55,7 @@ struct GameTimeState
 };
 
 class Game {
-private:
+public:
     int argc;
 
     GameState state = LOADING;
@@ -109,9 +110,9 @@ public:
         Profiler profiler;
         Settings settings;
         World *world = nullptr;
-        
+
         ThreadPool *updateDirtyPool = nullptr;
-        ThreadPool *rotateVectorsPool = nullptr;
+        ThreadPoolC updateDirtyPool2;
     } GameIsolate_;
 
     struct

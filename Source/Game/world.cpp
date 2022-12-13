@@ -334,27 +334,31 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     maxX++;
     maxY++;
 
-    // FIX ME
-    C_Surface *sf =
-            SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY,
-                                           texture->format->BitsPerPixel, texture->format->format);
-    C_Rect src = {minX, minY, maxX - minX, maxY - minY};
-    SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
-    SDL_BlitSurface(texture, &src, sf, NULL);
-    SDL_FreeSurface(texture);
+    if (static_cast<bool>(texture)) {
+        // FIX ME
+        C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY,
+                                                       texture->format->BitsPerPixel,
+                                                       texture->format->format);
+        C_Rect src = {minX, minY, maxX - minX, maxY - minY};
+        SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
+        SDL_BlitSurface(texture, &src, sf, NULL);
+        SDL_FreeSurface(texture);
 
-    if (static_cast<bool>(rb->surface)) {
-        if (rb->surface->w <= 1 || rb->surface->h <= 1) {
-            b2world->DestroyBody(rb->body);
-            WorldIsolate_.rigidBodies.erase(std::remove(WorldIsolate_.rigidBodies.begin(),
-                                                        WorldIsolate_.rigidBodies.end(), rb),
-                                            WorldIsolate_.rigidBodies.end());
-            return;
+        if (static_cast<bool>(rb->surface)) {
+            if (rb->surface->w <= 1 || rb->surface->h <= 1) {
+                b2world->DestroyBody(rb->body);
+                WorldIsolate_.rigidBodies.erase(std::remove(WorldIsolate_.rigidBodies.begin(),
+                                                            WorldIsolate_.rigidBodies.end(), rb),
+                                                WorldIsolate_.rigidBodies.end());
+                return;
+            }
+            rb->surface = sf;
+            texture = rb->surface;
+        } else {
+            METADOT_ASSERT_E(0);
         }
-        rb->surface = sf;
-        texture = rb->surface;
     } else {
-        METADOT_ASSERT_E(0);
+        return;
     }
 
     float s = sin(rb->body->GetAngle());

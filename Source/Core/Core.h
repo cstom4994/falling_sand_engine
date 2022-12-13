@@ -3,9 +3,10 @@
 #ifndef _METADOT_CORE_H_
 #define _METADOT_CORE_H_
 
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
 
+#include "Core/Macros.h"
 #include "Engine/Logging.h"
 
 #define METADOT_INT8_MAX 0x7F
@@ -37,7 +38,11 @@ typedef unsigned char Byte;
 //--------------------------------------------------------------------------------------------------------------------------------//
 // LOGGING FUNCTIONS
 
+#if defined(METADOT_DEBUG)
 #define METADOT_BUG(...) log_debug(__VA_ARGS__)
+#else
+#define METADOT_BUG(...)
+#endif
 #define METADOT_TRACE(...) log_trace(__VA_ARGS__)
 #define METADOT_INFO(...) log_info(__VA_ARGS__)
 #define METADOT_WARN(...) log_warn(__VA_ARGS__)

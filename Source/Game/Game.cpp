@@ -1,6 +1,7 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "Game.hpp"
+#include <cstddef>
 #include <iterator>
 #include <regex>
 
@@ -138,8 +139,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 6);
-    METADOT_NEW(C, GameIsolate_.rotateVectorsPool, ThreadPool, 3);
+    GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
+    METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
 
     if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
         global.shaderworker.LoadShaders();
@@ -1320,7 +1321,7 @@ exit:
     METADOT_DELETE(C, movingTiles, UInt16);
 
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
-    METADOT_DELETE(C, GameIsolate_.rotateVectorsPool, ThreadPool);
+    metadot_thpool_destroy(GameIsolate_.updateDirtyPool2);
 
     if (GameIsolate_.world) {
         METADOT_DELETE(C, GameIsolate_.world, World);
@@ -1811,6 +1812,22 @@ accLoadY = 0;*/
     }
 }
 
+void update_ParticlePixels(void *arg) {
+    //SDL_SetRenderTarget(renderer, textureParticles);
+    void *particlePixels = global.game->TexturePack_.pixelsParticles_ar;
+
+    memset(particlePixels, 0,
+           (size_t) global.game->GameIsolate_.world->width *
+                   global.game->GameIsolate_.world->height * 4);
+
+    global.game->GameIsolate_.world->renderParticles((UInt8 **) &particlePixels);
+    global.game->GameIsolate_.world->tickParticles();
+
+    //SDL_SetRenderTarget(renderer, NULL);
+}
+
+void update_ObjectBounds(void *arg) { global.game->GameIsolate_.world->tickObjectBounds(); }
+
 void Game::tick() {
 
     //METADOT_BUG("{0:d} {0:d}", accLoadX, accLoadY);
@@ -2083,25 +2100,18 @@ void Game::tick() {
 
         std::vector<std::future<void>> results = {};
 
-        results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
-            //SDL_SetRenderTarget(renderer, textureParticles);
-            void *particlePixels = TexturePack_.pixelsParticles_ar;
-
-            memset(particlePixels, 0,
-                   (size_t) GameIsolate_.world->width * GameIsolate_.world->height * 4);
-
-            GameIsolate_.world->renderParticles((UInt8 **) &particlePixels);
-            GameIsolate_.world->tickParticles();
-
-            //SDL_SetRenderTarget(renderer, NULL);
-        }));
+        int i = 1;
+        metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ParticlePixels,
+                        (void *) (uintptr_t) i);
 
         if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
-            results.push_back(GameIsolate_.updateDirtyPool->push(
-                    [&](int id) { GameIsolate_.world->tickObjectBounds(); }));
+            metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ObjectBounds,
+                            (void *) (uintptr_t) i);
         }
 
         for (int i = 0; i < results.size(); i++) { results[i].get(); }
+
+        metadot_thpool_wait(GameIsolate_.updateDirtyPool2);
 
         for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
             RigidBody *cur = GameIsolate_.world->WorldIsolate_.rigidBodies[i];

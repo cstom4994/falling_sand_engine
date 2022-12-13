@@ -4,10 +4,10 @@
 #define _METADOT_GENERATOR_WORLD_CPP_
 
 #include "Core/Global.hpp"
+#include "Engine/Renderer/RendererUtils.h"
 #include "Game/Game.hpp"
 #include "Game/GameResources.hpp"
 #include "GameDataStruct.hpp"
-#include "Engine/Renderer/RendererUtils.h"
 
 #pragma region MaterialTestGenerator
 
@@ -184,7 +184,7 @@ class DefaultGenerator : public WorldGenerator {
                                  Textures::caveBG->h;
                         background[x + y * CHUNK_W] =
                                 R_GET_PIXEL(Textures::caveBG, tx % Textures::caveBG->w,
-                                                  ty % Textures::caveBG->h);
+                                            ty % Textures::caveBG->h);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) -

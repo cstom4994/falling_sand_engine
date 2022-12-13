@@ -12,6 +12,12 @@
 #include <string>
 #include <vector>
 
+#include "Libs/external/stb_perlin.h"
+
+float math_perlin(float x, float y, float z, int x_wrap, int y_wrap, int z_wrap) {
+    return stb_perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap);
+}
+
 #pragma region NewMATH
 
 float NewMaths::clamp(float input, float min, float max) {
