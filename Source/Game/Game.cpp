@@ -490,9 +490,9 @@ int Game::run(int argc, char *argv[]) {
                     }
                 }
 
-                ImGui_ImplSDL2_ProcessEvent(&windowEvent);
-
                 if (windowEvent.type == SDL_QUIT) { goto exit; }
+
+                ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
                 if (ImGui::GetIO().WantCaptureMouse) {
                     if (windowEvent.type == SDL_MOUSEBUTTONDOWN ||
@@ -3602,7 +3602,7 @@ void Game::renderOverlays() {
     R_Text_EndDraw();
 
     R_Text_SetText(text3,
-                   MetaEngine::Format("{:.3f} ms/frame ({:.1f}({}) FPS)",
+                   MetaEngine::Format("{0} ms/frame ({1}({2}) FPS)",
                                       1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
                                       GameIsolate_.game_timestate.feelsLikeFps)
                            .c_str());
@@ -4195,7 +4195,7 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC_STR(MetaEngine::Format("saves/{}", wn)));
+    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC_STR(MetaEngine::Format("saves/{0}", wn)));
     GameUI::MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -4205,7 +4205,7 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{}", wn));
+    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn));
 
     METADOT_NEW(C, GameIsolate_.world, World);
     GameIsolate_.world->noSaveLoad = true;

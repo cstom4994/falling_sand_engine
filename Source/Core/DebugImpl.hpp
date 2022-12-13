@@ -6,7 +6,6 @@
 #include "Core/Core.hpp"
 #include "Core/Macros.h"
 #include "Engine/ImGuiImplement.hpp"
-#include "fmt/format.h"
 
 int MetaDot_buildnum(void);
 const std::string metadata(void);
