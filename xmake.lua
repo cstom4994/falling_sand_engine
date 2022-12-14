@@ -53,10 +53,10 @@ option_end()
 
 --     local args = {
 --         '-e', 'package.path="' ..
---             path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"):gsub(
+--             path.join(os.projectdir(), "Source/engine/UserInterface/IMGUI"):gsub(
 --                 '\\', '/') .. '/?.lua"',
 --         path.join(
---             path.join(os.projectdir(), "Source/Engine/UserInterface/IMGUI"),
+--             path.join(os.projectdir(), "Source/engine/UserInterface/IMGUI"),
 --             'uidslparser.lua'), '-H', path(headerpath), '-I', path(implpath),
 --         '--cpp', outfile
 --     }
@@ -159,13 +159,13 @@ end
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
-    "Source", "Source/Engine", "Source/Libs", "Source/Libs/imgui",
-    "Source/Libs/glad"
+    "Source", "Source/engine", "Source/libs", "Source/libs/imgui",
+    "Source/libs/glad"
 }
 
 defines_list = { "METADOT_BACKEND_GL" }
 
-target("Libs")
+target("libs")
 do
     set_kind("static")
     add_rules("c.unity_build", { batchsize = 0 })
@@ -173,21 +173,21 @@ do
     add_includedirs(include_dir_list)
     add_defines(defines_list)
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
-    add_files("Source/Libs/*.cpp")
-    add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
-        "Source/Libs/glad/**.c",
+    add_files("Source/libs/*.cpp")
+    add_files("Source/libs/ImGui/**.cpp", "Source/libs/ImGui/**.c",
+        "Source/libs/glad/**.c",
         { unity_group = "invade" })
 
-    add_files("Source/Libs/quickjs/**.c")
-    add_files("Source/Libs/physfs/**.c")
+    add_files("Source/libs/quickjs/**.c")
+    add_files("Source/libs/physfs/**.c")
     if is_os("macosx") then
-        add_files("Source/Libs/physfs/**.m")
+        add_files("Source/libs/physfs/**.m")
     end
-    add_files("Source/Libs/lz4/**.c")
-    add_files("Source/Libs/lua/host/**.c", { unity_group = "unity_lua" })
-    add_files("Source/Libs/lua/*.c", { unity_group = "unity_luaffi" })
-    add_headerfiles("Source/Libs/**.h")
-    add_headerfiles("Source/Libs/**.hpp")
+    add_files("Source/libs/lz4/**.c")
+    add_files("Source/libs/lua/host/**.c", { unity_group = "unity_lua" })
+    add_files("Source/libs/lua/*.c", { unity_group = "unity_luaffi" })
+    add_headerfiles("Source/libs/**.h")
+    add_headerfiles("Source/libs/**.hpp")
 end
 
 target("MetaDot")
@@ -203,21 +203,21 @@ do
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("Libs")
+    add_deps("libs")
     add_links(link_list)
-    add_files("Source/Core/**.c")
-    add_files("Source/Core/**.cpp")
-    add_files("Source/Game/**.cpp")
-    add_files("Source/Engine/**.c")
-    add_files("Source/Engine/**.cpp")
-    add_headerfiles("Source/Engine/**.h")
-    add_headerfiles("Source/Engine/**.hpp")
-    add_headerfiles("Source/Engine/**.inl")
-    add_headerfiles("Source/Game/**.h")
-    add_headerfiles("Source/Core/**.hpp")
-    add_headerfiles("Source/Game/**.hpp")
-    add_headerfiles("Source/Game/**.inl")
-    add_headerfiles("Source/Shared/**.hpp")
+    add_files("Source/core/**.c")
+    add_files("Source/core/**.cpp")
+    add_files("Source/game/**.cpp")
+    add_files("Source/engine/**.c")
+    add_files("Source/engine/**.cpp")
+    add_headerfiles("Source/engine/**.h")
+    add_headerfiles("Source/engine/**.hpp")
+    add_headerfiles("Source/engine/**.inl")
+    add_headerfiles("Source/game/**.h")
+    add_headerfiles("Source/core/**.hpp")
+    add_headerfiles("Source/game/**.hpp")
+    add_headerfiles("Source/game/**.inl")
+    add_headerfiles("Source/shared/**.hpp")
     if (is_os("macosx") and has_config("build_audio")) then
         add_links("fmod", "fmodstudio")
     end
@@ -229,6 +229,6 @@ do
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_files("Source/Tests/TestFFI.c")
-    add_headerfiles("Source/Tests/**.h")
+    add_files("Source/tests/TestFFI.c")
+    add_headerfiles("Source/tests/**.h")
 end
