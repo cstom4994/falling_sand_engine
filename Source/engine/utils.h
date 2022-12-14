@@ -38,19 +38,19 @@
 #define FILENAME_MAX 256
 #endif
 
-#define max(a, b)                                                                                  \
-    ({                                                                                             \
-        __typeof__(a) _a = (a);                                                                    \
-        __typeof__(b) _b = (b);                                                                    \
-        _a > _b ? _a : _b;                                                                         \
-    })
+// #define max(a, b)                                                                                  \
+//     ({                                                                                             \
+//         __typeof__(a) _a = (a);                                                                    \
+//         __typeof__(b) _b = (b);                                                                    \
+//         _a > _b ? _a : _b;                                                                         \
+//     })
 
-#define min(a, b)                                                                                  \
-    ({                                                                                             \
-        __typeof__(a) _a = (a);                                                                    \
-        __typeof__(b) _b = (b);                                                                    \
-        _a < _b ? _a : _b;                                                                         \
-    })
+// #define min(a, b)                                                                                  \
+//     ({                                                                                             \
+//         __typeof__(a) _a = (a);                                                                    \
+//         __typeof__(b) _b = (b);                                                                    \
+//         _a < _b ? _a : _b;                                                                         \
+//     })
 
 /* --- PRINTF_BYTE_TO_BINARY macro's --- */
 #define PRINTF_BINARY_PATTERN_INT8 "%c%c%c%c%c%c%c%c"
@@ -70,8 +70,8 @@
     PRINTF_BYTE_TO_BINARY_INT32((i) >> 32), PRINTF_BYTE_TO_BINARY_INT32(i)
 /* --- end macros --- */
 
-#define sign(x) (x > 0 ? 1 : (x < 0 ? -1 : 0))
-#define clamp(x, m, M) (x < m ? m : (x > M ? M : x))
+// #define sign(x) (x > 0 ? 1 : (x < 0 ? -1 : 0))
+#define UTIL_clamp(x, m, M) (x < m ? m : (x > M ? M : x))
 #define FRAC0(x) (x - floorf(x))
 #define FRAC1(x) (1 - x + floorf(x))
 
@@ -79,8 +79,8 @@
     (Vector3) {                                                                                    \
         (u).y *(v).z - (u).z *(v).y, (u).z *(v).x - (u).x *(v).z, (u).x *(v).y - (u).y *(v).x      \
     }
-#define dot(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
-#define norm(v) sqrt(dot(v, v))// norm = length of  vector
+#define UTIL_dot(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
+// #define norm(v) sqrt(dot(v, v))// norm = length of  vector
 
 typedef struct Vector3
 {

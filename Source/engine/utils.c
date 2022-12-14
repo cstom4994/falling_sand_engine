@@ -503,18 +503,18 @@ Vector3 ScalarMult(Vector3 v, float s) { return (Vector3){v.x * s, v.y * s, v.z 
 
 double Distance(Vector3 a, Vector3 b) {
     Vector3 AMinusB = Subtract(a, b);
-    return sqrt(dot(AMinusB, AMinusB));
+    return sqrt(UTIL_dot(AMinusB, AMinusB));
 }
 
 Vector3 VectorProjection(Vector3 a, Vector3 b) {
     //https://en.wikipedia.org/wiki/Vector_projection
     Vector3 normalizedB = NormalizeVector(b);
-    double a1 = dot(a, normalizedB);
+    double a1 = UTIL_dot(a, normalizedB);
     return ScalarMult(normalizedB, a1);
 }
 
 Vector3 Reflection(Vector3 *v1, Vector3 *v2) {
-    float dotpr = dot(*v2, *v1);
+    float dotpr = UTIL_dot(*v2, *v1);
     Vector3 result;
     result.x = v2->x * 2 * dotpr;
     result.y = v2->y * 2 * dotpr;
@@ -533,7 +533,7 @@ Vector3 RotatePoint(Vector3 p, Vector3 r, Vector3 pivot) {
 
 double DistanceFromPointToLine2D(Vector3 lP1, Vector3 lP2, Vector3 p) {
     //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-    return abs((lP2.y - lP1.y) * p.x - (lP2.x - lP1.x) * p.y + lP2.x * lP1.y - lP2.y * lP1.x) /
+    return fabsf((lP2.y - lP1.y) * p.x - (lP2.x - lP1.x) * p.y + lP2.x * lP1.y - lP2.y * lP1.x) /
            Distance(lP1, lP2);
 }
 
@@ -642,7 +642,7 @@ int Step(float edge, float x) { return x < edge ? 0 : 1; }
 
 float Smoothstep(float edge0, float edge1, float x) {
     // Scale, bias and saturate x to 0..1 range
-    x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    x = UTIL_clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
     // Evaluate polynomial
     return x * x * (3 - 2 * x);
 }

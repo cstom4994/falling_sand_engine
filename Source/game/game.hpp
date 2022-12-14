@@ -191,6 +191,7 @@ public:
 
     int init(int argc, char *argv[]);
     int run(int argc, char *argv[]);
+    void exit();
     void updateFrameEarly();
     void tick();
     void tickChunkLoading();

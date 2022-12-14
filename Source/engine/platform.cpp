@@ -37,8 +37,7 @@ int Platform::InitWindow() {
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
-    U32 sdl_init_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
-    if (SDL_Init(sdl_init_flags) < 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         METADOT_ERROR("SDL_Init failed: %s", SDL_GetError());
         return EXIT_FAILURE;
     }

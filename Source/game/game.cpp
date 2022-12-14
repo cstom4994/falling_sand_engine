@@ -2,6 +2,7 @@
 
 #include "game.hpp"
 #include <cstddef>
+#include <cstdlib>
 #include <iterator>
 #include <regex>
 
@@ -11,14 +12,15 @@
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
+#include "engine/engine_cpp.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
-#include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/gpu.hpp"
-#include "engine/sdl_wrapper.h"
+#include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting.hpp"
+#include "engine/sdl_wrapper.h"
 #include "game/console.hpp"
 #include "game/filesystem.hpp"
 #include "game/game_datastruct.hpp"
@@ -61,7 +63,11 @@ int Game::init(int argc, char *argv[]) {
 
     METADOT_INFO("Starting game...");
 
+    InitECS(128);
+
     global.platform.InitWindow();
+
+    if (!InitEngine()) return 1;
 
     // scripting system
     auto loadscript = [&]() {
@@ -373,22 +379,22 @@ void Game::createTexture() {
 
     TexturePack_.pixelsObjects =
             std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4,
-                               METAENGINE_ALPHA_TRANSPARENT);
+                            METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
     TexturePack_.pixelsTemp =
             std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4,
-                               METAENGINE_ALPHA_TRANSPARENT);
+                            METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
     TexturePack_.pixelsParticles =
             std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4,
-                               METAENGINE_ALPHA_TRANSPARENT);
+                            METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
 
     TexturePack_.pixelsLoading =
             std::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4,
-                               METAENGINE_ALPHA_TRANSPARENT);
+                            METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
     TexturePack_.pixelsFire =
@@ -452,8 +458,7 @@ int Game::run(int argc, char *argv[]) {
             (GameData_.ofsY - global.platform.HEIGHT / 2) / 2 * 3 + global.platform.HEIGHT / 2;
 
     for (int i = 0; i < FrameTimeNum; i++) { frameTime[i] = 0; }
-    METADOT_NEW_ARRAY(C, objectDelete, U8,
-                      GameIsolate_.world->width * GameIsolate_.world->height);
+    METADOT_NEW_ARRAY(C, objectDelete, U8, GameIsolate_.world->width * GameIsolate_.world->height);
 
     fadeInStart = Time::millis();
     fadeInLength = 250;
@@ -490,7 +495,7 @@ int Game::run(int argc, char *argv[]) {
                     }
                 }
 
-                if (windowEvent.type == SDL_QUIT) { goto exit; }
+                if (windowEvent.type == SDL_QUIT) { exit(); }
 
                 ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
@@ -725,8 +730,7 @@ int Game::run(int argc, char *argv[]) {
 
                                                 if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w &&
                                                     nty < cur->surface->h) {
-                                                    U32 pixel =
-                                                            R_GET_PIXEL(cur->surface, ntx, nty);
+                                                    U32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
                                                     }
@@ -1292,8 +1296,12 @@ int Game::run(int argc, char *argv[]) {
         GameIsolate_.game_timestate.lastTime = GameIsolate_.game_timestate.now;
     }
 
-exit:
+    exit();
 
+    return METADOT_OK;
+}
+
+void Game::exit() {
     METADOT_INFO("Shutting down...");
 
     GameIsolate_.world->saveWorld();
@@ -1337,12 +1345,11 @@ exit:
         global.platform.EndWindow();
         global.audioEngine.Shutdown();
         SDL_DestroyWindow(global.platform.window);
-        SDL_Quit();
     }
 
-    METADOT_INFO("Clean done...");
+    EndEngine(0);
 
-    return METADOT_OK;
+    METADOT_INFO("Clean done...");
 }
 
 void Game::updateFrameEarly() {
@@ -1701,9 +1708,9 @@ accLoadY = 0;*/
                                 UInt16Point pt =
                                         GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
                                 U32 c = GameIsolate_.world
-                                                   ->tiles[(x + xx) +
-                                                           (y + yy) * GameIsolate_.world->width]
-                                                   .color;
+                                                ->tiles[(x + xx) +
+                                                        (y + yy) * GameIsolate_.world->width]
+                                                .color;
                                 R_GET_PIXEL(
                                         GameIsolate_.world->WorldIsolate_.player->heldItem->surface,
                                         pt.x, pt.y) =

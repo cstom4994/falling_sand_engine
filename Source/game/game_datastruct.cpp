@@ -10,7 +10,6 @@
 #include "game/filesystem.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
-
 #include "structures.hpp"
 #include "world.hpp"
 

@@ -11,7 +11,6 @@
 
 #include "utils.h"
 
-
 //Engine functions called from main
 int InitEngine();
 void EngineUpdate();

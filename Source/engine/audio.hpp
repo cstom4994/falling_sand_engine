@@ -4,7 +4,7 @@
 #define _AUDIO_ENGINE_H_
 
 #include "core/macros.h"
-#include "engine/math.hpp"
+#include "engine/engine_cpp.h"
 
 #if defined(METADOT_BUILD_AUDIO)
 #include "engine/internal/builtin_fmod.h"
