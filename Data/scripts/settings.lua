@@ -37,9 +37,5 @@ GetSettingsData = function()
 
     settings_data.hd_objects_size = 3
 
-    settings_data.networkMode = -1
-    settings_data.server_ip = "127.0.0.1"
-    settings_data.server_port = 25555
-
     return settings_data
 end

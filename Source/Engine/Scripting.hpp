@@ -40,10 +40,10 @@ struct test_visitor
 };
 
 template<typename T>
-void SaveLuaConfig(const T &_struct, std::string &out) {
+void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
     visit_struct::for_each(_struct, [&](const char *name, const auto &value) {
         //METADOT_INFO("{} == {} ({})", name, value, typeid(value).name());
-        struct_as(out, "mytable", name, value);
+        struct_as(out, table_name, name, value);
     });
 }
 

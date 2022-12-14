@@ -220,6 +220,9 @@ namespace GameUI {
         ImGui::SetCursorPos(
                 ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
         ImGui::Text("返回");
+        if (ImGui::Button("保存")) {
+            global.game->GameIsolate_.settings.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
+        }
         //ImGui::PopFont();
     }
 

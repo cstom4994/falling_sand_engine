@@ -3632,9 +3632,9 @@ bool WorldMeta::save(std::string worldFileName) {
     if (this->lastOpenedVersion.empty())
         this->lastOpenedVersion = std::to_string(MetaDot_buildnum());
 
-    std::string worldMetaData = "LoadWorldMeta = function()\nmytable = {}\n";
-    SaveLuaConfig(*this, worldMetaData);
-    worldMetaData += "return mytable\nend";
+    std::string worldMetaData = "LoadWorldMeta = function()\nsettings_data = {}\n";
+    SaveLuaConfig(*this, "settings_data", worldMetaData);
+    worldMetaData += "return settings_data\nend";
 
     METADOT_INFO("Save World\n%s", worldMetaData.c_str());
     std::ofstream o(metaFile);

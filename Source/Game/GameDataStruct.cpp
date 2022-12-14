@@ -491,12 +491,12 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
     return {};
 }
 void Settings::Save(std::string setting_file) {
-    // std::string settings_data = "SettingsData = function()\nmytable = {}\n";
-    // SaveLuaConfig(*this, settings_data);
-    // settings_data += "return mytable\nend";
+    std::string settings_data = "GetSettingsData = function()\nsettings_data = {}\n";
+    SaveLuaConfig(*this, "settings_data", settings_data);
+    settings_data += "return settings_data\nend";
 
-    // std::ofstream o(setting_file);
-    // o << settings_data;
+    std::ofstream o(setting_file);
+    o << settings_data;
 }
 
 void Settings::Init(bool openDebugUIs) {
@@ -550,9 +550,9 @@ void Settings::Init(bool openDebugUIs) {
 
         LoadLuaConfig((*this), luat, hd_objects_size);
 
-        LoadLuaConfig((*this), luat, networkMode);
-        LoadLuaConfig((*this), luat, server_ip);
-        LoadLuaConfig((*this), luat, server_port);
+        networkMode = NetworkMode::ERROR;
+        server_ip = "127.0.0.1";
+        server_port = 25555;
 
     } else {
         METADOT_BUG("SettingsData WAS NULL");
