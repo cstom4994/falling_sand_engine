@@ -66,6 +66,12 @@
 #endif
 #endif
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+#define METADOT_PLATFORM_WIN32
+#else
+#define METADOT_PLATFORM_POSIX
+#endif
+
 #if defined(_MSC_VER)
 #define METADOT_COMPILER_MSVC
 #elif defined(__clang__)

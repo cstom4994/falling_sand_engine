@@ -3,7 +3,6 @@
 #include "Chunk.hpp"
 #include "Core/Core.hpp"
 #include "Engine/Platform.hpp"
-#include "Game/InEngine.h"
 #include "Game/Utils.hpp"
 
 #include "lz4/lz4.h"

@@ -160,7 +160,7 @@ end
 
 include_dir_list = {
     "Source", "Source/Engine", "Source/Libs", "Source/Libs/imgui",
-    "Source/Libs/fmt/include", "Source/Libs/glad"
+    "Source/Libs/glad"
 }
 
 defines_list = { "METADOT_BACKEND_GL" }
@@ -175,7 +175,7 @@ do
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
     add_files("Source/Libs/*.cpp")
     add_files("Source/Libs/ImGui/**.cpp", "Source/Libs/ImGui/**.c",
-        "Source/Libs/fmt/**.cc", "Source/Libs/glad/**.c",
+        "Source/Libs/glad/**.c",
         { unity_group = "invade" })
 
     add_files("Source/Libs/quickjs/**.c")
@@ -184,7 +184,8 @@ do
         add_files("Source/Libs/physfs/**.m")
     end
     add_files("Source/Libs/lz4/**.c")
-    add_files("Source/Libs/lua/**.c")
+    add_files("Source/Libs/lua/host/**.c", { unity_group = "unity_lua" })
+    add_files("Source/Libs/lua/*.c", { unity_group = "unity_luaffi" })
     add_headerfiles("Source/Libs/**.h")
     add_headerfiles("Source/Libs/**.hpp")
 end

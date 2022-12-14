@@ -5,7 +5,6 @@
 
 #include "Core/Core.hpp"
 #include "Engine/Platform.hpp"
-#include "Game/InEngine.h"
 
 #include <algorithm>
 #include <bitset>

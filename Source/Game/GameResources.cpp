@@ -9,7 +9,7 @@
 #include "Engine/SDLWrapper.h"
 #include "Engine/Scripting.hpp"
 #include "Game/FileSystem.hpp"
-#include "Game/InEngine.h"
+
 #include "Libs/Ase_Loader.h"
 #include "Libs/external/stb_image.h"
 #include "LuaWrapper.hpp"

@@ -10,7 +10,7 @@
 #include "Game/FileSystem.hpp"
 #include "Game/GameResources.hpp"
 #include "Game/GameUI.hpp"
-#include "Game/InEngine.h"
+
 #include "Structures.hpp"
 #include "world.hpp"
 

@@ -2083,53 +2083,6 @@ void World::tickTemperature() {
         v += tiles[(x + xa) + (y + ya) * width].temperature * factor;                              \
         n += factor;                                                                               \
     }
-
-            // if (tiles[(x + -1) + (y + -1) * width].temperature) {
-            //     factor = abs(tiles[(x + -1) + (y + -1) * width].temperature) / 64.0f * tiles[(x + -1) + (y + -1) * width].mat->conductionOther;
-            //     v += tiles[(x + -1) + (y + -1) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + -1) + (y + 0) * width].temperature) {
-            //     factor = abs(tiles[(x + -1) + (y + 0) * width].temperature) / 64.0f * tiles[(x + -1) + (y + 0) * width].mat->conductionOther;
-            //     v += tiles[(x + -1) + (y + 0) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + -1) + (y + 1) * width].temperature) {
-            //     factor = abs(tiles[(x + -1) + (y + 1) * width].temperature) / 64.0f * tiles[(x + -1) + (y + 1) * width].mat->conductionOther;
-            //     v += tiles[(x + -1) + (y + 1) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + 0) + (y + -1) * width].temperature) {
-            //     factor = abs(tiles[(x + 0) + (y + -1) * width].temperature) / 64.0f * tiles[(x + 0) + (y + -1) * width].mat->conductionOther;
-            //     v += tiles[(x + 0) + (y + -1) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + 0) + (y + 0) * width].temperature) {
-            //     factor = abs(tiles[(x + 0) + (y + 0) * width].temperature) / 64.0f * tiles[(x + 0) + (y + 0) * width].mat->conductionOther;
-            //     v += tiles[(x + 0) + (y + 0) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + 0) + (y + 1) * width].temperature) {
-            //     factor = abs(tiles[(x + 0) + (y + 1) * width].temperature) / 64.0f * tiles[(x + 0) + (y + 1) * width].mat->conductionOther;
-            //     v += tiles[(x + 0) + (y + 1) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + 1) + (y + -1) * width].temperature) {
-            //     factor = abs(tiles[(x + 1) + (y + -1) * width].temperature) / 64.0f * tiles[(x + 1) + (y + -1) * width].mat->conductionOther;
-            //     v += tiles[(x + 1) + (y + -1) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + 1) + (y + 0) * width].temperature) {
-            //     factor = abs(tiles[(x + 1) + (y + 0) * width].temperature) / 64.0f * tiles[(x + 1) + (y + 0) * width].mat->conductionOther;
-            //     v += tiles[(x + 1) + (y + 0) * width].temperature * factor;
-            //     n += factor;
-            // }
-            // if (tiles[(x + 1) + (y + 1) * width].temperature) {
-            //     factor = abs(tiles[(x + 1) + (y + 1) * width].temperature) / 64.0f * tiles[(x + 1) + (y + 1) * width].mat->conductionOther;
-            //     v += tiles[(x + 1) + (y + 1) * width].temperature * factor;
-            //     n += factor;
-            // }
-
             FN(-1, -1);
             FN(-1, 0);
             FN(-1, 1);

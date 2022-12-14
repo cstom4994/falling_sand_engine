@@ -16,7 +16,7 @@
 #include "Game/FileSystem.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameDataStruct.hpp"
-#include "Game/InEngine.h"
+
 #include "Game/Utils.hpp"
 #include "Libs/lua/ffi.h"
 #include "quickjs/quickjs.h"

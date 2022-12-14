@@ -5,6 +5,9 @@
 
 #include "Engine/Platform.hpp"
 
+#include <ios>
+#include <fstream>
+
 std::string ResourceWorker::s_ProjectRootPath;
 std::string ResourceWorker::s_DataPath;
 
