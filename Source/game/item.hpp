@@ -3,33 +3,28 @@
 #ifndef _METADOT_ITEM_HPP_
 #define _METADOT_ITEM_HPP_
 
+#include "core/core.h"
 #include "rigidbody.hpp"
 #include "materials.hpp"
 #include "game_datastruct.hpp"
 
 class ItemFlags {
 public:
-    static const uint8_t RIGIDBODY = 0b00000001;
-    static const uint8_t FLUID_CONTAINER = 0b00000010;
-    static const uint8_t TOOL = 0b00000100;
-    static const uint8_t CHISEL = 0b00001000;
-    static const uint8_t HAMMER = 0b00010000;
-    static const uint8_t VACUUM = 0b00100000;
+    static const U8 RIGIDBODY = 0b00000001;
+    static const U8 FLUID_CONTAINER = 0b00000010;
+    static const U8 TOOL = 0b00000100;
+    static const U8 CHISEL = 0b00001000;
+    static const U8 HAMMER = 0b00010000;
+    static const U8 VACUUM = 0b00100000;
 };
-
-typedef struct UInt16Point
-{
-    uint16_t x;
-    uint16_t y;
-} UInt16Point;
 
 class Item {
 public:
-    uint8_t flags = 0;
+    U8 flags = 0;
 
-    void setFlag(uint8_t f) { flags |= f; }
+    void setFlag(U8 f) { flags |= f; }
 
-    bool getFlag(uint8_t f) { return flags & f; }
+    bool getFlag(U8 f) { return flags & f; }
 
     C_Surface *surface = nullptr;
     R_Image *texture = nullptr;
@@ -37,7 +32,7 @@ public:
     int pivotY = 0;
     float breakSize = 16;
     std::vector<MaterialInstance> carry;
-    std::vector<UInt16Point> fill;
+    std::vector<U16Point> fill;
     uint16_t capacity = 0;
 
     std::vector<Particle *> vacuumParticles;
@@ -45,7 +40,7 @@ public:
     Item();
     ~Item();
 
-    static Item *makeItem(uint8_t flags, RigidBody *rb);
+    static Item *makeItem(U8 flags, RigidBody *rb);
     void loadFillTexture(C_Surface *tex);
 };
 

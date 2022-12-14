@@ -4,9 +4,9 @@
 
 #include "core/macros.h"
 #include "engine/sdl_wrapper.h"
-#include "libs/glad/glad.h"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
+#include "libs/glad/glad.h"
 
 // Most of the code pulled in from here...
 #define R_USE_OPENGL
@@ -6141,7 +6141,7 @@ static void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute
                                                                                                    \
     impl->SetLineThickness = &SetLineThickness;                                                    \
     impl->GetLineThickness = &GetLineThickness;                                                    \
-    impl->Pixel = &Pixel;                                                                          \
+    impl->DrawPixel = &DrawPixel;                                                                  \
     impl->Line = &Line;                                                                            \
     impl->Arc = &Arc;                                                                              \
     impl->ArcFilled = &ArcFilled;                                                                  \
@@ -6259,9 +6259,9 @@ static float GetLineThickness(R_Renderer *renderer) {
     return renderer->current_context_target->context->line_thickness;
 }
 
-static void Pixel(R_Renderer *renderer, R_Target *target, float x, float y,
-                  METAENGINE_Color color) {
-    BEGIN_UNTEXTURED("R_Pixel", GL_POINTS, 1, 1);
+static void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y,
+                      METAENGINE_Color color) {
+    BEGIN_UNTEXTURED("R_DrawPixel", GL_POINTS, 1, 1);
 
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
 }

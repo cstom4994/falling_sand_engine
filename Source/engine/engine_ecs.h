@@ -3,8 +3,8 @@
 #ifndef _METADOT_ENGINEECS_H_
 #define _METADOT_ENGINEECS_H_
 
-#include "utils.h"
 #include "engine_core.h"
+#include "utils.h"
 
 //ECS Types
 typedef struct ComponentMask
@@ -65,7 +65,7 @@ typedef struct System
     void (*systemFree)();
 } System;
 
-typedef struct engineECS
+typedef struct engine_ecs
 {
     unsigned maxEntities;
     long int maxUsedIndex;
@@ -83,14 +83,14 @@ typedef struct engineECS
 
     //List containing all systems
     List SystemList;
-} engineECS;
+} engine_ecs;
 
 //ECS functions
 int InitECS(unsigned max_entities);
 void FreeECS();
 
 int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **data),
-                         void (*destructorFunc)(void **data), void *(*copyFunc)(void *));
+                         void (*destructorFunc)(void **data), void *(*copyFunc)(void *) );
 int RegisterNewSystem(char systemName[25], int priority, ComponentMask required,
                       ComponentMask excluded, void (*initFunc)(), void (*updateFunc)(),
                       void (*freeFunc)());

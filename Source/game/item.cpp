@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "item.hpp"
+#include "core/core.h"
 #include "core/macros.h"
 #include "engine/renderer/renderer_utils.h"
 
@@ -11,7 +12,7 @@ Item::~Item() {
     SDL_FreeSurface(surface);
 }
 
-Item *Item::makeItem(uint8_t flags, RigidBody *rb) {
+Item *Item::makeItem(U8 flags, RigidBody *rb) {
     Item *i;
 
     if (rb->item != NULL) {
@@ -59,17 +60,17 @@ U32 getpixel(C_Surface *surface, int x, int y) {
 
 void Item::loadFillTexture(C_Surface *tex) {
     fill.resize(capacity);
-    uint32_t maxN = 0;
-    for (uint16_t x = 0; x < tex->w; x++) {
-        for (uint16_t y = 0; y < tex->h; y++) {
+    U32 maxN = 0;
+    for (U16 x = 0; x < tex->w; x++) {
+        for (U16 y = 0; y < tex->h; y++) {
 
-            uint32_t color = R_GET_PIXEL(tex, x, y);
+            U32 color = R_GET_PIXEL(tex, x, y);
 
             // SDL_Color rgb;
             // U32 data = getpixel(tex, x, y);
             // SDL_GetRGB(data, tex->format, &rgb.r, &rgb.g, &rgb.b);
 
-            // uint32_t j = data;
+            // U32 j = data;
 
             // if (rgb.a > (U8)0)
             // {
@@ -79,10 +80,10 @@ void Item::loadFillTexture(C_Surface *tex) {
             // }
 
             if (((color >> 32) & 0xff) > 0) {
-                uint32_t n = color & 0x00ffffff;
+                U32 n = color & 0x00ffffff;
 
-                //uint32_t t = (n * 100) / col;
-                uint32_t t = n;
+                //U32 t = (n * 100) / col;
+                U32 t = n;
 
                 fill[t - 1] = {x, y};
                 if (t - 1 > maxN) maxN = t - 1;

@@ -82,21 +82,6 @@
 #define UTIL_dot(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
 // #define norm(v) sqrt(dot(v, v))// norm = length of  vector
 
-typedef struct Vector3
-{
-    float x;
-    float y;
-    float z;
-} Vector3;
-
-typedef struct Pixel
-{
-    unsigned char b;
-    unsigned char g;
-    unsigned char r;
-    unsigned char a;
-} Pixel;
-
 //Trie structures and interface
 
 //Add all supported types here, as 'Trie_type'

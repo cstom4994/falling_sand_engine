@@ -1640,7 +1640,7 @@ accLoadY = 0;*/
                 i = (int) ((i /
                             (float) GameIsolate_.world->WorldIsolate_.player->heldItem->capacity) *
                            GameIsolate_.world->WorldIsolate_.player->heldItem->fill.size());
-                UInt16Point pt = GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
+                U16Point pt = GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
                 R_GET_PIXEL(GameIsolate_.world->WorldIsolate_.player->heldItem->surface, pt.x,
                             pt.y) = 0x00;
 
@@ -1705,7 +1705,7 @@ accLoadY = 0;*/
                                                         ->heldItem->capacity) *
                                            GameIsolate_.world->WorldIsolate_.player->heldItem->fill
                                                    .size());
-                                UInt16Point pt =
+                                U16Point pt =
                                         GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
                                 U32 c = GameIsolate_.world
                                                 ->tiles[(x + xx) +

@@ -9,7 +9,7 @@ extern unsigned char initializedEngine;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-engineECS ECS = {.numberOfComponents = 0, .maxEntities = 0, .maxUsedIndex = 0, .Entities = 0};
+engine_ecs ECS = {.numberOfComponents = 0, .maxEntities = 0, .maxUsedIndex = 0, .Entities = 0};
 unsigned char initializedECS = 0;
 
 //----------------- ECS Functions -----------------

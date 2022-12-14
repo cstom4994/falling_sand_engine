@@ -10,7 +10,7 @@
 
 extern engineCore Core;
 
-extern engineECS ECS;
+extern engine_ecs ECS;
 extern unsigned char initializedECS;
 
 ////////////////////////////////////////////////////////////////////////////////

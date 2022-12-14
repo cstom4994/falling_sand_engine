@@ -3771,9 +3771,9 @@ float R_GetLineThickness(void) {
     return renderer->impl->GetLineThickness(renderer);
 }
 
-void R_Pixel(R_Target *target, float x, float y, METAENGINE_Color color) {
+void R_DrawPixel(R_Target *target, float x, float y, METAENGINE_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Pixel(renderer, target, x, y, color);
+    renderer->impl->DrawPixel(renderer, target, x, y, color);
 }
 
 void R_Line(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
