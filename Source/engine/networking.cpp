@@ -5,7 +5,7 @@
 #include "core/core.hpp"
 
 #include "engine/memory.hpp"
-#include "Networking.hpp"
+#include "networking.hpp"
 
 bool Networking::init() {
     // if (enet_initialize() != 0) {

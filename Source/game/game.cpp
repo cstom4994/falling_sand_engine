@@ -2020,7 +2020,7 @@ void Game::tick() {
         // entity fluid displacement & make solid
 
         for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.entities.size(); i++) {
-            Entity cur = *GameIsolate_.world->WorldIsolate_.entities[i];
+            WorldEntity cur = *GameIsolate_.world->WorldIsolate_.entities[i];
 
             for (int tx = 0; tx < cur.hw; tx++) {
                 for (int ty = 0; ty < cur.hh; ty++) {

@@ -5,7 +5,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine/memory.hpp"
-#include "engine/Networking.hpp"
+#include "engine/networking.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "game/filesystem.hpp"
 #include "game/game.hpp"

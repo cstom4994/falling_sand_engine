@@ -5,7 +5,7 @@
 
 #include "structures.hpp"
 #include "core/core.hpp"
-#include "engine/entity_components/entity_components.hpp"
+#include "engine/entity_components/worldentity.hpp"
 #include "materials.hpp"
 
 #include <functional>

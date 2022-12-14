@@ -90,7 +90,7 @@ void Player::setItemInHand(Item *item, World *world) {
     heldItem = item;
 }
 
-Player::Player() : Entity(true) {}
+Player::Player() : WorldEntity(true) {}
 
 Player::~Player() {
     if (heldItem) delete heldItem;

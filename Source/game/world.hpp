@@ -14,7 +14,7 @@
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 #include "libs/sparsehash/dense_hash_map.h"
-#include "Networking.hpp"
+#include "networking.hpp"
 #include "rigidbody.hpp"
 #include "structures.hpp"
 
@@ -79,7 +79,7 @@ public:
         google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;
         //std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
         std::vector<Populator *> populators;
-        std::vector<Entity *> entities;
+        std::vector<WorldEntity *> entities;
         Player *player = nullptr;
     } WorldIsolate_;
 

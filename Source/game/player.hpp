@@ -9,7 +9,7 @@
 
 class World;
 
-class Player : public Entity {
+class Player : public WorldEntity {
 public:
     Item *heldItem = nullptr;
     float holdAngle = 0;

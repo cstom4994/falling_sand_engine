@@ -7,7 +7,7 @@
 #include "core/macros.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
-#include "engine/Networking.hpp"
+#include "engine/networking.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/gpu.hpp"
 #include "engine/scripting.hpp"

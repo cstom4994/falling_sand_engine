@@ -14,7 +14,7 @@
 #include "core/threadpool.h"
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"
-#include "engine/Networking.hpp"
+#include "engine/networking.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting.hpp"
 #include "game/console.hpp"

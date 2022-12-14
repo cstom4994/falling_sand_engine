@@ -4,7 +4,7 @@ struct RigidBody;
 struct b2Body;
 struct R_Target;
 
-struct Entity
+struct WorldEntity
 {
     float x = 0;
     float y = 0;
@@ -19,8 +19,8 @@ struct Entity
 
     virtual void render(R_Target *target, int ofsX, int ofsY);
     virtual void renderLQ(R_Target *target, int ofsX, int ofsY);
-    Entity(bool isplayer);
-    ~Entity();
+    WorldEntity(bool isplayer);
+    ~WorldEntity();
 };
 
 struct EntityComponents

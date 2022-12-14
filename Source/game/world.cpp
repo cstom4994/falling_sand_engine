@@ -3156,7 +3156,7 @@ void World::tickEntities(R_Target *t) {
 
     C_Rect fr = {0, 0, width, height};
 
-    auto func = [&](Entity *cur) {
+    auto func = [&](WorldEntity *cur) {
         int nIntersect = 0;
         int avInX = 0;
         int avInY = 0;
