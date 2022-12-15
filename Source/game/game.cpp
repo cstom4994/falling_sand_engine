@@ -15,6 +15,7 @@
 #include "engine.h"
 #include "engine/engine.h"
 #include "engine/engine_cpp.h"
+#include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
@@ -25,7 +26,6 @@
 #include "engine/sdl_wrapper.h"
 #include "engine_platform.h"
 #include "game/console.hpp"
-#include "engine/filesystem.h"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
@@ -520,6 +520,7 @@ int Game::run(int argc, char *argv[]) {
                         //METADOT_INFO("Resizing window...");
                         R_SetWindowResolution(windowEvent.window.data1, windowEvent.window.data2);
                         R_ResetProjection(Render.realTarget);
+                        resolu(windowEvent.window.data1, windowEvent.window.data2);
                     }
                 }
 

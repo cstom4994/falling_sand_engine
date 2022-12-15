@@ -505,8 +505,8 @@ int metadot_bind_image(lua_State *L) {
     lua_pushcfunction(L, freeImage);
     lua_settable(L, -3);
 
-    LuaWrapper::metadot_load(L, imageLib_m, "_metadot_image_m");
-    LuaWrapper::metadot_load(L, imageLib, "_metadot_image");
+    metadot_load(L, imageLib_m, "_metadot_image_m");
+    metadot_load(L, imageLib, "_metadot_image");
 
     return 1;
 }
@@ -797,7 +797,7 @@ static const luaL_Reg gpuLib[] = {{"setPaletteColor", gpu_set_palette_color},
 int metadot_bind_gpu(lua_State *L) {
     translateStack = new int[32];
 
-    LuaWrapper::metadot_load(L, gpuLib, "_metadot_gpu");
+    metadot_load(L, gpuLib, "_metadot_gpu");
     lua_pushnumber(L, SCRN_WIDTH);
     lua_setfield(L, -2, "width");
     lua_pushnumber(L, SCRN_HEIGHT);
@@ -1541,8 +1541,8 @@ int metadot_bind_fs(lua_State *L) {
     lua_pushcfunction(L, fsObjCloseHandle);
     lua_settable(L, -3);
 
-    LuaWrapper::metadot_load(L, fsLib_m, "_metadot_fs_m");
-    LuaWrapper::metadot_load(L, fsLib, "_metadot_fs");
+    metadot_load(L, fsLib_m, "_metadot_fs_m");
+    metadot_load(L, fsLib, "_metadot_fs");
 
     return 1;
 }
@@ -2273,7 +2273,7 @@ static const luaL_Reg export_functions[] = {
 int metadot_bind_lz4(lua_State *L) {
     int table_index;
 
-    LuaWrapper::metadot_load(L, export_functions, "_metadot_lz4");
+    metadot_load(L, export_functions, "_metadot_lz4");
 
     table_index = lua_gettop(L);
 

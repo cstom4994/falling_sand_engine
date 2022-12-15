@@ -7,13 +7,13 @@
 #include "engine/code_reflection.hpp"
 #include "engine/domainlang.hpp"
 #include "engine/engine_funcwrap.hpp"
+#include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/js_wrapper.hpp"
 #include "engine/lua_wrapper.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting.hpp"
 #include "game/background.hpp"
-#include "engine/filesystem.h"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 
@@ -171,7 +171,7 @@ void LuaCore::Init() {
     metadot_bind_fs(m_L);
     metadot_bind_lz4(m_L);
 
-    LuaWrapper::metadot_preload(m_L, luaopen_ffi, "ffi");
+    metadot_preload(m_L, luaopen_ffi, "ffi");
     lua_getglobal(m_L, "require");
     lua_pushstring(m_L, "ffi");
     lua_call(m_L, 1, 0);
