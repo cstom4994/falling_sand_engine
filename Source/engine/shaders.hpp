@@ -6,7 +6,7 @@
 #include "engine/sdl_wrapper.h"
 
 #include "engine/renderer/renderer_gpu.h"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 
 #include <cstdlib>
 #include <string>
@@ -37,11 +37,6 @@ public:
     virtual void prepare() = 0;
 
     void activate() { R_ActivateShaderProgram(shader, &block); }
-
-    template<typename T>
-    void uniform(std::string name, const T u);
-    template<typename T, size_t N>
-    void uniform(std::string name, const T (&u)[N]);
 };
 
 class WaterFlowPassShader : public ShaderBase {
@@ -49,8 +44,8 @@ public:
     bool dirty = false;
 
     WaterFlowPassShader()
-        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                     METADOT_RESLOC_STR("data/shaders/waterFlow.frag")){};
+        : ShaderBase(METADOT_RESLOC("data/shaders/common.vert"),
+                     METADOT_RESLOC("data/shaders/waterFlow.frag")){};
 
     void prepare() {}
 
@@ -65,8 +60,8 @@ public:
 class WaterShader : public ShaderBase {
 public:
     WaterShader()
-        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                     METADOT_RESLOC_STR("data/shaders/water.frag")){};
+        : ShaderBase(METADOT_RESLOC("data/shaders/common.vert"),
+                     METADOT_RESLOC("data/shaders/water.frag")){};
 
     void prepare() {}
 
@@ -117,8 +112,8 @@ public:
     bool lastDitheringEnabled = false;
 
     NewLightingShader()
-        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                     METADOT_RESLOC_STR("data/shaders/newLighting.frag")){};
+        : ShaderBase(METADOT_RESLOC("data/shaders/common.vert"),
+                     METADOT_RESLOC("data/shaders/newLighting.frag")){};
 
     void prepare() {}
 
@@ -192,8 +187,8 @@ public:
 class FireShader : public ShaderBase {
 public:
     FireShader()
-        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                     METADOT_RESLOC_STR("data/shaders/fire.frag")){};
+        : ShaderBase(METADOT_RESLOC("data/shaders/common.vert"),
+                     METADOT_RESLOC("data/shaders/fire.frag")){};
 
     void prepare() {}
 
@@ -211,8 +206,8 @@ public:
 class Fire2Shader : public ShaderBase {
 public:
     Fire2Shader()
-        : ShaderBase(METADOT_RESLOC_STR("data/shaders/common.vert"),
-                     METADOT_RESLOC_STR("data/shaders/fire2.frag")){};
+        : ShaderBase(METADOT_RESLOC("data/shaders/common.vert"),
+                     METADOT_RESLOC("data/shaders/fire2.frag")){};
 
     void prepare() {}
 

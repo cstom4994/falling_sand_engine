@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "game_datastruct.hpp"
+#include "core/core.h"
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
@@ -8,7 +9,7 @@
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/renderer_utils.h"
 #include "game/chunk.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
 #include "structures.hpp"
@@ -501,11 +502,11 @@ void Settings::Save(std::string setting_file) {
 
 void Settings::Init(bool openDebugUIs) {
 
-    std::string setting_file = METADOT_RESLOC("data/scripts/settings.lua");
+    auto setting_file = METADOT_RESLOC("data/scripts/settings.lua");
 
     auto L = global.scripts->LuaRuntime;
 
-    if (!FUtil::exists(setting_file)) { this->Save(setting_file); }
+    if (!FUtil_exists(setting_file)) { this->Save(setting_file); }
 
     L->GetWrapper()->dofile(setting_file);
 
@@ -555,7 +556,7 @@ void Settings::Init(bool openDebugUIs) {
         server_port = 25555;
 
     } else {
-        METADOT_BUG("SettingsData WAS NULL");
+        METADOT_ERROR("SettingsData WAS NULL");
     }
 
     networkMode = engine_networkmode::HOST;// force

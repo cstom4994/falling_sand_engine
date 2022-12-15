@@ -153,6 +153,7 @@ if (has_config("build_audio")) then
     if (is_os("macosx")) then
         add_linkdirs("output")
         add_rpathdirs("./")
+        add_rpathdirs("./output")
     end
 end
 
@@ -229,6 +230,6 @@ do
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_files("Source/tests/TestFFI.c")
+    add_files("Source/tests/test_ffi.c")
     add_headerfiles("Source/tests/**.h")
 end

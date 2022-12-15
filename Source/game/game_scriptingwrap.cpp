@@ -6,7 +6,7 @@
 #include "engine/imgui_binder.hpp"
 #include "engine/reflectionflat.hpp"
 #include "game/controls.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game_resources.hpp"
 #include "game/materials.hpp"
 #include "js_wrapper.hpp"
@@ -28,7 +28,7 @@ static void audio_init() { global.audioEngine.Init(); }
 
 static void audio_load_bank(std::string name, unsigned int type) {
 #if defined(METADOT_BUILD_AUDIO)
-    global.audioEngine.LoadBank(METADOT_RESLOC(name), type);
+    global.audioEngine.LoadBank(METADOT_RESLOC(name.c_str()), type);
 #endif
 }
 
@@ -43,7 +43,7 @@ static void controls_init() { Controls::initKey(); }
 static void load_lua(std::string luafile) {}
 static void load_script(std::string scriptfile) {
     auto context = global.scripts->JsContext;
-    context->evalFile(METADOT_RESLOC_STR(scriptfile));
+    context->evalFile(METADOT_RESLOC(scriptfile.c_str()));
 }
 
 #pragma endregion GameScriptingBind_1
@@ -101,7 +101,7 @@ void GameScriptingWrap::Bind() {
         )Js",
                       "<import>", JS_EVAL_TYPE_MODULE);
 
-        context->evalFile(METADOT_RESLOC_STR("data/scripts/init.js"));
+        context->evalFile(METADOT_RESLOC("data/scripts/init.js"));
 
         auto OnGameDataLoad = (std::function<void(void)>) context->eval("OnGameDataLoad");
         auto OnGameEngineLoad = (std::function<void(void)>) context->eval("OnGameEngineLoad");

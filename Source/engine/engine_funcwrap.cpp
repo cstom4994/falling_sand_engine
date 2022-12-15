@@ -36,8 +36,7 @@
 #define f_mkdir(a, b) _mkdir(a)
 #endif
 
-extern engine_core Core;
-extern engine_render Render;
+IMPLENGINE();
 
 namespace TestData {
     bool shaderOn = false;

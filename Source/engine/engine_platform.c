@@ -3,18 +3,14 @@
 #include "engine_platform.h"
 #include "core/const.h"
 #include "core/core.h"
-#include "engine/engine_network.h"
+#include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
-#include "engine_core.h"
-#include "engine_render.h"
 
 #include "libs/glad/glad.h"
 #include <string.h>
 
-extern engine_core Core;
-extern engine_render Render;
-extern engine_screen Screen;
+IMPLENGINE();
 
 int ParseRunArgs(int argc, char *argv[]) {
 
@@ -101,9 +97,9 @@ int InitWindow() {
 
     // if (global.game->GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
 
-    //     font64 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 64);
-    //     font16 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
-    //     font14 = Drawing::LoadFont(METADOT_RESLOC_STR("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 14);
+    //     font64 = Drawing::LoadFont(METADOT_RESLOC("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 64);
+    //     font16 = Drawing::LoadFont(METADOT_RESLOC("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 16);
+    //     font14 = Drawing::LoadFont(METADOT_RESLOC("data/assets/fonts/pixel_operator/PixelOperator.ttf"), 14);
     // }
 
 #if defined(_WIN32)

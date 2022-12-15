@@ -13,7 +13,7 @@
 #include "engine/memory.hpp"
 #include "engine/scripting.hpp"
 #include "game/background.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 
@@ -100,8 +100,8 @@ static int metadot_run_lua_file_script(lua_State *L) {
     auto LuaCore = global.scripts->LuaRuntime;
     METADOT_ASSERT_E(LuaCore);
     if (SUtil::startsWith(string, "Script:"))
-        SUtil::replaceWith(string, "Script:", METADOT_RESLOC_STR("data/scripts/"));
-    LuaCore->RunScriptFromFile(string);
+        SUtil::replaceWith(string, "Script:", METADOT_RESLOC("data/scripts/"));
+    LuaCore->RunScriptFromFile(string.c_str());
     return 0;
 }
 
@@ -188,25 +188,24 @@ void LuaCore::Init() {
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua["METADOT_RESLOC"] =
-            LuaWrapper::function([](const std::string &a) { return METADOT_RESLOC(a); });
+    s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
 
     s_lua.dostring(
             MetaEngine::Format("package.path = "
                                "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
                                "?/?.lua;' .. package.path",
-                               METADOT_RESLOC("data/scripts"), FUtil::getExecutableFolderPath()),
+                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath()),
             s_lua.globalTable());
 
     s_lua.dostring(
             MetaEngine::Format("package.cpath = "
                                "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
                                "?/?.{2};' .. package.cpath",
-                               METADOT_RESLOC("data/scripts"), FUtil::getExecutableFolderPath(),
+                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(),
                                "dylib"),
             s_lua.globalTable());
 
-    s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC_STR("data/scripts/coroutines.lua"));
+    s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/coroutines.lua"));
     RunScriptFromFile("data/scripts/startup.lua");
 }
 
@@ -222,10 +221,10 @@ void LuaCore::RunScriptInConsole(lua_State *L, const char *c) {
     }
 }
 
-void LuaCore::RunScriptFromFile(const std::string &filePath) {
+void LuaCore::RunScriptFromFile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(m_L, METADOT_RESLOC_STR(filePath));
+    int result = luaL_loadfile(m_L, METADOT_RESLOC(filePath));
     if (result != LUA_OK) {
         print_error(m_L);
         return;
@@ -364,8 +363,9 @@ void integrationExample() {
 void Scripts::Init() {
     METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);
     LoadMuFuncs();
-    std::string init_src = FUtil::readFileString("data/init.mu");
+    char *init_src = futil_readfilestring("data/init.mu");
     MuDSL->evaluate(init_src);
+    gc_free(&gc, init_src);
     // auto end = MuDSL->callFunction("init");
 
     METADOT_NEW(C, LuaRuntime, LuaCore);

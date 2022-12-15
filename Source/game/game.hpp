@@ -18,7 +18,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting.hpp"
 #include "game/console.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"

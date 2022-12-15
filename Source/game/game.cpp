@@ -25,7 +25,7 @@
 #include "engine/sdl_wrapper.h"
 #include "engine_platform.h"
 #include "game/console.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
@@ -34,6 +34,7 @@
 #include "game/player.hpp"
 #include "game/utils.hpp"
 
+#include "physfs/physfs.h"
 #include "world_generator.cpp"
 
 #include "libs/glad/glad.h"
@@ -45,9 +46,7 @@ extern void fuckme();
 
 Global global;
 
-extern engine_core Core;
-extern engine_render Render;
-extern engine_screen Screen;
+IMPLENGINE();
 
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
@@ -66,15 +65,15 @@ int Game::init(int argc, char *argv[]) {
 
     ParseRunArgs(argc, argv);
 
-    ResourceWorker::init();
+    PHYSFS_init(0);
+
+    ResourceWorker_init();
 
     METADOT_INFO("Starting game...");
 
     InitECS(128);
 
     if (!InitEngine()) return 1;
-
-    
 
     // load splash screen
     METADOT_INFO("Loading splash screen...");
@@ -92,7 +91,6 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Loading ImGUI");
     METADOT_NEW(C, global.ImGuiCore, ImGuiCore);
     global.ImGuiCore->Init(Core.window, Core.glContext);
-
 
     // scripting system
     auto loadscript = [&]() {
@@ -4260,7 +4258,8 @@ void Game::quitToMainMenu() {
     std::string worldName = "mainMenu";
     char *wn = (char *) worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC_STR(MetaEngine::Format("saves/{0}", wn)));
+    METADOT_INFO("Loading main menu @ %s",
+                 METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
     GameUI::MainMenuUI::visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -4270,7 +4269,7 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn));
+    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
 
     METADOT_NEW(C, GameIsolate_.world, World);
     GameIsolate_.world->noSaveLoad = true;

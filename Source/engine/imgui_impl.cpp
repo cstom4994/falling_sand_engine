@@ -7,9 +7,10 @@
 
 #include "imgui_impl.hpp"
 #include "core/core.hpp"
+#include "core/gc.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "imgui_impl.hpp"
 
 #include <algorithm>
@@ -628,24 +629,24 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
     int glsl_version = 130;
     sscanf(bd->GlslVersionString, "#version %d", &glsl_version);
 
-    std::string vertex_shader =
-            FUtil::readFileString(METADOT_RESLOC_STR("data/shaders/imgui_common.vert"));
-    std::string fragment_shader =
-            FUtil::readFileString(METADOT_RESLOC_STR("data/shaders/imgui_common.frag"));
-
-    const char *vertbuffer = vertex_shader.c_str();
-    const char *fragbuffer = fragment_shader.c_str();
+    char *vertex_shader =
+            futil_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.vert"));
+    char *fragment_shader =
+            futil_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.frag"));
 
     // Create shaders
     GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert_handle, 1, &vertbuffer, nullptr);
+    glShaderSource(vert_handle, 1, &vertex_shader, nullptr);
     glCompileShader(vert_handle);
     CheckShader(vert_handle, "vertex shader");
 
     GLuint frag_handle = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag_handle, 1, &fragbuffer, nullptr);
+    glShaderSource(frag_handle, 1, &fragment_shader, nullptr);
     glCompileShader(frag_handle);
     CheckShader(frag_handle, "fragment shader");
+
+    gc_free(&gc, vertex_shader);
+    gc_free(&gc, fragment_shader);
 
     // Link
     bd->ShaderHandle = glCreateProgram();
@@ -2867,7 +2868,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
         }// end of WM_IME_COMPOSITION
 
 #if defined(UNICODE)
-        // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
+            // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
             // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
 #else

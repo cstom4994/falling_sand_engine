@@ -11,16 +11,18 @@ U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename
     U32 shader;
     R_Renderer *renderer = R_GetCurrentRenderer();
 
-    std::string source = FUtil::readFileString(filename);
+    char *source = futil_readfilestring(filename);
 
-    if (source.empty()) {
+    if (!source) {
         R_PushErrorCode("load_shader", R_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found",
                         filename);
         return METADOT_FAILED;
     }
 
     // Compile the shader
-    shader = R_CompileShader(shader_type, source.c_str());
+    shader = R_CompileShader(shader_type, source);
+
+    gc_free(&gc, source);
 
     return shader;
 }
@@ -59,73 +61,6 @@ R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(U32 *p, const char *vertex_sh
 }
 
 void METAENGINE_Shaders_FreeShader(U32 p) { R_FreeShaderProgram(p); }
-
-template<typename T>
-void ShaderBase::uniform(std::string name, T u) {
-    std::cout << "Error: Data type not recognized for uniform " << name << "." << std::endl;
-}
-
-template<typename T, size_t N>
-void ShaderBase::uniform(std::string name, const T (&u)[N]) {
-    std::cout << "Error: Data type not recognized for uniform " << name << "." << std::endl;
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const bool u) {
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform1i(glGetUniformLocation(program, name.c_str()), u);
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const int u) {
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform1i(glGetUniformLocation(program, name.c_str()), u);
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const float u) {
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform1f(glGetUniformLocation(program, name.c_str()), u);
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const double u) {//GLSL Intrinsically Single Precision
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform1f(glGetUniformLocation(program, name.c_str()), (float) u);
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const b2Vec2 u) {
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform2fv(glGetUniformLocation(program, name.c_str()), 1, &u.x);
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const float (&u)[3]) {
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform3fv(glGetUniformLocation(program, name.c_str()), 1, &u[0]);
-}
-
-template<>
-void ShaderBase::uniform(std::string name, const float (&u)[4]) {
-    int program = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    glUniform4fv(glGetUniformLocation(program, name.c_str()), 1, &u[0]);
-}
-
-// template<>
-// void ShaderBase::uniform(std::string name, const std::vector<glm::mat4> u) {
-//     int program = 0;
-//     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-//     glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), u.size(), GL_FALSE,
-//                        &u[0][0][0]);
-// }
 
 void ShaderWorker::LoadShaders() {
     if (waterShader) METADOT_DELETE(C, waterShader, WaterShader);

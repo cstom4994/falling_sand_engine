@@ -13,7 +13,7 @@
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game_resources.hpp"
 #include "game/materials.hpp"
 #include "game/utils.hpp"
@@ -3601,7 +3601,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
     char *metaFile = new char[255];
     snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
 
-    if (!FUtil::exists(metaFile)) { meta.save(worldFileName); }
+    if (!FUtil_exists(METADOT_RESLOC(metaFile))) { meta.save(worldFileName); }
 
     L->GetWrapper()->dofile(metaFile);
 

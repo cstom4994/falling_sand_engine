@@ -1,6 +1,7 @@
 # .gitignore config
 
 output/
+saves/
 build/
 .xmake/
 *.gen.*
@@ -16,6 +17,7 @@ Source/Generated
 
 build.bat
 compile_commands.json
+imgui.ini
 
 # clangd
 .clangd/

@@ -2,11 +2,12 @@
 
 #include "game/game_ui.hpp"
 #include "core/global.hpp"
+#include "engine.h"
 #include "engine/engine_cpp.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine_network.h"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/imgui_core.hpp"
@@ -18,8 +19,7 @@
 
 #include <string>
 
-extern engine_screen Screen;
-extern engine_render Render;
+IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -420,7 +420,7 @@ namespace GameUI {
             if (worldName == ".DS_Store") continue;
 
             WorldMeta meta = WorldMeta::loadWorldMeta(
-                    METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName)));
+                    METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()));
 
             worlds.push_back(std::make_tuple(worldName, meta));
         }
@@ -629,7 +629,7 @@ namespace GameUI {
 
                     World *w = nullptr;
                     METADOT_NEW(C, w, World);
-                    w->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName)),
+                    w->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()),
                             (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W +
                                     CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
@@ -1389,7 +1389,7 @@ namespace GameUI {
             worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
             METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(),
-                         METADOT_RESLOC_STR(MetaEngine::Format("saves/{0}", wn)));
+                         METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
             MainMenuUI::visible = false;
             game->setGameState(LOADING, INGAME);
 
@@ -1407,7 +1407,7 @@ namespace GameUI {
                 generator = new MaterialTestGenerator();
             }
 
-            std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn));
+            std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
 
             METADOT_NEW(C, game->GameIsolate_.world, World);
             game->GameIsolate_.world->init(
@@ -1459,7 +1459,8 @@ namespace GameUI {
         std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
 
         std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
-        std::string folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldFolderName));
+        std::string folder =
+                METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldFolderName).c_str());
         struct stat buffer;
         bool exists = (stat(folder.c_str(), &buffer) == 0);
 
@@ -1467,7 +1468,7 @@ namespace GameUI {
         int i = 2;
         while (exists) {
             newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
-            folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", newWorldFolderName));
+            folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", newWorldFolderName).c_str());
 
             exists = (stat(folder.c_str(), &buffer) == 0);
 

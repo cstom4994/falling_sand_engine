@@ -77,8 +77,8 @@ protected:
 };
 
 namespace SUtil {
-    typedef std::string Stringo;
-    typedef std::string_view Viewo;
+    typedef std::string String;
+    typedef std::string_view StringView;
 
     inline std::string ws2s(const std::wstring &wstr) {
         using convert_typeX = std::codecvt_utf8<wchar_t>;
@@ -89,22 +89,24 @@ namespace SUtil {
 
     inline bool equals(const char *a, const char *c) { return strcmp(a, c) == 0; }
 
-    inline bool startsWith(Viewo s, Viewo prefix) {
+    inline bool startsWith(StringView s, StringView prefix) {
         return prefix.size() <= s.size() && (strncmp(prefix.data(), s.data(), prefix.size()) == 0);
     }
 
-    inline bool startsWith(Viewo s, char prefix) { return !s.empty() && s[0] == prefix; }
+    inline bool startsWith(StringView s, char prefix) { return !s.empty() && s[0] == prefix; }
 
     inline bool startsWith(const char *s, const char *prefix) {
         return strncmp(s, prefix, strlen(prefix)) == 0;
     }
 
-    inline bool endsWith(Viewo s, Viewo suffix) {
+    inline bool endsWith(StringView s, StringView suffix) {
         return suffix.size() <= s.size() &&
                strncmp(suffix.data(), s.data() + s.size() - suffix.size(), suffix.size()) == 0;
     }
 
-    inline bool endsWith(Viewo s, char suffix) { return !s.empty() && s[s.size() - 1] == suffix; }
+    inline bool endsWith(StringView s, char suffix) {
+        return !s.empty() && s[s.size() - 1] == suffix;
+    }
 
     inline bool endsWith(const char *s, const char *suffix) {
         auto sizeS = strlen(s);
@@ -128,7 +130,7 @@ namespace SUtil {
         for (int i = 0; i < (l & 3); ++i) { s[ind++] = std::tolower(s[ind]); }
     }
 
-    inline void toLower(Stringo &ss) {
+    inline void toLower(String &ss) {
         int l = ss.size();
         auto s = ss.data();
         int ind = 0;
@@ -159,7 +161,7 @@ namespace SUtil {
         for (int i = 0; i < (l & 3); ++i) { s[ind++] = std::toupper(s[ind]); }
     }
 
-    inline void toUpper(Stringo &ss) {
+    inline void toUpper(String &ss) {
         int l = ss.size();
         auto s = ss.data();
         int ind = 0;
@@ -184,7 +186,7 @@ namespace SUtil {
         }
     }
 
-    inline bool replaceWith(Stringo &src, char what, char with) {
+    inline bool replaceWith(String &src, char what, char with) {
         for (int i = 0; i < src.size(); ++i) {
             auto &id = src.data()[i];
             bool isWhat = id == what;
@@ -193,15 +195,15 @@ namespace SUtil {
         return true;
     }
 
-    inline bool replaceWith(Stringo &src, const char *what, const char *with) {
-        Stringo out;
+    inline bool replaceWith(String &src, const char *what, const char *with) {
+        String out;
         size_t whatlen = strlen(what);
         out.reserve(src.size());
         size_t ind = 0;
         size_t lastInd = 0;
         while (true) {
             ind = src.find(what, ind);
-            if (ind == Stringo::npos) {
+            if (ind == String::npos) {
                 out += src.substr(lastInd);
                 break;
             }
@@ -213,7 +215,7 @@ namespace SUtil {
         return true;
     }
 
-    inline bool replaceWith(Stringo &src, const char *what, const char *with, int times) {
+    inline bool replaceWith(String &src, const char *what, const char *with, int times) {
         for (int i = 0; i < times; ++i) replaceWith(src, what, with);
         return true;
     }
@@ -240,12 +242,12 @@ namespace SUtil {
             }
         }
     }*/
-    inline void splitString(const Stringo &line, std::vector<Stringo> &words,
+    inline void splitString(const String &line, std::vector<String> &words,
                             const char *divider = " \n\t") {
         auto beginIdx = line.find_first_not_of(divider, 0);
-        while (beginIdx != Stringo::npos) {
+        while (beginIdx != String::npos) {
             auto endIdx = line.find_first_of(divider, beginIdx);
-            if (endIdx != Stringo::npos) {
+            if (endIdx != String::npos) {
                 words.emplace_back(line.data() + beginIdx, endIdx - beginIdx);
                 beginIdx = line.find_first_not_of(divider, endIdx);
             } else {
@@ -291,8 +293,8 @@ namespace SUtil {
                       std::is_same<DividerType, char>::value);
 
     private:
-        Viewo m_source;
-        Viewo m_pointer;
+        StringView m_source;
+        StringView m_pointer;
         // this fixes 1 edge case when m_source end with m_divider
         DividerType m_divider;
         bool m_ending = false;
@@ -309,43 +311,44 @@ namespace SUtil {
                     //check if this is ending
                     //the next one will be false
                     if (m_source.size() == m_pointer.size()) {
-                        m_source = Viewo(nullptr, 0);
+                        m_source = StringView(nullptr, 0);
                     } else {
                         auto viewSize = m_pointer.size();
-                        m_source = Viewo(m_source.data() + viewSize + 1,
-                                         m_source.size() - viewSize - 1);
+                        m_source = StringView(m_source.data() + viewSize + 1,
+                                              m_source.size() - viewSize - 1);
                         //shift source by viewSize
 
                         auto nextDivi = m_source.find_first_of(m_divider, 0);
-                        if (nextDivi != Stringo::npos) m_pointer = Viewo(m_source.data(), nextDivi);
+                        if (nextDivi != String::npos)
+                            m_pointer = StringView(m_source.data(), nextDivi);
                         else
-                            m_pointer = Viewo(m_source.data(), m_source.size());
+                            m_pointer = StringView(m_source.data(), m_source.size());
                     }
                 }
             } else {
                 //check if this is ending
                 //the next one will be false
                 if (m_source.size() == m_pointer.size()) {
-                    m_source = Viewo(nullptr, 0);
+                    m_source = StringView(nullptr, 0);
                     m_ending = false;
                 } else {
                     auto viewSize = m_pointer.size();
-                    m_source =
-                            Viewo(m_source.data() + viewSize + 1, m_source.size() - viewSize - 1);
+                    m_source = StringView(m_source.data() + viewSize + 1,
+                                          m_source.size() - viewSize - 1);
                     //shift source by viewSize
                     if (m_source.empty()) m_ending = true;
                     auto nextDivi = m_source.find_first_of(m_divider, 0);
-                    if (nextDivi != Stringo::npos) m_pointer = Viewo(m_source.data(), nextDivi);
+                    if (nextDivi != String::npos) m_pointer = StringView(m_source.data(), nextDivi);
                     else
-                        m_pointer = Viewo(m_source.data(), m_source.size());
+                        m_pointer = StringView(m_source.data(), m_source.size());
                 }
             }
         }
 
     public:
-        SplitIterator(Viewo src, DividerType divider) : m_source(src), m_divider(divider) {
+        SplitIterator(StringView src, DividerType divider) : m_source(src), m_divider(divider) {
             auto div = m_source.find_first_of(m_divider, 0);
-            m_pointer = Viewo(m_source.data(), div == Stringo::npos ? m_source.size() : div);
+            m_pointer = StringView(m_source.data(), div == String::npos ? m_source.size() : div);
             if constexpr (ignoreBlanks) {
                 if (m_pointer.empty()) step();
             }
@@ -374,18 +377,18 @@ namespace SUtil {
             return temp;
         }
 
-        const Viewo &operator*() {
+        const StringView &operator*() {
             if (throwException &&
                 !operator bool())//Attempt to access* it or it->when no word is left in the iterator
-                throw Stringo("No Word Left");
+                throw String("No Word Left");
             return m_pointer;
         }
 
-        const Viewo *operator->() {
+        const StringView *operator->() {
             if (throwException &&
                 !
                 operator bool())//Attempt to access *it or it-> when no word is left in the iterator
-                throw Stringo("No Word Left");
+                throw String("No Word Left");
             return &m_pointer;
         }
     };
@@ -393,14 +396,14 @@ namespace SUtil {
     //removes comments: (replaces with ' ')
     //	1. one liner starting with "//"
     //	2. block comment bounded by "/*" and "*/"
-    inline void removeComments(Stringo &src) {
+    inline void removeComments(String &src) {
         size_t offset = 0;
         bool opened = false;//multiliner opened
         size_t openedStart = 0;
         while (true) {
             auto slash = src.find_first_of('/', offset);
-            if (slash != Stringo::npos) {
-                Stringo s = src.substr(slash);
+            if (slash != String::npos) {
+                String s = src.substr(slash);
                 if (!opened) {
                     if (src.size() == slash - 1) return;
 
@@ -408,7 +411,7 @@ namespace SUtil {
                     if (next == '/')//one liner
                     {
                         auto end = src.find_first_of('\n', slash + 1);
-                        if (end == Stringo::npos) {
+                        if (end == String::npos) {
                             memset(src.data() + slash, ' ', src.size() - 1 - slash);
                             return;
                         }
@@ -443,11 +446,11 @@ namespace SUtil {
 
     std::u32string utf8toCodePoints(const char *c);
 
-    inline std::u32string utf8toCodePoints(const Stringo &c) { return utf8toCodePoints(c.c_str()); }
+    inline std::u32string utf8toCodePoints(const String &c) { return utf8toCodePoints(c.c_str()); }
 
     // converts ascii u32 string to string
     // use only if you know that there are only ascii characters
-    Stringo u32StringToString(std::u32string_view s);
+    String u32StringToString(std::u32string_view s);
 
     // returns first occurrence of digit or nullptr
     inline const char *skipToNextDigit(const char *c) {
@@ -484,7 +487,7 @@ namespace SUtil {
     // keeps parsing numbers until size is reached or until there are no numbers
     // actualSize is set to number of numbers actually parsed
     template<int size, typename numberType>
-    void parseNumbers(const Stringo &s, numberType ray[size], int *actualSize = nullptr) {
+    void parseNumbers(const String &s, numberType ray[size], int *actualSize = nullptr) {
         parseNumbers<size>(s.c_str(), ray, actualSize);
     }
 

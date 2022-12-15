@@ -73,7 +73,7 @@ public:
     LuaWrapper::State *GetWrapper() { return &s_lua; }
     void RunScriptInConsole(lua_State *L, const char *c);
 
-    void RunScriptFromFile(const std::string &filePath);
+    void RunScriptFromFile(const char *filePath);
     void Update();
     void Init();
     void End();

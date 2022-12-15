@@ -8,10 +8,10 @@
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/networking.hpp"
-#include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/gpu.hpp"
+#include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting.hpp"
-#include "game/filesystem.hpp"
+#include "engine/filesystem.h"
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
@@ -20,8 +20,8 @@
 #include "game_datastruct.hpp"
 #include "imgui/imgui.h"
 
-#include "libs/imgui/implot.h"
 #include "libs/glad/glad.h"
+#include "libs/imgui/implot.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -210,8 +210,8 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
     io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
 #else
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf").c_str(), 22.0f,
-                                 &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 22.0f, &config,
+                                 io.Fonts->GetGlyphRangesChineseFull());
 
 #endif
 
@@ -644,7 +644,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::BeginTabBar("ViewContents");
 
             for (auto &view: view_contents) {
-                if (ImGui::BeginTabItem(FUtil::GetFileName(view.file).c_str())) {
+                if (ImGui::BeginTabItem(FUtil_GetFileName(view.file.c_str()))) {
                     view_editing = &view;
 
                     if (!view_editing->is_edited) {
@@ -667,7 +667,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                                     editor.IsOverwrite() ? "Ovr" : "Ins",
                                     editor.CanUndo() ? "*" : " ",
                                     editor.GetLanguageDefinition().mName.c_str(),
-                                    FUtil::GetFileName(view_editing->file).c_str());
+                                    FUtil_GetFileName(view_editing->file.c_str()));
 
                         editor.Render("TextEditor");
                         break;

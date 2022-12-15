@@ -6,9 +6,9 @@
 #include "core/global.hpp"
 #include "engine/memory.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/sdl_wrapper.h"
 #include "engine/scripting.hpp"
-#include "game/filesystem.hpp"
+#include "engine/sdl_wrapper.h"
+#include "engine/filesystem.h"
 
 #include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"
@@ -70,10 +70,10 @@ C_Surface *Textures::LoadTexture(std::string path, U32 pixelFormat) {
     int req_format = STBI_rgb_alpha;
     int width, height, orig_format;
     unsigned char *data =
-            stbi_load(METADOT_RESLOC_STR(path), &width, &height, &orig_format, req_format);
+            stbi_load(METADOT_RESLOC(path.c_str()), &width, &height, &orig_format, req_format);
     if (data == NULL) {
         std::cout << "Loading image failed: " << stbi_failure_reason()
-                  << " ::" << METADOT_RESLOC_STR(path) << std::endl;
+                  << " ::" << METADOT_RESLOC(path.c_str()) << std::endl;
     }
 
     // Set up the pixel format color masks for RGB(A) byte arrays.
@@ -113,7 +113,7 @@ C_Surface *Textures::LoadTexture(std::string path, U32 pixelFormat) {
 
 C_Surface *Textures::loadAseprite(std::string path) {
 
-    Ase_Output *ase = Ase_Load(METADOT_RESLOC(path));
+    Ase_Output *ase = Ase_Load(METADOT_RESLOC(path.c_str()));
 
     if (NULL == ase) return nullptr;
 

@@ -3,13 +3,25 @@
 #ifndef _METADOT_ENGINE_H_
 #define _METADOT_ENGINE_H_
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
+
+#include "engine_core.h"
+#include "engine_ecs.h"
+#include "engine_network.h"
+#include "engine_platform.h"
+#include "engine_render.h"
 
 #include "utils.h"
+
+#define IMPLENGINE()                                                                               \
+    extern engine_core Core;                                                                       \
+    extern engine_render Render;                                                                   \
+    extern engine_screen Screen;                                                                   \
+    extern engine_ecs ECS
 
 //Engine functions called from main
 int InitEngine();

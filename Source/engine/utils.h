@@ -263,4 +263,8 @@ void Vector3ToTable(lua_State *L, Vector3 vector);
 int StringCompareEqual(char *stringA, char *stringB);
 int StringCompareEqualCaseInsensitive(char *stringA, char *stringB);
 
+inline R_bool startsWith(const char *s, const char *prefix) {
+    return strlen(prefix) <= strlen(s) && (strncmp(prefix, s, strlen(prefix)) == 0);
+}
+
 #endif
