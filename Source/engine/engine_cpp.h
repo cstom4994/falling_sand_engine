@@ -11,6 +11,9 @@ extern "C"
 #include "engine.h"
 #include "engine_core.h"
 #include "engine_ecs.h"
+#include "engine_network.h"
+#include "engine_platform.h"
+#include "engine_render.h"
 #include "util.h"
 
 #if defined(__cplusplus)

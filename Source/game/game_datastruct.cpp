@@ -4,6 +4,7 @@
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
+#include "engine/engine_network.h"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/renderer_utils.h"
 #include "game/chunk.hpp"
@@ -549,7 +550,7 @@ void Settings::Init(bool openDebugUIs) {
 
         LoadLuaConfig((*this), luat, hd_objects_size);
 
-        networkMode = NetworkMode::ERROR;
+        networkMode = engine_networkmode::ERROR;
         server_ip = "127.0.0.1";
         server_port = 25555;
 
@@ -557,7 +558,7 @@ void Settings::Init(bool openDebugUIs) {
         METADOT_BUG("SettingsData WAS NULL");
     }
 
-    networkMode = NetworkMode::HOST;// force
+    networkMode = engine_networkmode::HOST;// force
 
     GameUI::DebugDrawUI::visible = openDebugUIs;
     draw_frame_graph = openDebugUIs;

@@ -4,7 +4,7 @@
 #define _METADOT_UTILS_HPP_
 
 #include "core/core.hpp"
-#include "engine/platform.hpp"
+#include "engine/engine_platform.h"
 
 #include <algorithm>
 #include <bitset>

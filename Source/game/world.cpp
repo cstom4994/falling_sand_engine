@@ -7,6 +7,7 @@
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
+#include "engine/engine_cpp.h"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/lua_wrapper.hpp"
 #include "engine/math.hpp"
@@ -67,7 +68,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
     if (updateRigidBodyHitboxPool == nullptr)
         METADOT_NEW(C, updateRigidBodyHitboxPool, ThreadPool, 8);
 
-    if (netMode != NetworkMode::SERVER) {
+    if (netMode != engine_networkmode::SERVER) {
         this->audioEngine = audioEngine;
         audioEngine->LoadEvent("event:/World/Explode");
     }
@@ -2131,9 +2132,9 @@ void World::renderParticles(unsigned char **texture) {
 
         const unsigned int offset = (width * 4 * (int) cur->y) + (int) cur->x * 4;
         U32 color = cur->tile.color;
-        (*texture)[offset + 2] = (color >> 0) & 0xff;                      // b
-        (*texture)[offset + 1] = (color >> 8) & 0xff;                      // g
-        (*texture)[offset + 0] = (color >> 16) & 0xff;                     // r
+        (*texture)[offset + 2] = (color >> 0) & 0xff;                   // b
+        (*texture)[offset + 1] = (color >> 8) & 0xff;                   // g
+        (*texture)[offset + 0] = (color >> 16) & 0xff;                  // r
         (*texture)[offset + 3] = (U8) (cur->tile.mat->alpha * alphaMod);// a
         //SDL_SetRenderDrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (U8)(cur->tile.mat->alpha * alphaMod));
         //SDL_RenderDrawPoint(renderer, (int)cur->x, (int)cur->y);

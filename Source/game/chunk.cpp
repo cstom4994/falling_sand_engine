@@ -2,7 +2,7 @@
 
 #include "chunk.hpp"
 #include "core/core.hpp"
-#include "engine/platform.hpp"
+#include "engine/engine_platform.h"
 #include "game/utils.hpp"
 
 #include "lz4/lz4.h"

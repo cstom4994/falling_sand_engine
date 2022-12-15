@@ -12,6 +12,8 @@
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
+#include "engine.h"
+#include "engine/engine.h"
 #include "engine/engine_cpp.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/math.hpp"
@@ -21,6 +23,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting.hpp"
 #include "engine/sdl_wrapper.h"
+#include "engine_platform.h"
 #include "game/console.hpp"
 #include "game/filesystem.hpp"
 #include "game/game_datastruct.hpp"
@@ -42,6 +45,10 @@ extern void fuckme();
 
 Global global;
 
+extern engine_core Core;
+extern engine_render Render;
+extern engine_screen Screen;
+
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
     global.game = this;
@@ -57,7 +64,7 @@ Game::~Game() {
 
 int Game::init(int argc, char *argv[]) {
 
-    global.platform.ParseRunArgs(argc, argv);
+    ParseRunArgs(argc, argv);
 
     ResourceWorker::init();
 
@@ -65,9 +72,27 @@ int Game::init(int argc, char *argv[]) {
 
     InitECS(128);
 
-    global.platform.InitWindow();
-
     if (!InitEngine()) return 1;
+
+    
+
+    // load splash screen
+    METADOT_INFO("Loading splash screen...");
+
+    R_Clear(Render.target);
+    R_Flip(Render.target);
+    C_Surface *splashSurf = Textures::LoadTexture("data/assets/title/splash.png");
+    R_Image *splashImg = R_CopyImageFromSurface(splashSurf);
+    R_SetImageFilter(splashImg, R_FILTER_NEAREST);
+    R_BlitRect(splashImg, NULL, Render.target, NULL);
+    R_FreeImage(splashImg);
+    SDL_FreeSurface(splashSurf);
+    R_Flip(Render.target);
+
+    METADOT_INFO("Loading ImGUI");
+    METADOT_NEW(C, global.ImGuiCore, ImGuiCore);
+    global.ImGuiCore->Init(Core.window, Core.glContext);
+
 
     // scripting system
     auto loadscript = [&]() {
@@ -84,17 +109,17 @@ int Game::init(int argc, char *argv[]) {
     GameSystem_.console.Init();
 
     Networking::init();
-    if (GameIsolate_.settings.networkMode == NetworkMode::SERVER) {
+    if (GameIsolate_.settings.networkMode == engine_networkmode::SERVER) {
         int port = GameIsolate_.settings.server_port;
         if (argc >= 3) { port = atoi(argv[2]); }
         global.server = Server::start(port);
-        SDL_SetWindowTitle(global.platform.window, win_title_server);
+        SDL_SetWindowTitle(Core.window, win_title_server);
     } else {
         global.client = Client::start();
-        SDL_SetWindowTitle(global.platform.window, win_title_client);
+        SDL_SetWindowTitle(Core.window, win_title_client);
     }
 
-    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+    if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
         GameIsolate_.backgrounds->Load();
     }
 
@@ -109,7 +134,7 @@ int Game::init(int argc, char *argv[]) {
     R_Text_Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, U16, Materials::nMaterials);
-    METADOT_NEW(C, debugDraw, DebugDraw, RenderTarget_.target);
+    METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
 
     // global.audioEngine.PlayEvent("event:/Music/Background1");
     global.audioEngine.PlayEvent("event:/Music/Title");
@@ -124,31 +149,38 @@ int Game::init(int argc, char *argv[]) {
                     CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
                     CHUNK_H * RENDER_C_TEST,
-            RenderTarget_.target, &global.audioEngine, GameIsolate_.settings.networkMode);
+            Render.target, &global.audioEngine, GameIsolate_.settings.networkMode);
 
-    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+    if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
         // set up main menu ui
 
         METADOT_INFO("Setting up main menu...");
         std::string displayMode = "windowed";
 
         if (displayMode == "windowed") {
-            global.platform.SetDisplayMode(DisplayMode::WINDOWED);
+            SetDisplayMode(engine_displaymode::WINDOWED);
         } else if (displayMode == "borderless") {
-            global.platform.SetDisplayMode(DisplayMode::BORDERLESS);
+            SetDisplayMode(engine_displaymode::BORDERLESS);
         } else if (displayMode == "fullscreen") {
-            global.platform.SetDisplayMode(DisplayMode::FULLSCREEN);
+            SetDisplayMode(engine_displaymode::FULLSCREEN);
         }
 
-        global.platform.SetVSync(true);
-        global.platform.SetMinimizeOnLostFocus(false);
+        int w;
+        int h;
+        SDL_GetWindowSize(Core.window, &w, &h);
+        R_SetWindowResolution(w, h);
+        R_ResetProjection(Render.realTarget);
+        resolu(w, h);
+
+        SetVSync(true);
+        SetMinimizeOnLostFocus(false);
     }
 
     // init threadpools
     GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
     METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
 
-    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+    if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
         global.shaderworker.LoadShaders();
     }
 
@@ -189,8 +221,8 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
                 TexturePack_.loadingTexture =
-                        R_CreateImage(TexturePack_.loadingScreenW = (global.platform.WIDTH / 20),
-                                      TexturePack_.loadingScreenH = (global.platform.HEIGHT / 20),
+                        R_CreateImage(TexturePack_.loadingScreenW = (Screen.windowWidth / 20),
+                                      TexturePack_.loadingScreenH = (Screen.windowHeight / 20),
                                       R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
@@ -354,7 +386,7 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
                 TexturePack_.backgroundImage = R_CreateImage(
-                        global.platform.WIDTH, global.platform.HEIGHT, R_FormatEnum::R_FORMAT_RGBA);
+                        Screen.windowWidth, Screen.windowHeight, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.backgroundImage, R_FILTER_NEAREST);
 
@@ -425,7 +457,7 @@ int Game::run(int argc, char *argv[]) {
 
     // start game loop
     METADOT_INFO("Starting game loop...");
-    GameData_.freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2;
+    GameData_.freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2.0f;
     GameData_.freeCamY = GameIsolate_.world->height / 2.0f - (int) (CHUNK_H * 0.75);
     if (GameIsolate_.world->WorldIsolate_.player) {
         GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x;
@@ -452,10 +484,8 @@ int Game::run(int argc, char *argv[]) {
     GameData_.ofsX = (int) (-CHUNK_W * 4);
     GameData_.ofsY = (int) (-CHUNK_H * 2.5);
 
-    GameData_.ofsX =
-            (GameData_.ofsX - global.platform.WIDTH / 2) / 2 * 3 + global.platform.WIDTH / 2;
-    GameData_.ofsY =
-            (GameData_.ofsY - global.platform.HEIGHT / 2) / 2 * 3 + global.platform.HEIGHT / 2;
+    GameData_.ofsX = (GameData_.ofsX - Screen.windowWidth / 2) / 2 * 3 + Screen.windowWidth / 2;
+    GameData_.ofsY = (GameData_.ofsY - Screen.windowHeight / 2) / 2 * 3 + Screen.windowHeight / 2;
 
     for (int i = 0; i < FrameTimeNum; i++) { frameTime[i] = 0; }
     METADOT_NEW_ARRAY(C, objectDelete, U8, GameIsolate_.world->width * GameIsolate_.world->height);
@@ -478,8 +508,10 @@ int Game::run(int argc, char *argv[]) {
 
         GameIsolate_.profiler.Frame();
 
+        EngineUpdate();
+
 #pragma region SDL_Input
-        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+        if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
 
             // handle window events
             GameIsolate_.profiler.Begin(Profiler::Stage::SdlInput);
@@ -489,9 +521,7 @@ int Game::run(int argc, char *argv[]) {
                     if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
                         //METADOT_INFO("Resizing window...");
                         R_SetWindowResolution(windowEvent.window.data1, windowEvent.window.data2);
-                        R_ResetProjection(RenderTarget_.realTarget);
-                        global.platform.HandleWindowSizeChange(windowEvent.window.data1,
-                                                               windowEvent.window.data2);
+                        R_ResetProjection(Render.realTarget);
                     }
                 }
 
@@ -1064,16 +1094,16 @@ int Game::run(int argc, char *argv[]) {
 #pragma endregion SDL_Input
 
 #pragma region Network_Tick
-        if (GameIsolate_.settings.networkMode == NetworkMode::SERVER) {
+        if (GameIsolate_.settings.networkMode == engine_networkmode::SERVER) {
             global.server->tick();
-        } else if (GameIsolate_.settings.networkMode == NetworkMode::CLIENT) {
+        } else if (GameIsolate_.settings.networkMode == engine_networkmode::CLIENT) {
             global.client->tick();
         }
 #pragma endregion Network_Tikc
 
 #pragma region GameTick
         GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
-        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+        if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
             //if(GameIsolate_.settings.tick_world)
             updateFrameEarly();
             global.scripts->UpdateTick();
@@ -1082,41 +1112,41 @@ int Game::run(int argc, char *argv[]) {
         while (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.lastTick >
                GameIsolate_.game_timestate.mspt) {
             if (GameIsolate_.settings.tick_world &&
-                GameIsolate_.settings.networkMode != NetworkMode::CLIENT)
+                GameIsolate_.settings.networkMode != engine_networkmode::CLIENT)
                 tick();
-            RenderTarget_.target = RenderTarget_.realTarget;
+            Render.target = Render.realTarget;
             GameIsolate_.game_timestate.lastTick = GameIsolate_.game_timestate.now;
             tickTime++;
         }
 
-        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+        if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
             if (GameIsolate_.settings.tick_world) updateFrameLate();
         }
         GameIsolate_.profiler.End(Profiler::Stage::GameTick);
 #pragma endregion GameTick
 
 #pragma region Render
-        if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
+        if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
             // render
             GameIsolate_.profiler.Begin(Profiler::Stage::Rendering);
 
-            RenderTarget_.target = RenderTarget_.realTarget;
-            R_Clear(RenderTarget_.target);
+            Render.target = Render.realTarget;
+            R_Clear(Render.target);
 
             GameIsolate_.profiler.Begin(Profiler::Stage::RenderEarly);
             renderEarly();
-            RenderTarget_.target = RenderTarget_.realTarget;
+            Render.target = Render.realTarget;
             GameIsolate_.profiler.End(Profiler::Stage::RenderEarly);
 
             GameIsolate_.profiler.Begin(Profiler::Stage::RenderLate);
             renderLate();
-            RenderTarget_.target = RenderTarget_.realTarget;
+            Render.target = Render.realTarget;
             GameIsolate_.profiler.End(Profiler::Stage::RenderLate);
 
             global.scripts->UpdateRender();
 
             // auto image2 = R_CopyImageFromSurface(Textures::testAse);
-            // R_BlitScale(image2, NULL, global.game->RenderTarget_.target, 200, 200,
+            // R_BlitScale(image2, NULL, global.game->Render.target, 200, 200,
             //                             1.0f, 1.0f);
 
             R_ActivateShaderProgram(0, NULL);
@@ -1225,16 +1255,16 @@ int Game::run(int argc, char *argv[]) {
             if (fadeInWaitFrames > 0) {
                 fadeInWaitFrames--;
                 fadeInStart = GameIsolate_.game_timestate.now;
-                R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
-                                  global.platform.HEIGHT, {0, 0, 0, 255});
+                R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
+                                  {0, 0, 0, 255});
             } else if (fadeInStart > 0 && fadeInLength > 0) {
 
                 float thru =
                         1 - (float) (GameIsolate_.game_timestate.now - fadeInStart) / fadeInLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
-                                      global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
+                    R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
+                                      {0, 0, 0, (uint8) (thru * 255)});
                 } else {
                     fadeInStart = 0;
                     fadeInLength = 0;
@@ -1250,28 +1280,30 @@ int Game::run(int argc, char *argv[]) {
                         (float) (GameIsolate_.game_timestate.now - fadeOutStart) / fadeOutLength;
 
                 if (thru >= 0 && thru <= 1) {
-                    R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
-                                      global.platform.HEIGHT, {0, 0, 0, (uint8) (thru * 255)});
+                    R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
+                                      {0, 0, 0, (uint8) (thru * 255)});
                 } else {
-                    R_RectangleFilled(RenderTarget_.target, 0, 0, global.platform.WIDTH,
-                                      global.platform.HEIGHT, {0, 0, 0, 255});
+                    R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
+                                      {0, 0, 0, 255});
                     fadeOutStart = 0;
                     fadeOutLength = 0;
                     fadeOutCallback();
                 }
             }
 
-            R_Flip(RenderTarget_.target);
+            R_Flip(Render.target);
 
             GameIsolate_.profiler.End(Profiler::Stage::Rendering);
         }
 #pragma endregion Render
 
+        EngineUpdateEnd();
+
         frames++;
         if (GameIsolate_.game_timestate.now - lastFPS >= 1000) {
             lastFPS = GameIsolate_.game_timestate.now;
             //METADOT_INFO("{0:d} FPS", frames);
-            if (GameIsolate_.settings.networkMode == NetworkMode::SERVER) {
+            if (GameIsolate_.settings.networkMode == engine_networkmode::SERVER) {
                 //METADOT_BUG("{0:d} peers connected.", server->server->connectedPeers);
             }
             GameIsolate_.game_timestate.fps = frames;
@@ -1341,10 +1373,10 @@ void Game::exit() {
     R_Text_DeleteText(text3);
     R_Text_Terminate();
 
-    if (GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
-        global.platform.EndWindow();
+    if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {
+        EndWindow();
         global.audioEngine.Shutdown();
-        SDL_DestroyWindow(global.platform.window);
+        SDL_DestroyWindow(Core.window);
     }
 
     EndEngine(0);
@@ -1852,7 +1884,7 @@ void Game::tick() {
                     state = stateAfterLoad;
                 };
 
-                global.platform.SetWindowFlash(WindowFlashAction::START_COUNT, 1, 333);
+                SetWindowFlash(engine_windowflashaction::START_COUNT, 1, 333);
             }
         }
     } else {
@@ -2078,10 +2110,10 @@ void Game::tick() {
             scale += deltaScale;
             if (scale < 1) scale = 1;
 
-            GameData_.ofsX = (GameData_.ofsX - global.platform.WIDTH / 2) / oldScale * scale +
-                             global.platform.WIDTH / 2;
-            GameData_.ofsY = (GameData_.ofsY - global.platform.HEIGHT / 2) / oldScale * scale +
-                             global.platform.HEIGHT / 2;
+            GameData_.ofsX = (GameData_.ofsX - Screen.windowWidth / 2) / oldScale * scale +
+                             Screen.windowWidth / 2;
+            GameData_.ofsY = (GameData_.ofsY - Screen.windowHeight / 2) / oldScale * scale +
+                             Screen.windowHeight / 2;
         } else {
         }
 
@@ -2765,8 +2797,8 @@ void Game::tickPlayer() {
     }
 
     if (GameIsolate_.world->WorldIsolate_.player) {
-        GameData_.desCamX = (float) (-(mx - (global.platform.WIDTH / 2)) / 4);
-        GameData_.desCamY = (float) (-(my - (global.platform.HEIGHT / 2)) / 4);
+        GameData_.desCamX = (float) (-(mx - (Screen.windowWidth / 2)) / 4);
+        GameData_.desCamY = (float) (-(my - (Screen.windowHeight / 2)) / 4);
 
         GameIsolate_.world->WorldIsolate_.player->holdAngle =
                 (float) (atan2(GameData_.desCamY, GameData_.desCamX) * 180 / (float) M_PI);
@@ -2783,12 +2815,11 @@ void Game::tickPlayer() {
             if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::VACUUM)) {
                 if (GameIsolate_.world->WorldIsolate_.player->holdVacuum) {
 
-                    int wcx = (int) ((global.platform.WIDTH / 2.0f - GameData_.ofsX -
-                                      GameData_.camX) /
+                    int wcx = (int) ((Screen.windowWidth / 2.0f - GameData_.ofsX - GameData_.camX) /
                                      scale);
-                    int wcy = (int) ((global.platform.HEIGHT / 2.0f - GameData_.ofsY -
-                                      GameData_.camY) /
-                                     scale);
+                    int wcy =
+                            (int) ((Screen.windowHeight / 2.0f - GameData_.ofsY - GameData_.camY) /
+                                   scale);
 
                     int wmx = (int) ((mx - GameData_.ofsX - GameData_.camX) / scale);
                     int wmy = (int) ((my - GameData_.ofsY - GameData_.camY) / scale);
@@ -3067,12 +3098,12 @@ void Game::updateFrameLate() {
                              GameIsolate_.world->WorldIsolate_.player->hw / 2 +
                              GameIsolate_.world->loadZone.x) *
                                    scale +
-                           global.platform.WIDTH / 2);
+                           Screen.windowWidth / 2);
             nofsY = (int) (-((int) GameData_.plPosY +
                              GameIsolate_.world->WorldIsolate_.player->hh / 2 +
                              GameIsolate_.world->loadZone.y) *
                                    scale +
-                           global.platform.HEIGHT / 2);
+                           Screen.windowHeight / 2);
         } else {
             GameData_.plPosX =
                     (float) (GameData_.plPosX + (GameData_.freeCamX - GameData_.plPosX) / 50.0f);
@@ -3080,9 +3111,9 @@ void Game::updateFrameLate() {
                     (float) (GameData_.plPosY + (GameData_.freeCamY - GameData_.plPosY) / 50.0f);
 
             nofsX = (int) (-(GameData_.plPosX + 0 + GameIsolate_.world->loadZone.x) * scale +
-                           global.platform.WIDTH / 2.0f);
+                           Screen.windowWidth / 2.0f);
             nofsY = (int) (-(GameData_.plPosY + 0 + GameIsolate_.world->loadZone.y) * scale +
-                           global.platform.HEIGHT / 2.0f);
+                           Screen.windowHeight / 2.0f);
         }
 
         accLoadX += (nofsX - GameData_.ofsX) / (float) scale;
@@ -3162,8 +3193,8 @@ newState = true;
 
                     ldPixels[(x + y * TexturePack_.loadingScreenW)] =
                             (newState ? loadingOnColor : loadingOffColor);
-                    int sx = global.platform.WIDTH / TexturePack_.loadingScreenW;
-                    int sy = global.platform.HEIGHT / TexturePack_.loadingScreenH;
+                    int sx = Screen.windowWidth / TexturePack_.loadingScreenW;
+                    int sy = Screen.windowHeight / TexturePack_.loadingScreenH;
                     //R_RectangleFilled(target, x * sx, y * sy, x * sx + sx, y * sy + sy, state ? SDL_Color{ 0xff, 0, 0, 0xff } : SDL_Color{ 0, 0xff, 0, 0xff });
                 }
             }
@@ -3185,14 +3216,13 @@ newState = true;
             //#endif
         }
         R_ActivateShaderProgram(0, NULL);
-        R_BlitRect(TexturePack_.loadingTexture, NULL, RenderTarget_.target, NULL);
-        Drawing::drawTextEx("loading", global.platform.WIDTH / 2, global.platform.HEIGHT / 2 - 32,
-                            [&] {
-                                const char *text = "Loading...";
-                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(176, 176, 176, 255));
-                                ImGui::Text("%s", text);
-                                ImGui::PopStyleColor();
-                            });
+        R_BlitRect(TexturePack_.loadingTexture, NULL, Render.target, NULL);
+        Drawing::drawTextEx("loading", Screen.windowWidth / 2, Screen.windowHeight / 2 - 32, [&] {
+            const char *text = "Loading...";
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(176, 176, 176, 255));
+            ImGui::Text("%s", text);
+            ImGui::PopStyleColor();
+        });
     } else {
         // render entities with LERP
 
@@ -3295,8 +3325,8 @@ newState = true;
 
 void Game::renderLate() {
 
-    RenderTarget_.target = TexturePack_.backgroundImage->target;
-    R_Clear(RenderTarget_.target);
+    Render.target = TexturePack_.backgroundImage->target;
+    R_Clear(Render.target);
 
     if (state == LOADING) {
 
@@ -3310,15 +3340,15 @@ void Game::renderLate() {
             METAENGINE_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff),
                                     static_cast<U8>((bg->solid >> 8) & 0xff),
                                     static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
-            R_ClearColor(RenderTarget_.target, col);
+            R_ClearColor(Render.target, col);
 
             R_Rect *dst = nullptr;
             R_Rect *src = nullptr;
             METADOT_NEW(C, dst, R_Rect);
             METADOT_NEW(C, src, R_Rect);
 
-            float arX = (float) global.platform.WIDTH / (bg->layers[0].surface[0]->w);
-            float arY = (float) global.platform.HEIGHT / (bg->layers[0].surface[0]->h);
+            float arX = (float) Screen.windowWidth / (bg->layers[0].surface[0]->w);
+            float arY = (float) Screen.windowHeight / (bg->layers[0].surface[0]->h);
 
             double time = Time::millis() / 1000.0;
 
@@ -3335,7 +3365,7 @@ void Game::renderLate() {
                 int tw = texture->w;
                 int th = texture->h;
 
-                int iter = (int) ceil((float) global.platform.WIDTH / (tw)) + 1;
+                int iter = (int) ceil((float) Screen.windowWidth / (tw)) + 1;
                 for (int n = 0; n < iter; n++) {
 
                     src->x = 0;
@@ -3352,14 +3382,14 @@ void Game::renderLate() {
                               GameIsolate_.world->loadZone.y * scale) *
                                      cur.parralaxY +
                              GameIsolate_.world->height / 2.0f * scale - th / 2.0f -
-                             global.platform.HEIGHT / 3.0f * (scale - 1);
+                             Screen.windowHeight / 3.0f * (scale - 1);
                     dst->w = (float) tw;
                     dst->h = (float) th;
 
                     dst->x += (float) (scale * fmod(cur.moveX * time, tw));
 
                     //TODO: optimize
-                    while (dst->x >= global.platform.WIDTH - 10) dst->x -= (iter * tw);
+                    while (dst->x >= Screen.windowWidth - 10) dst->x -= (iter * tw);
                     while (dst->x + dst->w < 0) dst->x += (iter * tw - 1);
 
                     //TODO: optimize
@@ -3377,17 +3407,17 @@ void Game::renderLate() {
                         dst->y = 0;
                     }
 
-                    if (dst->x + dst->w >= global.platform.WIDTH) {
-                        src->w -= (int) ((dst->x + dst->w) - global.platform.WIDTH);
-                        dst->w += global.platform.WIDTH - (dst->x + dst->w);
+                    if (dst->x + dst->w >= Screen.windowWidth) {
+                        src->w -= (int) ((dst->x + dst->w) - Screen.windowWidth);
+                        dst->w += Screen.windowWidth - (dst->x + dst->w);
                     }
 
-                    if (dst->y + dst->h >= global.platform.HEIGHT) {
-                        src->h -= (int) ((dst->y + dst->h) - global.platform.HEIGHT);
-                        dst->h += global.platform.HEIGHT - (dst->y + dst->h);
+                    if (dst->y + dst->h >= Screen.windowHeight) {
+                        src->h -= (int) ((dst->y + dst->h) - Screen.windowHeight);
+                        dst->h += Screen.windowHeight - (dst->y + dst->h);
                     }
 
-                    R_BlitRect(tex, src, RenderTarget_.target, dst);
+                    R_BlitRect(tex, src, Render.target, dst);
                 }
             }
 
@@ -3400,13 +3430,13 @@ void Game::renderLate() {
                            (float) (GameIsolate_.world->width * scale),
                            (float) (GameIsolate_.world->height * scale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureBackground, NULL, RenderTarget_.target, &r1);
+        R_BlitRect(TexturePack_.textureBackground, NULL, Render.target, &r1);
 
         R_SetBlendMode(TexturePack_.textureLayer2, R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureLayer2, NULL, RenderTarget_.target, &r1);
+        R_BlitRect(TexturePack_.textureLayer2, NULL, Render.target, &r1);
 
         R_SetBlendMode(TexturePack_.textureObjectsBack, R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureObjectsBack, NULL, RenderTarget_.target, &r1);
+        R_BlitRect(TexturePack_.textureObjectsBack, NULL, Render.target, &r1);
 
         // shader
 
@@ -3429,15 +3459,15 @@ void Game::renderLate() {
             float t = (GameIsolate_.game_timestate.now - GameIsolate_.game_timestate.startTime) /
                       1000.0;
             global.shaderworker.waterShader->update(
-                    t, RenderTarget_.target->w * scale, RenderTarget_.target->h * scale,
-                    TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale,
-                    TexturePack_.textureFlowSpead, GameIsolate_.settings.water_overlay,
-                    GameIsolate_.settings.water_showFlow, GameIsolate_.settings.water_pixelated);
+                    t, Render.target->w * scale, Render.target->h * scale, TexturePack_.texture,
+                    r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead,
+                    GameIsolate_.settings.water_overlay, GameIsolate_.settings.water_showFlow,
+                    GameIsolate_.settings.water_pixelated);
         }
 
-        RenderTarget_.target = RenderTarget_.realTarget;
+        Render.target = Render.realTarget;
 
-        R_BlitRect(TexturePack_.backgroundImage, NULL, RenderTarget_.target, NULL);
+        R_BlitRect(TexturePack_.backgroundImage, NULL, Render.target, NULL);
 
         R_SetBlendMode(TexturePack_.texture, R_BLEND_NORMAL);
         R_ActivateShaderProgram(0, NULL);
@@ -3570,13 +3600,13 @@ void Game::renderLate() {
         }
         if (GameIsolate_.settings.draw_shaders) R_ActivateShaderProgram(0, NULL);
 
-        R_BlitRect(TexturePack_.worldTexture, NULL, RenderTarget_.target, &r1);
+        R_BlitRect(TexturePack_.worldTexture, NULL, Render.target, &r1);
 
         if (GameIsolate_.settings.draw_shaders) {
             R_SetBlendMode(TexturePack_.lightingTexture, GameIsolate_.settings.draw_light_overlay
                                                                  ? R_BLEND_NORMAL
                                                                  : R_BLEND_MULTIPLY);
-            R_BlitRect(TexturePack_.lightingTexture, NULL, RenderTarget_.target, &r1);
+            R_BlitRect(TexturePack_.lightingTexture, NULL, Render.target, &r1);
         }
 
         if (GameIsolate_.settings.draw_shaders) {
@@ -3589,7 +3619,7 @@ void Game::renderLate() {
 
             global.shaderworker.fire2Shader->activate();
             global.shaderworker.fire2Shader->update(TexturePack_.texture2Fire);
-            R_BlitRect(TexturePack_.texture2Fire, NULL, RenderTarget_.target, &r1);
+            R_BlitRect(TexturePack_.texture2Fire, NULL, Render.target, &r1);
             R_ActivateShaderProgram(0, NULL);
         }
 
@@ -3606,7 +3636,7 @@ void Game::renderOverlays() {
 
     R_Text_BeginDraw();
     R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
-    R_Text_DrawText2D(text1, 4, global.platform.HEIGHT - 20, 1.0f);
+    R_Text_DrawText2D(text1, 4, Screen.windowHeight - 20, 1.0f);
     R_Text_EndDraw();
 
     R_Text_SetText(text3,
@@ -3617,7 +3647,7 @@ void Game::renderOverlays() {
 
     R_Text_BeginDraw();
     R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
-    R_Text_DrawText2D(text3, global.platform.WIDTH - 250, 4, 1.0f);
+    R_Text_DrawText2D(text3, Screen.windowWidth - 250, 4, 1.0f);
     R_Text_EndDraw();
 
     R_Rect r1 = R_Rect{(float) (GameData_.ofsX + GameData_.camX),
@@ -3632,7 +3662,7 @@ void Game::renderOverlays() {
 
     if (GameIsolate_.settings.draw_temperature_map) {
         R_SetBlendMode(TexturePack_.temperatureMap, R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.temperatureMap, NULL, RenderTarget_.target, &r1);
+        R_BlitRect(TexturePack_.temperatureMap, NULL, Render.target, &r1);
     }
 
     if (GameIsolate_.settings.draw_load_zones) {
@@ -3642,8 +3672,8 @@ void Game::renderOverlays() {
                 (float) (GameIsolate_.world->meshZone.w * scale),
                 (float) (GameIsolate_.world->meshZone.h * scale)};
 
-        R_Rectangle2(RenderTarget_.target, r2m, {0x00, 0xff, 0xff, 0xff});
-        R_Rectangle2(RenderTarget_.target, r2, {0xff, 0x00, 0x00, 0xff});
+        R_Rectangle2(Render.target, r2m, {0x00, 0xff, 0xff, 0xff});
+        R_Rectangle2(Render.target, r2, {0xff, 0x00, 0x00, 0xff});
     }
 
     if (GameIsolate_.settings.draw_load_zones) {
@@ -3654,44 +3684,44 @@ void Game::renderOverlays() {
         R_Rect r3 = R_Rect{(float) (0), (float) (0),
                            (float) ((GameData_.ofsX + GameData_.camX +
                                      GameIsolate_.world->tickZone.x * scale)),
-                           (float) (global.platform.HEIGHT)};
-        R_Rectangle2(RenderTarget_.target, r3, col);
+                           (float) (Screen.windowHeight)};
+        R_Rectangle2(Render.target, r3, col);
 
         R_Rect r4 = R_Rect{
                 (float) (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale +
                          GameIsolate_.world->tickZone.w * scale),
                 (float) (0),
-                (float) ((global.platform.WIDTH) -
+                (float) ((Screen.windowWidth) -
                          (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale +
                           GameIsolate_.world->tickZone.w * scale)),
-                (float) (global.platform.HEIGHT)};
-        R_Rectangle2(RenderTarget_.target, r3, col);
+                (float) (Screen.windowHeight)};
+        R_Rectangle2(Render.target, r3, col);
 
         R_Rect r5 = R_Rect{
                 (float) (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale),
                 (float) (0), (float) (GameIsolate_.world->tickZone.w * scale),
                 (float) (GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale)};
-        R_Rectangle2(RenderTarget_.target, r3, col);
+        R_Rectangle2(Render.target, r3, col);
 
         R_Rect r6 = R_Rect{
                 (float) (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale),
                 (float) (GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale +
                          GameIsolate_.world->tickZone.h * scale),
                 (float) (GameIsolate_.world->tickZone.w * scale),
-                (float) (global.platform.HEIGHT -
+                (float) (Screen.windowHeight -
                          (GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale +
                           GameIsolate_.world->tickZone.h * scale))};
-        R_Rectangle2(RenderTarget_.target, r6, col);
+        R_Rectangle2(Render.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
         R_Rect r7 = R_Rect{
                 (float) (GameData_.ofsX + GameData_.camX + GameIsolate_.world->width / 2 * scale -
-                         (global.platform.WIDTH / 3 * scale / 2)),
+                         (Screen.windowWidth / 3 * scale / 2)),
                 (float) (GameData_.ofsY + GameData_.camY + GameIsolate_.world->height / 2 * scale -
-                         (global.platform.HEIGHT / 3 * scale / 2)),
-                (float) (global.platform.WIDTH / 3 * scale),
-                (float) (global.platform.HEIGHT / 3 * scale)};
-        R_Rectangle2(RenderTarget_.target, r7, col);
+                         (Screen.windowHeight / 3 * scale / 2)),
+                (float) (Screen.windowWidth / 3 * scale),
+                (float) (Screen.windowHeight / 3 * scale)};
+        R_Rectangle2(Render.target, r7, col);
     }
 
     if (GameIsolate_.settings.draw_physics_debug) {
@@ -3816,7 +3846,7 @@ void Game::renderOverlays() {
                 float y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * scale +
                            GameData_.ofsY + GameData_.camY);
 
-                R_Rectangle(RenderTarget_.target, x, y, x + CHUNK_W * scale, y + CHUNK_H * scale,
+                R_Rectangle(Render.target, x, y, x + CHUNK_W * scale, y + CHUNK_H * scale,
                             {50, 50, 0, 255});
 
                 //for(int i = 0; i < ch->polys.size(); i++) {
@@ -3844,13 +3874,13 @@ void Game::renderOverlays() {
     // Drawing::drawText("fps",
     //                   MetaEngine::Format("{} FPS\n Feels Like: {} FPS", GameIsolate_.game_timestate.fps,
     //                               GameIsolate_.game_timestate.feelsLikeFps),
-    //                   global.platform.WIDTH, 20);
+    //                   Screen.windowWidth, 20);
 
     if (GameIsolate_.settings.draw_chunk_state) {
 
         int chSize = 10;
 
-        int centerX = global.platform.WIDTH / 2;
+        int centerX = Screen.windowWidth / 2;
         int centerY = CHUNK_UNLOAD_DIST * chSize + 10;
 
         int pposX = GameData_.plPosX;
@@ -3860,7 +3890,7 @@ void Game::renderOverlays() {
         int pchxf = (int) (((float) pposX / CHUNK_W) * chSize);
         int pchyf = (int) (((float) pposY / CHUNK_H) * chSize);
 
-        R_Rectangle(RenderTarget_.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize,
+        R_Rectangle(Render.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerY - chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
@@ -3892,7 +3922,7 @@ void Game::renderOverlays() {
                     col = {0x00, 0xff, 0xff, 0xff};
                 } else {
                 }
-                R_Rectangle2(RenderTarget_.target, r, col);
+                R_Rectangle2(Render.target, r, col);
             }
         }
 
@@ -3907,10 +3937,10 @@ void Game::renderOverlays() {
                 (int) (((float) (-GameIsolate_.world->loadZone.y + GameIsolate_.world->loadZone.h) /
                         CHUNK_H) *
                        chSize);
-        R_Rectangle(RenderTarget_.target, centerX - pchx + loadx, centerY - pchy + loady,
+        R_Rectangle(Render.target, centerX - pchx + loadx, centerY - pchy + loady,
                     centerX - pchx + loadx2, centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
 
-        R_Rectangle(RenderTarget_.target, centerX - pchx + pchxf, centerY - pchy + pchyf,
+        R_Rectangle(Render.target, centerX - pchx + pchxf, centerY - pchy + pchyf,
                     centerX + 1 - pchx + pchxf, centerY + 1 - pchy + pchyf,
                     {0x00, 0xff, 0x00, 0xff});
     }
@@ -4031,7 +4061,7 @@ ReadyToMerge ({16})
         //     char buff[10];
         //     snprintf(buff, sizeof(buff), "    #%d", (int) i);
         //     std::string buffAsStdStr = buff;
-        //     Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
+        //     Drawing::drawTextBG(Render.target, buffAsStdStr.c_str(), font16, 4,
         //                         2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
         //                         {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         // }
@@ -4042,7 +4072,7 @@ ReadyToMerge ({16})
         //              GameIsolate_.world->WorldIsolate_.readyToMerge[i]->x,
         //              GameIsolate_.world->WorldIsolate_.readyToMerge[i]->y);
         //     std::string buffAsStdStr = buff;
-        //     Drawing::drawTextBG(RenderTarget_.target, buffAsStdStr.c_str(), font16, 4,
+        //     Drawing::drawTextBG(Render.target, buffAsStdStr.c_str(), font16, 4,
         //                         2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,
         //                         {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         // }
@@ -4051,11 +4081,11 @@ ReadyToMerge ({16})
     if (GameIsolate_.settings.draw_frame_graph) {
 
         for (int i = 0; i <= 4; i++) {
-            // Drawing::drawText(RenderTarget_.target, dt_frameGraph[i], global.platform.WIDTH - 20,
-            //                   global.platform.HEIGHT - 15 - (i * 25) - 2);
-            R_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
-                   global.platform.HEIGHT - 10 - (i * 25), global.platform.WIDTH - 25,
-                   global.platform.HEIGHT - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
+            // Drawing::drawText(Render.target, dt_frameGraph[i], Screen.windowWidth - 20,
+            //                   Screen.windowHeight - 15 - (i * 25) - 2);
+            R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5,
+                   Screen.windowHeight - 10 - (i * 25), Screen.windowWidth - 25,
+                   Screen.windowHeight - 10 - (i * 25), {0xff, 0xff, 0xff, 0xff});
         }
         /*for (int i = 0; i <= 100; i += 25) {
 char buff[20];
@@ -4081,23 +4111,21 @@ SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WID
                 col = {0xff, 0x00, 0x00, 0xff};
             }
 
-            R_Line(RenderTarget_.target, global.platform.WIDTH - FrameTimeNum - 30 + i,
-                   global.platform.HEIGHT - 10 - h, global.platform.WIDTH - FrameTimeNum - 30 + i,
-                   global.platform.HEIGHT - 10, col);
+            R_Line(Render.target, Screen.windowWidth - FrameTimeNum - 30 + i,
+                   Screen.windowHeight - 10 - h, Screen.windowWidth - FrameTimeNum - 30 + i,
+                   Screen.windowHeight - 10, col);
             //SDL_RenderDrawLine(renderer, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        R_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
-               global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
-               global.platform.WIDTH - 25,
-               global.platform.HEIGHT - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
+        R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5,
+               Screen.windowHeight - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
+               Screen.windowWidth - 25,
+               Screen.windowHeight - 10 - (int) (1000.0 / GameIsolate_.game_timestate.fps),
                {0x00, 0xff, 0xff, 0xff});
-        R_Line(RenderTarget_.target, global.platform.WIDTH - 30 - FrameTimeNum - 5,
-               global.platform.HEIGHT - 10 -
-                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
-               global.platform.WIDTH - 25,
-               global.platform.HEIGHT - 10 -
-                       (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
+        R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5,
+               Screen.windowHeight - 10 - (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
+               Screen.windowWidth - 25,
+               Screen.windowHeight - 10 - (int) (1000.0 / GameIsolate_.game_timestate.feelsLikeFps),
                {0xff, 0x00, 0xff, 0xff});
     }
 
@@ -4111,24 +4139,24 @@ char buffDevBuild[40];
 snprintf(buffDevBuild, sizeof(buffDevBuild), "Development Build");
 //if (dt_versionInfo1.t1 != nullptr) R_FreeImage(dt_versionInfo1.t1);
 //if (dt_versionInfo1.t2 != nullptr) R_FreeImage(dt_versionInfo1.t2);
-dt_versionInfo1 = Drawing::drawTextParams(RenderTarget_.target, buffDevBuild, font16, 4, global.platform.HEIGHT - 32 - 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+dt_versionInfo1 = Drawing::drawTextParams(Render.target, buffDevBuild, font16, 4, Screen.windowHeight - 32 - 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
 char buffVersion[40];
 snprintf(buffVersion, sizeof(buffVersion), "Version %s - dev", VERSION);
 //if (dt_versionInfo2.t1 != nullptr) R_FreeImage(dt_versionInfo2.t1);
 //if (dt_versionInfo2.t2 != nullptr) R_FreeImage(dt_versionInfo2.t2);
-dt_versionInfo2 = Drawing::drawTextParams(RenderTarget_.target, buffVersion, font16, 4, global.platform.HEIGHT - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
+dt_versionInfo2 = Drawing::drawTextParams(Render.target, buffVersion, font16, 4, Screen.windowHeight - 32, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
 char buffBuildDate[40];
 snprintf(buffBuildDate, sizeof(buffBuildDate), "%s : %s", __DATE__, __TIME__);
 //if (dt_versionInfo3.t1 != nullptr) R_FreeImage(dt_versionInfo3.t1);
 //if (dt_versionInfo3.t2 != nullptr) R_FreeImage(dt_versionInfo3.t2);
-dt_versionInfo3 = Drawing::drawTextParams(RenderTarget_.target, buffBuildDate, font16, 4, global.platform.HEIGHT - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
+dt_versionInfo3 = Drawing::drawTextParams(Render.target, buffBuildDate, font16, 4, Screen.windowHeight - 32 + 13, 0xff, 0xff, 0xff, ALIGN_LEFT);
 }
 
-Drawing::drawText(RenderTarget_.target, dt_versionInfo1, 4, global.platform.HEIGHT - 32 - 13, ALIGN_LEFT);
-Drawing::drawText(RenderTarget_.target, dt_versionInfo2, 4, global.platform.HEIGHT - 32, ALIGN_LEFT);
-Drawing::drawText(RenderTarget_.target, dt_versionInfo3, 4, global.platform.HEIGHT - 32 + 13, ALIGN_LEFT);
+Drawing::drawText(Render.target, dt_versionInfo1, 4, Screen.windowHeight - 32 - 13, ALIGN_LEFT);
+Drawing::drawText(Render.target, dt_versionInfo2, 4, Screen.windowHeight - 32, ALIGN_LEFT);
+Drawing::drawText(Render.target, dt_versionInfo3, 4, Screen.windowHeight - 32 + 13, ALIGN_LEFT);
 #elif defined ALPHA_BUILD
 char buffDevBuild[40];
 snprintf(buffDevBuild, sizeof(buffDevBuild), "Alpha Build");
@@ -4163,19 +4191,48 @@ void Game::renderTemperatureMap(World *world) {
     }
 }
 
+void Game::resolu(int newWidth, int newHeight) {
+
+    int prevWidth = Screen.windowWidth;
+    int prevHeight = Screen.windowHeight;
+
+    Screen.windowWidth = newWidth;
+    Screen.windowHeight = newHeight;
+
+    global.game->createTexture();
+
+    global.game->accLoadX -= (newWidth - prevWidth) / 2.0f / global.game->scale;
+    global.game->accLoadY -= (newHeight - prevHeight) / 2.0f / global.game->scale;
+
+    METADOT_INFO("Ticking chunk...");
+    global.game->tickChunkLoading();
+    METADOT_INFO("Ticking chunk done");
+
+    for (int x = 0; x < global.game->GameIsolate_.world->width; x++) {
+        for (int y = 0; y < global.game->GameIsolate_.world->height; y++) {
+            global.game->GameIsolate_.world->dirty[x + y * global.game->GameIsolate_.world->width] =
+                    true;
+            global.game->GameIsolate_.world
+                    ->layer2Dirty[x + y * global.game->GameIsolate_.world->width] = true;
+            global.game->GameIsolate_.world
+                    ->backgroundDirty[x + y * global.game->GameIsolate_.world->width] = true;
+        }
+    }
+}
+
 int Game::getAimSurface(int dist) {
-    int dcx = this->mx - global.platform.WIDTH / 2;
-    int dcy = this->my - global.platform.HEIGHT / 2;
+    int dcx = this->mx - Screen.windowWidth / 2;
+    int dcy = this->my - Screen.windowHeight / 2;
 
     float len = sqrtf(dcx * dcx + dcy * dcy);
     float udx = dcx / len;
     float udy = dcy / len;
 
-    int mmx = global.platform.WIDTH / 2.0f + udx * dist;
-    int mmy = global.platform.HEIGHT / 2.0f + udy * dist;
+    int mmx = Screen.windowWidth / 2.0f + udx * dist;
+    int mmy = Screen.windowHeight / 2.0f + udy * dist;
 
-    int wcx = (int) ((global.platform.WIDTH / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
-    int wcy = (int) ((global.platform.HEIGHT / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
+    int wcx = (int) ((Screen.windowWidth / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
+    int wcy = (int) ((Screen.windowHeight / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
 
     int wmx = (int) ((mmx - GameData_.ofsX - GameData_.camX) / scale);
     int wmy = (int) ((mmy - GameData_.ofsY - GameData_.camY) / scale);
@@ -4223,8 +4280,7 @@ void Game::quitToMainMenu() {
                     CHUNK_W * RENDER_C_TEST,
             (int) ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (double) CHUNK_H) * CHUNK_H +
                     CHUNK_H * RENDER_C_TEST,
-            RenderTarget_.target, &global.audioEngine, GameIsolate_.settings.networkMode,
-            generator);
+            Render.target, &global.audioEngine, GameIsolate_.settings.networkMode, generator);
 
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
@@ -4266,18 +4322,18 @@ void Game::quitToMainMenu() {
 }
 
 int Game::getAimSolidSurface(int dist) {
-    int dcx = this->mx - global.platform.WIDTH / 2;
-    int dcy = this->my - global.platform.HEIGHT / 2;
+    int dcx = this->mx - Screen.windowWidth / 2;
+    int dcy = this->my - Screen.windowHeight / 2;
 
     float len = sqrtf(dcx * dcx + dcy * dcy);
     float udx = dcx / len;
     float udy = dcy / len;
 
-    int mmx = global.platform.WIDTH / 2.0f + udx * dist;
-    int mmy = global.platform.HEIGHT / 2.0f + udy * dist;
+    int mmx = Screen.windowWidth / 2.0f + udx * dist;
+    int mmy = Screen.windowHeight / 2.0f + udy * dist;
 
-    int wcx = (int) ((global.platform.WIDTH / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
-    int wcy = (int) ((global.platform.HEIGHT / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
+    int wcx = (int) ((Screen.windowWidth / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
+    int wcy = (int) ((Screen.windowHeight / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
 
     int wmx = (int) ((mmx - GameData_.ofsX - GameData_.camX) / scale);
     int wmy = (int) ((mmy - GameData_.ofsY - GameData_.camY) / scale);

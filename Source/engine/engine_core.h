@@ -15,29 +15,28 @@
 
 #include "utils.h"
 
-typedef struct engineCore
+typedef struct engine_core
 {
-    SDL_Renderer *renderer;
-    SDL_Window *window;
-    SDL_GLContext glContext;
+    C_Renderer *renderer;
+    C_Window *window;
+    C_GLContext *glContext;
+} engine_core;
 
-} engineCore;
-
-typedef struct engineScreen
+typedef struct engine_screen
 {
     //Internal resolution, used in rendering
-    int gameWidth;
-    int gameHeight;
+    // int gameWidth;
+    // int gameHeight;
 
     //Window resolution
     int windowWidth;
     int windowHeight;
 
     //Scale of division, as gameRes = windowRes/gameScale
-    double gameScale;
+    int gameScale;
 
     unsigned maxFPS;
-} engineScreen;
+} engine_screen;
 
 typedef struct engineTime
 {

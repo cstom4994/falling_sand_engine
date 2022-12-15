@@ -64,10 +64,6 @@
 
 #define FS_LINE_INCR 256
 
-#include <string>
-
-namespace Platforms {
-    const std::string &GetExecutablePath();
-}
+const char *Platforms_GetExecutablePath();
 
 #endif// !_METADOT_PLATFORMDETAIL_H_

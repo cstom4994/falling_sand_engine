@@ -5,10 +5,11 @@
 #include "core/core.h"
 #include "engine_core.h"
 #include "engine_ecs.h"
+#include "engine_platform.h"
 
 /////////////////////////////////External data//////////////////////////////////
 
-extern engineCore Core;
+extern engine_core Core;
 
 extern engine_ecs ECS;
 extern unsigned char initializedECS;
@@ -34,7 +35,7 @@ int InitEngine() {
     InitTime();
     InitScreen(1280, 720, 1, 60);
 
-    if (!InitCore()) {
+    if (!InitCore() || !InitWindow()) {
         EndEngine(1);
         return 0;
     }
@@ -48,7 +49,7 @@ int InitEngine() {
     }
 
     //Disable text input
-    SDL_StopTextInput();
+    // SDL_StopTextInput();
 
     initializedEngine = 1;
     METADOT_INFO("Engine sucessfully initialized!");
@@ -87,7 +88,7 @@ void EngineUpdate() {
     }
 }
 void EngineUpdateEnd() {
-    SDL_GL_SwapWindow(Core.window);
+    // SDL_GL_SwapWindow(Core.window);
     WaitUntilNextFrame();
 }
 

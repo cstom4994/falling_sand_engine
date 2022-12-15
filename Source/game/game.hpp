@@ -123,12 +123,6 @@ public:
 
     struct
     {
-        R_Target *realTarget = nullptr;
-        R_Target *target = nullptr;
-    } RenderTarget_;
-
-    struct
-    {
         R_Image *backgroundImage = nullptr;
 
         R_Image *loadingTexture = nullptr;
@@ -203,6 +197,7 @@ public:
     void renderEarly();
     void renderLate();
     void renderTemperatureMap(World *world);
+    void resolu(int newWidth, int newHeight);
     int getAimSolidSurface(int dist);
     int getAimSurface(int dist);
     void quitToMainMenu();

@@ -10,15 +10,12 @@ static const int WINDOWS_MAX_HEIGHT = 1080;
 
 static const int RENDER_C_TEST = 3;
 
-static const char *logo = R"(
-__  __      _        _____        _   
-|  \/  |    | |      |  __ \      | |  
-| \  / | ___| |_ __ _| |  | | ___ | |_ 
-| |\/| |/ _ \ __/ _` | |  | |/ _ \| __|
-| |  | |  __/ || (_| | |__| | (_) | |_ 
-|_|  |_|\___|\__\__,_|_____/ \___/ \__|
-
-)";
+static const char *logo = "__  __      _        _____        _   "
+                          "|  \/  |    | |      |  __ \      | |  "
+                          "| \  / | ___| |_ __ _| |  | | ___ | |_ "
+                          "| |\/| |/ _ \ __/ _` | |  | |/ _ \| __|"
+                          "| |  | |  __/ || (_| | |__| | (_) | |_ "
+                          "|_|  |_|\___|\__\__,_|_____/ \___/ \__|";
 
 static const char *win_title_client = CC("MetaDot 少女祈祷中");
 static const char *win_title_server = CC("MetaDot Server");
@@ -57,7 +54,6 @@ static const int GameTick = 4;
 static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
 static const int VERSION_MINOR = METADOT_VERSION_MINOR;
 static const int VERSION_REV = METADOT_VERSION_BUILD;
-static const char *VERSION = METADOT_VERSION_TEXT;
-static const char *VERSION_COMPATIBILITY[] = {VERSION, "0.0.1", 0};
+static const char *VERSION_COMPATIBILITY[] = {METADOT_VERSION_TEXT, "0.0.1", 0};
 
 #endif

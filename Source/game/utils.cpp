@@ -28,8 +28,7 @@ time_t Time::mkgmtime(struct tm *unixdate) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Timer::Timer()
-    : myOffSet(global.platform.GetTime()), myPause(false), myPauseTime(0), myLastUpdate(0) {
+Timer::Timer() : myOffSet(GetTime()), myPause(false), myPauseTime(0), myLastUpdate(0) {
     METADOT_ASSERT_E(sizeof(I64) == 8);
 }
 
@@ -73,7 +72,7 @@ Timer &Timer::operator-=(Timer::Ticks time) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void Timer::SetTime(Timer::Ticks time) {
-    myOffSet = (I64) global.platform.GetTime() - (I64) time;
+    myOffSet = (I64) GetTime() - (I64) time;
     myPauseTime = time;
 }
 
@@ -86,9 +85,9 @@ Timer::Ticks Timer::GetTime() const {
         return (Timer::Ticks) myPauseTime;
     }
 
-    if ((unsigned) myOffSet > global.platform.GetTime()) return 0;
+    if ((unsigned) myOffSet > GetTime()) return 0;
 
-    return (global.platform.GetTime() - (Timer::Ticks) myOffSet);
+    return (GetTime() - (Timer::Ticks) myOffSet);
 }
 
 //.............................................................................
@@ -131,7 +130,7 @@ void Timer::Resume() {
 void Timer::Reset() {
     // myPause = false;
     myPauseTime = 0;
-    myOffSet = global.platform.GetTime();
+    myOffSet = GetTime();
     myLastUpdate = 0;
 }
 

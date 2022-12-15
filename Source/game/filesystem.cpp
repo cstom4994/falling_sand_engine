@@ -3,10 +3,10 @@
 #include "filesystem.hpp"
 #include "game/utils.hpp"
 
-#include "engine/platform.hpp"
+#include "engine/engine_platform.h"
 
-#include <ios>
 #include <fstream>
+#include <ios>
 
 std::string ResourceWorker::s_ProjectRootPath;
 std::string ResourceWorker::s_DataPath;
@@ -86,8 +86,8 @@ std::string FUtil::getAbsolutePath(const char *fileName) {
 const std::string &FUtil::getExecutableFolderPath() {
     static std::string out;
     if (out.empty()) {
-        out = Platforms::GetExecutablePath().substr(
-                0, Platforms::GetExecutablePath().find_last_of('/') + 1);
+        out = std::string(Platforms_GetExecutablePath())
+                      .substr(0, std::string(Platforms_GetExecutablePath()).find_last_of('/') + 1);
     }
     return out;
 }

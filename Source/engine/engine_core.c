@@ -2,7 +2,8 @@
 
 #include "engine_core.h"
 
-engineCore Core;
+engine_core Core;
+engine_screen Screen;
 
 int exitGame = 0;
 
@@ -17,7 +18,12 @@ int InitCore() {
 
 void InitTime() {}
 
-void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {}
+void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
+    Screen.windowWidth = windowWidth;
+    Screen.windowHeight = windowHeight;
+    Screen.maxFPS = maxFPS;
+    Screen.gameScale = scale;
+}
 
 void UpdateTime() {}
 

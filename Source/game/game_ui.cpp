@@ -2,8 +2,10 @@
 
 #include "game/game_ui.hpp"
 #include "core/global.hpp"
+#include "engine/engine_cpp.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
+#include "engine_network.h"
 #include "game/filesystem.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
@@ -15,6 +17,9 @@
 #include "imgui/imgui.h"
 
 #include <string>
+
+extern engine_screen Screen;
+extern engine_render Render;
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -52,7 +57,7 @@ namespace GameUI {
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
-                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                        ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Pause Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -122,7 +127,7 @@ namespace GameUI {
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
-                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                        ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Pause Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -250,13 +255,13 @@ namespace GameUI {
 
                     switch (n) {
                         case 0:
-                            global.platform.SetDisplayMode(DisplayMode::WINDOWED);
+                            SetDisplayMode(engine_displaymode::WINDOWED);
                             break;
                         case 1:
-                            global.platform.SetDisplayMode(DisplayMode::BORDERLESS);
+                            SetDisplayMode(engine_displaymode::BORDERLESS);
                             break;
                         case 2:
-                            global.platform.SetDisplayMode(DisplayMode::FULLSCREEN);
+                            SetDisplayMode(engine_displaymode::FULLSCREEN);
                             break;
                     }
 
@@ -269,10 +274,10 @@ namespace GameUI {
             ImGui::EndCombo();
         }
 
-        if (ImGui::Checkbox("VSync", &vsync)) { global.platform.SetVSync(vsync); }
+        if (ImGui::Checkbox("VSync", &vsync)) { SetVSync(vsync); }
 
         if (ImGui::Checkbox("失去焦点后最小化", &minimizeOnFocus)) {
-            global.platform.SetMinimizeOnLostFocus(minimizeOnFocus);
+            SetMinimizeOnLostFocus(minimizeOnFocus);
         }
 
         ImGui::Unindent(4);
@@ -462,8 +467,8 @@ namespace GameUI {
         ImGui::SetNextWindowSize(ImVec2(400, 350));
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu,
-                                                    ImVec2(global.platform.WIDTH / 2 - 400 / 2,
-                                                           global.platform.HEIGHT / 2 - 350 / 2)),
+                                                    ImVec2(Screen.windowWidth / 2 - 400 / 2,
+                                                           Screen.windowHeight / 2 - 350 / 2)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -558,7 +563,7 @@ namespace GameUI {
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
-                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                        ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -629,7 +634,7 @@ namespace GameUI {
                                     CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
                                     CHUNK_H * 3,
-                            game->RenderTarget_.target, &global.audioEngine,
+                            Render.target, &global.audioEngine,
                             global.game->GameIsolate_.settings.networkMode);
                     w->metadata.lastOpenedTime = Time::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
@@ -711,7 +716,7 @@ namespace GameUI {
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
-                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                        ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -743,7 +748,7 @@ namespace GameUI {
             METADOT_INFO("connectButton select");
             if (global.client->connect(global.game->GameIsolate_.settings.server_ip.c_str(),
                                        global.game->GameIsolate_.settings.server_port)) {
-                global.game->GameIsolate_.settings.networkMode = NetworkMode::CLIENT;
+                global.game->GameIsolate_.settings.networkMode = engine_networkmode::CLIENT;
                 visible = false;
                 game->setGameState(LOADING, INGAME);
             }
@@ -762,7 +767,7 @@ namespace GameUI {
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
-                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                        ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -782,7 +787,7 @@ namespace GameUI {
         ImGui::SetNextWindowPos(
                 global.ImGuiCore->GetNextWindowsPos(
                         ImGuiWindowTags::UI_MainMenu,
-                        ImVec2(global.platform.WIDTH / 2 - 200, global.platform.HEIGHT / 2 - 250)),
+                        ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)),
                 ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Main Menu", NULL,
                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar |
@@ -1409,7 +1414,7 @@ namespace GameUI {
                     wpStr,
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                    game->RenderTarget_.target, &global.audioEngine,
+                    Render.target, &global.audioEngine,
                     global.game->GameIsolate_.settings.networkMode, generator);
             game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
             game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;

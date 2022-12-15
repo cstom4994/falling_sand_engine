@@ -6,8 +6,8 @@
 #include "core/core.hpp"
 #include "engine/audio.hpp"
 #include "engine/code_reflection.hpp"
+#include "engine/engine_platform.h"
 #include "engine/imgui_impl.hpp"
-#include "engine/platform.hpp"
 #include "engine/shaders.hpp"
 #include "game/filesystem.hpp"
 #include "game/game_resources.hpp"
@@ -33,7 +33,6 @@ struct Global
 
     ShaderWorker shaderworker;
     Audio audioEngine;
-    Platform platform;
     I18N I18N;
 
     Client *client = nullptr;
