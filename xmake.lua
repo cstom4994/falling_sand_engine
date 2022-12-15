@@ -175,6 +175,7 @@ do
     add_defines(defines_list)
     add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
     add_files("Source/libs/*.cpp")
+    add_files("Source/libs/*.c")
     add_files("Source/libs/ImGui/**.cpp", "Source/libs/ImGui/**.c",
         "Source/libs/glad/**.c",
         { unity_group = "invade" })

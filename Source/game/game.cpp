@@ -1,12 +1,8 @@
 ﻿// Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "game.hpp"
-#include <cstddef>
-#include <cstdlib>
-#include <iterator>
-#include <regex>
-
 #include "core/const.h"
+#include "core/core.h"
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
@@ -30,15 +26,17 @@
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
 #include "game/imgui_core.hpp"
-
 #include "game/player.hpp"
 #include "game/utils.hpp"
-
+#include "libs/glad/glad.h"
 #include "physfs/physfs.h"
+
 #include "world_generator.cpp"
 
-#include "libs/glad/glad.h"
-
+#include <cstddef>
+#include <cstdlib>
+#include <iterator>
+#include <regex>
 #include <string>
 #include <string_view>
 
@@ -73,7 +71,7 @@ int Game::init(int argc, char *argv[]) {
 
     InitECS(128);
 
-    if (!InitEngine()) return 1;
+    if (!InitEngine()) return METADOT_FAILED;
 
     // load splash screen
     METADOT_INFO("Loading splash screen...");

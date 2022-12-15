@@ -13,5 +13,8 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include "external/stb_perlin.h"
 
+#define STB_DS_IMPLEMENTATION
+#include "external/stb_ds.h"
+
 #define ASE_LOADER_IMPLEMENTATION
 #include "Ase_Loader.h"

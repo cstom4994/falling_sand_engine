@@ -40,9 +40,9 @@ typedef unsigned int uint32;
 
 #pragma region COMMON
 
-#include "core/debug_impl.hpp"
+#include "core/core.h"
 
-#include <cmath>
+#include <math.h>
 #include <float.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -148,9 +148,9 @@ struct b2Version
 };
 
 /// Current version.
-extern b2Version b2_version;
+extern struct b2Version b2_version;
 
-class DebugDraw;
+struct DebugDraw;
 
 #pragma endregion COMMON
 
@@ -266,7 +266,7 @@ private:
 #pragma region MATH
 
 /// This function is used to ensure that a floating point number is not a NaN or infinity.
-inline bool b2IsValid(float x) { return std::isfinite(x); }
+inline bool b2IsValid(float x) { return isfinite(x); }
 
 #define b2Sqrt(x) sqrtf(x)
 #define b2Atan2(y, x) atan2f(y, x)
