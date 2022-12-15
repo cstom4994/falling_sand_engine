@@ -1,8 +1,11 @@
 
 #include "lua_wrapper.h"
 #include "core/gc.h"
+#include "filesystem.h"
 
+#include <assert.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/cdefs.h>
 #include <sys/queue.h>
@@ -3900,6 +3903,72 @@ SPLAY_GENERATE(luacenum_labels, luacenum_value, treel, luacenum_label_cmp);
 SPLAY_GENERATE(luacenum_values, luacenum_value, treev, luacenum_value_cmp);
 
 #pragma endregion LuaCS
+
+int luaopen_debugger(lua_State *lua) {
+    if (luaL_dofile(lua, METADOT_RESLOC("data/scripts/libs/debugger.lua"))) lua_error(lua);
+    return 1;
+}
+
+static const char *MODULE_NAME = "DEBUGGER_LUA_MODULE";
+static const char *MSGH = "DEBUGGER_LUA_MSGH";
+
+void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName, lua_CFunction readFunc,
+               lua_CFunction writeFunc) {
+    // Check that the module name was not already defined.
+    lua_getfield(lua, LUA_REGISTRYINDEX, MODULE_NAME);
+    assert(lua_isnil(lua, -1) || strcmp(name, luaL_checkstring(lua, -1)));
+    lua_pop(lua, 1);
+
+    // Push the module name into the registry.
+    lua_pushstring(lua, name);
+    lua_setfield(lua, LUA_REGISTRYINDEX, MODULE_NAME);
+
+    // Preload the module
+    luaL_requiref(lua, name, luaopen_debugger, false);
+
+    // Insert the msgh function into the registry.
+    lua_getfield(lua, -1, "msgh");
+    lua_setfield(lua, LUA_REGISTRYINDEX, MSGH);
+
+    if (readFunc) {
+        lua_pushcfunction(lua, readFunc);
+        lua_setfield(lua, -2, "read");
+    }
+
+    if (writeFunc) {
+        lua_pushcfunction(lua, writeFunc);
+        lua_setfield(lua, -2, "write");
+    }
+
+    if (globalName) {
+        lua_setglobal(lua, globalName);
+    } else {
+        lua_pop(lua, 1);
+    }
+}
+
+int metadot_debug_pcall(lua_State *lua, int nargs, int nresults, int msgh) {
+    // Call regular lua_pcall() if a message handler is provided.
+    if (msgh) return lua_pcall(lua, nargs, nresults, msgh);
+
+    // Grab the msgh function out of the registry.
+    lua_getfield(lua, LUA_REGISTRYINDEX, MSGH);
+    if (lua_isnil(lua, -1)) {
+        luaL_error(lua, "Tried to call dbg_call() before calling dbg_setup().");
+    }
+
+    // Move the error handler just below the function.
+    msgh = lua_gettop(lua) - (1 + nargs);
+    lua_insert(lua, msgh);
+
+    // Call the function.
+    int err = lua_pcall(lua, nargs, nresults, msgh);
+
+    // Remove the debug handler.
+    lua_remove(lua, msgh);
+
+    return err;
+}
 
 int metadot_preload(lua_State *L, lua_CFunction f, const char *name) {
     lua_getglobal(L, "package");

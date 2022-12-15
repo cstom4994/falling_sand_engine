@@ -19,6 +19,7 @@
 
 #include "game/utils.hpp"
 #include "libs/lua/ffi.h"
+#include "lua/host/lualib.h"
 #include "quickjs/quickjs.h"
 
 #include <iostream>
@@ -171,6 +172,8 @@ void LuaCore::Init() {
     metadot_bind_fs(m_L);
     metadot_bind_lz4(m_L);
 
+    metadot_debug_setup(m_L, "debugger", "dbg", NULL, NULL);
+
     metadot_preload(m_L, luaopen_ffi, "ffi");
     lua_getglobal(m_L, "require");
     lua_pushstring(m_L, "ffi");
@@ -213,7 +216,7 @@ void LuaCore::End() {}
 
 void LuaCore::RunScriptInConsole(lua_State *L, const char *c) {
     luaL_loadstring(m_L, c);
-    auto result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
+    auto result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
         print_error(m_L);
@@ -229,7 +232,7 @@ void LuaCore::RunScriptFromFile(const char *filePath) {
         print_error(m_L);
         return;
     }
-    result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
+    result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) { print_error(m_L); }
 }
@@ -239,7 +242,7 @@ void LuaCore::Update() {
     //lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
     //call coroutes
     luaL_loadstring(m_L, s_couroutineFileSrc.c_str());
-    auto result = lua_pcall(m_L, 0, LUA_MULTRET, 0);
+    auto result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
         print_error(m_L);

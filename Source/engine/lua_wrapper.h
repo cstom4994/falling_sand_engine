@@ -1,4 +1,7 @@
 
+#ifndef _METADOT_LUAWRAPPER_H_
+#define _METADOT_LUAWRAPPER_H_
+
 #include "core/core.h"
 
 #include "libs/lua/host/lauxlib.h"
@@ -1301,6 +1304,15 @@ __END_DECLS
 
 #pragma endregion LuaCS
 
+void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName,
+                         lua_CFunction readFunc, lua_CFunction writeFunc);
+int metadot_debug_pcall(lua_State *lua, int nargs, int nresults, int msgh);
+
+#define metadot_debug_dofile(lua, filename)                                                        \
+    (luaL_loadfile(lua, filename) || metadot_debug_pcall(lua, 0, LUA_MULTRET, 0))
+
 int metadot_preload(lua_State *L, lua_CFunction f, const char *name);
 void metadot_load(lua_State *L, const luaL_Reg *l, const char *name);
 void metadot_loadover(lua_State *L, const luaL_Reg *l, const char *name);
+
+#endif
