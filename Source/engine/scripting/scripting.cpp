@@ -9,17 +9,14 @@
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
-#include "engine/scripting/js_wrapper.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/mu.h"
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
-#include "engine/scripting/mu.h"
-
 #include "game/utils.hpp"
 #include "libs/lua/ffi.h"
-#include "lua/host/lualib.h"
-#include "quickjs/quickjs.h"
+#include "libs/lua/host/lualib.h"
 
 #include <iostream>
 #include <memory>
@@ -371,18 +368,12 @@ void Scripts::Init() {
     METADOT_NEW(C, LuaRuntime, LuaCore);
     LuaRuntime->Init();
 
-    METADOT_NEW(C, JsRuntime, JsWrapper::Runtime);
-    METADOT_NEW(C, JsContext, JsWrapper::Context, *this->JsRuntime);
-
     // test_js();
     global.game->GameSystem_.gameScriptwrap.Init();
     global.game->GameSystem_.gameScriptwrap.Bind();
 }
 
 void Scripts::End() {
-
-    METADOT_DELETE_EX(C, JsContext, Context, JsWrapper::Context);
-    METADOT_DELETE_EX(C, JsRuntime, Runtime, JsWrapper::Runtime);
 
     LuaRuntime->End();
     METADOT_DELETE(C, LuaRuntime, LuaCore);
@@ -392,12 +383,12 @@ void Scripts::End() {
 }
 
 void Scripts::UpdateRender() {
-    METADOT_ASSERT_E(JsContext && LuaRuntime);
+    METADOT_ASSERT_E(LuaRuntime);
     LuaRuntime->Update();
 }
 
 void Scripts::UpdateTick() {
-    METADOT_ASSERT_E(JsContext && LuaRuntime);
-    auto OnGameTickUpdate = (std::function<void(void)>) JsContext->eval("OnGameTickUpdate");
-    OnGameTickUpdate();
+    METADOT_ASSERT_E(LuaRuntime);
+    // auto OnGameTickUpdate = (std::function<void(void)>) JsContext->eval("OnGameTickUpdate");
+    // OnGameTickUpdate();
 }

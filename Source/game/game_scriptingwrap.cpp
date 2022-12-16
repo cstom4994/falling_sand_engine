@@ -4,21 +4,16 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine/filesystem.h"
-#include "engine/imgui_binder.hpp"
 #include "engine/reflectionflat.hpp"
-#include "engine/scripting/js_wrapper.hpp"
 #include "game/controls.hpp"
 #include "game/game_resources.hpp"
 #include "game/materials.hpp"
-#include "libs/quickjs/quickjs-libc.h"
+#include "scripting/lua_wrapper.hpp"
+#include "scripting/scripting.hpp"
 
 #include <string>
 
 #pragma region GameScriptingBind_1
-
-static void println(JsWrapper::rest<std::string> args) {
-    for (auto const &arg: args) METADOT_INFO("%s", arg.c_str());
-}
 
 static void create_biome(std::string name, int id) {
     Biome *b = new Biome(name, id);
@@ -42,10 +37,6 @@ static void materials_init() { Materials::Init(); }
 static void controls_init() { Controls::initKey(); }
 
 static void load_lua(std::string luafile) {}
-static void load_script(std::string scriptfile) {
-    auto context = global.scripts->JsContext;
-    context->evalFile(METADOT_RESLOC(scriptfile.c_str()));
-}
 
 #pragma endregion GameScriptingBind_1
 
@@ -59,60 +50,19 @@ Biome *GameScriptingWrap::BiomeGet(std::string name) {
 }
 
 void GameScriptingWrap::Bind() {
-    auto context = global.scripts->JsContext;
-    try {
-        auto &module = context->addModule("CoreModule");
-        module.function<&println>("println");
-        module.function<&create_biome>("create_biome");
-        module.function<&load_lua>("load_lua");
-        module.function<&load_script>("load_script");
-        module.function<&audio_init>("audio_init");
-        module.function<&audio_load_bank>("audio_load_bank");
-        module.function<&audio_load_event>("audio_load_event");
-        module.function<&audio_play_event>("audio_play_event");
-        module.function<&materials_init>("materials_init");
-        module.function<&textures_init>("textures_init");
-        module.function<&textures_load>("textures_load");
-        module.function<&controls_init>("controls_init");
+    auto luacore = global.scripts->LuaRuntime;
+    auto &luawrap = (*luacore->GetWrapper());
+    luawrap["controls_init"] = LuaWrapper::function(controls_init);
+    luawrap["materials_init"] = LuaWrapper::function(materials_init);
+    luawrap["textures_load"] = LuaWrapper::function(textures_load);
+    luawrap["textures_init"] = LuaWrapper::function(textures_init);
+    luawrap["audio_load_event"] = LuaWrapper::function(audio_load_event);
+    luawrap["audio_play_event"] = LuaWrapper::function(audio_play_event);
+    luawrap["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
+    luawrap["audio_init"] = LuaWrapper::function(audio_init);
+    luawrap["create_biome"] = LuaWrapper::function(create_biome);
 
-        js_std_init_handlers(global.scripts->JsRuntime->rt);
-        /* loader for ES6 modules */
-        JS_SetModuleLoaderFunc(global.scripts->JsRuntime->rt, nullptr, js_module_loader, nullptr);
-        js_std_add_helpers(context->ctx, 0, nullptr);
-
-        js_init_module_std(context->ctx, "std");
-        js_init_module_os(context->ctx, "os");
-
-        init_imgui_module(context->ctx, "ImGuiModule");
-
-        // module.class_<Biome>("Biome")
-        //         .constructor<std::string, int>("Biome")
-        //         .fun<&Biome::id>("id")
-        //         .fun<&Biome::name>("name");
-
-        context->eval(R"Js(
-            import * as test from 'CoreModule';
-            globalThis.test = test;
-            import * as ImGui from 'ImGuiModule';
-            globalThis.ImGui = ImGui;
-            import * as std from 'std';
-            globalThis.std = std;
-            import * as os from 'os';
-            globalThis.os = os;
-        )Js",
-                      "<import>", JS_EVAL_TYPE_MODULE);
-
-        context->evalFile(METADOT_RESLOC("data/scripts/init.js"));
-
-        auto OnGameDataLoad = (std::function<void(void)>) context->eval("OnGameDataLoad");
-        auto OnGameEngineLoad = (std::function<void(void)>) context->eval("OnGameEngineLoad");
-        OnGameEngineLoad();
-        OnGameDataLoad();
-
-    } catch (JsWrapper::exception) {
-        auto exc = context->getException();
-        std::cerr << (std::string) exc << std::endl;
-        if ((bool) exc["stack"]) std::cerr << (std::string) exc["stack"] << std::endl;
-        return;
-    }
+    luawrap.dofile(METADOT_RESLOC("data/scripts/init.lua"));
+    auto InitFunc = luawrap["OnGameEngineLoad"];
+    InitFunc();
 }

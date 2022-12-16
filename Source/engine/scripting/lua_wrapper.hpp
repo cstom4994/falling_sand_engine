@@ -9128,8 +9128,9 @@ namespace LuaWrapper {
         bool created_;
 
         // non copyable
-        State(const State &);
-        State &operator=(const State &);
+        METADOT_MAKE_MOVEONLY(State);
+        // State(const State &);
+        // State &operator=(const State &);
 
         static int initializing_panic(lua_State *L) {
             ErrorHandler::throwDefaultError(lua_status(L), lua_tostring(L, -1));

@@ -112,7 +112,6 @@ const char *u8Cpp20(T &&t) noexcept {
 #if defined(__cplusplus)
 
 #define METADOT_MAKE_MOVEONLY(class_name)                                                          \
-    class_name() = default;                                                                        \
     class_name(const class_name &) = delete;                                                       \
     class_name &operator=(const class_name &) = delete;                                            \
     class_name(class_name &&) = default;                                                           \

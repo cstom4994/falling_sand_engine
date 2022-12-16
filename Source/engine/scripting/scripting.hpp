@@ -3,7 +3,6 @@
 #ifndef _METADOT_SCRIPTING_HPP_
 #define _METADOT_SCRIPTING_HPP_
 
-#include "js_wrapper.hpp"
 #include "libs/visitstruct.hpp"
 #include "lua_wrapper.hpp"
 
@@ -92,9 +91,6 @@ public:
 struct Scripts
 {
     LuaCore *LuaRuntime;
-
-    JsWrapper::Runtime *JsRuntime = nullptr;
-    JsWrapper::Context *JsContext = nullptr;
 
     void Init();
     void End();

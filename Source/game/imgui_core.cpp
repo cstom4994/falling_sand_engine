@@ -684,7 +684,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     }
     GameUI::GameUI_Draw(global.game);
 
-    auto context = global.scripts->JsContext;
-    auto OnImGuiUpdate = (std::function<void(void)>) context->eval("OnImGuiUpdate");
-    OnImGuiUpdate();
+    // auto context = global.scripts->JsContext;
+    // auto OnImGuiUpdate = (std::function<void(void)>) context->eval("OnImGuiUpdate");
+    // OnImGuiUpdate();
 }
