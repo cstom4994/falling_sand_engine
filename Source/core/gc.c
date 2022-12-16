@@ -1,5 +1,6 @@
 
 #include "GC.h"
+#include "auto_c.h"
 
 #include <errno.h>
 #include <setjmp.h>
@@ -393,7 +394,12 @@ void gc_free(GarbageCollector *gc, void *ptr) {
     }
 }
 
-void gc_start(GarbageCollector *gc, void *bos) { gc_start_ext(gc, bos, 1024, 1024, 0.2, 0.8, 0.5); }
+void gc_start(GarbageCollector *gc, void *bos) {
+    var bottom = NULL;
+    new_raw(AutoC_GC, $R(&bottom));
+    atexit(MetaDotC_Exit);
+    gc_start_ext(gc, bos, 1024, 1024, 0.2, 0.8, 0.5);
+}
 
 void gc_start_ext(GarbageCollector *gc, void *bos, size_t initial_capacity, size_t min_capacity,
                   double downsize_load_factor, double upsize_load_factor, double sweep_factor) {
