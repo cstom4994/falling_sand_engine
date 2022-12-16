@@ -395,9 +395,6 @@ void gc_free(GarbageCollector *gc, void *ptr) {
 }
 
 void gc_start(GarbageCollector *gc, void *bos) {
-    var bottom = NULL;
-    new_raw(AutoC_GC, $R(&bottom));
-    atexit(MetaDotC_Exit);
     gc_start_ext(gc, bos, 1024, 1024, 0.2, 0.8, 0.5);
 }
 

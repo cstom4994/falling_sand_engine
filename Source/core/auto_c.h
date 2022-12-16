@@ -756,12 +756,4 @@ var exception_message(void);
 
 void mark(var self, var gc, void (*f)(var, void *));
 
-#ifndef METADOT_C_NGC
-
-extern var AutoC_GC;
-
-void MetaDotC_Exit(void);
-
-#endif
-
 #endif

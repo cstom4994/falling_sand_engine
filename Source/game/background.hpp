@@ -40,7 +40,6 @@ struct Backgrounds
 
     void Push(std::string name, Background *bg);
     Background *Get(std::string name);
-    //static Background TEST_OVERWORLD;
 
     void Load();
     void Unload();
