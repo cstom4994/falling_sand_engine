@@ -4,8 +4,8 @@
 #define _METADOT_GAMERESOURCES_HPP_
 
 #include "core/core.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
 #include "engine/sdl_wrapper.h"
-#include "lua_wrapper.hpp"
 
 #include <iostream>
 #include <string>

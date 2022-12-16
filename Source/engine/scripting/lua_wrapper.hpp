@@ -20,7 +20,7 @@
 extern "C"
 {
 #endif
-#include "engine/lua_wrapper.h"
+#include "lua_wrapper.h"
 #if defined(__cplusplus)
 }
 #endif

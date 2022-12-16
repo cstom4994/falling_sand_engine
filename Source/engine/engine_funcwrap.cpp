@@ -3,10 +3,10 @@
 #include "engine_funcwrap.hpp"
 #include "core/global.hpp"
 #include "engine/engine_cpp.h"
-#include "engine/lua_wrapper.hpp"
 #include "engine/platform_detail.h"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "engine/sdl_wrapper.h"
 #include "game/game.hpp"
 

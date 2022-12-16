@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "engine/scripting.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "game_datastruct.hpp"
 
 struct GameScriptingWrap

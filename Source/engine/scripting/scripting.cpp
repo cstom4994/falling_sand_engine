@@ -1,18 +1,16 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "engine/scripting.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "engine/code_reflection.hpp"
-#include "engine/domainlang.hpp"
 #include "engine/engine_funcwrap.hpp"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
-#include "engine/js_wrapper.hpp"
-#include "engine/lua_wrapper.hpp"
 #include "engine/memory.hpp"
-#include "engine/scripting.hpp"
+#include "engine/scripting/js_wrapper.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
@@ -364,11 +362,11 @@ void integrationExample() {
 #endif
 
 void Scripts::Init() {
-    METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);
-    LoadMuFuncs();
-    char *init_src = futil_readfilestring("data/init.mu");
-    MuDSL->evaluate(init_src);
-    gc_free(&gc, init_src);
+    // METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);
+    // LoadMuFuncs();
+    // char *init_src = futil_readfilestring("data/init.mu");
+    // MuDSL->evaluate(init_src);
+    // gc_free(&gc, init_src);
     // auto end = MuDSL->callFunction("init");
 
     METADOT_NEW(C, LuaRuntime, LuaCore);
@@ -390,8 +388,8 @@ void Scripts::End() {
     LuaRuntime->End();
     METADOT_DELETE(C, LuaRuntime, LuaCore);
 
-    auto end = MuDSL->callFunction("end");
-    METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
+    // auto end = MuDSL->callFunction("end");
+    // METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
 }
 
 void Scripts::UpdateRender() {
@@ -405,4 +403,3 @@ void Scripts::UpdateTick() {
     OnGameTickUpdate();
 }
 
-void Scripts::LoadMuFuncs() { METADOT_ASSERT_E(MuDSL); }

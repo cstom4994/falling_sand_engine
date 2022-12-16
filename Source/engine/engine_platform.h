@@ -36,6 +36,7 @@ void SetDisplayMode(engine_displaymode mode);
 void SetWindowFlash(engine_windowflashaction action, int count, int period);
 void SetVSync(bool vsync);
 void SetMinimizeOnLostFocus(bool minimize);
+void SetWindowTitle(const char* title);
 inline ticks GetTime() { return (ticks) SDL_GetTicks(); }
 
 #endif

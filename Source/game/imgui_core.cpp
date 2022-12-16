@@ -5,13 +5,13 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
+#include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/networking.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting.hpp"
-#include "engine/filesystem.h"
+#include "engine/scripting/scripting.hpp"
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
@@ -688,10 +688,4 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     auto context = global.scripts->JsContext;
     auto OnImGuiUpdate = (std::function<void(void)>) context->eval("OnImGuiUpdate");
     OnImGuiUpdate();
-}
-
-void ImGuiCore::registerWindow(std::string_view windowName, bool *opened) {
-    for (auto &m_win: m_wins)
-        if (m_win.name == windowName) return;
-    m_wins.push_back({std::string(windowName), opened});
 }

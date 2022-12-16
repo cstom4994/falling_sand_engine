@@ -4,16 +4,15 @@
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
+#include "engine/filesystem.h"
 #include "engine/memory.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "engine/sdl_wrapper.h"
-#include "engine/filesystem.h"
-
 #include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"
-#include "lua_wrapper.hpp"
-#include "scripting.hpp"
+
 #include <string>
 
 C_Surface *Textures::testTexture = nullptr;

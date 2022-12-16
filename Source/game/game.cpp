@@ -18,7 +18,7 @@
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "engine/sdl_wrapper.h"
 #include "engine_platform.h"
 #include "game/console.hpp"
@@ -49,8 +49,6 @@ IMPLENGINE();
 Game::Game(int argc, char *argv[]) {
     METAENGINE_Memory_Init(argc, argv);
     global.game = this;
-    // init console & print title
-    std::cout << logo << std::endl;
     METADOT_INFO("%s %s", METADOT_NAME, METADOT_VERSION_TEXT);
 }
 
@@ -109,10 +107,10 @@ int Game::init(int argc, char *argv[]) {
         int port = GameIsolate_.settings.server_port;
         if (argc >= 3) { port = atoi(argv[2]); }
         global.server = Server::start(port);
-        SDL_SetWindowTitle(Core.window, win_title_server);
+        SetWindowTitle(win_title_server);
     } else {
         global.client = Client::start();
-        SDL_SetWindowTitle(Core.window, win_title_client);
+        SetWindowTitle(win_title_client);
     }
 
     if (GameIsolate_.settings.networkMode != engine_networkmode::SERVER) {

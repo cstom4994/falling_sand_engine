@@ -10,13 +10,6 @@ static const int WINDOWS_MAX_HEIGHT = 1080;
 
 static const int RENDER_C_TEST = 3;
 
-static const char *logo = "__  __      _        _____        _   "
-                          "|  \/  |    | |      |  __ \      | |  "
-                          "| \  / | ___| |_ __ _| |  | | ___ | |_ "
-                          "| |\/| |/ _ \ __/ _` | |  | |/ _ \| __|"
-                          "| |  | |  __/ || (_| | |__| | (_) | |_ "
-                          "|_|  |_|\___|\__\__,_|_____/ \___/ \__|";
-
 static const char *win_title_client = CC("MetaDot 少女祈祷中");
 static const char *win_title_server = CC("MetaDot Server");
 static const char *win_game = CC("MetaDot");

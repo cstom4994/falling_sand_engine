@@ -4,11 +4,11 @@
 #define _METADOT_SCRIPTING_HPP_
 
 #include "js_wrapper.hpp"
+#include "libs/visitstruct.hpp"
+#include "lua_wrapper.hpp"
+
 #include <map>
 #include <string>
-
-#include "engine/lua_wrapper.hpp"
-#include "libs/visitstruct.hpp"
 
 struct lua_State;
 
@@ -89,13 +89,8 @@ public:
     } Data_;
 };
 
-namespace MuDSL {
-    class MuDSLInterpreter;
-}
-
 struct Scripts
 {
-    MuDSL::MuDSLInterpreter *MuDSL = nullptr;
     LuaCore *LuaRuntime;
 
     JsWrapper::Runtime *JsRuntime = nullptr;
@@ -105,7 +100,6 @@ struct Scripts
     void End();
     void UpdateRender();
     void UpdateTick();
-    void LoadMuFuncs();
 };
 
 #endif

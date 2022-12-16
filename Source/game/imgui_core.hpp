@@ -29,12 +29,6 @@ enum EditorTags {
 
 class ImGuiCore {
 private:
-    struct ImGuiWin
-    {
-        std::string name;
-        bool *opened;
-    };
-
     struct EditorView
     {
         EditorTags tags;
@@ -45,8 +39,6 @@ private:
 
         bool operator==(EditorView v) { return (v.file == this->file) && (v.tags == this->tags); }
     };
-
-    std::vector<ImGuiWin> m_wins;
 
     C_Window *window;
     void *gl_context;
@@ -66,7 +58,6 @@ public:
     void begin();
     void end();
     void Render();
-    void registerWindow(std::string_view windowName, bool *opened);
     ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
     ImGuiContext *getImGuiCtx() {

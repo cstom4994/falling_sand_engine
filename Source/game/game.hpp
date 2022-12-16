@@ -16,7 +16,7 @@
 #include "engine/internal/builtin_box2d.h"
 #include "engine/networking.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "game/console.hpp"
 #include "engine/filesystem.h"
 #include "game/game_datastruct.hpp"

@@ -213,3 +213,5 @@ void SetMinimizeOnLostFocus(bool minimize) {
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
     //GameUI::OptionsUI::minimizeOnFocus = minimize;
 }
+
+void SetWindowTitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }

@@ -3,14 +3,15 @@
 #include "game_scriptingwrap.hpp"
 #include "core/core.hpp"
 #include "core/global.hpp"
+#include "engine/filesystem.h"
 #include "engine/imgui_binder.hpp"
 #include "engine/reflectionflat.hpp"
+#include "engine/scripting/js_wrapper.hpp"
 #include "game/controls.hpp"
-#include "engine/filesystem.h"
 #include "game/game_resources.hpp"
 #include "game/materials.hpp"
-#include "js_wrapper.hpp"
-#include "quickjs/quickjs-libc.h"
+#include "libs/quickjs/quickjs-libc.h"
+
 #include <string>
 
 #pragma region GameScriptingBind_1
