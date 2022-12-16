@@ -16,7 +16,7 @@
 #include <string_view>
 #include <unordered_set>
 
-#include "engine/scripting/muscript/mu_ast.h"
+#include "engine/scripting/mu_ast.h"
 
 namespace mu {
     using namespace std::string_view_literals;

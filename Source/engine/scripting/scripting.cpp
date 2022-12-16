@@ -10,7 +10,7 @@
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/scripting/mu.h"
+#include "engine/scripting/muscript.h"
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"

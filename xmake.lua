@@ -11,8 +11,8 @@ add_rules("mode.debug", "mode.release")
 if (is_os("windows")) then
     add_requires("vcpkg::sdl2")
     add_packages("vcpkg::sdl2")
-    add_requires("vcpkg::pthreads")
-    add_packages("vcpkg::pthreads")
+    -- add_requires("vcpkg::pthreads")
+    -- add_packages("vcpkg::pthreads")
 else
     add_requires("libsdl")
     add_packages("libsdl")
@@ -164,7 +164,7 @@ include_dir_list = {
     "Source/libs/glad"
 }
 
-defines_list = { "METADOT_BACKEND_GL" }
+defines_list = {}
 
 target("libs")
 do
@@ -173,14 +173,12 @@ do
     add_rules("c++.unity_build", { batchsize = 0 })
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_defines("CONFIG_VERSION=\"2021-03-27\"", "_GNU_SOURCE")
     add_files("Source/libs/*.cpp")
     add_files("Source/libs/*.c")
     add_files("Source/libs/ImGui/**.cpp", "Source/libs/ImGui/**.c",
         "Source/libs/glad/**.c",
         { unity_group = "invade" })
 
-    add_files("Source/libs/quickjs/**.c")
     add_files("Source/libs/physfs/**.c")
     if is_os("macosx") then
         add_files("Source/libs/physfs/**.m")

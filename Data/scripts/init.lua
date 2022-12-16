@@ -7,10 +7,8 @@
 OnGameEngineLoad = function()
     textures_init()
     materials_init()
-    audio_init()
 
-    audio_load_bank("data/assets/audio/fmod/Build/Desktop/Master.bank", 0)
-    audio_load_bank("data/assets/audio/fmod/Build/Desktop/Master.strings.bank", 0)
+    runf("Script:audio.lua")
 
     controls_init()
 

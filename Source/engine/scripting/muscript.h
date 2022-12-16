@@ -1,3 +1,19 @@
+// Copyright(c) 2022, KaoruXun All rights reserved.
+
+#ifndef _METADOT_MU_H_
+#define _METADOT_MU_H_
+
+#include "engine/scripting/mu_compiler.h"
+#include "engine/scripting/mu_parser.h"
+
+extern "C"
+{
+#include "libs/lua/host/lauxlib.h"
+#include "libs/lua/host/lua.h"
+#include "libs/lua/host/lualib.h"
+    int luaopen_mu(lua_State *L);
+}// extern "C"
+
 static const char muscriptCodes[] = R"muscript_codes(
 --[[
 Copyright (C) 2020 by Leaf Corcoran, modified by Li Jin, 2022
@@ -221,3 +237,5 @@ mu.require = mu_require
 mu.p = p
 mu.traceback = mu_traceback
 )muscript_codes";
+
+#endif
