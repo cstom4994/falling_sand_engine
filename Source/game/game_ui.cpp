@@ -4,10 +4,9 @@
 #include "core/global.hpp"
 #include "engine.h"
 #include "engine/engine_cpp.h"
+#include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
-#include "engine_network.h"
-#include "engine/filesystem.h"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/imgui_core.hpp"
@@ -617,7 +616,7 @@ namespace GameUI {
                 METADOT_INFO("Selected world: %s", worldName.c_str());
                 visible = false;
 
-                game->fadeOutStart = game->GameIsolate_.game_timestate.now;
+                game->fadeOutStart = Time.now;
                 game->fadeOutLength = 250;
                 game->fadeOutCallback = [&, game, worldName]() {
                     game->setGameState(LOADING, INGAME);
@@ -634,8 +633,7 @@ namespace GameUI {
                                     CHUNK_W * 3,
                             (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H +
                                     CHUNK_H * 3,
-                            Render.target, &global.audioEngine,
-                            global.game->GameIsolate_.settings.networkMode);
+                            Render.target, &global.audioEngine);
                     w->metadata.lastOpenedTime = Time::millis() / 1000;
                     w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
                     w->metadata.save(w->worldName);
@@ -650,7 +648,7 @@ namespace GameUI {
                     game->GameIsolate_.world = w;
                     //});
 
-                    game->fadeInStart = game->GameIsolate_.game_timestate.now;
+                    game->fadeInStart = Time.now;
                     game->fadeInLength = 250;
                     game->fadeInWaitFrames = 4;
                 };
@@ -746,12 +744,12 @@ namespace GameUI {
 
         if (ImGui::Button("连接")) {
             METADOT_INFO("connectButton select");
-            if (global.client->connect(global.game->GameIsolate_.settings.server_ip.c_str(),
-                                       global.game->GameIsolate_.settings.server_port)) {
-                global.game->GameIsolate_.settings.networkMode = engine_networkmode::CLIENT;
-                visible = false;
-                game->setGameState(LOADING, INGAME);
-            }
+            // if (global.client->connect(global.game->GameIsolate_.settings.server_ip.c_str(),
+            //                            global.game->GameIsolate_.settings.server_port)) {
+            //     global.game->GameIsolate_.settings.networkMode = engine_networkmode::CLIENT;
+            //     visible = false;
+            //     game->setGameState(LOADING, INGAME);
+            // }
         }
 
         if (!connectButtonEnabled) {
@@ -1414,8 +1412,7 @@ namespace GameUI {
                     wpStr,
                     (int) ceil(WINDOWS_MAX_WIDTH / 3 / (double) CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                     (int) ceil(WINDOWS_MAX_HEIGHT / 3 / (double) CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                    Render.target, &global.audioEngine,
-                    global.game->GameIsolate_.settings.networkMode, generator);
+                    Render.target, &global.audioEngine, generator);
             game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
             game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
             game->GameIsolate_.world->metadata.lastOpenedVersion =

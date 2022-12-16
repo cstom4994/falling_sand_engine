@@ -11,7 +11,6 @@
 
 #include "engine_core.h"
 #include "engine_ecs.h"
-#include "engine_network.h"
 #include "engine_platform.h"
 #include "engine_render.h"
 
@@ -21,7 +20,8 @@
     extern engine_core Core;                                                                       \
     extern engine_render Render;                                                                   \
     extern engine_screen Screen;                                                                   \
-    extern engine_ecs ECS
+    extern engine_ecs ECS;                                                                         \
+    extern engine_time Time
 
 //Engine functions called from main
 int InitEngine();

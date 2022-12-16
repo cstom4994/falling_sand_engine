@@ -7,14 +7,13 @@
 #include "core/const.h"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
+#include "engine/Noise.h"
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"
-#include "engine/Noise.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 #include "libs/sparsehash/dense_hash_map.h"
-#include "networking.hpp"
 #include "rigidbody.hpp"
 #include "structures.hpp"
 
@@ -126,9 +125,8 @@ public:
     RigidBody *staticBody = nullptr;
 
     void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer, Audio *audioEngine,
-              int netMode, WorldGenerator *generator);
-    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer, Audio *audioEngine,
-              int netMode);
+              WorldGenerator *generator);
+    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target, Audio *audioEngine);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);

@@ -38,14 +38,18 @@ typedef struct engine_screen
     unsigned maxFPS;
 } engine_screen;
 
-typedef struct engineTime
+typedef struct engine_time
 {
-    double deltaTime;
-    unsigned frameTicks;
-    unsigned msTime;
-    U64 nowCounter;
-    U64 lastCounter;
-} engineTime;
+    int fps;
+    int feelsLikeFps;
+    long long lastTime;
+    long long lastTick;
+    long long lastLoadingTick;
+    long long now;
+    long long startTime;
+    long long deltaTime;
+    long mspt;
+} engine_time;
 
 void ExitGame();
 int GameExited();

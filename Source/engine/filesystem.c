@@ -4,6 +4,7 @@
 #include "core/core.h"
 
 #include "core/gc.h"
+#include "engine/datapackage.h"
 #include "engine/engine_cpp.h"
 #include "engine/engine_platform.h"
 #include "libs/physfs/physfs.h"
@@ -13,10 +14,12 @@
 #include <string.h>
 #include <sys/malloc.h>
 
-char *ResourceWorker_ProjectRootPath;
-char *ResourceWorker_DataPath;
+char *FilesystemProjectRootPath;
+char *FilesystemDataPath;
 
-void ResourceWorker_init() {
+void InitFilesystem() {
+
+    InitPhysFS();
 
     char currentDir[MAX_PATH];
     strcpy(currentDir, FUtil_getExecutableFolderPath());
@@ -26,20 +29,20 @@ void ResourceWorker_init() {
     if (!FUtil_exists(dir)) {
         strcpy(dir, currentDir);
         strcat(dir, "../");
-        ResourceWorker_ProjectRootPath = dir;
+        FilesystemProjectRootPath = dir;
         strcat(dir, "data/");
-        ResourceWorker_DataPath = dir;
+        FilesystemDataPath = dir;
         if (!FUtil_exists(dir)) { METADOT_ERROR("Check runtime folder failed %s", dir); }
-        METADOT_BUG("Runtime folder detected: %s", ResourceWorker_ProjectRootPath);
+        METADOT_BUG("Runtime folder detected: %s", FilesystemProjectRootPath);
         return;
     }
-    ResourceWorker_ProjectRootPath = currentDir;
-    ResourceWorker_DataPath = dir;
-    METADOT_BUG("Runtime folder detected: %s", ResourceWorker_ProjectRootPath);
+    FilesystemProjectRootPath = currentDir;
+    FilesystemDataPath = dir;
+    METADOT_BUG("Runtime folder detected: %s", FilesystemProjectRootPath);
     return;
 }
 
-char *ResourceWorker_getDataPath() { return ResourceWorker_DataPath; }
+char *GetGameDataPath() { return FilesystemDataPath; }
 
 const char *FUtil_getExecutableFolderPath() {
     const char *out = PHYSFS_getBaseDir();

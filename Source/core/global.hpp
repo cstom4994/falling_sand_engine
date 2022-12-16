@@ -15,8 +15,6 @@
 #include <map>
 
 class Game;
-class Client;
-class Server;
 class Scripts;
 class ImGuiCore;
 
@@ -34,9 +32,6 @@ struct Global
     ShaderWorker shaderworker;
     Audio audioEngine;
     I18N I18N;
-
-    Client *client = nullptr;
-    Server *server = nullptr;
 
     struct
     {

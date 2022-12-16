@@ -6,6 +6,7 @@
 #include "engine_core.h"
 #include "engine_ecs.h"
 #include "engine_platform.h"
+#include "filesystem.h"
 
 /////////////////////////////////External data//////////////////////////////////
 
@@ -32,6 +33,7 @@ int InitEngine() {
     METADOT_INFO("Initializing Engine...");
 
     InitTime();
+    InitFilesystem();
     InitScreen(1280, 720, 1, 60);
 
     if (!InitCore() || !InitWindow()) {

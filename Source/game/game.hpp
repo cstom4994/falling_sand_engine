@@ -14,7 +14,6 @@
 #include "core/threadpool.h"
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"
-#include "engine/networking.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "game/console.hpp"
@@ -39,19 +38,6 @@ enum GameState {
     MAIN_MENU,
     LOADING,
     INGAME
-};
-
-struct GameTimeState
-{
-    int fps = 0;
-    int feelsLikeFps = 0;
-    long long lastTime = 0;
-    long long lastTick = 0;
-    long long lastLoadingTick = 0;
-    long long now = 0;
-    long long startTime = 0;
-    long long deltaTime;
-    long mspt = 0;
 };
 
 class Game {
@@ -106,7 +92,6 @@ public:
     struct
     {
         Backgrounds *backgrounds = nullptr;
-        GameTimeState game_timestate;
         Profiler profiler;
         Settings settings;
         World *world = nullptr;

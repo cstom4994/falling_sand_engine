@@ -4,6 +4,7 @@
 
 engine_core Core;
 engine_screen Screen;
+engine_time Time;
 
 int exitGame = 0;
 

@@ -12,6 +12,7 @@
 
 #include "core/core.h"
 
+#include "libs/cJSON.h"
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
@@ -253,10 +254,10 @@ float Smoothstep(float edge0, float edge1, float x);
 int Modulus(int a, int b);
 float fModulus(float a, float b);
 
-// cJSON *OpenJSON(char path[], char name[]);
-// double JSON_GetObjectDouble(cJSON *object, char *string, double defaultValue);
-// Vector3 JSON_GetObjectVector3(cJSON *object, char *string, Vector3 defaultValue);
-// cJSON *JSON_CreateVector3(Vector3 value);
+cJSON *OpenJSON(char path[], char name[]);
+double JSON_GetObjectDouble(cJSON *object, char *string, double defaultValue);
+Vector3 JSON_GetObjectVector3(cJSON *object, char *string, Vector3 defaultValue);
+cJSON *JSON_CreateVector3(Vector3 value);
 
 void Vector3ToTable(lua_State *L, Vector3 vector);
 

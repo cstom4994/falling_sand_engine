@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "utils.h"
+#include "core/core.h"
 
 // --------------- FPS counter functions ---------------
 
@@ -660,79 +661,79 @@ float fModulus(float a, float b) {
 
 // --------------- cJSON wrapper functions ---------------
 
-// cJSON *OpenJSON(char path[], char name[]) {
+cJSON *OpenJSON(char path[], char name[]) {
 
-//     char fullPath[512 + 256];
-//     strncpy(fullPath, path, 512);
-//     if (path[strlen(path) - 1] != '/') { strcat(fullPath, "/"); }
-//     strcat(fullPath, name);
-//     PrintLog(Info, "Opening JSON: (%s)\n", fullPath);
-//     FILE *file = fopen(fullPath, "rb");
+    char fullPath[512 + 256];
+    strncpy(fullPath, path, 512);
+    if (path[strlen(path) - 1] != '/') { strcat(fullPath, "/"); }
+    strcat(fullPath, name);
+    METADOT_TRACE("Opening JSON: (%s)", fullPath);
+    FILE *file = fopen(fullPath, "rb");
 
-//     if (file) {
-//         fseek(file, 0, SEEK_END);
-//         unsigned size = ftell(file);
-//         rewind(file);
+    if (file) {
+        fseek(file, 0, SEEK_END);
+        unsigned size = ftell(file);
+        rewind(file);
 
-//         char *jsonString = malloc((size + 1) * sizeof(char));
-//         fread(jsonString, sizeof(char), size, file);
-//         jsonString[size] = '\0';
-//         fclose(file);
+        char *jsonString = malloc((size + 1) * sizeof(char));
+        fread(jsonString, sizeof(char), size, file);
+        jsonString[size] = '\0';
+        fclose(file);
 
-//         cJSON *json = cJSON_Parse(jsonString);
-//         if (!json) {
-//             //Error treatment
-//             const char *error_ptr = cJSON_GetErrorPtr();
-//             if (error_ptr != NULL) { PrintLog(Error, "OpenJSON: JSON error: %s\n", error_ptr); }
-//             free(jsonString);
-//             return NULL;
+        cJSON *json = cJSON_Parse(jsonString);
+        if (!json) {
+            //Error treatment
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL) { METADOT_ERROR("OpenJSON: JSON error: %s", error_ptr); }
+            free(jsonString);
+            return NULL;
 
-//         } else {
-//             free(jsonString);
-//             return json;
-//         }
+        } else {
+            free(jsonString);
+            return json;
+        }
 
-//     } else {
-//         PrintLog(Error, "OpenJSON: Failed to open json file!\n");
-//     }
-//     return NULL;
-// }
+    } else {
+        METADOT_ERROR("OpenJSON: Failed to open json file!");
+    }
+    return NULL;
+}
 
-// double JSON_GetObjectDouble(cJSON *object, char *string, double defaultValue) {
-//     cJSON *obj = cJSON_GetObjectItem(object, string);
-//     if (obj) return obj->valuedouble;
-//     else
-//         return defaultValue;
-// }
+double JSON_GetObjectDouble(cJSON *object, char *string, double defaultValue) {
+    cJSON *obj = cJSON_GetObjectItem(object, string);
+    if (obj) return obj->valuedouble;
+    else
+        return defaultValue;
+}
 
-// Vector3 JSON_GetObjectVector3(cJSON *object, char *string, Vector3 defaultValue) {
+Vector3 JSON_GetObjectVector3(cJSON *object, char *string, Vector3 defaultValue) {
 
-//     cJSON *arr = cJSON_GetObjectItem(object, string);
-//     if (!arr) return defaultValue;
+    cJSON *arr = cJSON_GetObjectItem(object, string);
+    if (!arr) return defaultValue;
 
-//     Vector3 v = VECTOR3_ZERO;
+    Vector3 v = VECTOR3_ZERO;
 
-//     cJSON *item = cJSON_GetArrayItem(arr, 0);
-//     if (item) v.x = item->valuedouble;
+    cJSON *item = cJSON_GetArrayItem(arr, 0);
+    if (item) v.x = item->valuedouble;
 
-//     item = cJSON_GetArrayItem(arr, 1);
-//     if (item) v.y = item->valuedouble;
+    item = cJSON_GetArrayItem(arr, 1);
+    if (item) v.y = item->valuedouble;
 
-//     item = cJSON_GetArrayItem(arr, 2);
-//     if (item) v.z = item->valuedouble;
+    item = cJSON_GetArrayItem(arr, 2);
+    if (item) v.z = item->valuedouble;
 
-//     return v;
-// }
+    return v;
+}
 
-// cJSON *JSON_CreateVector3(Vector3 value) {
+cJSON *JSON_CreateVector3(Vector3 value) {
 
-//     cJSON *v = cJSON_CreateArray();
-//     cJSON_AddItemToArray(v, cJSON_CreateNumber(value.x));
-//     cJSON_AddItemToArray(v, cJSON_CreateNumber(value.y));
-//     cJSON_AddItemToArray(v, cJSON_CreateNumber(value.z));
+    cJSON *v = cJSON_CreateArray();
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.x));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.y));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.z));
 
-//     return v;
-// }
+    return v;
+}
 
 // --------------- Lua stack manipulation functions ---------------
 

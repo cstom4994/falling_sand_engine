@@ -42,12 +42,12 @@ bool is_ready(std::future<R> const &f) {
 }
 
 void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target,
-                 Audio *audioEngine, int netMode) {
-    init(worldPath, w, h, target, audioEngine, netMode, new MaterialTestGenerator());
+                 Audio *audioEngine) {
+    init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator());
 }
 
 void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target,
-                 Audio *audioEngine, int netMode, WorldGenerator *generator) {
+                 Audio *audioEngine, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 
@@ -68,10 +68,8 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
     if (updateRigidBodyHitboxPool == nullptr)
         METADOT_NEW(C, updateRigidBodyHitboxPool, ThreadPool, 8);
 
-    if (netMode != engine_networkmode::SERVER) {
-        this->audioEngine = audioEngine;
-        audioEngine->LoadEvent("event:/World/Explode");
-    }
+    this->audioEngine = audioEngine;
+    audioEngine->LoadEvent("event:/World/Explode");
 
     newTemps = new int32_t[width * height];
 

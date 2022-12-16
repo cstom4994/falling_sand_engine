@@ -20,11 +20,11 @@ extern "C"
 {
 #endif
 
-    extern char *ResourceWorker_ProjectRootPath;
-    extern char *ResourceWorker_DataPath;
+    extern char *FilesystemProjectRootPath;
+    extern char *FilesystemDataPath;
 
-    void ResourceWorker_init();
-    char *ResourceWorker_getDataPath();
+    void InitFilesystem();
+    char *GetGameDataPath();
 
 #define METADOT_RESLOC(x) x
 

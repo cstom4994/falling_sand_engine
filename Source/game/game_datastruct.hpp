@@ -94,10 +94,6 @@ struct Settings
 
     int hd_objects_size;
 
-    int networkMode;
-    std::string server_ip;
-    int server_port;
-
     void Init(bool openDebugUIs);
     void Load(std::string setting_file);
     void Save(std::string setting_file);
