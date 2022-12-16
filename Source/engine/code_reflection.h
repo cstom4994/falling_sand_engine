@@ -202,7 +202,7 @@ extern "C"
 #ifdef METADOT_CREFLECT_IMPL
 
 #define METADOT_CREFLECT_DEFINE_GET_METHOD(TYPE_NAME, ...)                                         \
-    METADOT_CREFLECT_TypeInfo *mkcreflect_get_##TYPE_NAME##_type_info(void) {                      \
+    METADOT_CREFLECT_TypeInfo *metadot_creflect_get_##TYPE_NAME##_type_info(void) {                      \
         static METADOT_CREFLECT_FieldInfo fields_info[METADOT_CREFLECT_FOREACH(                    \
                 METADOT_CREFLECT_SUM, 0, __VA_ARGS__)] = {                                         \
                 METADOT_CREFLECT_FOREACH(METADOT_CREFLECT_FIELD_INFO, TYPE_NAME, __VA_ARGS__)};    \
@@ -224,7 +224,7 @@ extern "C"
     {                                                                                              \
         METADOT_CREFLECT_FOREACH(METADOT_CREFLECT_DECLARE_FIELD, 0, __VA_ARGS__)                   \
     } TYPE_NAME;                                                                                   \
-    METADOT_CREFLECT_TypeInfo *mkcreflect_get_##TYPE_NAME##_type_info(void);                       \
+    METADOT_CREFLECT_TypeInfo *metadot_creflect_get_##TYPE_NAME##_type_info(void);                       \
     METADOT_CREFLECT_DEFINE_GET_METHOD(TYPE_NAME, __VA_ARGS__)
 
 #ifdef __cplusplus

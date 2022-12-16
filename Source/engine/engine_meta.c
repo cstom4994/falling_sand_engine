@@ -365,7 +365,7 @@ C_API CSTR cobject_to_json(void *obj, metainfo_t *mi) {
 
     json = _to_jsonobject(obj, mi);
 
-    cs.cstr = cJSON_Print(json);
+    cs.cstr = cJSON_PrintUnformatted(json);
 
     cJSON_Delete(json);
 
