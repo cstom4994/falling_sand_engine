@@ -1312,6 +1312,7 @@ int metadot_debug_pcall(lua_State *lua, int nargs, int nresults, int msgh);
     (luaL_loadfile(lua, filename) || metadot_debug_pcall(lua, 0, LUA_MULTRET, 0))
 
 int metadot_preload(lua_State *L, lua_CFunction f, const char *name);
+int metadot_preload_auto(lua_State *L, lua_CFunction f, const char *name);
 void metadot_load(lua_State *L, const luaL_Reg *l, const char *name);
 void metadot_loadover(lua_State *L, const luaL_Reg *l, const char *name);
 

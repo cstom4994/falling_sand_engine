@@ -3912,8 +3912,8 @@ int luaopen_debugger(lua_State *lua) {
 static const char *MODULE_NAME = "DEBUGGER_LUA_MODULE";
 static const char *MSGH = "DEBUGGER_LUA_MSGH";
 
-void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName, lua_CFunction readFunc,
-               lua_CFunction writeFunc) {
+void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName,
+                         lua_CFunction readFunc, lua_CFunction writeFunc) {
     // Check that the module name was not already defined.
     lua_getfield(lua, LUA_REGISTRYINDEX, MODULE_NAME);
     assert(lua_isnil(lua, -1) || strcmp(name, luaL_checkstring(lua, -1)));
@@ -3977,6 +3977,13 @@ int metadot_preload(lua_State *L, lua_CFunction f, const char *name) {
     lua_setfield(L, -2, name);
     lua_pop(L, 2);
     return 0;
+}
+
+int metadot_preload_auto(lua_State *L, lua_CFunction f, const char *name) {
+    metadot_preload(L, f, name);
+    lua_getglobal(L, "require");
+    lua_pushstring(L, name);
+    lua_call(L, 1, 0);
 }
 
 void metadot_load(lua_State *L, const luaL_Reg *l, const char *name) {

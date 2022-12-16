@@ -14,6 +14,7 @@
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
+#include "engine/scripting/mu.h"
 
 #include "game/utils.hpp"
 #include "libs/lua/ffi.h"
@@ -172,10 +173,8 @@ void LuaCore::Init() {
 
     metadot_debug_setup(m_L, "debugger", "dbg", NULL, NULL);
 
-    metadot_preload(m_L, luaopen_ffi, "ffi");
-    lua_getglobal(m_L, "require");
-    lua_pushstring(m_L, "ffi");
-    lua_call(m_L, 1, 0);
+    metadot_preload_auto(m_L, luaopen_ffi, "ffi");
+    metadot_preload_auto(m_L, luaopen_mu, "mu");
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
@@ -402,4 +401,3 @@ void Scripts::UpdateTick() {
     auto OnGameTickUpdate = (std::function<void(void)>) JsContext->eval("OnGameTickUpdate");
     OnGameTickUpdate();
 }
-
