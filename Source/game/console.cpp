@@ -3,6 +3,7 @@
 #include "console.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
+#include "cvar.hpp"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
 #include "game/game.hpp"
@@ -527,6 +528,13 @@ void Console::Init() {
                                       [&clear_color, val = clear_color]() { clear_color = val; });
 
     console->System().RegisterCommand("print_methods", "a", [this]() { PrintAllMethods(); });
+    console->System().RegisterCommand(
+            "lua", "dostring",
+            [&](const char *s) {
+                auto l = global.scripts->LuaRuntime;
+                l->GetWrapper()->dostring(s);
+            },
+            CVar::Arg<CVar::String>(""));
 
     console->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
     console->System().Log(CVar::ItemType::INFO)

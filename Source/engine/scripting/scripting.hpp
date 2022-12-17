@@ -70,7 +70,7 @@ private:
 public:
     lua_State *getLuaState() { return m_L; }
     LuaWrapper::State *GetWrapper() { return &s_lua; }
-    void RunScriptInConsole(lua_State *L, const char *c);
+    void RunScriptInConsole(const char *c);
 
     void RunScriptFromFile(const char *filePath);
     void Update();

@@ -215,10 +215,9 @@ void LuaCore::Init() {
 
 void LuaCore::End() {}
 
-void LuaCore::RunScriptInConsole(lua_State *L, const char *c) {
+void LuaCore::RunScriptInConsole(const char *c) {
     luaL_loadstring(m_L, c);
     auto result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
-
     if (result != LUA_OK) {
         print_error(m_L);
         return;

@@ -9,9 +9,9 @@
 // Unimplemened optional arguments aren't suppported but here it is anyway
 //    IMGUI_API void          DestroyContext(ImGuiContext* ctx = NULL);   // NULL = destroy current context
 // Unimplemened optional arguments aren't suppported but here it is anyway
-IMGUI_FUNCTION(DestroyContext)
-CALL_FUNCTION_NO_RET(DestroyContext)
-END_IMGUI_FUNC
+// IMGUI_FUNCTION(DestroyContext)
+// CALL_FUNCTION_NO_RET(DestroyContext)
+// END_IMGUI_FUNC
 //    IMGUI_API ImGuiContext* GetCurrentContext();
 // Unsupported return type ImGuiContext*
 //    IMGUI_API void          SetCurrentContext(ImGuiContext* ctx);
@@ -23,10 +23,10 @@ END_IMGUI_FUNC
 //    IMGUI_API void          NewFrame();                                 // start a new Dear ImGui frame, you can submit any command from this point until Render()/EndFrame().
 //Not allowed to use this function
 //    IMGUI_API void          EndFrame();                                 // ends the Dear ImGui frame. automatically called by Render(). If you don't need to render data (skipping rendering) you may call EndFrame() without Render()... but you'll have wasted CPU already! If you don't need to render, better to not create any windows and not call NewFrame() at all!
-IMGUI_FUNCTION(EndFrame)
-CALL_FUNCTION_NO_RET(EndFrame)
-POP_END_STACK(0)
-END_IMGUI_FUNC
+// IMGUI_FUNCTION(EndFrame)
+// CALL_FUNCTION_NO_RET(EndFrame)
+// POP_END_STACK(0)
+// END_IMGUI_FUNC
 //    IMGUI_API void          Render();                                   // ends the Dear ImGui frame, finalize the draw data. You can then get call GetDrawData().
 //Not allowed to use this function
 //    IMGUI_API ImDrawData*   GetDrawData();                              // valid after Render() and until the next call to NewFrame(). this is what you have to render.

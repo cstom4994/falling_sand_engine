@@ -52,7 +52,6 @@ private:
 
 public:
     ImGuiCore();
-    ~ImGuiCore() = default;
     void Init(C_Window *window, void *gl_context);
     void onDetach();
     void begin();

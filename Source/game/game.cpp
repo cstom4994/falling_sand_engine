@@ -497,8 +497,6 @@ int Game::run(int argc, char *argv[]) {
                 }
             }
 
-            if (windowEvent.type == SDL_QUIT) { exit(); }
-
             ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
             if (ImGui::GetIO().WantCaptureMouse) {
@@ -1043,6 +1041,8 @@ int Game::run(int argc, char *argv[]) {
                 mx = windowEvent.motion.x;
                 my = windowEvent.motion.y;
             }
+
+            if (windowEvent.type == SDL_QUIT) { running = false; }
         }
         GameIsolate_.profiler.End(Profiler::Stage::SdlInput);
 
@@ -1269,6 +1269,8 @@ void Game::exit() {
 
     GameIsolate_.world->saveWorld();
 
+    running = false;
+
     // TODO CppScript
 
     // release resources & shutdown
@@ -1285,8 +1287,6 @@ void Game::exit() {
     GameIsolate_.backgrounds->Unload();
 
     GameSystem_.console.End();
-
-    running = false;
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
