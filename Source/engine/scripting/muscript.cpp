@@ -6,6 +6,7 @@
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "engine/scripting/muscript.h"
+#include "engine/filesystem.h"
 #include "engine/scripting/mu_compiler.h"
 #include "engine/scripting/mu_parser.h"
 
@@ -37,9 +38,6 @@ using namespace std::string_literals;
 #endif// METADOT_MU_NO_MACRO
 
 #ifndef METADOT_MU_COMPILER_ONLY
-#include "libs/LuaMinify.h"
-
-#include "engine/scripting/stacktraceplus.h"
 
 extern "C"
 {
@@ -49,8 +47,7 @@ extern "C"
 #include "libs/lua/host/lualib.h"
 
     static void init_muscript(lua_State *L) {
-        if (luaL_loadbuffer(L, muscriptCodes, sizeof(muscriptCodes) / sizeof(muscriptCodes[0]) - 1,
-                            "=(muscript)") != 0) {
+        if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/muscript.lua")) != 0) {
             std::string err = "failed to load muscript module.\n"s + lua_tostring(L, -1);
             luaL_error(L, err.c_str());
         } else {
@@ -63,8 +60,7 @@ extern "C"
     }
 
     static int init_stacktraceplus(lua_State *L) {
-        if (luaL_loadbuffer(L, stpCodes, sizeof(stpCodes) / sizeof(stpCodes[0]) - 1,
-                            "=(stacktraceplus)") != 0) {
+        if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/stacktraceplus.lua")) != 0) {
             std::string err = "failed to load stacktraceplus module.\n"s + lua_tostring(L, -1);
             luaL_error(L, err.c_str());
         } else if (lua_pcall(L, 0, 1, 0) != 0) {
@@ -321,8 +317,7 @@ void pushOptions(lua_State *L, int lineOffset) {
 #endif// not (defined METADOT_MU_NO_MACRO && defined METADOT_MU_COMPILER_ONLY)
 
 static void pushLuaminify(lua_State *L) {
-    if (luaL_loadbuffer(L, luaminifyCodes, sizeof(luaminifyCodes) / sizeof(luaminifyCodes[0]) - 1,
-                        "=(luaminify)") != 0) {
+    if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/luaminify.lua")) != 0) {
         std::string err = "failed to load luaminify module.\n"s + lua_tostring(L, -1);
         luaL_error(L, err.c_str());
     } else if (lua_pcall(L, 0, 1, 0) != 0) {

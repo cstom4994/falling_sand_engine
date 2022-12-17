@@ -1,24 +1,22 @@
-static const char stpCodes[] = R"lua_codes(
---[[
-Copyright (c) 2010 Ignacio Burgueño, modified by Li Jin
+-- Copyright (c) 2010 Ignacio Burgueño, modified by KaoruXun
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+-- Permission is hereby granted, free of charge, to any person obtaining a copy
+-- of this software and associated documentation files (the "Software"), to deal
+-- in the Software without restriction, including without limitation the rights
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-- copies of the Software, and to permit persons to whom the Software is
+-- furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+-- The above copyright notice and this permission notice shall be included in
+-- all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.]]
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-- THE SOFTWARE.
 
 -- tables
 local _G = _G
@@ -39,7 +37,7 @@ local table_concat = table.concat
 local mu = require("mu")
 
 local _M = {
-	max_tb_output_len = 70,	-- controls the maximum length of the 'stringified' table before cutting with ' (more...)'
+	max_tb_output_len = 70, -- controls the maximum length of the 'stringified' table before cutting with ' (more...)'
 	dump_locals = true,
 	simplified = false
 }
@@ -76,41 +74,14 @@ end
 local m_user_known_tables = {}
 
 local m_known_functions = {}
-for _, name in ipairs{
-	-- Lua 5.2, 5.1
-	"assert",
-	"collectgarbage",
-	"dofile",
-	"error",
-	"getmetatable",
-	"ipairs",
-	"load",
-	"loadfile",
-	"next",
-	"pairs",
-	"pcall",
-	"print",
-	"rawequal",
-	"rawget",
-	"rawlen",
-	"rawset",
-	"require",
-	"select",
-	"setmetatable",
-	"tonumber",
-	"tostring",
-	"type",
-	"xpcall",
+for _, name in ipairs {
+	--Lua 5.2, 5.1 "assert", "collectgarbage", "dofile", "error", "getmetatable", "ipairs",
+	"load", "loadfile", "next", "pairs", "pcall", "print", "rawequal", "rawget",
+	"rawlen", "rawset", "require", "select", "setmetatable", "tonumber", "tostring",
+	"type", "xpcall",
 
-	-- Lua 5.1
-	"gcinfo",
-	"getfenv",
-	"loadstring",
-	"module",
-	"newproxy",
-	"setfenv",
-	"unpack",
-	-- TODO: add table.* etc functions
+	--Lua 5.1 "gcinfo", "getfenv", "loadstring", "module", "newproxy", "setfenv",
+	"unpack", --TODO : add table.*etc functions
 } do
 	if _G[name] then
 		m_known_functions[_G[name]] = name
@@ -119,7 +90,7 @@ end
 
 local m_user_known_functions = {}
 
-local function safe_tostring (value)
+local function safe_tostring(value)
 	local ok, err = pcall(tostring, value)
 	if ok then return err else return ("<failed to get printable value>: '%s'"):format(err) end
 end
@@ -144,7 +115,7 @@ local function ParseLine(line)
 		--print("++++++++++++local func", match)
 		return match
 	end
-	match = line:match("%s*function%s*%(")	-- this is an anonymous function
+	match = line:match("%s*function%s*%(") -- this is an anonymous function
 	if match then
 		--print("+++++++++++++function2", match)
 		return "(anonymous)"
@@ -158,7 +129,7 @@ end
 -- Returns '?' if the line where the function is defined is not found
 local function GuessFunctionName(info)
 	-- print("guessing function name")
-	if type(info.source) == "string" and info.source:sub(1,1) == "@" then
+	if type(info.source) == "string" and info.source:sub(1, 1) == "@" then
 		local fname = info.source:sub(2)
 		local text
 		if mu.file_exist(fname) then
@@ -170,7 +141,7 @@ local function GuessFunctionName(info)
 		end
 		local line
 		local count = 0
-		for lineText in (text.."\n"):gmatch("(.-)\n") do
+		for lineText in (text .. "\n"):gmatch("(.-)\n") do
 			line = lineText
 			count = count + 1
 			if count == info.linedefined then
@@ -207,7 +178,7 @@ local Dumper = {}
 
 Dumper.new = function(thread)
 	local t = { lines = {} }
-	for k,v in pairs(Dumper) do t[k] = v end
+	for k, v in pairs(Dumper) do t[k] = v end
 
 	t.dumping_same_thread = (thread == coroutine.running())
 
@@ -236,13 +207,15 @@ Dumper.new = function(thread)
 end
 
 -- helpers for collecting strings to be used when assembling the final trace
-function Dumper:add (text)
+function Dumper:add(text)
 	self.lines[#self.lines + 1] = text
 end
-function Dumper:add_f (fmt, ...)
+
+function Dumper:add_f(fmt, ...)
 	self:add(fmt:format(...))
 end
-function Dumper:concat_lines ()
+
+function Dumper:concat_lines()
 	return table_concat(self.lines)
 end
 
@@ -252,7 +225,7 @@ end
 --
 -- @param level The stack level where the function is.
 --
-function Dumper:DumpLocals (level)
+function Dumper:DumpLocals(level)
 	if not _M.dump_locals then return end
 
 	local prefix = "\t "
@@ -285,15 +258,15 @@ function Dumper:DumpLocals (level)
 				self:add_f("%s%s = %s\r\n", prefix, name, m_user_known_tables[value])
 			else
 				local txt = "{"
-				for k,v in pairs(value) do
-					txt = txt..safe_tostring(k)..":"..safe_tostring(v)
+				for k, v in pairs(value) do
+					txt = txt .. safe_tostring(k) .. ":" .. safe_tostring(v)
 					if #txt > _M.max_tb_output_len then
-						txt = txt.." (more...)"
+						txt = txt .. " (more...)"
 						break
 					end
-					if next(value, k) then txt = txt..", " end
+					if next(value, k) then txt = txt .. ", " end
 				end
-				self:add_f("%s%s = %s  %s\r\n", prefix, name, safe_tostring(value), txt.."}")
+				self:add_f("%s%s = %s  %s\r\n", prefix, name, safe_tostring(value), txt .. "}")
 			end
 		elseif type(value) == "function" then
 			local info = self.getinfo(value, "nS")
@@ -302,12 +275,13 @@ function Dumper:DumpLocals (level)
 				self:add_f("%s%s = C %s\r\n", prefix, name, (fun_name and ("function: " .. fun_name) or tostring(value)))
 			else
 				local source = info.short_src
-				if source:sub(2,7) == "string" then
+				if source:sub(2, 7) == "string" then
 					source = source:sub(9)
 				end
 				--for k,v in pairs(info) do print(k,v) end
 				fun_name = fun_name or GuessFunctionName(info)
-				self:add_f("%s%s = Lua function '%s' (defined at line %d of chunk %s)\r\n", prefix, name, fun_name, info.linedefined, source)
+				self:add_f("%s%s = Lua function '%s' (defined at line %d of chunk %s)\r\n", prefix, name, fun_name, info.linedefined
+					, source)
 			end
 		elseif type(value) == "thread" then
 			self:add_f("%sthread %q = %s\r\n", prefix, name, tostring(value))
@@ -319,9 +293,9 @@ end
 
 local function getMuLineNumber(fname, line)
 	local muCompiled = require("mu").mu_compiled
-	local source = muCompiled["@"..fname]
+	local source = muCompiled["@" .. fname]
 	if not source then
-		source = muCompiled["@="..fname]
+		source = muCompiled["@=" .. fname]
 	end
 	if not source then
 		local name_path = fname:gsub("%.", mu.options.dirsep)
@@ -385,7 +359,7 @@ function _M.stacktrace(thread, message, level)
 	if type(message) == "table" then
 		dumper:add("an error object {\r\n")
 		local first = true
-		for k,v in pairs(message) do
+		for k, v in pairs(message) do
 			if first then
 				dumper:add("  ")
 				first = false
@@ -413,20 +387,22 @@ function _M.stacktrace(thread, message, level)
 			if _M.simplified then
 				message = table.concat({
 					"", fname, ":",
-					line, ": ", msg})
+					line, ": ", msg
+				})
 				message = message:gsub("^%(muscript%):%s*%d+:%s*", "")
 				message = message:gsub("%s(%d+):", "%1:")
 			else
 				message = table.concat({
 					"[string \"", fname, "\"]:",
-					line, ": ", msg})
+					line, ": ", msg
+				})
 			end
 		end
 		dumper:add(message)
 	end
 
 	dumper:add("\r\n")
-	dumper:add[[
+	dumper:add [[
 Stack Traceback
 ===============
 ]]
@@ -436,7 +412,7 @@ Stack Traceback
 
 	local info = dumper.getinfo(level, "nSlf")
 	while info do
-		if info.source and info.source:sub(1,1) == "@" then
+		if info.source and info.source:sub(1, 1) == "@" then
 			info.source = info.source:sub(2)
 		elseif info.what == "main" or info.what == "Lua" then
 			info.source = info.source
@@ -451,7 +427,8 @@ Stack Traceback
 		elseif info.what == "C" then
 			--print(info.namewhat, info.name)
 			--for k,v in pairs(info) do print(k,v, type(v)) end
-			local function_name = m_user_known_functions[info.func] or m_known_functions[info.func] or info.name or tostring(info.func)
+			local function_name = m_user_known_functions[info.func] or m_known_functions[info.func] or info.name or
+				tostring(info.func)
 			dumper:add_f("(%d) %s C function '%s'\r\n", level_to_show, info.namewhat, function_name)
 			--dumper:add_f("%s%s = C %s\r\n", prefix, name, (m_known_functions[value] and ("function: " .. m_known_functions[value]) or tostring(value)))
 		elseif info.what == "tail" then
@@ -463,7 +440,7 @@ Stack Traceback
 			local source = info.source
 			local function_name = m_user_known_functions[info.func] or m_known_functions[info.func] or info.name
 			if source:sub(2, 7) == "string" then
-				source = source:sub(10,-3)
+				source = source:sub(10, -3)
 			end
 			local was_guessed = false
 			if not function_name or function_name == "?" then
@@ -475,21 +452,26 @@ Stack Traceback
 			local function_type = (info.namewhat == "") and "function" or info.namewhat
 			if info.source and info.source:sub(1, 1) == "@" then
 				if _M.simplified then
-					dumper:add_f("(%d) '%s':%d%s\r\n", level_to_show, info.source:sub(2), info.currentline, was_guessed and " (guess)" or "")
+					dumper:add_f("(%d) '%s':%d%s\r\n", level_to_show, info.source:sub(2), info.currentline,
+						was_guessed and " (guess)" or "")
 				else
-					dumper:add_f("(%d) Lua %s '%s' at file '%s':%d%s\r\n", level_to_show, function_type, function_name, info.source:sub(2), info.currentline, was_guessed and " (best guess)" or "")
+					dumper:add_f("(%d) Lua %s '%s' at file '%s':%d%s\r\n", level_to_show, function_type, function_name,
+						info.source:sub(2), info.currentline, was_guessed and " (best guess)" or "")
 				end
-			elseif info.source and info.source:sub(1,1) == '#' then
+			elseif info.source and info.source:sub(1, 1) == '#' then
 				if _M.simplified then
-					dumper:add_f("(%d) '%s':%d%s\r\n", level_to_show, info.source:sub(2), info.currentline, was_guessed and " (guess)" or "")
+					dumper:add_f("(%d) '%s':%d%s\r\n", level_to_show, info.source:sub(2), info.currentline,
+						was_guessed and " (guess)" or "")
 				else
-					dumper:add_f("(%d) Lua %s '%s' at template '%s':%d%s\r\n", level_to_show, function_type, function_name, info.source:sub(2), info.currentline, was_guessed and " (best guess)" or "")
+					dumper:add_f("(%d) Lua %s '%s' at template '%s':%d%s\r\n", level_to_show, function_type, function_name,
+						info.source:sub(2), info.currentline, was_guessed and " (best guess)" or "")
 				end
 			else
 				if _M.simplified then
 					dumper:add_f("(%d) '%s':%d\r\n", level_to_show, source, info.currentline)
 				else
-					dumper:add_f("(%d) Lua %s '%s' at chunk '%s':%d\r\n", level_to_show, function_type, function_name, source, info.currentline)
+					dumper:add_f("(%d) Lua %s '%s' at chunk '%s':%d\r\n", level_to_show, function_type, function_name, source,
+						info.currentline)
 				end
 			end
 			dumper:DumpLocals(level)
@@ -524,5 +506,3 @@ function _M.add_known_function(fun, description)
 end
 
 return _M
-
-)lua_codes";

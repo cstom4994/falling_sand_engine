@@ -16,6 +16,7 @@
 #include "game/game_datastruct.hpp"
 #include "game/utils.hpp"
 #include "libs/lua/ffi.h"
+#include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 
 #include <iostream>
@@ -28,6 +29,8 @@
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
+
+extern int LoadImguiBindings(lua_State *l);
 
 struct MyStruct
 {
@@ -163,15 +166,7 @@ void LuaCore::Init() {
     luaopen_base(m_L);
     luaL_openlibs(m_L);
 
-    metadot_bind_image(m_L);
-    metadot_bind_gpu(m_L);
-    metadot_bind_fs(m_L);
-    metadot_bind_lz4(m_L);
-
     metadot_debug_setup(m_L, "debugger", "dbg", NULL, NULL);
-
-    metadot_preload_auto(m_L, luaopen_ffi, "ffi");
-    metadot_preload_auto(m_L, luaopen_mu, "mu");
 
     lua_atpanic(m_L, catch_panic);
     lua_register(m_L, "METADOT_TRACE", metadot_trace);
@@ -182,6 +177,16 @@ void LuaCore::Init() {
     lua_register(m_L, "runf", metadot_run_lua_file_script);
     lua_register(m_L, "exit", metadot_exit);
     lua_register(m_L, "ls", ls);
+
+    metadot_bind_image(m_L);
+    metadot_bind_gpu(m_L);
+    metadot_bind_fs(m_L);
+    metadot_bind_lz4(m_L);
+
+    LoadImguiBindings(m_L);
+
+    metadot_preload_auto(m_L, luaopen_ffi, "ffi");
+    metadot_preload_auto(m_L, luaopen_mu, "mu");
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
