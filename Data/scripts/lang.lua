@@ -1,4 +1,5 @@
 i18n = require("i18n")
+i18n_ex = require("i18n_ex")
 
 local lang_pack = {
     en = {
@@ -57,5 +58,6 @@ function translate(str) return i18n.translate(str) end
 
 function setlocale(loc)
     i18n.setLocale(loc)
+    i18n_ex:set_namespace(loc)
     METADOT_INFO("Using Language " .. loc)
 end

@@ -23,6 +23,7 @@ content = i18n("welcome")
 -- runf("Script:tests/test_lpeg.lua")
 -- runf("Script:tests/test_ffi.lua")
 -- runf("Script:tests/test_lz4.lua")
+runf("Script:tests/test_csv.lua")
 
 function starts_with(str, start) return str:sub(1, #start) == start end
 
