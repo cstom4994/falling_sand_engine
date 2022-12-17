@@ -7,7 +7,7 @@
 
 #include "imgui_impl.hpp"
 #include "core/core.hpp"
-#include "core/gc.h"
+#include "core/alloc.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
 #include "engine/filesystem.h"

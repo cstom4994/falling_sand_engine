@@ -3,7 +3,7 @@
 #include "filesystem.h"
 #include "core/core.h"
 
-#include "core/gc.h"
+#include "core/alloc.h"
 #include "engine/datapackage.h"
 #include "engine/engine_cpp.h"
 #include "engine/engine_platform.h"

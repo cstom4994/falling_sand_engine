@@ -15,7 +15,7 @@
 #include <map>
 
 #include "core/core.hpp"
-#include "core/GC.h"
+#include "core/alloc.h"
 #include "core/macros.h"
 #include "libs/nameof.hpp"
 

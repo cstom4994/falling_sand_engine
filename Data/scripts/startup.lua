@@ -3,11 +3,17 @@
 -- used to load scripts
 tl = require("tl")
 inspect = require("inspect")
+sandbox = require("sandbox")
 lang = require("lang")
 
 assert(inspect({ 1, 2, 3, 4 }) == "{ 1, 2, 3, 4 }")
 assert(inspect(1) == "1")
 assert(inspect("Hello") == '"Hello"')
+
+local safefunc = sandbox.protect([[
+]])
+
+safefunc()
 
 runf("Script:vec.lua")
 METADOT_INFO(i18n("loaded_vec"))

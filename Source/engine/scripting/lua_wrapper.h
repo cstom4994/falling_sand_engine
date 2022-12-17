@@ -1316,4 +1316,30 @@ int metadot_preload_auto(lua_State *L, lua_CFunction f, const char *name);
 void metadot_load(lua_State *L, const luaL_Reg *l, const char *name);
 void metadot_loadover(lua_State *L, const luaL_Reg *l, const char *name);
 
+#pragma region LuaMemSafe
+
+#define SAFELUA_CANCELED (-2)
+#define SAFELUA_FINISHED (-1)
+
+/** Open a new Lua state that can be canceled */
+lua_State *metadot_safelua_open(void);
+/** Close the Lua state and free resources */
+void metadot_safelua_close(lua_State *state);
+
+/** Type for the cancel callback, used to check if this thread should stop */
+typedef int (*metadot_safelua_CancelCheck)(lua_State *, void *);
+
+/** Type for the handler callback, used to free some resource */
+typedef void (*metadot_safelua_Handler)(int, void *);
+
+int metadot_safelua_pcallk(lua_State *state, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k,
+                   metadot_safelua_CancelCheck cancel, void *canceludata);
+void metadot_safelua_checkcancel(lua_State *state);
+void metadot_safelua_cancel(lua_State *state);
+int metadot_safelua_shouldcancel(lua_State *state);
+void metadot_safelua_add_handler(lua_State *state, metadot_safelua_Handler handler, void *handlerudata);
+int metadot_safelua_remove_handler(lua_State *state, metadot_safelua_Handler handler, void *handlerudata);
+
+#pragma endregion LuaMemSafe
+
 #endif

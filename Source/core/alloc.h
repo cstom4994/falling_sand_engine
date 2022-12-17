@@ -42,6 +42,25 @@ extern "C"
     void *gc_make_static(GarbageCollector *gc, void *ptr);
     char *gc_strdup(GarbageCollector *gc, const char *s);
 
+    struct LuaMemBlock
+    {
+        void *ptr;
+        size_t size;
+    };
+
+    struct LuaAllocator
+    {
+        struct LuaMemBlock *blocks;
+        size_t nb_blocks, size_blocks;
+        size_t total_allocated;
+    };
+
+    struct LuaAllocator *new_allocator(void);
+    void delete_allocator(struct LuaAllocator *alloc);
+
+    void *lua_simple_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+    void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
