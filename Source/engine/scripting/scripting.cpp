@@ -8,6 +8,7 @@
 #include "engine/engine_funcwrap.hpp"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
+#include "engine/internal/builtin_lpeg.h"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/muscript.h"
@@ -187,6 +188,7 @@ void LuaCore::Init() {
 
     metadot_preload_auto(m_L, luaopen_ffi, "ffi");
     metadot_preload_auto(m_L, luaopen_mu, "mu");
+    metadot_preload_auto(m_L, luaopen_lpeg, "lpeg");
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
