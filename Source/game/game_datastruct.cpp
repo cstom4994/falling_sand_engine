@@ -6,6 +6,7 @@
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "engine/filesystem.h"
+#include "engine/internal/builtin_box2d.h"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/renderer_utils.h"
 #include "game/chunk.hpp"
@@ -22,6 +23,16 @@ void ReleaseGameData() {
     for (auto b: GameData_.biome_container) {
         if (static_cast<bool>(b)) delete b;
     }
+}
+
+void WorldEntity::render(R_Target *target, int ofsX, int ofsY) {}
+
+void WorldEntity::renderLQ(R_Target *target, int ofsX, int ofsY) {}
+
+WorldEntity::WorldEntity(bool isplayer) : is_player(isplayer) {}
+
+WorldEntity::~WorldEntity() {
+    // if (static_cast<bool>(rb)) delete rb;
 }
 
 // #include "Populator.hpp"
@@ -490,6 +501,13 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
     }
     return {};
 }
+
+RigidBody::RigidBody(b2Body *body) { this->body = body; }
+
+RigidBody::~RigidBody() {
+    // if (item) delete item;
+}
+
 void Settings::Save(std::string setting_file) {
     std::string settings_data = "GetSettingsData = function()\nsettings_data = {}\n";
     SaveLuaConfig(*this, "settings_data", settings_data);

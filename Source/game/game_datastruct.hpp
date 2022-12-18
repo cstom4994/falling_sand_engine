@@ -3,18 +3,48 @@
 #ifndef _METADOT_GAMEDATASTRUCT_HPP_
 #define _METADOT_GAMEDATASTRUCT_HPP_
 
-#include "structures.hpp"
 #include "core/core.hpp"
-#include "engine/entity_components/worldentity.hpp"
+#include "engine/internal/builtin_box2d.h"
+#include "engine/math.hpp"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/sdl_wrapper.h"
 #include "materials.hpp"
+#include "structures.hpp"
 
 #include <functional>
+#include <memory>
 #include <string>
+#include <vector>
 
 struct Chunk;
 struct Populator;
-struct RigidBody;
 struct World;
+struct RigidBody;
+struct b2Body;
+struct R_Target;
+
+struct WorldEntity
+{
+    float x = 0;
+    float y = 0;
+    float vx = 0;
+    float vy = 0;
+    int hw = 14;
+    int hh = 26;
+    bool ground = false;
+    RigidBody *rb = nullptr;
+    b2Body *body = nullptr;
+    bool is_player = false;
+
+    virtual void render(R_Target *target, int ofsX, int ofsY);
+    virtual void renderLQ(R_Target *target, int ofsX, int ofsY);
+    WorldEntity(bool isplayer);
+    ~WorldEntity();
+};
+
+struct EntityComponents
+{
+};
 
 struct Biome
 {
@@ -206,5 +236,40 @@ struct TreePopulator : public Populator
 };
 
 #pragma endregion Populators
+
+#pragma region Rigidbody
+
+class Item;
+
+class RigidBody {
+public:
+    b2Body *body = nullptr;
+    C_Surface *surface = nullptr;
+    R_Image *texture = nullptr;
+
+    int matWidth = 0;
+    int matHeight = 0;
+    MaterialInstance *tiles = nullptr;
+
+    // hitbox needs update
+    bool needsUpdate = false;
+
+    // surface needs to be converted to texture
+    bool texNeedsUpdate = false;
+
+    int weldX = -1;
+    int weldY = -1;
+    bool back = false;
+    std::list<TPPLPoly> outline;
+    std::list<TPPLPoly> outline2;
+    float hover = 0;
+
+    Item *item = nullptr;
+
+    RigidBody(b2Body *body);
+    ~RigidBody();
+};
+
+#pragma endregion Rigidbody
 
 #endif

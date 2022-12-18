@@ -14,7 +14,6 @@
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 #include "libs/sparsehash/dense_hash_map.h"
-#include "rigidbody.hpp"
 #include "structures.hpp"
 
 #include <deque>

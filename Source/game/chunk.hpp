@@ -7,7 +7,6 @@
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 #include "materials.hpp"
-#include "rigidbody.hpp"
 
 #include <fstream>
 #include <iostream>
