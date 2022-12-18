@@ -226,68 +226,6 @@ namespace Meta {
 
 #endif
 
-template<typename T>
-struct StructMetaInfo
-{
-    static std::tuple<> Info() { return std::make_tuple(); }
-};
-
-#define REFL(Struct, ...)                                                                          \
-    template<>                                                                                     \
-    struct StructMetaInfo<Struct>                                                                  \
-    {                                                                                              \
-        static decltype(std::make_tuple(__VA_ARGS__)) Info() {                                     \
-            return std::make_tuple(__VA_ARGS__);                                                   \
-        }                                                                                          \
-    };
-
-#define FIELD(class, field) std::make_tuple(#field, &class ::field)
-
-template<typename T, typename Fields, typename F, size_t... Is>
-void metadot_struct_foreach(T &&obj, Fields &&fields, F &&f, std::index_sequence<Is...>) {
-    (void) std::initializer_list<size_t>{
-            (f(std::get<0>(std::get<Is>(fields)), obj.*std::get<1>(std::get<Is>(fields))), Is)...};
-}
-
-template<typename T, typename F>
-void metadot_struct_foreach(T &&obj, F &&f) {
-    auto fields = StructMetaInfo<std::decay_t<T>>::Info();
-    metadot_struct_foreach(std::forward<T>(obj), fields, std::forward<F>(f),
-                           std::make_index_sequence<std::tuple_size<decltype(fields)>::value>{});
-}
-
-template<typename F>
-struct metadot_struct_recur_func;
-
-template<typename T, typename F,
-         std::enable_if_t<std::is_class<std::decay_t<T>>::value> * = nullptr>
-void metadot_struct_recur_obj(T &&obj, F &&f, const char *fieldName, int depth) {
-    f(fieldName, depth);
-    metadot_struct_foreach(obj, metadot_struct_recur_func<F>(f, depth));
-}
-
-template<typename T, typename F,
-         std::enable_if_t<!std::is_class<std::decay_t<T>>::value> * = nullptr>
-void metadot_struct_recur_obj(T &&obj, F &&f, const char *fieldName, int depth) {
-    f(fieldName, depth);
-}
-
-template<typename F>
-struct metadot_struct_recur_func
-{
-public:
-    metadot_struct_recur_func(const F &_f, int _depth) : f(_f), depth(_depth) {}
-
-    template<typename Value>
-    void operator()(const char *fieldName, Value &&value) {
-        metadot_struct_recur_obj(value, f, fieldName, depth + 1);
-    }
-
-private:
-    F f;
-    int depth;
-};
-
 namespace tmp {
 
     // type list

@@ -20,10 +20,27 @@ METADOT_INFO(i18n("loaded_vec"))
 
 content = i18n("welcome")
 
+local mu = require("mu")
+local codes, err, globals = mu.to_lua([[
+f = ->
+  print "hello world"
+f!
+]], {
+    implicit_return_root = true,
+    reserve_line_number = true,
+    lint_global = true
+})
+
+f = load(codes)
+f()
+
+add_packagepath(METADOT_RESLOC("data/scripts/samples"))
+
 -- runf("Script:tests/test_lpeg.lua")
 -- runf("Script:tests/test_ffi.lua")
 -- runf("Script:tests/test_lz4.lua")
-runf("Script:tests/test_csv.lua")
+-- runf("Script:tests/test_csv.lua")
+runf("Script:tests/test_p1.lua")
 
 function starts_with(str, start) return str:sub(1, #start) == start end
 

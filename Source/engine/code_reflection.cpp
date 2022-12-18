@@ -173,24 +173,8 @@ namespace reflect {
 
 }// namespace reflect
 
-//
 // Here is acknowledgement
 // https://stackoverflow.com/questions/41453/how-can-i-add-reflection-to-a-c-application/
-//
-
-struct Point
-{
-    int x, y;
-};
-
-struct Rect
-{
-    Point p1, p2;
-    uint32_t color;
-};
-
-REFL(Point, FIELD(Point, x), FIELD(Point, y));
-REFL(Rect, FIELD(Rect, p1), FIELD(Rect, p2), FIELD(Rect, color));
 
 //####################################################################################
 //##    Component: Transform2D
@@ -390,20 +374,6 @@ auto fuckme() -> void {
     METADOT_INFO(f.get_result_type().info->name());
 
     f.invoke({});
-
-    Rect rect{
-            {0, 0},
-            {8, 9},
-            123353,
-    };
-
-    metadot_struct_recur_obj(
-            rect,
-            [](const char *name, int depth) {
-                std::cout << "field name:" << name << std::endl;
-                return;
-            },
-            "", 0);
 
     // Create an object of type Node
     Node node = {"apple", 3, {{"banana", 7, {}}, {"cherry", 11, {}}}};

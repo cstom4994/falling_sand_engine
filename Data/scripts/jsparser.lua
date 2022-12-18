@@ -2,6 +2,7 @@
 
 function letOperator(code)
     code = code:gsub("let %s*(%w+)%s*=", "local %1 =")
+    code = code:gsub("var %s*(%w+)%s*=", "%1 =")
 
     return code
 end

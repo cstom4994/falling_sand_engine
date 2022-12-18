@@ -6,7 +6,7 @@
 #include "libs/imgui/imgui_internal.h"
 
 #include <deque>
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 extern "C"

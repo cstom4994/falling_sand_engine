@@ -12,6 +12,9 @@ test *= 3;
 test ^= 2;
 test -= 1;
 
+var test2 = 6;
+print(test2)
+
 let test = {5, 6, 7};
 for(c in test) {
     print(c);

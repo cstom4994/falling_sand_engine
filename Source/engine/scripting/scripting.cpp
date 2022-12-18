@@ -140,6 +140,15 @@ static int ls(lua_State *L) {
     return 1;
 }
 
+static void add_packagepath(const char *p) {
+    auto s_lua = global.scripts->LuaRuntime->GetWrapper();
+    METADOT_ASSERT_E(s_lua);
+    s_lua->dostring(MetaEngine::Format("package.path = "
+                                       "'{0}/?.lua;' .. package.path",
+                                       p),
+                    s_lua->globalTable());
+}
+
 void LuaCore::print_error(lua_State *state) {
     const char *message = lua_tostring(state, -1);
     METADOT_ERROR("LuaScript ERROR:\n  %s", (message ? message : "no message"));
@@ -193,6 +202,7 @@ void LuaCore::Init() {
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
     s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
+    s_lua["add_packagepath"] = LuaWrapper::function(add_packagepath);
 
     s_lua.dostring(
             MetaEngine::Format("package.path = "
