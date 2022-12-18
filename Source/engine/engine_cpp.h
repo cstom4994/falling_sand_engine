@@ -14,6 +14,7 @@ extern "C"
 #include "engine_platform.h"
 #include "engine_render.h"
 #include "util.h"
+#include "shaders.h"
 
 #if defined(__cplusplus)
 }

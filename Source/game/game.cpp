@@ -31,6 +31,7 @@
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
 
+#include "shaders.h"
 #include "world_generator.cpp"
 
 #include <cstddef>
@@ -155,7 +156,9 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
     METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
 
-    global.shaderworker.LoadShaders();
+    global.shaderworker = {.newLightingShader_insideDes = 0.0f,
+                           .newLightingShader_insideCur = 0.0f};
+    LoadShaders(&global.shaderworker);
 
     return this->run(argc, argv);
 }
@@ -1303,6 +1306,8 @@ void Game::exit() {
     R_Text_DeleteText(text2);
     R_Text_DeleteText(text3);
     R_Text_Terminate();
+
+    EndShaders(&global.shaderworker);
 
     EndWindow();
     global.audioEngine.Shutdown();
@@ -3364,9 +3369,9 @@ void Game::renderLate() {
             if (global.shaderworker.waterFlowPassShader->dirty &&
                 GameIsolate_.settings.water_showFlow) {
 
-                global.shaderworker.waterFlowPassShader->activate();
-                global.shaderworker.waterFlowPassShader->update(GameIsolate_.world->width,
-                                                                GameIsolate_.world->height);
+                ShaderActivate(&global.shaderworker.waterFlowPassShader->sb);
+                WaterFlowPassShader__update(global.shaderworker.waterFlowPassShader,
+                                            GameIsolate_.world->width, GameIsolate_.world->height);
                 R_SetBlendMode(TexturePack_.textureFlow, R_BLEND_SET);
                 R_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target,
                            NULL);
@@ -3374,13 +3379,13 @@ void Game::renderLate() {
                 global.shaderworker.waterFlowPassShader->dirty = false;
             }
 
-            global.shaderworker.waterShader->activate();
+            ShaderActivate(&global.shaderworker.waterShader->sb);
             float t = (Time.now - Time.startTime) / 1000.0;
-            global.shaderworker.waterShader->update(
-                    t, Render.target->w * scale, Render.target->h * scale, TexturePack_.texture,
-                    r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead,
-                    GameIsolate_.settings.water_overlay, GameIsolate_.settings.water_showFlow,
-                    GameIsolate_.settings.water_pixelated);
+            WaterShader__update(
+                    global.shaderworker.waterShader, t, Render.target->w * scale,
+                    Render.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale,
+                    TexturePack_.textureFlowSpead, GameIsolate_.settings.water_overlay,
+                    GameIsolate_.settings.water_showFlow, GameIsolate_.settings.water_pixelated);
         }
 
         Render.target = Render.realTarget;
@@ -3412,7 +3417,8 @@ void Game::renderLate() {
         R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
-        if (GameIsolate_.settings.draw_shaders) global.shaderworker.newLightingShader->activate();
+        if (GameIsolate_.settings.draw_shaders)
+            ShaderActivate(&global.shaderworker.newLightingShader->sb);
 
         // I use this to only rerender the lighting when a parameter changes or N times per second anyway
         // Doing this massively reduces the GPU load of the shader
@@ -3446,14 +3452,15 @@ void Game::renderLate() {
             if (global.shaderworker.newLightingShader->lastLx != lightTx ||
                 global.shaderworker.newLightingShader->lastLy != lightTy)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->update(
-                    TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
+            NewLightingShader__update(global.shaderworker.newLightingShader,
+                                      TexturePack_.worldTexture, TexturePack_.emissionTexture,
+                                      lightTx, lightTy);
             if (global.shaderworker.newLightingShader->lastQuality !=
                 GameIsolate_.settings.lightingQuality) {
                 needToRerenderLighting = true;
             }
-            global.shaderworker.newLightingShader->setQuality(
-                    GameIsolate_.settings.lightingQuality);
+            NewLightingShader__setQuality(global.shaderworker.newLightingShader,
+                                          GameIsolate_.settings.lightingQuality);
 
             int nBg = 0;
             int range = 64;
@@ -3484,8 +3491,9 @@ void Game::renderLate() {
                                 : global.shaderworker.newLightingShader_insideCur;
             if (global.shaderworker.newLightingShader->lastInside != ins)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setInside(ins);
-            global.shaderworker.newLightingShader->setBounds(
+            NewLightingShader__setInside(global.shaderworker.newLightingShader, ins);
+            NewLightingShader__setBounds(
+                    global.shaderworker.newLightingShader,
                     GameIsolate_.world->tickZone.x * GameIsolate_.settings.hd_objects_size,
                     GameIsolate_.world->tickZone.y * GameIsolate_.settings.hd_objects_size,
                     (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) *
@@ -3496,20 +3504,20 @@ void Game::renderLate() {
             if (global.shaderworker.newLightingShader->lastSimpleMode !=
                 GameIsolate_.settings.simpleLighting)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setSimpleMode(
-                    GameIsolate_.settings.simpleLighting);
+            NewLightingShader__setSimpleMode(global.shaderworker.newLightingShader,
+                                             GameIsolate_.settings.simpleLighting);
 
             if (global.shaderworker.newLightingShader->lastEmissionEnabled !=
                 GameIsolate_.settings.lightingEmission)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setEmissionEnabled(
-                    GameIsolate_.settings.lightingEmission);
+            NewLightingShader__setEmissionEnabled(global.shaderworker.newLightingShader,
+                                                  GameIsolate_.settings.lightingEmission);
 
             if (global.shaderworker.newLightingShader->lastDitheringEnabled !=
                 GameIsolate_.settings.lightingDithering)
                 needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->setDitheringEnabled(
-                    GameIsolate_.settings.lightingDithering);
+            NewLightingShader__setDitheringEnabled(global.shaderworker.newLightingShader,
+                                                   GameIsolate_.settings.lightingDithering);
         }
 
         if (GameIsolate_.settings.draw_shaders && needToRerenderLighting) {
@@ -3530,13 +3538,13 @@ void Game::renderLate() {
         if (GameIsolate_.settings.draw_shaders) {
             R_Clear(TexturePack_.texture2Fire->target);
 
-            global.shaderworker.fireShader->activate();
-            global.shaderworker.fireShader->update(TexturePack_.textureFire);
+            ShaderActivate(&global.shaderworker.fireShader->sb);
+            FireShader__update(global.shaderworker.fireShader, TexturePack_.textureFire);
             R_BlitRect(TexturePack_.textureFire, NULL, TexturePack_.texture2Fire->target, NULL);
             R_ActivateShaderProgram(0, NULL);
 
-            global.shaderworker.fire2Shader->activate();
-            global.shaderworker.fire2Shader->update(TexturePack_.texture2Fire);
+            ShaderActivate(&global.shaderworker.fire2Shader->sb);
+            Fire2Shader__update(global.shaderworker.fire2Shader, TexturePack_.texture2Fire);
             R_BlitRect(TexturePack_.texture2Fire, NULL, Render.target, &r1);
             R_ActivateShaderProgram(0, NULL);
         }

@@ -22,7 +22,7 @@ GetSettingsData = function()
 
     settings_data.draw_shaders = true
     settings_data.water_overlay = 0
-    settings_data.water_showFlow = true
+    settings_data.water_showFlow = false
     settings_data.water_pixelated = false
     settings_data.lightingQuality = 0.5
     settings_data.draw_light_overlay = false

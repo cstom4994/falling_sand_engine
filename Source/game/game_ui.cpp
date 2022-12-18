@@ -847,7 +847,7 @@ namespace GameUI {
             }
 
             if (ImGui::TreeNode(CC("GLSL方法"))) {
-                if (ImGui::Button(CC("重新加载GLSL"))) { global.shaderworker.LoadShaders(); }
+                if (ImGui::Button(CC("重新加载GLSL"))) { LoadShaders(&global.shaderworker); }
                 ImGui::Checkbox(CC("绘制GLSL"), &global.game->GameIsolate_.settings.draw_shaders);
 
                 if (ImGui::TreeNode(CC("光照"))) {

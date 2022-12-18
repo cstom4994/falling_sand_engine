@@ -5,6 +5,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
+#include "engine/engine_cpp.h"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
@@ -14,7 +15,6 @@
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
-
 #include "game/utils.hpp"
 #include "game_datastruct.hpp"
 #include "imgui/imgui.h"
@@ -538,7 +538,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         }
         if (ImGui::BeginTabItem(LANG("ui_debug"))) {
             if (myCollapsingHeader(LANG("ui_telemetry"))) { GameUI::DebugUI::Draw(global.game); }
-#define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->shader)
+#define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->sb.shader)
             if (myCollapsingHeader(CC("GLSL"))) {
                 INSPECTSHADER(newLightingShader);
                 INSPECTSHADER(fireShader);

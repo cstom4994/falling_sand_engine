@@ -7,9 +7,9 @@
 #include "engine/audio.hpp"
 #include "engine/code_reflection.hpp"
 #include "engine/engine_platform.h"
-#include "engine/imgui_impl.hpp"
-#include "engine/shaders.hpp"
 #include "engine/filesystem.h"
+#include "engine/imgui_impl.hpp"
+#include "engine/engine_cpp.h"
 #include "game/game_resources.hpp"
 
 #include <map>
