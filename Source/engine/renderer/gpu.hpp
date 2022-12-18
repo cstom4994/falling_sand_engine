@@ -21,7 +21,7 @@ public:
     static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
     static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts, int x, int y,
                             float scale, int count, float angle, float cx, float cy);
-    static uint32 darkenColor(uint32 col, float brightness);
+    static U32 darkenColor(U32 col, float brightness);
 };
 
 namespace METAENGINE {
@@ -71,7 +71,7 @@ namespace METAENGINE {
 class DebugDraw {
 
 private:
-    uint32 m_drawFlags;
+    U32 m_drawFlags;
 
 public:
     enum {
@@ -93,21 +93,21 @@ public:
     void Create();
     void Destroy();
 
-    void SetFlags(uint32 flags) { m_drawFlags = flags; }
+    void SetFlags(U32 flags) { m_drawFlags = flags; }
 
-    uint32 GetFlags() const { return m_drawFlags; }
+    U32 GetFlags() const { return m_drawFlags; }
 
-    void AppendFlags(uint32 flags) { m_drawFlags |= flags; }
+    void AppendFlags(U32 flags) { m_drawFlags |= flags; }
 
-    void ClearFlags(uint32 flags) { m_drawFlags &= ~flags; }
+    void ClearFlags(U32 flags) { m_drawFlags &= ~flags; }
 
     b2Vec2 transform(const b2Vec2 &pt);
 
     METAENGINE_Color convertColor(const b2Color &color);
 
-    void DrawPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color);
+    void DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color);
 
-    void DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount, const b2Color &color);
+    void DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color);
 
     void DrawCircle(const b2Vec2 &center, float radius, const b2Color &color);
 

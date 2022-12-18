@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "controls.hpp"
+#include "SDL_keycode.h"
 
 std::vector<KeyControl *> Controls::keyControls = {};
 bool Controls::initted = false;
@@ -59,7 +60,7 @@ void Controls::initKey() {
     STATS_DISPLAY = add(new KeyControl(SDLK_F3, RISING));
     STATS_DISPLAY_DETAILED = add(new KeyControl(SDLK_LSHIFT, MOMENTARY));
 
-    DEBUG_UI = add(new KeyControl(SDLK_F4, RISING));
+    DEBUG_UI = add(new KeyControl(SDLK_TAB, RISING));
     DEBUG_REFRESH = add(new KeyControl(SDLK_KP_0, RISING));
     DEBUG_UPDATE_WORLD_MESH = add(new KeyControl(SDLK_KP_1, RISING));
     DEBUG_TICK = add(new KeyControl(SDLK_KP_2, RISING));

@@ -21,6 +21,7 @@
 
 #include "libs/glad/glad.h"
 #include "libs/imgui/implot.h"
+#include "scripting/lua_wrapper.hpp"
 
 #include <cstddef>
 #include <cstdio>
@@ -73,22 +74,6 @@ static int common_control_initialize() {
     }
     return 1;
 }
-
-#endif
-
-#if defined(METADOT_EMBEDRES)
-
-static unsigned char font_fz[] = {
-#include "FZXIANGSU12.ttf.h"
-};
-
-static unsigned char font_silver[] = {
-#include "Silver.ttf.h"
-};
-
-static unsigned char font_fa[] = {
-#include "fa_solid_900.ttf.h"
-};
 
 #endif
 
@@ -187,32 +172,8 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
     float scale = 1.0f;
 
-    // Using cstd malloc because imgui will use default delete to destruct fonts' data
-
-#if defined(METADOT_EMBEDRES)
-    void *fonts_1 = malloc(sizeof(font_fz));
-    void *fonts_2 = malloc(sizeof(font_silver));
-    void *fonts_3 = malloc(sizeof(font_fa));
-
-    memcpy(fonts_1, (void *) font_fz, sizeof(font_fz));
-    memcpy(fonts_2, (void *) font_silver, sizeof(font_silver));
-    memcpy(fonts_3, (void *) font_fa, sizeof(font_fa));
-
-    io.Fonts->AddFontFromMemoryTTF(fonts_1, sizeof(font_fz), 16.0f, &config,
-                                   io.Fonts->GetGlyphRangesChineseFull());
-
-    config.MergeMode = true;
-    config.GlyphMinAdvanceX = 10.0f;
-
-    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    io.Fonts->AddFontFromMemoryTTF(fonts_3, sizeof(font_fa), 15.0f, &config, icon_ranges);
-    io.Fonts->AddFontFromMemoryTTF(fonts_2, sizeof(font_silver), 26.0f, &config);
-#else
-
     io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 22.0f, &config,
                                  io.Fonts->GetGlyphRangesChineseFull());
-
-#endif
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
@@ -375,7 +336,7 @@ void ImGuiCore::Render() {
                 ImGui::SetNextWindowBgAlpha(0.5F);
                 ImGui::Begin("FilePanel", nullptr, option_flags | ImGuiWindowFlags_NoScrollbar);
 
-                ImGuiHelper::AlignedText(std::string(ICON_FA_FILE) + " ", ImGuiHelper::Alignment::kVerticalCenter);
+                ImGuiHelper::AlignedText(std::string("ICON_FA_FILE") + " ", ImGuiHelper::Alignment::kVerticalCenter);
                 ImGui::SameLine();
 
                 if (ImGui::Button("Load mesh from file...")) {
@@ -419,14 +380,14 @@ void ImGuiCore::Render() {
                 ImGui::Begin("DebugPanel", nullptr, option_flags | ImGuiWindowFlags_NoScrollbar);
 
                 auto static show_metrics = false;
-                ImGuiHelper::SwitchButton(ICON_FA_WRENCH, "Window Metrics", show_metrics);
+                ImGuiHelper::SwitchButton("ICON_FA_WRENCH", "Window Metrics", show_metrics);
                 ImGuiHelper::ListSeparator();
                 if (show_metrics) {
                     ImGui::ShowMetricsWindow();
                 }
 
                 auto static show_demo = false;
-                ImGuiHelper::SwitchButton(ICON_FA_ROCKET, "Demo", show_demo);
+                ImGuiHelper::SwitchButton("ICON_FA_ROCKET", "Demo", show_demo);
                 if (show_demo) {
                     ImGui::ShowDemoWindow();
 
@@ -684,7 +645,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     }
     GameUI::GameUI_Draw(global.game);
 
-    // auto context = global.scripts->JsContext;
-    // auto OnImGuiUpdate = (std::function<void(void)>) context->eval("OnImGuiUpdate");
-    // OnImGuiUpdate();
+    auto l = global.scripts->LuaRuntime->GetWrapper();
+    LuaWrapper::LuaFunction OnGameGUIUpdate = (*l)["OnGameGUIUpdate"];
+    OnGameGUIUpdate();
 }

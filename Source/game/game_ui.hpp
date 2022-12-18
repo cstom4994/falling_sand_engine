@@ -5,14 +5,15 @@
 
 #include "engine/imgui_impl.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "game/materials.hpp"
 #include "game/World.hpp"
+#include "game/materials.hpp"
 
 #include <vector>
 
 class Game;
 
 namespace GameUI {
+
     void GameUI_Draw(Game *game);
 
     class DebugUI {
@@ -28,7 +29,7 @@ namespace GameUI {
         static std::vector<R_Image *> tools_images;
 
         static Material *selectedMaterial;
-        static uint8 brushSize;
+        static U8 brushSize;
 
         static void Setup();
 

@@ -1203,7 +1203,7 @@ int Game::run(int argc, char *argv[]) {
 
             if (thru >= 0 && thru <= 1) {
                 R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
-                                  {0, 0, 0, (uint8) (thru * 255)});
+                                  {0, 0, 0, (U8) (thru * 255)});
             } else {
                 fadeInStart = 0;
                 fadeInLength = 0;
@@ -1219,7 +1219,7 @@ int Game::run(int argc, char *argv[]) {
 
             if (thru >= 0 && thru <= 1) {
                 R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
-                                  {0, 0, 0, (uint8) (thru * 255)});
+                                  {0, 0, 0, (U8) (thru * 255)});
             } else {
                 R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight,
                                   {0, 0, 0, 255});
@@ -3126,7 +3126,7 @@ newState = true;
                 }
             }
             if (!anyFalse) {
-                uint32 tmp = loadingOnColor;
+                U32 tmp = loadingOnColor;
                 loadingOnColor = loadingOffColor;
                 loadingOffColor = tmp;
             }

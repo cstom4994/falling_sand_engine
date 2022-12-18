@@ -56,6 +56,10 @@ void Textures::Init() {
     // testAse = Textures::loadAseprite("data/assets/textures/tests/3.0_one_slice.ase");
 }
 
+C_Surface *LoadTextureData(std::string path) {
+    return Textures::LoadTexture(path, SDL_PIXELFORMAT_ARGB8888);
+}
+
 C_Surface *Textures::LoadTexture(std::string path) {
     return LoadTexture(path, SDL_PIXELFORMAT_ARGB8888);
 }

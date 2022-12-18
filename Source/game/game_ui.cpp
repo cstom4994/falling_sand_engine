@@ -998,7 +998,7 @@ namespace GameUI {
     int DebugDrawUI::selIndex = -1;
     std::vector<R_Image *> DebugDrawUI::images = {};
     std::vector<R_Image *> DebugDrawUI::tools_images = {};
-    uint8 DebugDrawUI::brushSize = 5;
+    U8 DebugDrawUI::brushSize = 5;
     Material *DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
 
     void DebugDrawUI::Setup() {

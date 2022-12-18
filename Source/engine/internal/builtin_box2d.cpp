@@ -27,6 +27,7 @@ SOFTWARE.
 */
 
 #include "builtin_box2d.h"
+#include "Ase_Loader.h"
 #include "engine/renderer/gpu.hpp"
 
 #include <new>
@@ -131,8 +132,8 @@ void b2Body::SetType(b2BodyType type) {
     // Touch the proxies so that new contacts will be created (when appropriate)
     b2BroadPhase *broadPhase = &m_world->m_contactManager.m_broadPhase;
     for (b2Fixture *f = m_fixtureList; f; f = f->m_next) {
-        int32 proxyCount = f->m_proxyCount;
-        for (int32 i = 0; i < proxyCount; ++i) { broadPhase->TouchProxy(f->m_proxies[i].proxyId); }
+        I32 proxyCount = f->m_proxyCount;
+        for (I32 i = 0; i < proxyCount; ++i) { broadPhase->TouchProxy(f->m_proxies[i].proxyId); }
     }
 }
 
@@ -423,7 +424,7 @@ void b2Body::SetFixedRotation(bool flag) {
 }
 
 void b2Body::Dump() {
-    int32 bodyIndex = m_islandIndex;
+    I32 bodyIndex = m_islandIndex;
 
     // %.9g is sufficient to save and load the same value using text
     // FLT_DECIMAL_DIG == 9
@@ -730,7 +731,7 @@ void b2World::Solve(const b2TimeStep &step) {
     for (b2Joint *j = m_jointList; j; j = j->m_next) { j->m_islandFlag = false; }
 
     // Build and simulate all awake islands.
-    int32 stackSize = m_bodyCount;
+    I32 stackSize = m_bodyCount;
     b2Body **stack = (b2Body **) m_stackAllocator.Allocate(stackSize * sizeof(b2Body *));
     for (b2Body *seed = m_bodyList; seed; seed = seed->m_next) {
         if (seed->m_flags & b2Body::e_islandFlag) { continue; }
@@ -742,7 +743,7 @@ void b2World::Solve(const b2TimeStep &step) {
 
         // Reset island and stack.
         island.Clear();
-        int32 stackCount = 0;
+        I32 stackCount = 0;
         stack[stackCount++] = seed;
         seed->m_flags |= b2Body::e_islandFlag;
 
@@ -815,7 +816,7 @@ void b2World::Solve(const b2TimeStep &step) {
         m_profile.solvePosition += profile.solvePosition;
 
         // Post solve cleanup.
-        for (int32 i = 0; i < island.m_bodyCount; ++i) {
+        for (I32 i = 0; i < island.m_bodyCount; ++i) {
             // Allow static bodies to participate in other islands.
             b2Body *b = island.m_bodies[i];
             if (b->GetType() == b2_staticBody) { b->m_flags &= ~b2Body::e_islandFlag; }
@@ -919,8 +920,8 @@ void b2World::SolveTOI(const b2TimeStep &step) {
 
                 METADOT_ASSERT_E(alpha0 < 1.0f);
 
-                int32 indexA = c->GetChildIndexA();
-                int32 indexB = c->GetChildIndexB();
+                I32 indexA = c->GetChildIndexA();
+                I32 indexB = c->GetChildIndexB();
 
                 // Compute the time of impact in interval [0, minTOI]
                 b2TOIInput input;
@@ -1001,7 +1002,7 @@ void b2World::SolveTOI(const b2TimeStep &step) {
 
         // Get contacts on bodyA and bodyB.
         b2Body *bodies[2] = {bA, bB};
-        for (int32 i = 0; i < 2; ++i) {
+        for (I32 i = 0; i < 2; ++i) {
             b2Body *body = bodies[i];
             if (body->m_type == b2_dynamicBody) {
                 for (b2ContactEdge *ce = body->m_contactList; ce; ce = ce->next) {
@@ -1074,7 +1075,7 @@ void b2World::SolveTOI(const b2TimeStep &step) {
         island.SolveTOI(subStep, bA->m_islandIndex, bB->m_islandIndex);
 
         // Reset island flags and synchronize broad-phase proxies.
-        for (int32 i = 0; i < island.m_bodyCount; ++i) {
+        for (I32 i = 0; i < island.m_bodyCount; ++i) {
             b2Body *body = island.m_bodies[i];
             body->m_flags &= ~b2Body::e_islandFlag;
 
@@ -1099,7 +1100,7 @@ void b2World::SolveTOI(const b2TimeStep &step) {
     }
 }
 
-void b2World::Step(float dt, int32 velocityIterations, int32 positionIterations) {
+void b2World::Step(float dt, I32 velocityIterations, I32 positionIterations) {
     b2Timer stepTimer;
 
     // If new fixtures were added, we need to find the new contacts.
@@ -1163,7 +1164,7 @@ void b2World::ClearForces() {
 
 struct b2WorldQueryWrapper
 {
-    bool QueryCallback(int32 proxyId) {
+    bool QueryCallback(I32 proxyId) {
         b2FixtureProxy *proxy = (b2FixtureProxy *) broadPhase->GetUserData(proxyId);
         return callback->ReportFixture(proxy->fixture);
     }
@@ -1181,11 +1182,11 @@ void b2World::QueryAABB(b2QueryCallback *callback, const b2AABB &aabb) const {
 
 struct b2WorldRayCastWrapper
 {
-    float RayCastCallback(const b2RayCastInput &input, int32 proxyId) {
+    float RayCastCallback(const b2RayCastInput &input, I32 proxyId) {
         void *userData = broadPhase->GetUserData(proxyId);
         b2FixtureProxy *proxy = (b2FixtureProxy *) userData;
         b2Fixture *fixture = proxy->fixture;
-        int32 index = proxy->childIndex;
+        I32 index = proxy->childIndex;
         b2RayCastOutput output;
         bool hit = fixture->RayCast(&output, input, index);
 
@@ -1240,11 +1241,11 @@ void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const b2Color
 
         case b2Shape::e_chain: {
             b2ChainShape *chain = (b2ChainShape *) fixture->GetShape();
-            int32 count = chain->m_count;
+            I32 count = chain->m_count;
             const b2Vec2 *vertices = chain->m_vertices;
 
             b2Vec2 v1 = b2Mul(xf, vertices[0]);
-            for (int32 i = 1; i < count; ++i) {
+            for (I32 i = 1; i < count; ++i) {
                 b2Vec2 v2 = b2Mul(xf, vertices[i]);
                 m_debugDraw->DrawSegment(v1, v2, color);
                 v1 = v2;
@@ -1253,13 +1254,11 @@ void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const b2Color
 
         case b2Shape::e_polygon: {
             b2PolygonShape *poly = (b2PolygonShape *) fixture->GetShape();
-            int32 vertexCount = poly->m_count;
+            I32 vertexCount = poly->m_count;
             METADOT_ASSERT_E(vertexCount <= b2_maxPolygonVertices);
             b2Vec2 vertices[b2_maxPolygonVertices];
 
-            for (int32 i = 0; i < vertexCount; ++i) {
-                vertices[i] = b2Mul(xf, poly->m_vertices[i]);
-            }
+            for (I32 i = 0; i < vertexCount; ++i) { vertices[i] = b2Mul(xf, poly->m_vertices[i]); }
 
             m_debugDraw->DrawSolidPolygon(vertices, vertexCount, color);
         } break;
@@ -1272,7 +1271,7 @@ void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const b2Color
 void b2World::DebugDraw() {
     if (m_debugDraw == nullptr) { return; }
 
-    uint32 flags = m_debugDraw->GetFlags();
+    U32 flags = m_debugDraw->GetFlags();
 
     if (flags & DebugDraw::e_shapeBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
@@ -1305,8 +1304,8 @@ void b2World::DebugDraw() {
         for (b2Contact *c = m_contactManager.m_contactList; c; c = c->GetNext()) {
             b2Fixture *fixtureA = c->GetFixtureA();
             b2Fixture *fixtureB = c->GetFixtureB();
-            int32 indexA = c->GetChildIndexA();
-            int32 indexB = c->GetChildIndexB();
+            I32 indexA = c->GetChildIndexA();
+            I32 indexB = c->GetChildIndexB();
             b2Vec2 cA = fixtureA->GetAABB(indexA).GetCenter();
             b2Vec2 cB = fixtureB->GetAABB(indexB).GetCenter();
 
@@ -1322,7 +1321,7 @@ void b2World::DebugDraw() {
             if (b->IsEnabled() == false) { continue; }
 
             for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
-                for (int32 i = 0; i < f->m_proxyCount; ++i) {
+                for (I32 i = 0; i < f->m_proxyCount; ++i) {
                     b2FixtureProxy *proxy = f->m_proxies + i;
                     b2AABB aabb = bp->GetFatAABB(proxy->proxyId);
                     b2Vec2 vs[4];
@@ -1346,11 +1345,11 @@ void b2World::DebugDraw() {
     }
 }
 
-int32 b2World::GetProxyCount() const { return m_contactManager.m_broadPhase.GetProxyCount(); }
+I32 b2World::GetProxyCount() const { return m_contactManager.m_broadPhase.GetProxyCount(); }
 
-int32 b2World::GetTreeHeight() const { return m_contactManager.m_broadPhase.GetTreeHeight(); }
+I32 b2World::GetTreeHeight() const { return m_contactManager.m_broadPhase.GetTreeHeight(); }
 
-int32 b2World::GetTreeBalance() const { return m_contactManager.m_broadPhase.GetTreeBalance(); }
+I32 b2World::GetTreeBalance() const { return m_contactManager.m_broadPhase.GetTreeBalance(); }
 
 float b2World::GetTreeQuality() const { return m_contactManager.m_broadPhase.GetTreeQuality(); }
 
@@ -1380,7 +1379,7 @@ void b2World::Dump() {
     b2Dump("b2Body** bodies = (b2Body**)b2Alloc(%d * sizeof(b2Body*));\n", m_bodyCount);
     b2Dump("b2Joint** joints = (b2Joint**)b2Alloc(%d * sizeof(b2Joint*));\n", m_jointCount);
 
-    int32 i = 0;
+    I32 i = 0;
     for (b2Body *b = m_bodyList; b; b = b->m_next) {
         b->m_islandIndex = i;
         b->Dump();
@@ -1928,8 +1927,8 @@ float b2WheelJoint::GetDamping() const { return m_damping; }
 void b2WheelJoint::Dump() {
     // FLT_DECIMAL_DIG == 9
 
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2WheelJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -2248,8 +2247,8 @@ b2Vec2 b2WeldJoint::GetReactionForce(float inv_dt) const {
 float b2WeldJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_impulse.z; }
 
 void b2WeldJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2WeldJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -2617,8 +2616,8 @@ void b2RevoluteJoint::SetLimits(float lower, float upper) {
 }
 
 void b2RevoluteJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2RevoluteJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -2926,8 +2925,8 @@ float b2PulleyJoint::GetCurrentLengthB() const {
 }
 
 void b2PulleyJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2PulleyJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -3441,8 +3440,8 @@ float b2PrismaticJoint::GetMotorForce(float inv_dt) const { return inv_dt * m_mo
 void b2PrismaticJoint::Dump() {
     // FLT_DECIMAL_DIG == 9
 
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2PrismaticJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -3492,7 +3491,7 @@ void b2PrismaticJoint::Draw(DebugDraw *draw) const {
     draw->DrawPoint(pB, 5.0f, c4);
 }
 
-b2Contact *b2PolygonContact::Create(b2Fixture *fixtureA, int32, b2Fixture *fixtureB, int32,
+b2Contact *b2PolygonContact::Create(b2Fixture *fixtureA, I32, b2Fixture *fixtureB, I32,
                                     b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2PolygonContact));
     return new (mem) b2PolygonContact(fixtureA, fixtureB);
@@ -3515,7 +3514,7 @@ void b2PolygonContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA,
                       (b2PolygonShape *) m_fixtureB->GetShape(), xfB);
 }
 
-b2Contact *b2PolygonAndCircleContact::Create(b2Fixture *fixtureA, int32, b2Fixture *fixtureB, int32,
+b2Contact *b2PolygonAndCircleContact::Create(b2Fixture *fixtureA, I32, b2Fixture *fixtureB, I32,
                                              b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2PolygonAndCircleContact));
     return new (mem) b2PolygonAndCircleContact(fixtureA, fixtureB);
@@ -3889,8 +3888,8 @@ void b2MotorJoint::SetAngularOffset(float angularOffset) {
 float b2MotorJoint::GetAngularOffset() const { return m_angularOffset; }
 
 void b2MotorJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2MotorJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -4237,7 +4236,7 @@ This might be faster than computing sin+cos.
 However, we can compute sin+cos of the same angle fast.
 */
 
-b2Island::b2Island(int32 bodyCapacity, int32 contactCapacity, int32 jointCapacity,
+b2Island::b2Island(I32 bodyCapacity, I32 contactCapacity, I32 jointCapacity,
                    b2StackAllocator *allocator, b2ContactListener *listener) {
     m_bodyCapacity = bodyCapacity;
     m_contactCapacity = contactCapacity;
@@ -4273,7 +4272,7 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
     float h = step.dt;
 
     // Integrate velocities and apply damping. Initialize the body state.
-    for (int32 i = 0; i < m_bodyCount; ++i) {
+    for (I32 i = 0; i < m_bodyCount; ++i) {
         b2Body *b = m_bodies[i];
 
         b2Vec2 c = b->m_sweep.c;
@@ -4329,14 +4328,14 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
 
     if (step.warmStarting) { contactSolver.WarmStart(); }
 
-    for (int32 i = 0; i < m_jointCount; ++i) { m_joints[i]->InitVelocityConstraints(solverData); }
+    for (I32 i = 0; i < m_jointCount; ++i) { m_joints[i]->InitVelocityConstraints(solverData); }
 
     profile->solveInit = timer.GetMilliseconds();
 
     // Solve velocity constraints
     timer.Reset();
-    for (int32 i = 0; i < step.velocityIterations; ++i) {
-        for (int32 j = 0; j < m_jointCount; ++j) {
+    for (I32 i = 0; i < step.velocityIterations; ++i) {
+        for (I32 j = 0; j < m_jointCount; ++j) {
             m_joints[j]->SolveVelocityConstraints(solverData);
         }
 
@@ -4348,7 +4347,7 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
     profile->solveVelocity = timer.GetMilliseconds();
 
     // Integrate positions
-    for (int32 i = 0; i < m_bodyCount; ++i) {
+    for (I32 i = 0; i < m_bodyCount; ++i) {
         b2Vec2 c = m_positions[i].c;
         float a = m_positions[i].a;
         b2Vec2 v = m_velocities[i].v;
@@ -4380,11 +4379,11 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
     // Solve position constraints
     timer.Reset();
     bool positionSolved = false;
-    for (int32 i = 0; i < step.positionIterations; ++i) {
+    for (I32 i = 0; i < step.positionIterations; ++i) {
         bool contactsOkay = contactSolver.SolvePositionConstraints();
 
         bool jointsOkay = true;
-        for (int32 j = 0; j < m_jointCount; ++j) {
+        for (I32 j = 0; j < m_jointCount; ++j) {
             bool jointOkay = m_joints[j]->SolvePositionConstraints(solverData);
             jointsOkay = jointsOkay && jointOkay;
         }
@@ -4397,7 +4396,7 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
     }
 
     // Copy state buffers back to the bodies
-    for (int32 i = 0; i < m_bodyCount; ++i) {
+    for (I32 i = 0; i < m_bodyCount; ++i) {
         b2Body *body = m_bodies[i];
         body->m_sweep.c = m_positions[i].c;
         body->m_sweep.a = m_positions[i].a;
@@ -4416,7 +4415,7 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
         const float linTolSqr = b2_linearSleepTolerance * b2_linearSleepTolerance;
         const float angTolSqr = b2_angularSleepTolerance * b2_angularSleepTolerance;
 
-        for (int32 i = 0; i < m_bodyCount; ++i) {
+        for (I32 i = 0; i < m_bodyCount; ++i) {
             b2Body *b = m_bodies[i];
             if (b->GetType() == b2_staticBody) { continue; }
 
@@ -4432,7 +4431,7 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
         }
 
         if (minSleepTime >= b2_timeToSleep && positionSolved) {
-            for (int32 i = 0; i < m_bodyCount; ++i) {
+            for (I32 i = 0; i < m_bodyCount; ++i) {
                 b2Body *b = m_bodies[i];
                 b->SetAwake(false);
             }
@@ -4440,12 +4439,12 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
     }
 }
 
-void b2Island::SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiIndexB) {
+void b2Island::SolveTOI(const b2TimeStep &subStep, I32 toiIndexA, I32 toiIndexB) {
     METADOT_ASSERT_E(toiIndexA < m_bodyCount);
     METADOT_ASSERT_E(toiIndexB < m_bodyCount);
 
     // Initialize the body state.
-    for (int32 i = 0; i < m_bodyCount; ++i) {
+    for (I32 i = 0; i < m_bodyCount; ++i) {
         b2Body *b = m_bodies[i];
         m_positions[i].c = b->m_sweep.c;
         m_positions[i].a = b->m_sweep.a;
@@ -4463,14 +4462,14 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiInd
     b2ContactSolver contactSolver(&contactSolverDef);
 
     // Solve position constraints.
-    for (int32 i = 0; i < subStep.positionIterations; ++i) {
+    for (I32 i = 0; i < subStep.positionIterations; ++i) {
         bool contactsOkay = contactSolver.SolveTOIPositionConstraints(toiIndexA, toiIndexB);
         if (contactsOkay) { break; }
     }
 
 #if 0
 	// Is the new position really safe?
-	for (int32 i = 0; i < m_contactCount; ++i)
+	for (I32 i = 0; i < m_contactCount; ++i)
 	{
 		b2Contact* c = m_contacts[i];
 		b2Fixture* fA = c->GetFixtureA();
@@ -4479,8 +4478,8 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiInd
 		b2Body* bA = fA->GetBody();
 		b2Body* bB = fB->GetBody();
 
-		int32 indexA = c->GetChildIndexA();
-		int32 indexB = c->GetChildIndexB();
+		I32 indexA = c->GetChildIndexA();
+		I32 indexB = c->GetChildIndexB();
 
 		b2DistanceInput input;
 		input.proxyA.Set(fA->GetShape(), indexA);
@@ -4512,7 +4511,7 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiInd
     contactSolver.InitializeVelocityConstraints();
 
     // Solve velocity constraints.
-    for (int32 i = 0; i < subStep.velocityIterations; ++i) {
+    for (I32 i = 0; i < subStep.velocityIterations; ++i) {
         contactSolver.SolveVelocityConstraints();
     }
 
@@ -4522,7 +4521,7 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiInd
     float h = subStep.dt;
 
     // Integrate positions
-    for (int32 i = 0; i < m_bodyCount; ++i) {
+    for (I32 i = 0; i < m_bodyCount; ++i) {
         b2Vec2 c = m_positions[i].c;
         float a = m_positions[i].a;
         b2Vec2 v = m_velocities[i].v;
@@ -4565,14 +4564,14 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiInd
 void b2Island::Report(const b2ContactVelocityConstraint *constraints) {
     if (m_listener == nullptr) { return; }
 
-    for (int32 i = 0; i < m_contactCount; ++i) {
+    for (I32 i = 0; i < m_contactCount; ++i) {
         b2Contact *c = m_contacts[i];
 
         const b2ContactVelocityConstraint *vc = constraints + i;
 
         b2ContactImpulse impulse;
         impulse.count = vc->pointCount;
-        for (int32 j = 0; j < vc->pointCount; ++j) {
+        for (I32 j = 0; j < vc->pointCount; ++j) {
             impulse.normalImpulses[j] = vc->points[j].normalImpulse;
             impulse.tangentImpulses[j] = vc->points[j].tangentImpulse;
         }
@@ -4930,11 +4929,11 @@ void b2GearJoint::SetRatio(float ratio) {
 float b2GearJoint::GetRatio() const { return m_ratio; }
 
 void b2GearJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
-    int32 index1 = m_joint1->m_index;
-    int32 index2 = m_joint2->m_index;
+    I32 index1 = m_joint1->m_index;
+    I32 index2 = m_joint2->m_index;
 
     b2Dump("  b2GearJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -5128,8 +5127,8 @@ void b2FrictionJoint::SetMaxTorque(float torque) {
 float b2FrictionJoint::GetMaxTorque() const { return m_maxTorque; }
 
 void b2FrictionJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2FrictionJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -5167,9 +5166,9 @@ void b2Fixture::Create(b2BlockAllocator *allocator, b2Body *body, const b2Fixtur
     m_shape = def->shape->Clone(allocator);
 
     // Reserve proxy space
-    int32 childCount = m_shape->GetChildCount();
+    I32 childCount = m_shape->GetChildCount();
     m_proxies = (b2FixtureProxy *) allocator->Allocate(childCount * sizeof(b2FixtureProxy));
-    for (int32 i = 0; i < childCount; ++i) {
+    for (I32 i = 0; i < childCount; ++i) {
         m_proxies[i].fixture = nullptr;
         m_proxies[i].proxyId = b2BroadPhase::e_nullProxy;
     }
@@ -5183,7 +5182,7 @@ void b2Fixture::Destroy(b2BlockAllocator *allocator) {
     METADOT_ASSERT_E(m_proxyCount == 0);
 
     // Free the proxy array.
-    int32 childCount = m_shape->GetChildCount();
+    I32 childCount = m_shape->GetChildCount();
     allocator->Free(m_proxies, childCount * sizeof(b2FixtureProxy));
     m_proxies = nullptr;
 
@@ -5227,7 +5226,7 @@ void b2Fixture::CreateProxies(b2BroadPhase *broadPhase, const b2Transform &xf) {
     // Create proxies in the broad-phase.
     m_proxyCount = m_shape->GetChildCount();
 
-    for (int32 i = 0; i < m_proxyCount; ++i) {
+    for (I32 i = 0; i < m_proxyCount; ++i) {
         b2FixtureProxy *proxy = m_proxies + i;
         m_shape->ComputeAABB(&proxy->aabb, xf, i);
         proxy->proxyId = broadPhase->CreateProxy(proxy->aabb, proxy);
@@ -5238,7 +5237,7 @@ void b2Fixture::CreateProxies(b2BroadPhase *broadPhase, const b2Transform &xf) {
 
 void b2Fixture::DestroyProxies(b2BroadPhase *broadPhase) {
     // Destroy proxies in the broad-phase.
-    for (int32 i = 0; i < m_proxyCount; ++i) {
+    for (I32 i = 0; i < m_proxyCount; ++i) {
         b2FixtureProxy *proxy = m_proxies + i;
         broadPhase->DestroyProxy(proxy->proxyId);
         proxy->proxyId = b2BroadPhase::e_nullProxy;
@@ -5251,7 +5250,7 @@ void b2Fixture::Synchronize(b2BroadPhase *broadPhase, const b2Transform &transfo
                             const b2Transform &transform2) {
     if (m_proxyCount == 0) { return; }
 
-    for (int32 i = 0; i < m_proxyCount; ++i) {
+    for (I32 i = 0; i < m_proxyCount; ++i) {
         b2FixtureProxy *proxy = m_proxies + i;
 
         // Compute an AABB that covers the swept shape (may miss some rotation effect).
@@ -5293,7 +5292,7 @@ void b2Fixture::Refilter() {
 
     // Touch each proxy so that new pairs may be created
     b2BroadPhase *broadPhase = &world->m_contactManager.m_broadPhase;
-    for (int32 i = 0; i < m_proxyCount; ++i) { broadPhase->TouchProxy(m_proxies[i].proxyId); }
+    for (I32 i = 0; i < m_proxyCount; ++i) { broadPhase->TouchProxy(m_proxies[i].proxyId); }
 }
 
 void b2Fixture::SetSensor(bool sensor) {
@@ -5303,7 +5302,7 @@ void b2Fixture::SetSensor(bool sensor) {
     }
 }
 
-void b2Fixture::Dump(int32 bodyIndex) {
+void b2Fixture::Dump(I32 bodyIndex) {
     b2Dump("    b2FixtureDef fd;\n");
     b2Dump("    fd.friction = %.9g;\n", m_friction);
     b2Dump("    fd.restitution = %.9g;\n", m_restitution);
@@ -5337,7 +5336,7 @@ void b2Fixture::Dump(int32 bodyIndex) {
             b2PolygonShape *s = (b2PolygonShape *) m_shape;
             b2Dump("    b2PolygonShape shape;\n");
             b2Dump("    b2Vec2 vs[%d];\n", b2_maxPolygonVertices);
-            for (int32 i = 0; i < s->m_count; ++i) {
+            for (I32 i = 0; i < s->m_count; ++i) {
                 b2Dump("    vs[%d].Set(%.9g, %.9g);\n", i, s->m_vertices[i].x, s->m_vertices[i].y);
             }
             b2Dump("    shape.Set(vs, %d);\n", s->m_count);
@@ -5347,7 +5346,7 @@ void b2Fixture::Dump(int32 bodyIndex) {
             b2ChainShape *s = (b2ChainShape *) m_shape;
             b2Dump("    b2ChainShape shape;\n");
             b2Dump("    b2Vec2 vs[%d];\n", s->m_count);
-            for (int32 i = 0; i < s->m_count; ++i) {
+            for (I32 i = 0; i < s->m_count; ++i) {
                 b2Dump("    vs[%d].Set(%.9g, %.9g);\n", i, s->m_vertices[i].x, s->m_vertices[i].y);
             }
             b2Dump("    shape.CreateChain(vs, %d);\n", s->m_count);
@@ -5367,7 +5366,7 @@ void b2Fixture::Dump(int32 bodyIndex) {
     b2Dump("    bodies[%d]->CreateFixture(&fd);\n", bodyIndex);
 }
 
-b2Contact *b2EdgeAndPolygonContact::Create(b2Fixture *fixtureA, int32, b2Fixture *fixtureB, int32,
+b2Contact *b2EdgeAndPolygonContact::Create(b2Fixture *fixtureA, I32, b2Fixture *fixtureB, I32,
                                            b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2EdgeAndPolygonContact));
     return new (mem) b2EdgeAndPolygonContact(fixtureA, fixtureB);
@@ -5390,7 +5389,7 @@ void b2EdgeAndPolygonContact::Evaluate(b2Manifold *manifold, const b2Transform &
                             (b2PolygonShape *) m_fixtureB->GetShape(), xfB);
 }
 
-b2Contact *b2EdgeAndCircleContact::Create(b2Fixture *fixtureA, int32, b2Fixture *fixtureB, int32,
+b2Contact *b2EdgeAndCircleContact::Create(b2Fixture *fixtureA, I32, b2Fixture *fixtureB, I32,
                                           b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2EdgeAndCircleContact));
     return new (mem) b2EdgeAndCircleContact(fixtureA, fixtureB);
@@ -5715,8 +5714,8 @@ float b2DistanceJoint::GetCurrentLength() const {
 }
 
 void b2DistanceJoint::Dump() {
-    int32 indexA = m_bodyA->m_islandIndex;
-    int32 indexB = m_bodyB->m_islandIndex;
+    I32 indexA = m_bodyA->m_islandIndex;
+    I32 indexB = m_bodyB->m_islandIndex;
 
     b2Dump("  b2DistanceJointDef jd;\n");
     b2Dump("  jd.bodyA = bodies[%d];\n", indexA);
@@ -5800,7 +5799,7 @@ void b2Contact::AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *dest
     }
 }
 
-b2Contact *b2Contact::Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+b2Contact *b2Contact::Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator) {
     if (s_initialized == false) {
         InitializeRegisters();
@@ -5847,7 +5846,7 @@ void b2Contact::Destroy(b2Contact *contact, b2BlockAllocator *allocator) {
     destroyFcn(contact, allocator);
 }
 
-b2Contact::b2Contact(b2Fixture *fA, int32 indexA, b2Fixture *fB, int32 indexB) {
+b2Contact::b2Contact(b2Fixture *fA, I32 indexA, b2Fixture *fB, I32 indexB) {
     m_flags = e_enabledFlag;
 
     m_fixtureA = fA;
@@ -5915,13 +5914,13 @@ void b2Contact::Update(b2ContactListener *listener) {
 
         // Match old contact ids to new contact ids and copy the
         // stored impulses to warm start the solver.
-        for (int32 i = 0; i < m_manifold.pointCount; ++i) {
+        for (I32 i = 0; i < m_manifold.pointCount; ++i) {
             b2ManifoldPoint *mp2 = m_manifold.points + i;
             mp2->normalImpulse = 0.0f;
             mp2->tangentImpulse = 0.0f;
             b2ContactID id2 = mp2->id;
 
-            for (int32 j = 0; j < oldManifold.pointCount; ++j) {
+            for (I32 j = 0; j < oldManifold.pointCount; ++j) {
                 b2ManifoldPoint *mp1 = oldManifold.points + j;
 
                 if (mp1->id.key == id2.key) {
@@ -5961,14 +5960,14 @@ struct b2ContactPositionConstraint
     b2Vec2 localPoints[b2_maxManifoldPoints];
     b2Vec2 localNormal;
     b2Vec2 localPoint;
-    int32 indexA;
-    int32 indexB;
+    I32 indexA;
+    I32 indexB;
     float invMassA, invMassB;
     b2Vec2 localCenterA, localCenterB;
     float invIA, invIB;
     b2Manifold::Type type;
     float radiusA, radiusB;
-    int32 pointCount;
+    I32 pointCount;
 };
 
 b2ContactSolver::b2ContactSolver(b2ContactSolverDef *def) {
@@ -5984,7 +5983,7 @@ b2ContactSolver::b2ContactSolver(b2ContactSolverDef *def) {
     m_contacts = def->contacts;
 
     // Initialize position independent portions of the constraints.
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2Contact *contact = m_contacts[i];
 
         b2Fixture *fixtureA = contact->m_fixtureA;
@@ -5997,7 +5996,7 @@ b2ContactSolver::b2ContactSolver(b2ContactSolverDef *def) {
         b2Body *bodyB = fixtureB->GetBody();
         b2Manifold *manifold = contact->GetManifold();
 
-        int32 pointCount = manifold->pointCount;
+        I32 pointCount = manifold->pointCount;
         METADOT_ASSERT_E(pointCount > 0);
 
         b2ContactVelocityConstraint *vc = m_velocityConstraints + i;
@@ -6032,7 +6031,7 @@ b2ContactSolver::b2ContactSolver(b2ContactSolverDef *def) {
         pc->radiusB = radiusB;
         pc->type = manifold->type;
 
-        for (int32 j = 0; j < pointCount; ++j) {
+        for (I32 j = 0; j < pointCount; ++j) {
             b2ManifoldPoint *cp = manifold->points + j;
             b2VelocityConstraintPoint *vcp = vc->points + j;
 
@@ -6062,7 +6061,7 @@ b2ContactSolver::~b2ContactSolver() {
 
 // Initialize position dependent portions of the velocity constraints.
 void b2ContactSolver::InitializeVelocityConstraints() {
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2ContactVelocityConstraint *vc = m_velocityConstraints + i;
         b2ContactPositionConstraint *pc = m_positionConstraints + i;
 
@@ -6070,8 +6069,8 @@ void b2ContactSolver::InitializeVelocityConstraints() {
         float radiusB = pc->radiusB;
         b2Manifold *manifold = m_contacts[vc->contactIndex]->GetManifold();
 
-        int32 indexA = vc->indexA;
-        int32 indexB = vc->indexB;
+        I32 indexA = vc->indexA;
+        I32 indexB = vc->indexB;
 
         float mA = vc->invMassA;
         float mB = vc->invMassB;
@@ -6103,8 +6102,8 @@ void b2ContactSolver::InitializeVelocityConstraints() {
 
         vc->normal = worldManifold.normal;
 
-        int32 pointCount = vc->pointCount;
-        for (int32 j = 0; j < pointCount; ++j) {
+        I32 pointCount = vc->pointCount;
+        for (I32 j = 0; j < pointCount; ++j) {
             b2VelocityConstraintPoint *vcp = vc->points + j;
 
             vcp->rA = worldManifold.points[j] - cA;
@@ -6164,16 +6163,16 @@ void b2ContactSolver::InitializeVelocityConstraints() {
 
 void b2ContactSolver::WarmStart() {
     // Warm start.
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2ContactVelocityConstraint *vc = m_velocityConstraints + i;
 
-        int32 indexA = vc->indexA;
-        int32 indexB = vc->indexB;
+        I32 indexA = vc->indexA;
+        I32 indexB = vc->indexB;
         float mA = vc->invMassA;
         float iA = vc->invIA;
         float mB = vc->invMassB;
         float iB = vc->invIB;
-        int32 pointCount = vc->pointCount;
+        I32 pointCount = vc->pointCount;
 
         b2Vec2 vA = m_velocities[indexA].v;
         float wA = m_velocities[indexA].w;
@@ -6183,7 +6182,7 @@ void b2ContactSolver::WarmStart() {
         b2Vec2 normal = vc->normal;
         b2Vec2 tangent = b2Cross(normal, 1.0f);
 
-        for (int32 j = 0; j < pointCount; ++j) {
+        for (I32 j = 0; j < pointCount; ++j) {
             b2VelocityConstraintPoint *vcp = vc->points + j;
             b2Vec2 P = vcp->normalImpulse * normal + vcp->tangentImpulse * tangent;
             wA -= iA * b2Cross(vcp->rA, P);
@@ -6200,16 +6199,16 @@ void b2ContactSolver::WarmStart() {
 }
 
 void b2ContactSolver::SolveVelocityConstraints() {
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2ContactVelocityConstraint *vc = m_velocityConstraints + i;
 
-        int32 indexA = vc->indexA;
-        int32 indexB = vc->indexB;
+        I32 indexA = vc->indexA;
+        I32 indexB = vc->indexB;
         float mA = vc->invMassA;
         float iA = vc->invIA;
         float mB = vc->invMassB;
         float iB = vc->invIB;
-        int32 pointCount = vc->pointCount;
+        I32 pointCount = vc->pointCount;
 
         b2Vec2 vA = m_velocities[indexA].v;
         float wA = m_velocities[indexA].w;
@@ -6224,7 +6223,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
 
         // Solve tangent constraints first because non-penetration is more important
         // than friction.
-        for (int32 j = 0; j < pointCount; ++j) {
+        for (I32 j = 0; j < pointCount; ++j) {
             b2VelocityConstraintPoint *vcp = vc->points + j;
 
             // Relative velocity at contact
@@ -6252,7 +6251,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
 
         // Solve normal constraints
         if (pointCount == 1 || g_blockSolve == false) {
-            for (int32 j = 0; j < pointCount; ++j) {
+            for (I32 j = 0; j < pointCount; ++j) {
                 b2VelocityConstraintPoint *vcp = vc->points + j;
 
                 // Relative velocity at contact
@@ -6499,11 +6498,11 @@ void b2ContactSolver::SolveVelocityConstraints() {
 }
 
 void b2ContactSolver::StoreImpulses() {
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2ContactVelocityConstraint *vc = m_velocityConstraints + i;
         b2Manifold *manifold = m_contacts[vc->contactIndex]->GetManifold();
 
-        for (int32 j = 0; j < vc->pointCount; ++j) {
+        for (I32 j = 0; j < vc->pointCount; ++j) {
             manifold->points[j].normalImpulse = vc->points[j].normalImpulse;
             manifold->points[j].tangentImpulse = vc->points[j].tangentImpulse;
         }
@@ -6513,7 +6512,7 @@ void b2ContactSolver::StoreImpulses() {
 struct b2PositionSolverManifold
 {
     void Initialize(b2ContactPositionConstraint *pc, const b2Transform &xfA, const b2Transform &xfB,
-                    int32 index) {
+                    I32 index) {
         METADOT_ASSERT_E(pc->pointCount > 0);
 
         switch (pc->type) {
@@ -6558,18 +6557,18 @@ struct b2PositionSolverManifold
 bool b2ContactSolver::SolvePositionConstraints() {
     float minSeparation = 0.0f;
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2ContactPositionConstraint *pc = m_positionConstraints + i;
 
-        int32 indexA = pc->indexA;
-        int32 indexB = pc->indexB;
+        I32 indexA = pc->indexA;
+        I32 indexB = pc->indexB;
         b2Vec2 localCenterA = pc->localCenterA;
         float mA = pc->invMassA;
         float iA = pc->invIA;
         b2Vec2 localCenterB = pc->localCenterB;
         float mB = pc->invMassB;
         float iB = pc->invIB;
-        int32 pointCount = pc->pointCount;
+        I32 pointCount = pc->pointCount;
 
         b2Vec2 cA = m_positions[indexA].c;
         float aA = m_positions[indexA].a;
@@ -6578,7 +6577,7 @@ bool b2ContactSolver::SolvePositionConstraints() {
         float aB = m_positions[indexB].a;
 
         // Solve normal constraints
-        for (int32 j = 0; j < pointCount; ++j) {
+        for (I32 j = 0; j < pointCount; ++j) {
             b2Transform xfA, xfB;
             xfA.q.Set(aA);
             xfB.q.Set(aB);
@@ -6632,17 +6631,17 @@ bool b2ContactSolver::SolvePositionConstraints() {
 }
 
 // Sequential position solver for position constraints.
-bool b2ContactSolver::SolveTOIPositionConstraints(int32 toiIndexA, int32 toiIndexB) {
+bool b2ContactSolver::SolveTOIPositionConstraints(I32 toiIndexA, I32 toiIndexB) {
     float minSeparation = 0.0f;
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         b2ContactPositionConstraint *pc = m_positionConstraints + i;
 
-        int32 indexA = pc->indexA;
-        int32 indexB = pc->indexB;
+        I32 indexA = pc->indexA;
+        I32 indexB = pc->indexB;
         b2Vec2 localCenterA = pc->localCenterA;
         b2Vec2 localCenterB = pc->localCenterB;
-        int32 pointCount = pc->pointCount;
+        I32 pointCount = pc->pointCount;
 
         float mA = 0.0f;
         float iA = 0.0f;
@@ -6665,7 +6664,7 @@ bool b2ContactSolver::SolveTOIPositionConstraints(int32 toiIndexA, int32 toiInde
         float aB = m_positions[indexB].a;
 
         // Solve normal constraints
-        for (int32 j = 0; j < pointCount; ++j) {
+        for (I32 j = 0; j < pointCount; ++j) {
             b2Transform xfA, xfB;
             xfA.q.Set(aA);
             xfB.q.Set(aB);
@@ -6772,8 +6771,8 @@ void b2ContactManager::Collide() {
     while (c) {
         b2Fixture *fixtureA = c->GetFixtureA();
         b2Fixture *fixtureB = c->GetFixtureB();
-        int32 indexA = c->GetChildIndexA();
-        int32 indexB = c->GetChildIndexB();
+        I32 indexA = c->GetChildIndexA();
+        I32 indexB = c->GetChildIndexB();
         b2Body *bodyA = fixtureA->GetBody();
         b2Body *bodyB = fixtureB->GetBody();
 
@@ -6808,8 +6807,8 @@ void b2ContactManager::Collide() {
             continue;
         }
 
-        int32 proxyIdA = fixtureA->m_proxies[indexA].proxyId;
-        int32 proxyIdB = fixtureB->m_proxies[indexB].proxyId;
+        I32 proxyIdA = fixtureA->m_proxies[indexA].proxyId;
+        I32 proxyIdB = fixtureB->m_proxies[indexB].proxyId;
         bool overlap = m_broadPhase.TestOverlap(proxyIdA, proxyIdB);
 
         // Here we destroy contacts that cease to overlap in the broad-phase.
@@ -6835,8 +6834,8 @@ void b2ContactManager::AddPair(void *proxyUserDataA, void *proxyUserDataB) {
     b2Fixture *fixtureA = proxyA->fixture;
     b2Fixture *fixtureB = proxyB->fixture;
 
-    int32 indexA = proxyA->childIndex;
-    int32 indexB = proxyB->childIndex;
+    I32 indexA = proxyA->childIndex;
+    I32 indexB = proxyB->childIndex;
 
     b2Body *bodyA = fixtureA->GetBody();
     b2Body *bodyB = fixtureB->GetBody();
@@ -6852,8 +6851,8 @@ void b2ContactManager::AddPair(void *proxyUserDataA, void *proxyUserDataB) {
         if (edge->other == bodyA) {
             b2Fixture *fA = edge->contact->GetFixtureA();
             b2Fixture *fB = edge->contact->GetFixtureB();
-            int32 iA = edge->contact->GetChildIndexA();
-            int32 iB = edge->contact->GetChildIndexB();
+            I32 iA = edge->contact->GetChildIndexA();
+            I32 iB = edge->contact->GetChildIndexB();
 
             if (fA == fixtureA && fB == fixtureB && iA == indexA && iB == indexB) {
                 // A contact already exists.
@@ -6916,7 +6915,7 @@ void b2ContactManager::AddPair(void *proxyUserDataA, void *proxyUserDataB) {
     ++m_contactCount;
 }
 
-b2Contact *b2CircleContact::Create(b2Fixture *fixtureA, int32, b2Fixture *fixtureB, int32,
+b2Contact *b2CircleContact::Create(b2Fixture *fixtureA, I32, b2Fixture *fixtureB, I32,
                                    b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2CircleContact));
     return new (mem) b2CircleContact(fixtureA, fixtureB);
@@ -6939,8 +6938,8 @@ void b2CircleContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA,
                      (b2CircleShape *) m_fixtureB->GetShape(), xfB);
 }
 
-b2Contact *b2ChainAndPolygonContact::Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB,
-                                            int32 indexB, b2BlockAllocator *allocator) {
+b2Contact *b2ChainAndPolygonContact::Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB,
+                                            I32 indexB, b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2ChainAndPolygonContact));
     return new (mem) b2ChainAndPolygonContact(fixtureA, indexA, fixtureB, indexB);
 }
@@ -6950,8 +6949,8 @@ void b2ChainAndPolygonContact::Destroy(b2Contact *contact, b2BlockAllocator *all
     allocator->Free(contact, sizeof(b2ChainAndPolygonContact));
 }
 
-b2ChainAndPolygonContact::b2ChainAndPolygonContact(b2Fixture *fixtureA, int32 indexA,
-                                                   b2Fixture *fixtureB, int32 indexB)
+b2ChainAndPolygonContact::b2ChainAndPolygonContact(b2Fixture *fixtureA, I32 indexA,
+                                                   b2Fixture *fixtureB, I32 indexB)
     : b2Contact(fixtureA, indexA, fixtureB, indexB) {
     METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_chain);
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
@@ -6965,8 +6964,8 @@ void b2ChainAndPolygonContact::Evaluate(b2Manifold *manifold, const b2Transform 
     b2CollideEdgeAndPolygon(manifold, &edge, xfA, (b2PolygonShape *) m_fixtureB->GetShape(), xfB);
 }
 
-b2Contact *b2ChainAndCircleContact::Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB,
-                                           int32 indexB, b2BlockAllocator *allocator) {
+b2Contact *b2ChainAndCircleContact::Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB,
+                                           I32 indexB, b2BlockAllocator *allocator) {
     void *mem = allocator->Allocate(sizeof(b2ChainAndCircleContact));
     return new (mem) b2ChainAndCircleContact(fixtureA, indexA, fixtureB, indexB);
 }
@@ -6976,8 +6975,8 @@ void b2ChainAndCircleContact::Destroy(b2Contact *contact, b2BlockAllocator *allo
     allocator->Free(contact, sizeof(b2ChainAndCircleContact));
 }
 
-b2ChainAndCircleContact::b2ChainAndCircleContact(b2Fixture *fixtureA, int32 indexA,
-                                                 b2Fixture *fixtureB, int32 indexB)
+b2ChainAndCircleContact::b2ChainAndCircleContact(b2Fixture *fixtureA, I32 indexA,
+                                                 b2Fixture *fixtureB, I32 indexB)
     : b2Contact(fixtureA, indexA, fixtureB, indexB) {
     METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_chain);
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
@@ -6993,7 +6992,7 @@ void b2ChainAndCircleContact::Evaluate(b2Manifold *manifold, const b2Transform &
 
 struct b2RopeStretch
 {
-    int32 i1, i2;
+    I32 i1, i2;
     float invMass1, invMass2;
     float L;
     float lambda;
@@ -7003,7 +7002,7 @@ struct b2RopeStretch
 
 struct b2RopeBend
 {
-    int32 i1, i2, i3;
+    I32 i1, i2, i3;
     float invMass1, invMass2, invMass3;
     float invEffectiveMass;
     float lambda;
@@ -7048,7 +7047,7 @@ void b2Rope::Create(const b2RopeDef &def) {
     m_vs = (b2Vec2 *) b2Alloc(m_count * sizeof(b2Vec2));
     m_invMasses = (float *) b2Alloc(m_count * sizeof(float));
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         m_bindPositions[i] = def.vertices[i];
         m_ps[i] = def.vertices[i] + m_position;
         m_p0s[i] = def.vertices[i] + m_position;
@@ -7068,7 +7067,7 @@ void b2Rope::Create(const b2RopeDef &def) {
     m_stretchConstraints = (b2RopeStretch *) b2Alloc(m_stretchCount * sizeof(b2RopeStretch));
     m_bendConstraints = (b2RopeBend *) b2Alloc(m_bendCount * sizeof(b2RopeBend));
 
-    for (int32 i = 0; i < m_stretchCount; ++i) {
+    for (I32 i = 0; i < m_stretchCount; ++i) {
         b2RopeStretch &c = m_stretchConstraints[i];
 
         b2Vec2 p1 = m_ps[i];
@@ -7084,7 +7083,7 @@ void b2Rope::Create(const b2RopeDef &def) {
         c.spring = 0.0f;
     }
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         b2RopeBend &c = m_bendConstraints[i];
 
         b2Vec2 p1 = m_ps[i];
@@ -7143,7 +7142,7 @@ void b2Rope::SetTuning(const b2RopeTuning &tuning) {
 
     const float bendOmega = 2.0f * b2_pi * m_tuning.bendHertz;
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         b2RopeBend &c = m_bendConstraints[i];
 
         float L1sqr = c.L1 * c.L1;
@@ -7172,7 +7171,7 @@ void b2Rope::SetTuning(const b2RopeTuning &tuning) {
 
     const float stretchOmega = 2.0f * b2_pi * m_tuning.stretchHertz;
 
-    for (int32 i = 0; i < m_stretchCount; ++i) {
+    for (I32 i = 0; i < m_stretchCount; ++i) {
         b2RopeStretch &c = m_stretchConstraints[i];
 
         float sum = c.invMass1 + c.invMass2;
@@ -7185,14 +7184,14 @@ void b2Rope::SetTuning(const b2RopeTuning &tuning) {
     }
 }
 
-void b2Rope::Step(float dt, int32 iterations, const b2Vec2 &position) {
+void b2Rope::Step(float dt, I32 iterations, const b2Vec2 &position) {
     if (dt == 0.0) { return; }
 
     const float inv_dt = 1.0f / dt;
     float d = expf(-dt * m_tuning.damping);
 
     // Apply gravity and damping
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         if (m_invMasses[i] > 0.0f) {
             m_vs[i] *= d;
             m_vs[i] += dt * m_gravity;
@@ -7204,15 +7203,15 @@ void b2Rope::Step(float dt, int32 iterations, const b2Vec2 &position) {
     // Apply bending spring
     if (m_tuning.bendingModel == b2_springAngleBendingModel) { ApplyBendForces(dt); }
 
-    for (int32 i = 0; i < m_bendCount; ++i) { m_bendConstraints[i].lambda = 0.0f; }
+    for (I32 i = 0; i < m_bendCount; ++i) { m_bendConstraints[i].lambda = 0.0f; }
 
-    for (int32 i = 0; i < m_stretchCount; ++i) { m_stretchConstraints[i].lambda = 0.0f; }
+    for (I32 i = 0; i < m_stretchCount; ++i) { m_stretchConstraints[i].lambda = 0.0f; }
 
     // Update position
-    for (int32 i = 0; i < m_count; ++i) { m_ps[i] += dt * m_vs[i]; }
+    for (I32 i = 0; i < m_count; ++i) { m_ps[i] += dt * m_vs[i]; }
 
     // Solve constraints
-    for (int32 i = 0; i < iterations; ++i) {
+    for (I32 i = 0; i < iterations; ++i) {
         if (m_tuning.bendingModel == b2_pbdAngleBendingModel) {
             SolveBend_PBD_Angle();
         } else if (m_tuning.bendingModel == b2_xpbdAngleBendingModel) {
@@ -7233,7 +7232,7 @@ void b2Rope::Step(float dt, int32 iterations, const b2Vec2 &position) {
     }
 
     // Constrain velocity
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         m_vs[i] = inv_dt * (m_ps[i] - m_p0s[i]);
         m_p0s[i] = m_ps[i];
     }
@@ -7242,21 +7241,21 @@ void b2Rope::Step(float dt, int32 iterations, const b2Vec2 &position) {
 void b2Rope::Reset(const b2Vec2 &position) {
     m_position = position;
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         m_ps[i] = m_bindPositions[i] + m_position;
         m_p0s[i] = m_bindPositions[i] + m_position;
         m_vs[i].SetZero();
     }
 
-    for (int32 i = 0; i < m_bendCount; ++i) { m_bendConstraints[i].lambda = 0.0f; }
+    for (I32 i = 0; i < m_bendCount; ++i) { m_bendConstraints[i].lambda = 0.0f; }
 
-    for (int32 i = 0; i < m_stretchCount; ++i) { m_stretchConstraints[i].lambda = 0.0f; }
+    for (I32 i = 0; i < m_stretchCount; ++i) { m_stretchConstraints[i].lambda = 0.0f; }
 }
 
 void b2Rope::SolveStretch_PBD() {
     const float stiffness = m_tuning.stretchStiffness;
 
-    for (int32 i = 0; i < m_stretchCount; ++i) {
+    for (I32 i = 0; i < m_stretchCount; ++i) {
         const b2RopeStretch &c = m_stretchConstraints[i];
 
         b2Vec2 p1 = m_ps[c.i1];
@@ -7282,7 +7281,7 @@ void b2Rope::SolveStretch_PBD() {
 void b2Rope::SolveStretch_XPBD(float dt) {
     METADOT_ASSERT_E(dt > 0.0f);
 
-    for (int32 i = 0; i < m_stretchCount; ++i) {
+    for (I32 i = 0; i < m_stretchCount; ++i) {
         b2RopeStretch &c = m_stretchConstraints[i];
 
         b2Vec2 p1 = m_ps[c.i1];
@@ -7325,7 +7324,7 @@ void b2Rope::SolveStretch_XPBD(float dt) {
 void b2Rope::SolveBend_PBD_Angle() {
     const float stiffness = m_tuning.bendStiffness;
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
         b2Vec2 p1 = m_ps[c.i1];
@@ -7383,7 +7382,7 @@ void b2Rope::SolveBend_PBD_Angle() {
 void b2Rope::SolveBend_XPBD_Angle(float dt) {
     METADOT_ASSERT_E(dt > 0.0f);
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         b2RopeBend &c = m_bendConstraints[i];
 
         b2Vec2 p1 = m_ps[c.i1];
@@ -7459,7 +7458,7 @@ void b2Rope::ApplyBendForces(float dt) {
     // omega = 2 * pi * hz
     const float omega = 2.0f * b2_pi * m_tuning.bendHertz;
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
         b2Vec2 p1 = m_ps[c.i1];
@@ -7526,11 +7525,11 @@ void b2Rope::ApplyBendForces(float dt) {
 void b2Rope::SolveBend_PBD_Distance() {
     const float stiffness = m_tuning.bendStiffness;
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
-        int32 i1 = c.i1;
-        int32 i2 = c.i3;
+        I32 i1 = c.i1;
+        I32 i2 = c.i3;
 
         b2Vec2 p1 = m_ps[i1];
         b2Vec2 p2 = m_ps[i2];
@@ -7557,7 +7556,7 @@ void b2Rope::SolveBend_PBD_Distance() {
 void b2Rope::SolveBend_PBD_Height() {
     const float stiffness = m_tuning.bendStiffness;
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
         b2Vec2 p1 = m_ps[c.i1];
@@ -7599,7 +7598,7 @@ void b2Rope::SolveBend_PBD_Height() {
 void b2Rope::SolveBend_PBD_Triangle() {
     const float stiffness = m_tuning.bendStiffness;
 
-    for (int32 i = 0; i < m_bendCount; ++i) {
+    for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
         b2Vec2 b0 = m_ps[c.i1];
@@ -7634,7 +7633,7 @@ void b2Rope::Draw(DebugDraw *draw) const {
     b2Color pg(0.1f, 0.8f, 0.1f);
     b2Color pd(0.7f, 0.2f, 0.4f);
 
-    for (int32 i = 0; i < m_count - 1; ++i) {
+    for (I32 i = 0; i < m_count - 1; ++i) {
         draw->DrawSegment(m_ps[i], m_ps[i + 1], c);
 
         const b2Color &pc = m_invMasses[i] > 0.0f ? pd : pg;
@@ -7645,12 +7644,12 @@ void b2Rope::Draw(DebugDraw *draw) const {
     draw->DrawPoint(m_ps[m_count - 1], 5.0f, pc);
 }
 
-static const int32 b2_chunkSize = 16 * 1024;
-static const int32 b2_maxBlockSize = 640;
-static const int32 b2_chunkArrayIncrement = 128;
+static const I32 b2_chunkSize = 16 * 1024;
+static const I32 b2_maxBlockSize = 640;
+static const I32 b2_chunkArrayIncrement = 128;
 
 // These are the supported object sizes. Actual allocations are rounded up the next size.
-static const int32 b2_blockSizes[b2_blockSizeCount] = {
+static const I32 b2_blockSizes[b2_blockSizeCount] = {
         16, // 0
         32, // 1
         64, // 2
@@ -7671,27 +7670,27 @@ static const int32 b2_blockSizes[b2_blockSizeCount] = {
 struct b2SizeMap
 {
     b2SizeMap() {
-        int32 j = 0;
+        I32 j = 0;
         values[0] = 0;
-        for (int32 i = 1; i <= b2_maxBlockSize; ++i) {
+        for (I32 i = 1; i <= b2_maxBlockSize; ++i) {
             METADOT_ASSERT_E(j < b2_blockSizeCount);
             if (i <= b2_blockSizes[j]) {
-                values[i] = (uint8) j;
+                values[i] = (U8) j;
             } else {
                 ++j;
-                values[i] = (uint8) j;
+                values[i] = (U8) j;
             }
         }
     }
 
-    uint8 values[b2_maxBlockSize + 1];
+    U8 values[b2_maxBlockSize + 1];
 };
 
 static const b2SizeMap b2_sizeMap;
 
 struct b2Chunk
 {
-    int32 blockSize;
+    I32 blockSize;
     b2Block *blocks;
 };
 
@@ -7712,19 +7711,19 @@ b2BlockAllocator::b2BlockAllocator() {
 }
 
 b2BlockAllocator::~b2BlockAllocator() {
-    for (int32 i = 0; i < m_chunkCount; ++i) { b2Free(m_chunks[i].blocks); }
+    for (I32 i = 0; i < m_chunkCount; ++i) { b2Free(m_chunks[i].blocks); }
 
     b2Free(m_chunks);
 }
 
-void *b2BlockAllocator::Allocate(int32 size) {
+void *b2BlockAllocator::Allocate(I32 size) {
     if (size == 0) { return nullptr; }
 
     METADOT_ASSERT_E(0 < size);
 
     if (size > b2_maxBlockSize) { return b2Alloc(size); }
 
-    int32 index = b2_sizeMap.values[size];
+    I32 index = b2_sizeMap.values[size];
     METADOT_ASSERT_E(0 <= index && index < b2_blockSizeCount);
 
     if (m_freeLists[index]) {
@@ -7746,16 +7745,16 @@ void *b2BlockAllocator::Allocate(int32 size) {
 #if defined(_DEBUG)
         memset(chunk->blocks, 0xcd, b2_chunkSize);
 #endif
-        int32 blockSize = b2_blockSizes[index];
+        I32 blockSize = b2_blockSizes[index];
         chunk->blockSize = blockSize;
-        int32 blockCount = b2_chunkSize / blockSize;
+        I32 blockCount = b2_chunkSize / blockSize;
         METADOT_ASSERT_E(blockCount * blockSize <= b2_chunkSize);
-        for (int32 i = 0; i < blockCount - 1; ++i) {
-            b2Block *block = (b2Block *) ((int8 *) chunk->blocks + blockSize * i);
-            b2Block *next = (b2Block *) ((int8 *) chunk->blocks + blockSize * (i + 1));
+        for (I32 i = 0; i < blockCount - 1; ++i) {
+            b2Block *block = (b2Block *) ((I8 *) chunk->blocks + blockSize * i);
+            b2Block *next = (b2Block *) ((I8 *) chunk->blocks + blockSize * (i + 1));
             block->next = next;
         }
-        b2Block *last = (b2Block *) ((int8 *) chunk->blocks + blockSize * (blockCount - 1));
+        b2Block *last = (b2Block *) ((I8 *) chunk->blocks + blockSize * (blockCount - 1));
         last->next = nullptr;
 
         m_freeLists[index] = chunk->blocks->next;
@@ -7765,7 +7764,7 @@ void *b2BlockAllocator::Allocate(int32 size) {
     }
 }
 
-void b2BlockAllocator::Free(void *p, int32 size) {
+void b2BlockAllocator::Free(void *p, I32 size) {
     if (size == 0) { return; }
 
     METADOT_ASSERT_E(0 < size);
@@ -7775,21 +7774,21 @@ void b2BlockAllocator::Free(void *p, int32 size) {
         return;
     }
 
-    int32 index = b2_sizeMap.values[size];
+    I32 index = b2_sizeMap.values[size];
     METADOT_ASSERT_E(0 <= index && index < b2_blockSizeCount);
 
 #if defined(_DEBUG)
     // Verify the memory address and size is valid.
-    int32 blockSize = b2_blockSizes[index];
+    I32 blockSize = b2_blockSizes[index];
     bool found = false;
-    for (int32 i = 0; i < m_chunkCount; ++i) {
+    for (I32 i = 0; i < m_chunkCount; ++i) {
         b2Chunk *chunk = m_chunks + i;
         if (chunk->blockSize != blockSize) {
-            METADOT_ASSERT_E((int8 *) p + blockSize <= (int8 *) chunk->blocks ||
-                     (int8 *) chunk->blocks + b2_chunkSize <= (int8 *) p);
+            METADOT_ASSERT_E((I8 *) p + blockSize <= (I8 *) chunk->blocks ||
+                             (I8 *) chunk->blocks + b2_chunkSize <= (I8 *) p);
         } else {
-            if ((int8 *) chunk->blocks <= (int8 *) p &&
-                (int8 *) p + blockSize <= (int8 *) chunk->blocks + b2_chunkSize) {
+            if ((I8 *) chunk->blocks <= (I8 *) p &&
+                (I8 *) p + blockSize <= (I8 *) chunk->blocks + b2_chunkSize) {
                 found = true;
             }
         }
@@ -7806,7 +7805,7 @@ void b2BlockAllocator::Free(void *p, int32 size) {
 }
 
 void b2BlockAllocator::Clear() {
-    for (int32 i = 0; i < m_chunkCount; ++i) { b2Free(m_chunks[i].blocks); }
+    for (I32 i = 0; i < m_chunkCount; ++i) { b2Free(m_chunks[i].blocks); }
 
     m_chunkCount = 0;
     memset(m_chunks, 0, m_chunkSpace * sizeof(b2Chunk));
@@ -7881,7 +7880,7 @@ void b2Mat33::GetSymInverse33(b2Mat33 *M) const {
 b2Version b2_version = {2, 4, 1};
 
 // Memory allocators. Modify these to use your own allocator.
-void *b2Alloc_Default(int32 size) { return malloc(size); }
+void *b2Alloc_Default(I32 size) { return malloc(size); }
 
 void b2Free_Default(void *mem) { free(mem); }
 
@@ -7921,7 +7920,7 @@ b2StackAllocator::~b2StackAllocator() {
     METADOT_ASSERT_E(m_entryCount == 0);
 }
 
-void *b2StackAllocator::Allocate(int32 size) {
+void *b2StackAllocator::Allocate(I32 size) {
     METADOT_ASSERT_E(m_entryCount < b2_maxStackEntries);
 
     b2StackEntry *entry = m_entries + m_entryCount;
@@ -7957,7 +7956,7 @@ void b2StackAllocator::Free(void *p) {
     p = nullptr;
 }
 
-int32 b2StackAllocator::GetMaxAllocation() const { return m_maxAllocation; }
+I32 b2StackAllocator::GetMaxAllocation() const { return m_maxAllocation; }
 
 #if defined(_WIN32)
 
@@ -8048,12 +8047,12 @@ void b2ChainShape::Clear() {
     m_count = 0;
 }
 
-void b2ChainShape::CreateLoop(const b2Vec2 *vertices, int32 count) {
+void b2ChainShape::CreateLoop(const b2Vec2 *vertices, I32 count) {
     METADOT_ASSERT_E(m_vertices == nullptr && m_count == 0);
     METADOT_ASSERT_E(count >= 3);
     if (count < 3) { return; }
 
-    for (int32 i = 1; i < count; ++i) {
+    for (I32 i = 1; i < count; ++i) {
         b2Vec2 v1 = vertices[i - 1];
         b2Vec2 v2 = vertices[i];
         // If the code crashes here, it means your vertices are too close together.
@@ -8068,13 +8067,14 @@ void b2ChainShape::CreateLoop(const b2Vec2 *vertices, int32 count) {
     m_nextVertex = m_vertices[1];
 }
 
-void b2ChainShape::CreateChain(const b2Vec2 *vertices, int32 count, const b2Vec2 &prevVertex,
+void b2ChainShape::CreateChain(const b2Vec2 *vertices, I32 count, const b2Vec2 &prevVertex,
                                const b2Vec2 &nextVertex) {
     METADOT_ASSERT_E(m_vertices == nullptr && m_count == 0);
     METADOT_ASSERT_E(count >= 2);
-    for (int32 i = 1; i < count; ++i) {
+    for (I32 i = 1; i < count; ++i) {
         // If the code crashes here, it means your vertices are too close together.
-        METADOT_ASSERT_E(b2DistanceSquared(vertices[i - 1], vertices[i]) > b2_linearSlop * b2_linearSlop);
+        METADOT_ASSERT_E(b2DistanceSquared(vertices[i - 1], vertices[i]) >
+                         b2_linearSlop * b2_linearSlop);
     }
 
     m_count = count;
@@ -8092,12 +8092,12 @@ b2Shape *b2ChainShape::Clone(b2BlockAllocator *allocator) const {
     return clone;
 }
 
-int32 b2ChainShape::GetChildCount() const {
+I32 b2ChainShape::GetChildCount() const {
     // edge count = vertex count - 1
     return m_count - 1;
 }
 
-void b2ChainShape::GetChildEdge(b2EdgeShape *edge, int32 index) const {
+void b2ChainShape::GetChildEdge(b2EdgeShape *edge, I32 index) const {
     METADOT_ASSERT_E(0 <= index && index < m_count - 1);
     edge->m_type = b2Shape::e_edge;
     edge->m_radius = m_radius;
@@ -8126,13 +8126,13 @@ bool b2ChainShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
 }
 
 bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                           const b2Transform &xf, int32 childIndex) const {
+                           const b2Transform &xf, I32 childIndex) const {
     METADOT_ASSERT_E(childIndex < m_count);
 
     b2EdgeShape edgeShape;
 
-    int32 i1 = childIndex;
-    int32 i2 = childIndex + 1;
+    I32 i1 = childIndex;
+    I32 i2 = childIndex + 1;
     if (i2 == m_count) { i2 = 0; }
 
     edgeShape.m_vertex1 = m_vertices[i1];
@@ -8141,11 +8141,11 @@ bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
     return edgeShape.RayCast(output, input, xf, 0);
 }
 
-void b2ChainShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, int32 childIndex) const {
+void b2ChainShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const {
     METADOT_ASSERT_E(childIndex < m_count);
 
-    int32 i1 = childIndex;
-    int32 i2 = childIndex + 1;
+    I32 i1 = childIndex;
+    I32 i2 = childIndex + 1;
     if (i2 == m_count) { i2 = 0; }
 
     b2Vec2 v1 = b2Mul(xf, m_vertices[i1]);
@@ -8176,7 +8176,7 @@ b2BroadPhase::b2BroadPhase() {
 
     m_moveCapacity = 16;
     m_moveCount = 0;
-    m_moveBuffer = (int32 *) b2Alloc(m_moveCapacity * sizeof(int32));
+    m_moveBuffer = (I32 *) b2Alloc(m_moveCapacity * sizeof(I32));
 }
 
 b2BroadPhase::~b2BroadPhase() {
@@ -8184,32 +8184,32 @@ b2BroadPhase::~b2BroadPhase() {
     b2Free(m_pairBuffer);
 }
 
-int32 b2BroadPhase::CreateProxy(const b2AABB &aabb, void *userData) {
-    int32 proxyId = m_tree.CreateProxy(aabb, userData);
+I32 b2BroadPhase::CreateProxy(const b2AABB &aabb, void *userData) {
+    I32 proxyId = m_tree.CreateProxy(aabb, userData);
     ++m_proxyCount;
     BufferMove(proxyId);
     return proxyId;
 }
 
-void b2BroadPhase::DestroyProxy(int32 proxyId) {
+void b2BroadPhase::DestroyProxy(I32 proxyId) {
     UnBufferMove(proxyId);
     --m_proxyCount;
     m_tree.DestroyProxy(proxyId);
 }
 
-void b2BroadPhase::MoveProxy(int32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement) {
+void b2BroadPhase::MoveProxy(I32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement) {
     bool buffer = m_tree.MoveProxy(proxyId, aabb, displacement);
     if (buffer) { BufferMove(proxyId); }
 }
 
-void b2BroadPhase::TouchProxy(int32 proxyId) { BufferMove(proxyId); }
+void b2BroadPhase::TouchProxy(I32 proxyId) { BufferMove(proxyId); }
 
-void b2BroadPhase::BufferMove(int32 proxyId) {
+void b2BroadPhase::BufferMove(I32 proxyId) {
     if (m_moveCount == m_moveCapacity) {
-        int32 *oldBuffer = m_moveBuffer;
+        I32 *oldBuffer = m_moveBuffer;
         m_moveCapacity *= 2;
-        m_moveBuffer = (int32 *) b2Alloc(m_moveCapacity * sizeof(int32));
-        memcpy(m_moveBuffer, oldBuffer, m_moveCount * sizeof(int32));
+        m_moveBuffer = (I32 *) b2Alloc(m_moveCapacity * sizeof(I32));
+        memcpy(m_moveBuffer, oldBuffer, m_moveCount * sizeof(I32));
         b2Free(oldBuffer);
     }
 
@@ -8217,14 +8217,14 @@ void b2BroadPhase::BufferMove(int32 proxyId) {
     ++m_moveCount;
 }
 
-void b2BroadPhase::UnBufferMove(int32 proxyId) {
-    for (int32 i = 0; i < m_moveCount; ++i) {
+void b2BroadPhase::UnBufferMove(I32 proxyId) {
+    for (I32 i = 0; i < m_moveCount; ++i) {
         if (m_moveBuffer[i] == proxyId) { m_moveBuffer[i] = e_nullProxy; }
     }
 }
 
 // This is called from b2DynamicTree::Query when we are gathering pairs.
-bool b2BroadPhase::QueryCallback(int32 proxyId) {
+bool b2BroadPhase::QueryCallback(I32 proxyId) {
     // A proxy cannot form a pair with itself.
     if (proxyId == m_queryProxyId) { return true; }
 
@@ -8257,7 +8257,7 @@ b2Shape *b2CircleShape::Clone(b2BlockAllocator *allocator) const {
     return clone;
 }
 
-int32 b2CircleShape::GetChildCount() const { return 1; }
+I32 b2CircleShape::GetChildCount() const { return 1; }
 
 bool b2CircleShape::TestPoint(const b2Transform &transform, const b2Vec2 &p) const {
     b2Vec2 center = transform.p + b2Mul(transform.q, m_p);
@@ -8270,7 +8270,7 @@ bool b2CircleShape::TestPoint(const b2Transform &transform, const b2Vec2 &p) con
 // x = s + a * r
 // norm(x) = radius
 bool b2CircleShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                            const b2Transform &transform, int32 childIndex) const {
+                            const b2Transform &transform, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     b2Vec2 position = transform.p + b2Mul(transform.q, m_p);
@@ -8301,8 +8301,7 @@ bool b2CircleShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input
     return false;
 }
 
-void b2CircleShape::ComputeAABB(b2AABB *aabb, const b2Transform &transform,
-                                int32 childIndex) const {
+void b2CircleShape::ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     b2Vec2 p = transform.p + b2Mul(transform.q, m_p);
@@ -8350,14 +8349,14 @@ void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polyg
     b2Vec2 cLocal = b2MulT(xfA, c);
 
     // Find the min separating edge.
-    int32 normalIndex = 0;
+    I32 normalIndex = 0;
     float separation = -b2_maxFloat;
     float radius = polygonA->m_radius + circleB->m_radius;
-    int32 vertexCount = polygonA->m_count;
+    I32 vertexCount = polygonA->m_count;
     const b2Vec2 *vertices = polygonA->m_vertices;
     const b2Vec2 *normals = polygonA->m_normals;
 
-    for (int32 i = 0; i < vertexCount; ++i) {
+    for (I32 i = 0; i < vertexCount; ++i) {
         float s = b2Dot(normals[i], cLocal - vertices[i]);
 
         if (s > radius) {
@@ -8372,8 +8371,8 @@ void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polyg
     }
 
     // Vertices that subtend the incident face.
-    int32 vertIndex1 = normalIndex;
-    int32 vertIndex2 = vertIndex1 + 1 < vertexCount ? vertIndex1 + 1 : 0;
+    I32 vertIndex1 = normalIndex;
+    I32 vertIndex2 = vertIndex1 + 1 < vertexCount ? vertIndex1 + 1 : 0;
     b2Vec2 v1 = vertices[vertIndex1];
     b2Vec2 v2 = vertices[vertIndex2];
 
@@ -8547,7 +8546,7 @@ struct b2EPAxis
 
     b2Vec2 normal;
     Type type;
-    int32 index;
+    I32 index;
     float separation;
 };
 
@@ -8556,13 +8555,13 @@ struct b2TempPolygon
 {
     b2Vec2 vertices[b2_maxPolygonVertices];
     b2Vec2 normals[b2_maxPolygonVertices];
-    int32 count;
+    I32 count;
 };
 
 // Reference face used for clipping
 struct b2ReferenceFace
 {
-    int32 i1, i2;
+    I32 i1, i2;
     b2Vec2 v1, v2;
     b2Vec2 normal;
 
@@ -8584,11 +8583,11 @@ static b2EPAxis b2ComputeEdgeSeparation(const b2TempPolygon &polygonB, const b2V
     b2Vec2 axes[2] = {normal1, -normal1};
 
     // Find axis with least overlap (min-max problem)
-    for (int32 j = 0; j < 2; ++j) {
+    for (I32 j = 0; j < 2; ++j) {
         float sj = FLT_MAX;
 
         // Find deepest polygon vertex along axis j
-        for (int32 i = 0; i < polygonB.count; ++i) {
+        for (I32 i = 0; i < polygonB.count; ++i) {
             float si = b2Dot(axes[j], polygonB.vertices[i] - v1);
             if (si < sj) { sj = si; }
         }
@@ -8611,7 +8610,7 @@ static b2EPAxis b2ComputePolygonSeparation(const b2TempPolygon &polygonB, const 
     axis.separation = -FLT_MAX;
     axis.normal.SetZero();
 
-    for (int32 i = 0; i < polygonB.count; ++i) {
+    for (I32 i = 0; i < polygonB.count; ++i) {
         b2Vec2 n = -polygonB.normals[i];
 
         float s1 = b2Dot(n, polygonB.vertices[i] - v1);
@@ -8653,7 +8652,7 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
     // Get polygonB in frameA
     b2TempPolygon tempPolygonB;
     tempPolygonB.count = polygonB->m_count;
-    for (int32 i = 0; i < polygonB->m_count; ++i) {
+    for (I32 i = 0; i < polygonB->m_count; ++i) {
         tempPolygonB.vertices[i] = b2Mul(xf, polygonB->m_vertices[i]);
         tempPolygonB.normals[i] = b2Mul(xf.q, polygonB->m_normals[i]);
     }
@@ -8729,9 +8728,9 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
         manifold->type = b2Manifold::e_faceA;
 
         // Search for the polygon normal that is most anti-parallel to the edge normal.
-        int32 bestIndex = 0;
+        I32 bestIndex = 0;
         float bestValue = b2Dot(primaryAxis.normal, tempPolygonB.normals[0]);
-        for (int32 i = 1; i < tempPolygonB.count; ++i) {
+        for (I32 i = 1; i < tempPolygonB.count; ++i) {
             float value = b2Dot(primaryAxis.normal, tempPolygonB.normals[i]);
             if (value < bestValue) {
                 bestValue = value;
@@ -8739,18 +8738,18 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
             }
         }
 
-        int32 i1 = bestIndex;
-        int32 i2 = i1 + 1 < tempPolygonB.count ? i1 + 1 : 0;
+        I32 i1 = bestIndex;
+        I32 i2 = i1 + 1 < tempPolygonB.count ? i1 + 1 : 0;
 
         clipPoints[0].v = tempPolygonB.vertices[i1];
         clipPoints[0].id.cf.indexA = 0;
-        clipPoints[0].id.cf.indexB = static_cast<uint8>(i1);
+        clipPoints[0].id.cf.indexB = static_cast<U8>(i1);
         clipPoints[0].id.cf.typeA = b2ContactFeature::e_face;
         clipPoints[0].id.cf.typeB = b2ContactFeature::e_vertex;
 
         clipPoints[1].v = tempPolygonB.vertices[i2];
         clipPoints[1].id.cf.indexA = 0;
-        clipPoints[1].id.cf.indexB = static_cast<uint8>(i2);
+        clipPoints[1].id.cf.indexB = static_cast<U8>(i2);
         clipPoints[1].id.cf.typeA = b2ContactFeature::e_face;
         clipPoints[1].id.cf.typeB = b2ContactFeature::e_vertex;
 
@@ -8766,13 +8765,13 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
 
         clipPoints[0].v = v2;
         clipPoints[0].id.cf.indexA = 1;
-        clipPoints[0].id.cf.indexB = static_cast<uint8>(primaryAxis.index);
+        clipPoints[0].id.cf.indexB = static_cast<U8>(primaryAxis.index);
         clipPoints[0].id.cf.typeA = b2ContactFeature::e_vertex;
         clipPoints[0].id.cf.typeB = b2ContactFeature::e_face;
 
         clipPoints[1].v = v1;
         clipPoints[1].id.cf.indexA = 0;
-        clipPoints[1].id.cf.indexB = static_cast<uint8>(primaryAxis.index);
+        clipPoints[1].id.cf.indexB = static_cast<U8>(primaryAxis.index);
         clipPoints[1].id.cf.typeA = b2ContactFeature::e_vertex;
         clipPoints[1].id.cf.typeB = b2ContactFeature::e_face;
 
@@ -8793,7 +8792,7 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
     // Clip incident edge against reference face side planes
     b2ClipVertex clipPoints1[2];
     b2ClipVertex clipPoints2[2];
-    int32 np;
+    I32 np;
 
     // Clip to side 1
     np = b2ClipSegmentToLine(clipPoints1, clipPoints, ref.sideNormal1, ref.sideOffset1, ref.i1);
@@ -8814,8 +8813,8 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
         manifold->localPoint = polygonB->m_vertices[ref.i1];
     }
 
-    int32 pointCount = 0;
-    for (int32 i = 0; i < b2_maxManifoldPoints; ++i) {
+    I32 pointCount = 0;
+    for (I32 i = 0; i < b2_maxManifoldPoints; ++i) {
         float separation;
 
         separation = b2Dot(ref.normal, clipPoints2[i].v - ref.v1);
@@ -8842,26 +8841,26 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
 }
 
 // Find the max separation between poly1 and poly2 using edge normals from poly1.
-static float b2FindMaxSeparation(int32 *edgeIndex, const b2PolygonShape *poly1,
+static float b2FindMaxSeparation(I32 *edgeIndex, const b2PolygonShape *poly1,
                                  const b2Transform &xf1, const b2PolygonShape *poly2,
                                  const b2Transform &xf2) {
-    int32 count1 = poly1->m_count;
-    int32 count2 = poly2->m_count;
+    I32 count1 = poly1->m_count;
+    I32 count2 = poly2->m_count;
     const b2Vec2 *n1s = poly1->m_normals;
     const b2Vec2 *v1s = poly1->m_vertices;
     const b2Vec2 *v2s = poly2->m_vertices;
     b2Transform xf = b2MulT(xf2, xf1);
 
-    int32 bestIndex = 0;
+    I32 bestIndex = 0;
     float maxSeparation = -b2_maxFloat;
-    for (int32 i = 0; i < count1; ++i) {
+    for (I32 i = 0; i < count1; ++i) {
         // Get poly1 normal in frame2.
         b2Vec2 n = b2Mul(xf.q, n1s[i]);
         b2Vec2 v1 = b2Mul(xf, v1s[i]);
 
         // Find deepest point for normal i.
         float si = b2_maxFloat;
-        for (int32 j = 0; j < count2; ++j) {
+        for (I32 j = 0; j < count2; ++j) {
             float sij = b2Dot(n, v2s[j] - v1);
             if (sij < si) { si = sij; }
         }
@@ -8877,11 +8876,11 @@ static float b2FindMaxSeparation(int32 *edgeIndex, const b2PolygonShape *poly1,
 }
 
 static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1,
-                               const b2Transform &xf1, int32 edge1, const b2PolygonShape *poly2,
+                               const b2Transform &xf1, I32 edge1, const b2PolygonShape *poly2,
                                const b2Transform &xf2) {
     const b2Vec2 *normals1 = poly1->m_normals;
 
-    int32 count2 = poly2->m_count;
+    I32 count2 = poly2->m_count;
     const b2Vec2 *vertices2 = poly2->m_vertices;
     const b2Vec2 *normals2 = poly2->m_normals;
 
@@ -8891,9 +8890,9 @@ static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1,
     b2Vec2 normal1 = b2MulT(xf2.q, b2Mul(xf1.q, normals1[edge1]));
 
     // Find the incident edge on poly2.
-    int32 index = 0;
+    I32 index = 0;
     float minDot = b2_maxFloat;
-    for (int32 i = 0; i < count2; ++i) {
+    for (I32 i = 0; i < count2; ++i) {
         float dot = b2Dot(normal1, normals2[i]);
         if (dot < minDot) {
             minDot = dot;
@@ -8902,18 +8901,18 @@ static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1,
     }
 
     // Build the clip vertices for the incident edge.
-    int32 i1 = index;
-    int32 i2 = i1 + 1 < count2 ? i1 + 1 : 0;
+    I32 i1 = index;
+    I32 i2 = i1 + 1 < count2 ? i1 + 1 : 0;
 
     c[0].v = b2Mul(xf2, vertices2[i1]);
-    c[0].id.cf.indexA = (uint8) edge1;
-    c[0].id.cf.indexB = (uint8) i1;
+    c[0].id.cf.indexA = (U8) edge1;
+    c[0].id.cf.indexB = (U8) i1;
     c[0].id.cf.typeA = b2ContactFeature::e_face;
     c[0].id.cf.typeB = b2ContactFeature::e_vertex;
 
     c[1].v = b2Mul(xf2, vertices2[i2]);
-    c[1].id.cf.indexA = (uint8) edge1;
-    c[1].id.cf.indexB = (uint8) i2;
+    c[1].id.cf.indexA = (U8) edge1;
+    c[1].id.cf.indexB = (U8) i2;
     c[1].id.cf.typeA = b2ContactFeature::e_face;
     c[1].id.cf.typeB = b2ContactFeature::e_vertex;
 }
@@ -8930,19 +8929,19 @@ void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const 
     manifold->pointCount = 0;
     float totalRadius = polyA->m_radius + polyB->m_radius;
 
-    int32 edgeA = 0;
+    I32 edgeA = 0;
     float separationA = b2FindMaxSeparation(&edgeA, polyA, xfA, polyB, xfB);
     if (separationA > totalRadius) return;
 
-    int32 edgeB = 0;
+    I32 edgeB = 0;
     float separationB = b2FindMaxSeparation(&edgeB, polyB, xfB, polyA, xfA);
     if (separationB > totalRadius) return;
 
     const b2PolygonShape *poly1;// reference polygon
     const b2PolygonShape *poly2;// incident polygon
     b2Transform xf1, xf2;
-    int32 edge1;// reference edge
-    uint8 flip;
+    I32 edge1;// reference edge
+    U8 flip;
     const float k_tol = 0.1f * b2_linearSlop;
 
     if (separationB > separationA + k_tol) {
@@ -8966,11 +8965,11 @@ void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const 
     b2ClipVertex incidentEdge[2];
     b2FindIncidentEdge(incidentEdge, poly1, xf1, edge1, poly2, xf2);
 
-    int32 count1 = poly1->m_count;
+    I32 count1 = poly1->m_count;
     const b2Vec2 *vertices1 = poly1->m_vertices;
 
-    int32 iv1 = edge1;
-    int32 iv2 = edge1 + 1 < count1 ? edge1 + 1 : 0;
+    I32 iv1 = edge1;
+    I32 iv2 = edge1 + 1 < count1 ? edge1 + 1 : 0;
 
     b2Vec2 v11 = vertices1[iv1];
     b2Vec2 v12 = vertices1[iv2];
@@ -9013,8 +9012,8 @@ void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const 
     manifold->localNormal = localNormal;
     manifold->localPoint = planePoint;
 
-    int32 pointCount = 0;
-    for (int32 i = 0; i < b2_maxManifoldPoints; ++i) {
+    I32 pointCount = 0;
+    for (I32 i = 0; i < b2_maxManifoldPoints; ++i) {
         float separation = b2Dot(normal, clipPoints2[i].v) - frontOffset;
 
         if (separation <= totalRadius) {
@@ -9060,7 +9059,7 @@ void b2WorldManifold::Initialize(const b2Manifold *manifold, const b2Transform &
             normal = b2Mul(xfA.q, manifold->localNormal);
             b2Vec2 planePoint = b2Mul(xfA, manifold->localPoint);
 
-            for (int32 i = 0; i < manifold->pointCount; ++i) {
+            for (I32 i = 0; i < manifold->pointCount; ++i) {
                 b2Vec2 clipPoint = b2Mul(xfB, manifold->points[i].localPoint);
                 b2Vec2 cA = clipPoint + (radiusA - b2Dot(clipPoint - planePoint, normal)) * normal;
                 b2Vec2 cB = clipPoint - radiusB * normal;
@@ -9073,7 +9072,7 @@ void b2WorldManifold::Initialize(const b2Manifold *manifold, const b2Transform &
             normal = b2Mul(xfB.q, manifold->localNormal);
             b2Vec2 planePoint = b2Mul(xfB, manifold->localPoint);
 
-            for (int32 i = 0; i < manifold->pointCount; ++i) {
+            for (I32 i = 0; i < manifold->pointCount; ++i) {
                 b2Vec2 clipPoint = b2Mul(xfA, manifold->points[i].localPoint);
                 b2Vec2 cB = clipPoint + (radiusB - b2Dot(clipPoint - planePoint, normal)) * normal;
                 b2Vec2 cA = clipPoint - radiusA * normal;
@@ -9090,18 +9089,18 @@ void b2WorldManifold::Initialize(const b2Manifold *manifold, const b2Transform &
 void b2GetPointStates(b2PointState state1[b2_maxManifoldPoints],
                       b2PointState state2[b2_maxManifoldPoints], const b2Manifold *manifold1,
                       const b2Manifold *manifold2) {
-    for (int32 i = 0; i < b2_maxManifoldPoints; ++i) {
+    for (I32 i = 0; i < b2_maxManifoldPoints; ++i) {
         state1[i] = b2_nullState;
         state2[i] = b2_nullState;
     }
 
     // Detect persists and removes.
-    for (int32 i = 0; i < manifold1->pointCount; ++i) {
+    for (I32 i = 0; i < manifold1->pointCount; ++i) {
         b2ContactID id = manifold1->points[i].id;
 
         state1[i] = b2_removeState;
 
-        for (int32 j = 0; j < manifold2->pointCount; ++j) {
+        for (I32 j = 0; j < manifold2->pointCount; ++j) {
             if (manifold2->points[j].id.key == id.key) {
                 state1[i] = b2_persistState;
                 break;
@@ -9110,12 +9109,12 @@ void b2GetPointStates(b2PointState state1[b2_maxManifoldPoints],
     }
 
     // Detect persists and adds.
-    for (int32 i = 0; i < manifold2->pointCount; ++i) {
+    for (I32 i = 0; i < manifold2->pointCount; ++i) {
         b2ContactID id = manifold2->points[i].id;
 
         state2[i] = b2_addState;
 
-        for (int32 j = 0; j < manifold1->pointCount; ++j) {
+        for (I32 j = 0; j < manifold1->pointCount; ++j) {
             if (manifold1->points[j].id.key == id.key) {
                 state2[i] = b2_persistState;
                 break;
@@ -9135,7 +9134,7 @@ bool b2AABB::RayCast(b2RayCastOutput *output, const b2RayCastInput &input) const
 
     b2Vec2 normal;
 
-    for (int32 i = 0; i < 2; ++i) {
+    for (I32 i = 0; i < 2; ++i) {
         if (absD(i) < b2_epsilon) {
             // Parallel.
             if (p(i) < lowerBound(i) || upperBound(i) < p(i)) { return false; }
@@ -9177,10 +9176,10 @@ bool b2AABB::RayCast(b2RayCastOutput *output, const b2RayCastInput &input) const
 }
 
 // Sutherland-Hodgman clipping.
-int32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal,
-                          float offset, int32 vertexIndexA) {
+I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal,
+                        float offset, I32 vertexIndexA) {
     // Start with no output points
-    int32 count = 0;
+    I32 count = 0;
 
     // Calculate the distance of end points to the line
     float distance0 = b2Dot(normal, vIn[0].v) - offset;
@@ -9197,7 +9196,7 @@ int32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const
         vOut[count].v = vIn[0].v + interp * (vIn[1].v - vIn[0].v);
 
         // VertexA is hitting edgeB.
-        vOut[count].id.cf.indexA = static_cast<uint8>(vertexIndexA);
+        vOut[count].id.cf.indexA = static_cast<U8>(vertexIndexA);
         vOut[count].id.cf.indexB = vIn[0].id.cf.indexB;
         vOut[count].id.cf.typeA = b2ContactFeature::e_vertex;
         vOut[count].id.cf.typeB = b2ContactFeature::e_face;
@@ -9209,7 +9208,7 @@ int32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const
     return count;
 }
 
-bool b2TestOverlap(const b2Shape *shapeA, int32 indexA, const b2Shape *shapeB, int32 indexB,
+bool b2TestOverlap(const b2Shape *shapeA, I32 indexA, const b2Shape *shapeB, I32 indexB,
                    const b2Transform &xfA, const b2Transform &xfB) {
     b2DistanceInput input;
     input.proxyA.Set(shapeA, indexA);
@@ -9229,9 +9228,9 @@ bool b2TestOverlap(const b2Shape *shapeA, int32 indexA, const b2Shape *shapeB, i
 }
 
 // GJK using Voronoi regions (Christer Ericson) and Barycentric coordinates.
-int32 b2_gjkCalls, b2_gjkIters, b2_gjkMaxIters;
+I32 b2_gjkCalls, b2_gjkIters, b2_gjkMaxIters;
 
-void b2DistanceProxy::Set(const b2Shape *shape, int32 index) {
+void b2DistanceProxy::Set(const b2Shape *shape, I32 index) {
     switch (shape->GetType()) {
         case b2Shape::e_circle: {
             const b2CircleShape *circle = static_cast<const b2CircleShape *>(shape);
@@ -9275,7 +9274,7 @@ void b2DistanceProxy::Set(const b2Shape *shape, int32 index) {
     }
 }
 
-void b2DistanceProxy::Set(const b2Vec2 *vertices, int32 count, float radius) {
+void b2DistanceProxy::Set(const b2Vec2 *vertices, I32 count, float radius) {
     m_vertices = vertices;
     m_count = count;
     m_radius = radius;
@@ -9283,12 +9282,12 @@ void b2DistanceProxy::Set(const b2Vec2 *vertices, int32 count, float radius) {
 
 struct b2SimplexVertex
 {
-    b2Vec2 wA;   // support point in proxyA
-    b2Vec2 wB;   // support point in proxyB
-    b2Vec2 w;    // wB - wA
-    float a;     // barycentric coordinate for closest point
-    int32 indexA;// wA index
-    int32 indexB;// wB index
+    b2Vec2 wA; // support point in proxyA
+    b2Vec2 wB; // support point in proxyB
+    b2Vec2 w;  // wB - wA
+    float a;   // barycentric coordinate for closest point
+    I32 indexA;// wA index
+    I32 indexB;// wB index
 };
 
 struct b2Simplex
@@ -9301,7 +9300,7 @@ struct b2Simplex
         // Copy data from cache.
         m_count = cache->count;
         b2SimplexVertex *vertices = &m_v1;
-        for (int32 i = 0; i < m_count; ++i) {
+        for (I32 i = 0; i < m_count; ++i) {
             b2SimplexVertex *v = vertices + i;
             v->indexA = cache->indexA[i];
             v->indexB = cache->indexB[i];
@@ -9341,11 +9340,11 @@ struct b2Simplex
 
     void WriteCache(b2SimplexCache *cache) const {
         cache->metric = GetMetric();
-        cache->count = uint16(m_count);
+        cache->count = u16(m_count);
         const b2SimplexVertex *vertices = &m_v1;
-        for (int32 i = 0; i < m_count; ++i) {
-            cache->indexA[i] = uint8(vertices[i].indexA);
-            cache->indexB[i] = uint8(vertices[i].indexB);
+        for (I32 i = 0; i < m_count; ++i) {
+            cache->indexA[i] = U8(vertices[i].indexA);
+            cache->indexB[i] = U8(vertices[i].indexB);
         }
     }
 
@@ -9445,7 +9444,7 @@ struct b2Simplex
     void Solve3();
 
     b2SimplexVertex m_v1, m_v2, m_v3;
-    int32 m_count;
+    I32 m_count;
 };
 
 // Solve a line segment using barycentric coordinates.
@@ -9624,19 +9623,19 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
 
     // Get simplex vertices as an array.
     b2SimplexVertex *vertices = &simplex.m_v1;
-    const int32 k_maxIters = 20;
+    const I32 k_maxIters = 20;
 
     // These store the vertices of the last simplex so that we
     // can check for duplicates and prevent cycling.
-    int32 saveA[3], saveB[3];
-    int32 saveCount = 0;
+    I32 saveA[3], saveB[3];
+    I32 saveCount = 0;
 
     // Main iteration loop.
-    int32 iter = 0;
+    I32 iter = 0;
     while (iter < k_maxIters) {
         // Copy simplex so we can identify duplicates.
         saveCount = simplex.m_count;
-        for (int32 i = 0; i < saveCount; ++i) {
+        for (I32 i = 0; i < saveCount; ++i) {
             saveA[i] = vertices[i].indexA;
             saveB[i] = vertices[i].indexB;
         }
@@ -9688,7 +9687,7 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
 
         // Check for duplicate support points. This is the main termination criteria.
         bool duplicate = false;
-        for (int32 i = 0; i < saveCount; ++i) {
+        for (I32 i = 0; i < saveCount; ++i) {
             if (vertex->indexA == saveA[i] && vertex->indexB == saveB[i]) {
                 duplicate = true;
                 break;
@@ -9765,9 +9764,9 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
     b2SimplexVertex *vertices = &simplex.m_v1;
 
     // Get support point in -r direction
-    int32 indexA = proxyA->GetSupport(b2MulT(xfA.q, -r));
+    I32 indexA = proxyA->GetSupport(b2MulT(xfA.q, -r));
     b2Vec2 wA = b2Mul(xfA, proxyA->GetVertex(indexA));
-    int32 indexB = proxyB->GetSupport(b2MulT(xfB.q, r));
+    I32 indexB = proxyB->GetSupport(b2MulT(xfB.q, r));
     b2Vec2 wB = b2Mul(xfB, proxyB->GetVertex(indexB));
     b2Vec2 v = wA - wB;
 
@@ -9776,8 +9775,8 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
     const float tolerance = 0.5f * b2_linearSlop;
 
     // Main iteration loop.
-    const int32 k_maxIters = 20;
-    int32 iter = 0;
+    const I32 k_maxIters = 20;
+    I32 iter = 0;
     while (iter < k_maxIters && v.Length() - sigma > tolerance) {
         METADOT_ASSERT_E(simplex.m_count < 3);
 
@@ -9878,7 +9877,7 @@ b2DynamicTree::b2DynamicTree() {
     memset(m_nodes, 0, m_nodeCapacity * sizeof(b2TreeNode));
 
     // Build a linked list for the free list.
-    for (int32 i = 0; i < m_nodeCapacity - 1; ++i) {
+    for (I32 i = 0; i < m_nodeCapacity - 1; ++i) {
         m_nodes[i].next = i + 1;
         m_nodes[i].height = -1;
     }
@@ -9895,7 +9894,7 @@ b2DynamicTree::~b2DynamicTree() {
 }
 
 // Allocate a node from the pool. Grow the pool if necessary.
-int32 b2DynamicTree::AllocateNode() {
+I32 b2DynamicTree::AllocateNode() {
     // Expand the node pool as needed.
     if (m_freeList == b2_nullNode) {
         METADOT_ASSERT_E(m_nodeCount == m_nodeCapacity);
@@ -9909,7 +9908,7 @@ int32 b2DynamicTree::AllocateNode() {
 
         // Build a linked list for the free list. The parent
         // pointer becomes the "next" pointer.
-        for (int32 i = m_nodeCount; i < m_nodeCapacity - 1; ++i) {
+        for (I32 i = m_nodeCount; i < m_nodeCapacity - 1; ++i) {
             m_nodes[i].next = i + 1;
             m_nodes[i].height = -1;
         }
@@ -9919,7 +9918,7 @@ int32 b2DynamicTree::AllocateNode() {
     }
 
     // Peel a node off the free list.
-    int32 nodeId = m_freeList;
+    I32 nodeId = m_freeList;
     m_freeList = m_nodes[nodeId].next;
     m_nodes[nodeId].parent = b2_nullNode;
     m_nodes[nodeId].child1 = b2_nullNode;
@@ -9932,7 +9931,7 @@ int32 b2DynamicTree::AllocateNode() {
 }
 
 // Return a node to the pool.
-void b2DynamicTree::FreeNode(int32 nodeId) {
+void b2DynamicTree::FreeNode(I32 nodeId) {
     METADOT_ASSERT_E(0 <= nodeId && nodeId < m_nodeCapacity);
     METADOT_ASSERT_E(0 < m_nodeCount);
     m_nodes[nodeId].next = m_freeList;
@@ -9944,8 +9943,8 @@ void b2DynamicTree::FreeNode(int32 nodeId) {
 // Create a proxy in the tree as a leaf node. We return the index
 // of the node instead of a pointer so that we can grow
 // the node pool.
-int32 b2DynamicTree::CreateProxy(const b2AABB &aabb, void *userData) {
-    int32 proxyId = AllocateNode();
+I32 b2DynamicTree::CreateProxy(const b2AABB &aabb, void *userData) {
+    I32 proxyId = AllocateNode();
 
     // Fatten the aabb.
     b2Vec2 r(b2_aabbExtension, b2_aabbExtension);
@@ -9960,7 +9959,7 @@ int32 b2DynamicTree::CreateProxy(const b2AABB &aabb, void *userData) {
     return proxyId;
 }
 
-void b2DynamicTree::DestroyProxy(int32 proxyId) {
+void b2DynamicTree::DestroyProxy(I32 proxyId) {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     METADOT_ASSERT_E(m_nodes[proxyId].IsLeaf());
 
@@ -9968,7 +9967,7 @@ void b2DynamicTree::DestroyProxy(int32 proxyId) {
     FreeNode(proxyId);
 }
 
-bool b2DynamicTree::MoveProxy(int32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement) {
+bool b2DynamicTree::MoveProxy(I32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement) {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
 
     METADOT_ASSERT_E(m_nodes[proxyId].IsLeaf());
@@ -10023,7 +10022,7 @@ bool b2DynamicTree::MoveProxy(int32 proxyId, const b2AABB &aabb, const b2Vec2 &d
     return true;
 }
 
-void b2DynamicTree::InsertLeaf(int32 leaf) {
+void b2DynamicTree::InsertLeaf(I32 leaf) {
     ++m_insertionCount;
 
     if (m_root == b2_nullNode) {
@@ -10034,10 +10033,10 @@ void b2DynamicTree::InsertLeaf(int32 leaf) {
 
     // Find the best sibling for this node
     b2AABB leafAABB = m_nodes[leaf].aabb;
-    int32 index = m_root;
+    I32 index = m_root;
     while (m_nodes[index].IsLeaf() == false) {
-        int32 child1 = m_nodes[index].child1;
-        int32 child2 = m_nodes[index].child2;
+        I32 child1 = m_nodes[index].child1;
+        I32 child2 = m_nodes[index].child2;
 
         float area = m_nodes[index].aabb.GetPerimeter();
 
@@ -10090,11 +10089,11 @@ void b2DynamicTree::InsertLeaf(int32 leaf) {
         }
     }
 
-    int32 sibling = index;
+    I32 sibling = index;
 
     // Create a new parent.
-    int32 oldParent = m_nodes[sibling].parent;
-    int32 newParent = AllocateNode();
+    I32 oldParent = m_nodes[sibling].parent;
+    I32 newParent = AllocateNode();
     m_nodes[newParent].parent = oldParent;
     m_nodes[newParent].userData = nullptr;
     m_nodes[newParent].aabb.Combine(leafAABB, m_nodes[sibling].aabb);
@@ -10126,8 +10125,8 @@ void b2DynamicTree::InsertLeaf(int32 leaf) {
     while (index != b2_nullNode) {
         index = Balance(index);
 
-        int32 child1 = m_nodes[index].child1;
-        int32 child2 = m_nodes[index].child2;
+        I32 child1 = m_nodes[index].child1;
+        I32 child2 = m_nodes[index].child2;
 
         METADOT_ASSERT_E(child1 != b2_nullNode);
         METADOT_ASSERT_E(child2 != b2_nullNode);
@@ -10141,15 +10140,15 @@ void b2DynamicTree::InsertLeaf(int32 leaf) {
     //Validate();
 }
 
-void b2DynamicTree::RemoveLeaf(int32 leaf) {
+void b2DynamicTree::RemoveLeaf(I32 leaf) {
     if (leaf == m_root) {
         m_root = b2_nullNode;
         return;
     }
 
-    int32 parent = m_nodes[leaf].parent;
-    int32 grandParent = m_nodes[parent].parent;
-    int32 sibling;
+    I32 parent = m_nodes[leaf].parent;
+    I32 grandParent = m_nodes[parent].parent;
+    I32 sibling;
     if (m_nodes[parent].child1 == leaf) {
         sibling = m_nodes[parent].child2;
     } else {
@@ -10167,12 +10166,12 @@ void b2DynamicTree::RemoveLeaf(int32 leaf) {
         FreeNode(parent);
 
         // Adjust ancestor bounds.
-        int32 index = grandParent;
+        I32 index = grandParent;
         while (index != b2_nullNode) {
             index = Balance(index);
 
-            int32 child1 = m_nodes[index].child1;
-            int32 child2 = m_nodes[index].child2;
+            I32 child1 = m_nodes[index].child1;
+            I32 child2 = m_nodes[index].child2;
 
             m_nodes[index].aabb.Combine(m_nodes[child1].aabb, m_nodes[child2].aabb);
             m_nodes[index].height = 1 + b2Max(m_nodes[child1].height, m_nodes[child2].height);
@@ -10190,26 +10189,26 @@ void b2DynamicTree::RemoveLeaf(int32 leaf) {
 
 // Perform a left or right rotation if node A is imbalanced.
 // Returns the new root index.
-int32 b2DynamicTree::Balance(int32 iA) {
+I32 b2DynamicTree::Balance(I32 iA) {
     METADOT_ASSERT_E(iA != b2_nullNode);
 
     b2TreeNode *A = m_nodes + iA;
     if (A->IsLeaf() || A->height < 2) { return iA; }
 
-    int32 iB = A->child1;
-    int32 iC = A->child2;
+    I32 iB = A->child1;
+    I32 iC = A->child2;
     METADOT_ASSERT_E(0 <= iB && iB < m_nodeCapacity);
     METADOT_ASSERT_E(0 <= iC && iC < m_nodeCapacity);
 
     b2TreeNode *B = m_nodes + iB;
     b2TreeNode *C = m_nodes + iC;
 
-    int32 balance = C->height - B->height;
+    I32 balance = C->height - B->height;
 
     // Rotate C up
     if (balance > 1) {
-        int32 iF = C->child1;
-        int32 iG = C->child2;
+        I32 iF = C->child1;
+        I32 iG = C->child2;
         b2TreeNode *F = m_nodes + iF;
         b2TreeNode *G = m_nodes + iG;
         METADOT_ASSERT_E(0 <= iF && iF < m_nodeCapacity);
@@ -10258,8 +10257,8 @@ int32 b2DynamicTree::Balance(int32 iA) {
 
     // Rotate B up
     if (balance < -1) {
-        int32 iD = B->child1;
-        int32 iE = B->child2;
+        I32 iD = B->child1;
+        I32 iE = B->child2;
         b2TreeNode *D = m_nodes + iD;
         b2TreeNode *E = m_nodes + iE;
         METADOT_ASSERT_E(0 <= iD && iD < m_nodeCapacity);
@@ -10309,7 +10308,7 @@ int32 b2DynamicTree::Balance(int32 iA) {
     return iA;
 }
 
-int32 b2DynamicTree::GetHeight() const {
+I32 b2DynamicTree::GetHeight() const {
     if (m_root == b2_nullNode) { return 0; }
 
     return m_nodes[m_root].height;
@@ -10323,7 +10322,7 @@ float b2DynamicTree::GetAreaRatio() const {
     float rootArea = root->aabb.GetPerimeter();
 
     float totalArea = 0.0f;
-    for (int32 i = 0; i < m_nodeCapacity; ++i) {
+    for (I32 i = 0; i < m_nodeCapacity; ++i) {
         const b2TreeNode *node = m_nodes + i;
         if (node->height < 0) {
             // Free node in pool
@@ -10337,31 +10336,31 @@ float b2DynamicTree::GetAreaRatio() const {
 }
 
 // Compute the height of a sub-tree.
-int32 b2DynamicTree::ComputeHeight(int32 nodeId) const {
+I32 b2DynamicTree::ComputeHeight(I32 nodeId) const {
     METADOT_ASSERT_E(0 <= nodeId && nodeId < m_nodeCapacity);
     b2TreeNode *node = m_nodes + nodeId;
 
     if (node->IsLeaf()) { return 0; }
 
-    int32 height1 = ComputeHeight(node->child1);
-    int32 height2 = ComputeHeight(node->child2);
+    I32 height1 = ComputeHeight(node->child1);
+    I32 height2 = ComputeHeight(node->child2);
     return 1 + b2Max(height1, height2);
 }
 
-int32 b2DynamicTree::ComputeHeight() const {
-    int32 height = ComputeHeight(m_root);
+I32 b2DynamicTree::ComputeHeight() const {
+    I32 height = ComputeHeight(m_root);
     return height;
 }
 
-void b2DynamicTree::ValidateStructure(int32 index) const {
+void b2DynamicTree::ValidateStructure(I32 index) const {
     if (index == b2_nullNode) { return; }
 
     if (index == m_root) { METADOT_ASSERT_E(m_nodes[index].parent == b2_nullNode); }
 
     const b2TreeNode *node = m_nodes + index;
 
-    int32 child1 = node->child1;
-    int32 child2 = node->child2;
+    I32 child1 = node->child1;
+    I32 child2 = node->child2;
 
     if (node->IsLeaf()) {
         METADOT_ASSERT_E(child1 == b2_nullNode);
@@ -10380,13 +10379,13 @@ void b2DynamicTree::ValidateStructure(int32 index) const {
     ValidateStructure(child2);
 }
 
-void b2DynamicTree::ValidateMetrics(int32 index) const {
+void b2DynamicTree::ValidateMetrics(I32 index) const {
     if (index == b2_nullNode) { return; }
 
     const b2TreeNode *node = m_nodes + index;
 
-    int32 child1 = node->child1;
-    int32 child2 = node->child2;
+    I32 child1 = node->child1;
+    I32 child2 = node->child2;
 
     if (node->IsLeaf()) {
         METADOT_ASSERT_E(child1 == b2_nullNode);
@@ -10398,9 +10397,9 @@ void b2DynamicTree::ValidateMetrics(int32 index) const {
     METADOT_ASSERT_E(0 <= child1 && child1 < m_nodeCapacity);
     METADOT_ASSERT_E(0 <= child2 && child2 < m_nodeCapacity);
 
-    int32 height1 = m_nodes[child1].height;
-    int32 height2 = m_nodes[child2].height;
-    int32 height;
+    I32 height1 = m_nodes[child1].height;
+    I32 height2 = m_nodes[child2].height;
+    I32 height;
     height = 1 + b2Max(height1, height2);
     METADOT_ASSERT_E(node->height == height);
 
@@ -10419,8 +10418,8 @@ void b2DynamicTree::Validate() const {
     ValidateStructure(m_root);
     ValidateMetrics(m_root);
 
-    int32 freeCount = 0;
-    int32 freeIndex = m_freeList;
+    I32 freeCount = 0;
+    I32 freeIndex = m_freeList;
     while (freeIndex != b2_nullNode) {
         METADOT_ASSERT_E(0 <= freeIndex && freeIndex < m_nodeCapacity);
         freeIndex = m_nodes[freeIndex].next;
@@ -10433,17 +10432,17 @@ void b2DynamicTree::Validate() const {
 #endif
 }
 
-int32 b2DynamicTree::GetMaxBalance() const {
-    int32 maxBalance = 0;
-    for (int32 i = 0; i < m_nodeCapacity; ++i) {
+I32 b2DynamicTree::GetMaxBalance() const {
+    I32 maxBalance = 0;
+    for (I32 i = 0; i < m_nodeCapacity; ++i) {
         const b2TreeNode *node = m_nodes + i;
         if (node->height <= 1) { continue; }
 
         METADOT_ASSERT_E(node->IsLeaf() == false);
 
-        int32 child1 = node->child1;
-        int32 child2 = node->child2;
-        int32 balance = b2Abs(m_nodes[child2].height - m_nodes[child1].height);
+        I32 child1 = node->child1;
+        I32 child2 = node->child2;
+        I32 balance = b2Abs(m_nodes[child2].height - m_nodes[child1].height);
         maxBalance = b2Max(maxBalance, balance);
     }
 
@@ -10451,11 +10450,11 @@ int32 b2DynamicTree::GetMaxBalance() const {
 }
 
 void b2DynamicTree::RebuildBottomUp() {
-    int32 *nodes = (int32 *) b2Alloc(m_nodeCount * sizeof(int32));
-    int32 count = 0;
+    I32 *nodes = (I32 *) b2Alloc(m_nodeCount * sizeof(I32));
+    I32 count = 0;
 
     // Build array of leaves. Free the rest.
-    for (int32 i = 0; i < m_nodeCapacity; ++i) {
+    for (I32 i = 0; i < m_nodeCapacity; ++i) {
         if (m_nodes[i].height < 0) {
             // free node in pool
             continue;
@@ -10472,11 +10471,11 @@ void b2DynamicTree::RebuildBottomUp() {
 
     while (count > 1) {
         float minCost = b2_maxFloat;
-        int32 iMin = -1, jMin = -1;
-        for (int32 i = 0; i < count; ++i) {
+        I32 iMin = -1, jMin = -1;
+        for (I32 i = 0; i < count; ++i) {
             b2AABB aabbi = m_nodes[nodes[i]].aabb;
 
-            for (int32 j = i + 1; j < count; ++j) {
+            for (I32 j = i + 1; j < count; ++j) {
                 b2AABB aabbj = m_nodes[nodes[j]].aabb;
                 b2AABB b;
                 b.Combine(aabbi, aabbj);
@@ -10489,12 +10488,12 @@ void b2DynamicTree::RebuildBottomUp() {
             }
         }
 
-        int32 index1 = nodes[iMin];
-        int32 index2 = nodes[jMin];
+        I32 index1 = nodes[iMin];
+        I32 index2 = nodes[jMin];
         b2TreeNode *child1 = m_nodes + index1;
         b2TreeNode *child2 = m_nodes + index2;
 
-        int32 parentIndex = AllocateNode();
+        I32 parentIndex = AllocateNode();
         b2TreeNode *parent = m_nodes + parentIndex;
         parent->child1 = index1;
         parent->child2 = index2;
@@ -10518,7 +10517,7 @@ void b2DynamicTree::RebuildBottomUp() {
 
 void b2DynamicTree::ShiftOrigin(const b2Vec2 &newOrigin) {
     // Build array of leaves. Free the rest.
-    for (int32 i = 0; i < m_nodeCapacity; ++i) {
+    for (I32 i = 0; i < m_nodeCapacity; ++i) {
         m_nodes[i].aabb.lowerBound -= newOrigin;
         m_nodes[i].aabb.upperBound -= newOrigin;
     }
@@ -10546,7 +10545,7 @@ b2Shape *b2EdgeShape::Clone(b2BlockAllocator *allocator) const {
     return clone;
 }
 
-int32 b2EdgeShape::GetChildCount() const { return 1; }
+I32 b2EdgeShape::GetChildCount() const { return 1; }
 
 bool b2EdgeShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
     B2_NOT_USED(xf);
@@ -10559,7 +10558,7 @@ bool b2EdgeShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
 // p1 + t * d = v1 + s * e
 // s * e - t * d = p1 - v1
 bool b2EdgeShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                          const b2Transform &xf, int32 childIndex) const {
+                          const b2Transform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     // Put the ray into the edge's frame of reference.
@@ -10608,7 +10607,7 @@ bool b2EdgeShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
     return true;
 }
 
-void b2EdgeShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, int32 childIndex) const {
+void b2EdgeShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     b2Vec2 v1 = b2Mul(xf, m_vertex1);
@@ -10667,15 +10666,15 @@ void b2PolygonShape::SetAsBox(float hx, float hy, const b2Vec2 &center, float an
     xf.q.Set(angle);
 
     // Transform vertices and normals.
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         m_vertices[i] = b2Mul(xf, m_vertices[i]);
         m_normals[i] = b2Mul(xf.q, m_normals[i]);
     }
 }
 
-int32 b2PolygonShape::GetChildCount() const { return 1; }
+I32 b2PolygonShape::GetChildCount() const { return 1; }
 
-static b2Vec2 ComputeCentroid(const b2Vec2 *vs, int32 count) {
+static b2Vec2 ComputeCentroid(const b2Vec2 *vs, I32 count) {
     METADOT_ASSERT_E(count >= 3);
 
     b2Vec2 c(0.0f, 0.0f);
@@ -10687,7 +10686,7 @@ static b2Vec2 ComputeCentroid(const b2Vec2 *vs, int32 count) {
 
     const float inv3 = 1.0f / 3.0f;
 
-    for (int32 i = 0; i < count; ++i) {
+    for (I32 i = 0; i < count; ++i) {
         // Triangle vertices.
         b2Vec2 p1 = vs[0] - s;
         b2Vec2 p2 = vs[i] - s;
@@ -10711,23 +10710,23 @@ static b2Vec2 ComputeCentroid(const b2Vec2 *vs, int32 count) {
     return c;
 }
 
-void b2PolygonShape::Set(const b2Vec2 *vertices, int32 count) {
+void b2PolygonShape::Set(const b2Vec2 *vertices, I32 count) {
     METADOT_ASSERT_E(3 <= count && count <= b2_maxPolygonVertices);
     if (count < 3) {
         SetAsBox(1.0f, 1.0f);
         return;
     }
 
-    int32 n = b2Min(count, b2_maxPolygonVertices);
+    I32 n = b2Min(count, b2_maxPolygonVertices);
 
     // Perform welding and copy vertices into local buffer.
     b2Vec2 ps[b2_maxPolygonVertices];
-    int32 tempCount = 0;
-    for (int32 i = 0; i < n; ++i) {
+    I32 tempCount = 0;
+    for (I32 i = 0; i < n; ++i) {
         b2Vec2 v = vertices[i];
 
         bool unique = true;
-        for (int32 j = 0; j < tempCount; ++j) {
+        for (I32 j = 0; j < tempCount; ++j) {
             if (b2DistanceSquared(v, ps[j]) < ((0.5f * b2_linearSlop) * (0.5f * b2_linearSlop))) {
                 unique = false;
                 break;
@@ -10749,9 +10748,9 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, int32 count) {
     // http://en.wikipedia.org/wiki/Gift_wrapping_algorithm
 
     // Find the right most point on the hull
-    int32 i0 = 0;
+    I32 i0 = 0;
     float x0 = ps[0].x;
-    for (int32 i = 1; i < n; ++i) {
+    for (I32 i = 1; i < n; ++i) {
         float x = ps[i].x;
         if (x > x0 || (x == x0 && ps[i].y < ps[i0].y)) {
             i0 = i;
@@ -10759,16 +10758,16 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, int32 count) {
         }
     }
 
-    int32 hull[b2_maxPolygonVertices];
-    int32 m = 0;
-    int32 ih = i0;
+    I32 hull[b2_maxPolygonVertices];
+    I32 m = 0;
+    I32 ih = i0;
 
     for (;;) {
         METADOT_ASSERT_E(m < b2_maxPolygonVertices);
         hull[m] = ih;
 
-        int32 ie = 0;
-        for (int32 j = 1; j < n; ++j) {
+        I32 ie = 0;
+        for (I32 j = 1; j < n; ++j) {
             if (ie == ih) {
                 ie = j;
                 continue;
@@ -10799,12 +10798,12 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, int32 count) {
     m_count = m;
 
     // Copy vertices.
-    for (int32 i = 0; i < m; ++i) { m_vertices[i] = ps[hull[i]]; }
+    for (I32 i = 0; i < m; ++i) { m_vertices[i] = ps[hull[i]]; }
 
     // Compute normals. Ensure the edges have non-zero length.
-    for (int32 i = 0; i < m; ++i) {
-        int32 i1 = i;
-        int32 i2 = i + 1 < m ? i + 1 : 0;
+    for (I32 i = 0; i < m; ++i) {
+        I32 i1 = i;
+        I32 i2 = i + 1 < m ? i + 1 : 0;
         b2Vec2 edge = m_vertices[i2] - m_vertices[i1];
         METADOT_ASSERT_E(edge.LengthSquared() > b2_epsilon * b2_epsilon);
         m_normals[i] = b2Cross(edge, 1.0f);
@@ -10818,7 +10817,7 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, int32 count) {
 bool b2PolygonShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
     b2Vec2 pLocal = b2MulT(xf.q, p - xf.p);
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         float dot = b2Dot(m_normals[i], pLocal - m_vertices[i]);
         if (dot > 0.0f) { return false; }
     }
@@ -10827,7 +10826,7 @@ bool b2PolygonShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
 }
 
 bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                             const b2Transform &xf, int32 childIndex) const {
+                             const b2Transform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     // Put the ray into the polygon's frame of reference.
@@ -10837,9 +10836,9 @@ bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &inpu
 
     float lower = 0.0f, upper = input.maxFraction;
 
-    int32 index = -1;
+    I32 index = -1;
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         // p = p1 + a * d
         // dot(normal, p - v) = 0
         // dot(normal, p1 - v) + a * dot(normal, d) = 0
@@ -10883,13 +10882,13 @@ bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &inpu
     return false;
 }
 
-void b2PolygonShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, int32 childIndex) const {
+void b2PolygonShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     b2Vec2 lower = b2Mul(xf, m_vertices[0]);
     b2Vec2 upper = lower;
 
-    for (int32 i = 1; i < m_count; ++i) {
+    for (I32 i = 1; i < m_count; ++i) {
         b2Vec2 v = b2Mul(xf, m_vertices[i]);
         lower = b2Min(lower, v);
         upper = b2Max(upper, v);
@@ -10937,7 +10936,7 @@ void b2PolygonShape::ComputeMass(b2MassData *massData, float density) const {
 
     const float k_inv3 = 1.0f / 3.0f;
 
-    for (int32 i = 0; i < m_count; ++i) {
+    for (I32 i = 0; i < m_count; ++i) {
         // Triangle vertices.
         b2Vec2 e1 = m_vertices[i] - s;
         b2Vec2 e2 = i + 1 < m_count ? m_vertices[i + 1] - s : m_vertices[0] - s;
@@ -10976,13 +10975,13 @@ void b2PolygonShape::ComputeMass(b2MassData *massData, float density) const {
 }
 
 bool b2PolygonShape::Validate() const {
-    for (int32 i = 0; i < m_count; ++i) {
-        int32 i1 = i;
-        int32 i2 = i < m_count - 1 ? i1 + 1 : 0;
+    for (I32 i = 0; i < m_count; ++i) {
+        I32 i1 = i;
+        I32 i2 = i < m_count - 1 ? i1 + 1 : 0;
         b2Vec2 p = m_vertices[i1];
         b2Vec2 e = m_vertices[i2] - p;
 
-        for (int32 j = 0; j < m_count; ++j) {
+        for (I32 j = 0; j < m_count; ++j) {
             if (j == i1 || j == i2) { continue; }
 
             b2Vec2 v = m_vertices[j] - p;
@@ -10995,8 +10994,8 @@ bool b2PolygonShape::Validate() const {
 }
 
 float b2_toiTime, b2_toiMaxTime;
-int32 b2_toiCalls, b2_toiIters, b2_toiMaxIters;
-int32 b2_toiRootIters, b2_toiMaxRootIters;
+I32 b2_toiCalls, b2_toiIters, b2_toiMaxIters;
+I32 b2_toiRootIters, b2_toiMaxRootIters;
 
 //
 struct b2SeparationFunction
@@ -11014,7 +11013,7 @@ struct b2SeparationFunction
                      float t1) {
         m_proxyA = proxyA;
         m_proxyB = proxyB;
-        int32 count = cache->count;
+        I32 count = cache->count;
         METADOT_ASSERT_E(0 < count && count < 3);
 
         m_sweepA = sweepA;
@@ -11081,7 +11080,7 @@ struct b2SeparationFunction
     }
 
     //
-    float FindMinSeparation(int32 *indexA, int32 *indexB, float t) const {
+    float FindMinSeparation(I32 *indexA, I32 *indexB, float t) const {
         b2Transform xfA, xfB;
         m_sweepA.GetTransform(&xfA, t);
         m_sweepB.GetTransform(&xfB, t);
@@ -11145,7 +11144,7 @@ struct b2SeparationFunction
     }
 
     //
-    float Evaluate(int32 indexA, int32 indexB, float t) const {
+    float Evaluate(I32 indexA, I32 indexB, float t) const {
         b2Transform xfA, xfB;
         m_sweepA.GetTransform(&xfA, t);
         m_sweepB.GetTransform(&xfB, t);
@@ -11227,8 +11226,8 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
     METADOT_ASSERT_E(target > tolerance);
 
     float t1 = 0.0f;
-    const int32 k_maxIterations = 20;// TODO_ERIN b2Settings
-    int32 iter = 0;
+    const I32 k_maxIterations = 20;// TODO_ERIN b2Settings
+    I32 iter = 0;
 
     // Prepare input for distance query.
     b2SimplexCache cache;
@@ -11273,14 +11272,14 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
 #if 0
 		// Dump the curve seen by the root finder
 		{
-			const int32 N = 100;
+			const I32 N = 100;
 			float dx = 1.0f / N;
 			float xs[N+1];
 			float fs[N+1];
 
 			float x = 0.0f;
 
-			for (int32 i = 0; i <= N; ++i)
+			for (I32 i = 0; i <= N; ++i)
 			{
 				sweepA.GetTransform(&xfA, x);
 				sweepB.GetTransform(&xfB, x);
@@ -11300,10 +11299,10 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
         // resolving the deepest point. This loop is bounded by the number of vertices.
         bool done = false;
         float t2 = tMax;
-        int32 pushBackIter = 0;
+        I32 pushBackIter = 0;
         for (;;) {
             // Find the deepest point at t2. Store the witness point indices.
-            int32 indexA, indexB;
+            I32 indexA, indexB;
             float s2 = fcn.FindMinSeparation(&indexA, &indexB, t2);
 
             // Is the final configuration separated?
@@ -11344,7 +11343,7 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
             }
 
             // Compute 1D root of: f(x) - target = 0
-            int32 rootIterCount = 0;
+            I32 rootIterCount = 0;
             float a1 = t1, a2 = t2;
             for (;;) {
                 // Use a mix of the secant rule and bisection.

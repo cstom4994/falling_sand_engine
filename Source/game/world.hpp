@@ -168,7 +168,7 @@ public:
     void forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     void forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     RigidBody *physicsCheck(int x, int y);
-    void physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *cols, int *minX,
+    void physicsCheck_flood(int x, int y, bool *visited, int *count, U32 *cols, int *minX,
                             int *maxX, int *minY, int *maxY);
     void saveWorld();
 };

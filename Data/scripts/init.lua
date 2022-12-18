@@ -4,10 +4,12 @@
 --     test.load_script("data/scripts/biomes.js");
 -- }
 
-OnGameEngineLoad = function()
-    textures_init()
-    materials_init()
+require("game_datastruct")
+require("game_ui")
 
+OnGameEngineLoad = function()
+
+    runf("Script:graphics.lua")
     runf("Script:audio.lua")
 
     controls_init()

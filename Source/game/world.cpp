@@ -205,7 +205,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle,
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                uint32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
+                U32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = Tiles::create(rand() % 250 == -1 ? &Materials::FIRE
                                                                              : &Materials::OBSIDIAN,
@@ -265,7 +265,7 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float an
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                uint32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
+                U32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = Tiles::create(rand() % 250 == -1 ? &Materials::FIRE
                                                                              : &Materials::OBSIDIAN,
@@ -2388,8 +2388,8 @@ void World::tickObjects() {
 
     float timeStep = 33.0 / 1000.0;
 
-    int32 velocityIterations = 5;
-    int32 positionIterations = 2;
+    I32 velocityIterations = 5;
+    I32 positionIterations = 2;
 
     for (auto &cur: WorldIsolate_.entities) {
         cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5,
@@ -3472,9 +3472,9 @@ RigidBody *World::physicsCheck(int x, int y) {
 
     memset(visited, false, (size_t) width * height);
 
-    static uint32 *cols = new uint32[width * height];
+    static U32 *cols = new U32[width * height];
 
-    memset(cols, 0x00, (size_t) width * height * sizeof(uint32));// init to all 0s
+    memset(cols, 0x00, (size_t) width * height * sizeof(U32));// init to all 0s
 
     int count = 0;
     int minX = width;
@@ -3547,7 +3547,7 @@ RigidBody *World::physicsCheck(int x, int y) {
 }
 
 // Helper for World::physicsCheck that does the 4-way recursive flood fill
-void World::physicsCheck_flood(int x, int y, bool *visited, int *count, uint32 *cols, int *minX,
+void World::physicsCheck_flood(int x, int y, bool *visited, int *count, U32 *cols, int *minX,
                                int *maxX, int *minY, int *maxY) {
     if (*count > 1000 || x < 0 || x >= width || y < 0 || y >= height) return;
     if (!visited[x + y * width] && getTile(x, y).mat->physicsType == PhysicsType::SOLID) {

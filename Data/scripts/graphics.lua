@@ -1,6 +1,6 @@
 -- Copyright(c) 2022, KaoruXun All rights reserved.
 
--- test.textures_init();
+textures_init();
 
 -- var textures_pack = {
 --     "testTexture": { "path": "data/assets/textures/test.png" },
@@ -29,4 +29,9 @@
 --     test.textures_load(t, path);
 -- }
 
--- test.materials_init();
+materials_init();
+
+logoSfc = texture_load_data("data/assets/ui/logo.png")
+title = R_CopyImageFromSurface(logoSfc)
+R_SetImageFilter(title, 0)
+SDL_FreeSurface(logoSfc)

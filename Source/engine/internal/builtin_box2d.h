@@ -31,19 +31,12 @@ SOFTWARE.
 
 // These include files constitute the main Box2D API
 
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-
 #pragma region COMMON
 
 #include "core/core.h"
 
-#include <math.h>
 #include <float.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -142,9 +135,9 @@ void b2CloseDump();
 /// See http://en.wikipedia.org/wiki/Software_versioning
 struct b2Version
 {
-    int32 major;   ///< significant changes
-    int32 minor;   ///< incremental changes
-    int32 revision;///< bug fixes
+    I32 major;   ///< significant changes
+    I32 minor;   ///< incremental changes
+    I32 revision;///< bug fixes
 };
 
 /// Current version.
@@ -212,11 +205,11 @@ struct b2JointUserData
 // Memory Allocation
 
 /// Default allocation functions
-void *b2Alloc_Default(int32 size);
+void *b2Alloc_Default(I32 size);
 void b2Free_Default(void *mem);
 
 /// Implement this function to use your own memory allocator.
-inline void *b2Alloc(int32 size) { return b2Alloc_Default(size); }
+inline void *b2Alloc(I32 size) { return b2Alloc_Default(size); }
 
 /// If you implement b2Alloc, you should also implement this function.
 inline void b2Free(void *mem) { b2Free_Default(mem); }
@@ -234,7 +227,7 @@ inline void b2Log(const char *string, ...) {
 
 #endif// B2_USER_SETTINGS
 
-const int32 b2_blockSizeCount = 14;
+const I32 b2_blockSizeCount = 14;
 
 struct b2Block;
 struct b2Chunk;
@@ -248,17 +241,17 @@ public:
     ~b2BlockAllocator();
 
     /// Allocate memory. This will use b2Alloc if the size is larger than b2_maxBlockSize.
-    void *Allocate(int32 size);
+    void *Allocate(I32 size);
 
     /// Free memory. This will use b2Free if the size is larger than b2_maxBlockSize.
-    void Free(void *p, int32 size);
+    void Free(void *p, I32 size);
 
     void Clear();
 
 private:
     b2Chunk *m_chunks;
-    int32 m_chunkCount;
-    int32 m_chunkSpace;
+    I32 m_chunkCount;
+    I32 m_chunkSpace;
 
     b2Block *m_freeLists[b2_blockSizeCount];
 };
@@ -300,10 +293,10 @@ struct b2Vec2
     }
 
     /// Read from and indexed element.
-    float operator()(int32 i) const { return (&x)[i]; }
+    float operator()(I32 i) const { return (&x)[i]; }
 
     /// Write to an indexed element.
-    float &operator()(int32 i) { return (&x)[i]; }
+    float &operator()(I32 i) { return (&x)[i]; }
 
     /// Add a vector to this vector.
     void operator+=(const b2Vec2 &v) {
@@ -819,7 +812,7 @@ inline void b2Swap(T &a, T &b) {
 /// that recursively "folds" the upper bits into the lower bits. This process yields a bit vector with
 /// the same most significant 1 as x, but all 1's below it. Adding 1 to that value yields the next
 /// largest power of 2. For a 32-bit value:"
-inline uint32 b2NextPowerOfTwo(uint32 x) {
+inline U32 b2NextPowerOfTwo(U32 x) {
     x |= (x >> 1);
     x |= (x >> 2);
     x |= (x >> 4);
@@ -828,7 +821,7 @@ inline uint32 b2NextPowerOfTwo(uint32 x) {
     return x + 1;
 }
 
-inline bool b2IsPowerOfTwo(uint32 x) {
+inline bool b2IsPowerOfTwo(U32 x) {
     bool result = x > 0 && (x & (x - 1)) == 0;
     return result;
 }
@@ -1064,7 +1057,7 @@ protected:
     b2Body *m_bodyA;
     b2Body *m_bodyB;
 
-    int32 m_index;
+    I32 m_index;
 
     bool m_islandFlag;
     bool m_collideConnected;
@@ -1103,7 +1096,7 @@ class b2CircleShape;
 class b2EdgeShape;
 class b2PolygonShape;
 
-const uint8 b2_nullFeature = UCHAR_MAX;
+const U8 b2_nullFeature = UCHAR_MAX;
 
 /// The features that intersect to form the contact point
 /// This must be 4 bytes or less.
@@ -1114,16 +1107,16 @@ struct b2ContactFeature
         e_face = 1
     };
 
-    uint8 indexA;///< Feature index on shapeA
-    uint8 indexB;///< Feature index on shapeB
-    uint8 typeA; ///< The feature type on shapeA
-    uint8 typeB; ///< The feature type on shapeB
+    U8 indexA;///< Feature index on shapeA
+    U8 indexB;///< Feature index on shapeB
+    U8 typeA; ///< The feature type on shapeA
+    U8 typeB; ///< The feature type on shapeB
 };
 
 /// Contact ids to facilitate warm starting.
 union b2ContactID {
     b2ContactFeature cf;
-    uint32 key;///< Used to quickly compare contact ids.
+    U32 key;///< Used to quickly compare contact ids.
 };
 
 /// A manifold point is a contact point belonging to a contact
@@ -1172,7 +1165,7 @@ struct b2Manifold
     b2Vec2 localNormal;                          ///< not use for Type::e_points
     b2Vec2 localPoint;                           ///< usage depends on manifold type
     Type type;
-    int32 pointCount;///< the number of manifold points
+    I32 pointCount;///< the number of manifold points
 };
 
 /// This is used to compute the current state of a contact manifold.
@@ -1296,11 +1289,11 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
                              const b2PolygonShape *circleB, const b2Transform &xfB);
 
 /// Clipping for contact manifolds.
-int32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal,
-                          float offset, int32 vertexIndexA);
+I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal,
+                        float offset, I32 vertexIndexA);
 
 /// Determine if two generic shapes overlap.
-bool b2TestOverlap(const b2Shape *shapeA, int32 indexA, const b2Shape *shapeB, int32 indexB,
+bool b2TestOverlap(const b2Shape *shapeA, I32 indexA, const b2Shape *shapeB, I32 indexB,
                    const b2Transform &xfA, const b2Transform &xfB);
 
 // ---------------- Inline Functions ------------------------------------------
@@ -1366,7 +1359,7 @@ public:
     Type GetType() const;
 
     /// Get the number of child primitives.
-    virtual int32 GetChildCount() const = 0;
+    virtual I32 GetChildCount() const = 0;
 
     /// Test a point for containment in this shape. This only works for convex shapes.
     /// @param xf the shape world transform.
@@ -1379,13 +1372,13 @@ public:
     /// @param transform the transform to be applied to the shape.
     /// @param childIndex the child shape index
     virtual bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                         const b2Transform &transform, int32 childIndex) const = 0;
+                         const b2Transform &transform, I32 childIndex) const = 0;
 
     /// Given a transform, compute the associated axis aligned bounding box for a child shape.
     /// @param aabb returns the axis aligned box.
     /// @param xf the world transform of the shape.
     /// @param childIndex the child shape
-    virtual void ComputeAABB(b2AABB *aabb, const b2Transform &xf, int32 childIndex) const = 0;
+    virtual void ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const = 0;
 
     /// Compute the mass properties of this shape using its dimensions and density.
     /// The inertia tensor is computed about the local origin.
@@ -1805,9 +1798,9 @@ private:
 
     b2BodyType m_type;
 
-    uint16 m_flags;
+    U16 m_flags;
 
-    int32 m_islandIndex;
+    I32 m_islandIndex;
 
     b2Transform m_xf;// the body origin transform
     b2Sweep m_sweep; // the swept motion for CCD
@@ -1823,7 +1816,7 @@ private:
     b2Body *m_next;
 
     b2Fixture *m_fixtureList;
-    int32 m_fixtureCount;
+    I32 m_fixtureCount;
 
     b2JointEdge *m_jointList;
     b2ContactEdge *m_contactList;
@@ -2088,16 +2081,16 @@ struct b2Filter
     }
 
     /// The collision category bits. Normally you would just set one bit.
-    uint16 categoryBits;
+    U16 categoryBits;
 
     /// The collision mask bits. This states the categories that this
     /// shape would accept for collision.
-    uint16 maskBits;
+    U16 maskBits;
 
     /// Collision groups allow a certain group of objects to never collide (negative)
     /// or always collide (positive). Zero means no collision group. Non-zero group
     /// filtering always wins against the mask bits.
-    int16 groupIndex;
+    I16 groupIndex;
 };
 
 /// A fixture definition is used to create a fixture. This class defines an
@@ -2147,8 +2140,8 @@ struct b2FixtureProxy
 {
     b2AABB aabb;
     b2Fixture *fixture;
-    int32 childIndex;
-    int32 proxyId;
+    I32 childIndex;
+    I32 proxyId;
 };
 
 /// A fixture is used to attach a shape to a body for collision detection. A fixture
@@ -2209,7 +2202,7 @@ public:
     /// @param output the ray-cast results.
     /// @param input the ray-cast input parameters.
     /// @param childIndex the child shape index (e.g. edge index)
-    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, int32 childIndex) const;
+    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, I32 childIndex) const;
 
     /// Get the mass data for this fixture. The mass data is based on the density and
     /// the shape. The rotational inertia is about the shape's origin. This operation
@@ -2247,10 +2240,10 @@ public:
     /// Get the fixture's AABB. This AABB may be enlarge and/or stale.
     /// If you need a more accurate AABB, compute it using the shape and
     /// the body transform.
-    const b2AABB &GetAABB(int32 childIndex) const;
+    const b2AABB &GetAABB(I32 childIndex) const;
 
     /// Dump this fixture to the log file.
-    void Dump(int32 bodyIndex);
+    void Dump(I32 bodyIndex);
 
 protected:
     friend class b2Body;
@@ -2283,7 +2276,7 @@ protected:
     float m_restitutionThreshold;
 
     b2FixtureProxy *m_proxies;
-    int32 m_proxyCount;
+    I32 m_proxyCount;
 
     b2Filter m_filter;
 
@@ -2340,7 +2333,7 @@ inline bool b2Fixture::TestPoint(const b2Vec2 &p) const {
 }
 
 inline bool b2Fixture::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                               int32 childIndex) const {
+                               I32 childIndex) const {
     return m_shape->RayCast(output, input, m_body->GetTransform(), childIndex);
 }
 
@@ -2348,7 +2341,7 @@ inline void b2Fixture::GetMassData(b2MassData *massData) const {
     m_shape->ComputeMass(massData, m_density);
 }
 
-inline const b2AABB &b2Fixture::GetAABB(int32 childIndex) const {
+inline const b2AABB &b2Fixture::GetAABB(I32 childIndex) const {
     METADOT_ASSERT_E(0 <= childIndex && childIndex < m_proxyCount);
     return m_proxies[childIndex].aabb;
 }
@@ -2382,8 +2375,8 @@ inline float b2MixRestitutionThreshold(float threshold1, float threshold2) {
     return threshold1 < threshold2 ? threshold1 : threshold2;
 }
 
-typedef b2Contact *b2ContactCreateFcn(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB,
-                                      int32 indexB, b2BlockAllocator *allocator);
+typedef b2Contact *b2ContactCreateFcn(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB,
+                                      I32 indexB, b2BlockAllocator *allocator);
 typedef void b2ContactDestroyFcn(b2Contact *contact, b2BlockAllocator *allocator);
 
 struct b2ContactRegister
@@ -2439,14 +2432,14 @@ public:
     const b2Fixture *GetFixtureA() const;
 
     /// Get the child primitive index for fixture A.
-    int32 GetChildIndexA() const;
+    I32 GetChildIndexA() const;
 
     /// Get fixture B in this contact.
     b2Fixture *GetFixtureB();
     const b2Fixture *GetFixtureB() const;
 
     /// Get the child primitive index for fixture B.
-    int32 GetChildIndexB() const;
+    I32 GetChildIndexB() const;
 
     /// Override the default friction mixture. You can call this in b2ContactListener::PreSolve.
     /// This value persists until set or reset.
@@ -2521,14 +2514,14 @@ protected:
     static void AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *destroyFcn,
                         b2Shape::Type typeA, b2Shape::Type typeB);
     static void InitializeRegisters();
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2Shape::Type typeA, b2Shape::Type typeB,
                         b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2Contact() : m_fixtureA(nullptr), m_fixtureB(nullptr) {}
-    b2Contact(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB);
+    b2Contact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB);
     virtual ~b2Contact() {}
 
     void Update(b2ContactListener *listener);
@@ -2536,7 +2529,7 @@ protected:
     static b2ContactRegister s_registers[b2Shape::e_typeCount][b2Shape::e_typeCount];
     static bool s_initialized;
 
-    uint32 m_flags;
+    U32 m_flags;
 
     // World pool and list pointers.
     b2Contact *m_prev;
@@ -2549,12 +2542,12 @@ protected:
     b2Fixture *m_fixtureA;
     b2Fixture *m_fixtureB;
 
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
 
     b2Manifold m_manifold;
 
-    int32 m_toiCount;
+    I32 m_toiCount;
     float m_toi;
 
     float m_friction;
@@ -2600,11 +2593,11 @@ inline const b2Fixture *b2Contact::GetFixtureA() const { return m_fixtureA; }
 
 inline b2Fixture *b2Contact::GetFixtureB() { return m_fixtureB; }
 
-inline int32 b2Contact::GetChildIndexA() const { return m_indexA; }
+inline I32 b2Contact::GetChildIndexA() const { return m_indexA; }
 
 inline const b2Fixture *b2Contact::GetFixtureB() const { return m_fixtureB; }
 
-inline int32 b2Contact::GetChildIndexB() const { return m_indexB; }
+inline I32 b2Contact::GetChildIndexB() const { return m_indexB; }
 
 inline void b2Contact::FlagForFiltering() { m_flags |= e_filterFlag; }
 
@@ -2769,8 +2762,8 @@ protected:
     float m_upperImpulse;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_u;
     b2Vec2 m_rA;
     b2Vec2 m_rB;
@@ -2867,8 +2860,8 @@ protected:
     float m_maxTorque;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_rA;
     b2Vec2 m_rB;
     b2Vec2 m_localCenterA;
@@ -2976,7 +2969,7 @@ protected:
     float m_impulse;
 
     // Solver temp
-    int32 m_indexA, m_indexB, m_indexC, m_indexD;
+    I32 m_indexA, m_indexB, m_indexC, m_indexD;
     b2Vec2 m_lcA, m_lcB, m_lcC, m_lcD;
     float m_mA, m_mB, m_mC, m_mD;
     float m_iA, m_iB, m_iC, m_iD;
@@ -3079,8 +3072,8 @@ protected:
     float m_correctionFactor;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_rA;
     b2Vec2 m_rB;
     b2Vec2 m_localCenterA;
@@ -3191,8 +3184,8 @@ protected:
     float m_gamma;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_rB;
     b2Vec2 m_localCenterB;
     float m_invMassB;
@@ -3358,8 +3351,8 @@ protected:
     bool m_enableMotor;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_localCenterA;
     b2Vec2 m_localCenterB;
     float m_invMassA;
@@ -3489,8 +3482,8 @@ protected:
     float m_impulse;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_uA;
     b2Vec2 m_uB;
     b2Vec2 m_rA;
@@ -3667,8 +3660,8 @@ protected:
     float m_upperAngle;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_rA;
     b2Vec2 m_rB;
     b2Vec2 m_localCenterA;
@@ -3776,8 +3769,8 @@ protected:
     b2Vec3 m_impulse;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_rA;
     b2Vec2 m_rB;
     b2Vec2 m_localCenterA;
@@ -3968,8 +3961,8 @@ protected:
     float m_damping;
 
     // Solver temp
-    int32 m_indexA;
-    int32 m_indexB;
+    I32 m_indexA;
+    I32 m_indexB;
     b2Vec2 m_localCenterA;
     b2Vec2 m_localCenterB;
     float m_invMassA;
@@ -4018,24 +4011,24 @@ public:
     /// Create a loop. This automatically adjusts connectivity.
     /// @param vertices an array of vertices, these are copied
     /// @param count the vertex count
-    void CreateLoop(const b2Vec2 *vertices, int32 count);
+    void CreateLoop(const b2Vec2 *vertices, I32 count);
 
     /// Create a chain with ghost vertices to connect multiple chains together.
     /// @param vertices an array of vertices, these are copied
     /// @param count the vertex count
     /// @param prevVertex previous vertex from chain that connects to the start
     /// @param nextVertex next vertex from chain that connects to the end
-    void CreateChain(const b2Vec2 *vertices, int32 count, const b2Vec2 &prevVertex,
+    void CreateChain(const b2Vec2 *vertices, I32 count, const b2Vec2 &prevVertex,
                      const b2Vec2 &nextVertex);
 
     /// Implement b2Shape. Vertices are cloned using b2Alloc.
     b2Shape *Clone(b2BlockAllocator *allocator) const override;
 
     /// @see b2Shape::GetChildCount
-    int32 GetChildCount() const override;
+    I32 GetChildCount() const override;
 
     /// Get a child edge.
-    void GetChildEdge(b2EdgeShape *edge, int32 index) const;
+    void GetChildEdge(b2EdgeShape *edge, I32 index) const;
 
     /// This always return false.
     /// @see b2Shape::TestPoint
@@ -4043,10 +4036,10 @@ public:
 
     /// Implement b2Shape.
     bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 int32 childIndex) const override;
+                 I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
-    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, int32 childIndex) const override;
+    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
 
     /// Chains have zero mass.
     /// @see b2Shape::ComputeMass
@@ -4056,7 +4049,7 @@ public:
     b2Vec2 *m_vertices;
 
     /// The vertex count.
-    int32 m_count;
+    I32 m_count;
 
     b2Vec2 m_prevVertex, m_nextVertex;
 };
@@ -4081,7 +4074,7 @@ public:
     b2Shape *Clone(b2BlockAllocator *allocator) const override;
 
     /// @see b2Shape::GetChildCount
-    int32 GetChildCount() const override;
+    I32 GetChildCount() const override;
 
     /// Implement b2Shape.
     bool TestPoint(const b2Transform &transform, const b2Vec2 &p) const override;
@@ -4090,10 +4083,10 @@ public:
     /// @note because the circle is solid, rays that start inside do not hit because the normal is
     /// not defined.
     bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 int32 childIndex) const override;
+                 I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
-    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, int32 childIndex) const override;
+    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData *massData, float density) const override;
@@ -4132,17 +4125,17 @@ public:
     b2Shape *Clone(b2BlockAllocator *allocator) const override;
 
     /// @see b2Shape::GetChildCount
-    int32 GetChildCount() const override;
+    I32 GetChildCount() const override;
 
     /// @see b2Shape::TestPoint
     bool TestPoint(const b2Transform &transform, const b2Vec2 &p) const override;
 
     /// Implement b2Shape.
     bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 int32 childIndex) const override;
+                 I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
-    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, int32 childIndex) const override;
+    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData *massData, float density) const override;
@@ -4183,14 +4176,14 @@ public:
     b2Shape *Clone(b2BlockAllocator *allocator) const override;
 
     /// @see b2Shape::GetChildCount
-    int32 GetChildCount() const override;
+    I32 GetChildCount() const override;
 
     /// Create a convex hull from the given array of local points.
     /// The count must be in the range [3, b2_maxPolygonVertices].
     /// @warning the points may be re-ordered, even if they form a convex polygon
     /// @warning collinear points are handled but not removed. Collinear points
     /// may lead to poor stacking behavior.
-    void Set(const b2Vec2 *points, int32 count);
+    void Set(const b2Vec2 *points, I32 count);
 
     /// Build vertices to represent an axis-aligned box centered on the local origin.
     /// @param hx the half-width.
@@ -4211,10 +4204,10 @@ public:
     /// @note because the polygon is solid, rays that start inside do not hit because the normal is
     /// not defined.
     bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 int32 childIndex) const override;
+                 I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
-    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, int32 childIndex) const override;
+    void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData *massData, float density) const override;
@@ -4226,7 +4219,7 @@ public:
     b2Vec2 m_centroid;
     b2Vec2 m_vertices[b2_maxPolygonVertices];
     b2Vec2 m_normals[b2_maxPolygonVertices];
-    int32 m_count;
+    I32 m_count;
 };
 
 inline b2PolygonShape::b2PolygonShape() {
@@ -4244,7 +4237,7 @@ inline b2PolygonShape::b2PolygonShape() {
 /// This is a growable LIFO stack with an initial capacity of N.
 /// If the stack size exceeds the initial capacity, the heap is used
 /// to increase the size of the stack.
-template<typename T, int32 N>
+template<typename T, I32 N>
 class b2GrowableStack {
 public:
     b2GrowableStack() {
@@ -4279,13 +4272,13 @@ public:
         return m_stack[m_count];
     }
 
-    int32 GetCount() { return m_count; }
+    I32 GetCount() { return m_count; }
 
 private:
     T *m_stack;
     T m_array[N];
-    int32 m_count;
-    int32 m_capacity;
+    I32 m_count;
+    I32 m_capacity;
 };
 
 #pragma endregion
@@ -4305,15 +4298,15 @@ struct b2TreeNode
     void *userData;
 
     union {
-        int32 parent;
-        int32 next;
+        I32 parent;
+        I32 next;
     };
 
-    int32 child1;
-    int32 child2;
+    I32 child1;
+    I32 child2;
 
     // leaf = 0, free node = -1
-    int32 height;
+    I32 height;
 
     bool moved;
 };
@@ -4335,26 +4328,26 @@ public:
     ~b2DynamicTree();
 
     /// Create a proxy. Provide a tight fitting AABB and a userData pointer.
-    int32 CreateProxy(const b2AABB &aabb, void *userData);
+    I32 CreateProxy(const b2AABB &aabb, void *userData);
 
     /// Destroy a proxy. This asserts if the id is invalid.
-    void DestroyProxy(int32 proxyId);
+    void DestroyProxy(I32 proxyId);
 
     /// Move a proxy with a swepted AABB. If the proxy has moved outside of its fattened AABB,
     /// then the proxy is removed from the tree and re-inserted. Otherwise
     /// the function returns immediately.
     /// @return true if the proxy was re-inserted.
-    bool MoveProxy(int32 proxyId, const b2AABB &aabb1, const b2Vec2 &displacement);
+    bool MoveProxy(I32 proxyId, const b2AABB &aabb1, const b2Vec2 &displacement);
 
     /// Get proxy user data.
     /// @return the proxy user data or 0 if the id is invalid.
-    void *GetUserData(int32 proxyId) const;
+    void *GetUserData(I32 proxyId) const;
 
-    bool WasMoved(int32 proxyId) const;
-    void ClearMoved(int32 proxyId);
+    bool WasMoved(I32 proxyId) const;
+    void ClearMoved(I32 proxyId);
 
     /// Get the fat AABB for a proxy.
-    const b2AABB &GetFatAABB(int32 proxyId) const;
+    const b2AABB &GetFatAABB(I32 proxyId) const;
 
     /// Query an AABB for overlapping proxies. The callback class
     /// is called for each proxy that overlaps the supplied AABB.
@@ -4376,11 +4369,11 @@ public:
 
     /// Compute the height of the binary tree in O(N) time. Should not be
     /// called often.
-    int32 GetHeight() const;
+    I32 GetHeight() const;
 
     /// Get the maximum balance of an node in the tree. The balance is the difference
     /// in height of the two children of a node.
-    int32 GetMaxBalance() const;
+    I32 GetMaxBalance() const;
 
     /// Get the ratio of the sum of the node areas to the root area.
     float GetAreaRatio() const;
@@ -4394,58 +4387,58 @@ public:
     void ShiftOrigin(const b2Vec2 &newOrigin);
 
 private:
-    int32 AllocateNode();
-    void FreeNode(int32 node);
+    I32 AllocateNode();
+    void FreeNode(I32 node);
 
-    void InsertLeaf(int32 node);
-    void RemoveLeaf(int32 node);
+    void InsertLeaf(I32 node);
+    void RemoveLeaf(I32 node);
 
-    int32 Balance(int32 index);
+    I32 Balance(I32 index);
 
-    int32 ComputeHeight() const;
-    int32 ComputeHeight(int32 nodeId) const;
+    I32 ComputeHeight() const;
+    I32 ComputeHeight(I32 nodeId) const;
 
-    void ValidateStructure(int32 index) const;
-    void ValidateMetrics(int32 index) const;
+    void ValidateStructure(I32 index) const;
+    void ValidateMetrics(I32 index) const;
 
-    int32 m_root;
+    I32 m_root;
 
     b2TreeNode *m_nodes;
-    int32 m_nodeCount;
-    int32 m_nodeCapacity;
+    I32 m_nodeCount;
+    I32 m_nodeCapacity;
 
-    int32 m_freeList;
+    I32 m_freeList;
 
-    int32 m_insertionCount;
+    I32 m_insertionCount;
 };
 
-inline void *b2DynamicTree::GetUserData(int32 proxyId) const {
+inline void *b2DynamicTree::GetUserData(I32 proxyId) const {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].userData;
 }
 
-inline bool b2DynamicTree::WasMoved(int32 proxyId) const {
+inline bool b2DynamicTree::WasMoved(I32 proxyId) const {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].moved;
 }
 
-inline void b2DynamicTree::ClearMoved(int32 proxyId) {
+inline void b2DynamicTree::ClearMoved(I32 proxyId) {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     m_nodes[proxyId].moved = false;
 }
 
-inline const b2AABB &b2DynamicTree::GetFatAABB(int32 proxyId) const {
+inline const b2AABB &b2DynamicTree::GetFatAABB(I32 proxyId) const {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].aabb;
 }
 
 template<typename T>
 inline void b2DynamicTree::Query(T *callback, const b2AABB &aabb) const {
-    b2GrowableStack<int32, 256> stack;
+    b2GrowableStack<I32, 256> stack;
     stack.Push(m_root);
 
     while (stack.GetCount() > 0) {
-        int32 nodeId = stack.Pop();
+        I32 nodeId = stack.Pop();
         if (nodeId == b2_nullNode) { continue; }
 
         const b2TreeNode *node = m_nodes + nodeId;
@@ -4487,11 +4480,11 @@ inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) con
         segmentAABB.upperBound = b2Max(p1, t);
     }
 
-    b2GrowableStack<int32, 256> stack;
+    b2GrowableStack<I32, 256> stack;
     stack.Push(m_root);
 
     while (stack.GetCount() > 0) {
-        int32 nodeId = stack.Pop();
+        I32 nodeId = stack.Pop();
         if (nodeId == b2_nullNode) { continue; }
 
         const b2TreeNode *node = m_nodes + nodeId;
@@ -4538,8 +4531,8 @@ inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) con
 
 struct b2Pair
 {
-    int32 proxyIdA;
-    int32 proxyIdB;
+    I32 proxyIdA;
+    I32 proxyIdB;
 };
 
 /// The broad-phase is used for computing pairs and performing volume queries and ray casts.
@@ -4556,29 +4549,29 @@ public:
 
     /// Create a proxy with an initial AABB. Pairs are not reported until
     /// UpdatePairs is called.
-    int32 CreateProxy(const b2AABB &aabb, void *userData);
+    I32 CreateProxy(const b2AABB &aabb, void *userData);
 
     /// Destroy a proxy. It is up to the client to remove any pairs.
-    void DestroyProxy(int32 proxyId);
+    void DestroyProxy(I32 proxyId);
 
     /// Call MoveProxy as many times as you like, then when you are done
     /// call UpdatePairs to finalized the proxy pairs (for your time step).
-    void MoveProxy(int32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement);
+    void MoveProxy(I32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement);
 
     /// Call to trigger a re-processing of it's pairs on the next call to UpdatePairs.
-    void TouchProxy(int32 proxyId);
+    void TouchProxy(I32 proxyId);
 
     /// Get the fat AABB for a proxy.
-    const b2AABB &GetFatAABB(int32 proxyId) const;
+    const b2AABB &GetFatAABB(I32 proxyId) const;
 
     /// Get user data from a proxy. Returns nullptr if the id is invalid.
-    void *GetUserData(int32 proxyId) const;
+    void *GetUserData(I32 proxyId) const;
 
     /// Test overlap of fat AABBs.
-    bool TestOverlap(int32 proxyIdA, int32 proxyIdB) const;
+    bool TestOverlap(I32 proxyIdA, I32 proxyIdB) const;
 
     /// Get the number of proxies.
-    int32 GetProxyCount() const;
+    I32 GetProxyCount() const;
 
     /// Update the pairs. This results in pair callbacks. This can only add pairs.
     template<typename T>
@@ -4600,10 +4593,10 @@ public:
     void RayCast(T *callback, const b2RayCastInput &input) const;
 
     /// Get the height of the embedded tree.
-    int32 GetTreeHeight() const;
+    I32 GetTreeHeight() const;
 
     /// Get the balance of the embedded tree.
-    int32 GetTreeBalance() const;
+    I32 GetTreeBalance() const;
 
     /// Get the quality metric of the embedded tree.
     float GetTreeQuality() const;
@@ -4616,43 +4609,43 @@ public:
 private:
     friend class b2DynamicTree;
 
-    void BufferMove(int32 proxyId);
-    void UnBufferMove(int32 proxyId);
+    void BufferMove(I32 proxyId);
+    void UnBufferMove(I32 proxyId);
 
-    bool QueryCallback(int32 proxyId);
+    bool QueryCallback(I32 proxyId);
 
     b2DynamicTree m_tree;
 
-    int32 m_proxyCount;
+    I32 m_proxyCount;
 
-    int32 *m_moveBuffer;
-    int32 m_moveCapacity;
-    int32 m_moveCount;
+    I32 *m_moveBuffer;
+    I32 m_moveCapacity;
+    I32 m_moveCount;
 
     b2Pair *m_pairBuffer;
-    int32 m_pairCapacity;
-    int32 m_pairCount;
+    I32 m_pairCapacity;
+    I32 m_pairCount;
 
-    int32 m_queryProxyId;
+    I32 m_queryProxyId;
 };
 
-inline void *b2BroadPhase::GetUserData(int32 proxyId) const { return m_tree.GetUserData(proxyId); }
+inline void *b2BroadPhase::GetUserData(I32 proxyId) const { return m_tree.GetUserData(proxyId); }
 
-inline bool b2BroadPhase::TestOverlap(int32 proxyIdA, int32 proxyIdB) const {
+inline bool b2BroadPhase::TestOverlap(I32 proxyIdA, I32 proxyIdB) const {
     const b2AABB &aabbA = m_tree.GetFatAABB(proxyIdA);
     const b2AABB &aabbB = m_tree.GetFatAABB(proxyIdB);
     return b2TestOverlap(aabbA, aabbB);
 }
 
-inline const b2AABB &b2BroadPhase::GetFatAABB(int32 proxyId) const {
+inline const b2AABB &b2BroadPhase::GetFatAABB(I32 proxyId) const {
     return m_tree.GetFatAABB(proxyId);
 }
 
-inline int32 b2BroadPhase::GetProxyCount() const { return m_proxyCount; }
+inline I32 b2BroadPhase::GetProxyCount() const { return m_proxyCount; }
 
-inline int32 b2BroadPhase::GetTreeHeight() const { return m_tree.GetHeight(); }
+inline I32 b2BroadPhase::GetTreeHeight() const { return m_tree.GetHeight(); }
 
-inline int32 b2BroadPhase::GetTreeBalance() const { return m_tree.GetMaxBalance(); }
+inline I32 b2BroadPhase::GetTreeBalance() const { return m_tree.GetMaxBalance(); }
 
 inline float b2BroadPhase::GetTreeQuality() const { return m_tree.GetAreaRatio(); }
 
@@ -4662,7 +4655,7 @@ void b2BroadPhase::UpdatePairs(T *callback) {
     m_pairCount = 0;
 
     // Perform tree queries for all moving proxies.
-    for (int32 i = 0; i < m_moveCount; ++i) {
+    for (I32 i = 0; i < m_moveCount; ++i) {
         m_queryProxyId = m_moveBuffer[i];
         if (m_queryProxyId == e_nullProxy) { continue; }
 
@@ -4675,7 +4668,7 @@ void b2BroadPhase::UpdatePairs(T *callback) {
     }
 
     // Send pairs to caller
-    for (int32 i = 0; i < m_pairCount; ++i) {
+    for (I32 i = 0; i < m_pairCount; ++i) {
         b2Pair *primaryPair = m_pairBuffer + i;
         void *userDataA = m_tree.GetUserData(primaryPair->proxyIdA);
         void *userDataB = m_tree.GetUserData(primaryPair->proxyIdB);
@@ -4684,8 +4677,8 @@ void b2BroadPhase::UpdatePairs(T *callback) {
     }
 
     // Clear move flags
-    for (int32 i = 0; i < m_moveCount; ++i) {
-        int32 proxyId = m_moveBuffer[i];
+    for (I32 i = 0; i < m_moveCount; ++i) {
+        I32 proxyId = m_moveBuffer[i];
         if (proxyId == e_nullProxy) { continue; }
 
         m_tree.ClearMoved(proxyId);
@@ -4729,8 +4722,8 @@ struct b2TimeStep
     float dt;     // time step
     float inv_dt; // inverse time step (0 if dt == 0).
     float dtRatio;// dt * inv_dt0
-    int32 velocityIterations;
-    int32 positionIterations;
+    I32 velocityIterations;
+    I32 positionIterations;
     bool warmStarting;
 };
 
@@ -4781,7 +4774,7 @@ public:
 
     b2BroadPhase m_broadPhase;
     b2Contact *m_contactList;
-    int32 m_contactCount;
+    I32 m_contactCount;
     b2ContactFilter *m_contactFilter;
     b2ContactListener *m_contactListener;
     b2BlockAllocator *m_allocator;
@@ -4791,13 +4784,13 @@ public:
 
 #pragma region
 
-const int32 b2_stackSize = 100 * 1024;// 100k
-const int32 b2_maxStackEntries = 32;
+const I32 b2_stackSize = 100 * 1024;// 100k
+const I32 b2_maxStackEntries = 32;
 
 struct b2StackEntry
 {
     char *data;
-    int32 size;
+    I32 size;
     bool usedMalloc;
 };
 
@@ -4809,20 +4802,20 @@ public:
     b2StackAllocator();
     ~b2StackAllocator();
 
-    void *Allocate(int32 size);
+    void *Allocate(I32 size);
     void Free(void *p);
 
-    int32 GetMaxAllocation() const;
+    I32 GetMaxAllocation() const;
 
 private:
     char m_data[b2_stackSize];
-    int32 m_index;
+    I32 m_index;
 
-    int32 m_allocation;
-    int32 m_maxAllocation;
+    I32 m_allocation;
+    I32 m_maxAllocation;
 
     b2StackEntry m_entries[b2_maxStackEntries];
-    int32 m_entryCount;
+    I32 m_entryCount;
 };
 
 #pragma endregion
@@ -4872,7 +4865,7 @@ struct b2ContactImpulse
 {
     float normalImpulses[b2_maxManifoldPoints];
     float tangentImpulses[b2_maxManifoldPoints];
-    int32 count;
+    I32 count;
 };
 
 /// Implement this class to get contact information. You can use these results for
@@ -5021,7 +5014,7 @@ public:
     /// @param timeStep the amount of time to simulate, this should not vary.
     /// @param velocityIterations for the velocity constraint solver.
     /// @param positionIterations for the position constraint solver.
-    void Step(float timeStep, int32 velocityIterations, int32 positionIterations);
+    void Step(float timeStep, I32 velocityIterations, I32 positionIterations);
 
     /// Manually clear the force buffer on all bodies. By default, forces are cleared automatically
     /// after each call to Step. The default behavior is modified by calling SetAutoClearForces.
@@ -5086,22 +5079,22 @@ public:
     bool GetSubStepping() const { return m_subStepping; }
 
     /// Get the number of broad-phase proxies.
-    int32 GetProxyCount() const;
+    I32 GetProxyCount() const;
 
     /// Get the number of bodies.
-    int32 GetBodyCount() const;
+    I32 GetBodyCount() const;
 
     /// Get the number of joints.
-    int32 GetJointCount() const;
+    I32 GetJointCount() const;
 
     /// Get the number of contacts (each may have 0 or more contact points).
-    int32 GetContactCount() const;
+    I32 GetContactCount() const;
 
     /// Get the height of the dynamic tree.
-    int32 GetTreeHeight() const;
+    I32 GetTreeHeight() const;
 
     /// Get the balance of the dynamic tree.
-    int32 GetTreeBalance() const;
+    I32 GetTreeBalance() const;
 
     /// Get the quality metric of the dynamic tree. The smaller the better.
     /// The minimum is 1.
@@ -5156,8 +5149,8 @@ private:
     b2Body *m_bodyList;
     b2Joint *m_jointList;
 
-    int32 m_bodyCount;
-    int32 m_jointCount;
+    I32 m_bodyCount;
+    I32 m_jointCount;
 
     b2Vec2 m_gravity;
     bool m_allowSleep;
@@ -5195,11 +5188,11 @@ inline b2Contact *b2World::GetContactList() { return m_contactManager.m_contactL
 
 inline const b2Contact *b2World::GetContactList() const { return m_contactManager.m_contactList; }
 
-inline int32 b2World::GetBodyCount() const { return m_bodyCount; }
+inline I32 b2World::GetBodyCount() const { return m_bodyCount; }
 
-inline int32 b2World::GetJointCount() const { return m_jointCount; }
+inline I32 b2World::GetJointCount() const { return m_jointCount; }
 
-inline int32 b2World::GetContactCount() const { return m_contactManager.m_contactCount; }
+inline I32 b2World::GetContactCount() const { return m_contactManager.m_contactCount; }
 
 inline void b2World::SetGravity(const b2Vec2 &gravity) { m_gravity = gravity; }
 
@@ -5230,8 +5223,8 @@ struct b2Profile;
 /// This is an internal class.
 class b2Island {
 public:
-    b2Island(int32 bodyCapacity, int32 contactCapacity, int32 jointCapacity,
-             b2StackAllocator *allocator, b2ContactListener *listener);
+    b2Island(I32 bodyCapacity, I32 contactCapacity, I32 jointCapacity, b2StackAllocator *allocator,
+             b2ContactListener *listener);
     ~b2Island();
 
     void Clear() {
@@ -5242,7 +5235,7 @@ public:
 
     void Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &gravity, bool allowSleep);
 
-    void SolveTOI(const b2TimeStep &subStep, int32 toiIndexA, int32 toiIndexB);
+    void SolveTOI(const b2TimeStep &subStep, I32 toiIndexA, I32 toiIndexB);
 
     void Add(b2Body *body) {
         METADOT_ASSERT_E(m_bodyCount < m_bodyCapacity);
@@ -5273,13 +5266,13 @@ public:
     b2Position *m_positions;
     b2Velocity *m_velocities;
 
-    int32 m_bodyCount;
-    int32 m_jointCount;
-    int32 m_contactCount;
+    I32 m_bodyCount;
+    I32 m_jointCount;
+    I32 m_contactCount;
 
-    int32 m_bodyCapacity;
-    int32 m_contactCapacity;
-    int32 m_jointCapacity;
+    I32 m_bodyCapacity;
+    I32 m_contactCapacity;
+    I32 m_jointCapacity;
 };
 
 #pragma endregion
@@ -5290,11 +5283,11 @@ class b2BlockAllocator;
 
 class b2ChainAndCircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
-    b2ChainAndCircleContact(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB);
+    b2ChainAndCircleContact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB);
     ~b2ChainAndCircleContact() {}
 
     void Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) override;
@@ -5307,11 +5300,11 @@ class b2BlockAllocator;
 
 class b2ChainAndPolygonContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
-    b2ChainAndPolygonContact(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB);
+    b2ChainAndPolygonContact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB);
     ~b2ChainAndPolygonContact() {}
 
     void Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) override;
@@ -5325,7 +5318,7 @@ class b2BlockAllocator;
 
 class b2CircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
@@ -5360,23 +5353,23 @@ struct b2ContactVelocityConstraint
     b2Vec2 normal;
     b2Mat22 normalMass;
     b2Mat22 K;
-    int32 indexA;
-    int32 indexB;
+    I32 indexA;
+    I32 indexB;
     float invMassA, invMassB;
     float invIA, invIB;
     float friction;
     float restitution;
     float threshold;
     float tangentSpeed;
-    int32 pointCount;
-    int32 contactIndex;
+    I32 pointCount;
+    I32 contactIndex;
 };
 
 struct b2ContactSolverDef
 {
     b2TimeStep step;
     b2Contact **contacts;
-    int32 count;
+    I32 count;
     b2Position *positions;
     b2Velocity *velocities;
     b2StackAllocator *allocator;
@@ -5394,7 +5387,7 @@ public:
     void StoreImpulses();
 
     bool SolvePositionConstraints();
-    bool SolveTOIPositionConstraints(int32 toiIndexA, int32 toiIndexB);
+    bool SolveTOIPositionConstraints(I32 toiIndexA, I32 toiIndexB);
 
     b2TimeStep m_step;
     b2Position *m_positions;
@@ -5420,27 +5413,27 @@ struct b2DistanceProxy
 
     /// Initialize the proxy using the given shape. The shape
     /// must remain in scope while the proxy is in use.
-    void Set(const b2Shape *shape, int32 index);
+    void Set(const b2Shape *shape, I32 index);
 
     /// Initialize the proxy using a vertex cloud and radius. The vertices
     /// must remain in scope while the proxy is in use.
-    void Set(const b2Vec2 *vertices, int32 count, float radius);
+    void Set(const b2Vec2 *vertices, I32 count, float radius);
 
     /// Get the supporting vertex index in the given direction.
-    int32 GetSupport(const b2Vec2 &d) const;
+    I32 GetSupport(const b2Vec2 &d) const;
 
     /// Get the supporting vertex in the given direction.
     const b2Vec2 &GetSupportVertex(const b2Vec2 &d) const;
 
     /// Get the vertex count.
-    int32 GetVertexCount() const;
+    I32 GetVertexCount() const;
 
     /// Get a vertex by index. Used by b2Distance.
-    const b2Vec2 &GetVertex(int32 index) const;
+    const b2Vec2 &GetVertex(I32 index) const;
 
     b2Vec2 m_buffer[2];
     const b2Vec2 *m_vertices;
-    int32 m_count;
+    I32 m_count;
     float m_radius;
 };
 
@@ -5449,9 +5442,9 @@ struct b2DistanceProxy
 struct b2SimplexCache
 {
     float metric;///< length or area
-    uint16 count;
-    uint8 indexA[3];///< vertices on shape A
-    uint8 indexB[3];///< vertices on shape B
+    U16 count;
+    U8 indexA[3];///< vertices on shape A
+    U8 indexB[3];///< vertices on shape B
 };
 
 /// Input for b2Distance.
@@ -5472,7 +5465,7 @@ struct b2DistanceOutput
     b2Vec2 pointA;///< closest point on shapeA
     b2Vec2 pointB;///< closest point on shapeB
     float distance;
-    int32 iterations;///< number of GJK iterations used
+    I32 iterations;///< number of GJK iterations used
 };
 
 /// Compute the closest points between two shapes. Supports any combination of:
@@ -5496,7 +5489,7 @@ struct b2ShapeCastOutput
     b2Vec2 point;
     b2Vec2 normal;
     float lambda;
-    int32 iterations;
+    I32 iterations;
 };
 
 /// Perform a linear shape cast of shape B moving and shape A fixed. Determines the hit point, normal, and translation fraction.
@@ -5505,17 +5498,17 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input);
 
 //////////////////////////////////////////////////////////////////////////
 
-inline int32 b2DistanceProxy::GetVertexCount() const { return m_count; }
+inline I32 b2DistanceProxy::GetVertexCount() const { return m_count; }
 
-inline const b2Vec2 &b2DistanceProxy::GetVertex(int32 index) const {
+inline const b2Vec2 &b2DistanceProxy::GetVertex(I32 index) const {
     METADOT_ASSERT_E(0 <= index && index < m_count);
     return m_vertices[index];
 }
 
-inline int32 b2DistanceProxy::GetSupport(const b2Vec2 &d) const {
-    int32 bestIndex = 0;
+inline I32 b2DistanceProxy::GetSupport(const b2Vec2 &d) const {
+    I32 bestIndex = 0;
     float bestValue = b2Dot(m_vertices[0], d);
-    for (int32 i = 1; i < m_count; ++i) {
+    for (I32 i = 1; i < m_count; ++i) {
         float value = b2Dot(m_vertices[i], d);
         if (value > bestValue) {
             bestIndex = i;
@@ -5527,9 +5520,9 @@ inline int32 b2DistanceProxy::GetSupport(const b2Vec2 &d) const {
 }
 
 inline const b2Vec2 &b2DistanceProxy::GetSupportVertex(const b2Vec2 &d) const {
-    int32 bestIndex = 0;
+    I32 bestIndex = 0;
     float bestValue = b2Dot(m_vertices[0], d);
-    for (int32 i = 1; i < m_count; ++i) {
+    for (I32 i = 1; i < m_count; ++i) {
         float value = b2Dot(m_vertices[i], d);
         if (value > bestValue) {
             bestIndex = i;
@@ -5548,7 +5541,7 @@ class b2BlockAllocator;
 
 class b2EdgeAndCircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
@@ -5565,7 +5558,7 @@ class b2BlockAllocator;
 
 class b2EdgeAndPolygonContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
@@ -5583,7 +5576,7 @@ class b2BlockAllocator;
 
 class b2PolygonAndCircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
@@ -5601,7 +5594,7 @@ class b2BlockAllocator;
 
 class b2PolygonContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, int32 indexA, b2Fixture *fixtureB, int32 indexB,
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
                              b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
@@ -5677,7 +5670,7 @@ struct b2RopeDef
 
     b2Vec2 position;
     b2Vec2 *vertices;
-    int32 count;
+    I32 count;
     float *masses;
     b2Vec2 gravity;
     b2RopeTuning tuning;
@@ -5696,7 +5689,7 @@ public:
     void SetTuning(const b2RopeTuning &tuning);
 
     ///
-    void Step(float timeStep, int32 iterations, const b2Vec2 &position);
+    void Step(float timeStep, I32 iterations, const b2Vec2 &position);
 
     ///
     void Reset(const b2Vec2 &position);
@@ -5716,9 +5709,9 @@ private:
 
     b2Vec2 m_position;
 
-    int32 m_count;
-    int32 m_stretchCount;
-    int32 m_bendCount;
+    I32 m_count;
+    I32 m_stretchCount;
+    I32 m_bendCount;
 
     b2RopeStretch *m_stretchConstraints;
     b2RopeBend *m_bendConstraints;

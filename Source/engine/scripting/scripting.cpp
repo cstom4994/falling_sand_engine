@@ -15,6 +15,7 @@
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
+#include "game/game_resources.hpp"
 #include "game/utils.hpp"
 #include "libs/lua/ffi.h"
 #include "libs/lua/host/lua.h"
@@ -204,6 +205,12 @@ void LuaCore::Init() {
     s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
     s_lua["add_packagepath"] = LuaWrapper::function(add_packagepath);
 
+    s_lua["texture_load_data"] = LuaWrapper::function(LoadTextureData);
+    s_lua["R_CopyImageFromSurface"] = LuaWrapper::function(R_CopyImageFromSurface);
+    s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
+    s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
+    s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
+
     s_lua.dostring(
             MetaEngine::Format("package.path = "
                                "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
@@ -374,12 +381,6 @@ void integrationExample() {
 #endif
 
 void Scripts::Init() {
-    // METADOT_NEW(C, MuDSL, MuDSL::MuDSLInterpreter, MuDSL::ModulePrivilege::allPrivilege);
-    // LoadMuFuncs();
-    // char *init_src = futil_readfilestring("data/init.mu");
-    // MuDSL->evaluate(init_src);
-    // gc_free(&gc, init_src);
-    // auto end = MuDSL->callFunction("init");
 
     METADOT_NEW(C, LuaRuntime, LuaCore);
     LuaRuntime->Init();
@@ -393,9 +394,6 @@ void Scripts::End() {
 
     LuaRuntime->End();
     METADOT_DELETE(C, LuaRuntime, LuaCore);
-
-    // auto end = MuDSL->callFunction("end");
-    // METADOT_DELETE_EX(C, MuDSL, MuDSLInterpreter, MuDSL::MuDSLInterpreter);
 }
 
 void Scripts::UpdateRender() {

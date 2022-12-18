@@ -200,6 +200,18 @@ metadot_lua.define("mu",
         return print(c)
     end })
 
+metadot_lua.define("meta_js",
+    "{.*} -> build_chunk",
+    function(c)
+        return ""
+    end,
+    { build_chunk = function(c)
+        local jsparser = require("jsparser")
+        local v = load(jsparser(c))
+        assert(v, "Error")
+        return v()
+    end })
+
 metadot_lua.define("meta",
     "{.*} -> build_chunk",
     function(c)

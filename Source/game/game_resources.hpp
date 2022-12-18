@@ -46,11 +46,14 @@ public:
     static void Init();
 
     static C_Surface *LoadTexture(std::string path);
+
     static C_Surface *LoadTexture(std::string path, U32 pixelFormat);
     static C_Surface *loadAseprite(std::string path);
 
     static C_Surface *scaleTexture(C_Surface *, float x, float y);
 };
+
+C_Surface *LoadTextureData(std::string path);
 
 struct I18N
 {

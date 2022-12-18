@@ -12,6 +12,7 @@
 
 #include <chrono>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <future>
 #include <iomanip>
@@ -28,7 +29,6 @@ using namespace std::string_literals;
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
-#include "libs/ghc/fs_std.hpp"
 #include "libs/linenoise.hpp"
 
 #ifndef METADOT_MU_NO_MACRO
@@ -327,41 +327,45 @@ static void pushLuaminify(lua_State *L) {
 }
 #endif// METADOT_MU_COMPILER_ONLY
 
-fs::path getTargetFile(const fs::path &file, const fs::path &workPath, const fs::path &targetPath) {
-    auto srcFile = fs::absolute(file);
+std::filesystem::path getTargetFile(const std::filesystem::path &file,
+                                    const std::filesystem::path &workPath,
+                                    const std::filesystem::path &targetPath) {
+    auto srcFile = std::filesystem::absolute(file);
     auto ext = srcFile.extension().string();
     for (auto &ch: ext) ch = std::tolower(ch);
     if (!ext.empty() && ext.substr(1) == mu::extension) {
         auto targetFile = targetPath / srcFile.lexically_relative(workPath);
         targetFile.replace_extension("lua"s);
-        if (fs::exists(targetFile)) { return targetFile; }
+        if (std::filesystem::exists(targetFile)) { return targetFile; }
     }
-    return fs::path();
+    return std::filesystem::path();
 }
 
-fs::path getTargetFileDirty(const fs::path &file, const fs::path &workPath,
-                            const fs::path &targetPath) {
-    if (!fs::exists(file)) return fs::path();
-    auto srcFile = fs::absolute(file);
+std::filesystem::path getTargetFileDirty(const std::filesystem::path &file,
+                                         const std::filesystem::path &workPath,
+                                         const std::filesystem::path &targetPath) {
+    if (!std::filesystem::exists(file)) return std::filesystem::path();
+    auto srcFile = std::filesystem::absolute(file);
     auto ext = srcFile.extension().string();
     for (auto &ch: ext) ch = std::tolower(ch);
-    if (!fs::is_directory(srcFile) && !ext.empty() && ext.substr(1) == mu::extension) {
+    if (!std::filesystem::is_directory(srcFile) && !ext.empty() && ext.substr(1) == mu::extension) {
         auto targetFile = targetPath / srcFile.lexically_relative(workPath);
         targetFile.replace_extension("lua"s);
-        if (fs::exists(targetFile)) {
-            auto time = fs::last_write_time(targetFile);
-            auto targetTime = fs::last_write_time(srcFile);
+        if (std::filesystem::exists(targetFile)) {
+            auto time = std::filesystem::last_write_time(targetFile);
+            auto targetTime = std::filesystem::last_write_time(srcFile);
             if (time < targetTime) { return targetFile; }
         } else {
             return targetFile;
         }
     }
-    return fs::path();
+    return std::filesystem::path();
 }
 
-static std::string compileFile(const fs::path &file, mu::MuConfig conf, const fs::path &workPath,
-                               const fs::path &targetPath) {
-    auto srcFile = fs::absolute(file);
+static std::string compileFile(const std::filesystem::path &file, mu::MuConfig conf,
+                               const std::filesystem::path &workPath,
+                               const std::filesystem::path &targetPath) {
+    auto srcFile = std::filesystem::absolute(file);
     auto targetFile = getTargetFileDirty(srcFile, workPath, targetPath);
     if (targetFile.empty()) return std::string();
     std::ifstream input(srcFile, std::ios::in);
@@ -386,7 +390,9 @@ static std::string compileFile(const fs::path &file, mu::MuConfig conf, const fs
                 auto it = result.options->find("target_extension"s);
                 if (it != result.options->end()) { targetExtension = it->second; }
             }
-            if (targetFile.has_parent_path()) { fs::create_directories(targetFile.parent_path()); }
+            if (targetFile.has_parent_path()) {
+                std::filesystem::create_directories(targetFile.parent_path());
+            }
             if (result.codes.empty()) { return "Built "s + modulePath.string() + '\n'; }
             std::ofstream output(targetFile, std::ios::trunc | std::ios::out);
             if (output) {
@@ -414,15 +420,15 @@ public:
     //                       efsw::Action action, std::string) override {
     //     switch (action) {
     //         case efsw::Actions::Add:
-    //             if (auto res = compileFile(fs::path(dir) / filename, config, workPath, targetPath);
+    //             if (auto res = compileFile(std::filesystem::path(dir) / filename, config, workPath, targetPath);
     //                 !res.empty()) {
     //                 std::cout << res;
     //             }
     //             break;
     //         case efsw::Actions::Delete: {
-    //             auto targetFile = getTargetFile(fs::path(dir) / filename, workPath, targetPath);
+    //             auto targetFile = getTargetFile(std::filesystem::path(dir) / filename, workPath, targetPath);
     //             if (!targetFile.empty()) {
-    //                 fs::remove(targetFile);
+    //                 std::filesystem::remove(targetFile);
     //                 auto moduleFile = targetFile.lexically_relative(targetPath);
     //                 if (moduleFile.empty()) { moduleFile = targetFile; }
     //                 std::cout << "Deleted " << moduleFile.string() << '\n';
@@ -430,7 +436,7 @@ public:
     //             break;
     //         }
     //         case efsw::Actions::Modified:
-    //             if (auto res = compileFile(fs::path(dir) / filename, config, workPath, targetPath);
+    //             if (auto res = compileFile(std::filesystem::path(dir) / filename, config, workPath, targetPath);
     //                 !res.empty()) {
     //                 std::cout << res;
     //             }
@@ -442,8 +448,8 @@ public:
     //     }
     // }
     mu::MuConfig config;
-    fs::path workPath;
-    fs::path targetPath;
+    std::filesystem::path workPath;
+    std::filesystem::path targetPath;
 };
 
 #if 0
@@ -671,7 +677,7 @@ int exe_mu(int narg, const char **args) {
                 lua_setglobal(L, "arg");
                 std::ifstream input(evalStr, std::ios::in);
                 if (input) {
-                    auto ext = fs::path(evalStr).extension().string();
+                    auto ext = std::filesystem::path(evalStr).extension().string();
                     for (auto &ch: ext) ch = std::tolower(ch);
                     if (ext == ".lua") {
                         lua_getglobal(L, "load");
@@ -770,9 +776,9 @@ int exe_mu(int narg, const char **args) {
                 config.options[argStr] = std::string();
             }
         } else {
-            if (fs::is_directory(arg)) {
+            if (std::filesystem::is_directory(arg)) {
                 workPath = arg;
-                for (auto item: fs::recursive_directory_iterator(arg)) {
+                for (auto item: std::filesystem::recursive_directory_iterator(arg)) {
                     if (!item.is_directory()) {
                         auto ext = item.path().extension().string();
                         for (char &ch: ext) ch = std::tolower(ch);
@@ -786,7 +792,7 @@ int exe_mu(int narg, const char **args) {
                 std::cout << "Error: -w can not be used with file\n"sv;
                 return 1;
             } else {
-                workPath = fs::path(arg).parent_path().string();
+                workPath = std::filesystem::path(arg).parent_path().string();
                 files.emplace_back(arg, arg);
             }
         }
@@ -800,13 +806,13 @@ int exe_mu(int narg, const char **args) {
         return 1;
     }
     if (watchFiles) {
-        auto fullWorkPath = fs::absolute(fs::path(workPath)).string();
+        auto fullWorkPath = std::filesystem::absolute(std::filesystem::path(workPath)).string();
         auto fullTargetPath = fullWorkPath;
-        if (!targetPath.empty()) { fullTargetPath = fs::absolute(fs::path(targetPath)).string(); }
+        if (!targetPath.empty()) { fullTargetPath = std::filesystem::absolute(std::filesystem::path(targetPath)).string(); }
         std::list<std::future<std::string>> results;
         for (const auto &file: files) {
             auto task = std::async(std::launch::async, [=]() {
-                return compileFile(fs::absolute(file.first), config, fullWorkPath, fullTargetPath);
+                return compileFile(std::filesystem::absolute(file.first), config, fullWorkPath, fullTargetPath);
             });
             results.push_back(std::move(task));
         }
@@ -836,9 +842,9 @@ int exe_mu(int narg, const char **args) {
                     auto it = conf.options.find("path");
                     if (it != conf.options.end()) {
                         it->second += ';';
-                        it->second += (fs::path(workPath) / "?.lua"sv).string();
+                        it->second += (std::filesystem::path(workPath) / "?.lua"sv).string();
                     } else {
-                        conf.options["path"] = (fs::path(workPath) / "?.lua"sv).string();
+                        conf.options["path"] = (std::filesystem::path(workPath) / "?.lua"sv).string();
                     }
                 }
                 if (dumpCompileTime) {
@@ -879,19 +885,19 @@ int exe_mu(int narg, const char **args) {
                             auto it = result.options->find("target_extension"s);
                             if (it != result.options->end()) { targetExtension = it->second; }
                         }
-                        fs::path targetFile;
+                        std::filesystem::path targetFile;
                         if (!resultFile.empty()) {
                             targetFile = resultFile;
                         } else {
                             if (!targetPath.empty()) {
-                                targetFile = fs::path(targetPath) / file.second;
+                                targetFile = std::filesystem::path(targetPath) / file.second;
                             } else {
                                 targetFile = file.first;
                             }
                             targetFile.replace_extension('.' + targetExtension);
                         }
                         if (targetFile.has_parent_path()) {
-                            fs::create_directories(targetFile.parent_path());
+                            std::filesystem::create_directories(targetFile.parent_path());
                         }
                         if (result.codes.empty()) {
                             return std::tuple{0, targetFile.string(),

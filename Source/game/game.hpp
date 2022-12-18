@@ -13,11 +13,11 @@
 #include "core/macros.h"
 #include "core/threadpool.h"
 #include "engine/audio.hpp"
+#include "engine/filesystem.h"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "game/console.hpp"
-#include "engine/filesystem.h"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"
@@ -65,8 +65,8 @@ public:
 
     U8 *objectDelete = nullptr;
 
-    uint32 loadingOnColor = 0;
-    uint32 loadingOffColor = 0;
+    U32 loadingOnColor = 0;
+    U32 loadingOffColor = 0;
 
     R_Texttext *text1 = nullptr;
     R_Texttext *text2 = nullptr;
