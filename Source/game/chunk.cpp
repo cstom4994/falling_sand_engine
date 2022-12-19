@@ -266,11 +266,12 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     myfile.write((char *) &compressed_data_size2, sizeof(int));
 
     myfile.write((char *) compressed_data, compressed_data_size);
-    delete[] buf;
     myfile.write((char *) compressed_data2, compressed_data_size2);
 
     free(compressed_data);
     free(compressed_data2);
+
+    delete[] buf;
 
     myfile.close();
 }

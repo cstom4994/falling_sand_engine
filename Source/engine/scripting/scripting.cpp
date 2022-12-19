@@ -210,6 +210,8 @@ void LuaCore::Init() {
     s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
     s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
     s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
+    s_lua["metadot_metadata"] = LuaWrapper::function(metadot_metadata);
+    s_lua["metadot_buildnum"] = LuaWrapper::function(metadot_buildnum);
 
     s_lua.dostring(
             MetaEngine::Format("package.path = "

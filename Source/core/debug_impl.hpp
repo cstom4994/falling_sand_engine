@@ -7,8 +7,8 @@
 #include "core/macros.h"
 #include "engine/imgui_impl.hpp"
 
-int MetaDot_buildnum(void);
-const std::string metadata(void);
+extern int metadot_buildnum(void);
+extern const std::string metadot_metadata(void);
 
 #ifndef DBG_MACRO_DBG_H
 #define DBG_MACRO_DBG_H
@@ -1048,5 +1048,7 @@ static void ProfilerValueGetter(float *startTimestamp, float *endTimestamp, ImU8
     if (level) { *level = stage._level; }
     if (caption) { *caption = stageNames[idx]; }
 }
+
+int metadot_buildnum(void);
 
 #endif

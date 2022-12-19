@@ -8,7 +8,7 @@ static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char mond[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-int MetaDot_buildnum(void) {
+int metadot_buildnum(void) {
     int m = 0, d = 0, y = 0;
     static int b = 0;
 
@@ -29,8 +29,8 @@ int MetaDot_buildnum(void) {
     return b;
 }
 
-const std::string metadata() {
-    std::string result;
+const std::string metadot_metadata() {
+    static std::string result;
 
     result += "Copyright(c) 2022, KaoruXun All rights reserved.\n";
     result += "MetaDot\n";

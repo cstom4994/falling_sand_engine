@@ -1,5 +1,4 @@
-
-meta[[
+meta [[
 
 mlua.define_simple("inc", "$1 = $1 + 1")
 
@@ -9,20 +8,22 @@ mlua.define_simple("inc_e", "(function () $1 = $1 + 1; return $1 end)()")
 
 local a = 2
 
-inc[[a]]
+inc [[a]]
 
 print(a)
 
-print(inc_e[[a]])
+print(inc_e [[a]])
 
 print(a)
 
-mu[[
+mu [[
 
 
 ]]
 
-meta_js[[
+v = 1
+
+meta_js [[
 
 let test = 3;
 test++;
@@ -72,5 +73,10 @@ try {
     print("can't call this function!");
 }
 
+print("test global", v);
+v = 2
 
+return "ok"
 ]]
+
+-- assert(v == 2)

@@ -3629,7 +3629,7 @@ bool WorldMeta::save(std::string worldFileName) {
     snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
     if (this->worldName.empty()) this->worldName = "WorldName";
     if (this->lastOpenedVersion.empty())
-        this->lastOpenedVersion = std::to_string(MetaDot_buildnum());
+        this->lastOpenedVersion = std::to_string(metadot_buildnum());
 
     std::string worldMetaData = "LoadWorldMeta = function()\nsettings_data = {}\n";
     SaveLuaConfig(*this, "settings_data", worldMetaData);

@@ -635,7 +635,7 @@ namespace GameUI {
                                     CHUNK_H * 3,
                             Render.target, &global.audioEngine);
                     w->metadata.lastOpenedTime = Time::millis() / 1000;
-                    w->metadata.lastOpenedVersion = std::to_string(MetaDot_buildnum());
+                    w->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
                     w->metadata.save(w->worldName);
 
                     METADOT_INFO("Queueing chunk loading...");
@@ -1416,7 +1416,7 @@ namespace GameUI {
             game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
             game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
             game->GameIsolate_.world->metadata.lastOpenedVersion =
-                    std::to_string(MetaDot_buildnum());
+                    std::to_string(metadot_buildnum());
             game->GameIsolate_.world->metadata.save(wpStr);
 
             METADOT_INFO("Queueing chunk loading...");

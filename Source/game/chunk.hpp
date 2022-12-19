@@ -32,7 +32,8 @@ public:
 
     explicit Chunk(int x, int y, char *worldName)
         : x(std::move(x)), y(std::move(y)),
-          fname(std::move(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".region")){};
+          fname(std::move(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" +
+                          std::to_string(y) + ".region")){};
     Chunk() : Chunk(0, 0, (char *) "chunks"){};
     ~Chunk();
 
