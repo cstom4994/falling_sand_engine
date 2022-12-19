@@ -3,6 +3,11 @@
 #ifndef _METADOT_WORLD_HPP_
 #define _METADOT_WORLD_HPP_
 
+#include <deque>
+#include <future>
+#include <unordered_map>
+#include <vector>
+
 #include "chunk.hpp"
 #include "core/const.h"
 #include "core/macros.h"
@@ -15,11 +20,6 @@
 #include "game_scriptingwrap.hpp"
 #include "libs/sparsehash/dense_hash_map.h"
 #include "structures.hpp"
-
-#include <deque>
-#include <future>
-#include <unordered_map>
-#include <vector>
 
 class Populator;
 class WorldGenerator;
@@ -39,8 +39,7 @@ public:
     }
 };
 
-struct WorldMeta
-{
+struct WorldMeta {
     std::string worldName;
     std::string lastOpenedVersion;
     long lastOpenedTime = 0;
@@ -60,8 +59,7 @@ public:
 
     ~World();
 
-    struct
-    {
+    struct {
         std::vector<Particle *> particles;
         std::vector<RigidBody *> rigidBodies;
         std::vector<std::vector<b2Vec2>> worldMeshes;
@@ -75,7 +73,7 @@ public:
         std::vector<PlacedStructure> structures;
         std::vector<b2Vec2> distributedPoints;
         google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;
-        //std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
+        // std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
         std::vector<Populator *> populators;
         std::vector<WorldEntity *> entities;
         Player *player = nullptr;
@@ -123,8 +121,7 @@ public:
     b2World *b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
-    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer, Audio *audioEngine,
-              WorldGenerator *generator);
+    void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *renderer, Audio *audioEngine, WorldGenerator *generator);
     void init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target, Audio *audioEngine);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
@@ -142,11 +139,8 @@ public:
     void tickChunkGeneration();
     void addParticle(Particle *particle);
     void explosion(int x, int y, int radius);
-    RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape,
-                             float density, float friction, C_Surface *texture);
-    RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle,
-                                  std::vector<b2PolygonShape> shape, float density, float friction,
-                                  C_Surface *texture);
+    RigidBody *makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, C_Surface *texture);
+    RigidBody *makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
@@ -168,8 +162,7 @@ public:
     void forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     void forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn);
     RigidBody *physicsCheck(int x, int y);
-    void physicsCheck_flood(int x, int y, bool *visited, int *count, U32 *cols, int *minX,
-                            int *maxX, int *minY, int *maxY);
+    void physicsCheck_flood(int x, int y, bool *visited, int *count, U32 *cols, int *minX, int *maxX, int *minY, int *maxY);
     void saveWorld();
 };
 

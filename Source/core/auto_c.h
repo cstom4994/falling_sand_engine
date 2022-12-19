@@ -33,16 +33,14 @@
 
 #if METADOT_C_MAGIC_CHECK == 1
 #define METADOT_C_MAGIC_NUM 0xCe110
-#define METADOT_C_MAGIC_HEADER ((var) METADOT_C_MAGIC_NUM),
+#define METADOT_C_MAGIC_HEADER ((var)METADOT_C_MAGIC_NUM),
 #else
 #define METADOT_C_MAGIC_HEADER
 #endif
 
 #ifndef METADOT_C_CACHE
 #define METADOT_C_CACHE 1
-#define METADOT_C_CACHE_HEADER                                                                     \
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,      \
-            NULL, NULL, NULL,
+#define METADOT_C_CACHE_HEADER NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 #define METADOT_C_CACHE_NUM 18
 #else
 #define METADOT_C_CACHE 0
@@ -119,10 +117,8 @@ typedef void *var;
 #define MetaDotC(T, ...) MetaDotCStruct(T, ##__VA_ARGS__)
 #define MetaDotCStruct(T, ...) MetaDotCObject(T, sizeof(struct T), ##__VA_ARGS__)
 #define MetaDotCEmpty(T, ...) MetaDotCObject(T, 0, ##__VA_ARGS__)
-#define MetaDotCObject(T, S, ...)                                                                  \
-    (var)((char *) ((var[]){                                                                       \
-                  NULL, METADOT_C_ALLOC_HEADER METADOT_C_MAGIC_HEADER METADOT_C_CACHE_HEADER NULL, \
-                  "__Name", #T, NULL, "__Size", (var) S, ##__VA_ARGS__, NULL, NULL, NULL}) +       \
+#define MetaDotCObject(T, S, ...)                                                                                                                                                     \
+    (var)((char *)((var[]){NULL, METADOT_C_ALLOC_HEADER METADOT_C_MAGIC_HEADER METADOT_C_CACHE_HEADER NULL, "__Name", #T, NULL, "__Size", (var)S, ##__VA_ARGS__, NULL, NULL, NULL}) + \
           sizeof(struct Header))
 
 #define Instance(I, ...) NULL, #I, &((struct I){__VA_ARGS__})
@@ -176,15 +172,9 @@ extern var ProgramTerminationError;
 
 /* Data */
 
-enum {
-    AllocStatic = 0x01,
-    AllocStack = 0x02,
-    AllocHeap = 0x03,
-    AllocData = 0x04
-};
+enum { AllocStatic = 0x01, AllocStack = 0x02, AllocHeap = 0x03, AllocData = 0x04 };
 
-struct Header
-{
+struct Header {
     var type;
 #if METADOT_C_ALLOC_CHECK == 1
     var alloc;
@@ -194,88 +184,73 @@ struct Header
 #endif
 };
 
-struct Type
-{
+struct Type {
     var cls;
     var name;
     var inst;
 };
 
-struct Ref
-{
+struct Ref {
     var val;
 };
 
-struct Box
-{
+struct Box {
     var val;
 };
 
-struct Int
-{
+struct Int {
     int64_t val;
 };
 
-struct Float
-{
+struct Float {
     double val;
 };
 
-struct String
-{
+struct String {
     char *val;
 };
 
-struct Tuple
-{
+struct Tuple {
     var *items;
 };
 
-struct Range
-{
+struct Range {
     var value;
     int64_t start;
     int64_t stop;
     int64_t step;
 };
 
-struct Slice
-{
+struct Slice {
     var iter;
     var range;
 };
 
-struct Zip
-{
+struct Zip {
     var iters;
     var values;
 };
 
-struct Filter
-{
+struct Filter {
     var iter;
     var func;
 };
 
-struct Map
-{
+struct Map {
     var iter;
     var curr;
     var func;
 };
 
-struct File
-{
+struct File {
     FILE *file;
 };
 
-struct Process
-{
+struct Process {
     FILE *proc;
 };
 
-struct Function
-{
+struct Function {
     var (*func)(var);
 };
 
@@ -314,21 +289,18 @@ extern var Mark;
 
 /* Signatures */
 
-struct Example
-{
+struct Example {
     const char *name;
     const char *body;
 };
 
-struct Method
-{
+struct Method {
     const char *name;
     const char *definition;
     const char *description;
 };
 
-struct Doc
-{
+struct Doc {
     const char *(*name)(void);
     const char *(*brief)(void);
     const char *(*description)(void);
@@ -337,79 +309,65 @@ struct Doc
     struct Method *(*methods)(void);
 };
 
-struct Help
-{
+struct Help {
     int (*help_to)(var, var, int);
 };
 
-struct Cast
-{
+struct Cast {
     var (*cast)(var, var);
 };
 
-struct Size
-{
+struct Size {
     size_t (*size)(void);
 };
 
-struct Alloc
-{
+struct Alloc {
     var (*alloc)(void);
     void (*dealloc)(var);
 };
 
-struct New
-{
+struct New {
     void (*construct_with)(var, var);
     void (*destruct)(var);
 };
 
-struct Copy
-{
+struct Copy {
     var (*copy)(var);
 };
 
-struct Assign
-{
+struct Assign {
     void (*assign)(var, var);
 };
 
-struct Swap
-{
+struct Swap {
     void (*swap)(var, var);
 };
 
-struct Cmp
-{
+struct Cmp {
     int (*cmp)(var, var);
 };
 
-struct Hash
-{
+struct Hash {
     uint64_t (*hash)(var);
 };
 
-struct Len
-{
+struct Len {
     size_t (*len)(var);
 };
 
-struct Push
-{
+struct Push {
     void (*push)(var, var);
     void (*pop)(var);
     void (*push_at)(var, var, var);
     void (*pop_at)(var, var);
 };
 
-struct Concat
-{
+struct Concat {
     void (*concat)(var, var);
     void (*append)(var, var);
 };
 
-struct Get
-{
+struct Get {
     var (*get)(var, var);
     void (*set)(var, var, var);
     bool (*mem)(var, var);
@@ -418,8 +376,7 @@ struct Get
     var (*val_type)(var);
 };
 
-struct Iter
-{
+struct Iter {
     var (*iter_init)(var);
     var (*iter_next)(var, var);
     var (*iter_last)(var);
@@ -427,33 +384,27 @@ struct Iter
     var (*iter_type)(var);
 };
 
-struct Sort
-{
+struct Sort {
     void (*sort_by)(var, bool (*f)(var, var));
 };
 
-struct Resize
-{
+struct Resize {
     void (*resize)(var, size_t);
 };
 
-struct C_Str
-{
+struct C_Str {
     char *(*c_str)(var);
 };
 
-struct C_Int
-{
+struct C_Int {
     int64_t (*c_int)(var);
 };
 
-struct C_Float
-{
+struct C_Float {
     double (*c_float)(var);
 };
 
-struct Stream
-{
+struct Stream {
     var (*sopen)(var, var, var);
     void (*sclose)(var);
     void (*sseek)(var, int64_t, int);
@@ -464,51 +415,43 @@ struct Stream
     size_t (*swrite)(var, void *, size_t);
 };
 
-struct Pointer
-{
+struct Pointer {
     void (*ref)(var, var);
     var (*deref)(var);
 };
 
-struct Call
-{
+struct Call {
     var (*call_with)(var, var);
 };
 
-struct Format
-{
+struct Format {
     int (*format_to)(var, int, const char *, va_list);
     int (*format_from)(var, int, const char *, va_list);
 };
 
-struct Show
-{
+struct Show {
     int (*show)(var, var, int);
     int (*look)(var, var, int);
 };
 
-struct Current
-{
+struct Current {
     var (*current)(void);
 };
 
-struct Start
-{
+struct Start {
     void (*start)(var);
     void (*stop)(var);
     void (*join)(var);
     bool (*running)(var);
 };
 
-struct Lock
-{
+struct Lock {
     void (*lock)(var);
     void (*unlock)(var);
     bool (*trylock)(var);
 };
 
-struct Mark
-{
+struct Mark {
     void (*mark)(var, var, void (*)(var, void *));
 };
 
@@ -529,16 +472,13 @@ bool implements(var self, var cls);
 var type_instance(var type, var cls);
 bool type_implements(var type, var cls);
 
-#define method(X, C, M, ...)                                                                       \
-    ((struct C *) method_at_offset(X, C, offsetof(struct C, M), #M))->M(X, ##__VA_ARGS__)
+#define method(X, C, M, ...) ((struct C *)method_at_offset(X, C, offsetof(struct C, M), #M))->M(X, ##__VA_ARGS__)
 
 #define implements_method(X, C, M) implements_method_at_offset(X, C, offsetof(struct C, M))
 
-#define type_method(T, C, M, ...)                                                                  \
-    ((struct C *) type_method_at_offset(T, C, offsetof(struct C, M), #M))->M(__VA_ARGS__)
+#define type_method(T, C, M, ...) ((struct C *)type_method_at_offset(T, C, offsetof(struct C, M), #M))->M(__VA_ARGS__)
 
-#define type_implements_method(T, C, M)                                                            \
-    type_implements_method_at_offset(T, C, offsetof(struct C, M))
+#define type_implements_method(T, C, M) type_implements_method_at_offset(T, C, offsetof(struct C, M))
 
 var method_at_offset(var self, var cls, size_t offset, const char *method);
 bool implements_method_at_offset(var self, var cls, size_t offset);
@@ -555,15 +495,13 @@ var alloc(var type);
 var alloc_raw(var type);
 var alloc_root(var type);
 
-#define alloc_stack(T)                                                                             \
-    ((struct T *) header_init((char[sizeof(struct Header) + sizeof(struct T)]){0}, T, AllocStack))
+#define alloc_stack(T) ((struct T *)header_init((char[sizeof(struct Header) + sizeof(struct T)]){0}, T, AllocStack))
 
 void dealloc(var self);
 void dealloc_raw(var self);
 void dealloc_root(var self);
 
-#define $(T, ...)                                                                                  \
-    ((struct T *) memcpy(alloc_stack(T), &((struct T){__VA_ARGS__}), sizeof(struct T)))
+#define $(T, ...) ((struct T *)memcpy(alloc_stack(T), &((struct T){__VA_ARGS__}), sizeof(struct T)))
 
 #define $I(X) $(Int, X)
 #define $F(X) $(Float, X)
@@ -579,9 +517,9 @@ void dealloc_root(var self);
 var construct_with(var self, var args);
 var destruct(var self);
 
-#define new(T, ...) ((struct T *) new_with(T, tuple(__VA_ARGS__)))
-#define new_raw(T, ...) ((struct T *) new_raw_with(T, tuple(__VA_ARGS__)))
-#define new_root(T, ...) ((struct T *) new_root_with(T, tuple(__VA_ARGS__)))
+#define new(T, ...) ((struct T *)new_with(T, tuple(__VA_ARGS__)))
+#define new_raw(T, ...) ((struct T *)new_raw_with(T, tuple(__VA_ARGS__)))
+#define new_root(T, ...) ((struct T *)new_root_with(T, tuple(__VA_ARGS__)))
 
 var new_with(var type, var args);
 var new_raw_with(var type, var args);
@@ -614,10 +552,8 @@ var iter_type(var self);
 
 #define foreach(...) foreach_xp(foreach_in, (__VA_ARGS__))
 #define foreach_xp(X, A) X A
-#define foreach_in(X, S)                                                                           \
-    for (var __##X = (S), __Iter##X = instance(__##X, Iter),                                       \
-             X = ((struct Iter *) (__Iter##X))->iter_init(__##X);                                  \
-         X isnt Terminal; X = ((struct Iter *) (__Iter##X))->iter_next(__##X, X))
+#define foreach_in(X, S) \
+    for (var __##X = (S), __Iter##X = instance(__##X, Iter), X = ((struct Iter *)(__Iter##X))->iter_init(__##X); X isnt Terminal; X = ((struct Iter *)(__Iter##X))->iter_next(__##X, X))
 
 void push(var self, var obj);
 void pop(var self);
@@ -655,9 +591,7 @@ double c_float(var self);
 #define filter(I, F) $(Filter, I, F)
 #define map(I, F) $(Map, I, NULL, F)
 
-#define zip(...)                                                                                   \
-    zip_stack($(Zip, tuple(__VA_ARGS__),                                                           \
-                $(Tuple, (var[(sizeof((var[]){__VA_ARGS__}) / sizeof(var)) + 1]){0})))
+#define zip(...) zip_stack($(Zip, tuple(__VA_ARGS__), $(Tuple, (var[(sizeof((var[]){__VA_ARGS__}) / sizeof(var)) + 1]){0})))
 
 #define enumerate(I) enumerate_stack(zip(range(), I))
 
@@ -727,18 +661,20 @@ void lock(var self);
 bool trylock(var self);
 void unlock(var self);
 
-#define try                                                                                        \
-    {                                                                                              \
-        jmp_buf __env;                                                                             \
-        exception_try(&__env);                                                                     \
+#define try                    \
+    {                          \
+        jmp_buf __env;         \
+        exception_try(&__env); \
         if (!setjmp(__env))
 
 #define catch(...) catch_xp(catch_in, (__VA_ARGS__))
 #define catch_xp(X, A) X A
-#define catch_in(X, ...)                                                                           \
-    else { exception_try_fail(); }                                                                 \
-    exception_try_end();                                                                           \
-    }                                                                                              \
+#define catch_in(X, ...)      \
+    else {                    \
+        exception_try_fail(); \
+    }                         \
+    exception_try_end();      \
+    }                         \
     for (var X = exception_catch(tuple(__VA_ARGS__)); X isnt NULL; X = NULL)
 
 #define throw(E, F, ...) exception_throw(E, F, tuple(__VA_ARGS__))

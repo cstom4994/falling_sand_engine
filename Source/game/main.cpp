@@ -1,8 +1,8 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#include "game/game.hpp"
-
 #include <memory>
+
+#include "game/game.hpp"
 
 #if defined(SDL_MAIN_AVAILABLE)
 #undef main

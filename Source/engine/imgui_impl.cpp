@@ -6,19 +6,21 @@
 // https://github.com/ocornut/imgui (MIT) by Omar Cornut
 
 #include "imgui_impl.hpp"
-#include "core/core.hpp"
-#include "core/alloc.h"
-#include "engine/renderer/renderer_gpu.h"
-#include "engine/sdl_wrapper.h"
-#include "engine/filesystem.h"
-#include "imgui_impl.hpp"
+
+#include <stdio.h>
 
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
-#include <stdio.h>
 #include <string>
 #include <utility>
+
+#include "core/alloc.h"
+#include "core/core.hpp"
+#include "engine/filesystem.h"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/sdl_wrapper.h"
+#include "imgui_impl.hpp"
 
 #pragma region ImGuiImplementGL3
 
@@ -49,29 +51,28 @@
 #define IMGUI_IMPL_OPENGL_MAY_HAVE_EXTENSIONS
 #endif
 
-//#define IMGUI_IMPL_OPENGL_DEBUG
+// #define IMGUI_IMPL_OPENGL_DEBUG
 #ifdef IMGUI_IMPL_OPENGL_DEBUG
 #include <stdio.h>
-#define GL_CALL(_CALL)                                                                             \
-    do {                                                                                           \
-        _CALL;                                                                                     \
-        GLenum gl_err = glGetError();                                                              \
-        if (gl_err != 0) fprintf(stderr, "GL error 0x%x returned from '%s'.\n", gl_err, #_CALL);   \
-    } while (0)// Call with error check
+#define GL_CALL(_CALL)                                                                           \
+    do {                                                                                         \
+        _CALL;                                                                                   \
+        GLenum gl_err = glGetError();                                                            \
+        if (gl_err != 0) fprintf(stderr, "GL error 0x%x returned from '%s'.\n", gl_err, #_CALL); \
+    } while (0)  // Call with error check
 #else
-#define GL_CALL(_CALL) _CALL// Call without error check
+#define GL_CALL(_CALL) _CALL  // Call without error check
 #endif
 
 // OpenGL Data
-struct ImGui_ImplOpenGL3_Data
-{
-    GLuint GlVersion;// Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
-    char GlslVersionString[32];// Specified by user or detected based on compile time GL settings.
+struct ImGui_ImplOpenGL3_Data {
+    GLuint GlVersion;            // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
+    char GlslVersionString[32];  // Specified by user or detected based on compile time GL settings.
     GLuint FontTexture;
     GLuint ShaderHandle;
-    GLint AttribLocationTex;// Uniforms location
+    GLint AttribLocationTex;  // Uniforms location
     GLint AttribLocationProjMtx;
-    GLuint AttribLocationVtxPos;// Vertex attributes location
+    GLuint AttribLocationVtxPos;  // Vertex attributes location
     GLuint AttribLocationVtxUV;
     GLuint AttribLocationVtxColor;
     unsigned int VboHandle, ElementsHandle;
@@ -80,16 +81,12 @@ struct ImGui_ImplOpenGL3_Data
     bool HasClipOrigin;
     bool UseBufferSubData;
 
-    ImGui_ImplOpenGL3_Data() { memset((void *) this, 0, sizeof(*this)); }
+    ImGui_ImplOpenGL3_Data() { memset((void *)this, 0, sizeof(*this)); }
 };
 
 // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
 // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
-static ImGui_ImplOpenGL3_Data *ImGui_ImplOpenGL3_GetBackendData() {
-    return ImGui::GetCurrentContext()
-                   ? (ImGui_ImplOpenGL3_Data *) ImGui::GetIO().BackendRendererUserData
-                   : nullptr;
-}
+static ImGui_ImplOpenGL3_Data *ImGui_ImplOpenGL3_GetBackendData() { return ImGui::GetCurrentContext() ? (ImGui_ImplOpenGL3_Data *)ImGui::GetIO().BackendRendererUserData : nullptr; }
 
 // Forward Declarations
 static void ImGui_ImplOpenGL3_InitPlatformInterface();
@@ -97,8 +94,7 @@ static void ImGui_ImplOpenGL3_ShutdownPlatformInterface();
 
 // OpenGL vertex attribute state (for ES 1.0 and ES 2.0 only)
 #ifndef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-struct ImGui_ImplOpenGL3_VtxAttribState
-{
+struct ImGui_ImplOpenGL3_VtxAttribState {
     GLint Enabled, Size, Type, Normalized, Stride;
     GLvoid *Ptr;
 
@@ -111,8 +107,9 @@ struct ImGui_ImplOpenGL3_VtxAttribState
         glGetVertexAttribPointerv(index, GL_VERTEX_ATTRIB_ARRAY_POINTER, &Ptr);
     }
     void SetState(GLint index) {
-        glVertexAttribPointer(index, Size, Type, (GLboolean) Normalized, Stride, Ptr);
-        if (Enabled) glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, Size, Type, (GLboolean)Normalized, Stride, Ptr);
+        if (Enabled)
+            glEnableVertexAttribArray(index);
         else
             glDisableVertexAttribArray(index);
     }
@@ -125,8 +122,7 @@ bool ImGui_ImplOpenGL3_Init() {
     IM_ASSERT(io.BackendRendererUserData == nullptr && "Already initialized a renderer backend!");
 
     // Initialize our loader
-#if !defined(IMGUI_IMPL_OPENGL_ES2) && !defined(IMGUI_IMPL_OPENGL_ES3) &&                          \
-        !defined(IMGUI_IMPL_OPENGL_LOADER_CUSTOM)
+#if !defined(IMGUI_IMPL_OPENGL_ES2) && !defined(IMGUI_IMPL_OPENGL_ES3) && !defined(IMGUI_IMPL_OPENGL_LOADER_CUSTOM)
     if (!gladLoadGL()) {
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
         return false;
@@ -135,7 +131,7 @@ bool ImGui_ImplOpenGL3_Init() {
 
     // Setup backend capabilities flags
     ImGui_ImplOpenGL3_Data *bd = IM_NEW(ImGui_ImplOpenGL3_Data)();
-    io.BackendRendererUserData = (void *) bd;
+    io.BackendRendererUserData = (void *)bd;
     io.BackendRendererName = "imgui_impl_opengl3";
 
     // Query for GL version (e.g. 320 for GL 3.2)
@@ -146,10 +142,10 @@ bool ImGui_ImplOpenGL3_Init() {
     glGetIntegerv(GL_MINOR_VERSION, &minor);
     if (major == 0 && minor == 0) {
         // Query GL_VERSION in desktop GL 2.x, the string will start with "<major>.<minor>"
-        const char *gl_version = (const char *) glGetString(GL_VERSION);
+        const char *gl_version = (const char *)glGetString(GL_VERSION);
         sscanf(gl_version, "%d.%d", &major, &minor);
     }
-    bd->GlVersion = (GLuint) (major * 100 + minor * 10);
+    bd->GlVersion = (GLuint)(major * 100 + minor * 10);
 
     bd->UseBufferSubData = false;
     /*
@@ -161,25 +157,21 @@ bool ImGui_ImplOpenGL3_Init() {
 #endif
     */
 #else
-    bd->GlVersion = 200;// GLES 2
+    bd->GlVersion = 200;  // GLES 2
 #endif
 
 #ifdef IMGUI_IMPL_OPENGL_DEBUG
-    printf("GL_MAJOR_VERSION = %d\nGL_MINOR_VERSION = %d\nGL_VENDOR = '%s'\nGL_RENDERER = '%s'\n",
-           major, minor, (const char *) glGetString(GL_VENDOR),
-           (const char *) glGetString(GL_RENDERER));// [DEBUG]
+    printf("GL_MAJOR_VERSION = %d\nGL_MINOR_VERSION = %d\nGL_VENDOR = '%s'\nGL_RENDERER = '%s'\n", major, minor, (const char *)glGetString(GL_VENDOR),
+           (const char *)glGetString(GL_RENDERER));  // [DEBUG]
 #endif
 
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
-    if (bd->GlVersion >= 320)
-        io.BackendFlags |=
-                ImGuiBackendFlags_RendererHasVtxOffset;// We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
+    if (bd->GlVersion >= 320) io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;  // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
 #endif
-    io.BackendFlags |=
-            ImGuiBackendFlags_RendererHasViewports;// We can create multi-viewports on the Renderer side (optional)
+    io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;  // We can create multi-viewports on the Renderer side (optional)
 
     const char *glsl_version = "#version 330";
-    IM_ASSERT((int) strlen(glsl_version) + 2 < IM_ARRAYSIZE(bd->GlslVersionString));
+    IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(bd->GlslVersionString));
     strcpy(bd->GlslVersionString, glsl_version);
     strcat(bd->GlslVersionString, "\n");
 
@@ -194,14 +186,12 @@ bool ImGui_ImplOpenGL3_Init() {
     GLint num_extensions = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
     for (GLint i = 0; i < num_extensions; i++) {
-        const char *extension = (const char *) glGetStringi(GL_EXTENSIONS, i);
-        if (extension != nullptr && strcmp(extension, "GL_ARB_clip_control") == 0)
-            bd->HasClipOrigin = true;
+        const char *extension = (const char *)glGetStringi(GL_EXTENSIONS, i);
+        if (extension != nullptr && strcmp(extension, "GL_ARB_clip_control") == 0) bd->HasClipOrigin = true;
     }
 #endif
 
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        ImGui_ImplOpenGL3_InitPlatformInterface();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) ImGui_ImplOpenGL3_InitPlatformInterface();
 
     return true;
 }
@@ -225,8 +215,7 @@ void ImGui_ImplOpenGL3_NewFrame() {
     if (!bd->ShaderHandle) ImGui_ImplOpenGL3_CreateDeviceObjects();
 }
 
-static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_width, int fb_height,
-                                               GLuint vertex_array_object) {
+static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_width, int fb_height, GLuint vertex_array_object) {
     ImGui_ImplOpenGL3_Data *bd = ImGui_ImplOpenGL3_GetBackendData();
 
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
@@ -249,14 +238,14 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_wid
     bool clip_origin_lower_left = true;
     if (bd->HasClipOrigin) {
         GLenum current_clip_origin = 0;
-        glGetIntegerv(GL_CLIP_ORIGIN, (GLint *) &current_clip_origin);
+        glGetIntegerv(GL_CLIP_ORIGIN, (GLint *)&current_clip_origin);
         if (current_clip_origin == GL_UPPER_LEFT) clip_origin_lower_left = false;
     }
 #endif
 
     // Setup viewport, orthographic projection matrix
     // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
-    GL_CALL(glViewport(0, 0, (GLsizei) fb_width, (GLsizei) fb_height));
+    GL_CALL(glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height));
     float L = draw_data->DisplayPos.x;
     float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
     float T = draw_data->DisplayPos.y;
@@ -266,7 +255,7 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_wid
         float tmp = T;
         T = B;
         B = tmp;
-    }// Swap top and bottom if origin is upper left
+    }  // Swap top and bottom if origin is upper left
 #endif
     const float ortho_projection[4][4] = {
             {2.0f / (R - L), 0.0f, 0.0f, 0.0f},
@@ -279,13 +268,11 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_wid
     glUniformMatrix4fv(bd->AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
 
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
-    if (bd->GlVersion >= 330)
-        glBindSampler(
-                0,
-                0);// We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
+    if (bd->GlVersion >= 330) glBindSampler(0,
+                                            0);  // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
 #endif
 
-    (void) vertex_array_object;
+    (void)vertex_array_object;
 #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
     glBindVertexArray(vertex_array_object);
 #endif
@@ -296,12 +283,9 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_wid
     GL_CALL(glEnableVertexAttribArray(bd->AttribLocationVtxPos));
     GL_CALL(glEnableVertexAttribArray(bd->AttribLocationVtxUV));
     GL_CALL(glEnableVertexAttribArray(bd->AttribLocationVtxColor));
-    GL_CALL(glVertexAttribPointer(bd->AttribLocationVtxPos, 2, GL_FLOAT, GL_FALSE,
-                                  sizeof(ImDrawVert), (GLvoid *) IM_OFFSETOF(ImDrawVert, pos)));
-    GL_CALL(glVertexAttribPointer(bd->AttribLocationVtxUV, 2, GL_FLOAT, GL_FALSE,
-                                  sizeof(ImDrawVert), (GLvoid *) IM_OFFSETOF(ImDrawVert, uv)));
-    GL_CALL(glVertexAttribPointer(bd->AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,
-                                  sizeof(ImDrawVert), (GLvoid *) IM_OFFSETOF(ImDrawVert, col)));
+    GL_CALL(glVertexAttribPointer(bd->AttribLocationVtxPos, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid *)IM_OFFSETOF(ImDrawVert, pos)));
+    GL_CALL(glVertexAttribPointer(bd->AttribLocationVtxUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid *)IM_OFFSETOF(ImDrawVert, uv)));
+    GL_CALL(glVertexAttribPointer(bd->AttribLocationVtxColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid *)IM_OFFSETOF(ImDrawVert, col)));
 }
 
 // OpenGL3 Render function.
@@ -309,30 +293,30 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData *draw_data, int fb_wid
 // This is in order to be able to run within an OpenGL engine that doesn't do so.
 void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-    int fb_width = (int) (draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    int fb_height = (int) (draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+    int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0) return;
 
     ImGui_ImplOpenGL3_Data *bd = ImGui_ImplOpenGL3_GetBackendData();
 
     // Backup GL state
     GLenum last_active_texture;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &last_active_texture);
+    glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *)&last_active_texture);
     glActiveTexture(GL_TEXTURE0);
     GLuint last_program;
-    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint *) &last_program);
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint *)&last_program);
     GLuint last_texture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &last_texture);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *)&last_texture);
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
     GLuint last_sampler;
     if (bd->GlVersion >= 330) {
-        glGetIntegerv(GL_SAMPLER_BINDING, (GLint *) &last_sampler);
+        glGetIntegerv(GL_SAMPLER_BINDING, (GLint *)&last_sampler);
     } else {
         last_sampler = 0;
     }
 #endif
     GLuint last_array_buffer;
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint *) &last_array_buffer);
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint *)&last_array_buffer);
 #ifndef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
     // This is part of VAO on OpenGL 3.0+ and OpenGL ES 3.0+.
     GLint last_element_array_buffer;
@@ -346,7 +330,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
 #endif
 #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
     GLuint last_vertex_array_object;
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint *) &last_vertex_array_object);
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint *)&last_vertex_array_object);
 #endif
 #ifdef IMGUI_IMPL_HAS_POLYGON_MODE
     GLint last_polygon_mode[2];
@@ -357,25 +341,24 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
     GLint last_scissor_box[4];
     glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
     GLenum last_blend_src_rgb;
-    glGetIntegerv(GL_BLEND_SRC_RGB, (GLint *) &last_blend_src_rgb);
+    glGetIntegerv(GL_BLEND_SRC_RGB, (GLint *)&last_blend_src_rgb);
     GLenum last_blend_dst_rgb;
-    glGetIntegerv(GL_BLEND_DST_RGB, (GLint *) &last_blend_dst_rgb);
+    glGetIntegerv(GL_BLEND_DST_RGB, (GLint *)&last_blend_dst_rgb);
     GLenum last_blend_src_alpha;
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint *) &last_blend_src_alpha);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint *)&last_blend_src_alpha);
     GLenum last_blend_dst_alpha;
-    glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint *) &last_blend_dst_alpha);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint *)&last_blend_dst_alpha);
     GLenum last_blend_equation_rgb;
-    glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint *) &last_blend_equation_rgb);
+    glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint *)&last_blend_equation_rgb);
     GLenum last_blend_equation_alpha;
-    glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint *) &last_blend_equation_alpha);
+    glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint *)&last_blend_equation_alpha);
     GLboolean last_enable_blend = glIsEnabled(GL_BLEND);
     GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
     GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
     GLboolean last_enable_stencil_test = glIsEnabled(GL_STENCIL_TEST);
     GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_PRIMITIVE_RESTART
-    GLboolean last_enable_primitive_restart =
-            (bd->GlVersion >= 310) ? glIsEnabled(GL_PRIMITIVE_RESTART) : GL_FALSE;
+    GLboolean last_enable_primitive_restart = (bd->GlVersion >= 310) ? glIsEnabled(GL_PRIMITIVE_RESTART) : GL_FALSE;
 #endif
 
     // Setup desired GL state
@@ -388,9 +371,8 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
     ImGui_ImplOpenGL3_SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
 
     // Will project scissor/clipping rectangles into framebuffer space
-    ImVec2 clip_off = draw_data->DisplayPos;// (0,0) unless using multi-viewports
-    ImVec2 clip_scale =
-            draw_data->FramebufferScale;// (1,1) unless using retina display which are often (2,2)
+    ImVec2 clip_off = draw_data->DisplayPos;          // (0,0) unless using multi-viewports
+    ImVec2 clip_scale = draw_data->FramebufferScale;  // (1,1) unless using retina display which are often (2,2)
 
     // Render command lists
     for (int n = 0; n < draw_data->CmdListsCount; n++) {
@@ -404,30 +386,22 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
         // - We are now back to using exclusively glBufferData(). So bd->UseBufferSubData IS ALWAYS FALSE in this code.
         //   We are keeping the old code path for a while in case people finding new issues may want to test the bd->UseBufferSubData path.
         // - See https://github.com/ocornut/imgui/issues/4468 and please report any corruption issues.
-        const GLsizeiptr vtx_buffer_size =
-                (GLsizeiptr) cmd_list->VtxBuffer.Size * (int) sizeof(ImDrawVert);
-        const GLsizeiptr idx_buffer_size =
-                (GLsizeiptr) cmd_list->IdxBuffer.Size * (int) sizeof(ImDrawIdx);
+        const GLsizeiptr vtx_buffer_size = (GLsizeiptr)cmd_list->VtxBuffer.Size * (int)sizeof(ImDrawVert);
+        const GLsizeiptr idx_buffer_size = (GLsizeiptr)cmd_list->IdxBuffer.Size * (int)sizeof(ImDrawIdx);
         if (bd->UseBufferSubData) {
             if (bd->VertexBufferSize < vtx_buffer_size) {
                 bd->VertexBufferSize = vtx_buffer_size;
-                GL_CALL(glBufferData(GL_ARRAY_BUFFER, bd->VertexBufferSize, nullptr,
-                                     GL_STREAM_DRAW));
+                GL_CALL(glBufferData(GL_ARRAY_BUFFER, bd->VertexBufferSize, nullptr, GL_STREAM_DRAW));
             }
             if (bd->IndexBufferSize < idx_buffer_size) {
                 bd->IndexBufferSize = idx_buffer_size;
-                GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, bd->IndexBufferSize, nullptr,
-                                     GL_STREAM_DRAW));
+                GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, bd->IndexBufferSize, nullptr, GL_STREAM_DRAW));
             }
-            GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vtx_buffer_size,
-                                    (const GLvoid *) cmd_list->VtxBuffer.Data));
-            GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, idx_buffer_size,
-                                    (const GLvoid *) cmd_list->IdxBuffer.Data));
+            GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vtx_buffer_size, (const GLvoid *)cmd_list->VtxBuffer.Data));
+            GL_CALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, idx_buffer_size, (const GLvoid *)cmd_list->IdxBuffer.Data));
         } else {
-            GL_CALL(glBufferData(GL_ARRAY_BUFFER, vtx_buffer_size,
-                                 (const GLvoid *) cmd_list->VtxBuffer.Data, GL_STREAM_DRAW));
-            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx_buffer_size,
-                                 (const GLvoid *) cmd_list->IdxBuffer.Data, GL_STREAM_DRAW));
+            GL_CALL(glBufferData(GL_ARRAY_BUFFER, vtx_buffer_size, (const GLvoid *)cmd_list->VtxBuffer.Data, GL_STREAM_DRAW));
+            GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx_buffer_size, (const GLvoid *)cmd_list->IdxBuffer.Data, GL_STREAM_DRAW));
         }
 
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
@@ -436,38 +410,28 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
                 // User callback, registered via ImDrawList::AddCallback()
                 // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
                 if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    ImGui_ImplOpenGL3_SetupRenderState(draw_data, fb_width, fb_height,
-                                                       vertex_array_object);
+                    ImGui_ImplOpenGL3_SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
                 else
                     pcmd->UserCallback(cmd_list, pcmd);
             } else {
                 // Project scissor/clipping rectangles into framebuffer space
-                ImVec2 clip_min((pcmd->ClipRect.x - clip_off.x) * clip_scale.x,
-                                (pcmd->ClipRect.y - clip_off.y) * clip_scale.y);
-                ImVec2 clip_max((pcmd->ClipRect.z - clip_off.x) * clip_scale.x,
-                                (pcmd->ClipRect.w - clip_off.y) * clip_scale.y);
+                ImVec2 clip_min((pcmd->ClipRect.x - clip_off.x) * clip_scale.x, (pcmd->ClipRect.y - clip_off.y) * clip_scale.y);
+                ImVec2 clip_max((pcmd->ClipRect.z - clip_off.x) * clip_scale.x, (pcmd->ClipRect.w - clip_off.y) * clip_scale.y);
                 if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y) continue;
 
                 // Apply scissor/clipping rectangle (Y is inverted in OpenGL)
-                GL_CALL(glScissor((int) clip_min.x, (int) ((float) fb_height - clip_max.y),
-                                  (int) (clip_max.x - clip_min.x),
-                                  (int) (clip_max.y - clip_min.y)));
+                GL_CALL(glScissor((int)clip_min.x, (int)((float)fb_height - clip_max.y), (int)(clip_max.x - clip_min.x), (int)(clip_max.y - clip_min.y)));
 
                 // Bind texture, Draw
-                GL_CALL(glBindTexture(GL_TEXTURE_2D, (GLuint) (intptr_t) pcmd->GetTexID()));
+                GL_CALL(glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->GetTexID()));
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
                 if (bd->GlVersion >= 320)
-                    GL_CALL(glDrawElementsBaseVertex(
-                            GL_TRIANGLES, (GLsizei) pcmd->ElemCount,
-                            sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
-                            (void *) (intptr_t) (pcmd->IdxOffset * sizeof(ImDrawIdx)),
-                            (GLint) pcmd->VtxOffset));
+                    GL_CALL(glDrawElementsBaseVertex(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+                                                     (void *)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)), (GLint)pcmd->VtxOffset));
                 else
 #endif
-                    GL_CALL(glDrawElements(
-                            GL_TRIANGLES, (GLsizei) pcmd->ElemCount,
-                            sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
-                            (void *) (intptr_t) (pcmd->IdxOffset * sizeof(ImDrawIdx))));
+                    GL_CALL(glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+                                           (void *)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx))));
             }
         }
     }
@@ -495,39 +459,42 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData *draw_data) {
     last_vtx_attrib_state_color.SetState(bd->AttribLocationVtxColor);
 #endif
     glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-    glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha,
-                        last_blend_dst_alpha);
-    if (last_enable_blend) glEnable(GL_BLEND);
+    glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
+    if (last_enable_blend)
+        glEnable(GL_BLEND);
     else
         glDisable(GL_BLEND);
-    if (last_enable_cull_face) glEnable(GL_CULL_FACE);
+    if (last_enable_cull_face)
+        glEnable(GL_CULL_FACE);
     else
         glDisable(GL_CULL_FACE);
-    if (last_enable_depth_test) glEnable(GL_DEPTH_TEST);
+    if (last_enable_depth_test)
+        glEnable(GL_DEPTH_TEST);
     else
         glDisable(GL_DEPTH_TEST);
-    if (last_enable_stencil_test) glEnable(GL_STENCIL_TEST);
+    if (last_enable_stencil_test)
+        glEnable(GL_STENCIL_TEST);
     else
         glDisable(GL_STENCIL_TEST);
-    if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST);
+    if (last_enable_scissor_test)
+        glEnable(GL_SCISSOR_TEST);
     else
         glDisable(GL_SCISSOR_TEST);
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_PRIMITIVE_RESTART
     if (bd->GlVersion >= 310) {
-        if (last_enable_primitive_restart) glEnable(GL_PRIMITIVE_RESTART);
+        if (last_enable_primitive_restart)
+            glEnable(GL_PRIMITIVE_RESTART);
         else
             glDisable(GL_PRIMITIVE_RESTART);
     }
 #endif
 
 #ifdef IMGUI_IMPL_HAS_POLYGON_MODE
-    glPolygonMode(GL_FRONT_AND_BACK, (GLenum) last_polygon_mode[0]);
+    glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
 #endif
-    glViewport(last_viewport[0], last_viewport[1], (GLsizei) last_viewport[2],
-               (GLsizei) last_viewport[3]);
-    glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei) last_scissor_box[2],
-              (GLsizei) last_scissor_box[3]);
-    (void) bd;// Not all compilation paths use this
+    glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
+    glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+    (void)bd;  // Not all compilation paths use this
 }
 
 bool ImGui_ImplOpenGL3_CreateFontsTexture() {
@@ -537,9 +504,9 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture() {
     // Build texture atlas
     unsigned char *pixels;
     int width, height;
-    io.Fonts->GetTexDataAsRGBA32(
-            &pixels, &width,
-            &height);// Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width,
+                                 &height);  // Load as RGBA 32-bit (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders.
+                                            // If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
     // Upload texture to graphics system
     // (Bilinear sampling is required by default. Set 'io.Fonts->Flags |= ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex = false' to allow point/nearest sampling)
@@ -549,14 +516,13 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture() {
     GL_CALL(glBindTexture(GL_TEXTURE_2D, bd->FontTexture));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-#ifdef GL_UNPACK_ROW_LENGTH// Not on WebGL/ES
+#ifdef GL_UNPACK_ROW_LENGTH  // Not on WebGL/ES
     GL_CALL(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
 #endif
-    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         pixels));
+    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
 
     // Store our identifier
-    io.Fonts->SetTexID((ImTextureID) (intptr_t) bd->FontTexture);
+    io.Fonts->SetTexID((ImTextureID)(intptr_t)bd->FontTexture);
 
     // Restore state
     GL_CALL(glBindTexture(GL_TEXTURE_2D, last_texture));
@@ -580,18 +546,18 @@ static bool CheckShader(GLuint handle, const char *desc) {
     GLint status = 0, log_length = 0;
     glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
     glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
-    if ((GLboolean) status == GL_FALSE)
+    if ((GLboolean)status == GL_FALSE)
         fprintf(stderr,
                 "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile %s! With GLSL: "
                 "%s\n",
                 desc, bd->GlslVersionString);
     if (log_length > 1) {
         ImVector<char> buf;
-        buf.resize((int) (log_length + 1));
-        glGetShaderInfoLog(handle, log_length, nullptr, (GLchar *) buf.begin());
+        buf.resize((int)(log_length + 1));
+        glGetShaderInfoLog(handle, log_length, nullptr, (GLchar *)buf.begin());
         fprintf(stderr, "%s\n", buf.begin());
     }
-    return (GLboolean) status == GL_TRUE;
+    return (GLboolean)status == GL_TRUE;
 }
 
 // If you get an error please report on GitHub. You may try different GL context version or GLSL version.
@@ -600,17 +566,14 @@ static bool CheckProgram(GLuint handle, const char *desc) {
     GLint status = 0, log_length = 0;
     glGetProgramiv(handle, GL_LINK_STATUS, &status);
     glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &log_length);
-    if ((GLboolean) status == GL_FALSE)
-        fprintf(stderr,
-                "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to link %s! With GLSL %s\n",
-                desc, bd->GlslVersionString);
+    if ((GLboolean)status == GL_FALSE) fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to link %s! With GLSL %s\n", desc, bd->GlslVersionString);
     if (log_length > 1) {
         ImVector<char> buf;
-        buf.resize((int) (log_length + 1));
-        glGetProgramInfoLog(handle, log_length, nullptr, (GLchar *) buf.begin());
+        buf.resize((int)(log_length + 1));
+        glGetProgramInfoLog(handle, log_length, nullptr, (GLchar *)buf.begin());
         fprintf(stderr, "%s\n", buf.begin());
     }
-    return (GLboolean) status == GL_TRUE;
+    return (GLboolean)status == GL_TRUE;
 }
 
 bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
@@ -629,10 +592,8 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
     int glsl_version = 130;
     sscanf(bd->GlslVersionString, "#version %d", &glsl_version);
 
-    char *vertex_shader =
-            futil_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.vert"));
-    char *fragment_shader =
-            futil_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.frag"));
+    char *vertex_shader = futil_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.vert"));
+    char *fragment_shader = futil_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.frag"));
 
     // Create shaders
     GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);
@@ -662,9 +623,9 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
 
     bd->AttribLocationTex = glGetUniformLocation(bd->ShaderHandle, "Texture");
     bd->AttribLocationProjMtx = glGetUniformLocation(bd->ShaderHandle, "ProjMtx");
-    bd->AttribLocationVtxPos = (GLuint) glGetAttribLocation(bd->ShaderHandle, "Position");
-    bd->AttribLocationVtxUV = (GLuint) glGetAttribLocation(bd->ShaderHandle, "UV");
-    bd->AttribLocationVtxColor = (GLuint) glGetAttribLocation(bd->ShaderHandle, "Color");
+    bd->AttribLocationVtxPos = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Position");
+    bd->AttribLocationVtxUV = (GLuint)glGetAttribLocation(bd->ShaderHandle, "UV");
+    bd->AttribLocationVtxColor = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Color");
 
     // Create buffers
     glGenBuffers(1, &bd->VboHandle);
@@ -726,8 +687,7 @@ static void ImGui_ImplOpenGL3_ShutdownPlatformInterface() { ImGui::DestroyPlatfo
 #pragma region ImGuiImplementSDL
 
 // SDL Data
-struct ImGui_ImplSDL2_Data
-{
+struct ImGui_ImplSDL2_Data {
     C_Window *Window;
     C_Renderer *Renderer;
     Uint64 Time;
@@ -737,21 +697,17 @@ struct ImGui_ImplSDL2_Data
     int PendingMouseLeaveFrame;
     char *ClipboardTextData;
     bool MouseCanUseGlobalState;
-    bool MouseCanReportHoveredViewport;// This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
+    bool MouseCanReportHoveredViewport;  // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
     bool UseVulkan;
 
-    ImGui_ImplSDL2_Data() { memset((void *) this, 0, sizeof(*this)); }
+    ImGui_ImplSDL2_Data() { memset((void *)this, 0, sizeof(*this)); }
 };
 
 // Backend data stored in io.BackendPlatformUserData to allow support for multiple Dear ImGui contexts
 // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
 // FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
 // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
-static ImGui_ImplSDL2_Data *ImGui_ImplSDL2_GetBackendData() {
-    return ImGui::GetCurrentContext()
-                   ? (ImGui_ImplSDL2_Data *) ImGui::GetIO().BackendPlatformUserData
-                   : nullptr;
-}
+static ImGui_ImplSDL2_Data *ImGui_ImplSDL2_GetBackendData() { return ImGui::GetCurrentContext() ? (ImGui_ImplSDL2_Data *)ImGui::GetIO().BackendPlatformUserData : nullptr; }
 
 // Forward Declarations
 static void ImGui_ImplSDL2_UpdateMonitors();
@@ -766,9 +722,7 @@ static const char *ImGui_ImplSDL2_GetClipboardText(void *) {
     return bd->ClipboardTextData;
 }
 
-static void ImGui_ImplSDL2_SetClipboardText(void *, const char *text) {
-    SDL_SetClipboardText(text);
-}
+static void ImGui_ImplSDL2_SetClipboardText(void *, const char *text) { SDL_SetClipboardText(text); }
 
 static ImGuiKey ImGui_ImplSDL2_KeycodeToImGuiKey(int keycode) {
     switch (keycode) {
@@ -1005,11 +959,10 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event) {
 
     switch (event->type) {
         case SDL_MOUSEMOTION: {
-            ImVec2 mouse_pos((float) event->motion.x, (float) event->motion.y);
+            ImVec2 mouse_pos((float)event->motion.x, (float)event->motion.y);
             if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
                 int window_x, window_y;
-                SDL_GetWindowPosition(SDL_GetWindowFromID(event->motion.windowID), &window_x,
-                                      &window_y);
+                SDL_GetWindowPosition(SDL_GetWindowFromID(event->motion.windowID), &window_x, &window_y);
                 mouse_pos.x += window_x;
                 mouse_pos.y += window_y;
             }
@@ -1025,16 +978,24 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event) {
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP: {
             int mouse_button = -1;
-            if (event->button.button == SDL_BUTTON_LEFT) { mouse_button = 0; }
-            if (event->button.button == SDL_BUTTON_RIGHT) { mouse_button = 1; }
-            if (event->button.button == SDL_BUTTON_MIDDLE) { mouse_button = 2; }
-            if (event->button.button == SDL_BUTTON_X1) { mouse_button = 3; }
-            if (event->button.button == SDL_BUTTON_X2) { mouse_button = 4; }
+            if (event->button.button == SDL_BUTTON_LEFT) {
+                mouse_button = 0;
+            }
+            if (event->button.button == SDL_BUTTON_RIGHT) {
+                mouse_button = 1;
+            }
+            if (event->button.button == SDL_BUTTON_MIDDLE) {
+                mouse_button = 2;
+            }
+            if (event->button.button == SDL_BUTTON_X1) {
+                mouse_button = 3;
+            }
+            if (event->button.button == SDL_BUTTON_X2) {
+                mouse_button = 4;
+            }
             if (mouse_button == -1) break;
             io.AddMouseButtonEvent(mouse_button, (event->type == SDL_MOUSEBUTTONDOWN));
-            bd->MouseButtonsDown = (event->type == SDL_MOUSEBUTTONDOWN)
-                                           ? (bd->MouseButtonsDown | (1 << mouse_button))
-                                           : (bd->MouseButtonsDown & ~(1 << mouse_button));
+            bd->MouseButtonsDown = (event->type == SDL_MOUSEBUTTONDOWN) ? (bd->MouseButtonsDown | (1 << mouse_button)) : (bd->MouseButtonsDown & ~(1 << mouse_button));
             return true;
         }
         case SDL_TEXTINPUT: {
@@ -1043,13 +1004,11 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event) {
         }
         case SDL_KEYDOWN:
         case SDL_KEYUP: {
-            ImGui_ImplSDL2_UpdateKeyModifiers((SDL_Keymod) event->key.keysym.mod);
+            ImGui_ImplSDL2_UpdateKeyModifiers((SDL_Keymod)event->key.keysym.mod);
             ImGuiKey key = ImGui_ImplSDL2_KeycodeToImGuiKey(event->key.keysym.sym);
             io.AddKeyEvent(key, (event->type == SDL_KEYDOWN));
-            io.SetKeyEventNativeData(
-                    key, event->key.keysym.sym, event->key.keysym.scancode,
-                    event->key.keysym
-                            .scancode);// To support legacy indexing (<1.87 user code). Legacy backend uses SDLK_*** as indices to IsKeyXXX() functions.
+            io.SetKeyEventNativeData(key, event->key.keysym.sym, event->key.keysym.scancode,
+                                     event->key.keysym.scancode);  // To support legacy indexing (<1.87 user code). Legacy backend uses SDLK_*** as indices to IsKeyXXX() functions.
             return true;
         }
         case SDL_WINDOWEVENT: {
@@ -1063,20 +1022,16 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event) {
                 bd->MouseWindowID = event->window.windowID;
                 bd->PendingMouseLeaveFrame = 0;
             }
-            if (window_event == SDL_WINDOWEVENT_LEAVE)
-                bd->PendingMouseLeaveFrame = ImGui::GetFrameCount() + 1;
-            if (window_event == SDL_WINDOWEVENT_FOCUS_GAINED) io.AddFocusEvent(true);
+            if (window_event == SDL_WINDOWEVENT_LEAVE) bd->PendingMouseLeaveFrame = ImGui::GetFrameCount() + 1;
+            if (window_event == SDL_WINDOWEVENT_FOCUS_GAINED)
+                io.AddFocusEvent(true);
             else if (window_event == SDL_WINDOWEVENT_FOCUS_LOST)
                 io.AddFocusEvent(false);
-            if (window_event == SDL_WINDOWEVENT_CLOSE || window_event == SDL_WINDOWEVENT_MOVED ||
-                window_event == SDL_WINDOWEVENT_RESIZED)
-                if (ImGuiViewport *viewport = ImGui::FindViewportByPlatformHandle(
-                            (void *) SDL_GetWindowFromID(event->window.windowID))) {
-                    if (window_event == SDL_WINDOWEVENT_CLOSE)
-                        viewport->PlatformRequestClose = true;
+            if (window_event == SDL_WINDOWEVENT_CLOSE || window_event == SDL_WINDOWEVENT_MOVED || window_event == SDL_WINDOWEVENT_RESIZED)
+                if (ImGuiViewport *viewport = ImGui::FindViewportByPlatformHandle((void *)SDL_GetWindowFromID(event->window.windowID))) {
+                    if (window_event == SDL_WINDOWEVENT_CLOSE) viewport->PlatformRequestClose = true;
                     if (window_event == SDL_WINDOWEVENT_MOVED) viewport->PlatformRequestMove = true;
-                    if (window_event == SDL_WINDOWEVENT_RESIZED)
-                        viewport->PlatformRequestResize = true;
+                    if (window_event == SDL_WINDOWEVENT_RESIZED) viewport->PlatformRequestResize = true;
                     return true;
                 }
             return true;
@@ -1096,21 +1051,16 @@ static bool ImGui_ImplSDL2_Init(SDL_Window *window, SDL_Renderer *renderer, void
     const char *sdl_backend = SDL_GetCurrentVideoDriver();
     const char *global_mouse_whitelist[] = {"windows", "cocoa", "x11", "DIVE", "VMAN"};
     for (int n = 0; n < IM_ARRAYSIZE(global_mouse_whitelist); n++)
-        if (strncmp(sdl_backend, global_mouse_whitelist[n], strlen(global_mouse_whitelist[n])) == 0)
-            mouse_can_use_global_state = true;
+        if (strncmp(sdl_backend, global_mouse_whitelist[n], strlen(global_mouse_whitelist[n])) == 0) mouse_can_use_global_state = true;
 #endif
 
     // Setup backend capabilities flags
     ImGui_ImplSDL2_Data *bd = IM_NEW(ImGui_ImplSDL2_Data)();
-    io.BackendPlatformUserData = (void *) bd;
+    io.BackendPlatformUserData = (void *)bd;
     io.BackendPlatformName = "imgui_impl_sdl";
-    io.BackendFlags |=
-            ImGuiBackendFlags_HasMouseCursors;// We can honor GetMouseCursor() values (optional)
-    io.BackendFlags |=
-            ImGuiBackendFlags_HasSetMousePos;// We can honor io.WantSetMousePos requests (optional, rarely used)
-    if (mouse_can_use_global_state)
-        io.BackendFlags |=
-                ImGuiBackendFlags_PlatformHasViewports;// We can create multi-viewports on the Platform side (optional)
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;                                       // We can honor GetMouseCursor() values (optional)
+    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;                                        // We can honor io.WantSetMousePos requests (optional, rarely used)
+    if (mouse_can_use_global_state) io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;  // We can create multi-viewports on the Platform side (optional)
 
     bd->Window = window;
     bd->Renderer = renderer;
@@ -1131,29 +1081,26 @@ static bool ImGui_ImplSDL2_Init(SDL_Window *window, SDL_Renderer *renderer, void
     // Load mouse cursors
     bd->MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
     bd->MouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-    bd->MouseCursors[ImGuiMouseCursor_ResizeAll] =
-            SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+    bd->MouseCursors[ImGuiMouseCursor_ResizeAll] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
     bd->MouseCursors[ImGuiMouseCursor_ResizeNS] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
     bd->MouseCursors[ImGuiMouseCursor_ResizeEW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-    bd->MouseCursors[ImGuiMouseCursor_ResizeNESW] =
-            SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-    bd->MouseCursors[ImGuiMouseCursor_ResizeNWSE] =
-            SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+    bd->MouseCursors[ImGuiMouseCursor_ResizeNESW] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+    bd->MouseCursors[ImGuiMouseCursor_ResizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
     bd->MouseCursors[ImGuiMouseCursor_Hand] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
     bd->MouseCursors[ImGuiMouseCursor_NotAllowed] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
 
     // Set platform dependent data in viewport
     // Our mouse update function expect PlatformHandle to be filled for the main viewport
     ImGuiViewport *main_viewport = ImGui::GetMainViewport();
-    main_viewport->PlatformHandle = (void *) window;
+    main_viewport->PlatformHandle = (void *)window;
     main_viewport->PlatformHandleRaw = nullptr;
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info)) {
 #ifdef _WIN32
-        main_viewport->PlatformHandleRaw = (void *) info.info.win.window;
+        main_viewport->PlatformHandleRaw = (void *)info.info.win.window;
 #elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
-        main_viewport->PlatformHandleRaw = (void *) info.info.cocoa.window;
+        main_viewport->PlatformHandleRaw = (void *)info.info.cocoa.window;
 #endif
     }
 
@@ -1176,16 +1123,12 @@ static bool ImGui_ImplSDL2_Init(SDL_Window *window, SDL_Renderer *renderer, void
 
     // We need SDL_CaptureMouse(), SDL_GetGlobalMouseState() from SDL 2.0.4+ to support multiple viewports.
     // We left the call to ImGui_ImplSDL2_InitPlatformInterface() outside of #ifdef to avoid unused-function warnings.
-    if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) &&
-        (io.BackendFlags & ImGuiBackendFlags_PlatformHasViewports))
-        ImGui_ImplSDL2_InitPlatformInterface(window, sdl_gl_context);
+    if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) && (io.BackendFlags & ImGuiBackendFlags_PlatformHasViewports)) ImGui_ImplSDL2_InitPlatformInterface(window, sdl_gl_context);
 
     return true;
 }
 
-bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window *window, void *sdl_gl_context) {
-    return ImGui_ImplSDL2_Init(window, nullptr, sdl_gl_context);
-}
+bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window *window, void *sdl_gl_context) { return ImGui_ImplSDL2_Init(window, nullptr, sdl_gl_context); }
 
 bool ImGui_ImplSDL2_InitForVulkan(SDL_Window *window) {
 #if !SDL_HAS_VULKAN
@@ -1204,13 +1147,9 @@ bool ImGui_ImplSDL2_InitForD3D(SDL_Window *window) {
     return ImGui_ImplSDL2_Init(window, nullptr, nullptr);
 }
 
-bool ImGui_ImplSDL2_InitForMetal(SDL_Window *window) {
-    return ImGui_ImplSDL2_Init(window, nullptr, nullptr);
-}
+bool ImGui_ImplSDL2_InitForMetal(SDL_Window *window) { return ImGui_ImplSDL2_Init(window, nullptr, nullptr); }
 
-bool ImGui_ImplSDL2_InitForSDLRenderer(SDL_Window *window, SDL_Renderer *renderer) {
-    return ImGui_ImplSDL2_Init(window, renderer, nullptr);
-}
+bool ImGui_ImplSDL2_InitForSDLRenderer(SDL_Window *window, SDL_Renderer *renderer) { return ImGui_ImplSDL2_Init(window, renderer, nullptr); }
 
 void ImGui_ImplSDL2_Shutdown() {
     ImGui_ImplSDL2_Data *bd = ImGui_ImplSDL2_GetBackendData();
@@ -1220,8 +1159,7 @@ void ImGui_ImplSDL2_Shutdown() {
     ImGui_ImplSDL2_ShutdownPlatformInterface();
 
     if (bd->ClipboardTextData) SDL_free(bd->ClipboardTextData);
-    for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT; cursor_n++)
-        SDL_FreeCursor(bd->MouseCursors[cursor_n]);
+    for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT; cursor_n++) SDL_FreeCursor(bd->MouseCursors[cursor_n]);
 
     io.BackendPlatformName = nullptr;
     io.BackendPlatformUserData = nullptr;
@@ -1238,13 +1176,10 @@ static void ImGui_ImplSDL2_UpdateMouseData() {
     // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
     SDL_CaptureMouse((bd->MouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
     SDL_Window *focused_window = SDL_GetKeyboardFocus();
-    const bool is_app_focused =
-            (focused_window && (bd->Window == focused_window ||
-                                ImGui::FindViewportByPlatformHandle((void *) focused_window)));
+    const bool is_app_focused = (focused_window && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle((void *)focused_window)));
 #else
     SDL_Window *focused_window = bd->Window;
-    const bool is_app_focused = (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_INPUT_FOCUS) !=
-                                0;// SDL 2.0.3 and non-windowed systems: single-viewport only
+    const bool is_app_focused = (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_INPUT_FOCUS) != 0;  // SDL 2.0.3 and non-windowed systems: single-viewport only
 #endif
 
     if (is_app_focused) {
@@ -1252,10 +1187,10 @@ static void ImGui_ImplSDL2_UpdateMouseData() {
         if (io.WantSetMousePos) {
 #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
             if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                SDL_WarpMouseGlobal((int) io.MousePos.x, (int) io.MousePos.y);
+                SDL_WarpMouseGlobal((int)io.MousePos.x, (int)io.MousePos.y);
             else
 #endif
-                SDL_WarpMouseInWindow(bd->Window, (int) io.MousePos.x, (int) io.MousePos.y);
+                SDL_WarpMouseInWindow(bd->Window, (int)io.MousePos.x, (int)io.MousePos.y);
         }
 
         // (Optional) Fallback to provide mouse position when focused (SDL_MOUSEMOTION already provides this when hovered or captured)
@@ -1269,7 +1204,7 @@ static void ImGui_ImplSDL2_UpdateMouseData() {
                 mouse_x -= window_x;
                 mouse_y -= window_y;
             }
-            io.AddMousePosEvent((float) mouse_x, (float) mouse_y);
+            io.AddMousePosEvent((float)mouse_x, (float)mouse_y);
         }
     }
 
@@ -1283,9 +1218,7 @@ static void ImGui_ImplSDL2_UpdateMouseData() {
     if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
         ImGuiID mouse_viewport_id = 0;
         if (SDL_Window *sdl_mouse_window = SDL_GetWindowFromID(bd->MouseWindowID))
-            if (ImGuiViewport *mouse_viewport =
-                        ImGui::FindViewportByPlatformHandle((void *) sdl_mouse_window))
-                mouse_viewport_id = mouse_viewport->ID;
+            if (ImGuiViewport *mouse_viewport = ImGui::FindViewportByPlatformHandle((void *)sdl_mouse_window)) mouse_viewport_id = mouse_viewport->ID;
         io.AddMouseViewportEvent(mouse_viewport_id);
     }
 }
@@ -1301,16 +1234,14 @@ static void ImGui_ImplSDL2_UpdateMouseCursor() {
         SDL_ShowCursor(SDL_FALSE);
     } else {
         // Show OS mouse cursor
-        SDL_SetCursor(bd->MouseCursors[imgui_cursor] ? bd->MouseCursors[imgui_cursor]
-                                                     : bd->MouseCursors[ImGuiMouseCursor_Arrow]);
+        SDL_SetCursor(bd->MouseCursors[imgui_cursor] ? bd->MouseCursors[imgui_cursor] : bd->MouseCursors[ImGuiMouseCursor_Arrow]);
         SDL_ShowCursor(SDL_TRUE);
     }
 }
 
 static void ImGui_ImplSDL2_UpdateGamepads() {
     ImGuiIO &io = ImGui::GetIO();
-    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) ==
-        0)// FIXME: Technically feeding gamepad shouldn't depend on this now that they are regular inputs.
+    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)  // FIXME: Technically feeding gamepad shouldn't depend on this now that they are regular inputs.
         return;
 
     // Get gamepad
@@ -1321,22 +1252,21 @@ static void ImGui_ImplSDL2_UpdateGamepads() {
 
 // Update gamepad inputs
 #define IM_SATURATE(V) (V < 0.0f ? 0.0f : V > 1.0f ? 1.0f : V)
-#define MAP_BUTTON(KEY_NO, BUTTON_NO)                                                              \
+#define MAP_BUTTON(KEY_NO, BUTTON_NO) \
     { io.AddKeyEvent(KEY_NO, SDL_GameControllerGetButton(game_controller, BUTTON_NO) != 0); }
-#define MAP_ANALOG(KEY_NO, AXIS_NO, V0, V1)                                                        \
-    {                                                                                              \
-        float vn = (float) (SDL_GameControllerGetAxis(game_controller, AXIS_NO) - V0) /            \
-                   (float) (V1 - V0);                                                              \
-        vn = IM_SATURATE(vn);                                                                      \
-        io.AddKeyAnalogEvent(KEY_NO, vn > 0.1f, vn);                                               \
+#define MAP_ANALOG(KEY_NO, AXIS_NO, V0, V1)                                                              \
+    {                                                                                                    \
+        float vn = (float)(SDL_GameControllerGetAxis(game_controller, AXIS_NO) - V0) / (float)(V1 - V0); \
+        vn = IM_SATURATE(vn);                                                                            \
+        io.AddKeyAnalogEvent(KEY_NO, vn > 0.1f, vn);                                                     \
     }
-    const int thumb_dead_zone = 8000;// SDL_gamecontroller.h suggests using this value.
+    const int thumb_dead_zone = 8000;  // SDL_gamecontroller.h suggests using this value.
     MAP_BUTTON(ImGuiKey_GamepadStart, SDL_CONTROLLER_BUTTON_START);
     MAP_BUTTON(ImGuiKey_GamepadBack, SDL_CONTROLLER_BUTTON_BACK);
-    MAP_BUTTON(ImGuiKey_GamepadFaceLeft, SDL_CONTROLLER_BUTTON_X); // Xbox X, PS Square
-    MAP_BUTTON(ImGuiKey_GamepadFaceRight, SDL_CONTROLLER_BUTTON_B);// Xbox B, PS Circle
-    MAP_BUTTON(ImGuiKey_GamepadFaceUp, SDL_CONTROLLER_BUTTON_Y);   // Xbox Y, PS Triangle
-    MAP_BUTTON(ImGuiKey_GamepadFaceDown, SDL_CONTROLLER_BUTTON_A); // Xbox A, PS Cross
+    MAP_BUTTON(ImGuiKey_GamepadFaceLeft, SDL_CONTROLLER_BUTTON_X);   // Xbox X, PS Square
+    MAP_BUTTON(ImGuiKey_GamepadFaceRight, SDL_CONTROLLER_BUTTON_B);  // Xbox B, PS Circle
+    MAP_BUTTON(ImGuiKey_GamepadFaceUp, SDL_CONTROLLER_BUTTON_Y);     // Xbox Y, PS Triangle
+    MAP_BUTTON(ImGuiKey_GamepadFaceDown, SDL_CONTROLLER_BUTTON_A);   // Xbox A, PS Cross
     MAP_BUTTON(ImGuiKey_GamepadDpadLeft, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
     MAP_BUTTON(ImGuiKey_GamepadDpadRight, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
     MAP_BUTTON(ImGuiKey_GamepadDpadUp, SDL_CONTROLLER_BUTTON_DPAD_UP);
@@ -1369,12 +1299,12 @@ static void ImGui_ImplSDL2_UpdateMonitors() {
         ImGuiPlatformMonitor monitor;
         C_Rect r;
         SDL_GetDisplayBounds(n, &r);
-        monitor.MainPos = monitor.WorkPos = ImVec2((float) r.x, (float) r.y);
-        monitor.MainSize = monitor.WorkSize = ImVec2((float) r.w, (float) r.h);
+        monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+        monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
 #if SDL_HAS_USABLE_DISPLAY_BOUNDS
         SDL_GetDisplayUsableBounds(n, &r);
-        monitor.WorkPos = ImVec2((float) r.x, (float) r.y);
-        monitor.WorkSize = ImVec2((float) r.w, (float) r.h);
+        monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+        monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
 #endif
 #if SDL_HAS_PER_MONITOR_DPI
         // FIXME-VIEWPORT: On MacOS SDL reports actual monitor DPI scale, ignoring OS configuration. We may want to set
@@ -1396,22 +1326,20 @@ void ImGui_ImplSDL2_NewFrame() {
     int display_w, display_h;
     SDL_GetWindowSize(bd->Window, &w, &h);
     if (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_MINIMIZED) w = h = 0;
-    if (bd->Renderer != nullptr) SDL_GetRendererOutputSize(bd->Renderer, &display_w, &display_h);
+    if (bd->Renderer != nullptr)
+        SDL_GetRendererOutputSize(bd->Renderer, &display_w, &display_h);
     else
         SDL_GL_GetDrawableSize(bd->Window, &display_w, &display_h);
-    io.DisplaySize = ImVec2((float) w, (float) h);
-    if (w > 0 && h > 0)
-        io.DisplayFramebufferScale = ImVec2((float) display_w / w, (float) display_h / h);
+    io.DisplaySize = ImVec2((float)w, (float)h);
+    if (w > 0 && h > 0) io.DisplayFramebufferScale = ImVec2((float)display_w / w, (float)display_h / h);
 
     // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
     static Uint64 frequency = SDL_GetPerformanceFrequency();
     Uint64 current_time = SDL_GetPerformanceCounter();
-    io.DeltaTime = bd->Time > 0 ? (float) ((double) (current_time - bd->Time) / frequency)
-                                : (float) (1.0f / 60.0f);
+    io.DeltaTime = bd->Time > 0 ? (float)((double)(current_time - bd->Time) / frequency) : (float)(1.0f / 60.0f);
     bd->Time = current_time;
 
-    if (bd->PendingMouseLeaveFrame && bd->PendingMouseLeaveFrame >= ImGui::GetFrameCount() &&
-        bd->MouseButtonsDown == 0) {
+    if (bd->PendingMouseLeaveFrame && bd->PendingMouseLeaveFrame >= ImGui::GetFrameCount() && bd->MouseButtonsDown == 0) {
         bd->MouseWindowID = 0;
         bd->PendingMouseLeaveFrame = 0;
         io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
@@ -1438,8 +1366,7 @@ void ImGui_ImplSDL2_NewFrame() {
 //--------------------------------------------------------------------------------------------------------
 
 // Helper structure we store in the void* RenderUserData field of each ImGuiViewport to easily retrieve our backend data.
-struct ImGui_ImplSDL2_ViewportData
-{
+struct ImGui_ImplSDL2_ViewportData {
     C_Window *Window;
     Uint32 WindowID;
     bool WindowOwned;
@@ -1460,8 +1387,7 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport *viewport) {
     viewport->PlatformUserData = vd;
 
     ImGuiViewport *main_viewport = ImGui::GetMainViewport();
-    ImGui_ImplSDL2_ViewportData *main_viewport_data =
-            (ImGui_ImplSDL2_ViewportData *) main_viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *main_viewport_data = (ImGui_ImplSDL2_ViewportData *)main_viewport->PlatformUserData;
 
     // Share GL resources with main context
     bool use_opengl = (main_viewport_data->GLContext != nullptr);
@@ -1485,8 +1411,7 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport *viewport) {
 #if SDL_HAS_ALWAYS_ON_TOP
     sdl_flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? SDL_WINDOW_ALWAYS_ON_TOP : 0;
 #endif
-    vd->Window = SDL_CreateWindow("No Title Yet", (int) viewport->Pos.x, (int) viewport->Pos.y,
-                                  (int) viewport->Size.x, (int) viewport->Size.y, sdl_flags);
+    vd->Window = SDL_CreateWindow("No Title Yet", (int)viewport->Pos.x, (int)viewport->Pos.y, (int)viewport->Size.x, (int)viewport->Size.y, sdl_flags);
     vd->WindowOwned = true;
     if (use_opengl) {
         vd->GLContext = SDL_GL_CreateContext(vd->Window);
@@ -1494,7 +1419,7 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport *viewport) {
     }
     if (use_opengl && backup_context) SDL_GL_MakeCurrent(vd->Window, backup_context);
 
-    viewport->PlatformHandle = (void *) vd->Window;
+    viewport->PlatformHandle = (void *)vd->Window;
     viewport->PlatformHandleRaw = nullptr;
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
@@ -1502,14 +1427,13 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport *viewport) {
 #if defined(_WIN32)
         viewport->PlatformHandleRaw = info.info.win.window;
 #elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
-        viewport->PlatformHandleRaw = (void *) info.info.cocoa.window;
+        viewport->PlatformHandleRaw = (void *)info.info.cocoa.window;
 #endif
     }
 }
 
 static void ImGui_ImplSDL2_DestroyWindow(ImGuiViewport *viewport) {
-    if (ImGui_ImplSDL2_ViewportData *vd =
-                (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData) {
+    if (ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData) {
         if (vd->GLContext && vd->WindowOwned) SDL_GL_DeleteContext(vd->GLContext);
         if (vd->Window && vd->WindowOwned) SDL_DestroyWindow(vd->Window);
         vd->GLContext = nullptr;
@@ -1520,9 +1444,9 @@ static void ImGui_ImplSDL2_DestroyWindow(ImGuiViewport *viewport) {
 }
 
 static void ImGui_ImplSDL2_ShowWindow(ImGuiViewport *viewport) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
 #if defined(_WIN32)
-    HWND hwnd = (HWND) viewport->PlatformHandleRaw;
+    HWND hwnd = (HWND)viewport->PlatformHandleRaw;
 
     // SDL hack: Hide icon from task bar
     // Note: SDL 2.0.6+ has a SDL_WINDOW_SKIP_TASKBAR flag which is supported under Windows but the way it create the window breaks our seamless transition.
@@ -1544,63 +1468,63 @@ static void ImGui_ImplSDL2_ShowWindow(ImGuiViewport *viewport) {
 }
 
 static ImVec2 ImGui_ImplSDL2_GetWindowPos(ImGuiViewport *viewport) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     int x = 0, y = 0;
     SDL_GetWindowPosition(vd->Window, &x, &y);
-    return ImVec2((float) x, (float) y);
+    return ImVec2((float)x, (float)y);
 }
 
 static void ImGui_ImplSDL2_SetWindowPos(ImGuiViewport *viewport, ImVec2 pos) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
-    SDL_SetWindowPosition(vd->Window, (int) pos.x, (int) pos.y);
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
+    SDL_SetWindowPosition(vd->Window, (int)pos.x, (int)pos.y);
 }
 
 static ImVec2 ImGui_ImplSDL2_GetWindowSize(ImGuiViewport *viewport) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     int w = 0, h = 0;
     SDL_GetWindowSize(vd->Window, &w, &h);
-    return ImVec2((float) w, (float) h);
+    return ImVec2((float)w, (float)h);
 }
 
 static void ImGui_ImplSDL2_SetWindowSize(ImGuiViewport *viewport, ImVec2 size) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
-    SDL_SetWindowSize(vd->Window, (int) size.x, (int) size.y);
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
+    SDL_SetWindowSize(vd->Window, (int)size.x, (int)size.y);
 }
 
 static void ImGui_ImplSDL2_SetWindowTitle(ImGuiViewport *viewport, const char *title) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     SDL_SetWindowTitle(vd->Window, title);
 }
 
 #if SDL_HAS_WINDOW_ALPHA
 static void ImGui_ImplSDL2_SetWindowAlpha(ImGuiViewport *viewport, float alpha) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     SDL_SetWindowOpacity(vd->Window, alpha);
 }
 #endif
 
 static void ImGui_ImplSDL2_SetWindowFocus(ImGuiViewport *viewport) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     SDL_RaiseWindow(vd->Window);
 }
 
 static bool ImGui_ImplSDL2_GetWindowFocus(ImGuiViewport *viewport) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     return (SDL_GetWindowFlags(vd->Window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
 static bool ImGui_ImplSDL2_GetWindowMinimized(ImGuiViewport *viewport) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     return (SDL_GetWindowFlags(vd->Window) & SDL_WINDOW_MINIMIZED) != 0;
 }
 
 static void ImGui_ImplSDL2_RenderWindow(ImGuiViewport *viewport, void *) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     if (vd->GLContext) SDL_GL_MakeCurrent(vd->Window, vd->GLContext);
 }
 
 static void ImGui_ImplSDL2_SwapBuffers(ImGuiViewport *viewport, void *) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
     if (vd->GLContext) {
         SDL_GL_MakeCurrent(vd->Window, vd->GLContext);
         SDL_GL_SwapWindow(vd->Window);
@@ -1610,15 +1534,13 @@ static void ImGui_ImplSDL2_SwapBuffers(ImGuiViewport *viewport, void *) {
 // Vulkan support (the Vulkan renderer needs to call a platform-side support function to create the surface)
 // SDL is graceful enough to _not_ need <vulkan/vulkan.h> so we can safely include this.
 #if SDL_HAS_VULKAN
-static int ImGui_ImplSDL2_CreateVkSurface(ImGuiViewport *viewport, ImU64 vk_instance,
-                                          const void *vk_allocator, ImU64 *out_vk_surface) {
-    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *) viewport->PlatformUserData;
-    (void) vk_allocator;
-    SDL_bool ret = SDL_Vulkan_CreateSurface(vd->Window, (VkInstance) vk_instance,
-                                            (VkSurfaceKHR *) out_vk_surface);
-    return ret ? 0 : 1;// ret ? VK_SUCCESS : VK_NOT_READY
+static int ImGui_ImplSDL2_CreateVkSurface(ImGuiViewport *viewport, ImU64 vk_instance, const void *vk_allocator, ImU64 *out_vk_surface) {
+    ImGui_ImplSDL2_ViewportData *vd = (ImGui_ImplSDL2_ViewportData *)viewport->PlatformUserData;
+    (void)vk_allocator;
+    SDL_bool ret = SDL_Vulkan_CreateSurface(vd->Window, (VkInstance)vk_instance, (VkSurfaceKHR *)out_vk_surface);
+    return ret ? 0 : 1;  // ret ? VK_SUCCESS : VK_NOT_READY
 }
-#endif// SDL_HAS_VULKAN
+#endif  // SDL_HAS_VULKAN
 
 static void ImGui_ImplSDL2_InitPlatformInterface(SDL_Window *window, void *sdl_gl_context) {
     // Register platform interface (will be coupled with a renderer interface)
@@ -1711,7 +1633,7 @@ ImString &ImString::operator=(const ImString &other) {
 
 void ImString::reserve(size_t len) {
     if (mData) unref();
-    mData = (char *) ImGui::MemAlloc(len + 1);
+    mData = (char *)ImGui::MemAlloc(len + 1);
     mData[len] = '\0';
     ref();
 }
@@ -1755,25 +1677,15 @@ ImGuiMarkdown::ImGuiMarkdown() {
     m_md.debug_log = nullptr;
 
     m_md.flags = MD_FLAG_TABLES | MD_FLAG_UNDERLINE | MD_FLAG_STRIKETHROUGH;
-    m_md.enter_block = [](MD_BLOCKTYPE type, void *detail, void *userdata) {
-        return ((ImGuiMarkdown *) userdata)->block(type, detail, true);
-    };
+    m_md.enter_block = [](MD_BLOCKTYPE type, void *detail, void *userdata) { return ((ImGuiMarkdown *)userdata)->block(type, detail, true); };
 
-    m_md.leave_block = [](MD_BLOCKTYPE type, void *detail, void *userdata) {
-        return ((ImGuiMarkdown *) userdata)->block(type, detail, false);
-    };
+    m_md.leave_block = [](MD_BLOCKTYPE type, void *detail, void *userdata) { return ((ImGuiMarkdown *)userdata)->block(type, detail, false); };
 
-    m_md.enter_span = [](MD_SPANTYPE type, void *detail, void *userdata) {
-        return ((ImGuiMarkdown *) userdata)->span(type, detail, true);
-    };
+    m_md.enter_span = [](MD_SPANTYPE type, void *detail, void *userdata) { return ((ImGuiMarkdown *)userdata)->span(type, detail, true); };
 
-    m_md.leave_span = [](MD_SPANTYPE type, void *detail, void *userdata) {
-        return ((ImGuiMarkdown *) userdata)->span(type, detail, false);
-    };
+    m_md.leave_span = [](MD_SPANTYPE type, void *detail, void *userdata) { return ((ImGuiMarkdown *)userdata)->span(type, detail, false); };
 
-    m_md.text = [](MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata) {
-        return ((ImGuiMarkdown *) userdata)->text(type, text, text + size);
-    };
+    m_md.text = [](MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE size, void *userdata) { return ((ImGuiMarkdown *)userdata)->text(type, text, text + size); };
 }
 
 void ImGuiMarkdown::BLOCK_UL(const MD_BLOCK_UL_DETAIL *d, bool e) {
@@ -1876,9 +1788,13 @@ void ImGuiMarkdown::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL *, bool e) {
         const float wx = wp.x + sp.x / 2;
         const float wy = wp.y - sp.y / 2 - ImGui::GetScrollY();
 
-        for (int i = 0; i < m_table_col_pos.size(); ++i) { m_table_col_pos[i] += wx; }
+        for (int i = 0; i < m_table_col_pos.size(); ++i) {
+            m_table_col_pos[i] += wx;
+        }
 
-        for (int i = 0; i < m_table_row_pos.size(); ++i) { m_table_row_pos[i] += wy; }
+        for (int i = 0; i < m_table_row_pos.size(); ++i) {
+            m_table_row_pos[i] += wy;
+        }
 
         const ImColor c = ImGui::GetStyle().Colors[ImGuiCol_Separator];
         ////////////////////////////////////////////////////////////////////////
@@ -1932,8 +1848,7 @@ void ImGuiMarkdown::BLOCK_TD(const MD_BLOCK_TD_DETAIL *, bool e) {
         ++m_table_next_column;
 
         ImGui::Indent(m_table_col_pos[m_table_next_column - 1]);
-        ImGui::SetCursorPos(
-                ImVec2(m_table_col_pos[m_table_next_column - 1], m_table_row_pos.back()));
+        ImGui::SetCursorPos(ImVec2(m_table_col_pos[m_table_next_column - 1], m_table_row_pos.back()));
 
     } else {
         const ImVec2 p = ImGui::GetCursorPos();
@@ -1974,7 +1889,9 @@ void ImGuiMarkdown::line(ImColor c, bool under) {
     ImVec2 mi = ImGui::GetItemRectMin();
     ImVec2 ma = ImGui::GetItemRectMax();
 
-    if (!under) { ma.y -= ImGui::GetFontSize() / 2; }
+    if (!under) {
+        ma.y -= ImGui::GetFontSize() / 2;
+    }
 
     mi.y = ma.y;
 
@@ -2021,11 +1938,13 @@ void ImGuiMarkdown::SPAN_IMG(const MD_SPAN_IMG_DETAIL *d, bool e) {
 
             if (ImGui::IsItemHovered()) {
 
-                //if (d->title.size) {
+                // if (d->title.size) {
                 //	ImGui::SetTooltip("%.*s", (int)d->title.size, d->title.text);
-                //}
+                // }
 
-                if (ImGui::IsMouseReleased(0)) { open_url(); }
+                if (ImGui::IsMouseReleased(0)) {
+                    open_url();
+                }
             }
         }
     }
@@ -2056,9 +1975,7 @@ void ImGuiMarkdown::render_text(const char *str, const char *str_end) {
             float wl = ImGui::GetContentRegionAvail().x;
 
             if (m_is_table_body) {
-                wl = (m_table_next_column < m_table_col_pos.size()
-                              ? m_table_col_pos[m_table_next_column]
-                              : m_table_last_pos.x);
+                wl = (m_table_next_column < m_table_col_pos.size() ? m_table_col_pos[m_table_next_column] : m_table_last_pos.x);
                 wl -= ImGui::GetCursorPosX();
             }
 
@@ -2077,14 +1994,20 @@ void ImGuiMarkdown::render_text(const char *str, const char *str_end) {
                 ImGui::SetTooltip("%s", m_href.c_str());
 
                 c = s.Colors[ImGuiCol_ButtonHovered];
-                if (ImGui::IsMouseReleased(0)) { open_url(); }
+                if (ImGui::IsMouseReleased(0)) {
+                    open_url();
+                }
             } else {
                 c = s.Colors[ImGuiCol_Button];
             }
             line(c, true);
         }
-        if (m_is_underline) { line(s.Colors[ImGuiCol_Text], true); }
-        if (m_is_strikethrough) { line(s.Colors[ImGuiCol_Text], false); }
+        if (m_is_underline) {
+            line(s.Colors[ImGuiCol_Text], true);
+        }
+        if (m_is_strikethrough) {
+            line(s.Colors[ImGuiCol_Text], false);
+        }
 
         str = te;
 
@@ -2143,10 +2066,14 @@ int ImGuiMarkdown::text(MD_TEXTTYPE type, const char *str, const char *str_end) 
             soft_break();
             break;
         case MD_TEXT_ENTITY:
-            if (!render_entity(str, str_end)) { render_text(str, str_end); };
+            if (!render_entity(str, str_end)) {
+                render_text(str, str_end);
+            };
             break;
         case MD_TEXT_HTML:
-            if (!render_html(str, str_end)) { render_text(str, str_end); }
+            if (!render_html(str, str_end)) {
+                render_text(str, str_end);
+            }
             break;
         case MD_TEXT_LATEXMATH:
             render_text(str, str_end);
@@ -2172,22 +2099,22 @@ int ImGuiMarkdown::block(MD_BLOCKTYPE type, void *d, bool e) {
             BLOCK_QUOTE(e);
             break;
         case MD_BLOCK_UL:
-            BLOCK_UL((MD_BLOCK_UL_DETAIL *) d, e);
+            BLOCK_UL((MD_BLOCK_UL_DETAIL *)d, e);
             break;
         case MD_BLOCK_OL:
-            BLOCK_OL((MD_BLOCK_OL_DETAIL *) d, e);
+            BLOCK_OL((MD_BLOCK_OL_DETAIL *)d, e);
             break;
         case MD_BLOCK_LI:
-            BLOCK_LI((MD_BLOCK_LI_DETAIL *) d, e);
+            BLOCK_LI((MD_BLOCK_LI_DETAIL *)d, e);
             break;
         case MD_BLOCK_HR:
             BLOCK_HR(e);
             break;
         case MD_BLOCK_H:
-            BLOCK_H((MD_BLOCK_H_DETAIL *) d, e);
+            BLOCK_H((MD_BLOCK_H_DETAIL *)d, e);
             break;
         case MD_BLOCK_CODE:
-            BLOCK_CODE((MD_BLOCK_CODE_DETAIL *) d, e);
+            BLOCK_CODE((MD_BLOCK_CODE_DETAIL *)d, e);
             break;
         case MD_BLOCK_HTML:
             BLOCK_HTML(e);
@@ -2196,7 +2123,7 @@ int ImGuiMarkdown::block(MD_BLOCKTYPE type, void *d, bool e) {
             BLOCK_P(e);
             break;
         case MD_BLOCK_TABLE:
-            BLOCK_TABLE((MD_BLOCK_TABLE_DETAIL *) d, e);
+            BLOCK_TABLE((MD_BLOCK_TABLE_DETAIL *)d, e);
             break;
         case MD_BLOCK_THEAD:
             BLOCK_THEAD(e);
@@ -2208,10 +2135,10 @@ int ImGuiMarkdown::block(MD_BLOCKTYPE type, void *d, bool e) {
             BLOCK_TR(e);
             break;
         case MD_BLOCK_TH:
-            BLOCK_TH((MD_BLOCK_TD_DETAIL *) d, e);
+            BLOCK_TH((MD_BLOCK_TD_DETAIL *)d, e);
             break;
         case MD_BLOCK_TD:
-            BLOCK_TD((MD_BLOCK_TD_DETAIL *) d, e);
+            BLOCK_TD((MD_BLOCK_TD_DETAIL *)d, e);
             break;
         default:
             assert(false);
@@ -2230,10 +2157,10 @@ int ImGuiMarkdown::span(MD_SPANTYPE type, void *d, bool e) {
             SPAN_STRONG(e);
             break;
         case MD_SPAN_A:
-            SPAN_A((MD_SPAN_A_DETAIL *) d, e);
+            SPAN_A((MD_SPAN_A_DETAIL *)d, e);
             break;
         case MD_SPAN_IMG:
-            SPAN_IMG((MD_SPAN_IMG_DETAIL *) d, e);
+            SPAN_IMG((MD_SPAN_IMG_DETAIL *)d, e);
             break;
         case MD_SPAN_CODE:
             SPAN_CODE(e);
@@ -2248,7 +2175,7 @@ int ImGuiMarkdown::span(MD_SPANTYPE type, void *d, bool e) {
             SPAN_LATEXMATH_DISPLAY(e);
             break;
         case MD_SPAN_WIKILINK:
-            SPAN_WIKILINK((MD_SPAN_WIKILINK_DETAIL *) d, e);
+            SPAN_WIKILINK((MD_SPAN_WIKILINK_DETAIL *)d, e);
             break;
         case MD_SPAN_U:
             SPAN_U(e);
@@ -2261,16 +2188,14 @@ int ImGuiMarkdown::span(MD_SPANTYPE type, void *d, bool e) {
     return 0;
 }
 
-int ImGuiMarkdown::print(const std::string &text) {
-    return md_parse(text.c_str(), text.size() + 1, &m_md, this);
-}
+int ImGuiMarkdown::print(const std::string &text) { return md_parse(text.c_str(), text.size() + 1, &m_md, this); }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 ImFont *ImGuiMarkdown::get_font() const {
-    return nullptr;//default font
+    return nullptr;  // default font
 
-    //Example:
+    // Example:
 #if 0
     if (m_is_table_header) {
         return g_font_bold;
@@ -2289,7 +2214,9 @@ ImFont *ImGuiMarkdown::get_font() const {
 };
 
 ImVec4 ImGuiMarkdown::get_color() const {
-    if (!m_href.empty()) { return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]; }
+    if (!m_href.empty()) {
+        return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
+    }
     return ImGui::GetStyle().Colors[ImGuiCol_Text];
 }
 
@@ -2325,9 +2252,8 @@ void ImGuiMarkdown::soft_break() { ImGui::NewLine(); }
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#pragma comment(                                                                                   \
-        linker,                                                                                    \
-        "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+#pragma comment(linker, \
+                "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #pragma comment(lib, "comctl32.lib")
 
@@ -2343,25 +2269,18 @@ void ImGUIIMMCommunication::operator()() {
     static ImGuiID lastTextInputActiveId = 0;
     static ImGuiID lastTextInputFocusId = 0;
 
-    if (!(candidate_window_root_id &&
-          ((ImGui::GetCurrentContext()->NavWindow
-                    ? ImGui::GetCurrentContext()->NavWindow->RootWindow->ID
-                    : 0u) == candidate_window_root_id))) {
+    if (!(candidate_window_root_id && ((ImGui::GetCurrentContext()->NavWindow ? ImGui::GetCurrentContext()->NavWindow->RootWindow->ID : 0u) == candidate_window_root_id))) {
 
         window_pos = ImVec2(ImGui::GetCurrentContext()->PlatformImeData.InputPos.x + 1.0f,
-                            ImGui::GetCurrentContext()->PlatformImeData.InputPos.y);//
+                            ImGui::GetCurrentContext()->PlatformImeData.InputPos.y);  //
         window_pos_pivot = ImVec2(0.0f, 0.0f);
 
         const ImGuiContext *const currentContext = ImGui::GetCurrentContext();
         IM_ASSERT(currentContext || !"ImGui::GetCurrentContext() return nullptr.");
         if (currentContext) {
             if (!ImGui::IsMouseClicked(0)) {
-                if ((currentContext->WantTextInputNextFrame != -1)
-                            ? (!!(currentContext->WantTextInputNextFrame))
-                            : false) {
-                    if ((!!currentContext->NavWindow) &&
-                        (currentContext->NavWindow->RootWindow->ID != candidate_window_root_id) &&
-                        (ImGui::GetActiveID() != lastTextInputActiveId)) {
+                if ((currentContext->WantTextInputNextFrame != -1) ? (!!(currentContext->WantTextInputNextFrame)) : false) {
+                    if ((!!currentContext->NavWindow) && (currentContext->NavWindow->RootWindow->ID != candidate_window_root_id) && (ImGui::GetActiveID() != lastTextInputActiveId)) {
                         OutputDebugStringW(L"update lastTextInputActiveId\n");
                         lastTextInputNavWindow = ImGui::GetCurrentContext()->NavWindow;
                         lastTextInputActiveId = ImGui::GetActiveID();
@@ -2383,15 +2302,13 @@ void ImGUIIMMCommunication::operator()() {
         }
     }
 
-    ImVec2 target_screen_pos = ImVec2(0.0f, 0.0f);// IME Candidate List Window position.
+    ImVec2 target_screen_pos = ImVec2(0.0f, 0.0f);  // IME Candidate List Window position.
 
     if (this->is_open) {
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         if (ImGui::Begin("IME Composition Window", nullptr,
-                         ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoNav |
-                                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
-                                 ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize |
                                  ImGuiWindowFlags_NoSavedSettings)) {
 
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.78125f, 1.0f, 0.1875f, 1.0f));
@@ -2400,8 +2317,7 @@ void ImGUIIMMCommunication::operator()() {
 
             if (static_cast<bool>(comp_target_utf8)) {
                 ImGui::SameLine(0.0f, 0.0f);
-                ImGui::PushStyleColor(ImGuiCol_Text,
-                                      ImVec4(0.203125f, 0.91796875f, 0.35546875f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.203125f, 0.91796875f, 0.35546875f, 1.0f));
 
                 target_screen_pos = ImGui::GetCursorScreenPos();
                 target_screen_pos.y += ImGui::GetTextLineHeightWithSpacing();
@@ -2432,8 +2348,8 @@ void ImGUIIMMCommunication::operator()() {
             std::vector<const char *> listbox_items = {};
 
             IM_ASSERT(candidate_window_num);
-            int candidate_page = ((int) candidate_list.selection) / candidate_window_num;
-            int candidate_selection = ((int) candidate_list.selection) % candidate_window_num;
+            int candidate_page = ((int)candidate_list.selection) / candidate_window_num;
+            int candidate_selection = ((int)candidate_list.selection) % candidate_window_num;
 
             auto begin_ite = std::begin(candidate_list.list_utf8);
             std::advance(begin_ite, candidate_page * candidate_window_num);
@@ -2445,41 +2361,30 @@ void ImGUIIMMCommunication::operator()() {
                 }
             }
 
-            std::for_each(begin_ite, end_ite,
-                          [&](auto &item) { listbox_items.push_back(item.c_str()); });
+            std::for_each(begin_ite, end_ite, [&](auto &item) { listbox_items.push_back(item.c_str()); });
 
-            const float candidate_window_height = ((ImGui::GetStyle().FramePadding.y * 2) +
-                                                   ((ImGui::GetTextLineHeightWithSpacing()) *
-                                                    ((int) std::size(listbox_items) + 2)));
+            const float candidate_window_height = ((ImGui::GetStyle().FramePadding.y * 2) + ((ImGui::GetTextLineHeightWithSpacing()) * ((int)std::size(listbox_items) + 2)));
 
             if (io.DisplaySize.y < (target_screen_pos.y + candidate_window_height)) {
-                target_screen_pos.y -=
-                        ImGui::GetTextLineHeightWithSpacing() + candidate_window_height;
+                target_screen_pos.y -= ImGui::GetTextLineHeightWithSpacing() + candidate_window_height;
             }
 
             ImGui::SetNextWindowPos(target_screen_pos, ImGuiCond_Always, window_pos_pivot);
 
             if (ImGui::Begin("##Overlay-IME-Candidate-List-Window", &show_ime_candidate_list,
-                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
-                                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs |
-                                     ImGuiWindowFlags_NoSavedSettings |
-                                     ImGuiWindowFlags_NoFocusOnAppearing |
-                                     ImGuiWindowFlags_NoNav)) {
-                if (ImGui::ListBoxHeader("##IMECandidateListWindow",
-                                         static_cast<int>(std::size(listbox_items)),
-                                         static_cast<int>(std::size(listbox_items)))) {
+                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings |
+                                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav)) {
+                if (ImGui::ListBoxHeader("##IMECandidateListWindow", static_cast<int>(std::size(listbox_items)), static_cast<int>(std::size(listbox_items)))) {
 
                     int i = 0;
-                    for (const char *&listbox_item: listbox_items) {
+                    for (const char *&listbox_item : listbox_items) {
                         if (ImGui::Selectable(listbox_item, (i == candidate_selection))) {
 
                             /* candidate list selection */
 
-                            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-                                !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)) {
+                            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)) {
                                 if (lastTextInputActiveId && lastTextInputFocusId) {
-                                    ImGui::SetActiveID(lastTextInputActiveId,
-                                                       lastTextInputNavWindow);
+                                    ImGui::SetActiveID(lastTextInputActiveId, lastTextInputNavWindow);
                                     ImGui::SetFocusID(lastTextInputFocusId, lastTextInputNavWindow);
                                 }
                             }
@@ -2506,14 +2411,13 @@ void ImGUIIMMCommunication::operator()() {
                                     OutputDebugStringW(L"complete\n");
                                     this->request_candidate_list_str_commit = 1;
                                 } else {
-                                    const BYTE nVirtualKey =
-                                            (candidate_selection < i) ? VK_DOWN : VK_UP;
+                                    const BYTE nVirtualKey = (candidate_selection < i) ? VK_DOWN : VK_UP;
                                     const size_t nNumToHit = abs(candidate_selection - i);
                                     for (size_t hit = 0; hit < nNumToHit; ++hit) {
                                         keybd_event(nVirtualKey, 0, 0, 0);
                                         keybd_event(nVirtualKey, 0, KEYEVENTF_KEYUP, 0);
                                     }
-                                    this->request_candidate_list_str_commit = (int) nNumToHit;
+                                    this->request_candidate_list_str_commit = (int)nNumToHit;
                                 }
                             }
                         }
@@ -2521,8 +2425,7 @@ void ImGUIIMMCommunication::operator()() {
                     }
                     ImGui::ListBoxFooter();
                 }
-                ImGui::Text("%d/%d", candidate_list.selection + 1,
-                            static_cast<int>(std::size(candidate_list.list_utf8)));
+                ImGui::Text("%d/%d", candidate_list.selection + 1, static_cast<int>(std::size(candidate_list.list_utf8)));
 #if defined(_DEBUG)
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "%s",
@@ -2559,7 +2462,7 @@ void ImGUIIMMCommunication::operator()() {
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
         if (io.ImeWindowHandle) {
             IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-            (void) (ImmAssociateContext(static_cast<HWND>(io.ImeWindowHandle), HIMC(0)));
+            (void)(ImmAssociateContext(static_cast<HWND>(io.ImeWindowHandle), HIMC(0)));
         }
     }
     if (io.WantTextInput) {
@@ -2578,23 +2481,25 @@ void ImGUIIMMCommunication::operator()() {
 
               Passing HIMC appropriately when using IACE_DEFAULT causes an error and returns to 0
             */
-            VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), HIMC(0),
-                                         IACE_DEFAULT));
+            VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), HIMC(0), IACE_DEFAULT));
         }
     }
 
     return;
 }
 
-ImGUIIMMCommunication::IMMCandidateList ImGUIIMMCommunication::IMMCandidateList::cocreate(
-        const CANDIDATELIST *const src, const size_t src_size) {
+ImGUIIMMCommunication::IMMCandidateList ImGUIIMMCommunication::IMMCandidateList::cocreate(const CANDIDATELIST *const src, const size_t src_size) {
     IM_ASSERT(nullptr != src);
     IM_ASSERT(sizeof(CANDIDATELIST) <= src->dwSize);
     IM_ASSERT(src->dwSelection < src->dwCount);
 
     IMMCandidateList dst{};
-    if (!(sizeof(CANDIDATELIST) < src->dwSize)) { return dst; }
-    if (!(src->dwSelection < src->dwCount)) { return dst; }
+    if (!(sizeof(CANDIDATELIST) < src->dwSize)) {
+        return dst;
+    }
+    if (!(src->dwSelection < src->dwCount)) {
+        return dst;
+    }
     const char *const baseaddr = reinterpret_cast<const char *>(src);
 
     for (size_t i = 0; i < src->dwCount; ++i) {
@@ -2602,8 +2507,7 @@ ImGUIIMMCommunication::IMMCandidateList ImGUIIMMCommunication::IMMCandidateList:
         const int require_byte = WideCharToMultiByte(CP_UTF8, 0, item, -1, nullptr, 0, NULL, NULL);
         if (0 < require_byte) {
             std::unique_ptr<char[]> utf8buf{new char[require_byte]};
-            if (require_byte == WideCharToMultiByte(CP_UTF8, 0, item, -1, utf8buf.get(),
-                                                    require_byte, NULL, NULL)) {
+            if (require_byte == WideCharToMultiByte(CP_UTF8, 0, item, -1, utf8buf.get(), require_byte, NULL, NULL)) {
                 dst.list_utf8.emplace_back(utf8buf.get());
                 continue;
             }
@@ -2625,15 +2529,10 @@ bool ImGUIIMMCommunication::update_candidate_window(HWND hWnd) {
             IM_ASSERT(sizeof(CANDIDATELIST) <= dwSize);
             if (sizeof(CANDIDATELIST) <= dwSize) {
 
-                std::vector<char> candidatelist((size_t) dwSize);
-                if ((DWORD) (std::size(candidatelist) *
-                             sizeof(typename decltype(candidatelist)::value_type)) ==
-                    ImmGetCandidateListW(
-                            hImc, 0, reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
-                            (DWORD) (std::size(candidatelist) *
-                                     sizeof(typename decltype(candidatelist)::value_type)))) {
-                    const CANDIDATELIST *const cl =
-                            reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                std::vector<char> candidatelist((size_t)dwSize);
+                if ((DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) ==
+                    ImmGetCandidateListW(hImc, 0, reinterpret_cast<CANDIDATELIST *>(candidatelist.data()), (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
+                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
                     candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
                     result = true;
 #if 0  /* for IMM candidate window debug BEGIN*/
@@ -2663,43 +2562,36 @@ bool ImGUIIMMCommunication::update_candidate_window(HWND hWnd) {
 }
 
 LRESULT
-ImGUIIMMCommunication::imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam,
-                                                      LPARAM lParam, UINT_PTR uIdSubclass,
-                                                      DWORD_PTR dwRefData) {
+ImGUIIMMCommunication::imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
     switch (uMsg) {
         case WM_DESTROY: {
             VERIFY(ImmAssociateContextEx(hWnd, HIMC(0), IACE_DEFAULT));
-            if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass),
-                                      uIdSubclass)) {
+            if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass), uIdSubclass)) {
                 IM_ASSERT(!"RemoveWindowSubclass() failed\n");
             }
         } break;
         default:
             if (dwRefData) {
-                return imm_communication_subClassProc_implement(
-                        hWnd, uMsg, wParam, lParam, uIdSubclass,
-                        *reinterpret_cast<ImGUIIMMCommunication *>(dwRefData));
+                return imm_communication_subClassProc_implement(hWnd, uMsg, wParam, lParam, uIdSubclass, *reinterpret_cast<ImGUIIMMCommunication *>(dwRefData));
             }
     }
     return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT
-ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam,
-                                                                LPARAM lParam, UINT_PTR uIdSubclass,
-                                                                ImGUIIMMCommunication &comm) {
+ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, ImGUIIMMCommunication &comm) {
     switch (uMsg) {
         case WM_KEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
-            if (comm.is_open) { return 0; }
+            if (comm.is_open) {
+                return 0;
+            }
             break;
 
         case WM_IME_SETCONTEXT: { /* 各ビットを落とす */
-            lParam &= ~(ISC_SHOWUICOMPOSITIONWINDOW | (ISC_SHOWUICANDIDATEWINDOW) |
-                        (ISC_SHOWUICANDIDATEWINDOW << 1) | (ISC_SHOWUICANDIDATEWINDOW << 2) |
-                        (ISC_SHOWUICANDIDATEWINDOW << 3));
+            lParam &= ~(ISC_SHOWUICOMPOSITIONWINDOW | (ISC_SHOWUICANDIDATEWINDOW) | (ISC_SHOWUICANDIDATEWINDOW << 1) | (ISC_SHOWUICANDIDATEWINDOW << 2) | (ISC_SHOWUICANDIDATEWINDOW << 3));
         }
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
         case WM_IME_STARTCOMPOSITION: {
@@ -2726,32 +2618,24 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                 }
                 if (lParam & GCS_COMPSTR) {
 
-                    const LONG compstr_length_in_byte =
-                            ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
+                    const LONG compstr_length_in_byte = ImmGetCompositionStringW(hImc, GCS_COMPSTR, nullptr, 0);
                     switch (compstr_length_in_byte) {
                         case IMM_ERROR_NODATA:
                         case IMM_ERROR_GENERAL:
                             break;
                         default: {
-                            size_t const buf_length_in_wchar =
-                                    (size_t(compstr_length_in_byte) / sizeof(wchar_t)) + 1;
+                            size_t const buf_length_in_wchar = (size_t(compstr_length_in_byte) / sizeof(wchar_t)) + 1;
                             IM_ASSERT(0 < buf_length_in_wchar);
                             std::unique_ptr<wchar_t[]> buf{new wchar_t[buf_length_in_wchar]};
                             if (buf) {
-                                //std::fill( &buf[0] , &buf[buf_length_in_wchar-1] , L'\0' );
-                                const LONG buf_length_in_byte =
-                                        LONG(buf_length_in_wchar * sizeof(wchar_t));
-                                const DWORD l = ImmGetCompositionStringW(hImc, GCS_COMPSTR,
-                                                                         (LPVOID) (buf.get()),
-                                                                         buf_length_in_byte);
+                                // std::fill( &buf[0] , &buf[buf_length_in_wchar-1] , L'\0' );
+                                const LONG buf_length_in_byte = LONG(buf_length_in_wchar * sizeof(wchar_t));
+                                const DWORD l = ImmGetCompositionStringW(hImc, GCS_COMPSTR, (LPVOID)(buf.get()), buf_length_in_byte);
 
-                                const DWORD attribute_size =
-                                        ImmGetCompositionStringW(hImc, GCS_COMPATTR, NULL, 0);
+                                const DWORD attribute_size = ImmGetCompositionStringW(hImc, GCS_COMPATTR, NULL, 0);
                                 std::vector<char> attribute_vec(attribute_size, 0);
-                                const DWORD attribute_end = ImmGetCompositionStringW(
-                                        hImc, GCS_COMPATTR, attribute_vec.data(),
-                                        (DWORD) std::size(attribute_vec));
-                                IM_ASSERT(attribute_end == (DWORD) (std::size(attribute_vec)));
+                                const DWORD attribute_end = ImmGetCompositionStringW(hImc, GCS_COMPATTR, attribute_vec.data(), (DWORD)std::size(attribute_vec));
+                                IM_ASSERT(attribute_end == (DWORD)(std::size(attribute_vec)));
                                 {
                                     std::wstring comp_converted;
                                     std::wstring comp_target;
@@ -2760,8 +2644,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                                     size_t end = 0;
 
                                     for (end = begin; end < attribute_end; ++end) {
-                                        if ((ATTR_TARGET_CONVERTED == attribute_vec[end] ||
-                                             ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
+                                        if ((ATTR_TARGET_CONVERTED == attribute_vec[end] || ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
                                             break;
                                         } else {
                                             comp_converted.push_back(buf[end]);
@@ -2769,8 +2652,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                                     }
 
                                     for (begin = end; end < attribute_end; ++end) {
-                                        if (!(ATTR_TARGET_CONVERTED == attribute_vec[end] ||
-                                              ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
+                                        if (!(ATTR_TARGET_CONVERTED == attribute_vec[end] || ATTR_TARGET_NOTCONVERTED == attribute_vec[end])) {
                                             break;
                                         } else {
                                             comp_target.push_back(buf[end]);
@@ -2798,17 +2680,14 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                                 将 std::wstring 转换为 std::unique_ptr <char[]> 作为 UTF - 8 空终止字符串
                                 如果参数是空字符串，则输入 nullptr
                                 */
-                                    auto to_utf8_pointer =
-                                            [](const std::wstring &arg) -> std::unique_ptr<char[]> {
+                                    auto to_utf8_pointer = [](const std::wstring &arg) -> std::unique_ptr<char[]> {
                                         if (arg.empty()) {
                                             return std::unique_ptr<char[]>(nullptr);
                                         }
-                                        const int require_byte =
-                                                WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1,
-                                                                    nullptr, 0, NULL, NULL);
+                                        const int require_byte = WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, nullptr, 0, NULL, NULL);
                                         if (0 == require_byte) {
                                             const DWORD lastError = GetLastError();
-                                            (void) (lastError);
+                                            (void)(lastError);
                                             IM_ASSERT(ERROR_INSUFFICIENT_BUFFER != lastError);
                                             IM_ASSERT(ERROR_INVALID_FLAGS != lastError);
                                             IM_ASSERT(ERROR_INVALID_PARAMETER != lastError);
@@ -2821,12 +2700,10 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 
                                         std::unique_ptr<char[]> utf8buf{new char[require_byte]};
 
-                                        const int conversion_result = WideCharToMultiByte(
-                                                CP_UTF8, 0, arg.c_str(), -1, utf8buf.get(),
-                                                require_byte, NULL, NULL);
+                                        const int conversion_result = WideCharToMultiByte(CP_UTF8, 0, arg.c_str(), -1, utf8buf.get(), require_byte, NULL, NULL);
                                         if (conversion_result == 0) {
                                             const DWORD lastError = GetLastError();
-                                            (void) (lastError);
+                                            (void)(lastError);
                                             IM_ASSERT(ERROR_INSUFFICIENT_BUFFER != lastError);
                                             IM_ASSERT(ERROR_INVALID_FLAGS != lastError);
                                             IM_ASSERT(ERROR_INVALID_PARAMETER != lastError);
@@ -2865,10 +2742,10 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                 VERIFY(ImmReleaseContext(hWnd, hImc));
             }
 
-        }// end of WM_IME_COMPOSITION
+        }  // end of WM_IME_COMPOSITION
 
 #if defined(UNICODE)
-            // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
+           // 在UNICODE配置的情况下，直接用DefWindowProc吸收进IME就可以了
             return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
             // 在多字节配置中，Window 子类的过程处理它，所以需要 DefSubclassProc。
 #else
@@ -2888,7 +2765,7 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                 OutputDebugStringW(L"IMN_OPENCANDIDATE\n");
             }
 #endif
-                    ;// tear down;
+                    ;  // tear down;
                 case IMN_CHANGECANDIDATE: {
 #if 0
             if (IMN_CHANGECANDIDATE == wParam) {
@@ -2897,7 +2774,9 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 #endif
 
                     // Google IME BEGIN 的代码 有关详细信息，请参阅有关 IMN_OPENCANDIDATE 的评论
-                    if (!comm.show_ime_candidate_list) { comm.show_ime_candidate_list = true; }
+                    if (!comm.show_ime_candidate_list) {
+                        comm.show_ime_candidate_list = true;
+                    }
                     // 谷歌输入法结束代码
 
                     HIMC const hImc = ImmGetContext(hWnd);
@@ -2905,24 +2784,15 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                         DWORD dwSize = ImmGetCandidateListW(hImc, 0, NULL, 0);
                         if (dwSize) {
                             IM_ASSERT(sizeof(CANDIDATELIST) <= dwSize);
-                            if (sizeof(CANDIDATELIST) <=
-                                dwSize) {// dwSize は最低でも struct CANDIDATELIST より大きくなければならない
+                            if (sizeof(CANDIDATELIST) <= dwSize) {  // dwSize は最低でも struct CANDIDATELIST より大きくなければならない
 
-                                (void) (lParam);
-                                std::vector<char> candidatelist((size_t) dwSize);
-                                if ((DWORD) (std::size(candidatelist) *
-                                             sizeof(typename decltype(candidatelist)::
-                                                            value_type)) ==
-                                    ImmGetCandidateListW(
-                                            hImc, 0,
-                                            reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
-                                            (DWORD) (std::size(candidatelist) *
-                                                     sizeof(typename decltype(candidatelist)::
-                                                                    value_type)))) {
-                                    const CANDIDATELIST *const cl =
-                                            reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
-                                    comm.candidate_list =
-                                            std::move(IMMCandidateList::cocreate(cl, dwSize));
+                                (void)(lParam);
+                                std::vector<char> candidatelist((size_t)dwSize);
+                                if ((DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) ==
+                                    ImmGetCandidateListW(hImc, 0, reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
+                                                         (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
+                                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                                    comm.candidate_list = std::move(IMMCandidateList::cocreate(cl, dwSize));
 
 #if 0  /* for IMM candidate window debug BEGIN*/
                             {
@@ -2953,15 +2823,14 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
                     IM_ASSERT(0 <= comm.request_candidate_list_str_commit);
                     if (comm.request_candidate_list_str_commit) {
                         if (comm.request_candidate_list_str_commit == 1) {
-                            VERIFY(PostMessage(hWnd, WM_IMGUI_IMM32_COMMAND,
-                                               WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, 0));
+                            VERIFY(PostMessage(hWnd, WM_IMGUI_IMM32_COMMAND, WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, 0));
                         }
                         --(comm.request_candidate_list_str_commit);
                     }
 
                     break;
                 case IMN_CLOSECANDIDATE: {
-                    //OutputDebugStringW(L"IMN_CLOSECANDIDATE\n");
+                    // OutputDebugStringW(L"IMN_CLOSECANDIDATE\n");
                     comm.show_ime_candidate_list = false;
                 } break;
                 default:
@@ -2978,20 +2847,18 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 
         case WM_IMGUI_IMM32_COMMAND: {
             switch (wParam) {
-                case WM_IMGUI_IMM32_COMMAND_NOP:// NOP
+                case WM_IMGUI_IMM32_COMMAND_NOP:  // NOP
                     return 1;
                 case WM_IMGUI_IMM32_COMMAND_SUBCLASSIFY: {
                     ImGuiIO &io = ImGui::GetIO();
                     if (io.ImeWindowHandle) {
                         IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-                        VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr,
-                                                     IACE_IGNORENOCONTEXT));
+                        VERIFY(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
                     }
                 }
                     return 1;
                 case WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE:
-                    if (!static_cast<bool>(comm.comp_unconv_utf8) ||
-                        '\0' == *(comm.comp_unconv_utf8.get())) {
+                    if (!static_cast<bool>(comm.comp_unconv_utf8) || '\0' == *(comm.comp_unconv_utf8.get())) {
                         /*
                    There is probably no unconverted string after the conversion target.
                    However, since there is now a cursor operation in the
@@ -3052,7 +2919,9 @@ ImGUIIMMCommunication::imm_communication_subClassProc_implement(HWND hWnd, UINT 
 
 BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
     IM_ASSERT(IsWindow(hWnd));
-    if (!IsWindow(hWnd)) { return FALSE; }
+    if (!IsWindow(hWnd)) {
+        return FALSE;
+    }
 
     /* 在 imgui_imm32_onthespot 中进行 IME 控制，
             因为当 TextWidget 失去焦点时 io.WantTextInput 变为 true-> off
@@ -3065,10 +2934,8 @@ BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
             但是，这种方法不好，因为当有多个目标操作系统窗口时它会崩溃。
     */
     ImGui::GetIO().ImeWindowHandle = static_cast<void *>(hWnd);
-    if (::SetWindowSubclass(
-                hWnd, ImGUIIMMCommunication::imm_communication_subClassProc,
-                reinterpret_cast<UINT_PTR>(ImGUIIMMCommunication::imm_communication_subClassProc),
-                reinterpret_cast<DWORD_PTR>(this))) {
+    if (::SetWindowSubclass(hWnd, ImGUIIMMCommunication::imm_communication_subClassProc, reinterpret_cast<UINT_PTR>(ImGUIIMMCommunication::imm_communication_subClassProc),
+                            reinterpret_cast<DWORD_PTR>(this))) {
         /*
            I want to close IME once by calling imgex::imm_associate_context_disable()
 
@@ -3082,12 +2949,8 @@ BOOL ImGUIIMMCommunication::subclassify_impl(HWND hWnd) {
 
 #endif
 
-void ImGuiWidget::PlotFlame(const char *label,
-                            void (*values_getter)(float *start, float *end, ImU8 *level,
-                                                  const char **caption, const void *data, int idx),
-                            const void *data, int values_count, int values_offset,
-                            const char *overlay_text, float scale_min, float scale_max,
-                            ImVec2 graph_size) {
+void ImGuiWidget::PlotFlame(const char *label, void (*values_getter)(float *start, float *end, ImU8 *level, const char **caption, const void *data, int idx), const void *data, int values_count,
+                            int values_offset, const char *overlay_text, float scale_min, float scale_max, ImVec2 graph_size) {
     ImGuiWindow *window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return;
 
@@ -3105,16 +2968,11 @@ void ImGuiWidget::PlotFlame(const char *label,
     const auto blockHeight = ImGui::GetTextLineHeight() + (style.FramePadding.y * 2);
     const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
     if (graph_size.x == 0.0f) graph_size.x = ImGui::CalcItemWidth();
-    if (graph_size.y == 0.0f)
-        graph_size.y = label_size.y + (style.FramePadding.y * 3) + blockHeight * (maxDepth + 1);
+    if (graph_size.y == 0.0f) graph_size.y = label_size.y + (style.FramePadding.y * 3) + blockHeight * (maxDepth + 1);
 
     const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + graph_size);
     const ImRect inner_bb(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
-    const ImRect total_bb(frame_bb.Min,
-                          frame_bb.Max + ImVec2(label_size.x > 0.0f
-                                                        ? style.ItemInnerSpacing.x + label_size.x
-                                                        : 0.0f,
-                                                0));
+    const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0));
     ImGui::ItemSize(total_bb, style.FramePadding.y);
     if (!ImGui::ItemAdd(total_bb, 0, &frame_bb)) return;
 
@@ -3125,25 +2983,23 @@ void ImGuiWidget::PlotFlame(const char *label,
         for (int i = values_offset; i < values_count; i++) {
             float v_start, v_end;
             values_getter(&v_start, &v_end, nullptr, nullptr, data, i);
-            if (v_start == v_start)// Check non-NaN values
+            if (v_start == v_start)  // Check non-NaN values
                 v_min = ImMin(v_min, v_start);
-            if (v_end == v_end)// Check non-NaN values
+            if (v_end == v_end)  // Check non-NaN values
                 v_max = ImMax(v_max, v_end);
         }
         if (scale_min == FLT_MAX) scale_min = v_min;
         if (scale_max == FLT_MAX) scale_max = v_max;
     }
 
-    ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true,
-                       style.FrameRounding);
+    ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
 
     bool any_hovered = false;
     if (values_count - values_offset >= 1) {
         const ImU32 col_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x77FFFFFF;
         const ImU32 col_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x77FFFFFF;
         const ImU32 col_outline_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x7FFFFFFF;
-        const ImU32 col_outline_hovered =
-                ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x7FFFFFFF;
+        const ImU32 col_outline_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x7FFFFFFF;
 
         for (int i = values_offset; i < values_count; ++i) {
             float stageStart, stageEnd;
@@ -3153,13 +3009,15 @@ void ImGuiWidget::PlotFlame(const char *label,
             values_getter(&stageStart, &stageEnd, &depth, &caption, data, i);
 
             auto duration = scale_max - scale_min;
-            if (duration == 0) { return; }
+            if (duration == 0) {
+                return;
+            }
 
             auto start = stageStart - scale_min;
             auto end = stageEnd - scale_min;
 
-            auto startX = static_cast<float>(start / (double) duration);
-            auto endX = static_cast<float>(end / (double) duration);
+            auto startX = static_cast<float>(start / (double)duration);
+            auto endX = static_cast<float>(end / (double)duration);
 
             float width = inner_bb.Max.x - inner_bb.Min.x;
             float height = blockHeight * (maxDepth - depth + 1) - style.FramePadding.y;
@@ -3175,8 +3033,7 @@ void ImGuiWidget::PlotFlame(const char *label,
             }
 
             window->DrawList->AddRectFilled(pos0, pos1, v_hovered ? col_hovered : col_base);
-            window->DrawList->AddRect(pos0, pos1,
-                                      v_hovered ? col_outline_hovered : col_outline_base);
+            window->DrawList->AddRect(pos0, pos1, v_hovered ? col_outline_hovered : col_outline_base);
             auto textSize = ImGui::CalcTextSize(caption);
             auto boxSize = (pos1 - pos0);
             auto textOffset = ImVec2(0.0f, 0.0f);
@@ -3187,13 +3044,9 @@ void ImGuiWidget::PlotFlame(const char *label,
         }
 
         // Text overlay
-        if (overlay_text)
-            ImGui::RenderTextClipped(ImVec2(frame_bb.Min.x, frame_bb.Min.y + style.FramePadding.y),
-                                     frame_bb.Max, overlay_text, NULL, NULL, ImVec2(0.5f, 0.0f));
+        if (overlay_text) ImGui::RenderTextClipped(ImVec2(frame_bb.Min.x, frame_bb.Min.y + style.FramePadding.y), frame_bb.Max, overlay_text, NULL, NULL, ImVec2(0.5f, 0.0f));
 
-        if (label_size.x > 0.0f)
-            ImGui::RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, inner_bb.Min.y),
-                              label);
+        if (label_size.x > 0.0f) ImGui::RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, inner_bb.Min.y), label);
     }
 
     if (!any_hovered && ImGui::IsItemHovered()) {
@@ -3202,7 +3055,7 @@ void ImGuiWidget::PlotFlame(const char *label,
 }
 
 /**
-	Define METAENGINE_GUI_DISABLE_TEST_WINDOW to disable this feature.
+    Define METAENGINE_GUI_DISABLE_TEST_WINDOW to disable this feature.
 */
 
 #ifndef METAENGINE_GUI_DISABLE_TEST_WINDOW
@@ -3287,7 +3140,7 @@ Container data, large structs and tuples are hidden by default.
 
         ImGui::Auto(R"code(
 	ImGui::Auto("Hello Imgui::Auto() !"); //This is how this text is written as well.)code");
-        ImGui::Auto("Hello Imgui::Auto() !");//This is how this text is written as well.
+        ImGui::Auto("Hello Imgui::Auto() !");  // This is how this text is written as well.
 
         ImGui::NewLine();
         ImGui::Separator();
@@ -3304,8 +3157,7 @@ Container data, large structs and tuples are hidden by default.
         ImGui::Auto(R"code(
 	static std::string str2 = "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
 	ImGui::Auto(str2, "str2");)code");
-        static std::string str2 =
-                "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
+        static std::string str2 = "ImGui::Auto()\n Automatically uses multiline input for strings!\n:)";
         ImGui::Auto(str2, "str2");
 
         ImGui::NewLine();
@@ -3382,7 +3234,7 @@ Container data, large structs and tuples are hidden by default.
 	static const std::vector<float> constvec = { 3,1,2.1f,4,3,4,5 };
 	ImGui::Auto(constvec,"constvec");	//Cannot change vector, nor values)code");
         static const std::vector<float> constvec = {3, 1, 2.1f, 4, 3, 4, 5};
-        ImGui::Auto(constvec, "constvec");//Cannot change vector, nor values
+        ImGui::Auto(constvec, "constvec");  // Cannot change vector, nor values
 
         ImGui::NewLine();
         ImGui::Separator();
@@ -3410,7 +3262,7 @@ Container data, large structs and tuples are hidden by default.
 	static std::map<int, float> map = { {3,2},{1,2} };
 	ImGui::Auto(map, "map");	// insert and other operations)code");
         static std::map<int, float> map = {{3, 2}, {1, 2}};
-        ImGui::Auto(map, "map");// insert and other operations
+        ImGui::Auto(map, "map");  // insert and other operations
 
         if (ImGui::TreeNode("All cases")) {
             ImGui::Auto(R"code(
@@ -3425,9 +3277,8 @@ Container data, large structs and tuples are hidden by default.
             ImGui::Auto(R"code(
 	static std::set<char*> set = { "set","with","char*" };
 	ImGui::Auto(set,"set");)code");
-            static std::set<char *> set = {"set", "with",
-                                           "char*"};//for some reason, this does not work
-            ImGui::Auto(set, "set");                // the problem is with the const iterator, but
+            static std::set<char *> set = {"set", "with", "char*"};  // for some reason, this does not work
+            ImGui::Auto(set, "set");                                 // the problem is with the const iterator, but
 
             ImGui::NewLine();
             ImGui::Separator();
@@ -3436,7 +3287,7 @@ Container data, large structs and tuples are hidden by default.
 	static std::map<char*, std::string> map = { {"asd","somevalue"},{"bsd","value"} };
 	ImGui::Auto(map, "map");	// insert and other operations)code");
             static std::map<char *, std::string> map = {{"asd", "somevalue"}, {"bsd", "value"}};
-            ImGui::Auto(map, "map");// insert and other operations
+            ImGui::Auto(map, "map");  // insert and other operations
 
             ImGui::TreePop();
         }
@@ -3513,8 +3364,7 @@ Container data, large structs and tuples are hidden by default.
         ImGui::Auto(R"code(
 	static std::pair<int, std::string> pair2 = { -3,"simple types appear next to each other in a pair" };
 	ImGui::Auto(pair2, "pair2");)code");
-        static std::pair<int, std::string> pair2 = {
-                -3, "simple types appear next to each other in a pair"};
+        static std::pair<int, std::string> pair2 = {-3, "simple types appear next to each other in a pair"};
         ImGui::Auto(pair2, "pair2");
 
         ImGui::NewLine();
@@ -3522,7 +3372,7 @@ Container data, large structs and tuples are hidden by default.
 
         ImGui::Auto(R"code(
 	ImGui::Auto(ImGui::as_const(pair), "as_const(pair)"); //easy way to view as const)code");
-        ImGui::Auto(ImGui::as_const(pair), "as_const(pair)");//easy way to view as const
+        ImGui::Auto(ImGui::as_const(pair), "as_const(pair)");  // easy way to view as const
 
         ImGui::NewLine();
         ImGui::Separator();
@@ -3555,8 +3405,7 @@ Container data, large structs and tuples are hidden by default.
 	};
 	static A a;
 	ImGui::Auto("a", a);)code");
-        struct A
-        {
+        struct A {
             int i = 216;
             bool b = true;
         };
@@ -3581,8 +3430,7 @@ Container data, large structs and tuples are hidden by default.
 	};
 	static B b;
 	ImGui::Auto(b, "b");)code");
-        struct B
-        {
+        struct B {
             std::string str = "Unfortunatelly, cannot deduce const-ness from within a struct";
             const A a = A();
         };
@@ -3609,8 +3457,7 @@ Container data, large structs and tuples are hidden by default.
 	};
 	static C c = { {{"Container inside a struct!", A() }}, &a };
 	ImGui::Auto(c, "c");)code");
-        struct C
-        {
+        struct C {
             std::list<B> vec;
             A *a;
         };

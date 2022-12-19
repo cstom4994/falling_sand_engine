@@ -4,10 +4,7 @@
 
 #include "auto_c.h"
 
-struct Header *header(var self)
-{
-    return (struct Header *) ((char *) self - sizeof(struct Header));
-}
+struct Header *header(var self) { return (struct Header *)((char *)self - sizeof(struct Header)); }
 
 var header_init(var head, var type, int alloc) {
 
@@ -16,14 +13,14 @@ var header_init(var head, var type, int alloc) {
     self->type = type;
 
 #if METADOT_C_ALLOC_CHECK == 1
-    self->alloc = (var) (intptr_t) alloc;
+    self->alloc = (var)(intptr_t)alloc;
 #endif
 
 #if METADOT_C_MAGIC_CHECK == 1
-    self->magic = (var) METADOT_C_MAGIC_NUM;
+    self->magic = (var)METADOT_C_MAGIC_NUM;
 #endif
 
-    return ((char *) self) + sizeof(struct Header);
+    return ((char *)self) + sizeof(struct Header);
 }
 
 static const char *Alloc_Name(void) { return "Alloc"; }
@@ -53,70 +50,63 @@ static const char *Alloc_Definition(void) {
 
 static struct Example *Alloc_Examples(void) {
 
-    static struct Example examples[] = {
-            {
-                    "Usage",
-                    "/* Allocation deallocated by Garbage Collector */\n"
-                    "var x = alloc(Int);\n"
-                    "construct(x, $I(10));\n",
-            },
-            {
-                    "Avoid Garbage Collection",
-                    "/* Allocation must be manually deallocated */\n"
-                    "var x = alloc_raw(Int);\n"
-                    "construct(x, $I(10));\n"
-                    "destruct(x);\n"
-                    "dealloc_raw(x);\n",
-            },
-            {NULL, NULL}};
+    static struct Example examples[] = {{
+                                                "Usage",
+                                                "/* Allocation deallocated by Garbage Collector */\n"
+                                                "var x = alloc(Int);\n"
+                                                "construct(x, $I(10));\n",
+                                        },
+                                        {
+                                                "Avoid Garbage Collection",
+                                                "/* Allocation must be manually deallocated */\n"
+                                                "var x = alloc_raw(Int);\n"
+                                                "construct(x, $I(10));\n"
+                                                "destruct(x);\n"
+                                                "dealloc_raw(x);\n",
+                                        },
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Alloc_Methods(void) {
 
-    static struct Method methods[] = {
-            {"$",
-             "#define $(T, ...)\n"
-             "#define $I(X)\n"
-             "#define $F(X)\n"
-             "#define $S(X)\n"
-             "#define $R(X)\n"
-             "#define $B(X)",
-             "Allocate memory for the given type `T` on the stack and copy in the "
-             "given arguments `...` as struct members. Shorthand constructors exist "
-             "for native types:\n\n* `$I -> Int` `$F -> Float` `$S -> String`\n*"
-             " `$R -> Ref` `$B -> Box`\n\n"},
-            {"alloc",
-             "#define alloc_stack(T)\n"
-             "var alloc(var type);\n"
-             "var alloc_raw(var type);\n"
-             "var alloc_root(var type);",
-             "Allocate memory for a given `type`. To avoid the Garbage Collector "
-             "completely use `alloc_raw`, to register the allocation as a root use "
-             "`alloc_root`. In the case of raw or root allocations the corresponding "
-             "`dealloc` function should be used when done. Memory allocated with "
-             "`alloc_stack` is not managed by the Garbage Collector."},
-            {"dealloc",
-             "void dealloc(var self);\n"
-             "void dealloc_raw(var self);\n"
-             "void dealloc_root(var self);",
-             "Deallocate memory for object `self` manually. If registered with the "
-             "Garbage Collector then entry will be removed. If the `raw` variation is "
-             "used memory will be deallocated without going via the Garbage Collector."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"$",
+                                       "#define $(T, ...)\n"
+                                       "#define $I(X)\n"
+                                       "#define $F(X)\n"
+                                       "#define $S(X)\n"
+                                       "#define $R(X)\n"
+                                       "#define $B(X)",
+                                       "Allocate memory for the given type `T` on the stack and copy in the "
+                                       "given arguments `...` as struct members. Shorthand constructors exist "
+                                       "for native types:\n\n* `$I -> Int` `$F -> Float` `$S -> String`\n*"
+                                       " `$R -> Ref` `$B -> Box`\n\n"},
+                                      {"alloc",
+                                       "#define alloc_stack(T)\n"
+                                       "var alloc(var type);\n"
+                                       "var alloc_raw(var type);\n"
+                                       "var alloc_root(var type);",
+                                       "Allocate memory for a given `type`. To avoid the Garbage Collector "
+                                       "completely use `alloc_raw`, to register the allocation as a root use "
+                                       "`alloc_root`. In the case of raw or root allocations the corresponding "
+                                       "`dealloc` function should be used when done. Memory allocated with "
+                                       "`alloc_stack` is not managed by the Garbage Collector."},
+                                      {"dealloc",
+                                       "void dealloc(var self);\n"
+                                       "void dealloc_raw(var self);\n"
+                                       "void dealloc_root(var self);",
+                                       "Deallocate memory for object `self` manually. If registered with the "
+                                       "Garbage Collector then entry will be removed. If the `raw` variation is "
+                                       "used memory will be deallocated without going via the Garbage Collector."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Alloc = MetaDotC(Alloc, Instance(Doc, Alloc_Name, Alloc_Brief, Alloc_Description,
-                                     Alloc_Definition, Alloc_Examples, Alloc_Methods));
+var Alloc = MetaDotC(Alloc, Instance(Doc, Alloc_Name, Alloc_Brief, Alloc_Description, Alloc_Definition, Alloc_Examples, Alloc_Methods));
 
-enum {
-    ALLOC_STANDARD,
-    ALLOC_RAW,
-    ALLOC_ROOT
-};
+enum { ALLOC_STANDARD, ALLOC_RAW, ALLOC_ROOT };
 
 static var alloc_by(var type, int method) {
 
@@ -161,7 +151,9 @@ void dealloc(var self) {
     }
 
 #if METADOT_C_ALLOC_CHECK == 1
-    if (self is NULL) { throw(ResourceError, "Attempt to deallocate NULL!", ""); }
+    if (self is NULL) {
+        throw(ResourceError, "Attempt to deallocate NULL!", "");
+    }
 
     if (header(self)->alloc is(var) AllocStatic) {
         throw(ResourceError,
@@ -188,11 +180,11 @@ void dealloc(var self) {
 #if METADOT_C_ALLOC_CHECK == 1
     size_t s = size(type_of(self));
     for (size_t i = 0; i < (sizeof(struct Header) + s) / sizeof(var); i++) {
-        ((var *) header(self))[i] = (var) 0xDeadCe110;
+        ((var *)header(self))[i] = (var)0xDeadCe110;
     }
 #endif
 
-    free(((char *) self) - sizeof(struct Header));
+    free(((char *)self) - sizeof(struct Header));
 }
 
 void dealloc_raw(var self) { dealloc(self); }
@@ -234,14 +226,15 @@ static const char *New_Definition(void) {
 
 static struct Example *New_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Int, $I(1));\n"
-                                                  "show(x); /* 1 */\n"
-                                                  "show(type_of(x)); /* Int */\n"
-                                                  "\n"
-                                                  "var y = alloc(Float);\n"
-                                                  "construct(y, $F(1.0));\n"
-                                                  "show(y); /* 1.0 */\n"
-                                                  "destruct(y);\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Int, $I(1));\n"
+                                         "show(x); /* 1 */\n"
+                                         "show(type_of(x)); /* Int */\n"
+                                         "\n"
+                                         "var y = alloc(Float);\n"
+                                         "construct(y, $F(1.0));\n"
+                                         "show(y); /* 1.0 */\n"
+                                         "destruct(y);\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -249,39 +242,37 @@ static struct Example *New_Examples(void) {
 
 static struct Method *New_Methods(void) {
 
-    static struct Method methods[] = {
-            {"new",
-             "#define new(T, ...)\n"
-             "#define new_raw(T, ...)\n"
-             "#define new_root(T, ...)\n"
-             "var new_with(var type, var args);\n"
-             "var new_raw_with(var type, var args);\n"
-             "var new_root_with(var type, var args);",
-             "Construct a new object of a given `type`. Use `new_raw` to avoid the "
-             "Garbage Collector completely, and `new_root` to register the allocation "
-             "as a Garbage Collection root. In the case of raw and root allocations "
-             "they must be destructed with the corresponding deletion functions."},
-            {"del",
-             "void del(var self);\n"
-             "void del_raw(var self);\n"
-             "void del_root(var self);",
-             "Destruct the object `self` manually. If registered with the "
-             "Garbage Collector then entry will be removed. If `del_raw` is used then"
-             "the destruction will be done without going via the Garbage Collector."},
-            {"construct",
-             "#define construct(self, ...)\n"
-             "var construct_with(var self, var args);",
-             "Call the constructor on object `self` which has already been allocated."},
-            {"destruct", "var destruct(var self);",
-             "Call the destructor on object `self` without deallocating the memory "
-             "for it."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"new",
+                                       "#define new(T, ...)\n"
+                                       "#define new_raw(T, ...)\n"
+                                       "#define new_root(T, ...)\n"
+                                       "var new_with(var type, var args);\n"
+                                       "var new_raw_with(var type, var args);\n"
+                                       "var new_root_with(var type, var args);",
+                                       "Construct a new object of a given `type`. Use `new_raw` to avoid the "
+                                       "Garbage Collector completely, and `new_root` to register the allocation "
+                                       "as a Garbage Collection root. In the case of raw and root allocations "
+                                       "they must be destructed with the corresponding deletion functions."},
+                                      {"del",
+                                       "void del(var self);\n"
+                                       "void del_raw(var self);\n"
+                                       "void del_root(var self);",
+                                       "Destruct the object `self` manually. If registered with the "
+                                       "Garbage Collector then entry will be removed. If `del_raw` is used then"
+                                       "the destruction will be done without going via the Garbage Collector."},
+                                      {"construct",
+                                       "#define construct(self, ...)\n"
+                                       "var construct_with(var self, var args);",
+                                       "Call the constructor on object `self` which has already been allocated."},
+                                      {"destruct", "var destruct(var self);",
+                                       "Call the destructor on object `self` without deallocating the memory "
+                                       "for it."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var New = MetaDotC(New, Instance(Doc, New_Name, New_Brief, New_Description, New_Definition,
-                                 New_Examples, New_Methods));
+var New = MetaDotC(New, Instance(Doc, New_Name, New_Brief, New_Description, New_Definition, New_Examples, New_Methods));
 
 var construct_with(var self, var args) {
     struct New *n = instance(self, New);
@@ -295,7 +286,9 @@ var construct_with(var self, var args) {
 
 var destruct(var self) {
     struct New *n = instance(self, New);
-    if (n and n->destruct) { n->destruct(self); }
+    if (n and n->destruct) {
+        n->destruct(self);
+    }
     return self;
 }
 
@@ -352,12 +345,13 @@ static const char *Copy_Definition(void) {
 
 static struct Example *Copy_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(String, $S(\"Hello\"));\n"
-                                                  "var y = copy(x);\n"
-                                                  "show(x); /* Hello */\n"
-                                                  "show(y); /* Hello */\n"
-                                                  "show($I(eq(x, y))); /* 1 */\n"
-                                                  "show($I(x is y)); /* 0 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(String, $S(\"Hello\"));\n"
+                                         "var y = copy(x);\n"
+                                         "show(x); /* Hello */\n"
+                                         "show(y); /* Hello */\n"
+                                         "show($I(eq(x, y))); /* 1 */\n"
+                                         "show($I(x is y)); /* 0 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -365,20 +359,19 @@ static struct Example *Copy_Examples(void) {
 
 static struct Method *Copy_Methods(void) {
 
-    static struct Method methods[] = {
-            {"copy", "var copy(var self);", "Make a copy of the object `self`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"copy", "var copy(var self);", "Make a copy of the object `self`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Copy = MetaDotC(Copy, Instance(Doc, Copy_Name, Copy_Brief, Copy_Description, Copy_Definition,
-                                   Copy_Examples, Copy_Methods));
+var Copy = MetaDotC(Copy, Instance(Doc, Copy_Name, Copy_Brief, Copy_Description, Copy_Definition, Copy_Examples, Copy_Methods));
 
 var copy(var self) {
 
     struct Copy *c = instance(self, Copy);
-    if (c and c->copy) { return c->copy(self); }
+    if (c and c->copy) {
+        return c->copy(self);
+    }
 
     return assign(alloc(type_of(self)), self);
 }
@@ -408,59 +401,57 @@ static const char *Array_Description(void) {
 
 static struct Example *Array_Examples(void) {
 
-    static struct Example examples[] = {
-            {
-                    "Construction & Deletion",
-                    "var x = new(Array, Int);\n"
-                    "push(x, $I(32));\n"
-                    "push(x, $I(6));\n"
-                    "\n"
-                    "/* <'Array' At 0x0000000000414603 [32, 6]> */\n"
-                    "show(x);\n",
-            },
-            {
-                    "Element Access",
-                    "var x = new(Array, Float, $F(0.01), $F(5.12));\n"
-                    "\n"
-                    "show(get(x, $I(0))); /* 0.01 */\n"
-                    "show(get(x, $I(1))); /* 5.12 */\n"
-                    "\n"
-                    "set(x, $I(0), $F(500.1));\n"
-                    "show(get(x, $I(0))); /* 500.1 */\n",
-            },
-            {
-                    "Membership",
-                    "var x = new(Array, Int, $I(1), $I(2), $I(3), $I(4));\n"
-                    "\n"
-                    "show($I(mem(x, $I(1)))); /* 1 */\n"
-                    "show($I(len(x)));        /* 4 */\n"
-                    "\n"
-                    "rem(x, $I(3));\n"
-                    "\n"
-                    "show($I(mem(x, $I(3)))); /* 0 */\n"
-                    "show($I(len(x)));        /* 3 */\n"
-                    "show($I(empty(x)));      /* 0 */\n"
-                    "\n"
-                    "resize(x, 0);\n"
-                    "\n"
-                    "show($I(empty(x)));      /* 1 */\n",
-            },
-            {
-                    "Iteration",
-                    "var greetings = new(Array, String, \n"
-                    "  $S(\"Hello\"), $S(\"Bonjour\"), $S(\"Hej\"));\n"
-                    "\n"
-                    "foreach(greet in greetings) {\n"
-                    "  show(greet);\n"
-                    "}\n",
-            },
-            {NULL, NULL}};
+    static struct Example examples[] = {{
+                                                "Construction & Deletion",
+                                                "var x = new(Array, Int);\n"
+                                                "push(x, $I(32));\n"
+                                                "push(x, $I(6));\n"
+                                                "\n"
+                                                "/* <'Array' At 0x0000000000414603 [32, 6]> */\n"
+                                                "show(x);\n",
+                                        },
+                                        {
+                                                "Element Access",
+                                                "var x = new(Array, Float, $F(0.01), $F(5.12));\n"
+                                                "\n"
+                                                "show(get(x, $I(0))); /* 0.01 */\n"
+                                                "show(get(x, $I(1))); /* 5.12 */\n"
+                                                "\n"
+                                                "set(x, $I(0), $F(500.1));\n"
+                                                "show(get(x, $I(0))); /* 500.1 */\n",
+                                        },
+                                        {
+                                                "Membership",
+                                                "var x = new(Array, Int, $I(1), $I(2), $I(3), $I(4));\n"
+                                                "\n"
+                                                "show($I(mem(x, $I(1)))); /* 1 */\n"
+                                                "show($I(len(x)));        /* 4 */\n"
+                                                "\n"
+                                                "rem(x, $I(3));\n"
+                                                "\n"
+                                                "show($I(mem(x, $I(3)))); /* 0 */\n"
+                                                "show($I(len(x)));        /* 3 */\n"
+                                                "show($I(empty(x)));      /* 0 */\n"
+                                                "\n"
+                                                "resize(x, 0);\n"
+                                                "\n"
+                                                "show($I(empty(x)));      /* 1 */\n",
+                                        },
+                                        {
+                                                "Iteration",
+                                                "var greetings = new(Array, String, \n"
+                                                "  $S(\"Hello\"), $S(\"Bonjour\"), $S(\"Hej\"));\n"
+                                                "\n"
+                                                "foreach(greet in greetings) {\n"
+                                                "  show(greet);\n"
+                                                "}\n",
+                                        },
+                                        {NULL, NULL}};
 
     return examples;
 }
 
-struct Array
-{
+struct Array {
     var type;
     var data;
     size_t tsize;
@@ -470,19 +461,15 @@ struct Array
 
 static size_t Array_Step(struct Array *a) { return a->tsize + sizeof(struct Header); }
 
-static var Array_Item(struct Array *a, size_t i) {
-    return (char *) a->data + Array_Step(a) * i + sizeof(struct Header);
-}
+static var Array_Item(struct Array *a, size_t i) { return (char *)a->data + Array_Step(a) * i + sizeof(struct Header); }
 
 static void Array_Alloc(struct Array *a, size_t i) {
-    memset((char *) a->data + Array_Step(a) * i, 0, Array_Step(a));
-    struct Header *head = (struct Header *) ((char *) a->data + Array_Step(a) * i);
+    memset((char *)a->data + Array_Step(a) * i, 0, Array_Step(a));
+    struct Header *head = (struct Header *)((char *)a->data + Array_Step(a) * i);
     header_init(head, a->type, AllocData);
 }
 
-static size_t Array_Size_Round(size_t s) {
-    return ((s + sizeof(var) - 1) / sizeof(var)) * sizeof(var);
-}
+static size_t Array_Size_Round(size_t s) { return ((s + sizeof(var) - 1) / sizeof(var)) * sizeof(var); }
 
 static void Array_New(var self, var args) {
 
@@ -500,7 +487,9 @@ static void Array_New(var self, var args) {
     a->data = malloc(a->nslots * Array_Step(a));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (a->data is NULL) { throw(OutOfMemoryError, "Cannot allocate Array, out of memory!", ""); }
+    if (a->data is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate Array, out of memory!", "");
+    }
 #endif
 
     for (size_t i = 0; i < a->nitems; i++) {
@@ -513,7 +502,9 @@ static void Array_Del(var self) {
 
     struct Array *a = self;
 
-    for (size_t i = 0; i < a->nitems; i++) { destruct(Array_Item(a, i)); }
+    for (size_t i = 0; i < a->nitems; i++) {
+        destruct(Array_Item(a, i));
+    }
 
     free(a->data);
 }
@@ -521,7 +512,9 @@ static void Array_Del(var self) {
 static void Array_Clear(var self) {
     struct Array *a = self;
 
-    for (size_t i = 0; i < a->nitems; i++) { destruct(Array_Item(a, i)); }
+    for (size_t i = 0; i < a->nitems; i++) {
+        destruct(Array_Item(a, i));
+    }
 
     free(a->data);
     a->data = NULL;
@@ -566,7 +559,9 @@ static void Array_Assign(var self, var obj) {
 
     } else {
 
-        foreach (item in obj) { Array_Push(self, item); }
+        foreach (item in obj) {
+            Array_Push(self, item);
+        }
     }
 }
 
@@ -576,7 +571,9 @@ static void Array_Reserve_More(struct Array *a) {
         a->nslots = a->nitems + a->nitems / 2;
         a->data = realloc(a->data, Array_Step(a) * a->nslots);
 #if METADOT_C_MEMORY_CHECK == 1
-        if (a->data is NULL) { throw(OutOfMemoryError, "Cannot grow Array, out of memory!", ""); }
+        if (a->data is NULL) {
+            throw(OutOfMemoryError, "Cannot grow Array, out of memory!", "");
+        }
 #endif
     }
 }
@@ -607,12 +604,22 @@ static int Array_Cmp(var self, var obj) {
     var item1 = iter_init(obj);
 
     while (true) {
-        if (item0 is Terminal and item1 is Terminal) { return 0; }
-        if (item0 is Terminal) { return -1; }
-        if (item1 is Terminal) { return 1; }
+        if (item0 is Terminal and item1 is Terminal) {
+            return 0;
+        }
+        if (item0 is Terminal) {
+            return -1;
+        }
+        if (item1 is Terminal) {
+            return 1;
+        }
         int c = cmp(item0, item1);
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         item0 = Array_Iter_Next(self, item0);
         item1 = iter_next(obj, item1);
     }
@@ -624,7 +631,9 @@ static uint64_t Array_Hash(var self) {
     struct Array *a = self;
     uint64_t h = 0;
 
-    for (size_t i = 0; i < a->nitems; i++) { h ^= hash(Array_Item(a, i)); }
+    for (size_t i = 0; i < a->nitems; i++) {
+        h ^= hash(Array_Item(a, i));
+    }
 
     return h;
 }
@@ -637,7 +646,9 @@ static size_t Array_Len(var self) {
 static bool Array_Mem(var self, var obj) {
     struct Array *a = self;
     for (size_t i = 0; i < a->nitems; i++) {
-        if (eq(Array_Item(a, i), obj)) { return true; }
+        if (eq(Array_Item(a, i), obj)) {
+            return true;
+        }
     }
     return false;
 }
@@ -656,17 +667,15 @@ static void Array_Pop_At(var self, var key) {
     i = i < 0 ? a->nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) a->nitems) {
-        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key,
-              $I(a->nitems));
+    if (i < 0 or i >= (int64_t)a->nitems) {
+        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key, $I(a->nitems));
         return;
     }
 #endif
 
     destruct(Array_Item(a, i));
 
-    memmove((char *) a->data + Array_Step(a) * (i + 0), (char *) a->data + Array_Step(a) * (i + 1),
-            Array_Step(a) * ((a->nitems - 1) - i));
+    memmove((char *)a->data + Array_Step(a) * (i + 0), (char *)a->data + Array_Step(a) * (i + 1), Array_Step(a) * ((a->nitems - 1) - i));
 
     a->nitems--;
     Array_Reserve_Less(a);
@@ -700,15 +709,13 @@ static void Array_Push_At(var self, var obj, var key) {
     i = i < 0 ? a->nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) a->nitems) {
-        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key,
-              $I(a->nitems));
+    if (i < 0 or i >= (int64_t)a->nitems) {
+        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key, $I(a->nitems));
         return;
     }
 #endif
 
-    memmove((char *) a->data + Array_Step(a) * (i + 1), (char *) a->data + Array_Step(a) * (i + 0),
-            Array_Step(a) * ((a->nitems - 1) - i));
+    memmove((char *)a->data + Array_Step(a) * (i + 1), (char *)a->data + Array_Step(a) * (i + 0), Array_Step(a) * ((a->nitems - 1) - i));
 
     Array_Alloc(self, i);
     assign(Array_Item(a, i), obj);
@@ -738,9 +745,8 @@ static var Array_Get(var self, var key) {
     i = i < 0 ? a->nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) a->nitems) {
-        return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key,
-                     $I(a->nitems));
+    if (i < 0 or i >= (int64_t)a->nitems) {
+        return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key, $I(a->nitems));
     }
 #endif
 
@@ -754,9 +760,8 @@ static void Array_Set(var self, var key, var val) {
     i = i < 0 ? a->nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) a->nitems) {
-        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key,
-              $I(a->nitems));
+    if (i < 0 or i >= (int64_t)a->nitems) {
+        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Array of size %i.", key, $I(a->nitems));
         return;
     }
 #endif
@@ -766,7 +771,9 @@ static void Array_Set(var self, var key, var val) {
 
 static var Array_Iter_Init(var self) {
     struct Array *a = self;
-    if (a->nitems is 0) { return Terminal; }
+    if (a->nitems is 0) {
+        return Terminal;
+    }
     return Array_Item(a, 0);
 }
 
@@ -775,13 +782,15 @@ static var Array_Iter_Next(var self, var curr) {
     if (curr >= Array_Item(a, a->nitems - 1)) {
         return Terminal;
     } else {
-        return (char *) curr + Array_Step(a);
+        return (char *)curr + Array_Step(a);
     }
 }
 
 static var Array_Iter_Last(var self) {
     struct Array *a = self;
-    if (a->nitems is 0) { return Terminal; }
+    if (a->nitems is 0) {
+        return Terminal;
+    }
     return Array_Item(a, a->nitems - 1);
 }
 
@@ -790,7 +799,7 @@ static var Array_Iter_Prev(var self, var curr) {
     if (curr < Array_Item(a, 0)) {
         return Terminal;
     } else {
-        return (char *) curr - Array_Step(a);
+        return (char *)curr - Array_Step(a);
     }
 }
 
@@ -825,16 +834,16 @@ static void Array_Sort_Part(struct Array *a, int64_t l, int64_t r, bool (*f)(var
     }
 }
 
-static void Array_Sort_By(var self, bool (*f)(var, var)) {
-    Array_Sort_Part(self, 0, Array_Len(self) - 1, f);
-}
+static void Array_Sort_By(var self, bool (*f)(var, var)) { Array_Sort_Part(self, 0, Array_Len(self) - 1, f); }
 
 static int Array_Show(var self, var output, int pos) {
     struct Array *a = self;
     pos = print_to(output, pos, "<'Array' At 0x%p [", self);
     for (size_t i = 0; i < a->nitems; i++) {
         pos = print_to(output, pos, "%$", Array_Item(a, i));
-        if (i < a->nitems - 1) { pos = print_to(output, pos, ", ", ""); }
+        if (i < a->nitems - 1) {
+            pos = print_to(output, pos, ", ", "");
+        }
     }
     return print_to(output, pos, "]>", "");
 }
@@ -856,27 +865,24 @@ static void Array_Resize(var self, size_t n) {
     a->data = realloc(a->data, Array_Step(a) * a->nslots);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (a->data is NULL) { throw(OutOfMemoryError, "Cannot grow Array, out of memory!", ""); }
+    if (a->data is NULL) {
+        throw(OutOfMemoryError, "Cannot grow Array, out of memory!", "");
+    }
 #endif
 }
 
 static void Array_Mark(var self, var gc, void (*f)(var, void *)) {
     struct Array *a = self;
-    for (size_t i = 0; i < a->nitems; i++) { f(gc, Array_Item(a, i)); }
+    for (size_t i = 0; i < a->nitems; i++) {
+        f(gc, Array_Item(a, i));
+    }
 }
 
-var Array = MetaDotC(
-        Array,
-        Instance(Doc, Array_Name, Array_Brief, Array_Description, NULL, Array_Examples, NULL),
-        Instance(New, Array_New, Array_Del), Instance(Assign, Array_Assign),
-        Instance(Mark, Array_Mark), Instance(Cmp, Array_Cmp), Instance(Hash, Array_Hash),
-        Instance(Push, Array_Push, Array_Pop, Array_Push_At, Array_Pop_At),
-        Instance(Concat, Array_Concat, Array_Push), Instance(Len, Array_Len),
-        Instance(Get, Array_Get, Array_Set, Array_Mem, Array_Rem),
-        Instance(Iter, Array_Iter_Init, Array_Iter_Next, Array_Iter_Last, Array_Iter_Prev,
-                 Array_Iter_Type),
-        Instance(Sort, Array_Sort_By), Instance(Show, Array_Show, NULL),
-        Instance(Resize, Array_Resize));
+var Array = MetaDotC(Array, Instance(Doc, Array_Name, Array_Brief, Array_Description, NULL, Array_Examples, NULL), Instance(New, Array_New, Array_Del), Instance(Assign, Array_Assign),
+                     Instance(Mark, Array_Mark), Instance(Cmp, Array_Cmp), Instance(Hash, Array_Hash), Instance(Push, Array_Push, Array_Pop, Array_Push_At, Array_Pop_At),
+                     Instance(Concat, Array_Concat, Array_Push), Instance(Len, Array_Len), Instance(Get, Array_Get, Array_Set, Array_Mem, Array_Rem),
+                     Instance(Iter, Array_Iter_Init, Array_Iter_Next, Array_Iter_Last, Array_Iter_Prev, Array_Iter_Type), Instance(Sort, Array_Sort_By), Instance(Show, Array_Show, NULL),
+                     Instance(Resize, Array_Resize));
 
 static const char *Assign_Name(void) { return "Assign"; }
 
@@ -906,16 +912,17 @@ static const char *Assign_Definition(void) {
 
 static struct Example *Assign_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Int, $I(10));\n"
-                                                  "var y = new(Int, $I(20));\n"
-                                                  "\n"
-                                                  "show(x); /* 10 */\n"
-                                                  "show(y); /* 20 */\n"
-                                                  "\n"
-                                                  "assign(x, y);\n"
-                                                  "\n"
-                                                  "show(x); /* 20 */\n"
-                                                  "show(y); /* 20 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Int, $I(10));\n"
+                                         "var y = new(Int, $I(20));\n"
+                                         "\n"
+                                         "show(x); /* 10 */\n"
+                                         "show(y); /* 20 */\n"
+                                         "\n"
+                                         "assign(x, y);\n"
+                                         "\n"
+                                         "show(x); /* 20 */\n"
+                                         "show(y); /* 20 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -923,17 +930,15 @@ static struct Example *Assign_Examples(void) {
 
 static struct Method *Assign_Methods(void) {
 
-    static struct Method methods[] = {
-            {"assign", "var assign(var self, var obj);",
-             "Assign the object `obj` to the object `self`. The assigned object "
-             "`self` is returned."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"assign", "var assign(var self, var obj);",
+                                       "Assign the object `obj` to the object `self`. The assigned object "
+                                       "`self` is returned."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Assign = MetaDotC(Assign, Instance(Doc, Assign_Name, Assign_Brief, Assign_Description,
-                                       Assign_Definition, Assign_Examples, Assign_Methods));
+var Assign = MetaDotC(Assign, Instance(Doc, Assign_Name, Assign_Brief, Assign_Description, Assign_Definition, Assign_Examples, Assign_Methods));
 
 var assign(var self, var obj) {
 
@@ -945,7 +950,9 @@ var assign(var self, var obj) {
     }
 
     size_t s = size(type_of(self));
-    if (type_of(self) is type_of(obj) and s) { return memcpy(self, obj, s); }
+    if (type_of(self) is type_of(obj) and s) {
+        return memcpy(self, obj, s);
+    }
 
     return throw(TypeError, "Cannot assign type %s to type %s", type_of(obj), type_of(self));
 }
@@ -972,13 +979,14 @@ static const char *Swap_Definition(void) {
 
 static struct Example *Swap_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = $S(\"Hello\");\n"
-                                                  "var y = $S(\"World\");\n"
-                                                  "show(x); /* Hello */\n"
-                                                  "show(y); /* World */\n"
-                                                  "swap(x, y);\n"
-                                                  "show(x); /* World */\n"
-                                                  "show(y); /* Hello */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = $S(\"Hello\");\n"
+                                         "var y = $S(\"World\");\n"
+                                         "show(x); /* Hello */\n"
+                                         "show(y); /* World */\n"
+                                         "swap(x, y);\n"
+                                         "show(x); /* World */\n"
+                                         "show(y); /* Hello */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -986,22 +994,21 @@ static struct Example *Swap_Examples(void) {
 
 static struct Method *Swap_Methods(void) {
 
-    static struct Method methods[] = {{"swap", "void swap(var self, var obj);",
-                                       "Swap the object `self` for the object `obj`."},
-                                      {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"swap", "void swap(var self, var obj);", "Swap the object `self` for the object `obj`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Swap = MetaDotC(Swap, Instance(Doc, Swap_Name, Swap_Brief, Swap_Description, Swap_Definition,
-                                   Swap_Examples, Swap_Methods));
+var Swap = MetaDotC(Swap, Instance(Doc, Swap_Name, Swap_Brief, Swap_Description, Swap_Definition, Swap_Examples, Swap_Methods));
 
 static void memswap(void *p0, void *p1, size_t s) {
-    if (p0 == p1) { return; }
+    if (p0 == p1) {
+        return;
+    }
     for (size_t i = 0; i < s; i++) {
-        char t = ((char *) p0)[i];
-        ((char *) p0)[i] = ((char *) p1)[i];
-        ((char *) p1)[i] = t;
+        char t = ((char *)p0)[i];
+        ((char *)p0)[i] = ((char *)p1)[i];
+        ((char *)p1)[i] = t;
     }
 }
 
@@ -1068,16 +1075,17 @@ static struct Example *Cmp_Examples(void) {
                                          "show($I(eq(a, b))); /* 1 */\n"
                                          "show($I(a is b));   /* 0 */\n"
                                          "show($I(a isnt b)); /* 1 */\n"},
-                                        {"Usage 2", "show($I(gt($I(15), $I(3 )))); /* 1 */\n"
-                                                    "show($I(lt($I(70), $I(81)))); /* 1 */\n"
-                                                    "show($I(lt($I(71), $I(71)))); /* 0 */\n"
-                                                    "show($I(ge($I(78), $I(71)))); /* 1 */\n"
-                                                    "show($I(gt($I(32), $I(32)))); /* 0 */\n"
-                                                    "show($I(le($I(21), $I(32)))); /* 1 */\n"
-                                                    "\n"
-                                                    "show($I(cmp($I(20), $I(20)))); /*  0 */\n"
-                                                    "show($I(cmp($I(21), $I(20)))); /*  1 */\n"
-                                                    "show($I(cmp($I(20), $I(21)))); /* -1 */\n"},
+                                        {"Usage 2",
+                                         "show($I(gt($I(15), $I(3 )))); /* 1 */\n"
+                                         "show($I(lt($I(70), $I(81)))); /* 1 */\n"
+                                         "show($I(lt($I(71), $I(71)))); /* 0 */\n"
+                                         "show($I(ge($I(78), $I(71)))); /* 1 */\n"
+                                         "show($I(gt($I(32), $I(32)))); /* 0 */\n"
+                                         "show($I(le($I(21), $I(32)))); /* 1 */\n"
+                                         "\n"
+                                         "show($I(cmp($I(20), $I(20)))); /*  0 */\n"
+                                         "show($I(cmp($I(21), $I(20)))); /*  1 */\n"
+                                         "show($I(cmp($I(20), $I(21)))); /* -1 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -1085,39 +1093,37 @@ static struct Example *Cmp_Examples(void) {
 
 static struct Method *Cmp_Methods(void) {
 
-    static struct Method methods[] = {
-            {"cmp", "int cmp(var self, var obj);",
-             "The return value of `cmp` is `< 0` if `self` is less than `obj`, `> 0` "
-             "if `self` is greater than `obj` and `0` if they are equal."},
-            {"eq", "bool eq(var self, var obj);",
-             "Returns true if the object `self` is equal to the object `obj`."},
-            {"neq", "bool neq(var self, var obj);",
-             "Returns false if the object `self` is equal to the object `obj`."},
-            {"gt", "bool gt(var self, var obj);",
-             "Returns true if the object `self` is greater than the object `obj`."},
-            {"lt", "bool lt(var self, var obj);",
-             "Returns false if the object `self` is less than the object `obj`."},
-            {"ge", "bool ge(var self, var obj);",
-             "Returns false if the object `self` is greater than or equal to the "
-             "object `obj`."},
-            {"le", "bool le(var self, var obj);",
-             "Returns false if the object `self` is less than or equal to the "
-             "object `obj`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"cmp", "int cmp(var self, var obj);",
+                                       "The return value of `cmp` is `< 0` if `self` is less than `obj`, `> 0` "
+                                       "if `self` is greater than `obj` and `0` if they are equal."},
+                                      {"eq", "bool eq(var self, var obj);", "Returns true if the object `self` is equal to the object `obj`."},
+                                      {"neq", "bool neq(var self, var obj);", "Returns false if the object `self` is equal to the object `obj`."},
+                                      {"gt", "bool gt(var self, var obj);", "Returns true if the object `self` is greater than the object `obj`."},
+                                      {"lt", "bool lt(var self, var obj);", "Returns false if the object `self` is less than the object `obj`."},
+                                      {"ge", "bool ge(var self, var obj);",
+                                       "Returns false if the object `self` is greater than or equal to the "
+                                       "object `obj`."},
+                                      {"le", "bool le(var self, var obj);",
+                                       "Returns false if the object `self` is less than or equal to the "
+                                       "object `obj`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Cmp = MetaDotC(Cmp, Instance(Doc, Cmp_Name, Cmp_Brief, Cmp_Description, Cmp_Definition,
-                                 Cmp_Examples, Cmp_Methods));
+var Cmp = MetaDotC(Cmp, Instance(Doc, Cmp_Name, Cmp_Brief, Cmp_Description, Cmp_Definition, Cmp_Examples, Cmp_Methods));
 
 int cmp(var self, var obj) {
 
     struct Cmp *c = instance(self, Cmp);
-    if (c and c->cmp) { return c->cmp(self, obj); }
+    if (c and c->cmp) {
+        return c->cmp(self, obj);
+    }
 
     size_t s = size(type_of(self));
-    if (type_of(self) is type_of(obj) and s) { return memcmp(self, obj, s); }
+    if (type_of(self) is type_of(obj) and s) {
+        return memcmp(self, obj, s);
+    }
 
     throw(TypeError, "Cannot compare type %s to type %s", type_of(obj), type_of(self));
 
@@ -1149,14 +1155,14 @@ static const char *Sort_Definition(void) {
 
 static struct Example *Sort_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var x = new(Array, Float, \n"
-                      "  $F(5.2), $F(7.1), $F(2.2));\n"
-                      "\n"
-                      "show(x); /* <'Array' At 0x00414603 [5.2, 7.1, 2.2]> */\n"
-                      "sort(x);\n"
-                      "show(x); /* <'Array' At 0x00414603 [2.2, 5.2, 7.1]> */\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Array, Float, \n"
+                                         "  $F(5.2), $F(7.1), $F(2.2));\n"
+                                         "\n"
+                                         "show(x); /* <'Array' At 0x00414603 [5.2, 7.1, 2.2]> */\n"
+                                         "sort(x);\n"
+                                         "show(x); /* <'Array' At 0x00414603 [2.2, 5.2, 7.1]> */\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
@@ -1164,15 +1170,13 @@ static struct Example *Sort_Examples(void) {
 static struct Method *Sort_Methods(void) {
 
     static struct Method methods[] = {{"sort", "void sort(var self);", "Sorts the object `self`."},
-                                      {"sort_by", "void sort_by(var self, bool(*f)(var,var));",
-                                       "Sorts the object `self` using the function `f`."},
+                                      {"sort_by", "void sort_by(var self, bool(*f)(var,var));", "Sorts the object `self` using the function `f`."},
                                       {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Sort = MetaDotC(Sort, Instance(Doc, Sort_Name, Sort_Brief, Sort_Description, Sort_Definition,
-                                   Sort_Examples, Sort_Methods));
+var Sort = MetaDotC(Sort, Instance(Doc, Sort_Name, Sort_Brief, Sort_Description, Sort_Definition, Sort_Examples, Sort_Methods));
 
 void sort(var self) { method(self, Sort, sort_by, lt); }
 
@@ -1197,34 +1201,31 @@ static const char *Concat_Definition(void) {
 
 static struct Example *Concat_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var x = new(Array, Float, $F(9.9), $F(2.8));\n"
-                      "var y = new(Array, Float, $F(1.1), $F(6.5));\n"
-                      "\n"
-                      "show(x); /* <'Array' At 0x00414603 [9.9, 2.8]> */\n"
-                      "show(y); /* <'Array' At 0x00414603 [1.1, 6.5]> */\n"
-                      "append(x, $F(2.5));\n"
-                      "show(x); /* <'Array' At 0x00414603 [9.9, 2.8, 2.5]> */\n"
-                      "concat(x, y);\n"
-                      "show(x); /* <'Array' At 0x00414603 [9.9, 2.8, 2.5, 1.1, 6.5]> */\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Array, Float, $F(9.9), $F(2.8));\n"
+                                         "var y = new(Array, Float, $F(1.1), $F(6.5));\n"
+                                         "\n"
+                                         "show(x); /* <'Array' At 0x00414603 [9.9, 2.8]> */\n"
+                                         "show(y); /* <'Array' At 0x00414603 [1.1, 6.5]> */\n"
+                                         "append(x, $F(2.5));\n"
+                                         "show(x); /* <'Array' At 0x00414603 [9.9, 2.8, 2.5]> */\n"
+                                         "concat(x, y);\n"
+                                         "show(x); /* <'Array' At 0x00414603 [9.9, 2.8, 2.5, 1.1, 6.5]> */\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Concat_Methods(void) {
 
-    static struct Method methods[] = {{"append", "void append(var self, var obj);",
-                                       "Append the object `obj` to the object `self`."},
-                                      {"concat", "void concat(var self, var obj);",
-                                       "Concatenate the object `obj` to the object `self`."},
+    static struct Method methods[] = {{"append", "void append(var self, var obj);", "Append the object `obj` to the object `self`."},
+                                      {"concat", "void concat(var self, var obj);", "Concatenate the object `obj` to the object `self`."},
                                       {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Concat = MetaDotC(Concat, Instance(Doc, Concat_Name, Concat_Brief, Concat_Description,
-                                       Concat_Definition, Concat_Examples, Concat_Methods));
+var Concat = MetaDotC(Concat, Instance(Doc, Concat_Name, Concat_Brief, Concat_Description, Concat_Definition, Concat_Examples, Concat_Methods));
 
 void append(var self, var obj) { method(self, Concat, append, obj); }
 
@@ -1268,34 +1269,32 @@ static const char *Doc_Definition(void) {
 
 static struct Method *Doc_Methods(void) {
 
-    static struct Method methods[] = {
-            {"name", "const char* name(var type);", "Return the name of a given `type`."},
-            {"brief", "const char* brief(var type);",
-             "Return a brief description of a given `type`."},
-            {"description", "const char* description(var type);",
-             "Return a longer description of a given `type`."},
-            {"definition", "const char* definition(var type);",
-             "Return the C definition of a given `type`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"name", "const char* name(var type);", "Return the name of a given `type`."},
+                                      {"brief", "const char* brief(var type);", "Return a brief description of a given `type`."},
+                                      {"description", "const char* description(var type);", "Return a longer description of a given `type`."},
+                                      {"definition", "const char* definition(var type);", "Return the C definition of a given `type`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
 static struct Example *Doc_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "show($S(name(Int))); /* Int */\n"
-                                                  "show($S(brief(Int))); /* Integer Object */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "show($S(name(Int))); /* Int */\n"
+                                         "show($S(brief(Int))); /* Integer Object */\n"},
                                         {NULL, NULL}};
 
     return examples;
 }
 
-var Doc = MetaDotC(Doc, Instance(Doc, Doc_Name, Doc_Brief, Doc_Description, Doc_Definition,
-                                 Doc_Examples, Doc_Methods));
+var Doc = MetaDotC(Doc, Instance(Doc, Doc_Name, Doc_Brief, Doc_Description, Doc_Definition, Doc_Examples, Doc_Methods));
 
 const char *name(var type) {
     struct Doc *doc = type_instance(type, Doc);
-    if (doc->name) { return doc->name(); }
+    if (doc->name) {
+        return doc->name();
+    }
     return c_str(type);
 }
 
@@ -1324,13 +1323,12 @@ static const char *Help_Definition(void) {
 
 static struct Method *Help_Methods(void) {
 
-    static struct Method methods[] = {
-            {"help",
-             "void help(var self);\n"
-             "int help_to(var out, int pos, var self);",
-             "Print help information about the object `self` either to `stdout` or "
-             "to the object `out` at some position `pos`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"help",
+                                       "void help(var self);\n"
+                                       "int help_to(var out, int pos, var self);",
+                                       "Print help information about the object `self` either to `stdout` or "
+                                       "to the object `out` at some position `pos`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
@@ -1342,8 +1340,7 @@ static struct Example *Help_Examples(void) {
     return examples;
 }
 
-var Help = MetaDotC(Help, Instance(Doc, Help_Name, Help_Brief, Help_Description, Help_Definition,
-                                   Help_Examples, Help_Methods));
+var Help = MetaDotC(Help, Instance(Doc, Help_Name, Help_Brief, Help_Description, Help_Definition, Help_Examples, Help_Methods));
 
 int help_to(var out, int pos, var self) { return method(self, Help, help_to, out, pos); }
 
@@ -1351,10 +1348,7 @@ void help(var self) { help_to($(File, stdout), 0, self); }
 
 #define EXCEPTION_TLS_KEY "__Exception"
 
-enum {
-    EXCEPTION_MAX_DEPTH = 2048,
-    EXCEPTION_MAX_STRACE = 25
-};
+enum { EXCEPTION_MAX_DEPTH = 2048, EXCEPTION_MAX_STRACE = 25 };
 
 var TypeError = MetaDotCEmpty(TypeError);
 var ValueError = MetaDotCEmpty(ValueError);
@@ -1374,8 +1368,7 @@ var ProgramInterruptedError = MetaDotCEmpty(ProgramInterruptedError);
 var SegmentationError = MetaDotCEmpty(SegmentationError);
 var ProgramTerminationError = MetaDotCEmpty(ProgramTerminationError);
 
-struct Exception
-{
+struct Exception {
     var obj;
     var msg;
     size_t depth;
@@ -1409,36 +1402,32 @@ static const char *Exception_Description(void) {
 
 static struct Method *Exception_Methods(void) {
 
-    static struct Method methods[] = {
-            {"try", "#define try", "Start an exception `try` block."},
-            {"catch", "#define catch(...)",
-             "Start an exception `catch` block, catching any objects listed in `...` "
-             "as the first name given. To catch any exception object leave argument "
-             "list empty other than caught variable name."},
-            {"#define throw", "throw(E, F, ...)",
-             "Throw exception object `E` with format string `F` and arguments `...`."},
-            {"exception_signals", "void exception_signals(void);",
-             "Register the standard C signals to throw corresponding exceptions."},
-            {"exception_object", "void exception_object(void);\n",
-             "Retrieve the current exception object."},
-            {"exception_message", "void exception_message(void);\n",
-             "Retrieve the current exception message."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"try", "#define try", "Start an exception `try` block."},
+                                      {"catch", "#define catch(...)",
+                                       "Start an exception `catch` block, catching any objects listed in `...` "
+                                       "as the first name given. To catch any exception object leave argument "
+                                       "list empty other than caught variable name."},
+                                      {"#define throw", "throw(E, F, ...)", "Throw exception object `E` with format string `F` and arguments `...`."},
+                                      {"exception_signals", "void exception_signals(void);", "Register the standard C signals to throw corresponding exceptions."},
+                                      {"exception_object", "void exception_object(void);\n", "Retrieve the current exception object."},
+                                      {"exception_message", "void exception_message(void);\n", "Retrieve the current exception message."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
 static struct Example *Exception_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Table, String, Int);\n"
-                                                  "set(x, $S(\"Hello\"), $I(1));\n"
-                                                  "set(x, $S(\"World\"), $I(2));\n"
-                                                  "\n"
-                                                  "try {\n"
-                                                  "  get(x, $S(\"Missing\"));\n"
-                                                  "} catch (e in KeyError) {\n"
-                                                  "  println(\"Got Exception: %$\", e);\n"
-                                                  "}\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Table, String, Int);\n"
+                                         "set(x, $S(\"Hello\"), $I(1));\n"
+                                         "set(x, $S(\"World\"), $I(2));\n"
+                                         "\n"
+                                         "try {\n"
+                                         "  get(x, $S(\"Missing\"));\n"
+                                         "} catch (e in KeyError) {\n"
+                                         "  println(\"Got Exception: %$\", e);\n"
+                                         "}\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -1579,17 +1568,18 @@ static void Exception_Backtrace(void) {
 
     for (size_t i = 0; i < EXCEPTION_MAX_STRACE; i++) {
 
-        BOOL result = StackWalk64(image, process, thread, &stackframe, &context, NULL,
-                                  SymFunctionTableAccess64, SymGetModuleBase64, NULL);
+        BOOL result = StackWalk64(image, process, thread, &stackframe, &context, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL);
 
-        if (!result) { break; }
+        if (!result) {
+            break;
+        }
 
         char *filename = "";
         char *symbolname = "???";
         int lineno = 0;
 
         char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
-        PSYMBOL_INFO symbol = (PSYMBOL_INFO) buffer;
+        PSYMBOL_INFO symbol = (PSYMBOL_INFO)buffer;
         symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
         symbol->MaxNameLen = MAX_SYM_NAME;
 
@@ -1615,8 +1605,7 @@ static void Exception_Backtrace(void) {
         if (strcmp(filename, "") == 0) {
             print_to($(File, stderr), 0, "!!\t\t[%i] %s\n", $I(i), $S(symbolname));
         } else {
-            print_to($(File, stderr), 0, "!!\t\t[%i] %s:%i %s\n", $I(i), $S(filename), $I(lineno),
-                     $S(symbolname));
+            print_to($(File, stderr), 0, "!!\t\t[%i] %s:%i %s\n", $I(i), $S(filename), $I(lineno), $S(symbolname));
         }
     }
 
@@ -1656,13 +1645,9 @@ static int Exception_Show(var self, var out, int pos) {
     return print_to(out, pos, "<'Exception' At 0x%p %$ - %$>", self, e->obj, e->msg);
 }
 
-var Exception = MetaDotC(
-        Exception,
-        Instance(Doc, Exception_Name, Exception_Brief, Exception_Description, NULL,
-                 Exception_Examples, Exception_Methods),
-        Instance(New, Exception_New, Exception_Del), Instance(Assign, Exception_Assign),
-        Instance(Len, Exception_Len), Instance(Current, Exception_Current),
-        Instance(Start, NULL, NULL, NULL, Exception_Running), Instance(Show, Exception_Show, NULL));
+var Exception = MetaDotC(Exception, Instance(Doc, Exception_Name, Exception_Brief, Exception_Description, NULL, Exception_Examples, Exception_Methods), Instance(New, Exception_New, Exception_Del),
+                         Instance(Assign, Exception_Assign), Instance(Len, Exception_Len), Instance(Current, Exception_Current), Instance(Start, NULL, NULL, NULL, Exception_Running),
+                         Instance(Show, Exception_Show, NULL));
 
 void exception_signals(void) {
     signal(SIGABRT, Exception_Signal);
@@ -1704,14 +1689,20 @@ var exception_catch(var args) {
 
     struct Exception *e = current(Exception);
 
-    if (not e->active) { return NULL; }
+    if (not e->active) {
+        return NULL;
+    }
 
     /* If no Arguments catch all */
-    if (len(args) is 0) { return e->obj; }
+    if (len(args) is 0) {
+        return e->obj;
+    }
 
     /* Check Exception against Arguments */
     foreach (arg in args) {
-        if (eq(arg, e->obj)) { return e->obj; }
+        if (eq(arg, e->obj)) {
+            return e->obj;
+        }
     }
 
     /* No matches found. Propagate to outward block */
@@ -1762,49 +1753,39 @@ static const char *Stream_Definition(void) {
 
 static struct Example *Stream_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var f = sopen($(File, NULL), $S(\"test.bin\"), $S(\"r\"));\n"
-                      "\n"
-                      "char c;\n"
-                      "while (!seof(f)) {\n"
-                      "  sread(f, &c, 1);\n"
-                      "  putc(c, stdout);\n"
-                      "}\n"
-                      "\n"
-                      "sclose(f);\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var f = sopen($(File, NULL), $S(\"test.bin\"), $S(\"r\"));\n"
+                                         "\n"
+                                         "char c;\n"
+                                         "while (!seof(f)) {\n"
+                                         "  sread(f, &c, 1);\n"
+                                         "  putc(c, stdout);\n"
+                                         "}\n"
+                                         "\n"
+                                         "sclose(f);\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Stream_Methods(void) {
 
-    static struct Method methods[] = {
-            {"sopen", "var sopen(var self, var resource, var options);",
-             "Open the stream `self` with a given `resource` and `options`."},
-            {"sclose", "void sclose(var self);", "Close the stream `self`."},
-            {"sseek", "void sseek(var self, int64_t pos, int origin);",
-             "Seek to the position `pos` from some `origin` in the stream `self`."},
-            {"stell", "int64_t stell(var self);",
-             "Return the current position of the stream `stell`."},
-            {"sflush", "void sflush(var self);", "Flush the buffered contents of stream `self`."},
-            {"seof", "bool seof(var self);",
-             "Returns true if there is no more information in the stream."},
-            {"sread", "size_t sread(var self, void* output, size_t size);",
-             "Read `size` bytes from the stream `self` and write them to `output`."},
-            {"swrite", "size_t swrite(var self, void* input, size_t size);",
-             "Write `size` bytes to the stream `self` and read them from `input`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"sopen", "var sopen(var self, var resource, var options);", "Open the stream `self` with a given `resource` and `options`."},
+                                      {"sclose", "void sclose(var self);", "Close the stream `self`."},
+                                      {"sseek", "void sseek(var self, int64_t pos, int origin);", "Seek to the position `pos` from some `origin` in the stream `self`."},
+                                      {"stell", "int64_t stell(var self);", "Return the current position of the stream `stell`."},
+                                      {"sflush", "void sflush(var self);", "Flush the buffered contents of stream `self`."},
+                                      {"seof", "bool seof(var self);", "Returns true if there is no more information in the stream."},
+                                      {"sread", "size_t sread(var self, void* output, size_t size);", "Read `size` bytes from the stream `self` and write them to `output`."},
+                                      {"swrite", "size_t swrite(var self, void* input, size_t size);", "Write `size` bytes to the stream `self` and read them from `input`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Stream = MetaDotC(Stream, Instance(Doc, Stream_Name, Stream_Brief, Stream_Description,
-                                       Stream_Definition, Stream_Examples, Stream_Methods));
+var Stream = MetaDotC(Stream, Instance(Doc, Stream_Name, Stream_Brief, Stream_Description, Stream_Definition, Stream_Examples, Stream_Methods));
 
-var sopen(var self, var resource, var options) {
-    return method(self, Stream, sopen, resource, options);
-}
+var sopen(var self, var resource, var options) { return method(self, Stream, sopen, resource, options); }
 
 void sclose(var self) { method(self, Stream, sclose); }
 
@@ -1816,13 +1797,9 @@ void sflush(var self) { method(self, Stream, sflush); }
 
 bool seof(var self) { return method(self, Stream, seof); }
 
-size_t sread(var self, void *output, size_t size) {
-    return method(self, Stream, sread, output, size);
-}
+size_t sread(var self, void *output, size_t size) { return method(self, Stream, sread, output, size); }
 
-size_t swrite(var self, void *input, size_t size) {
-    return method(self, Stream, swrite, input, size);
-}
+size_t swrite(var self, void *input, size_t size) { return method(self, Stream, swrite, input, size); }
 
 static const char *File_Name(void) { return "File"; }
 
@@ -1841,25 +1818,27 @@ static const char *File_Definition(void) {
 
 static struct Example *File_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var x = new(File, $S(\"test.bin\"), $S(\"wb\"));\n"
-                      "char* data = \"hello\";\n"
-                      "swrite(x, data, strlen(data));\n"
-                      "sclose(x);\n"},
-            {"Formatted Printing", "var x = $(File, NULL);\n"
-                                   "sopen(x, $S(\"test.txt\"), $S(\"w\"));\n"
-                                   "print_to(x, 0, \"%$ is %$ \", $S(\"Dan\"), $I(23));\n"
-                                   "print_to(x, 0, \"%$ is %$ \", $S(\"Chess\"), $I(24));\n"
-                                   "sclose(x);\n"},
-            {"Automatic Closing", "with(f in new(File, $S(\"test.txt\"), $S(\"r\"))) {\n"
-                                  "  var k = new(String); resize(k, 100);\n"
-                                  "  var v = new(Int, $I(0));\n"
-                                  "  foreach (i in range($I(2))) {\n"
-                                  "    scan_from(f, 0, \"%$ is %$ \", k, v);\n"
-                                  "    show(k); show(v);\n"
-                                  "  }\n"
-                                  "}\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(File, $S(\"test.bin\"), $S(\"wb\"));\n"
+                                         "char* data = \"hello\";\n"
+                                         "swrite(x, data, strlen(data));\n"
+                                         "sclose(x);\n"},
+                                        {"Formatted Printing",
+                                         "var x = $(File, NULL);\n"
+                                         "sopen(x, $S(\"test.txt\"), $S(\"w\"));\n"
+                                         "print_to(x, 0, \"%$ is %$ \", $S(\"Dan\"), $I(23));\n"
+                                         "print_to(x, 0, \"%$ is %$ \", $S(\"Chess\"), $I(24));\n"
+                                         "sclose(x);\n"},
+                                        {"Automatic Closing",
+                                         "with(f in new(File, $S(\"test.txt\"), $S(\"r\"))) {\n"
+                                         "  var k = new(String); resize(k, 100);\n"
+                                         "  var v = new(Int, $I(0));\n"
+                                         "  foreach (i in range($I(2))) {\n"
+                                         "    scan_from(f, 0, \"%$ is %$ \", k, v);\n"
+                                         "    show(k); show(v);\n"
+                                         "  }\n"
+                                         "}\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
@@ -1869,22 +1848,30 @@ static void File_Close(var self);
 
 static void File_New(var self, var args) {
     struct File *f = self;
-    if (len(args) > 0) { File_Open(self, get(args, $I(0)), get(args, $I(1))); }
+    if (len(args) > 0) {
+        File_Open(self, get(args, $I(0)), get(args, $I(1)));
+    }
 }
 
 static void File_Del(var self) {
     struct File *f = self;
-    if (f->file isnt NULL) { File_Close(self); }
+    if (f->file isnt NULL) {
+        File_Close(self);
+    }
 }
 
 static var File_Open(var self, var filename, var access) {
     struct File *f = self;
 
-    if (f->file isnt NULL) { File_Close(self); }
+    if (f->file isnt NULL) {
+        File_Close(self);
+    }
 
     f->file = fopen(c_str(filename), c_str(access));
 
-    if (f->file is NULL) { throw(IOError, "Could not open file: %s", filename); }
+    if (f->file is NULL) {
+        throw(IOError, "Could not open file: %s", filename);
+    }
 
     return self;
 }
@@ -1893,7 +1880,9 @@ static void File_Close(var self) {
     struct File *f = self;
 
     int err = fclose(f->file);
-    if (err != 0) { throw(IOError, "Failed to close file: %i", $I(err)); }
+    if (err != 0) {
+        throw(IOError, "Failed to close file: %i", $I(err));
+    }
 
     f->file = NULL;
 }
@@ -1901,19 +1890,27 @@ static void File_Close(var self) {
 static void File_Seek(var self, int64_t pos, int origin) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot seek file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot seek file - no file open.", "");
+    }
 
     int err = fseek(f->file, pos, origin);
-    if (err != 0) { throw(IOError, "Failed to seek in file: %i", $I(err)); }
+    if (err != 0) {
+        throw(IOError, "Failed to seek in file: %i", $I(err));
+    }
 }
 
 static int64_t File_Tell(var self) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot tell file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot tell file - no file open.", "");
+    }
 
     int64_t i = ftell(f->file);
-    if (i == -1) { throw(IOError, "Failed to tell file: %i", $I(i)); }
+    if (i == -1) {
+        throw(IOError, "Failed to tell file: %i", $I(i));
+    }
 
     return i;
 }
@@ -1921,16 +1918,22 @@ static int64_t File_Tell(var self) {
 static void File_Flush(var self) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot flush file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot flush file - no file open.", "");
+    }
 
     int err = fflush(f->file);
-    if (err != 0) { throw(IOError, "Failed to flush file: %i", $I(err)); }
+    if (err != 0) {
+        throw(IOError, "Failed to flush file: %i", $I(err));
+    }
 }
 
 static bool File_EOF(var self) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot eof file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot eof file - no file open.", "");
+    }
 
     return feof(f->file);
 }
@@ -1938,7 +1941,9 @@ static bool File_EOF(var self) {
 static size_t File_Read(var self, void *output, size_t size) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot read file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot read file - no file open.", "");
+    }
 
     size_t num = fread(output, size, 1, f->file);
     if (num isnt 1 and size isnt 0 and not feof(f->file)) {
@@ -1952,10 +1957,14 @@ static size_t File_Read(var self, void *output, size_t size) {
 static size_t File_Write(var self, void *input, size_t size) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot write file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot write file - no file open.", "");
+    }
 
     size_t num = fwrite(input, size, 1, f->file);
-    if (num isnt 1 and size isnt 0) { throw(IOError, "Failed to write to file: %i", $I(num)); }
+    if (num isnt 1 and size isnt 0) {
+        throw(IOError, "Failed to write to file: %i", $I(num));
+    }
 
     return num;
 }
@@ -1963,7 +1972,9 @@ static size_t File_Write(var self, void *input, size_t size) {
 static int File_Format_To(var self, int pos, const char *fmt, va_list va) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot format to file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot format to file - no file open.", "");
+    }
 
     return vfprintf(f->file, fmt, va);
 }
@@ -1971,18 +1982,15 @@ static int File_Format_To(var self, int pos, const char *fmt, va_list va) {
 static int File_Format_From(var self, int pos, const char *fmt, va_list va) {
     struct File *f = self;
 
-    if (f->file is NULL) { throw(IOError, "Cannot format from file - no file open.", ""); }
+    if (f->file is NULL) {
+        throw(IOError, "Cannot format from file - no file open.", "");
+    }
 
     return vfscanf(f->file, fmt, va);
 }
 
-var File = MetaDotC(File,
-                    Instance(Doc, File_Name, File_Brief, File_Description, File_Definition,
-                             File_Examples, NULL),
-                    Instance(New, File_New, File_Del), Instance(Start, NULL, File_Close, NULL),
-                    Instance(Stream, File_Open, File_Close, File_Seek, File_Tell, File_Flush,
-                             File_EOF, File_Read, File_Write),
-                    Instance(Format, File_Format_To, File_Format_From));
+var File = MetaDotC(File, Instance(Doc, File_Name, File_Brief, File_Description, File_Definition, File_Examples, NULL), Instance(New, File_New, File_Del), Instance(Start, NULL, File_Close, NULL),
+                    Instance(Stream, File_Open, File_Close, File_Seek, File_Tell, File_Flush, File_EOF, File_Read, File_Write), Instance(Format, File_Format_To, File_Format_From));
 
 static const char *Process_Name(void) { return "Process"; }
 
@@ -2003,13 +2011,14 @@ static const char *Process_Definition(void) {
 
 static struct Example *Process_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Process, $S(\"ls\"), $S(\"r\"));\n"
-                                                  "char c;\n"
-                                                  "while (not seof(x)) {\n"
-                                                  "  sread(x, &c, 1);\n"
-                                                  "  print(\"%c\", $I(c));\n"
-                                                  "}\n"
-                                                  "sclose(x);\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Process, $S(\"ls\"), $S(\"r\"));\n"
+                                         "char c;\n"
+                                         "while (not seof(x)) {\n"
+                                         "  sread(x, &c, 1);\n"
+                                         "  print(\"%c\", $I(c));\n"
+                                         "}\n"
+                                         "sclose(x);\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -2026,17 +2035,23 @@ static void Process_New(var self, var args) {
 
 static void Process_Del(var self) {
     struct Process *p = self;
-    if (p->proc isnt NULL) { Process_Close(self); }
+    if (p->proc isnt NULL) {
+        Process_Close(self);
+    }
 }
 
 static var Process_Open(var self, var filename, var access) {
     struct Process *p = self;
 
-    if (p->proc isnt NULL) { Process_Close(self); }
+    if (p->proc isnt NULL) {
+        Process_Close(self);
+    }
 
     p->proc = popen(c_str(filename), c_str(access));
 
-    if (p->proc is NULL) { throw(IOError, "Could not open process: %s", filename); }
+    if (p->proc is NULL) {
+        throw(IOError, "Could not open process: %s", filename);
+    }
 
     return self;
 }
@@ -2045,7 +2060,9 @@ static void Process_Close(var self) {
     struct Process *p = self;
 
     int err = pclose(p->proc);
-    if (err != 0) { throw(IOError, "Failed to close process: %i", $I(err)); }
+    if (err != 0) {
+        throw(IOError, "Failed to close process: %i", $I(err));
+    }
 
     p->proc = NULL;
 }
@@ -2053,19 +2070,27 @@ static void Process_Close(var self) {
 static void Process_Seek(var self, int64_t pos, int origin) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot seek process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot seek process - no process open.", "");
+    }
 
     int err = fseek(p->proc, pos, origin);
-    if (err != 0) { throw(IOError, "Failed to seek in process: %i", $I(err)); }
+    if (err != 0) {
+        throw(IOError, "Failed to seek in process: %i", $I(err));
+    }
 }
 
 static int64_t Process_Tell(var self) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot tell process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot tell process - no process open.", "");
+    }
 
     int64_t i = ftell(p->proc);
-    if (i == -1) { throw(IOError, "Failed to tell process: %i", $I(i)); }
+    if (i == -1) {
+        throw(IOError, "Failed to tell process: %i", $I(i));
+    }
 
     return i;
 }
@@ -2073,16 +2098,22 @@ static int64_t Process_Tell(var self) {
 static void Process_Flush(var self) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot flush process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot flush process - no process open.", "");
+    }
 
     int err = fflush(p->proc);
-    if (err != 0) { throw(IOError, "Failed to flush process: %i", $I(err)); }
+    if (err != 0) {
+        throw(IOError, "Failed to flush process: %i", $I(err));
+    }
 }
 
 static bool Process_EOF(var self) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot eof process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot eof process - no process open.", "");
+    }
 
     return feof(p->proc);
 }
@@ -2090,7 +2121,9 @@ static bool Process_EOF(var self) {
 static size_t Process_Read(var self, void *output, size_t size) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot read process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot read process - no process open.", "");
+    }
 
     size_t num = fread(output, size, 1, p->proc);
     if (num isnt 1 and size isnt 0 and not feof(p->proc)) {
@@ -2104,10 +2137,14 @@ static size_t Process_Read(var self, void *output, size_t size) {
 static size_t Process_Write(var self, void *input, size_t size) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot write process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot write process - no process open.", "");
+    }
 
     size_t num = fwrite(input, size, 1, p->proc);
-    if (num isnt 1 and size isnt 0) { throw(IOError, "Failed to write to process: %i", $I(num)); }
+    if (num isnt 1 and size isnt 0) {
+        throw(IOError, "Failed to write to process: %i", $I(num));
+    }
 
     return num;
 }
@@ -2115,7 +2152,9 @@ static size_t Process_Write(var self, void *input, size_t size) {
 static int Process_Format_To(var self, int pos, const char *fmt, va_list va) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot format to process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot format to process - no process open.", "");
+    }
 
     return vfprintf(p->proc, fmt, va);
 }
@@ -2123,27 +2162,22 @@ static int Process_Format_To(var self, int pos, const char *fmt, va_list va) {
 static int Process_Format_From(var self, int pos, const char *fmt, va_list va) {
     struct Process *p = self;
 
-    if (p->proc is NULL) { throw(IOError, "Cannot format from process - no process open.", ""); }
+    if (p->proc is NULL) {
+        throw(IOError, "Cannot format from process - no process open.", "");
+    }
 
     return vfscanf(p->proc, fmt, va);
 }
 
-var Process = MetaDotC(Process,
-                       Instance(Doc, Process_Name, Process_Brief, Process_Description,
-                                Process_Definition, Process_Examples, NULL),
-                       Instance(New, Process_New, Process_Del),
-                       Instance(Start, NULL, Process_Close, NULL),
-                       Instance(Stream, Process_Open, Process_Close, Process_Seek, Process_Tell,
-                                Process_Flush, Process_EOF, Process_Read, Process_Write),
+var Process = MetaDotC(Process, Instance(Doc, Process_Name, Process_Brief, Process_Description, Process_Definition, Process_Examples, NULL), Instance(New, Process_New, Process_Del),
+                       Instance(Start, NULL, Process_Close, NULL), Instance(Stream, Process_Open, Process_Close, Process_Seek, Process_Tell, Process_Flush, Process_EOF, Process_Read, Process_Write),
                        Instance(Format, Process_Format_To, Process_Format_From));
 
 static const char *Call_Name(void) { return "Call"; }
 
 static const char *Call_Brief(void) { return "Callable"; }
 
-static const char *Call_Description(void) {
-    return "The `Call` class is used by types which can be called as functions.";
-}
+static const char *Call_Description(void) { return "The `Call` class is used by types which can be called as functions."; }
 
 static const char *Call_Definition(void) {
     return "struct Call {\n"
@@ -2153,16 +2187,17 @@ static const char *Call_Definition(void) {
 
 static struct Example *Call_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var increment(var args) {\n"
-                                                  "  struct Int* i = get(args, $I(0));\n"
-                                                  "  i->val++;\n"
-                                                  "  return NULL;\n"
-                                                  "}\n"
-                                                  "\n"
-                                                  "var x = $I(0);\n"
-                                                  "show(x); /* 0 */\n"
-                                                  "call($(Function, increment), x);\n"
-                                                  "show(x); /* 1 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var increment(var args) {\n"
+                                         "  struct Int* i = get(args, $I(0));\n"
+                                         "  i->val++;\n"
+                                         "  return NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var x = $I(0);\n"
+                                         "show(x); /* 0 */\n"
+                                         "call($(Function, increment), x);\n"
+                                         "show(x); /* 1 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -2179,8 +2214,7 @@ static struct Method *Call_Methods(void) {
     return methods;
 }
 
-var Call = MetaDotC(Call, Instance(Doc, Call_Name, Call_Brief, Call_Description, Call_Definition,
-                                   Call_Examples, Call_Methods));
+var Call = MetaDotC(Call, Instance(Doc, Call_Name, Call_Brief, Call_Description, Call_Definition, Call_Examples, Call_Methods));
 
 var call_with(var self, var args) { return method(self, Call, call_with, args); }
 
@@ -2198,32 +2232,34 @@ static const char *Function_Description(void) {
 
 static struct Example *Function_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var increment(var args) {\n"
-                      "  struct Int* i = get(args, $I(0));\n"
-                      "  i->val++;\n"
-                      "  return NULL;\n"
-                      "}\n"
-                      "\n"
-                      "var x = $I(0);\n"
-                      "show(x); /* 0 */\n"
-                      "call($(Function, increment), x);\n"
-                      "show(x); /* 1 */\n"},
-            {"Usage 2", "var hello_person(var args) {\n"
-                        "  print(\"Hello %$!\", get(args, $I(0)));\n"
-                        "  return NULL;\n"
-                        "}\n"
-                        "\n"
-                        "call($(Function, hello_person), $S(\"Dan\"));\n"},
-            {"Usage 3", "var add_print(var args) {\n"
-                        "  int64_t fst = c_int(get(args, $I(0)));\n"
-                        "  int64_t snd = c_int(get(args, $I(1)));\n"
-                        "  println(\"%i + %i = %i\", $I(fst), $I(snd), $I(fst+snd));\n"
-                        "  return NULL;\n"
-                        "}\n"
-                        "\n"
-                        "call($(Function, add_print), $I(10), $I(21));\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var increment(var args) {\n"
+                                         "  struct Int* i = get(args, $I(0));\n"
+                                         "  i->val++;\n"
+                                         "  return NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var x = $I(0);\n"
+                                         "show(x); /* 0 */\n"
+                                         "call($(Function, increment), x);\n"
+                                         "show(x); /* 1 */\n"},
+                                        {"Usage 2",
+                                         "var hello_person(var args) {\n"
+                                         "  print(\"Hello %$!\", get(args, $I(0)));\n"
+                                         "  return NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "call($(Function, hello_person), $S(\"Dan\"));\n"},
+                                        {"Usage 3",
+                                         "var add_print(var args) {\n"
+                                         "  int64_t fst = c_int(get(args, $I(0)));\n"
+                                         "  int64_t snd = c_int(get(args, $I(1)));\n"
+                                         "  println(\"%i + %i = %i\", $I(fst), $I(snd), $I(fst+snd));\n"
+                                         "  return NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "call($(Function, add_print), $I(10), $I(21));\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
@@ -2239,10 +2275,7 @@ static var Function_Call(var self, var args) {
     return f->func(args);
 }
 
-var Function = MetaDotC(Function,
-                        Instance(Doc, Function_Name, Function_Brief, Function_Description,
-                                 Function_Definition, Function_Examples, NULL),
-                        Instance(Call, Function_Call));
+var Function = MetaDotC(Function, Instance(Doc, Function_Name, Function_Brief, Function_Description, Function_Definition, Function_Examples, NULL), Instance(Call, Function_Call));
 
 static const char *Mark_Name(void) { return "Mark"; }
 
@@ -2269,22 +2302,24 @@ static const char *Mark_Definition(void) {
 
 static struct Method *Mark_Methods(void) {
 
-    static struct Method methods[] = {
-            {"mark", "void mark(var self, var gc, void(*f)(var,void*));",
-             "Mark the object `self` with the Garbage Collector `gc` and the callback "
-             "function `f`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"mark", "void mark(var self, var gc, void(*f)(var,void*));",
+                                       "Mark the object `self` with the Garbage Collector `gc` and the callback "
+                                       "function `f`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Mark = MetaDotC(Mark, Instance(Doc, Mark_Name, Mark_Brief, Mark_Description, Mark_Definition,
-                                   NULL, Mark_Methods));
+var Mark = MetaDotC(Mark, Instance(Doc, Mark_Name, Mark_Brief, Mark_Description, Mark_Definition, NULL, Mark_Methods));
 
 void mark(var self, var gc, void (*f)(var, void *)) {
-    if (self is NULL) { return; }
+    if (self is NULL) {
+        return;
+    }
     struct Mark *m = instance(self, Mark);
-    if (m and m->mark) { m->mark(self, gc, f); }
+    if (m and m->mark) {
+        m->mark(self, gc, f);
+    }
 }
 
 static const char *Get_Name(void) { return "Get"; }
@@ -2312,13 +2347,14 @@ static const char *Get_Definition(void) {
 
 static struct Example *Get_Examples(void) {
 
-    static struct Example examples[] = {{"Usage 1", "var x = new(Array, String, \n"
-                                                    "  $S(\"Hello\"), $S(\"There\"));\n"
-                                                    "\n"
-                                                    "show(get(x, $I(0))); /* Hello */\n"
-                                                    "show(get(x, $I(1))); /* There */\n"
-                                                    "set(x, $I(1), $S(\"Blah\"));\n"
-                                                    "show(get(x, $I(1))); /* Blah */\n"},
+    static struct Example examples[] = {{"Usage 1",
+                                         "var x = new(Array, String, \n"
+                                         "  $S(\"Hello\"), $S(\"There\"));\n"
+                                         "\n"
+                                         "show(get(x, $I(0))); /* Hello */\n"
+                                         "show(get(x, $I(1))); /* There */\n"
+                                         "set(x, $I(1), $S(\"Blah\"));\n"
+                                         "show(get(x, $I(1))); /* Blah */\n"},
                                         {"Usage 2",
                                          "var prices = new(Table, String, Int, \n"
                                          "  $S(\"Apple\"),  $I(12),\n"
@@ -2339,24 +2375,18 @@ static struct Example *Get_Examples(void) {
 
 static struct Method *Get_Methods(void) {
 
-    static struct Method methods[] = {
-            {"get", "var get(var self, var key);",
-             "Get the value at a given `key` for object `self`."},
-            {"set", "void set(var self, var key, var val);",
-             "Set the value at a given `key` for object `self`."},
-            {"mem", "bool mem(var self, var key);",
-             "Returns true if `key` is a member of the object `self`."},
-            {"rem", "void rem(var self, var key);", "Removes the `key` from object `self`."},
-            {"key_type", "var key_type(var self);", "Returns the key type for the object `self`."},
-            {"val_type", "var val_type(var self);",
-             "Returns the value type for the object `self`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"get", "var get(var self, var key);", "Get the value at a given `key` for object `self`."},
+                                      {"set", "void set(var self, var key, var val);", "Set the value at a given `key` for object `self`."},
+                                      {"mem", "bool mem(var self, var key);", "Returns true if `key` is a member of the object `self`."},
+                                      {"rem", "void rem(var self, var key);", "Removes the `key` from object `self`."},
+                                      {"key_type", "var key_type(var self);", "Returns the key type for the object `self`."},
+                                      {"val_type", "var val_type(var self);", "Returns the value type for the object `self`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Get = MetaDotC(Get, Instance(Doc, Get_Name, Get_Brief, Get_Description, Get_Definition,
-                                 Get_Examples, Get_Methods));
+var Get = MetaDotC(Get, Instance(Doc, Get_Name, Get_Brief, Get_Description, Get_Definition, Get_Examples, Get_Methods));
 
 var get(var self, var key) { return method(self, Get, get, key); }
 
@@ -2398,41 +2428,39 @@ static const char *Hash_Definition(void) {
 
 static struct Example *Hash_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "println(\"%li\", $I(hash($I(  1)))); /*   1 */\n"
-                      "println(\"%li\", $I(hash($I(123)))); /* 123 */\n"
-                      "\n"
-                      "/* 866003103 */\n"
-                      "println(\"%li\", $I(hash_data($I(123), size(Int))));\n"
-                      "\n"
-                      "println(\"%li\", $I(hash($S(\"Hello\"))));  /* -1838682532 */\n"
-                      "println(\"%li\", $I(hash($S(\"There\"))));  /*   961387266 */\n"
-                      "println(\"%li\", $I(hash($S(\"People\")))); /*   697467069 */\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "println(\"%li\", $I(hash($I(  1)))); /*   1 */\n"
+                                         "println(\"%li\", $I(hash($I(123)))); /* 123 */\n"
+                                         "\n"
+                                         "/* 866003103 */\n"
+                                         "println(\"%li\", $I(hash_data($I(123), size(Int))));\n"
+                                         "\n"
+                                         "println(\"%li\", $I(hash($S(\"Hello\"))));  /* -1838682532 */\n"
+                                         "println(\"%li\", $I(hash($S(\"There\"))));  /*   961387266 */\n"
+                                         "println(\"%li\", $I(hash($S(\"People\")))); /*   697467069 */\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Hash_Methods(void) {
 
-    static struct Method methods[] = {
-            {"hash", "uint64_t hash(var self);", "Get the hash value for the object `self`."},
-            {"hash_data", "uint64_t hash_data(void* data, size_t num);",
-             "Hash `num` bytes pointed to by `data` using "
-             "[Murmurhash](http://en.wikipedia.org/wiki/MurmurHash)."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"hash", "uint64_t hash(var self);", "Get the hash value for the object `self`."},
+                                      {"hash_data", "uint64_t hash_data(void* data, size_t num);",
+                                       "Hash `num` bytes pointed to by `data` using "
+                                       "[Murmurhash](http://en.wikipedia.org/wiki/MurmurHash)."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Hash = MetaDotC(Hash, Instance(Doc, Hash_Name, Hash_Brief, Hash_Description, Hash_Definition,
-                                   Hash_Examples, Hash_Methods));
+var Hash = MetaDotC(Hash, Instance(Doc, Hash_Name, Hash_Brief, Hash_Description, Hash_Definition, Hash_Examples, Hash_Methods));
 
 uint64_t hash_data(const void *data, size_t size) {
 
     const uint64_t m = 0xc6a4a7935bd1e995;
     const int r = 47;
-    const uint64_t *d = (const uint64_t *) data;
+    const uint64_t *d = (const uint64_t *)data;
     const uint64_t *end = d + (size / 8);
 
     uint64_t h = 0xCe110 ^ (size * m);
@@ -2446,23 +2474,23 @@ uint64_t hash_data(const void *data, size_t size) {
         h *= m;
     }
 
-    const unsigned char *data2 = (const unsigned char *) d;
+    const unsigned char *data2 = (const unsigned char *)d;
 
     switch (size & 7) {
         case 7:
-            h ^= (uint64_t) (data2[6]) << 48;
+            h ^= (uint64_t)(data2[6]) << 48;
         case 6:
-            h ^= (uint64_t) (data2[5]) << 40;
+            h ^= (uint64_t)(data2[5]) << 40;
         case 5:
-            h ^= (uint64_t) (data2[4]) << 32;
+            h ^= (uint64_t)(data2[4]) << 32;
         case 4:
-            h ^= (uint64_t) (data2[3]) << 24;
+            h ^= (uint64_t)(data2[3]) << 24;
         case 3:
-            h ^= (uint64_t) (data2[2]) << 16;
+            h ^= (uint64_t)(data2[2]) << 16;
         case 2:
-            h ^= (uint64_t) (data2[1]) << 8;
+            h ^= (uint64_t)(data2[1]) << 8;
         case 1:
-            h ^= (uint64_t) (data2[0]);
+            h ^= (uint64_t)(data2[0]);
             h *= m;
     };
 
@@ -2476,7 +2504,9 @@ uint64_t hash_data(const void *data, size_t size) {
 uint64_t hash(var self) {
 
     struct Hash *h = instance(self, Hash);
-    if (h and h->hash) { return h->hash(self); }
+    if (h and h->hash) {
+        return h->hash(self);
+    }
 
     return hash_data(self, size(type_of(self)));
 }
@@ -2510,20 +2540,22 @@ static const char *Iter_Definition(void) {
 
 static struct Example *Iter_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Array, Int, $I(1), $I(2), $I(5));\n"
-                                                  "\n"
-                                                  "foreach(o in x) {\n"
-                                                  "  show(o); /* 1, 2, 5 */\n"
-                                                  "}\n"},
-                                        {"Table", "var prices = new(Table, String, Int);\n"
-                                                  "set(prices, $S(\"Apple\"),  $I(12));\n"
-                                                  "set(prices, $S(\"Banana\"), $I( 6));\n"
-                                                  "set(prices, $S(\"Pear\"),   $I(55));\n"
-                                                  "\n"
-                                                  "foreach(key in prices) {\n"
-                                                  "  var price = get(prices, key);\n"
-                                                  "  print(\"Price of %$ is %$\\n\", key, price);\n"
-                                                  "}\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Array, Int, $I(1), $I(2), $I(5));\n"
+                                         "\n"
+                                         "foreach(o in x) {\n"
+                                         "  show(o); /* 1, 2, 5 */\n"
+                                         "}\n"},
+                                        {"Table",
+                                         "var prices = new(Table, String, Int);\n"
+                                         "set(prices, $S(\"Apple\"),  $I(12));\n"
+                                         "set(prices, $S(\"Banana\"), $I( 6));\n"
+                                         "set(prices, $S(\"Pear\"),   $I(55));\n"
+                                         "\n"
+                                         "foreach(key in prices) {\n"
+                                         "  var price = get(prices, key);\n"
+                                         "  print(\"Price of %$ is %$\\n\", key, price);\n"
+                                         "}\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -2531,27 +2563,25 @@ static struct Example *Iter_Examples(void) {
 
 static struct Method *Iter_Methods(void) {
 
-    static struct Method methods[] = {
-            {"foreach", "#define foreach(...)\n", "Iterate over elements in a loop."},
-            {"iter_init",
-             "var iter_init(var self);\n"
-             "var iter_last(var self);",
-             "Return the initial item (or final item) in the iteration over `self`."},
-            {"iter_next",
-             "var iter_next(var self, var curr);\n"
-             "var iter_prev(var self, var curr);",
-             "Given the current item `curr`, return the next (or previous) item in "
-             "the iteration over `self`."},
-            {"iter_type", "var iter_type(var self);",
-             "Returns the type of item that can be expected to be returned by the "
-             "iterable."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"foreach", "#define foreach(...)\n", "Iterate over elements in a loop."},
+                                      {"iter_init",
+                                       "var iter_init(var self);\n"
+                                       "var iter_last(var self);",
+                                       "Return the initial item (or final item) in the iteration over `self`."},
+                                      {"iter_next",
+                                       "var iter_next(var self, var curr);\n"
+                                       "var iter_prev(var self, var curr);",
+                                       "Given the current item `curr`, return the next (or previous) item in "
+                                       "the iteration over `self`."},
+                                      {"iter_type", "var iter_type(var self);",
+                                       "Returns the type of item that can be expected to be returned by the "
+                                       "iterable."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Iter = MetaDotC(Iter, Instance(Doc, Iter_Name, Iter_Brief, Iter_Description, Iter_Definition,
-                                   Iter_Examples, Iter_Methods));
+var Iter = MetaDotC(Iter, Instance(Doc, Iter_Name, Iter_Brief, Iter_Description, Iter_Definition, Iter_Examples, Iter_Methods));
 
 var iter_init(var self) { return method(self, Iter, iter_init); }
 
@@ -2589,25 +2619,26 @@ static const char *Range_Definition(void) {
 
 static struct Example *Range_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "/* Iterate 0 to 10 */\n"
-                                                  "foreach (i in range($I(10))) {\n"
-                                                  "  print(\"%i\\n\", i);\n"
-                                                  "}\n"
-                                                  "\n"
-                                                  "/* Iterate 10 to 20 */\n"
-                                                  "foreach (i in range($I(10), $I(20))) {\n"
-                                                  "  print(\"%i\\n\", i);\n"
-                                                  "}\n"
-                                                  "\n"
-                                                  "/* Iterate 10 to 20 with a step of 5 */\n"
-                                                  "foreach (i in range($I(10), $I(20), $I(5))) {\n"
-                                                  "  print(\"%i\\n\", i);\n"
-                                                  "}\n"
-                                                  "\n"
-                                                  "/* Iterate 20 to 10 */\n"
-                                                  "foreach (i in range($I(10), $I(20), $I(-1))) {\n"
-                                                  "  print(\"%i\\n\", i);\n"
-                                                  "}\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "/* Iterate 0 to 10 */\n"
+                                         "foreach (i in range($I(10))) {\n"
+                                         "  print(\"%i\\n\", i);\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate 10 to 20 */\n"
+                                         "foreach (i in range($I(10), $I(20))) {\n"
+                                         "  print(\"%i\\n\", i);\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate 10 to 20 with a step of 5 */\n"
+                                         "foreach (i in range($I(10), $I(20), $I(5))) {\n"
+                                         "  print(\"%i\\n\", i);\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate 20 to 10 */\n"
+                                         "foreach (i in range($I(10), $I(20), $I(-1))) {\n"
+                                         "  print(\"%i\\n\", i);\n"
+                                         "}\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -2615,9 +2646,7 @@ static struct Example *Range_Examples(void) {
 
 static struct Method *Range_Methods(void) {
 
-    static struct Method methods[] = {
-            {"range", "#define range(...)", "Construct a `Range` object on the stack."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"range", "#define range(...)", "Construct a `Range` object on the stack."}, {NULL, NULL, NULL}};
 
     return methods;
 }
@@ -2627,7 +2656,9 @@ var range_stack(var self, var args) {
     struct Range *r = self;
     size_t nargs = len(args);
 
-    if (nargs > 3) { throw(FormatError, "Received too many arguments to Range constructor", ""); }
+    if (nargs > 3) {
+        throw(FormatError, "Received too many arguments to Range constructor", "");
+    }
 
     switch (nargs) {
         case 0:
@@ -2684,22 +2715,42 @@ static int Range_Cmp(var self, var obj) {
 static var Range_Iter_Init(var self) {
     struct Range *r = self;
     struct Int *i = r->value;
-    if (r->step == 0) { return Terminal; }
-    if (r->step > 0) { i->val = r->start; }
-    if (r->step < 0) { i->val = r->stop - 1; }
-    if (r->step > 0 and i->val >= r->stop) { return Terminal; }
-    if (r->step < 0 and i->val < r->start) { return Terminal; }
+    if (r->step == 0) {
+        return Terminal;
+    }
+    if (r->step > 0) {
+        i->val = r->start;
+    }
+    if (r->step < 0) {
+        i->val = r->stop - 1;
+    }
+    if (r->step > 0 and i->val >= r->stop) {
+        return Terminal;
+    }
+    if (r->step < 0 and i->val < r->start) {
+        return Terminal;
+    }
     return i;
 }
 
 static var Range_Iter_Last(var self) {
     struct Range *r = self;
     struct Int *i = r->value;
-    if (r->step == 0) { return Terminal; }
-    if (r->step > 0) { i->val = r->stop - 1; }
-    if (r->step < 0) { i->val = r->start; }
-    if (r->step > 0 and i->val < r->start) { return Terminal; }
-    if (r->step < 0 and i->val >= r->stop) { return Terminal; }
+    if (r->step == 0) {
+        return Terminal;
+    }
+    if (r->step > 0) {
+        i->val = r->stop - 1;
+    }
+    if (r->step < 0) {
+        i->val = r->start;
+    }
+    if (r->step > 0 and i->val < r->start) {
+        return Terminal;
+    }
+    if (r->step < 0 and i->val >= r->stop) {
+        return Terminal;
+    }
     return i;
 }
 
@@ -2707,9 +2758,15 @@ static var Range_Iter_Next(var self, var curr) {
     struct Range *r = self;
     struct Int *i = r->value;
     i->val += r->step;
-    if (r->step == 0) { return Terminal; }
-    if (r->step > 0 and i->val >= r->stop) { return Terminal; }
-    if (r->step < 0 and i->val < r->start) { return Terminal; }
+    if (r->step == 0) {
+        return Terminal;
+    }
+    if (r->step > 0 and i->val >= r->stop) {
+        return Terminal;
+    }
+    if (r->step < 0 and i->val < r->start) {
+        return Terminal;
+    }
     return i;
 }
 
@@ -2717,9 +2774,15 @@ static var Range_Iter_Prev(var self, var curr) {
     struct Range *r = self;
     struct Int *i = r->value;
     i->val -= r->step;
-    if (r->step == 0) { return Terminal; }
-    if (r->step > 0 and i->val < r->start) { return Terminal; }
-    if (r->step < 0 and i->val >= r->stop) { return Terminal; }
+    if (r->step == 0) {
+        return Terminal;
+    }
+    if (r->step > 0 and i->val < r->start) {
+        return Terminal;
+    }
+    if (r->step < 0 and i->val >= r->stop) {
+        return Terminal;
+    }
     return i;
 }
 
@@ -2727,9 +2790,15 @@ static var Range_Iter_Type(var self) { return Int; }
 
 static size_t Range_Len(var self) {
     struct Range *r = self;
-    if (r->step == 0) { return 0; }
-    if (r->step > 0) { return ((r->stop - 1) - r->start) / r->step + 1; }
-    if (r->step < 0) { return ((r->stop - 1) - r->start) / -r->step + 1; }
+    if (r->step == 0) {
+        return 0;
+    }
+    if (r->step > 0) {
+        return ((r->stop - 1) - r->start) / r->step + 1;
+    }
+    if (r->step < 0) {
+        return ((r->stop - 1) - r->start) / -r->step + 1;
+    }
     return 0;
 }
 
@@ -2755,17 +2824,19 @@ static var Range_Get(var self, var key) {
         return x;
     }
 
-    return throw(IndexOutOfBoundsError,
-                 "Index '%i' out of bounds for Range of start %i, stop %i and step %i.", key,
-                 $I(r->start), $I(r->stop), $I(r->step));
+    return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Range of start %i, stop %i and step %i.", key, $I(r->start), $I(r->stop), $I(r->step));
 }
 
 static bool Range_Mem(var self, var key) {
     struct Range *r = self;
     int64_t i = c_int(key);
     i = i < 0 ? Range_Len(r) + i : i;
-    if (r->step == 0) { return false; }
-    if (r->step > 0) { return i >= r->start and i < r->stop and (i - r->start) % r->step is 0; }
+    if (r->step == 0) {
+        return false;
+    }
+    if (r->step > 0) {
+        return i >= r->start and i < r->stop and (i - r->start) % r->step is 0;
+    }
     if (r->step < 0) {
         return i >= r->start and i < r->stop and (i - (r->stop - 1)) % -r->step is 0;
     }
@@ -2779,20 +2850,16 @@ static int Range_Show(var self, var output, int pos) {
     while (curr isnt Terminal) {
         pos = print_to(output, pos, "%i", curr);
         curr = Range_Iter_Next(self, curr);
-        if (curr isnt Terminal) { pos = print_to(output, pos, ", ", ""); }
+        if (curr isnt Terminal) {
+            pos = print_to(output, pos, ", ", "");
+        }
     }
     return print_to(output, pos, "]>", "");
 }
 
-var Range =
-        MetaDotC(Range,
-                 Instance(Doc, Range_Name, Range_Brief, Range_Description, Range_Definition,
-                          Range_Examples, Range_Methods),
-                 Instance(New, Range_New, Range_Del), Instance(Assign, Range_Assign),
-                 Instance(Cmp, Range_Cmp), Instance(Len, Range_Len),
-                 Instance(Get, Range_Get, NULL, Range_Mem, NULL), Instance(Show, Range_Show, NULL),
-                 Instance(Iter, Range_Iter_Init, Range_Iter_Next, Range_Iter_Last, Range_Iter_Prev,
-                          Range_Iter_Type));
+var Range = MetaDotC(Range, Instance(Doc, Range_Name, Range_Brief, Range_Description, Range_Definition, Range_Examples, Range_Methods), Instance(New, Range_New, Range_Del),
+                     Instance(Assign, Range_Assign), Instance(Cmp, Range_Cmp), Instance(Len, Range_Len), Instance(Get, Range_Get, NULL, Range_Mem, NULL), Instance(Show, Range_Show, NULL),
+                     Instance(Iter, Range_Iter_Init, Range_Iter_Next, Range_Iter_Last, Range_Iter_Prev, Range_Iter_Type));
 
 static const char *Slice_Name(void) { return "Slice"; }
 
@@ -2816,43 +2883,41 @@ static const char *Slice_Definition(void) {
 
 static struct Example *Slice_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var x = tuple(\n"
-                      "  $S(\"Hello\"), $S(\"There\"), $S(\"World\"), $S(\"!\"));\n"
-                      "\n"
-                      "/* Iterate over elements 0 to 2 */\n"
-                      "foreach (s in slice(x, $I(2))) {\n"
-                      "  print(\"%s\\n\", s);\n"
-                      "}\n"
-                      "\n"
-                      "/* Iterate over elements 1 to 2 */\n"
-                      "foreach (s in slice(x, $I(1), $I(2))) {\n"
-                      "  print(\"%s\\n\", s);\n"
-                      "}\n"
-                      "\n"
-                      "/* Iterate over every other element */\n"
-                      "foreach (s in slice(x, _, _, $I(2))) {\n"
-                      "  print(\"%s\\n\", s);\n"
-                      "}\n"
-                      "\n"
-                      "/* Iterate backwards, starting from element 3 */\n"
-                      "foreach (s in slice(x, _, $I(2), $I(-1))) {\n"
-                      "  print(\"%s\\n\", s);\n"
-                      "}\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var x = tuple(\n"
+                                         "  $S(\"Hello\"), $S(\"There\"), $S(\"World\"), $S(\"!\"));\n"
+                                         "\n"
+                                         "/* Iterate over elements 0 to 2 */\n"
+                                         "foreach (s in slice(x, $I(2))) {\n"
+                                         "  print(\"%s\\n\", s);\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate over elements 1 to 2 */\n"
+                                         "foreach (s in slice(x, $I(1), $I(2))) {\n"
+                                         "  print(\"%s\\n\", s);\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate over every other element */\n"
+                                         "foreach (s in slice(x, _, _, $I(2))) {\n"
+                                         "  print(\"%s\\n\", s);\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate backwards, starting from element 3 */\n"
+                                         "foreach (s in slice(x, _, $I(2), $I(-1))) {\n"
+                                         "  print(\"%s\\n\", s);\n"
+                                         "}\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Slice_Methods(void) {
 
-    static struct Method methods[] = {
-            {"slice", "#define slice(I, ...)",
-             "Construct a `Slice` object on the stack over iterable `I`."},
-            {"reverse", "#define reverse(I)",
-             "Construct a `Slice` object that iterates over iterable `I` in reverse "
-             "order."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"slice", "#define slice(I, ...)", "Construct a `Slice` object on the stack over iterable `I`."},
+                                      {"reverse", "#define reverse(I)",
+                                       "Construct a `Slice` object that iterates over iterable `I` in reverse "
+                                       "order."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
@@ -2860,9 +2925,15 @@ static struct Method *Slice_Methods(void) {
 static int64_t Slice_Arg(int part, size_t n, var arg) {
 
     if (arg is _) {
-        if (part is 0) { return 0; }
-        if (part is 1) { return n; }
-        if (part is 2) { return 1; }
+        if (part is 0) {
+            return 0;
+        }
+        if (part is 1) {
+            return n;
+        }
+        if (part is 2) {
+            return 1;
+        }
     }
 
     int64_t a = c_int(arg);
@@ -2880,9 +2951,13 @@ var slice_stack(var self, var args) {
 
     size_t nargs = len(args);
 
-    if (nargs > 4) { throw(FormatError, "Received too many arguments to Slice constructor", ""); }
+    if (nargs > 4) {
+        throw(FormatError, "Received too many arguments to Slice constructor", "");
+    }
 
-    if (nargs < 1) { throw(FormatError, "Received too few arguments to Slice constructor", ""); }
+    if (nargs < 1) {
+        throw(FormatError, "Received too few arguments to Slice constructor", "");
+    }
 
     struct Slice *s = self;
     s->iter = get(args, $I(0));
@@ -2937,8 +3012,12 @@ static void Slice_Assign(var self, var obj) {
 static int Slice_Cmp(var self, var obj) {
     struct Slice *s = self;
     struct Slice *o = cast(obj, Slice);
-    if (s->iter > o->iter) { return 1; }
-    if (s->iter < o->iter) { return -1; }
+    if (s->iter > o->iter) {
+        return 1;
+    }
+    if (s->iter < o->iter) {
+        return -1;
+    }
     return cmp(s->range, o->range);
 }
 
@@ -2948,13 +3027,15 @@ static var Slice_Iter_Init(var self) {
 
     if (r->step > 0) {
         var curr = iter_init(s->iter);
-        for (int64_t i = 0; i < r->start; i++) { curr = iter_next(s->iter, curr); }
+        for (int64_t i = 0; i < r->start; i++) {
+            curr = iter_next(s->iter, curr);
+        }
         return curr;
     }
 
     if (r->step < 0) {
         var curr = iter_last(s->iter);
-        for (int64_t i = 0; i < (int64_t) len(s->iter) - r->stop; i++) {
+        for (int64_t i = 0; i < (int64_t)len(s->iter) - r->stop; i++) {
             curr = iter_prev(s->iter, curr);
         }
         return curr;
@@ -2968,11 +3049,15 @@ static var Slice_Iter_Next(var self, var curr) {
     struct Range *r = s->range;
 
     if (r->step > 0) {
-        for (int64_t i = 0; i < r->step; i++) { curr = iter_next(s->iter, curr); }
+        for (int64_t i = 0; i < r->step; i++) {
+            curr = iter_next(s->iter, curr);
+        }
     }
 
     if (r->step < 0) {
-        for (int64_t i = 0; i < -r->step; i++) { curr = iter_prev(s->iter, curr); }
+        for (int64_t i = 0; i < -r->step; i++) {
+            curr = iter_prev(s->iter, curr);
+        }
     }
 
     return curr;
@@ -2989,7 +3074,7 @@ static var Slice_Iter_Last(var self) {
 
     if (r->step > 0) {
         var curr = iter_last(s->iter);
-        for (int64_t i = 0; i < (int64_t) len(s->iter) - r->stop; i++) {
+        for (int64_t i = 0; i < (int64_t)len(s->iter) - r->stop; i++) {
             curr = iter_prev(s->iter, curr);
         }
         return curr;
@@ -2997,7 +3082,9 @@ static var Slice_Iter_Last(var self) {
 
     if (r->step < 0) {
         var curr = iter_init(s->iter);
-        for (int64_t i = 0; i < r->start; i++) { curr = iter_next(s->iter, curr); }
+        for (int64_t i = 0; i < r->start; i++) {
+            curr = iter_next(s->iter, curr);
+        }
         return curr;
     }
 
@@ -3009,11 +3096,15 @@ static var Slice_Iter_Prev(var self, var curr) {
     struct Range *r = s->range;
 
     if (r->step > 0) {
-        for (int64_t i = 0; i < r->step; i++) { curr = iter_prev(s->iter, curr); }
+        for (int64_t i = 0; i < r->step; i++) {
+            curr = iter_prev(s->iter, curr);
+        }
     }
 
     if (r->step < 0) {
-        for (int64_t i = 0; i < -r->step; i++) { curr = iter_next(s->iter, curr); }
+        for (int64_t i = 0; i < -r->step; i++) {
+            curr = iter_next(s->iter, curr);
+        }
     }
 
     return curr;
@@ -3032,7 +3123,9 @@ static var Slice_Get(var self, var key) {
 static bool Slice_Mem(var self, var key) {
     var curr = Slice_Iter_Init(self);
     while (curr) {
-        if (eq(curr, key)) { return true; }
+        if (eq(curr, key)) {
+            return true;
+        }
         curr = Slice_Iter_Next(self, curr);
     }
     return false;
@@ -3045,20 +3138,16 @@ static int Slice_Show(var self, var output, int pos) {
     while (curr isnt Terminal) {
         pos = print_to(output, pos, "%$", curr);
         curr = Slice_Iter_Next(self, curr);
-        if (curr isnt Terminal) { pos = print_to(output, pos, ", ", ""); }
+        if (curr isnt Terminal) {
+            pos = print_to(output, pos, ", ", "");
+        }
     }
     return print_to(output, pos, "]>", "");
 }
 
-var Slice = MetaDotC(Slice,
-                     Instance(Doc, Slice_Name, Slice_Brief, Slice_Description, Slice_Definition,
-                              Slice_Examples, Slice_Methods),
-                     Instance(New, Slice_New, Slice_Del), Instance(Assign, Slice_Assign),
-                     Instance(Cmp, Slice_Cmp), Instance(Len, Slice_Len),
-                     Instance(Get, Slice_Get, NULL, Slice_Mem, NULL),
-                     Instance(Iter, Slice_Iter_Init, Slice_Iter_Next, Slice_Iter_Last,
-                              Slice_Iter_Prev, Slice_Iter_Type),
-                     Instance(Show, Slice_Show, NULL));
+var Slice = MetaDotC(Slice, Instance(Doc, Slice_Name, Slice_Brief, Slice_Description, Slice_Definition, Slice_Examples, Slice_Methods), Instance(New, Slice_New, Slice_Del),
+                     Instance(Assign, Slice_Assign), Instance(Cmp, Slice_Cmp), Instance(Len, Slice_Len), Instance(Get, Slice_Get, NULL, Slice_Mem, NULL),
+                     Instance(Iter, Slice_Iter_Init, Slice_Iter_Next, Slice_Iter_Last, Slice_Iter_Prev, Slice_Iter_Type), Instance(Show, Slice_Show, NULL));
 
 static const char *Zip_Name(void) { return "Zip"; }
 
@@ -3081,31 +3170,29 @@ static const char *Zip_Definition(void) {
 
 static struct Example *Zip_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "/* Iterate over two iterables at once */\n"
-                      "var x = new(Array, Int, $I(100), $I(200), $I(130));\n"
-                      "var y = new(Array, Float, $F(0.1), $F(0.2), $F(1.3));\n"
-                      "foreach (pair in zip(x, y)) {\n"
-                      "  print(\"x: %$\\n\", get(pair, $I(0)));\n"
-                      "  print(\"y: %$\\n\", get(pair, $I(1)));\n"
-                      "}\n"
-                      "\n"
-                      "/* Iterate over iterable with count */\n"
-                      "foreach (pair in enumerate(x)) {\n"
-                      "  print(\"%i: %$\\n\", get(pair, $I(0)), get(pair, $I(1)));\n"
-                      "}\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "/* Iterate over two iterables at once */\n"
+                                         "var x = new(Array, Int, $I(100), $I(200), $I(130));\n"
+                                         "var y = new(Array, Float, $F(0.1), $F(0.2), $F(1.3));\n"
+                                         "foreach (pair in zip(x, y)) {\n"
+                                         "  print(\"x: %$\\n\", get(pair, $I(0)));\n"
+                                         "  print(\"y: %$\\n\", get(pair, $I(1)));\n"
+                                         "}\n"
+                                         "\n"
+                                         "/* Iterate over iterable with count */\n"
+                                         "foreach (pair in enumerate(x)) {\n"
+                                         "  print(\"%i: %$\\n\", get(pair, $I(0)), get(pair, $I(1)));\n"
+                                         "}\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Zip_Methods(void) {
 
-    static struct Method methods[] = {
-            {"zip", "#define zip(...)", "Construct a `Zip` object on the stack."},
-            {"enumerate", "#define enumerate(I)",
-             "Zip the iterable `I` with a `Range` object of the same length."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"zip", "#define zip(...)", "Construct a `Zip` object on the stack."},
+                                      {"enumerate", "#define enumerate(I)", "Zip the iterable `I` with a `Range` object of the same length."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
@@ -3114,7 +3201,9 @@ var zip_stack(var self) {
     struct Zip *z = self;
     size_t nargs = len(z->iters);
     struct Tuple *t = z->values;
-    for (size_t i = 0; i < nargs; i++) { t->items[i] = _; }
+    for (size_t i = 0; i < nargs; i++) {
+        t->items[i] = _;
+    }
     t->items[nargs] = Terminal;
     return z;
 }
@@ -3124,7 +3213,9 @@ static void Zip_New(var self, var args) {
     z->iters = new (Tuple, NULL);
     z->values = new (Tuple, NULL);
     assign(z->iters, args);
-    for (size_t i = 0; i < len(args); i++) { push(z->values, _); }
+    for (size_t i = 0; i < len(args); i++) {
+        push(z->values, _);
+    }
 }
 
 static void Zip_Del(var self) {
@@ -3145,10 +3236,14 @@ static var Zip_Iter_Init(var self) {
     struct Tuple *values = z->values;
     struct Tuple *iters = z->iters;
     size_t num = len(iters);
-    if (num is 0) { return Terminal; }
+    if (num is 0) {
+        return Terminal;
+    }
     for (size_t i = 0; i < num; i++) {
         var init = iter_init(iters->items[i]);
-        if (init is Terminal) { return Terminal; }
+        if (init is Terminal) {
+            return Terminal;
+        }
         values->items[i] = init;
     }
     return values;
@@ -3159,10 +3254,14 @@ static var Zip_Iter_Last(var self) {
     struct Tuple *values = z->values;
     struct Tuple *iters = z->iters;
     size_t num = len(iters);
-    if (num is 0) { return Terminal; }
+    if (num is 0) {
+        return Terminal;
+    }
     for (size_t i = 0; i < num; i++) {
         var last = iter_last(iters->items[i]);
-        if (last is Terminal) { return Terminal; }
+        if (last is Terminal) {
+            return Terminal;
+        }
         values->items[i] = last;
     }
     return values;
@@ -3173,10 +3272,14 @@ static var Zip_Iter_Next(var self, var curr) {
     struct Tuple *values = z->values;
     struct Tuple *iters = z->iters;
     size_t num = len(iters);
-    if (num is 0) { return Terminal; }
+    if (num is 0) {
+        return Terminal;
+    }
     for (size_t i = 0; i < num; i++) {
         var next = iter_next(iters->items[i], get(curr, $I(i)));
-        if (next is Terminal) { return Terminal; }
+        if (next is Terminal) {
+            return Terminal;
+        }
         values->items[i] = next;
     }
     return values;
@@ -3187,10 +3290,14 @@ static var Zip_Iter_Prev(var self, var curr) {
     struct Tuple *values = z->values;
     struct Tuple *iters = z->iters;
     size_t num = len(iters);
-    if (num is 0) { return Terminal; }
+    if (num is 0) {
+        return Terminal;
+    }
     for (size_t i = 0; i < num; i++) {
         var prev = iter_prev(iters->items[i], get(curr, $I(i)));
-        if (prev is Terminal) { return Terminal; }
+        if (prev is Terminal) {
+            return Terminal;
+        }
         values->items[i] = prev;
     }
     return values;
@@ -3203,7 +3310,9 @@ static size_t Zip_Len(var self) {
     struct Tuple *values = z->values;
     struct Tuple *iters = z->iters;
     size_t num = len(iters);
-    if (num is 0) { return 0; }
+    if (num is 0) {
+        return 0;
+    }
     size_t mlen = len(iters->items[0]);
     for (size_t i = 1; i < num; i++) {
         size_t num = len(iters->items[i]);
@@ -3218,25 +3327,24 @@ static var Zip_Get(var self, var key) {
     struct Tuple *iters = z->iters;
     size_t num = len(iters);
 
-    for (size_t i = 0; i < num; i++) { values->items[i] = get(iters->items[i], key); }
+    for (size_t i = 0; i < num; i++) {
+        values->items[i] = get(iters->items[i], key);
+    }
 
     return values;
 }
 
 static bool Zip_Mem(var self, var key) {
     foreach (item in self) {
-        if (eq(item, key)) { return true; }
+        if (eq(item, key)) {
+            return true;
+        }
     }
     return false;
 }
 
-var Zip = MetaDotC(
-        Zip,
-        Instance(Doc, Zip_Name, Zip_Brief, Zip_Description, Zip_Definition, Zip_Examples,
-                 Zip_Methods),
-        Instance(New, Zip_New, Zip_Del), Instance(Assign, Zip_Assign), Instance(Len, Zip_Len),
-        Instance(Get, Zip_Get, NULL, Zip_Mem, NULL),
-        Instance(Iter, Zip_Iter_Init, Zip_Iter_Next, Zip_Iter_Last, Zip_Iter_Prev, Zip_Iter_Type));
+var Zip = MetaDotC(Zip, Instance(Doc, Zip_Name, Zip_Brief, Zip_Description, Zip_Definition, Zip_Examples, Zip_Methods), Instance(New, Zip_New, Zip_Del), Instance(Assign, Zip_Assign),
+                   Instance(Len, Zip_Len), Instance(Get, Zip_Get, NULL, Zip_Mem, NULL), Instance(Iter, Zip_Iter_Init, Zip_Iter_Next, Zip_Iter_Last, Zip_Iter_Prev, Zip_Iter_Type));
 
 var enumerate_stack(var self) {
     struct Zip *z = self;
@@ -3265,39 +3373,39 @@ static const char *Filter_Definition(void) {
 
 static struct Example *Filter_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var greater_than_two(var x) {\n"
-                      "  return c_int(x) > 2 ? x : NULL;\n"
-                      "}\n"
-                      "\n"
-                      "var x = new(Array, Int, $I(0), $I(5), $I(2), $I(9));\n"
-                      "\n"
-                      "foreach (n in filter(x, $(Function, greater_than_two))) {\n"
-                      "  show(n); /* 5, 9 */\n"
-                      "}\n"},
-            {"Usage 2", "var mem_hello(var x) {\n"
-                        "  return mem(x, $S(\"Hello\")) ? x : NULL;\n"
-                        "}\n"
-                        "\n"
-                        "var x = new(Tuple, \n"
-                        "  $S(\"Hello World\"), $S(\"Hello Dan\"), \n"
-                        "  $S(\"Bonjour\"));\n"
-                        "\n"
-                        "var y = new(Tuple);\n"
-                        "assign(y, filter(x, $(Function, mem_hello)));\n"
-                        "show(y); /* tuple(\"Hello World\", \"Hello Dan\") */\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var greater_than_two(var x) {\n"
+                                         "  return c_int(x) > 2 ? x : NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var x = new(Array, Int, $I(0), $I(5), $I(2), $I(9));\n"
+                                         "\n"
+                                         "foreach (n in filter(x, $(Function, greater_than_two))) {\n"
+                                         "  show(n); /* 5, 9 */\n"
+                                         "}\n"},
+                                        {"Usage 2",
+                                         "var mem_hello(var x) {\n"
+                                         "  return mem(x, $S(\"Hello\")) ? x : NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var x = new(Tuple, \n"
+                                         "  $S(\"Hello World\"), $S(\"Hello Dan\"), \n"
+                                         "  $S(\"Bonjour\"));\n"
+                                         "\n"
+                                         "var y = new(Tuple);\n"
+                                         "assign(y, filter(x, $(Function, mem_hello)));\n"
+                                         "show(y); /* tuple(\"Hello World\", \"Hello Dan\") */\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Filter_Methods(void) {
 
-    static struct Method methods[] = {
-            {"filter", "#define filter(I, F)",
-             "Construct a `Filter` object on the stack over iterable `I` with "
-             "filter function `F`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"filter", "#define filter(I, F)",
+                                       "Construct a `Filter` object on the stack over iterable `I` with "
+                                       "filter function `F`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
@@ -3367,17 +3475,15 @@ static var Filter_Iter_Type(var self) {
 
 static bool Filter_Mem(var self, var key) {
     foreach (item in self) {
-        if (eq(item, key)) { return true; }
+        if (eq(item, key)) {
+            return true;
+        }
     }
     return false;
 }
 
-var Filter = MetaDotC(Filter,
-                      Instance(Doc, Filter_Name, Filter_Brief, Filter_Description,
-                               Filter_Definition, Filter_Examples, Filter_Methods),
-                      Instance(New, Filter_New, NULL), Instance(Get, NULL, NULL, Filter_Mem, NULL),
-                      Instance(Iter, Filter_Iter_Init, Filter_Iter_Next, Filter_Iter_Last,
-                               Filter_Iter_Prev, Filter_Iter_Type));
+var Filter = MetaDotC(Filter, Instance(Doc, Filter_Name, Filter_Brief, Filter_Description, Filter_Definition, Filter_Examples, Filter_Methods), Instance(New, Filter_New, NULL),
+                      Instance(Get, NULL, NULL, Filter_Mem, NULL), Instance(Iter, Filter_Iter_Init, Filter_Iter_Next, Filter_Iter_Last, Filter_Iter_Prev, Filter_Iter_Type));
 
 static const char *Map_Name(void) { return "Map"; }
 
@@ -3408,38 +3514,38 @@ static const char *Map_Definition(void) {
 
 static struct Method *Map_Methods(void) {
 
-    static struct Method methods[] = {
-            {"map", "#define map(I, F)",
-             "Construct a `Map` object on the stack over iterable `I` applying "
-             "function `F`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"map", "#define map(I, F)",
+                                       "Construct a `Map` object on the stack over iterable `I` applying "
+                                       "function `F`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
 static struct Example *Map_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var convert_to_int(var x) {\n"
-                      "  var y = new(Int);\n"
-                      "  look_from(y, x, 0);\n"
-                      "  return y;\n"
-                      "}\n"
-                      "\n"
-                      "var x = tuple($S(\"1\"), $S(\"2\"), $S(\"3\"));\n"
-                      "\n"
-                      "foreach (y in map(x, $(Function, convert_to_int))) {\n"
-                      "  show(y); /* 1, 2, 3 */\n"
-                      "};\n"},
-            {"Usage 2", "var print_object(var x) {\n"
-                        "  println(\"Object %$ is of type %$\", x, type_of(x));\n"
-                        "  return NULL;\n"
-                        "}\n"
-                        "\n"
-                        "var x = tuple($I(0), $S(\"Hello!\"), $F(2.4));\n"
-                        "\n"
-                        "call(map(x, $(Function, print_object)));\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var convert_to_int(var x) {\n"
+                                         "  var y = new(Int);\n"
+                                         "  look_from(y, x, 0);\n"
+                                         "  return y;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var x = tuple($S(\"1\"), $S(\"2\"), $S(\"3\"));\n"
+                                         "\n"
+                                         "foreach (y in map(x, $(Function, convert_to_int))) {\n"
+                                         "  show(y); /* 1, 2, 3 */\n"
+                                         "};\n"},
+                                        {"Usage 2",
+                                         "var print_object(var x) {\n"
+                                         "  println(\"Object %$ is of type %$\", x, type_of(x));\n"
+                                         "  return NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var x = tuple($I(0), $S(\"Hello!\"), $F(2.4));\n"
+                                         "\n"
+                                         "call(map(x, $(Function, print_object)));\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
@@ -3507,7 +3613,9 @@ static var Map_Get(var self, var key) {
 
 static bool Map_Mem(var self, var key) {
     foreach (item in self) {
-        if (eq(item, key)) { return true; }
+        if (eq(item, key)) {
+            return true;
+        }
     }
     return false;
 }
@@ -3518,13 +3626,8 @@ static var Map_Call(var self, var args) {
     return Terminal;
 }
 
-var Map =
-        MetaDotC(Map,
-                 Instance(Doc, Map_Name, Map_Brief, Map_Description, Map_Definition, Map_Examples,
-                          Map_Methods),
-                 Instance(New, Map_New, NULL), Instance(Len, Map_Len),
-                 Instance(Get, Map_Get, NULL, Map_Mem, NULL), Instance(Call, Map_Call),
-                 Instance(Iter, Map_Iter_Init, Map_Iter_Next, Map_Iter_Last, Map_Iter_Prev, NULL));
+var Map = MetaDotC(Map, Instance(Doc, Map_Name, Map_Brief, Map_Description, Map_Definition, Map_Examples, Map_Methods), Instance(New, Map_New, NULL), Instance(Len, Map_Len),
+                   Instance(Get, Map_Get, NULL, Map_Mem, NULL), Instance(Call, Map_Call), Instance(Iter, Map_Iter_Init, Map_Iter_Next, Map_Iter_Last, Map_Iter_Prev, NULL));
 
 static const char *Len_Name(void) { return "Len"; }
 
@@ -3544,10 +3647,11 @@ static const char *Len_Definition(void) {
 
 static struct Example *Len_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Array, Int, $I(1), $I(2), $I(5));\n"
-                                                  "show($I(len(x))); /* 3 */\n"
-                                                  "var y = $S(\"Test\");\n"
-                                                  "show($I(len(y))); /* 4 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Array, Int, $I(1), $I(2), $I(5));\n"
+                                         "show($I(len(x))); /* 3 */\n"
+                                         "var y = $S(\"Test\");\n"
+                                         "show($I(len(y))); /* 4 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -3555,15 +3659,12 @@ static struct Example *Len_Examples(void) {
 
 static struct Method *Len_Methods(void) {
 
-    static struct Method methods[] = {
-            {"len", "size_t len(var self);", "Returns the length of object `self`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"len", "size_t len(var self);", "Returns the length of object `self`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Len = MetaDotC(Len, Instance(Doc, Len_Name, Len_Brief, Len_Description, Len_Definition,
-                                 Len_Examples, Len_Methods));
+var Len = MetaDotC(Len, Instance(Doc, Len_Name, Len_Brief, Len_Description, Len_Definition, Len_Examples, Len_Methods));
 
 size_t len(var self) { return method(self, Len, len); }
 
@@ -3592,59 +3693,57 @@ static const char *List_Description(void) {
 
 static struct Example *List_Examples(void) {
 
-    static struct Example examples[] = {
-            {
-                    "Construction & Deletion",
-                    "var x = new(List, Int);\n"
-                    "push(x, $I(32));\n"
-                    "push(x, $I(6));\n"
-                    "\n"
-                    "/* <'List' At 0x0000000000414603 [32, 6]> */\n"
-                    "show(x);\n",
-            },
-            {
-                    "Element Access",
-                    "var x = new(List, Float, $F(0.01), $F(5.12));\n"
-                    "\n"
-                    "show(get(x, $I(0))); /* 0.01 */\n"
-                    "show(get(x, $I(1))); /* 5.12 */\n"
-                    "\n"
-                    "set(x, $I(0), $F(500.1));\n"
-                    "show(get(x, $I(0))); /* 500.1 */\n",
-            },
-            {
-                    "Membership",
-                    "var x = new(List, Int, $I(1), $I(2), $I(3), $I(4));\n"
-                    "\n"
-                    "show($I(mem(x, $I(1)))); /* 1 */\n"
-                    "show($I(len(x)));        /* 4 */\n"
-                    "\n"
-                    "rem(x, $I(3));\n"
-                    "\n"
-                    "show($I(mem(x, $I(3)))); /* 0 */\n"
-                    "show($I(len(x)));        /* 3 */\n"
-                    "show($I(empty(x)));      /* 0 */\n"
-                    "\n"
-                    "resize(x, 0);\n"
-                    "\n"
-                    "show($I(empty(x)));      /* 1 */\n",
-            },
-            {
-                    "Iteration",
-                    "var greetings = new(List, String, \n"
-                    "  $S(\"Hello\"), $S(\"Bonjour\"), $S(\"Hej\"));\n"
-                    "\n"
-                    "foreach(greet in greetings) {\n"
-                    "  show(greet);\n"
-                    "}\n",
-            },
-            {NULL, NULL}};
+    static struct Example examples[] = {{
+                                                "Construction & Deletion",
+                                                "var x = new(List, Int);\n"
+                                                "push(x, $I(32));\n"
+                                                "push(x, $I(6));\n"
+                                                "\n"
+                                                "/* <'List' At 0x0000000000414603 [32, 6]> */\n"
+                                                "show(x);\n",
+                                        },
+                                        {
+                                                "Element Access",
+                                                "var x = new(List, Float, $F(0.01), $F(5.12));\n"
+                                                "\n"
+                                                "show(get(x, $I(0))); /* 0.01 */\n"
+                                                "show(get(x, $I(1))); /* 5.12 */\n"
+                                                "\n"
+                                                "set(x, $I(0), $F(500.1));\n"
+                                                "show(get(x, $I(0))); /* 500.1 */\n",
+                                        },
+                                        {
+                                                "Membership",
+                                                "var x = new(List, Int, $I(1), $I(2), $I(3), $I(4));\n"
+                                                "\n"
+                                                "show($I(mem(x, $I(1)))); /* 1 */\n"
+                                                "show($I(len(x)));        /* 4 */\n"
+                                                "\n"
+                                                "rem(x, $I(3));\n"
+                                                "\n"
+                                                "show($I(mem(x, $I(3)))); /* 0 */\n"
+                                                "show($I(len(x)));        /* 3 */\n"
+                                                "show($I(empty(x)));      /* 0 */\n"
+                                                "\n"
+                                                "resize(x, 0);\n"
+                                                "\n"
+                                                "show($I(empty(x)));      /* 1 */\n",
+                                        },
+                                        {
+                                                "Iteration",
+                                                "var greetings = new(List, String, \n"
+                                                "  $S(\"Hello\"), $S(\"Bonjour\"), $S(\"Hej\"));\n"
+                                                "\n"
+                                                "foreach(greet in greetings) {\n"
+                                                "  show(greet);\n"
+                                                "}\n",
+                                        },
+                                        {NULL, NULL}};
 
     return examples;
 }
 
-struct List
-{
+struct List {
     var type;
     var head;
     var tail;
@@ -3656,38 +3755,33 @@ static var List_Alloc(struct List *l) {
     var item = calloc(1, 2 * sizeof(var) + sizeof(struct Header) + l->tsize);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (item is NULL) { throw(OutOfMemoryError, "Cannot allocate List entry, out of memory!", ""); }
+    if (item is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate List entry, out of memory!", "");
+    }
 #endif
 
-    return header_init((struct Header *) ((char *) item + 2 * sizeof(var)), l->type, AllocData);
+    return header_init((struct Header *)((char *)item + 2 * sizeof(var)), l->type, AllocData);
 }
 
-static void List_Free(struct List *l, var self) {
-    free((char *) self - sizeof(struct Header) - 2 * sizeof(var));
-}
+static void List_Free(struct List *l, var self) { free((char *)self - sizeof(struct Header) - 2 * sizeof(var)); }
 
-static var *List_Next(struct List *l, var self) {
-    return (var *) ((char *) self - sizeof(struct Header) - 1 * sizeof(var));
-}
+static var *List_Next(struct List *l, var self) { return (var *)((char *)self - sizeof(struct Header) - 1 * sizeof(var)); }
 
-static var *List_Prev(struct List *l, var self) {
-    return (var *) ((char *) self - sizeof(struct Header) - 2 * sizeof(var));
-}
+static var *List_Prev(struct List *l, var self) { return (var *)((char *)self - sizeof(struct Header) - 2 * sizeof(var)); }
 
 static var List_At(struct List *l, int64_t i) {
 
     i = i < 0 ? l->nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) l->nitems) {
-        return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for List of size %i.",
-                     $(Int, i), $(Int, l->nitems));
+    if (i < 0 or i >= (int64_t)l->nitems) {
+        return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for List of size %i.", $(Int, i), $(Int, l->nitems));
     }
 #endif
 
     var item;
 
-    if (i <= (int64_t) (l->nitems / 2)) {
+    if (i <= (int64_t)(l->nitems / 2)) {
         item = l->head;
         while (i) {
             item = *List_Next(l, item);
@@ -3718,7 +3812,9 @@ static void List_New(var self, var args) {
     l->tail = NULL;
 
     size_t nargs = len(args);
-    for (size_t i = 0; i < nargs - 1; i++) { List_Push(self, get(args, $I(i + 1))); }
+    for (size_t i = 0; i < nargs - 1; i++) {
+        List_Push(self, get(args, $I(i + 1)));
+    }
 }
 
 static void List_Clear(var self) {
@@ -3749,11 +3845,15 @@ static void List_Assign(var self, var obj) {
     l->tsize = size(l->type);
 
     size_t nargs = len(obj);
-    for (size_t i = 0; i < nargs; i++) { List_Push(self, get(obj, $I(i))); }
+    for (size_t i = 0; i < nargs; i++) {
+        List_Push(self, get(obj, $I(i)));
+    }
 }
 
 static void List_Concat(var self, var obj) {
-    foreach (item in obj) { List_Push(self, item); }
+    foreach (item in obj) {
+        List_Push(self, item);
+    }
 }
 
 static var List_Iter_Init(var self);
@@ -3765,12 +3865,22 @@ static int List_Cmp(var self, var obj) {
     var item1 = iter_init(obj);
 
     while (true) {
-        if (item0 is Terminal and item1 is Terminal) { return 0; }
-        if (item0 is Terminal) { return -1; }
-        if (item1 is Terminal) { return 1; }
+        if (item0 is Terminal and item1 is Terminal) {
+            return 0;
+        }
+        if (item0 is Terminal) {
+            return -1;
+        }
+        if (item1 is Terminal) {
+            return 1;
+        }
         int c = cmp(item0, item1);
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         item0 = List_Iter_Next(self, item0);
         item1 = iter_next(obj, item1);
     }
@@ -3800,7 +3910,9 @@ static bool List_Mem(var self, var obj) {
     struct List *l = self;
     var item = l->head;
     while (item) {
-        if (eq(item, obj)) { return true; }
+        if (eq(item, obj)) {
+            return true;
+        }
         item = *List_Next(l, item);
     }
     return false;
@@ -3924,7 +4036,9 @@ static void List_Set(var self, var key, var val) {
 
 static var List_Iter_Init(var self) {
     struct List *l = self;
-    if (l->nitems is 0) { return Terminal; }
+    if (l->nitems is 0) {
+        return Terminal;
+    }
     return l->head;
 }
 
@@ -3936,7 +4050,9 @@ static var List_Iter_Next(var self, var curr) {
 
 static var List_Iter_Last(var self) {
     struct List *l = self;
-    if (l->nitems is 0) { return Terminal; }
+    if (l->nitems is 0) {
+        return Terminal;
+    }
     return l->tail;
 }
 
@@ -3958,7 +4074,9 @@ static int List_Show(var self, var output, int pos) {
     while (item) {
         pos = print_to(output, pos, "%$", item);
         item = *List_Next(l, item);
-        if (item) { pos = print_to(output, pos, ", ", ""); }
+        if (item) {
+            pos = print_to(output, pos, ", ", "");
+        }
     }
     return print_to(output, pos, "]>", "");
 }
@@ -3995,16 +4113,10 @@ static void List_Mark(var self, var gc, void (*f)(var, void *)) {
     }
 }
 
-var List = MetaDotC(
-        List, Instance(Doc, List_Name, List_Brief, List_Description, NULL, List_Examples, NULL),
-        Instance(New, List_New, List_Del), Instance(Assign, List_Assign), Instance(Mark, List_Mark),
-        Instance(Cmp, List_Cmp), Instance(Hash, List_Hash),
-        Instance(Push, List_Push, List_Pop, List_Push_At, List_Pop_At),
-        Instance(Concat, List_Concat, List_Push), Instance(Len, List_Len),
-        Instance(Get, List_Get, List_Set, List_Mem, List_Rem),
-        Instance(Iter, List_Iter_Init, List_Iter_Next, List_Iter_Last, List_Iter_Prev,
-                 List_Iter_Type),
-        Instance(Show, List_Show, NULL), Instance(Resize, List_Resize));
+var List = MetaDotC(List, Instance(Doc, List_Name, List_Brief, List_Description, NULL, List_Examples, NULL), Instance(New, List_New, List_Del), Instance(Assign, List_Assign),
+                    Instance(Mark, List_Mark), Instance(Cmp, List_Cmp), Instance(Hash, List_Hash), Instance(Push, List_Push, List_Pop, List_Push_At, List_Pop_At),
+                    Instance(Concat, List_Concat, List_Push), Instance(Len, List_Len), Instance(Get, List_Get, List_Set, List_Mem, List_Rem),
+                    Instance(Iter, List_Iter_Init, List_Iter_Next, List_Iter_Last, List_Iter_Prev, List_Iter_Type), Instance(Show, List_Show, NULL), Instance(Resize, List_Resize));
 
 static const char *C_Int_Name(void) { return "C_Int"; }
 
@@ -4023,8 +4135,9 @@ static const char *C_Int_Definition(void) {
 
 static struct Example *C_Int_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "printf(\"%li\", c_int($I(5))); /* 5 */\n"
-                                                  "printf(\"%li\", c_int($I(6))); /* 6 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "printf(\"%li\", c_int($I(5))); /* 5 */\n"
+                                         "printf(\"%li\", c_int($I(6))); /* 6 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4032,15 +4145,12 @@ static struct Example *C_Int_Examples(void) {
 
 static struct Method *C_Int_Methods(void) {
 
-    static struct Method methods[] = {{"c_int", "int64_t c_int(var self);",
-                                       "Returns the object `self` represented as a `int64_t`."},
-                                      {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"c_int", "int64_t c_int(var self);", "Returns the object `self` represented as a `int64_t`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var C_Int = MetaDotC(C_Int, Instance(Doc, C_Int_Name, C_Int_Brief, C_Int_Description,
-                                     C_Int_Definition, C_Int_Examples, C_Int_Methods));
+var C_Int = MetaDotC(C_Int, Instance(Doc, C_Int_Name, C_Int_Brief, C_Int_Description, C_Int_Definition, C_Int_Examples, C_Int_Methods));
 
 static const char *C_Float_Name(void) { return "C_Float"; }
 
@@ -4059,8 +4169,9 @@ static const char *C_Float_Definition(void) {
 
 static struct Example *C_Float_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "printf(\"%f\", c_float($F(5.1))); /* 5.1 */\n"
-                                                  "printf(\"%f\", c_float($F(6.2))); /* 6.2 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "printf(\"%f\", c_float($F(5.1))); /* 5.1 */\n"
+                                         "printf(\"%f\", c_float($F(6.2))); /* 6.2 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4068,26 +4179,27 @@ static struct Example *C_Float_Examples(void) {
 
 static struct Method *C_Float_Methods(void) {
 
-    static struct Method methods[] = {{"c_float", "double c_float(var self);",
-                                       "Returns the object `self` represented as a `double`."},
-                                      {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"c_float", "double c_float(var self);", "Returns the object `self` represented as a `double`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var C_Float = MetaDotC(C_Float, Instance(Doc, C_Float_Name, C_Float_Brief, C_Float_Description,
-                                         C_Float_Definition, C_Float_Examples, C_Float_Methods));
+var C_Float = MetaDotC(C_Float, Instance(Doc, C_Float_Name, C_Float_Brief, C_Float_Description, C_Float_Definition, C_Float_Examples, C_Float_Methods));
 
 int64_t c_int(var self) {
 
-    if (type_of(self) is Int) { return ((struct Int *) self)->val; }
+    if (type_of(self) is Int) {
+        return ((struct Int *)self)->val;
+    }
 
     return method(self, C_Int, c_int);
 }
 
 double c_float(var self) {
 
-    if (type_of(self) is Float) { return ((struct Float *) self)->val; }
+    if (type_of(self) is Float) {
+        return ((struct Float *)self)->val;
+    }
 
     return method(self, C_Float, c_float);
 }
@@ -4106,13 +4218,14 @@ static const char *Int_Definition(void) {
 
 static struct Example *Int_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var i0 = $(Int, 1);\n"
-                                                  "var i1 = new(Int, $I(24313));\n"
-                                                  "var i2 = copy(i0);\n"
-                                                  "\n"
-                                                  "show(i0); /*     1 */\n"
-                                                  "show(i1); /* 24313 */\n"
-                                                  "show(i2); /*     1 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var i0 = $(Int, 1);\n"
+                                         "var i1 = new(Int, $I(24313));\n"
+                                         "var i2 = copy(i0);\n"
+                                         "\n"
+                                         "show(i0); /*     1 */\n"
+                                         "show(i1); /* 24313 */\n"
+                                         "show(i2); /*     1 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4128,19 +4241,16 @@ static int64_t Int_C_Int(var self) {
     return i->val;
 }
 
-static int Int_Cmp(var self, var obj) { return (int) (Int_C_Int(self) - c_int(obj)); }
+static int Int_Cmp(var self, var obj) { return (int)(Int_C_Int(self) - c_int(obj)); }
 
-static uint64_t Int_Hash(var self) { return (uint64_t) c_int(self); }
+static uint64_t Int_Hash(var self) { return (uint64_t)c_int(self); }
 
 static int Int_Show(var self, var output, int pos) { return print_to(output, pos, "%li", self); }
 
 static int Int_Look(var self, var input, int pos) { return scan_from(input, pos, "%li", self); }
 
-var Int = MetaDotC(
-        Int,
-        Instance(Doc, Int_Name, Int_Brief, Int_Description, Int_Definition, Int_Examples, NULL),
-        Instance(Assign, Int_Assign), Instance(Cmp, Int_Cmp), Instance(Hash, Int_Hash),
-        Instance(C_Int, Int_C_Int), Instance(Show, Int_Show, Int_Look));
+var Int = MetaDotC(Int, Instance(Doc, Int_Name, Int_Brief, Int_Description, Int_Definition, Int_Examples, NULL), Instance(Assign, Int_Assign), Instance(Cmp, Int_Cmp), Instance(Hash, Int_Hash),
+                   Instance(C_Int, Int_C_Int), Instance(Show, Int_Show, Int_Look));
 
 static const char *Float_Name(void) { return "Float"; }
 
@@ -4156,13 +4266,14 @@ static const char *Float_Definition(void) {
 
 static struct Example *Float_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var f0 = $(Float, 1.0);\n"
-                                                  "var f1 = new(Float, $F(24.313));\n"
-                                                  "var f2 = copy(f0);\n"
-                                                  "\n"
-                                                  "show(f0); /*  1.000 */\n"
-                                                  "show(f1); /* 24.313 */\n"
-                                                  "show(f2); /*  1.000 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var f0 = $(Float, 1.0);\n"
+                                         "var f1 = new(Float, $F(24.313));\n"
+                                         "var f2 = copy(f0);\n"
+                                         "\n"
+                                         "show(f0); /*  1.000 */\n"
+                                         "show(f1); /* 24.313 */\n"
+                                         "show(f2); /*  1.000 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4198,12 +4309,8 @@ int Float_Show(var self, var output, int pos) { return print_to(output, pos, "%f
 
 int Float_Look(var self, var input, int pos) { return scan_from(input, pos, "%f", self); }
 
-var Float = MetaDotC(Float,
-                     Instance(Doc, Float_Name, Float_Brief, Float_Description, Float_Definition,
-                              Float_Examples, NULL),
-                     Instance(Assign, Float_Assign), Instance(Cmp, Float_Cmp),
-                     Instance(Hash, Float_Hash), Instance(C_Float, Float_C_Float),
-                     Instance(Show, Float_Show, Float_Look));
+var Float = MetaDotC(Float, Instance(Doc, Float_Name, Float_Brief, Float_Description, Float_Definition, Float_Examples, NULL), Instance(Assign, Float_Assign), Instance(Cmp, Float_Cmp),
+                     Instance(Hash, Float_Hash), Instance(C_Float, Float_C_Float), Instance(Show, Float_Show, Float_Look));
 
 static const char *Pointer_Name(void) { return "Pointer"; }
 
@@ -4224,14 +4331,15 @@ static const char *Pointer_Definition(void) {
 
 static struct Example *Pointer_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var obj0 = $F(1.0), obj1 = $F(2.0);\n"
-                                                  "var r = $(Ref, obj0);\n"
-                                                  "show(r);\n"
-                                                  "show(deref(r)); /* 1.0 */\n"
-                                                  "ref(r, obj1);\n"
-                                                  "show(deref(r)); /* 2.0 */\n"
-                                                  "assign(r, obj0);\n"
-                                                  "show(deref(r)); /* 1.0 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var obj0 = $F(1.0), obj1 = $F(2.0);\n"
+                                         "var r = $(Ref, obj0);\n"
+                                         "show(r);\n"
+                                         "show(deref(r)); /* 1.0 */\n"
+                                         "ref(r, obj1);\n"
+                                         "show(deref(r)); /* 2.0 */\n"
+                                         "assign(r, obj0);\n"
+                                         "show(deref(r)); /* 1.0 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4239,17 +4347,14 @@ static struct Example *Pointer_Examples(void) {
 
 static struct Method *Pointer_Methods(void) {
 
-    static struct Method methods[] = {
-            {"ref", "void ref(var self, var item);",
-             "Set the object `self` to reference the object `item`."},
-            {"deref", "var deref(var self);", "Get the object referenced by `self`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"ref", "void ref(var self, var item);", "Set the object `self` to reference the object `item`."},
+                                      {"deref", "var deref(var self);", "Get the object referenced by `self`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Pointer = MetaDotC(Pointer, Instance(Doc, Pointer_Name, Pointer_Brief, Pointer_Description,
-                                         Pointer_Definition, Pointer_Examples, Pointer_Methods));
+var Pointer = MetaDotC(Pointer, Instance(Doc, Pointer_Name, Pointer_Brief, Pointer_Description, Pointer_Definition, Pointer_Examples, Pointer_Methods));
 
 void ref(var self, var item) { method(self, Pointer, ref, item); }
 
@@ -4274,14 +4379,15 @@ static const char *Ref_Definition(void) {
 
 static struct Example *Ref_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var obj0 = $F(1.0), obj1 = $F(2.0);\n"
-                                                  "var r = $(Ref, obj0);\n"
-                                                  "show(r);\n"
-                                                  "show(deref(r)); /* 1.0 */\n"
-                                                  "ref(r, obj1);\n"
-                                                  "show(deref(r)); /* 2.0 */\n"
-                                                  "assign(r, obj0);\n"
-                                                  "show(deref(r)); /* 1.0 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var obj0 = $F(1.0), obj1 = $F(2.0);\n"
+                                         "var r = $(Ref, obj0);\n"
+                                         "show(r);\n"
+                                         "show(deref(r)); /* 1.0 */\n"
+                                         "ref(r, obj1);\n"
+                                         "show(deref(r)); /* 2.0 */\n"
+                                         "assign(r, obj0);\n"
+                                         "show(deref(r)); /* 1.0 */\n"},
                                         {"Collections",
                                          "var i0 = new(Int, $I(100));\n"
                                          "var i1 = new(Int, $I(200));\n"
@@ -4318,10 +4424,7 @@ static var Ref_Deref(var self) {
     return r->val;
 }
 
-var Ref = MetaDotC(
-        Ref,
-        Instance(Doc, Ref_Name, Ref_Brief, Ref_Description, Ref_Definition, Ref_Examples, NULL),
-        Instance(Assign, Ref_Assign), Instance(Pointer, Ref_Ref, Ref_Deref));
+var Ref = MetaDotC(Ref, Instance(Doc, Ref_Name, Ref_Brief, Ref_Description, Ref_Definition, Ref_Examples, NULL), Instance(Assign, Ref_Assign), Instance(Pointer, Ref_Ref, Ref_Deref));
 
 static const char *Box_Name(void) { return "Box"; }
 
@@ -4349,33 +4452,35 @@ static const char *Box_Definition(void) {
 
 static struct Example *Box_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var obj0 = $F(1.0), obj1 = $F(2.0);\n"
-                      "var r = $(Box, obj0);\n"
-                      "show(r);\n"
-                      "show(deref(r)); /* 1.0 */\n"
-                      "ref(r, obj1);\n"
-                      "show(deref(r)); /* 2.0 */\n"
-                      "assign(r, obj0);\n"
-                      "show(deref(r)); /* 1.0 */\n"},
-            {"Lifetimes", "var quote = $S(\"Life is long\");\n"
-                          "\n"
-                          "with (r in $B(new(String, quote))) {\n"
-                          "  println(\"This reference is: %$\", r);\n"
-                          "  println(\"This string is alive: '%s'\", deref(r));\n"
-                          "}\n"
-                          "\n"
-                          "print(\"Now it has been cleared up!\\n\");\n"},
-            {"Collection", "/* Multiple Types in one Collection */\n"
-                           "var x = new(Array, Box, \n"
-                           "  new(String, $S(\"Hello\")), \n"
-                           "  new(String, $S(\"There\")), \n"
-                           "  new(Int, $I(10)));\n"
-                           "\n"
-                           "print(deref(get(x, $I(0)))); /* Hello */ \n"
-                           "\n"
-                           "del(x); /* Contents of `x` deleted with it */\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var obj0 = $F(1.0), obj1 = $F(2.0);\n"
+                                         "var r = $(Box, obj0);\n"
+                                         "show(r);\n"
+                                         "show(deref(r)); /* 1.0 */\n"
+                                         "ref(r, obj1);\n"
+                                         "show(deref(r)); /* 2.0 */\n"
+                                         "assign(r, obj0);\n"
+                                         "show(deref(r)); /* 1.0 */\n"},
+                                        {"Lifetimes",
+                                         "var quote = $S(\"Life is long\");\n"
+                                         "\n"
+                                         "with (r in $B(new(String, quote))) {\n"
+                                         "  println(\"This reference is: %$\", r);\n"
+                                         "  println(\"This string is alive: '%s'\", deref(r));\n"
+                                         "}\n"
+                                         "\n"
+                                         "print(\"Now it has been cleared up!\\n\");\n"},
+                                        {"Collection",
+                                         "/* Multiple Types in one Collection */\n"
+                                         "var x = new(Array, Box, \n"
+                                         "  new(String, $S(\"Hello\")), \n"
+                                         "  new(String, $S(\"There\")), \n"
+                                         "  new(Int, $I(10)));\n"
+                                         "\n"
+                                         "print(deref(get(x, $I(0)))); /* Hello */ \n"
+                                         "\n"
+                                         "del(x); /* Contents of `x` deleted with it */\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
@@ -4388,7 +4493,9 @@ static void Box_New(var self, var args) { Box_Assign(self, get(args, $I(0))); }
 
 static void Box_Del(var self) {
     var obj = Box_Deref(self);
-    if (obj) { del(obj); }
+    if (obj) {
+        del(obj);
+    }
     Box_Ref(self, NULL);
 }
 
@@ -4401,9 +4508,7 @@ static void Box_Assign(var self, var obj) {
     }
 }
 
-static int Box_Show(var self, var output, int pos) {
-    return print_to(output, pos, "<'Box' at 0x%p (%$)>", self, Box_Deref(self));
-}
+static int Box_Show(var self, var output, int pos) { return print_to(output, pos, "<'Box' at 0x%p (%$)>", self, Box_Deref(self)); }
 
 static void Box_Ref(var self, var val) {
     struct Box *b = self;
@@ -4415,11 +4520,8 @@ static var Box_Deref(var self) {
     return b->val;
 }
 
-var Box = MetaDotC(
-        Box,
-        Instance(Doc, Box_Name, Box_Brief, Box_Description, Box_Definition, Box_Examples, NULL),
-        Instance(New, Box_New, Box_Del), Instance(Assign, Box_Assign),
-        Instance(Show, Box_Show, NULL), Instance(Pointer, Box_Ref, Box_Deref));
+var Box = MetaDotC(Box, Instance(Doc, Box_Name, Box_Brief, Box_Description, Box_Definition, Box_Examples, NULL), Instance(New, Box_New, Box_Del), Instance(Assign, Box_Assign),
+                   Instance(Show, Box_Show, NULL), Instance(Pointer, Box_Ref, Box_Deref));
 
 static const char *Push_Name(void) { return "Push"; }
 
@@ -4445,20 +4547,21 @@ static const char *Push_Definition(void) {
 
 static struct Example *Push_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Array, Int);\n"
-                                                  "\n"
-                                                  "push(x, $I( 0));\n"
-                                                  "push(x, $I( 5));\n"
-                                                  "push(x, $I(10));\n"
-                                                  "\n"
-                                                  "show(get(x, $I(0))); /*  0 */\n"
-                                                  "show(get(x, $I(1))); /*  5 */\n"
-                                                  "show(get(x, $I(2))); /* 10 */\n"
-                                                  "\n"
-                                                  "pop_at(x, $I(1));\n"
-                                                  "\n"
-                                                  "show(get(x, $I(0))); /*  0 */\n"
-                                                  "show(get(x, $I(1))); /* 10 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Array, Int);\n"
+                                         "\n"
+                                         "push(x, $I( 0));\n"
+                                         "push(x, $I( 5));\n"
+                                         "push(x, $I(10));\n"
+                                         "\n"
+                                         "show(get(x, $I(0))); /*  0 */\n"
+                                         "show(get(x, $I(1))); /*  5 */\n"
+                                         "show(get(x, $I(2))); /* 10 */\n"
+                                         "\n"
+                                         "pop_at(x, $I(1));\n"
+                                         "\n"
+                                         "show(get(x, $I(0))); /*  0 */\n"
+                                         "show(get(x, $I(1))); /* 10 */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4466,21 +4569,16 @@ static struct Example *Push_Examples(void) {
 
 static struct Method *Push_Methods(void) {
 
-    static struct Method methods[] = {
-            {"push", "void push(var self, var obj);",
-             "Push the object `obj` onto the top of object `self`."},
-            {"pop", "void pop(var self);", "Pop the top item from the object `self`."},
-            {"push_at", "void push_at(var self, var obj, var key);",
-             "Push the object `obj` onto the object `self` at a given `key`."},
-            {"pop_at", "void pop_at(var self, var key);",
-             "Pop the object from the object `self` at a given `key`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"push", "void push(var self, var obj);", "Push the object `obj` onto the top of object `self`."},
+                                      {"pop", "void pop(var self);", "Pop the top item from the object `self`."},
+                                      {"push_at", "void push_at(var self, var obj, var key);", "Push the object `obj` onto the object `self` at a given `key`."},
+                                      {"pop_at", "void pop_at(var self, var key);", "Pop the object from the object `self` at a given `key`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Push = MetaDotC(Push, Instance(Doc, Push_Name, Push_Brief, Push_Description, Push_Definition,
-                                   Push_Examples, Push_Methods));
+var Push = MetaDotC(Push, Instance(Doc, Push_Name, Push_Brief, Push_Description, Push_Definition, Push_Examples, Push_Methods));
 
 void push(var self, var val) { method(self, Push, push, val); }
 void push_at(var self, var val, var i) { method(self, Push, push_at, val, i); }
@@ -4508,32 +4606,31 @@ static const char *Resize_Definition(void) {
 
 static struct Method *Resize_Methods(void) {
 
-    static struct Method methods[] = {
-            {"resize", "void resize(var self, size_t n);",
-             "Resize to some size `n`, perhaps reserving some resource for object "
-             "`self`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"resize", "void resize(var self, size_t n);",
+                                       "Resize to some size `n`, perhaps reserving some resource for object "
+                                       "`self`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
 static struct Example *Resize_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "var x = new(Array, Int);\n"
-                      "resize(x, 10000); /* Reserve space in Array */ \n"
-                      "for (size_t i = 0; i < 10000; i++) {\n"
-                      "  push(x, $I(i));\n"
-                      "}\n"},
-            {"Usage 2", "var x = new(Array, Int, $I(0), $I(1), $I(2));\n"
-                        "resize(x, 0); /* Clear Array of items */\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Array, Int);\n"
+                                         "resize(x, 10000); /* Reserve space in Array */ \n"
+                                         "for (size_t i = 0; i < 10000; i++) {\n"
+                                         "  push(x, $I(i));\n"
+                                         "}\n"},
+                                        {"Usage 2",
+                                         "var x = new(Array, Int, $I(0), $I(1), $I(2));\n"
+                                         "resize(x, 0); /* Clear Array of items */\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
-var Resize = MetaDotC(Resize, Instance(Doc, Resize_Name, Resize_Brief, Resize_Description,
-                                       Resize_Definition, Resize_Examples, Resize_Methods));
+var Resize = MetaDotC(Resize, Instance(Doc, Resize_Name, Resize_Brief, Resize_Description, Resize_Definition, Resize_Examples, Resize_Methods));
 
 void resize(var self, size_t n) { method(self, Resize, resize, n); }
 
@@ -4563,41 +4660,35 @@ static const char *Format_Definition(void) {
 
 static struct Example *Format_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Usage", "/* printf(\"Hello my name is %s, I'm %i\\n\", \"Dan\", 23); */\n"
-                      "format_to($(File, stdout), 0, \n"
-                      "  \"Hello my name is %s, I'm %i\\n\", \"Dan\", 23);\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Usage",
+                                         "/* printf(\"Hello my name is %s, I'm %i\\n\", \"Dan\", 23); */\n"
+                                         "format_to($(File, stdout), 0, \n"
+                                         "  \"Hello my name is %s, I'm %i\\n\", \"Dan\", 23);\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Format_Methods(void) {
 
-    static struct Method methods[] = {
-            {"format_to",
-             "int format_to(var self, int pos, const char* fmt, ...);\n"
-             "int format_to_va(var self, int pos, const char* fmt, va_list va);",
-             "Write a formatted string `fmt` to the object `self` at position `pos`."},
-            {"format_from",
-             "int format_from(var self, int pos, const char* fmt, ...);\n"
-             "int format_from_va(var self, int pos, const char* fmt, va_list va);",
-             "Read a formatted string `fmt` from the object `self` at position `pos`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"format_to",
+                                       "int format_to(var self, int pos, const char* fmt, ...);\n"
+                                       "int format_to_va(var self, int pos, const char* fmt, va_list va);",
+                                       "Write a formatted string `fmt` to the object `self` at position `pos`."},
+                                      {"format_from",
+                                       "int format_from(var self, int pos, const char* fmt, ...);\n"
+                                       "int format_from_va(var self, int pos, const char* fmt, va_list va);",
+                                       "Read a formatted string `fmt` from the object `self` at position `pos`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Format = MetaDotC(Format, Instance(Doc, Format_Name, Format_Brief, Format_Description,
-                                       Format_Definition, Format_Examples, Format_Methods));
+var Format = MetaDotC(Format, Instance(Doc, Format_Name, Format_Brief, Format_Description, Format_Definition, Format_Examples, Format_Methods));
 
-int format_to_va(var self, int pos, const char *fmt, va_list va) {
-    return method(self, Format, format_to, pos, fmt, va);
-}
+int format_to_va(var self, int pos, const char *fmt, va_list va) { return method(self, Format, format_to, pos, fmt, va); }
 
-int format_from_va(var self, int pos, const char *fmt, va_list va) {
-    return method(self, Format, format_from, pos, fmt, va);
-}
+int format_from_va(var self, int pos, const char *fmt, va_list va) { return method(self, Format, format_from, pos, fmt, va); }
 
 int format_to(var self, int pos, const char *fmt, ...) {
     va_list va;
@@ -4651,74 +4742,76 @@ static const char *Show_Definition(void) {
 
 static struct Example *Show_Examples(void) {
 
-    static struct Example examples[] = {
-            {"Hello World", "println(\"Hello %s!\", $S(\"World\"));\n"},
-            {"File Writing", "with (f in new(File, $S(\"prices.txt\"), $S(\"wb\"))) {\n"
-                             "  print_to(f, 0, \"%$ :: %$\\n\", $S(\"Banana\"), $I(57));\n"
-                             "  print_to(f, 0, \"%$ :: %$\\n\", $S(\"Apple\"),  $I(22));\n"
-                             "  print_to(f, 0, \"%$ :: %$\\n\", $S(\"Pear\"),   $I(16));\n"
-                             "}\n"},
-            {"String Scanning", "var input = $S(\"1 and 52 then 78\");\n"
-                                "\n"
-                                "var i0 = $I(0), i1 = $I(0), i2 = $I(0);\n"
-                                "scan_from(input, 0, \"%i and %i then %i\", i0, i1, i2);\n"
-                                "\n"
-                                "/* i0: 1, i1: 52, i2: 78 */\n"
-                                "println(\"i0: %$, i1: %$, i2: %$\", i0, i1, i2);\n"},
-            {"String Printing", "var greeting = new(String);\n"
-                                "print_to(greeting, 0, \"Hello %s %s, %s?\", \n"
-                                "  $S(\"Mr\"), $S(\"Johnson\"), $S(\"how are you?\"));\n"
-                                "\n"
-                                "/* Hello Mr Johnson, how are you? */\n"
-                                "show(greeting);\n"},
-            {NULL, NULL}};
+    static struct Example examples[] = {{"Hello World", "println(\"Hello %s!\", $S(\"World\"));\n"},
+                                        {"File Writing",
+                                         "with (f in new(File, $S(\"prices.txt\"), $S(\"wb\"))) {\n"
+                                         "  print_to(f, 0, \"%$ :: %$\\n\", $S(\"Banana\"), $I(57));\n"
+                                         "  print_to(f, 0, \"%$ :: %$\\n\", $S(\"Apple\"),  $I(22));\n"
+                                         "  print_to(f, 0, \"%$ :: %$\\n\", $S(\"Pear\"),   $I(16));\n"
+                                         "}\n"},
+                                        {"String Scanning",
+                                         "var input = $S(\"1 and 52 then 78\");\n"
+                                         "\n"
+                                         "var i0 = $I(0), i1 = $I(0), i2 = $I(0);\n"
+                                         "scan_from(input, 0, \"%i and %i then %i\", i0, i1, i2);\n"
+                                         "\n"
+                                         "/* i0: 1, i1: 52, i2: 78 */\n"
+                                         "println(\"i0: %$, i1: %$, i2: %$\", i0, i1, i2);\n"},
+                                        {"String Printing",
+                                         "var greeting = new(String);\n"
+                                         "print_to(greeting, 0, \"Hello %s %s, %s?\", \n"
+                                         "  $S(\"Mr\"), $S(\"Johnson\"), $S(\"how are you?\"));\n"
+                                         "\n"
+                                         "/* Hello Mr Johnson, how are you? */\n"
+                                         "show(greeting);\n"},
+                                        {NULL, NULL}};
 
     return examples;
 }
 
 static struct Method *Show_Methods(void) {
 
-    static struct Method methods[] = {
-            {"show",
-             "int show(var self);\n"
-             "int show_to(var self, var out, int pos);",
-             "Show the object `self` either to `stdout` or to the object `output`."},
-            {"look",
-             "int look(var self);\n"
-             "int look_from(var self, var input, int pos);",
-             "Read the object `self` either from `stdout` or from the object `input`."},
-            {"print",
-             "#define print(fmt, ...)\n"
-             "#define println(fmt, ...)\n"
-             "#define print_to(out, pos, fmt, ...)\n"
-             "int print_with(const char* fmt, var args);\n"
-             "int println_with(const char* fmt, var args);\n"
-             "int print_to_with(var out, int pos, const char* fmt, var args);",
-             "Print the format string `fmt` either to `stdout` or to the object `out` "
-             "at positions `pos`. Returns new position in output."},
-            {"scan",
-             "#define scan(fmt, ...)\n"
-             "#define scanln(fmt, ...)\n"
-             "#define scan_from(input, pos, fmt, ...)\n"
-             "int scan_with(const char* fmt, var args);\n"
-             "int scanln_with(const char* fmt, var args);\n"
-             "int scan_from_with(var input, int pos, const char* fmt, var args);",
-             "Scan the format string `fmt` either from `stdin` or from the object "
-             "`input` at position `pos`. Returns new position in output."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"show",
+                                       "int show(var self);\n"
+                                       "int show_to(var self, var out, int pos);",
+                                       "Show the object `self` either to `stdout` or to the object `output`."},
+                                      {"look",
+                                       "int look(var self);\n"
+                                       "int look_from(var self, var input, int pos);",
+                                       "Read the object `self` either from `stdout` or from the object `input`."},
+                                      {"print",
+                                       "#define print(fmt, ...)\n"
+                                       "#define println(fmt, ...)\n"
+                                       "#define print_to(out, pos, fmt, ...)\n"
+                                       "int print_with(const char* fmt, var args);\n"
+                                       "int println_with(const char* fmt, var args);\n"
+                                       "int print_to_with(var out, int pos, const char* fmt, var args);",
+                                       "Print the format string `fmt` either to `stdout` or to the object `out` "
+                                       "at positions `pos`. Returns new position in output."},
+                                      {"scan",
+                                       "#define scan(fmt, ...)\n"
+                                       "#define scanln(fmt, ...)\n"
+                                       "#define scan_from(input, pos, fmt, ...)\n"
+                                       "int scan_with(const char* fmt, var args);\n"
+                                       "int scanln_with(const char* fmt, var args);\n"
+                                       "int scan_from_with(var input, int pos, const char* fmt, var args);",
+                                       "Scan the format string `fmt` either from `stdin` or from the object "
+                                       "`input` at position `pos`. Returns new position in output."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Show = MetaDotC(Show, Instance(Doc, Show_Name, Show_Brief, Show_Description, Show_Definition,
-                                   Show_Examples, Show_Methods));
+var Show = MetaDotC(Show, Instance(Doc, Show_Name, Show_Brief, Show_Description, Show_Definition, Show_Examples, Show_Methods));
 
 int show(var self) { return show_to(self, $(File, stdout), 0); }
 
 int show_to(var self, var out, int pos) {
 
     struct Show *s = instance(self, Show);
-    if (s and s->show) { return s->show(self, out, pos); }
+    if (s and s->show) {
+        return s->show(self, out, pos);
+    }
 
     return print_to(out, pos, "<'%s' At 0x%p>", type_of(self), self);
 }
@@ -4739,18 +4832,24 @@ int print_to_with(var out, int pos, const char *fmt, var args) {
 
     while (true) {
 
-        if (*fmt is '\0') { break; }
+        if (*fmt is '\0') {
+            break;
+        }
 
         const char *start = fmt;
 
         /* Match String */
-        while (*fmt isnt '\0' and *fmt isnt '%') { fmt++; }
+        while (*fmt isnt '\0' and *fmt isnt '%') {
+            fmt++;
+        }
 
         if (start isnt fmt) {
             memcpy(fmt_buf, start, fmt - start);
             fmt_buf[fmt - start] = '\0';
             int off = format_to(out, pos, fmt_buf);
-            if (off < 0) { throw(FormatError, "Unable to output format!", ""); }
+            if (off < 0) {
+                throw(FormatError, "Unable to output format!", "");
+            }
             pos += off;
             continue;
         }
@@ -4758,14 +4857,18 @@ int print_to_with(var out, int pos, const char *fmt, var args) {
         /* Match %% */
         if (*fmt is '%' && *(fmt + 1) is '%') {
             int off = format_to(out, pos, "%%");
-            if (off < 0) { throw(FormatError, "Unable to output '%%%%'!", ""); }
+            if (off < 0) {
+                throw(FormatError, "Unable to output '%%%%'!", "");
+            }
             pos += off;
             fmt += 2;
             continue;
         }
 
         /* Match Format Specifier */
-        while (not strchr("diuoxXfFeEgGaAxcsp$", *fmt)) { fmt++; }
+        while (not strchr("diuoxXfFeEgGaAxcsp$", *fmt)) {
+            fmt++;
+        }
 
         if (start isnt fmt) {
 
@@ -4779,35 +4882,47 @@ int print_to_with(var out, int pos, const char *fmt, var args) {
             var a = get(args, $I(index));
             index++;
 
-            if (*fmt is '$') { pos = show_to(a, out, pos); }
+            if (*fmt is '$') {
+                pos = show_to(a, out, pos);
+            }
 
             if (*fmt is 's') {
                 int off = format_to(out, pos, fmt_buf, c_str(a));
-                if (off < 0) { throw(FormatError, "Unable to output String!", ""); }
+                if (off < 0) {
+                    throw(FormatError, "Unable to output String!", "");
+                }
                 pos += off;
             }
 
             if (strchr("diouxX", *fmt)) {
                 int off = format_to(out, pos, fmt_buf, c_int(a));
-                if (off < 0) { throw(FormatError, "Unable to output Int!", ""); }
+                if (off < 0) {
+                    throw(FormatError, "Unable to output Int!", "");
+                }
                 pos += off;
             }
 
             if (strchr("fFeEgGaA", *fmt)) {
                 int off = format_to(out, pos, fmt_buf, c_float(a));
-                if (off < 0) { throw(FormatError, "Unable to output Real!", ""); }
+                if (off < 0) {
+                    throw(FormatError, "Unable to output Real!", "");
+                }
                 pos += off;
             }
 
             if (*fmt is 'c') {
                 int off = format_to(out, pos, fmt_buf, c_int(a));
-                if (off < 0) { throw(FormatError, "Unable to output Char!", ""); }
+                if (off < 0) {
+                    throw(FormatError, "Unable to output Char!", "");
+                }
                 pos += off;
             }
 
             if (*fmt is 'p') {
                 int off = format_to(out, pos, fmt_buf, a);
-                if (off < 0) { throw(FormatError, "Unable to output Object!", ""); }
+                if (off < 0) {
+                    throw(FormatError, "Unable to output Object!", "");
+                }
                 pos += off;
             }
 
@@ -4843,32 +4958,40 @@ int scan_from_with(var input, int pos, const char *fmt, var args) {
 
     while (true) {
 
-        if (*fmt is '\0') { break; }
+        if (*fmt is '\0') {
+            break;
+        }
 
         const char *start = fmt;
 
         /* Match String */
-        while (*fmt isnt '\0' and *fmt isnt '%') { fmt++; }
+        while (*fmt isnt '\0' and *fmt isnt '%') {
+            fmt++;
+        }
 
         if (start isnt fmt) {
             memcpy(fmt_buf, start, fmt - start);
             fmt_buf[fmt - start] = '\0';
             format_from(input, pos, fmt_buf);
-            pos += (int) (fmt - start);
+            pos += (int)(fmt - start);
             continue;
         }
 
         /* Match %% */
         if (*fmt is '%' and *(fmt + 1) is '%') {
             int err = format_from(input, pos, "%%");
-            if (err < 0) { throw(FormatError, "Unable to input '%%%%'!", ""); }
+            if (err < 0) {
+                throw(FormatError, "Unable to input '%%%%'!", "");
+            }
             pos += 2;
             fmt += 2;
             continue;
         }
 
         /* Match Format Specifier */
-        while (not strchr("diuoxXfFeEgGaAxcsp$[^]", *fmt)) { fmt++; }
+        while (not strchr("diuoxXfFeEgGaAxcsp$[^]", *fmt)) {
+            fmt++;
+        }
 
         if (start isnt fmt) {
 
@@ -4890,21 +5013,27 @@ int scan_from_with(var input, int pos, const char *fmt, var args) {
 
             else if (*fmt is 's') {
                 int err = format_from(input, pos, fmt_buf, c_str(a), &off);
-                if (err < 1) { throw(FormatError, "Unable to input String!", ""); }
+                if (err < 1) {
+                    throw(FormatError, "Unable to input String!", "");
+                }
                 pos += off;
             }
 
             /* TODO: Test */
             else if (*fmt is ']') {
                 int err = format_from(input, pos, fmt_buf, c_str(a), &off);
-                if (err < 1) { throw(FormatError, "Unable to input Scanset!", ""); }
+                if (err < 1) {
+                    throw(FormatError, "Unable to input Scanset!", "");
+                }
                 pos += off;
             }
 
             else if (strchr("diouxX", *fmt)) {
                 long tmp = 0;
                 int err = format_from(input, pos, fmt_buf, &tmp, &off);
-                if (err < 1) { throw(FormatError, "Unable to input Int!", ""); }
+                if (err < 1) {
+                    throw(FormatError, "Unable to input Int!", "");
+                }
                 pos += off;
                 assign(a, $I(tmp));
             }
@@ -4913,13 +5042,17 @@ int scan_from_with(var input, int pos, const char *fmt, var args) {
                 if (strchr(fmt_buf, 'l')) {
                     double tmp = 0;
                     int err = format_from(input, pos, fmt_buf, &tmp, &off);
-                    if (err < 1) { throw(FormatError, "Unable to input Float!", ""); }
+                    if (err < 1) {
+                        throw(FormatError, "Unable to input Float!", "");
+                    }
                     pos += off;
                     assign(a, $F(tmp));
                 } else {
                     float tmp = 0;
                     int err = format_from(input, pos, fmt_buf, &tmp, &off);
-                    if (err < 1) { throw(FormatError, "Unable to input Float!", ""); }
+                    if (err < 1) {
+                        throw(FormatError, "Unable to input Float!", "");
+                    }
                     pos += off;
                     assign(a, $F(tmp));
                 }
@@ -4928,7 +5061,9 @@ int scan_from_with(var input, int pos, const char *fmt, var args) {
             else if (*fmt is 'c') {
                 char tmp = '\0';
                 int err = format_from(input, pos, fmt_buf, &tmp, &off);
-                if (err < 1) { throw(FormatError, "Unable to input Char!", ""); }
+                if (err < 1) {
+                    throw(FormatError, "Unable to input Char!", "");
+                }
                 pos += off;
                 assign(a, $I(tmp));
             }
@@ -4936,7 +5071,9 @@ int scan_from_with(var input, int pos, const char *fmt, var args) {
             else if (*fmt is 'p') {
                 void *tmp = NULL;
                 int err = format_from(input, pos, fmt_buf, &tmp, &off);
-                if (err < 1) { throw(FormatError, "Unable to input Ref!", ""); }
+                if (err < 1) {
+                    throw(FormatError, "Unable to input Ref!", "");
+                }
                 pos += off;
                 assign(a, $R(tmp));
             }
@@ -4982,14 +5119,16 @@ static const char *Start_Definition(void) {
 
 static struct Example *Start_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Mutex);\n"
-                                                  "start(x); /* Lock Mutex */ \n"
-                                                  "print(\"Inside Mutex!\\n\");\n"
-                                                  "stop(x); /* unlock Mutex */"},
-                                        {"Scoped", "var x = new(Mutex);\n"
-                                                   "with (mut in x) { /* Lock Mutex */ \n"
-                                                   "  print(\"Inside Mutex!\\n\");\n"
-                                                   "} /* unlock Mutex */"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Mutex);\n"
+                                         "start(x); /* Lock Mutex */ \n"
+                                         "print(\"Inside Mutex!\\n\");\n"
+                                         "stop(x); /* unlock Mutex */"},
+                                        {"Scoped",
+                                         "var x = new(Mutex);\n"
+                                         "with (mut in x) { /* Lock Mutex */ \n"
+                                         "  print(\"Inside Mutex!\\n\");\n"
+                                         "} /* unlock Mutex */"},
                                         {NULL, NULL}};
 
     return examples;
@@ -4997,19 +5136,17 @@ static struct Example *Start_Examples(void) {
 
 static struct Method *Start_Methods(void) {
 
-    static struct Method methods[] = {
-            {"with", "#define with(...)", "Perform operations in between `start` and `stop`."},
-            {"start", "void start(var self);", "Start the object `self`."},
-            {"stop", "void stop(var self);", "Stop the object `self`."},
-            {"join", "void join(var self);", "Block and wait for the object `self` to stop."},
-            {"running", "bool running(var self);", "Check if the object `self` is running."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"with", "#define with(...)", "Perform operations in between `start` and `stop`."},
+                                      {"start", "void start(var self);", "Start the object `self`."},
+                                      {"stop", "void stop(var self);", "Stop the object `self`."},
+                                      {"join", "void join(var self);", "Block and wait for the object `self` to stop."},
+                                      {"running", "bool running(var self);", "Check if the object `self` is running."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Start = MetaDotC(Start, Instance(Doc, Start_Name, Start_Brief, Start_Description,
-                                     Start_Definition, Start_Examples, Start_Methods));
+var Start = MetaDotC(Start, Instance(Doc, Start_Name, Start_Brief, Start_Description, Start_Definition, Start_Examples, Start_Methods));
 
 void start(var self) { method(self, Start, start); }
 
@@ -5021,13 +5158,17 @@ bool running(var self) { return method(self, Start, running); }
 
 var start_in(var self) {
     struct Start *s = instance(self, Start);
-    if (s and s->start) { s->start(self); }
+    if (s and s->start) {
+        s->start(self);
+    }
     return self;
 }
 
 var stop_in(var self) {
     struct Start *s = instance(self, Start);
-    if (s and s->stop) { s->stop(self); }
+    if (s and s->stop) {
+        s->stop(self);
+    }
     return NULL;
 }
 
@@ -5048,8 +5189,9 @@ static const char *C_Str_Definition(void) {
 
 static struct Example *C_Str_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "puts(c_str($S(\"Hello\"))); /* Hello */\n"
-                                                  "puts(c_str($S(\"There\"))); /* There */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "puts(c_str($S(\"Hello\"))); /* Hello */\n"
+                                         "puts(c_str($S(\"There\"))); /* There */\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -5057,19 +5199,18 @@ static struct Example *C_Str_Examples(void) {
 
 static struct Method *C_Str_Methods(void) {
 
-    static struct Method methods[] = {{"c_str", "char* c_str(var self);",
-                                       "Returns the object `self` represented as a `char*`."},
-                                      {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"c_str", "char* c_str(var self);", "Returns the object `self` represented as a `char*`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var C_Str = MetaDotC(C_Str, Instance(Doc, C_Str_Name, C_Str_Brief, C_Str_Description,
-                                     C_Str_Definition, C_Str_Examples, C_Str_Methods));
+var C_Str = MetaDotC(C_Str, Instance(Doc, C_Str_Name, C_Str_Brief, C_Str_Description, C_Str_Definition, C_Str_Examples, C_Str_Methods));
 
 char *c_str(var self) {
 
-    if (type_of(self) is String) { return ((struct String *) self)->val; }
+    if (type_of(self) is String) {
+        return ((struct String *)self)->val;
+    }
 
     return method(self, C_Str, c_str);
 }
@@ -5094,11 +5235,12 @@ static const char *String_Definition(void) {
 
 static struct Example *String_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var s0 = $(String, \"Hello\");\n"
-                                                  "var s1 = new(String, $S(\"Hello\"));\n"
-                                                  "append(s1, $S(\" There\"));\n"
-                                                  "show(s0); /* Hello */\n"
-                                                  "show(s1); /* Hello There */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var s0 = $(String, \"Hello\");\n"
+                                         "var s1 = new(String, $S(\"Hello\"));\n"
+                                         "append(s1, $S(\" There\"));\n"
+                                         "show(s0); /* Hello */\n"
+                                         "show(s1); /* Hello There */\n"},
                                         {"Manipulation",
                                          "var s0 = new(String, $S(\"Balloons\"));\n"
                                          "\n"
@@ -5132,7 +5274,9 @@ static void String_New(var self, var args) {
     }
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!", ""); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!", "");
+    }
 #endif
 }
 
@@ -5161,7 +5305,9 @@ static void String_Assign(var self, var obj) {
     s->val = realloc(s->val, strlen(val) + 1);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!", ""); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!", "");
+    }
 #endif
 
     strcpy(s->val, val);
@@ -5191,7 +5337,9 @@ static void String_Clear(var self) {
     s->val = realloc(s->val, 1);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!", ""); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!", "");
+    }
 #endif
 
     s->val[0] = '\0';
@@ -5200,7 +5348,9 @@ static void String_Clear(var self) {
 static bool String_Mem(var self, var obj) {
 
     struct C_Str *c = instance(obj, C_Str);
-    if (c and c->c_str) { return strstr(String_C_Str(self), c->c_str(obj)); }
+    if (c and c->c_str) {
+        return strstr(String_C_Str(self), c->c_str(obj));
+    }
 
     return false;
 }
@@ -5211,7 +5361,7 @@ static void String_Rem(var self, var obj) {
     if (c and c->c_str) {
         char *pos = strstr(String_C_Str(self), c->c_str(obj));
         size_t count = strlen(String_C_Str(self)) - strlen(pos) - strlen(c->c_str(obj)) + 1;
-        memmove((char *) pos, pos + strlen(c->c_str(obj)), count);
+        memmove((char *)pos, pos + strlen(c->c_str(obj)), count);
     }
 }
 
@@ -5232,7 +5382,9 @@ static void String_Concat(var self, var obj) {
     s->val = realloc(s->val, strlen(s->val) + strlen(c_str(obj)) + 1);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!", ""); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!", "");
+    }
 #endif
 
     strcat(s->val, c_str(obj));
@@ -5257,7 +5409,9 @@ static void String_Resize(var self, size_t n) {
     }
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!", ""); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!", "");
+    }
 #endif
 }
 
@@ -5281,7 +5435,9 @@ static int String_Format_To(var self, int pos, const char *fmt, va_list va) {
     s->val = realloc(s->val, pos + size + 1);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!"); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!");
+    }
 #endif
 
     return vsprintf(s->val + pos, fmt, va);
@@ -5303,7 +5459,9 @@ static int String_Format_To(var self, int pos, const char *fmt, va_list va) {
     s->val = realloc(s->val, pos + size + 1);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!", ""); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!", "");
+    }
 #endif
 
     s->val[pos] = '\0';
@@ -5328,7 +5486,9 @@ static int String_Format_To(var self, int pos, const char *fmt, va_list va) {
     s->val = realloc(s->val, pos + size + 1);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (s->val is NULL) { throw(OutOfMemoryError, "Cannot allocate String, out of memory!"); }
+    if (s->val is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate String, out of memory!");
+    }
 #endif
 
     return vsprintf(s->val + pos, fmt, va);
@@ -5403,7 +5563,9 @@ static int String_Look(var self, var input, int pos) {
 
         pos = scan_from(input, pos, "%c", chr);
 
-        if (c_int(chr) == '"') { break; }
+        if (c_int(chr) == '"') {
+            break;
+        }
 
         if (c_int(chr) == '\\') {
             pos = scan_from(input, pos, "%c", chr);
@@ -5447,7 +5609,7 @@ static int String_Look(var self, var input, int pos) {
         }
 
         char buffer[2];
-        buffer[0] = (char) c_int(chr);
+        buffer[0] = (char)c_int(chr);
         buffer[1] = '\0';
 
         String_Concat(self, $S(buffer));
@@ -5457,15 +5619,9 @@ static int String_Look(var self, var input, int pos) {
 }
 
 var String =
-        MetaDotC(String,
-                 Instance(Doc, String_Name, String_Brief, String_Description, String_Definition,
-                          String_Examples, NULL),
-                 Instance(New, String_New, String_Del), Instance(Assign, String_Assign),
-                 Instance(Cmp, String_Cmp), Instance(Hash, String_Hash), Instance(Len, String_Len),
-                 Instance(Get, NULL, NULL, String_Mem, String_Rem), Instance(Resize, String_Resize),
-                 Instance(Concat, String_Concat, String_Concat), Instance(C_Str, String_C_Str),
-                 Instance(Format, String_Format_To, String_Format_From),
-                 Instance(Show, String_Show, String_Look));
+        MetaDotC(String, Instance(Doc, String_Name, String_Brief, String_Description, String_Definition, String_Examples, NULL), Instance(New, String_New, String_Del), Instance(Assign, String_Assign),
+                 Instance(Cmp, String_Cmp), Instance(Hash, String_Hash), Instance(Len, String_Len), Instance(Get, NULL, NULL, String_Mem, String_Rem), Instance(Resize, String_Resize),
+                 Instance(Concat, String_Concat, String_Concat), Instance(C_Str, String_C_Str), Instance(Format, String_Format_To, String_Format_From), Instance(Show, String_Show, String_Look));
 
 static const char *Table_Name(void) { return "Table"; }
 
@@ -5487,15 +5643,16 @@ static const char *Table_Description(void) {
 
 static struct Example *Table_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var prices = new(Table, String, Int);\n"
-                                                  "set(prices, $S(\"Apple\"),  $I(12));\n"
-                                                  "set(prices, $S(\"Banana\"), $I( 6));\n"
-                                                  "set(prices, $S(\"Pear\"),   $I(55));\n"
-                                                  "\n"
-                                                  "foreach (key in prices) {\n"
-                                                  "  var price = get(prices, key);\n"
-                                                  "  println(\"Price of %$ is %$\", key, price);\n"
-                                                  "}\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var prices = new(Table, String, Int);\n"
+                                         "set(prices, $S(\"Apple\"),  $I(12));\n"
+                                         "set(prices, $S(\"Banana\"), $I( 6));\n"
+                                         "set(prices, $S(\"Pear\"),   $I(55));\n"
+                                         "\n"
+                                         "foreach (key in prices) {\n"
+                                         "  var price = get(prices, key);\n"
+                                         "  println(\"Price of %$ is %$\", key, price);\n"
+                                         "}\n"},
                                         {"Manipulation",
                                          "var t = new(Table, String, Int);\n"
                                          "set(t, $S(\"Hello\"), $I(2));\n"
@@ -5520,8 +5677,7 @@ static struct Example *Table_Examples(void) {
     return examples;
 }
 
-struct Table
-{
+struct Table {
     var data;
     var ktype;
     var vtype;
@@ -5533,57 +5689,48 @@ struct Table
     var sspace1;
 };
 
-enum {
-    TABLE_PRIMES_COUNT = 24
-};
+enum { TABLE_PRIMES_COUNT = 24 };
 
-static const size_t Table_Primes[TABLE_PRIMES_COUNT] = {
-        0,     1,      5,      11,     23,      53,      101,     197,
-        389,   683,    1259,   2417,   4733,    9371,    18617,   37097,
-        74093, 148073, 296099, 592019, 1100009, 2200013, 4400021, 8800019};
+static const size_t Table_Primes[TABLE_PRIMES_COUNT] = {0,    1,    5,     11,    23,    53,     101,    197,    389,     683,     1259,    2417,
+                                                        4733, 9371, 18617, 37097, 74093, 148073, 296099, 592019, 1100009, 2200013, 4400021, 8800019};
 
 static const double Table_Load_Factor = 0.9;
 
 static size_t Table_Ideal_Size(size_t size) {
-    size = (size_t) ((double) (size + 1) / Table_Load_Factor);
+    size = (size_t)((double)(size + 1) / Table_Load_Factor);
     for (size_t i = 0; i < TABLE_PRIMES_COUNT; i++) {
-        if (Table_Primes[i] >= size) { return Table_Primes[i]; }
+        if (Table_Primes[i] >= size) {
+            return Table_Primes[i];
+        }
     }
     size_t last = Table_Primes[TABLE_PRIMES_COUNT - 1];
     for (size_t i = 0;; i++) {
-        if (last * i >= size) { return last * i; }
+        if (last * i >= size) {
+            return last * i;
+        }
     }
 }
 
-static size_t Table_Step(struct Table *t) {
-    return sizeof(uint64_t) + sizeof(struct Header) + t->ksize + sizeof(struct Header) + t->vsize;
-}
+static size_t Table_Step(struct Table *t) { return sizeof(uint64_t) + sizeof(struct Header) + t->ksize + sizeof(struct Header) + t->vsize; }
 
-static uint64_t Table_Key_Hash(struct Table *t, uint64_t i) {
-    return *(uint64_t *) ((char *) t->data + i * Table_Step(t));
-}
+static uint64_t Table_Key_Hash(struct Table *t, uint64_t i) { return *(uint64_t *)((char *)t->data + i * Table_Step(t)); }
 
-static var Table_Key(struct Table *t, uint64_t i) {
-    return (char *) t->data + i * Table_Step(t) + sizeof(uint64_t) + sizeof(struct Header);
-}
+static var Table_Key(struct Table *t, uint64_t i) { return (char *)t->data + i * Table_Step(t) + sizeof(uint64_t) + sizeof(struct Header); }
 
-static var Table_Val(struct Table *t, uint64_t i) {
-    return (char *) t->data + i * Table_Step(t) + sizeof(uint64_t) + sizeof(struct Header) +
-           t->ksize + sizeof(struct Header);
-}
+static var Table_Val(struct Table *t, uint64_t i) { return (char *)t->data + i * Table_Step(t) + sizeof(uint64_t) + sizeof(struct Header) + t->ksize + sizeof(struct Header); }
 
 static uint64_t Table_Probe(struct Table *t, uint64_t i, uint64_t h) {
     int64_t v = i - (h - 1);
-    if (v < 0) { v = t->nslots + v; }
+    if (v < 0) {
+        v = t->nslots + v;
+    }
     return v;
 }
 
 static void Table_Set(var self, var key, var val);
 static void Table_Set_Move(var self, var key, var val, bool move);
 
-static size_t Table_Size_Round(size_t s) {
-    return ((s + sizeof(var) - 1) / sizeof(var)) * sizeof(var);
-}
+static size_t Table_Size_Round(size_t s) { return ((s + sizeof(var) - 1) / sizeof(var)) * sizeof(var); }
 
 static void Table_New(var self, var args) {
 
@@ -5694,7 +5841,9 @@ static void Table_Assign(var self, var obj) {
     memset(t->sspace0, 0, Table_Step(t));
     memset(t->sspace1, 0, Table_Step(t));
 
-    foreach (key in obj) { Table_Set_Move(t, key, get(obj, key), false); }
+    foreach (key in obj) {
+        Table_Set_Move(t, key, get(obj, key), false);
+    }
 }
 
 static var Table_Iter_Init(var self);
@@ -5710,15 +5859,29 @@ static int Table_Cmp(var self, var obj) {
     var item1 = iter_init(obj);
 
     while (true) {
-        if (item0 is Terminal and item1 is Terminal) { return 0; }
-        if (item0 is Terminal) { return -1; }
-        if (item1 is Terminal) { return 1; }
+        if (item0 is Terminal and item1 is Terminal) {
+            return 0;
+        }
+        if (item0 is Terminal) {
+            return -1;
+        }
+        if (item1 is Terminal) {
+            return 1;
+        }
         c = cmp(item0, item1);
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         c = cmp(Table_Get(self, item0), get(obj, item1));
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         item0 = Table_Iter_Next(self, item0);
         item1 = iter_next(obj, item1);
     }
@@ -5732,7 +5895,7 @@ static uint64_t Table_Hash(var self) {
 
     var curr = Table_Iter_Init(self);
     while (curr isnt Terminal) {
-        var vurr = (char *) curr + t->ksize + sizeof(struct Header);
+        var vurr = (char *)curr + t->ksize + sizeof(struct Header);
         h = h ^ hash(curr) ^ hash(vurr);
         curr = Table_Iter_Next(self, curr);
     }
@@ -5745,16 +5908,11 @@ static size_t Table_Len(var self) {
     return t->nitems;
 }
 
-static uint64_t Table_Swapspace_Hash(struct Table *t, var space) { return *((uint64_t *) space); }
+static uint64_t Table_Swapspace_Hash(struct Table *t, var space) { return *((uint64_t *)space); }
 
-static var Table_Swapspace_Key(struct Table *t, var space) {
-    return (char *) space + sizeof(uint64_t) + sizeof(struct Header);
-}
+static var Table_Swapspace_Key(struct Table *t, var space) { return (char *)space + sizeof(uint64_t) + sizeof(struct Header); }
 
-static var Table_Swapspace_Val(struct Table *t, var space) {
-    return (char *) space + sizeof(uint64_t) + sizeof(struct Header) + t->ksize +
-           sizeof(struct Header);
-}
+static var Table_Swapspace_Val(struct Table *t, var space) { return (char *)space + sizeof(uint64_t) + sizeof(struct Header) + t->ksize + sizeof(struct Header); }
 
 static void Table_Set_Move(var self, var key, var val, bool move) {
 
@@ -5771,34 +5929,29 @@ static void Table_Set_Move(var self, var key, var val, bool move) {
     if (move) {
 
         uint64_t ihash = i + 1;
-        memcpy((char *) t->sspace0, &ihash, sizeof(uint64_t));
-        memcpy((char *) t->sspace0 + sizeof(uint64_t), (char *) key - sizeof(struct Header),
-               t->ksize + sizeof(struct Header));
-        memcpy((char *) t->sspace0 + sizeof(uint64_t) + sizeof(struct Header) + t->ksize,
-               (char *) val - sizeof(struct Header), t->vsize + sizeof(struct Header));
+        memcpy((char *)t->sspace0, &ihash, sizeof(uint64_t));
+        memcpy((char *)t->sspace0 + sizeof(uint64_t), (char *)key - sizeof(struct Header), t->ksize + sizeof(struct Header));
+        memcpy((char *)t->sspace0 + sizeof(uint64_t) + sizeof(struct Header) + t->ksize, (char *)val - sizeof(struct Header), t->vsize + sizeof(struct Header));
 
     } else {
 
-        struct Header *khead = (struct Header *) ((char *) t->sspace0 + sizeof(uint64_t));
-        struct Header *vhead = (struct Header *) ((char *) t->sspace0 + sizeof(uint64_t) +
-                                                  sizeof(struct Header) + t->ksize);
+        struct Header *khead = (struct Header *)((char *)t->sspace0 + sizeof(uint64_t));
+        struct Header *vhead = (struct Header *)((char *)t->sspace0 + sizeof(uint64_t) + sizeof(struct Header) + t->ksize);
 
         header_init(khead, t->ktype, AllocData);
         header_init(vhead, t->vtype, AllocData);
 
         uint64_t ihash = i + 1;
-        memcpy((char *) t->sspace0, &ihash, sizeof(uint64_t));
-        assign((char *) t->sspace0 + sizeof(uint64_t) + sizeof(struct Header), key);
-        assign((char *) t->sspace0 + sizeof(uint64_t) + sizeof(struct Header) + t->ksize +
-                       sizeof(struct Header),
-               val);
+        memcpy((char *)t->sspace0, &ihash, sizeof(uint64_t));
+        assign((char *)t->sspace0 + sizeof(uint64_t) + sizeof(struct Header), key);
+        assign((char *)t->sspace0 + sizeof(uint64_t) + sizeof(struct Header) + t->ksize + sizeof(struct Header), val);
     }
 
     while (true) {
 
         uint64_t h = Table_Key_Hash(t, i);
         if (h is 0) {
-            memcpy((char *) t->data + i * Table_Step(t), t->sspace0, Table_Step(t));
+            memcpy((char *)t->data + i * Table_Step(t), t->sspace0, Table_Step(t));
             t->nitems++;
             return;
         }
@@ -5806,15 +5959,15 @@ static void Table_Set_Move(var self, var key, var val, bool move) {
         if (eq(Table_Key(t, i), Table_Swapspace_Key(t, t->sspace0))) {
             destruct(Table_Key(t, i));
             destruct(Table_Val(t, i));
-            memcpy((char *) t->data + i * Table_Step(t), t->sspace0, Table_Step(t));
+            memcpy((char *)t->data + i * Table_Step(t), t->sspace0, Table_Step(t));
             return;
         }
 
         uint64_t p = Table_Probe(t, i, h);
         if (j >= p) {
-            memcpy((char *) t->sspace1, (char *) t->data + i * Table_Step(t), Table_Step(t));
-            memcpy((char *) t->data + i * Table_Step(t), (char *) t->sspace0, Table_Step(t));
-            memcpy((char *) t->sspace0, (char *) t->sspace1, Table_Step(t));
+            memcpy((char *)t->sspace1, (char *)t->data + i * Table_Step(t), Table_Step(t));
+            memcpy((char *)t->data + i * Table_Step(t), (char *)t->sspace0, Table_Step(t));
+            memcpy((char *)t->sspace0, (char *)t->sspace1, Table_Step(t));
             j = p;
         }
 
@@ -5833,18 +5986,18 @@ static void Table_Rehash(struct Table *t, size_t new_size) {
     t->data = calloc(t->nslots, Table_Step(t));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (t->data is NULL) { throw(OutOfMemoryError, "Cannot allocate Table, out of memory!", ""); }
+    if (t->data is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate Table, out of memory!", "");
+    }
 #endif
 
     for (size_t i = 0; i < old_size; i++) {
 
-        uint64_t h = *(uint64_t *) ((char *) old_data + i * Table_Step(t));
+        uint64_t h = *(uint64_t *)((char *)old_data + i * Table_Step(t));
 
         if (h isnt 0) {
-            var key = (char *) old_data + i * Table_Step(t) + sizeof(uint64_t) +
-                      sizeof(struct Header);
-            var val = (char *) old_data + i * Table_Step(t) + sizeof(uint64_t) +
-                      sizeof(struct Header) + t->ksize + sizeof(struct Header);
+            var key = (char *)old_data + i * Table_Step(t) + sizeof(uint64_t) + sizeof(struct Header);
+            var val = (char *)old_data + i * Table_Step(t) + sizeof(uint64_t) + sizeof(struct Header) + t->ksize + sizeof(struct Header);
             Table_Set_Move(t, key, val, true);
         }
     }
@@ -5855,20 +6008,26 @@ static void Table_Rehash(struct Table *t, size_t new_size) {
 static void Table_Resize_More(struct Table *t) {
     size_t new_size = Table_Ideal_Size(t->nitems);
     size_t old_size = t->nslots;
-    if (new_size > old_size) { Table_Rehash(t, new_size); }
+    if (new_size > old_size) {
+        Table_Rehash(t, new_size);
+    }
 }
 
 static void Table_Resize_Less(struct Table *t) {
     size_t new_size = Table_Ideal_Size(t->nitems);
     size_t old_size = t->nslots;
-    if (new_size < old_size) { Table_Rehash(t, new_size); }
+    if (new_size < old_size) {
+        Table_Rehash(t, new_size);
+    }
 }
 
 static bool Table_Mem(var self, var key) {
     struct Table *t = self;
     key = cast(key, t->ktype);
 
-    if (t->nslots is 0) { return false; }
+    if (t->nslots is 0) {
+        return false;
+    }
 
     uint64_t i = hash(key) % t->nslots;
     uint64_t j = 0;
@@ -5876,9 +6035,13 @@ static bool Table_Mem(var self, var key) {
     while (true) {
 
         uint64_t h = Table_Key_Hash(t, i);
-        if (h is 0 or j > Table_Probe(t, i, h)) { return false; }
+        if (h is 0 or j > Table_Probe(t, i, h)) {
+            return false;
+        }
 
-        if (eq(Table_Key(t, i), key)) { return true; }
+        if (eq(Table_Key(t, i), key)) {
+            return true;
+        }
 
         i = (i + 1) % t->nslots;
         j++;
@@ -5891,7 +6054,9 @@ static void Table_Rem(var self, var key) {
     struct Table *t = self;
     key = cast(key, t->ktype);
 
-    if (t->nslots is 0) { throw(KeyError, "Key %$ not in Table!", key); }
+    if (t->nslots is 0) {
+        throw(KeyError, "Key %$ not in Table!", key);
+    }
 
     uint64_t i = hash(key) % t->nslots;
     uint64_t j = 0;
@@ -5899,22 +6064,23 @@ static void Table_Rem(var self, var key) {
     while (true) {
 
         uint64_t h = Table_Key_Hash(t, i);
-        if (h is 0 or j > Table_Probe(t, i, h)) { throw(KeyError, "Key %$ not in Table!", key); }
+        if (h is 0 or j > Table_Probe(t, i, h)) {
+            throw(KeyError, "Key %$ not in Table!", key);
+        }
 
         if (eq(Table_Key(t, i), key)) {
 
             destruct(Table_Key(t, i));
             destruct(Table_Val(t, i));
-            memset((char *) t->data + i * Table_Step(t), 0, Table_Step(t));
+            memset((char *)t->data + i * Table_Step(t), 0, Table_Step(t));
 
             while (true) {
 
                 uint64_t ni = (i + 1) % t->nslots;
                 uint64_t nh = Table_Key_Hash(t, ni);
                 if (nh isnt 0 and Table_Probe(t, ni, nh) > 0) {
-                    memcpy((char *) t->data + i * Table_Step(t),
-                           (char *) t->data + ni * Table_Step(t), Table_Step(t));
-                    memset((char *) t->data + ni * Table_Step(t), 0, Table_Step(t));
+                    memcpy((char *)t->data + i * Table_Step(t), (char *)t->data + ni * Table_Step(t), Table_Step(t));
+                    memset((char *)t->data + ni * Table_Step(t), 0, Table_Step(t));
                     i = ni;
                 } else {
                     break;
@@ -5934,13 +6100,15 @@ static void Table_Rem(var self, var key) {
 static var Table_Get(var self, var key) {
     struct Table *t = self;
 
-    if (key >= t->data and ((char *) key) < ((char *) t->data) + t->nslots * Table_Step(self)) {
-        return Table_Val(self, (((char *) key) - ((char *) t->data)) / Table_Step(self));
+    if (key >= t->data and ((char *)key) < ((char *)t->data) + t->nslots * Table_Step(self)) {
+        return Table_Val(self, (((char *)key) - ((char *)t->data)) / Table_Step(self));
     }
 
     key = cast(key, t->ktype);
 
-    if (t->nslots is 0) { throw(KeyError, "Key %$ not in Table!", key); }
+    if (t->nslots is 0) {
+        throw(KeyError, "Key %$ not in Table!", key);
+    }
 
     uint64_t i = hash(key) % t->nslots;
     uint64_t j = 0;
@@ -5948,9 +6116,13 @@ static var Table_Get(var self, var key) {
     while (true) {
 
         uint64_t h = Table_Key_Hash(t, i);
-        if (h is 0 or j > Table_Probe(t, i, h)) { throw(KeyError, "Key %$ not in Table!", key); }
+        if (h is 0 or j > Table_Probe(t, i, h)) {
+            throw(KeyError, "Key %$ not in Table!", key);
+        }
 
-        if (eq(Table_Key(t, i), key)) { return Table_Val(t, i); }
+        if (eq(Table_Key(t, i), key)) {
+            return Table_Val(t, i);
+        }
 
         i = (i + 1) % t->nslots;
         j++;
@@ -5966,10 +6138,14 @@ static void Table_Set(var self, var key, var val) {
 
 static var Table_Iter_Init(var self) {
     struct Table *t = self;
-    if (t->nitems is 0) { return Terminal; }
+    if (t->nitems is 0) {
+        return Terminal;
+    }
 
     for (size_t i = 0; i < t->nslots; i++) {
-        if (Table_Key_Hash(t, i) isnt 0) { return Table_Key(t, i); }
+        if (Table_Key_Hash(t, i) isnt 0) {
+            return Table_Key(t, i);
+        }
     }
 
     return Terminal;
@@ -5978,14 +6154,18 @@ static var Table_Iter_Init(var self) {
 static var Table_Iter_Next(var self, var curr) {
     struct Table *t = self;
 
-    curr = (char *) curr + Table_Step(t);
+    curr = (char *)curr + Table_Step(t);
 
     while (true) {
 
-        if (curr > Table_Key(t, t->nslots - 1)) { return Terminal; }
-        uint64_t h = *(uint64_t *) ((char *) curr - sizeof(struct Header) - sizeof(uint64_t));
-        if (h isnt 0) { return curr; }
-        curr = (char *) curr + Table_Step(t);
+        if (curr > Table_Key(t, t->nslots - 1)) {
+            return Terminal;
+        }
+        uint64_t h = *(uint64_t *)((char *)curr - sizeof(struct Header) - sizeof(uint64_t));
+        if (h isnt 0) {
+            return curr;
+        }
+        curr = (char *)curr + Table_Step(t);
     }
 
     return Terminal;
@@ -5994,12 +6174,18 @@ static var Table_Iter_Next(var self, var curr) {
 static var Table_Iter_Last(var self) {
 
     struct Table *t = self;
-    if (t->nitems is 0) { return Terminal; }
+    if (t->nitems is 0) {
+        return Terminal;
+    }
 
     size_t i = t->nslots - 1;
     while (true) {
-        if (Table_Key_Hash(t, i) isnt 0) { return Table_Key(t, i); }
-        if (i == 0) { break; }
+        if (Table_Key_Hash(t, i) isnt 0) {
+            return Table_Key(t, i);
+        }
+        if (i == 0) {
+            break;
+        }
         i--;
     }
 
@@ -6009,14 +6195,18 @@ static var Table_Iter_Last(var self) {
 static var Table_Iter_Prev(var self, var curr) {
     struct Table *t = self;
 
-    curr = (char *) curr - Table_Step(t);
+    curr = (char *)curr - Table_Step(t);
 
     while (true) {
 
-        if (curr < Table_Key(t, 0)) { return Terminal; }
-        uint64_t h = *(uint64_t *) ((char *) curr - sizeof(struct Header) - sizeof(uint64_t));
-        if (h isnt 0) { return curr; }
-        curr = (char *) curr - Table_Step(t);
+        if (curr < Table_Key(t, 0)) {
+            return Terminal;
+        }
+        uint64_t h = *(uint64_t *)((char *)curr - sizeof(struct Header) - sizeof(uint64_t));
+        if (h isnt 0) {
+            return curr;
+        }
+        curr = (char *)curr - Table_Step(t);
     }
 
     return Terminal;
@@ -6036,7 +6226,9 @@ static int Table_Show(var self, var output, int pos) {
     for (size_t i = 0; i < t->nslots; i++) {
         if (Table_Key_Hash(t, i) isnt 0) {
             pos = print_to(output, pos, "%$:%$", Table_Key(t, i), Table_Val(t, i));
-            if (j < Table_Len(t) - 1) { pos = print_to(output, pos, ", ", ""); }
+            if (j < Table_Len(t) - 1) {
+                pos = print_to(output, pos, ", ", "");
+            }
             j++;
         }
     }
@@ -6071,16 +6263,10 @@ static void Table_Mark(var self, var gc, void (*f)(var, void *)) {
     }
 }
 
-var Table = MetaDotC(
-        Table,
-        Instance(Doc, Table_Name, Table_Brief, Table_Description, NULL, Table_Examples, NULL),
-        Instance(New, Table_New, Table_Del), Instance(Assign, Table_Assign),
-        Instance(Mark, Table_Mark), Instance(Cmp, Table_Cmp), Instance(Hash, Table_Hash),
-        Instance(Len, Table_Len),
-        Instance(Get, Table_Get, Table_Set, Table_Mem, Table_Rem, Table_Key_Type, Table_Val_Type),
-        Instance(Iter, Table_Iter_Init, Table_Iter_Next, Table_Iter_Last, Table_Iter_Prev,
-                 Table_Iter_Type),
-        Instance(Show, Table_Show, NULL), Instance(Resize, Table_Resize));
+var Table = MetaDotC(Table, Instance(Doc, Table_Name, Table_Brief, Table_Description, NULL, Table_Examples, NULL), Instance(New, Table_New, Table_Del), Instance(Assign, Table_Assign),
+                     Instance(Mark, Table_Mark), Instance(Cmp, Table_Cmp), Instance(Hash, Table_Hash), Instance(Len, Table_Len),
+                     Instance(Get, Table_Get, Table_Set, Table_Mem, Table_Rem, Table_Key_Type, Table_Val_Type),
+                     Instance(Iter, Table_Iter_Init, Table_Iter_Next, Table_Iter_Last, Table_Iter_Prev, Table_Iter_Type), Instance(Show, Table_Show, NULL), Instance(Resize, Table_Resize));
 
 static const char *Current_Name(void) { return "Current"; }
 
@@ -6104,10 +6290,11 @@ static const char *Current_Definition(void) {
 
 static struct Example *Current_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var gc = current(GC);\n"
-                                                  "show(gc);\n"
-                                                  "var thread = current(Thread);\n"
-                                                  "show(thread);\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var gc = current(GC);\n"
+                                         "show(gc);\n"
+                                         "var thread = current(Thread);\n"
+                                         "show(thread);\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -6115,20 +6302,16 @@ static struct Example *Current_Examples(void) {
 
 static struct Method *Current_Methods(void) {
 
-    static struct Method methods[] = {{"current", "var current(var type);",
-                                       "Returns the current active object of the given `type`."},
-                                      {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"current", "var current(var type);", "Returns the current active object of the given `type`."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Current = MetaDotC(Current, Instance(Doc, Current_Name, Current_Brief, Current_Description,
-                                         Current_Definition, Current_Examples, Current_Methods));
+var Current = MetaDotC(Current, Instance(Doc, Current_Name, Current_Brief, Current_Description, Current_Definition, Current_Examples, Current_Methods));
 
 var current(var type) { return type_method(type, Current, current); }
 
-struct Thread
-{
+struct Thread {
 
     var func;
     var args;
@@ -6157,18 +6340,19 @@ static const char *Thread_Description(void) {
 
 static struct Example *Thread_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var set_value(var args) {\n"
-                                                  "  assign(get(args, $I(0)), $I(1));\n"
-                                                  "  return NULL;\n"
-                                                  "}\n"
-                                                  "\n"
-                                                  "var i = $I(0);\n"
-                                                  "\n"
-                                                  "var x = new(Thread, $(Function, set_value));\n"
-                                                  "call(x, i);\n"
-                                                  "join(x);\n"
-                                                  "\n"
-                                                  "show(i); /* 1 */\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var set_value(var args) {\n"
+                                         "  assign(get(args, $I(0)), $I(1));\n"
+                                         "  return NULL;\n"
+                                         "}\n"
+                                         "\n"
+                                         "var i = $I(0);\n"
+                                         "\n"
+                                         "var x = new(Thread, $(Function, set_value));\n"
+                                         "call(x, i);\n"
+                                         "join(x);\n"
+                                         "\n"
+                                         "show(i); /* 1 */\n"},
                                         {"Exclusive Resource",
                                          "var increment(var args) {\n"
                                          "  var mut = get(args, $I(0));\n"
@@ -6219,19 +6403,23 @@ static void Thread_Del(var self) {
     CloseHandle(t->thread);
 #endif
 
-    if (t->args isnt NULL) { del_raw(t->args); }
+    if (t->args isnt NULL) {
+        del_raw(t->args);
+    }
     del_raw(t->tls);
 }
 
 static int64_t Thread_C_Int(var self) {
     struct Thread *t = self;
 
-    if (not t->is_running) { throw(ValueError, "Cannot get thread ID, thread not running!", ""); }
+    if (not t->is_running) {
+        throw(ValueError, "Cannot get thread ID, thread not running!", "");
+    }
 
 #if defined(METADOT_C_UNIX)
-    return (int64_t) t->thread;
+    return (int64_t)t->thread;
 #elif defined(METADOT_C_WINDOWS)
-    return (int64_t) t->id;
+    return (int64_t)t->id;
 #else
     return 0;
 #endif
@@ -6245,7 +6433,7 @@ static void Thread_Assign(var self, var obj) {
     assign(t->tls, o->tls);
 }
 
-static int Thread_Cmp(var self, var obj) { return (int) (Thread_C_Int(self) - c_int(obj)); }
+static int Thread_Cmp(var self, var obj) { return (int)(Thread_C_Int(self) - c_int(obj)); }
 
 static uint64_t Thread_Hash(var self) { return Thread_C_Int(self); }
 
@@ -6321,13 +6509,17 @@ static var Thread_Call(var self, var args) {
 
     int err = pthread_create(&t->thread, NULL, Thread_Init_Run, t);
 
-    if (err is EINVAL) { throw(ValueError, "Invalid Argument to Thread Creation", ""); }
+    if (err is EINVAL) {
+        throw(ValueError, "Invalid Argument to Thread Creation", "");
+    }
 
     if (err is EAGAIN) {
         throw(OutOfMemoryError, "Not enough resources to create another Thread", "");
     }
 
-    if (err is EBUSY) { throw(BusyError, "System is too busy to create thread", ""); }
+    if (err is EBUSY) {
+        throw(BusyError, "System is too busy to create thread", "");
+    }
 
 #elif defined(METADOT_C_WINDOWS)
 
@@ -6339,9 +6531,11 @@ static var Thread_Call(var self, var args) {
         atexit(Thread_TLS_Key_Delete);
     }
 
-    t->thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) Thread_Init_Run, t, 0, &t->id);
+    t->thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Thread_Init_Run, t, 0, &t->id);
 
-    if (t->thread is NULL) { throw(ValueError, "Unable to Create WinThread"); }
+    if (t->thread is NULL) {
+        throw(ValueError, "Unable to Create WinThread");
+    }
 
 #else
 
@@ -6377,16 +6571,18 @@ static var Thread_Current(void) {
 #endif
 
     /*
-  ** Here is a nasty one. On OSX instead of
-  ** returning NULL for an unset key it
-  ** decides to return uninitialized rubbish
-  ** (even though the spec says otherwise).
-  **
-  ** Luckily we can test directly for the main
-  ** thread on OSX using this non-portable method
-  */
+     ** Here is a nasty one. On OSX instead of
+     ** returning NULL for an unset key it
+     ** decides to return uninitialized rubbish
+     ** (even though the spec says otherwise).
+     **
+     ** Luckily we can test directly for the main
+     ** thread on OSX using this non-portable method
+     */
 #ifdef METADOT_C_MAC
-    if (pthread_main_np()) { wrapper = NULL; }
+    if (pthread_main_np()) {
+        wrapper = NULL;
+    }
 #endif
 
     if (wrapper is NULL) {
@@ -6419,12 +6615,20 @@ static void Thread_Stop(var self) {
     struct Thread *t = self;
 
 #if defined(METADOT_C_UNIX)
-    if (not t->thread) { return; }
+    if (not t->thread) {
+        return;
+    }
     int err = pthread_kill(t->thread, SIGINT);
-    if (err is EINVAL) { throw(ValueError, "Invalid Argument to Thread Stop", ""); }
-    if (err is ESRCH) { throw(ValueError, "Invalid Thread", ""); }
+    if (err is EINVAL) {
+        throw(ValueError, "Invalid Argument to Thread Stop", "");
+    }
+    if (err is ESRCH) {
+        throw(ValueError, "Invalid Thread", "");
+    }
 #elif defined(METADOT_C_WINDOWS)
-    if (not t->thread) { return; }
+    if (not t->thread) {
+        return;
+    }
     TerminateThread(t->thread, FALSE);
 #endif
 }
@@ -6433,12 +6637,20 @@ static void Thread_Join(var self) {
     struct Thread *t = self;
 
 #if defined(METADOT_C_UNIX)
-    if (not t->thread) { return; }
+    if (not t->thread) {
+        return;
+    }
     int err = pthread_join(t->thread, NULL);
-    if (err is EINVAL) { throw(ValueError, "Invalid Argument to Thread Join", ""); }
-    if (err is ESRCH) { throw(ValueError, "Invalid Thread", ""); }
+    if (err is EINVAL) {
+        throw(ValueError, "Invalid Argument to Thread Join", "");
+    }
+    if (err is ESRCH) {
+        throw(ValueError, "Invalid Thread", "");
+    }
 #elif defined(METADOT_C_WINDOWS)
-    if (not t->thread) { return; }
+    if (not t->thread) {
+        return;
+    }
     WaitForSingleObject(t->thread, INFINITE);
 #endif
 }
@@ -6483,15 +6695,9 @@ static void Thread_Mark(var self, var gc, void (*f)(var, void *)) {
     mark(t->tls, gc, f);
 }
 
-var Thread = MetaDotC(
-        Thread,
-        Instance(Doc, Thread_Name, Thread_Brief, Thread_Description, NULL, Thread_Examples, NULL),
-        Instance(New, Thread_New, Thread_Del), Instance(Assign, Thread_Assign),
-        Instance(Cmp, Thread_Cmp), Instance(Hash, Thread_Hash), Instance(Call, Thread_Call),
-        Instance(Current, Thread_Current), Instance(Mark, Thread_Mark),
-        Instance(Start, Thread_Start, Thread_Stop, Thread_Join, Thread_Running),
-        Instance(C_Int, Thread_C_Int),
-        Instance(Get, Thread_Get, Thread_Set, Thread_Mem, Thread_Rem));
+var Thread = MetaDotC(Thread, Instance(Doc, Thread_Name, Thread_Brief, Thread_Description, NULL, Thread_Examples, NULL), Instance(New, Thread_New, Thread_Del), Instance(Assign, Thread_Assign),
+                      Instance(Cmp, Thread_Cmp), Instance(Hash, Thread_Hash), Instance(Call, Thread_Call), Instance(Current, Thread_Current), Instance(Mark, Thread_Mark),
+                      Instance(Start, Thread_Start, Thread_Stop, Thread_Join, Thread_Running), Instance(C_Int, Thread_C_Int), Instance(Get, Thread_Get, Thread_Set, Thread_Mem, Thread_Rem));
 
 static const char *Lock_Name(void) { return "Lock"; }
 
@@ -6513,30 +6719,29 @@ static const char *Lock_Definition(void) {
 
 static struct Method *Lock_Methods(void) {
 
-    static struct Method methods[] = {
-            {"lock", "void lock(var self);", "Wait until a lock can be aquired on object `self`."},
-            {"trylock", "bool trylock(var self);",
-             "Try to acquire a lock on object `self`. Returns `true` on success and "
-             "`false` if the resource is busy."},
-            {"unlock", "void unlock(var self);", "Release lock on object `self`."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"lock", "void lock(var self);", "Wait until a lock can be aquired on object `self`."},
+                                      {"trylock", "bool trylock(var self);",
+                                       "Try to acquire a lock on object `self`. Returns `true` on success and "
+                                       "`false` if the resource is busy."},
+                                      {"unlock", "void unlock(var self);", "Release lock on object `self`."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
 static struct Example *Lock_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Mutex);\n"
-                                                  "lock(x);   /* Lock Mutex */ \n"
-                                                  "print(\"Inside Mutex!\\n\");\n"
-                                                  "unlock(x); /* Unlock Mutex */"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Mutex);\n"
+                                         "lock(x);   /* Lock Mutex */ \n"
+                                         "print(\"Inside Mutex!\\n\");\n"
+                                         "unlock(x); /* Unlock Mutex */"},
                                         {NULL, NULL}};
 
     return examples;
 }
 
-var Lock = MetaDotC(Lock, Instance(Doc, Lock_Name, Lock_Brief, Lock_Description, Lock_Definition,
-                                   Lock_Examples, Lock_Methods));
+var Lock = MetaDotC(Lock, Instance(Doc, Lock_Name, Lock_Brief, Lock_Description, Lock_Definition, Lock_Examples, Lock_Methods));
 
 void lock(var self) { method(self, Lock, lock); }
 
@@ -6544,8 +6749,7 @@ void unlock(var self) { method(self, Lock, unlock); }
 
 bool trylock(var self) { return method(self, Lock, trylock); }
 
-struct Mutex
-{
+struct Mutex {
 #if defined(METADOT_C_UNIX)
     pthread_mutex_t mutex;
 #elif defined(METADOT_C_WINDOWS)
@@ -6564,10 +6768,11 @@ static const char *Mutex_Description(void) {
 
 static struct Example *Mutex_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = new(Mutex);\n"
-                                                  "with (mut in x) { /* Lock Mutex */ \n"
-                                                  "  print(\"Inside Mutex!\\n\");\n"
-                                                  "} /* Unlock Mutex */"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = new(Mutex);\n"
+                                         "with (mut in x) { /* Lock Mutex */ \n"
+                                         "  print(\"Inside Mutex!\\n\");\n"
+                                         "} /* Unlock Mutex */"},
                                         {NULL, NULL}};
 
     return examples;
@@ -6596,9 +6801,13 @@ static void Mutex_Lock(var self) {
 #if defined(METADOT_C_UNIX)
     int err = pthread_mutex_lock(&m->mutex);
 
-    if (err is EINVAL) { throw(ValueError, "Invalid Argument to Mutex Lock", ""); }
+    if (err is EINVAL) {
+        throw(ValueError, "Invalid Argument to Mutex Lock", "");
+    }
 
-    if (err is EDEADLK) { throw(ResourceError, "Attempt to relock already held mutex", ""); }
+    if (err is EDEADLK) {
+        throw(ResourceError, "Attempt to relock already held mutex", "");
+    }
 #elif defined(METADOT_C_WINDOWS)
     WaitForSingleObject(m->mutex, INFINITE);
 #endif
@@ -6608,8 +6817,12 @@ static bool Mutex_Trylock(var self) {
     struct Mutex *m = self;
 #if defined(METADOT_C_UNIX)
     int err = pthread_mutex_trylock(&m->mutex);
-    if (err == EBUSY) { return false; }
-    if (err is EINVAL) { throw(ValueError, "Invalid Argument to Mutex Lock Try", ""); }
+    if (err == EBUSY) {
+        return false;
+    }
+    if (err is EINVAL) {
+        throw(ValueError, "Invalid Argument to Mutex Lock Try", "");
+    }
     return true;
 #elif defined(METADOT_C_WINDOWS)
     return not(WaitForSingleObject(m->mutex, 0) is WAIT_TIMEOUT);
@@ -6622,19 +6835,19 @@ static void Mutex_Unlock(var self) {
     struct Mutex *m = cast(self, Mutex);
 #if defined(METADOT_C_UNIX)
     int err = pthread_mutex_unlock(&m->mutex);
-    if (err is EINVAL) { throw(ValueError, "Invalid Argument to Mutex Unlock", ""); }
-    if (err is EPERM) { throw(ResourceError, "Mutex cannot be held by caller", ""); }
+    if (err is EINVAL) {
+        throw(ValueError, "Invalid Argument to Mutex Unlock", "");
+    }
+    if (err is EPERM) {
+        throw(ResourceError, "Mutex cannot be held by caller", "");
+    }
 #elif defined(METADOT_C_WINDOWS)
     ReleaseMutex(m->mutex);
 #endif
 }
 
-var Mutex = MetaDotC(
-        Mutex,
-        Instance(Doc, Mutex_Name, Mutex_Brief, Mutex_Description, NULL, Mutex_Examples, NULL),
-        Instance(New, Mutex_New, Mutex_Del),
-        Instance(Lock, Mutex_Lock, Mutex_Unlock, Mutex_Trylock),
-        Instance(Start, Mutex_Lock, Mutex_Unlock, NULL));
+var Mutex = MetaDotC(Mutex, Instance(Doc, Mutex_Name, Mutex_Brief, Mutex_Description, NULL, Mutex_Examples, NULL), Instance(New, Mutex_New, Mutex_Del),
+                     Instance(Lock, Mutex_Lock, Mutex_Unlock, Mutex_Trylock), Instance(Start, Mutex_Lock, Mutex_Unlock, NULL));
 
 static const char *Tree_Name(void) { return "Tree"; }
 
@@ -6656,15 +6869,16 @@ static const char *Tree_Description(void) {
 
 static struct Example *Tree_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var prices = new(Tree, String, Int);\n"
-                                                  "set(prices, $S(\"Apple\"),  $I(12));\n"
-                                                  "set(prices, $S(\"Banana\"), $I( 6));\n"
-                                                  "set(prices, $S(\"Pear\"),   $I(55));\n"
-                                                  "\n"
-                                                  "foreach (key in prices) {\n"
-                                                  "  var price = get(prices, key);\n"
-                                                  "  println(\"Price of %$ is %$\", key, price);\n"
-                                                  "}\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var prices = new(Tree, String, Int);\n"
+                                         "set(prices, $S(\"Apple\"),  $I(12));\n"
+                                         "set(prices, $S(\"Banana\"), $I( 6));\n"
+                                         "set(prices, $S(\"Pear\"),   $I(55));\n"
+                                         "\n"
+                                         "foreach (key in prices) {\n"
+                                         "  var price = get(prices, key);\n"
+                                         "  println(\"Price of %$ is %$\", key, price);\n"
+                                         "}\n"},
                                         {"Manipulation",
                                          "var t = new(Tree, String, Int);\n"
                                          "set(t, $S(\"Hello\"), $I(2));\n"
@@ -6689,8 +6903,7 @@ static struct Example *Tree_Examples(void) {
     return examples;
 }
 
-struct Tree
-{
+struct Tree {
     var root;
     var ktype;
     var vtype;
@@ -6701,49 +6914,42 @@ struct Tree
 
 static bool Tree_Is_Red(struct Tree *m, var node);
 
-static var *Tree_Left(struct Tree *m, var node) {
-    return (var *) ((char *) node + 0 * sizeof(var));
-}
+static var *Tree_Left(struct Tree *m, var node) { return (var *)((char *)node + 0 * sizeof(var)); }
 
-static var *Tree_Right(struct Tree *m, var node) {
-    return (var *) ((char *) node + 1 * sizeof(var));
-}
+static var *Tree_Right(struct Tree *m, var node) { return (var *)((char *)node + 1 * sizeof(var)); }
 
 static var Tree_Get_Parent(struct Tree *m, var node) {
-    var ptr = *(var *) ((char *) node + 2 * sizeof(var));
-    return (var) (((uintptr_t) ptr) & (~1));
+    var ptr = *(var *)((char *)node + 2 * sizeof(var));
+    return (var)(((uintptr_t)ptr) & (~1));
 }
 
 static void Tree_Set_Parent(struct Tree *m, var node, var ptr) {
     if (Tree_Is_Red(m, node)) {
-        *(var *) ((char *) node + 2 * sizeof(var)) = (var) (((uintptr_t) ptr) | 1);
+        *(var *)((char *)node + 2 * sizeof(var)) = (var)(((uintptr_t)ptr) | 1);
     } else {
-        *(var *) ((char *) node + 2 * sizeof(var)) = ptr;
+        *(var *)((char *)node + 2 * sizeof(var)) = ptr;
     }
 }
 
-static var Tree_Key(struct Tree *m, var node) {
-    return (char *) node + 3 * sizeof(var) + sizeof(struct Header);
-}
+static var Tree_Key(struct Tree *m, var node) { return (char *)node + 3 * sizeof(var) + sizeof(struct Header); }
 
-static var Tree_Val(struct Tree *m, var node) {
-    return (char *) node + 3 * sizeof(var) + sizeof(struct Header) + m->ksize +
-           sizeof(struct Header);
-}
+static var Tree_Val(struct Tree *m, var node) { return (char *)node + 3 * sizeof(var) + sizeof(struct Header) + m->ksize + sizeof(struct Header); }
 
 static void Tree_Set_Color(struct Tree *m, var node, bool col) {
     var ptr = Tree_Get_Parent(m, node);
     if (col) {
-        *(var *) ((char *) node + 2 * sizeof(var)) = (var) (((uintptr_t) ptr) | 1);
+        *(var *)((char *)node + 2 * sizeof(var)) = (var)(((uintptr_t)ptr) | 1);
     } else {
-        *(var *) ((char *) node + 2 * sizeof(var)) = ptr;
+        *(var *)((char *)node + 2 * sizeof(var)) = ptr;
     }
 }
 
 static bool Tree_Get_Color(struct Tree *m, var node) {
-    if (node is NULL) { return 0; }
-    var ptr = *(var *) ((char *) node + 2 * sizeof(var));
-    return ((uintptr_t) ptr) & 1;
+    if (node is NULL) {
+        return 0;
+    }
+    var ptr = *(var *)((char *)node + 2 * sizeof(var));
+    return ((uintptr_t)ptr) & 1;
 }
 
 static void Tree_Set_Black(struct Tree *m, var node) { Tree_Set_Color(m, node, false); }
@@ -6755,17 +6961,16 @@ static bool Tree_Is_Red(struct Tree *m, var node) { return Tree_Get_Color(m, nod
 static bool Tree_Is_Black(struct Tree *m, var node) { return not Tree_Get_Color(m, node); }
 
 static var Tree_Alloc(struct Tree *m) {
-    var node = calloc(1, 3 * sizeof(var) + sizeof(struct Header) + m->ksize +
-                                 sizeof(struct Header) + m->vsize);
+    var node = calloc(1, 3 * sizeof(var) + sizeof(struct Header) + m->ksize + sizeof(struct Header) + m->vsize);
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (node is NULL) { throw(OutOfMemoryError, "Cannot allocate Tree entry, out of memory!", ""); }
+    if (node is NULL) {
+        throw(OutOfMemoryError, "Cannot allocate Tree entry, out of memory!", "");
+    }
 #endif
 
-    var key = header_init((struct Header *) ((char *) node + 3 * sizeof(var)), m->ktype, AllocData);
-    var val = header_init(
-            (struct Header *) ((char *) node + 3 * sizeof(var) + sizeof(struct Header) + m->ksize),
-            m->vtype, AllocData);
+    var key = header_init((struct Header *)((char *)node + 3 * sizeof(var)), m->ktype, AllocData);
+    var val = header_init((struct Header *)((char *)node + 3 * sizeof(var) + sizeof(struct Header) + m->ksize), m->vtype, AllocData);
 
     *Tree_Left(m, node) = NULL;
     *Tree_Right(m, node) = NULL;
@@ -6827,7 +7032,9 @@ static void Tree_Assign(var self, var obj) {
     m->vtype = implements_method(obj, Get, val_type) ? val_type(obj) : Ref;
     m->ksize = size(m->ktype);
     m->vsize = size(m->vtype);
-    foreach (key in obj) { Tree_Set(self, key, get(obj, key)); }
+    foreach (key in obj) {
+        Tree_Set(self, key, get(obj, key));
+    }
 }
 
 static var Tree_Iter_Init(var self);
@@ -6843,15 +7050,29 @@ static int Tree_Cmp(var self, var obj) {
     var item1 = iter_init(obj);
 
     while (true) {
-        if (item0 is Terminal and item1 is Terminal) { return 0; }
-        if (item0 is Terminal) { return -1; }
-        if (item1 is Terminal) { return 1; }
+        if (item0 is Terminal and item1 is Terminal) {
+            return 0;
+        }
+        if (item0 is Terminal) {
+            return -1;
+        }
+        if (item1 is Terminal) {
+            return 1;
+        }
         c = cmp(item0, item1);
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         c = cmp(Tree_Get(self, item0), get(obj, item1));
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         item0 = Tree_Iter_Next(self, item0);
         item1 = iter_next(obj, item1);
     }
@@ -6865,7 +7086,7 @@ static uint64_t Tree_Hash(var self) {
 
     var curr = Tree_Iter_Init(self);
     while (curr isnt Terminal) {
-        var node = (char *) curr - sizeof(struct Header) - 3 * sizeof(var);
+        var node = (char *)curr - sizeof(struct Header) - 3 * sizeof(var);
         h = h ^ hash(Tree_Key(m, node)) ^ hash(Tree_Val(m, node));
         curr = Tree_Iter_Next(self, curr);
     }
@@ -6885,7 +7106,9 @@ static bool Tree_Mem(var self, var key) {
     var node = m->root;
     while (node isnt NULL) {
         int c = cmp(Tree_Key(m, node), key);
-        if (c is 0) { return true; }
+        if (c is 0) {
+            return true;
+        }
         node = c < 0 ? *Tree_Left(m, node) : *Tree_Right(m, node);
     }
 
@@ -6899,7 +7122,9 @@ static var Tree_Get(var self, var key) {
     var node = m->root;
     while (node isnt NULL) {
         int c = cmp(Tree_Key(m, node), key);
-        if (c is 0) { return Tree_Val(m, node); }
+        if (c is 0) {
+            return Tree_Val(m, node);
+        }
         node = c < 0 ? *Tree_Left(m, node) : *Tree_Right(m, node);
     }
 
@@ -6917,13 +7142,17 @@ static var Tree_Val_Type(var self) {
 }
 
 static var Tree_Maximum(struct Tree *m, var node) {
-    while (*Tree_Right(m, node) isnt NULL) { node = *Tree_Right(m, node); }
+    while (*Tree_Right(m, node) isnt NULL) {
+        node = *Tree_Right(m, node);
+    }
     return node;
 }
 
 static var Tree_Sibling(struct Tree *m, var node) {
 
-    if (node is NULL or Tree_Get_Parent(m, node) is NULL) { return NULL; }
+    if (node is NULL or Tree_Get_Parent(m, node) is NULL) {
+        return NULL;
+    }
 
     if (node is * Tree_Left(m, Tree_Get_Parent(m, node))) {
         return *Tree_Right(m, Tree_Get_Parent(m, node));
@@ -6942,7 +7171,9 @@ static var Tree_Grandparent(struct Tree *m, var node) {
 
 static var Tree_Uncle(struct Tree *m, var node) {
     var gpar = Tree_Grandparent(m, node);
-    if (gpar is NULL) { return NULL; }
+    if (gpar is NULL) {
+        return NULL;
+    }
     if (Tree_Get_Parent(m, node) is * Tree_Left(m, gpar)) {
         return *Tree_Right(m, gpar);
     } else {
@@ -6960,14 +7191,18 @@ void Tree_Replace(struct Tree *m, var oldn, var newn) {
             *Tree_Right(m, Tree_Get_Parent(m, oldn)) = newn;
         }
     }
-    if (newn isnt NULL) { Tree_Set_Parent(m, newn, Tree_Get_Parent(m, oldn)); }
+    if (newn isnt NULL) {
+        Tree_Set_Parent(m, newn, Tree_Get_Parent(m, oldn));
+    }
 }
 
 static void Tree_Rotate_Left(struct Tree *m, var node) {
     var r = *Tree_Right(m, node);
     Tree_Replace(m, node, r);
     *Tree_Right(m, node) = *Tree_Left(m, r);
-    if (*Tree_Left(m, r) isnt NULL) { Tree_Set_Parent(m, *Tree_Left(m, r), node); }
+    if (*Tree_Left(m, r) isnt NULL) {
+        Tree_Set_Parent(m, *Tree_Left(m, r), node);
+    }
     *Tree_Left(m, r) = node;
     Tree_Set_Parent(m, node, r);
 }
@@ -6976,7 +7211,9 @@ static void Tree_Rotate_Right(struct Tree *m, var node) {
     var l = *Tree_Left(m, node);
     Tree_Replace(m, node, l);
     *Tree_Left(m, node) = *Tree_Right(m, l);
-    if (*Tree_Right(m, l) isnt NULL) { Tree_Set_Parent(m, *Tree_Right(m, l), node); }
+    if (*Tree_Right(m, l) isnt NULL) {
+        Tree_Set_Parent(m, *Tree_Right(m, l), node);
+    }
     *Tree_Right(m, l) = node;
     Tree_Set_Parent(m, node, l);
 }
@@ -6990,7 +7227,9 @@ static void Tree_Set_Fix(struct Tree *m, var node) {
             return;
         }
 
-        if (Tree_Is_Black(m, Tree_Get_Parent(m, node))) { return; }
+        if (Tree_Is_Black(m, Tree_Get_Parent(m, node))) {
+            return;
+        }
 
         if ((Tree_Uncle(m, node) isnt NULL) and (Tree_Is_Red(m, Tree_Uncle(m, node)))) {
             Tree_Set_Black(m, Tree_Get_Parent(m, node));
@@ -7000,16 +7239,14 @@ static void Tree_Set_Fix(struct Tree *m, var node) {
             continue;
         }
 
-        if ((node is * Tree_Right(m, Tree_Get_Parent(m, node))) and
-            (Tree_Get_Parent(m, node) is * Tree_Left(m, Tree_Grandparent(m, node)))) {
+        if ((node is * Tree_Right(m, Tree_Get_Parent(m, node))) and (Tree_Get_Parent(m, node) is * Tree_Left(m, Tree_Grandparent(m, node)))) {
             Tree_Rotate_Left(m, Tree_Get_Parent(m, node));
             node = *Tree_Left(m, node);
         }
 
         else
 
-                if ((node is * Tree_Left(m, Tree_Get_Parent(m, node))) and
-                    (Tree_Get_Parent(m, node) is * Tree_Right(m, Tree_Grandparent(m, node)))) {
+                if ((node is * Tree_Left(m, Tree_Get_Parent(m, node))) and (Tree_Get_Parent(m, node) is * Tree_Right(m, Tree_Grandparent(m, node)))) {
             Tree_Rotate_Right(m, Tree_Get_Parent(m, node));
             node = *Tree_Right(m, node);
         }
@@ -7092,7 +7329,9 @@ static void Tree_Rem_Fix(struct Tree *m, var node) {
 
     while (true) {
 
-        if (Tree_Get_Parent(m, node) is NULL) { return; }
+        if (Tree_Get_Parent(m, node) is NULL) {
+            return;
+        }
 
         if (Tree_Is_Red(m, Tree_Sibling(m, node))) {
             Tree_Set_Red(m, Tree_Get_Parent(m, node));
@@ -7104,17 +7343,14 @@ static void Tree_Rem_Fix(struct Tree *m, var node) {
             }
         }
 
-        if (Tree_Is_Black(m, Tree_Get_Parent(m, node)) and
-            Tree_Is_Black(m, Tree_Sibling(m, node)) and
-            Tree_Is_Black(m, *Tree_Left(m, Tree_Sibling(m, node))) and
+        if (Tree_Is_Black(m, Tree_Get_Parent(m, node)) and Tree_Is_Black(m, Tree_Sibling(m, node)) and Tree_Is_Black(m, *Tree_Left(m, Tree_Sibling(m, node))) and
             Tree_Is_Black(m, *Tree_Right(m, Tree_Sibling(m, node)))) {
             Tree_Set_Red(m, Tree_Sibling(m, node));
             node = Tree_Get_Parent(m, node);
             continue;
         }
 
-        if (Tree_Is_Red(m, Tree_Get_Parent(m, node)) and Tree_Is_Black(m, Tree_Sibling(m, node)) and
-            Tree_Is_Black(m, *Tree_Left(m, Tree_Sibling(m, node))) and
+        if (Tree_Is_Red(m, Tree_Get_Parent(m, node)) and Tree_Is_Black(m, Tree_Sibling(m, node)) and Tree_Is_Black(m, *Tree_Left(m, Tree_Sibling(m, node))) and
             Tree_Is_Black(m, *Tree_Right(m, Tree_Sibling(m, node)))) {
             Tree_Set_Red(m, Tree_Sibling(m, node));
             Tree_Set_Black(m, Tree_Get_Parent(m, node));
@@ -7123,9 +7359,7 @@ static void Tree_Rem_Fix(struct Tree *m, var node) {
 
         if (Tree_Is_Black(m, Tree_Sibling(m, node))) {
 
-            if (node is * Tree_Left(m, Tree_Get_Parent(m, node)) and
-                Tree_Is_Red(m, *Tree_Left(m, Tree_Sibling(m, node))) and
-                Tree_Is_Black(m, *Tree_Right(m, Tree_Sibling(m, node)))) {
+            if (node is * Tree_Left(m, Tree_Get_Parent(m, node)) and Tree_Is_Red(m, *Tree_Left(m, Tree_Sibling(m, node))) and Tree_Is_Black(m, *Tree_Right(m, Tree_Sibling(m, node)))) {
                 Tree_Set_Red(m, Tree_Sibling(m, node));
                 Tree_Set_Black(m, *Tree_Left(m, Tree_Sibling(m, node)));
                 Tree_Rotate_Right(m, Tree_Sibling(m, node));
@@ -7133,9 +7367,7 @@ static void Tree_Rem_Fix(struct Tree *m, var node) {
 
             else
 
-                    if (node is * Tree_Right(m, Tree_Get_Parent(m, node)) and
-                        Tree_Is_Red(m, *Tree_Right(m, Tree_Sibling(m, node))) and
-                        Tree_Is_Black(m, *Tree_Left(m, Tree_Sibling(m, node)))) {
+                    if (node is * Tree_Right(m, Tree_Get_Parent(m, node)) and Tree_Is_Red(m, *Tree_Right(m, Tree_Sibling(m, node))) and Tree_Is_Black(m, *Tree_Left(m, Tree_Sibling(m, node)))) {
                 Tree_Set_Red(m, Tree_Sibling(m, node));
                 Tree_Set_Black(m, *Tree_Right(m, Tree_Sibling(m, node)));
                 Tree_Rotate_Left(m, Tree_Sibling(m, node));
@@ -7185,8 +7417,7 @@ static void Tree_Rem(var self, var key) {
     if ((*Tree_Left(m, node) isnt NULL) and (*Tree_Right(m, node) isnt NULL)) {
         var pred = Tree_Maximum(m, *Tree_Left(m, node));
         bool ncol = Tree_Get_Color(m, node);
-        memcpy((char *) node + 3 * sizeof(var), (char *) pred + 3 * sizeof(var),
-               sizeof(struct Header) + m->ksize + sizeof(struct Header) + m->vsize);
+        memcpy((char *)node + 3 * sizeof(var), (char *)pred + 3 * sizeof(var), sizeof(struct Header) + m->ksize + sizeof(struct Header) + m->vsize);
         Tree_Set_Color(m, node, ncol);
         node = pred;
     }
@@ -7200,7 +7431,9 @@ static void Tree_Rem(var self, var key) {
 
     Tree_Replace(m, node, chld);
 
-    if ((Tree_Get_Parent(m, node) is NULL) and (chld isnt NULL)) { Tree_Set_Black(m, chld); }
+    if ((Tree_Get_Parent(m, node) is NULL) and (chld isnt NULL)) {
+        Tree_Set_Black(m, chld);
+    }
 
     m->nitems--;
     free(node);
@@ -7208,27 +7441,37 @@ static void Tree_Rem(var self, var key) {
 
 static var Tree_Iter_Init(var self) {
     struct Tree *m = self;
-    if (m->nitems is 0) { return Terminal; }
+    if (m->nitems is 0) {
+        return Terminal;
+    }
     var node = m->root;
-    while (*Tree_Left(m, node) isnt NULL) { node = *Tree_Left(m, node); }
+    while (*Tree_Left(m, node) isnt NULL) {
+        node = *Tree_Left(m, node);
+    }
     return Tree_Key(m, node);
 }
 
 static var Tree_Iter_Next(var self, var curr) {
     struct Tree *m = self;
 
-    var node = (char *) curr - sizeof(struct Header) - 3 * sizeof(var);
+    var node = (char *)curr - sizeof(struct Header) - 3 * sizeof(var);
     var prnt = Tree_Get_Parent(m, node);
 
     if (*Tree_Right(m, node) isnt NULL) {
         node = *Tree_Right(m, node);
-        while (*Tree_Left(m, node) isnt NULL) { node = *Tree_Left(m, node); }
+        while (*Tree_Left(m, node) isnt NULL) {
+            node = *Tree_Left(m, node);
+        }
         return Tree_Key(m, node);
     }
 
     while (true) {
-        if (prnt is NULL) { return Terminal; }
-        if (node is * Tree_Left(m, prnt)) { return Tree_Key(m, prnt); }
+        if (prnt is NULL) {
+            return Terminal;
+        }
+        if (node is * Tree_Left(m, prnt)) {
+            return Tree_Key(m, prnt);
+        }
         if (node is * Tree_Right(m, prnt)) {
             prnt = Tree_Get_Parent(m, prnt);
             node = Tree_Get_Parent(m, node);
@@ -7240,27 +7483,37 @@ static var Tree_Iter_Next(var self, var curr) {
 
 static var Tree_Iter_Last(var self) {
     struct Tree *m = self;
-    if (m->nitems is 0) { return Terminal; }
+    if (m->nitems is 0) {
+        return Terminal;
+    }
     var node = m->root;
-    while (*Tree_Right(m, node) isnt NULL) { node = *Tree_Right(m, node); }
+    while (*Tree_Right(m, node) isnt NULL) {
+        node = *Tree_Right(m, node);
+    }
     return Tree_Key(m, node);
 }
 
 static var Tree_Iter_Prev(var self, var curr) {
     struct Tree *m = self;
 
-    var node = (char *) curr - sizeof(struct Header) - 3 * sizeof(var);
+    var node = (char *)curr - sizeof(struct Header) - 3 * sizeof(var);
     var prnt = Tree_Get_Parent(m, node);
 
     if (*Tree_Left(m, node) isnt NULL) {
         node = *Tree_Left(m, node);
-        while (*Tree_Right(m, node) isnt NULL) { node = *Tree_Right(m, node); }
+        while (*Tree_Right(m, node) isnt NULL) {
+            node = *Tree_Right(m, node);
+        }
         return Tree_Key(m, node);
     }
 
     while (true) {
-        if (prnt is NULL) { return Terminal; }
-        if (node is * Tree_Right(m, prnt)) { return Tree_Key(m, prnt); }
+        if (prnt is NULL) {
+            return Terminal;
+        }
+        if (node is * Tree_Right(m, prnt)) {
+            return Tree_Key(m, prnt);
+        }
         if (node is * Tree_Left(m, prnt)) {
             prnt = Tree_Get_Parent(m, prnt);
             node = Tree_Get_Parent(m, node);
@@ -7283,10 +7536,12 @@ static int Tree_Show(var self, var output, int pos) {
     var curr = Tree_Iter_Init(self);
 
     while (curr isnt Terminal) {
-        var node = (char *) curr - sizeof(struct Header) - 3 * sizeof(var);
+        var node = (char *)curr - sizeof(struct Header) - 3 * sizeof(var);
         pos = print_to(output, pos, "%$:%$", Tree_Key(m, node), Tree_Val(m, node));
         curr = Tree_Iter_Next(self, curr);
-        if (curr isnt Terminal) { pos = print_to(output, pos, ", ", ""); }
+        if (curr isnt Terminal) {
+            pos = print_to(output, pos, ", ", "");
+        }
     }
 
     return print_to(output, pos, "}>", "");
@@ -7298,7 +7553,7 @@ static void Tree_Mark(var self, var gc, void (*f)(var, void *)) {
     var curr = Tree_Iter_Init(self);
 
     while (curr isnt Terminal) {
-        var node = (char *) curr - sizeof(struct Header) - 3 * sizeof(var);
+        var node = (char *)curr - sizeof(struct Header) - 3 * sizeof(var);
         f(gc, Tree_Key(m, node));
         f(gc, Tree_Val(m, node));
         curr = Tree_Iter_Next(self, curr);
@@ -7310,20 +7565,14 @@ static void Tree_Resize(var self, size_t n) {
     if (n is 0) {
         Tree_Clear(self);
     } else {
-        throw(FormatError, "Cannot resize Tree to %li items. Trees can only be resized to 0 items.",
-              $I(n));
+        throw(FormatError, "Cannot resize Tree to %li items. Trees can only be resized to 0 items.", $I(n));
     }
 }
 
-var Tree = MetaDotC(
-        Tree, Instance(Doc, Tree_Name, Tree_Brief, Tree_Description, NULL, Tree_Examples, NULL),
-        Instance(New, Tree_New, Tree_Del), Instance(Assign, Tree_Assign), Instance(Mark, Tree_Mark),
-        Instance(Cmp, Tree_Cmp), Instance(Hash, Tree_Hash), Instance(Len, Tree_Len),
-        Instance(Get, Tree_Get, Tree_Set, Tree_Mem, Tree_Rem, Tree_Key_Type, Tree_Val_Type),
-        Instance(Resize, Tree_Resize),
-        Instance(Iter, Tree_Iter_Init, Tree_Iter_Next, Tree_Iter_Last, Tree_Iter_Prev,
-                 Tree_Iter_Type),
-        Instance(Show, Tree_Show, NULL));
+var Tree =
+        MetaDotC(Tree, Instance(Doc, Tree_Name, Tree_Brief, Tree_Description, NULL, Tree_Examples, NULL), Instance(New, Tree_New, Tree_Del), Instance(Assign, Tree_Assign), Instance(Mark, Tree_Mark),
+                 Instance(Cmp, Tree_Cmp), Instance(Hash, Tree_Hash), Instance(Len, Tree_Len), Instance(Get, Tree_Get, Tree_Set, Tree_Mem, Tree_Rem, Tree_Key_Type, Tree_Val_Type),
+                 Instance(Resize, Tree_Resize), Instance(Iter, Tree_Iter_Init, Tree_Iter_Next, Tree_Iter_Last, Tree_Iter_Prev, Tree_Iter_Type), Instance(Show, Tree_Show, NULL));
 
 static const char *Tuple_Name(void) { return "Tuple"; }
 
@@ -7375,9 +7624,7 @@ static struct Example *Tuple_Examples(void) {
 
 static struct Method *Tuple_Methods(void) {
 
-    static struct Method methods[] = {
-            {"tuple", "#define tuple(...)", "Construct a `Tuple` object on the stack."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"tuple", "#define tuple(...)", "Construct a `Tuple` object on the stack."}, {NULL, NULL, NULL}};
 
     return methods;
 }
@@ -7389,10 +7636,14 @@ static void Tuple_New(var self, var args) {
     t->items = malloc(sizeof(var) * (nargs + 1));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (t->items is NULL) { throw(OutOfMemoryError, "Cannot create Tuple, out of memory!", ""); }
+    if (t->items is NULL) {
+        throw(OutOfMemoryError, "Cannot create Tuple, out of memory!", "");
+    }
 #endif
 
-    for (size_t i = 0; i < nargs; i++) { t->items[i] = get(args, $I(i)); }
+    for (size_t i = 0; i < nargs; i++) {
+        t->items[i] = get(args, $I(i));
+    }
 
     t->items[nargs] = Terminal;
 }
@@ -7432,20 +7683,26 @@ static void Tuple_Assign(var self, var obj) {
         }
 #endif
 
-        for (size_t i = 0; i < nargs; i++) { t->items[i] = get(obj, $I(i)); }
+        for (size_t i = 0; i < nargs; i++) {
+            t->items[i] = get(obj, $I(i));
+        }
 
         t->items[nargs] = Terminal;
 
     } else {
 
-        foreach (item in obj) { Tuple_Push(self, item); }
+        foreach (item in obj) {
+            Tuple_Push(self, item);
+        }
     }
 }
 
 static size_t Tuple_Len(var self) {
     struct Tuple *t = self;
     size_t i = 0;
-    while (t->items and t->items[i] isnt Terminal) { i++; }
+    while (t->items and t->items[i] isnt Terminal) {
+        i++;
+    }
     return i;
 }
 
@@ -7458,7 +7715,9 @@ static var Tuple_Iter_Next(var self, var curr) {
     struct Tuple *t = self;
     size_t i = 0;
     while (t->items[i] isnt Terminal) {
-        if (t->items[i] is curr) { return t->items[i + 1]; }
+        if (t->items[i] is curr) {
+            return t->items[i + 1];
+        }
         i++;
     }
     return Terminal;
@@ -7471,10 +7730,14 @@ static var Tuple_Iter_Last(var self) {
 
 static var Tuple_Iter_Prev(var self, var curr) {
     struct Tuple *t = self;
-    if (curr is t->items[0]) { return Terminal; }
+    if (curr is t->items[0]) {
+        return Terminal;
+    }
     size_t i = 0;
     while (t->items[i] isnt Terminal) {
-        if (t->items[i] is curr) { return t->items[i - 1]; }
+        if (t->items[i] is curr) {
+            return t->items[i - 1];
+        }
         i++;
     }
     return Terminal;
@@ -7488,9 +7751,8 @@ static var Tuple_Get(var self, var key) {
     i = i < 0 ? nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) nitems) {
-        return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key,
-                     $I(Tuple_Len(t)));
+    if (i < 0 or i >= (int64_t)nitems) {
+        return throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key, $I(Tuple_Len(t)));
     }
 #endif
 
@@ -7505,9 +7767,8 @@ static void Tuple_Set(var self, var key, var val) {
     i = i < 0 ? nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) nitems) {
-        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key,
-              $I(Tuple_Len(t)));
+    if (i < 0 or i >= (int64_t)nitems) {
+        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key, $I(Tuple_Len(t)));
         return;
     }
 #endif
@@ -7517,7 +7778,9 @@ static void Tuple_Set(var self, var key, var val) {
 
 static bool Tuple_Mem(var self, var item) {
     foreach (obj in self) {
-        if (eq(obj, item)) { return true; }
+        if (eq(obj, item)) {
+            return true;
+        }
     }
     return false;
 }
@@ -7542,7 +7805,9 @@ static int Tuple_Show(var self, var output, int pos) {
     size_t i = 0;
     while (t->items[i] isnt Terminal) {
         pos = print_to(output, pos, "%$", t->items[i]);
-        if (t->items[i + 1] isnt Terminal) { pos = print_to(output, pos, ", ", ""); }
+        if (t->items[i + 1] isnt Terminal) {
+            pos = print_to(output, pos, ", ", "");
+        }
         i++;
     }
     return print_to(output, pos, ")", "");
@@ -7562,7 +7827,9 @@ static void Tuple_Push(var self, var obj) {
     t->items = realloc(t->items, sizeof(var) * (nitems + 2));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (t->items is NULL) { throw(OutOfMemoryError, "Cannot grow Tuple, out of memory!", ""); }
+    if (t->items is NULL) {
+        throw(OutOfMemoryError, "Cannot grow Tuple, out of memory!", "");
+    }
 #endif
 
     t->items[nitems + 0] = obj;
@@ -7600,9 +7867,8 @@ static void Tuple_Push_At(var self, var obj, var key) {
     i = i < 0 ? nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) nitems) {
-        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key,
-              $I(nitems));
+    if (i < 0 or i >= (int64_t)nitems) {
+        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key, $I(nitems));
     }
 #endif
 
@@ -7615,10 +7881,12 @@ static void Tuple_Push_At(var self, var obj, var key) {
     t->items = realloc(t->items, sizeof(var) * (nitems + 2));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (t->items is NULL) { throw(OutOfMemoryError, "Cannot grow Tuple, out of memory!", ""); }
+    if (t->items is NULL) {
+        throw(OutOfMemoryError, "Cannot grow Tuple, out of memory!", "");
+    }
 #endif
 
-    memmove(&t->items[i + 1], &t->items[i + 0], sizeof(var) * (nitems - (size_t) i + 1));
+    memmove(&t->items[i + 1], &t->items[i + 0], sizeof(var) * (nitems - (size_t)i + 1));
 
     t->items[i] = obj;
 }
@@ -7632,13 +7900,12 @@ static void Tuple_Pop_At(var self, var key) {
     i = i < 0 ? nitems + i : i;
 
 #if METADOT_C_BOUND_CHECK == 1
-    if (i < 0 or i >= (int64_t) nitems) {
-        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key,
-              $I(nitems));
+    if (i < 0 or i >= (int64_t)nitems) {
+        throw(IndexOutOfBoundsError, "Index '%i' out of bounds for Tuple of size %i.", key, $I(nitems));
     }
 #endif
 
-    memmove(&t->items[i + 0], &t->items[i + 1], sizeof(var) * (nitems - (size_t) i));
+    memmove(&t->items[i + 0], &t->items[i + 1], sizeof(var) * (nitems - (size_t)i));
 
 #if METADOT_C_ALLOC_CHECK == 1
     if (header(self)->alloc is(var) AllocStack or header(self)->alloc is(var) AllocStatic) {
@@ -7664,7 +7931,9 @@ static void Tuple_Concat(var self, var obj) {
     t->items = realloc(t->items, sizeof(var) * (nitems + 1 + objlen));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (t->items is NULL) { throw(OutOfMemoryError, "Cannot grow Tuple, out of memory!", ""); }
+    if (t->items is NULL) {
+        throw(OutOfMemoryError, "Cannot grow Tuple, out of memory!", "");
+    }
 #endif
 
     size_t i = nitems;
@@ -7691,15 +7960,16 @@ static void Tuple_Resize(var self, size_t n) {
         t->items = realloc(t->items, sizeof(var) * (n + 1));
         t->items[n] = Terminal;
     } else {
-        throw(FormatError, "Cannot resize Tuple to %li as it only contains %li items", $I(n),
-              $I(m));
+        throw(FormatError, "Cannot resize Tuple to %li as it only contains %li items", $I(n), $I(m));
     }
 }
 
 static void Tuple_Mark(var self, var gc, void (*f)(var, void *)) {
     struct Tuple *t = self;
     size_t i = 0;
-    if (t->items is NULL) { return; }
+    if (t->items is NULL) {
+        return;
+    }
     while (t->items[i] isnt Terminal) {
         f(gc, t->items[i]);
         i++;
@@ -7737,9 +8007,7 @@ static void Tuple_Sort_Part(struct Tuple *t, int64_t l, int64_t r, bool (*f)(var
     }
 }
 
-static void Tuple_Sort_By(var self, bool (*f)(var, var)) {
-    Tuple_Sort_Part(self, 0, Tuple_Len(self) - 1, f);
-}
+static void Tuple_Sort_By(var self, bool (*f)(var, var)) { Tuple_Sort_Part(self, 0, Tuple_Len(self) - 1, f); }
 
 static int Tuple_Cmp(var self, var obj) {
     struct Tuple *t = self;
@@ -7749,12 +8017,22 @@ static int Tuple_Cmp(var self, var obj) {
     var item1 = iter_init(obj);
 
     while (true) {
-        if (item0 is Terminal and item1 is Terminal) { return 0; }
-        if (item0 is Terminal) { return -1; }
-        if (item1 is Terminal) { return 1; }
+        if (item0 is Terminal and item1 is Terminal) {
+            return 0;
+        }
+        if (item0 is Terminal) {
+            return -1;
+        }
+        if (item1 is Terminal) {
+            return 1;
+        }
         int c = cmp(item0, item1);
-        if (c < 0) { return -1; }
-        if (c > 0) { return 1; }
+        if (c < 0) {
+            return -1;
+        }
+        if (c > 0) {
+            return 1;
+        }
         i++;
         item0 = t->items[i];
         item1 = iter_next(obj, item1);
@@ -7768,23 +8046,18 @@ static uint64_t Tuple_Hash(var self) {
     uint64_t h = 0;
 
     size_t n = Tuple_Len(self);
-    for (size_t i = 0; i < n; i++) { h ^= hash(t->items[i]); }
+    for (size_t i = 0; i < n; i++) {
+        h ^= hash(t->items[i]);
+    }
 
     return h;
 }
 
-var Tuple = MetaDotC(
-        Tuple,
-        Instance(Doc, Tuple_Name, Tuple_Brief, Tuple_Description, Tuple_Definition, Tuple_Examples,
-                 Tuple_Methods),
-        Instance(New, Tuple_New, Tuple_Del), Instance(Assign, Tuple_Assign),
-        Instance(Cmp, Tuple_Cmp), Instance(Hash, Tuple_Hash), Instance(Len, Tuple_Len),
-        Instance(Get, Tuple_Get, Tuple_Set, Tuple_Mem, Tuple_Rem),
-        Instance(Push, Tuple_Push, Tuple_Pop, Tuple_Push_At, Tuple_Pop_At),
-        Instance(Concat, Tuple_Concat, Tuple_Push), Instance(Resize, Tuple_Resize),
-        Instance(Iter, Tuple_Iter_Init, Tuple_Iter_Next, Tuple_Iter_Last, Tuple_Iter_Prev, NULL),
-        Instance(Mark, Tuple_Mark), Instance(Sort, Tuple_Sort_By),
-        Instance(Show, Tuple_Show, NULL));
+var Tuple =
+        MetaDotC(Tuple, Instance(Doc, Tuple_Name, Tuple_Brief, Tuple_Description, Tuple_Definition, Tuple_Examples, Tuple_Methods), Instance(New, Tuple_New, Tuple_Del), Instance(Assign, Tuple_Assign),
+                 Instance(Cmp, Tuple_Cmp), Instance(Hash, Tuple_Hash), Instance(Len, Tuple_Len), Instance(Get, Tuple_Get, Tuple_Set, Tuple_Mem, Tuple_Rem),
+                 Instance(Push, Tuple_Push, Tuple_Pop, Tuple_Push_At, Tuple_Pop_At), Instance(Concat, Tuple_Concat, Tuple_Push), Instance(Resize, Tuple_Resize),
+                 Instance(Iter, Tuple_Iter_Init, Tuple_Iter_Next, Tuple_Iter_Last, Tuple_Iter_Prev, NULL), Instance(Mark, Tuple_Mark), Instance(Sort, Tuple_Sort_By), Instance(Show, Tuple_Show, NULL));
 
 static const char *Cast_Name(void) { return "Cast"; }
 
@@ -7805,9 +8078,10 @@ static const char *Cast_Definition(void) {
 
 static struct Example *Cast_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "var x = $I(100);\n"
-                                                  "struct Int* y = cast(x, Int);\n"
-                                                  "show(y);\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "var x = $I(100);\n"
+                                         "struct Int* y = cast(x, Int);\n"
+                                         "show(y);\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -7815,22 +8089,22 @@ static struct Example *Cast_Examples(void) {
 
 static struct Method *Cast_Methods(void) {
 
-    static struct Method methods[] = {
-            {"cast", "var cast(var self, var type);",
-             "Ensures the object `self` is of the given `type` and returns it if it "
-             "is."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"cast", "var cast(var self, var type);",
+                                       "Ensures the object `self` is of the given `type` and returns it if it "
+                                       "is."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Cast = MetaDotC(Cast, Instance(Doc, Cast_Name, Cast_Brief, Cast_Description, Cast_Definition,
-                                   Cast_Examples, Cast_Methods));
+var Cast = MetaDotC(Cast, Instance(Doc, Cast_Name, Cast_Brief, Cast_Description, Cast_Definition, Cast_Examples, Cast_Methods));
 
 var cast(var self, var type) {
 
     struct Cast *c = instance(self, Cast);
-    if (c and c->cast) { return c->cast(self, type); }
+    if (c and c->cast) {
+        return c->cast(self, type);
+    }
 
     if (type_of(self) is type) {
         return self;
@@ -7876,45 +8150,41 @@ static struct Example *Type_Examples(void) {
 
 static struct Method *Type_Methods(void) {
 
-    static struct Method methods[] = {
-            {"type_of", "var type_of(var self);", "Returns the `Type` of an object `self`."},
-            {"instance",
-             "var instance(var self, var cls);\n"
-             "var type_instance(var type, var cls);",
-             "Returns the instance of class `cls` implemented by object `self` or "
-             "type `type`. If class is not implemented then returns `NULL`."},
-            {"implements",
-             "bool implements(var self, var cls);\n"
-             "bool type_implements(var type, var cls);",
-             "Returns if the object `self` or type `type` implements the class `cls`."},
-            {"method",
-             "#define method(X, C, M, ...)\n"
-             "#define type_method(T, C, M, ...)",
-             "Returns the result of the call to method `M` of class `C` for object `X`"
-             "or type `T`. If class is not implemented then an error is thrown."},
-            {"implements_method",
-             "#define implements_method(X, C, M)\n"
-             "#define type_implements_method(T, C, M)",
-             "Returns if the type `T` or object `X` implements the method `M` of "
-             "class C."},
-            {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"type_of", "var type_of(var self);", "Returns the `Type` of an object `self`."},
+                                      {"instance",
+                                       "var instance(var self, var cls);\n"
+                                       "var type_instance(var type, var cls);",
+                                       "Returns the instance of class `cls` implemented by object `self` or "
+                                       "type `type`. If class is not implemented then returns `NULL`."},
+                                      {"implements",
+                                       "bool implements(var self, var cls);\n"
+                                       "bool type_implements(var type, var cls);",
+                                       "Returns if the object `self` or type `type` implements the class `cls`."},
+                                      {"method",
+                                       "#define method(X, C, M, ...)\n"
+                                       "#define type_method(T, C, M, ...)",
+                                       "Returns the result of the call to method `M` of class `C` for object `X`"
+                                       "or type `T`. If class is not implemented then an error is thrown."},
+                                      {"implements_method",
+                                       "#define implements_method(X, C, M)\n"
+                                       "#define type_implements_method(T, C, M)",
+                                       "Returns if the type `T` or object `X` implements the method `M` of "
+                                       "class C."},
+                                      {NULL, NULL, NULL}};
 
     return methods;
 }
 
-enum {
-    METADOT_C_NBUILTINS = 2 + (METADOT_C_CACHE_NUM / 3),
-    METADOT_C_MAX_INSTANCES = 256
-};
+enum { METADOT_C_NBUILTINS = 2 + (METADOT_C_CACHE_NUM / 3), METADOT_C_MAX_INSTANCES = 256 };
 
 static var Type_Alloc(void) {
 
-    struct Header *head =
-            calloc(1, sizeof(struct Header) + sizeof(struct Type) * (METADOT_C_NBUILTINS +
-                                                                     METADOT_C_MAX_INSTANCES + 1));
+    struct Header *head = calloc(1, sizeof(struct Header) + sizeof(struct Type) * (METADOT_C_NBUILTINS + METADOT_C_MAX_INSTANCES + 1));
 
 #if METADOT_C_MEMORY_CHECK == 1
-    if (head is NULL) { throw(OutOfMemoryError, "Cannot create new 'Type', out of memory!", ""); }
+    if (head is NULL) {
+        throw(OutOfMemoryError, "Cannot create new 'Type', out of memory!", "");
+    }
 #endif
 
     return header_init(head, Type, AllocHeap);
@@ -7929,20 +8199,21 @@ static void Type_New(var self, var args) {
 
 #if METADOT_C_MEMORY_CHECK == 1
     if (len(args) - 2 > METADOT_C_MAX_INSTANCES) {
-        throw(OutOfMemoryError, "Cannot construct 'Type' with %i instances, maximum is %i.",
-              $I(len(args)), $I(METADOT_C_MAX_INSTANCES));
+        throw(OutOfMemoryError, "Cannot construct 'Type' with %i instances, maximum is %i.", $I(len(args)), $I(METADOT_C_MAX_INSTANCES));
     }
 #endif
 
     size_t cache_entries = METADOT_C_CACHE_NUM / 3;
-    for (size_t i = 0; i < cache_entries; i++) { t[i] = (struct Type){NULL, NULL, NULL}; }
+    for (size_t i = 0; i < cache_entries; i++) {
+        t[i] = (struct Type){NULL, NULL, NULL};
+    }
 
-    t[cache_entries + 0] = (struct Type){NULL, "__Name", (var) c_str(name)};
-    t[cache_entries + 1] = (struct Type){NULL, "__Size", (var) (uintptr_t) c_int(size)};
+    t[cache_entries + 0] = (struct Type){NULL, "__Name", (var)c_str(name)};
+    t[cache_entries + 1] = (struct Type){NULL, "__Size", (var)(uintptr_t)c_int(size)};
 
     for (size_t i = 2; i < len(args); i++) {
         var ins = get(args, $I(i));
-        t[METADOT_C_NBUILTINS - 2 + i] = (struct Type){NULL, (var) c_str(type_of(ins)), ins};
+        t[METADOT_C_NBUILTINS - 2 + i] = (struct Type){NULL, (var)c_str(type_of(ins)), ins};
     }
 
     t[METADOT_C_NBUILTINS + len(args) - 2] = (struct Type){NULL, NULL, NULL};
@@ -7950,13 +8221,9 @@ static void Type_New(var self, var args) {
 
 static char *Type_Builtin_Name(struct Type *t) { return t[(METADOT_C_CACHE_NUM / 3) + 0].inst; }
 
-static size_t Type_Builtin_Size(struct Type *t) {
-    return (size_t) t[(METADOT_C_CACHE_NUM / 3) + 1].inst;
-}
+static size_t Type_Builtin_Size(struct Type *t) { return (size_t)t[(METADOT_C_CACHE_NUM / 3) + 1].inst; }
 
-static int Type_Show(var self, var output, int pos) {
-    return format_to(output, pos, "%s", Type_Builtin_Name(self));
-}
+static int Type_Show(var self, var output, int pos) { return format_to(output, pos, "%s", Type_Builtin_Name(self)); }
 
 static int Type_Cmp(var self, var obj) {
     struct Type *objt = cast(obj, Type);
@@ -7970,9 +8237,7 @@ static uint64_t Type_Hash(var self) {
 
 static char *Type_C_Str(var self) { return Type_Builtin_Name(self); }
 
-static void Type_Assign(var self, var obj) {
-    throw(ValueError, "Type objects cannot be assigned.", "");
-}
+static void Type_Assign(var self, var obj) { throw(ValueError, "Type objects cannot be assigned.", ""); }
 
 static var Type_Copy(var self) { return throw(ValueError, "Type objects cannot be copied.", ""); }
 
@@ -7993,14 +8258,20 @@ static int Type_Help_To(var self, var out, int pos) {
 
     struct Doc *doc = type_instance(self, Doc);
 
-    if (doc is NULL) { return print_to(out, pos, "\nNo Documentation Found for Type %s\n", self); }
+    if (doc is NULL) {
+        return print_to(out, pos, "\nNo Documentation Found for Type %s\n", self);
+    }
 
     pos = print_to(out, pos, "\n", "");
     pos = print_to(out, pos, "# %s ", self);
 
-    if (doc->brief) { pos = print_to(out, pos, " - %s\n\n", $S((char *) doc->brief())); }
+    if (doc->brief) {
+        pos = print_to(out, pos, " - %s\n\n", $S((char *)doc->brief()));
+    }
 
-    if (doc->description) { pos = print_to(out, pos, "%s\n\n", $S((char *) doc->description())); }
+    if (doc->description) {
+        pos = print_to(out, pos, "%s\n\n", $S((char *)doc->description()));
+    }
 
     if (doc->definition) {
         pos = print_to(out, pos, "\n### Definition\n\n", "");
@@ -8012,9 +8283,9 @@ static int Type_Help_To(var self, var out, int pos) {
         pos = print_to(out, pos, "\n### Methods\n\n", "");
         struct Method *methods = doc->methods();
         while (methods[0].name) {
-            pos = print_to(out, pos, "__%s__\n\n", $S((char *) methods[0].name));
+            pos = print_to(out, pos, "__%s__\n\n", $S((char *)methods[0].name));
             pos = print_indent(out, pos, methods[0].definition);
-            pos = print_to(out, pos, "\n\n%s\n\n", $S((char *) methods[0].description));
+            pos = print_to(out, pos, "\n\n%s\n\n", $S((char *)methods[0].description));
             methods++;
         }
     }
@@ -8023,7 +8294,7 @@ static int Type_Help_To(var self, var out, int pos) {
         pos = print_to(out, pos, "\n### Examples\n\n", "");
         struct Example *examples = doc->examples();
         while (examples[0].name) {
-            pos = print_to(out, pos, "__%s__\n\n", $S((char *) examples[0].name));
+            pos = print_to(out, pos, "__%s__\n\n", $S((char *)examples[0].name));
             pos = print_indent(out, pos, examples[0].body);
             pos = print_to(out, pos, "\n\n", "");
             examples++;
@@ -8034,12 +8305,9 @@ static int Type_Help_To(var self, var out, int pos) {
     return pos;
 }
 
-var Type = MetaDotCEmpty(
-        Type,
-        Instance(Doc, Type_Name, Type_Brief, Type_Description, NULL, Type_Examples, Type_Methods),
-        Instance(Assign, Type_Assign), Instance(Copy, Type_Copy), Instance(Alloc, Type_Alloc, NULL),
-        Instance(New, Type_New, NULL), Instance(Cmp, Type_Cmp), Instance(Hash, Type_Hash),
-        Instance(Show, Type_Show, NULL), Instance(C_Str, Type_C_Str), Instance(Help, Type_Help_To));
+var Type = MetaDotCEmpty(Type, Instance(Doc, Type_Name, Type_Brief, Type_Description, NULL, Type_Examples, Type_Methods), Instance(Assign, Type_Assign), Instance(Copy, Type_Copy),
+                         Instance(Alloc, Type_Alloc, NULL), Instance(New, Type_New, NULL), Instance(Cmp, Type_Cmp), Instance(Hash, Type_Hash), Instance(Show, Type_Show, NULL),
+                         Instance(C_Str, Type_C_Str), Instance(Help, Type_Help_To));
 
 static var Type_Scan(var self, var cls) {
 
@@ -8051,13 +8319,15 @@ static var Type_Scan(var self, var cls) {
 
     struct Type *t;
 
-    t = (struct Type *) self + METADOT_C_NBUILTINS;
+    t = (struct Type *)self + METADOT_C_NBUILTINS;
     while (t->name) {
-        if (t->cls is cls) { return t->inst; }
+        if (t->cls is cls) {
+            return t->inst;
+        }
         t++;
     }
 
-    t = (struct Type *) self + METADOT_C_NBUILTINS;
+    t = (struct Type *)self + METADOT_C_NBUILTINS;
     while (t->name) {
         if (strcmp(t->name, Type_Builtin_Name(cls)) is 0) {
             t->cls = cls;
@@ -8086,66 +8356,65 @@ static var Type_Method_At_Offset(var self, var cls, size_t offset, const char *m
 #endif
 
 #if METADOT_C_METHOD_CHECK == 1
-    var meth = *((var *) (((char *) inst) + offset));
+    var meth = *((var *)(((char *)inst) + offset));
 
     if (meth is NULL) {
-        return throw(ClassError, "Type '%s' implements class '%s' but not the method '%s' required",
-                     self, cls, $(String, (char *) method_name));
+        return throw(ClassError, "Type '%s' implements class '%s' but not the method '%s' required", self, cls, $(String, (char *)method_name));
     }
 #endif
 
     return inst;
 }
 
-var type_method_at_offset(var self, var cls, size_t offset, const char *method_name) {
-    return Type_Method_At_Offset(self, cls, offset, method_name);
-}
+var type_method_at_offset(var self, var cls, size_t offset, const char *method_name) { return Type_Method_At_Offset(self, cls, offset, method_name); }
 
 static bool Type_Implements_Method_At_Offset(var self, var cls, size_t offset) {
     var inst = Type_Scan(self, cls);
-    if (inst is NULL) { return false; }
-    var meth = *((var *) (((char *) inst) + offset));
-    if (meth is NULL) { return false; }
+    if (inst is NULL) {
+        return false;
+    }
+    var meth = *((var *)(((char *)inst) + offset));
+    if (meth is NULL) {
+        return false;
+    }
     return true;
 }
 
-bool type_implements_method_at_offset(var self, var cls, size_t offset) {
-    return Type_Implements_Method_At_Offset(self, cls, offset);
-}
+bool type_implements_method_at_offset(var self, var cls, size_t offset) { return Type_Implements_Method_At_Offset(self, cls, offset); }
 
 /*
 **  Doing the lookup of a class instances is fairly fast
 **  but still too slow to be done inside a tight inner loop.
-**  This is because there could be any number of instances 
-**  and they could be in any order, so each time a linear 
+**  This is because there could be any number of instances
+**  and they could be in any order, so each time a linear
 **  search must be done to find the correct instance.
 **
 **  We can remove the need for a linear search by placing
-**  some common class instances at known locations. These 
+**  some common class instances at known locations. These
 **  are the _Type Cache Entries_ and are located at some
 **  preallocated space at the beginning of every type object.
 **
-**  The only problem is that these instances are not filled 
+**  The only problem is that these instances are not filled
 **  at compile type, so we must dynamically fill them if they
-**  are empty. But this can be done with a standard call to 
+**  are empty. But this can be done with a standard call to
 **  `Type_Scan` the first time.
 **
 **  The main advantage of this method is that it gives the compiler
-**  a better chance of inlining the code up to the call of the 
-**  instance function pointer, and removes the overhead 
-**  associated with setting up the call to `Type_Scan` which is 
+**  a better chance of inlining the code up to the call of the
+**  instance function pointer, and removes the overhead
+**  associated with setting up the call to `Type_Scan` which is
 **  too complex a call to be effectively inlined.
 **
 */
 
-#define Type_Cache_Entry(i, lit)                                                                   \
-    if (cls is lit) {                                                                              \
-        var inst = ((var *) self)[i];                                                              \
-        if (inst is NULL) {                                                                        \
-            inst = Type_Scan(self, lit);                                                           \
-            ((var *) self)[i] = inst;                                                              \
-        }                                                                                          \
-        return inst;                                                                               \
+#define Type_Cache_Entry(i, lit)         \
+    if (cls is lit) {                    \
+        var inst = ((var *)self)[i];     \
+        if (inst is NULL) {              \
+            inst = Type_Scan(self, lit); \
+            ((var *)self)[i] = inst;     \
+        }                                \
+        return inst;                     \
     }
 
 static var Type_Instance(var self, var cls) {
@@ -8181,21 +8450,23 @@ var type_instance(var self, var cls) { return Type_Instance(self, cls); }
 static var Type_Of(var self) {
 
     /*
-  **  The type of a Type object is just `Type` again. But because `Type` is 
-  **  extern it isn't a constant expression. This means it cannot be set at 
-  **  compile time.
-  **
-  **  But we really want to be able to construct types statically. So by 
-  **  convention at compile time the type of a Type object is set to `NULL`.
-  **  So if we access a statically allocated object and it tells us `NULL` 
-  **  is the type, we assume the type is `Type`.
-  */
+     **  The type of a Type object is just `Type` again. But because `Type` is
+     **  extern it isn't a constant expression. This means it cannot be set at
+     **  compile time.
+     **
+     **  But we really want to be able to construct types statically. So by
+     **  convention at compile time the type of a Type object is set to `NULL`.
+     **  So if we access a statically allocated object and it tells us `NULL`
+     **  is the type, we assume the type is `Type`.
+     */
 
 #if METADOT_C_NULL_CHECK == 1
-    if (self is NULL) { return throw(ValueError, "Received NULL as value to 'type_of'", ""); }
+    if (self is NULL) {
+        return throw(ValueError, "Received NULL as value to 'type_of'", "");
+    }
 #endif
 
-    struct Header *head = (struct Header *) ((char *) self - sizeof(struct Header));
+    struct Header *head = (struct Header *)((char *)self - sizeof(struct Header));
 
 #if METADOT_C_MAGIC_CHECK == 1
     if (head->magic is(var) 0xDeadCe110) {
@@ -8205,7 +8476,7 @@ static var Type_Of(var self) {
               self);
     }
 
-    if (head->magic isnt((var) METADOT_C_MAGIC_NUM)) {
+    if (head->magic isnt((var)METADOT_C_MAGIC_NUM)) {
         throw(ValueError,
               "Pointer '%p' passed to 'type_of' "
               "has bad magic number, perhaps it wasn't allocated by MetaDotC.",
@@ -8213,7 +8484,9 @@ static var Type_Of(var self) {
     }
 #endif
 
-    if (head->type is NULL) { head->type = Type; }
+    if (head->type is NULL) {
+        head->type = Type;
+    }
 
     return head->type;
 }
@@ -8224,13 +8497,9 @@ var instance(var self, var cls) { return Type_Instance(Type_Of(self), cls); }
 
 bool implements(var self, var cls) { return Type_Implements(Type_Of(self), cls); }
 
-var method_at_offset(var self, var cls, size_t offset, const char *method_name) {
-    return Type_Method_At_Offset(Type_Of(self), cls, offset, method_name);
-}
+var method_at_offset(var self, var cls, size_t offset, const char *method_name) { return Type_Method_At_Offset(Type_Of(self), cls, offset, method_name); }
 
-bool implements_method_at_offset(var self, var cls, size_t offset) {
-    return Type_Implements_Method_At_Offset(Type_Of(self), cls, offset);
-}
+bool implements_method_at_offset(var self, var cls, size_t offset) { return Type_Implements_Method_At_Offset(Type_Of(self), cls, offset); }
 
 static const char *Size_Name(void) { return "Size"; }
 
@@ -8254,9 +8523,10 @@ static const char *Size_Definition(void) {
 
 static struct Example *Size_Examples(void) {
 
-    static struct Example examples[] = {{"Usage", "show($I(size(Int)));\n"
-                                                  "show($I(size(Float)));\n"
-                                                  "show($I(size(Array)));\n"},
+    static struct Example examples[] = {{"Usage",
+                                         "show($I(size(Int)));\n"
+                                         "show($I(size(Float)));\n"
+                                         "show($I(size(Array)));\n"},
                                         {NULL, NULL}};
 
     return examples;
@@ -8264,20 +8534,19 @@ static struct Example *Size_Examples(void) {
 
 static struct Method *Size_Methods(void) {
 
-    static struct Method methods[] = {{"size", "size_t size(var type);",
-                                       "Returns the associated size of a given `type` in bytes."},
-                                      {NULL, NULL, NULL}};
+    static struct Method methods[] = {{"size", "size_t size(var type);", "Returns the associated size of a given `type` in bytes."}, {NULL, NULL, NULL}};
 
     return methods;
 }
 
-var Size = MetaDotC(Size, Instance(Doc, Size_Name, Size_Brief, Size_Description, Size_Definition,
-                                   Size_Examples, Size_Methods));
+var Size = MetaDotC(Size, Instance(Doc, Size_Name, Size_Brief, Size_Description, Size_Definition, Size_Examples, Size_Methods));
 
 size_t size(var type) {
 
     struct Size *s = type_instance(type, Size);
-    if (s and s->size) { return s->size(); }
+    if (s and s->size) {
+        return s->size();
+    }
 
     return Type_Builtin_Size(type);
 }

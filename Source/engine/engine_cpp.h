@@ -4,8 +4,7 @@
 #define _METADOT_ENGINECPP_H_
 
 #if defined(__cplusplus)
-extern "C"
-{
+extern "C" {
 #endif
 
 #include "engine.h"
@@ -13,8 +12,8 @@ extern "C"
 #include "engine_ecs.h"
 #include "engine_platform.h"
 #include "engine_render.h"
-#include "util.h"
 #include "shaders.h"
+#include "util.h"
 
 #if defined(__cplusplus)
 }

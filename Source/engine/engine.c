@@ -20,13 +20,16 @@ unsigned char initializedEngine = 0;
 
 //-------- Engine Functions called from main -------------
 
-//Engine initialization function
-//Return 1 if suceeded, 0 if failed
+// Engine initialization function
+// Return 1 if suceeded, 0 if failed
 int InitEngine() {
-    if (initializedEngine) { METADOT_WARN("InitEngine: Engine already initialized"); }
+    if (initializedEngine) {
+        METADOT_WARN("InitEngine: Engine already initialized");
+    }
     if (!initializedECS) {
-        METADOT_WARN("InitEngine: ECS not initialized! Initialize and configure ECS before "
-                     "initializing the engine!");
+        METADOT_WARN(
+                "InitEngine: ECS not initialized! Initialize and configure ECS before "
+                "initializing the engine!");
         return 0;
     }
 
@@ -41,16 +44,16 @@ int InitEngine() {
         return 0;
     }
 
-    //Call initialization function of all systems
+    // Call initialization function of all systems
     ListCellPointer current = GetFirstCell(ECS.SystemList);
     while (current) {
-        System *curSystem = ((System *) GetElement(*current));
+        System *curSystem = ((System *)GetElement(*current));
         curSystem->systemInit();
         current = GetNextCell(current);
     }
 
-    //Disable text input
-    // SDL_StopTextInput();
+    // Disable text input
+    //  SDL_StopTextInput();
 
     initializedEngine = 1;
     METADOT_INFO("Engine sucessfully initialized!");
@@ -60,9 +63,9 @@ int InitEngine() {
 void EngineUpdate() {
     UpdateTime();
 
-    //Run systems updates
+    // Run systems updates
 
-    //Remove missing child connections from parents
+    // Remove missing child connections from parents
     int e;
     for (e = 0; e <= ECS.maxUsedIndex; e++) {
         if (IsValidEntity(e) && EntityIsParent(e)) {
@@ -80,7 +83,7 @@ void EngineUpdate() {
         }
     }
 
-    //Iterate through the systems list
+    // Iterate through the systems list
     ListCellPointer currentSystem = GetFirstCell(ECS.SystemList);
     ListForEach(currentSystem, ECS.SystemList) {
         System sys = GetElementAsType(currentSystem, System);
@@ -97,7 +100,7 @@ void EndEngine(int errorOcurred) {
 
     FreeECS();
 
-    //Finish core systems
+    // Finish core systems
     if (Core.renderer) SDL_DestroyRenderer(Core.renderer);
 
     if (Core.window) SDL_DestroyWindow(Core.window);

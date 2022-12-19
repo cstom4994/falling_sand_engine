@@ -33,18 +33,18 @@ SOFTWARE.
 
 #pragma region COMMON
 
-#include "core/core.h"
-
 #include <float.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "core/core.h"
+
 #if !defined(NDEBUG)
 #define b2DEBUG
 #endif
 
-#define B2_NOT_USED(x) ((void) (x))
+#define B2_NOT_USED(x) ((void)(x))
 
 #define b2_maxFloat FLT_MAX
 #define b2_epsilon FLT_EPSILON
@@ -133,11 +133,10 @@ void b2CloseDump();
 
 /// Version numbering scheme.
 /// See http://en.wikipedia.org/wiki/Software_versioning
-struct b2Version
-{
-    I32 major;   ///< significant changes
-    I32 minor;   ///< incremental changes
-    I32 revision;///< bug fixes
+struct b2Version {
+    I32 major;     ///< significant changes
+    I32 minor;     ///< incremental changes
+    I32 revision;  ///< bug fixes
 };
 
 /// Current version.
@@ -176,8 +175,7 @@ struct DebugDraw;
 // User data
 
 /// You can define this to inject whatever data you want in b2Body
-struct b2BodyUserData
-{
+struct b2BodyUserData {
     b2BodyUserData() { pointer = 0; }
 
     /// For legacy compatibility
@@ -185,8 +183,7 @@ struct b2BodyUserData
 };
 
 /// You can define this to inject whatever data you want in b2Fixture
-struct b2FixtureUserData
-{
+struct b2FixtureUserData {
     b2FixtureUserData() { pointer = 0; }
 
     /// For legacy compatibility
@@ -194,8 +191,7 @@ struct b2FixtureUserData
 };
 
 /// You can define this to inject whatever data you want in b2Joint
-struct b2JointUserData
-{
+struct b2JointUserData {
     b2JointUserData() { pointer = 0; }
 
     /// For legacy compatibility
@@ -225,7 +221,7 @@ inline void b2Log(const char *string, ...) {
     va_end(args);
 }
 
-#endif// B2_USER_SETTINGS
+#endif  // B2_USER_SETTINGS
 
 const I32 b2_blockSizeCount = 14;
 
@@ -265,8 +261,7 @@ inline bool b2IsValid(float x) { return isfinite(x); }
 #define b2Atan2(y, x) atan2f(y, x)
 
 /// A 2D column vector.
-struct b2Vec2
-{
+struct b2Vec2 {
     /// Default constructor does nothing (for performance).
     b2Vec2() = default;
 
@@ -326,7 +321,9 @@ struct b2Vec2
     /// Convert this vector into a unit vector. Returns the length.
     float Normalize() {
         float length = Length();
-        if (length < b2_epsilon) { return 0.0f; }
+        if (length < b2_epsilon) {
+            return 0.0f;
+        }
         float invLength = 1.0f / length;
         x *= invLength;
         y *= invLength;
@@ -344,8 +341,7 @@ struct b2Vec2
 };
 
 /// A 2D column vector with 3 elements.
-struct b2Vec3
-{
+struct b2Vec3 {
     /// Default constructor does nothing (for performance).
     b2Vec3() = default;
 
@@ -398,8 +394,7 @@ struct b2Vec3
 };
 
 /// A 2-by-2 matrix. Stored in column-major order.
-struct b2Mat22
-{
+struct b2Mat22 {
     /// The default constructor does nothing (for performance).
     b2Mat22() = default;
 
@@ -443,7 +438,9 @@ struct b2Mat22
         float a = ex.x, b = ey.x, c = ex.y, d = ey.y;
         b2Mat22 B;
         float det = a * d - b * c;
-        if (det != 0.0f) { det = 1.0f / det; }
+        if (det != 0.0f) {
+            det = 1.0f / det;
+        }
         B.ex.x = det * d;
         B.ey.x = -det * b;
         B.ex.y = -det * c;
@@ -456,7 +453,9 @@ struct b2Mat22
     b2Vec2 Solve(const b2Vec2 &b) const {
         float a11 = ex.x, a12 = ey.x, a21 = ex.y, a22 = ey.y;
         float det = a11 * a22 - a12 * a21;
-        if (det != 0.0f) { det = 1.0f / det; }
+        if (det != 0.0f) {
+            det = 1.0f / det;
+        }
         b2Vec2 x;
         x.x = det * (a22 * b.x - a12 * b.y);
         x.y = det * (a11 * b.y - a21 * b.x);
@@ -467,8 +466,7 @@ struct b2Mat22
 };
 
 /// A 3-by-3 matrix. Stored in column-major order.
-struct b2Mat33
-{
+struct b2Mat33 {
     /// The default constructor does nothing (for performance).
     b2Mat33() = default;
 
@@ -507,8 +505,7 @@ struct b2Mat33
 };
 
 /// Rotation
-struct b2Rot
-{
+struct b2Rot {
     b2Rot() = default;
 
     /// Initialize from an angle in radians
@@ -546,8 +543,7 @@ struct b2Rot
 
 /// A transform contains translation and rotation. It is used to represent
 /// the position and orientation of rigid frames.
-struct b2Transform
-{
+struct b2Transform {
     /// The default constructor does nothing.
     b2Transform() = default;
 
@@ -574,8 +570,7 @@ struct b2Transform
 /// Shapes are defined with respect to the body origin, which may
 /// no coincide with the center of mass. However, to support dynamics
 /// we must interpolate the center of mass position.
-struct b2Sweep
-{
+struct b2Sweep {
     b2Sweep() = default;
 
     /// Get the interpolated transform at a specific time.
@@ -590,9 +585,9 @@ struct b2Sweep
     /// Normalize the angles.
     void Normalize();
 
-    b2Vec2 localCenter;///< local center of mass position
-    b2Vec2 c0, c;      ///< center world positions
-    float a0, a;       ///< world angles
+    b2Vec2 localCenter;  ///< local center of mass position
+    b2Vec2 c0, c;        ///< center world positions
+    float a0, a;         ///< world angles
 
     /// Fraction of the current time step in the range [0,1]
     /// c0 and a0 are the positions at alpha0.
@@ -618,15 +613,11 @@ inline b2Vec2 b2Cross(float s, const b2Vec2 &a) { return b2Vec2(-s * a.y, s * a.
 
 /// Multiply a matrix times a vector. If a rotation matrix is provided,
 /// then this transforms the vector from one frame to another.
-inline b2Vec2 b2Mul(const b2Mat22 &A, const b2Vec2 &v) {
-    return b2Vec2(A.ex.x * v.x + A.ey.x * v.y, A.ex.y * v.x + A.ey.y * v.y);
-}
+inline b2Vec2 b2Mul(const b2Mat22 &A, const b2Vec2 &v) { return b2Vec2(A.ex.x * v.x + A.ey.x * v.y, A.ex.y * v.x + A.ey.y * v.y); }
 
 /// Multiply a matrix transpose times a vector. If a rotation matrix is provided,
 /// then this transforms the vector from one frame to another (inverse transform).
-inline b2Vec2 b2MulT(const b2Mat22 &A, const b2Vec2 &v) {
-    return b2Vec2(b2Dot(v, A.ex), b2Dot(v, A.ey));
-}
+inline b2Vec2 b2MulT(const b2Mat22 &A, const b2Vec2 &v) { return b2Vec2(b2Dot(v, A.ex), b2Dot(v, A.ey)); }
 
 /// Add two vectors component-wise.
 inline b2Vec2 operator+(const b2Vec2 &a, const b2Vec2 &b) { return b2Vec2(a.x + b.x, a.y + b.y); }
@@ -653,31 +644,21 @@ inline float b2DistanceSquared(const b2Vec2 &a, const b2Vec2 &b) {
 inline b2Vec3 operator*(float s, const b2Vec3 &a) { return b2Vec3(s * a.x, s * a.y, s * a.z); }
 
 /// Add two vectors component-wise.
-inline b2Vec3 operator+(const b2Vec3 &a, const b2Vec3 &b) {
-    return b2Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
-}
+inline b2Vec3 operator+(const b2Vec3 &a, const b2Vec3 &b) { return b2Vec3(a.x + b.x, a.y + b.y, a.z + b.z); }
 
 /// Subtract two vectors component-wise.
-inline b2Vec3 operator-(const b2Vec3 &a, const b2Vec3 &b) {
-    return b2Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
-}
+inline b2Vec3 operator-(const b2Vec3 &a, const b2Vec3 &b) { return b2Vec3(a.x - b.x, a.y - b.y, a.z - b.z); }
 
 /// Perform the dot product on two vectors.
 inline float b2Dot(const b2Vec3 &a, const b2Vec3 &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 
 /// Perform the cross product on two vectors.
-inline b2Vec3 b2Cross(const b2Vec3 &a, const b2Vec3 &b) {
-    return b2Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-}
+inline b2Vec3 b2Cross(const b2Vec3 &a, const b2Vec3 &b) { return b2Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x); }
 
-inline b2Mat22 operator+(const b2Mat22 &A, const b2Mat22 &B) {
-    return b2Mat22(A.ex + B.ex, A.ey + B.ey);
-}
+inline b2Mat22 operator+(const b2Mat22 &A, const b2Mat22 &B) { return b2Mat22(A.ex + B.ex, A.ey + B.ey); }
 
 // A * B
-inline b2Mat22 b2Mul(const b2Mat22 &A, const b2Mat22 &B) {
-    return b2Mat22(b2Mul(A, B.ex), b2Mul(A, B.ey));
-}
+inline b2Mat22 b2Mul(const b2Mat22 &A, const b2Mat22 &B) { return b2Mat22(b2Mul(A, B.ex), b2Mul(A, B.ey)); }
 
 // A^T * B
 inline b2Mat22 b2MulT(const b2Mat22 &A, const b2Mat22 &B) {
@@ -687,14 +668,10 @@ inline b2Mat22 b2MulT(const b2Mat22 &A, const b2Mat22 &B) {
 }
 
 /// Multiply a matrix times a vector.
-inline b2Vec3 b2Mul(const b2Mat33 &A, const b2Vec3 &v) {
-    return v.x * A.ex + v.y * A.ey + v.z * A.ez;
-}
+inline b2Vec3 b2Mul(const b2Mat33 &A, const b2Vec3 &v) { return v.x * A.ex + v.y * A.ey + v.z * A.ez; }
 
 /// Multiply a matrix times a vector.
-inline b2Vec2 b2Mul22(const b2Mat33 &A, const b2Vec2 &v) {
-    return b2Vec2(A.ex.x * v.x + A.ey.x * v.y, A.ex.y * v.x + A.ey.y * v.y);
-}
+inline b2Vec2 b2Mul22(const b2Mat33 &A, const b2Vec2 &v) { return b2Vec2(A.ex.x * v.x + A.ey.x * v.y, A.ex.y * v.x + A.ey.y * v.y); }
 
 /// Multiply two rotations: q * r
 inline b2Rot b2Mul(const b2Rot &q, const b2Rot &r) {
@@ -721,14 +698,10 @@ inline b2Rot b2MulT(const b2Rot &q, const b2Rot &r) {
 }
 
 /// Rotate a vector
-inline b2Vec2 b2Mul(const b2Rot &q, const b2Vec2 &v) {
-    return b2Vec2(q.c * v.x - q.s * v.y, q.s * v.x + q.c * v.y);
-}
+inline b2Vec2 b2Mul(const b2Rot &q, const b2Vec2 &v) { return b2Vec2(q.c * v.x - q.s * v.y, q.s * v.x + q.c * v.y); }
 
 /// Inverse rotate a vector
-inline b2Vec2 b2MulT(const b2Rot &q, const b2Vec2 &v) {
-    return b2Vec2(q.c * v.x + q.s * v.y, -q.s * v.x + q.c * v.y);
-}
+inline b2Vec2 b2MulT(const b2Rot &q, const b2Vec2 &v) { return b2Vec2(q.c * v.x + q.s * v.y, -q.s * v.x + q.c * v.y); }
 
 inline b2Vec2 b2Mul(const b2Transform &T, const b2Vec2 &v) {
     float x = (T.q.c * v.x - T.q.s * v.y) + T.p.x;
@@ -764,7 +737,7 @@ inline b2Transform b2MulT(const b2Transform &A, const b2Transform &B) {
     return C;
 }
 
-template<typename T>
+template <typename T>
 inline T b2Abs(T a) {
     return a > T(0) ? a : -a;
 }
@@ -773,34 +746,28 @@ inline b2Vec2 b2Abs(const b2Vec2 &a) { return b2Vec2(b2Abs(a.x), b2Abs(a.y)); }
 
 inline b2Mat22 b2Abs(const b2Mat22 &A) { return b2Mat22(b2Abs(A.ex), b2Abs(A.ey)); }
 
-template<typename T>
+template <typename T>
 inline T b2Min(T a, T b) {
     return a < b ? a : b;
 }
 
-inline b2Vec2 b2Min(const b2Vec2 &a, const b2Vec2 &b) {
-    return b2Vec2(b2Min(a.x, b.x), b2Min(a.y, b.y));
-}
+inline b2Vec2 b2Min(const b2Vec2 &a, const b2Vec2 &b) { return b2Vec2(b2Min(a.x, b.x), b2Min(a.y, b.y)); }
 
-template<typename T>
+template <typename T>
 inline T b2Max(T a, T b) {
     return a > b ? a : b;
 }
 
-inline b2Vec2 b2Max(const b2Vec2 &a, const b2Vec2 &b) {
-    return b2Vec2(b2Max(a.x, b.x), b2Max(a.y, b.y));
-}
+inline b2Vec2 b2Max(const b2Vec2 &a, const b2Vec2 &b) { return b2Vec2(b2Max(a.x, b.x), b2Max(a.y, b.y)); }
 
-template<typename T>
+template <typename T>
 inline T b2Clamp(T a, T low, T high) {
     return b2Max(low, b2Min(a, high));
 }
 
-inline b2Vec2 b2Clamp(const b2Vec2 &a, const b2Vec2 &low, const b2Vec2 &high) {
-    return b2Max(low, b2Min(a, high));
-}
+inline b2Vec2 b2Clamp(const b2Vec2 &a, const b2Vec2 &low, const b2Vec2 &high) { return b2Max(low, b2Min(a, high)); }
 
-template<typename T>
+template <typename T>
 inline void b2Swap(T &a, T &b) {
     T tmp = a;
     a = b;
@@ -857,8 +824,7 @@ inline void b2Sweep::Normalize() {
 #pragma region DRAW
 
 /// Color for debug drawing. Each value has the range [0,1].
-struct b2Color
-{
+struct b2Color {
     b2Color() {}
     b2Color(float rIn, float gIn, float bIn, float aIn = 1.0f) {
         r = rIn;
@@ -913,22 +879,9 @@ class b2Joint;
 struct b2SolverData;
 class b2BlockAllocator;
 
-enum b2JointType {
-    e_unknownJoint,
-    e_revoluteJoint,
-    e_prismaticJoint,
-    e_distanceJoint,
-    e_pulleyJoint,
-    e_mouseJoint,
-    e_gearJoint,
-    e_wheelJoint,
-    e_weldJoint,
-    e_frictionJoint,
-    e_motorJoint
-};
+enum b2JointType { e_unknownJoint, e_revoluteJoint, e_prismaticJoint, e_distanceJoint, e_pulleyJoint, e_mouseJoint, e_gearJoint, e_wheelJoint, e_weldJoint, e_frictionJoint, e_motorJoint };
 
-struct b2Jacobian
-{
+struct b2Jacobian {
     b2Vec2 linear;
     float angularA;
     float angularB;
@@ -939,17 +892,15 @@ struct b2Jacobian
 /// is an edge. A joint edge belongs to a doubly linked list
 /// maintained in each attached body. Each joint has two joint
 /// nodes, one for each attached body.
-struct b2JointEdge
-{
-    b2Body *other;    ///< provides quick access to the other body attached.
-    b2Joint *joint;   ///< the joint
-    b2JointEdge *prev;///< the previous joint edge in the body's joint list
-    b2JointEdge *next;///< the next joint edge in the body's joint list
+struct b2JointEdge {
+    b2Body *other;      ///< provides quick access to the other body attached.
+    b2Joint *joint;     ///< the joint
+    b2JointEdge *prev;  ///< the previous joint edge in the body's joint list
+    b2JointEdge *next;  ///< the next joint edge in the body's joint list
 };
 
 /// Joint definitions are used to construct joints.
-struct b2JointDef
-{
+struct b2JointDef {
     b2JointDef() {
         type = e_unknownJoint;
         bodyA = nullptr;
@@ -974,12 +925,10 @@ struct b2JointDef
 };
 
 /// Utility to compute linear stiffness values from frequency and damping ratio
-void b2LinearStiffness(float &stiffness, float &damping, float frequencyHertz, float dampingRatio,
-                       const b2Body *bodyA, const b2Body *bodyB);
+void b2LinearStiffness(float &stiffness, float &damping, float frequencyHertz, float dampingRatio, const b2Body *bodyA, const b2Body *bodyB);
 
 /// Utility to compute rotational stiffness values frequency and damping ratio
-void b2AngularStiffness(float &stiffness, float &damping, float frequencyHertz, float dampingRatio,
-                        const b2Body *bodyA, const b2Body *bodyB);
+void b2AngularStiffness(float &stiffness, float &damping, float frequencyHertz, float dampingRatio, const b2Body *bodyA, const b2Body *bodyB);
 
 /// The base joint class. Joints are used to constraint two bodies together in
 /// various fashions. Some joints also feature limits and motors.
@@ -1100,23 +1049,19 @@ const U8 b2_nullFeature = UCHAR_MAX;
 
 /// The features that intersect to form the contact point
 /// This must be 4 bytes or less.
-struct b2ContactFeature
-{
-    enum Type {
-        e_vertex = 0,
-        e_face = 1
-    };
+struct b2ContactFeature {
+    enum Type { e_vertex = 0, e_face = 1 };
 
-    U8 indexA;///< Feature index on shapeA
-    U8 indexB;///< Feature index on shapeB
-    U8 typeA; ///< The feature type on shapeA
-    U8 typeB; ///< The feature type on shapeB
+    U8 indexA;  ///< Feature index on shapeA
+    U8 indexB;  ///< Feature index on shapeB
+    U8 typeA;   ///< The feature type on shapeA
+    U8 typeB;   ///< The feature type on shapeB
 };
 
 /// Contact ids to facilitate warm starting.
 union b2ContactID {
     b2ContactFeature cf;
-    U32 key;///< Used to quickly compare contact ids.
+    U32 key;  ///< Used to quickly compare contact ids.
 };
 
 /// A manifold point is a contact point belonging to a contact
@@ -1129,12 +1074,11 @@ union b2ContactID {
 /// This structure is stored across time steps, so we keep it small.
 /// Note: the impulses are used for internal caching and may not
 /// provide reliable contact forces, especially for high speed collisions.
-struct b2ManifoldPoint
-{
-    b2Vec2 localPoint;   ///< usage depends on manifold type
-    float normalImpulse; ///< the non-penetration impulse
-    float tangentImpulse;///< the friction impulse
-    b2ContactID id;      ///< uniquely identifies a contact point between two shapes
+struct b2ManifoldPoint {
+    b2Vec2 localPoint;     ///< usage depends on manifold type
+    float normalImpulse;   ///< the non-penetration impulse
+    float tangentImpulse;  ///< the friction impulse
+    b2ContactID id;        ///< uniquely identifies a contact point between two shapes
 };
 
 /// A manifold for two touching convex shapes.
@@ -1153,75 +1097,62 @@ struct b2ManifoldPoint
 /// account for movement, which is critical for continuous physics.
 /// All contact scenarios must be expressed in one of these types.
 /// This structure is stored across time steps, so we keep it small.
-struct b2Manifold
-{
-    enum Type {
-        e_circles,
-        e_faceA,
-        e_faceB
-    };
+struct b2Manifold {
+    enum Type { e_circles, e_faceA, e_faceB };
 
-    b2ManifoldPoint points[b2_maxManifoldPoints];///< the points of contact
-    b2Vec2 localNormal;                          ///< not use for Type::e_points
-    b2Vec2 localPoint;                           ///< usage depends on manifold type
+    b2ManifoldPoint points[b2_maxManifoldPoints];  ///< the points of contact
+    b2Vec2 localNormal;                            ///< not use for Type::e_points
+    b2Vec2 localPoint;                             ///< usage depends on manifold type
     Type type;
-    I32 pointCount;///< the number of manifold points
+    I32 pointCount;  ///< the number of manifold points
 };
 
 /// This is used to compute the current state of a contact manifold.
-struct b2WorldManifold
-{
+struct b2WorldManifold {
     /// Evaluate the manifold with supplied transforms. This assumes
     /// modest motion from the original state. This does not change the
     /// point count, impulses, etc. The radii must come from the shapes
     /// that generated the manifold.
-    void Initialize(const b2Manifold *manifold, const b2Transform &xfA, float radiusA,
-                    const b2Transform &xfB, float radiusB);
+    void Initialize(const b2Manifold *manifold, const b2Transform &xfA, float radiusA, const b2Transform &xfB, float radiusB);
 
-    b2Vec2 normal;                          ///< world vector pointing from A to B
-    b2Vec2 points[b2_maxManifoldPoints];    ///< world contact point (point of intersection)
-    float separations[b2_maxManifoldPoints];///< a negative value indicates overlap, in meters
+    b2Vec2 normal;                            ///< world vector pointing from A to B
+    b2Vec2 points[b2_maxManifoldPoints];      ///< world contact point (point of intersection)
+    float separations[b2_maxManifoldPoints];  ///< a negative value indicates overlap, in meters
 };
 
 /// This is used for determining the state of contact points.
 enum b2PointState {
-    b2_nullState,   ///< point does not exist
-    b2_addState,    ///< point was added in the update
-    b2_persistState,///< point persisted across the update
-    b2_removeState  ///< point was removed in the update
+    b2_nullState,     ///< point does not exist
+    b2_addState,      ///< point was added in the update
+    b2_persistState,  ///< point persisted across the update
+    b2_removeState    ///< point was removed in the update
 };
 
 /// Compute the point states given two manifolds. The states pertain to the transition from manifold1
 /// to manifold2. So state1 is either persist or remove while state2 is either add or persist.
-void b2GetPointStates(b2PointState state1[b2_maxManifoldPoints],
-                      b2PointState state2[b2_maxManifoldPoints], const b2Manifold *manifold1,
-                      const b2Manifold *manifold2);
+void b2GetPointStates(b2PointState state1[b2_maxManifoldPoints], b2PointState state2[b2_maxManifoldPoints], const b2Manifold *manifold1, const b2Manifold *manifold2);
 
 /// Used for computing contact manifolds.
-struct b2ClipVertex
-{
+struct b2ClipVertex {
     b2Vec2 v;
     b2ContactID id;
 };
 
 /// Ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).
-struct b2RayCastInput
-{
+struct b2RayCastInput {
     b2Vec2 p1, p2;
     float maxFraction;
 };
 
 /// Ray-cast output data. The ray hits at p1 + fraction * (p2 - p1), where p1 and p2
 /// come from b2RayCastInput.
-struct b2RayCastOutput
-{
+struct b2RayCastOutput {
     b2Vec2 normal;
     float fraction;
 };
 
 /// An axis aligned bounding box.
-struct b2AABB
-{
+struct b2AABB {
     /// Verify that the bounds are sorted.
     bool IsValid() const;
 
@@ -1262,39 +1193,30 @@ struct b2AABB
 
     bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input) const;
 
-    b2Vec2 lowerBound;///< the lower vertex
-    b2Vec2 upperBound;///< the upper vertex
+    b2Vec2 lowerBound;  ///< the lower vertex
+    b2Vec2 upperBound;  ///< the upper vertex
 };
 
 /// Compute the collision manifold between two circles.
-void b2CollideCircles(b2Manifold *manifold, const b2CircleShape *circleA, const b2Transform &xfA,
-                      const b2CircleShape *circleB, const b2Transform &xfB);
+void b2CollideCircles(b2Manifold *manifold, const b2CircleShape *circleA, const b2Transform &xfA, const b2CircleShape *circleB, const b2Transform &xfB);
 
 /// Compute the collision manifold between a polygon and a circle.
-void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polygonA,
-                               const b2Transform &xfA, const b2CircleShape *circleB,
-                               const b2Transform &xfB);
+void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polygonA, const b2Transform &xfA, const b2CircleShape *circleB, const b2Transform &xfB);
 
 /// Compute the collision manifold between two polygons.
-void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polygonA, const b2Transform &xfA,
-                       const b2PolygonShape *polygonB, const b2Transform &xfB);
+void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polygonA, const b2Transform &xfA, const b2PolygonShape *polygonB, const b2Transform &xfB);
 
 /// Compute the collision manifold between an edge and a circle.
-void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *polygonA,
-                            const b2Transform &xfA, const b2CircleShape *circleB,
-                            const b2Transform &xfB);
+void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *polygonA, const b2Transform &xfA, const b2CircleShape *circleB, const b2Transform &xfB);
 
 /// Compute the collision manifold between an edge and a polygon.
-void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, const b2Transform &xfA,
-                             const b2PolygonShape *circleB, const b2Transform &xfB);
+void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, const b2Transform &xfA, const b2PolygonShape *circleB, const b2Transform &xfB);
 
 /// Clipping for contact manifolds.
-I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal,
-                        float offset, I32 vertexIndexA);
+I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal, float offset, I32 vertexIndexA);
 
 /// Determine if two generic shapes overlap.
-bool b2TestOverlap(const b2Shape *shapeA, I32 indexA, const b2Shape *shapeB, I32 indexB,
-                   const b2Transform &xfA, const b2Transform &xfB);
+bool b2TestOverlap(const b2Shape *shapeA, I32 indexA, const b2Shape *shapeB, I32 indexB, const b2Transform &xfA, const b2Transform &xfB);
 
 // ---------------- Inline Functions ------------------------------------------
 
@@ -1324,8 +1246,7 @@ inline bool b2TestOverlap(const b2AABB &a, const b2AABB &b) {
 class b2BlockAllocator;
 
 /// This holds the mass data computed for a shape.
-struct b2MassData
-{
+struct b2MassData {
     /// The mass of the shape, usually in kilograms.
     float mass;
 
@@ -1341,13 +1262,7 @@ struct b2MassData
 /// is created. Shapes may encapsulate a one or more child shapes.
 class b2Shape {
 public:
-    enum Type {
-        e_circle = 0,
-        e_edge = 1,
-        e_polygon = 2,
-        e_chain = 3,
-        e_typeCount = 4
-    };
+    enum Type { e_circle = 0, e_edge = 1, e_polygon = 2, e_chain = 3, e_typeCount = 4 };
 
     virtual ~b2Shape() {}
 
@@ -1371,8 +1286,7 @@ public:
     /// @param input the ray-cast input parameters.
     /// @param transform the transform to be applied to the shape.
     /// @param childIndex the child shape index
-    virtual bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                         const b2Transform &transform, I32 childIndex) const = 0;
+    virtual bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform, I32 childIndex) const = 0;
 
     /// Given a transform, compute the associated axis aligned bounding box for a child shape.
     /// @param aabb returns the axis aligned box.
@@ -1412,16 +1326,11 @@ struct b2ContactEdge;
 /// static: zero mass, zero velocity, may be manually moved
 /// kinematic: zero mass, non-zero velocity set by user, moved by solver
 /// dynamic: positive mass, non-zero velocity determined by forces, moved by solver
-enum b2BodyType {
-    b2_staticBody = 0,
-    b2_kinematicBody,
-    b2_dynamicBody
-};
+enum b2BodyType { b2_staticBody = 0, b2_kinematicBody, b2_dynamicBody };
 
 /// A body definition holds all the data needed to construct a rigid body.
 /// You can safely re-use body definitions. Shapes are added to a body after construction.
-struct b2BodyDef
-{
+struct b2BodyDef {
     /// This constructor sets the body definition default values.
     b2BodyDef() {
         position.Set(0.0f, 0.0f);
@@ -1774,15 +1683,7 @@ private:
     friend class b2WheelJoint;
 
     // m_flags
-    enum {
-        e_islandFlag = 0x0001,
-        e_awakeFlag = 0x0002,
-        e_autoSleepFlag = 0x0004,
-        e_bulletFlag = 0x0008,
-        e_fixedRotationFlag = 0x0010,
-        e_enabledFlag = 0x0020,
-        e_toiFlag = 0x0040
-    };
+    enum { e_islandFlag = 0x0001, e_awakeFlag = 0x0002, e_autoSleepFlag = 0x0004, e_bulletFlag = 0x0008, e_fixedRotationFlag = 0x0010, e_enabledFlag = 0x0020, e_toiFlag = 0x0040 };
 
     b2Body(const b2BodyDef *bd, b2World *world);
     ~b2Body();
@@ -1802,8 +1703,8 @@ private:
 
     I32 m_islandIndex;
 
-    b2Transform m_xf;// the body origin transform
-    b2Sweep m_sweep; // the swept motion for CCD
+    b2Transform m_xf;  // the body origin transform
+    b2Sweep m_sweep;   // the swept motion for CCD
 
     b2Vec2 m_linearVelocity;
     float m_angularVelocity;
@@ -1848,9 +1749,13 @@ inline const b2Vec2 &b2Body::GetWorldCenter() const { return m_sweep.c; }
 inline const b2Vec2 &b2Body::GetLocalCenter() const { return m_sweep.localCenter; }
 
 inline void b2Body::SetLinearVelocity(const b2Vec2 &v) {
-    if (m_type == b2_staticBody) { return; }
+    if (m_type == b2_staticBody) {
+        return;
+    }
 
-    if (b2Dot(v, v) > 0.0f) { SetAwake(true); }
+    if (b2Dot(v, v) > 0.0f) {
+        SetAwake(true);
+    }
 
     m_linearVelocity = v;
 }
@@ -1858,9 +1763,13 @@ inline void b2Body::SetLinearVelocity(const b2Vec2 &v) {
 inline const b2Vec2 &b2Body::GetLinearVelocity() const { return m_linearVelocity; }
 
 inline void b2Body::SetAngularVelocity(float w) {
-    if (m_type == b2_staticBody) { return; }
+    if (m_type == b2_staticBody) {
+        return;
+    }
 
-    if (w * w > 0.0f) { SetAwake(true); }
+    if (w * w > 0.0f) {
+        SetAwake(true);
+    }
 
     m_angularVelocity = w;
 }
@@ -1869,9 +1778,7 @@ inline float b2Body::GetAngularVelocity() const { return m_angularVelocity; }
 
 inline float b2Body::GetMass() const { return m_mass; }
 
-inline float b2Body::GetInertia() const {
-    return m_I + m_mass * b2Dot(m_sweep.localCenter, m_sweep.localCenter);
-}
+inline float b2Body::GetInertia() const { return m_I + m_mass * b2Dot(m_sweep.localCenter, m_sweep.localCenter); }
 
 inline b2MassData b2Body::GetMassData() const {
     b2MassData data;
@@ -1881,29 +1788,17 @@ inline b2MassData b2Body::GetMassData() const {
     return data;
 }
 
-inline b2Vec2 b2Body::GetWorldPoint(const b2Vec2 &localPoint) const {
-    return b2Mul(m_xf, localPoint);
-}
+inline b2Vec2 b2Body::GetWorldPoint(const b2Vec2 &localPoint) const { return b2Mul(m_xf, localPoint); }
 
-inline b2Vec2 b2Body::GetWorldVector(const b2Vec2 &localVector) const {
-    return b2Mul(m_xf.q, localVector);
-}
+inline b2Vec2 b2Body::GetWorldVector(const b2Vec2 &localVector) const { return b2Mul(m_xf.q, localVector); }
 
-inline b2Vec2 b2Body::GetLocalPoint(const b2Vec2 &worldPoint) const {
-    return b2MulT(m_xf, worldPoint);
-}
+inline b2Vec2 b2Body::GetLocalPoint(const b2Vec2 &worldPoint) const { return b2MulT(m_xf, worldPoint); }
 
-inline b2Vec2 b2Body::GetLocalVector(const b2Vec2 &worldVector) const {
-    return b2MulT(m_xf.q, worldVector);
-}
+inline b2Vec2 b2Body::GetLocalVector(const b2Vec2 &worldVector) const { return b2MulT(m_xf.q, worldVector); }
 
-inline b2Vec2 b2Body::GetLinearVelocityFromWorldPoint(const b2Vec2 &worldPoint) const {
-    return m_linearVelocity + b2Cross(m_angularVelocity, worldPoint - m_sweep.c);
-}
+inline b2Vec2 b2Body::GetLinearVelocityFromWorldPoint(const b2Vec2 &worldPoint) const { return m_linearVelocity + b2Cross(m_angularVelocity, worldPoint - m_sweep.c); }
 
-inline b2Vec2 b2Body::GetLinearVelocityFromLocalPoint(const b2Vec2 &localPoint) const {
-    return GetLinearVelocityFromWorldPoint(GetWorldPoint(localPoint));
-}
+inline b2Vec2 b2Body::GetLinearVelocityFromLocalPoint(const b2Vec2 &localPoint) const { return GetLinearVelocityFromWorldPoint(GetWorldPoint(localPoint)); }
 
 inline float b2Body::GetLinearDamping() const { return m_linearDamping; }
 
@@ -1928,7 +1823,9 @@ inline void b2Body::SetBullet(bool flag) {
 inline bool b2Body::IsBullet() const { return (m_flags & e_bulletFlag) == e_bulletFlag; }
 
 inline void b2Body::SetAwake(bool flag) {
-    if (m_type == b2_staticBody) { return; }
+    if (m_type == b2_staticBody) {
+        return;
+    }
 
     if (flag) {
         m_flags |= e_awakeFlag;
@@ -1947,9 +1844,7 @@ inline bool b2Body::IsAwake() const { return (m_flags & e_awakeFlag) == e_awakeF
 
 inline bool b2Body::IsEnabled() const { return (m_flags & e_enabledFlag) == e_enabledFlag; }
 
-inline bool b2Body::IsFixedRotation() const {
-    return (m_flags & e_fixedRotationFlag) == e_fixedRotationFlag;
-}
+inline bool b2Body::IsFixedRotation() const { return (m_flags & e_fixedRotationFlag) == e_fixedRotationFlag; }
 
 inline void b2Body::SetSleepingAllowed(bool flag) {
     if (flag) {
@@ -1960,9 +1855,7 @@ inline void b2Body::SetSleepingAllowed(bool flag) {
     }
 }
 
-inline bool b2Body::IsSleepingAllowed() const {
-    return (m_flags & e_autoSleepFlag) == e_autoSleepFlag;
-}
+inline bool b2Body::IsSleepingAllowed() const { return (m_flags & e_autoSleepFlag) == e_autoSleepFlag; }
 
 inline b2Fixture *b2Body::GetFixtureList() { return m_fixtureList; }
 
@@ -1985,9 +1878,13 @@ inline b2BodyUserData &b2Body::GetUserData() { return m_userData; }
 inline const b2BodyUserData &b2Body::GetUserData() const { return m_userData; }
 
 inline void b2Body::ApplyForce(const b2Vec2 &force, const b2Vec2 &point, bool wake) {
-    if (m_type != b2_dynamicBody) { return; }
+    if (m_type != b2_dynamicBody) {
+        return;
+    }
 
-    if (wake && (m_flags & e_awakeFlag) == 0) { SetAwake(true); }
+    if (wake && (m_flags & e_awakeFlag) == 0) {
+        SetAwake(true);
+    }
 
     // Don't accumulate a force if the body is sleeping.
     if (m_flags & e_awakeFlag) {
@@ -1997,27 +1894,43 @@ inline void b2Body::ApplyForce(const b2Vec2 &force, const b2Vec2 &point, bool wa
 }
 
 inline void b2Body::ApplyForceToCenter(const b2Vec2 &force, bool wake) {
-    if (m_type != b2_dynamicBody) { return; }
+    if (m_type != b2_dynamicBody) {
+        return;
+    }
 
-    if (wake && (m_flags & e_awakeFlag) == 0) { SetAwake(true); }
+    if (wake && (m_flags & e_awakeFlag) == 0) {
+        SetAwake(true);
+    }
 
     // Don't accumulate a force if the body is sleeping
-    if (m_flags & e_awakeFlag) { m_force += force; }
+    if (m_flags & e_awakeFlag) {
+        m_force += force;
+    }
 }
 
 inline void b2Body::ApplyTorque(float torque, bool wake) {
-    if (m_type != b2_dynamicBody) { return; }
+    if (m_type != b2_dynamicBody) {
+        return;
+    }
 
-    if (wake && (m_flags & e_awakeFlag) == 0) { SetAwake(true); }
+    if (wake && (m_flags & e_awakeFlag) == 0) {
+        SetAwake(true);
+    }
 
     // Don't accumulate a force if the body is sleeping
-    if (m_flags & e_awakeFlag) { m_torque += torque; }
+    if (m_flags & e_awakeFlag) {
+        m_torque += torque;
+    }
 }
 
 inline void b2Body::ApplyLinearImpulse(const b2Vec2 &impulse, const b2Vec2 &point, bool wake) {
-    if (m_type != b2_dynamicBody) { return; }
+    if (m_type != b2_dynamicBody) {
+        return;
+    }
 
-    if (wake && (m_flags & e_awakeFlag) == 0) { SetAwake(true); }
+    if (wake && (m_flags & e_awakeFlag) == 0) {
+        SetAwake(true);
+    }
 
     // Don't accumulate velocity if the body is sleeping
     if (m_flags & e_awakeFlag) {
@@ -2027,21 +1940,33 @@ inline void b2Body::ApplyLinearImpulse(const b2Vec2 &impulse, const b2Vec2 &poin
 }
 
 inline void b2Body::ApplyLinearImpulseToCenter(const b2Vec2 &impulse, bool wake) {
-    if (m_type != b2_dynamicBody) { return; }
+    if (m_type != b2_dynamicBody) {
+        return;
+    }
 
-    if (wake && (m_flags & e_awakeFlag) == 0) { SetAwake(true); }
+    if (wake && (m_flags & e_awakeFlag) == 0) {
+        SetAwake(true);
+    }
 
     // Don't accumulate velocity if the body is sleeping
-    if (m_flags & e_awakeFlag) { m_linearVelocity += m_invMass * impulse; }
+    if (m_flags & e_awakeFlag) {
+        m_linearVelocity += m_invMass * impulse;
+    }
 }
 
 inline void b2Body::ApplyAngularImpulse(float impulse, bool wake) {
-    if (m_type != b2_dynamicBody) { return; }
+    if (m_type != b2_dynamicBody) {
+        return;
+    }
 
-    if (wake && (m_flags & e_awakeFlag) == 0) { SetAwake(true); }
+    if (wake && (m_flags & e_awakeFlag) == 0) {
+        SetAwake(true);
+    }
 
     // Don't accumulate velocity if the body is sleeping
-    if (m_flags & e_awakeFlag) { m_angularVelocity += m_invI * impulse; }
+    if (m_flags & e_awakeFlag) {
+        m_angularVelocity += m_invI * impulse;
+    }
 }
 
 inline void b2Body::SynchronizeTransform() {
@@ -2072,8 +1997,7 @@ class b2BroadPhase;
 class b2Fixture;
 
 /// This holds contact filtering data.
-struct b2Filter
-{
+struct b2Filter {
     b2Filter() {
         categoryBits = 0x0001;
         maskBits = 0xFFFF;
@@ -2095,8 +2019,7 @@ struct b2Filter
 
 /// A fixture definition is used to create a fixture. This class defines an
 /// abstract fixture definition. You can reuse fixture definitions safely.
-struct b2FixtureDef
-{
+struct b2FixtureDef {
     /// The constructor sets the default fixture definition values.
     b2FixtureDef() {
         shape = nullptr;
@@ -2136,8 +2059,7 @@ struct b2FixtureDef
 };
 
 /// This proxy is used internally to connect fixtures to the broad-phase.
-struct b2FixtureProxy
-{
+struct b2FixtureProxy {
     b2AABB aabb;
     b2Fixture *fixture;
     I32 childIndex;
@@ -2324,22 +2246,13 @@ inline void b2Fixture::SetRestitution(float restitution) { m_restitution = resti
 
 inline float b2Fixture::GetRestitutionThreshold() const { return m_restitutionThreshold; }
 
-inline void b2Fixture::SetRestitutionThreshold(float threshold) {
-    m_restitutionThreshold = threshold;
-}
+inline void b2Fixture::SetRestitutionThreshold(float threshold) { m_restitutionThreshold = threshold; }
 
-inline bool b2Fixture::TestPoint(const b2Vec2 &p) const {
-    return m_shape->TestPoint(m_body->GetTransform(), p);
-}
+inline bool b2Fixture::TestPoint(const b2Vec2 &p) const { return m_shape->TestPoint(m_body->GetTransform(), p); }
 
-inline bool b2Fixture::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
-                               I32 childIndex) const {
-    return m_shape->RayCast(output, input, m_body->GetTransform(), childIndex);
-}
+inline bool b2Fixture::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, I32 childIndex) const { return m_shape->RayCast(output, input, m_body->GetTransform(), childIndex); }
 
-inline void b2Fixture::GetMassData(b2MassData *massData) const {
-    m_shape->ComputeMass(massData, m_density);
-}
+inline void b2Fixture::GetMassData(b2MassData *massData) const { m_shape->ComputeMass(massData, m_density); }
 
 inline const b2AABB &b2Fixture::GetAABB(I32 childIndex) const {
     METADOT_ASSERT_E(0 <= childIndex && childIndex < m_proxyCount);
@@ -2360,27 +2273,19 @@ class b2ContactListener;
 
 /// Friction mixing law. The idea is to allow either fixture to drive the friction to zero.
 /// For example, anything slides on ice.
-inline float b2MixFriction(float friction1, float friction2) {
-    return b2Sqrt(friction1 * friction2);
-}
+inline float b2MixFriction(float friction1, float friction2) { return b2Sqrt(friction1 * friction2); }
 
 /// Restitution mixing law. The idea is allow for anything to bounce off an inelastic surface.
 /// For example, a superball bounces on anything.
-inline float b2MixRestitution(float restitution1, float restitution2) {
-    return restitution1 > restitution2 ? restitution1 : restitution2;
-}
+inline float b2MixRestitution(float restitution1, float restitution2) { return restitution1 > restitution2 ? restitution1 : restitution2; }
 
 /// Restitution mixing law. This picks the lowest value.
-inline float b2MixRestitutionThreshold(float threshold1, float threshold2) {
-    return threshold1 < threshold2 ? threshold1 : threshold2;
-}
+inline float b2MixRestitutionThreshold(float threshold1, float threshold2) { return threshold1 < threshold2 ? threshold1 : threshold2; }
 
-typedef b2Contact *b2ContactCreateFcn(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB,
-                                      I32 indexB, b2BlockAllocator *allocator);
+typedef b2Contact *b2ContactCreateFcn(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
 typedef void b2ContactDestroyFcn(b2Contact *contact, b2BlockAllocator *allocator);
 
-struct b2ContactRegister
-{
+struct b2ContactRegister {
     b2ContactCreateFcn *createFcn;
     b2ContactDestroyFcn *destroyFcn;
     bool primary;
@@ -2391,12 +2296,11 @@ struct b2ContactRegister
 /// is an edge. A contact edge belongs to a doubly linked list
 /// maintained in each attached body. Each contact has two contact
 /// nodes, one for each attached body.
-struct b2ContactEdge
-{
-    b2Body *other;      ///< provides quick access to the other body attached.
-    b2Contact *contact; ///< the contact
-    b2ContactEdge *prev;///< the previous contact edge in the body's contact list
-    b2ContactEdge *next;///< the next contact edge in the body's contact list
+struct b2ContactEdge {
+    b2Body *other;        ///< provides quick access to the other body attached.
+    b2Contact *contact;   ///< the contact
+    b2ContactEdge *prev;  ///< the previous contact edge in the body's contact list
+    b2ContactEdge *next;  ///< the next contact edge in the body's contact list
 };
 
 /// The class manages contact between two shapes. A contact exists for each overlapping
@@ -2511,13 +2415,10 @@ protected:
     /// Flag this contact for filtering. Filtering will occur the next time step.
     void FlagForFiltering();
 
-    static void AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *destroyFcn,
-                        b2Shape::Type typeA, b2Shape::Type typeB);
+    static void AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *destroyFcn, b2Shape::Type typeA, b2Shape::Type typeB);
     static void InitializeRegisters();
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
-    static void Destroy(b2Contact *contact, b2Shape::Type typeA, b2Shape::Type typeB,
-                        b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
+    static void Destroy(b2Contact *contact, b2Shape::Type typeA, b2Shape::Type typeB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2Contact() : m_fixtureA(nullptr), m_fixtureB(nullptr) {}
@@ -2567,8 +2468,7 @@ inline void b2Contact::GetWorldManifold(b2WorldManifold *worldManifold) const {
     const b2Shape *shapeA = m_fixtureA->GetShape();
     const b2Shape *shapeB = m_fixtureB->GetShape();
 
-    worldManifold->Initialize(&m_manifold, bodyA->GetTransform(), shapeA->m_radius,
-                              bodyB->GetTransform(), shapeB->m_radius);
+    worldManifold->Initialize(&m_manifold, bodyA->GetTransform(), shapeA->m_radius, bodyB->GetTransform(), shapeB->m_radius);
 }
 
 inline void b2Contact::SetEnabled(bool flag) {
@@ -2605,28 +2505,19 @@ inline void b2Contact::SetFriction(float friction) { m_friction = friction; }
 
 inline float b2Contact::GetFriction() const { return m_friction; }
 
-inline void b2Contact::ResetFriction() {
-    m_friction = b2MixFriction(m_fixtureA->m_friction, m_fixtureB->m_friction);
-}
+inline void b2Contact::ResetFriction() { m_friction = b2MixFriction(m_fixtureA->m_friction, m_fixtureB->m_friction); }
 
 inline void b2Contact::SetRestitution(float restitution) { m_restitution = restitution; }
 
 inline float b2Contact::GetRestitution() const { return m_restitution; }
 
-inline void b2Contact::ResetRestitution() {
-    m_restitution = b2MixRestitution(m_fixtureA->m_restitution, m_fixtureB->m_restitution);
-}
+inline void b2Contact::ResetRestitution() { m_restitution = b2MixRestitution(m_fixtureA->m_restitution, m_fixtureB->m_restitution); }
 
-inline void b2Contact::SetRestitutionThreshold(float threshold) {
-    m_restitutionThreshold = threshold;
-}
+inline void b2Contact::SetRestitutionThreshold(float threshold) { m_restitutionThreshold = threshold; }
 
 inline float b2Contact::GetRestitutionThreshold() const { return m_restitutionThreshold; }
 
-inline void b2Contact::ResetRestitutionThreshold() {
-    m_restitutionThreshold = b2MixRestitutionThreshold(m_fixtureA->m_restitutionThreshold,
-                                                       m_fixtureB->m_restitutionThreshold);
-}
+inline void b2Contact::ResetRestitutionThreshold() { m_restitutionThreshold = b2MixRestitutionThreshold(m_fixtureA->m_restitutionThreshold, m_fixtureB->m_restitutionThreshold); }
 
 inline void b2Contact::SetTangentSpeed(float speed) { m_tangentSpeed = speed; }
 
@@ -2640,8 +2531,7 @@ inline float b2Contact::GetTangentSpeed() const { return m_tangentSpeed; }
 /// bodies and the non-zero distance of the distance joint. The definition uses
 /// local anchor points so that the initial configuration can violate the
 /// constraint slightly. This helps when saving and loading a game.
-struct b2DistanceJointDef : public b2JointDef
-{
+struct b2DistanceJointDef : public b2JointDef {
     b2DistanceJointDef() {
         type = e_distanceJoint;
         localAnchorA.Set(0.0f, 0.0f);
@@ -2783,8 +2673,7 @@ protected:
 #pragma region
 
 /// Friction joint definition.
-struct b2FrictionJointDef : public b2JointDef
-{
+struct b2FrictionJointDef : public b2JointDef {
     b2FrictionJointDef() {
         type = e_frictionJoint;
         localAnchorA.SetZero();
@@ -2881,8 +2770,7 @@ protected:
 /// Gear joint definition. This definition requires two existing
 /// revolute or prismatic joints (any combination will work).
 /// @warning bodyB on the input joints must both be dynamic
-struct b2GearJointDef : public b2JointDef
-{
+struct b2GearJointDef : public b2JointDef {
     b2GearJointDef() {
         type = e_gearJoint;
         joint1 = nullptr;
@@ -2983,8 +2871,7 @@ protected:
 #pragma region
 
 /// Motor joint definition.
-struct b2MotorJointDef : public b2JointDef
-{
+struct b2MotorJointDef : public b2JointDef {
     b2MotorJointDef() {
         type = e_motorJoint;
         linearOffset.SetZero();
@@ -3094,8 +2981,7 @@ protected:
 
 /// Mouse joint definition. This requires a world target point,
 /// tuning parameters, and the time step.
-struct b2MouseJointDef : public b2JointDef
-{
+struct b2MouseJointDef : public b2JointDef {
     b2MouseJointDef() {
         type = e_mouseJoint;
         target.Set(0.0f, 0.0f);
@@ -3204,8 +3090,7 @@ protected:
 /// can violate the constraint slightly. The joint translation is zero
 /// when the local anchor points coincide in world space. Using local
 /// anchors and a local axis helps when saving and loading a game.
-struct b2PrismaticJointDef : public b2JointDef
-{
+struct b2PrismaticJointDef : public b2JointDef {
     b2PrismaticJointDef() {
         type = e_prismaticJoint;
         localAnchorA.SetZero();
@@ -3377,8 +3262,7 @@ const float b2_minPulleyLength = 2.0f;
 
 /// Pulley joint definition. This requires two ground anchors,
 /// two dynamic body anchor points, and a pulley ratio.
-struct b2PulleyJointDef : public b2JointDef
-{
+struct b2PulleyJointDef : public b2JointDef {
     b2PulleyJointDef() {
         type = e_pulleyJoint;
         groundAnchorA.Set(-1.0f, 1.0f);
@@ -3392,9 +3276,7 @@ struct b2PulleyJointDef : public b2JointDef
     }
 
     /// Initialize the bodies, anchors, lengths, max lengths, and ratio using the world anchors.
-    void Initialize(b2Body *bodyA, b2Body *bodyB, const b2Vec2 &groundAnchorA,
-                    const b2Vec2 &groundAnchorB, const b2Vec2 &anchorA, const b2Vec2 &anchorB,
-                    float ratio);
+    void Initialize(b2Body *bodyA, b2Body *bodyB, const b2Vec2 &groundAnchorA, const b2Vec2 &groundAnchorB, const b2Vec2 &anchorA, const b2Vec2 &anchorB, float ratio);
 
     /// The first ground anchor in world coordinates. This point never moves.
     b2Vec2 groundAnchorA;
@@ -3511,8 +3393,7 @@ protected:
 /// 1. you might not know where the center of mass will be.
 /// 2. if you add/remove shapes from a body and recompute the mass,
 ///    the joints will be broken.
-struct b2RevoluteJointDef : public b2JointDef
-{
+struct b2RevoluteJointDef : public b2JointDef {
     b2RevoluteJointDef() {
         type = e_revoluteJoint;
         localAnchorA.Set(0.0f, 0.0f);
@@ -3684,8 +3565,7 @@ inline float b2RevoluteJoint::GetMotorSpeed() const { return m_motorSpeed; }
 /// Weld joint definition. You need to specify local anchor points
 /// where they are attached and the relative body angle. The position
 /// of the anchor points is important for computing the reaction torque.
-struct b2WeldJointDef : public b2JointDef
-{
+struct b2WeldJointDef : public b2JointDef {
     b2WeldJointDef() {
         type = e_weldJoint;
         localAnchorA.Set(0.0f, 0.0f);
@@ -3792,8 +3672,7 @@ protected:
 /// can violate the constraint slightly. The joint translation is zero
 /// when the local anchor points coincide in world space. Using local
 /// anchors and a local axis helps when saving and loading a game.
-struct b2WheelJointDef : public b2JointDef
-{
+struct b2WheelJointDef : public b2JointDef {
     b2WheelJointDef() {
         type = e_wheelJoint;
         localAnchorA.SetZero();
@@ -4018,8 +3897,7 @@ public:
     /// @param count the vertex count
     /// @param prevVertex previous vertex from chain that connects to the start
     /// @param nextVertex next vertex from chain that connects to the end
-    void CreateChain(const b2Vec2 *vertices, I32 count, const b2Vec2 &prevVertex,
-                     const b2Vec2 &nextVertex);
+    void CreateChain(const b2Vec2 *vertices, I32 count, const b2Vec2 &prevVertex, const b2Vec2 &nextVertex);
 
     /// Implement b2Shape. Vertices are cloned using b2Alloc.
     b2Shape *Clone(b2BlockAllocator *allocator) const override;
@@ -4035,8 +3913,7 @@ public:
     bool TestPoint(const b2Transform &transform, const b2Vec2 &p) const override;
 
     /// Implement b2Shape.
-    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 I32 childIndex) const override;
+    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
     void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
@@ -4082,8 +3959,7 @@ public:
     /// Implement b2Shape.
     /// @note because the circle is solid, rays that start inside do not hit because the normal is
     /// not defined.
-    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 I32 childIndex) const override;
+    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
     void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
@@ -4131,8 +4007,7 @@ public:
     bool TestPoint(const b2Transform &transform, const b2Vec2 &p) const override;
 
     /// Implement b2Shape.
-    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 I32 childIndex) const override;
+    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
     void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
@@ -4203,8 +4078,7 @@ public:
     /// Implement b2Shape.
     /// @note because the polygon is solid, rays that start inside do not hit because the normal is
     /// not defined.
-    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform,
-                 I32 childIndex) const override;
+    bool RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform, I32 childIndex) const override;
 
     /// @see b2Shape::ComputeAABB
     void ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const override;
@@ -4237,7 +4111,7 @@ inline b2PolygonShape::b2PolygonShape() {
 /// This is a growable LIFO stack with an initial capacity of N.
 /// If the stack size exceeds the initial capacity, the heap is used
 /// to increase the size of the stack.
-template<typename T, I32 N>
+template <typename T, I32 N>
 class b2GrowableStack {
 public:
     b2GrowableStack() {
@@ -4257,9 +4131,11 @@ public:
         if (m_count == m_capacity) {
             T *old = m_stack;
             m_capacity *= 2;
-            m_stack = (T *) b2Alloc(m_capacity * sizeof(T));
+            m_stack = (T *)b2Alloc(m_capacity * sizeof(T));
             memcpy(m_stack, old, m_count * sizeof(T));
-            if (old != m_array) { b2Free(old); }
+            if (old != m_array) {
+                b2Free(old);
+            }
         }
 
         m_stack[m_count] = element;
@@ -4288,8 +4164,7 @@ private:
 #define b2_nullNode (-1)
 
 /// A node in the dynamic tree. The client does not interact with this directly.
-struct b2TreeNode
-{
+struct b2TreeNode {
     bool IsLeaf() const { return child1 == b2_nullNode; }
 
     /// Enlarged AABB
@@ -4351,7 +4226,7 @@ public:
 
     /// Query an AABB for overlapping proxies. The callback class
     /// is called for each proxy that overlaps the supplied AABB.
-    template<typename T>
+    template <typename T>
     void Query(T *callback, const b2AABB &aabb) const;
 
     /// Ray-cast against the proxies in the tree. This relies on the callback
@@ -4361,7 +4236,7 @@ public:
     /// number of proxies in the tree.
     /// @param input the ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).
     /// @param callback a callback class that is called for each proxy that is hit by the ray.
-    template<typename T>
+    template <typename T>
     void RayCast(T *callback, const b2RayCastInput &input) const;
 
     /// Validate this tree. For testing.
@@ -4432,21 +4307,25 @@ inline const b2AABB &b2DynamicTree::GetFatAABB(I32 proxyId) const {
     return m_nodes[proxyId].aabb;
 }
 
-template<typename T>
+template <typename T>
 inline void b2DynamicTree::Query(T *callback, const b2AABB &aabb) const {
     b2GrowableStack<I32, 256> stack;
     stack.Push(m_root);
 
     while (stack.GetCount() > 0) {
         I32 nodeId = stack.Pop();
-        if (nodeId == b2_nullNode) { continue; }
+        if (nodeId == b2_nullNode) {
+            continue;
+        }
 
         const b2TreeNode *node = m_nodes + nodeId;
 
         if (b2TestOverlap(node->aabb, aabb)) {
             if (node->IsLeaf()) {
                 bool proceed = callback->QueryCallback(nodeId);
-                if (proceed == false) { return; }
+                if (proceed == false) {
+                    return;
+                }
             } else {
                 stack.Push(node->child1);
                 stack.Push(node->child2);
@@ -4455,7 +4334,7 @@ inline void b2DynamicTree::Query(T *callback, const b2AABB &aabb) const {
     }
 }
 
-template<typename T>
+template <typename T>
 inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) const {
     b2Vec2 p1 = input.p1;
     b2Vec2 p2 = input.p2;
@@ -4485,18 +4364,24 @@ inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) con
 
     while (stack.GetCount() > 0) {
         I32 nodeId = stack.Pop();
-        if (nodeId == b2_nullNode) { continue; }
+        if (nodeId == b2_nullNode) {
+            continue;
+        }
 
         const b2TreeNode *node = m_nodes + nodeId;
 
-        if (b2TestOverlap(node->aabb, segmentAABB) == false) { continue; }
+        if (b2TestOverlap(node->aabb, segmentAABB) == false) {
+            continue;
+        }
 
         // Separating axis for segment (Gino, p80).
         // |dot(v, p1 - c)| > dot(|v|, h)
         b2Vec2 c = node->aabb.GetCenter();
         b2Vec2 h = node->aabb.GetExtents();
         float separation = b2Abs(b2Dot(v, p1 - c)) - b2Dot(abs_v, h);
-        if (separation > 0.0f) { continue; }
+        if (separation > 0.0f) {
+            continue;
+        }
 
         if (node->IsLeaf()) {
             b2RayCastInput subInput;
@@ -4529,8 +4414,7 @@ inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) con
 
 #pragma region
 
-struct b2Pair
-{
+struct b2Pair {
     I32 proxyIdA;
     I32 proxyIdB;
 };
@@ -4540,9 +4424,7 @@ struct b2Pair
 /// It is up to the client to consume the new pairs and to track subsequent overlap.
 class b2BroadPhase {
 public:
-    enum {
-        e_nullProxy = -1
-    };
+    enum { e_nullProxy = -1 };
 
     b2BroadPhase();
     ~b2BroadPhase();
@@ -4574,12 +4456,12 @@ public:
     I32 GetProxyCount() const;
 
     /// Update the pairs. This results in pair callbacks. This can only add pairs.
-    template<typename T>
+    template <typename T>
     void UpdatePairs(T *callback);
 
     /// Query an AABB for overlapping proxies. The callback class
     /// is called for each proxy that overlaps the supplied AABB.
-    template<typename T>
+    template <typename T>
     void Query(T *callback, const b2AABB &aabb) const;
 
     /// Ray-cast against the proxies in the tree. This relies on the callback
@@ -4589,7 +4471,7 @@ public:
     /// number of proxies in the tree.
     /// @param input the ray-cast input data. The ray extends from p1 to p1 + maxFraction * (p2 - p1).
     /// @param callback a callback class that is called for each proxy that is hit by the ray.
-    template<typename T>
+    template <typename T>
     void RayCast(T *callback, const b2RayCastInput &input) const;
 
     /// Get the height of the embedded tree.
@@ -4637,9 +4519,7 @@ inline bool b2BroadPhase::TestOverlap(I32 proxyIdA, I32 proxyIdB) const {
     return b2TestOverlap(aabbA, aabbB);
 }
 
-inline const b2AABB &b2BroadPhase::GetFatAABB(I32 proxyId) const {
-    return m_tree.GetFatAABB(proxyId);
-}
+inline const b2AABB &b2BroadPhase::GetFatAABB(I32 proxyId) const { return m_tree.GetFatAABB(proxyId); }
 
 inline I32 b2BroadPhase::GetProxyCount() const { return m_proxyCount; }
 
@@ -4649,7 +4529,7 @@ inline I32 b2BroadPhase::GetTreeBalance() const { return m_tree.GetMaxBalance();
 
 inline float b2BroadPhase::GetTreeQuality() const { return m_tree.GetAreaRatio(); }
 
-template<typename T>
+template <typename T>
 void b2BroadPhase::UpdatePairs(T *callback) {
     // Reset pair buffer
     m_pairCount = 0;
@@ -4657,7 +4537,9 @@ void b2BroadPhase::UpdatePairs(T *callback) {
     // Perform tree queries for all moving proxies.
     for (I32 i = 0; i < m_moveCount; ++i) {
         m_queryProxyId = m_moveBuffer[i];
-        if (m_queryProxyId == e_nullProxy) { continue; }
+        if (m_queryProxyId == e_nullProxy) {
+            continue;
+        }
 
         // We have to query the tree with the fat AABB so that
         // we don't fail to create a pair that may touch later.
@@ -4679,7 +4561,9 @@ void b2BroadPhase::UpdatePairs(T *callback) {
     // Clear move flags
     for (I32 i = 0; i < m_moveCount; ++i) {
         I32 proxyId = m_moveBuffer[i];
-        if (proxyId == e_nullProxy) { continue; }
+        if (proxyId == e_nullProxy) {
+            continue;
+        }
 
         m_tree.ClearMoved(proxyId);
     }
@@ -4688,12 +4572,12 @@ void b2BroadPhase::UpdatePairs(T *callback) {
     m_moveCount = 0;
 }
 
-template<typename T>
+template <typename T>
 inline void b2BroadPhase::Query(T *callback, const b2AABB &aabb) const {
     m_tree.Query(callback, aabb);
 }
 
-template<typename T>
+template <typename T>
 inline void b2BroadPhase::RayCast(T *callback, const b2RayCastInput &input) const {
     m_tree.RayCast(callback, input);
 }
@@ -4704,8 +4588,7 @@ inline void b2BroadPhase::ShiftOrigin(const b2Vec2 &newOrigin) { m_tree.ShiftOri
 #pragma region
 
 /// Profiling data. Times are in milliseconds.
-struct b2Profile
-{
+struct b2Profile {
     float step;
     float collide;
     float solve;
@@ -4717,33 +4600,29 @@ struct b2Profile
 };
 
 /// This is an internal structure.
-struct b2TimeStep
-{
-    float dt;     // time step
-    float inv_dt; // inverse time step (0 if dt == 0).
-    float dtRatio;// dt * inv_dt0
+struct b2TimeStep {
+    float dt;       // time step
+    float inv_dt;   // inverse time step (0 if dt == 0).
+    float dtRatio;  // dt * inv_dt0
     I32 velocityIterations;
     I32 positionIterations;
     bool warmStarting;
 };
 
 /// This is an internal structure.
-struct b2Position
-{
+struct b2Position {
     b2Vec2 c;
     float a;
 };
 
 /// This is an internal structure.
-struct b2Velocity
-{
+struct b2Velocity {
     b2Vec2 v;
     float w;
 };
 
 /// Solver Data
-struct b2SolverData
-{
+struct b2SolverData {
     b2TimeStep step;
     b2Position *positions;
     b2Velocity *velocities;
@@ -4784,11 +4663,10 @@ public:
 
 #pragma region
 
-const I32 b2_stackSize = 100 * 1024;// 100k
+const I32 b2_stackSize = 100 * 1024;  // 100k
 const I32 b2_maxStackEntries = 32;
 
-struct b2StackEntry
-{
+struct b2StackEntry {
     char *data;
     I32 size;
     bool usedMalloc;
@@ -4861,8 +4739,7 @@ public:
 /// Contact impulses for reporting. Impulses are used instead of forces because
 /// sub-step forces may approach infinity for rigid body collisions. These
 /// match up one-to-one with the contact points in b2Manifold.
-struct b2ContactImpulse
-{
+struct b2ContactImpulse {
     float normalImpulses[b2_maxManifoldPoints];
     float tangentImpulses[b2_maxManifoldPoints];
     I32 count;
@@ -4943,8 +4820,7 @@ public:
     /// @param fraction the fraction along the ray at the point of intersection
     /// @return -1 to filter, 0 to terminate, fraction to clip the ray for
     /// closest hit, 1 to continue
-    virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal,
-                                float fraction) = 0;
+    virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction) = 0;
 };
 
 #pragma endregion
@@ -5223,8 +5099,7 @@ struct b2Profile;
 /// This is an internal class.
 class b2Island {
 public:
-    b2Island(I32 bodyCapacity, I32 contactCapacity, I32 jointCapacity, b2StackAllocator *allocator,
-             b2ContactListener *listener);
+    b2Island(I32 bodyCapacity, I32 contactCapacity, I32 jointCapacity, b2StackAllocator *allocator, b2ContactListener *listener);
     ~b2Island();
 
     void Clear() {
@@ -5283,8 +5158,7 @@ class b2BlockAllocator;
 
 class b2ChainAndCircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2ChainAndCircleContact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB);
@@ -5300,8 +5174,7 @@ class b2BlockAllocator;
 
 class b2ChainAndPolygonContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2ChainAndPolygonContact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB);
@@ -5318,8 +5191,7 @@ class b2BlockAllocator;
 
 class b2CircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2CircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB);
@@ -5336,8 +5208,7 @@ class b2Body;
 class b2StackAllocator;
 struct b2ContactPositionConstraint;
 
-struct b2VelocityConstraintPoint
-{
+struct b2VelocityConstraintPoint {
     b2Vec2 rA;
     b2Vec2 rB;
     float normalImpulse;
@@ -5347,8 +5218,7 @@ struct b2VelocityConstraintPoint
     float velocityBias;
 };
 
-struct b2ContactVelocityConstraint
-{
+struct b2ContactVelocityConstraint {
     b2VelocityConstraintPoint points[b2_maxManifoldPoints];
     b2Vec2 normal;
     b2Mat22 normalMass;
@@ -5365,8 +5235,7 @@ struct b2ContactVelocityConstraint
     I32 contactIndex;
 };
 
-struct b2ContactSolverDef
-{
+struct b2ContactSolverDef {
     b2TimeStep step;
     b2Contact **contacts;
     I32 count;
@@ -5407,8 +5276,7 @@ class b2Shape;
 
 /// A distance proxy is used by the GJK algorithm.
 /// It encapsulates any shape.
-struct b2DistanceProxy
-{
+struct b2DistanceProxy {
     b2DistanceProxy() : m_vertices(nullptr), m_count(0), m_radius(0.0f) {}
 
     /// Initialize the proxy using the given shape. The shape
@@ -5439,19 +5307,17 @@ struct b2DistanceProxy
 
 /// Used to warm start b2Distance.
 /// Set count to zero on first call.
-struct b2SimplexCache
-{
-    float metric;///< length or area
+struct b2SimplexCache {
+    float metric;  ///< length or area
     U16 count;
-    U8 indexA[3];///< vertices on shape A
-    U8 indexB[3];///< vertices on shape B
+    U8 indexA[3];  ///< vertices on shape A
+    U8 indexB[3];  ///< vertices on shape B
 };
 
 /// Input for b2Distance.
 /// You have to option to use the shape radii
 /// in the computation. Even
-struct b2DistanceInput
-{
+struct b2DistanceInput {
     b2DistanceProxy proxyA;
     b2DistanceProxy proxyB;
     b2Transform transformA;
@@ -5460,12 +5326,11 @@ struct b2DistanceInput
 };
 
 /// Output for b2Distance.
-struct b2DistanceOutput
-{
-    b2Vec2 pointA;///< closest point on shapeA
-    b2Vec2 pointB;///< closest point on shapeB
+struct b2DistanceOutput {
+    b2Vec2 pointA;  ///< closest point on shapeA
+    b2Vec2 pointB;  ///< closest point on shapeB
     float distance;
-    I32 iterations;///< number of GJK iterations used
+    I32 iterations;  ///< number of GJK iterations used
 };
 
 /// Compute the closest points between two shapes. Supports any combination of:
@@ -5474,8 +5339,7 @@ struct b2DistanceOutput
 void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2DistanceInput *input);
 
 /// Input parameters for b2ShapeCast
-struct b2ShapeCastInput
-{
+struct b2ShapeCastInput {
     b2DistanceProxy proxyA;
     b2DistanceProxy proxyB;
     b2Transform transformA;
@@ -5484,8 +5348,7 @@ struct b2ShapeCastInput
 };
 
 /// Output results for b2ShapeCast
-struct b2ShapeCastOutput
-{
+struct b2ShapeCastOutput {
     b2Vec2 point;
     b2Vec2 normal;
     float lambda;
@@ -5541,8 +5404,7 @@ class b2BlockAllocator;
 
 class b2EdgeAndCircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2EdgeAndCircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB);
@@ -5558,8 +5420,7 @@ class b2BlockAllocator;
 
 class b2EdgeAndPolygonContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2EdgeAndPolygonContact(b2Fixture *fixtureA, b2Fixture *fixtureB);
@@ -5576,8 +5437,7 @@ class b2BlockAllocator;
 
 class b2PolygonAndCircleContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2PolygonAndCircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB);
@@ -5594,8 +5454,7 @@ class b2BlockAllocator;
 
 class b2PolygonContact : public b2Contact {
 public:
-    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB,
-                             b2BlockAllocator *allocator);
+    static b2Contact *Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB, b2BlockAllocator *allocator);
     static void Destroy(b2Contact *contact, b2BlockAllocator *allocator);
 
     b2PolygonContact(b2Fixture *fixtureA, b2Fixture *fixtureB);
@@ -5611,23 +5470,12 @@ public:
 struct b2RopeStretch;
 struct b2RopeBend;
 
-enum b2StretchingModel {
-    b2_pbdStretchingModel,
-    b2_xpbdStretchingModel
-};
+enum b2StretchingModel { b2_pbdStretchingModel, b2_xpbdStretchingModel };
 
-enum b2BendingModel {
-    b2_springAngleBendingModel = 0,
-    b2_pbdAngleBendingModel,
-    b2_xpbdAngleBendingModel,
-    b2_pbdDistanceBendingModel,
-    b2_pbdHeightBendingModel,
-    b2_pbdTriangleBendingModel
-};
+enum b2BendingModel { b2_springAngleBendingModel = 0, b2_pbdAngleBendingModel, b2_xpbdAngleBendingModel, b2_pbdDistanceBendingModel, b2_pbdHeightBendingModel, b2_pbdTriangleBendingModel };
 
 ///
-struct b2RopeTuning
-{
+struct b2RopeTuning {
     b2RopeTuning() {
         stretchingModel = b2_pbdStretchingModel;
         bendingModel = b2_pbdAngleBendingModel;
@@ -5658,8 +5506,7 @@ struct b2RopeTuning
 };
 
 ///
-struct b2RopeDef
-{
+struct b2RopeDef {
     b2RopeDef() {
         position.SetZero();
         vertices = nullptr;
@@ -5732,25 +5579,17 @@ private:
 #pragma region
 
 /// Input parameters for b2TimeOfImpact
-struct b2TOIInput
-{
+struct b2TOIInput {
     b2DistanceProxy proxyA;
     b2DistanceProxy proxyB;
     b2Sweep sweepA;
     b2Sweep sweepB;
-    float tMax;// defines sweep interval [0, tMax]
+    float tMax;  // defines sweep interval [0, tMax]
 };
 
 /// Output parameters for b2TimeOfImpact.
-struct b2TOIOutput
-{
-    enum State {
-        e_unknown,
-        e_failed,
-        e_overlapped,
-        e_touching,
-        e_separated
-    };
+struct b2TOIOutput {
+    enum State { e_unknown, e_failed, e_overlapped, e_touching, e_separated };
 
     State state;
     float t;

@@ -69,9 +69,7 @@ void ImGui_ImplSDL2_NewFrame();
 bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event *event);
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) {
-    ImGui_ImplSDL2_NewFrame();
-}// 1.84: removed unnecessary parameter
+static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) { ImGui_ImplSDL2_NewFrame(); }  // 1.84: removed unnecessary parameter
 #endif
 
 #pragma once
@@ -81,11 +79,10 @@ static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) {
 #include <string>
 
 #ifndef METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE
-#define METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE                                                       \
-    sizeof(std::string)//larger values generate less tree nodes
+#define METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE sizeof(std::string)  // larger values generate less tree nodes
 #endif
 #ifndef METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS
-#define METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS 3//larger values generate less tree nodes
+#define METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS 3  // larger values generate less tree nodes
 #endif
 
 #include <tuple>
@@ -109,121 +106,110 @@ static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) {
 #include <unordered_map>
 #define _UNORDERED_MAP_
 
-#include "engine/internal/builtin_pfr.hpp"
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
+
+#include "engine/internal/builtin_pfr.hpp"
 #define METAENGINE_GUI_STRUCT_TO_TUPLE BuiltinPFR::pfr::structure_tie
 
 namespace ImGui {
-    //		IMGUI::AUTO()
-    //		=============
+//		IMGUI::AUTO()
+//		=============
 
-    // This is the function that this libary implements. (It's just a wrapper around the class ImGui::Auto_t<AnyType>)
-    template<typename AnyType>
-    void Auto(AnyType &anything, const std::string &name = std::string());
+// This is the function that this libary implements. (It's just a wrapper around the class ImGui::Auto_t<AnyType>)
+template <typename AnyType>
+void Auto(AnyType &anything, const std::string &name = std::string());
 
-    //		Test function showcasing all the features of ImGui::Auto()
-    void ShowAutoTestWindow();
+//		Test function showcasing all the features of ImGui::Auto()
+void ShowAutoTestWindow();
 
-    //		HELPER FUNCTIONS
-    //		================
+//		HELPER FUNCTIONS
+//		================
 
-    //same as std::as_const in c++17
-    template<class T>
-    constexpr std::add_const_t<T> &as_const(T &t) noexcept {
-        return t;
-    }
+// same as std::as_const in c++17
+template <class T>
+constexpr std::add_const_t<T> &as_const(T &t) noexcept {
+    return t;
+}
 
 #pragma region DETAIL
-    namespace detail {
+namespace detail {
 
-        template<typename T>
-        bool AutoExpand(const std::string &name, T &value);
-        template<typename Container>
-        bool AutoContainerTreeNode(const std::string &name, Container &cont);
-        template<typename Container>
-        bool AutoContainerValues(
-                const std::string &name,
-                Container &
-                        cont);//Container must have .size(), .begin() and .end() methods and ::value_type.
-        template<typename Container>
-        bool AutoMapContainerValues(const std::string &name,
-                                    Container &map);// Same as above but that iterates over pairs
-        template<typename Container>
-        void AutoContainerPushFrontButton(Container &cont);
-        template<typename Container>
-        void AutoContainerPushBackButton(Container &cont);
-        template<typename Container>
-        void AutoContainerPopFrontButton(Container &cont);
-        template<typename Container>
-        void AutoContainerPopBackButton(Container &cont);
-        template<typename Key, typename Value>
-        void AutoMapKeyValue(Key &key, Value &value);
+template <typename T>
+bool AutoExpand(const std::string &name, T &value);
+template <typename Container>
+bool AutoContainerTreeNode(const std::string &name, Container &cont);
+template <typename Container>
+bool AutoContainerValues(const std::string &name,
+                         Container &cont);  // Container must have .size(), .begin() and .end() methods and ::value_type.
+template <typename Container>
+bool AutoMapContainerValues(const std::string &name,
+                            Container &map);  // Same as above but that iterates over pairs
+template <typename Container>
+void AutoContainerPushFrontButton(Container &cont);
+template <typename Container>
+void AutoContainerPushBackButton(Container &cont);
+template <typename Container>
+void AutoContainerPopFrontButton(Container &cont);
+template <typename Container>
+void AutoContainerPopBackButton(Container &cont);
+template <typename Key, typename Value>
+void AutoMapKeyValue(Key &key, Value &value);
 
-#ifdef _TUPLE_//For tuples
+#ifdef _TUPLE_  // For tuples
 
-        template<class T>
-        constexpr std::add_const_t<T> &as_const(T &t) noexcept {
-            return t;
-        }//same as std::as_const in c++17
-        template<std::size_t I, typename... Args>
-        void AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<0 != I> * = 0);
-        template<std::size_t I, typename... Args>
-        inline void AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<0 == I> * = 0) {
-        }//End of recursion.
-        template<std::size_t I, typename... Args>
-        void AutoTupleRecurse(const std::tuple<Args...> &tpl, std::enable_if_t<0 != I> * = 0);
-        template<std::size_t I, typename... Args>
-        inline void AutoTupleRecurse(const std::tuple<Args...> &tpl,
-                                     std::enable_if_t<0 == I> * = 0) {}//End of recursion.
-        template<typename... Args>
-        void AutoTuple(const std::string &name, std::tuple<Args...> &tpl);
-        template<typename... Args>
-        void AutoTuple(const std::string &name, const std::tuple<Args...> &tpl);
-#endif// _TUPLE_
+template <class T>
+constexpr std::add_const_t<T> &as_const(T &t) noexcept {
+    return t;
+}  // same as std::as_const in c++17
+template <std::size_t I, typename... Args>
+void AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<0 != I> * = 0);
+template <std::size_t I, typename... Args>
+inline void AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<0 == I> * = 0) {}  // End of recursion.
+template <std::size_t I, typename... Args>
+void AutoTupleRecurse(const std::tuple<Args...> &tpl, std::enable_if_t<0 != I> * = 0);
+template <std::size_t I, typename... Args>
+inline void AutoTupleRecurse(const std::tuple<Args...> &tpl, std::enable_if_t<0 == I> * = 0) {}  // End of recursion.
+template <typename... Args>
+void AutoTuple(const std::string &name, std::tuple<Args...> &tpl);
+template <typename... Args>
+void AutoTuple(const std::string &name, const std::tuple<Args...> &tpl);
+#endif  // _TUPLE_
 
-        template<typename T, std::size_t N>
-        using c_array_t = T[N];//so arrays are regular types and can be used in macro
+template <typename T, std::size_t N>
+using c_array_t = T[N];  // so arrays are regular types and can be used in macro
 
-        //template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t< std::is_array_v<Container>>*=0){	return sizeof(Container) / sizeof(decltype(*std::begin(cont)));}
-        //template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t<!std::is_array_v<Container>> *= 0) { return cont.size(); }
+// template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t< std::is_array_v<Container>>*=0){	return sizeof(Container) /
+// sizeof(decltype(*std::begin(cont)));} template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t<!std::is_array_v<Container>> *= 0) { return cont.size(); }
 
-    }// namespace detail
+}  // namespace detail
 #pragma endregion
 
-    //		PRIMARY TEMPLATE
-    //		================
-    // This implements the struct to tuple scenario
-    template<typename AnyType>
-    struct Auto_t
-    {
-        static void Auto(AnyType &anything, const std::string &name) {
+//		PRIMARY TEMPLATE
+//		================
+// This implements the struct to tuple scenario
+template <typename AnyType>
+struct Auto_t {
+    static void Auto(AnyType &anything, const std::string &name) {
 #ifndef METAENGINE_GUI_STRUCT_TO_TUPLE
-            static_assert(false, "TODO: fix for this compiler! (at least C++14 is required)")
+        static_assert(false, "TODO: fix for this compiler! (at least C++14 is required)")
 #endif
-                    static_assert(
-                            !std::is_reference_v<AnyType> &&
-                                    std::is_copy_constructible_v<
-                                            std::remove_all_extents_t<AnyType>> &&
-                                    !std::is_polymorphic_v<AnyType> &&
-                                    BuiltinPFR::pfr::detail::is_aggregate_initializable_n<
-                                            AnyType,
-                                            BuiltinPFR::pfr::detail::detect_fields_count_dispatch<
-                                                    AnyType>(BuiltinPFR::pfr::detail::size_t_<
-                                                                     sizeof(AnyType) * 8>{},
-                                                             1L)>::
-                                            value,// If the above is not a constexpr expression, you are yousing an invalid type
-                            "This type cannot be converted to a tuple.");
-            auto tuple = METAENGINE_GUI_STRUCT_TO_TUPLE(anything);
-            ImGui::detail::AutoTuple("Struct " + name, tuple);
-        }
-    };//ImGui::Auto_t<>::Auto()
-}// namespace ImGui
+                static_assert(
+                        !std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
+                                BuiltinPFR::pfr::detail::is_aggregate_initializable_n<AnyType, BuiltinPFR::pfr::detail::detect_fields_count_dispatch<AnyType>(
+                                                                                                       BuiltinPFR::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
+                                                                                                       1L)>::value,  // If the above is not a constexpr expression, you are yousing an invalid type
+                        "This type cannot be converted to a tuple.");
+        auto tuple = METAENGINE_GUI_STRUCT_TO_TUPLE(anything);
+        ImGui::detail::AutoTuple("Struct " + name, tuple);
+    }
+};  // ImGui::Auto_t<>::Auto()
+}  // namespace ImGui
 
 // Implementation of ImGui::Auto()
-template<typename AnyType>
+template <typename AnyType>
 inline void ImGui::Auto(AnyType &anything, const std::string &name) {
     ImGui::Auto_t<AnyType>::Auto(anything, name);
 }
@@ -233,7 +219,7 @@ inline void ImGui::Auto(AnyType &anything, const std::string &name) {
 
 #pragma region UTILS
 
-template<typename T>
+template <typename T>
 bool ImGui::detail::AutoExpand(const std::string &name, T &value) {
     if (sizeof(T) <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE) {
         ImGui::PushID(name.c_str());
@@ -249,13 +235,13 @@ bool ImGui::detail::AutoExpand(const std::string &name, T &value) {
         return false;
 }
 
-template<typename Container>
+template <typename Container>
 bool ImGui::detail::AutoContainerTreeNode(const std::string &name, Container &cont) {
-    //std::size_t size = ImGui::detail::AutoContainerSize(cont);
+    // std::size_t size = ImGui::detail::AutoContainerSize(cont);
     std::size_t size = cont.size();
     if (ImGui::CollapsingHeader(name.c_str())) {
         size_t elemsize = sizeof(decltype(*std::begin(cont)));
-        ImGui::Text("size = %d, non dynamic elemsize = %d bytes", (int) size, (int) elemsize);
+        ImGui::Text("size = %d, non dynamic elemsize = %d bytes", (int)size, (int)elemsize);
         return true;
     } else {
         float label_width = CalcTextSize(name.c_str()).x + ImGui::GetTreeNodeToLabelSpacing() + 5;
@@ -269,13 +255,13 @@ bool ImGui::detail::AutoContainerTreeNode(const std::string &name, Container &co
         return false;
     }
 }
-template<typename Container>
+template <typename Container>
 bool ImGui::detail::AutoContainerValues(const std::string &name, Container &cont) {
     if (ImGui::detail::AutoContainerTreeNode(name, cont)) {
         ImGui::Indent();
         ImGui::PushID(name.c_str());
         std::size_t i = 0;
-        for (auto &elem: cont) {
+        for (auto &elem : cont) {
             std::string itemname = "[" + std::to_string(i) + ']';
             ImGui::detail::AutoExpand(itemname, elem);
             ++i;
@@ -286,12 +272,12 @@ bool ImGui::detail::AutoContainerValues(const std::string &name, Container &cont
     } else
         return false;
 }
-template<typename Container>
+template <typename Container>
 bool ImGui::detail::AutoMapContainerValues(const std::string &name, Container &cont) {
     if (ImGui::detail::AutoContainerTreeNode(name, cont)) {
         ImGui::Indent();
         std::size_t i = 0;
-        for (auto &elem: cont) {
+        for (auto &elem : cont) {
             ImGui::PushID(i);
             AutoMapKeyValue(elem.first, elem.second);
             ImGui::PopID();
@@ -302,23 +288,23 @@ bool ImGui::detail::AutoMapContainerValues(const std::string &name, Container &c
     } else
         return false;
 }
-template<typename Container>
+template <typename Container>
 void ImGui::detail::AutoContainerPushFrontButton(Container &cont) {
     if (ImGui::SmallButton("Push Front")) cont.emplace_front();
 }
-template<typename Container>
+template <typename Container>
 void ImGui::detail::AutoContainerPushBackButton(Container &cont) {
     if (ImGui::SmallButton("Push Back ")) cont.emplace_back();
 }
-template<typename Container>
+template <typename Container>
 void ImGui::detail::AutoContainerPopFrontButton(Container &cont) {
     if (!cont.empty() && ImGui::SmallButton("Pop Front ")) cont.pop_front();
 }
-template<typename Container>
+template <typename Container>
 void ImGui::detail::AutoContainerPopBackButton(Container &cont) {
     if (!cont.empty() && ImGui::SmallButton("Pop Back  ")) cont.pop_back();
 }
-template<typename Key, typename Value>
+template <typename Key, typename Value>
 void ImGui::detail::AutoMapKeyValue(Key &key, Value &value) {
     bool b_k = sizeof(Key) <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE;
     bool b_v = sizeof(Value) <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE;
@@ -336,27 +322,25 @@ void ImGui::detail::AutoMapKeyValue(Key &key, Value &value) {
     }
 }
 
-template<std::size_t I, typename... Args>
+template <std::size_t I, typename... Args>
 void ImGui::detail::AutoTupleRecurse(std::tuple<Args...> &tpl, std::enable_if_t<0 != I> *) {
-    ImGui::detail::AutoTupleRecurse<I - 1, Args...>(tpl);// first draw smaller indeces
+    ImGui::detail::AutoTupleRecurse<I - 1, Args...>(tpl);  // first draw smaller indeces
     using type = decltype(std::get<I - 1>(tpl));
-    std::string str = '<' + std::to_string(I) + ">: " + (std::is_const_v<type> ? "const " : "") +
-                      typeid(type).name();
+    std::string str = '<' + std::to_string(I) + ">: " + (std::is_const_v<type> ? "const " : "") + typeid(type).name();
     ImGui::detail::AutoExpand(str, std::get<I - 1>(tpl));
 }
-template<std::size_t I, typename... Args>
+template <std::size_t I, typename... Args>
 void ImGui::detail::AutoTupleRecurse(const std::tuple<Args...> &tpl, std::enable_if_t<0 != I> *) {
-    ImGui::detail::AutoTupleRecurse<I - 1, const Args...>(tpl);// first draw smaller indeces
+    ImGui::detail::AutoTupleRecurse<I - 1, const Args...>(tpl);  // first draw smaller indeces
     using type = decltype(std::get<I - 1>(tpl));
     std::string str = '<' + std::to_string(I) + ">: " + "const " + typeid(type).name();
     ImGui::detail::AutoExpand(str, ImGui::as_const(std::get<I - 1>(tpl)));
 }
-template<typename... Args>
+template <typename... Args>
 void ImGui::detail::AutoTuple(const std::string &name, std::tuple<Args...> &tpl) {
     constexpr std::size_t tuple_size = sizeof(decltype(tpl));
     constexpr std::size_t tuple_numelems = sizeof...(Args);
-    if (tuple_size <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE &&
-        tuple_numelems <= METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS) {
+    if (tuple_size <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE && tuple_numelems <= METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS) {
         ImGui::TextUnformatted((name + " (" + std::to_string(tuple_size) + " bytes)").c_str());
         ImGui::PushID(name.c_str());
         ImGui::Indent();
@@ -368,14 +352,13 @@ void ImGui::detail::AutoTuple(const std::string &name, std::tuple<Args...> &tpl)
         ImGui::TreePop();
     }
 }
-template<typename... Args>
+template <typename... Args>
 void ImGui::detail::AutoTuple(const std::string &name,
-                              const std::tuple<Args...> &tpl)//same but const
+                              const std::tuple<Args...> &tpl)  // same but const
 {
     constexpr std::size_t tuple_size = sizeof(std::tuple<Args...>);
     constexpr std::size_t tuple_numelems = sizeof...(Args);
-    if (tuple_size <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE &&
-        tuple_numelems <= METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS) {
+    if (tuple_size <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE && tuple_numelems <= METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS) {
         ImGui::TextUnformatted((name + " !(" + std::to_string(tuple_size) + " bytes)").c_str());
         ImGui::PushID(name.c_str());
         ImGui::Indent();
@@ -393,30 +376,24 @@ void ImGui::detail::AutoTuple(const std::string &name,
 //		HELPER MACROS
 //		=============
 
-#define UNPACK(...)                                                                                \
-    __VA_ARGS__//for unpacking parentheses. It is needed for macro arguments with commmas
-//Enclose templatespec, AND typespec in parentheses in this version. Useful if there are commas in the argument.
-#define METAENGINE_GUI_DEFINE_BEGIN_P(templatespec, typespec)                                      \
-    namespace ImGui {                                                                              \
-        UNPACK templatespec struct Auto_t<UNPACK typespec>                                         \
-        {                                                                                          \
-            static void Auto(UNPACK typespec &var, const std::string &name) {
-//If macro arguments have no commmas inside use this version without parentheses
-#define METAENGINE_GUI_DEFINE_BEGIN(templatespec, typespec)                                        \
-    METAENGINE_GUI_DEFINE_BEGIN_P(                                                                 \
-            (templatespec),                                                                        \
-            (typespec))//when there are no commas in types, use this without parentheses
-#define METAENGINE_GUI_DEFINE_END                                                                  \
-    }                                                                                              \
-    }                                                                                              \
-    ;                                                                                              \
+#define UNPACK(...) __VA_ARGS__  // for unpacking parentheses. It is needed for macro arguments with commmas
+// Enclose templatespec, AND typespec in parentheses in this version. Useful if there are commas in the argument.
+#define METAENGINE_GUI_DEFINE_BEGIN_P(templatespec, typespec) \
+    namespace ImGui {                                         \
+    UNPACK templatespec struct Auto_t<UNPACK typespec> {      \
+        static void Auto(UNPACK typespec &var, const std::string &name) {
+// If macro arguments have no commmas inside use this version without parentheses
+#define METAENGINE_GUI_DEFINE_BEGIN(templatespec, typespec) METAENGINE_GUI_DEFINE_BEGIN_P((templatespec), (typespec))  // when there are no commas in types, use this without parentheses
+#define METAENGINE_GUI_DEFINE_END \
+    }                             \
+    }                             \
+    ;                             \
     }
-#define METAENGINE_GUI_DEFINE_INLINE_P(template_spec, type_spec, code)                             \
-    METAENGINE_GUI_DEFINE_BEGIN_P(template_spec, type_spec) code METAENGINE_GUI_DEFINE_END
-#define METAENGINE_GUI_DEFINE_INLINE(template_spec, type_spec, code)                               \
-    METAENGINE_GUI_DEFINE_INLINE_P((template_spec), (type_spec), code)
+#define METAENGINE_GUI_DEFINE_INLINE_P(template_spec, type_spec, code) METAENGINE_GUI_DEFINE_BEGIN_P(template_spec, type_spec) code METAENGINE_GUI_DEFINE_END
+#define METAENGINE_GUI_DEFINE_INLINE(template_spec, type_spec, code) METAENGINE_GUI_DEFINE_INLINE_P((template_spec), (type_spec), code)
 
 #include <imgui/imgui.h>
+
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -454,33 +431,33 @@ void ImGui::detail::AutoTuple(const std::string &name,
 
 #pragma region STRINGS
 
-METAENGINE_GUI_DEFINE_BEGIN(template<>, const char *)
-if (name.empty()) ImGui::TextUnformatted(var);
+METAENGINE_GUI_DEFINE_BEGIN(template <>, const char *)
+if (name.empty())
+    ImGui::TextUnformatted(var);
 else
     ImGui::Text("%s=%s", name.c_str(), var);
 METAENGINE_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN_P((template<std::size_t N>), (const detail::c_array_t<char, N>) )
-if (name.empty()) ImGui::TextUnformatted(var, var + N - 1);
+METAENGINE_GUI_DEFINE_BEGIN_P((template <std::size_t N>), (const detail::c_array_t<char, N>))
+if (name.empty())
+    ImGui::TextUnformatted(var, var + N - 1);
 else
     ImGui::Text("%s=%s", name.c_str(), var);
 METAENGINE_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_INLINE(template<>, char *, const char *tmp = var;
-                             ImGui::Auto_t<const char *>::Auto(tmp, name);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, char *const, const char *tmp = var;
-                             ImGui::Auto_t<const char *>::Auto(tmp, name);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const char *const, const char *tmp = var;
-                             ImGui::Auto_t<const char *>::Auto(tmp, name);)
-METAENGINE_GUI_DEFINE_BEGIN(template<>, std::string)
+METAENGINE_GUI_DEFINE_INLINE(template <>, char *, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, char *const, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const char *const, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
+METAENGINE_GUI_DEFINE_BEGIN(template <>, std::string)
 const std::size_t lines = var.find('\n');
 if (var.find('\n') != std::string::npos)
     ImGui::InputTextMultiline(name.c_str(), const_cast<char *>(var.c_str()), 256);
 else
     ImGui::InputText(name.c_str(), const_cast<char *>(var.c_str()), 256);
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<>, const std::string)
-if (name.empty()) ImGui::TextUnformatted(var.c_str(), var.c_str() + var.length());
+METAENGINE_GUI_DEFINE_BEGIN(template <>, const std::string)
+if (name.empty())
+    ImGui::TextUnformatted(var.c_str(), var.c_str() + var.length());
 else
     ImGui::Text("%s=%s", name.c_str(), var.c_str());
 METAENGINE_GUI_DEFINE_END
@@ -489,108 +466,67 @@ METAENGINE_GUI_DEFINE_END
 
 #pragma region NUMBERS
 
-METAENGINE_GUI_DEFINE_INLINE(template<>, float, METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, int, METAENGINE_GUI_INPUT_INT1(name.c_str(), &var);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, unsigned int,
-                             METAENGINE_GUI_INPUT_INT1(name.c_str(), (int *) &var);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, bool, ImGui::Checkbox(name.c_str(), &var);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, ImVec2, METAENGINE_GUI_INPUT_FLOAT2(name.c_str(), &var.x);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, ImVec4, METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var.x);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const float,
-                             ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const int,
-                             ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const unsigned,
-                             ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const bool,
-                             ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const ImVec2,
-                             ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(),
-                                         var.x, var.y);)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const ImVec4,
-                             ImGui::Text("%s(%f,%f,%f,%f)",
-                                         (name.empty() ? "" : name + "=").c_str(), var.x, var.y,
-                                         var.z, var.w);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, float, METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, int, METAENGINE_GUI_INPUT_INT1(name.c_str(), &var);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, unsigned int, METAENGINE_GUI_INPUT_INT1(name.c_str(), (int *)&var);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, bool, ImGui::Checkbox(name.c_str(), &var);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec2, METAENGINE_GUI_INPUT_FLOAT2(name.c_str(), &var.x);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec4, METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var.x);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const float, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const int, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const unsigned, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const bool, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec2, ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec4, ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y, var.z, var.w);)
 
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<float, 1>),
-                               METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<float, 1>),
-                               ImGui::Text("%s%f", (name.empty() ? "" : name + "=").c_str(),
-                                           var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<float, 2>),
-                               METAENGINE_GUI_INPUT_FLOAT2(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<float, 2>),
-                               ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(),
-                                           var[0], var[1]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<float, 3>),
-                               METAENGINE_GUI_INPUT_FLOAT3(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<float, 3>),
-                               ImGui::Text("%s(%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(),
-                                           var[0], var[1], var[2]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<float, 4>),
-                               METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<float, 4>),
-                               ImGui::Text("%s(%f,%f,%f,%f)",
-                                           (name.empty() ? "" : name + "=").c_str(), var[0], var[1],
-                                           var[2], var[3]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 1>), METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 1>), ImGui::Text("%s%f", (name.empty() ? "" : name + "=").c_str(), var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 2>), METAENGINE_GUI_INPUT_FLOAT2(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 2>), ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 3>), METAENGINE_GUI_INPUT_FLOAT3(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 3>), ImGui::Text("%s(%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 4>), METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 4>), ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2], var[3]);)
 
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<int, 1>),
-                               METAENGINE_GUI_INPUT_INT1(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<int, 1>),
-                               ImGui::Text("%s%d", (name.empty() ? "" : name + "=").c_str(),
-                                           var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<int, 2>),
-                               METAENGINE_GUI_INPUT_INT2(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<int, 2>),
-                               ImGui::Text("%s(%d,%d)", (name.empty() ? "" : name + "=").c_str(),
-                                           var[0], var[1]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<int, 3>),
-                               METAENGINE_GUI_INPUT_INT3(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<int, 3>),
-                               ImGui::Text("%s(%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(),
-                                           var[0], var[1], var[2]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (detail::c_array_t<int, 4>),
-                               METAENGINE_GUI_INPUT_INT4(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<>), (const detail::c_array_t<int, 4>),
-                               ImGui::Text("%s(%d,%d,%d,%d)",
-                                           (name.empty() ? "" : name + "=").c_str(), var[0], var[1],
-                                           var[2], var[3]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 1>), METAENGINE_GUI_INPUT_INT1(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 1>), ImGui::Text("%s%d", (name.empty() ? "" : name + "=").c_str(), var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 2>), METAENGINE_GUI_INPUT_INT2(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 2>), ImGui::Text("%s(%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 3>), METAENGINE_GUI_INPUT_INT3(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 3>), ImGui::Text("%s(%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 4>), METAENGINE_GUI_INPUT_INT4(name.c_str(), &var[0]);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 4>), ImGui::Text("%s(%d,%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2], var[3]);)
 
 #pragma endregion
 
 #pragma region POINTERS and ARRAYS
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, T *)
-if (var != nullptr) ImGui::detail::AutoExpand<T>("Pointer " + name, *var);
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, T *)
+if (var != nullptr)
+    ImGui::detail::AutoExpand<T>("Pointer " + name, *var);
 else
     ImGui::TextColored(METAENGINE_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, T *const)
-if (var != nullptr) ImGui::detail::AutoExpand<T>("Pointer " + name, *var);
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, T *const)
+if (var != nullptr)
+    ImGui::detail::AutoExpand<T>("Pointer " + name, *var);
 else
     ImGui::TextColored(METAENGINE_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
 METAENGINE_GUI_DEFINE_END
 #ifdef _ARRAY_
-METAENGINE_GUI_DEFINE_INLINE_P((template<typename T, std::size_t N>), (std::array<T, N>),
-                               ImGui::detail::AutoContainerValues("array " + name, var);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<typename T, std::size_t N>), (const std::array<T, N>),
-                               ImGui::detail::AutoContainerValues("array " + name, var);)
-METAENGINE_GUI_DEFINE_INLINE_P((template<typename T, std::size_t N>), (detail::c_array_t<T, N>),
-                               ImGui::detail::AutoContainerValues("Array " + name,
-                                                                  *(std::array<T, N> *) (&var));)
-METAENGINE_GUI_DEFINE_INLINE_P(
-        (template<typename T, std::size_t N>), (const detail::c_array_t<T, N>),
-        ImGui::detail::AutoContainerValues("Array " + name, *(const std::array<T, N> *) (&var));)
+METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
+METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(std::array<T, N> *)(&var));)
+METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(const std::array<T, N> *)(&var));)
 #endif
 
 #pragma endregion
 
 #pragma region PAIRS and TUPLES
 
-METAENGINE_GUI_DEFINE_BEGIN_P((template<typename T1, typename T2>), (std::pair<T1, T2>) )
-if ((std::is_fundamental_v<T1> || std::is_same_v<std::string, T1>) &&(
-            std::is_fundamental_v<T2> || std::is_same_v<std::string, T2>) ) {
+METAENGINE_GUI_DEFINE_BEGIN_P((template <typename T1, typename T2>), (std::pair<T1, T2>))
+if ((std::is_fundamental_v<T1> || std::is_same_v<std::string, T1>)&&(std::is_fundamental_v<T2> || std::is_same_v<std::string, T2>)) {
     float width = ImGui::CalcItemWidth();
-    ImGui::PushItemWidth(width * 0.4 - 10);//a bit less than half
+    ImGui::PushItemWidth(width * 0.4 - 10);  // a bit less than half
     ImGui::detail::AutoExpand<T1>(name + ".first", var.first);
     ImGui::SameLine();
     ImGui::detail::AutoExpand<T2>(name + ".second", var.second);
@@ -602,24 +538,22 @@ if ((std::is_fundamental_v<T1> || std::is_same_v<std::string, T1>) &&(
 
 METAENGINE_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN_P((template<typename T1, typename T2>), (const std::pair<T1, T2>) )
+METAENGINE_GUI_DEFINE_BEGIN_P((template <typename T1, typename T2>), (const std::pair<T1, T2>))
 ImGui::detail::AutoExpand<const T1>(name + ".first", var.first);
 if (std::is_fundamental_v<T1> && std::is_fundamental_v<T2>) ImGui::SameLine();
 ImGui::detail::AutoExpand<const T2>(name + ".second", var.second);
 METAENGINE_GUI_DEFINE_END
 
 #ifdef _TUPLE_
-METAENGINE_GUI_DEFINE_INLINE(template<typename... Args>, std::tuple<Args...>,
-                             ImGui::detail::AutoTuple("Tuple " + name, var);)
-METAENGINE_GUI_DEFINE_INLINE(template<typename... Args>, const std::tuple<Args...>,
-                             ImGui::detail::AutoTuple("Tuple " + name, var);)
-#endif//_TUPLE_
+METAENGINE_GUI_DEFINE_INLINE(template <typename... Args>, std::tuple<Args...>, ImGui::detail::AutoTuple("Tuple " + name, var);)
+METAENGINE_GUI_DEFINE_INLINE(template <typename... Args>, const std::tuple<Args...>, ImGui::detail::AutoTuple("Tuple " + name, var);)
+#endif  //_TUPLE_
 
 #pragma endregion
 
 #pragma region CONTAINERS
 #ifdef _VECTOR_
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, std::vector<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
 if (ImGui::detail::AutoContainerValues<std::vector<T>>("Vector " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -630,7 +564,7 @@ if (ImGui::detail::AutoContainerValues<std::vector<T>>("Vector " + name, var)) {
     ImGui::Unindent();
 }
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<>, std::vector<bool>)
+METAENGINE_GUI_DEFINE_BEGIN(template <>, std::vector<bool>)
 if (ImGui::detail::AutoContainerTreeNode<std::vector<bool>>("Vector " + name, var)) {
     ImGui::Indent();
     for (int i = 0; i < var.size(); ++i) {
@@ -650,10 +584,10 @@ if (ImGui::detail::AutoContainerTreeNode<std::vector<bool>>("Vector " + name, va
 }
 METAENGINE_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, const std::vector<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
 ImGui::detail::AutoContainerValues<const std::vector<T>>("Vector " + name, var);
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<>, const std::vector<bool>)
+METAENGINE_GUI_DEFINE_BEGIN(template <>, const std::vector<bool>)
 if (ImGui::detail::AutoContainerTreeNode<const std::vector<bool>>("Vector " + name, var)) {
     ImGui::Indent();
     for (int i = 0; i < var.size(); ++i) {
@@ -666,7 +600,7 @@ METAENGINE_GUI_DEFINE_END
 #endif
 
 #ifdef _LIST_
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, std::list<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::list<T>)
 if (ImGui::detail::AutoContainerValues<std::list<T>>("List " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -680,13 +614,13 @@ if (ImGui::detail::AutoContainerValues<std::list<T>>("List " + name, var)) {
     ImGui::Unindent();
 }
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, const std::list<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::list<T>)
 ImGui::detail::AutoContainerValues<const std::list<T>>("List " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _LIST_
+#endif  // _LIST_
 
 #ifdef _DEQUE_
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, std::deque<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::deque<T>)
 if (ImGui::detail::AutoContainerValues<std::deque<T>>("Deque " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -700,13 +634,13 @@ if (ImGui::detail::AutoContainerValues<std::deque<T>>("Deque " + name, var)) {
     ImGui::Unindent();
 }
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, const std::deque<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::deque<T>)
 ImGui::detail::AutoContainerValues<const std::deque<T>>("Deque " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _DEQUE_
+#endif  // _DEQUE_
 
 #ifdef _FORWARD_LIST_
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, std::forward_list<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::forward_list<T>)
 if (ImGui::detail::AutoContainerValues<std::forward_list<T>>("Forward list " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -717,59 +651,57 @@ if (ImGui::detail::AutoContainerValues<std::forward_list<T>>("Forward list " + n
     ImGui::Unindent();
 }
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, const std::forward_list<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::forward_list<T>)
 ImGui::detail::AutoContainerValues<const std::forward_list<T>>("Forward list " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _FORWARD_LIST_
+#endif  // _FORWARD_LIST_
 
 #ifdef _SET_
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, std::set<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::set<T>)
 ImGui::detail::AutoContainerValues<std::set<T>>("Set " + name, var);
-//todo insert
+// todo insert
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, const std::set<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::set<T>)
 ImGui::detail::AutoContainerValues<const std::set<T>>("Set " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _SET_
+#endif  // _SET_
 
 #ifdef _UNORDERED_SET_
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, std::unordered_set<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::unordered_set<T>)
 ImGui::detail::AutoContainerValues<std::unordered_set<T>>("Unordered set " + name, var);
-//todo insert
+// todo insert
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template<typename T>, const std::unordered_set<T>)
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::unordered_set<T>)
 ImGui::detail::AutoContainerValues<const std::unordered_set<T>>("Unordered set " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _UNORDERED_SET_
+#endif  // _UNORDERED_SET_
 
 #ifdef _MAP_
-METAENGINE_GUI_DEFINE_BEGIN_P((template<typename K, typename V>), (std::map<K, V>) )
+METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::map<K, V>))
 ImGui::detail::AutoMapContainerValues<std::map<K, V>>("Map " + name, var);
-//todo insert
+// todo insert
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN_P((template<typename K, typename V>), (const std::map<K, V>) )
+METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::map<K, V>))
 ImGui::detail::AutoMapContainerValues<const std::map<K, V>>("Map " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _MAP_
+#endif  // _MAP_
 
 #ifdef _UNORDERED_MAP_
-METAENGINE_GUI_DEFINE_BEGIN_P((template<typename K, typename V>), (std::unordered_map<K, V>) )
+METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::unordered_map<K, V>))
 ImGui::detail::AutoMapContainerValues<std::unordered_map<K, V>>("Unordered map " + name, var);
-//todo insert
+// todo insert
 METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN_P((template<typename K, typename V>), (const std::unordered_map<K, V>) )
+METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::unordered_map<K, V>))
 ImGui::detail::AutoMapContainerValues<const std::unordered_map<K, V>>("Unordered map " + name, var);
 METAENGINE_GUI_DEFINE_END
-#endif// _UNORDERED_MAP_
+#endif  // _UNORDERED_MAP_
 
 #pragma endregion
 
 #pragma region FUNCTIONS
 
-METAENGINE_GUI_DEFINE_INLINE(template<>, std::add_pointer_t<void()>,
-                             if (ImGui::Button(name.c_str())) var();)
-METAENGINE_GUI_DEFINE_INLINE(template<>, const std::add_pointer_t<void()>,
-                             if (ImGui::Button(name.c_str())) var();)
+METAENGINE_GUI_DEFINE_INLINE(template <>, std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
 
 #pragma endregion
 
@@ -831,8 +763,7 @@ private:
 
 #pragma endregion ImString
 
-struct ImGuiMarkdown
-{
+struct ImGuiMarkdown {
     ImGuiMarkdown();
     virtual ~ImGuiMarkdown(){};
 
@@ -869,8 +800,7 @@ protected:
 
     ////////////////////////////////////////////////////////////////////////////
 
-    struct image_info
-    {
+    struct image_info {
         ImTextureID texture_id;
         ImVec2 size;
         ImVec2 uv0;
@@ -879,26 +809,26 @@ protected:
         ImVec4 col_border;
     };
 
-    //use m_href to identify image
+    // use m_href to identify image
     virtual bool get_image(image_info &nfo) const;
     virtual ImFont *get_font() const;
     virtual ImVec4 get_color() const;
 
-    //url == m_href
+    // url == m_href
     virtual void open_url() const;
 
-    //returns true if the term has been processed
+    // returns true if the term has been processed
     virtual bool render_entity(const char *str, const char *str_end);
 
-    //returns true if the term has been processed
+    // returns true if the term has been processed
     virtual bool render_html(const char *str, const char *str_end);
 
-    //called when '\n' in source text where it is not semantically meaningful
+    // called when '\n' in source text where it is not semantically meaningful
     virtual void soft_break();
     ////////////////////////////////////////////////////////////////////////////
 
-    //current state
-    std::string m_href;//empty if no link/image
+    // current state
+    std::string m_href;  // empty if no link/image
 
     bool m_is_underline = false;
     bool m_is_strikethrough = false;
@@ -907,7 +837,7 @@ protected:
     bool m_is_table_header = false;
     bool m_is_table_body = false;
     bool m_is_image = false;
-    unsigned m_hlevel = 0;//0 - no heading
+    unsigned m_hlevel = 0;  // 0 - no heading
 
 private:
     int text(MD_TEXTTYPE type, const char *str, const char *str_end);
@@ -920,15 +850,14 @@ private:
     void set_color(bool e);
     void set_href(bool e, const MD_ATTRIBUTE &src);
 
-    //table state
+    // table state
     ImVec2 m_table_last_pos;
     int m_table_next_column = 0;
     ImVector<float> m_table_col_pos;
     ImVector<float> m_table_row_pos;
 
-    //list state
-    struct list_info
-    {
+    // list state
+    struct list_info {
         bool is_ol;
         char delim;
         unsigned cur_ol;
@@ -940,194 +869,189 @@ private:
     MD_PARSER m_md;
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template<>, MarkdownData)
+METAENGINE_GUI_DEFINE_BEGIN(template <>, MarkdownData)
 ImGuiMarkdown markdown;
 markdown.print(var.data);
 METAENGINE_GUI_DEFINE_END
 
 namespace ImGuiHelper {
 
-    inline void init_style(const float pixel_ratio, const float dpi_scaling) {
-        ImGui::StyleColorsDark();
-        ImGuiStyle &style = ImGui::GetStyle();
-        style.FrameRounding = 5.0F;
-        style.ChildRounding = 5.0F;
-        style.GrabRounding = 5.0F;
-        style.PopupRounding = 5.0F;
-        style.ScrollbarRounding = 5.0F;
-        style.TabRounding = 5.0F;
-        style.WindowRounding = 5.0F;
-        style.WindowTitleAlign = ImVec2(0.5F, 0.5F);
-    }
+inline void init_style(const float pixel_ratio, const float dpi_scaling) {
+    ImGui::StyleColorsDark();
+    ImGuiStyle &style = ImGui::GetStyle();
+    style.FrameRounding = 5.0F;
+    style.ChildRounding = 5.0F;
+    style.GrabRounding = 5.0F;
+    style.PopupRounding = 5.0F;
+    style.ScrollbarRounding = 5.0F;
+    style.TabRounding = 5.0F;
+    style.WindowRounding = 5.0F;
+    style.WindowTitleAlign = ImVec2(0.5F, 0.5F);
+}
 
-    enum class Alignment : unsigned char {
-        kHorizontalCenter = 1 << 0,
-        kVerticalCenter = 1 << 1,
-        kCenter = kHorizontalCenter | kVerticalCenter,
-    };
+enum class Alignment : unsigned char {
+    kHorizontalCenter = 1 << 0,
+    kVerticalCenter = 1 << 1,
+    kCenter = kHorizontalCenter | kVerticalCenter,
+};
 
-    /**
-     * @brief Render text with alignment
-     */
-    inline void AlignedText(const std::string &text, Alignment align, const float &width = 0.0F) {
-        const auto alignment = static_cast<unsigned char>(align);
-        const auto text_size = ImGui::CalcTextSize(text.c_str());
-        const auto wind_size = ImGui::GetContentRegionAvail();
-        if (alignment & static_cast<unsigned char>(Alignment::kHorizontalCenter)) {
-            if (width < 0.1F) {
-                ImGui::SetCursorPosX((wind_size.x - text_size.x) * 0.5F);
-            } else {
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (width - text_size.x) * 0.5F);
-            }
-        }
-        if (alignment & static_cast<unsigned char>(Alignment::kVerticalCenter)) {
-            ImGui::AlignTextToFramePadding();
-        }
-
-        ImGui::TextUnformatted(text.c_str());
-    }
-
-    inline auto CheckButton(const std::string &label, bool checked, const ImVec2 &size) -> bool {
-        if (checked) {
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                  ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+/**
+ * @brief Render text with alignment
+ */
+inline void AlignedText(const std::string &text, Alignment align, const float &width = 0.0F) {
+    const auto alignment = static_cast<unsigned char>(align);
+    const auto text_size = ImGui::CalcTextSize(text.c_str());
+    const auto wind_size = ImGui::GetContentRegionAvail();
+    if (alignment & static_cast<unsigned char>(Alignment::kHorizontalCenter)) {
+        if (width < 0.1F) {
+            ImGui::SetCursorPosX((wind_size.x - text_size.x) * 0.5F);
         } else {
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                  ImGui::GetStyle().Colors[ImGuiCol_TabUnfocusedActive]);
-            ImGui::PushStyleColor(ImGuiCol_Button,
-                                  ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
-        }
-        if (ImGui::Button(label.c_str(), size)) { checked = !checked; }
-
-        ImGui::PopStyleColor(2);
-
-        return checked;
-    }
-
-    inline auto ButtonTab(std::vector<std::string> &tabs, int &index) -> int {
-        auto checked = 1 << index;
-        std::string tab_names;
-        std::for_each(tabs.begin(), tabs.end(),
-                      [&tab_names](const auto item) { tab_names += item; });
-        const auto tab_width = ImGui::GetContentRegionAvail().x;
-        const auto tab_btn_width = tab_width / static_cast<float>(tabs.size());
-        const auto h = ImGui::CalcTextSize(tab_names.c_str()).y;
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0, 0});
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, h);
-        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, h);
-
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
-        ImGui::BeginChild(
-                tab_names.c_str(), {tab_width, h + ImGui::GetStyle().FramePadding.y * 2}, false,
-                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-
-        for (int i = 0; i < tabs.size(); ++i) {
-            auto &tab = tabs[i];
-
-            // if current tab is checkd, uncheck otheres
-            if (CheckButton(tab, checked & (1 << i), ImVec2{tab_btn_width, 0})) {
-                checked = 0;
-                checked = 1 << i;
-            }
-
-            if (i != tabs.size() - 1) { ImGui::SameLine(); }
-        }
-        ImGui::PopStyleColor();
-        ImGui::PopStyleVar(3);
-        ImGui::EndChild();
-
-        index = 0;
-        while (checked / 2) {
-            checked = checked / 2;
-            ++index;
-        }
-
-        return index;
-    }
-
-    inline void SwitchButton(std::string &&icon, std::string &&label, bool &checked) {
-        float height = ImGui::GetFrameHeight();
-        float width = height * 1.55F;
-        float radius = height * 0.50F;
-        const auto frame_width = ImGui::GetContentRegionAvail().x;
-
-        AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
-        ImGui::SameLine();
-
-        ImGui::SetCursorPosX(frame_width - width);
-        ImVec2 pos = ImGui::GetCursorScreenPos();
-        if (ImGui::InvisibleButton(label.c_str(), ImVec2(width, height))) { checked = !checked; }
-        ImU32 col_bg = 0;
-        if (checked) {
-            col_bg = ImColor(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-        } else {
-            col_bg = ImColor(ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-        }
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        draw_list->AddRectFilled(pos, ImVec2(pos.x + width, pos.y + height), col_bg, radius);
-        draw_list->AddCircleFilled(
-                ImVec2(checked ? (pos.x + width - radius) : (pos.x + radius), pos.y + radius),
-                radius - 1.5F, IM_COL32_WHITE);
-    }
-
-    inline void Comb(std::string &&icon, std::string &&label,
-                     const std::vector<const char *> &items, int &index) {
-        const auto p_w = ImGui::GetContentRegionAvail().x;
-        AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(p_w - 150.0F - ImGui::GetStyle().FramePadding.x);
-        ImGui::SetNextItemWidth(150.0F);
-        ImGui::Combo((std::string("##") + label).c_str(), &index, items.data(),
-                     static_cast<int>(items.size()));
-    }
-
-    inline void InputInt(std::string &&icon, std::string &&label, int &value) {
-        const auto p_w = ImGui::GetContentRegionAvail().x;
-        AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(p_w - 100.0F - ImGui::GetStyle().FramePadding.x);
-        ImGui::SetNextItemWidth(100.0F);
-        ImGui::InputInt((std::string("##") + label).c_str(), &value);
-    }
-
-    inline void ListSeparator(float indent = 30.0F) {
-        ImGuiWindow *window = ImGui::GetCurrentWindow();
-        if (window->SkipItems) { return; }
-
-        ImGuiContext &g = *GImGui;
-
-        float thickness_draw = 1.0F;
-        float thickness_layout = 0.0F;
-        // Horizontal Separator
-        float x1 = window->Pos.x + indent;
-        float x2 = window->Pos.x + window->Size.x;
-
-        // FIXME-WORKRECT: old hack (#205) until we decide of consistent behavior with WorkRect/Indent and Separator
-        if (g.GroupStack.Size > 0 && g.GroupStack.back().WindowID == window->ID) {
-            x1 += window->DC.Indent.x;
-        }
-
-        // We don't provide our width to the layout so that it doesn't get feed back into AutoFit
-        const ImRect bb(ImVec2(x1, window->DC.CursorPos.y),
-                        ImVec2(x2, window->DC.CursorPos.y + thickness_draw));
-        ImGui::ItemSize(ImVec2(0.0F, thickness_layout));
-        const bool item_visible = ImGui::ItemAdd(bb, 0);
-        if (item_visible) {
-            // Draw
-            window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x, bb.Min.y),
-                                      ImGui::GetColorU32(ImGuiCol_Separator));
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (width - text_size.x) * 0.5F);
         }
     }
+    if (alignment & static_cast<unsigned char>(Alignment::kVerticalCenter)) {
+        ImGui::AlignTextToFramePadding();
+    }
 
-}// namespace ImGuiHelper
+    ImGui::TextUnformatted(text.c_str());
+}
 
-struct test_markdown : public ImGuiMarkdown
-{
+inline auto CheckButton(const std::string &label, bool checked, const ImVec2 &size) -> bool {
+    if (checked) {
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyle().Colors[ImGuiCol_TabUnfocusedActive]);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
+    }
+    if (ImGui::Button(label.c_str(), size)) {
+        checked = !checked;
+    }
+
+    ImGui::PopStyleColor(2);
+
+    return checked;
+}
+
+inline auto ButtonTab(std::vector<std::string> &tabs, int &index) -> int {
+    auto checked = 1 << index;
+    std::string tab_names;
+    std::for_each(tabs.begin(), tabs.end(), [&tab_names](const auto item) { tab_names += item; });
+    const auto tab_width = ImGui::GetContentRegionAvail().x;
+    const auto tab_btn_width = tab_width / static_cast<float>(tabs.size());
+    const auto h = ImGui::CalcTextSize(tab_names.c_str()).y;
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0, 0});
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, h);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, h);
+
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]);
+    ImGui::BeginChild(tab_names.c_str(), {tab_width, h + ImGui::GetStyle().FramePadding.y * 2}, false, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+
+    for (int i = 0; i < tabs.size(); ++i) {
+        auto &tab = tabs[i];
+
+        // if current tab is checkd, uncheck otheres
+        if (CheckButton(tab, checked & (1 << i), ImVec2{tab_btn_width, 0})) {
+            checked = 0;
+            checked = 1 << i;
+        }
+
+        if (i != tabs.size() - 1) {
+            ImGui::SameLine();
+        }
+    }
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar(3);
+    ImGui::EndChild();
+
+    index = 0;
+    while (checked / 2) {
+        checked = checked / 2;
+        ++index;
+    }
+
+    return index;
+}
+
+inline void SwitchButton(std::string &&icon, std::string &&label, bool &checked) {
+    float height = ImGui::GetFrameHeight();
+    float width = height * 1.55F;
+    float radius = height * 0.50F;
+    const auto frame_width = ImGui::GetContentRegionAvail().x;
+
+    AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
+    ImGui::SameLine();
+
+    ImGui::SetCursorPosX(frame_width - width);
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    if (ImGui::InvisibleButton(label.c_str(), ImVec2(width, height))) {
+        checked = !checked;
+    }
+    ImU32 col_bg = 0;
+    if (checked) {
+        col_bg = ImColor(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+    } else {
+        col_bg = ImColor(ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+    }
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled(pos, ImVec2(pos.x + width, pos.y + height), col_bg, radius);
+    draw_list->AddCircleFilled(ImVec2(checked ? (pos.x + width - radius) : (pos.x + radius), pos.y + radius), radius - 1.5F, IM_COL32_WHITE);
+}
+
+inline void Comb(std::string &&icon, std::string &&label, const std::vector<const char *> &items, int &index) {
+    const auto p_w = ImGui::GetContentRegionAvail().x;
+    AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(p_w - 150.0F - ImGui::GetStyle().FramePadding.x);
+    ImGui::SetNextItemWidth(150.0F);
+    ImGui::Combo((std::string("##") + label).c_str(), &index, items.data(), static_cast<int>(items.size()));
+}
+
+inline void InputInt(std::string &&icon, std::string &&label, int &value) {
+    const auto p_w = ImGui::GetContentRegionAvail().x;
+    AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(p_w - 100.0F - ImGui::GetStyle().FramePadding.x);
+    ImGui::SetNextItemWidth(100.0F);
+    ImGui::InputInt((std::string("##") + label).c_str(), &value);
+}
+
+inline void ListSeparator(float indent = 30.0F) {
+    ImGuiWindow *window = ImGui::GetCurrentWindow();
+    if (window->SkipItems) {
+        return;
+    }
+
+    ImGuiContext &g = *GImGui;
+
+    float thickness_draw = 1.0F;
+    float thickness_layout = 0.0F;
+    // Horizontal Separator
+    float x1 = window->Pos.x + indent;
+    float x2 = window->Pos.x + window->Size.x;
+
+    // FIXME-WORKRECT: old hack (#205) until we decide of consistent behavior with WorkRect/Indent and Separator
+    if (g.GroupStack.Size > 0 && g.GroupStack.back().WindowID == window->ID) {
+        x1 += window->DC.Indent.x;
+    }
+
+    // We don't provide our width to the layout so that it doesn't get feed back into AutoFit
+    const ImRect bb(ImVec2(x1, window->DC.CursorPos.y), ImVec2(x2, window->DC.CursorPos.y + thickness_draw));
+    ImGui::ItemSize(ImVec2(0.0F, thickness_layout));
+    const bool item_visible = ImGui::ItemAdd(bb, 0);
+    if (item_visible) {
+        // Draw
+        window->DrawList->AddLine(bb.Min, ImVec2(bb.Max.x, bb.Min.y), ImGui::GetColorU32(ImGuiCol_Separator));
+    }
+}
+
+}  // namespace ImGuiHelper
+
+struct test_markdown : public ImGuiMarkdown {
     void open_url() const override { system(std::string("start msedge " + m_href).c_str()); }
 
     bool get_image(image_info &nfo) const override {
-        //use m_href to identify images
+        // use m_href to identify images
         nfo.size = {40, 20};
         nfo.uv0 = {0, 0};
         nfo.uv1 = {1, 1};
@@ -1168,8 +1092,10 @@ struct test_markdown : public ImGuiMarkdown
 
 #if !defined(VERIFY)
 #if defined(NDEBUG)
-#define VERIFY(exp)                                                                                \
-    do { (void) (exp); } while (0)
+#define VERIFY(exp)  \
+    do {             \
+        (void)(exp); \
+    } while (0)
 #else /* defined( NDEBUG ) */
 #define VERIFY(exp) VERIFY_ASSERT(exp)
 #endif /* defined( NDEBUG ) */
@@ -1178,23 +1104,23 @@ struct test_markdown : public ImGuiMarkdown
 #if defined(__cplusplus)
 
 namespace imgex {
-    // composition of flags
-    namespace implements {
-        template<typename first_t>
-        constexpr inline unsigned int composite_flags_0(first_t first) {
-            return static_cast<unsigned int>(first);
-        }
-        template<typename first_t, typename... tail_t>
-        constexpr inline unsigned int composite_flags_0(first_t first, tail_t... tail) {
-            return static_cast<unsigned int>(first) | composite_flags_0(tail...);
-        }
-    }// namespace implements
+// composition of flags
+namespace implements {
+template <typename first_t>
+constexpr inline unsigned int composite_flags_0(first_t first) {
+    return static_cast<unsigned int>(first);
+}
+template <typename first_t, typename... tail_t>
+constexpr inline unsigned int composite_flags_0(first_t first, tail_t... tail) {
+    return static_cast<unsigned int>(first) | composite_flags_0(tail...);
+}
+}  // namespace implements
 
-    template<typename require_t, typename... tail_t>
-    constexpr inline require_t composite_flags(tail_t... tail) {
-        return static_cast<require_t>(implements::composite_flags_0(tail...));
-    }
-}// namespace imgex
+template <typename require_t, typename... tail_t>
+constexpr inline require_t composite_flags(tail_t... tail) {
+    return static_cast<require_t>(implements::composite_flags_0(tail...));
+}
+}  // namespace imgex
 
 #endif
 #endif
@@ -1215,38 +1141,28 @@ namespace imgex {
 
 #if defined(_WIN32)
 
-struct ImGUIIMMCommunication
-{
+struct ImGUIIMMCommunication {
 
-    enum {
-        WM_IMGUI_IMM32_COMMAND = WM_IMGUI_IMM32_COMMAND_BEGIN,
-        WM_IMGUI_IMM32_END
-    };
+    enum { WM_IMGUI_IMM32_COMMAND = WM_IMGUI_IMM32_COMMAND_BEGIN, WM_IMGUI_IMM32_END };
 
-    enum {
-        WM_IMGUI_IMM32_COMMAND_NOP = 0u,
-        WM_IMGUI_IMM32_COMMAND_SUBCLASSIFY,
-        WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE,
-        WM_IMGUI_IMM32_COMMAND_CLEANUP
-    };
+    enum { WM_IMGUI_IMM32_COMMAND_NOP = 0u, WM_IMGUI_IMM32_COMMAND_SUBCLASSIFY, WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, WM_IMGUI_IMM32_COMMAND_CLEANUP };
 
-    struct IMMCandidateList
-    {
+    struct IMMCandidateList {
         std::vector<std::string> list_utf8;
         std::vector<std::string>::size_type selection;
 
         IMMCandidateList() : list_utf8{}, selection(0) {}
         IMMCandidateList(const IMMCandidateList &rhv) = default;
-        IMMCandidateList(IMMCandidateList &&rhv) noexcept : list_utf8(), selection(0) {
-            *this = std::move(rhv);
-        }
+        IMMCandidateList(IMMCandidateList &&rhv) noexcept : list_utf8(), selection(0) { *this = std::move(rhv); }
 
         ~IMMCandidateList() = default;
 
         inline IMMCandidateList &operator=(const IMMCandidateList &rhv) = default;
 
         inline IMMCandidateList &operator=(IMMCandidateList &&rhv) noexcept {
-            if (this == &rhv) { return *this; }
+            if (this == &rhv) {
+                return *this;
+            }
             std::swap(list_utf8, rhv.list_utf8);
             std::swap(selection, rhv.selection);
             return *this;
@@ -1266,13 +1182,11 @@ struct ImGUIIMMCommunication
     std::unique_ptr<char[]> comp_target_utf8;
     std::unique_ptr<char[]> comp_unconv_utf8;
     bool show_ime_candidate_list;
-    int request_candidate_list_str_commit;// 1の時に candidate list が更新された後に、次の変換候補へ移る要請をする
+    int request_candidate_list_str_commit;  // 1の時に candidate list が更新された後に、次の変換候補へ移る要請をする
     IMMCandidateList candidate_list;
 
     ImGUIIMMCommunication()
-        : is_open(false), comp_conved_utf8(nullptr), comp_target_utf8(nullptr),
-          comp_unconv_utf8(nullptr), show_ime_candidate_list(false),
-          request_candidate_list_str_commit(false), candidate_list() {}
+        : is_open(false), comp_conved_utf8(nullptr), comp_target_utf8(nullptr), comp_unconv_utf8(nullptr), show_ime_candidate_list(false), request_candidate_list_str_commit(false), candidate_list() {}
 
     ~ImGUIIMMCommunication() = default;
     void operator()();
@@ -1280,19 +1194,15 @@ struct ImGUIIMMCommunication
 private:
     bool update_candidate_window(HWND hWnd);
 
-    static LRESULT WINAPI imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam,
-                                                         LPARAM lParam, UINT_PTR uIdSubclass,
-                                                         DWORD_PTR dwRefData);
-    static LRESULT imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam,
-                                                            LPARAM lParam, UINT_PTR uIdSubclass,
-                                                            ImGUIIMMCommunication &comm);
+    static LRESULT WINAPI imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+    static LRESULT imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, ImGUIIMMCommunication &comm);
     BOOL subclassify_impl(HWND hWnd);
 
 public:
-    template<typename type_t>
+    template <typename type_t>
     inline BOOL subclassify(type_t hWnd);
 
-    template<>
+    template <>
     inline BOOL subclassify<HWND>(HWND hWnd) {
         return subclassify_impl(hWnd);
     }
@@ -1300,19 +1210,19 @@ public:
 
 #endif
 
-//#if defined( _WIN32 )
+// #if defined( _WIN32 )
 //
-//#define GLFW_EXPOSE_NATIVE_WIN32
-//#include <GLFW/glfw3.h>
-//#include <GLFW/glfw3native.h>
+// #define GLFW_EXPOSE_NATIVE_WIN32
+// #include <GLFW/glfw3.h>
+// #include <GLFW/glfw3native.h>
 //
-//template<>
-//inline BOOL
-//ImGUIIMMCommunication::subclassify<GLFWwindow*>(GLFWwindow* window)
+// template<>
+// inline BOOL
+// ImGUIIMMCommunication::subclassify<GLFWwindow*>(GLFWwindow* window)
 //{
-//    return this->subclassify(glfwGetWin32Window(window));
-//}
-//#endif
+//     return this->subclassify(glfwGetWin32Window(window));
+// }
+// #endif
 
 #if defined(__cplusplus)
 
@@ -1320,7 +1230,7 @@ public:
 
 #include "engine/sdl_wrapper.h"
 
-template<>
+template <>
 inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
@@ -1336,179 +1246,175 @@ inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window)
 #endif
 
 namespace ImGuiWidget {
-    void PlotFlame(const char *label,
-                   void (*values_getter)(float *start, float *end, ImU8 *level,
-                                         const char **caption, const void *data, int idx),
-                   const void *data, int values_count, int values_offset = 0,
-                   const char *overlay_text = NULL, float scale_min = FLT_MAX,
-                   float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
+void PlotFlame(const char *label, void (*values_getter)(float *start, float *end, ImU8 *level, const char **caption, const void *data, int idx), const void *data, int values_count,
+               int values_offset = 0, const char *overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
 
-    using ImGuiFileBrowserFlags = int;
+using ImGuiFileBrowserFlags = int;
 
-    enum ImGuiFileBrowserFlags_ {
-        ImGuiFileBrowserFlags_SelectDirectory = 1 << 0,// select directory instead of regular file
-        ImGuiFileBrowserFlags_EnterNewFilename =
-                1 << 1,// allow user to enter new filename when selecting regular file
-        ImGuiFileBrowserFlags_NoModal =
-                1
-                << 2,// file browsing window is modal by default. specify this to use a popup window
-        ImGuiFileBrowserFlags_NoTitleBar = 1 << 3,// hide window title bar
-        ImGuiFileBrowserFlags_NoStatusBar = 1
-                                            << 4,// hide status bar at the bottom of browsing window
-        ImGuiFileBrowserFlags_CloseOnEsc = 1 << 5,  // close file browser when pressing 'ESC'
-        ImGuiFileBrowserFlags_CreateNewDir = 1 << 6,// allow user to create new directory
-        ImGuiFileBrowserFlags_MultipleSelection =
-                1
-                << 7,// allow user to select multiple files. this will hide ImGuiFileBrowserFlags_EnterNewFilename
-    };
+enum ImGuiFileBrowserFlags_ {
+    ImGuiFileBrowserFlags_SelectDirectory = 1 << 0,    // select directory instead of regular file
+    ImGuiFileBrowserFlags_EnterNewFilename = 1 << 1,   // allow user to enter new filename when selecting regular file
+    ImGuiFileBrowserFlags_NoModal = 1 << 2,            // file browsing window is modal by default. specify this to use a popup window
+    ImGuiFileBrowserFlags_NoTitleBar = 1 << 3,         // hide window title bar
+    ImGuiFileBrowserFlags_NoStatusBar = 1 << 4,        // hide status bar at the bottom of browsing window
+    ImGuiFileBrowserFlags_CloseOnEsc = 1 << 5,         // close file browser when pressing 'ESC'
+    ImGuiFileBrowserFlags_CreateNewDir = 1 << 6,       // allow user to create new directory
+    ImGuiFileBrowserFlags_MultipleSelection = 1 << 7,  // allow user to select multiple files. this will hide ImGuiFileBrowserFlags_EnterNewFilename
+};
 
-    class FileBrowser {
-    public:
-        // pwd is set to current working directory by default
-        explicit FileBrowser(ImGuiFileBrowserFlags flags = 0);
+class FileBrowser {
+public:
+    // pwd is set to current working directory by default
+    explicit FileBrowser(ImGuiFileBrowserFlags flags = 0);
 
-        FileBrowser(const FileBrowser &copyFrom);
+    FileBrowser(const FileBrowser &copyFrom);
 
-        FileBrowser &operator=(const FileBrowser &copyFrom);
+    FileBrowser &operator=(const FileBrowser &copyFrom);
 
-        // set the window position (in pixels)
-        // default is centered
-        void SetWindowPos(int posx, int posy) noexcept;
+    // set the window position (in pixels)
+    // default is centered
+    void SetWindowPos(int posx, int posy) noexcept;
 
-        // set the window size (in pixels)
-        // default is (700, 450)
-        void SetWindowSize(int width, int height) noexcept;
+    // set the window size (in pixels)
+    // default is (700, 450)
+    void SetWindowSize(int width, int height) noexcept;
 
-        // set the window title text
-        void SetTitle(std::string title);
+    // set the window title text
+    void SetTitle(std::string title);
 
-        // open the browsing window
-        void Open();
+    // open the browsing window
+    void Open();
 
-        // close the browsing window
-        void Close();
+    // close the browsing window
+    void Close();
 
-        // the browsing window is opened or not
-        bool IsOpened() const noexcept;
+    // the browsing window is opened or not
+    bool IsOpened() const noexcept;
 
-        // display the browsing window if opened
-        void Display();
+    // display the browsing window if opened
+    void Display();
 
-        // returns true when there is a selected filename and the "ok" button was clicked
-        bool HasSelected() const noexcept;
+    // returns true when there is a selected filename and the "ok" button was clicked
+    bool HasSelected() const noexcept;
 
-        // set current browsing directory
-        bool SetPwd(const std::filesystem::path &pwd = std::filesystem::current_path());
+    // set current browsing directory
+    bool SetPwd(const std::filesystem::path &pwd = std::filesystem::current_path());
 
-        // get current browsing directory
-        const std::filesystem::path &GetPwd() const noexcept;
+    // get current browsing directory
+    const std::filesystem::path &GetPwd() const noexcept;
 
-        // returns selected filename. make sense only when HasSelected returns true
-        // when ImGuiFileBrowserFlags_MultipleSelection is enabled, only one of
-        // selected filename will be returned
-        std::filesystem::path GetSelected() const;
+    // returns selected filename. make sense only when HasSelected returns true
+    // when ImGuiFileBrowserFlags_MultipleSelection is enabled, only one of
+    // selected filename will be returned
+    std::filesystem::path GetSelected() const;
 
-        // returns all selected filenames.
-        // when ImGuiFileBrowserFlags_MultipleSelection is enabled, use this
-        // instead of GetSelected
-        std::vector<std::filesystem::path> GetMultiSelected() const;
+    // returns all selected filenames.
+    // when ImGuiFileBrowserFlags_MultipleSelection is enabled, use this
+    // instead of GetSelected
+    std::vector<std::filesystem::path> GetMultiSelected() const;
 
-        // set selected filename to empty
-        void ClearSelected();
+    // set selected filename to empty
+    void ClearSelected();
 
-        // (optional) set file type filters. eg. { ".h", ".cpp", ".hpp" }
-        // ".*" matches any file types
-        void SetTypeFilters(const std::vector<std::string> &typeFilters);
+    // (optional) set file type filters. eg. { ".h", ".cpp", ".hpp" }
+    // ".*" matches any file types
+    void SetTypeFilters(const std::vector<std::string> &typeFilters);
 
-        // set currently applied type filter
-        // default value is 0 (the first type filter)
-        void SetCurrentTypeFilterIndex(int index);
+    // set currently applied type filter
+    // default value is 0 (the first type filter)
+    void SetCurrentTypeFilterIndex(int index);
 
-        // when ImGuiFileBrowserFlags_EnterNewFilename is set
-        // this function will pre-fill the input dialog with a filename.
-        void SetInputName(std::string_view input);
+    // when ImGuiFileBrowserFlags_EnterNewFilename is set
+    // this function will pre-fill the input dialog with a filename.
+    void SetInputName(std::string_view input);
+
+private:
+    template <class Functor>
+    struct ScopeGuard {
+        ScopeGuard(Functor &&t) : func(std::move(t)) {}
+
+        ~ScopeGuard() { func(); }
 
     private:
-        template<class Functor>
-        struct ScopeGuard
-        {
-            ScopeGuard(Functor &&t) : func(std::move(t)) {}
+        Functor func;
+    };
 
-            ~ScopeGuard() { func(); }
+    struct FileRecord {
+        bool isDir = false;
+        std::filesystem::path name;
+        std::string showName;
+        std::filesystem::path extension;
+    };
 
-        private:
-            Functor func;
-        };
+    static std::string ToLower(const std::string &s);
 
-        struct FileRecord
-        {
-            bool isDir = false;
-            std::filesystem::path name;
-            std::string showName;
-            std::filesystem::path extension;
-        };
+    void UpdateFileRecords();
 
-        static std::string ToLower(const std::string &s);
+    void SetPwdUncatched(const std::filesystem::path &pwd);
 
-        void UpdateFileRecords();
-
-        void SetPwdUncatched(const std::filesystem::path &pwd);
-
-        bool IsExtensionMatched(const std::filesystem::path &extension) const;
+    bool IsExtensionMatched(const std::filesystem::path &extension) const;
 
 #ifdef _WIN32
-        static std::uint32_t GetDrivesBitMask();
+    static std::uint32_t GetDrivesBitMask();
 #endif
 
-        // for c++17 compatibility
+    // for c++17 compatibility
 
 #if defined(__cpp_lib_char8_t)
-        static std::string u8StrToStr(std::u8string s);
+    static std::string u8StrToStr(std::u8string s);
 #endif
-        static std::string u8StrToStr(std::string s);
+    static std::string u8StrToStr(std::string s);
 
-        int width_;
-        int height_;
-        int posX_;
-        int posY_;
-        ImGuiFileBrowserFlags flags_;
+    int width_;
+    int height_;
+    int posX_;
+    int posY_;
+    ImGuiFileBrowserFlags flags_;
 
-        std::string title_;
-        std::string openLabel_;
+    std::string title_;
+    std::string openLabel_;
 
-        bool openFlag_;
-        bool closeFlag_;
-        bool isOpened_;
-        bool ok_;
-        bool posIsSet_;
+    bool openFlag_;
+    bool closeFlag_;
+    bool isOpened_;
+    bool ok_;
+    bool posIsSet_;
 
-        std::string statusStr_;
+    std::string statusStr_;
 
-        std::vector<std::string> typeFilters_;
-        unsigned int typeFilterIndex_;
-        bool hasAllFilter_;
+    std::vector<std::string> typeFilters_;
+    unsigned int typeFilterIndex_;
+    bool hasAllFilter_;
 
-        std::filesystem::path pwd_;
-        std::set<std::filesystem::path> selectedFilenames_;
+    std::filesystem::path pwd_;
+    std::set<std::filesystem::path> selectedFilenames_;
 
-        std::vector<FileRecord> fileRecords_;
+    std::vector<FileRecord> fileRecords_;
 
-        // IMPROVE: truncate when selectedFilename_.length() > inputNameBuf_.size() - 1
-        static constexpr size_t INPUT_NAME_BUF_SIZE = 512;
-        std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> inputNameBuf_;
+    // IMPROVE: truncate when selectedFilename_.length() > inputNameBuf_.size() - 1
+    static constexpr size_t INPUT_NAME_BUF_SIZE = 512;
+    std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> inputNameBuf_;
 
-        std::string openNewDirLabel_;
-        std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> newDirNameBuf_;
+    std::string openNewDirLabel_;
+    std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> newDirNameBuf_;
 
 #ifdef _WIN32
-        uint32_t drives_;
+    uint32_t drives_;
 #endif
-    };
-}// namespace ImGuiWidget
+};
+}  // namespace ImGuiWidget
 
 inline ImGuiWidget::FileBrowser::FileBrowser(ImGuiFileBrowserFlags flags)
-    : width_(700), height_(450), posX_(0), posY_(0), flags_(flags), openFlag_(false),
-      closeFlag_(false), isOpened_(false), ok_(false), posIsSet_(false),
+    : width_(700),
+      height_(450),
+      posX_(0),
+      posY_(0),
+      flags_(flags),
+      openFlag_(false),
+      closeFlag_(false),
+      isOpened_(false),
+      ok_(false),
+      posIsSet_(false),
       inputNameBuf_(std::make_unique<std::array<char, INPUT_NAME_BUF_SIZE>>()) {
     if (flags_ & ImGuiFileBrowserFlags_CreateNewDir) {
         newDirNameBuf_ = std::make_unique<std::array<char, INPUT_NAME_BUF_SIZE>>();
@@ -1528,9 +1434,7 @@ inline ImGuiWidget::FileBrowser::FileBrowser(ImGuiFileBrowserFlags flags)
 #endif
 }
 
-inline ImGuiWidget::FileBrowser::FileBrowser(const FileBrowser &copyFrom) : FileBrowser() {
-    *this = copyFrom;
-}
+inline ImGuiWidget::FileBrowser::FileBrowser(const FileBrowser &copyFrom) : FileBrowser() { *this = copyFrom; }
 
 inline ImGuiWidget::FileBrowser &ImGuiWidget::FileBrowser::operator=(const FileBrowser &copyFrom) {
     width_ = copyFrom.width_;
@@ -1617,28 +1521,25 @@ inline void ImGuiWidget::FileBrowser::Display() {
         ImGui::PopID();
     });
 
-    if (openFlag_) { ImGui::OpenPopup(openLabel_.c_str()); }
+    if (openFlag_) {
+        ImGui::OpenPopup(openLabel_.c_str());
+    }
     isOpened_ = false;
 
     // open the popup window
 
     if (openFlag_ && (flags_ & ImGuiFileBrowserFlags_NoModal)) {
-        if (posIsSet_)
-            ImGui::SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)));
+        if (posIsSet_) ImGui::SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)));
         ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)));
     } else {
-        if (posIsSet_)
-            ImGui::SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)),
-                                    ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)),
-                                 ImGuiCond_FirstUseEver);
+        if (posIsSet_) ImGui::SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)), ImGuiCond_FirstUseEver);
     }
     if (flags_ & ImGuiFileBrowserFlags_NoModal) {
-        if (!ImGui::BeginPopup(openLabel_.c_str())) { return; }
-    } else if (!ImGui::BeginPopupModal(openLabel_.c_str(), nullptr,
-                                       flags_ & ImGuiFileBrowserFlags_NoTitleBar
-                                               ? ImGuiWindowFlags_NoTitleBar
-                                               : 0)) {
+        if (!ImGui::BeginPopup(openLabel_.c_str())) {
+            return;
+        }
+    } else if (!ImGui::BeginPopupModal(openLabel_.c_str(), nullptr, flags_ & ImGuiFileBrowserFlags_NoTitleBar ? ImGuiWindowFlags_NoTitleBar : 0)) {
         return;
     }
 
@@ -1656,7 +1557,9 @@ inline void ImGuiWidget::FileBrowser::Display() {
         ScopeGuard guard([&] { EndCombo(); });
 
         for (int i = 0; i < 26; ++i) {
-            if (!(drives_ & (1 << i))) { continue; }
+            if (!(drives_ & (1 << i))) {
+                continue;
+            }
 
             char driveCh = static_cast<char>('A' + i);
             char selectableStr[] = {driveCh, ':', '\0'};
@@ -1674,7 +1577,7 @@ inline void ImGuiWidget::FileBrowser::Display() {
 #endif
 
     int secIdx = 0, newPwdLastSecIdx = -1;
-    for (const auto &sec: pwd_) {
+    for (const auto &sec : pwd_) {
 #ifdef _WIN32
         if (secIdx == 1) {
             ++secIdx;
@@ -1683,8 +1586,12 @@ inline void ImGuiWidget::FileBrowser::Display() {
 #endif
 
         ImGui::PushID(secIdx);
-        if (secIdx > 0) { ImGui::SameLine(); }
-        if (ImGui::SmallButton(u8StrToStr(sec.u8string()).c_str())) { newPwdLastSecIdx = secIdx; }
+        if (secIdx > 0) {
+            ImGui::SameLine();
+        }
+        if (ImGui::SmallButton(u8StrToStr(sec.u8string()).c_str())) {
+            newPwdLastSecIdx = secIdx;
+        }
         ImGui::PopID();
 
         ++secIdx;
@@ -1693,13 +1600,17 @@ inline void ImGuiWidget::FileBrowser::Display() {
     if (newPwdLastSecIdx >= 0) {
         int i = 0;
         std::filesystem::path newPwd;
-        for (const auto &sec: pwd_) {
-            if (i++ > newPwdLastSecIdx) { break; }
+        for (const auto &sec : pwd_) {
+            if (i++ > newPwdLastSecIdx) {
+                break;
+            }
             newPwd /= sec;
         }
 
 #ifdef _WIN32
-        if (newPwdLastSecIdx == 0) { newPwd /= "\\"; }
+        if (newPwdLastSecIdx == 0) {
+            newPwd /= "\\";
+        }
 #endif
 
         SetPwd(newPwd);
@@ -1711,11 +1622,12 @@ inline void ImGuiWidget::FileBrowser::Display() {
         UpdateFileRecords();
 
         std::set<std::filesystem::path> newSelectedFilenames;
-        for (auto &name: selectedFilenames_) {
-            auto it = std::find_if(fileRecords_.begin(), fileRecords_.end(),
-                                   [&](const FileRecord &record) { return name == record.name; });
+        for (auto &name : selectedFilenames_) {
+            auto it = std::find_if(fileRecords_.begin(), fileRecords_.end(), [&](const FileRecord &record) { return name == record.name; });
 
-            if (it != fileRecords_.end()) { newSelectedFilenames.insert(name); }
+            if (it != fileRecords_.end()) {
+                newSelectedFilenames.insert(name);
+            }
         }
 
         if (inputNameBuf_ && (*inputNameBuf_)[0]) {
@@ -1752,29 +1664,25 @@ inline void ImGuiWidget::FileBrowser::Display() {
     float reserveHeight = ImGui::GetFrameHeightWithSpacing();
     std::filesystem::path newPwd;
     bool setNewPwd = false;
-    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory) &&
-        (flags_ & ImGuiFileBrowserFlags_EnterNewFilename))
-        reserveHeight += ImGui::GetFrameHeightWithSpacing();
+    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory) && (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)) reserveHeight += ImGui::GetFrameHeightWithSpacing();
     {
-        ImGui::BeginChild("ch", ImVec2(0, -reserveHeight), true,
-                          (flags_ & ImGuiFileBrowserFlags_NoModal)
-                                  ? ImGuiWindowFlags_AlwaysHorizontalScrollbar
-                                  : 0);
+        ImGui::BeginChild("ch", ImVec2(0, -reserveHeight), true, (flags_ & ImGuiFileBrowserFlags_NoModal) ? ImGuiWindowFlags_AlwaysHorizontalScrollbar : 0);
         ScopeGuard endChild([] { ImGui::EndChild(); });
 
-        for (auto &rsc: fileRecords_) {
-            if (!rsc.isDir && !IsExtensionMatched(rsc.extension)) { continue; }
+        for (auto &rsc : fileRecords_) {
+            if (!rsc.isDir && !IsExtensionMatched(rsc.extension)) {
+                continue;
+            }
 
-            if (!rsc.name.empty() && rsc.name.c_str()[0] == '$') { continue; }
+            if (!rsc.name.empty() && rsc.name.c_str()[0] == '$') {
+                continue;
+            }
 
             bool selected = selectedFilenames_.find(rsc.name) != selectedFilenames_.end();
 
-            if (ImGui::Selectable(rsc.showName.c_str(), selected,
-                                  ImGuiSelectableFlags_DontClosePopups)) {
+            if (ImGui::Selectable(rsc.showName.c_str(), selected, ImGuiSelectableFlags_DontClosePopups)) {
                 const bool multiSelect =
-                        (flags_ & ImGuiFileBrowserFlags_MultipleSelection) &&
-                        ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-                        (ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeyShift);
+                        (flags_ & ImGuiFileBrowserFlags_MultipleSelection) && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && (ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeyShift);
 
                 if (selected) {
                     if (!multiSelect) {
@@ -1785,8 +1693,7 @@ inline void ImGuiWidget::FileBrowser::Display() {
 
                     (*inputNameBuf_)[0] = '\0';
                 } else if (rsc.name != "..") {
-                    if ((rsc.isDir && (flags_ & ImGuiFileBrowserFlags_SelectDirectory)) ||
-                        (!rsc.isDir && !(flags_ & ImGuiFileBrowserFlags_SelectDirectory))) {
+                    if ((rsc.isDir && (flags_ & ImGuiFileBrowserFlags_SelectDirectory)) || (!rsc.isDir && !(flags_ & ImGuiFileBrowserFlags_SelectDirectory))) {
                         if (multiSelect) {
                             selectedFilenames_.insert(rsc.name);
                         } else {
@@ -1795,17 +1702,16 @@ inline void ImGuiWidget::FileBrowser::Display() {
 
                         if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory)) {
 #ifdef _MSC_VER
-                            strcpy_s(inputNameBuf_->data(), inputNameBuf_->size(),
-                                     u8StrToStr(rsc.name.u8string()).c_str());
+                            strcpy_s(inputNameBuf_->data(), inputNameBuf_->size(), u8StrToStr(rsc.name.u8string()).c_str());
 #else
-                            std::strncpy(inputNameBuf_->data(),
-                                         u8StrToStr(rsc.name.u8string()).c_str(),
-                                         inputNameBuf_->size() - 1);
+                            std::strncpy(inputNameBuf_->data(), u8StrToStr(rsc.name.u8string()).c_str(), inputNameBuf_->size() - 1);
 #endif
                         }
                     }
                 } else {
-                    if (!multiSelect) { selectedFilenames_.clear(); }
+                    if (!multiSelect) {
+                        selectedFilenames_.clear();
+                    }
                 }
             }
 
@@ -1822,16 +1728,16 @@ inline void ImGuiWidget::FileBrowser::Display() {
         }
     }
 
-    if (setNewPwd) { SetPwd(newPwd); }
+    if (setNewPwd) {
+        SetPwd(newPwd);
+    }
 
-    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory) &&
-        (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)) {
+    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory) && (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)) {
         ImGui::PushID(this);
         ScopeGuard popTextID([] { ImGui::PopID(); });
 
         ImGui::PushItemWidth(-1);
-        if (ImGui::InputText("", inputNameBuf_->data(), inputNameBuf_->size()) &&
-            inputNameBuf_->at(0) != '\0') {
+        if (ImGui::InputText("", inputNameBuf_->data(), inputNameBuf_->size()) && inputNameBuf_->at(0) != '\0') {
             selectedFilenames_ = {inputNameBuf_->data()};
         }
         ImGui::PopItemWidth();
@@ -1852,10 +1758,10 @@ inline void ImGuiWidget::FileBrowser::Display() {
     ImGui::SameLine();
 
     bool shouldExit = ImGui::Button("cancel") || closeFlag_ ||
-                      ((flags_ & ImGuiFileBrowserFlags_CloseOnEsc) &&
-                       ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-                       ImGui::IsKeyPressed(ImGuiKey_Escape));
-    if (shouldExit) { ImGui::CloseCurrentPopup(); }
+                      ((flags_ & ImGuiFileBrowserFlags_CloseOnEsc) && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Escape));
+    if (shouldExit) {
+        ImGui::CloseCurrentPopup();
+    }
 
     if (!statusStr_.empty() && !(flags_ & ImGuiFileBrowserFlags_NoStatusBar)) {
         ImGui::SameLine();
@@ -1887,29 +1793,35 @@ inline bool ImGuiWidget::FileBrowser::SetPwd(const std::filesystem::path &pwd) {
         return true;
     } catch (const std::exception &err) {
         statusStr_ = std::string("last error: ") + err.what();
-    } catch (...) { statusStr_ = "last error: unknown"; }
+    } catch (...) {
+        statusStr_ = "last error: unknown";
+    }
 
     SetPwdUncatched(std::filesystem::current_path());
     return false;
 }
 
-inline const class std::filesystem::path &ImGuiWidget::FileBrowser::GetPwd() const noexcept {
-    return pwd_;
-}
+inline const class std::filesystem::path &ImGuiWidget::FileBrowser::GetPwd() const noexcept { return pwd_; }
 
 inline std::filesystem::path ImGuiWidget::FileBrowser::GetSelected() const {
     // when ok_ is true, selectedFilenames_ may be empty if SelectDirectory
     // is enabled. return pwd in that case.
-    if (selectedFilenames_.empty()) { return pwd_; }
+    if (selectedFilenames_.empty()) {
+        return pwd_;
+    }
     return pwd_ / *selectedFilenames_.begin();
 }
 
 inline std::vector<std::filesystem::path> ImGuiWidget::FileBrowser::GetMultiSelected() const {
-    if (selectedFilenames_.empty()) { return {pwd_}; }
+    if (selectedFilenames_.empty()) {
+        return {pwd_};
+    }
 
     std::vector<std::filesystem::path> ret;
     ret.reserve(selectedFilenames_.size());
-    for (auto &s: selectedFilenames_) { ret.push_back(pwd_ / s); }
+    for (auto &s : selectedFilenames_) {
+        ret.push_back(pwd_ / s);
+    }
 
     return ret;
 }
@@ -1928,10 +1840,12 @@ inline void ImGuiWidget::FileBrowser::SetTypeFilters(const std::vector<std::stri
 #ifdef _WIN32
 
     std::vector<std::string> typeFilters;
-    for (auto &rawFilter: _typeFilters) {
+    for (auto &rawFilter : _typeFilters) {
         std::string lowerFilter = ToLower(rawFilter);
         auto it = std::find(typeFilters.begin(), typeFilters.end(), lowerFilter);
-        if (it == typeFilters.end()) { typeFilters.push_back(std::move(lowerFilter)); }
+        if (it == typeFilters.end()) {
+            typeFilters.push_back(std::move(lowerFilter));
+        }
     }
 
 #else
@@ -1951,11 +1865,15 @@ inline void ImGuiWidget::FileBrowser::SetTypeFilters(const std::vector<std::stri
                 break;
             }
 
-            if (i > 0) { allFiltersName += ","; }
+            if (i > 0) {
+                allFiltersName += ",";
+            }
             allFiltersName += typeFilters[i];
         }
 
-        if (hasAllFilter_) { typeFilters_.push_back(std::move(allFiltersName)); }
+        if (hasAllFilter_) {
+            typeFilters_.push_back(std::move(allFiltersName));
+        }
     }
 
     std::copy(typeFilters.begin(), typeFilters.end(), std::back_inserter(typeFilters_));
@@ -1963,9 +1881,7 @@ inline void ImGuiWidget::FileBrowser::SetTypeFilters(const std::vector<std::stri
     typeFilterIndex_ = 0;
 }
 
-inline void ImGuiWidget::FileBrowser::SetCurrentTypeFilterIndex(int index) {
-    typeFilterIndex_ = static_cast<unsigned int>(index);
-}
+inline void ImGuiWidget::FileBrowser::SetCurrentTypeFilterIndex(int index) { typeFilterIndex_ = static_cast<unsigned int>(index); }
 
 inline void ImGuiWidget::FileBrowser::SetInputName(std::string_view input) {
     if (flags_ & ImGuiFileBrowserFlags_EnterNewFilename) {
@@ -1981,14 +1897,16 @@ inline void ImGuiWidget::FileBrowser::SetInputName(std::string_view input) {
 
 inline std::string ImGuiWidget::FileBrowser::ToLower(const std::string &s) {
     std::string ret = s;
-    for (char &c: ret) { c = static_cast<char>(std::tolower(c)); }
+    for (char &c : ret) {
+        c = static_cast<char>(std::tolower(c));
+    }
     return ret;
 }
 
 inline void ImGuiWidget::FileBrowser::UpdateFileRecords() {
     fileRecords_ = {FileRecord{true, "..", "[D] ..", ""}};
 
-    for (auto &p: std::filesystem::directory_iterator(pwd_)) {
+    for (auto &p : std::filesystem::directory_iterator(pwd_)) {
         FileRecord rcd;
 
         if (p.is_regular_file()) {
@@ -2000,7 +1918,9 @@ inline void ImGuiWidget::FileBrowser::UpdateFileRecords() {
         }
 
         rcd.name = p.path().filename();
-        if (rcd.name.empty()) { continue; }
+        if (rcd.name.empty()) {
+            continue;
+        }
 
         rcd.extension = p.path().filename().extension();
 
@@ -2008,10 +1928,7 @@ inline void ImGuiWidget::FileBrowser::UpdateFileRecords() {
         fileRecords_.push_back(rcd);
     }
 
-    std::sort(fileRecords_.begin(), fileRecords_.end(),
-              [](const FileRecord &L, const FileRecord &R) {
-                  return (L.isDir ^ R.isDir) ? L.isDir : (L.name < R.name);
-              });
+    std::sort(fileRecords_.begin(), fileRecords_.end(), [](const FileRecord &L, const FileRecord &R) { return (L.isDir ^ R.isDir) ? L.isDir : (L.name < R.name); });
 }
 
 inline void ImGuiWidget::FileBrowser::SetPwdUncatched(const std::filesystem::path &pwd) {
@@ -2021,8 +1938,7 @@ inline void ImGuiWidget::FileBrowser::SetPwdUncatched(const std::filesystem::pat
     (*inputNameBuf_)[0] = '\0';
 }
 
-inline bool ImGuiWidget::FileBrowser::IsExtensionMatched(
-        const std::filesystem::path &_extension) const {
+inline bool ImGuiWidget::FileBrowser::IsExtensionMatched(const std::filesystem::path &_extension) const {
 #ifdef _WIN32
     std::filesystem::path extension = ToLower(_extension.string());
 #else
@@ -2030,30 +1946,36 @@ inline bool ImGuiWidget::FileBrowser::IsExtensionMatched(
 #endif
 
     // no type filters
-    if (typeFilters_.empty()) { return true; }
+    if (typeFilters_.empty()) {
+        return true;
+    }
 
     // invalid type filter index
-    if (static_cast<size_t>(typeFilterIndex_) >= typeFilters_.size()) { return true; }
+    if (static_cast<size_t>(typeFilterIndex_) >= typeFilters_.size()) {
+        return true;
+    }
 
     // all type filters
     if (hasAllFilter_ && typeFilterIndex_ == 0) {
         for (size_t i = 1; i < typeFilters_.size(); ++i) {
-            if (extension == typeFilters_[i]) { return true; }
+            if (extension == typeFilters_[i]) {
+                return true;
+            }
         }
         return false;
     }
 
     // universal filter
-    if (typeFilters_[typeFilterIndex_] == std::string_view(".*")) { return true; }
+    if (typeFilters_[typeFilterIndex_] == std::string_view(".*")) {
+        return true;
+    }
 
     // regular filter
     return extension == typeFilters_[typeFilterIndex_];
 }
 
 #if defined(__cpp_lib_char8_t)
-inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::u8string s) {
-    return std::string(s.begin(), s.end());
-}
+inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::u8string s) { return std::string(s.begin(), s.end()); }
 #endif
 
 inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::string s) { return s; }
@@ -2067,22 +1989,24 @@ inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::string s) { return 
 #define IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 
-#endif// #ifndef WIN32_LEAN_AND_MEAN
+#endif  // #ifndef WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
 
 #ifdef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
 #undef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
 #undef WIN32_LEAN_AND_MEAN
-#endif// #ifdef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
+#endif  // #ifdef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
 
-#endif// #ifdef _INC_WINDOWS
+#endif  // #ifdef _INC_WINDOWS
 
 inline std::uint32_t ImGuiWidget::FileBrowser::GetDrivesBitMask() {
     DWORD mask = GetLogicalDrives();
     uint32_t ret = 0;
     for (int i = 0; i < 26; ++i) {
-        if (!(mask & (1 << i))) { continue; }
+        if (!(mask & (1 << i))) {
+            continue;
+        }
         char rootName[4] = {static_cast<char>('A' + i), ':', '\\', '\0'};
         UINT type = GetDriveTypeA(rootName);
         if (type == DRIVE_REMOVABLE || type == DRIVE_FIXED || type == DRIVE_REMOTE) {

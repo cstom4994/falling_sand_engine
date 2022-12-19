@@ -3,24 +3,23 @@
 #ifndef _METADOT_SCRIPTING_HPP_
 #define _METADOT_SCRIPTING_HPP_
 
-#include "libs/visitstruct.hpp"
-#include "lua_wrapper.hpp"
-
 #include <map>
 #include <string>
+
+#include "libs/visitstruct.hpp"
+#include "lua_wrapper.hpp"
 
 struct lua_State;
 
 #pragma region struct_as
 
-template<typename T>
+template <typename T>
 METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key, const T &value) {
     s += MetaEngine::Format("{0}.{1} = {2}\n", table, key, value);
 }
 
-template<>
-METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key,
-                              const std::string &value) {
+template <>
+METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key, const std::string &value) {
     s += MetaEngine::Format("{0}.{1} = \"{2}\"\n", table, key, value);
 }
 
@@ -28,20 +27,19 @@ METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key
 
 using ppair = std::pair<const char *, const void *>;
 
-struct test_visitor
-{
+struct test_visitor {
     std::vector<ppair> result;
 
-    template<typename T>
+    template <typename T>
     void operator()(const char *name, const T &t) {
         result.emplace_back(ppair{name, static_cast<const void *>(&t)});
     }
 };
 
-template<typename T>
+template <typename T>
 void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
     visit_struct::for_each(_struct, [&](const char *name, const auto &value) {
-        //METADOT_INFO("{} == {} ({})", name, value, typeid(value).name());
+        // METADOT_INFO("{} == {} ({})", name, value, typeid(value).name());
         struct_as(out, table_name, name, value);
     });
 }
@@ -60,8 +58,7 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 //     });
 // }
 
-struct LuaCore
-{
+struct LuaCore {
 private:
     LuaWrapper::State s_lua;
     lua_State *m_L;
@@ -77,19 +74,16 @@ public:
     void Init();
     void End();
 
-    struct
-    {
+    struct {
         // LuaWrapper::LuaFunction Lang;
     } Func_;
 
-    struct
-    {
+    struct {
         LuaWrapper::LuaTable Biome;
     } Data_;
 };
 
-struct Scripts
-{
+struct Scripts {
     LuaCore *LuaRuntime;
 
     void Init();

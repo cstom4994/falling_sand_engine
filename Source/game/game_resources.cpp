@@ -1,6 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "game_resources.hpp"
+
+#include <string>
+
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
@@ -12,8 +15,6 @@
 #include "engine/sdl_wrapper.h"
 #include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"
-
-#include <string>
 
 C_Surface *Textures::testTexture = nullptr;
 C_Surface *Textures::dirt1Texture = nullptr;
@@ -56,13 +57,9 @@ void Textures::Init() {
     // testAse = Textures::loadAseprite("data/assets/textures/tests/3.0_one_slice.ase");
 }
 
-C_Surface *LoadTextureData(std::string path) {
-    return Textures::LoadTexture(path, SDL_PIXELFORMAT_ARGB8888);
-}
+C_Surface *LoadTextureData(std::string path) { return Textures::LoadTexture(path, SDL_PIXELFORMAT_ARGB8888); }
 
-C_Surface *Textures::LoadTexture(std::string path) {
-    return LoadTexture(path, SDL_PIXELFORMAT_ARGB8888);
-}
+C_Surface *Textures::LoadTexture(std::string path) { return LoadTexture(path, SDL_PIXELFORMAT_ARGB8888); }
 
 C_Surface *Textures::LoadTexture(std::string path, U32 pixelFormat) {
 
@@ -72,11 +69,9 @@ C_Surface *Textures::LoadTexture(std::string path, U32 pixelFormat) {
     // use STBI_rgb if you don't want/need the alpha channel
     int req_format = STBI_rgb_alpha;
     int width, height, orig_format;
-    unsigned char *data =
-            stbi_load(METADOT_RESLOC(path.c_str()), &width, &height, &orig_format, req_format);
+    unsigned char *data = stbi_load(METADOT_RESLOC(path.c_str()), &width, &height, &orig_format, req_format);
     if (data == NULL) {
-        std::cout << "Loading image failed: " << stbi_failure_reason()
-                  << " ::" << METADOT_RESLOC(path.c_str()) << std::endl;
+        std::cout << "Loading image failed: " << stbi_failure_reason() << " ::" << METADOT_RESLOC(path.c_str()) << std::endl;
     }
 
     // Set up the pixel format color masks for RGB(A) byte arrays.
@@ -88,7 +83,7 @@ C_Surface *Textures::LoadTexture(std::string path, U32 pixelFormat) {
     gmask = 0x00ff0000 >> shift;
     bmask = 0x0000ff00 >> shift;
     amask = 0x000000ff >> shift;
-#else// little endian, like x86
+#else  // little endian, like x86
     rmask = 0x000000ff;
     gmask = 0x0000ff00;
     bmask = 0x00ff0000;
@@ -98,16 +93,15 @@ C_Surface *Textures::LoadTexture(std::string path, U32 pixelFormat) {
     int depth, pitch;
     if (req_format == STBI_rgb) {
         depth = 24;
-        pitch = 3 * width;// 3 bytes per pixel * pixels per row
-    } else {              // STBI_rgb_alpha (RGBA)
+        pitch = 3 * width;  // 3 bytes per pixel * pixels per row
+    } else {                // STBI_rgb_alpha (RGBA)
         depth = 32;
         pitch = 4 * width;
     }
 
-    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *) data, width, height, depth, pitch,
-                                                        rmask, gmask, bmask, amask);
+    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
 
-    //stbi_image_free(data);
+    // stbi_image_free(data);
 
     METADOT_ASSERT_E(loadedSurface);
 
@@ -129,21 +123,17 @@ C_Surface *Textures::loadAseprite(std::string path) {
         METADOT_ERROR("Test %d BPP not supported!", ase->bpp);
     }
 
-    C_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
-            ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8,
-            ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
+    C_Surface *surface =
+            SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
     if (!surface) METADOT_ERROR("Surface could not be created!, %s", SDL_GetError());
-    SDL_SetPaletteColors(surface->format->palette, (SDL_Color *) &ase->palette.entries, 0,
-                         ase->palette.num_entries);
+    SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.num_entries);
     SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
 
     return surface;
 }
 
 C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
-    C_Surface *dest = SDL_CreateRGBSurface(
-            src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask,
-            src->format->Gmask, src->format->Bmask, src->format->Amask);
+    C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
     C_Rect *srcR = nullptr;
     METADOT_NEW(C, srcR, C_Rect);
@@ -157,9 +147,8 @@ C_Surface *Textures::scaleTexture(C_Surface *src, float x, float y) {
 
     SDL_FillRect(dest, dstR, 0x00000000);
 
-    SDL_SetSurfaceBlendMode(
-            src,
-            SDL_BLENDMODE_NONE);// override instead of overlap (prevents transparent things darkening)
+    SDL_SetSurfaceBlendMode(src,
+                            SDL_BLENDMODE_NONE);  // override instead of overlap (prevents transparent things darkening)
 
     SDL_BlitScaled(src, srcR, dest, dstR);
 
@@ -176,10 +165,6 @@ void I18N::Init() {
     Load("zh");
 }
 
-void I18N::Load(std::string lang) {
-    (*global.scripts->LuaRuntime->GetWrapper())["setlocale"](lang);
-}
+void I18N::Load(std::string lang) { (*global.scripts->LuaRuntime->GetWrapper())["setlocale"](lang); }
 
-std::string I18N::Get(std::string text) {
-    return (*global.scripts->LuaRuntime->GetWrapper())["translate"](text);
-}
+std::string I18N::Get(std::string text) { return (*global.scripts->LuaRuntime->GetWrapper())["translate"](text); }

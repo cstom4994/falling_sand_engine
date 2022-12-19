@@ -3,10 +3,10 @@
 #ifndef _METADOT_CONSOLE_HPP_
 #define _METADOT_CONSOLE_HPP_
 
+#include <array>
+
 #include "engine/cvar.hpp"
 #include "engine/imgui_impl.hpp"
-
-#include <array>
 
 struct ImGuiSettingsHandler;
 class ImGuiConsole {
@@ -68,20 +68,16 @@ protected:
 
     static void SettingsHandler_ReadInit(ImGuiContext *ctx, ImGuiSettingsHandler *handler);
 
-    static void *SettingsHandler_ReadOpen(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
-                                          const char *name);
+    static void *SettingsHandler_ReadOpen(ImGuiContext *ctx, ImGuiSettingsHandler *handler, const char *name);
 
-    static void SettingsHandler_ReadLine(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
-                                         void *entry, const char *line);
+    static void SettingsHandler_ReadLine(ImGuiContext *ctx, ImGuiSettingsHandler *handler, void *entry, const char *line);
 
     static void SettingsHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler);
 
-    static void SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler,
-                                         ImGuiTextBuffer *buf);
+    static void SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf);
 };
 
-struct Console
-{
+struct Console {
     ImGuiConsole *console;
 
     void Init();

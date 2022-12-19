@@ -10,8 +10,7 @@
 #include "engine/scripting/scripting.hpp"
 #include "game_datastruct.hpp"
 
-struct GameScriptingWrap
-{
+struct GameScriptingWrap {
     LuaCore *MainLua = nullptr;
 
     void Init();

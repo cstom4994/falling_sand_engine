@@ -3,14 +3,15 @@
 #ifndef _METADOT_IMGUILAYER_HPP_
 #define _METADOT_IMGUILAYER_HPP_
 
+#include <regex>
+#include <string>
+#include <vector>
+
 #include "core/debug_impl.hpp"
 #include "engine/audio.hpp"
 #include "engine/imgui_impl.hpp"
 #include "engine/sdl_wrapper.h"
 #include "libs/imgui/text_editor.h"
-#include <regex>
-#include <string>
-#include <vector>
 
 class Material;
 class WorldMeta;
@@ -22,15 +23,11 @@ enum ImGuiWindowTags {
     UI_GCManager = 1 << 1,
 };
 
-enum EditorTags {
-    Editor_Code = 0,
-    Editor_Markdown = 1
-};
+enum EditorTags { Editor_Code = 0, Editor_Markdown = 1 };
 
 class ImGuiCore {
 private:
-    struct EditorView
-    {
+    struct EditorView {
         EditorTags tags;
 
         std::string file;

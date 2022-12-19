@@ -1,18 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "engine_funcwrap.hpp"
-#include "core/global.hpp"
-#include "engine/engine_cpp.h"
-#include "engine/platform_detail.h"
-#include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting/lua_wrapper.hpp"
-#include "engine/scripting/scripting.hpp"
-#include "engine/sdl_wrapper.h"
-#include "game/game.hpp"
 
-#include "lz4/lz4.h"
-#include "lz4/lz4frame.h"
-#include "lz4/lz4hc.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -22,9 +13,19 @@
 #include <cstring>
 #include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <vector>
+
+#include "core/global.hpp"
+#include "engine/engine_cpp.h"
+#include "engine/platform_detail.h"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/scripting.hpp"
+#include "engine/sdl_wrapper.h"
+#include "game/game.hpp"
+#include "lz4/lz4.h"
+#include "lz4/lz4frame.h"
+#include "lz4/lz4hc.h"
 
 #ifndef METADOT_PLATFORM_WINDOWS
 #include <dirent.h>
@@ -39,73 +40,71 @@
 IMPLENGINE();
 
 namespace TestData {
-    bool shaderOn = false;
+bool shaderOn = false;
 
-    int pixelScale = DEFAULT_SCALE;
-    int setPixelScale = DEFAULT_SCALE;
+int pixelScale = DEFAULT_SCALE;
+int setPixelScale = DEFAULT_SCALE;
 
-    R_Image *buffer;
-    // R_Target *renderer;
-    // R_Target *bufferTarget;
+R_Image *buffer;
+// R_Target *renderer;
+// R_Target *bufferTarget;
 
-    U8 palette[COLOR_LIMIT][3] = INIT_COLORS;
+U8 palette[COLOR_LIMIT][3] = INIT_COLORS;
 
-    int paletteNum = 0;
+int paletteNum = 0;
 
-    int drawOffX = 0;
-    int drawOffY = 0;
+int drawOffX = 0;
+int drawOffY = 0;
 
-    int windowWidth;
-    int windowHeight;
-    int drawX = 0;
-    int drawY = 0;
+int windowWidth;
+int windowHeight;
+int drawX = 0;
+int drawY = 0;
 
-    int lastWindowX = 0;
-    int lastWindowY = 0;
+int lastWindowX = 0;
+int lastWindowY = 0;
 
-    void assessWindow() {
-        int winW = 0;
-        int winH = 0;
-        SDL_GetWindowSize(Core.window, &winW, &winH);
+void assessWindow() {
+    int winW = 0;
+    int winH = 0;
+    SDL_GetWindowSize(Core.window, &winW, &winH);
 
-        int candidateOne = winH / SCRN_HEIGHT;
-        int candidateTwo = winW / SCRN_WIDTH;
+    int candidateOne = winH / SCRN_HEIGHT;
+    int candidateTwo = winW / SCRN_WIDTH;
 
-        if (winW != 0 && winH != 0) {
-            pixelScale = (candidateOne > candidateTwo) ? candidateTwo : candidateOne;
-            windowWidth = winW;
-            windowHeight = winH;
+    if (winW != 0 && winH != 0) {
+        pixelScale = (candidateOne > candidateTwo) ? candidateTwo : candidateOne;
+        windowWidth = winW;
+        windowHeight = winH;
 
-            drawX = (windowWidth - pixelScale * SCRN_WIDTH) / 2;
-            drawY = (windowHeight - pixelScale * SCRN_HEIGHT) / 2;
+        drawX = (windowWidth - pixelScale * SCRN_WIDTH) / 2;
+        drawY = (windowHeight - pixelScale * SCRN_HEIGHT) / 2;
 
-            R_SetWindowResolution(winW, winH);
-        }
+        R_SetWindowResolution(winW, winH);
     }
+}
 
-    char *appPath = nullptr;
-    char *scriptsPath;
+char *appPath = nullptr;
+char *scriptsPath;
 
-    char currentWorkingDirectory[MAX_PATH];
-    char lastOpenedPath[MAX_PATH];
+char currentWorkingDirectory[MAX_PATH];
+char lastOpenedPath[MAX_PATH];
 
-    struct fileHandleType
-    {
-        FILE *fileStream;
-        bool open;
-        bool canWrite;
-        bool eof;
-    };
-}// namespace TestData
+struct fileHandleType {
+    FILE *fileStream;
+    bool open;
+    bool canWrite;
+    bool eof;
+};
+}  // namespace TestData
 
 #pragma region BindImage
 
-#define clamp(v, min, max) (float) ((v) < (min) ? (min) : ((v) > (max) ? (max) : (v)))
+#define clamp(v, min, max) (float)((v) < (min) ? (min) : ((v) > (max) ? (max) : (v)))
 
-#define off(o, t) ((float) (o) -TestData::drawOffX), (float) ((t) -TestData::drawOffY)
+#define off(o, t) ((float)(o)-TestData::drawOffX), (float)((t)-TestData::drawOffY)
 
-struct imageType
-{
+struct imageType {
     int width;
     int height;
     bool free;
@@ -132,22 +131,18 @@ U32 aMask = 0xff000000;
 
 static char getColor(lua_State *L, int arg) {
     int color = luaL_checkinteger(L, arg) - 1;
-    return static_cast<char>(
-            color == -2
-                    ? -1
-                    : (color < 0 ? 0 : (color > (COLOR_LIMIT - 1) ? (COLOR_LIMIT - 1) : color)));
+    return static_cast<char>(color == -2 ? -1 : (color < 0 ? 0 : (color > (COLOR_LIMIT - 1) ? (COLOR_LIMIT - 1) : color)));
 }
 
 static U32 getRectC(imageType *data, int colorGiven) {
-    int color = data->remap[colorGiven];// Palette remapping
-    return SDL_MapRGBA(data->surface->format, TestData::palette[color][0],
-                       TestData::palette[color][1], TestData::palette[color][2], 255);
+    int color = data->remap[colorGiven];  // Palette remapping
+    return SDL_MapRGBA(data->surface->format, TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255);
 }
 
 static imageType *checkImage(lua_State *L) {
     void *ud = luaL_checkudata(L, 1, "MetaDot.Image");
     luaL_argcheck(L, ud != nullptr, 1, "`Image` expected");
-    return (imageType *) ud;
+    return (imageType *)ud;
 }
 
 bool freeCheck(lua_State *L, imageType *data) {
@@ -162,7 +157,7 @@ static int newImage(lua_State *L) {
     int w = luaL_checkinteger(L, 1);
     int h = luaL_checkinteger(L, 2);
     size_t nbytes = sizeof(imageType);
-    auto *a = (imageType *) lua_newuserdata(L, nbytes);
+    auto *a = (imageType *)lua_newuserdata(L, nbytes);
 
     luaL_getmetatable(L, "MetaDot.Image");
     lua_setmetatable(L, -2);
@@ -172,7 +167,9 @@ static int newImage(lua_State *L) {
     a->free = false;
     //        a->clr = 0;
     a->lastRenderNum = TestData::paletteNum;
-    for (int i = 0; i < COLOR_LIMIT; i++) { a->remap[i] = i; }
+    for (int i = 0; i < COLOR_LIMIT; i++) {
+        a->remap[i] = i;
+    }
 
     a->internalRep = new char *[w];
     for (int i = 0; i < w; i++) {
@@ -196,7 +193,7 @@ static int flushImage(lua_State *L) {
     imageType *data = checkImage(L);
     if (!freeCheck(L, data)) return 0;
 
-    R_Rect rect = {0, 0, (float) data->width, (float) data->height};
+    R_Rect rect = {0, 0, (float)data->width, (float)data->height};
     R_UpdateImage(data->texture, &rect, data->surface, &rect);
 
     return 0;
@@ -218,7 +215,7 @@ static int renderImage(lua_State *L) {
             }
         }
 
-        R_Rect rect = {0, 0, (float) data->width, (float) data->height};
+        R_Rect rect = {0, 0, (float)data->width, (float)data->height};
         R_UpdateImage(data->texture, &rect, data->surface, &rect);
 
         data->lastRenderNum = TestData::paletteNum;
@@ -232,9 +229,7 @@ static int renderImage(lua_State *L) {
 
     int top = lua_gettop(L);
     if (top > 7) {
-        R_Rect srcRect = {(float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5),
-                          clamp(luaL_checkinteger(L, 6), 0, data->width),
-                          clamp(luaL_checkinteger(L, 7), 0, data->height)};
+        R_Rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), clamp(luaL_checkinteger(L, 6), 0, data->width), clamp(luaL_checkinteger(L, 7), 0, data->height)};
 
         int scale = luaL_checkinteger(L, 8);
 
@@ -243,15 +238,14 @@ static int renderImage(lua_State *L) {
 
         R_BlitRect(data->texture, &srcRect, Render.target, &rect);
     } else if (top > 6) {
-        R_Rect srcRect = {(float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5),
-                          (float) luaL_checkinteger(L, 6), (float) luaL_checkinteger(L, 7)};
+        R_Rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), (float)luaL_checkinteger(L, 6), (float)luaL_checkinteger(L, 7)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
         R_BlitRect(data->texture, &srcRect, Render.target, &rect);
     } else if (top > 3) {
-        R_Rect srcRect = {0, 0, (float) luaL_checkinteger(L, 4), (float) luaL_checkinteger(L, 5)};
+        R_Rect srcRect = {0, 0, (float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
@@ -271,7 +265,9 @@ static int freeImage(lua_State *L) {
     imageType *data = checkImage(L);
     if (!freeCheck(L, data)) return 0;
 
-    for (int i = 0; i < data->width; i++) { delete data->internalRep[i]; }
+    for (int i = 0; i < data->width; i++) {
+        delete data->internalRep[i];
+    }
     delete data->internalRep;
 
     SDL_FreeSurface(data->surface);
@@ -282,7 +278,9 @@ static int freeImage(lua_State *L) {
 }
 
 static void internalDrawPixel(imageType *data, int x, int y, char c) {
-    if (x >= 0 && y >= 0 && x < data->width && y < data->height) { data->internalRep[x][y] = c; }
+    if (x >= 0 && y >= 0 && x < data->width && y < data->height) {
+        data->internalRep[x][y] = c;
+    }
 }
 
 static int imageGetPixel(lua_State *L) {
@@ -347,7 +345,9 @@ static int imageDrawRectangle(lua_State *L) {
         SDL_Rect rect = {x, y, w, h};
         SDL_FillRect(data->surface, &rect, rectColor);
         for (int xp = x; xp < x + w; xp++) {
-            for (int yp = y; yp < y + h; yp++) { internalDrawPixel(data, xp, yp, color); }
+            for (int yp = y; yp < y + h; yp++) {
+                internalDrawPixel(data, xp, yp, color);
+            }
         }
     }
     return 0;
@@ -372,13 +372,15 @@ static int imageBlitPixels(lua_State *L) {
     for (int i = 1; i <= len; i++) {
         lua_pushnumber(L, i);
         lua_gettable(L, -2);
-        if (!lua_isnumber(L, -1)) { luaL_error(L, "Index %d is non-numeric", i); }
+        if (!lua_isnumber(L, -1)) {
+            luaL_error(L, "Index %d is non-numeric", i);
+        }
         auto color = static_cast<int>(lua_tointeger(L, -1) - 1);
-        if (color == -1) { continue; }
+        if (color == -1) {
+            continue;
+        }
 
-        color = color == -2
-                        ? -1
-                        : (color < 0 ? 0 : (color > (COLOR_LIMIT - 1) ? (COLOR_LIMIT - 1) : color));
+        color = color == -2 ? -1 : (color < 0 ? 0 : (color > (COLOR_LIMIT - 1) ? (COLOR_LIMIT - 1) : color));
 
         if (color >= 0) {
             int xp = (i - 1) % w;
@@ -403,7 +405,9 @@ static int imageClear(lua_State *L) {
     U32 rectColor = SDL_MapRGBA(data->surface->format, 0, 0, 0, 0);
     SDL_FillRect(data->surface, nullptr, rectColor);
     for (int xp = 0; xp < data->width; xp++) {
-        for (int yp = 0; yp < data->height; yp++) { internalDrawPixel(data, xp, yp, 0); }
+        for (int yp = 0; yp < data->height; yp++) {
+            internalDrawPixel(data, xp, yp, 0);
+        }
     }
 
     return 0;
@@ -414,7 +418,7 @@ static int imageCopy(lua_State *L) {
 
     void *ud = luaL_checkudata(L, 2, "MetaDot.Image");
     luaL_argcheck(L, ud != nullptr, 1, "`Image` expected");
-    auto *dst = (imageType *) ud;
+    auto *dst = (imageType *)ud;
 
     int x = luaL_checkinteger(L, 3);
     int y = luaL_checkinteger(L, 4);
@@ -426,13 +430,13 @@ static int imageCopy(lua_State *L) {
     if (lua_gettop(L) > 4) {
         wi = luaL_checkinteger(L, 5);
         he = luaL_checkinteger(L, 6);
-        //srcRect = { luaL_checkinteger(L, 7), luaL_checkinteger(L, 8), wi, he };
+        // srcRect = { luaL_checkinteger(L, 7), luaL_checkinteger(L, 8), wi, he };
         srcRect.x = luaL_checkinteger(L, 7);
         srcRect.y = luaL_checkinteger(L, 8);
         srcRect.w = wi;
         srcRect.h = he;
     } else {
-        //srcRect = { 0, 0, src->width, src->height };
+        // srcRect = { 0, 0, src->width, src->height };
         srcRect.x = 0;
         srcRect.y = 0;
         srcRect.w = src->width;
@@ -445,7 +449,9 @@ static int imageCopy(lua_State *L) {
     SDL_BlitSurface(src->surface, &srcRect, dst->surface, &rect);
     for (int xp = srcRect.x; xp < srcRect.x + srcRect.w; xp++) {
         for (int yp = srcRect.y; yp < srcRect.y + srcRect.h; yp++) {
-            if (xp >= src->width || xp < 0 || yp >= src->height || yp < 0) { continue; }
+            if (xp >= src->width || xp < 0 || yp >= src->height || yp < 0) {
+                continue;
+            }
             internalDrawPixel(dst, xp, yp, src->internalRep[xp][yp]);
         }
     }
@@ -515,7 +521,7 @@ int metadot_bind_image(lua_State *L) {
 
 #pragma region BindGPU
 
-#define off(o, t) (float) ((o) -TestData::drawOffX), (float) ((t) -TestData::drawOffY)
+#define off(o, t) (float)((o)-TestData::drawOffX), (float)((t)-TestData::drawOffY)
 
 static int gpu_getColor(lua_State *L, int arg) {
     int color = luaL_checkinteger(L, arg) - 1;
@@ -528,8 +534,7 @@ static int gpu_draw_pixel(lua_State *L) {
 
     int color = gpu_getColor(L, 3);
 
-    METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
-                               TestData::palette[color][2], 255};
+    METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
 
     R_RectangleFilled(Render.target, off(x, y), off(x + 1, y + 1), colorS);
 
@@ -542,10 +547,9 @@ static int gpu_draw_rectangle(lua_State *L) {
     int x = luaL_checkinteger(L, 1);
     int y = luaL_checkinteger(L, 2);
 
-    R_Rect rect = {off(x, y), (float) luaL_checkinteger(L, 3), (float) luaL_checkinteger(L, 4)};
+    R_Rect rect = {off(x, y), (float)luaL_checkinteger(L, 3), (float)luaL_checkinteger(L, 4)};
 
-    METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
-                               TestData::palette[color][2], 255};
+    METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
     R_RectangleFilled2(Render.target, rect, colorS);
 
     return 0;
@@ -567,8 +571,10 @@ static int gpu_blit_pixels(lua_State *L) {
     for (int i = 1; i <= len; i++) {
         lua_pushnumber(L, i);
         lua_gettable(L, -2);
-        if (!lua_isnumber(L, -1)) { luaL_error(L, "Index %d is non-numeric", i); }
-        int color = (int) lua_tointeger(L, -1) - 1;
+        if (!lua_isnumber(L, -1)) {
+            luaL_error(L, "Index %d is non-numeric", i);
+        }
+        int color = (int)lua_tointeger(L, -1) - 1;
         if (color == -1) {
             lua_pop(L, 1);
             continue;
@@ -581,8 +587,7 @@ static int gpu_blit_pixels(lua_State *L) {
 
         R_Rect rect = {off(x + xp, y + yp), 1, 1};
 
-        METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
-                                   TestData::palette[color][2], 255};
+        METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
         R_RectangleFilled2(Render.target, rect, colorS);
 
         lua_pop(L, 1);
@@ -623,8 +628,10 @@ static int gpu_set_palette_color(lua_State *L) {
 }
 
 static int gpu_blit_palette(lua_State *L) {
-    auto amt = (char) lua_rawlen(L, -1);
-    if (amt < 1) { return 0; }
+    auto amt = (char)lua_rawlen(L, -1);
+    if (amt < 1) {
+        return 0;
+    }
 
     amt = static_cast<char>(amt > COLOR_LIMIT ? COLOR_LIMIT : amt);
 
@@ -686,19 +693,17 @@ static int gpu_get_pixel(lua_State *L) {
         }
     }
 
-    lua_pushinteger(L, 1);// Should never happen
+    lua_pushinteger(L, 1);  // Should never happen
     return 1;
 }
 
 static int gpu_clear(lua_State *L) {
     if (lua_gettop(L) > 0) {
         int color = gpu_getColor(L, 1);
-        METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1],
-                                   TestData::palette[color][2], 255};
+        METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
         R_ClearColor(Render.target, colorS);
     } else {
-        METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1],
-                                   TestData::palette[0][2], 255};
+        METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
         R_ClearColor(Render.target, colorS);
     }
 
@@ -719,7 +724,7 @@ static int gpu_translate(lua_State *L) {
 static int gpu_push(lua_State *L) {
     if (tStackUsed == tStackSize) {
         tStackSize *= 2;
-        translateStack = (int *) realloc(translateStack, tStackSize * sizeof(int));
+        translateStack = (int *)realloc(translateStack, tStackSize * sizeof(int));
     }
 
     translateStack[tStackUsed] = TestData::drawOffX;
@@ -750,8 +755,7 @@ static int gpu_set_fullscreen(lua_State *L) {
     auto fsc = static_cast<bool>(lua_toboolean(L, 1));
     if (!R_SetFullscreen(fsc, true)) {
         TestData::pixelScale = TestData::setPixelScale;
-        R_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH,
-                              TestData::pixelScale * SCRN_HEIGHT);
+        R_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH, TestData::pixelScale * SCRN_HEIGHT);
 
         SDL_SetWindowPosition(Core.window, TestData::lastWindowX, TestData::lastWindowY);
     }
@@ -762,14 +766,12 @@ static int gpu_set_fullscreen(lua_State *L) {
 }
 
 static int gpu_swap(lua_State *L) {
-    METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1],
-                               TestData::palette[0][2], 255};
+    METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
     R_ClearColor(Render.realTarget, colorS);
 
-    //TestData::shader::updateShader();
+    // TestData::shader::updateShader();
 
-    R_BlitScale(TestData::buffer, nullptr, Render.realTarget, TestData::windowWidth / 2,
-                TestData::windowHeight / 2, TestData::pixelScale, TestData::pixelScale);
+    R_BlitScale(TestData::buffer, nullptr, Render.realTarget, TestData::windowWidth / 2, TestData::windowHeight / 2, TestData::pixelScale, TestData::pixelScale);
 
     R_Flip(Render.realTarget);
 
@@ -815,7 +817,9 @@ std::vector<std::string> split(const std::string &s, char delim) {
     std::stringstream ss(s);
     std::string item;
 
-    while (std::getline(ss, item, delim)) { result.push_back(item); }
+    while (std::getline(ss, item, delim)) {
+        result.push_back(item);
+    }
 
     return result;
 }
@@ -825,15 +829,11 @@ bool checkPath(const char *luaInput, char *varName) {
     auto luaPath = std::string(luaInput);
     std::replace(luaPath.begin(), luaPath.end(), '/', PATH_SEPARATOR);
 
-    char *workingFront = (luaPath[0] == PATH_SEPARATOR) ? TestData::scriptsPath
-                                                        : TestData::currentWorkingDirectory;
+    char *workingFront = (luaPath[0] == PATH_SEPARATOR) ? TestData::scriptsPath : TestData::currentWorkingDirectory;
     std::string sysPath = std::string() + workingFront + PATH_SEPARATOR + luaPath;
 
     // Remove consecutive path seperators (e.g. a//b///c => a/b/c)
-    sysPath.erase(
-            std::unique(sysPath.begin(), sysPath.end(),
-                        [](const char a, const char b) { return a == b && b == PATH_SEPARATOR; }),
-            sysPath.end());
+    sysPath.erase(std::unique(sysPath.begin(), sysPath.end(), [](const char a, const char b) { return a == b && b == PATH_SEPARATOR; }), sysPath.end());
 
     auto pathComponents = split(sysPath, PATH_SEPARATOR);
 
@@ -871,13 +871,13 @@ bool checkPath(const char *luaInput, char *varName) {
 
     sprintf(varName, "%s", actualPath.c_str());
 
-    return false;// success
+    return false;  // success
 }
 
 static TestData::fileHandleType *checkFsObj(lua_State *L) {
     void *ud = luaL_checkudata(L, 1, "MetaDot.fsObj");
     luaL_argcheck(L, ud != nullptr, 1, "`FileHandle` expected");
-    return (TestData::fileHandleType *) ud;
+    return (TestData::fileHandleType *)ud;
 }
 
 static int fsGetAttr(lua_State *L) {
@@ -901,16 +901,13 @@ static int fsGetAttr(lua_State *L) {
         return 1;
     }
 
-    int attrOut = ((attr & FILE_ATTRIBUTE_READONLY) != 0) * 0b00000001 +
-                  ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0) * 0b00000010;
+    int attrOut = ((attr & FILE_ATTRIBUTE_READONLY) != 0) * 0b00000001 + ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0) * 0b00000010;
 
     lua_pushinteger(L, attrOut);
 
     return 1;
 #else
-    struct stat statbuf
-    {
-    };
+    struct stat statbuf {};
     if (stat(filePath, &statbuf) != 0) {
         lua_pushinteger(L, 0b11111111);
         return 1;
@@ -925,13 +922,17 @@ static int fsGetAttr(lua_State *L) {
 
 static int fsList(lua_State *L) {
     char filePath[MAX_PATH + 1];
-    if (checkPath(luaL_checkstring(L, 1), filePath)) { return 0; }
+    if (checkPath(luaL_checkstring(L, 1), filePath)) {
+        return 0;
+    }
 
     char dummy[MAX_PATH + 1];
     auto preRoot = std::string(luaL_checkstring(L, 1)) + PATH_SEPARATOR + "..";
     bool isAtRoot = checkPath(preRoot.c_str(), dummy);
 
-    if (filePath[0] == 0) { return 0; }
+    if (filePath[0] == 0) {
+        return 0;
+    }
 
 #ifdef __WINDOWS__
     WIN32_FIND_DATA fdFile;
@@ -939,10 +940,12 @@ static int fsList(lua_State *L) {
 
     char sPath[2048];
 
-    //Specify a file mask. *.* = We want everything!
+    // Specify a file mask. *.* = We want everything!
     sprintf(sPath, "%s\\*.*", filePath);
 
-    if ((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE) { return 0; }
+    if ((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
 
     lua_newtable(L);
     int i = 1;
@@ -960,7 +963,7 @@ static int fsList(lua_State *L) {
     }
 
     do {
-        //Build up our file path using the passed in
+        // Build up our file path using the passed in
 
         if (strcmp(fdFile.cFileName, ".") != 0 && strcmp(fdFile.cFileName, "..") != 0) {
             lua_pushinteger(L, i);
@@ -968,9 +971,9 @@ static int fsList(lua_State *L) {
             lua_rawset(L, -3);
             i++;
         }
-    } while (FindNextFile(hFind, &fdFile));//Find the next file.
+    } while (FindNextFile(hFind, &fdFile));  // Find the next file.
 
-    FindClose(hFind);//Always, Always, clean things up!
+    FindClose(hFind);  // Always, Always, clean things up!
 
     return 1;
 #else
@@ -983,8 +986,7 @@ static int fsList(lua_State *L) {
         int i = 1;
 
         while ((ep = readdir(dp))) {
-            if (isAtRoot && strcmp(ep->d_name, "..") == 0)
-                continue;// Don't tell them they can go beneath root
+            if (isAtRoot && strcmp(ep->d_name, "..") == 0) continue;  // Don't tell them they can go beneath root
 
             lua_pushinteger(L, i);
             lua_pushstring(L, ep->d_name);
@@ -1002,9 +1004,13 @@ static int fsList(lua_State *L) {
 
 static int fsOpenFile(lua_State *L) {
     char filePath[MAX_PATH + 1];
-    if (checkPath(luaL_checkstring(L, 1), filePath)) { return 0; }
+    if (checkPath(luaL_checkstring(L, 1), filePath)) {
+        return 0;
+    }
 
-    if (filePath[0] == 0) { return 0; }
+    if (filePath[0] == 0) {
+        return 0;
+    }
 
     const char *mode = luaL_checkstring(L, 2);
 
@@ -1097,13 +1103,13 @@ static int fsOpenFile(lua_State *L) {
         return 2;
     }
 
-    strcpy((char *) &TestData::lastOpenedPath, filePath + strlen(TestData::scriptsPath));
+    strcpy((char *)&TestData::lastOpenedPath, filePath + strlen(TestData::scriptsPath));
     for (int i = 0; TestData::lastOpenedPath[i] != '\0'; i++) {
         if (TestData::lastOpenedPath[i] == '\\') TestData::lastOpenedPath[i] = '/';
     }
 
     size_t nbytes = sizeof(TestData::fileHandleType);
-    auto *outObj = (TestData::fileHandleType *) lua_newuserdata(L, nbytes);
+    auto *outObj = (TestData::fileHandleType *)lua_newuserdata(L, nbytes);
 
     luaL_getmetatable(L, "MetaDot.fsObj");
     lua_setmetatable(L, -2);
@@ -1117,7 +1123,7 @@ static int fsOpenFile(lua_State *L) {
 }
 
 static int fsLastOpened(lua_State *L) {
-    lua_pushstring(L, (char *) &TestData::lastOpenedPath);
+    lua_pushstring(L, (char *)&TestData::lastOpenedPath);
 
     return 1;
 }
@@ -1155,7 +1161,9 @@ static int fsObjFlush(lua_State *L) {
 
 long lineStrLen(const char *s, long max) {
     for (long i = 0; i < max; i++) {
-        if (s[i] == '\n' || s[i] == '\r') { return i + 1; }
+        if (s[i] == '\n' || s[i] == '\r') {
+            return i + 1;
+        }
     }
 
     return max;
@@ -1209,14 +1217,12 @@ static int fsObjRead(lua_State *L) {
 
         for (int i = 1;; i++) {
             bufLen += sizeof(char) * FS_LINE_INCR;
-            dataBuf = (char *) realloc(dataBuf, bufLen);
-            if (dataBuf == nullptr)
-                return luaL_error(L, "unable to allocate enough memory for read operation");
+            dataBuf = (char *)realloc(dataBuf, bufLen);
+            if (dataBuf == nullptr) return luaL_error(L, "unable to allocate enough memory for read operation");
 
             st = ftell(data->fileStream);
 
-            if (fgets(dataBuf + i * (FS_LINE_INCR - 1) * sizeof(char), FS_LINE_INCR,
-                      data->fileStream) == nullptr) {
+            if (fgets(dataBuf + i * (FS_LINE_INCR - 1) * sizeof(char), FS_LINE_INCR, data->fileStream) == nullptr) {
                 lua_pushstring(L, "");
                 delete[] dataBuf;
                 return 1;
@@ -1291,14 +1297,12 @@ static int fsObjRead(lua_State *L) {
 
                 for (int i = 1;; i++) {
                     bufLen += sizeof(char) * FS_LINE_INCR;
-                    dataBuf = (char *) realloc(dataBuf, bufLen);
-                    if (dataBuf == nullptr)
-                        return luaL_error(L, "unable to allocate enough memory for read operation");
+                    dataBuf = (char *)realloc(dataBuf, bufLen);
+                    if (dataBuf == nullptr) return luaL_error(L, "unable to allocate enough memory for read operation");
 
                     st = ftell(data->fileStream);
 
-                    if (fgets(dataBuf + i * (FS_LINE_INCR - 1) * sizeof(char), FS_LINE_INCR,
-                              data->fileStream) == nullptr) {
+                    if (fgets(dataBuf + i * (FS_LINE_INCR - 1) * sizeof(char), FS_LINE_INCR, data->fileStream) == nullptr) {
                         lua_pushstring(L, "");
                         delete[] dataBuf;
                         return 1;
@@ -1324,7 +1328,7 @@ static int fsObjRead(lua_State *L) {
             return luaL_argerror(L, 2, "invalid mode");
         }
     } else if (type == LUA_TNUMBER) {
-        auto len = (int) (luaL_checkinteger(L, 2));
+        auto len = (int)(luaL_checkinteger(L, 2));
 
         // Read 'len' bytes
 
@@ -1405,7 +1409,8 @@ static int fsDelete(lua_State *L) {
         return 1;
     }
 
-    if (remove(filePath) == 0) lua_pushboolean(L, true);
+    if (remove(filePath) == 0)
+        lua_pushboolean(L, true);
     else
         lua_pushboolean(L, rmdir(filePath) + 1);
 
@@ -1439,7 +1444,7 @@ static int fsSetCWD(lua_State *L) {
     if (nwd[0] == '\\' || nwd[0] == '/') {
         size_t nwdLen = strlen(nwd);
 
-        size_t ln = (int) (strlen(TestData::scriptsPath) + nwdLen + 2);
+        size_t ln = (int)(strlen(TestData::scriptsPath) + nwdLen + 2);
         auto *concatStr = new char[ln];
         sprintf(concatStr, "%s/%s", TestData::scriptsPath, nwd);
 
@@ -1514,17 +1519,14 @@ static const luaL_Reg fsLib[] = {{"getAttr", fsGetAttr},
                                  {"setClipboard", fsSetClipboardText},
                                  {nullptr, nullptr}};
 
-static const luaL_Reg fsLib_m[] = {{"read", fsObjRead},
-                                   {"write", fsObjWrite},
-                                   {"close", fsObjCloseHandle},
-                                   {"flush", fsObjFlush},
-                                   {nullptr, nullptr}};
+static const luaL_Reg fsLib_m[] = {{"read", fsObjRead}, {"write", fsObjWrite}, {"close", fsObjCloseHandle}, {"flush", fsObjFlush}, {nullptr, nullptr}};
 
 int metadot_bind_fs(lua_State *L) {
     auto *fPath = new char[MAX_PATH];
     getFullPath(TestData::scriptsPath, fPath);
 
-    if (strlen(fPath) < MAX_PATH) strncpy(TestData::currentWorkingDirectory, fPath, strlen(fPath));
+    if (strlen(fPath) < MAX_PATH)
+        strncpy(TestData::currentWorkingDirectory, fPath, strlen(fPath));
     else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to initialize cwd");
         return 2;
@@ -1556,26 +1558,26 @@ int metadot_bind_fs(lua_State *L) {
 #define MIN_BUFFSIZE 1024
 
 #if LUA_VERSION_NUM < 502
-#define luaL_newlib(L, function_table)                                                             \
-    do {                                                                                           \
-        lua_newtable(L);                                                                           \
-        luaL_register(L, NULL, function_table);                                                    \
+#define luaL_newlib(L, function_table)          \
+    do {                                        \
+        lua_newtable(L);                        \
+        luaL_register(L, NULL, function_table); \
     } while (0)
 #endif
 
 #if LUA_VERSION_NUM >= 502
-#define LUABUFF_NEW(lua_buff, c_buff, max_size)                                                    \
-    luaL_Buffer lua_buff;                                                                          \
+#define LUABUFF_NEW(lua_buff, c_buff, max_size) \
+    luaL_Buffer lua_buff;                       \
     char *c_buff = luaL_buffinitsize(L, &lua_buff, max_size);
 #define LUABUFF_FREE(c_buff)
 #define LUABUFF_PUSH(lua_buff, c_buff, size) luaL_pushresultsize(&lua_buff, size);
 #else
-#define LUABUFF_NEW(lua_buff, c_buff, max_size)                                                    \
-    char *c_buff = malloc(max_size);                                                               \
+#define LUABUFF_NEW(lua_buff, c_buff, max_size) \
+    char *c_buff = malloc(max_size);            \
     if (c_buff == NULL) return luaL_error(L, "out of memory");
 #define LUABUFF_FREE(c_buff) free(c_buff);
-#define LUABUFF_PUSH(lua_buff, c_buff, size)                                                       \
-    lua_pushlstring(L, c_buff, size);                                                              \
+#define LUABUFF_PUSH(lua_buff, c_buff, size) \
+    lua_pushlstring(L, c_buff, size);        \
     free(c_buff);
 #endif
 
@@ -1631,14 +1633,9 @@ static int lz4_compress(lua_State *L) {
         settings = &stack_settings;
         settings->compressionLevel = _lua_table_optinteger(L, 2, "compression_level", 0);
         settings->autoFlush = _lua_table_optboolean(L, 2, "auto_flush", 0);
-        settings->frameInfo.blockSizeID =
-                (LZ4F_blockSizeID_t) _lua_table_optinteger(L, 2, "block_size", 0);
-        settings->frameInfo.blockMode = _lua_table_optboolean(L, 2, "block_independent", 0)
-                                                ? LZ4F_blockIndependent
-                                                : LZ4F_blockLinked;
-        settings->frameInfo.contentChecksumFlag = _lua_table_optboolean(L, 2, "content_checksum", 0)
-                                                          ? LZ4F_contentChecksumEnabled
-                                                          : LZ4F_noContentChecksum;
+        settings->frameInfo.blockSizeID = (LZ4F_blockSizeID_t)_lua_table_optinteger(L, 2, "block_size", 0);
+        settings->frameInfo.blockMode = _lua_table_optboolean(L, 2, "block_independent", 0) ? LZ4F_blockIndependent : LZ4F_blockLinked;
+        settings->frameInfo.contentChecksumFlag = _lua_table_optboolean(L, 2, "content_checksum", 0) ? LZ4F_contentChecksumEnabled : LZ4F_noContentChecksum;
     }
 
     bound = LZ4F_compressFrameBound(in_len, settings);
@@ -1710,8 +1707,7 @@ static int lz4_block_compress(lua_State *L) {
     int accelerate = luaL_optinteger(L, 2, 0);
     int bound, r;
 
-    if (in_len > LZ4_MAX_INPUT_SIZE)
-        return luaL_error(L, "input longer than %d", LZ4_MAX_INPUT_SIZE);
+    if (in_len > LZ4_MAX_INPUT_SIZE) return luaL_error(L, "input longer than %d", LZ4_MAX_INPUT_SIZE);
 
     bound = LZ4_compressBound(in_len);
 
@@ -1734,8 +1730,7 @@ static int lz4_block_compress_hc(lua_State *L) {
     int level = luaL_optinteger(L, 2, 0);
     int bound, r;
 
-    if (in_len > LZ4_MAX_INPUT_SIZE)
-        return luaL_error(L, "input longer than %d", LZ4_MAX_INPUT_SIZE);
+    if (in_len > LZ4_MAX_INPUT_SIZE) return luaL_error(L, "input longer than %d", LZ4_MAX_INPUT_SIZE);
 
     bound = LZ4_compressBound(in_len);
 
@@ -1811,8 +1806,7 @@ static int lz4_block_decompress_safe_partial(lua_State *L) {
  * Compression Stream
  ****************************************************************************/
 
-typedef struct
-{
+typedef struct {
     LZ4_stream_t handle;
     int accelerate;
     int buffer_size;
@@ -1820,9 +1814,7 @@ typedef struct
     char *buffer;
 } lz4_compress_stream_t;
 
-static lz4_compress_stream_t *_checkcompressionstream(lua_State *L, int index) {
-    return (lz4_compress_stream_t *) luaL_checkudata(L, index, "lz4.compression_stream");
-}
+static lz4_compress_stream_t *_checkcompressionstream(lua_State *L, int index) { return (lz4_compress_stream_t *)luaL_checkudata(L, index, "lz4.compression_stream"); }
 
 static int lz4_cs_reset(lua_State *L) {
     lz4_compress_stream_t *cs = _checkcompressionstream(L, 1);
@@ -1863,7 +1855,7 @@ static int lz4_cs_compress(lua_State *L) {
         if (policy == RING_POLICY_APPEND) {
             ring = cs->buffer + cs->buffer_position;
             cs->buffer_position += in_len;
-        } else {// RING_POLICY_RESET
+        } else {  // RING_POLICY_RESET
             ring = cs->buffer;
             cs->buffer_position = in_len;
         }
@@ -1873,7 +1865,7 @@ static int lz4_cs_compress(lua_State *L) {
             LUABUFF_FREE(out)
             return luaL_error(L, "compression failed");
         }
-    } else {// RING_POLICY_EXTERNAL
+    } else {  // RING_POLICY_EXTERNAL
         r = LZ4_compress_fast_continue(&cs->handle, in, out, in_len, bound, cs->accelerate);
         if (r == 0) {
             LUABUFF_FREE(out)
@@ -1912,12 +1904,12 @@ static int lz4_new_compression_stream(lua_State *L) {
 
     if (buffer_size < MIN_BUFFSIZE) buffer_size = MIN_BUFFSIZE;
 
-    p = (lz4_compress_stream_t *) lua_newuserdata(L, sizeof(lz4_compress_stream_t));
+    p = (lz4_compress_stream_t *)lua_newuserdata(L, sizeof(lz4_compress_stream_t));
     LZ4_resetStream(&p->handle);
     p->accelerate = accelerate;
     p->buffer_size = buffer_size;
     p->buffer_position = 0;
-    p->buffer = (char *) malloc(buffer_size);
+    p->buffer = (char *)malloc(buffer_size);
     if (p->buffer == NULL) luaL_error(L, "out of memory");
 
     if (luaL_newmetatable(L, "lz4.compression_stream")) {
@@ -1943,8 +1935,7 @@ static int lz4_new_compression_stream(lua_State *L) {
  * Compression Stream HC
  ****************************************************************************/
 
-typedef struct
-{
+typedef struct {
     LZ4_streamHC_t handle;
     int level;
     int buffer_size;
@@ -1952,9 +1943,7 @@ typedef struct
     char *buffer;
 } lz4_compress_stream_hc_t;
 
-static lz4_compress_stream_hc_t *_checkcompressionstream_hc(lua_State *L, int index) {
-    return (lz4_compress_stream_hc_t *) luaL_checkudata(L, index, "lz4.compression_stream_hc");
-}
+static lz4_compress_stream_hc_t *_checkcompressionstream_hc(lua_State *L, int index) { return (lz4_compress_stream_hc_t *)luaL_checkudata(L, index, "lz4.compression_stream_hc"); }
 
 static int lz4_cs_hc_reset(lua_State *L) {
     lz4_compress_stream_hc_t *cs = _checkcompressionstream_hc(L, 1);
@@ -1995,7 +1984,7 @@ static int lz4_cs_hc_compress(lua_State *L) {
         if (policy == RING_POLICY_APPEND) {
             ring = cs->buffer + cs->buffer_position;
             cs->buffer_position += in_len;
-        } else {// RING_POLICY_RESET
+        } else {  // RING_POLICY_RESET
             ring = cs->buffer;
             cs->buffer_position = in_len;
         }
@@ -2005,7 +1994,7 @@ static int lz4_cs_hc_compress(lua_State *L) {
             LUABUFF_FREE(out)
             return luaL_error(L, "compression failed");
         }
-    } else {// RING_POLICY_EXTERNAL
+    } else {  // RING_POLICY_EXTERNAL
         r = LZ4_compress_HC_continue(&cs->handle, in, out, in_len, bound);
         if (r == 0) {
             LUABUFF_FREE(out)
@@ -2044,12 +2033,12 @@ static int lz4_new_compression_stream_hc(lua_State *L) {
 
     if (buffer_size < MIN_BUFFSIZE) buffer_size = MIN_BUFFSIZE;
 
-    p = (lz4_compress_stream_hc_t *) lua_newuserdata(L, sizeof(lz4_compress_stream_hc_t));
+    p = (lz4_compress_stream_hc_t *)lua_newuserdata(L, sizeof(lz4_compress_stream_hc_t));
     LZ4_resetStreamHC(&p->handle, level);
     p->level = level;
     p->buffer_size = buffer_size;
     p->buffer_position = 0;
-    p->buffer = (char *) malloc(buffer_size);
+    p->buffer = (char *)malloc(buffer_size);
     if (p->buffer == NULL) luaL_error(L, "out of memory");
 
     if (luaL_newmetatable(L, "lz4.compression_stream_hc")) {
@@ -2075,17 +2064,14 @@ static int lz4_new_compression_stream_hc(lua_State *L) {
  * Decompression Stream
  ****************************************************************************/
 
-typedef struct
-{
+typedef struct {
     LZ4_streamDecode_t handle;
     int buffer_size;
     int buffer_position;
     char *buffer;
 } lz4_decompress_stream_t;
 
-static lz4_decompress_stream_t *_checkdecompressionstream(lua_State *L, int index) {
-    return (lz4_decompress_stream_t *) luaL_checkudata(L, index, "lz4.decompression_stream");
-}
+static lz4_decompress_stream_t *_checkdecompressionstream(lua_State *L, int index) { return (lz4_decompress_stream_t *)luaL_checkudata(L, index, "lz4.decompression_stream"); }
 
 static int lz4_ds_reset(lua_State *L) {
     lz4_decompress_stream_t *ds = _checkdecompressionstream(L, 1);
@@ -2140,7 +2126,7 @@ static int lz4_ds_decompress_safe(lua_State *L) {
         if (policy == RING_POLICY_APPEND) {
             ring = ds->buffer + ds->buffer_position;
             new_position = ds->buffer_position + out_len;
-        } else {// RING_POLICY_RESET
+        } else {  // RING_POLICY_RESET
             ring = ds->buffer;
             new_position = out_len;
         }
@@ -2148,14 +2134,14 @@ static int lz4_ds_decompress_safe(lua_State *L) {
         if (r < 0) return luaL_error(L, "corrupt input or need more output space");
         ds->buffer_position = new_position;
         lua_pushlstring(L, ring, r);
-    } else {// RING_POLICY_EXTERNAL
+    } else {  // RING_POLICY_EXTERNAL
         LUABUFF_NEW(b, out, out_len)
         r = LZ4_decompress_safe_continue(&ds->handle, in, out, in_len, out_len);
         if (r < 0) {
             LUABUFF_FREE(out)
             return luaL_error(L, "corrupt input or need more output space");
         }
-        _lz4_ds_save_dict(ds, out, r);// memcpy(ds->buffer, out, out_len)
+        _lz4_ds_save_dict(ds, out, r);  // memcpy(ds->buffer, out, out_len)
         LUABUFF_PUSH(b, out, r)
     }
 
@@ -2176,7 +2162,7 @@ static int lz4_ds_decompress_fast(lua_State *L) {
         if (policy == RING_POLICY_APPEND) {
             ring = ds->buffer + ds->buffer_position;
             new_position = ds->buffer_position + out_len;
-        } else {// RING_POLICY_RESET
+        } else {  // RING_POLICY_RESET
             ring = ds->buffer;
             new_position = out_len;
         }
@@ -2184,14 +2170,14 @@ static int lz4_ds_decompress_fast(lua_State *L) {
         if (r < 0) return luaL_error(L, "corrupt input or need more output space");
         ds->buffer_position = new_position;
         lua_pushlstring(L, ring, out_len);
-    } else {// RING_POLICY_EXTERNAL
+    } else {  // RING_POLICY_EXTERNAL
         LUABUFF_NEW(b, out, out_len)
         r = LZ4_decompress_fast_continue(&ds->handle, in, out, out_len);
         if (r < 0) {
             LUABUFF_FREE(out)
             return luaL_error(L, "corrupt input or need more output space");
         }
-        _lz4_ds_save_dict(ds, out, out_len);// memcpy(ds->buffer, out, out_len)
+        _lz4_ds_save_dict(ds, out, out_len);  // memcpy(ds->buffer, out, out_len)
         LUABUFF_PUSH(b, out, out_len)
     }
 
@@ -2223,11 +2209,11 @@ static int lz4_new_decompression_stream(lua_State *L) {
 
     if (buffer_size < MIN_BUFFSIZE) buffer_size = MIN_BUFFSIZE;
 
-    p = (lz4_decompress_stream_t *) lua_newuserdata(L, sizeof(lz4_decompress_stream_t));
+    p = (lz4_decompress_stream_t *)lua_newuserdata(L, sizeof(lz4_decompress_stream_t));
     LZ4_setStreamDecode(&p->handle, NULL, 0);
     p->buffer_size = buffer_size;
     p->buffer_position = 0;
-    p->buffer = (char *) malloc(buffer_size);
+    p->buffer = (char *)malloc(buffer_size);
     if (p->buffer == NULL) luaL_error(L, "out of memory");
 
     if (luaL_newmetatable(L, "lz4.decompression_stream")) {

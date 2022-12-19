@@ -9,8 +9,7 @@
 #include "core/macros.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #pragma region PortableThread
@@ -60,15 +59,14 @@ extern "C"
 #define _TTHREAD_EMULATE_TIMESPEC_GET_
 
 #if defined(METADOT_PLATFORM_WIN32)
-    struct _tthread_timespec
-    {
-        time_t tv_sec;
-        long tv_nsec;
-    };
+struct _tthread_timespec {
+    time_t tv_sec;
+    long tv_nsec;
+};
 #define timespec _tthread_timespec
 #endif
 
-    int _tthread_timespec_get(struct timespec *ts, int base);
+int _tthread_timespec_get(struct timespec *ts, int base);
 #define timespec_get _tthread_timespec_get
 #endif
 
@@ -78,8 +76,7 @@ extern "C"
 #else
 #define _Thread_local __declspec(thread)
 #endif
-#elif defined(__GNUC__) && defined(__GNUC_MINOR__) &&                                              \
-        (((__GNUC__ << 8) | __GNUC_MINOR__) < ((4 << 8) | 9))
+#elif defined(__GNUC__) && defined(__GNUC_MINOR__) && (((__GNUC__ << 8) | __GNUC_MINOR__) < ((4 << 8) | 9))
 #define _Thread_local __thread
 #endif
 
@@ -100,82 +97,79 @@ extern "C"
 #define mtx_recursive 2
 
 #if defined(METADOT_PLATFORM_WIN32)
-    typedef struct
-    {
-        union {
-            CRITICAL_SECTION cs;
-            HANDLE mut;
-        } mHandle;
-        int mAlreadyLocked;
-        int mRecursive;
-        int mTimed;
-    } mtx_t;
+typedef struct {
+    union {
+        CRITICAL_SECTION cs;
+        HANDLE mut;
+    } mHandle;
+    int mAlreadyLocked;
+    int mRecursive;
+    int mTimed;
+} mtx_t;
 #else
 typedef pthread_mutex_t mtx_t;
 #endif
 
-    int mtx_init(mtx_t *mtx, int type);
-    void mtx_destroy(mtx_t *mtx);
-    int mtx_lock(mtx_t *mtx);
-    int mtx_timedlock(mtx_t *mtx, const struct timespec *ts);
-    int mtx_trylock(mtx_t *mtx);
-    int mtx_unlock(mtx_t *mtx);
+int mtx_init(mtx_t *mtx, int type);
+void mtx_destroy(mtx_t *mtx);
+int mtx_lock(mtx_t *mtx);
+int mtx_timedlock(mtx_t *mtx, const struct timespec *ts);
+int mtx_trylock(mtx_t *mtx);
+int mtx_unlock(mtx_t *mtx);
 
 #if defined(METADOT_PLATFORM_WIN32)
-    typedef struct
-    {
-        HANDLE mEvents[2];
-        unsigned int mWaitersCount;
-        CRITICAL_SECTION mWaitersCountLock;
-    } cnd_t;
+typedef struct {
+    HANDLE mEvents[2];
+    unsigned int mWaitersCount;
+    CRITICAL_SECTION mWaitersCountLock;
+} cnd_t;
 #else
 typedef pthread_cond_t cnd_t;
 #endif
 
-    int cnd_init(cnd_t *cond);
-    void cnd_destroy(cnd_t *cond);
-    int cnd_signal(cnd_t *cond);
-    int cnd_broadcast(cnd_t *cond);
-    int cnd_wait(cnd_t *cond, mtx_t *mtx);
-    int cnd_timedwait(cnd_t *cond, mtx_t *mtx, const struct timespec *ts);
+int cnd_init(cnd_t *cond);
+void cnd_destroy(cnd_t *cond);
+int cnd_signal(cnd_t *cond);
+int cnd_broadcast(cnd_t *cond);
+int cnd_wait(cnd_t *cond, mtx_t *mtx);
+int cnd_timedwait(cnd_t *cond, mtx_t *mtx, const struct timespec *ts);
 
 #if defined(METADOT_PLATFORM_WIN32)
-    typedef HANDLE thrd_t;
+typedef HANDLE thrd_t;
 #else
 typedef pthread_t thrd_t;
 #endif
 
-    typedef int (*thrd_start_t)(void *arg);
+typedef int (*thrd_start_t)(void *arg);
 
-    int thrd_create(thrd_t *thr, thrd_start_t func, void *arg);
-    thrd_t thrd_current(void);
-    int thrd_detach(thrd_t thr);
-    int thrd_equal(thrd_t thr0, thrd_t thr1);
-    TTHREAD_NORETURN void thrd_exit(int res);
-    int thrd_join(thrd_t thr, int *res);
-    int thrd_sleep(const struct timespec *duration, struct timespec *remaining);
-    void thrd_yield(void);
+int thrd_create(thrd_t *thr, thrd_start_t func, void *arg);
+thrd_t thrd_current(void);
+int thrd_detach(thrd_t thr);
+int thrd_equal(thrd_t thr0, thrd_t thr1);
+TTHREAD_NORETURN void thrd_exit(int res);
+int thrd_join(thrd_t thr, int *res);
+int thrd_sleep(const struct timespec *duration, struct timespec *remaining);
+void thrd_yield(void);
 
 #if defined(METADOT_PLATFORM_WIN32)
-    typedef DWORD tss_t;
+typedef DWORD tss_t;
 #else
 typedef pthread_key_t tss_t;
 #endif
 
-    typedef void (*tss_dtor_t)(void *val);
+typedef void (*tss_dtor_t)(void *val);
 
-    int tss_create(tss_t *key, tss_dtor_t dtor);
-    void tss_delete(tss_t key);
-    void *tss_get(tss_t key);
-    int tss_set(tss_t key, void *val);
+int tss_create(tss_t *key, tss_dtor_t dtor);
+void tss_delete(tss_t key);
+void *tss_get(tss_t key);
+int tss_set(tss_t key, void *val);
 
 #if defined(METADOT_PLATFORM_WIN32)
-    typedef struct
-    {
-        LONG volatile status;
-        CRITICAL_SECTION lock;
-    } once_flag;
-#define ONCE_FLAG_INIT                                                                             \
+typedef struct {
+    LONG volatile status;
+    CRITICAL_SECTION lock;
+} once_flag;
+#define ONCE_FLAG_INIT \
     { 0, }
 #else
 #define once_flag pthread_once_t
@@ -183,22 +177,22 @@ typedef pthread_key_t tss_t;
 #endif
 
 #if defined(METADOT_PLATFORM_WIN32)
-    void call_once(once_flag *flag, void (*func)(void));
+void call_once(once_flag *flag, void (*func)(void));
 #else
 #define call_once(flag, func) pthread_once(flag, func)
 #endif
 
 #pragma endregion PortableThread
 
-    typedef struct metadot_thpool_ *ThreadPoolC;
+typedef struct metadot_thpool_ *ThreadPoolC;
 
-    ThreadPoolC metadot_thpool_init(int num_threads);
-    int metadot_thpool_addwork(ThreadPoolC, void (*function_p)(void *), void *arg_p);
-    void metadot_thpool_wait(ThreadPoolC);
-    void metadot_thpool_pause(ThreadPoolC);
-    void metadot_thpool_resume(ThreadPoolC);
-    void metadot_thpool_destroy(ThreadPoolC);
-    int metadot_thpool_workingcounts(ThreadPoolC);
+ThreadPoolC metadot_thpool_init(int num_threads);
+int metadot_thpool_addwork(ThreadPoolC, void (*function_p)(void *), void *arg_p);
+void metadot_thpool_wait(ThreadPoolC);
+void metadot_thpool_pause(ThreadPoolC);
+void metadot_thpool_resume(ThreadPoolC);
+void metadot_thpool_destroy(ThreadPoolC);
+int metadot_thpool_workingcounts(ThreadPoolC);
 
 #ifdef __cplusplus
 }

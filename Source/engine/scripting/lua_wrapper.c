@@ -1,7 +1,5 @@
 
 #include "lua_wrapper.h"
-#include "core/alloc.h"
-#include "filesystem.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -11,6 +9,9 @@
 #include <sys/cdefs.h>
 #include <sys/queue.h>
 #include <sys/types.h>
+
+#include "core/alloc.h"
+#include "filesystem.h"
 
 #pragma region LuaA
 
@@ -65,8 +66,7 @@ void luaA_open(lua_State *L) {
     luaA_conversion(L, long, luaA_push_long, luaA_to_long);
     luaA_conversion(L, unsigned long, luaA_push_unsigned_long, luaA_to_unsigned_long);
     luaA_conversion(L, long long, luaA_push_long_long, luaA_to_long_long);
-    luaA_conversion(L, unsigned long long, luaA_push_unsigned_long_long,
-                    luaA_to_unsigned_long_long);
+    luaA_conversion(L, unsigned long long, luaA_push_unsigned_long_long, luaA_to_unsigned_long_long);
     luaA_conversion(L, float, luaA_push_float, luaA_to_float);
     luaA_conversion(L, double, luaA_push_double, luaA_to_double);
     luaA_conversion(L, long double, luaA_push_long_double, luaA_to_long_double);
@@ -236,12 +236,15 @@ int luaA_push_type(lua_State *L, luaA_Type type_id, const void *c_in) {
 
     lua_pop(L, 2);
 
-    if (luaA_struct_registered_type(L, type_id)) { return luaA_struct_push_type(L, type_id, c_in); }
+    if (luaA_struct_registered_type(L, type_id)) {
+        return luaA_struct_push_type(L, type_id, c_in);
+    }
 
-    if (luaA_enum_registered_type(L, type_id)) { return luaA_enum_push_type(L, type_id, c_in); }
+    if (luaA_enum_registered_type(L, type_id)) {
+        return luaA_enum_push_type(L, type_id, c_in);
+    }
 
-    lua_pushfstring(L, "luaA_push: conversion to Lua object from type '%s' not registered!",
-                    luaA_typename(L, type_id));
+    lua_pushfstring(L, "luaA_push: conversion to Lua object from type '%s' not registered!", luaA_typename(L, type_id));
     lua_error(L);
     return 0;
 }
@@ -271,13 +274,11 @@ void luaA_to_type(lua_State *L, luaA_Type type_id, void *c_out, int index) {
         return;
     }
 
-    lua_pushfstring(L, "luaA_to: conversion from Lua object to type '%s' not registered!",
-                    luaA_typename(L, type_id));
+    lua_pushfstring(L, "luaA_to: conversion from Lua object to type '%s' not registered!", luaA_typename(L, type_id));
     lua_error(L);
 }
 
-void luaA_conversion_type(lua_State *L, luaA_Type type_id, luaA_Pushfunc push_func,
-                          luaA_Tofunc to_func) {
+void luaA_conversion_type(lua_State *L, luaA_Type type_id, luaA_Pushfunc push_func, luaA_Tofunc to_func) {
     luaA_conversion_push_type(L, type_id, push_func);
     luaA_conversion_to_type(L, type_id, to_func);
 }
@@ -299,176 +300,137 @@ void luaA_conversion_to_type(lua_State *L, luaA_Type type_id, luaA_Tofunc func) 
 }
 
 int luaA_push_bool(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushboolean(L, *(bool *) c_in);
+    lua_pushboolean(L, *(bool *)c_in);
     return 1;
 }
 
-void luaA_to_bool(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(bool *) c_out = lua_toboolean(L, index);
-}
+void luaA_to_bool(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(bool *)c_out = lua_toboolean(L, index); }
 
 int luaA_push_char(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(char *) c_in);
+    lua_pushinteger(L, *(char *)c_in);
     return 1;
 }
 
-void luaA_to_char(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(char *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_char(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(char *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_signed_char(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(signed char *) c_in);
+    lua_pushinteger(L, *(signed char *)c_in);
     return 1;
 }
 
-void luaA_to_signed_char(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(signed char *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_signed_char(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(signed char *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_unsigned_char(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(unsigned char *) c_in);
+    lua_pushinteger(L, *(unsigned char *)c_in);
     return 1;
 }
 
-void luaA_to_unsigned_char(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(unsigned char *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_unsigned_char(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(unsigned char *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_short(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(short *) c_in);
+    lua_pushinteger(L, *(short *)c_in);
     return 1;
 }
 
-void luaA_to_short(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(short *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_short(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(short *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_unsigned_short(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(unsigned short *) c_in);
+    lua_pushinteger(L, *(unsigned short *)c_in);
     return 1;
 }
 
-void luaA_to_unsigned_short(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(unsigned short *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_unsigned_short(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(unsigned short *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_int(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(int *) c_in);
+    lua_pushinteger(L, *(int *)c_in);
     return 1;
 }
 
-void luaA_to_int(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(int *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_int(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(int *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_unsigned_int(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(unsigned int *) c_in);
+    lua_pushinteger(L, *(unsigned int *)c_in);
     return 1;
 }
 
-void luaA_to_unsigned_int(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(unsigned int *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_unsigned_int(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(unsigned int *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_long(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(long *) c_in);
+    lua_pushinteger(L, *(long *)c_in);
     return 1;
 }
 
-void luaA_to_long(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(long *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_long(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(long *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_unsigned_long(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(unsigned long *) c_in);
+    lua_pushinteger(L, *(unsigned long *)c_in);
     return 1;
 }
 
-void luaA_to_unsigned_long(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(unsigned long *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_unsigned_long(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(unsigned long *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_long_long(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(long long *) c_in);
+    lua_pushinteger(L, *(long long *)c_in);
     return 1;
 }
 
-void luaA_to_long_long(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(long long *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_long_long(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(long long *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_unsigned_long_long(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushinteger(L, *(unsigned long long *) c_in);
+    lua_pushinteger(L, *(unsigned long long *)c_in);
     return 1;
 }
 
-void luaA_to_unsigned_long_long(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(unsigned long long *) c_out = lua_tointeger(L, index);
-}
+void luaA_to_unsigned_long_long(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(unsigned long long *)c_out = lua_tointeger(L, index); }
 
 int luaA_push_float(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushnumber(L, *(float *) c_in);
+    lua_pushnumber(L, *(float *)c_in);
     return 1;
 }
 
-void luaA_to_float(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(float *) c_out = lua_tonumber(L, index);
-}
+void luaA_to_float(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(float *)c_out = lua_tonumber(L, index); }
 
 int luaA_push_double(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushnumber(L, *(double *) c_in);
+    lua_pushnumber(L, *(double *)c_in);
     return 1;
 }
 
-void luaA_to_double(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(double *) c_out = lua_tonumber(L, index);
-}
+void luaA_to_double(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(double *)c_out = lua_tonumber(L, index); }
 
 int luaA_push_long_double(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushnumber(L, *(long double *) c_in);
+    lua_pushnumber(L, *(long double *)c_in);
     return 1;
 }
 
-void luaA_to_long_double(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(long double *) c_out = lua_tonumber(L, index);
-}
+void luaA_to_long_double(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(long double *)c_out = lua_tonumber(L, index); }
 
 int luaA_push_char_ptr(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushstring(L, *(char **) c_in);
+    lua_pushstring(L, *(char **)c_in);
     return 1;
 }
 
-void luaA_to_char_ptr(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(char **) c_out = (char *) lua_tostring(L, index);
-}
+void luaA_to_char_ptr(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(char **)c_out = (char *)lua_tostring(L, index); }
 
 int luaA_push_const_char_ptr(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushstring(L, *(const char **) c_in);
+    lua_pushstring(L, *(const char **)c_in);
     return 1;
 }
 
-void luaA_to_const_char_ptr(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(const char **) c_out = lua_tostring(L, index);
-}
+void luaA_to_const_char_ptr(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(const char **)c_out = lua_tostring(L, index); }
 
 int luaA_push_void_ptr(lua_State *L, luaA_Type type_id, const void *c_in) {
-    lua_pushlightuserdata(L, *(void **) c_in);
+    lua_pushlightuserdata(L, *(void **)c_in);
     return 1;
 }
 
-void luaA_to_void_ptr(lua_State *L, luaA_Type type_id, void *c_out, int index) {
-    *(void **) c_out = (void *) lua_touserdata(L, index);
-}
+void luaA_to_void_ptr(lua_State *L, luaA_Type type_id, void *c_out, int index) { *(void **)c_out = (void *)lua_touserdata(L, index); }
 
 int luaA_push_void(lua_State *L, luaA_Type type_id, const void *c_in) {
     lua_pushnil(L);
     return 1;
 }
 
-bool luaA_conversion_registered_type(lua_State *L, luaA_Type type_id) {
-    return (luaA_conversion_push_registered_type(L, type_id) &&
-            luaA_conversion_to_registered_type(L, type_id));
-}
+bool luaA_conversion_registered_type(lua_State *L, luaA_Type type_id) { return (luaA_conversion_push_registered_type(L, type_id) && luaA_conversion_to_registered_type(L, type_id)); }
 
 bool luaA_conversion_push_registered_type(lua_State *L, luaA_Type type_id) {
 
@@ -498,8 +460,7 @@ bool luaA_conversion_to_registered_type(lua_State *L, luaA_Type type_id) {
 ** Structs
 */
 
-int luaA_struct_push_member_offset_type(lua_State *L, luaA_Type type, size_t offset,
-                                        const void *c_in) {
+int luaA_struct_push_member_offset_type(lua_State *L, luaA_Type type, size_t offset, const void *c_in) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
     lua_pushinteger(L, type);
@@ -518,21 +479,17 @@ int luaA_struct_push_member_offset_type(lua_State *L, luaA_Type type, size_t off
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(
-                L, "luaA_struct_push_member: Member offset '%d' not registered for struct '%s'!",
-                offset, luaA_typename(L, type));
+        lua_pushfstring(L, "luaA_struct_push_member: Member offset '%d' not registered for struct '%s'!", offset, luaA_typename(L, type));
         lua_error(L);
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_push_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_push_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return 0;
 }
 
-int luaA_struct_push_member_name_type(lua_State *L, luaA_Type type, const char *member,
-                                      const void *c_in) {
+int luaA_struct_push_member_name_type(lua_State *L, luaA_Type type, const char *member, const void *c_in) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
     lua_pushinteger(L, type);
@@ -553,21 +510,17 @@ int luaA_struct_push_member_name_type(lua_State *L, luaA_Type type, const char *
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(L,
-                        "luaA_struct_push_member: Member name '%s' not registered for struct '%s'!",
-                        member, luaA_typename(L, type));
+        lua_pushfstring(L, "luaA_struct_push_member: Member name '%s' not registered for struct '%s'!", member, luaA_typename(L, type));
         lua_error(L);
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_push_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_push_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return 0;
 }
 
-void luaA_struct_to_member_offset_type(lua_State *L, luaA_Type type, size_t offset, void *c_out,
-                                       int index) {
+void luaA_struct_to_member_offset_type(lua_State *L, luaA_Type type, size_t offset, void *c_out, int index) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
     lua_pushinteger(L, type);
@@ -587,20 +540,16 @@ void luaA_struct_to_member_offset_type(lua_State *L, luaA_Type type, size_t offs
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(L,
-                        "luaA_struct_to_member: Member offset '%d' not registered for struct '%s'!",
-                        offset, luaA_typename(L, type));
+        lua_pushfstring(L, "luaA_struct_to_member: Member offset '%d' not registered for struct '%s'!", offset, luaA_typename(L, type));
         lua_error(L);
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_to_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_to_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
 }
 
-void luaA_struct_to_member_name_type(lua_State *L, luaA_Type type, const char *member, void *c_out,
-                                     int index) {
+void luaA_struct_to_member_name_type(lua_State *L, luaA_Type type, const char *member, void *c_out, int index) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
     lua_pushinteger(L, type);
@@ -623,15 +572,12 @@ void luaA_struct_to_member_name_type(lua_State *L, luaA_Type type, const char *m
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(L,
-                        "luaA_struct_to_member: Member name '%s' not registered for struct '%s'!",
-                        member, luaA_typename(L, type));
+        lua_pushfstring(L, "luaA_struct_to_member: Member name '%s' not registered for struct '%s'!", member, luaA_typename(L, type));
         lua_error(L);
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_to_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_to_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
 }
 
@@ -656,8 +602,7 @@ bool luaA_struct_has_member_offset_type(lua_State *L, luaA_Type type, size_t off
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_has_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_has_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return false;
 }
@@ -683,8 +628,7 @@ bool luaA_struct_has_member_name_type(lua_State *L, luaA_Type type, const char *
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_has_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_has_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return false;
 }
@@ -708,15 +652,12 @@ luaA_Type luaA_struct_typeof_member_offset_type(lua_State *L, luaA_Type type, si
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(
-                L, "luaA_struct_typeof_member: Member offset '%d' not registered for struct '%s'!",
-                offset, luaA_typename(L, type));
+        lua_pushfstring(L, "luaA_struct_typeof_member: Member offset '%d' not registered for struct '%s'!", offset, luaA_typename(L, type));
         lua_error(L);
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_typeof_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_typeof_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return 0;
 }
@@ -740,15 +681,12 @@ luaA_Type luaA_struct_typeof_member_name_type(lua_State *L, luaA_Type type, cons
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(
-                L, "luaA_struct_typeof_member: Member name '%s' not registered for struct '%s'!",
-                member, luaA_typename(L, type));
+        lua_pushfstring(L, "luaA_struct_typeof_member: Member name '%s' not registered for struct '%s'!", member, luaA_typename(L, type));
         lua_error(L);
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_typeof_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_typeof_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return 0;
 }
@@ -767,8 +705,7 @@ void luaA_struct_type(lua_State *L, luaA_Type type) {
     lua_pop(L, 1);
 }
 
-void luaA_struct_member_type(lua_State *L, luaA_Type type, const char *member, luaA_Type mtype,
-                             size_t offset) {
+void luaA_struct_member_type(lua_State *L, luaA_Type type, const char *member, luaA_Type mtype, size_t offset) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
     lua_pushinteger(L, type);
@@ -896,8 +833,7 @@ const char *luaA_struct_next_member_name_type(lua_State *L, luaA_Type type, cons
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_struct_next_member: Struct '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_struct_next_member: Struct '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return NULL;
 }
@@ -935,8 +871,7 @@ int luaA_enum_push_type(lua_State *L, luaA_Type type, const void *value) {
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(L, "luaA_enum_push: Enum '%s' value %d not registered!",
-                        luaA_typename(L, type), lvalue);
+        lua_pushfstring(L, "luaA_enum_push: Enum '%s' value %d not registered!", luaA_typename(L, type), lvalue);
         lua_error(L);
         return 0;
     }
@@ -975,8 +910,7 @@ void luaA_enum_to_type(lua_State *L, luaA_Type type, void *c_out, int index) {
         }
 
         lua_pop(L, 3);
-        lua_pushfstring(L, "luaA_enum_to: Enum '%s' field '%s' not registered!",
-                        luaA_typename(L, type), name);
+        lua_pushfstring(L, "luaA_enum_to: Enum '%s' field '%s' not registered!", luaA_typename(L, type), name);
         lua_error(L);
         return;
     }
@@ -1141,8 +1075,7 @@ const char *luaA_enum_next_value_name_type(lua_State *L, luaA_Type type, const c
     }
 
     lua_pop(L, 2);
-    lua_pushfstring(L, "luaA_enum_next_enum_name_type: Enum '%s' not registered!",
-                    luaA_typename(L, type));
+    lua_pushfstring(L, "luaA_enum_next_enum_name_type: Enum '%s' not registered!", luaA_typename(L, type));
     lua_error(L);
     return NULL;
 }
@@ -1225,7 +1158,9 @@ static int luaA_call_entry(lua_State *L) {
         arg_heap = true;
         arg_data = gc_malloc(&gc, arg_size);
         if (arg_data == NULL) {
-            if (ret_heap) { gc_free(&gc, ret_data); }
+            if (ret_heap) {
+                gc_free(&gc, ret_data);
+            }
             lua_pushfstring(L, "luaA_call: Out of memory!");
             lua_error(L);
             return 0;
@@ -1262,7 +1197,9 @@ static int luaA_call_entry(lua_State *L) {
 
     /* Pop arguments from stack */
 
-    for (int i = 0; i < arg_num; i++) { lua_remove(L, -2); }
+    for (int i = 0; i < arg_num; i++) {
+        lua_remove(L, -2);
+    }
 
     /* Get Function Pointer and Call */
 
@@ -1299,7 +1236,9 @@ int luaA_call(lua_State *L, void *func_ptr) {
     lua_gettable(L, -2);
     lua_remove(L, -2);
 
-    if (!lua_isnil(L, -1)) { return luaA_call_entry(L); }
+    if (!lua_isnil(L, -1)) {
+        return luaA_call_entry(L);
+    }
 
     lua_pop(L, 1);
     lua_pushfstring(L, "luaA_call: Function with address '%p' is not registered!", func_ptr);
@@ -1313,7 +1252,9 @@ int luaA_call_name(lua_State *L, const char *func_name) {
     lua_gettable(L, -2);
     lua_remove(L, -2);
 
-    if (!lua_isnil(L, -1)) { return luaA_call_entry(L); }
+    if (!lua_isnil(L, -1)) {
+        return luaA_call_entry(L);
+    }
 
     lua_pop(L, 1);
     lua_pushfstring(L, "luaA_call_name: Function '%s' is not registered!", func_name);
@@ -1321,8 +1262,7 @@ int luaA_call_name(lua_State *L, const char *func_name) {
     return 0;
 }
 
-void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_func,
-                                 const char *name, luaA_Type ret_t, int num_args, ...) {
+void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_func, const char *name, luaA_Type ret_t, int num_args, ...) {
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
     lua_pushstring(L, name);
@@ -1370,23 +1310,23 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 
 #if 1
 
-#define SPLAY_HEAD(name, type)                                                                     \
-    struct name                                                                                    \
-    {                                                                                              \
-        struct type *sph_root; /* root of the tree */                                              \
+#define SPLAY_HEAD(name, type)                        \
+    struct name {                                     \
+        struct type *sph_root; /* root of the tree */ \
     }
 
-#define SPLAY_INITIALIZER(root)                                                                    \
+#define SPLAY_INITIALIZER(root) \
     { NULL }
 
-#define SPLAY_INIT(root)                                                                           \
-    do { (root)->sph_root = NULL; } while (/*CONSTCOND*/ 0)
+#define SPLAY_INIT(root)         \
+    do {                         \
+        (root)->sph_root = NULL; \
+    } while (/*CONSTCOND*/ 0)
 
-#define SPLAY_ENTRY(type)                                                                          \
-    struct                                                                                         \
-    {                                                                                              \
-        struct type *spe_left;  /* left element */                                                 \
-        struct type *spe_right; /* right element */                                                \
+#define SPLAY_ENTRY(type)                           \
+    struct {                                        \
+        struct type *spe_left;  /* left element */  \
+        struct type *spe_right; /* right element */ \
     }
 
 #define SPLAY_LEFT(elm, field) (elm)->field.spe_left
@@ -1395,177 +1335,177 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #define SPLAY_EMPTY(head) (SPLAY_ROOT(head) == NULL)
 
 /* SPLAY_ROTATE_{LEFT,RIGHT} expect that tmp hold SPLAY_{RIGHT,LEFT} */
-#define SPLAY_ROTATE_RIGHT(head, tmp, field)                                                       \
-    do {                                                                                           \
-        SPLAY_LEFT((head)->sph_root, field) = SPLAY_RIGHT(tmp, field);                             \
-        SPLAY_RIGHT(tmp, field) = (head)->sph_root;                                                \
-        (head)->sph_root = tmp;                                                                    \
+#define SPLAY_ROTATE_RIGHT(head, tmp, field)                           \
+    do {                                                               \
+        SPLAY_LEFT((head)->sph_root, field) = SPLAY_RIGHT(tmp, field); \
+        SPLAY_RIGHT(tmp, field) = (head)->sph_root;                    \
+        (head)->sph_root = tmp;                                        \
     } while (/*CONSTCOND*/ 0)
 
-#define SPLAY_ROTATE_LEFT(head, tmp, field)                                                        \
-    do {                                                                                           \
-        SPLAY_RIGHT((head)->sph_root, field) = SPLAY_LEFT(tmp, field);                             \
-        SPLAY_LEFT(tmp, field) = (head)->sph_root;                                                 \
-        (head)->sph_root = tmp;                                                                    \
+#define SPLAY_ROTATE_LEFT(head, tmp, field)                            \
+    do {                                                               \
+        SPLAY_RIGHT((head)->sph_root, field) = SPLAY_LEFT(tmp, field); \
+        SPLAY_LEFT(tmp, field) = (head)->sph_root;                     \
+        (head)->sph_root = tmp;                                        \
     } while (/*CONSTCOND*/ 0)
 
-#define SPLAY_LINKLEFT(head, tmp, field)                                                           \
-    do {                                                                                           \
-        SPLAY_LEFT(tmp, field) = (head)->sph_root;                                                 \
-        tmp = (head)->sph_root;                                                                    \
-        (head)->sph_root = SPLAY_LEFT((head)->sph_root, field);                                    \
+#define SPLAY_LINKLEFT(head, tmp, field)                        \
+    do {                                                        \
+        SPLAY_LEFT(tmp, field) = (head)->sph_root;              \
+        tmp = (head)->sph_root;                                 \
+        (head)->sph_root = SPLAY_LEFT((head)->sph_root, field); \
     } while (/*CONSTCOND*/ 0)
 
-#define SPLAY_LINKRIGHT(head, tmp, field)                                                          \
-    do {                                                                                           \
-        SPLAY_RIGHT(tmp, field) = (head)->sph_root;                                                \
-        tmp = (head)->sph_root;                                                                    \
-        (head)->sph_root = SPLAY_RIGHT((head)->sph_root, field);                                   \
+#define SPLAY_LINKRIGHT(head, tmp, field)                        \
+    do {                                                         \
+        SPLAY_RIGHT(tmp, field) = (head)->sph_root;              \
+        tmp = (head)->sph_root;                                  \
+        (head)->sph_root = SPLAY_RIGHT((head)->sph_root, field); \
     } while (/*CONSTCOND*/ 0)
 
-#define SPLAY_ASSEMBLE(head, node, left, right, field)                                             \
-    do {                                                                                           \
-        SPLAY_RIGHT(left, field) = SPLAY_LEFT((head)->sph_root, field);                            \
-        SPLAY_LEFT(right, field) = SPLAY_RIGHT((head)->sph_root, field);                           \
-        SPLAY_LEFT((head)->sph_root, field) = SPLAY_RIGHT(node, field);                            \
-        SPLAY_RIGHT((head)->sph_root, field) = SPLAY_LEFT(node, field);                            \
+#define SPLAY_ASSEMBLE(head, node, left, right, field)                   \
+    do {                                                                 \
+        SPLAY_RIGHT(left, field) = SPLAY_LEFT((head)->sph_root, field);  \
+        SPLAY_LEFT(right, field) = SPLAY_RIGHT((head)->sph_root, field); \
+        SPLAY_LEFT((head)->sph_root, field) = SPLAY_RIGHT(node, field);  \
+        SPLAY_RIGHT((head)->sph_root, field) = SPLAY_LEFT(node, field);  \
     } while (/*CONSTCOND*/ 0)
 
 /* Generates prototypes and inline functions */
 
-#define SPLAY_PROTOTYPE(name, type, field, cmp)                                                    \
-    void name##_SPLAY(struct name *, struct type *);                                               \
-    void name##_SPLAY_MINMAX(struct name *, int);                                                  \
-    struct type *name##_SPLAY_INSERT(struct name *, struct type *);                                \
-    struct type *name##_SPLAY_REMOVE(struct name *, struct type *);                                \
-                                                                                                   \
-    /* Finds the node with the same key as elm */                                                  \
-    static __inline struct type *name##_SPLAY_FIND(struct name *head, struct type *elm) {          \
-        if (SPLAY_EMPTY(head)) return (NULL);                                                      \
-        name##_SPLAY(head, elm);                                                                   \
-        if ((cmp) (elm, (head)->sph_root) == 0) return (head->sph_root);                           \
-        return (NULL);                                                                             \
-    }                                                                                              \
-                                                                                                   \
-    static __inline struct type *name##_SPLAY_NEXT(struct name *head, struct type *elm) {          \
-        name##_SPLAY(head, elm);                                                                   \
-        if (SPLAY_RIGHT(elm, field) != NULL) {                                                     \
-            elm = SPLAY_RIGHT(elm, field);                                                         \
-            while (SPLAY_LEFT(elm, field) != NULL) { elm = SPLAY_LEFT(elm, field); }               \
-        } else                                                                                     \
-            elm = NULL;                                                                            \
-        return (elm);                                                                              \
-    }                                                                                              \
-                                                                                                   \
-    static __inline struct type *name##_SPLAY_MIN_MAX(struct name *head, int val) {                \
-        name##_SPLAY_MINMAX(head, val);                                                            \
-        return (SPLAY_ROOT(head));                                                                 \
+#define SPLAY_PROTOTYPE(name, type, field, cmp)                                           \
+    void name##_SPLAY(struct name *, struct type *);                                      \
+    void name##_SPLAY_MINMAX(struct name *, int);                                         \
+    struct type *name##_SPLAY_INSERT(struct name *, struct type *);                       \
+    struct type *name##_SPLAY_REMOVE(struct name *, struct type *);                       \
+                                                                                          \
+    /* Finds the node with the same key as elm */                                         \
+    static __inline struct type *name##_SPLAY_FIND(struct name *head, struct type *elm) { \
+        if (SPLAY_EMPTY(head)) return (NULL);                                             \
+        name##_SPLAY(head, elm);                                                          \
+        if ((cmp)(elm, (head)->sph_root) == 0) return (head->sph_root);                   \
+        return (NULL);                                                                    \
+    }                                                                                     \
+                                                                                          \
+    static __inline struct type *name##_SPLAY_NEXT(struct name *head, struct type *elm) { \
+        name##_SPLAY(head, elm);                                                          \
+        if (SPLAY_RIGHT(elm, field) != NULL) {                                            \
+            elm = SPLAY_RIGHT(elm, field);                                                \
+            while (SPLAY_LEFT(elm, field) != NULL) {                                      \
+                elm = SPLAY_LEFT(elm, field);                                             \
+            }                                                                             \
+        } else                                                                            \
+            elm = NULL;                                                                   \
+        return (elm);                                                                     \
+    }                                                                                     \
+                                                                                          \
+    static __inline struct type *name##_SPLAY_MIN_MAX(struct name *head, int val) {       \
+        name##_SPLAY_MINMAX(head, val);                                                   \
+        return (SPLAY_ROOT(head));                                                        \
     }
 
 /* Main splay operation.
  * Moves node close to the key of elm to top
  */
-#define SPLAY_GENERATE(name, type, field, cmp)                                                     \
-    struct type *name##_SPLAY_INSERT(struct name *head, struct type *elm)                          \
-    {                                                                                              \
-        if (SPLAY_EMPTY(head)) {                                                                   \
-            SPLAY_LEFT(elm, field) = SPLAY_RIGHT(elm, field) = NULL;                               \
-        } else {                                                                                   \
-            int __comp;                                                                            \
-            name##_SPLAY(head, elm);                                                               \
-            __comp = (cmp) (elm, (head)->sph_root);                                                \
-            if (__comp < 0) {                                                                      \
-                SPLAY_LEFT(elm, field) = SPLAY_LEFT((head)->sph_root, field);                      \
-                SPLAY_RIGHT(elm, field) = (head)->sph_root;                                        \
-                SPLAY_LEFT((head)->sph_root, field) = NULL;                                        \
-            } else if (__comp > 0) {                                                               \
-                SPLAY_RIGHT(elm, field) = SPLAY_RIGHT((head)->sph_root, field);                    \
-                SPLAY_LEFT(elm, field) = (head)->sph_root;                                         \
-                SPLAY_RIGHT((head)->sph_root, field) = NULL;                                       \
-            } else                                                                                 \
-                return ((head)->sph_root);                                                         \
-        }                                                                                          \
-        (head)->sph_root = (elm);                                                                  \
-        return (NULL);                                                                             \
-    }                                                                                              \
-                                                                                                   \
-    struct type *name##_SPLAY_REMOVE(struct name *head, struct type *elm)                          \
-    {                                                                                              \
-        struct type *__tmp;                                                                        \
-        if (SPLAY_EMPTY(head)) return (NULL);                                                      \
-        name##_SPLAY(head, elm);                                                                   \
-        if ((cmp) (elm, (head)->sph_root) == 0) {                                                  \
-            if (SPLAY_LEFT((head)->sph_root, field) == NULL) {                                     \
-                (head)->sph_root = SPLAY_RIGHT((head)->sph_root, field);                           \
-            } else {                                                                               \
-                __tmp = SPLAY_RIGHT((head)->sph_root, field);                                      \
-                (head)->sph_root = SPLAY_LEFT((head)->sph_root, field);                            \
-                name##_SPLAY(head, elm);                                                           \
-                SPLAY_RIGHT((head)->sph_root, field) = __tmp;                                      \
-            }                                                                                      \
-            return (elm);                                                                          \
-        }                                                                                          \
-        return (NULL);                                                                             \
-    }                                                                                              \
-                                                                                                   \
-    void name##_SPLAY(struct name *head, struct type *elm) {                                       \
-        struct type __node, *__left, *__right, *__tmp;                                             \
-        int __comp;                                                                                \
-                                                                                                   \
-        SPLAY_LEFT(&__node, field) = SPLAY_RIGHT(&__node, field) = NULL;                           \
-        __left = __right = &__node;                                                                \
-                                                                                                   \
-        while ((__comp = (cmp) (elm, (head)->sph_root)) != 0) {                                    \
-            if (__comp < 0) {                                                                      \
-                __tmp = SPLAY_LEFT((head)->sph_root, field);                                       \
-                if (__tmp == NULL) break;                                                          \
-                if ((cmp) (elm, __tmp) < 0) {                                                      \
-                    SPLAY_ROTATE_RIGHT(head, __tmp, field);                                        \
-                    if (SPLAY_LEFT((head)->sph_root, field) == NULL) break;                        \
-                }                                                                                  \
-                SPLAY_LINKLEFT(head, __right, field);                                              \
-            } else if (__comp > 0) {                                                               \
-                __tmp = SPLAY_RIGHT((head)->sph_root, field);                                      \
-                if (__tmp == NULL) break;                                                          \
-                if ((cmp) (elm, __tmp) > 0) {                                                      \
-                    SPLAY_ROTATE_LEFT(head, __tmp, field);                                         \
-                    if (SPLAY_RIGHT((head)->sph_root, field) == NULL) break;                       \
-                }                                                                                  \
-                SPLAY_LINKRIGHT(head, __left, field);                                              \
-            }                                                                                      \
-        }                                                                                          \
-        SPLAY_ASSEMBLE(head, &__node, __left, __right, field);                                     \
-    }                                                                                              \
-                                                                                                   \
-    /* Splay with either the minimum or the maximum element			\
- * Used to find minimum or maximum element in tree.			\
- */                                    \
-    void name##_SPLAY_MINMAX(struct name *head, int __comp) {                                      \
-        struct type __node, *__left, *__right, *__tmp;                                             \
-                                                                                                   \
-        SPLAY_LEFT(&__node, field) = SPLAY_RIGHT(&__node, field) = NULL;                           \
-        __left = __right = &__node;                                                                \
-                                                                                                   \
-        while (1) {                                                                                \
-            if (__comp < 0) {                                                                      \
-                __tmp = SPLAY_LEFT((head)->sph_root, field);                                       \
-                if (__tmp == NULL) break;                                                          \
-                if (__comp < 0) {                                                                  \
-                    SPLAY_ROTATE_RIGHT(head, __tmp, field);                                        \
-                    if (SPLAY_LEFT((head)->sph_root, field) == NULL) break;                        \
-                }                                                                                  \
-                SPLAY_LINKLEFT(head, __right, field);                                              \
-            } else if (__comp > 0) {                                                               \
-                __tmp = SPLAY_RIGHT((head)->sph_root, field);                                      \
-                if (__tmp == NULL) break;                                                          \
-                if (__comp > 0) {                                                                  \
-                    SPLAY_ROTATE_LEFT(head, __tmp, field);                                         \
-                    if (SPLAY_RIGHT((head)->sph_root, field) == NULL) break;                       \
-                }                                                                                  \
-                SPLAY_LINKRIGHT(head, __left, field);                                              \
-            }                                                                                      \
-        }                                                                                          \
-        SPLAY_ASSEMBLE(head, &__node, __left, __right, field);                                     \
+#define SPLAY_GENERATE(name, type, field, cmp)                                  \
+    struct type *name##_SPLAY_INSERT(struct name *head, struct type *elm) {     \
+        if (SPLAY_EMPTY(head)) {                                                \
+            SPLAY_LEFT(elm, field) = SPLAY_RIGHT(elm, field) = NULL;            \
+        } else {                                                                \
+            int __comp;                                                         \
+            name##_SPLAY(head, elm);                                            \
+            __comp = (cmp)(elm, (head)->sph_root);                              \
+            if (__comp < 0) {                                                   \
+                SPLAY_LEFT(elm, field) = SPLAY_LEFT((head)->sph_root, field);   \
+                SPLAY_RIGHT(elm, field) = (head)->sph_root;                     \
+                SPLAY_LEFT((head)->sph_root, field) = NULL;                     \
+            } else if (__comp > 0) {                                            \
+                SPLAY_RIGHT(elm, field) = SPLAY_RIGHT((head)->sph_root, field); \
+                SPLAY_LEFT(elm, field) = (head)->sph_root;                      \
+                SPLAY_RIGHT((head)->sph_root, field) = NULL;                    \
+            } else                                                              \
+                return ((head)->sph_root);                                      \
+        }                                                                       \
+        (head)->sph_root = (elm);                                               \
+        return (NULL);                                                          \
+    }                                                                           \
+                                                                                \
+    struct type *name##_SPLAY_REMOVE(struct name *head, struct type *elm) {     \
+        struct type *__tmp;                                                     \
+        if (SPLAY_EMPTY(head)) return (NULL);                                   \
+        name##_SPLAY(head, elm);                                                \
+        if ((cmp)(elm, (head)->sph_root) == 0) {                                \
+            if (SPLAY_LEFT((head)->sph_root, field) == NULL) {                  \
+                (head)->sph_root = SPLAY_RIGHT((head)->sph_root, field);        \
+            } else {                                                            \
+                __tmp = SPLAY_RIGHT((head)->sph_root, field);                   \
+                (head)->sph_root = SPLAY_LEFT((head)->sph_root, field);         \
+                name##_SPLAY(head, elm);                                        \
+                SPLAY_RIGHT((head)->sph_root, field) = __tmp;                   \
+            }                                                                   \
+            return (elm);                                                       \
+        }                                                                       \
+        return (NULL);                                                          \
+    }                                                                           \
+                                                                                \
+    void name##_SPLAY(struct name *head, struct type *elm) {                    \
+        struct type __node, *__left, *__right, *__tmp;                          \
+        int __comp;                                                             \
+                                                                                \
+        SPLAY_LEFT(&__node, field) = SPLAY_RIGHT(&__node, field) = NULL;        \
+        __left = __right = &__node;                                             \
+                                                                                \
+        while ((__comp = (cmp)(elm, (head)->sph_root)) != 0) {                  \
+            if (__comp < 0) {                                                   \
+                __tmp = SPLAY_LEFT((head)->sph_root, field);                    \
+                if (__tmp == NULL) break;                                       \
+                if ((cmp)(elm, __tmp) < 0) {                                    \
+                    SPLAY_ROTATE_RIGHT(head, __tmp, field);                     \
+                    if (SPLAY_LEFT((head)->sph_root, field) == NULL) break;     \
+                }                                                               \
+                SPLAY_LINKLEFT(head, __right, field);                           \
+            } else if (__comp > 0) {                                            \
+                __tmp = SPLAY_RIGHT((head)->sph_root, field);                   \
+                if (__tmp == NULL) break;                                       \
+                if ((cmp)(elm, __tmp) > 0) {                                    \
+                    SPLAY_ROTATE_LEFT(head, __tmp, field);                      \
+                    if (SPLAY_RIGHT((head)->sph_root, field) == NULL) break;    \
+                }                                                               \
+                SPLAY_LINKRIGHT(head, __left, field);                           \
+            }                                                                   \
+        }                                                                       \
+        SPLAY_ASSEMBLE(head, &__node, __left, __right, field);                  \
+    }                                                                           \
+                                                                                \
+    /* Splay with either the minimum or the maximum element                     \
+     * Used to find minimum or maximum element in tree.                         \
+     */                                                                         \
+    void name##_SPLAY_MINMAX(struct name *head, int __comp) {                   \
+        struct type __node, *__left, *__right, *__tmp;                          \
+                                                                                \
+        SPLAY_LEFT(&__node, field) = SPLAY_RIGHT(&__node, field) = NULL;        \
+        __left = __right = &__node;                                             \
+                                                                                \
+        while (1) {                                                             \
+            if (__comp < 0) {                                                   \
+                __tmp = SPLAY_LEFT((head)->sph_root, field);                    \
+                if (__tmp == NULL) break;                                       \
+                if (__comp < 0) {                                               \
+                    SPLAY_ROTATE_RIGHT(head, __tmp, field);                     \
+                    if (SPLAY_LEFT((head)->sph_root, field) == NULL) break;     \
+                }                                                               \
+                SPLAY_LINKLEFT(head, __right, field);                           \
+            } else if (__comp > 0) {                                            \
+                __tmp = SPLAY_RIGHT((head)->sph_root, field);                   \
+                if (__tmp == NULL) break;                                       \
+                if (__comp > 0) {                                               \
+                    SPLAY_ROTATE_LEFT(head, __tmp, field);                      \
+                    if (SPLAY_RIGHT((head)->sph_root, field) == NULL) break;    \
+                }                                                               \
+                SPLAY_LINKRIGHT(head, __left, field);                           \
+            }                                                                   \
+        }                                                                       \
+        SPLAY_ASSEMBLE(head, &__node, __left, __right, field);                  \
     }
 
 #define SPLAY_NEGINF -1
@@ -1578,31 +1518,30 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #define SPLAY_MIN(name, x) (SPLAY_EMPTY(x) ? NULL : name##_SPLAY_MIN_MAX(x, SPLAY_NEGINF))
 #define SPLAY_MAX(name, x) (SPLAY_EMPTY(x) ? NULL : name##_SPLAY_MIN_MAX(x, SPLAY_INF))
 
-#define SPLAY_FOREACH(x, name, head)                                                               \
-    for ((x) = SPLAY_MIN(name, head); (x) != NULL; (x) = SPLAY_NEXT(name, head, x))
+#define SPLAY_FOREACH(x, name, head) for ((x) = SPLAY_MIN(name, head); (x) != NULL; (x) = SPLAY_NEXT(name, head, x))
 
 /* Macros that define a red-black tree */
-#define RB_HEAD(name, type)                                                                        \
-    struct name                                                                                    \
-    {                                                                                              \
-        struct type *rbh_root; /* root of the tree */                                              \
+#define RB_HEAD(name, type)                           \
+    struct name {                                     \
+        struct type *rbh_root; /* root of the tree */ \
     }
 
-#define RB_INITIALIZER(root)                                                                       \
+#define RB_INITIALIZER(root) \
     { NULL }
 
-#define RB_INIT(root)                                                                              \
-    do { (root)->rbh_root = NULL; } while (/*CONSTCOND*/ 0)
+#define RB_INIT(root)            \
+    do {                         \
+        (root)->rbh_root = NULL; \
+    } while (/*CONSTCOND*/ 0)
 
 #define RB_BLACK 0
 #define RB_RED 1
-#define RB_ENTRY(type)                                                                             \
-    struct                                                                                         \
-    {                                                                                              \
-        struct type *rbe_left;   /* left element */                                                \
-        struct type *rbe_right;  /* right element */                                               \
-        struct type *rbe_parent; /* parent element */                                              \
-        int rbe_color;           /* node color */                                                  \
+#define RB_ENTRY(type)                                \
+    struct {                                          \
+        struct type *rbe_left;   /* left element */   \
+        struct type *rbe_right;  /* right element */  \
+        struct type *rbe_parent; /* parent element */ \
+        int rbe_color;           /* node color */     \
     }
 
 #define RB_LEFT(elm, field) (elm)->field.rbe_left
@@ -1612,356 +1551,351 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #define RB_ROOT(head) (head)->rbh_root
 #define RB_EMPTY(head) (RB_ROOT(head) == NULL)
 
-#define RB_SET(elm, parent, field)                                                                 \
-    do {                                                                                           \
-        RB_PARENT(elm, field) = parent;                                                            \
-        RB_LEFT(elm, field) = RB_RIGHT(elm, field) = NULL;                                         \
-        RB_COLOR(elm, field) = RB_RED;                                                             \
+#define RB_SET(elm, parent, field)                         \
+    do {                                                   \
+        RB_PARENT(elm, field) = parent;                    \
+        RB_LEFT(elm, field) = RB_RIGHT(elm, field) = NULL; \
+        RB_COLOR(elm, field) = RB_RED;                     \
     } while (/*CONSTCOND*/ 0)
 
-#define RB_SET_BLACKRED(black, red, field)                                                         \
-    do {                                                                                           \
-        RB_COLOR(black, field) = RB_BLACK;                                                         \
-        RB_COLOR(red, field) = RB_RED;                                                             \
+#define RB_SET_BLACKRED(black, red, field) \
+    do {                                   \
+        RB_COLOR(black, field) = RB_BLACK; \
+        RB_COLOR(red, field) = RB_RED;     \
     } while (/*CONSTCOND*/ 0)
 
 #ifndef RB_AUGMENT
-#define RB_AUGMENT(x)                                                                              \
-    do {                                                                                           \
+#define RB_AUGMENT(x) \
+    do {              \
     } while (0)
 #endif
 
-#define RB_ROTATE_LEFT(head, elm, tmp, field)                                                      \
-    do {                                                                                           \
-        (tmp) = RB_RIGHT(elm, field);                                                              \
-        if ((RB_RIGHT(elm, field) = RB_LEFT(tmp, field)) != NULL) {                                \
-            RB_PARENT(RB_LEFT(tmp, field), field) = (elm);                                         \
-        }                                                                                          \
-        RB_AUGMENT(elm);                                                                           \
-        if ((RB_PARENT(tmp, field) = RB_PARENT(elm, field)) != NULL) {                             \
-            if ((elm) == RB_LEFT(RB_PARENT(elm, field), field))                                    \
-                RB_LEFT(RB_PARENT(elm, field), field) = (tmp);                                     \
-            else                                                                                   \
-                RB_RIGHT(RB_PARENT(elm, field), field) = (tmp);                                    \
-        } else                                                                                     \
-            (head)->rbh_root = (tmp);                                                              \
-        RB_LEFT(tmp, field) = (elm);                                                               \
-        RB_PARENT(elm, field) = (tmp);                                                             \
-        RB_AUGMENT(tmp);                                                                           \
-        if ((RB_PARENT(tmp, field))) RB_AUGMENT(RB_PARENT(tmp, field));                            \
+#define RB_ROTATE_LEFT(head, elm, tmp, field)                           \
+    do {                                                                \
+        (tmp) = RB_RIGHT(elm, field);                                   \
+        if ((RB_RIGHT(elm, field) = RB_LEFT(tmp, field)) != NULL) {     \
+            RB_PARENT(RB_LEFT(tmp, field), field) = (elm);              \
+        }                                                               \
+        RB_AUGMENT(elm);                                                \
+        if ((RB_PARENT(tmp, field) = RB_PARENT(elm, field)) != NULL) {  \
+            if ((elm) == RB_LEFT(RB_PARENT(elm, field), field))         \
+                RB_LEFT(RB_PARENT(elm, field), field) = (tmp);          \
+            else                                                        \
+                RB_RIGHT(RB_PARENT(elm, field), field) = (tmp);         \
+        } else                                                          \
+            (head)->rbh_root = (tmp);                                   \
+        RB_LEFT(tmp, field) = (elm);                                    \
+        RB_PARENT(elm, field) = (tmp);                                  \
+        RB_AUGMENT(tmp);                                                \
+        if ((RB_PARENT(tmp, field))) RB_AUGMENT(RB_PARENT(tmp, field)); \
     } while (/*CONSTCOND*/ 0)
 
-#define RB_ROTATE_RIGHT(head, elm, tmp, field)                                                     \
-    do {                                                                                           \
-        (tmp) = RB_LEFT(elm, field);                                                               \
-        if ((RB_LEFT(elm, field) = RB_RIGHT(tmp, field)) != NULL) {                                \
-            RB_PARENT(RB_RIGHT(tmp, field), field) = (elm);                                        \
-        }                                                                                          \
-        RB_AUGMENT(elm);                                                                           \
-        if ((RB_PARENT(tmp, field) = RB_PARENT(elm, field)) != NULL) {                             \
-            if ((elm) == RB_LEFT(RB_PARENT(elm, field), field))                                    \
-                RB_LEFT(RB_PARENT(elm, field), field) = (tmp);                                     \
-            else                                                                                   \
-                RB_RIGHT(RB_PARENT(elm, field), field) = (tmp);                                    \
-        } else                                                                                     \
-            (head)->rbh_root = (tmp);                                                              \
-        RB_RIGHT(tmp, field) = (elm);                                                              \
-        RB_PARENT(elm, field) = (tmp);                                                             \
-        RB_AUGMENT(tmp);                                                                           \
-        if ((RB_PARENT(tmp, field))) RB_AUGMENT(RB_PARENT(tmp, field));                            \
+#define RB_ROTATE_RIGHT(head, elm, tmp, field)                          \
+    do {                                                                \
+        (tmp) = RB_LEFT(elm, field);                                    \
+        if ((RB_LEFT(elm, field) = RB_RIGHT(tmp, field)) != NULL) {     \
+            RB_PARENT(RB_RIGHT(tmp, field), field) = (elm);             \
+        }                                                               \
+        RB_AUGMENT(elm);                                                \
+        if ((RB_PARENT(tmp, field) = RB_PARENT(elm, field)) != NULL) {  \
+            if ((elm) == RB_LEFT(RB_PARENT(elm, field), field))         \
+                RB_LEFT(RB_PARENT(elm, field), field) = (tmp);          \
+            else                                                        \
+                RB_RIGHT(RB_PARENT(elm, field), field) = (tmp);         \
+        } else                                                          \
+            (head)->rbh_root = (tmp);                                   \
+        RB_RIGHT(tmp, field) = (elm);                                   \
+        RB_PARENT(elm, field) = (tmp);                                  \
+        RB_AUGMENT(tmp);                                                \
+        if ((RB_PARENT(tmp, field))) RB_AUGMENT(RB_PARENT(tmp, field)); \
     } while (/*CONSTCOND*/ 0)
 
 /* Generates prototypes and inline functions */
 #define RB_PROTOTYPE(name, type, field, cmp) RB_PROTOTYPE_INTERNAL(name, type, field, cmp, )
-#define RB_PROTOTYPE_STATIC(name, type, field, cmp)                                                \
-    RB_PROTOTYPE_INTERNAL(name, type, field, cmp, __unused static)
-#define RB_PROTOTYPE_INTERNAL(name, type, field, cmp, attr)                                        \
-    attr void name##_RB_INSERT_COLOR(struct name *, struct type *);                                \
-    attr void name##_RB_REMOVE_COLOR(struct name *, struct type *, struct type *);                 \
-    attr struct type *name##_RB_REMOVE(struct name *, struct type *);                              \
-    attr struct type *name##_RB_INSERT(struct name *, struct type *);                              \
-    attr struct type *name##_RB_FIND(struct name *, struct type *);                                \
-    attr struct type *name##_RB_NFIND(struct name *, struct type *);                               \
-    attr struct type *name##_RB_NEXT(struct type *);                                               \
-    attr struct type *name##_RB_PREV(struct type *);                                               \
+#define RB_PROTOTYPE_STATIC(name, type, field, cmp) RB_PROTOTYPE_INTERNAL(name, type, field, cmp, __unused static)
+#define RB_PROTOTYPE_INTERNAL(name, type, field, cmp, attr)                        \
+    attr void name##_RB_INSERT_COLOR(struct name *, struct type *);                \
+    attr void name##_RB_REMOVE_COLOR(struct name *, struct type *, struct type *); \
+    attr struct type *name##_RB_REMOVE(struct name *, struct type *);              \
+    attr struct type *name##_RB_INSERT(struct name *, struct type *);              \
+    attr struct type *name##_RB_FIND(struct name *, struct type *);                \
+    attr struct type *name##_RB_NFIND(struct name *, struct type *);               \
+    attr struct type *name##_RB_NEXT(struct type *);                               \
+    attr struct type *name##_RB_PREV(struct type *);                               \
     attr struct type *name##_RB_MINMAX(struct name *, int);
 
 /* Main rb operation.
  * Moves node close to the key of elm to top
  */
 #define RB_GENERATE(name, type, field, cmp) RB_GENERATE_INTERNAL(name, type, field, cmp, )
-#define RB_GENERATE_STATIC(name, type, field, cmp)                                                 \
-    RB_GENERATE_INTERNAL(name, type, field, cmp, __unused static)
-#define RB_GENERATE_INTERNAL(name, type, field, cmp, attr)                                         \
-    attr void name##_RB_INSERT_COLOR(struct name *head, struct type *elm) {                        \
-        struct type *parent, *gparent, *tmp;                                                       \
-        while ((parent = RB_PARENT(elm, field)) != NULL && RB_COLOR(parent, field) == RB_RED) {    \
-            gparent = RB_PARENT(parent, field);                                                    \
-            if (parent == RB_LEFT(gparent, field)) {                                               \
-                tmp = RB_RIGHT(gparent, field);                                                    \
-                if (tmp && RB_COLOR(tmp, field) == RB_RED) {                                       \
-                    RB_COLOR(tmp, field) = RB_BLACK;                                               \
-                    RB_SET_BLACKRED(parent, gparent, field);                                       \
-                    elm = gparent;                                                                 \
-                    continue;                                                                      \
-                }                                                                                  \
-                if (RB_RIGHT(parent, field) == elm) {                                              \
-                    RB_ROTATE_LEFT(head, parent, tmp, field);                                      \
-                    tmp = parent;                                                                  \
-                    parent = elm;                                                                  \
-                    elm = tmp;                                                                     \
-                }                                                                                  \
-                RB_SET_BLACKRED(parent, gparent, field);                                           \
-                RB_ROTATE_RIGHT(head, gparent, tmp, field);                                        \
-            } else {                                                                               \
-                tmp = RB_LEFT(gparent, field);                                                     \
-                if (tmp && RB_COLOR(tmp, field) == RB_RED) {                                       \
-                    RB_COLOR(tmp, field) = RB_BLACK;                                               \
-                    RB_SET_BLACKRED(parent, gparent, field);                                       \
-                    elm = gparent;                                                                 \
-                    continue;                                                                      \
-                }                                                                                  \
-                if (RB_LEFT(parent, field) == elm) {                                               \
-                    RB_ROTATE_RIGHT(head, parent, tmp, field);                                     \
-                    tmp = parent;                                                                  \
-                    parent = elm;                                                                  \
-                    elm = tmp;                                                                     \
-                }                                                                                  \
-                RB_SET_BLACKRED(parent, gparent, field);                                           \
-                RB_ROTATE_LEFT(head, gparent, tmp, field);                                         \
-            }                                                                                      \
-        }                                                                                          \
-        RB_COLOR(head->rbh_root, field) = RB_BLACK;                                                \
-    }                                                                                              \
-                                                                                                   \
-    attr void name##_RB_REMOVE_COLOR(struct name *head, struct type *parent, struct type *elm) {   \
-        struct type *tmp;                                                                          \
-        while ((elm == NULL || RB_COLOR(elm, field) == RB_BLACK) && elm != RB_ROOT(head)) {        \
-            if (RB_LEFT(parent, field) == elm) {                                                   \
-                tmp = RB_RIGHT(parent, field);                                                     \
-                if (RB_COLOR(tmp, field) == RB_RED) {                                              \
-                    RB_SET_BLACKRED(tmp, parent, field);                                           \
-                    RB_ROTATE_LEFT(head, parent, tmp, field);                                      \
-                    tmp = RB_RIGHT(parent, field);                                                 \
-                }                                                                                  \
-                if ((RB_LEFT(tmp, field) == NULL ||                                                \
-                     RB_COLOR(RB_LEFT(tmp, field), field) == RB_BLACK) &&                          \
-                    (RB_RIGHT(tmp, field) == NULL ||                                               \
-                     RB_COLOR(RB_RIGHT(tmp, field), field) == RB_BLACK)) {                         \
-                    RB_COLOR(tmp, field) = RB_RED;                                                 \
-                    elm = parent;                                                                  \
-                    parent = RB_PARENT(elm, field);                                                \
-                } else {                                                                           \
-                    if (RB_RIGHT(tmp, field) == NULL ||                                            \
-                        RB_COLOR(RB_RIGHT(tmp, field), field) == RB_BLACK) {                       \
-                        struct type *oleft;                                                        \
-                        if ((oleft = RB_LEFT(tmp, field)) != NULL)                                 \
-                            RB_COLOR(oleft, field) = RB_BLACK;                                     \
-                        RB_COLOR(tmp, field) = RB_RED;                                             \
-                        RB_ROTATE_RIGHT(head, tmp, oleft, field);                                  \
-                        tmp = RB_RIGHT(parent, field);                                             \
-                    }                                                                              \
-                    RB_COLOR(tmp, field) = RB_COLOR(parent, field);                                \
-                    RB_COLOR(parent, field) = RB_BLACK;                                            \
-                    if (RB_RIGHT(tmp, field)) RB_COLOR(RB_RIGHT(tmp, field), field) = RB_BLACK;    \
-                    RB_ROTATE_LEFT(head, parent, tmp, field);                                      \
-                    elm = RB_ROOT(head);                                                           \
-                    break;                                                                         \
-                }                                                                                  \
-            } else {                                                                               \
-                tmp = RB_LEFT(parent, field);                                                      \
-                if (RB_COLOR(tmp, field) == RB_RED) {                                              \
-                    RB_SET_BLACKRED(tmp, parent, field);                                           \
-                    RB_ROTATE_RIGHT(head, parent, tmp, field);                                     \
-                    tmp = RB_LEFT(parent, field);                                                  \
-                }                                                                                  \
-                if ((RB_LEFT(tmp, field) == NULL ||                                                \
-                     RB_COLOR(RB_LEFT(tmp, field), field) == RB_BLACK) &&                          \
-                    (RB_RIGHT(tmp, field) == NULL ||                                               \
-                     RB_COLOR(RB_RIGHT(tmp, field), field) == RB_BLACK)) {                         \
-                    RB_COLOR(tmp, field) = RB_RED;                                                 \
-                    elm = parent;                                                                  \
-                    parent = RB_PARENT(elm, field);                                                \
-                } else {                                                                           \
-                    if (RB_LEFT(tmp, field) == NULL ||                                             \
-                        RB_COLOR(RB_LEFT(tmp, field), field) == RB_BLACK) {                        \
-                        struct type *oright;                                                       \
-                        if ((oright = RB_RIGHT(tmp, field)) != NULL)                               \
-                            RB_COLOR(oright, field) = RB_BLACK;                                    \
-                        RB_COLOR(tmp, field) = RB_RED;                                             \
-                        RB_ROTATE_LEFT(head, tmp, oright, field);                                  \
-                        tmp = RB_LEFT(parent, field);                                              \
-                    }                                                                              \
-                    RB_COLOR(tmp, field) = RB_COLOR(parent, field);                                \
-                    RB_COLOR(parent, field) = RB_BLACK;                                            \
-                    if (RB_LEFT(tmp, field)) RB_COLOR(RB_LEFT(tmp, field), field) = RB_BLACK;      \
-                    RB_ROTATE_RIGHT(head, parent, tmp, field);                                     \
-                    elm = RB_ROOT(head);                                                           \
-                    break;                                                                         \
-                }                                                                                  \
-            }                                                                                      \
-        }                                                                                          \
-        if (elm) RB_COLOR(elm, field) = RB_BLACK;                                                  \
-    }                                                                                              \
-                                                                                                   \
-    attr struct type *name##_RB_REMOVE(struct name *head, struct type *elm) {                      \
-        struct type *child, *parent, *old = elm;                                                   \
-        int color;                                                                                 \
-        if (RB_LEFT(elm, field) == NULL) child = RB_RIGHT(elm, field);                             \
-        else if (RB_RIGHT(elm, field) == NULL)                                                     \
-            child = RB_LEFT(elm, field);                                                           \
-        else {                                                                                     \
-            struct type *left;                                                                     \
-            elm = RB_RIGHT(elm, field);                                                            \
-            while ((left = RB_LEFT(elm, field)) != NULL) elm = left;                               \
-            child = RB_RIGHT(elm, field);                                                          \
-            parent = RB_PARENT(elm, field);                                                        \
-            color = RB_COLOR(elm, field);                                                          \
-            if (child) RB_PARENT(child, field) = parent;                                           \
-            if (parent) {                                                                          \
-                if (RB_LEFT(parent, field) == elm) RB_LEFT(parent, field) = child;                 \
-                else                                                                               \
-                    RB_RIGHT(parent, field) = child;                                               \
-                RB_AUGMENT(parent);                                                                \
-            } else                                                                                 \
-                RB_ROOT(head) = child;                                                             \
-            if (RB_PARENT(elm, field) == old) parent = elm;                                        \
-            (elm)->field = (old)->field;                                                           \
-            if (RB_PARENT(old, field)) {                                                           \
-                if (RB_LEFT(RB_PARENT(old, field), field) == old)                                  \
-                    RB_LEFT(RB_PARENT(old, field), field) = elm;                                   \
-                else                                                                               \
-                    RB_RIGHT(RB_PARENT(old, field), field) = elm;                                  \
-                RB_AUGMENT(RB_PARENT(old, field));                                                 \
-            } else                                                                                 \
-                RB_ROOT(head) = elm;                                                               \
-            RB_PARENT(RB_LEFT(old, field), field) = elm;                                           \
-            if (RB_RIGHT(old, field)) RB_PARENT(RB_RIGHT(old, field), field) = elm;                \
-            if (parent) {                                                                          \
-                left = parent;                                                                     \
-                do { RB_AUGMENT(left); } while ((left = RB_PARENT(left, field)) != NULL);          \
-            }                                                                                      \
-            goto color;                                                                            \
-        }                                                                                          \
-        parent = RB_PARENT(elm, field);                                                            \
-        color = RB_COLOR(elm, field);                                                              \
-        if (child) RB_PARENT(child, field) = parent;                                               \
-        if (parent) {                                                                              \
-            if (RB_LEFT(parent, field) == elm) RB_LEFT(parent, field) = child;                     \
-            else                                                                                   \
-                RB_RIGHT(parent, field) = child;                                                   \
-            RB_AUGMENT(parent);                                                                    \
-        } else                                                                                     \
-            RB_ROOT(head) = child;                                                                 \
-    color:                                                                                         \
-        if (color == RB_BLACK) name##_RB_REMOVE_COLOR(head, parent, child);                        \
-        return (old);                                                                              \
-    }                                                                                              \
-                                                                                                   \
-    /* Inserts a node into the RB tree */                                                          \
-    attr struct type *name##_RB_INSERT(struct name *head, struct type *elm) {                      \
-        struct type *tmp;                                                                          \
-        struct type *parent = NULL;                                                                \
-        int comp = 0;                                                                              \
-        tmp = RB_ROOT(head);                                                                       \
-        while (tmp) {                                                                              \
-            parent = tmp;                                                                          \
-            comp = (cmp) (elm, parent);                                                            \
-            if (comp < 0) tmp = RB_LEFT(tmp, field);                                               \
-            else if (comp > 0)                                                                     \
-                tmp = RB_RIGHT(tmp, field);                                                        \
-            else                                                                                   \
-                return (tmp);                                                                      \
-        }                                                                                          \
-        RB_SET(elm, parent, field);                                                                \
-        if (parent != NULL) {                                                                      \
-            if (comp < 0) RB_LEFT(parent, field) = elm;                                            \
-            else                                                                                   \
-                RB_RIGHT(parent, field) = elm;                                                     \
-            RB_AUGMENT(parent);                                                                    \
-        } else                                                                                     \
-            RB_ROOT(head) = elm;                                                                   \
-        name##_RB_INSERT_COLOR(head, elm);                                                         \
-        return (NULL);                                                                             \
-    }                                                                                              \
-                                                                                                   \
-    /* Finds the node with the same key as elm */                                                  \
-    attr struct type *name##_RB_FIND(struct name *head, struct type *elm) {                        \
-        struct type *tmp = RB_ROOT(head);                                                          \
-        int comp;                                                                                  \
-        while (tmp) {                                                                              \
-            comp = cmp(elm, tmp);                                                                  \
-            if (comp < 0) tmp = RB_LEFT(tmp, field);                                               \
-            else if (comp > 0)                                                                     \
-                tmp = RB_RIGHT(tmp, field);                                                        \
-            else                                                                                   \
-                return (tmp);                                                                      \
-        }                                                                                          \
-        return (NULL);                                                                             \
-    }                                                                                              \
-                                                                                                   \
-    /* Finds the first node greater than or equal to the search key */                             \
-    attr struct type *name##_RB_NFIND(struct name *head, struct type *elm) {                       \
-        struct type *tmp = RB_ROOT(head);                                                          \
-        struct type *res = NULL;                                                                   \
-        int comp;                                                                                  \
-        while (tmp) {                                                                              \
-            comp = cmp(elm, tmp);                                                                  \
-            if (comp < 0) {                                                                        \
-                res = tmp;                                                                         \
-                tmp = RB_LEFT(tmp, field);                                                         \
-            } else if (comp > 0)                                                                   \
-                tmp = RB_RIGHT(tmp, field);                                                        \
-            else                                                                                   \
-                return (tmp);                                                                      \
-        }                                                                                          \
-        return (res);                                                                              \
-    }                                                                                              \
-                                                                                                   \
-    /* ARGSUSED */                                                                                 \
-    attr struct type *name##_RB_NEXT(struct type *elm) {                                           \
-        if (RB_RIGHT(elm, field)) {                                                                \
-            elm = RB_RIGHT(elm, field);                                                            \
-            while (RB_LEFT(elm, field)) elm = RB_LEFT(elm, field);                                 \
-        } else {                                                                                   \
-            if (RB_PARENT(elm, field) && (elm == RB_LEFT(RB_PARENT(elm, field), field)))           \
-                elm = RB_PARENT(elm, field);                                                       \
-            else {                                                                                 \
-                while (RB_PARENT(elm, field) && (elm == RB_RIGHT(RB_PARENT(elm, field), field)))   \
-                    elm = RB_PARENT(elm, field);                                                   \
-                elm = RB_PARENT(elm, field);                                                       \
-            }                                                                                      \
-        }                                                                                          \
-        return (elm);                                                                              \
-    }                                                                                              \
-                                                                                                   \
-    /* ARGSUSED */                                                                                 \
-    attr struct type *name##_RB_PREV(struct type *elm) {                                           \
-        if (RB_LEFT(elm, field)) {                                                                 \
-            elm = RB_LEFT(elm, field);                                                             \
-            while (RB_RIGHT(elm, field)) elm = RB_RIGHT(elm, field);                               \
-        } else {                                                                                   \
-            if (RB_PARENT(elm, field) && (elm == RB_RIGHT(RB_PARENT(elm, field), field)))          \
-                elm = RB_PARENT(elm, field);                                                       \
-            else {                                                                                 \
-                while (RB_PARENT(elm, field) && (elm == RB_LEFT(RB_PARENT(elm, field), field)))    \
-                    elm = RB_PARENT(elm, field);                                                   \
-                elm = RB_PARENT(elm, field);                                                       \
-            }                                                                                      \
-        }                                                                                          \
-        return (elm);                                                                              \
-    }                                                                                              \
-                                                                                                   \
-    attr struct type *name##_RB_MINMAX(struct name *head, int val) {                               \
-        struct type *tmp = RB_ROOT(head);                                                          \
-        struct type *parent = NULL;                                                                \
-        while (tmp) {                                                                              \
-            parent = tmp;                                                                          \
-            if (val < 0) tmp = RB_LEFT(tmp, field);                                                \
-            else                                                                                   \
-                tmp = RB_RIGHT(tmp, field);                                                        \
-        }                                                                                          \
-        return (parent);                                                                           \
+#define RB_GENERATE_STATIC(name, type, field, cmp) RB_GENERATE_INTERNAL(name, type, field, cmp, __unused static)
+#define RB_GENERATE_INTERNAL(name, type, field, cmp, attr)                                                                                                                                      \
+    attr void name##_RB_INSERT_COLOR(struct name *head, struct type *elm) {                                                                                                                     \
+        struct type *parent, *gparent, *tmp;                                                                                                                                                    \
+        while ((parent = RB_PARENT(elm, field)) != NULL && RB_COLOR(parent, field) == RB_RED) {                                                                                                 \
+            gparent = RB_PARENT(parent, field);                                                                                                                                                 \
+            if (parent == RB_LEFT(gparent, field)) {                                                                                                                                            \
+                tmp = RB_RIGHT(gparent, field);                                                                                                                                                 \
+                if (tmp && RB_COLOR(tmp, field) == RB_RED) {                                                                                                                                    \
+                    RB_COLOR(tmp, field) = RB_BLACK;                                                                                                                                            \
+                    RB_SET_BLACKRED(parent, gparent, field);                                                                                                                                    \
+                    elm = gparent;                                                                                                                                                              \
+                    continue;                                                                                                                                                                   \
+                }                                                                                                                                                                               \
+                if (RB_RIGHT(parent, field) == elm) {                                                                                                                                           \
+                    RB_ROTATE_LEFT(head, parent, tmp, field);                                                                                                                                   \
+                    tmp = parent;                                                                                                                                                               \
+                    parent = elm;                                                                                                                                                               \
+                    elm = tmp;                                                                                                                                                                  \
+                }                                                                                                                                                                               \
+                RB_SET_BLACKRED(parent, gparent, field);                                                                                                                                        \
+                RB_ROTATE_RIGHT(head, gparent, tmp, field);                                                                                                                                     \
+            } else {                                                                                                                                                                            \
+                tmp = RB_LEFT(gparent, field);                                                                                                                                                  \
+                if (tmp && RB_COLOR(tmp, field) == RB_RED) {                                                                                                                                    \
+                    RB_COLOR(tmp, field) = RB_BLACK;                                                                                                                                            \
+                    RB_SET_BLACKRED(parent, gparent, field);                                                                                                                                    \
+                    elm = gparent;                                                                                                                                                              \
+                    continue;                                                                                                                                                                   \
+                }                                                                                                                                                                               \
+                if (RB_LEFT(parent, field) == elm) {                                                                                                                                            \
+                    RB_ROTATE_RIGHT(head, parent, tmp, field);                                                                                                                                  \
+                    tmp = parent;                                                                                                                                                               \
+                    parent = elm;                                                                                                                                                               \
+                    elm = tmp;                                                                                                                                                                  \
+                }                                                                                                                                                                               \
+                RB_SET_BLACKRED(parent, gparent, field);                                                                                                                                        \
+                RB_ROTATE_LEFT(head, gparent, tmp, field);                                                                                                                                      \
+            }                                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        RB_COLOR(head->rbh_root, field) = RB_BLACK;                                                                                                                                             \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    attr void name##_RB_REMOVE_COLOR(struct name *head, struct type *parent, struct type *elm) {                                                                                                \
+        struct type *tmp;                                                                                                                                                                       \
+        while ((elm == NULL || RB_COLOR(elm, field) == RB_BLACK) && elm != RB_ROOT(head)) {                                                                                                     \
+            if (RB_LEFT(parent, field) == elm) {                                                                                                                                                \
+                tmp = RB_RIGHT(parent, field);                                                                                                                                                  \
+                if (RB_COLOR(tmp, field) == RB_RED) {                                                                                                                                           \
+                    RB_SET_BLACKRED(tmp, parent, field);                                                                                                                                        \
+                    RB_ROTATE_LEFT(head, parent, tmp, field);                                                                                                                                   \
+                    tmp = RB_RIGHT(parent, field);                                                                                                                                              \
+                }                                                                                                                                                                               \
+                if ((RB_LEFT(tmp, field) == NULL || RB_COLOR(RB_LEFT(tmp, field), field) == RB_BLACK) && (RB_RIGHT(tmp, field) == NULL || RB_COLOR(RB_RIGHT(tmp, field), field) == RB_BLACK)) { \
+                    RB_COLOR(tmp, field) = RB_RED;                                                                                                                                              \
+                    elm = parent;                                                                                                                                                               \
+                    parent = RB_PARENT(elm, field);                                                                                                                                             \
+                } else {                                                                                                                                                                        \
+                    if (RB_RIGHT(tmp, field) == NULL || RB_COLOR(RB_RIGHT(tmp, field), field) == RB_BLACK) {                                                                                    \
+                        struct type *oleft;                                                                                                                                                     \
+                        if ((oleft = RB_LEFT(tmp, field)) != NULL) RB_COLOR(oleft, field) = RB_BLACK;                                                                                           \
+                        RB_COLOR(tmp, field) = RB_RED;                                                                                                                                          \
+                        RB_ROTATE_RIGHT(head, tmp, oleft, field);                                                                                                                               \
+                        tmp = RB_RIGHT(parent, field);                                                                                                                                          \
+                    }                                                                                                                                                                           \
+                    RB_COLOR(tmp, field) = RB_COLOR(parent, field);                                                                                                                             \
+                    RB_COLOR(parent, field) = RB_BLACK;                                                                                                                                         \
+                    if (RB_RIGHT(tmp, field)) RB_COLOR(RB_RIGHT(tmp, field), field) = RB_BLACK;                                                                                                 \
+                    RB_ROTATE_LEFT(head, parent, tmp, field);                                                                                                                                   \
+                    elm = RB_ROOT(head);                                                                                                                                                        \
+                    break;                                                                                                                                                                      \
+                }                                                                                                                                                                               \
+            } else {                                                                                                                                                                            \
+                tmp = RB_LEFT(parent, field);                                                                                                                                                   \
+                if (RB_COLOR(tmp, field) == RB_RED) {                                                                                                                                           \
+                    RB_SET_BLACKRED(tmp, parent, field);                                                                                                                                        \
+                    RB_ROTATE_RIGHT(head, parent, tmp, field);                                                                                                                                  \
+                    tmp = RB_LEFT(parent, field);                                                                                                                                               \
+                }                                                                                                                                                                               \
+                if ((RB_LEFT(tmp, field) == NULL || RB_COLOR(RB_LEFT(tmp, field), field) == RB_BLACK) && (RB_RIGHT(tmp, field) == NULL || RB_COLOR(RB_RIGHT(tmp, field), field) == RB_BLACK)) { \
+                    RB_COLOR(tmp, field) = RB_RED;                                                                                                                                              \
+                    elm = parent;                                                                                                                                                               \
+                    parent = RB_PARENT(elm, field);                                                                                                                                             \
+                } else {                                                                                                                                                                        \
+                    if (RB_LEFT(tmp, field) == NULL || RB_COLOR(RB_LEFT(tmp, field), field) == RB_BLACK) {                                                                                      \
+                        struct type *oright;                                                                                                                                                    \
+                        if ((oright = RB_RIGHT(tmp, field)) != NULL) RB_COLOR(oright, field) = RB_BLACK;                                                                                        \
+                        RB_COLOR(tmp, field) = RB_RED;                                                                                                                                          \
+                        RB_ROTATE_LEFT(head, tmp, oright, field);                                                                                                                               \
+                        tmp = RB_LEFT(parent, field);                                                                                                                                           \
+                    }                                                                                                                                                                           \
+                    RB_COLOR(tmp, field) = RB_COLOR(parent, field);                                                                                                                             \
+                    RB_COLOR(parent, field) = RB_BLACK;                                                                                                                                         \
+                    if (RB_LEFT(tmp, field)) RB_COLOR(RB_LEFT(tmp, field), field) = RB_BLACK;                                                                                                   \
+                    RB_ROTATE_RIGHT(head, parent, tmp, field);                                                                                                                                  \
+                    elm = RB_ROOT(head);                                                                                                                                                        \
+                    break;                                                                                                                                                                      \
+                }                                                                                                                                                                               \
+            }                                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        if (elm) RB_COLOR(elm, field) = RB_BLACK;                                                                                                                                               \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    attr struct type *name##_RB_REMOVE(struct name *head, struct type *elm) {                                                                                                                   \
+        struct type *child, *parent, *old = elm;                                                                                                                                                \
+        int color;                                                                                                                                                                              \
+        if (RB_LEFT(elm, field) == NULL)                                                                                                                                                        \
+            child = RB_RIGHT(elm, field);                                                                                                                                                       \
+        else if (RB_RIGHT(elm, field) == NULL)                                                                                                                                                  \
+            child = RB_LEFT(elm, field);                                                                                                                                                        \
+        else {                                                                                                                                                                                  \
+            struct type *left;                                                                                                                                                                  \
+            elm = RB_RIGHT(elm, field);                                                                                                                                                         \
+            while ((left = RB_LEFT(elm, field)) != NULL) elm = left;                                                                                                                            \
+            child = RB_RIGHT(elm, field);                                                                                                                                                       \
+            parent = RB_PARENT(elm, field);                                                                                                                                                     \
+            color = RB_COLOR(elm, field);                                                                                                                                                       \
+            if (child) RB_PARENT(child, field) = parent;                                                                                                                                        \
+            if (parent) {                                                                                                                                                                       \
+                if (RB_LEFT(parent, field) == elm)                                                                                                                                              \
+                    RB_LEFT(parent, field) = child;                                                                                                                                             \
+                else                                                                                                                                                                            \
+                    RB_RIGHT(parent, field) = child;                                                                                                                                            \
+                RB_AUGMENT(parent);                                                                                                                                                             \
+            } else                                                                                                                                                                              \
+                RB_ROOT(head) = child;                                                                                                                                                          \
+            if (RB_PARENT(elm, field) == old) parent = elm;                                                                                                                                     \
+            (elm)->field = (old)->field;                                                                                                                                                        \
+            if (RB_PARENT(old, field)) {                                                                                                                                                        \
+                if (RB_LEFT(RB_PARENT(old, field), field) == old)                                                                                                                               \
+                    RB_LEFT(RB_PARENT(old, field), field) = elm;                                                                                                                                \
+                else                                                                                                                                                                            \
+                    RB_RIGHT(RB_PARENT(old, field), field) = elm;                                                                                                                               \
+                RB_AUGMENT(RB_PARENT(old, field));                                                                                                                                              \
+            } else                                                                                                                                                                              \
+                RB_ROOT(head) = elm;                                                                                                                                                            \
+            RB_PARENT(RB_LEFT(old, field), field) = elm;                                                                                                                                        \
+            if (RB_RIGHT(old, field)) RB_PARENT(RB_RIGHT(old, field), field) = elm;                                                                                                             \
+            if (parent) {                                                                                                                                                                       \
+                left = parent;                                                                                                                                                                  \
+                do {                                                                                                                                                                            \
+                    RB_AUGMENT(left);                                                                                                                                                           \
+                } while ((left = RB_PARENT(left, field)) != NULL);                                                                                                                              \
+            }                                                                                                                                                                                   \
+            goto color;                                                                                                                                                                         \
+        }                                                                                                                                                                                       \
+        parent = RB_PARENT(elm, field);                                                                                                                                                         \
+        color = RB_COLOR(elm, field);                                                                                                                                                           \
+        if (child) RB_PARENT(child, field) = parent;                                                                                                                                            \
+        if (parent) {                                                                                                                                                                           \
+            if (RB_LEFT(parent, field) == elm)                                                                                                                                                  \
+                RB_LEFT(parent, field) = child;                                                                                                                                                 \
+            else                                                                                                                                                                                \
+                RB_RIGHT(parent, field) = child;                                                                                                                                                \
+            RB_AUGMENT(parent);                                                                                                                                                                 \
+        } else                                                                                                                                                                                  \
+            RB_ROOT(head) = child;                                                                                                                                                              \
+    color:                                                                                                                                                                                      \
+        if (color == RB_BLACK) name##_RB_REMOVE_COLOR(head, parent, child);                                                                                                                     \
+        return (old);                                                                                                                                                                           \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    /* Inserts a node into the RB tree */                                                                                                                                                       \
+    attr struct type *name##_RB_INSERT(struct name *head, struct type *elm) {                                                                                                                   \
+        struct type *tmp;                                                                                                                                                                       \
+        struct type *parent = NULL;                                                                                                                                                             \
+        int comp = 0;                                                                                                                                                                           \
+        tmp = RB_ROOT(head);                                                                                                                                                                    \
+        while (tmp) {                                                                                                                                                                           \
+            parent = tmp;                                                                                                                                                                       \
+            comp = (cmp)(elm, parent);                                                                                                                                                          \
+            if (comp < 0)                                                                                                                                                                       \
+                tmp = RB_LEFT(tmp, field);                                                                                                                                                      \
+            else if (comp > 0)                                                                                                                                                                  \
+                tmp = RB_RIGHT(tmp, field);                                                                                                                                                     \
+            else                                                                                                                                                                                \
+                return (tmp);                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        RB_SET(elm, parent, field);                                                                                                                                                             \
+        if (parent != NULL) {                                                                                                                                                                   \
+            if (comp < 0)                                                                                                                                                                       \
+                RB_LEFT(parent, field) = elm;                                                                                                                                                   \
+            else                                                                                                                                                                                \
+                RB_RIGHT(parent, field) = elm;                                                                                                                                                  \
+            RB_AUGMENT(parent);                                                                                                                                                                 \
+        } else                                                                                                                                                                                  \
+            RB_ROOT(head) = elm;                                                                                                                                                                \
+        name##_RB_INSERT_COLOR(head, elm);                                                                                                                                                      \
+        return (NULL);                                                                                                                                                                          \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    /* Finds the node with the same key as elm */                                                                                                                                               \
+    attr struct type *name##_RB_FIND(struct name *head, struct type *elm) {                                                                                                                     \
+        struct type *tmp = RB_ROOT(head);                                                                                                                                                       \
+        int comp;                                                                                                                                                                               \
+        while (tmp) {                                                                                                                                                                           \
+            comp = cmp(elm, tmp);                                                                                                                                                               \
+            if (comp < 0)                                                                                                                                                                       \
+                tmp = RB_LEFT(tmp, field);                                                                                                                                                      \
+            else if (comp > 0)                                                                                                                                                                  \
+                tmp = RB_RIGHT(tmp, field);                                                                                                                                                     \
+            else                                                                                                                                                                                \
+                return (tmp);                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        return (NULL);                                                                                                                                                                          \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    /* Finds the first node greater than or equal to the search key */                                                                                                                          \
+    attr struct type *name##_RB_NFIND(struct name *head, struct type *elm) {                                                                                                                    \
+        struct type *tmp = RB_ROOT(head);                                                                                                                                                       \
+        struct type *res = NULL;                                                                                                                                                                \
+        int comp;                                                                                                                                                                               \
+        while (tmp) {                                                                                                                                                                           \
+            comp = cmp(elm, tmp);                                                                                                                                                               \
+            if (comp < 0) {                                                                                                                                                                     \
+                res = tmp;                                                                                                                                                                      \
+                tmp = RB_LEFT(tmp, field);                                                                                                                                                      \
+            } else if (comp > 0)                                                                                                                                                                \
+                tmp = RB_RIGHT(tmp, field);                                                                                                                                                     \
+            else                                                                                                                                                                                \
+                return (tmp);                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        return (res);                                                                                                                                                                           \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    /* ARGSUSED */                                                                                                                                                                              \
+    attr struct type *name##_RB_NEXT(struct type *elm) {                                                                                                                                        \
+        if (RB_RIGHT(elm, field)) {                                                                                                                                                             \
+            elm = RB_RIGHT(elm, field);                                                                                                                                                         \
+            while (RB_LEFT(elm, field)) elm = RB_LEFT(elm, field);                                                                                                                              \
+        } else {                                                                                                                                                                                \
+            if (RB_PARENT(elm, field) && (elm == RB_LEFT(RB_PARENT(elm, field), field)))                                                                                                        \
+                elm = RB_PARENT(elm, field);                                                                                                                                                    \
+            else {                                                                                                                                                                              \
+                while (RB_PARENT(elm, field) && (elm == RB_RIGHT(RB_PARENT(elm, field), field))) elm = RB_PARENT(elm, field);                                                                   \
+                elm = RB_PARENT(elm, field);                                                                                                                                                    \
+            }                                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        return (elm);                                                                                                                                                                           \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    /* ARGSUSED */                                                                                                                                                                              \
+    attr struct type *name##_RB_PREV(struct type *elm) {                                                                                                                                        \
+        if (RB_LEFT(elm, field)) {                                                                                                                                                              \
+            elm = RB_LEFT(elm, field);                                                                                                                                                          \
+            while (RB_RIGHT(elm, field)) elm = RB_RIGHT(elm, field);                                                                                                                            \
+        } else {                                                                                                                                                                                \
+            if (RB_PARENT(elm, field) && (elm == RB_RIGHT(RB_PARENT(elm, field), field)))                                                                                                       \
+                elm = RB_PARENT(elm, field);                                                                                                                                                    \
+            else {                                                                                                                                                                              \
+                while (RB_PARENT(elm, field) && (elm == RB_LEFT(RB_PARENT(elm, field), field))) elm = RB_PARENT(elm, field);                                                                    \
+                elm = RB_PARENT(elm, field);                                                                                                                                                    \
+            }                                                                                                                                                                                   \
+        }                                                                                                                                                                                       \
+        return (elm);                                                                                                                                                                           \
+    }                                                                                                                                                                                           \
+                                                                                                                                                                                                \
+    attr struct type *name##_RB_MINMAX(struct name *head, int val) {                                                                                                                            \
+        struct type *tmp = RB_ROOT(head);                                                                                                                                                       \
+        struct type *parent = NULL;                                                                                                                                                             \
+        while (tmp) {                                                                                                                                                                           \
+            parent = tmp;                                                                                                                                                                       \
+            if (val < 0)                                                                                                                                                                        \
+                tmp = RB_LEFT(tmp, field);                                                                                                                                                      \
+            else                                                                                                                                                                                \
+                tmp = RB_RIGHT(tmp, field);                                                                                                                                                     \
+        }                                                                                                                                                                                       \
+        return (parent);                                                                                                                                                                        \
     }
 
 #define RB_NEGINF -1
@@ -1976,25 +1910,17 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #define RB_MIN(name, x) name##_RB_MINMAX(x, RB_NEGINF)
 #define RB_MAX(name, x) name##_RB_MINMAX(x, RB_INF)
 
-#define RB_FOREACH(x, name, head)                                                                  \
-    for ((x) = RB_MIN(name, head); (x) != NULL; (x) = name##_RB_NEXT(x))
+#define RB_FOREACH(x, name, head) for ((x) = RB_MIN(name, head); (x) != NULL; (x) = name##_RB_NEXT(x))
 
-#define RB_FOREACH_FROM(x, name, y)                                                                \
-    for ((x) = (y); ((x) != NULL) && ((y) = name##_RB_NEXT(x), (x) != NULL); (x) = (y))
+#define RB_FOREACH_FROM(x, name, y) for ((x) = (y); ((x) != NULL) && ((y) = name##_RB_NEXT(x), (x) != NULL); (x) = (y))
 
-#define RB_FOREACH_SAFE(x, name, head, y)                                                          \
-    for ((x) = RB_MIN(name, head); ((x) != NULL) && ((y) = name##_RB_NEXT(x), (x) != NULL);        \
-         (x) = (y))
+#define RB_FOREACH_SAFE(x, name, head, y) for ((x) = RB_MIN(name, head); ((x) != NULL) && ((y) = name##_RB_NEXT(x), (x) != NULL); (x) = (y))
 
-#define RB_FOREACH_REVERSE(x, name, head)                                                          \
-    for ((x) = RB_MAX(name, head); (x) != NULL; (x) = name##_RB_PREV(x))
+#define RB_FOREACH_REVERSE(x, name, head) for ((x) = RB_MAX(name, head); (x) != NULL; (x) = name##_RB_PREV(x))
 
-#define RB_FOREACH_REVERSE_FROM(x, name, y)                                                        \
-    for ((x) = (y); ((x) != NULL) && ((y) = name##_RB_PREV(x), (x) != NULL); (x) = (y))
+#define RB_FOREACH_REVERSE_FROM(x, name, y) for ((x) = (y); ((x) != NULL) && ((y) = name##_RB_PREV(x), (x) != NULL); (x) = (y))
 
-#define RB_FOREACH_REVERSE_SAFE(x, name, head, y)                                                  \
-    for ((x) = RB_MAX(name, head); ((x) != NULL) && ((y) = name##_RB_PREV(x), (x) != NULL);        \
-         (x) = (y))
+#define RB_FOREACH_REVERSE_SAFE(x, name, head, y) for ((x) = RB_MAX(name, head); ((x) != NULL) && ((y) = name##_RB_PREV(x), (x) != NULL); (x) = (y))
 
 #endif
 
@@ -2021,29 +1947,28 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 
 #if LUA_VERSION_NUM == 501
 #define lua_rawlen(_x, _i) lua_objlen((_x), (_i))
-#define lua_absindex(_L, _i)                                                                       \
-    (((_i) > 0 || (_i) <= LUA_REGISTRYINDEX) ? (_i) : lua_gettop(_L) + (_i) + 1)
+#define lua_absindex(_L, _i) (((_i) > 0 || (_i) <= LUA_REGISTRYINDEX) ? (_i) : lua_gettop(_L) + (_i) + 1)
 #endif
 
 #ifdef LUACS_DEBUG
-#define LUACS_DBG(...)                                                                             \
-    do {                                                                                           \
-        fprintf(stdout, __VA_ARGS__);                                                              \
-        fputs("\n", stdout);                                                                       \
+#define LUACS_DBG(...)                \
+    do {                              \
+        fprintf(stdout, __VA_ARGS__); \
+        fputs("\n", stdout);          \
     } while (0 /*CONSTCOND*/)
-#define LUACS_ASSERT(_L, _cond)                                                                    \
-    do {                                                                                           \
-        if (!(_cond)) {                                                                            \
-            lua_pushfstring((_L),                                                                  \
-                            "ASSERT(%s) failed "                                                   \
-                            "in %s() at %s:%d",                                                    \
-                            #_cond, __func__, __FILE__, __LINE__);                                 \
-            lua_error((_L));                                                                       \
-        }                                                                                          \
+#define LUACS_ASSERT(_L, _cond)                                    \
+    do {                                                           \
+        if (!(_cond)) {                                            \
+            lua_pushfstring((_L),                                  \
+                            "ASSERT(%s) failed "                   \
+                            "in %s() at %s:%d",                    \
+                            #_cond, __func__, __FILE__, __LINE__); \
+            lua_error((_L));                                       \
+        }                                                          \
     } while (0 /*CONSTCOND*/)
 #else
-#define LUACS_DBG(...) ((void) 0)
-#define LUACS_ASSERT(_L, _cond) ((void) 0)
+#define LUACS_DBG(...) ((void)0)
+#define LUACS_ASSERT(_L, _cond) ((void)0)
 #endif
 
 #ifndef MINIMUM
@@ -2061,8 +1986,7 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #define __unused __attribute__((__unused__))
 #endif
 
-struct luacstruct
-{
+struct luacstruct {
     const char *typename;
     char metaname[METANAMELEN];
     SPLAY_HEAD(luacstruct_fields, luacstruct_field)
@@ -2070,8 +1994,7 @@ struct luacstruct
     TAILQ_HEAD(, luacstruct_field) sorted;
 };
 
-struct luacarraytype
-{
+struct luacarraytype {
     const char *typename;
     char metaname[METANAMELEN];
     enum luacstruct_type type;
@@ -2081,8 +2004,7 @@ struct luacarraytype
     unsigned flags;
 };
 
-struct luacregeon
-{
+struct luacregeon {
     enum luacstruct_type type;
     int off;
     size_t size;
@@ -2090,8 +2012,7 @@ struct luacregeon
     unsigned flags;
 };
 
-struct luacstruct_field
-{
+struct luacstruct_field {
     enum luacstruct_type type;
     const char *fieldname;
     struct luacregeon regeon;
@@ -2103,8 +2024,7 @@ struct luacstruct_field
     TAILQ_ENTRY(luacstruct_field) queue;
 };
 
-struct luacobject
-{
+struct luacobject {
     enum luacstruct_type type;
     struct luacstruct *cs;
     caddr_t ptr;
@@ -2115,8 +2035,7 @@ struct luacobject
     unsigned flags;
 };
 
-struct luacenum
-{
+struct luacenum {
     const char *enumname;
     char metaname[METANAMELEN];
     size_t valwidth;
@@ -2128,8 +2047,7 @@ struct luacenum
     int func_memberof;
 };
 
-struct luacenum_value
-{
+struct luacenum_value {
     struct luacenum *ce;
     intmax_t value;
     int ref;
@@ -2140,8 +2058,7 @@ struct luacenum_value
 
 static struct luacstruct *luacs_checkstruct(lua_State *, int);
 static int luacs_struct__gc(lua_State *);
-static struct luacstruct_field *luacs_declare(lua_State *, enum luacstruct_type, const char *,
-                                              const char *, size_t, int, int, unsigned);
+static struct luacstruct_field *luacs_declare(lua_State *, enum luacstruct_type, const char *, const char *, size_t, int, int, unsigned);
 static int luacstruct_field_cmp(struct luacstruct_field *, struct luacstruct_field *);
 static struct luacstruct_field *luacsfield_copy(lua_State *, struct luacstruct_field *);
 static void luacstruct_field_free(lua_State *, struct luacstruct *, struct luacstruct_field *);
@@ -2264,10 +2181,7 @@ int luacs_delstruct(lua_State *L, const char *tname) {
     return (0);
 }
 
-struct luacstruct *luacs_checkstruct(lua_State *L, int csidx)
-{
-    return (luaL_checkudata(L, csidx, METANAME_LUACSTRUCT));
-}
+struct luacstruct *luacs_checkstruct(lua_State *L, int csidx) { return (luaL_checkudata(L, csidx, METANAME_LUACSTRUCT)); }
 
 int luacs_struct__gc(lua_State *L) {
     struct luacstruct *cs;
@@ -2276,23 +2190,18 @@ int luacs_struct__gc(lua_State *L) {
     lua_settop(L, 1);
     cs = luacs_checkstruct(L, 1);
     if (cs) {
-        while ((field = SPLAY_MIN(luacstruct_fields, &cs->fields)) != NULL)
-            luacstruct_field_free(L, cs, field);
+        while ((field = SPLAY_MIN(luacstruct_fields, &cs->fields)) != NULL) luacstruct_field_free(L, cs, field);
     }
 
     return (0);
 }
 
-int luacs_declare_field(lua_State *L, enum luacstruct_type _type, const char *tname,
-                        const char *name, size_t siz, int off, int nmemb, unsigned flags) {
+int luacs_declare_field(lua_State *L, enum luacstruct_type _type, const char *tname, const char *name, size_t siz, int off, int nmemb, unsigned flags) {
     luacs_declare(L, _type, tname, name, siz, off, nmemb, flags);
     return (0);
 }
 
-struct luacstruct_field *luacs_declare(lua_State *L, enum luacstruct_type _type, const char *tname,
-                                       const char *name, size_t siz, int off, int nmemb,
-                                       unsigned flags)
-{
+struct luacstruct_field *luacs_declare(lua_State *L, enum luacstruct_type _type, const char *tname, const char *name, size_t siz, int off, int nmemb, unsigned flags) {
     struct luacstruct_field *field, *field0;
     struct luacstruct *cs;
     char buf[BUFSIZ];
@@ -2309,8 +2218,7 @@ struct luacstruct_field *luacs_declare(lua_State *L, enum luacstruct_type _type,
         lua_pushstring(L, buf);
         lua_error(L);
     }
-    while ((field0 = SPLAY_FIND(luacstruct_fields, &cs->fields, field)) != NULL)
-        luacstruct_field_free(L, cs, field0);
+    while ((field0 = SPLAY_FIND(luacstruct_fields, &cs->fields, field)) != NULL) luacstruct_field_free(L, cs, field0);
     field->regeon.type = _type;
     field->regeon.off = off;
     field->regeon.size = siz;
@@ -2340,7 +2248,8 @@ struct luacstruct_field *luacs_declare(lua_State *L, enum luacstruct_type _type,
     TAILQ_FOREACH(field0, &cs->sorted, queue) {
         if (field->regeon.off < field0->regeon.off) break;
     }
-    if (field0 == NULL) TAILQ_INSERT_TAIL(&cs->sorted, field, queue);
+    if (field0 == NULL)
+        TAILQ_INSERT_TAIL(&cs->sorted, field, queue);
     else
         TAILQ_INSERT_BEFORE(field0, field, queue);
 
@@ -2366,12 +2275,9 @@ int luacs_declare_const(lua_State *L, const char *name, int constval) {
     return (0);
 }
 
-int luacstruct_field_cmp(struct luacstruct_field *a, struct luacstruct_field *b) {
-    return (strcmp(a->fieldname, b->fieldname));
-}
+int luacstruct_field_cmp(struct luacstruct_field *a, struct luacstruct_field *b) { return (strcmp(a->fieldname, b->fieldname)); }
 
-struct luacstruct_field *luacsfield_copy(lua_State *L, struct luacstruct_field *from)
-{
+struct luacstruct_field *luacsfield_copy(lua_State *L, struct luacstruct_field *from) {
     struct luacstruct_field *to;
 
     to = calloc(1, sizeof(struct luacstruct_field));
@@ -2404,7 +2310,7 @@ void luacstruct_field_free(lua_State *L, struct luacstruct *cs, struct luacstruc
         if (field->ref != 0) luacs_unref(L, field->ref);
         TAILQ_REMOVE(&cs->sorted, field, queue);
         SPLAY_REMOVE(luacstruct_fields, &cs->fields, field);
-        free((char *) field->fieldname);
+        free((char *)field->fieldname);
     }
     free(field);
 }
@@ -2415,13 +2321,14 @@ int luacs_pushctype(lua_State *L, enum luacstruct_type _type, const char *tname)
     snprintf(metaname, sizeof(metaname), "%s%s", METANAME_LUACTYPE, tname);
     lua_getfield(L, LUA_REGISTRYINDEX, metaname);
     if (lua_isnil(L, -1)) {
-        if (_type == LUACS_TARRAY) lua_pushfstring(L, "array `%s' is not registered", tname);
+        if (_type == LUACS_TARRAY)
+            lua_pushfstring(L, "array `%s' is not registered", tname);
         else
-            lua_pushfstring(L, "`%s %s' is not registered",
-                            _type == LUACS_TENUM ? "enum" : "struct", tname);
+            lua_pushfstring(L, "`%s %s' is not registered", _type == LUACS_TENUM ? "enum" : "struct", tname);
         lua_error(L);
     }
-    if (_type == LUACS_TARRAY) luaL_checkudata(L, -1, METANAME_LUACARRAYTYPE);
+    if (_type == LUACS_TARRAY)
+        luaL_checkudata(L, -1, METANAME_LUACARRAYTYPE);
     else if (_type == LUACS_TENUM)
         luacs_checkenum(L, -1);
     else
@@ -2437,8 +2344,7 @@ int luacs_arraytype__gc(lua_State *L) {
     return (0);
 }
 
-int luacs_newarraytype(lua_State *L, const char *tname, enum luacstruct_type _type,
-                       const char *membtname, size_t size, int nmemb, unsigned flags) {
+int luacs_newarraytype(lua_State *L, const char *tname, enum luacstruct_type _type, const char *membtname, size_t size, int nmemb, unsigned flags) {
     int ret;
     struct luacarraytype *cat;
     char metaname[METANAMELEN];
@@ -2494,8 +2400,7 @@ int luacs_newarraytype(lua_State *L, const char *tname, enum luacstruct_type _ty
     return (1);
 }
 
-int luacs_newarray(lua_State *L, enum luacstruct_type _type, const char *membtname, size_t size,
-                   int nmemb, unsigned flags, void *ptr) {
+int luacs_newarray(lua_State *L, enum luacstruct_type _type, const char *membtname, size_t size, int nmemb, unsigned flags, void *ptr) {
     int typref = 0;
 
     switch (_type) {
@@ -2521,8 +2426,7 @@ int luacs_newarray(lua_State *L, enum luacstruct_type _type, const char *membtna
     return (luacs_newarray0(L, _type, typref, size, nmemb, flags, ptr));
 }
 
-int luacs_newarray0(lua_State *L, enum luacstruct_type _type, int typidx, size_t size, int nmemb,
-                    unsigned flags, void *ptr) {
+int luacs_newarray0(lua_State *L, enum luacstruct_type _type, int typidx, size_t size, int nmemb, unsigned flags, void *ptr) {
     struct luacobject *obj;
     int ret, absidx;
 
@@ -2533,7 +2437,7 @@ int luacs_newarray0(lua_State *L, enum luacstruct_type _type, int typidx, size_t
         obj->ptr = ptr;
     } else {
         obj = lua_newuserdata(L, sizeof(struct luacobject) + size * nmemb);
-        obj->ptr = (caddr_t) (obj + 1);
+        obj->ptr = (caddr_t)(obj + 1);
     }
     obj->type = _type;
     obj->size = size;
@@ -2545,8 +2449,7 @@ int luacs_newarray0(lua_State *L, enum luacstruct_type _type, int typidx, size_t
         obj->typref = luacs_ref(L);
     }
 
-    if (_type == LUACS_TOBJREF || _type == LUACS_TOBJENT || _type == LUACS_TEXTREF ||
-        _type == LUACS_TARRAY) {
+    if (_type == LUACS_TOBJREF || _type == LUACS_TOBJENT || _type == LUACS_TEXTREF || _type == LUACS_TARRAY) {
         lua_newtable(L);
         obj->tblref = luacs_ref(L);
     }
@@ -2605,10 +2508,12 @@ int luacs_array__index(lua_State *L) {
             break;
         case LUACS_TOBJREF:
         case LUACS_TOBJENT:
-            if (obj->type == LUACS_TOBJENT) ptr = obj->ptr + regeon.off;
+            if (obj->type == LUACS_TOBJENT)
+                ptr = obj->ptr + regeon.off;
             else
-                ptr = *(void **) (obj->ptr + regeon.off);
-            if (ptr == NULL) lua_pushnil(L);
+                ptr = *(void **)(obj->ptr + regeon.off);
+            if (ptr == NULL)
+                lua_pushnil(L);
             else {
                 luacs_getref(L, obj->tblref);
                 lua_rawgeti(L, -1, idx);
@@ -2630,7 +2535,8 @@ int luacs_array__index(lua_State *L) {
             break;
         case LUACS_TARRAY:
             ptr = obj->ptr + regeon.off;
-            if (ptr == NULL) lua_pushnil(L);
+            if (ptr == NULL)
+                lua_pushnil(L);
             else {
                 luacs_getref(L, obj->tblref);
                 lua_rawgeti(L, -1, idx);
@@ -2640,8 +2546,7 @@ int luacs_array__index(lua_State *L) {
                     cat = luaL_checkudata(L, -1, METANAME_LUACARRAYTYPE);
                     lua_pop(L, 1);
                     if (cat->typref != 0) luacs_getref(L, cat->typref);
-                    luacs_newarray0(L, cat->type, cat->typref, (cat->typref != 0) ? -1 : 0,
-                                    cat->nmemb, cat->flags, obj->ptr + regeon.off);
+                    luacs_newarray0(L, cat->type, cat->typref, (cat->typref != 0) ? -1 : 0, cat->nmemb, cat->flags, obj->ptr + regeon.off);
                     if (cat->typref != 0) lua_remove(L, -2);
                     lua_pushvalue(L, -1);
                     lua_rawseti(L, -3, idx);
@@ -2691,8 +2596,7 @@ int luacs_array__newindex(lua_State *L) {
             cs0 = luacs_checkstruct(L, -1);
             lua_pop(L, 1);
             /* given instance of struct */
-            if (regeon.type == LUACS_TOBJENT || !lua_isnil(L, 3))
-                ano = luaL_checkudata(L, 3, METANAME_LUACSTRUCTOBJ);
+            if (regeon.type == LUACS_TOBJENT || !lua_isnil(L, 3)) ano = luaL_checkudata(L, 3, METANAME_LUACSTRUCTOBJ);
             if (ano != NULL && cs0 != ano->cs) {
                 lua_pushfstring(L, "must be an instance of `struct %s'", cs0->typename);
                 lua_error(L);
@@ -2709,7 +2613,7 @@ int luacs_array__newindex(lua_State *L) {
                 lua_pushvalue(L, 3);
                 lua_call(L, 2, 0);
             } else {
-                *(void **) (obj->ptr + regeon.off) = ano ? ano->ptr : NULL;
+                *(void **)(obj->ptr + regeon.off) = ano ? ano->ptr : NULL;
                 /* use the same object */
                 luacs_getref(L, obj->tblref);
                 lua_pushvalue(L, 3);
@@ -2777,8 +2681,7 @@ int luacs_array_copy(lua_State *L) {
             luacs_getref(L, l->tblref);
             for (idx = 1; idx <= l->nmemb; idx++) {
                 /* use the same pointer */
-                *(void **) (l->ptr + (idx - 1) * l->size) =
-                        *(void **) (r->ptr + (idx - 1) * r->size);
+                *(void **)(l->ptr + (idx - 1) * l->size) = *(void **)(r->ptr + (idx - 1) * r->size);
 
                 lua_pushcfunction(L, luacs_array__index);
                 lua_pushvalue(L, 2);
@@ -2908,12 +2811,9 @@ int luacs_newobject0(lua_State *L, void *ptr) {
         obj = lua_newuserdata(L, sizeof(struct luacobject));
         obj->ptr = ptr;
     } else {
-        TAILQ_FOREACH(field, &cs->sorted, queue) {
-            objsiz = MAXIMUM(objsiz, field->regeon.off + (field->nmemb == 0 ? 1 : field->nmemb) *
-                                                                 field->regeon.size);
-        }
+        TAILQ_FOREACH(field, &cs->sorted, queue) { objsiz = MAXIMUM(objsiz, field->regeon.off + (field->nmemb == 0 ? 1 : field->nmemb) * field->regeon.size); }
         obj = lua_newuserdata(L, sizeof(struct luacobject) + objsiz);
-        obj->ptr = (caddr_t) (obj + 1);
+        obj->ptr = (caddr_t)(obj + 1);
     }
     obj->cs = cs;
     lua_pushvalue(L, -2);
@@ -2954,8 +2854,7 @@ int luacs_object__luacstructdump(struct lua_State *L) {
     return (2);
 }
 
-struct luacobj_compat
-{
+struct luacobj_compat {
     void *ptr;
     const char *typ;
 };
@@ -2965,8 +2864,7 @@ void *luacs_object_pointer(lua_State *L, int ref, const char *typename) {
 
     memset(&compat, 0, sizeof(compat));
     luacs_object_compat(L, ref, &compat);
-    if (typename == NULL || (compat.typ != NULL && strcmp(compat.typ, typename) == 0))
-        return (compat.ptr);
+    if (typename == NULL || (compat.typ != NULL && strcmp(compat.typ, typename) == 0)) return (compat.ptr);
 
     return (NULL);
 }
@@ -3046,7 +2944,8 @@ int luacs_object_typename(lua_State *L) {
     memset(&compat, 0, sizeof(compat));
     lua_settop(L, 1);
     luacs_object_compat(L, 1, &compat);
-    if (compat.typ != NULL) lua_pushstring(L, compat.typ);
+    if (compat.typ != NULL)
+        lua_pushstring(L, compat.typ);
     else
         lua_pushnil(L);
 
@@ -3075,21 +2974,23 @@ int luacs_object__get(lua_State *L, struct luacobject *obj, struct luacstruct_fi
             return (luacs_pushregeon(L, obj, &field->regeon));
         case LUACS_TOBJREF:
         case LUACS_TOBJENT:
-            if (field->type == LUACS_TOBJENT) ptr = obj->ptr + field->regeon.off;
+            if (field->type == LUACS_TOBJENT)
+                ptr = obj->ptr + field->regeon.off;
             else
-                ptr = *(void **) (obj->ptr + field->regeon.off);
-            if (ptr == NULL) lua_pushnil(L);
+                ptr = *(void **)(obj->ptr + field->regeon.off);
+            if (ptr == NULL)
+                lua_pushnil(L);
             else {
                 struct luacobject *cache = NULL;
 
                 luacs_getref(L, obj->tblref);
                 lua_getfield(L, -1, field->fieldname);
-                if (lua_isnil(L, -1)) lua_pop(L, 1);
+                if (lua_isnil(L, -1))
+                    lua_pop(L, 1);
                 else { /* has a cache */
                     cache = luaL_checkudata(L, -1, METANAME_LUACSTRUCTOBJ);
                     /* cached reference may be staled */
-                    if (field->type == LUACS_TOBJREF &&
-                        cache->ptr != *(void **) (obj->ptr + field->regeon.off)) {
+                    if (field->type == LUACS_TOBJREF && cache->ptr != *(void **)(obj->ptr + field->regeon.off)) {
                         lua_pop(L, 1);
                         lua_pushnil(L);
                         lua_setfield(L, -2, field->fieldname);
@@ -3118,9 +3019,7 @@ int luacs_object__get(lua_State *L, struct luacobject *obj, struct luacstruct_fi
             if (lua_isnil(L, -1)) {
                 lua_pop(L, 1);
                 if (field->regeon.typref != 0) luacs_getref(L, field->regeon.typref);
-                luacs_newarray0(L, field->regeon.type, (field->regeon.typref != 0) ? -1 : 0,
-                                field->regeon.size, field->nmemb, field->flags,
-                                obj->ptr + field->regeon.off);
+                luacs_newarray0(L, field->regeon.type, (field->regeon.typref != 0) ? -1 : 0, field->regeon.size, field->nmemb, field->flags, obj->ptr + field->regeon.off);
                 if (field->regeon.typref != 0) lua_remove(L, -2);
                 lua_pushvalue(L, -1);
                 lua_setfield(L, -3, field->fieldname);
@@ -3164,8 +3063,7 @@ int luacs_object__newindex(lua_State *L) {
                 luacs_getref(L, field->regeon.typref);
                 cs0 = luacs_checkstruct(L, -1);
                 lua_pop(L, 1);
-                if (field->regeon.type == LUACS_TOBJENT || !lua_isnil(L, 3))
-                    /* given instance of struct */
+                if (field->regeon.type == LUACS_TOBJENT || !lua_isnil(L, 3)) /* given instance of struct */
                     ano = luaL_checkudata(L, 3, METANAME_LUACSTRUCTOBJ);
                 /* given instance of struct */
                 if (ano != NULL && cs0 != ano->cs) {
@@ -3181,7 +3079,7 @@ int luacs_object__newindex(lua_State *L) {
                     lua_pushvalue(L, 3);
                     lua_call(L, 2, 0);
                 } else {
-                    *(void **) (obj->ptr + field->regeon.off) = ano != NULL ? ano->ptr : NULL;
+                    *(void **)(obj->ptr + field->regeon.off) = ano != NULL ? ano->ptr : NULL;
                     /* use the same object */
                     luacs_getref(L, obj->tblref);
                     lua_pushvalue(L, 3);
@@ -3203,8 +3101,7 @@ int luacs_object__newindex(lua_State *L) {
                 break;
         }
     } else {
-        lua_pushfstring(L, "`struct %s' doesn't have field `%s'", obj->cs->typename,
-                        fkey.fieldname);
+        lua_pushfstring(L, "`struct %s' doesn't have field `%s'", obj->cs->typename, fkey.fieldname);
         lua_error(L);
     }
 
@@ -3228,10 +3125,8 @@ int luacs_object_copy(lua_State *L) {
 
     TAILQ_FOREACH(field, &l->cs->sorted, queue) {
         if (field->regeon.size > 0)
-            memcpy((caddr_t) l->ptr + field->regeon.off, (caddr_t) r->ptr + field->regeon.off,
-                   field->regeon.size);
-        else if (field->regeon.type == LUACS_TOBJREF || field->regeon.type == LUACS_TOBJENT ||
-                 field->regeon.type == LUACS_TEXTREF) {
+            memcpy((caddr_t)l->ptr + field->regeon.off, (caddr_t)r->ptr + field->regeon.off, field->regeon.size);
+        else if (field->regeon.type == LUACS_TOBJREF || field->regeon.type == LUACS_TOBJENT || field->regeon.type == LUACS_TEXTREF) {
             /* l[fieldname] = r[fieldname] */
             lua_getfield(L, 2, field->fieldname);
             lua_setfield(L, 1, field->fieldname);
@@ -3247,7 +3142,8 @@ int luacs_object__next(lua_State *L) {
 
     lua_settop(L, 2);
     obj = luaL_checkudata(L, 1, METANAME_LUACSTRUCTOBJ);
-    if (lua_isnil(L, 2)) field = TAILQ_FIRST(&obj->cs->sorted);
+    if (lua_isnil(L, 2))
+        field = TAILQ_FIRST(&obj->cs->sorted);
     else {
         fkey.fieldname = luaL_checkstring(L, 2);
         field = SPLAY_FIND(luacstruct_fields, &obj->cs->fields, &fkey);
@@ -3279,8 +3175,7 @@ int luacs_object__gc(lua_State *L) {
     lua_settop(L, 1);
     obj = luaL_checkudata(L, 1, METANAME_LUACSTRUCTOBJ);
     fkey.fieldname = "__gc";
-    if ((field = SPLAY_FIND(luacstruct_fields, &obj->cs->fields, &fkey)) != NULL &&
-        field->type == LUACS_TMETHOD) {
+    if ((field = SPLAY_FIND(luacstruct_fields, &obj->cs->fields, &fkey)) != NULL && field->type == LUACS_TMETHOD) {
         luacs_getref(L, field->ref);
         lua_pushvalue(L, 1);
         lua_pcall(L, 1, 0, 0);
@@ -3299,8 +3194,7 @@ void *luacs_checkobject(lua_State *L, int idx, const char *typename) {
 
     if (compat.typ != NULL && strcmp(compat.typ, typename) == 0) return (compat.ptr);
 
-    luaL_error(L, "%s expected, got %s", typename,
-               (compat.typ != NULL) ? compat.typ : luaL_typename(L, idx));
+    luaL_error(L, "%s expected, got %s", typename, (compat.typ != NULL) ? compat.typ : luaL_typename(L, idx));
     /* NOTREACHED */
     LUACS_ASSERT(L, 0);
     abort();
@@ -3313,67 +3207,73 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
 
     switch (regeon->type) {
         case LUACS_TINT8:
-            lua_pushinteger(L, *(int8_t *) (obj->ptr + regeon->off));
+            lua_pushinteger(L, *(int8_t *)(obj->ptr + regeon->off));
             break;
         case LUACS_TINT16:
-            ival = *(int16_t *) (obj->ptr + regeon->off);
-            if ((regeon->flags & LUACS_FENDIAN) == 0) lua_pushinteger(L, ival);
+            ival = *(int16_t *)(obj->ptr + regeon->off);
+            if ((regeon->flags & LUACS_FENDIAN) == 0)
+                lua_pushinteger(L, ival);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
                 lua_pushinteger(L, be16toh(ival));
             else
                 lua_pushinteger(L, le16toh(ival));
             break;
         case LUACS_TINT32:
-            ival = *(int32_t *) (obj->ptr + regeon->off);
-            if ((regeon->flags & LUACS_FENDIAN) == 0) lua_pushinteger(L, ival);
+            ival = *(int32_t *)(obj->ptr + regeon->off);
+            if ((regeon->flags & LUACS_FENDIAN) == 0)
+                lua_pushinteger(L, ival);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
                 lua_pushinteger(L, be32toh(ival));
             else
                 lua_pushinteger(L, le32toh(ival));
             break;
         case LUACS_TINT64:
-            ival = *(int64_t *) (obj->ptr + regeon->off);
-            if ((regeon->flags & LUACS_FENDIAN) == 0) lua_pushinteger(L, ival);
+            ival = *(int64_t *)(obj->ptr + regeon->off);
+            if ((regeon->flags & LUACS_FENDIAN) == 0)
+                lua_pushinteger(L, ival);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
                 lua_pushinteger(L, be64toh(ival));
             else
                 lua_pushinteger(L, le64toh(ival));
             break;
         case LUACS_TUINT8:
-            lua_pushinteger(L, *(uint8_t *) (obj->ptr + regeon->off));
+            lua_pushinteger(L, *(uint8_t *)(obj->ptr + regeon->off));
             break;
         case LUACS_TUINT16:
-            uval = *(uint16_t *) (obj->ptr + regeon->off);
-            if ((regeon->flags & LUACS_FENDIAN) == 0) lua_pushinteger(L, uval);
+            uval = *(uint16_t *)(obj->ptr + regeon->off);
+            if ((regeon->flags & LUACS_FENDIAN) == 0)
+                lua_pushinteger(L, uval);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
                 lua_pushinteger(L, be16toh(uval));
             else
                 lua_pushinteger(L, le16toh(uval));
             break;
         case LUACS_TUINT32:
-            uval = *(uint32_t *) (obj->ptr + regeon->off);
-            if ((regeon->flags & LUACS_FENDIAN) == 0) lua_pushinteger(L, uval);
+            uval = *(uint32_t *)(obj->ptr + regeon->off);
+            if ((regeon->flags & LUACS_FENDIAN) == 0)
+                lua_pushinteger(L, uval);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
                 lua_pushinteger(L, be32toh(uval));
             else
                 lua_pushinteger(L, le32toh(uval));
             break;
         case LUACS_TUINT64:
-            uval = *(uint64_t *) (obj->ptr + regeon->off);
-            if ((regeon->flags & LUACS_FENDIAN) == 0) lua_pushinteger(L, uval);
+            uval = *(uint64_t *)(obj->ptr + regeon->off);
+            if ((regeon->flags & LUACS_FENDIAN) == 0)
+                lua_pushinteger(L, uval);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
                 lua_pushinteger(L, be64toh(uval));
             else
                 lua_pushinteger(L, le64toh(uval));
             break;
         case LUACS_TBOOL:
-            lua_pushboolean(L, *(bool *) (obj->ptr + regeon->off));
+            lua_pushboolean(L, *(bool *)(obj->ptr + regeon->off));
             break;
         case LUACS_TSTRING:
-            lua_pushstring(L, (const char *) (obj->ptr + regeon->off));
+            lua_pushstring(L, (const char *)(obj->ptr + regeon->off));
             break;
         case LUACS_TSTRPTR:
-            lua_pushstring(L, *(const char **) (obj->ptr + regeon->off));
+            lua_pushstring(L, *(const char **)(obj->ptr + regeon->off));
             break;
         case LUACS_TENUM: {
             intmax_t value;
@@ -3381,16 +3281,16 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
             struct luacenum *ce;
             switch (regeon->size) {
                 case 1:
-                    value = *(int8_t *) (obj->ptr + regeon->off);
+                    value = *(int8_t *)(obj->ptr + regeon->off);
                     break;
                 case 2:
-                    value = *(int16_t *) (obj->ptr + regeon->off);
+                    value = *(int16_t *)(obj->ptr + regeon->off);
                     break;
                 case 4:
-                    value = *(int32_t *) (obj->ptr + regeon->off);
+                    value = *(int32_t *)(obj->ptr + regeon->off);
                     break;
                 case 8:
-                    value = *(int64_t *) (obj->ptr + regeon->off);
+                    value = *(int64_t *)(obj->ptr + regeon->off);
                     break;
                 default:
                     luaL_error(L, "%s: obj is broken", __func__);
@@ -3400,13 +3300,14 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
             ce = luacs_checkenum(L, -1);
             lua_pop(L, 1);
             val = luacs_enum_get0(ce, value);
-            if (val == NULL) lua_pushinteger(L, value);
+            if (val == NULL)
+                lua_pushinteger(L, value);
             else
                 luacs_getref(L, val->ref);
             break;
         }
         case LUACS_TBYTEARRAY:
-            lua_pushlstring(L, (char *) obj->ptr + regeon->off, regeon->size);
+            lua_pushlstring(L, (char *)obj->ptr + regeon->off, regeon->size);
             break;
         default:
             lua_pushnil(L);
@@ -3426,55 +3327,61 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
 
     switch (regeon->type) {
         case LUACS_TINT8:
-            *(int8_t *) (obj->ptr + regeon->off) = lua_tointeger(L, absidx);
+            *(int8_t *)(obj->ptr + regeon->off) = lua_tointeger(L, absidx);
             break;
         case LUACS_TUINT8:
-            *(uint8_t *) (obj->ptr + regeon->off) = lua_tointeger(L, absidx);
+            *(uint8_t *)(obj->ptr + regeon->off) = lua_tointeger(L, absidx);
             break;
         case LUACS_TINT16:
             ival = lua_tointeger(L, absidx);
-            if ((regeon->flags & LUACS_FENDIANBIG) != 0) ival = htobe16(ival);
+            if ((regeon->flags & LUACS_FENDIANBIG) != 0)
+                ival = htobe16(ival);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 ival = htole16(ival);
-            *(int16_t *) (obj->ptr + regeon->off) = ival;
+            *(int16_t *)(obj->ptr + regeon->off) = ival;
             break;
         case LUACS_TUINT16:
             uval = lua_tointeger(L, absidx);
-            if ((regeon->flags & LUACS_FENDIANBIG) != 0) uval = htobe16(uval);
+            if ((regeon->flags & LUACS_FENDIANBIG) != 0)
+                uval = htobe16(uval);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 uval = htole16(uval);
-            *(uint16_t *) (obj->ptr + regeon->off) = uval;
+            *(uint16_t *)(obj->ptr + regeon->off) = uval;
             break;
         case LUACS_TINT32:
             ival = lua_tointeger(L, absidx);
-            if ((regeon->flags & LUACS_FENDIANBIG) != 0) ival = htobe32(ival);
+            if ((regeon->flags & LUACS_FENDIANBIG) != 0)
+                ival = htobe32(ival);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 ival = htole32(ival);
-            *(int32_t *) (obj->ptr + regeon->off) = ival;
+            *(int32_t *)(obj->ptr + regeon->off) = ival;
             break;
         case LUACS_TUINT32:
             uval = lua_tointeger(L, absidx);
-            if ((regeon->flags & LUACS_FENDIANBIG) != 0) uval = htobe32(uval);
+            if ((regeon->flags & LUACS_FENDIANBIG) != 0)
+                uval = htobe32(uval);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 uval = htole32(uval);
-            *(uint32_t *) (obj->ptr + regeon->off) = uval;
+            *(uint32_t *)(obj->ptr + regeon->off) = uval;
             break;
         case LUACS_TINT64:
             ival = lua_tointeger(L, absidx);
-            if ((regeon->flags & LUACS_FENDIANBIG) != 0) ival = htobe64(ival);
+            if ((regeon->flags & LUACS_FENDIANBIG) != 0)
+                ival = htobe64(ival);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 ival = htole64(ival);
-            *(int64_t *) (obj->ptr + regeon->off) = ival;
+            *(int64_t *)(obj->ptr + regeon->off) = ival;
             break;
         case LUACS_TUINT64:
             uval = lua_tointeger(L, absidx);
-            if ((regeon->flags & LUACS_FENDIANBIG) != 0) uval = htobe64(uval);
+            if ((regeon->flags & LUACS_FENDIANBIG) != 0)
+                uval = htobe64(uval);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 uval = htole64(uval);
-            *(uint64_t *) (obj->ptr + regeon->off) = uval;
+            *(uint64_t *)(obj->ptr + regeon->off) = uval;
             break;
         case LUACS_TBOOL:
-            *(bool *) (obj->ptr + regeon->off) = lua_toboolean(L, absidx);
+            *(bool *)(obj->ptr + regeon->off) = lua_toboolean(L, absidx);
             break;
         case LUACS_TENUM: {
             struct luacenum *ce;
@@ -3495,8 +3402,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 lua_pushvalue(L, -2);
                 lua_pushvalue(L, absidx);
                 lua_call(L, 2, 1);
-                if (!lua_toboolean(L, -1))
-                    luaL_error(L, "must be a member of `enum %s", ce->enumname);
+                if (!lua_toboolean(L, -1)) luaL_error(L, "must be a member of `enum %s", ce->enumname);
                 val = lua_touserdata(L, absidx);
                 value = val->value;
             } else {
@@ -3508,16 +3414,16 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
             ptr = obj->ptr + regeon->off;
             switch (regeon->size) {
                 case 1:
-                    *(int8_t *) (ptr) = value;
+                    *(int8_t *)(ptr) = value;
                     break;
                 case 2:
-                    *(int16_t *) (ptr) = value;
+                    *(int16_t *)(ptr) = value;
                     break;
                 case 4:
-                    *(int32_t *) (ptr) = value;
+                    *(int32_t *)(ptr) = value;
                     break;
                 case 8:
-                    *(int64_t *) (ptr) = value;
+                    *(int64_t *)(ptr) = value;
                     break;
             }
         } break;
@@ -3527,8 +3433,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
             siz = lua_rawlen(L, absidx);
             luaL_argcheck(L, siz < regeon->size, absidx, "too long");
             memcpy(obj->ptr + regeon->off, lua_tostring(L, absidx), MINIMUM(siz, regeon->size));
-            if (regeon->type == LUACS_TSTRING)
-                *(char *) (obj->ptr + regeon->off + regeon->size - 1) = '\0';
+            if (regeon->type == LUACS_TSTRING) *(char *)(obj->ptr + regeon->off + regeon->size - 1) = '\0';
             break;
         case LUACS_TOBJREF:
         case LUACS_TOBJENT:
@@ -3595,13 +3500,9 @@ int luacs_delenum(lua_State *L, const char *ename) {
     return (0);
 }
 
-struct luacenum *luacs_checkenum(lua_State *L, int ceidx)
-{
-    return (luaL_checkudata(L, ceidx, METANAME_LUACSENUM));
-}
+struct luacenum *luacs_checkenum(lua_State *L, int ceidx) { return (luaL_checkudata(L, ceidx, METANAME_LUACSENUM)); }
 
-struct luacenum_value *luacs_enum_get0(struct luacenum *ce, intmax_t value)
-{
+struct luacenum_value *luacs_enum_get0(struct luacenum *ce, intmax_t value) {
     struct luacenum_value vkey;
 
     vkey.value = value;
@@ -3616,7 +3517,8 @@ int luacs_enum_get(lua_State *L) {
     ce = luacs_checkenum(L, lua_upvalueindex(1));
     vkey.value = luaL_checkinteger(L, 1);
 
-    if ((val = SPLAY_FIND(luacenum_values, &ce->values, &vkey)) == NULL) lua_pushnil(L);
+    if ((val = SPLAY_FIND(luacenum_values, &ce->values, &vkey)) == NULL)
+        lua_pushnil(L);
     else
         luacs_getref(L, val->ref);
 
@@ -3664,7 +3566,8 @@ int luacs_enum__index(lua_State *L) {
     ce = luacs_checkenum(L, 1);
     vkey.label = luaL_checkstring(L, 2);
     if ((val = SPLAY_FIND(luacenum_labels, &ce->labels, &vkey)) == NULL) {
-        if (strcmp(vkey.label, "get") == 0) luacs_getref(L, ce->func_get);
+        if (strcmp(vkey.label, "get") == 0)
+            luacs_getref(L, ce->func_get);
         else if (strcmp(vkey.label, "memberof") == 0)
             luacs_getref(L, ce->func_memberof);
         else
@@ -3681,7 +3584,8 @@ int luacs_enum__next(lua_State *L) {
 
     lua_settop(L, 2);
     ce = luacs_checkenum(L, 1);
-    if (lua_isnil(L, 2)) val = SPLAY_MIN(luacenum_values, &ce->values);
+    if (lua_isnil(L, 2))
+        val = SPLAY_MIN(luacenum_values, &ce->values);
     else {
         vkey.label = luaL_checkstring(L, 2);
         /* don't confuse.  key is label, sort by value */
@@ -3736,7 +3640,7 @@ int luacs_enum_declare_value(lua_State *L, const char *label, intmax_t value) {
     llabel = strlen(label) + 1;
     val = lua_newuserdata(L, sizeof(struct luacenum_value) + llabel);
     memcpy(val + 1, label, llabel);
-    val->label = (char *) (val + 1);
+    val->label = (char *)(val + 1);
     val->value = value;
     SPLAY_INSERT(luacenum_labels, &ce->labels, val);
     SPLAY_INSERT(luacenum_values, &ce->values, val);
@@ -3814,12 +3718,14 @@ int luacs_enumvalue__eq(lua_State *L) {
     val1 = luaL_checkudata(L, 1, METANAME_LUACSENUMVAL);
     ival1 = val1->value;
 
-    if (lua_isnumber(L, 2)) ival2 = lua_tointeger(L, 2);
+    if (lua_isnumber(L, 2))
+        ival2 = lua_tointeger(L, 2);
     else {
         val2 = luaL_checkudata(L, 2, METANAME_LUACSENUMVAL);
         ival2 = val2->value;
     }
-    if (ival1 == ival2) lua_pushboolean(L, 1);
+    if (ival1 == ival2)
+        lua_pushboolean(L, 1);
     else
         lua_pushboolean(L, 0);
 
@@ -3834,21 +3740,21 @@ int luacs_enumvalue__lt(lua_State *L) {
     val1 = luaL_checkudata(L, 1, METANAME_LUACSENUMVAL);
     ival1 = val1->value;
 
-    if (lua_isnumber(L, 2)) ival2 = lua_tointeger(L, 2);
+    if (lua_isnumber(L, 2))
+        ival2 = lua_tointeger(L, 2);
     else {
         val2 = luaL_checkudata(L, 2, METANAME_LUACSENUMVAL);
         ival2 = val2->value;
     }
-    if (ival1 < ival2) lua_pushboolean(L, 1);
+    if (ival1 < ival2)
+        lua_pushboolean(L, 1);
     else
         lua_pushboolean(L, 0);
 
     return (1);
 }
 
-int luacenum_label_cmp(struct luacenum_value *a, struct luacenum_value *b) {
-    return (strcmp(a->label, b->label));
-}
+int luacenum_label_cmp(struct luacenum_value *a, struct luacenum_value *b) { return (strcmp(a->label, b->label)); }
 
 int luacenum_value_cmp(struct luacenum_value *a, struct luacenum_value *b) {
     intmax_t cmp = a->value - b->value;
@@ -3859,8 +3765,7 @@ int luacs_checkenumval(lua_State *L, int idx, const char *enumname) {
     struct luacenum_value *val;
 
     val = luaL_checkudata(L, idx, METANAME_LUACSENUMVAL);
-    if (strcmp(val->ce->enumname, enumname) != 0)
-        luaL_error(L, "%s expected, got %s", enumname, val->ce->enumname);
+    if (strcmp(val->ce->enumname, enumname) != 0) luaL_error(L, "%s expected, got %s", enumname, val->ce->enumname);
 
     return (val->value);
 }
@@ -3913,8 +3818,7 @@ int luaopen_debugger(lua_State *lua) {
 static const char *MODULE_NAME = "DEBUGGER_LUA_MODULE";
 static const char *MSGH = "DEBUGGER_LUA_MSGH";
 
-void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName,
-                         lua_CFunction readFunc, lua_CFunction writeFunc) {
+void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName, lua_CFunction readFunc, lua_CFunction writeFunc) {
     // Check that the module name was not already defined.
     lua_getfield(lua, LUA_REGISTRYINDEX, MODULE_NAME);
     assert(lua_isnil(lua, -1) || strcmp(name, luaL_checkstring(lua, -1)));
@@ -4010,11 +3914,11 @@ const char *const REG_CANCEL = "metadot_safelua_cancel";
 const char *const REG_CANCELUDATA = "metadot_safelua_canceludata";
 const char *const REG_CANCELJMP = "metadot_safelua_canceljmp";
 
-#define setudregistry(state, value, name)                                                          \
-    do {                                                                                           \
-        lua_State *state_ = (state);                                                               \
-        lua_pushlightuserdata(state_, (value));                                                    \
-        lua_setfield(state_, LUA_REGISTRYINDEX, (name));                                           \
+#define setudregistry(state, value, name)                \
+    do {                                                 \
+        lua_State *state_ = (state);                     \
+        lua_pushlightuserdata(state_, (value));          \
+        lua_setfield(state_, LUA_REGISTRYINDEX, (name)); \
     } while (0)
 
 static void *getudregistry(lua_State *state, const char *name) {
@@ -4025,14 +3929,12 @@ static void *getudregistry(lua_State *state, const char *name) {
     return ret;
 }
 
-struct Handler
-{
+struct Handler {
     metadot_safelua_Handler callback;
     void *udata;
 };
 
-struct Policy
-{
+struct Policy {
     struct Allocator *allocator;
     struct Handler *handlers;
     size_t nb_handlers, size_handlers;
@@ -4066,8 +3968,7 @@ lua_State *metadot_safelua_open(void) {
 
 static void free_resources(struct Policy *policy, int why) {
     size_t i;
-    for (i = 0; i < policy->nb_handlers; ++i)
-        policy->handlers[i].callback(why, policy->handlers[i].udata);
+    for (i = 0; i < policy->nb_handlers; ++i) policy->handlers[i].callback(why, policy->handlers[i].udata);
     free(policy->handlers);
 }
 
@@ -4081,8 +3982,7 @@ void metadot_safelua_close(lua_State *state) {
 
 static void cancel_hook(lua_State *state, lua_Debug *ar) { metadot_safelua_checkcancel(state); }
 
-int metadot_safelua_pcallk(lua_State *state, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k,
-                   metadot_safelua_CancelCheck cancel, void *canceludata) {
+int metadot_safelua_pcallk(lua_State *state, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k, metadot_safelua_CancelCheck cancel, void *canceludata) {
     struct Policy *policy = getudregistry(state, REG_POLICY);
     jmp_buf env;
     int ret;
@@ -4134,11 +4034,11 @@ int metadot_safelua_shouldcancel(lua_State *state) {
 void metadot_safelua_add_handler(lua_State *state, metadot_safelua_Handler handler, void *handlerudata) {
     struct Policy *policy = getudregistry(state, REG_POLICY);
     if (++policy->nb_handlers > policy->size_handlers) {
-        if (policy->size_handlers == 0) policy->size_handlers = 4;
+        if (policy->size_handlers == 0)
+            policy->size_handlers = 4;
         else
             policy->size_handlers *= 2;
-        policy->handlers =
-                realloc(policy->handlers, sizeof(struct Handler) * policy->size_handlers);
+        policy->handlers = realloc(policy->handlers, sizeof(struct Handler) * policy->size_handlers);
     }
     {
         struct Handler *h = &policy->handlers[policy->nb_handlers - 1];
@@ -4152,8 +4052,7 @@ int metadot_safelua_remove_handler(lua_State *state, metadot_safelua_Handler han
     size_t found = 0;
     size_t pos = 0;
     for (; pos < policy->nb_handlers; ++pos) {
-        if (policy->handlers[pos].callback == handler &&
-            policy->handlers[pos].udata == handlerudata)
+        if (policy->handlers[pos].callback == handler && policy->handlers[pos].udata == handlerudata)
             found++;
         else
             policy->handlers[pos - found] = policy->handlers[pos];

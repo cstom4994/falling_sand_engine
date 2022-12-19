@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "controls.hpp"
+
 #include "SDL_keycode.h"
 
 std::vector<KeyControl *> Controls::keyControls = {};
@@ -38,7 +39,7 @@ bool Controls::mmouse = false;
 bool Controls::rmouse = false;
 
 void Controls::keyEvent(SDL_KeyboardEvent event) {
-    for (auto &v: keyControls) {
+    for (auto &v : keyControls) {
         if (v->key == event.keysym.sym) {
 
             bool newState = false;
@@ -51,7 +52,9 @@ void Controls::keyEvent(SDL_KeyboardEvent event) {
                     break;
             }
 
-            if (event.repeat == 0 || v->mode == TYPE) { v->raw = newState; }
+            if (event.repeat == 0 || v->mode == TYPE) {
+                v->raw = newState;
+            }
         }
     }
 }
@@ -68,16 +71,13 @@ void Controls::initKey() {
     DEBUG_CARVE = add(new KeyControl(SDLK_c, RISING));
     DEBUG_RIGID = add(new KeyControl(SDLK_r, RISING));
 
-    DEBUG_DRAW =
-            new MultiControl(ControlCombine::AND, {add(new KeyControl(SDLK_x, MOMENTARY)),
-                                                   add(new KeyControl(SDLK_LCTRL, MOMENTARY))});
+    DEBUG_DRAW = new MultiControl(ControlCombine::AND, {add(new KeyControl(SDLK_x, MOMENTARY)), add(new KeyControl(SDLK_LCTRL, MOMENTARY))});
     DEBUG_BRUSHSIZE_INC = add(new KeyControl(']', TYPE));
     DEBUG_BRUSHSIZE_DEC = add(new KeyControl('[', TYPE));
 
     DEBUG_TOGGLE_PLAYER = add(new KeyControl(SDLK_p, RISING));
 
-    PLAYER_UP = new MultiControl(ControlCombine::OR, {add(new KeyControl(SDLK_w, MOMENTARY)),
-                                                      add(new KeyControl(SDLK_SPACE, MOMENTARY))});
+    PLAYER_UP = new MultiControl(ControlCombine::OR, {add(new KeyControl(SDLK_w, MOMENTARY)), add(new KeyControl(SDLK_SPACE, MOMENTARY))});
     PLAYER_LEFT = add(new KeyControl(SDLK_a, MOMENTARY));
     PLAYER_DOWN = add(new KeyControl(SDLK_s, MOMENTARY));
     PLAYER_RIGHT = add(new KeyControl(SDLK_d, MOMENTARY));
@@ -127,7 +127,7 @@ bool KeyControl::get() {
 }
 
 bool MultiControl::get() {
-    for (auto &v: this->controls) {
+    for (auto &v : this->controls) {
         if (this->combine == ControlCombine::OR) {
             if (v->get()) return true;
             return false;

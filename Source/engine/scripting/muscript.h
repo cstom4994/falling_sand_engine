@@ -6,12 +6,11 @@
 #include "engine/scripting/mu_compiler.h"
 #include "engine/scripting/mu_parser.h"
 
-extern "C"
-{
+extern "C" {
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
-    int luaopen_mu(lua_State *L);
-}// extern "C"
+int luaopen_mu(lua_State *L);
+}  // extern "C"
 
 #endif

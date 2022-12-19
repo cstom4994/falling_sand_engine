@@ -3,23 +3,14 @@
 #ifndef _METADOT_CONTROLS_HPP_
 #define _METADOT_CONTROLS_HPP_
 
-#include "engine/sdl_wrapper.h"
-
 #include <cstdio>
 #include <vector>
 
-enum ControlMode {
-    MOMENTARY,
-    RISING,
-    FALLING,
-    TOGGLE,
-    TYPE
-};
+#include "engine/sdl_wrapper.h"
 
-enum ControlCombine {
-    AND,
-    OR
-};
+enum ControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };
+
+enum ControlCombine { AND, OR };
 
 class Control {
 public:
@@ -97,7 +88,7 @@ public:
     static Control *PAUSE;
 
     static std::vector<KeyControl *> keyControls;
-    
+
     static bool initted;
 
     static void keyEvent(SDL_KeyboardEvent event);

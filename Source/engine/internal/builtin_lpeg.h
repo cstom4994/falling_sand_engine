@@ -4,9 +4,12 @@
 // http://www.inf.puc-rio.br/~roberto/lpeg/
 
 // Copyright 2007-2019 Lua.org, PUC-Rio.
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to
+// do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED
+// "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+// THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
 ** LPeg - PEG pattern matching for Lua
@@ -82,25 +85,26 @@ typedef unsigned char byte;
 
 #define CHARSETSIZE ((UCHAR_MAX / BITSPERCHAR) + 1)
 
-typedef struct Charset
-{
+typedef struct Charset {
     byte cs[CHARSETSIZE];
 } Charset;
 
-#define loopset(v, b)                                                                              \
-    {                                                                                              \
-        int v;                                                                                     \
-        for (v = 0; v < CHARSETSIZE; v++) { b; }                                                   \
+#define loopset(v, b)                       \
+    {                                       \
+        int v;                              \
+        for (v = 0; v < CHARSETSIZE; v++) { \
+            b;                              \
+        }                                   \
     }
 
 /* access to charset */
-#define treebuffer(t) ((byte *) ((t) + 1))
+#define treebuffer(t) ((byte *)((t) + 1))
 
 /* number of slots needed for 'n' bytes */
-#define bytes2slots(n) (((n) -1) / sizeof(TTree) + 1)
+#define bytes2slots(n) (((n)-1) / sizeof(TTree) + 1)
 
 /* set 'b' bit in charset 'cs' */
-#define setchar(cs, b) ((cs)[(b) >> 3] |= (1 << ((b) &7)))
+#define setchar(cs, b) ((cs)[(b) >> 3] |= (1 << ((b)&7)))
 
 /*
 ** in capture instructions, 'kind' of capture and its offset are
@@ -128,7 +132,7 @@ typedef struct Charset
 /* size (in elements) for a IFunc instruction */
 #define funcinstsize(p) ((p)->i.aux + 2)
 
-#define testchar(st, c) (((int) (st)[((c) >> 3)] & (1 << ((c) &7))))
+#define testchar(st, c) (((int)(st)[((c) >> 3)] & (1 << ((c)&7))))
 
 /* kinds of captures */
 typedef enum CapKind {
@@ -149,16 +153,14 @@ typedef enum CapKind {
     Cgroup     /* ktable[key] is group's "name" */
 } CapKind;
 
-typedef struct Capture
-{
+typedef struct Capture {
     const char *s;      /* subject position */
     unsigned short idx; /* extra info (group name, arg index, etc.) */
     byte kind;          /* kind of capture */
     byte siz;           /* size of full capture + 1 (0 = not a full capture) */
 } Capture;
 
-typedef struct CapState
-{
+typedef struct CapState {
     Capture *cap;  /* current capture */
     Capture *ocap; /* (original) capture list */
     lua_State *L;
@@ -201,8 +203,7 @@ typedef enum Opcode {
 } Opcode;
 
 typedef union Instruction {
-    struct Inst
-    {
+    struct Inst {
         byte code;
         byte aux;
         short key;
@@ -212,8 +213,7 @@ typedef union Instruction {
 } Instruction;
 
 void printpatt(Instruction *p, int n);
-const char *match(lua_State *L, const char *o, const char *s, const char *e, Instruction *op,
-                  Capture *capture, int ptop);
+const char *match(lua_State *L, const char *o, const char *s, const char *e, Instruction *op, Capture *capture, int ptop);
 
 /*
 ** types of trees
@@ -249,8 +249,7 @@ typedef enum TTag {
 ** the tree.  A reference to a second child (ps) is its position
 ** relative to the position of the tree itself.
 */
-typedef struct TTree
-{
+typedef struct TTree {
     byte tag;
     byte cap;           /* kind of capture (if it is a capture) */
     unsigned short key; /* key in ktable for Lua data (0 if no key) */
@@ -264,8 +263,7 @@ typedef struct TTree
 ** A complete pattern has its tree plus, if already compiled,
 ** its corresponding code
 */
-typedef struct Pattern
-{
+typedef struct Pattern {
     union Instruction *code;
     int codesize;
     TTree tree[1];
@@ -319,10 +317,9 @@ int sizei(const Instruction *i);
 #define nullable(t) checkaux(t, PEnullable)
 
 #if defined(__cplusplus)
-extern "C"
-{
+extern "C" {
 #endif
-    int luaopen_lpeg(lua_State *L);
+int luaopen_lpeg(lua_State *L);
 #if defined(__cplusplus)
 }
 #endif

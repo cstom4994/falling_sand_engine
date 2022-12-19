@@ -5,8 +5,7 @@
 
 #include "engine/renderer/renderer_gpu.h"
 
-typedef struct engine_render
-{
+typedef struct engine_render {
     R_Target *realTarget;
     R_Target *target;
 } engine_render;

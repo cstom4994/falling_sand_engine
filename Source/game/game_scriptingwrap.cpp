@@ -1,6 +1,9 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "game_scriptingwrap.hpp"
+
+#include <string>
+
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine/filesystem.h"
@@ -10,8 +13,6 @@
 #include "game/materials.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
-
-#include <string>
 
 #pragma region GameScriptingBind_1
 
@@ -43,8 +44,10 @@ static void load_lua(std::string luafile) {}
 void GameScriptingWrap::Init() {}
 
 Biome *GameScriptingWrap::BiomeGet(std::string name) {
-    for (auto t: GameData_.biome_container) {
-        if (t->name == name) { return t; }
+    for (auto t : GameData_.biome_container) {
+        if (t->name == name) {
+            return t;
+        }
     }
     return nullptr;
 }

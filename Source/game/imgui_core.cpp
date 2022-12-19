@@ -1,6 +1,12 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "imgui_core.hpp"
+
+#include <cstddef>
+#include <cstdio>
+#include <iterator>
+#include <map>
+
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/global.hpp"
@@ -18,15 +24,9 @@
 #include "game/utils.hpp"
 #include "game_datastruct.hpp"
 #include "imgui/imgui.h"
-
 #include "libs/glad/glad.h"
 #include "libs/imgui/implot.h"
 #include "scripting/lua_wrapper.hpp"
-
-#include <cstddef>
-#include <cstdio>
-#include <iterator>
-#include <map>
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -42,33 +42,29 @@ extern void ShowAutoTestWindow();
 
 static int common_control_initialize() {
     HMODULE comctl32 = nullptr;
-    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"Comctl32.dll",
-                            &comctl32)) {
+    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"Comctl32.dll", &comctl32)) {
         return EXIT_FAILURE;
     }
 
     assert(comctl32 != nullptr);
     if (comctl32) {
         {
-            typename std::add_pointer<decltype(InitCommonControlsEx)>::type
-                    lpfnInitCommonControlsEx = reinterpret_cast<
-                            typename std::add_pointer<decltype(InitCommonControlsEx)>::type>(
-                            GetProcAddress(comctl32, "InitCommonControlsEx"));
+            typename std::add_pointer<decltype(InitCommonControlsEx)>::type lpfnInitCommonControlsEx =
+                    reinterpret_cast<typename std::add_pointer<decltype(InitCommonControlsEx)>::type>(GetProcAddress(comctl32, "InitCommonControlsEx"));
 
             if (lpfnInitCommonControlsEx) {
-                const INITCOMMONCONTROLSEX initcommoncontrolsex = {sizeof(INITCOMMONCONTROLSEX),
-                                                                   ICC_WIN95_CLASSES};
+                const INITCOMMONCONTROLSEX initcommoncontrolsex = {sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES};
                 if (!lpfnInitCommonControlsEx(&initcommoncontrolsex)) {
                     assert(!" InitCommonControlsEx(&initcommoncontrolsex) ");
                     return EXIT_FAILURE;
                 }
-                //OutputDebugStringW(L"initCommonControlsEx Enable\n");
+                // OutputDebugStringW(L"initCommonControlsEx Enable\n");
                 return 0;
             }
         }
         {
             InitCommonControls();
-            //OutputDebugStringW(L"initCommonControls Enable\n");
+            // OutputDebugStringW(L"initCommonControls Enable\n");
             return 0;
         }
     }
@@ -78,11 +74,11 @@ static int common_control_initialize() {
 #endif
 
 namespace layout {
-    constexpr auto kRenderOptionsPanelWidth = 300;
-    constexpr auto kMargin = 5;
-    constexpr auto kPanelSpacing = 10;
-    constexpr auto kColorWidgetWidth = 250.0F;
-}// namespace layout
+constexpr auto kRenderOptionsPanelWidth = 300;
+constexpr auto kMargin = 5;
+constexpr auto kPanelSpacing = 10;
+constexpr auto kColorWidgetWidth = 250.0F;
+}  // namespace layout
 
 static bool s_is_animaiting = false;
 static const int view_size = 256;
@@ -120,16 +116,15 @@ public:
 #ifdef GL_UNPACK_ROW_LENGTH
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 #endif
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                     pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         glBindTexture(GL_TEXTURE_2D, last_texture);
         mTextures.reserve(mTextures.size() + 1);
         mTextures.push_back(texture_id);
-        return (ImTextureID) (intptr_t) texture_id;
+        return (ImTextureID)(intptr_t)texture_id;
     }
 
     void deleteTexture(ImTextureID id) {
-        GLuint tex = (GLuint) (intptr_t) id;
+        GLuint tex = (GLuint)(intptr_t)id;
         glDeleteTextures(1, &tex);
     }
 
@@ -151,7 +146,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
     IMGUI_CHECKVERSION();
 
-    //ImGui::SetAllocatorFunctions(myMalloc, myFree);
+    // ImGui::SetAllocatorFunctions(myMalloc, myFree);
 
     m_imgui = ImGui::CreateContext();
     ImPlot::CreateContext();
@@ -172,8 +167,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
 
     float scale = 1.0f;
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 22.0f, &config,
-                                 io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 22.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
@@ -276,7 +270,7 @@ void ImGuiCore::begin() {
 
 void ImGuiCore::end() {
     ImGuiIO &io = ImGui::GetIO();
-    (void) io;
+    (void)io;
 
     ImGui::Render();
     SDL_GL_MakeCurrent(window, gl_context);
@@ -310,15 +304,15 @@ void ImGuiCore::Render() {
     imguiIMMCommunication();
 #endif
 
-    //ImGui::Begin("Progress Indicators");
+    // ImGui::Begin("Progress Indicators");
 
-    //const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-    //const ImU32 bg = ImGui::GetColorU32(ImGuiCol_Button);
+    // const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+    // const ImU32 bg = ImGui::GetColorU32(ImGuiCol_Button);
 
-    //ImGui::Spinner("##spinner", 15, 6, col);
-    //ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
+    // ImGui::Spinner("##spinner", 15, 6, col);
+    // ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
 
-    //ImGui::End();
+    // ImGui::End();
 
 #if 0
 
@@ -447,26 +441,20 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         }
 
         if (ImGui::BeginTabItem(LANG("ui_info"))) {
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                        1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
             R_Renderer *renderer = R_GetCurrentRenderer();
             R_RendererID id = renderer->id;
 
             ImGui::Text("Using renderer: %s", glGetString(GL_RENDERER));
             ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));
-            ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version,
-                        id.minor_version);
-            ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version,
-                        renderer->max_shader_version);
+            ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
+            ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
 
             ImGui::Separator();
 
-            auto &entry =
-                    global.game->GameIsolate_.profiler
-                            ._entries[global.game->GameIsolate_.profiler.GetCurrentEntryIndex()];
-            ImGuiWidget::PlotFlame("CPU", &ProfilerValueGetter, &entry, Profiler::_StageCount, 0,
-                                   "Main Thread", FLT_MAX, FLT_MAX, ImVec2(600, 0));
+            auto &entry = global.game->GameIsolate_.profiler._entries[global.game->GameIsolate_.profiler.GetCurrentEntryIndex()];
+            ImGuiWidget::PlotFlame("CPU", &ProfilerValueGetter, &entry, Profiler::_StageCount, 0, "Main Thread", FLT_MAX, FLT_MAX, ImVec2(600, 0));
 
             ImGui::Separator();
 
@@ -475,7 +463,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 #if defined(METADOT_DEBUG)
             ImGui::Separator();
             ImGui::Text("GC:\n");
-            for (auto [name, size]: GC::MemoryDebugMap) {
+            for (auto [name, size] : GC::MemoryDebugMap) {
                 ImGui::Text("%s", MetaEngine::Format("   {0} {1}", name, size).c_str());
             }
             // ImGui::Auto(GC::MemoryDebugMap, "map");
@@ -498,7 +486,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem(LANG("ui_debug"))) {
-            if (myCollapsingHeader(LANG("ui_telemetry"))) { GameUI::DebugUI::Draw(global.game); }
+            if (myCollapsingHeader(LANG("ui_telemetry"))) {
+                GameUI::DebugUI::Draw(global.game);
+            }
 #define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->sb.shader)
             if (myCollapsingHeader(CC("GLSL"))) {
                 INSPECTSHADER(newLightingShader);
@@ -514,7 +504,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         if (ImGui::BeginTabItem(LANG("ui_scripts_editor"))) {
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu(LANG("ui_file"))) {
-                    if (ImGui::MenuItem(LANG("ui_open"))) { fileDialog.Open(); }
+                    if (ImGui::MenuItem(LANG("ui_open"))) {
+                        fileDialog.Open();
+                    }
                     if (ImGui::MenuItem(LANG("ui_save"))) {
                         if (view_editing && view_contents.size()) {
                             auto textToSave = editor.GetText();
@@ -523,11 +515,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         }
                     }
                     if (ImGui::MenuItem(LANG("ui_close"))) {
-                        for (auto &code: view_contents) {
+                        for (auto &code : view_contents) {
                             if (code.file == view_editing->file) {
-                                view_contents.erase(std::remove(std::begin(view_contents),
-                                                                std::end(view_contents), code),
-                                                    std::end(view_contents));
+                                view_contents.erase(std::remove(std::begin(view_contents), std::end(view_contents), code), std::end(view_contents));
                             }
                         }
                     }
@@ -535,47 +525,30 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 }
                 if (ImGui::BeginMenu(LANG("ui_edit"))) {
                     bool ro = editor.IsReadOnly();
-                    if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro))
-                        editor.SetReadOnly(ro);
+                    if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) editor.SetReadOnly(ro);
                     ImGui::Separator();
 
-                    if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr,
-                                        !ro && editor.CanUndo()))
-                        editor.Undo();
-                    if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr,
-                                        !ro && editor.CanRedo()))
-                        editor.Redo();
+                    if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr, !ro && editor.CanUndo())) editor.Undo();
+                    if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr, !ro && editor.CanRedo())) editor.Redo();
 
                     ImGui::Separator();
 
-                    if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, editor.HasSelection()))
-                        editor.Copy();
-                    if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr,
-                                        !ro && editor.HasSelection()))
-                        editor.Cut();
-                    if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr,
-                                        !ro && editor.HasSelection()))
-                        editor.Delete();
-                    if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr,
-                                        !ro && ImGui::GetClipboardText() != nullptr))
-                        editor.Paste();
+                    if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, editor.HasSelection())) editor.Copy();
+                    if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr, !ro && editor.HasSelection())) editor.Cut();
+                    if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr, !ro && editor.HasSelection())) editor.Delete();
+                    if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr)) editor.Paste();
 
                     ImGui::Separator();
 
-                    if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr))
-                        editor.SetSelection(TextEditor::Coordinates(),
-                                            TextEditor::Coordinates(editor.GetTotalLines(), 0));
+                    if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr)) editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
 
                     ImGui::EndMenu();
                 }
 
                 if (ImGui::BeginMenu(LANG("ui_view"))) {
-                    if (ImGui::MenuItem("Dark palette"))
-                        editor.SetPalette(TextEditor::GetDarkPalette());
-                    if (ImGui::MenuItem("Light palette"))
-                        editor.SetPalette(TextEditor::GetLightPalette());
-                    if (ImGui::MenuItem("Retro blue palette"))
-                        editor.SetPalette(TextEditor::GetRetroBluePalette());
+                    if (ImGui::MenuItem("Dark palette")) editor.SetPalette(TextEditor::GetDarkPalette());
+                    if (ImGui::MenuItem("Light palette")) editor.SetPalette(TextEditor::GetLightPalette());
+                    if (ImGui::MenuItem("Retro blue palette")) editor.SetPalette(TextEditor::GetRetroBluePalette());
                     ImGui::EndMenu();
                 }
                 ImGui::EndMenuBar();
@@ -586,16 +559,13 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             if (fileDialog.HasSelected()) {
                 bool shouldopen = true;
                 auto fileopen = fileDialog.GetSelected().string();
-                for (auto code: view_contents)
+                for (auto code : view_contents)
                     if (code.file == fileopen) shouldopen = false;
                 if (shouldopen) {
                     std::ifstream i(fileopen);
                     if (i.good()) {
-                        std::string str((std::istreambuf_iterator<char>(i)),
-                                        std::istreambuf_iterator<char>());
-                        view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code,
-                                                           .file = fileopen,
-                                                           .content = str});
+                        std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                        view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = fileopen, .content = str});
                     }
                 }
                 fileDialog.ClearSelected();
@@ -603,31 +573,28 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
             ImGui::BeginTabBar("ViewContents");
 
-            for (auto &view: view_contents) {
+            for (auto &view : view_contents) {
                 if (ImGui::BeginTabItem(FUtil_GetFileName(view.file.c_str()))) {
                     view_editing = &view;
 
                     if (!view_editing->is_edited) {
-                        if (view.tags == EditorTags::Editor_Code)
-                            editor.SetText(view_editing->content);
+                        if (view.tags == EditorTags::Editor_Code) editor.SetText(view_editing->content);
                         view_editing->is_edited = true;
                     }
 
                     ImGui::EndTabItem();
                 } else {
-                    if (view.is_edited) { view.is_edited = false; }
+                    if (view.is_edited) {
+                        view.is_edited = false;
+                    }
                 }
             }
 
             if (view_editing && view_contents.size()) {
                 switch (view_editing->tags) {
                     case Editor_Code:
-                        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1,
-                                    cpos.mColumn + 1, editor.GetTotalLines(),
-                                    editor.IsOverwrite() ? "Ovr" : "Ins",
-                                    editor.CanUndo() ? "*" : " ",
-                                    editor.GetLanguageDefinition().mName.c_str(),
-                                    FUtil_GetFileName(view_editing->file.c_str()));
+                        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
+                                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(), FUtil_GetFileName(view_editing->file.c_str()));
 
                         editor.Render("TextEditor");
                         break;

@@ -3,11 +3,11 @@
 #ifndef _METADOT_FILESYSTEM_HPP_
 #define _METADOT_FILESYSTEM_HPP_
 
+#include <string.h>
+
 #include "core/core.h"
 #include "core/macros.h"
 #include "platform_detail.h"
-
-#include <string.h>
 
 // #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
 //     METADOT_ASSERT(FUtil_exists(METADOT_RESLOC(stringPath)),                                       \
@@ -16,41 +16,40 @@
 #define FUTIL_ASSERT_EXIST(stringPath)
 
 #if defined(__cplusplus)
-extern "C"
-{
+extern "C" {
 #endif
 
-    extern char *FilesystemProjectRootPath;
-    extern char *FilesystemDataPath;
+extern char *FilesystemProjectRootPath;
+extern char *FilesystemDataPath;
 
-    void InitFilesystem();
-    char *GetGameDataPath();
+void InitFilesystem();
+char *GetGameDataPath();
 
 #define METADOT_RESLOC(x) x
 
-    inline R_bool FUtil_exists(const char *path) {
-        struct stat buffer;
-        return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));
-    }
+inline R_bool FUtil_exists(const char *path) {
+    struct stat buffer;
+    return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));
+}
 
-    // folder path of current executable
-    const char *FUtil_getExecutableFolderPath();
+// folder path of current executable
+const char *FUtil_getExecutableFolderPath();
 
-    inline const char *FUtil_GetFileName(const char *path) {
-        int len = strlen(path);
-        int flag = 0;
+inline const char *FUtil_GetFileName(const char *path) {
+    int len = strlen(path);
+    int flag = 0;
 
-        for (int i = len - 1; i > 0; i--) {
-            if (path[i] == '\\' || path[i] == '//' || path[i] == '/') {
-                flag = 1;
-                path = path + i + 1;
-                break;
-            }
+    for (int i = len - 1; i > 0; i--) {
+        if (path[i] == '\\' || path[i] == '//' || path[i] == '/') {
+            flag = 1;
+            path = path + i + 1;
+            break;
         }
-        return path;
     }
+    return path;
+}
 
-    char *futil_readfilestring(const char *path);
+char *futil_readfilestring(const char *path);
 
 #if defined(__cplusplus)
 }

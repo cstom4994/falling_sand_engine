@@ -10,13 +10,10 @@ void Drawing::drawText(std::string name, std::string text, uint8_t x, uint8_t y,
 }
 
 void Drawing::drawTextEx(std::string name, uint8_t x, uint8_t y, std::function<void()> func) {
-    ImGui::SetNextWindowPos(
-            global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(x, y)));
+    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(x, y)));
 
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
-                             ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
-                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar |
-                             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize;
     ImGui::Begin(name.c_str(), NULL, flags);
     func();
     ImGui::End();
@@ -38,30 +35,28 @@ b2Vec2 Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     return b2Vec2(xnew + cx, ynew + cy);
 }
 
-void Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts, int x, int y,
-                          float scale, int count, float angle, float cx, float cy) {
+void Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
     b2Vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
         b2Vec2 rot = rotate_point(cx, cy, angle, verts[i]);
-        R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale, y + rot.y * scale,
-               col);
+        R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale, y + rot.y * scale, col);
         last = rot;
     }
 }
 
 U32 Drawing::darkenColor(U32 color, float brightness) {
     int a = (color >> 24) & 0xFF;
-    int r = (int) (((color >> 16) & 0xFF) * brightness);
-    int g = (int) (((color >> 8) & 0xFF) * brightness);
-    int b = (int) ((color & 0xFF) * brightness);
+    int r = (int)(((color >> 16) & 0xFF) * brightness);
+    int g = (int)(((color >> 8) & 0xFF) * brightness);
+    int b = (int)((color & 0xFF) * brightness);
 
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
-#define R_TO_STRING_GENERATOR(x)                                                                   \
-    case x:                                                                                        \
-        return #x;                                                                                 \
+#define R_TO_STRING_GENERATOR(x) \
+    case x:                      \
+        return #x;               \
         break;
 
 const char *METAENGINE::GLEnumToString(GLenum e) {
@@ -211,18 +206,15 @@ const char *METAENGINE::GLEnumToString(GLenum e) {
 }
 #undef R_TO_STRING_GENERATOR
 
-void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, const char *name,
-                                               GLint location) {
+void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, const char *name, GLint location) {
     static bool is_color = false;
     switch (type) {
         case GL_FLOAT:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLfloat, 1, GL_FLOAT, glGetUniformfv,
-                                                     glProgramUniform1fv, ImGui::DragFloat);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLfloat, 1, GL_FLOAT, glGetUniformfv, glProgramUniform1fv, ImGui::DragFloat);
             break;
 
         case GL_FLOAT_VEC2:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLfloat, 2, GL_FLOAT_VEC2, glGetUniformfv,
-                                                     glProgramUniform2fv, ImGui::DragFloat2);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLfloat, 2, GL_FLOAT_VEC2, glGetUniformfv, glProgramUniform2fv, ImGui::DragFloat2);
             break;
 
         case GL_FLOAT_VEC3: {
@@ -232,8 +224,7 @@ void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
             ImGui::SameLine();
             float value[3];
             glGetUniformfv(program, location, &value[0]);
-            if ((!is_color && ImGui::DragFloat3("", &value[0])) ||
-                (is_color && ImGui::ColorEdit3("Color", &value[0], ImGuiColorEditFlags_NoLabel)))
+            if ((!is_color && ImGui::DragFloat3("", &value[0])) || (is_color && ImGui::ColorEdit3("Color", &value[0], ImGuiColorEditFlags_NoLabel)))
                 glProgramUniform3fv(program, location, 1, &value[0]);
         } break;
 
@@ -245,71 +236,56 @@ void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
             float value[4];
             glGetUniformfv(program, location, &value[0]);
             if ((!is_color && ImGui::DragFloat4("", &value[0])) ||
-                (is_color &&
-                 ImGui::ColorEdit4("Color", &value[0],
-                                   ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar |
-                                           ImGuiColorEditFlags_AlphaPreviewHalf)))
+                (is_color && ImGui::ColorEdit4("Color", &value[0], ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf)))
                 glProgramUniform4fv(program, location, 1, &value[0]);
         } break;
 
         case GL_INT:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_INT, glGetUniformiv,
-                                                     glProgramUniform1iv, ImGui::DragInt);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_INT, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
             break;
 
         case GL_INT_VEC2:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 2, GL_INT, glGetUniformiv,
-                                                     glProgramUniform2iv, ImGui::DragInt2);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 2, GL_INT, glGetUniformiv, glProgramUniform2iv, ImGui::DragInt2);
             break;
 
         case GL_INT_VEC3:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 3, GL_INT, glGetUniformiv,
-                                                     glProgramUniform3iv, ImGui::DragInt3);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 3, GL_INT, glGetUniformiv, glProgramUniform3iv, ImGui::DragInt3);
             break;
 
         case GL_INT_VEC4:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 4, GL_INT, glGetUniformiv,
-                                                     glProgramUniform4iv, ImGui::DragInt4);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 4, GL_INT, glGetUniformiv, glProgramUniform4iv, ImGui::DragInt4);
             break;
 
         case GL_SAMPLER_2D:
-            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_SAMPLER_2D, glGetUniformiv,
-                                                     glProgramUniform1iv, ImGui::DragInt);
+            R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_SAMPLER_2D, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
             break;
 
         case GL_FLOAT_MAT2:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 2, 2, GL_FLOAT_MAT2, glGetUniformfv,
-                                                   glProgramUniformMatrix2fv, ImGui::DragFloat2);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 2, 2, GL_FLOAT_MAT2, glGetUniformfv, glProgramUniformMatrix2fv, ImGui::DragFloat2);
             break;
 
         case GL_FLOAT_MAT3:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 3, 3, GL_FLOAT_MAT3, glGetUniformfv,
-                                                   glProgramUniformMatrix3fv, ImGui::DragFloat3);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 3, 3, GL_FLOAT_MAT3, glGetUniformfv, glProgramUniformMatrix3fv, ImGui::DragFloat3);
             break;
 
         case GL_FLOAT_MAT4:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 4, GL_FLOAT_MAT4, glGetUniformfv,
-                                                   glProgramUniformMatrix4fv, ImGui::DragFloat4);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 4, GL_FLOAT_MAT4, glGetUniformfv, glProgramUniformMatrix4fv, ImGui::DragFloat4);
             break;
 
         case GL_FLOAT_MAT2x3:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 3, 2, GL_FLOAT_MAT2x3, glGetUniformfv,
-                                                   glProgramUniformMatrix2x3fv, ImGui::DragFloat3);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 3, 2, GL_FLOAT_MAT2x3, glGetUniformfv, glProgramUniformMatrix2x3fv, ImGui::DragFloat3);
             break;
 
         case GL_FLOAT_MAT2x4:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 2, GL_FLOAT_MAT2x4, glGetUniformfv,
-                                                   glProgramUniformMatrix2x4fv, ImGui::DragFloat4);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 2, GL_FLOAT_MAT2x4, glGetUniformfv, glProgramUniformMatrix2x4fv, ImGui::DragFloat4);
             break;
 
         case GL_FLOAT_MAT3x2:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 2, 3, GL_FLOAT_MAT3x2, glGetUniformfv,
-                                                   glProgramUniformMatrix3x2fv, ImGui::DragFloat2);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 2, 3, GL_FLOAT_MAT3x2, glGetUniformfv, glProgramUniformMatrix3x2fv, ImGui::DragFloat2);
             break;
 
         case GL_FLOAT_MAT3x4:
-            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 3, GL_FLOAT_MAT3x4, glGetUniformfv,
-                                                   glProgramUniformMatrix3x2fv, ImGui::DragFloat4);
+            R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 3, GL_FLOAT_MAT3x4, glGetUniformfv, glProgramUniformMatrix3x2fv, ImGui::DragFloat4);
             break;
 
         default:
@@ -325,8 +301,7 @@ float METAENGINE::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeigh
 
 void METAENGINE::IntrospectShader(const char *label, GLuint program) {
     METADOT_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
-    METADOT_ASSERT(glIsProgram(program),
-                   ("The program: {} is not a valid shader program", program));
+    METADOT_ASSERT(glIsProgram(program), ("The program: {} is not a valid shader program", program));
 
     ImGui::PushID(label);
     if (ImGui::CollapsingHeader(label)) {
@@ -346,8 +321,7 @@ void METAENGINE::IntrospectShader(const char *label, GLuint program) {
             for (int i = 0; i < uniform_count; i++) {
                 GLint ignored;
                 GLenum type;
-                glGetActiveUniform(program, i, max_name_length, nullptr, &ignored, &type,
-                                   name.data());
+                glGetActiveUniform(program, i, max_name_length, nullptr, &ignored, &type, name.data());
 
                 const auto location = glGetUniformLocation(program, name.data());
                 ImGui::Indent();
@@ -371,7 +345,7 @@ void METAENGINE::IntrospectShader(const char *label, GLuint program) {
             attached_shaders.resize(shader_count);
             glGetAttachedShaders(program, shader_count, nullptr, attached_shaders.data());
 
-            for (const auto &shader: attached_shaders) {
+            for (const auto &shader : attached_shaders) {
                 GLint source_length = 0;
                 glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &source_length);
                 static std::vector<char> source;
@@ -385,10 +359,8 @@ void METAENGINE::IntrospectShader(const char *label, GLuint program) {
                 auto string_type = GLEnumToString(type);
                 ImGui::PushID(string_type);
                 if (ImGui::CollapsingHeader(string_type)) {
-                    auto y_size = std::min(ImGui::CalcTextSize(source.data()).y,
-                                           Detail::GetScrollableHeight());
-                    ImGui::InputTextMultiline("", source.data(), source.size(),
-                                              ImVec2(-1.0f, y_size), ImGuiInputTextFlags_ReadOnly);
+                    auto y_size = std::min(ImGui::CalcTextSize(source.data()).y, Detail::GetScrollableHeight());
+                    ImGui::InputTextMultiline("", source.data(), source.size(), ImVec2(-1.0f, y_size), ImGuiInputTextFlags_ReadOnly);
                 }
                 ImGui::PopID();
                 ImGui::Unindent();
@@ -439,7 +411,7 @@ void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
             if (ImGui::TreeNode("Buffer Contents")) {
                 // TODO: Find a better way to put this out on screen, because this solution will probably not scale good when we get a lot of indices.
                 //       Possible solution: Make it into columns, like the VBO's, and present the indices as triangles.
-                auto ptr = (GLuint *) glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_ONLY);
+                auto ptr = (GLuint *)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_ONLY);
                 for (int i = 0; i < size; i++) {
                     ImGui::Text("%u", ptr[i]);
                     ImGui::SameLine();
@@ -492,7 +464,7 @@ void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
 
                 GLvoid *offset = nullptr;
                 glGetVertexAttribPointerv(i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &offset);
-                ImGui::Text("Offset in bytes: %" PRIdPTR "", (intptr_t) offset);
+                ImGui::Text("Offset in bytes: %" PRIdPTR "", (intptr_t)offset);
 
                 GLint usage = 0;
                 glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_USAGE, &usage);
@@ -500,9 +472,7 @@ void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
 
                 // Create table with indexes and actual contents
                 if (ImGui::TreeNode("Buffer Contents")) {
-                    ImGui::BeginChild(ImGui::GetID("vbo contents"),
-                                      ImVec2(-1.0f, Detail::GetScrollableHeight()), true,
-                                      ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    ImGui::BeginChild(ImGui::GetID("vbo contents"), ImVec2(-1.0f, Detail::GetScrollableHeight()), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
                     ImGui::Columns(dimensions + 1);
                     const char *descriptors[] = {"index", "x", "y", "z", "w"};
                     for (int j = 0; j < dimensions + 1; j++) {
@@ -511,37 +481,35 @@ void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
                     }
                     ImGui::Separator();
 
-                    auto ptr =
-                            (char *) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY) + (intptr_t) offset;
+                    auto ptr = (char *)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY) + (intptr_t)offset;
                     for (int j = 0, c = 0; j < size; j += stride, c++) {
                         ImGui::Text("%d", c);
                         ImGui::NextColumn();
                         for (int k = 0; k < dimensions; k++) {
                             switch (type) {
                                 case GL_BYTE:
-                                    ImGui::Text("% d", *(GLbyte *) &ptr[j + k * sizeof(GLbyte)]);
+                                    ImGui::Text("% d", *(GLbyte *)&ptr[j + k * sizeof(GLbyte)]);
                                     break;
                                 case GL_UNSIGNED_BYTE:
-                                    ImGui::Text("%u", *(GLubyte *) &ptr[j + k * sizeof(GLubyte)]);
+                                    ImGui::Text("%u", *(GLubyte *)&ptr[j + k * sizeof(GLubyte)]);
                                     break;
                                 case GL_SHORT:
-                                    ImGui::Text("% d", *(GLshort *) &ptr[j + k * sizeof(GLshort)]);
+                                    ImGui::Text("% d", *(GLshort *)&ptr[j + k * sizeof(GLshort)]);
                                     break;
                                 case GL_UNSIGNED_SHORT:
-                                    ImGui::Text("%u", *(GLushort *) &ptr[j + k * sizeof(GLushort)]);
+                                    ImGui::Text("%u", *(GLushort *)&ptr[j + k * sizeof(GLushort)]);
                                     break;
                                 case GL_INT:
-                                    ImGui::Text("% d", *(GLint *) &ptr[j + k * sizeof(GLint)]);
+                                    ImGui::Text("% d", *(GLint *)&ptr[j + k * sizeof(GLint)]);
                                     break;
                                 case GL_UNSIGNED_INT:
-                                    ImGui::Text("%u", *(GLuint *) &ptr[j + k * sizeof(GLuint)]);
+                                    ImGui::Text("%u", *(GLuint *)&ptr[j + k * sizeof(GLuint)]);
                                     break;
                                 case GL_FLOAT:
-                                    ImGui::Text("% f", *(GLfloat *) &ptr[j + k * sizeof(GLfloat)]);
+                                    ImGui::Text("% f", *(GLfloat *)&ptr[j + k * sizeof(GLfloat)]);
                                     break;
                                 case GL_DOUBLE:
-                                    ImGui::Text("% f",
-                                                *(GLdouble *) &ptr[j + k * sizeof(GLdouble)]);
+                                    ImGui::Text("% f", *(GLdouble *)&ptr[j + k * sizeof(GLdouble)]);
                                     break;
                             }
                             ImGui::NextColumn();
@@ -582,17 +550,17 @@ b2Vec2 DebugDraw::transform(const b2Vec2 &pt) {
     return b2Vec2(x, y);
 }
 
-METAENGINE_Color DebugDraw::convertColor(const b2Color &color) {
-    return {(U8) (color.r * 255), (U8) (color.g * 255), (U8) (color.b * 255), (U8) (color.a * 255)};
-}
+METAENGINE_Color DebugDraw::convertColor(const b2Color &color) { return {(U8)(color.r * 255), (U8)(color.g * 255), (U8)(color.b * 255), (U8)(color.a * 255)}; }
 
 void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
-    for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
+    for (int i = 0; i < vertexCount; i++) {
+        verts[i] = transform(vertices[i]);
+    }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
-    R_Polygon(target, vertexCount, (float *) verts, convertColor(color));
+    R_Polygon(target, vertexCount, (float *)verts, convertColor(color));
 
     delete[] verts;
 }
@@ -600,13 +568,15 @@ void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Col
 void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
-    for (int i = 0; i < vertexCount; i++) { verts[i] = transform(vertices[i]); }
+    for (int i = 0; i < vertexCount; i++) {
+        verts[i] = transform(vertices[i]);
+    }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
     METAENGINE_Color c2 = convertColor(color);
     c2.a *= 0.25;
-    R_PolygonFilled(target, vertexCount, (float *) verts, c2);
-    R_Polygon(target, vertexCount, (float *) verts, convertColor(color));
+    R_PolygonFilled(target, vertexCount, (float *)verts, c2);
+    R_Polygon(target, vertexCount, (float *)verts, convertColor(color));
 
     delete[] verts;
 }
@@ -616,8 +586,7 @@ void DebugDraw::DrawCircle(const b2Vec2 &center, float radius, const b2Color &co
     R_Circle(target, tr.x, tr.y, radius * scale, convertColor(color));
 }
 
-void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
-                                const b2Color &color) {
+void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const b2Color &color) {
     b2Vec2 tr = transform(center);
     R_CircleFilled(target, tr.x, tr.y, radius * scale, convertColor(color));
 }
@@ -662,384 +631,406 @@ void DebugDraw::DrawAABB(b2AABB *aabb, const b2Color &color) {
 
 namespace SurfaceBase {
 
-    SDL_Texture *R_Create_texture_from_surface(SDL_Renderer *sdlRenderer, SDL_Surface *surf,
-                                               int format = SDL_PIXELFORMAT_RGBA8888,
-                                               bool destroySurface = true);
-    SDL_Surface *R_Create_filled_surface_rgba(int w, int h, Uint8 color_key_r, Uint8 color_key_g,
-                                              Uint8 color_key_b, Uint8 alpha = 255);
+SDL_Texture *R_Create_texture_from_surface(SDL_Renderer *sdlRenderer, SDL_Surface *surf, int format = SDL_PIXELFORMAT_RGBA8888, bool destroySurface = true);
+SDL_Surface *R_Create_filled_surface_rgba(int w, int h, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b, Uint8 alpha = 255);
 
-    Uint32 get_pixel32(SDL_Surface *surface, int x, int y);
+Uint32 get_pixel32(SDL_Surface *surface, int x, int y);
 
-    Uint8 merge_channel(Uint8 a, Uint8 b, float amount);
+Uint8 merge_channel(Uint8 a, Uint8 b, float amount);
 
-    void put_pixel32(SDL_Surface *surface, int x, int y, Uint32 pixel);
+void put_pixel32(SDL_Surface *surface, int x, int y, Uint32 pixel);
 
-    void R_Surface_horizontal_line_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uint8 r,
-                                              Uint8 g, Uint8 b, Uint8 a = 255);
-    void R_Surface_vertical_line_color_rgba(SDL_Surface *surface, int x, int y1, int y2, Uint8 r,
-                                            Uint8 g, Uint8 b, Uint8 a = 255);
-    bool R_Surface_circle_color_rgba(SDL_Surface *surface, Sint16 x, Sint16 y, Sint16 rad, Uint8 r,
-                                     Uint8 g, Uint8 b, Uint8 a = 255);
+void R_Surface_horizontal_line_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
+void R_Surface_vertical_line_color_rgba(SDL_Surface *surface, int x, int y1, int y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
+bool R_Surface_circle_color_rgba(SDL_Surface *surface, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
 
-    SDL_Surface *R_Surface_grayscale(SDL_Surface *surface);
-    SDL_Surface *R_Surface_invert(SDL_Surface *surface);
-    SDL_Surface *R_Surface_merge_color_rgba(SDL_Surface *surface, Uint8 color_key_r,
-                                            Uint8 color_key_g, Uint8 color_key_b, float amount);
-    SDL_Surface *R_Surface_recolor_rgbar(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g,
-                                         Uint8 color_key_b, float amount);
-    SDL_Surface *R_Surface_remove_color_rgba(SDL_Surface *surface, Uint8 color_key_r,
-                                             Uint8 color_key_g, Uint8 color_key_b);
-    SDL_Surface *R_Surface_flip(SDL_Surface *surface, int flags);
-};// namespace SurfaceBase
+SDL_Surface *R_Surface_grayscale(SDL_Surface *surface);
+SDL_Surface *R_Surface_invert(SDL_Surface *surface);
+SDL_Surface *R_Surface_merge_color_rgba(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b, float amount);
+SDL_Surface *R_Surface_recolor_rgbar(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b, float amount);
+SDL_Surface *R_Surface_remove_color_rgba(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b);
+SDL_Surface *R_Surface_flip(SDL_Surface *surface, int flags);
+};  // namespace SurfaceBase
 
 namespace SurfaceBase {
-    Uint32 get_pixel32(SDL_Surface *surface, int x, int y) {
-        if (surface != NULL) {
-            if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
-                Uint32 *ptr = (Uint32 *) surface->pixels;
-                int lineoffset = y * (surface->pitch / 4);
-                return ptr[lineoffset + x];
-            }
-        }
-        return 0;
-    }
-
-    Uint8 merge_channel(Uint8 a, Uint8 b, float amount) {
-        float result = (b * amount) + (a * (1.0f - amount));
-        return (Uint8) result;
-    }
-
-    void put_pixel32(SDL_Surface *surface, int x, int y, Uint32 pixel) {
-        if (surface == NULL) { return; }
-        if (x < surface->w && y < surface->h) {
-
-            Uint32 *pixels = (Uint32 *) surface->pixels;
-
-            pixels[(y * surface->w) + x] = pixel;
+Uint32 get_pixel32(SDL_Surface *surface, int x, int y) {
+    if (surface != NULL) {
+        if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
+            Uint32 *ptr = (Uint32 *)surface->pixels;
+            int lineoffset = y * (surface->pitch / 4);
+            return ptr[lineoffset + x];
         }
     }
+    return 0;
+}
 
-    SDL_Texture *R_Create_texture_from_surface(SDL_Renderer *sdlRenderer, SDL_Surface *surf,
-                                               int format, bool destroySurface) {
-        if (surf == NULL) { return NULL; }
+Uint8 merge_channel(Uint8 a, Uint8 b, float amount) {
+    float result = (b * amount) + (a * (1.0f - amount));
+    return (Uint8)result;
+}
 
-        if (sdlRenderer == NULL) {
-            if (destroySurface) {
-                SDL_FreeSurface(surf);
-                surf = NULL;
-            }
-            return NULL;
-        }
-        SDL_Surface *cast_img = SDL_ConvertSurfaceFormat(surf, format, 0);
-        SDL_Rect rect = {0, 0, cast_img->w, cast_img->h};
-        SDL_Texture *newTexture = SDL_CreateTexture(sdlRenderer, format, SDL_TEXTUREACCESS_STATIC,
-                                                    cast_img->w, cast_img->h);
-        SDL_UpdateTexture(newTexture, &rect, cast_img->pixels, cast_img->w * 4);
-        SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-        SDL_FreeSurface(cast_img);
+void put_pixel32(SDL_Surface *surface, int x, int y, Uint32 pixel) {
+    if (surface == NULL) {
+        return;
+    }
+    if (x < surface->w && y < surface->h) {
+
+        Uint32 *pixels = (Uint32 *)surface->pixels;
+
+        pixels[(y * surface->w) + x] = pixel;
+    }
+}
+
+SDL_Texture *R_Create_texture_from_surface(SDL_Renderer *sdlRenderer, SDL_Surface *surf, int format, bool destroySurface) {
+    if (surf == NULL) {
+        return NULL;
+    }
+
+    if (sdlRenderer == NULL) {
         if (destroySurface) {
             SDL_FreeSurface(surf);
             surf = NULL;
         }
-        return newTexture;
+        return NULL;
+    }
+    SDL_Surface *cast_img = SDL_ConvertSurfaceFormat(surf, format, 0);
+    SDL_Rect rect = {0, 0, cast_img->w, cast_img->h};
+    SDL_Texture *newTexture = SDL_CreateTexture(sdlRenderer, format, SDL_TEXTUREACCESS_STATIC, cast_img->w, cast_img->h);
+    SDL_UpdateTexture(newTexture, &rect, cast_img->pixels, cast_img->w * 4);
+    SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
+    SDL_FreeSurface(cast_img);
+    if (destroySurface) {
+        SDL_FreeSurface(surf);
+        surf = NULL;
+    }
+    return newTexture;
+}
+
+SDL_Surface *R_Create_filled_surface_rgba(int w, int h, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b, Uint8 alpha) {
+    if (w <= 0 || h <= 0) {
+        return NULL;
+    }
+    SDL_Surface *newSurface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA8888);
+    if (newSurface == NULL) {
+        return NULL;
+    }
+    int x = 0, y = 0;
+    bool surface_is_locked = SDL_MUSTLOCK(newSurface);
+    if (surface_is_locked) {
+        SDL_LockSurface(newSurface);
     }
 
-    SDL_Surface *R_Create_filled_surface_rgba(int w, int h, Uint8 color_key_r, Uint8 color_key_g,
-                                              Uint8 color_key_b, Uint8 alpha) {
-        if (w <= 0 || h <= 0) { return NULL; }
-        SDL_Surface *newSurface =
-                SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA8888);
-        if (newSurface == NULL) { return NULL; }
-        int x = 0, y = 0;
-        bool surface_is_locked = SDL_MUSTLOCK(newSurface);
-        if (surface_is_locked) { SDL_LockSurface(newSurface); }
+    Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
+    Uint32 pixel;
+    for (x = 0; x < newSurface->w; x++) {
 
+        for (y = 0; y < newSurface->h; y++) {
+
+            pixel = SDL_MapRGBA(newSurface->format, color_key_r, color_key_g, color_key_b, alpha);
+            put_pixel32(newSurface, x, y, pixel);
+        }
+    }
+
+    if (surface_is_locked) {
+        SDL_UnlockSurface(newSurface);
+    }
+    return newSurface;
+}
+
+void surface_merge_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    if (surface == NULL) {
+        return;
+    }
+    if (surface->w <= x1 && surface->h <= y) {
+        return;
+    }
+    int temp = SDL_min(x1, x2);
+    x2 = SDL_max(x1, x2);
+    x1 = temp;
+    Uint32 pixel;
+    for (int i = x1; i < x2; i++) {
+        pixel = SDL_MapRGBA(surface->format, r, g, b, a);
+        put_pixel32(surface, i, y, pixel);
+    }
+}
+
+void R_Surface_horizontal_line_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    if (surface == NULL) {
+        return;
+    }
+    if (surface->w <= x1 && surface->h <= y) {
+        return;
+    }
+    int temp = SDL_min(x1, x2);
+    x2 = SDL_max(x1, x2);
+    x1 = temp;
+    Uint32 pixel;
+    for (int i = x1; i < x2; i++) {
+        pixel = SDL_MapRGBA(surface->format, r, g, b, a);
+        put_pixel32(surface, i, y, pixel);
+    }
+}
+
+void R_Surface_vertical_line_color_rgba(SDL_Surface *surface, int x, int y1, int y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    if (surface == NULL) {
+        return;
+    }
+    if (surface->h <= y1 && surface->w <= x) {
+        return;
+    }
+    int temp = SDL_min(y1, y2);
+    y2 = SDL_max(y1, y2);
+    y1 = temp;
+    Uint32 pixel;
+    for (int i = y1; i < y2; i++) {
+        pixel = SDL_MapRGBA(surface->format, r, g, b, a);
+        put_pixel32(surface, x, i, pixel);
+    }
+}
+
+bool R_Surface_circle_color_rgba(SDL_Surface *surface, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    if (surface == NULL) {
+        return false;
+    }
+
+    Sint16 cx = 0;
+    Sint16 cy = rad;
+    Sint16 ocx = (Sint16)0xffff;
+    Sint16 ocy = (Sint16)0xffff;
+    Sint16 df = 1 - rad;
+    Sint16 d_e = 3;
+    Sint16 d_se = -2 * rad + 5;
+    Sint16 xpcx, xmcx, xpcy, xmcy;
+    Sint16 ypcy, ymcy, ypcx, ymcx;
+
+    float alphaRatio = 1;
+    if (rad <= 0) {
+        return false;
+    }
+    do {
+        xpcx = x + cx;
+        xmcx = x - cx;
+        xpcy = x + cy;
+        xmcy = x - cy;
+        if (ocy != cy) {
+            if (cy > 0) {
+                ypcy = y + cy;
+                ymcy = y - cy;
+                R_Surface_horizontal_line_color_rgba(surface, ypcy, xmcx, xpcx, r, g, b, a);
+                R_Surface_horizontal_line_color_rgba(surface, ymcy, xmcx, xpcx, r, g, b, a);
+            }
+
+            ocy = cy;
+        }
+        if (ocx != cx) {
+            if (cx != cy) {
+                if (cx > 0) {
+                    ypcx = y + cx;
+                    ymcx = y - cx;
+                    R_Surface_horizontal_line_color_rgba(surface, ymcx, xmcy, xpcy, r, g, b, a);
+                    R_Surface_horizontal_line_color_rgba(surface, ypcx, xmcy, xpcy, r, g, b, a);
+                } else {
+                    R_Surface_horizontal_line_color_rgba(surface, y, xmcy, xpcy, r, g, b, a);
+                }
+            }
+            ocx = cx;
+        }
+
+        if (df < 0) {
+            df += d_e;
+            d_e += 2;
+            d_se += 2;
+        } else {
+            df += d_se;
+            d_e += 2;
+            d_se += 4;
+            cy--;
+        }
+        cx++;
+    } while (cx <= cy);
+    return true;
+}
+
+SDL_Surface *R_Surface_grayscale(SDL_Surface *surface) {
+    if (surface == NULL) {
+        return NULL;
+    }
+
+    SDL_Surface *coloredSurface = NULL;
+
+    coloredSurface = SDL_CreateRGBSurface(0, surface->w, surface->h, surface->format->BitsPerPixel, surface->format->Rmask, surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
+    if (coloredSurface != NULL) {
+        bool surface_is_locked = SDL_MUSTLOCK(surface);
+        if (surface_is_locked) {
+            SDL_LockSurface(surface);
+        }
         Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
-        Uint32 pixel;
-        for (x = 0; x < newSurface->w; x++) {
-
-            for (y = 0; y < newSurface->h; y++) {
-
-                pixel = SDL_MapRGBA(newSurface->format, color_key_r, color_key_g, color_key_b,
-                                    alpha);
-                put_pixel32(newSurface, x, y, pixel);
+        for (int x = 0; x < coloredSurface->w; x++) {
+            for (int y = 0; y < coloredSurface->h; y++) {
+                Uint32 pixel = get_pixel32(surface, x, y);
+                SDL_GetRGBA(pixel, surface->format, &rr, &gg, &bb, &aa);
+                Uint8 grayedColor = (rr + gg + bb) / 3;
+                pixel = SDL_MapRGBA(surface->format, grayedColor, grayedColor, grayedColor, aa);
+                put_pixel32(coloredSurface, x, y, pixel);
             }
         }
-
-        if (surface_is_locked) { SDL_UnlockSurface(newSurface); }
-        return newSurface;
-    }
-
-    void surface_merge_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uint8 r, Uint8 g,
-                                  Uint8 b, Uint8 a) {
-        if (surface == NULL) { return; }
-        if (surface->w <= x1 && surface->h <= y) { return; }
-        int temp = SDL_min(x1, x2);
-        x2 = SDL_max(x1, x2);
-        x1 = temp;
-        Uint32 pixel;
-        for (int i = x1; i < x2; i++) {
-            pixel = SDL_MapRGBA(surface->format, r, g, b, a);
-            put_pixel32(surface, i, y, pixel);
+        if (surface_is_locked) {
+            SDL_UnlockSurface(surface);
         }
+        return coloredSurface;
     }
+    return NULL;
+}
 
-    void R_Surface_horizontal_line_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uint8 r,
-                                              Uint8 g, Uint8 b, Uint8 a) {
-        if (surface == NULL) { return; }
-        if (surface->w <= x1 && surface->h <= y) { return; }
-        int temp = SDL_min(x1, x2);
-        x2 = SDL_max(x1, x2);
-        x1 = temp;
-        Uint32 pixel;
-        for (int i = x1; i < x2; i++) {
-            pixel = SDL_MapRGBA(surface->format, r, g, b, a);
-            put_pixel32(surface, i, y, pixel);
-        }
-    }
-
-    void R_Surface_vertical_line_color_rgba(SDL_Surface *surface, int x, int y1, int y2, Uint8 r,
-                                            Uint8 g, Uint8 b, Uint8 a) {
-        if (surface == NULL) { return; }
-        if (surface->h <= y1 && surface->w <= x) { return; }
-        int temp = SDL_min(y1, y2);
-        y2 = SDL_max(y1, y2);
-        y1 = temp;
-        Uint32 pixel;
-        for (int i = y1; i < y2; i++) {
-            pixel = SDL_MapRGBA(surface->format, r, g, b, a);
-            put_pixel32(surface, x, i, pixel);
-        }
-    }
-
-    bool R_Surface_circle_color_rgba(SDL_Surface *surface, Sint16 x, Sint16 y, Sint16 rad, Uint8 r,
-                                     Uint8 g, Uint8 b, Uint8 a) {
-        if (surface == NULL) { return false; }
-
-        Sint16 cx = 0;
-        Sint16 cy = rad;
-        Sint16 ocx = (Sint16) 0xffff;
-        Sint16 ocy = (Sint16) 0xffff;
-        Sint16 df = 1 - rad;
-        Sint16 d_e = 3;
-        Sint16 d_se = -2 * rad + 5;
-        Sint16 xpcx, xmcx, xpcy, xmcy;
-        Sint16 ypcy, ymcy, ypcx, ymcx;
-
-        float alphaRatio = 1;
-        if (rad <= 0) { return false; }
-        do {
-            xpcx = x + cx;
-            xmcx = x - cx;
-            xpcy = x + cy;
-            xmcy = x - cy;
-            if (ocy != cy) {
-                if (cy > 0) {
-                    ypcy = y + cy;
-                    ymcy = y - cy;
-                    R_Surface_horizontal_line_color_rgba(surface, ypcy, xmcx, xpcx, r, g, b, a);
-                    R_Surface_horizontal_line_color_rgba(surface, ymcy, xmcx, xpcx, r, g, b, a);
-                }
-
-                ocy = cy;
-            }
-            if (ocx != cx) {
-                if (cx != cy) {
-                    if (cx > 0) {
-                        ypcx = y + cx;
-                        ymcx = y - cx;
-                        R_Surface_horizontal_line_color_rgba(surface, ymcx, xmcy, xpcy, r, g, b, a);
-                        R_Surface_horizontal_line_color_rgba(surface, ypcx, xmcy, xpcy, r, g, b, a);
-                    } else {
-                        R_Surface_horizontal_line_color_rgba(surface, y, xmcy, xpcy, r, g, b, a);
-                    }
-                }
-                ocx = cx;
-            }
-
-            if (df < 0) {
-                df += d_e;
-                d_e += 2;
-                d_se += 2;
-            } else {
-                df += d_se;
-                d_e += 2;
-                d_se += 4;
-                cy--;
-            }
-            cx++;
-        } while (cx <= cy);
-        return true;
-    }
-
-    SDL_Surface *R_Surface_grayscale(SDL_Surface *surface) {
-        if (surface == NULL) { return NULL; }
-
+SDL_Surface *R_Surface_invert(SDL_Surface *surface) {
+    if (surface != NULL) {
+        SDL_Surface *tempSurface = NULL;
         SDL_Surface *coloredSurface = NULL;
 
-        coloredSurface = SDL_CreateRGBSurface(
-                0, surface->w, surface->h, surface->format->BitsPerPixel, surface->format->Rmask,
-                surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
+        coloredSurface = SDL_CreateRGBSurface(0, surface->w, surface->h, surface->format->BitsPerPixel, surface->format->Rmask, surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
         if (coloredSurface != NULL) {
             bool surface_is_locked = SDL_MUSTLOCK(surface);
-            if (surface_is_locked) { SDL_LockSurface(surface); }
+            if (surface_is_locked) {
+                SDL_LockSurface(surface);
+            }
             Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
             for (int x = 0; x < coloredSurface->w; x++) {
                 for (int y = 0; y < coloredSurface->h; y++) {
                     Uint32 pixel = get_pixel32(surface, x, y);
                     SDL_GetRGBA(pixel, surface->format, &rr, &gg, &bb, &aa);
-                    Uint8 grayedColor = (rr + gg + bb) / 3;
-                    pixel = SDL_MapRGBA(surface->format, grayedColor, grayedColor, grayedColor, aa);
+                    pixel = SDL_MapRGBA(surface->format, 255 - rr, 255 - gg, 255 - bb, aa);
                     put_pixel32(coloredSurface, x, y, pixel);
                 }
             }
-            if (surface_is_locked) { SDL_UnlockSurface(surface); }
+            if (surface_is_locked) {
+                SDL_UnlockSurface(surface);
+            }
+            return coloredSurface;
+        } else if (tempSurface != NULL) {
+            SDL_FreeSurface(tempSurface);
+            tempSurface = NULL;
+        }
+    }
+    return NULL;
+}
+
+SDL_Surface *surface_recolor(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b, float amount) {
+    if (surface != NULL) {
+
+        SDL_Surface *tempSurface = NULL;
+        SDL_Surface *coloredSurface = NULL;
+
+        coloredSurface = SDL_CreateRGBSurface(0, surface->w, surface->h, surface->format->BitsPerPixel, surface->format->Rmask, surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
+        if (coloredSurface != NULL) {
+
+            bool surface_is_locked = SDL_MUSTLOCK(surface);
+            if (surface_is_locked) {
+                SDL_LockSurface(surface);
+            }
+
+            Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
+
+            for (int x = 0; x < coloredSurface->w; x++) {
+
+                for (int y = 0; y < coloredSurface->h; y++) {
+
+                    Uint32 pixel = get_pixel32(surface, x, y);
+                    SDL_GetRGBA(pixel, surface->format, &rr, &gg, &bb, &aa);
+
+                    rr = merge_channel(rr, color_key_r, amount);
+                    gg = merge_channel(gg, color_key_g, amount);
+                    bb = merge_channel(bb, color_key_b, amount);
+                    pixel = SDL_MapRGBA(surface->format, rr, gg, bb, aa);
+                    put_pixel32(coloredSurface, x, y, pixel);
+                }
+            }
+
+            if (surface_is_locked) {
+                SDL_UnlockSurface(surface);
+            }
+
             return coloredSurface;
         }
-        return NULL;
     }
+    return NULL;
+}
 
-    SDL_Surface *R_Surface_invert(SDL_Surface *surface) {
-        if (surface != NULL) {
-            SDL_Surface *tempSurface = NULL;
-            SDL_Surface *coloredSurface = NULL;
+SDL_Surface *R_Surface_remove_color_rgba(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g, Uint8 color_key_b) {
+    if (surface != NULL) {
 
-            coloredSurface =
-                    SDL_CreateRGBSurface(0, surface->w, surface->h, surface->format->BitsPerPixel,
-                                         surface->format->Rmask, surface->format->Gmask,
-                                         surface->format->Bmask, surface->format->Amask);
-            if (coloredSurface != NULL) {
-                bool surface_is_locked = SDL_MUSTLOCK(surface);
-                if (surface_is_locked) { SDL_LockSurface(surface); }
-                Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
-                for (int x = 0; x < coloredSurface->w; x++) {
-                    for (int y = 0; y < coloredSurface->h; y++) {
-                        Uint32 pixel = get_pixel32(surface, x, y);
-                        SDL_GetRGBA(pixel, surface->format, &rr, &gg, &bb, &aa);
-                        pixel = SDL_MapRGBA(surface->format, 255 - rr, 255 - gg, 255 - bb, aa);
-                        put_pixel32(coloredSurface, x, y, pixel);
+        SDL_Surface *coloredSurface = NULL;
+
+        coloredSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
+        if (coloredSurface != NULL) {
+
+            bool surface_is_locked = SDL_MUSTLOCK(coloredSurface);
+            if (surface_is_locked) {
+                SDL_LockSurface(coloredSurface);
+            }
+
+            Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
+            int y = 0;
+            Uint32 pixel;
+
+            for (int x = 0; x < coloredSurface->w; x++) {
+
+                for (y = 0; y < coloredSurface->h; y++) {
+
+                    pixel = get_pixel32(coloredSurface, x, y);
+                    SDL_GetRGBA(pixel, coloredSurface->format, &rr, &gg, &bb, &aa);
+
+                    if (rr == color_key_r && gg == color_key_g && bb == color_key_b) {
+                        pixel = SDL_MapRGBA(coloredSurface->format, 255, 0, 255, 0);
+                    }
+                    put_pixel32(coloredSurface, x, y, pixel);
+                }
+            }
+
+            if (surface_is_locked) {
+                SDL_UnlockSurface(coloredSurface);
+            }
+            return coloredSurface;
+        }
+    }
+    return NULL;
+}
+
+SDL_Surface *R_Surface_flip(SDL_Surface *surface, int flags) {
+    if (surface != NULL) {
+
+        SDL_Surface *flipped = NULL;
+
+        flipped = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
+        if (flipped != NULL) {
+
+            bool surface_is_locked = SDL_MUSTLOCK(flipped);
+            if (surface_is_locked) {
+                SDL_LockSurface(flipped);
+            }
+
+            for (int x = 0, rx = flipped->w - 1; x < flipped->w; x++, rx--) {
+
+                for (int y = 0, ry = flipped->h - 1; y < flipped->h; y++, ry--) {
+
+                    Uint32 pixel = get_pixel32(surface, x, y);
+
+                    if ((flags & SDL_FLIP_VERTICAL) && (flags & SDL_FLIP_HORIZONTAL)) {
+                        put_pixel32(flipped, rx, ry, pixel);
+                    } else if (flags & SDL_FLIP_HORIZONTAL) {
+                        put_pixel32(flipped, rx, y, pixel);
+                    } else if (flags & SDL_FLIP_VERTICAL) {
+                        put_pixel32(flipped, x, ry, pixel);
                     }
                 }
-                if (surface_is_locked) { SDL_UnlockSurface(surface); }
-                return coloredSurface;
-            } else if (tempSurface != NULL) {
-                SDL_FreeSurface(tempSurface);
-                tempSurface = NULL;
             }
-        }
-        return NULL;
-    }
 
-    SDL_Surface *surface_recolor(SDL_Surface *surface, Uint8 color_key_r, Uint8 color_key_g,
-                                 Uint8 color_key_b, float amount) {
-        if (surface != NULL) {
-
-            SDL_Surface *tempSurface = NULL;
-            SDL_Surface *coloredSurface = NULL;
-
-            coloredSurface =
-                    SDL_CreateRGBSurface(0, surface->w, surface->h, surface->format->BitsPerPixel,
-                                         surface->format->Rmask, surface->format->Gmask,
-                                         surface->format->Bmask, surface->format->Amask);
-            if (coloredSurface != NULL) {
-
-                bool surface_is_locked = SDL_MUSTLOCK(surface);
-                if (surface_is_locked) { SDL_LockSurface(surface); }
-
-                Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
-
-                for (int x = 0; x < coloredSurface->w; x++) {
-
-                    for (int y = 0; y < coloredSurface->h; y++) {
-
-                        Uint32 pixel = get_pixel32(surface, x, y);
-                        SDL_GetRGBA(pixel, surface->format, &rr, &gg, &bb, &aa);
-
-                        rr = merge_channel(rr, color_key_r, amount);
-                        gg = merge_channel(gg, color_key_g, amount);
-                        bb = merge_channel(bb, color_key_b, amount);
-                        pixel = SDL_MapRGBA(surface->format, rr, gg, bb, aa);
-                        put_pixel32(coloredSurface, x, y, pixel);
-                    }
-                }
-
-                if (surface_is_locked) { SDL_UnlockSurface(surface); }
-
-                return coloredSurface;
+            if (surface_is_locked) {
+                SDL_UnlockSurface(flipped);
             }
+
+            return flipped;
         }
-        return NULL;
     }
-
-    SDL_Surface *R_Surface_remove_color_rgba(SDL_Surface *surface, Uint8 color_key_r,
-                                             Uint8 color_key_g, Uint8 color_key_b) {
-        if (surface != NULL) {
-
-            SDL_Surface *coloredSurface = NULL;
-
-            coloredSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
-            if (coloredSurface != NULL) {
-
-                bool surface_is_locked = SDL_MUSTLOCK(coloredSurface);
-                if (surface_is_locked) { SDL_LockSurface(coloredSurface); }
-
-                Uint8 rr = 0, bb = 0, gg = 0, aa = 0;
-                int y = 0;
-                Uint32 pixel;
-
-                for (int x = 0; x < coloredSurface->w; x++) {
-
-                    for (y = 0; y < coloredSurface->h; y++) {
-
-                        pixel = get_pixel32(coloredSurface, x, y);
-                        SDL_GetRGBA(pixel, coloredSurface->format, &rr, &gg, &bb, &aa);
-
-                        if (rr == color_key_r && gg == color_key_g && bb == color_key_b) {
-                            pixel = SDL_MapRGBA(coloredSurface->format, 255, 0, 255, 0);
-                        }
-                        put_pixel32(coloredSurface, x, y, pixel);
-                    }
-                }
-
-                if (surface_is_locked) { SDL_UnlockSurface(coloredSurface); }
-                return coloredSurface;
-            }
-        }
-        return NULL;
-    }
-
-    SDL_Surface *R_Surface_flip(SDL_Surface *surface, int flags) {
-        if (surface != NULL) {
-
-            SDL_Surface *flipped = NULL;
-
-            flipped = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
-            if (flipped != NULL) {
-
-                bool surface_is_locked = SDL_MUSTLOCK(flipped);
-                if (surface_is_locked) { SDL_LockSurface(flipped); }
-
-                for (int x = 0, rx = flipped->w - 1; x < flipped->w; x++, rx--) {
-
-                    for (int y = 0, ry = flipped->h - 1; y < flipped->h; y++, ry--) {
-
-                        Uint32 pixel = get_pixel32(surface, x, y);
-
-                        if ((flags & SDL_FLIP_VERTICAL) && (flags & SDL_FLIP_HORIZONTAL)) {
-                            put_pixel32(flipped, rx, ry, pixel);
-                        } else if (flags & SDL_FLIP_HORIZONTAL) {
-                            put_pixel32(flipped, rx, y, pixel);
-                        } else if (flags & SDL_FLIP_VERTICAL) {
-                            put_pixel32(flipped, x, ry, pixel);
-                        }
-                    }
-                }
-
-                if (surface_is_locked) { SDL_UnlockSurface(flipped); }
-
-                return flipped;
-            }
-        }
-        return NULL;
-    }
-}// namespace SurfaceBase
+    return NULL;
+}
+}  // namespace SurfaceBase

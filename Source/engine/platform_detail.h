@@ -64,4 +64,4 @@
 
 #define FS_LINE_INCR 256
 
-#endif// !_METADOT_PLATFORMDETAIL_H_
+#endif  // !_METADOT_PLATFORMDETAIL_H_

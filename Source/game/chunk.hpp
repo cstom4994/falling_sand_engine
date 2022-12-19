@@ -3,17 +3,16 @@
 #ifndef _METADOT_CHUNK_HPP_
 #define _METADOT_CHUNK_HPP_
 
+#include <fstream>
+#include <iostream>
+#include <utility>
+
 #include "core/const.h"
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 #include "materials.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <utility>
-
-typedef struct
-{
+typedef struct {
     U16 index;
     U32 color;
     int32_t temperature;
@@ -31,15 +30,13 @@ public:
     bool pleaseDelete = false;
 
     explicit Chunk(int x, int y, char *worldName)
-        : x(std::move(x)), y(std::move(y)),
-          fname(std::move(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" +
-                          std::to_string(y) + ".region")){};
-    Chunk() : Chunk(0, 0, (char *) "chunks"){};
+        : x(std::move(x)), y(std::move(y)), fname(std::move(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".region")){};
+    Chunk() : Chunk(0, 0, (char *)"chunks"){};
     ~Chunk();
 
     void loadMeta();
 
-    //static MaterialInstanceData* readBuf;
+    // static MaterialInstanceData* readBuf;
     void read();
     void write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *background);
     bool hasFile();

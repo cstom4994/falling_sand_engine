@@ -40,21 +40,18 @@ typedef double F64;
 
 typedef unsigned char Byte;
 
-typedef struct U16Point
-{
+typedef struct U16Point {
     U16 x;
     U16 y;
 } U16Point;
 
-typedef struct Vector3
-{
+typedef struct Vector3 {
     float x;
     float y;
     float z;
 } Vector3;
 
-typedef struct Pixel
-{
+typedef struct Pixel {
     unsigned char b;
     unsigned char g;
     unsigned char r;

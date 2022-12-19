@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "engine_ecs.h"
+
 #include "core/core.h"
 
 /////////////////////////////////External data//////////////////////////////////
@@ -14,16 +15,17 @@ unsigned char initializedECS = 0;
 
 //----------------- ECS Functions -----------------
 
-//Initialize the Entity Component System lists and arrays
-//Needs to be called before registering any system
+// Initialize the Entity Component System lists and arrays
+// Needs to be called before registering any system
 int InitECS(unsigned max_entities) {
     if (initializedECS) {
         METADOT_WARN("ECS already initialized");
         return 0;
     }
     if (initializedEngine) {
-        METADOT_WARN("Engine already initialized! Initialize and configure ECS before "
-                     "initializing the engine!");
+        METADOT_WARN(
+                "Engine already initialized! Initialize and configure ECS before "
+                "initializing the engine!");
         return 0;
     }
 
@@ -31,10 +33,10 @@ int InitECS(unsigned max_entities) {
     ECS.Entities = calloc(max_entities, sizeof(Entity));
     ECS.AvaliableEntitiesIndexes = InitList(sizeof(int));
 
-    //Populate avaliable entities with all indexes
+    // Populate avaliable entities with all indexes
     int i;
     for (i = 0; i < max_entities; i++) {
-        InsertListEnd(&ECS.AvaliableEntitiesIndexes, (void *) &i);
+        InsertListEnd(&ECS.AvaliableEntitiesIndexes, (void *)&i);
     }
 
     ECS.SystemList = InitList(sizeof(System));
@@ -44,17 +46,17 @@ int InitECS(unsigned max_entities) {
 }
 
 void FreeECS() {
-    //Call deallocation functions of systems
+    // Call deallocation functions of systems
     ListCellPointer current = GetFirstCell(ECS.SystemList);
     while (current) {
-        System curSystem = *((System *) GetElement(*current));
+        System curSystem = *((System *)GetElement(*current));
         curSystem.systemFree();
 
         current = GetNextCell(current);
     }
     FreeList(&ECS.SystemList);
 
-    //Free all ECS structures and lists
+    // Free all ECS structures and lists
     for (int c = 0; c < ECS.numberOfComponents; c++) {
         for (int j = 0; j < ECS.maxEntities; j++) {
             if (ECS.Components[c][j].data) {
@@ -75,14 +77,12 @@ void FreeECS() {
     initializedECS = 0;
 }
 
-int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **data),
-                         void (*destructorFunc)(void **data), void *(*copyFunc)(void *) ) {
+int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **data), void (*destructorFunc)(void **data), void *(*copyFunc)(void *)) {
     if (!ECS.Components) {
         ECS.Components = malloc(sizeof(Component *));
         ECS.Components[0] = calloc(ECS.maxEntities, sizeof(Component));
     } else {
-        ECS.Components =
-                realloc(ECS.Components, (ECS.numberOfComponents + 1) * sizeof(Component *));
+        ECS.Components = realloc(ECS.Components, (ECS.numberOfComponents + 1) * sizeof(Component *));
         ECS.Components[ECS.numberOfComponents] = calloc(ECS.maxEntities, sizeof(Component));
     }
 
@@ -98,8 +98,7 @@ int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **
         ECS.ComponentTypes = malloc(sizeof(ComponentType));
         ECS.ComponentTypes[0] = newType;
     } else {
-        ECS.ComponentTypes =
-                realloc(ECS.ComponentTypes, (ECS.numberOfComponents + 1) * sizeof(ComponentType));
+        ECS.ComponentTypes = realloc(ECS.ComponentTypes, (ECS.numberOfComponents + 1) * sizeof(ComponentType));
         ECS.ComponentTypes[ECS.numberOfComponents] = newType;
     }
     ECS.numberOfComponents++;
@@ -107,33 +106,25 @@ int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **
     return ECS.numberOfComponents - 1;
 }
 
-int RegisterNewSystem(char systemName[25], int priority, ComponentMask required,
-                      ComponentMask excluded, void (*initFunc)(), void (*updateFunc)(),
-                      void (*freeFunc)()) {
+int RegisterNewSystem(char systemName[25], int priority, ComponentMask required, ComponentMask excluded, void (*initFunc)(), void (*updateFunc)(), void (*freeFunc)()) {
     if (!initializedECS) {
         METADOT_WARN("ECS not initialized! Initialize ECS before registering the systems");
         return -1;
     }
-    System newSystem = (System){.priority = priority,
-                                .enabled = 1,
-                                .required = required,
-                                .excluded = excluded,
-                                .systemInit = initFunc,
-                                .systemUpdate = updateFunc,
-                                .systemFree = freeFunc};
+    System newSystem = (System){.priority = priority, .enabled = 1, .required = required, .excluded = excluded, .systemInit = initFunc, .systemUpdate = updateFunc, .systemFree = freeFunc};
     strncpy(newSystem.name, systemName, 25);
 
     ListCellPointer current = GetLastCell(ECS.SystemList);
     int index = GetLength(ECS.SystemList);
     while (current) {
-        System *curSystem = (System *) GetElement(*current);
+        System *curSystem = (System *)GetElement(*current);
         if (curSystem->priority >= priority) break;
 
         index--;
         current = GetPreviousCell(current);
     }
 
-    InsertListIndex(&ECS.SystemList, (void *) &newSystem, index < 0 ? 0 : index);
+    InsertListIndex(&ECS.SystemList, (void *)&newSystem, index < 0 ? 0 : index);
     return GetLength(ECS.SystemList) - 1;
 }
 
@@ -147,7 +138,7 @@ ComponentID GetComponentID(char componentName[25]) {
     return -1;
 }
 
-//Receives components name strings[25] and return a ComponentMask containing these components
+// Receives components name strings[25] and return a ComponentMask containing these components
 ComponentMask CreateComponentMaskByName(int numComp, ...) {
     ComponentMask newMask = {0};
 
@@ -168,7 +159,7 @@ ComponentMask CreateComponentMaskByName(int numComp, ...) {
     return newMask;
 }
 
-//Receives components index ints and return a ComponentMask containing these components
+// Receives components index ints and return a ComponentMask containing these components
 ComponentMask CreateComponentMaskByID(int numComp, ...) {
     ComponentMask newMask = {0};
 
@@ -191,11 +182,11 @@ ComponentMask CreateComponentMaskByID(int numComp, ...) {
 
 //----------------- Entity functions -----------------
 EntityID CreateEntity() {
-    int *avaliableIndex = (int *) GetFirstElement(ECS.AvaliableEntitiesIndexes);
+    int *avaliableIndex = (int *)GetFirstElement(ECS.AvaliableEntitiesIndexes);
     if (avaliableIndex) {
         int index = *avaliableIndex;
         if (index > ECS.maxUsedIndex) ECS.maxUsedIndex = index;
-        //Clear the entity before returning
+        // Clear the entity before returning
         ECS.Entities[index].mask = CreateComponentMaskByID(0);
         ECS.Entities[index].isSpawned = 1;
         ECS.Entities[index].childs = InitList(sizeof(EntityID));
@@ -215,15 +206,15 @@ void DestroyEntity(EntityID entity) {
 
     if (EntityIsParent(entity)) {
         ListCellPointer childCell;
-        ListForEach(childCell, ECS.Entities[entity].childs) {
-            DestroyEntity(GetElementAsType(childCell, EntityID));
-        }
+        ListForEach(childCell, ECS.Entities[entity].childs) { DestroyEntity(GetElementAsType(childCell, EntityID)); }
     }
 
     int mask = ECS.Entities[entity].mask.mask;
     ComponentID c;
     for (c = 0; c < ECS.numberOfComponents; c++) {
-        if (mask & 1) { ECS.ComponentTypes[c].destructor(&ECS.Components[c][entity].data); }
+        if (mask & 1) {
+            ECS.ComponentTypes[c].destructor(&ECS.Components[c][entity].data);
+        }
         mask >>= 1;
     }
 
@@ -236,7 +227,7 @@ void DestroyEntity(EntityID entity) {
     ECS.Entities[entity].prefabPath[0] = '\0';
     ECS.Entities[entity].prefabName[0] = '\0';
 
-    InsertListStart(&ECS.AvaliableEntitiesIndexes, (void *) &entity);
+    InsertListStart(&ECS.AvaliableEntitiesIndexes, (void *)&entity);
 }
 
 int IsValidEntity(EntityID entity) {
@@ -283,7 +274,7 @@ void AddComponentToEntity(ComponentID component, EntityID entity) {
 
     ECS.Entities[entity].mask.mask |= 1 << component;
 
-    //Call the component constructor
+    // Call the component constructor
     ECS.ComponentTypes[component].constructor(&ECS.Components[component][entity].data);
 }
 
@@ -297,13 +288,12 @@ void RemoveComponentFromEntity(ComponentID component, EntityID entity) {
         return;
     }
     if (!EntityContainsMask(entity, CreateComponentMaskByID(1, component))) {
-        METADOT_WARN("AddComponentToEntity: This entity doesnt have this component! (E:%d C:%d)",
-                     entity, component);
+        METADOT_WARN("AddComponentToEntity: This entity doesnt have this component! (E:%d C:%d)", entity, component);
         return;
     }
     ECS.Entities[entity].mask.mask &= ~(1 << component);
 
-    //Call the component destructor
+    // Call the component destructor
     ECS.ComponentTypes[component].destructor(&ECS.Components[component][entity].data);
 }
 
@@ -318,8 +308,7 @@ EntityID DuplicateEntity(EntityID entity) {
     ComponentID c;
     for (c = 0; c < ECS.numberOfComponents; c++) {
         if (EntityContainsComponent(entity, c)) {
-            ECS.Components[c][newEntity].data =
-                    ECS.ComponentTypes[c].copy(ECS.Components[c][entity].data);
+            ECS.Components[c][newEntity].data = ECS.ComponentTypes[c].copy(ECS.Components[c][entity].data);
         }
     }
     ECS.Entities[newEntity].mask.mask = ECS.Entities[entity].mask.mask;
@@ -332,7 +321,9 @@ EntityID DuplicateEntity(EntityID entity) {
         }
     }
 
-    if (EntityIsChild(entity)) { SetEntityParent(newEntity, GetEntityParent(entity)); }
+    if (EntityIsChild(entity)) {
+        SetEntityParent(newEntity, GetEntityParent(entity));
+    }
 
     if (EntityIsPrefab(entity)) {
         ECS.Entities[newEntity].isPrefab = 1;
@@ -380,9 +371,7 @@ int MaskContainsComponent(ComponentMask mask, ComponentID component) {
     return mask.mask >> component & 1;
 }
 
-ComponentMask IntersectComponentMasks(ComponentMask mask1, ComponentMask mask2) {
-    return (ComponentMask){mask1.mask & mask2.mask};
-}
+ComponentMask IntersectComponentMasks(ComponentMask mask1, ComponentMask mask2) { return (ComponentMask){mask1.mask & mask2.mask}; }
 
 //----------------- Parenting functions -----------------
 int EntityIsParent(EntityID entity) {
@@ -403,8 +392,7 @@ int EntityIsChild(EntityID entity) {
 
 void SetEntityParent(EntityID child, EntityID parent) {
     if (child == parent) {
-        METADOT_WARN("SetEntityParent: Child and parent can't be the same! (%d) (%d)", child,
-                     parent);
+        METADOT_WARN("SetEntityParent: Child and parent can't be the same! (%d) (%d)", child, parent);
         return;
     }
     if (!IsValidEntity(child)) {
@@ -416,8 +404,10 @@ void SetEntityParent(EntityID child, EntityID parent) {
         return;
     }
 
-    //If is already a child of another parent, remove it first
-    if (EntityIsChild(child)) { UnsetParent(child); }
+    // If is already a child of another parent, remove it first
+    if (EntityIsChild(child)) {
+        UnsetParent(child);
+    }
 
     InsertListEnd(&ECS.Entities[parent].childs, &child);
     ECS.Entities[child].parent = parent;
@@ -454,20 +444,22 @@ int UnsetParent(EntityID child) {
 
     EntityID parentID = GetEntityParent(child);
 
-    //Find the index of the child in the list of childs
+    // Find the index of the child in the list of childs
     int index = 0;
     ListCellPointer current = GetFirstCell(ECS.Entities[parentID].childs);
     while (current) {
-        EntityID cID = *((EntityID *) GetElement(*current));
+        EntityID cID = *((EntityID *)GetElement(*current));
 
-        //If found
+        // If found
         if (cID == child) {
             RemoveListIndex(&ECS.Entities[parentID].childs, index);
 
             ECS.Entities[child].isChild = 0;
 
-            //If his old parent has an empty list of childs, set isParent to zero
-            if (IsListEmpty(ECS.Entities[parentID].childs)) { ECS.Entities[parentID].isParent = 0; }
+            // If his old parent has an empty list of childs, set isParent to zero
+            if (IsListEmpty(ECS.Entities[parentID].childs)) {
+                ECS.Entities[parentID].isParent = 0;
+            }
 
             return 1;
         }
@@ -475,23 +467,22 @@ int UnsetParent(EntityID child) {
         index++;
     }
 
-    //Return zero if can't find the child's index in the list (Indicative of implementation error)
-    METADOT_ERROR("RemoveChild: Child is not an parent's child (Shouldn't happen). (P:%d  C:%d)",
-                  parentID, child);
+    // Return zero if can't find the child's index in the list (Indicative of implementation error)
+    METADOT_ERROR("RemoveChild: Child is not an parent's child (Shouldn't happen). (P:%d  C:%d)", parentID, child);
     return 0;
 }
 
 //----------------- Import/Export Entities functions -----------------
 
-//Warning: the encodingToPrefab flag is only valid for the first caller of this function,
-//as if you are encoding to prefab, you will only encode the full data of the first, and the childs will still
-//encode as normal prefabs (prefab path, name and changes) or normal objects
+// Warning: the encodingToPrefab flag is only valid for the first caller of this function,
+// as if you are encoding to prefab, you will only encode the full data of the first, and the childs will still
+// encode as normal prefabs (prefab path, name and changes) or normal objects
 
-//Limitations:
+// Limitations:
 //	* When not encoding to prefab (like when saving a scene with a prefab), only the local changes made to the first parent
-//    are saved. Ex: Saving a scene with a character prefab positioned and with his child weapon translated, the translation of
-//    the weapon will not be saved on the scene. But if you save the character prefab with his child weapon translated before saving
-//    the scene, the translation will not be discarted
+//     are saved. Ex: Saving a scene with a character prefab positioned and with his child weapon translated, the translation of
+//     the weapon will not be saved on the scene. But if you save the character prefab with his child weapon translated before saving
+//     the scene, the translation will not be discarted
 
 // cJSON *EncodeEntity(EntityID entity, int encodingToPrefab) {
 //     cJSON *entityObj = cJSON_CreateObject();

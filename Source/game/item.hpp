@@ -4,8 +4,8 @@
 #define _METADOT_ITEM_HPP_
 
 #include "core/core.h"
-#include "materials.hpp"
 #include "game_datastruct.hpp"
+#include "materials.hpp"
 
 class ItemFlags {
 public:

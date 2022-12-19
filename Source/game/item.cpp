@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "item.hpp"
+
 #include "core/core.h"
 #include "core/macros.h"
 #include "engine/renderer/renderer_utils.h"
@@ -32,7 +33,7 @@ Item *Item::makeItem(U8 flags, RigidBody *rb) {
 U32 getpixel(C_Surface *surface, int x, int y) {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    U8 *p = (U8 *) surface->pixels + y * surface->pitch + x * bpp;
+    U8 *p = (U8 *)surface->pixels + y * surface->pitch + x * bpp;
 
     switch (bpp) {
         case 1:
@@ -40,17 +41,18 @@ U32 getpixel(C_Surface *surface, int x, int y) {
             break;
 
         case 2:
-            return *(U16 *) p;
+            return *(U16 *)p;
             break;
 
         case 3:
-            if (SDL_BYTEORDER == SDL_BIG_ENDIAN) return p[0] << 16 | p[1] << 8 | p[2];
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+                return p[0] << 16 | p[1] << 8 | p[2];
             else
                 return p[0] | p[1] << 8 | p[2] << 16;
             break;
 
         case 4:
-            return *(U32 *) p;
+            return *(U32 *)p;
             break;
 
         default:
@@ -82,7 +84,7 @@ void Item::loadFillTexture(C_Surface *tex) {
             if (((color >> 32) & 0xff) > 0) {
                 U32 n = color & 0x00ffffff;
 
-                //U32 t = (n * 100) / col;
+                // U32 t = (n * 100) / col;
                 U32 t = n;
 
                 fill[t - 1] = {x, y};

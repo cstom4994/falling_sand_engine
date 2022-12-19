@@ -3,11 +3,12 @@
 #ifndef _METADOT_REFLECTIONFLAT_HPP_
 #define _METADOT_REFLECTIONFLAT_HPP_
 
+#include <array>
+#include <vector>
+
 #include "core/macros.h"
 #include "game/console.hpp"
 #include "game/game_scriptingwrap.hpp"
-#include <array>
-#include <vector>
 
 METADOT_INLINE CVar::ItemLog &operator<<(CVar::ItemLog &log, ImVec4 &vec) {
     log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";
@@ -17,7 +18,7 @@ METADOT_INLINE CVar::ItemLog &operator<<(CVar::ItemLog &log, ImVec4 &vec) {
 static void int_setter(int &my_type, int v) { my_type = v; }
 
 static void float_setter(float &my_type, float vec) {
-    //if (vec.size() != 1) return;
+    // if (vec.size() != 1) return;
     my_type = vec;
 }
 
@@ -30,8 +31,7 @@ static void imvec4_setter(ImVec4 &my_type, std::vector<int> vec) {
     my_type.w = vec[3] / 255.f;
 }
 
-struct GameData
-{
+struct GameData {
     int ofsX = 0;
     int ofsY = 0;
 

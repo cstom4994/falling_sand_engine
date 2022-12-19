@@ -6,16 +6,14 @@
 #include "engine_core.h"
 #include "utils.h"
 
-//ECS Types
-typedef struct ComponentMask
-{
+// ECS Types
+typedef struct ComponentMask {
     unsigned long mask;
 } ComponentMask;
 
 typedef int EntityID;
 
-typedef struct Entity
-{
+typedef struct Entity {
     ComponentMask mask;
     int isSpawned;
     int isParent;
@@ -24,21 +22,19 @@ typedef struct Entity
     char prefabPath[4096];
     char prefabName[256];
 
-    //If parent: List of his child EntityIDs
+    // If parent: List of his child EntityIDs
     List childs;
-    //If child: ID of his parent
+    // If child: ID of his parent
     EntityID parent;
 } Entity;
 
-typedef struct Component
-{
+typedef struct Component {
     void *data;
 } Component;
 
 typedef int ComponentID;
 
-typedef struct ComponentType
-{
+typedef struct ComponentType {
     char name[25];
     void (*constructor)(void **data);
     void (*destructor)(void **data);
@@ -51,8 +47,7 @@ typedef struct ComponentType
 typedef int SystemID;
 
 typedef struct System System;
-typedef struct System
-{
+typedef struct System {
     char name[25];
     int priority;
     int enabled;
@@ -65,41 +60,37 @@ typedef struct System
     void (*systemFree)();
 } System;
 
-typedef struct engine_ecs
-{
+typedef struct engine_ecs {
     unsigned maxEntities;
     long int maxUsedIndex;
 
-    //Dinamically allocated array of Entity structs
+    // Dinamically allocated array of Entity structs
     Entity *Entities;
     List AvaliableEntitiesIndexes;
 
-    //Array containing dinamicaly allocated arrays with components
-    //Each index of the main array is set to be unique to that component type
+    // Array containing dinamicaly allocated arrays with components
+    // Each index of the main array is set to be unique to that component type
     Component **Components;
-    //Array containing the name and operation functions of the component types
+    // Array containing the name and operation functions of the component types
     ComponentType *ComponentTypes;
     unsigned numberOfComponents;
 
-    //List containing all systems
+    // List containing all systems
     List SystemList;
 } engine_ecs;
 
-//ECS functions
+// ECS functions
 int InitECS(unsigned max_entities);
 void FreeECS();
 
-int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **data),
-                         void (*destructorFunc)(void **data), void *(*copyFunc)(void *) );
-int RegisterNewSystem(char systemName[25], int priority, ComponentMask required,
-                      ComponentMask excluded, void (*initFunc)(), void (*updateFunc)(),
-                      void (*freeFunc)());
+int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **data), void (*destructorFunc)(void **data), void *(*copyFunc)(void *));
+int RegisterNewSystem(char systemName[25], int priority, ComponentMask required, ComponentMask excluded, void (*initFunc)(), void (*updateFunc)(), void (*freeFunc)());
 
 ComponentID GetComponentID(char componentName[25]);
 
-//Receives string
+// Receives string
 ComponentMask CreateComponentMaskByName(int numComp, ...);
-//Receives ComponentID
+// Receives ComponentID
 ComponentMask CreateComponentMaskByID(int numComp, ...);
 
 EntityID CreateEntity();

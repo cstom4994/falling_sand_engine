@@ -7,39 +7,34 @@
 #include <time.h>
 
 #include "core/core.h"
-
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 #include "sdl_wrapper.h"
-
 #include "utils.h"
 
-typedef struct engine_core
-{
+typedef struct engine_core {
     C_Renderer *renderer;
     C_Window *window;
     C_GLContext *glContext;
 } engine_core;
 
-typedef struct engine_screen
-{
-    //Internal resolution, used in rendering
-    // int gameWidth;
-    // int gameHeight;
+typedef struct engine_screen {
+    // Internal resolution, used in rendering
+    //  int gameWidth;
+    //  int gameHeight;
 
-    //Window resolution
+    // Window resolution
     int windowWidth;
     int windowHeight;
 
-    //Scale of division, as gameRes = windowRes/gameScale
+    // Scale of division, as gameRes = windowRes/gameScale
     int gameScale;
 
     unsigned maxFPS;
 } engine_screen;
 
-typedef struct engine_time
-{
+typedef struct engine_time {
     int fps;
     int feelsLikeFps;
     long long lastTime;

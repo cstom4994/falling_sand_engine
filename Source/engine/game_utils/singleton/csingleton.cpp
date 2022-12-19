@@ -18,9 +18,6 @@
  *
  ***************************************************************************/
 
-
 #include "csingleton.h"
 
-namespace BaseEngine {
-
-}
+namespace BaseEngine {}

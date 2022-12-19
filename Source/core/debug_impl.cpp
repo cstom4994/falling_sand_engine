@@ -1,11 +1,11 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "debug_impl.hpp"
+
 #include "core/core.hpp"
 
 static const char *date = __DATE__;
-static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char mond[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 int metadot_buildnum(void) {
@@ -21,9 +21,11 @@ int metadot_buildnum(void) {
 
     d += atoi(&date[4]) - 1;
     y = atoi(&date[7]) - 2000;
-    b = d + (int) ((y - 1) * 365.25f);
+    b = d + (int)((y - 1) * 365.25f);
 
-    if (((y % 4) == 0) && m > 1) { b += 1; }
+    if (((y % 4) == 0) && m > 1) {
+        b += 1;
+    }
     b -= 7950;
 
     return b;
@@ -55,8 +57,7 @@ const std::string metadot_metadata() {
 #elif defined(__GNUC__) || defined(__GNUG__)
     result += "compiler.family = gcc\n";
     result += "compiler.version = ";
-    result += std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." +
-              std::to_string(__GNUC_PATCHLEVEL__);
+    result += std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__);
     result += "\n";
 #elif defined(_MSC_VER)
     result += "compiler.family = msvc\n";

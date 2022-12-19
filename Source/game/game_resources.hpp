@@ -3,19 +3,18 @@
 #ifndef _METADOT_GAMERESOURCES_HPP_
 #define _METADOT_GAMERESOURCES_HPP_
 
-#include "core/core.hpp"
-#include "engine/scripting/lua_wrapper.hpp"
-#include "engine/sdl_wrapper.h"
-
 #include <iostream>
 #include <string>
 #include <string_view>
 
+#include "core/core.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/sdl_wrapper.h"
+
 struct ase_t;
 
-struct Aseprite
-{
-    ase_t *ase;// Pointer to the cute_aseprite data.
+struct Aseprite {
+    ase_t *ase;  // Pointer to the cute_aseprite data.
 };
 
 class Textures {
@@ -55,8 +54,7 @@ public:
 
 C_Surface *LoadTextureData(std::string path);
 
-struct I18N
-{
+struct I18N {
     void Init();
     void Load(std::string lang);
     std::string Get(std::string text);

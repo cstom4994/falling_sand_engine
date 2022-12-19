@@ -13,17 +13,16 @@
 #include "engine_ecs.h"
 #include "engine_platform.h"
 #include "engine_render.h"
-
 #include "utils.h"
 
-#define IMPLENGINE()                                                                               \
-    extern engine_core Core;                                                                       \
-    extern engine_render Render;                                                                   \
-    extern engine_screen Screen;                                                                   \
-    extern engine_ecs ECS;                                                                         \
+#define IMPLENGINE()             \
+    extern engine_core Core;     \
+    extern engine_render Render; \
+    extern engine_screen Screen; \
+    extern engine_ecs ECS;       \
     extern engine_time Time
 
-//Engine functions called from main
+// Engine functions called from main
 int InitEngine();
 void EngineUpdate();
 void EngineUpdateEnd();

@@ -5,31 +5,20 @@
 
 #include "core/core.h"
 #include "core/macros.h"
-
 #include "platform_detail.h"
 #include "sdl_wrapper.h"
 
-typedef enum engine_displaymode {
-    WINDOWED,
-    BORDERLESS,
-    FULLSCREEN
-} engine_displaymode;
+typedef enum engine_displaymode { WINDOWED, BORDERLESS, FULLSCREEN } engine_displaymode;
 
-typedef enum engine_windowflashaction {
-    START,
-    START_COUNT,
-    START_UNTIL_FG,
-    STOP
-} engine_windowflashaction;
+typedef enum engine_windowflashaction { START, START_COUNT, START_UNTIL_FG, STOP } engine_windowflashaction;
 
-typedef struct engine_platform
-{
+typedef struct engine_platform {
 
 } engine_platform;
 
 typedef U32 ticks;
 
-int ParseRunArgs(int argc, char *argv[]);
+int ParseRunArgs(int argc, char* argv[]);
 int InitWindow();
 void EndWindow();
 void SetDisplayMode(engine_displaymode mode);
@@ -37,6 +26,6 @@ void SetWindowFlash(engine_windowflashaction action, int count, int period);
 void SetVSync(bool vsync);
 void SetMinimizeOnLostFocus(bool minimize);
 void SetWindowTitle(const char* title);
-inline ticks GetTime() { return (ticks) SDL_GetTicks(); }
+inline ticks GetTime() { return (ticks)SDL_GetTicks(); }
 
 #endif

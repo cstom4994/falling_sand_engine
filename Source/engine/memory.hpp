@@ -14,24 +14,21 @@
 #include <cstdint>
 #include <map>
 
-#include "core/core.hpp"
 #include "core/alloc.h"
+#include "core/core.hpp"
 #include "core/macros.h"
 #include "libs/nameof.hpp"
 
 class AllocatorUtils {
 public:
-    static const std::size_t CalculatePadding(const std::size_t baseAddress,
-                                              const std::size_t alignment) {
+    static const std::size_t CalculatePadding(const std::size_t baseAddress, const std::size_t alignment) {
         const std::size_t multiplier = (baseAddress / alignment) + 1;
         const std::size_t alignedAddress = multiplier * alignment;
         const std::size_t padding = alignedAddress - baseAddress;
         return padding;
     }
 
-    static const std::size_t CalculatePaddingWithHeader(const std::size_t baseAddress,
-                                                        const std::size_t alignment,
-                                                        const std::size_t headerSize) {
+    static const std::size_t CalculatePaddingWithHeader(const std::size_t baseAddress, const std::size_t alignment, const std::size_t headerSize) {
         std::size_t padding = CalculatePadding(baseAddress, alignment);
         std::size_t neededSpace = headerSize;
 
@@ -84,11 +81,10 @@ public:
     virtual void Init() override;
 };
 
-template<class T>
+template <class T>
 class DoublyLinkedList {
 public:
-    struct Node
-    {
+    struct Node {
         T data;
         Node *previous;
         Node *next;
@@ -105,10 +101,10 @@ private:
     DoublyLinkedList(DoublyLinkedList &doublyLinkedList);
 };
 
-template<class T>
+template <class T>
 DoublyLinkedList<T>::DoublyLinkedList() {}
 
-template<class T>
+template <class T>
 void DoublyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
     if (previousNode == nullptr) {
         // Is the first node
@@ -129,14 +125,16 @@ void DoublyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
         } else {
             // Is a middle node
             newNode->next = previousNode->next;
-            if (newNode->next != nullptr) { newNode->next->previous = newNode; }
+            if (newNode->next != nullptr) {
+                newNode->next->previous = newNode;
+            }
             previousNode->next = newNode;
             newNode->previous = previousNode;
         }
     }
 }
 
-template<class T>
+template <class T>
 void DoublyLinkedList<T>::remove(Node *deleteNode) {
     if (deleteNode->previous == nullptr) {
         // Is the first node
@@ -181,17 +179,15 @@ public:
 private:
     StackAllocator(StackAllocator &stackAllocator);
 
-    struct AllocationHeader
-    {
+    struct AllocationHeader {
         std::size_t padding;
     };
 };
 
-template<class T>
+template <class T>
 class StackLinkedList {
 public:
-    struct Node
-    {
+    struct Node {
         T data;
         Node *next;
     };
@@ -205,13 +201,13 @@ public:
     Node *pop();
 };
 
-template<class T>
+template <class T>
 void StackLinkedList<T>::push(Node *newNode) {
     newNode->next = head;
     head = newNode;
 }
 
-template<class T>
+template <class T>
 typename StackLinkedList<T>::Node *StackLinkedList<T>::pop() {
     Node *top = head;
     head = head->next;
@@ -220,9 +216,7 @@ typename StackLinkedList<T>::Node *StackLinkedList<T>::pop() {
 
 class PoolAllocator : public Allocator {
 private:
-    struct FreeHeader
-    {
-    };
+    struct FreeHeader {};
     using Node = StackLinkedList<FreeHeader>::Node;
     StackLinkedList<FreeHeader> m_freeList;
 
@@ -268,11 +262,10 @@ private:
     LinearAllocator(LinearAllocator &linearAllocator);
 };
 
-template<class T>
+template <class T>
 class SinglyLinkedList {
 public:
-    struct Node
-    {
+    struct Node {
         T data;
         Node *next;
     };
@@ -286,10 +279,10 @@ public:
     void remove(Node *previousNode, Node *deleteNode);
 };
 
-template<class T>
+template <class T>
 SinglyLinkedList<T>::SinglyLinkedList() {}
 
-template<class T>
+template <class T>
 void SinglyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
     if (previousNode == nullptr) {
         // Is the first node
@@ -313,7 +306,7 @@ void SinglyLinkedList<T>::insert(Node *previousNode, Node *newNode) {
     }
 }
 
-template<class T>
+template <class T>
 void SinglyLinkedList<T>::remove(Node *previousNode, Node *deleteNode) {
     if (previousNode == nullptr) {
         // Is the first node
@@ -331,18 +324,13 @@ void SinglyLinkedList<T>::remove(Node *previousNode, Node *deleteNode) {
 
 class FreeListAllocator : public Allocator {
 public:
-    enum PlacementPolicy {
-        FIND_FIRST,
-        FIND_BEST
-    };
+    enum PlacementPolicy { FIND_FIRST, FIND_BEST };
 
 private:
-    struct FreeHeader
-    {
+    struct FreeHeader {
         std::size_t blockSize;
     };
-    struct AllocationHeader
-    {
+    struct AllocationHeader {
         std::size_t blockSize;
         char padding;
     };
@@ -371,12 +359,9 @@ private:
 
     void Coalescence(Node *prevBlock, Node *freeBlock);
 
-    void Find(const std::size_t size, const std::size_t alignment, std::size_t &padding,
-              Node *&previousNode, Node *&foundNode);
-    void FindBest(const std::size_t size, const std::size_t alignment, std::size_t &padding,
-                  Node *&previousNode, Node *&foundNode);
-    void FindFirst(const std::size_t size, const std::size_t alignment, std::size_t &padding,
-                   Node *&previousNode, Node *&foundNode);
+    void Find(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode);
+    void FindBest(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode);
+    void FindFirst(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode);
 };
 
 #define METADOT_GC_ALLOC(size) malloc(size)
@@ -394,51 +379,50 @@ private:
 #define REMOVEDEBUGMAP(_c)
 #endif
 
-#define METADOT_NEW(_field, _ptr, _class, ...)                                                     \
-    {                                                                                              \
-        _ptr = (_class *) GC::_field->Allocate(sizeof(_class));                                    \
-        new (_ptr) _class(__VA_ARGS__);                                                            \
-        GC::_field##_Count++;                                                                      \
-        ADDTODEBUGMAP(_class);                                                                     \
+#define METADOT_NEW(_field, _ptr, _class, ...)                 \
+    {                                                          \
+        _ptr = (_class *)GC::_field->Allocate(sizeof(_class)); \
+        new (_ptr) _class(__VA_ARGS__);                        \
+        GC::_field##_Count++;                                  \
+        ADDTODEBUGMAP(_class);                                 \
     }
 
-#define METADOT_NEW_ARRAY(_field, _ptr, _class, _count, ...)                                       \
-    {                                                                                              \
-        _ptr = (_class *) GC::_field->Allocate(sizeof(_class[_count]));                            \
-        new (_ptr) _class(__VA_ARGS__);                                                            \
-        GC::_field##_Count++;                                                                      \
-        ADDTODEBUGMAP(_class);                                                                     \
+#define METADOT_NEW_ARRAY(_field, _ptr, _class, _count, ...)           \
+    {                                                                  \
+        _ptr = (_class *)GC::_field->Allocate(sizeof(_class[_count])); \
+        new (_ptr) _class(__VA_ARGS__);                                \
+        GC::_field##_Count++;                                          \
+        ADDTODEBUGMAP(_class);                                         \
     }
 
-#define METADOT_CREATE(_field, _ptr, _class, ...)                                                  \
-                                                                                                   \
-    _class *_ptr = nullptr;                                                                        \
+#define METADOT_CREATE(_field, _ptr, _class, ...) \
+                                                  \
+    _class *_ptr = nullptr;                       \
     METADOT_NEW(_field, _ptr, _class, __VA_ARGS__)
 
-#define METADOT_DELETE_RAW(_field, _ptr, _class_name, _class)                                      \
-    {                                                                                              \
-        _ptr->~_class_name();                                                                      \
-        GC::_field->Free(_ptr);                                                                    \
-        GC::_field##_Count--;                                                                      \
-        REMOVEDEBUGMAP(_class);                                                                    \
+#define METADOT_DELETE_RAW(_field, _ptr, _class_name, _class) \
+    {                                                         \
+        _ptr->~_class_name();                                 \
+        GC::_field->Free(_ptr);                               \
+        GC::_field##_Count--;                                 \
+        REMOVEDEBUGMAP(_class);                               \
     }
 
-#define METADOT_DELETE(_field, _ptr, _class_name)                                                  \
+#define METADOT_DELETE(_field, _ptr, _class_name) \
     { METADOT_DELETE_RAW(_field, _ptr, _class_name, _class_name); }
 
-#define METADOT_DELETE_EX(_field, _ptr, _class_name, _class)                                       \
+#define METADOT_DELETE_EX(_field, _ptr, _class_name, _class) \
     { METADOT_DELETE_RAW(_field, _ptr, _class_name, _class); }
 
-#define GCField_R(_c, _n)                                                                          \
-    static _c *_n;                                                                                 \
+#define GCField_R(_c, _n) \
+    static _c *_n;        \
     static std::atomic<int> _n##_Count
 
-#define GCField_S(_c, _n)                                                                          \
-    _c *GC::_n = nullptr;                                                                          \
+#define GCField_S(_c, _n) \
+    _c *GC::_n = nullptr; \
     std::atomic<int> GC::_n##_Count = 0
 
-struct GC
-{
+struct GC {
 #if defined(METADOT_DEBUG)
     static std::map<std::string_view, std::size_t> MemoryDebugMap;
 #endif
@@ -460,4 +444,4 @@ void getInfo();
 
 #endif
 
-#endif// _METADOT_GCMANAGER_HPP_
+#endif  // _METADOT_GCMANAGER_HPP_

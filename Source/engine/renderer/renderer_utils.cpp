@@ -25,17 +25,19 @@ R_public void *R_calloc_wrapper(R_allocator allocator, R_int amount, R_int size)
 
 R_public void *R_default_realloc(R_allocator allocator, void *source, int old_size, int new_size) {
     void *new_alloc = R_alloc(allocator, new_size);
-    if (new_alloc && source && old_size) { memcpy(new_alloc, source, old_size); }
-    if (source) { R_free(allocator, source); }
+    if (new_alloc && source && old_size) {
+        memcpy(new_alloc, source, old_size);
+    }
+    if (source) {
+        R_free(allocator, source);
+    }
     return new_alloc;
 }
 
-R_public void *R_libc_allocator_wrapper(struct R_allocator *this_allocator,
-                                        R_source_location source_location, R_allocator_mode mode,
-                                        R_allocator_args args) {
+R_public void *R_libc_allocator_wrapper(struct R_allocator *this_allocator, R_source_location source_location, R_allocator_mode mode, R_allocator_args args) {
     R_assert(this_allocator);
-    (void) this_allocator;
-    (void) source_location;
+    (void)this_allocator;
+    (void)source_location;
 
     void *result = 0;
 
@@ -64,7 +66,7 @@ R_public void *R_libc_allocator_wrapper(struct R_allocator *this_allocator,
 #pragma region io
 
 R_public R_int R_libc_get_file_size(void *user_data, const char *filename) {
-    ((void) user_data);
+    ((void)user_data);
 
     FILE *file = fopen(filename, "rb");
 
@@ -77,9 +79,8 @@ R_public R_int R_libc_get_file_size(void *user_data, const char *filename) {
     return size;
 }
 
-R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filename, void *dst,
-                                             R_int dst_size) {
-    ((void) user_data);
+R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filename, void *dst, R_int dst_size) {
+    ((void)user_data);
     R_bool result = 0;
 
     FILE *file = fopen(filename, "rb");
@@ -91,7 +92,9 @@ R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filena
         if (dst_size >= file_size) {
             int read_size = fread(dst, 1, file_size, file);
             int no_error = ferror(file) == 0;
-            if (no_error && read_size == file_size) { result = 1; }
+            if (no_error && read_size == file_size) {
+                result = 1;
+            }
         }
         // else log_error buffer is not big enough
     }
@@ -109,8 +112,7 @@ R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filena
 R_public float R_next_pot(float it) { return powf(2, ceilf(logf(it) / logf(2))); }
 
 R_public R_vec2 R_center_to_object(R_sizef center_this, R_rec to_this) {
-    R_vec2 result = {to_this.x + to_this.width / 2 - center_this.width / 2,
-                     to_this.y + to_this.height / 2 - center_this.height / 2};
+    R_vec2 result = {to_this.x + to_this.width / 2 - center_this.width / 2, to_this.y + to_this.height / 2 - center_this.height / 2};
     return result;
 }
 
@@ -119,9 +121,7 @@ R_public float R_clamp(float value, float min, float max) {
     return res > max ? max : res;
 }
 
-R_public float R_lerp(float start, float end, float amount) {
-    return start + amount * (end - start);
-}
+R_public float R_lerp(float start, float end, float amount) { return start + amount * (end - start); }
 
 #pragma endregion
 
@@ -132,7 +132,8 @@ R_public int R_get_size_base64(const unsigned char *input) {
 
     for (R_int i = 0; input[4 * i] != 0; i++) {
         if (input[4 * i + 3] == '=') {
-            if (input[4 * i + 2] == '=') size += 1;
+            if (input[4 * i + 2] == '=')
+                size += 1;
             else
                 size += 2;
         } else
@@ -143,23 +144,20 @@ R_public int R_get_size_base64(const unsigned char *input) {
 }
 
 R_public R_base64_output R_decode_base64(const unsigned char *input, R_allocator allocator) {
-    static const unsigned char R_base64_table[] = {
-            0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            0,  62, 0,  0,  0,  63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0,  0,  0,
-            0,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18,
-            19, 20, 21, 22, 23, 24, 25, 0,  0,  0,  0,  0,  0,  26, 27, 28, 29, 30, 31, 32, 33,
-            34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
+    static const unsigned char R_base64_table[] = {0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,
+                                                   0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  62, 0,  0,  0,  63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0, 0,
+                                                   0, 0, 0, 0, 1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 0,
+                                                   0, 0, 0, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
     R_base64_output result;
     result.size = R_get_size_base64(input);
-    result.buffer = (unsigned char *) R_alloc(allocator, result.size);
+    result.buffer = (unsigned char *)R_alloc(allocator, result.size);
 
     for (R_int i = 0; i < result.size / 3; i++) {
-        unsigned char a = R_base64_table[(int) input[4 * i + 0]];
-        unsigned char b = R_base64_table[(int) input[4 * i + 1]];
-        unsigned char c = R_base64_table[(int) input[4 * i + 2]];
-        unsigned char d = R_base64_table[(int) input[4 * i + 3]];
+        unsigned char a = R_base64_table[(int)input[4 * i + 0]];
+        unsigned char b = R_base64_table[(int)input[4 * i + 1]];
+        unsigned char c = R_base64_table[(int)input[4 * i + 2]];
+        unsigned char d = R_base64_table[(int)input[4 * i + 3]];
 
         result.buffer[3 * i + 0] = (a << 2) | (b >> 4);
         result.buffer[3 * i + 1] = (b << 4) | (c >> 2);
@@ -169,14 +167,14 @@ R_public R_base64_output R_decode_base64(const unsigned char *input, R_allocator
     int n = result.size / 3;
 
     if (result.size % 3 == 1) {
-        unsigned char a = R_base64_table[(int) input[4 * n + 0]];
-        unsigned char b = R_base64_table[(int) input[4 * n + 1]];
+        unsigned char a = R_base64_table[(int)input[4 * n + 0]];
+        unsigned char b = R_base64_table[(int)input[4 * n + 1]];
 
         result.buffer[result.size - 1] = (a << 2) | (b >> 4);
     } else if (result.size % 3 == 2) {
-        unsigned char a = R_base64_table[(int) input[4 * n + 0]];
-        unsigned char b = R_base64_table[(int) input[4 * n + 1]];
-        unsigned char c = R_base64_table[(int) input[4 * n + 2]];
+        unsigned char a = R_base64_table[(int)input[4 * n + 0]];
+        unsigned char b = R_base64_table[(int)input[4 * n + 1]];
+        unsigned char c = R_base64_table[(int)input[4 * n + 2]];
 
         result.buffer[result.size - 2] = (a << 2) | (b >> 4);
         result.buffer[result.size - 1] = (b << 4) | (c >> 2);
@@ -298,8 +296,7 @@ R_public R_vec3 R_vec3_mul_v(R_vec3 v1, R_vec3 v2) {
 
 // Calculate two vectors cross product
 R_public R_vec3 R_vec3_cross_product(R_vec3 v1, R_vec3 v2) {
-    R_vec3 result = {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
-                     v1.x * v2.y - v1.y * v2.x};
+    R_vec3 result = {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x};
     return result;
 }
 
@@ -307,11 +304,11 @@ R_public R_vec3 R_vec3_cross_product(R_vec3 v1, R_vec3 v2) {
 R_public R_vec3 R_vec3_perpendicular(R_vec3 v) {
     R_vec3 result = {0};
 
-    float min = (float) fabs(v.x);
+    float min = (float)fabs(v.x);
     R_vec3 cardinalAxis = {1.0f, 0.0f, 0.0f};
 
     if (fabs(v.y) < min) {
-        min = (float) fabs(v.y);
+        min = (float)fabs(v.y);
         R_vec3 tmp = {0.0f, 1.0f, 0.0f};
         cardinalAxis = tmp;
     }
@@ -415,13 +412,9 @@ R_public R_vec3 R_vec3_transform(R_vec3 v, R_mat mat) {
 R_public R_vec3 R_vec3_rotate_by_quaternion(R_vec3 v, R_quaternion q) {
     R_vec3 result = {0};
 
-    result.x = v.x * (q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z) +
-               v.y * (2 * q.x * q.y - 2 * q.w * q.z) + v.z * (2 * q.x * q.z + 2 * q.w * q.y);
-    result.y = v.x * (2 * q.w * q.z + 2 * q.x * q.y) +
-               v.y * (q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z) +
-               v.z * (-2 * q.w * q.x + 2 * q.y * q.z);
-    result.z = v.x * (-2 * q.w * q.y + 2 * q.x * q.z) + v.y * (2 * q.w * q.x + 2 * q.y * q.z) +
-               v.z * (q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+    result.x = v.x * (q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z) + v.y * (2 * q.x * q.y - 2 * q.w * q.z) + v.z * (2 * q.x * q.z + 2 * q.w * q.y);
+    result.y = v.x * (2 * q.w * q.z + 2 * q.x * q.y) + v.y * (q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z) + v.z * (-2 * q.w * q.x + 2 * q.y * q.z);
+    result.z = v.x * (-2 * q.w * q.y + 2 * q.x * q.z) + v.y * (2 * q.w * q.x + 2 * q.y * q.z) + v.z * (q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
 
     return result;
 }
@@ -479,7 +472,7 @@ R_public R_vec3 R_vec3_max(R_vec3 v1, R_vec3 v2) {
 // Compute barycenter coordinates (u, v, w) for point p with respect to triangle (a, b, c)
 // NOTE: Assumes P is on the plane of the triangle
 R_public R_vec3 R_vec3_barycenter(R_vec3 p, R_vec3 a, R_vec3 b, R_vec3 c) {
-    //Vector v0 = b - a, v1 = c - a, v2 = p - a;
+    // Vector v0 = b - a, v1 = c - a, v2 = p - a;
 
     R_vec3 v0 = R_vec3_sub(b, a);
     R_vec3 v1 = R_vec3_sub(c, a);
@@ -511,13 +504,9 @@ R_public float R_mat_determinant(R_mat mat) {
     float a20 = mat.m8, a21 = mat.m9, a22 = mat.m10, a23 = mat.m11;
     float a30 = mat.m12, a31 = mat.m13, a32 = mat.m14, a33 = mat.m15;
 
-    result = a30 * a21 * a12 * a03 - a20 * a31 * a12 * a03 - a30 * a11 * a22 * a03 +
-             a10 * a31 * a22 * a03 + a20 * a11 * a32 * a03 - a10 * a21 * a32 * a03 -
-             a30 * a21 * a02 * a13 + a20 * a31 * a02 * a13 + a30 * a01 * a22 * a13 -
-             a00 * a31 * a22 * a13 - a20 * a01 * a32 * a13 + a00 * a21 * a32 * a13 +
-             a30 * a11 * a02 * a23 - a10 * a31 * a02 * a23 - a30 * a01 * a12 * a23 +
-             a00 * a31 * a12 * a23 + a10 * a01 * a32 * a23 - a00 * a11 * a32 * a23 -
-             a20 * a11 * a02 * a33 + a10 * a21 * a02 * a33 + a20 * a01 * a12 * a33 -
+    result = a30 * a21 * a12 * a03 - a20 * a31 * a12 * a03 - a30 * a11 * a22 * a03 + a10 * a31 * a22 * a03 + a20 * a11 * a32 * a03 - a10 * a21 * a32 * a03 - a30 * a21 * a02 * a13 +
+             a20 * a31 * a02 * a13 + a30 * a01 * a22 * a13 - a00 * a31 * a22 * a13 - a20 * a01 * a32 * a13 + a00 * a21 * a32 * a13 + a30 * a11 * a02 * a23 - a10 * a31 * a02 * a23 -
+             a30 * a01 * a12 * a23 + a00 * a31 * a12 * a23 + a10 * a01 * a32 * a23 - a00 * a11 * a32 * a23 - a20 * a11 * a02 * a33 + a10 * a21 * a02 * a33 + a20 * a01 * a12 * a33 -
              a00 * a21 * a12 * a33 - a10 * a01 * a22 * a33 + a00 * a11 * a22 * a33;
 
     return result;
@@ -627,8 +616,7 @@ R_public R_mat R_mat_normalize(R_mat mat) {
 
 // Returns identity matrix
 R_public R_mat R_mat_identity(void) {
-    R_mat result = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    R_mat result = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
     return result;
 }
@@ -683,8 +671,7 @@ R_public R_mat R_mat_sub(R_mat left, R_mat right) {
 
 // Returns translation matrix
 R_public R_mat R_mat_translate(float x, float y, float z) {
-    R_mat result = {1.0f, 0.0f, 0.0f, x, 0.0f, 1.0f, 0.0f, y,
-                    0.0f, 0.0f, 1.0f, z, 0.0f, 0.0f, 0.0f, 1.0f};
+    R_mat result = {1.0f, 0.0f, 0.0f, x, 0.0f, 1.0f, 0.0f, y, 0.0f, 0.0f, 1.0f, z, 0.0f, 0.0f, 0.0f, 1.0f};
 
     return result;
 }
@@ -805,8 +792,7 @@ R_public R_mat R_mat_rotate_z(float angle) {
 
 // Returns scaling matrix
 R_public R_mat R_mat_scale(float x, float y, float z) {
-    R_mat result = {x,    0.0f, 0.0f, 0.0f, 0.0f, y,    0.0f, 0.0f,
-                    0.0f, 0.0f, z,    0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    R_mat result = {x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
     return result;
 }
@@ -824,53 +810,44 @@ R_public R_mat R_mat_mul(R_mat left, R_mat right) {
     result.m5 = left.m4 * right.m1 + left.m5 * right.m5 + left.m6 * right.m9 + left.m7 * right.m13;
     result.m6 = left.m4 * right.m2 + left.m5 * right.m6 + left.m6 * right.m10 + left.m7 * right.m14;
     result.m7 = left.m4 * right.m3 + left.m5 * right.m7 + left.m6 * right.m11 + left.m7 * right.m15;
-    result.m8 =
-            left.m8 * right.m0 + left.m9 * right.m4 + left.m10 * right.m8 + left.m11 * right.m12;
-    result.m9 =
-            left.m8 * right.m1 + left.m9 * right.m5 + left.m10 * right.m9 + left.m11 * right.m13;
-    result.m10 =
-            left.m8 * right.m2 + left.m9 * right.m6 + left.m10 * right.m10 + left.m11 * right.m14;
-    result.m11 =
-            left.m8 * right.m3 + left.m9 * right.m7 + left.m10 * right.m11 + left.m11 * right.m15;
-    result.m12 =
-            left.m12 * right.m0 + left.m13 * right.m4 + left.m14 * right.m8 + left.m15 * right.m12;
-    result.m13 =
-            left.m12 * right.m1 + left.m13 * right.m5 + left.m14 * right.m9 + left.m15 * right.m13;
-    result.m14 =
-            left.m12 * right.m2 + left.m13 * right.m6 + left.m14 * right.m10 + left.m15 * right.m14;
-    result.m15 =
-            left.m12 * right.m3 + left.m13 * right.m7 + left.m14 * right.m11 + left.m15 * right.m15;
+    result.m8 = left.m8 * right.m0 + left.m9 * right.m4 + left.m10 * right.m8 + left.m11 * right.m12;
+    result.m9 = left.m8 * right.m1 + left.m9 * right.m5 + left.m10 * right.m9 + left.m11 * right.m13;
+    result.m10 = left.m8 * right.m2 + left.m9 * right.m6 + left.m10 * right.m10 + left.m11 * right.m14;
+    result.m11 = left.m8 * right.m3 + left.m9 * right.m7 + left.m10 * right.m11 + left.m11 * right.m15;
+    result.m12 = left.m12 * right.m0 + left.m13 * right.m4 + left.m14 * right.m8 + left.m15 * right.m12;
+    result.m13 = left.m12 * right.m1 + left.m13 * right.m5 + left.m14 * right.m9 + left.m15 * right.m13;
+    result.m14 = left.m12 * right.m2 + left.m13 * right.m6 + left.m14 * right.m10 + left.m15 * right.m14;
+    result.m15 = left.m12 * right.m3 + left.m13 * right.m7 + left.m14 * right.m11 + left.m15 * right.m15;
 
     return result;
 }
 
 // Returns perspective GL_PROJECTION matrix
-R_public R_mat R_mat_frustum(double left, double right, double bottom, double top, double near_val,
-                             double far_val) {
+R_public R_mat R_mat_frustum(double left, double right, double bottom, double top, double near_val, double far_val) {
     R_mat result = {0};
 
-    float rl = (float) (right - left);
-    float tb = (float) (top - bottom);
-    float fn = (float) (far_val - near_val);
+    float rl = (float)(right - left);
+    float tb = (float)(top - bottom);
+    float fn = (float)(far_val - near_val);
 
-    result.m0 = ((float) near_val * 2.0f) / rl;
+    result.m0 = ((float)near_val * 2.0f) / rl;
     result.m1 = 0.0f;
     result.m2 = 0.0f;
     result.m3 = 0.0f;
 
     result.m4 = 0.0f;
-    result.m5 = ((float) near_val * 2.0f) / tb;
+    result.m5 = ((float)near_val * 2.0f) / tb;
     result.m6 = 0.0f;
     result.m7 = 0.0f;
 
-    result.m8 = ((float) right + (float) left) / rl;
-    result.m9 = ((float) top + (float) bottom) / tb;
-    result.m10 = -((float) far_val + (float) near_val) / fn;
+    result.m8 = ((float)right + (float)left) / rl;
+    result.m9 = ((float)top + (float)bottom) / tb;
+    result.m10 = -((float)far_val + (float)near_val) / fn;
     result.m11 = -1.0f;
 
     result.m12 = 0.0f;
     result.m13 = 0.0f;
-    result.m14 = -((float) far_val * (float) near_val * 2.0f) / fn;
+    result.m14 = -((float)far_val * (float)near_val * 2.0f) / fn;
     result.m15 = 0.0f;
 
     return result;
@@ -887,13 +864,12 @@ R_public R_mat R_mat_perspective(double fovy, double aspect, double near_val, do
 }
 
 // Returns orthographic GL_PROJECTION matrix
-R_public R_mat R_mat_ortho(double left, double right, double bottom, double top, double near_val,
-                           double far_val) {
+R_public R_mat R_mat_ortho(double left, double right, double bottom, double top, double near_val, double far_val) {
     R_mat result = {0};
 
-    float rl = (float) (right - left);
-    float tb = (float) (top - bottom);
-    float fn = (float) (far_val - near_val);
+    float rl = (float)(right - left);
+    float tb = (float)(top - bottom);
+    float fn = (float)(far_val - near_val);
 
     result.m0 = 2.0f / rl;
     result.m1 = 0.0f;
@@ -907,9 +883,9 @@ R_public R_mat R_mat_ortho(double left, double right, double bottom, double top,
     result.m9 = 0.0f;
     result.m10 = -2.0f / fn;
     result.m11 = 0.0f;
-    result.m12 = -((float) left + (float) right) / rl;
-    result.m13 = -((float) top + (float) bottom) / tb;
-    result.m14 = -((float) far_val + (float) near_val) / fn;
+    result.m12 = -((float)left + (float)right) / rl;
+    result.m13 = -((float)top + (float)bottom) / tb;
+    result.m14 = -((float)far_val + (float)near_val) / fn;
     result.m15 = 1.0f;
 
     return result;
@@ -979,7 +955,7 @@ R_public R_quaternion R_quaternion_identity(void) {
 
 // Computes the length of a quaternion
 R_public float R_quaternion_len(R_quaternion q) {
-    float result = (float) sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+    float result = (float)sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
     return result;
 }
 
@@ -1059,12 +1035,13 @@ R_public R_quaternion R_quaternion_slerp(R_quaternion q1, R_quaternion q2, float
 
     float cosHalfTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
 
-    if (fabs(cosHalfTheta) >= 1.0f) result = q1;
+    if (fabs(cosHalfTheta) >= 1.0f)
+        result = q1;
     else if (cosHalfTheta > 0.95f)
         result = R_quaternion_nlerp(q1, q2, amount);
     else {
-        float halfTheta = (float) acos(cosHalfTheta);
-        float sinHalfTheta = (float) sqrt(1.0f - cosHalfTheta * cosHalfTheta);
+        float halfTheta = (float)acos(cosHalfTheta);
+        float sinHalfTheta = (float)sqrt(1.0f - cosHalfTheta * cosHalfTheta);
 
         if (fabs(sinHalfTheta) < 0.001f) {
             result.x = (q1.x * 0.5f + q2.x * 0.5f);
@@ -1095,13 +1072,13 @@ R_public R_quaternion R_quaternion_from_vector3_to_vector3(R_vec3 from, R_vec3 t
     result.x = cross.x;
     result.y = cross.y;
     result.z = cross.y;
-    result.w = 1.0f + cos2Theta;// NOTE: Added QuaternioIdentity()
+    result.w = 1.0f + cos2Theta;  // NOTE: Added QuaternioIdentity()
 
     // Normalize to essentially nlerp the original and identity to 0.5
     result = R_quaternion_normalize(result);
 
     // Above lines are equivalent to:
-    //R_quaternion result = R_quaternion_nlerp(q, R_quaternion_identity(), 0.5f);
+    // R_quaternion result = R_quaternion_nlerp(q, R_quaternion_identity(), 0.5f);
 
     return result;
 }
@@ -1113,7 +1090,7 @@ R_public R_quaternion R_quaternion_from_matrix(R_mat mat) {
     float trace = R_mat_trace(mat);
 
     if (trace > 0.0f) {
-        float s = (float) sqrt(trace + 1) * 2.0f;
+        float s = (float)sqrt(trace + 1) * 2.0f;
         float invS = 1.0f / s;
 
         result.w = s * 0.25f;
@@ -1124,7 +1101,7 @@ R_public R_quaternion R_quaternion_from_matrix(R_mat mat) {
         float m00 = mat.m0, m11 = mat.m5, m22 = mat.m10;
 
         if (m00 > m11 && m00 > m22) {
-            float s = (float) sqrt(1.0f + m00 - m11 - m22) * 2.0f;
+            float s = (float)sqrt(1.0f + m00 - m11 - m22) * 2.0f;
             float invS = 1.0f / s;
 
             result.w = (mat.m6 - mat.m9) * invS;
@@ -1132,7 +1109,7 @@ R_public R_quaternion R_quaternion_from_matrix(R_mat mat) {
             result.y = (mat.m4 + mat.m1) * invS;
             result.z = (mat.m8 + mat.m2) * invS;
         } else if (m11 > m22) {
-            float s = (float) sqrt(1.0f + m11 - m00 - m22) * 2.0f;
+            float s = (float)sqrt(1.0f + m11 - m00 - m22) * 2.0f;
             float invS = 1.0f / s;
 
             result.w = (mat.m8 - mat.m2) * invS;
@@ -1140,7 +1117,7 @@ R_public R_quaternion R_quaternion_from_matrix(R_mat mat) {
             result.y = s * 0.25f;
             result.z = (mat.m9 + mat.m6) * invS;
         } else {
-            float s = (float) sqrt(1.0f + m22 - m00 - m11) * 2.0f;
+            float s = (float)sqrt(1.0f + m22 - m00 - m11) * 2.0f;
             float invS = 1.0f / s;
 
             result.w = (mat.m1 - mat.m4) * invS;
@@ -1227,8 +1204,8 @@ R_public void R_quaternion_to_axis_angle(R_quaternion q, R_vec3 *outAxis, float 
     R_vec3 resAxis = {0.0f, 0.0f, 0.0f};
     float resAngle = 0.0f;
 
-    resAngle = 2.0f * (float) acos(q.w);
-    float den = (float) sqrt(1.0f - q.w * q.w);
+    resAngle = 2.0f * (float)acos(q.w);
+    float den = (float)sqrt(1.0f - q.w * q.w);
 
     if (den > 0.0001f) {
         resAxis.x = q.x / den;
@@ -1307,27 +1284,21 @@ R_public R_quaternion R_quaternion_transform(R_quaternion q, R_mat mat) {
 R_bool R_check_collision_point_rec(R_vec2 point, R_rec rec) {
     R_bool collision = 0;
 
-    if ((point.x >= rec.x) && (point.x <= (rec.x + rec.width)) && (point.y >= rec.y) &&
-        (point.y <= (rec.y + rec.height)))
-        collision = 1;
+    if ((point.x >= rec.x) && (point.x <= (rec.x + rec.width)) && (point.y >= rec.y) && (point.y <= (rec.y + rec.height))) collision = 1;
 
     return collision;
 }
 
 // Check if point is inside circle
-R_bool R_check_collision_point_circle(R_vec2 point, R_vec2 center, float radius) {
-    return R_check_collision_circles(point, 0, center, radius);
-}
+R_bool R_check_collision_point_circle(R_vec2 point, R_vec2 center, float radius) { return R_check_collision_circles(point, 0, center, radius); }
 
 // Check if point is inside a triangle defined by three points (p1, p2, p3)
 R_bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2, R_vec2 p3) {
     R_bool collision = 0;
 
-    float alpha = ((p2.y - p3.y) * (point.x - p3.x) + (p3.x - p2.x) * (point.y - p3.y)) /
-                  ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
+    float alpha = ((p2.y - p3.y) * (point.x - p3.x) + (p3.x - p2.x) * (point.y - p3.y)) / ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
 
-    float beta = ((p3.y - p1.y) * (point.x - p3.x) + (p1.x - p3.x) * (point.y - p3.y)) /
-                 ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
+    float beta = ((p3.y - p1.y) * (point.x - p3.x) + (p1.x - p3.x) * (point.y - p3.y)) / ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
 
     float gamma = 1.0f - alpha - beta;
 
@@ -1340,9 +1311,7 @@ R_bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2, R_ve
 R_bool R_check_collision_recs(R_rec rec1, R_rec rec2) {
     R_bool collision = 0;
 
-    if ((rec1.x < (rec2.x + rec2.width) && (rec1.x + rec1.width) > rec2.x) &&
-        (rec1.y < (rec2.y + rec2.height) && (rec1.y + rec1.height) > rec2.y))
-        collision = 1;
+    if ((rec1.x < (rec2.x + rec2.width) && (rec1.x + rec1.width) > rec2.x) && (rec1.y < (rec2.y + rec2.height) && (rec1.y + rec1.height) > rec2.y)) collision = 1;
 
     return collision;
 }
@@ -1351,10 +1320,10 @@ R_bool R_check_collision_recs(R_rec rec1, R_rec rec2) {
 R_bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2, float radius2) {
     R_bool collision = 0;
 
-    float dx = center2.x - center1.x;// X distance between centers
-    float dy = center2.y - center1.y;// Y distance between centers
+    float dx = center2.x - center1.x;  // X distance between centers
+    float dy = center2.y - center1.y;  // Y distance between centers
 
-    float distance = sqrt(dx * dx + dy * dy);// Distance between centers
+    float distance = sqrt(dx * dx + dy * dy);  // Distance between centers
 
     if (distance <= (radius1 + radius2)) collision = 1;
 
@@ -1364,20 +1333,27 @@ R_bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2, 
 // Check collision between circle and rectangle
 // NOTE: Reviewed version to take into account corner limit case
 R_bool R_check_collision_circle_rec(R_vec2 center, float radius, R_rec rec) {
-    int recCenterX = (int) (rec.x + rec.width / 2.0f);
-    int recCenterY = (int) (rec.y + rec.height / 2.0f);
+    int recCenterX = (int)(rec.x + rec.width / 2.0f);
+    int recCenterY = (int)(rec.y + rec.height / 2.0f);
 
-    float dx = (float) fabs(center.x - recCenterX);
-    float dy = (float) fabs(center.y - recCenterY);
+    float dx = (float)fabs(center.x - recCenterX);
+    float dy = (float)fabs(center.y - recCenterY);
 
-    if (dx > (rec.width / 2.0f + radius)) { return 0; }
-    if (dy > (rec.height / 2.0f + radius)) { return 0; }
+    if (dx > (rec.width / 2.0f + radius)) {
+        return 0;
+    }
+    if (dy > (rec.height / 2.0f + radius)) {
+        return 0;
+    }
 
-    if (dx <= (rec.width / 2.0f)) { return 1; }
-    if (dy <= (rec.height / 2.0f)) { return 1; }
+    if (dx <= (rec.width / 2.0f)) {
+        return 1;
+    }
+    if (dy <= (rec.height / 2.0f)) {
+        return 1;
+    }
 
-    float cornerDistanceSq = (dx - rec.width / 2.0f) * (dx - rec.width / 2.0f) +
-                             (dy - rec.height / 2.0f) * (dy - rec.height / 2.0f);
+    float cornerDistanceSq = (dx - rec.width / 2.0f) * (dx - rec.width / 2.0f) + (dy - rec.height / 2.0f) * (dy - rec.height / 2.0f);
 
     return (cornerDistanceSq <= (radius * radius));
 }
@@ -1387,8 +1363,8 @@ R_rec R_get_collision_rec(R_rec rec1, R_rec rec2) {
     R_rec retRec = {0, 0, 0, 0};
 
     if (R_check_collision_recs(rec1, rec2)) {
-        float dxx = (float) fabs(rec1.x - rec2.x);
-        float dyy = (float) fabs(rec1.y - rec2.y);
+        float dxx = (float)fabs(rec1.x - rec2.x);
+        float dyy = (float)fabs(rec1.y - rec2.y);
 
         if (rec1.x <= rec2.x) {
             if (rec1.y <= rec2.y) {
@@ -1433,8 +1409,7 @@ R_rec R_get_collision_rec(R_rec rec1, R_rec rec2) {
 }
 
 // Detect collision between two spheres
-R_public R_bool R_check_collision_spheres(R_vec3 center_a, float radius_a, R_vec3 center_b,
-                                          float radius_b) {
+R_public R_bool R_check_collision_spheres(R_vec3 center_a, float radius_a, R_vec3 center_b, float radius_b) {
     R_bool collision = 0;
 
     // Simple way to check for collision, just checking distance between two points
@@ -1449,9 +1424,7 @@ float distance = R_sqrtf(dx*dx + dy*dy + dz*dz);  // Distance between centers
 if (distance <= (radiusA + radiusB)) collision = 1;
 */
     // Check for distances squared to avoid R_sqrtf()
-    if (R_vec3_dot_product(R_vec3_sub(center_b, center_a), R_vec3_sub(center_b, center_a)) <=
-        (radius_a + radius_b) * (radius_a + radius_b))
-        collision = 1;
+    if (R_vec3_dot_product(R_vec3_sub(center_b, center_a), R_vec3_sub(center_b, center_a)) <= (radius_a + radius_b) * (radius_a + radius_b)) collision = 1;
 
     return collision;
 }
@@ -1475,15 +1448,18 @@ R_public R_bool R_check_collision_box_sphere(R_bounding_box box, R_vec3 center, 
 
     float dmin = 0;
 
-    if (center.x < box.min.x) dmin += powf(center.x - box.min.x, 2);
+    if (center.x < box.min.x)
+        dmin += powf(center.x - box.min.x, 2);
     else if (center.x > box.max.x)
         dmin += powf(center.x - box.max.x, 2);
 
-    if (center.y < box.min.y) dmin += powf(center.y - box.min.y, 2);
+    if (center.y < box.min.y)
+        dmin += powf(center.y - box.min.y, 2);
     else if (center.y > box.max.y)
         dmin += powf(center.y - box.max.y, 2);
 
-    if (center.z < box.min.z) dmin += powf(center.z - box.min.z, 2);
+    if (center.z < box.min.z)
+        dmin += powf(center.z - box.min.z, 2);
     else if (center.z > box.max.z)
         dmin += powf(center.z - box.max.z, 2);
 
@@ -1507,8 +1483,7 @@ R_public R_bool R_check_collision_ray_sphere(R_ray ray, R_vec3 center, float rad
 }
 
 // Detect collision between ray and sphere with extended parameters and collision point detection
-R_public R_bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float radius,
-                                                R_vec3 *collision_point) {
+R_public R_bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float radius, R_vec3 *collision_point) {
     R_bool collision = 0;
 
     R_vec3 ray_sphere_pos = R_vec3_sub(center, ray.position);
@@ -1521,7 +1496,8 @@ R_public R_bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float 
     // Check if ray origin is inside the sphere to calculate the correct collision point
     float collision_distance = 0;
 
-    if (distance < radius) collision_distance = vector + sqrt(d);
+    if (distance < radius)
+        collision_distance = vector + sqrt(d);
     else
         collision_distance = vector - sqrt(d);
 
@@ -1546,8 +1522,8 @@ R_public R_bool R_check_collision_ray_box(R_ray ray, R_bounding_box box) {
     t[3] = (box.max.y - ray.position.y) / ray.direction.y;
     t[4] = (box.min.z - ray.position.z) / ray.direction.z;
     t[5] = (box.max.z - ray.position.z) / ray.direction.z;
-    t[6] = (float) fmax(fmax(fmin(t[0], t[1]), fmin(t[2], t[3])), fmin(t[4], t[5]));
-    t[7] = (float) fmin(fmin(fmax(t[0], t[1]), fmax(t[2], t[3])), fmax(t[4], t[5]));
+    t[6] = (float)fmax(fmax(fmin(t[0], t[1]), fmin(t[2], t[3])), fmin(t[4], t[5]));
+    t[7] = (float)fmin(fmin(fmax(t[0], t[1]), fmax(t[2], t[3])), fmax(t[4], t[5]));
 
     collision = !(t[7] < 0 || t[6] > t[7]);
 
@@ -1567,7 +1543,7 @@ R_public R_ray_hit_info R_collision_ray_triangle(R_ray ray, R_vec3 p1, R_vec3 p2
     float u = 0;
     float v = 0;
     float t = 0;
-    double epsilon = 0.000001;// Just a small number
+    double epsilon = 0.000001;  // Just a small number
 
     // Find vectors for two edges sharing V1
     edge1 = R_vec3_sub(p2, p1);
@@ -1619,7 +1595,7 @@ R_public R_ray_hit_info R_collision_ray_triangle(R_ray ray, R_vec3 p1, R_vec3 p2
 // Get collision info between ray and ground plane (Y-normal plane)
 R_public R_ray_hit_info R_collision_ray_ground(R_ray ray, float ground_height) {
     R_ray_hit_info result = {0};
-    double epsilon = 0.000001;// Just a small number
+    double epsilon = 0.000001;  // Just a small number
 
     if (fabs(ray.direction.y) > epsilon) {
         float distance = (ray.position.y - ground_height) / -ray.direction.y;
@@ -1658,10 +1634,12 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
     0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
     */
 
-    if (size < 1) { return (R_decoded_rune){RF_INVALID_CODEPOINT}; }
+    if (size < 1) {
+        return (R_decoded_rune){RF_INVALID_CODEPOINT};
+    }
 
     // The first UTF8 byte
-    const int byte = (unsigned char) (src[0]);
+    const int byte = (unsigned char)(src[0]);
 
     if (byte <= 0x7f) {
         // Only one byte (ASCII range x00-7F)
@@ -1670,8 +1648,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
         // Codepoints after U+10ffff are invalid
         const int valid = code > 0x10ffff;
 
-        return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
-                                .bytes_processed = 1, .valid = valid};
+        return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 1, .valid = valid};
     } else if ((byte & 0xe0) == 0xc0) {
         if (size < 2) {
             return (R_decoded_rune){
@@ -1695,11 +1672,12 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
             // Codepoints after U+10ffff are invalid
             const int valid = code > 0x10ffff;
 
-            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
-                                    .bytes_processed = 2, .valid = valid};
+            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 2, .valid = valid};
         }
     } else if ((byte & 0xf0) == 0xe0) {
-        if (size < 2) { return (R_decoded_rune){RF_INVALID_CODEPOINT, .bytes_processed = 1}; }
+        if (size < 2) {
+            return (R_decoded_rune){RF_INVALID_CODEPOINT, .bytes_processed = 1};
+        }
 
         // Three bytes
         const unsigned char byte1 = src[1];
@@ -1722,8 +1700,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
             [0]xED    [1]x80-9F       [2]UTF8-tail(x80-BF)
             [0]xEE-EF [1]UTF8-tail    [2]UTF8-tail(x80-BF)
         */
-        if (((byte == 0xe0) && !((byte1 >= 0xa0) && (byte1 <= 0xbf))) ||
-            ((byte == 0xed) && !((byte1 >= 0x80) && (byte1 <= 0x9f)))) {
+        if (((byte == 0xe0) && !((byte1 >= 0xa0) && (byte1 <= 0xbf))) || ((byte == 0xed) && !((byte1 >= 0x80) && (byte1 <= 0x9f)))) {
             return (R_decoded_rune){RF_INVALID_CODEPOINT, .bytes_processed = 2};
         }
 
@@ -1732,8 +1709,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
 
             // Codepoints after U+10ffff are invalid
             const int valid = code > 0x10ffff;
-            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
-                                    .bytes_processed = 3, .valid = valid};
+            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 3, .valid = valid};
         }
     } else if ((byte & 0xf8) == 0xf0) {
         // Four bytes
@@ -1769,19 +1745,16 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
         */
 
         // Check for unexpected sequence
-        if (((byte == 0xf0) && !((byte1 >= 0x90) && (byte1 <= 0xbf))) ||
-            ((byte == 0xf4) && !((byte1 >= 0x80) && (byte1 <= 0x8f)))) {
+        if (((byte == 0xf0) && !((byte1 >= 0x90) && (byte1 <= 0xbf))) || ((byte == 0xf4) && !((byte1 >= 0x80) && (byte1 <= 0x8f)))) {
             return (R_decoded_rune){RF_INVALID_CODEPOINT, .bytes_processed = 2};
         }
 
         if (byte >= 0xf0) {
-            const int code = ((byte & 0x7) << 18) | ((byte1 & 0x3f) << 12) | ((byte2 & 0x3f) << 6) |
-                             (byte3 & 0x3f);
+            const int code = ((byte & 0x7) << 18) | ((byte1 & 0x3f) << 12) | ((byte2 & 0x3f) << 6) | (byte3 & 0x3f);
 
             // Codepoints after U+10ffff are invalid
             const int valid = code > 0x10ffff;
-            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code),
-                                    .bytes_processed = 4, .valid = valid};
+            return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 4, .valid = valid};
         }
     }
 
@@ -1829,8 +1802,7 @@ R_public R_utf8_stats R_count_utf8_chars_til(const char *src, R_int size, R_int 
     return result;
 }
 
-R_public R_decoded_string R_decode_utf8_to_buffer(const char *src, R_int size, R_rune *dst,
-                                                  R_int dst_size) {
+R_public R_decoded_string R_decode_utf8_to_buffer(const char *src, R_int size, R_rune *dst, R_int dst_size) {
     R_decoded_string result = {0};
 
     result.codepoints = dst;
@@ -1843,7 +1815,9 @@ R_public R_decoded_string R_decode_utf8_to_buffer(const char *src, R_int size, R
             R_decoded_rune decoding_result = R_decode_utf8_char(src, size);
 
             // Count the invalid bytes
-            if (!decoding_result.valid) { invalid_bytes += decoding_result.bytes_processed; }
+            if (!decoding_result.valid) {
+                invalid_bytes += decoding_result.bytes_processed;
+            }
 
             src += decoding_result.bytes_processed;
             size -= decoding_result.bytes_processed;
@@ -1862,7 +1836,7 @@ R_public R_decoded_string R_decode_utf8_to_buffer(const char *src, R_int size, R
 R_public R_decoded_string R_decode_utf8(const char *src, R_int size, R_allocator allocator) {
     R_decoded_string result = {0};
 
-    R_rune *dst = (R_rune *) R_alloc(allocator, (R_int) sizeof(R_rune) * size);
+    R_rune *dst = (R_rune *)R_alloc(allocator, (R_int)sizeof(R_rune) * size);
 
     result = R_decode_utf8_to_buffer(src, size, dst, size);
 
@@ -1902,13 +1876,17 @@ int R_to_digit(char c) {
 
 char R_to_upper(char c) {
     char result = c;
-    if (R_is_upper(c)) { result = c + 'A' - 'a'; }
+    if (R_is_upper(c)) {
+        result = c + 'A' - 'a';
+    }
     return result;
 }
 
 char R_to_lower(char c) {
     char result = c;
-    if (R_is_lower(c)) { result = c + 'a' - 'A'; }
+    if (R_is_lower(c)) {
+        result = c + 'a' - 'A';
+    }
     return result;
 }
 
@@ -1955,7 +1933,7 @@ R_public R_strbuf R_strbuf_make_ex(R_int initial_amount, R_allocator allocator) 
     void *data = R_alloc(allocator, initial_amount);
 
     if (data) {
-        result.data = (char *) data;
+        result.data = (char *)data;
         result.capacity = initial_amount;
         result.allocator = allocator;
         result.valid = 1;
@@ -1993,8 +1971,7 @@ R_public R_int R_strbuf_remaining_capacity(const R_strbuf *this_buf) {
 
 R_public void R_strbuf_reserve(R_strbuf *this_buf, R_int new_capacity) {
     if (new_capacity > this_buf->capacity) {
-        char *new_buf = (char *) R_realloc(this_buf->allocator, this_buf->data, new_capacity,
-                                           this_buf->capacity);
+        char *new_buf = (char *)R_realloc(this_buf->allocator, this_buf->data, new_capacity, this_buf->capacity);
         if (new_buf) {
             this_buf->data = new_buf;
             this_buf->valid = 1;
@@ -2008,8 +1985,7 @@ R_public void R_strbuf_ensure_capacity_for(R_strbuf *this_buf, R_int size) {
     R_int remaining_capacity = R_strbuf_remaining_capacity(this_buf);
     if (remaining_capacity < size) {
         // We either increase the buffer to capacity * 2 or to the necessary size to fit the size plus one for the null terminator
-        R_int amount_to_reserve = R_max_i(this_buf->capacity * 2,
-                                          this_buf->capacity + (size - remaining_capacity) + 1);
+        R_int amount_to_reserve = R_max_i(this_buf->capacity * 2, this_buf->capacity + (size - remaining_capacity) + 1);
         R_strbuf_reserve(this_buf, amount_to_reserve);
     }
 }
@@ -2035,8 +2011,7 @@ R_public void R_strbuf_insert_utf8(R_strbuf *this_buf, R_str str_to_insert, R_in
     R_strbuf_ensure_capacity_for(this_buf, str_to_insert.size);
 
     // Iterate over utf8 until we find the byte to insert at
-    R_int insertion_point =
-            R_count_utf8_chars_til(this_buf->data, this_buf->size, insert_at).bytes_processed;
+    R_int insertion_point = R_count_utf8_chars_til(this_buf->data, this_buf->size, insert_at).bytes_processed;
 
     if (insertion_point && insertion_point < this_buf->size) {
         // Move all bytes from the insertion point ahead by the size of the string we need to insert
@@ -2105,7 +2080,7 @@ R_public R_int R_str_len(R_str src) {
 R_public R_str R_cstr(const char *src) {
     R_int size = strlen(src);
     R_str result = {
-            .data = (char *) src,
+            .data = (char *)src,
             .size = size,
     };
 
@@ -2119,7 +2094,9 @@ R_public R_str R_str_advance_b(R_str src, R_int amount) {
 }
 
 R_public R_str R_str_eat_spaces(R_str src) {
-    while (R_str_valid(src) && R_is_space(src.data[0])) { src = R_str_advance_b(src, 1); }
+    while (R_str_valid(src) && R_is_space(src.data[0])) {
+        src = R_str_advance_b(src, 1);
+    }
 
     return src;
 }
@@ -2143,9 +2120,13 @@ R_public R_utf8_char R_str_get_utf8_n(R_str src, R_int n) {
 R_public R_str R_str_sub_utf8(R_str src, R_int begin, R_int end) {
     R_str result = {0};
 
-    if (begin < 0) { begin = src.size + begin; }
+    if (begin < 0) {
+        begin = src.size + begin;
+    }
 
-    if (end <= 0) { end = src.size + end; }
+    if (end <= 0) {
+        end = src.size + end;
+    }
 
     if (R_str_valid(src) && begin > 0 && begin < end && end <= src.size) {
         R_utf8_stats stats = {0};
@@ -2168,9 +2149,13 @@ R_public R_str R_str_sub_utf8(R_str src, R_int begin, R_int end) {
 R_public R_str R_str_sub_b(R_str src, R_int begin, R_int end) {
     R_str result = {0};
 
-    if (begin < 0) { begin = src.size + begin; }
+    if (begin < 0) {
+        begin = src.size + begin;
+    }
 
-    if (end <= 0) { end = src.size + end; }
+    if (end <= 0) {
+        end = src.size + end;
+    }
 
     if (R_str_valid(src) && begin > 0 && begin < end && end <= src.size) {
         result.data = src.data + begin;
@@ -2282,8 +2267,8 @@ R_public R_utf8_char R_rune_to_utf8_char(R_rune src) {
 
 R_public R_rune R_utf8_char_to_rune(R_utf8_char src) {
     R_rune result = 0;
-    int len = strlen((char *) &src);
-    R_decoded_rune r = R_decode_utf8_char((char *) &src, len);
+    int len = strlen((char *)&src);
+    R_decoded_rune r = R_decode_utf8_char((char *)&src, len);
     result = r.codepoint;
     return result;
 }
@@ -2294,7 +2279,7 @@ R_public R_arr(void) R_arr_ensure_capacity_impl(R_arr_header *header, R_int size
     if (cap > header->capacity) {
         R_int arr_cur_size = sizeof(R_arr_header) + (size_of_t * header->capacity);
         R_int arr_new_size = sizeof(R_arr_header) + (size_of_t * cap);
-        header = (R_arr_header *) R_realloc(header->allocator, header, arr_new_size, arr_cur_size);
+        header = (R_arr_header *)R_realloc(header->allocator, header, arr_new_size, arr_cur_size);
     }
 
     return result;

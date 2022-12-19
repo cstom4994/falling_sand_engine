@@ -4,15 +4,13 @@
 
 #define MAX_CALLBACKS 32
 
-typedef struct
-{
+typedef struct {
     LogFn fn;
     void *udata;
     int level;
 } Callback;
 
-static struct
-{
+static struct {
     void *udata;
     LogLockFn lock;
     int level;
@@ -23,16 +21,14 @@ static struct
 static const char *level_strings[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
 #ifdef LOG_USE_COLOR
-static const char *level_colors[] = {"\x1b[94m", "\x1b[36m", "\x1b[32m",
-                                     "\x1b[33m", "\x1b[31m", "\x1b[35m"};
+static const char *level_colors[] = {"\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"};
 #endif
 
 static void stdout_callback(LogEvent *ev) {
     char buf[16];
     buf[strftime(buf, sizeof(buf), "%H:%M:%S", ev->time)] = '\0';
 #ifdef LOG_USE_COLOR
-    fprintf(ev->udata, "%s %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m ", buf, level_colors[ev->level],
-            level_strings[ev->level], ev->file, ev->line);
+    fprintf(ev->udata, "%s %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m ", buf, level_colors[ev->level], level_strings[ev->level], ev->file, ev->line);
 #else
     fprintf(ev->udata, "%s %-5s %s:%d: ", buf, level_strings[ev->level], ev->file, ev->line);
 #endif
@@ -51,11 +47,15 @@ static void file_callback(LogEvent *ev) {
 }
 
 static void lock(void) {
-    if (L.lock) { L.lock(true, L.udata); }
+    if (L.lock) {
+        L.lock(true, L.udata);
+    }
 }
 
 static void unlock(void) {
-    if (L.lock) { L.lock(false, L.udata); }
+    if (L.lock) {
+        L.lock(false, L.udata);
+    }
 }
 
 const char *metadot_log_levelstring(int level) { return level_strings[level]; }
@@ -79,9 +79,7 @@ int metadot_log_addcallback(LogFn fn, void *udata, int level) {
     return -1;
 }
 
-int metadot_log_addfp(FILE *fp, int level) {
-    return metadot_log_addcallback(file_callback, fp, level);
-}
+int metadot_log_addfp(FILE *fp, int level) { return metadot_log_addcallback(file_callback, fp, level); }
 
 static void init_event(LogEvent *ev, void *udata) {
     if (!ev->time) {

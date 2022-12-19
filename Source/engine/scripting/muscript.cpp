@@ -3,12 +3,11 @@
 // Yuescript code by Jin Li licensed under the MIT License
 // Link to https://github.com/pigpigyyy/Yuescript
 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+// IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "engine/scripting/muscript.h"
-#include "engine/filesystem.h"
-#include "engine/scripting/mu_compiler.h"
-#include "engine/scripting/mu_parser.h"
 
 #include <chrono>
 #include <cstdlib>
@@ -24,6 +23,10 @@
 #include <thread>
 #include <tuple>
 
+#include "engine/filesystem.h"
+#include "engine/scripting/mu_compiler.h"
+#include "engine/scripting/mu_parser.h"
+
 using namespace std::string_view_literals;
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -35,236 +38,240 @@ using namespace std::string_literals;
 #define METADOT_MU_ARGS nullptr, openlibs
 #else
 #define METADOT_MU_ARGS
-#endif// METADOT_MU_NO_MACRO
+#endif  // METADOT_MU_NO_MACRO
 
 #ifndef METADOT_MU_COMPILER_ONLY
 
-extern "C"
-{
+extern "C" {
 
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 
-    static void init_muscript(lua_State *L) {
-        if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/muscript.lua")) != 0) {
-            std::string err = "failed to load muscript module.\n"s + lua_tostring(L, -1);
-            luaL_error(L, err.c_str());
-        } else {
-            lua_insert(L, -2);
-            if (lua_pcall(L, 1, 0, 0) != 0) {
-                std::string err = "failed to init muscript module.\n"s + lua_tostring(L, -1);
-                luaL_error(L, err.c_str());
-            }
-        }
-    }
-
-    static int init_stacktraceplus(lua_State *L) {
-        if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/stacktraceplus.lua")) != 0) {
-            std::string err = "failed to load stacktraceplus module.\n"s + lua_tostring(L, -1);
-            luaL_error(L, err.c_str());
-        } else if (lua_pcall(L, 0, 1, 0) != 0) {
-            std::string err = "failed to init stacktraceplus module.\n"s + lua_tostring(L, -1);
+static void init_muscript(lua_State *L) {
+    if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/muscript.lua")) != 0) {
+        std::string err = "failed to load muscript module.\n"s + lua_tostring(L, -1);
+        luaL_error(L, err.c_str());
+    } else {
+        lua_insert(L, -2);
+        if (lua_pcall(L, 1, 0, 0) != 0) {
+            std::string err = "failed to init muscript module.\n"s + lua_tostring(L, -1);
             luaL_error(L, err.c_str());
         }
-        return 1;
     }
+}
 
-    static int mutolua(lua_State *L) {
-        size_t size = 0;
-        const char *input = luaL_checklstring(L, 1, &size);
-        mu::MuConfig config;
-        bool sameModule = false;
-        if (lua_gettop(L) == 2) {
-            luaL_checktype(L, 2, LUA_TTABLE);
-            lua_pushliteral(L, "lint_global");
-            lua_gettable(L, -2);
-            if (lua_isboolean(L, -1) != 0) {
-                config.lintGlobalVariable = lua_toboolean(L, -1) != 0;
-            }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "implicit_return_root");
-            lua_gettable(L, -2);
-            if (lua_isboolean(L, -1) != 0) {
-                config.implicitReturnRoot = lua_toboolean(L, -1) != 0;
-            }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "reserve_line_number");
-            lua_gettable(L, -2);
-            if (lua_isboolean(L, -1) != 0) { config.reserveLineNumber = lua_toboolean(L, -1) != 0; }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "space_over_tab");
-            lua_gettable(L, -2);
-            if (lua_isboolean(L, -1) != 0) { config.useSpaceOverTab = lua_toboolean(L, -1) != 0; }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "same_module");
-            lua_gettable(L, -2);
-            if (lua_isboolean(L, -1) != 0) { sameModule = lua_toboolean(L, -1) != 0; }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "line_offset");
-            lua_gettable(L, -2);
-            if (lua_isnumber(L, -1) != 0) {
-                config.lineOffset = static_cast<int>(lua_tonumber(L, -1));
-            }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "module");
-            lua_gettable(L, -2);
-            if (lua_isstring(L, -1) != 0) { config.module = lua_tostring(L, -1); }
-            lua_pop(L, 1);
-            lua_pushliteral(L, "target");
-            lua_gettable(L, -2);
-            if (lua_isstring(L, -1) != 0) { config.options["target"] = lua_tostring(L, -1); }
-            lua_pop(L, 1);
-        }
-        std::string s(input, size);
-        auto result = mu::MuCompiler(L, nullptr, sameModule).compile(s, config);
-        if (result.codes.empty() && !result.error.empty()) {
-            lua_pushnil(L);
-        } else {
-            lua_pushlstring(L, result.codes.c_str(), result.codes.size());
-        }
-        if (result.error.empty()) {
-            lua_pushnil(L);
-        } else {
-            lua_pushlstring(L, result.error.c_str(), result.error.size());
-        }
-        if (result.globals) {
-            lua_createtable(L, static_cast<int>(result.globals->size()), 0);
-            int i = 1;
-            for (const auto &var: *result.globals) {
-                lua_createtable(L, 3, 0);
-                lua_pushlstring(L, var.name.c_str(), var.name.size());
-                lua_rawseti(L, -2, 1);
-                lua_pushinteger(L, var.line);
-                lua_rawseti(L, -2, 2);
-                lua_pushinteger(L, var.col);
-                lua_rawseti(L, -2, 3);
-                lua_rawseti(L, -2, i);
-                i++;
-            }
-        } else {
-            lua_pushnil(L);
-        }
-        return 3;
+static int init_stacktraceplus(lua_State *L) {
+    if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/stacktraceplus.lua")) != 0) {
+        std::string err = "failed to load stacktraceplus module.\n"s + lua_tostring(L, -1);
+        luaL_error(L, err.c_str());
+    } else if (lua_pcall(L, 0, 1, 0) != 0) {
+        std::string err = "failed to init stacktraceplus module.\n"s + lua_tostring(L, -1);
+        luaL_error(L, err.c_str());
     }
+    return 1;
+}
 
-    static int mutoast(lua_State *L) {
-        size_t size = 0;
-        const char *input = luaL_checklstring(L, 1, &size);
-        int flattenLevel = 2;
-        if (lua_isnoneornil(L, 2) == 0) {
-            flattenLevel = static_cast<int>(luaL_checkinteger(L, 2));
-            flattenLevel = std::max(std::min(2, flattenLevel), 0);
+static int mutolua(lua_State *L) {
+    size_t size = 0;
+    const char *input = luaL_checklstring(L, 1, &size);
+    mu::MuConfig config;
+    bool sameModule = false;
+    if (lua_gettop(L) == 2) {
+        luaL_checktype(L, 2, LUA_TTABLE);
+        lua_pushliteral(L, "lint_global");
+        lua_gettable(L, -2);
+        if (lua_isboolean(L, -1) != 0) {
+            config.lintGlobalVariable = lua_toboolean(L, -1) != 0;
         }
-        mu::MuParser parser;
-        auto info = parser.parse<mu::File_t>({input, size});
-        if (info.node) {
-            lua_createtable(L, 0, 0);
-            int cacheIndex = lua_gettop(L);
-            auto getName = [&](mu::ast_node *node) {
-                int id = node->getId();
-                lua_rawgeti(L, cacheIndex, id);
-                if (lua_isnil(L, -1) != 0) {
-                    lua_pop(L, 1);
-                    auto name = node->getName();
-                    lua_pushlstring(L, &name.front(), name.length());
-                    lua_pushvalue(L, -1);
-                    lua_rawseti(L, cacheIndex, id);
-                }
-            };
-            std::function<void(mu::ast_node *)> visit;
-            visit = [&](mu::ast_node *node) {
-                int count = 0;
-                bool hasSep = false;
-                node->visitChild([&](mu::ast_node *child) {
-                    if (mu::ast_is<mu::Seperator_t>(child)) {
-                        hasSep = true;
-                        return false;
-                    }
-                    count++;
-                    visit(child);
-                    return false;
-                });
-                switch (count) {
-                    case 0: {
-                        lua_createtable(L, 4, 0);
-                        getName(node);
-                        lua_rawseti(L, -2, 1);
-                        lua_pushinteger(L, node->m_begin.m_line);
-                        lua_rawseti(L, -2, 2);
-                        lua_pushinteger(L, node->m_begin.m_col);
-                        lua_rawseti(L, -2, 3);
-                        auto str = parser.toString(node);
-                        mu::Utils::trim(str);
-                        lua_pushlstring(L, str.c_str(), str.length());
-                        lua_rawseti(L, -2, 4);
-                        break;
-                    }
-                    case 1: {
-                        if (flattenLevel > 1 || (flattenLevel == 1 && !hasSep)) {
-                            getName(node);
-                            lua_rawseti(L, -2, 1);
-                            lua_pushinteger(L, node->m_begin.m_line);
-                            lua_rawseti(L, -2, 2);
-                            lua_pushinteger(L, node->m_begin.m_col);
-                            lua_rawseti(L, -2, 3);
-                            break;
-                        }
-                    }
-                    default: {
-                        lua_createtable(L, count + 3, 0);
-                        getName(node);
-                        lua_rawseti(L, -2, 1);
-                        lua_pushinteger(L, node->m_begin.m_line);
-                        lua_rawseti(L, -2, 2);
-                        lua_pushinteger(L, node->m_begin.m_col);
-                        lua_rawseti(L, -2, 3);
-                        for (int i = count, j = 4; i >= 1; i--, j++) {
-                            lua_pushvalue(L, -1 - i);
-                            lua_rawseti(L, -2, j);
-                        }
-                        lua_insert(L, -1 - count);
-                        lua_pop(L, count);
-                        break;
-                    }
-                }
-            };
-            visit(info.node);
-            return 1;
-        } else {
-            lua_pushnil(L);
-            lua_pushlstring(L, info.error.c_str(), info.error.length());
-            return 2;
+        lua_pop(L, 1);
+        lua_pushliteral(L, "implicit_return_root");
+        lua_gettable(L, -2);
+        if (lua_isboolean(L, -1) != 0) {
+            config.implicitReturnRoot = lua_toboolean(L, -1) != 0;
         }
+        lua_pop(L, 1);
+        lua_pushliteral(L, "reserve_line_number");
+        lua_gettable(L, -2);
+        if (lua_isboolean(L, -1) != 0) {
+            config.reserveLineNumber = lua_toboolean(L, -1) != 0;
+        }
+        lua_pop(L, 1);
+        lua_pushliteral(L, "space_over_tab");
+        lua_gettable(L, -2);
+        if (lua_isboolean(L, -1) != 0) {
+            config.useSpaceOverTab = lua_toboolean(L, -1) != 0;
+        }
+        lua_pop(L, 1);
+        lua_pushliteral(L, "same_module");
+        lua_gettable(L, -2);
+        if (lua_isboolean(L, -1) != 0) {
+            sameModule = lua_toboolean(L, -1) != 0;
+        }
+        lua_pop(L, 1);
+        lua_pushliteral(L, "line_offset");
+        lua_gettable(L, -2);
+        if (lua_isnumber(L, -1) != 0) {
+            config.lineOffset = static_cast<int>(lua_tonumber(L, -1));
+        }
+        lua_pop(L, 1);
+        lua_pushliteral(L, "module");
+        lua_gettable(L, -2);
+        if (lua_isstring(L, -1) != 0) {
+            config.module = lua_tostring(L, -1);
+        }
+        lua_pop(L, 1);
+        lua_pushliteral(L, "target");
+        lua_gettable(L, -2);
+        if (lua_isstring(L, -1) != 0) {
+            config.options["target"] = lua_tostring(L, -1);
+        }
+        lua_pop(L, 1);
     }
+    std::string s(input, size);
+    auto result = mu::MuCompiler(L, nullptr, sameModule).compile(s, config);
+    if (result.codes.empty() && !result.error.empty()) {
+        lua_pushnil(L);
+    } else {
+        lua_pushlstring(L, result.codes.c_str(), result.codes.size());
+    }
+    if (result.error.empty()) {
+        lua_pushnil(L);
+    } else {
+        lua_pushlstring(L, result.error.c_str(), result.error.size());
+    }
+    if (result.globals) {
+        lua_createtable(L, static_cast<int>(result.globals->size()), 0);
+        int i = 1;
+        for (const auto &var : *result.globals) {
+            lua_createtable(L, 3, 0);
+            lua_pushlstring(L, var.name.c_str(), var.name.size());
+            lua_rawseti(L, -2, 1);
+            lua_pushinteger(L, var.line);
+            lua_rawseti(L, -2, 2);
+            lua_pushinteger(L, var.col);
+            lua_rawseti(L, -2, 3);
+            lua_rawseti(L, -2, i);
+            i++;
+        }
+    } else {
+        lua_pushnil(L);
+    }
+    return 3;
+}
 
-    static const luaL_Reg mulib[] = {{"to_lua", mutolua},
-                                     {"to_ast", mutoast},
-                                     {"version", nullptr},
-                                     {"options", nullptr},
-                                     {"load_stacktraceplus", nullptr},
-                                     {nullptr, nullptr}};
-
-    int luaopen_mu(lua_State *L) {
-#if LUA_VERSION_NUM > 501
-        luaL_newlib(L, mulib);
-#else
-        luaL_register(L, "mu", mulib);
-#endif
-        lua_pushlstring(L, &mu::version.front(), mu::version.size());
-        lua_setfield(L, -2, "version");
+static int mutoast(lua_State *L) {
+    size_t size = 0;
+    const char *input = luaL_checklstring(L, 1, &size);
+    int flattenLevel = 2;
+    if (lua_isnoneornil(L, 2) == 0) {
+        flattenLevel = static_cast<int>(luaL_checkinteger(L, 2));
+        flattenLevel = std::max(std::min(2, flattenLevel), 0);
+    }
+    mu::MuParser parser;
+    auto info = parser.parse<mu::File_t>({input, size});
+    if (info.node) {
         lua_createtable(L, 0, 0);
-        lua_pushlstring(L, &mu::extension.front(), mu::extension.size());
-        lua_setfield(L, -2, "extension");
-        lua_pushliteral(L, LUA_DIRSEP);
-        lua_setfield(L, -2, "dirsep");
-        lua_setfield(L, -2, "options");
-        lua_pushcfunction(L, init_stacktraceplus);
-        lua_setfield(L, -2, "load_stacktraceplus");
-        lua_pushvalue(L, -1);
-        init_muscript(L);
+        int cacheIndex = lua_gettop(L);
+        auto getName = [&](mu::ast_node *node) {
+            int id = node->getId();
+            lua_rawgeti(L, cacheIndex, id);
+            if (lua_isnil(L, -1) != 0) {
+                lua_pop(L, 1);
+                auto name = node->getName();
+                lua_pushlstring(L, &name.front(), name.length());
+                lua_pushvalue(L, -1);
+                lua_rawseti(L, cacheIndex, id);
+            }
+        };
+        std::function<void(mu::ast_node *)> visit;
+        visit = [&](mu::ast_node *node) {
+            int count = 0;
+            bool hasSep = false;
+            node->visitChild([&](mu::ast_node *child) {
+                if (mu::ast_is<mu::Seperator_t>(child)) {
+                    hasSep = true;
+                    return false;
+                }
+                count++;
+                visit(child);
+                return false;
+            });
+            switch (count) {
+                case 0: {
+                    lua_createtable(L, 4, 0);
+                    getName(node);
+                    lua_rawseti(L, -2, 1);
+                    lua_pushinteger(L, node->m_begin.m_line);
+                    lua_rawseti(L, -2, 2);
+                    lua_pushinteger(L, node->m_begin.m_col);
+                    lua_rawseti(L, -2, 3);
+                    auto str = parser.toString(node);
+                    mu::Utils::trim(str);
+                    lua_pushlstring(L, str.c_str(), str.length());
+                    lua_rawseti(L, -2, 4);
+                    break;
+                }
+                case 1: {
+                    if (flattenLevel > 1 || (flattenLevel == 1 && !hasSep)) {
+                        getName(node);
+                        lua_rawseti(L, -2, 1);
+                        lua_pushinteger(L, node->m_begin.m_line);
+                        lua_rawseti(L, -2, 2);
+                        lua_pushinteger(L, node->m_begin.m_col);
+                        lua_rawseti(L, -2, 3);
+                        break;
+                    }
+                }
+                default: {
+                    lua_createtable(L, count + 3, 0);
+                    getName(node);
+                    lua_rawseti(L, -2, 1);
+                    lua_pushinteger(L, node->m_begin.m_line);
+                    lua_rawseti(L, -2, 2);
+                    lua_pushinteger(L, node->m_begin.m_col);
+                    lua_rawseti(L, -2, 3);
+                    for (int i = count, j = 4; i >= 1; i--, j++) {
+                        lua_pushvalue(L, -1 - i);
+                        lua_rawseti(L, -2, j);
+                    }
+                    lua_insert(L, -1 - count);
+                    lua_pop(L, count);
+                    break;
+                }
+            }
+        };
+        visit(info.node);
         return 1;
+    } else {
+        lua_pushnil(L);
+        lua_pushlstring(L, info.error.c_str(), info.error.length());
+        return 2;
     }
+}
+
+static const luaL_Reg mulib[] = {{"to_lua", mutolua}, {"to_ast", mutoast}, {"version", nullptr}, {"options", nullptr}, {"load_stacktraceplus", nullptr}, {nullptr, nullptr}};
+
+int luaopen_mu(lua_State *L) {
+#if LUA_VERSION_NUM > 501
+    luaL_newlib(L, mulib);
+#else
+    luaL_register(L, "mu", mulib);
+#endif
+    lua_pushlstring(L, &mu::version.front(), mu::version.size());
+    lua_setfield(L, -2, "version");
+    lua_createtable(L, 0, 0);
+    lua_pushlstring(L, &mu::extension.front(), mu::extension.size());
+    lua_setfield(L, -2, "extension");
+    lua_pushliteral(L, LUA_DIRSEP);
+    lua_setfield(L, -2, "dirsep");
+    lua_setfield(L, -2, "options");
+    lua_pushcfunction(L, init_stacktraceplus);
+    lua_setfield(L, -2, "load_stacktraceplus");
+    lua_pushvalue(L, -1);
+    init_muscript(L);
+    return 1;
+}
 }
 
 #if not(defined METADOT_MU_NO_MACRO && defined METADOT_MU_COMPILER_ONLY)
@@ -284,13 +291,13 @@ static void openlibs(void *state) {
 }
 
 void pushMu(lua_State *L, std::string_view name) {
-    lua_getglobal(L, "package");                   // package
-    lua_getfield(L, -1, "loaded");                 // package loaded
-    lua_getfield(L, -1, "mu");                     // package loaded mu
-    lua_pushlstring(L, &name.front(), name.size());// package loaded mu name
-    lua_gettable(L, -2);                           // loaded[name], package loaded mu item
-    lua_insert(L, -4);                             // item package loaded mu
-    lua_pop(L, 3);                                 // item
+    lua_getglobal(L, "package");                     // package
+    lua_getfield(L, -1, "loaded");                   // package loaded
+    lua_getfield(L, -1, "mu");                       // package loaded mu
+    lua_pushlstring(L, &name.front(), name.size());  // package loaded mu name
+    lua_gettable(L, -2);                             // loaded[name], package loaded mu item
+    lua_insert(L, -4);                               // item package loaded mu
+    lua_pop(L, 3);                                   // item
 }
 
 void pushOptions(lua_State *L, int lineOffset) {
@@ -314,7 +321,7 @@ void pushOptions(lua_State *L, int lineOffset) {
     lua_pushinteger(L, lineOffset);
     lua_rawset(L, -3);
 }
-#endif// not (defined METADOT_MU_NO_MACRO && defined METADOT_MU_COMPILER_ONLY)
+#endif  // not (defined METADOT_MU_NO_MACRO && defined METADOT_MU_COMPILER_ONLY)
 
 static void pushLuaminify(lua_State *L) {
     if (luaL_loadfile(L, METADOT_RESLOC("data/scripts/libs/luaminify.lua")) != 0) {
@@ -325,36 +332,36 @@ static void pushLuaminify(lua_State *L) {
         luaL_error(L, err.c_str());
     }
 }
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
 
-std::filesystem::path getTargetFile(const std::filesystem::path &file,
-                                    const std::filesystem::path &workPath,
-                                    const std::filesystem::path &targetPath) {
+std::filesystem::path getTargetFile(const std::filesystem::path &file, const std::filesystem::path &workPath, const std::filesystem::path &targetPath) {
     auto srcFile = std::filesystem::absolute(file);
     auto ext = srcFile.extension().string();
-    for (auto &ch: ext) ch = std::tolower(ch);
+    for (auto &ch : ext) ch = std::tolower(ch);
     if (!ext.empty() && ext.substr(1) == mu::extension) {
         auto targetFile = targetPath / srcFile.lexically_relative(workPath);
         targetFile.replace_extension("lua"s);
-        if (std::filesystem::exists(targetFile)) { return targetFile; }
+        if (std::filesystem::exists(targetFile)) {
+            return targetFile;
+        }
     }
     return std::filesystem::path();
 }
 
-std::filesystem::path getTargetFileDirty(const std::filesystem::path &file,
-                                         const std::filesystem::path &workPath,
-                                         const std::filesystem::path &targetPath) {
+std::filesystem::path getTargetFileDirty(const std::filesystem::path &file, const std::filesystem::path &workPath, const std::filesystem::path &targetPath) {
     if (!std::filesystem::exists(file)) return std::filesystem::path();
     auto srcFile = std::filesystem::absolute(file);
     auto ext = srcFile.extension().string();
-    for (auto &ch: ext) ch = std::tolower(ch);
+    for (auto &ch : ext) ch = std::tolower(ch);
     if (!std::filesystem::is_directory(srcFile) && !ext.empty() && ext.substr(1) == mu::extension) {
         auto targetFile = targetPath / srcFile.lexically_relative(workPath);
         targetFile.replace_extension("lua"s);
         if (std::filesystem::exists(targetFile)) {
             auto time = std::filesystem::last_write_time(targetFile);
             auto targetTime = std::filesystem::last_write_time(srcFile);
-            if (time < targetTime) { return targetFile; }
+            if (time < targetTime) {
+                return targetFile;
+            }
         } else {
             return targetFile;
         }
@@ -362,9 +369,7 @@ std::filesystem::path getTargetFileDirty(const std::filesystem::path &file,
     return std::filesystem::path();
 }
 
-static std::string compileFile(const std::filesystem::path &file, mu::MuConfig conf,
-                               const std::filesystem::path &workPath,
-                               const std::filesystem::path &targetPath) {
+static std::string compileFile(const std::filesystem::path &file, mu::MuConfig conf, const std::filesystem::path &workPath, const std::filesystem::path &targetPath) {
     auto srcFile = std::filesystem::absolute(file);
     auto targetFile = getTargetFileDirty(srcFile, workPath, targetPath);
     if (targetFile.empty()) return std::string();
@@ -372,7 +377,9 @@ static std::string compileFile(const std::filesystem::path &file, mu::MuConfig c
     if (input) {
         std::string s((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
         auto modulePath = srcFile.lexically_relative(workPath);
-        if (modulePath.empty()) { modulePath = srcFile; }
+        if (modulePath.empty()) {
+            modulePath = srcFile;
+        }
         conf.module = modulePath.string();
         if (!workPath.empty()) {
             auto it = conf.options.find("path");
@@ -388,12 +395,16 @@ static std::string compileFile(const std::filesystem::path &file, mu::MuConfig c
             std::string targetExtension("lua"sv);
             if (result.options) {
                 auto it = result.options->find("target_extension"s);
-                if (it != result.options->end()) { targetExtension = it->second; }
+                if (it != result.options->end()) {
+                    targetExtension = it->second;
+                }
             }
             if (targetFile.has_parent_path()) {
                 std::filesystem::create_directories(targetFile.parent_path());
             }
-            if (result.codes.empty()) { return "Built "s + modulePath.string() + '\n'; }
+            if (result.codes.empty()) {
+                return "Built "s + modulePath.string() + '\n';
+            }
             std::ofstream output(targetFile, std::ios::trunc | std::ios::out);
             if (output) {
                 const auto &codes = result.codes;
@@ -461,7 +472,7 @@ int exe_mu(int narg, const char **args) {
 #ifndef METADOT_MU_COMPILER_ONLY
             "   -e str   Execute a file or raw codes\n"
             "   -m       Generate minified codes\n"
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
             "   -t path  Specify where to place compiled files\n"
             "   -o file  Write output to file\n"
             "   -s       Use spaces in generated codes instead of tabs\n"
@@ -479,7 +490,7 @@ int exe_mu(int narg, const char **args) {
             "   --path=path_str   Append an extra Lua search path string to package.path\n\n"
             "   Execute without options to enter REPL, type symbol '$'\n"
             "   in a single line to start/stop multi-line mode\n"
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
             ;
 #ifndef METADOT_MU_COMPILER_ONLY
     if (narg == 1) {
@@ -599,12 +610,12 @@ int exe_mu(int narg, const char **args) {
                     for (int i = 1; i < retCount; ++i) {
 #if LUA_VERSION_NUM > 501
                         std::cout << Val << luaL_tolstring(L, -retCount + i, nullptr) << Stop;
-#else // LUA_VERSION_NUM
+#else   // LUA_VERSION_NUM
                         lua_getglobal(L, "tostring");
                         lua_pushvalue(L, -retCount + i - 1);
                         lua_call(L, 1, 1);
                         std::cout << Val << lua_tostring(L, -1) << Stop;
-#endif// LUA_VERSION_NUM
+#endif  // LUA_VERSION_NUM
                         lua_pop(L, 1);
                     }
                 }
@@ -616,7 +627,7 @@ int exe_mu(int narg, const char **args) {
         return 0;
     }
     bool minify = false;
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
     mu::MuConfig config;
     config.implicitReturnRoot = true;
     config.lintGlobalVariable = false;
@@ -726,7 +737,7 @@ int exe_mu(int narg, const char **args) {
             }
         } else if (arg == "-m"sv) {
             minify = true;
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
         } else if (arg == "-s"sv) {
             config.useSpaceOverTab = true;
         } else if (arg == "-l"sv) {
@@ -942,7 +953,7 @@ int exe_mu(int narg, const char **args) {
         luaL_openlibs(L);
         pushLuaminify(L);
     }
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
     std::list<std::string> errs;
     for (auto &result: results) {
         int val = 0;
@@ -994,7 +1005,7 @@ int exe_mu(int narg, const char **args) {
             }
 #else
             std::cout << msg;
-#endif// METADOT_MU_COMPILER_ONLY
+#endif  // METADOT_MU_COMPILER_ONLY
         }
     }
     for (const auto &err: errs) { std::cout << err; }

@@ -3,8 +3,16 @@
 #ifndef _METADOT_GAME_HPP_
 #define _METADOT_GAME_HPP_
 
-//#define b2_maxTranslation 10.0f
-//#define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
+// #define b2_maxTranslation 10.0f
+// #define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)
+
+#include <algorithm>
+#include <chrono>
+#include <codecvt>
+#include <functional>
+#include <iostream>
+#include <thread>
+#include <unordered_map>
 
 #include "background.hpp"
 #include "controls.hpp"
@@ -26,19 +34,7 @@
 #include "libs/sparsehash/sparse_hash_map.h"
 #include "world.hpp"
 
-#include <algorithm>
-#include <chrono>
-#include <codecvt>
-#include <functional>
-#include <iostream>
-#include <thread>
-#include <unordered_map>
-
-enum GameState {
-    MAIN_MENU,
-    LOADING,
-    INGAME
-};
+enum GameState { MAIN_MENU, LOADING, INGAME };
 
 class Game {
 public:
@@ -89,8 +85,7 @@ public:
     long long fadeOutLength = 0;
     std::function<void()> fadeOutCallback = []() {};
 
-    struct
-    {
+    struct {
         Backgrounds *backgrounds = nullptr;
         Profiler profiler;
         Settings settings;
@@ -100,14 +95,12 @@ public:
         ThreadPoolC updateDirtyPool2;
     } GameIsolate_;
 
-    struct
-    {
+    struct {
         Console console;
         GameScriptingWrap gameScriptwrap;
     } GameSystem_;
 
-    struct
-    {
+    struct {
         R_Image *backgroundImage = nullptr;
 
         R_Image *loadingTexture = nullptr;
@@ -162,7 +155,9 @@ public:
     GameState getGameState() const { return state; }
     void setGameState(GameState state, std::optional<GameState> stateal) {
         this->state = state;
-        if (stateal.has_value()) { this->stateAfterLoad = stateal.value(); }
+        if (stateal.has_value()) {
+            this->stateAfterLoad = stateal.value();
+        }
     }
 
     Game(int argc, char *argv[]);

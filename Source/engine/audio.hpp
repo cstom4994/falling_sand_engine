@@ -10,9 +10,10 @@
 #include "engine/internal/builtin_fmod.h"
 #endif
 
+#include <math.h>
+
 #include <iostream>
 #include <map>
-#include <math.h>
 #include <string>
 #include <vector>
 
@@ -33,16 +34,15 @@ class event_instance {
 };
 
 namespace FMOD {
-    namespace Studio {
-        class EventDescription;
-    }
-}// namespace FMOD
+namespace Studio {
+class EventDescription;
+}
+}  // namespace FMOD
 
 /**
    Models FMOD event descriptions
 */
-struct event
-{
+struct event {
     FMOD::Studio::EventDescription *fmod_bank;
     std::string path;
 
@@ -50,13 +50,12 @@ struct event
 };
 
 namespace FMOD {
-    namespace Studio {
-        class Bank;
-    }
-}// namespace FMOD
+namespace Studio {
+class Bank;
+}
+}  // namespace FMOD
 
-struct bank
-{
+struct bank {
     /** Instance of the fmod bank object */
     FMOD::Studio::Bank *fmod_bank;
 
@@ -92,21 +91,21 @@ void init_fmod_system();
 FMOD::Studio::System *get_fmod_system();
 FMOD::System *get_fmod_core_system();
 
-struct fmod_exception
-{
+struct fmod_exception {
     const char *message;
 };
 
 /** Checks the result, printing it out and throwing an 'fmod_exception' if the
     result is an error. */
 inline void check_err(FMOD_RESULT res) {
-    if (res != FMOD_OK) { throw fmod_exception{FMOD_ErrorString(res)}; }
+    if (res != FMOD_OK) {
+        throw fmod_exception{FMOD_ErrorString(res)};
+    }
 }
 
 #pragma endregion FMODWrapper
 
-struct Implementation
-{
+struct Implementation {
     Implementation();
     ~Implementation();
 
@@ -135,21 +134,16 @@ public:
     void LoadBank(const std::string &strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS flags);
     FMOD::Studio::Bank *GetBank(const std::string &strBankName);
     void LoadEvent(const std::string &strEventName);
-    void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false,
-                   bool bStream = false);
+    void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false, bool bStream = false);
     void UnLoadSound(const std::string &strSoundName);
-    void Set3dListenerAndOrientation(const Vector3 &vPosition, const Vector3 &vLook,
-                                     const Vector3 &vUp);
-    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0},
-                   float fVolumedB = 0.0f);
+    void Set3dListenerAndOrientation(const Vector3 &vPosition, const Vector3 &vLook, const Vector3 &vUp);
+    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0}, float fVolumedB = 0.0f);
     void PlayEvent(const std::string &strEventName);
     FMOD::Studio::EventInstance *GetEvent(const std::string &strEventName);
     void StopChannel(int nChannelId);
     void StopEvent(const std::string &strEventName, bool bImmediate = false);
-    void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter,
-                           float *parameter);
-    void SetEventParameter(const std::string &strEventName, const std::string &strParameterName,
-                           float fValue);
+    void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter, float *parameter);
+    void SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue);
     void SetGlobalParameter(const std::string &strParameterName, float fValue);
     void GetGlobalParameter(const std::string &strEventParameter, float *parameter);
     void StopAllChannels();
@@ -171,17 +165,13 @@ public:
     static void Shutdown();
 
     void LoadEvent(const std::string &strEventName);
-    void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false,
-                   bool bStream = false);
+    void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false, bool bStream = false);
     void UnLoadSound(const std::string &strSoundName);
-    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0},
-                   float fVolumedB = 0.0f);
+    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0}, float fVolumedB = 0.0f);
     void PlayEvent(const std::string &strEventName);
     void StopEvent(const std::string &strEventName, bool bImmediate = false);
-    void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter,
-                           float *parameter);
-    void SetEventParameter(const std::string &strEventName, const std::string &strParameterName,
-                           float fValue);
+    void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter, float *parameter);
+    void SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue);
     void SetGlobalParameter(const std::string &strParameterName, float fValue);
     void GetGlobalParameter(const std::string &strEventParameter, float *parameter);
     void SetChannel3dPosition(int nChannelId, const Vector3 &vPosition);

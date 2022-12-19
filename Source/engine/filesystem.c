@@ -1,18 +1,18 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "filesystem.h"
-#include "core/core.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <sys/malloc.h>
 
 #include "core/alloc.h"
+#include "core/core.h"
 #include "engine/datapackage.h"
 #include "engine/engine_cpp.h"
 #include "engine/engine_platform.h"
 #include "libs/physfs/physfs.h"
 #include "platform_detail.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/malloc.h>
 
 char *FilesystemProjectRootPath;
 char *FilesystemDataPath;
@@ -32,7 +32,9 @@ void InitFilesystem() {
         FilesystemProjectRootPath = dir;
         strcat(dir, "data/");
         FilesystemDataPath = dir;
-        if (!FUtil_exists(dir)) { METADOT_ERROR("Check runtime folder failed %s", dir); }
+        if (!FUtil_exists(dir)) {
+            METADOT_ERROR("Check runtime folder failed %s", dir);
+        }
         METADOT_BUG("Runtime folder detected: %s", FilesystemProjectRootPath);
         return;
     }
@@ -61,7 +63,7 @@ char *futil_readfilestring(const char *path) {
             }
 
             /* Allocate our buffer to that size. */
-            source = (char *) gc_malloc(&gc, sizeof(char) * (bufsize + 1));
+            source = (char *)gc_malloc(&gc, sizeof(char) * (bufsize + 1));
 
             /* Go back to the start of the file. */
             if (fseek(fp, 0L, SEEK_SET) != 0) { /* Error */

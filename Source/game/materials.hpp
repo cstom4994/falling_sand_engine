@@ -3,14 +3,13 @@
 #ifndef _METADOT_MATERIALS_HPP_
 #define _METADOT_MATERIALS_HPP_
 
-#include "engine/sdl_wrapper.h"
-
-#include "core/core.hpp"
-
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "core/core.hpp"
+#include "engine/sdl_wrapper.h"
 
 enum PhysicsType {
     AIR = 0,
@@ -23,15 +22,14 @@ enum PhysicsType {
 };
 
 #define INTERACT_NONE 0
-#define INTERACT_TRANSFORM_MATERIAL 1// id, radius
-#define INTERACT_SPAWN_MATERIAL 2    // id, radius
-#define EXPLODE 3                    // radius
+#define INTERACT_TRANSFORM_MATERIAL 1  // id, radius
+#define INTERACT_SPAWN_MATERIAL 2      // id, radius
+#define EXPLODE 3                      // radius
 
-#define REACT_TEMPERATURE_BELOW 4// temperature, id
-#define REACT_TEMPERATURE_ABOVE 5// temperature, id
+#define REACT_TEMPERATURE_BELOW 4  // temperature, id
+#define REACT_TEMPERATURE_ABOVE 5  // temperature, id
 
-struct MaterialInteraction
-{
+struct MaterialInteraction {
     int type = INTERACT_NONE;
     int data1 = 0;
     int data2 = 0;
@@ -63,18 +61,11 @@ public:
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha,
-             float density, int iterations, int emit, U32 emitColor, U32 color);
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha,
-             float density, int iterations, int emit, U32 emitColor)
-        : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor,
-                   0xffffffff){};
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha,
-             float density, int iterations)
-        : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
-    Material(int id, std::string name, int physicsType, int slipperyness, float density,
-             int iterations)
-        : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
+    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations, int emit, U32 emitColor, U32 color);
+    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations, int emit, U32 emitColor)
+        : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
+    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
+    Material(int id, std::string name, int physicsType, int slipperyness, float density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
     Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
 };
 

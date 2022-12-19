@@ -1,6 +1,7 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "audio.hpp"
+
 #include "core/core.hpp"
 #include "core/macros.h"
 
@@ -44,13 +45,17 @@ bank_manager *bank_manager_instance = nullptr;
 bank_manager::bank_manager() {}
 
 bank_manager &bank_manager::instance() {
-    if (!bank_manager_instance) { bank_manager_instance = new bank_manager(); }
+    if (!bank_manager_instance) {
+        bank_manager_instance = new bank_manager();
+    }
     return *bank_manager_instance;
 }
 
 bank *bank_manager::load(const char *path) {
     const auto cached = bank_map.find(path);
-    if (cached != bank_map.end()) { return &cached->second; }
+    if (cached != bank_map.end()) {
+        return &cached->second;
+    }
     const auto system = get_fmod_system();
     FMOD::Studio::Bank *fmod_bank = nullptr;
     check_err(system->loadBankFile(path, FMOD_STUDIO_LOAD_BANK_NORMAL, &fmod_bank));
@@ -94,9 +99,13 @@ void Implementation::Update() {
     for (auto it = mChannels.begin(), itEnd = mChannels.end(); it != itEnd; ++it) {
         bool bIsPlaying = false;
         it->second->isPlaying(&bIsPlaying);
-        if (!bIsPlaying) { pStoppedChannels.push_back(it); }
+        if (!bIsPlaying) {
+            pStoppedChannels.push_back(it);
+        }
     }
-    for (auto &it: pStoppedChannels) { mChannels.erase(it); }
+    for (auto &it : pStoppedChannels) {
+        mChannels.erase(it);
+    }
     Audio::ErrorCheck(get_fmod_system()->update());
 }
 
@@ -114,9 +123,10 @@ void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, 
     eMode |= bLooping ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF;
     eMode |= bStream ? FMOD_CREATESTREAM : FMOD_CREATECOMPRESSEDSAMPLE;
     FMOD::Sound *pSound = nullptr;
-    Audio::ErrorCheck(
-            get_fmod_core_system()->createSound(strSoundName.c_str(), eMode, nullptr, &pSound));
-    if (pSound) { sgpImplementation->mSounds[strSoundName] = pSound; }
+    Audio::ErrorCheck(get_fmod_core_system()->createSound(strSoundName.c_str(), eMode, nullptr, &pSound));
+    if (pSound) {
+        sgpImplementation->mSounds[strSoundName] = pSound;
+    }
 }
 
 void Audio::UnLoadSound(const std::string &strSoundName) {
@@ -132,11 +142,12 @@ int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition,
     if (tFoundIt == sgpImplementation->mSounds.end()) {
         LoadSound(strSoundName);
         tFoundIt = sgpImplementation->mSounds.find(strSoundName);
-        if (tFoundIt == sgpImplementation->mSounds.end()) { return nChannelId; }
+        if (tFoundIt == sgpImplementation->mSounds.end()) {
+            return nChannelId;
+        }
     }
     FMOD::Channel *pChannel = nullptr;
-    Audio::ErrorCheck(
-            get_fmod_core_system()->playSound(tFoundIt->second, nullptr, true, &pChannel));
+    Audio::ErrorCheck(get_fmod_core_system()->playSound(tFoundIt->second, nullptr, true, &pChannel));
     if (pChannel) {
         FMOD_MODE currMode;
         tFoundIt->second->getMode(&currMode);
@@ -171,12 +182,12 @@ void Audio::LoadBank(const std::string &strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS
     if (tFoundIt != sgpImplementation->mBanks.end()) return;
     FMOD::Studio::Bank *pBank;
     Audio::ErrorCheck(get_fmod_system()->loadBankFile(strBankName.c_str(), flags, &pBank));
-    if (pBank) { sgpImplementation->mBanks[strBankName] = pBank; }
+    if (pBank) {
+        sgpImplementation->mBanks[strBankName] = pBank;
+    }
 }
 
-FMOD::Studio::Bank *Audio::GetBank(const std::string &strBankName) {
-    return sgpImplementation->mBanks[strBankName];
-}
+FMOD::Studio::Bank *Audio::GetBank(const std::string &strBankName) { return sgpImplementation->mBanks[strBankName]; }
 
 void Audio::LoadEvent(const std::string &strEventName) {
     auto tFoundit = sgpImplementation->mEvents.find(strEventName);
@@ -186,7 +197,9 @@ void Audio::LoadEvent(const std::string &strEventName) {
     if (pEventDescription) {
         FMOD::Studio::EventInstance *pEventInstance = NULL;
         Audio::ErrorCheck(pEventDescription->createInstance(&pEventInstance));
-        if (pEventInstance) { sgpImplementation->mEvents[strEventName] = pEventInstance; }
+        if (pEventInstance) {
+            sgpImplementation->mEvents[strEventName] = pEventInstance;
+        }
     }
 }
 
@@ -223,32 +236,28 @@ bool Audio::IsEventPlaying(const std::string &strEventName) const {
     if (tFoundIt == sgpImplementation->mEvents.end()) return false;
 
     FMOD_STUDIO_PLAYBACK_STATE *state = NULL;
-    if (tFoundIt->second->getPlaybackState(state) == FMOD_STUDIO_PLAYBACK_PLAYING) { return true; }
+    if (tFoundIt->second->getPlaybackState(state) == FMOD_STUDIO_PLAYBACK_PLAYING) {
+        return true;
+    }
     return false;
 }
 
-void Audio::GetEventParameter(const std::string &strEventName, const std::string &strParameterName,
-                              float *parameter) {
+void Audio::GetEventParameter(const std::string &strEventName, const std::string &strParameterName, float *parameter) {
     auto tFoundIt = sgpImplementation->mEvents.find(strEventName);
     if (tFoundIt == sgpImplementation->mEvents.end()) return;
     Audio::ErrorCheck(tFoundIt->second->getParameterByName(strParameterName.c_str(), parameter));
-    //CAudioEngine::ErrorCheck(pParameter->getValue(parameter));
+    // CAudioEngine::ErrorCheck(pParameter->getValue(parameter));
 }
 
-void Audio::SetEventParameter(const std::string &strEventName, const std::string &strParameterName,
-                              float fValue) {
+void Audio::SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue) {
     auto tFoundIt = sgpImplementation->mEvents.find(strEventName);
     if (tFoundIt == sgpImplementation->mEvents.end()) return;
     Audio::ErrorCheck(tFoundIt->second->setParameterByName(strParameterName.c_str(), fValue));
 }
 
-void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue) {
-    get_fmod_system()->setParameterByName(strParameterName.c_str(), fValue);
-}
+void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue) { get_fmod_system()->setParameterByName(strParameterName.c_str(), fValue); }
 
-void Audio::GetGlobalParameter(const std::string &strParameterName, float *parameter) {
-    get_fmod_system()->getParameterByName(strParameterName.c_str(), parameter);
-}
+void Audio::GetGlobalParameter(const std::string &strParameterName, float *parameter) { get_fmod_system()->getParameterByName(strParameterName.c_str(), parameter); }
 
 FMOD_VECTOR Audio::VectorToFmod(const Vector3 &vPosition) {
     FMOD_VECTOR fVec;
@@ -283,9 +292,7 @@ void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, 
 
 void Audio::UnLoadSound(const std::string &strSoundName) {}
 
-int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition, float fVolumedB) {
-    return 1;
-}
+int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition, float fVolumedB) { return 1; }
 
 void Audio::SetChannel3dPosition(int nChannelId, const Vector3 &vPosition) {}
 
@@ -299,11 +306,9 @@ void Audio::StopEvent(const std::string &strEventName, bool bImmediate) {}
 
 bool Audio::IsEventPlaying(const std::string &strEventName) const { return false; }
 
-void Audio::GetEventParameter(const std::string &strEventName, const std::string &strParameterName,
-                              float *parameter) {}
+void Audio::GetEventParameter(const std::string &strEventName, const std::string &strParameterName, float *parameter) {}
 
-void Audio::SetEventParameter(const std::string &strEventName, const std::string &strParameterName,
-                              float fValue) {}
+void Audio::SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue) {}
 
 void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue) {}
 

@@ -1,14 +1,15 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "engine_platform.h"
+
+#include <string.h>
+
 #include "core/const.h"
 #include "core/core.h"
 #include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
-
 #include "libs/glad/glad.h"
-#include <string.h>
 
 IMPLENGINE();
 
@@ -18,10 +19,10 @@ int ParseRunArgs(int argc, char *argv[]) {
         char *v1 = argv[1];
         if (v1) {
             if (!strcmp(v1, "server")) {
-                //global.game->GameIsolate_.settings.networkMode = NetworkMode::SERVER;
+                // global.game->GameIsolate_.settings.networkMode = NetworkMode::SERVER;
             }
         } else {
-            //global.game->GameIsolate_.settings.networkMode = NetworkMode::HOST;
+            // global.game->GameIsolate_.settings.networkMode = NetworkMode::HOST;
         }
     }
 
@@ -42,8 +43,7 @@ int InitWindow() {
 // Rendering on Catalina with High DPI (retina)
 // https://github.com/grimfang4/sdl-gpu/issues/201
 #if defined(METADOT_ALLOW_HIGHDPI)
-    R_WindowFlagEnum SDL_flags =
-            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    R_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #else
     R_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 #endif
@@ -51,8 +51,7 @@ int InitWindow() {
     // create the window
     METADOT_INFO("Creating game window...");
 
-    Core.window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                   Screen.windowWidth, Screen.windowHeight, SDL_flags);
+    Core.window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Screen.windowWidth, Screen.windowHeight, SDL_flags);
 
     if (Core.window == R_null) {
         METADOT_ERROR("Could not create SDL_Window: %s", SDL_GetError());
@@ -114,12 +113,12 @@ int InitWindow() {
 #elif defined(__linux)
     global.HostData.wndh = 0;
 #elif defined(__APPLE__)
-    //global.HostData.wndh = 0;
+    // global.HostData.wndh = 0;
 #else
 #error "GetWindowWMInfo Error"
 #endif
-    //this->data->window = window;
-    //this->data->imgui_context = m_ImGuiCore->getImGuiCtx();
+    // this->data->window = window;
+    // this->data->imgui_context = m_ImGuiCore->getImGuiCtx();
 
     // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
     // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
@@ -131,7 +130,7 @@ int InitWindow() {
 
     // TODO CppScript
 
-    //initThread.get();
+    // initThread.get();
 
     // global.audioEngine.PlayEvent("event:/Music/Title");
     // global.audioEngine.Update();
@@ -146,12 +145,12 @@ void SetDisplayMode(engine_displaymode mode) {
         case WINDOWED:
             SDL_SetWindowDisplayMode(Core.window, NULL);
             SDL_SetWindowFullscreen(Core.window, 0);
-            //GameUI::OptionsUI::item_current_idx = 0;
+            // GameUI::OptionsUI::item_current_idx = 0;
             break;
         case BORDERLESS:
             SDL_SetWindowDisplayMode(Core.window, NULL);
             SDL_SetWindowFullscreen(Core.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-            //GameUI::OptionsUI::item_current_idx = 1;
+            // GameUI::OptionsUI::item_current_idx = 1;
             break;
         case FULLSCREEN:
             SDL_MaximizeWindow(Core.window);
@@ -168,7 +167,7 @@ void SetDisplayMode(engine_displaymode mode) {
 
             SDL_SetWindowDisplayMode(Core.window, &disp);
             SDL_SetWindowFullscreen(Core.window, SDL_WINDOW_FULLSCREEN);
-            //GameUI::OptionsUI::item_current_idx = 2;
+            // GameUI::OptionsUI::item_current_idx = 2;
             break;
     }
 }
@@ -179,7 +178,7 @@ void SetWindowFlash(engine_windowflashaction action, int count, int period) {
 
     FLASHWINFO flash;
     flash.cbSize = sizeof(FLASHWINFO);
-    //flash.hwnd = hwnd;
+    // flash.hwnd = hwnd;
     flash.uCount = count;
     flash.dwTimeout = period;
 
@@ -206,12 +205,12 @@ void SetWindowFlash(engine_windowflashaction action, int count, int period) {
 
 void SetVSync(bool vsync) {
     SDL_GL_SetSwapInterval(vsync ? 1 : 0);
-    //GameUI::OptionsUI::vsync = vsync;
+    // GameUI::OptionsUI::vsync = vsync;
 }
 
 void SetMinimizeOnLostFocus(bool minimize) {
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
-    //GameUI::OptionsUI::minimizeOnFocus = minimize;
+    // GameUI::OptionsUI::minimizeOnFocus = minimize;
 }
 
 void SetWindowTitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }

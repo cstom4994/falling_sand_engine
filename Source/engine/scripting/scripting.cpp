@@ -1,6 +1,14 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
 #include "engine/scripting/scripting.hpp"
+
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
@@ -21,29 +29,20 @@
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 
-#include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include <cstring>
-
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
 extern int LoadImguiBindings(lua_State *l);
 
-struct MyStruct
-{
+struct MyStruct {
     void (*func1)(std::string);
     void (*func2)(std::string);
 };
 
-template<class T>
+template <class T>
 void As(T arg) {
-    //auto namespac = state["Test"].get_or_create<sol::table>();
-    //namespac.set_function();
+    // auto namespac = state["Test"].get_or_create<sol::table>();
+    // namespac.set_function();
 }
 
 auto f = [](auto &...args) { (..., As(args)); };
@@ -101,18 +100,17 @@ static int metadot_run_lua_file_script(lua_State *L) {
     std::string string = lua_tostring(L, 1);
     auto LuaCore = global.scripts->LuaRuntime;
     METADOT_ASSERT_E(LuaCore);
-    if (SUtil::startsWith(string, "Script:"))
-        SUtil::replaceWith(string, "Script:", METADOT_RESLOC("data/scripts/"));
+    if (SUtil::startsWith(string, "Script:")) SUtil::replaceWith(string, "Script:", METADOT_RESLOC("data/scripts/"));
     LuaCore->RunScriptFromFile(string.c_str());
     return 0;
 }
 
 static int metadot_exit(lua_State *L) {
-    //s_lua_layer->closeConsole();
+    // s_lua_layer->closeConsole();
     return 0;
 }
 
-//returns table with pairs of path and isDirectory
+// returns table with pairs of path and isDirectory
 static int ls(lua_State *L) {
     if (!lua_isstring(L, 1)) {
         METADOT_WARN("invalid lua argument");
@@ -126,8 +124,8 @@ static int ls(lua_State *L) {
 
     lua_newtable(L);
     int i = 0;
-    for (auto &p: std::filesystem::directory_iterator(string)) {
-        lua_pushnumber(L, i + 1);// parent table index
+    for (auto &p : std::filesystem::directory_iterator(string)) {
+        lua_pushnumber(L, i + 1);  // parent table index
         lua_newtable(L);
         lua_pushstring(L, "path");
         lua_pushstring(L, p.path().generic_string().c_str());
@@ -213,20 +211,17 @@ void LuaCore::Init() {
     s_lua["metadot_metadata"] = LuaWrapper::function(metadot_metadata);
     s_lua["metadot_buildnum"] = LuaWrapper::function(metadot_buildnum);
 
-    s_lua.dostring(
-            MetaEngine::Format("package.path = "
-                               "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
-                               "?/?.lua;' .. package.path",
-                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath()),
-            s_lua.globalTable());
+    s_lua.dostring(MetaEngine::Format("package.path = "
+                                      "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                                      "?/?.lua;' .. package.path",
+                                      METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath()),
+                   s_lua.globalTable());
 
-    s_lua.dostring(
-            MetaEngine::Format("package.cpath = "
-                               "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
-                               "?/?.{2};' .. package.cpath",
-                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(),
-                               "dylib"),
-            s_lua.globalTable());
+    s_lua.dostring(MetaEngine::Format("package.cpath = "
+                                      "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
+                                      "?/?.{2};' .. package.cpath",
+                                      METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(), "dylib"),
+                   s_lua.globalTable());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/coroutines.lua"));
     RunScriptFromFile("data/scripts/startup.lua");
@@ -253,13 +248,15 @@ void LuaCore::RunScriptFromFile(const char *filePath) {
     }
     result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
 
-    if (result != LUA_OK) { print_error(m_L); }
+    if (result != LUA_OK) {
+        print_error(m_L);
+    }
 }
 
 void LuaCore::Update() {
-    //todo store lua bytecode version instead (dont load it every tick)
-    //lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
-    //call coroutes
+    // todo store lua bytecode version instead (dont load it every tick)
+    // lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
+    // call coroutes
     luaL_loadstring(m_L, s_couroutineFileSrc.c_str());
     auto result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
 
