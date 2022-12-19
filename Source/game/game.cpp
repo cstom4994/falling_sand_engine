@@ -38,7 +38,7 @@
 #include "game/utils.hpp"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
-#include "shaders.h"
+#include "game/game_shaders.h"
 #include "world_generator.cpp"
 
 extern void fuckme();

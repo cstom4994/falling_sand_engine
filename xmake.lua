@@ -207,6 +207,7 @@ do
     add_links(link_list)
     add_files("Source/core/**.c")
     add_files("Source/core/**.cpp")
+    add_files("Source/game/**.c")
     add_files("Source/game/**.cpp")
     add_files("Source/engine/**.c")
     add_files("Source/engine/**.cpp")

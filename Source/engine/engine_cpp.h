@@ -12,7 +12,7 @@ extern "C" {
 #include "engine_ecs.h"
 #include "engine_platform.h"
 #include "engine_render.h"
-#include "shaders.h"
+#include "engine_shaders.h"
 #include "util.h"
 
 #if defined(__cplusplus)
