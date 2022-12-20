@@ -15,6 +15,7 @@ struct GameScriptingWrap {
 
     void Init();
     void Bind();
+    void End();
 
     Biome *BiomeGet(std::string name);
 };

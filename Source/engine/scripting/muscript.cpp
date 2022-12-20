@@ -32,8 +32,6 @@ using namespace std::string_literals;
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
-#include "libs/linenoise.hpp"
-
 #ifndef METADOT_MU_NO_MACRO
 #define METADOT_MU_ARGS nullptr, openlibs
 #else

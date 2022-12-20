@@ -390,6 +390,7 @@ void Scripts::Init() {
 }
 
 void Scripts::End() {
+    global.game->GameSystem_.gameScriptwrap.End();
 
     LuaRuntime->End();
     METADOT_DELETE(C, LuaRuntime, LuaCore);

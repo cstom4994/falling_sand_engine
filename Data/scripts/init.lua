@@ -6,11 +6,13 @@
 
 require("game_datastruct")
 require("game_ui")
+require("graphics")
+require("audio")
 
 OnGameEngineLoad = function()
 
-    runf("Script:graphics.lua")
-    runf("Script:audio.lua")
+    InitGraphics()
+    InitAudio()
 
     controls_init()
 
@@ -60,3 +62,8 @@ end
 -- function OnPausedChanged( is_paused, is_inventory_pause )
 -- function OnModSettingsChanged()
 -- function OnPausePreUpdate()
+
+OnGameEngineUnLoad = function ()
+    EndAudio()
+    EndGraphics()
+end

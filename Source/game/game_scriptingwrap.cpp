@@ -11,6 +11,7 @@
 #include "game/controls.hpp"
 #include "game/game.hpp"
 #include "game/game_cpp.h"
+#include "game/game_resources.h"
 #include "game/materials.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
@@ -34,6 +35,7 @@ static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(e
 static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
 
 static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack); }
+static void textures_end() { EndTexture(global.game->GameIsolate_.texturepack); }
 static void textures_load(std::string name, std::string path) {}
 static void materials_init() { Materials::Init(); }
 static void controls_init() { Controls::initKey(); }
@@ -60,6 +62,7 @@ void GameScriptingWrap::Bind() {
     luawrap["materials_init"] = LuaWrapper::function(materials_init);
     luawrap["textures_load"] = LuaWrapper::function(textures_load);
     luawrap["textures_init"] = LuaWrapper::function(textures_init);
+    luawrap["textures_end"] = LuaWrapper::function(textures_end);
     luawrap["audio_load_event"] = LuaWrapper::function(audio_load_event);
     luawrap["audio_play_event"] = LuaWrapper::function(audio_play_event);
     luawrap["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
@@ -69,4 +72,11 @@ void GameScriptingWrap::Bind() {
     luawrap.dofile(METADOT_RESLOC("data/scripts/init.lua"));
     auto InitFunc = luawrap["OnGameEngineLoad"];
     InitFunc();
+}
+
+void GameScriptingWrap::End() {
+    auto luacore = global.scripts->LuaRuntime;
+    auto &luawrap = (*luacore->GetWrapper());
+    auto EndFunc = luawrap["OnGameEngineUnLoad"];
+    EndFunc();
 }
