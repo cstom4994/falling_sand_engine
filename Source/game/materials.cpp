@@ -2,9 +2,11 @@
 
 #include "materials.hpp"
 
+#include "core/global.hpp"
 #include "core/macros.h"
 #include "engine/renderer/renderer_utils.h"
-#include "game/game_resources.hpp"
+#include "game/game.hpp"
+#include "game/game_cpp.h"
 
 Material::Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations, int emit, U32 emitColor, U32 color) {
     this->name = name;
@@ -243,7 +245,7 @@ MaterialInstance Tiles::createTestSand() {
 }
 
 MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
-    C_Surface *tex = Textures::testTexture;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->testTexture;
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -260,7 +262,7 @@ MaterialInstance Tiles::createTestLiquid() {
 }
 
 MaterialInstance Tiles::createStone(int x, int y) {
-    C_Surface *tex = Textures::cobbleStone;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->cobbleStone;
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -288,7 +290,7 @@ MaterialInstance Tiles::createDirt() {
 }
 
 MaterialInstance Tiles::createSmoothStone(int x, int y) {
-    C_Surface *tex = Textures::smoothStone;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->smoothStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -299,7 +301,7 @@ MaterialInstance Tiles::createSmoothStone(int x, int y) {
 }
 
 MaterialInstance Tiles::createCobbleStone(int x, int y) {
-    C_Surface *tex = Textures::cobbleStone;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->cobbleStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -310,7 +312,7 @@ MaterialInstance Tiles::createCobbleStone(int x, int y) {
 }
 
 MaterialInstance Tiles::createSmoothDirt(int x, int y) {
-    C_Surface *tex = Textures::smoothDirt;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->smoothDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -321,7 +323,7 @@ MaterialInstance Tiles::createSmoothDirt(int x, int y) {
 }
 
 MaterialInstance Tiles::createCobbleDirt(int x, int y) {
-    C_Surface *tex = Textures::cobbleDirt;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->cobbleDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -332,7 +334,7 @@ MaterialInstance Tiles::createCobbleDirt(int x, int y) {
 }
 
 MaterialInstance Tiles::createSoftDirt(int x, int y) {
-    C_Surface *tex = Textures::softDirt;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->softDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -355,7 +357,7 @@ MaterialInstance Tiles::createLava() {
 }
 
 MaterialInstance Tiles::createCloud(int x, int y) {
-    C_Surface *tex = Textures::cloud;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->cloud;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -366,7 +368,7 @@ MaterialInstance Tiles::createCloud(int x, int y) {
 }
 
 MaterialInstance Tiles::createGold(int x, int y) {
-    C_Surface *tex = Textures::gold;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->gold;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -377,7 +379,7 @@ MaterialInstance Tiles::createGold(int x, int y) {
 }
 
 MaterialInstance Tiles::createIron(int x, int y) {
-    C_Surface *tex = Textures::iron;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->iron;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -388,7 +390,7 @@ MaterialInstance Tiles::createIron(int x, int y) {
 }
 
 MaterialInstance Tiles::createObsidian(int x, int y) {
-    C_Surface *tex = Textures::obsidian;
+    C_Surface *tex = global.game->GameIsolate_.texturepack->obsidian;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -441,7 +443,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
     } else if (mat->id == Materials::GOLD_ORE.id) {
         return createGold(x, y);
     } else if (mat->id == Materials::GOLD_MOLTEN.id) {
-        C_Surface *tex = Textures::goldMolten;
+        C_Surface *tex = global.game->GameIsolate_.texturepack->goldMolten;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -450,7 +452,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
 
         return MaterialInstance(&Materials::GOLD_MOLTEN, rgb);
     } else if (mat->id == Materials::GOLD_SOLID.id) {
-        C_Surface *tex = Textures::goldSolid;
+        C_Surface *tex = global.game->GameIsolate_.texturepack->goldSolid;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -467,7 +469,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
     } else if (mat->id == Materials::FIRE.id) {
         return createFire();
     } else if (mat->id == Materials::FLAT_COBBLE_STONE.id) {
-        C_Surface *tex = Textures::flatCobbleStone;
+        C_Surface *tex = global.game->GameIsolate_.texturepack->flatCobbleStone;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -476,7 +478,7 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
 
         return MaterialInstance(&Materials::FLAT_COBBLE_STONE, rgb);
     } else if (mat->id == Materials::FLAT_COBBLE_DIRT.id) {
-        C_Surface *tex = Textures::flatCobbleDirt;
+        C_Surface *tex = global.game->GameIsolate_.texturepack->flatCobbleDirt;
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;

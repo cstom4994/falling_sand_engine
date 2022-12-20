@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <chrono>
 #include <codecvt>
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <thread>
@@ -27,7 +28,7 @@
 #include "engine/scripting/scripting.hpp"
 #include "game/console.hpp"
 #include "game/game_datastruct.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "game/game_scriptingwrap.hpp"
 #include "game/imgui_core.hpp"
 #include "game/utils.hpp"
@@ -90,6 +91,7 @@ public:
         Profiler profiler;
         Settings settings;
         World *world = nullptr;
+        TexturePack *texturepack = nullptr;
 
         ThreadPool *updateDirtyPool = nullptr;
         ThreadPoolC updateDirtyPool2;

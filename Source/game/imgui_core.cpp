@@ -19,7 +19,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "game/game.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "game/game_ui.hpp"
 #include "game/utils.hpp"
 #include "game_datastruct.hpp"

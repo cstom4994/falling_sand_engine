@@ -31,14 +31,14 @@
 #include "engine_platform.h"
 #include "game/console.hpp"
 #include "game/game_datastruct.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
+#include "game/game_shaders.h"
 #include "game/game_ui.hpp"
 #include "game/imgui_core.hpp"
 #include "game/player.hpp"
 #include "game/utils.hpp"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
-#include "game/game_shaders.h"
 #include "world_generator.cpp"
 
 extern void fuckme();
@@ -67,12 +67,14 @@ int Game::init(int argc, char *argv[]) {
     InitECS(128);
     if (!InitEngine()) return METADOT_FAILED;
 
+    GameIsolate_.texturepack = (TexturePack *)gc_malloc(&gc, sizeof(TexturePack));
+
     // load splash screen
     METADOT_INFO("Loading splash screen...");
 
     R_Clear(Render.target);
     R_Flip(Render.target);
-    C_Surface *splashSurf = Textures::LoadTexture("data/assets/title/splash.png");
+    C_Surface *splashSurf = LoadTexture("data/assets/title/splash.png");
     R_Image *splashImg = R_CopyImageFromSurface(splashSurf);
     R_SetImageFilter(splashImg, R_FILTER_NEAREST);
     R_BlitRect(splashImg, NULL, Render.target, NULL);
@@ -1295,7 +1297,7 @@ void Game::updateFrameEarly() {
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::VACUUM);
             i3->vacuumParticles = {};
-            i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
+            i3->surface = LoadTexture("data/assets/objects/testVacuum.png");
             i3->texture = R_CopyImageFromSurface(i3->surface);
             R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
             i3->pivotX = 6;

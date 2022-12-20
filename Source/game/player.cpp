@@ -5,7 +5,7 @@
 #include "core/global.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "game/utils.hpp"
 
 void Player::render(R_Target *target, int ofsX, int ofsY) {

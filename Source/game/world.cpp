@@ -22,7 +22,7 @@
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "game/materials.hpp"
 #include "game/utils.hpp"
 #include "reflectionflat.hpp"
@@ -154,20 +154,20 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
 
     b2PolygonShape nothingShape;
     nothingShape.SetAsBox(0, 0);
-    this->staticBody = makeRigidBody(b2_staticBody, 0, 0, 0, nothingShape, 0, 0, Textures::cloud);
+    this->staticBody = makeRigidBody(b2_staticBody, 0, 0, 0, nothingShape, 0, 0, global.game->GameIsolate_.texturepack->cloud);
 
     updateWorldMesh();
 
     b2PolygonShape dynamicBox3;
     dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
-    RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3, Textures::LoadTexture("data/assets/objects/testObject3.png"));
+    RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png"));
 
     WorldIsolate_.rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
 
     b2PolygonShape dynamicBox4;
     dynamicBox4.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
-    RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, Textures::LoadTexture("data/assets/objects/pumpkin_01.png"));
+    RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
 
     WorldIsolate_.rigidBodies.push_back(rb2);
     updateRigidBodyHitbox(rb2);
@@ -899,7 +899,7 @@ found : {};
 
 #pragma endregion
 
-    C_Surface *texture = Textures::LoadTexture("data/assets/objects/testObject3.png");
+    C_Surface *texture = LoadTexture("data/assets/objects/testObject3.png");
 
     if (chunk->rb) {
         delete[] chunk->rb->tiles;

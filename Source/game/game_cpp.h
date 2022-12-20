@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#include "game/game_resources.h"
 #include "game/game_shaders.h"
 
 #if defined(__cplusplus)

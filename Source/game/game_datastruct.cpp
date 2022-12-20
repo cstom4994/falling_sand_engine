@@ -13,7 +13,7 @@
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/renderer_utils.h"
 #include "game/chunk.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "game/game_ui.hpp"
 #include "structures.hpp"
 #include "world.hpp"
@@ -84,8 +84,8 @@ WorldEntity::~WorldEntity() {
 // 				for (int dx = -dist; dx <= dist; dx++) {
 // 					for (int dy = -dist; dy <= dist; dy++) {
 // 						if (x + dx >= 0 && x + dx < CHUNK_W && y + dy >= 0 && y + dy < CHUNK_H) {
-// 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx) + (y + dy) *
-// CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py); 								goto nextTile;
+// 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx) + (y + dy)
+// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py); 								goto nextTile;
 // 							}
 // 						}
 // 					}
@@ -96,8 +96,8 @@ WorldEntity::~WorldEntity() {
 // 				for (int dx = -dist; dx <= dist; dx++) {
 // 					for (int dy = -dist; dy <= dist; dy++) {
 // 						if (x + dx >= 0 && x + dx < CHUNK_W && y + dy >= 0 && y + dy < CHUNK_H) {
-// 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx) + (y + dy) *
-// CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = Tiles::createCobbleDirt(px, py); 								goto nextTile;
+// 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx) + (y + dy)
+// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = Tiles::createCobbleDirt(px, py); 								goto nextTile;
 // 							}
 // 						}
 // 					}
@@ -152,7 +152,7 @@ WorldEntity::~WorldEntity() {
 // 		std::string m = "data/assets/objects/cloud_";
 // 		m.append(std::to_string(rand() % 11));
 // 		m.append(".png");
-// 		Structure st = Structure(Textures::LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
+// 		Structure st = Structure(LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
 // 		PlacedStructure* ps = new PlacedStructure(st, posX, posY);
 // 		//world.addParticle(new Particle(Tiles::TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 		structs.push_back(*ps);
@@ -427,7 +427,7 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
 
             char buff[40];
             snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
-            C_Surface *tex = Textures::LoadTexture(buff);
+            C_Surface *tex = LoadTexture(buff);
 
             px -= tex->w / 2;
             py -= tex->h - 2;

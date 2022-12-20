@@ -6,7 +6,7 @@
 
 #include "core/macros.h"
 #include "engine/renderer/renderer_utils.h"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "world.hpp"
 
 Structure::Structure(int w, int h, MaterialInstance *tiles) {
@@ -98,7 +98,7 @@ Structure Structures::makeTree1(World world, int x, int y) {
     char buff[30];
     snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
     std::string buffAsStdStr = buff;
-    return Structure(Textures::LoadTexture(buffAsStdStr.c_str()), Materials::GENERIC_PASSABLE);
+    return Structure(LoadTexture(buffAsStdStr.c_str()), Materials::GENERIC_PASSABLE);
 }
 
 PlacedStructure::PlacedStructure(Structure base, int x, int y) {

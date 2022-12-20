@@ -13,7 +13,7 @@
 #include "engine/engine_platform.h"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_ui.hpp"
 
 class Game;
 class Scripts;

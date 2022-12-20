@@ -7,10 +7,17 @@
 
 #include "engine/imgui_impl.hpp"
 #include "engine/renderer/renderer_gpu.h"
+#include "engine/scripting/lua_wrapper.hpp"
 #include "game/World.hpp"
 #include "game/materials.hpp"
 
 class Game;
+
+struct I18N {
+    void Init();
+    void Load(std::string lang);
+    std::string Get(std::string text);
+};
 
 namespace GameUI {
 

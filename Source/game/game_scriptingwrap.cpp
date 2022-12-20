@@ -9,7 +9,8 @@
 #include "engine/filesystem.h"
 #include "engine/reflectionflat.hpp"
 #include "game/controls.hpp"
-#include "game/game_resources.hpp"
+#include "game/game.hpp"
+#include "game/game_cpp.h"
 #include "game/materials.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
@@ -32,7 +33,7 @@ static void audio_load_bank(std::string name, unsigned int type) {
 static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(event); }
 static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
 
-static void textures_init() { Textures::Init(); }
+static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack); }
 static void textures_load(std::string name, std::string path) {}
 static void materials_init() { Materials::Init(); }
 static void controls_init() { Controls::initKey(); }

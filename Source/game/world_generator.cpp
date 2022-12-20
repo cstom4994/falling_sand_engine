@@ -6,7 +6,7 @@
 #include "core/global.hpp"
 #include "engine/renderer/renderer_utils.h"
 #include "game/game.hpp"
-#include "game/game_resources.hpp"
+#include "game/game_cpp.h"
 #include "game_datastruct.hpp"
 
 #pragma region MaterialTestGenerator
@@ -168,9 +168,10 @@ class DefaultGenerator : public WorldGenerator {
 
                 if (b->id == BIOMEGETID("DEFAULT")) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->w)) % Textures::caveBG->w;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        background[x + y * CHUNK_W] = R_GET_PIXEL(Textures::caveBG, tx % Textures::caveBG->w, ty % Textures::caveBG->h);
+                        int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->w)) % global.game->GameIsolate_.texturepack->caveBG->w;
+                        int ty = (global.game->GameIsolate_.texturepack->caveBG->h + (py % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        background[x + y * CHUNK_W] = R_GET_PIXEL(global.game->GameIsolate_.texturepack->caveBG, tx % global.game->GameIsolate_.texturepack->caveBG->w,
+                                                                  ty % global.game->GameIsolate_.texturepack->caveBG->h);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
@@ -188,10 +189,11 @@ class DefaultGenerator : public WorldGenerator {
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
                 } else if (b->id == BIOMEGETID("PLAINS")) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        U8 *pixel = (U8 *)Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(U32));
+                        int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        int ty = (global.game->GameIsolate_.texturepack->caveBG->h + (py % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        U8 *pixel = (U8 *)global.game->GameIsolate_.texturepack->caveBG->pixels;
+                        pixel += ((ty % global.game->GameIsolate_.texturepack->caveBG->h) * global.game->GameIsolate_.texturepack->caveBG->pitch) +
+                                 ((tx % global.game->GameIsolate_.texturepack->caveBG->w) * sizeof(U32));
                         background[x + y * CHUNK_W] = *((U32 *)pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
@@ -210,10 +212,11 @@ class DefaultGenerator : public WorldGenerator {
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
                 } else if (b->id == BIOMEGETID("MOUNTAINS")) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        U8 *pixel = (U8 *)Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(U32));
+                        int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        int ty = (global.game->GameIsolate_.texturepack->caveBG->h + (py % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        U8 *pixel = (U8 *)global.game->GameIsolate_.texturepack->caveBG->pixels;
+                        pixel += ((ty % global.game->GameIsolate_.texturepack->caveBG->h) * global.game->GameIsolate_.texturepack->caveBG->pitch) +
+                                 ((tx % global.game->GameIsolate_.texturepack->caveBG->w) * sizeof(U32));
                         background[x + y * CHUNK_W] = *((U32 *)pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
@@ -232,10 +235,11 @@ class DefaultGenerator : public WorldGenerator {
                     layer2[x + y * CHUNK_W] = Tiles::NOTHING;
                 } else if (b->id == BIOMEGETID("FOREST")) {
                     if (py > surf) {
-                        int tx = (Textures::caveBG->w + (px % Textures::caveBG->h)) % Textures::caveBG->h;
-                        int ty = (Textures::caveBG->h + (py % Textures::caveBG->h)) % Textures::caveBG->h;
-                        U8 *pixel = (U8 *)Textures::caveBG->pixels;
-                        pixel += ((ty % Textures::caveBG->h) * Textures::caveBG->pitch) + ((tx % Textures::caveBG->w) * sizeof(U32));
+                        int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        int ty = (global.game->GameIsolate_.texturepack->caveBG->h + (py % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
+                        U8 *pixel = (U8 *)global.game->GameIsolate_.texturepack->caveBG->pixels;
+                        pixel += ((ty % global.game->GameIsolate_.texturepack->caveBG->h) * global.game->GameIsolate_.texturepack->caveBG->pitch) +
+                                 ((tx % global.game->GameIsolate_.texturepack->caveBG->w) * sizeof(U32));
                         background[x + y * CHUNK_W] = *((U32 *)pixel);
                         double thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 

@@ -10,6 +10,8 @@
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/imgui_core.hpp"
@@ -21,6 +23,17 @@
 IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
+
+void I18N::Init() {
+    auto L = global.scripts->LuaRuntime;
+    METADOT_ASSERT(L, "Can't load I18N when luacore is invaild");
+
+    Load("zh");
+}
+
+void I18N::Load(std::string lang) { (*global.scripts->LuaRuntime->GetWrapper())["setlocale"](lang); }
+
+std::string I18N::Get(std::string text) { return (*global.scripts->LuaRuntime->GetWrapper())["translate"](text); }
 
 void GameUI::GameUI_Draw(Game *game) {
     DebugDrawUI::Draw(game);
@@ -390,7 +403,7 @@ void MainMenuUI::RefreshWorlds(Game *game) {
 
 void MainMenuUI::Setup() {
 
-    C_Surface *logoSfc = Textures::LoadTexture("data/assets/ui/logo.png");
+    C_Surface *logoSfc = LoadTexture("data/assets/ui/logo.png");
     title = R_CopyImageFromSurface(logoSfc);
     R_SetImageFilter(title, R_FILTER_NEAREST);
     SDL_FreeSurface(logoSfc);
@@ -897,19 +910,19 @@ void DebugDrawUI::Setup() {
     }
 
     tools_images = {};
-    C_Surface *sfc = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
+    C_Surface *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc));
     R_SetImageFilter(tools_images[0], R_FILTER_NEAREST);
     SDL_FreeSurface(sfc);
-    sfc = Textures::LoadTexture("data/assets/objects/testHammer.png");
+    sfc = LoadTexture("data/assets/objects/testHammer.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc));
     R_SetImageFilter(tools_images[1], R_FILTER_NEAREST);
     SDL_FreeSurface(sfc);
-    sfc = Textures::LoadTexture("data/assets/objects/testVacuum.png");
+    sfc = LoadTexture("data/assets/objects/testVacuum.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc));
     R_SetImageFilter(tools_images[2], R_FILTER_NEAREST);
     SDL_FreeSurface(sfc);
-    sfc = Textures::LoadTexture("data/assets/objects/testBucket.png");
+    sfc = LoadTexture("data/assets/objects/testBucket.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc));
     R_SetImageFilter(tools_images[3], R_FILTER_NEAREST);
     SDL_FreeSurface(sfc);
@@ -1019,7 +1032,7 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::TOOL);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testPickaxe.png");
+                    i3->surface = LoadTexture("data/assets/objects/testPickaxe.png");
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
@@ -1040,7 +1053,7 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::HAMMER);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testHammer.png");
+                    i3->surface = LoadTexture("data/assets/objects/testHammer.png");
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
@@ -1060,7 +1073,7 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::VACUUM);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testVacuum.png");
+                    i3->surface = LoadTexture("data/assets/objects/testVacuum.png");
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 6;
@@ -1081,9 +1094,9 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::FLUID_CONTAINER);
-                    i3->surface = Textures::LoadTexture("data/assets/objects/testBucket.png");
+                    i3->surface = LoadTexture("data/assets/objects/testBucket.png");
                     i3->capacity = 100;
-                    i3->loadFillTexture(Textures::LoadTexture("data/assets/objects/testBucket_fill.png"));
+                    i3->loadFillTexture(LoadTexture("data/assets/objects/testBucket_fill.png"));
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 0;
@@ -1116,12 +1129,12 @@ int CreateWorldUI::selIndex = 0;
 
 void CreateWorldUI::Setup() {
 
-    C_Surface *logoMT = Textures::LoadTexture("data/assets/ui/prev_materialtest.png");
+    C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
     materialTestWorld = R_CopyImageFromSurface(logoMT);
     R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
     SDL_FreeSurface(logoMT);
 
-    C_Surface *logoDef = Textures::LoadTexture("data/assets/ui/prev_default.png");
+    C_Surface *logoDef = LoadTexture("data/assets/ui/prev_default.png");
     defaultWorld = R_CopyImageFromSurface(logoDef);
     R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
     SDL_FreeSurface(logoDef);
