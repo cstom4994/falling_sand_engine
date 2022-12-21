@@ -23,7 +23,7 @@
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "game/game_cpp.h"
-#include "game/materials.hpp"
+#include "game/game_datastruct.hpp"
 #include "game/utils.hpp"
 #include "reflectionflat.hpp"
 #include "world_generator.cpp"

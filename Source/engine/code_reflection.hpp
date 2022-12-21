@@ -4,14 +4,20 @@
 #define _METADOT_CODEREFLECTION_HPP_
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <functional>
+#include <iostream>
 #include <list>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "core/core.hpp"
 #include "libs/nameof.hpp"
@@ -26,11 +32,6 @@ void func_log_info(std::string info);
 
 #ifndef ANY_FUNCTION_H
 #define ANY_FUNCTION_H
-
-#include <cassert>     // For assert(...)
-#include <functional>  // For std::function<F>
-#include <memory>      // For std::unique_ptr<T>
-#include <vector>      // For std::vector<T>
 
 namespace Meta {
 
@@ -516,17 +517,6 @@ struct hierarchy_iterator<typelist<>> {
 #ifndef SCID_REFLECT_H
 #define SCID_REFLECT_H
 
-// Includes
-#include <algorithm>
-#include <cassert>
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
-#include <typeinfo>
-#include <unordered_map>
-#include <vector>
-
 // ####################################################################################
 // ##    Sample Meta Data Enum
 // ############################
@@ -865,11 +855,6 @@ struct StructTransformMeta {
     using type = decltype(StructApply(std::declval<T>(), FakeApplyer()));
 };
 }  // namespace Meta
-
-#include <cstddef>
-#include <iostream>
-#include <string>
-#include <vector>
 
 namespace reflect {
 

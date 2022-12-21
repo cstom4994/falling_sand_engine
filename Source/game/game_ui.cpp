@@ -15,8 +15,6 @@
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/imgui_core.hpp"
-#include "game/item.hpp"
-#include "game/player.hpp"
 #include "game/world_generator.cpp"
 #include "imgui/imgui.h"
 

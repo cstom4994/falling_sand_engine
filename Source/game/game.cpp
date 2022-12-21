@@ -35,7 +35,6 @@
 #include "game/game_shaders.h"
 #include "game/game_ui.hpp"
 #include "game/imgui_core.hpp"
-#include "game/player.hpp"
 #include "game/utils.hpp"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"

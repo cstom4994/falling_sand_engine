@@ -9,7 +9,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "game/World.hpp"
-#include "game/materials.hpp"
+#include "game/game_datastruct.hpp"
 
 class Game;
 
