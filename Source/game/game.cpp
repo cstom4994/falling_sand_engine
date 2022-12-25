@@ -30,8 +30,8 @@
 #include "engine/sdl_wrapper.h"
 #include "engine_platform.h"
 #include "game/console.hpp"
-#include "game/game_datastruct.hpp"
 #include "game/game_cpp.h"
+#include "game/game_datastruct.hpp"
 #include "game/game_shaders.h"
 #include "game/game_ui.hpp"
 #include "game/imgui_core.hpp"
@@ -41,6 +41,7 @@
 #include "world_generator.cpp"
 
 extern void fuckme();
+extern C_Surface *LoadAseprite(const char *path);
 
 Global global;
 
@@ -83,7 +84,7 @@ int Game::init(int argc, char *argv[]) {
 
     METADOT_INFO("Loading ImGUI");
     METADOT_NEW(C, global.ImGuiCore, ImGuiCore);
-    global.ImGuiCore->Init(Core.window, Core.glContext);
+    global.ImGuiCore->Init();
 
     // scripting system
     auto loadscript = [&]() {
@@ -97,6 +98,8 @@ int Game::init(int argc, char *argv[]) {
     global.I18N.Init();
     global.game->GameIsolate_.settings.Init(false);
     global.game->GameSystem_.console.Init();
+
+    GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0001.ase");
 
     GameIsolate_.backgrounds->Load();
 
@@ -906,9 +909,9 @@ int Game::run(int argc, char *argv[]) {
 
         global.scripts->UpdateRender();
 
-        // auto image2 = R_CopyImageFromSurface(Textures::testAse);
-        // R_BlitScale(image2, NULL, global.game->Render.target, 200, 200,
-        //                             1.0f, 1.0f);
+        // auto image2 = R_CopyImageFromSurface(GameIsolate_.texturepack->testAse);
+        // METADOT_ASSERT_E(image2);
+        // R_BlitScale(image2, NULL, Render.target, 200, 200, 1.0f, 1.0f);
 
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();

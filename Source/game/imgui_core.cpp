@@ -11,6 +11,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
+#include "engine.h"
 #include "engine/engine_cpp.h"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
@@ -27,6 +28,8 @@
 #include "libs/glad/glad.h"
 #include "libs/imgui/implot.h"
 #include "scripting/lua_wrapper.hpp"
+
+IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -140,9 +143,7 @@ static bool firstRun = false;
 ImGUIIMMCommunication imguiIMMCommunication{};
 #endif
 
-void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
-    window = p_window;
-    gl_context = p_gl_context;
+void ImGuiCore::Init() {
 
     IMGUI_CHECKVERSION();
 
@@ -176,7 +177,7 @@ void ImGuiCore::Init(C_Window *p_window, void *p_gl_context) {
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplSDL2_InitForOpenGL(Core.window, Core.glContext);
 
     ImGui_ImplOpenGL3_Init();
 
@@ -264,7 +265,7 @@ void ImGuiCore::onDetach() {
 
 void ImGuiCore::begin() {
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window);
+    ImGui_ImplSDL2_NewFrame(Core.window);
     ImGui::NewFrame();
 }
 
@@ -273,7 +274,7 @@ void ImGuiCore::end() {
     (void)io;
 
     ImGui::Render();
-    SDL_GL_MakeCurrent(window, gl_context);
+    SDL_GL_MakeCurrent(Core.window, Core.glContext);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Update and Render additional Platform Windows

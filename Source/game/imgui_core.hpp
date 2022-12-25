@@ -37,9 +37,6 @@ private:
         bool operator==(EditorView v) { return (v.file == this->file) && (v.tags == this->tags); }
     };
 
-    C_Window *window;
-    void *gl_context;
-
     ImGuiContext *m_imgui = nullptr;
 
     std::vector<EditorView> view_contents;
@@ -49,7 +46,7 @@ private:
 
 public:
     ImGuiCore();
-    void Init(C_Window *window, void *gl_context);
+    void Init();
     void onDetach();
     void begin();
     void end();
