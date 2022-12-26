@@ -22,7 +22,7 @@
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
-#include "game/game_cpp.h"
+#include "game/game_resources.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/utils.hpp"
 #include "reflectionflat.hpp"

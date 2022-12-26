@@ -1,9 +1,10 @@
 // Copyright(c) 2022, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAMESHADERS_H_
-#define _METADOT_GAMESHADERS_H_
+#ifndef _METADOT_GAMESHADERS_HPP_
+#define _METADOT_GAMESHADERS_HPP_
 
-#include "engine/engine_shaders.h"
+#include "core/core.hpp"
+#include "engine/engine_cpp.h"
 
 struct WaterFlowPassShader {
     metadot_shader_base sb;

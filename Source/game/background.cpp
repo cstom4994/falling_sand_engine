@@ -7,7 +7,7 @@
 #include "core/global.hpp"
 #include "engine/memory.hpp"
 #include "game/game.hpp"
-#include "game/game_cpp.h"
+#include "game/game_resources.hpp"
 
 BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
     this->surface = {ScaleTexture(texture, 1, 1), ScaleTexture(texture, 2, 2), ScaleTexture(texture, 3, 3)};

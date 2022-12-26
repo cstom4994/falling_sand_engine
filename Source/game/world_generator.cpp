@@ -6,7 +6,6 @@
 #include "core/global.hpp"
 #include "engine/renderer/renderer_utils.h"
 #include "game/game.hpp"
-#include "game/game_cpp.h"
 #include "game_datastruct.hpp"
 
 #pragma region MaterialTestGenerator

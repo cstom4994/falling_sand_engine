@@ -23,7 +23,7 @@
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
-#include "game/game_cpp.h"
+#include "game/game_resources.hpp"
 #include "game/utils.hpp"
 #include "libs/lua/ffi.h"
 #include "libs/lua/host/lua.h"

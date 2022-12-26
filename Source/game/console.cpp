@@ -11,7 +11,6 @@
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
 #include "game/game.hpp"
-#include "game/game_cpp.h"
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 

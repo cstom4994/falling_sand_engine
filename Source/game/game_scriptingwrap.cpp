@@ -10,9 +10,8 @@
 #include "engine/reflectionflat.hpp"
 #include "game/controls.hpp"
 #include "game/game.hpp"
-#include "game/game_cpp.h"
 #include "game/game_datastruct.hpp"
-#include "game/game_resources.h"
+#include "game/game_resources.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
 

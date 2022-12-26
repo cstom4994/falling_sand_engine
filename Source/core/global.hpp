@@ -8,7 +8,7 @@
 #include "core/core.hpp"
 #include "engine/audio.hpp"
 #include "engine/code_reflection.hpp"
-#include "game/game_cpp.h"
+#include "game/game_shaders.hpp"
 #include "engine/engine_cpp.h"
 #include "engine/engine_platform.h"
 #include "engine/filesystem.h"
