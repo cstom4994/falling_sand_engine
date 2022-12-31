@@ -103,18 +103,6 @@ int Game::init(int argc, char *argv[]) {
 
     GameIsolate_.backgrounds->Load();
 
-    fs = glfonsCreate(512, 512, FONS_ZERO_TOPLEFT);
-    if (fs == NULL) {
-        METADOT_ERROR("Could not create stash.");
-        return exit();
-    }
-
-    fontNormal = fonsAddFont(fs, "sans", METADOT_RESLOC("data/assets/fonts/DroidSerif-Regular.ttf"));
-    if (fontNormal == FONS_INVALID) {
-        METADOT_ERROR("Could not add font.");
-        return exit();
-    }
-
     // init the rng
     METADOT_INFO("Seeding RNG...");
     pcg32_random_t rng;
@@ -925,38 +913,8 @@ int Game::run(int argc, char *argv[]) {
         // METADOT_ASSERT_E(image2);
         // R_BlitScale(image2, NULL, Render.target, 200, 200, 1.0f, 1.0f);
 
-        fonsClearState(fs);
-
-        float sx, sy, dx, dy, lh = 0;
-        unsigned int white, black, brown, blue;
-
-        sx = 450;
-        sy = 450;
-
-        dx = sx;
-        dy = sy;
-
-        white = glfonsRGBA(255, 255, 255, 255);
-
-        fonsSetSize(fs, 124.0f);
-        fonsSetFont(fs, fontNormal);
-        fonsVertMetrics(fs, NULL, NULL, &lh);
-
-        fonsSetSize(fs, 124.0f);
-        fonsSetFont(fs, fontNormal);
-        fonsSetColor(fs, white);
-        dx = fonsDrawText(fs, dx, dy, "The quick ", NULL);
-
-        dx = sx;
-        dy += lh * 1.2f;
-        fonsSetSize(fs, 12.0f);
-        fonsSetFont(fs, fontNormal);
-        fonsSetColor(fs, white);
-        fonsDrawText(fs, dx, dy, "Now is the time for all good men to come to the aid of the party.", NULL);
-
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
-
 
         // render ImGui
         global.ImGuiCore->Render();
@@ -1156,8 +1114,6 @@ int Game::exit() {
     R_Text_DeleteText(text2);
     R_Text_DeleteText(text3);
     R_Text_Terminate();
-
-    glfonsDelete(fs);
 
     EndShaders(&global.shaderworker);
 

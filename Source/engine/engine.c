@@ -100,9 +100,6 @@ void EndEngine(int errorOcurred) {
 
     FreeECS();
 
-    // Finish core systems
-    if (Core.renderer) SDL_DestroyRenderer(Core.renderer);
-
     if (Core.window) SDL_DestroyWindow(Core.window);
 
     if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) SDL_Quit();

@@ -71,10 +71,6 @@ public:
     R_Texttext *text2 = nullptr;
     R_Texttext *text3 = nullptr;
 
-    FONScontext* fs = NULL;
-
-    int fontNormal = FONS_INVALID;
-
 public:
     bool running = true;
 

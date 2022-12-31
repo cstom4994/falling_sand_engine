@@ -14,7 +14,6 @@
 #include "utils.h"
 
 typedef struct engine_core {
-    C_Renderer *renderer;
     C_Window *window;
     C_GLContext *glContext;
 } engine_core;

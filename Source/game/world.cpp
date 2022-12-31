@@ -167,13 +167,13 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
     WorldIsolate_.rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
 
-    b2PolygonShape dynamicBox4;
-    dynamicBox4.SetAsBox(64.0f, 64.0f, {32, -32}, 0);
-    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
-    RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadAseprite("data/assets/textures/Sprite-0001.ase"));
+    // b2PolygonShape dynamicBox4;
+    // dynamicBox4.SetAsBox(64.0f, 64.0f, {32, -32}, 0);
+    // // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
+    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadAseprite("data/assets/textures/Sprite-0001.ase"));
 
-    WorldIsolate_.rigidBodies.push_back(rb2);
-    updateRigidBodyHitbox(rb2);
+    // WorldIsolate_.rigidBodies.push_back(rb2);
+    // updateRigidBodyHitbox(rb2);
 }
 
 RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, C_Surface *texture) {

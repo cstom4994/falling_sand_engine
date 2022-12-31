@@ -1,135 +1,231 @@
 
-#ifndef FONS_H
-#define FONS_H
+
+#ifndef _FONTCACHE_H_
+#define _FONTCACHE_H_
+
+#include <stdarg.h>
+
+#include "SDL.h"
+#include "SDL_ttf.h"
+#include "engine/renderer/renderer_gpu.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define FONS_INVALID -1
+// Let's pretend this exists...
+#define TTF_STYLE_OUTLINE 16
 
-enum FONSflags {
-    FONS_ZERO_TOPLEFT = 1,
-    FONS_ZERO_BOTTOMLEFT = 2,
-};
+#define FontCache_Rect R_Rect
+#define FontCache_Target R_Target
+#define FontCache_Image R_Image
 
-enum FONSalign {
-    // Horizontal align
-    FONS_ALIGN_LEFT = 1 << 0,  // Default
-    FONS_ALIGN_CENTER = 1 << 1,
-    FONS_ALIGN_RIGHT = 1 << 2,
-    // Vertical align
-    FONS_ALIGN_TOP = 1 << 3,
-    FONS_ALIGN_MIDDLE = 1 << 4,
-    FONS_ALIGN_BOTTOM = 1 << 5,
-    FONS_ALIGN_BASELINE = 1 << 6,  // Default
-};
+// SDL_FontCache types
 
-enum FONSerrorCode {
-    // Font atlas is full.
-    FONS_ATLAS_FULL = 1,
-    // Scratch memory used to render glyphs is full, requested size reported in 'val', you may need to bump up FONS_SCRATCH_BUF_SIZE.
-    FONS_SCRATCH_FULL = 2,
-    // Calls to fonsPushState has created too large stack, if you need deep state stack bump up FONS_MAX_STATES.
-    FONS_STATES_OVERFLOW = 3,
-    // Trying to pop too many states fonsPopState().
-    FONS_STATES_UNDERFLOW = 4,
-};
+typedef enum { FontCache_ALIGN_LEFT, FontCache_ALIGN_CENTER, FontCache_ALIGN_RIGHT } FontCache_AlignEnum;
 
-struct FONSparams {
-    int width, height;
-    unsigned char flags;
-    void* userPtr;
-    int (*renderCreate)(void* uptr, int width, int height);
-    int (*renderResize)(void* uptr, int width, int height);
-    void (*renderUpdate)(void* uptr, int* rect, const unsigned char* data);
-    void (*renderDraw)(void* uptr, const float* verts, const float* tcoords, const unsigned int* colors, int nverts);
-    void (*renderDelete)(void* uptr);
-};
-typedef struct FONSparams FONSparams;
+typedef enum { FontCache_FILTER_NEAREST, FontCache_FILTER_LINEAR } FontCache_FilterEnum;
 
-struct FONSquad {
-    float x0, y0, s0, t0;
-    float x1, y1, s1, t1;
-};
-typedef struct FONSquad FONSquad;
+typedef struct FontCache_Scale {
+    float x;
+    float y;
 
-struct FONStextIter {
-    float x, y, nextx, nexty, scale, spacing;
-    unsigned int codepoint;
-    short isize, iblur;
-    struct FONSfont* font;
-    int prevGlyphIndex;
-    const char* str;
-    const char* next;
-    const char* end;
-    unsigned int utf8state;
-};
-typedef struct FONStextIter FONStextIter;
+} FontCache_Scale;
 
-typedef struct FONScontext FONScontext;
+typedef struct FontCache_Effect {
+    FontCache_AlignEnum alignment;
+    FontCache_Scale scale;
+    SDL_Color color;
 
-// Contructor and destructor.
-FONScontext* fonsCreateInternal(FONSparams* params);
-void fonsDeleteInternal(FONScontext* s);
+} FontCache_Effect;
 
-void fonsSetErrorCallback(FONScontext* s, void (*callback)(void* uptr, int error, int val), void* uptr);
-// Returns current atlas size.
-void fonsGetAtlasSize(FONScontext* s, int* width, int* height);
-// Expands the atlas size.
-int fonsExpandAtlas(FONScontext* s, int width, int height);
-// Resets the whole stash.
-int fonsResetAtlas(FONScontext* stash, int width, int height);
+// Opaque type
+typedef struct FontCache_Font FontCache_Font;
 
-// Add fonts
-int fonsAddFont(FONScontext* s, const char* name, const char* path);
-int fonsAddFontMem(FONScontext* s, const char* name, unsigned char* data, int ndata, int freeData);
-int fonsGetFontByName(FONScontext* s, const char* name);
-int fonsAddFallbackFont(FONScontext* stash, int base, int fallback);
+typedef struct FontCache_GlyphData {
+    SDL_Rect rect;
+    int cache_level;
 
-// State handling
-void fonsPushState(FONScontext* s);
-void fonsPopState(FONScontext* s);
-void fonsClearState(FONScontext* s);
+} FontCache_GlyphData;
 
-// State setting
-void fonsSetSize(FONScontext* s, float size);
-void fonsSetColor(FONScontext* s, unsigned int color);
-void fonsSetSpacing(FONScontext* s, float spacing);
-void fonsSetBlur(FONScontext* s, float blur);
-void fonsSetAlign(FONScontext* s, int align);
-void fonsSetFont(FONScontext* s, int font);
+// Object creation
 
-// Draw text
-float fonsDrawText(FONScontext* s, float x, float y, const char* string, const char* end);
+FontCache_Rect FontCache_MakeRect(float x, float y, float w, float h);
 
-// Measure text
-float fonsTextBounds(FONScontext* s, float x, float y, const char* string, const char* end, float* bounds);
-void fonsLineBounds(FONScontext* s, float y, float* miny, float* maxy);
-void fonsVertMetrics(FONScontext* s, float* ascender, float* descender, float* lineh);
+FontCache_Scale FontCache_MakeScale(float x, float y);
 
-// Text iterator
-int fonsTextIterInit(FONScontext* stash, FONStextIter* iter, float x, float y, const char* str, const char* end);
-int fonsTextIterNext(FONScontext* stash, FONStextIter* iter, struct FONSquad* quad);
+SDL_Color FontCache_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
-// Pull texture changes
-const unsigned char* fonsGetTextureData(FONScontext* stash, int* width, int* height);
-int fonsValidateTexture(FONScontext* s, int* dirty);
+FontCache_Effect FontCache_MakeEffect(FontCache_AlignEnum alignment, FontCache_Scale scale, SDL_Color color);
 
-// Draws the stash texture for debugging
-void fonsDrawDebug(FONScontext* s, float x, float y);
+FontCache_GlyphData FontCache_MakeGlyphData(int cache_level, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
-#pragma region FontRender
+// Font object
 
-FONScontext* glfonsCreate(int width, int height, int flags);
-void glfonsDelete(FONScontext* ctx);
+FontCache_Font* FontCache_CreateFont(void);
 
-unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+Uint8 FontCache_LoadFont(FontCache_Font* font, const char* filename_ttf, Uint32 pointSize, SDL_Color color, int style);
 
-#pragma endregion FontRender
+Uint8 FontCache_LoadFontFromTTF(FontCache_Font* font, TTF_Font* ttf, SDL_Color color);
+
+Uint8 FontCache_LoadFont_RW(FontCache_Font* font, SDL_RWops* file_rwops_ttf, Uint8 own_rwops, Uint32 pointSize, SDL_Color color, int style);
+
+void FontCache_ClearFont(FontCache_Font* font);
+
+void FontCache_FreeFont(FontCache_Font* font);
+
+// Built-in loading strings
+
+char* FontCache_GetStringASCII(void);
+
+char* FontCache_GetStringLatin1(void);
+
+char* FontCache_GetStringASCII_Latin1(void);
+
+// UTF-8 to SDL_FontCache codepoint conversion
+
+/*!
+Returns the Uint32 codepoint (not UTF-32) parsed from the given UTF-8 string.
+\param c A pointer to a string of proper UTF-8 character values.
+\param advance_pointer If true, the source pointer will be incremented to skip the extra bytes from multibyte codepoints.
+*/
+Uint32 FontCache_GetCodepointFromUTF8(const char** c, Uint8 advance_pointer);
+
+/*!
+Parses the given codepoint and stores the UTF-8 bytes in 'result'.  The result is NULL terminated.
+\param result A memory buffer for the UTF-8 values.  Must be at least 5 bytes long.
+\param codepoint The Uint32 codepoint to parse (not UTF-32).
+*/
+void FontCache_GetUTF8FromCodepoint(char* result, Uint32 codepoint);
+
+// UTF-8 string operations
+
+/*! Allocates a new string of 'size' bytes that is already NULL-terminated.  The NULL byte counts toward the size limit, as usual.  Returns NULL if size is 0. */
+char* U8_alloc(unsigned int size);
+
+/*! Deallocates the given string. */
+void U8_free(char* string);
+
+/*! Allocates a copy of the given string. */
+char* U8_strdup(const char* string);
+
+/*! Returns the number of UTF-8 characters in the given string. */
+int U8_strlen(const char* string);
+
+/*! Returns the number of bytes in the UTF-8 multibyte character pointed at by 'character'. */
+int U8_charsize(const char* character);
+
+/*! Copies the source multibyte character into the given buffer without overrunning it.  Returns 0 on failure. */
+int U8_charcpy(char* buffer, const char* source, int buffer_size);
+
+/*! Returns a pointer to the next UTF-8 character. */
+const char* U8_next(const char* string);
+
+/*! Inserts a UTF-8 string into 'string' at the given position.  Use a position of -1 to append.  Returns 0 when unable to insert the string. */
+int U8_strinsert(char* string, int position, const char* source, int max_bytes);
+
+/*! Erases the UTF-8 character at the given position, moving the subsequent characters down. */
+void U8_strdel(char* string, int position);
+
+// Internal settings
+
+/*! Sets the string from which to load the initial glyphs.  Use this if you need upfront loading for any reason (such as lack of render-target support). */
+void FontCache_SetLoadingString(FontCache_Font* font, const char* string);
+
+/*! Returns the size of the internal buffer which is used for unpacking variadic text data.  This buffer is shared by all FontCache_Fonts. */
+unsigned int FontCache_GetBufferSize(void);
+
+/*! Changes the size of the internal buffer which is used for unpacking variadic text data.  This buffer is shared by all FontCache_Fonts. */
+void FontCache_SetBufferSize(unsigned int size);
+
+void FontCache_SetRenderCallback(FontCache_Rect (*callback)(FontCache_Image* src, FontCache_Rect* srcrect, FontCache_Target* dest, float x, float y, float xscale, float yscale));
+
+FontCache_Rect FontCache_DefaultRenderCallback(FontCache_Image* src, FontCache_Rect* srcrect, FontCache_Target* dest, float x, float y, float xscale, float yscale);
+
+// Custom caching
+
+/*! Returns the number of cache levels that are active. */
+int FontCache_GetNumCacheLevels(FontCache_Font* font);
+
+/*! Returns the cache source texture at the given cache level. */
+FontCache_Image* FontCache_GetGlyphCacheLevel(FontCache_Font* font, int cache_level);
+
+// TODO: Specify ownership of the texture (should be shareable)
+/*! Sets a cache source texture for rendering.  New cache levels must be sequential. */
+Uint8 FontCache_SetGlyphCacheLevel(FontCache_Font* font, int cache_level, FontCache_Image* cache_texture);
+
+/*! Copies the given surface to the given cache level as a texture.  New cache levels must be sequential. */
+Uint8 FontCache_UploadGlyphCache(FontCache_Font* font, int cache_level, SDL_Surface* data_surface);
+
+/*! Returns the number of codepoints that are stored in the font's glyph data map. */
+unsigned int FontCache_GetNumCodepoints(FontCache_Font* font);
+
+/*! Copies the stored codepoints into the given array. */
+void FontCache_GetCodepoints(FontCache_Font* font, Uint32* result);
+
+/*! Stores the glyph data for the given codepoint in 'result'.  Returns 0 if the codepoint was not found in the cache. */
+Uint8 FontCache_GetGlyphData(FontCache_Font* font, FontCache_GlyphData* result, Uint32 codepoint);
+
+/*! Sets the glyph data for the given codepoint.  Duplicates are not checked.  Returns a pointer to the stored data. */
+FontCache_GlyphData* FontCache_SetGlyphData(FontCache_Font* font, Uint32 codepoint, FontCache_GlyphData glyph_data);
+
+// Rendering
+
+FontCache_Rect FontCache_Draw(FontCache_Font* font, FontCache_Target* dest, float x, float y, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawAlign(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_AlignEnum align, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawScale(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_Scale scale, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawColor(FontCache_Font* font, FontCache_Target* dest, float x, float y, SDL_Color color, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawEffect(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_Effect effect, const char* formatted_text, ...);
+
+FontCache_Rect FontCache_DrawBox(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawBoxAlign(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, FontCache_AlignEnum align, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawBoxScale(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, FontCache_Scale scale, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawBoxColor(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, SDL_Color color, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawBoxEffect(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, FontCache_Effect effect, const char* formatted_text, ...);
+
+FontCache_Rect FontCache_DrawColumn(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawColumnAlign(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, FontCache_AlignEnum align, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawColumnScale(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, FontCache_Scale scale, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawColumnColor(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, SDL_Color color, const char* formatted_text, ...);
+FontCache_Rect FontCache_DrawColumnEffect(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, FontCache_Effect effect, const char* formatted_text, ...);
+
+// Getters
+
+FontCache_FilterEnum FontCache_GetFilterMode(FontCache_Font* font);
+Uint16 FontCache_GetLineHeight(FontCache_Font* font);
+Uint16 FontCache_GetHeight(FontCache_Font* font, const char* formatted_text, ...);
+Uint16 FontCache_GetWidth(FontCache_Font* font, const char* formatted_text, ...);
+
+// Returns a 1-pixel wide box in front of the character in the given position (index)
+FontCache_Rect FontCache_GetCharacterOffset(FontCache_Font* font, Uint16 position_index, int column_width, const char* formatted_text, ...);
+Uint16 FontCache_GetColumnHeight(FontCache_Font* font, Uint16 width, const char* formatted_text, ...);
+
+int FontCache_GetAscent(FontCache_Font* font, const char* formatted_text, ...);
+int FontCache_GetDescent(FontCache_Font* font, const char* formatted_text, ...);
+int FontCache_GetBaseline(FontCache_Font* font);
+int FontCache_GetSpacing(FontCache_Font* font);
+int FontCache_GetLineSpacing(FontCache_Font* font);
+Uint16 FontCache_GetMaxWidth(FontCache_Font* font);
+SDL_Color FontCache_GetDefaultColor(FontCache_Font* font);
+
+FontCache_Rect FontCache_GetBounds(FontCache_Font* font, float x, float y, FontCache_AlignEnum align, FontCache_Scale scale, const char* formatted_text, ...);
+
+Uint8 FontCache_InRect(float x, float y, FontCache_Rect input_rect);
+// Given an offset (x,y) from the text draw position (the upper-left corner), returns the character position (UTF-8 index)
+Uint16 FontCache_GetPositionFromOffset(FontCache_Font* font, float x, float y, int column_width, FontCache_AlignEnum align, const char* formatted_text, ...);
+
+// Returns the number of characters in the new wrapped text written into `result`.
+int FontCache_GetWrappedText(FontCache_Font* font, char* result, int max_result_size, Uint16 width, const char* formatted_text, ...);
+
+// Setters
+
+void FontCache_SetFilterMode(FontCache_Font* font, FontCache_FilterEnum filter);
+void FontCache_SetSpacing(FontCache_Font* font, int LetterSpacing);
+void FontCache_SetLineSpacing(FontCache_Font* font, int LineSpacing);
+void FontCache_SetDefaultColor(FontCache_Font* font, SDL_Color color);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // FONS_H
+#endif
