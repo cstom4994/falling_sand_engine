@@ -47,9 +47,7 @@ void GameScriptingWrap::Init() {}
 
 Biome *GameScriptingWrap::BiomeGet(std::string name) {
     for (auto t : GameData_.biome_container) {
-        if (t->name == name) {
-            return t;
-        }
+        if (t->name == name) return t;
     }
     return nullptr;
 }

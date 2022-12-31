@@ -1128,28 +1128,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window *window, SDL_Renderer *renderer, void
     return true;
 }
 
-bool ImGui_ImplSDL2_InitForOpenGL(SDL_Window *window, void *sdl_gl_context) { return ImGui_ImplSDL2_Init(window, nullptr, sdl_gl_context); }
-
-bool ImGui_ImplSDL2_InitForVulkan(SDL_Window *window) {
-#if !SDL_HAS_VULKAN
-    IM_ASSERT(0 && "Unsupported");
-#endif
-    if (!ImGui_ImplSDL2_Init(window, nullptr, nullptr)) return false;
-    ImGui_ImplSDL2_Data *bd = ImGui_ImplSDL2_GetBackendData();
-    bd->UseVulkan = true;
-    return true;
-}
-
-bool ImGui_ImplSDL2_InitForD3D(SDL_Window *window) {
-#if !defined(_WIN32)
-    IM_ASSERT(0 && "Unsupported");
-#endif
-    return ImGui_ImplSDL2_Init(window, nullptr, nullptr);
-}
-
-bool ImGui_ImplSDL2_InitForMetal(SDL_Window *window) { return ImGui_ImplSDL2_Init(window, nullptr, nullptr); }
-
-bool ImGui_ImplSDL2_InitForSDLRenderer(SDL_Window *window, SDL_Renderer *renderer) { return ImGui_ImplSDL2_Init(window, renderer, nullptr); }
+bool ImGui_ImplSDL2_Init(SDL_Window *window, void *sdl_gl_context) { return ImGui_ImplSDL2_Init(window, nullptr, sdl_gl_context); }
 
 void ImGui_ImplSDL2_Shutdown() {
     ImGui_ImplSDL2_Data *bd = ImGui_ImplSDL2_GetBackendData();

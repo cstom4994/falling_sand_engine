@@ -176,7 +176,7 @@ void ImGuiCore::Init() {
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
-    ImGui_ImplSDL2_InitForOpenGL(Core.window, Core.glContext);
+    ImGui_ImplSDL2_Init(Core.window, Core.glContext);
 
     ImGui_ImplOpenGL3_Init();
 
