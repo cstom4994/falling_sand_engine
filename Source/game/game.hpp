@@ -67,9 +67,7 @@ public:
     U32 loadingOnColor = 0;
     U32 loadingOffColor = 0;
 
-    R_Texttext *text1 = nullptr;
-    R_Texttext *text2 = nullptr;
-    R_Texttext *text3 = nullptr;
+    FontCache_Font *font = nullptr;
 
 public:
     bool running = true;

@@ -29,6 +29,7 @@
 #include "engine/scripting/scripting.hpp"
 #include "engine/sdl_wrapper.h"
 #include "engine_platform.h"
+#include "fonts.h"
 #include "game/console.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
@@ -103,6 +104,9 @@ int Game::init(int argc, char *argv[]) {
 
     GameIsolate_.backgrounds->Load();
 
+    font = FontCache_CreateFont();
+    FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 18, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
+
     // init the rng
     METADOT_INFO("Seeding RNG...");
     pcg32_random_t rng;
@@ -110,8 +114,6 @@ int Game::init(int argc, char *argv[]) {
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
-
-    R_Text_Init();
 
     METADOT_NEW_ARRAY(C, movingTiles, U16, Materials::nMaterials);
     METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
@@ -404,11 +406,6 @@ int Game::run(int argc, char *argv[]) {
     fadeInStart = Time::millis();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
-
-    // Creating text
-    text1 = R_Text_CreateText();
-    text2 = R_Text_CreateText();
-    text3 = R_Text_CreateText();
 
     // game loop
     while (this->running) {
@@ -913,6 +910,12 @@ int Game::run(int argc, char *argv[]) {
         // METADOT_ASSERT_E(image2);
         // R_BlitScale(image2, NULL, Render.target, 200, 200, 1.0f, 1.0f);
 
+        // FontCache_Rect rightHalf = {0, 0, Screen.windowWidth / 4.0f, Screen.windowWidth / 1.0f};
+        // R_RectangleFilled(Render.target, rightHalf.x, rightHalf.y, rightHalf.x + rightHalf.w, rightHalf.y + rightHalf.h, {255, 255, 255, 255});
+
+        METADOT_ASSERT_E(font);
+        FontCache_DrawColor(font, Render.target, 200, 200, {255, 144, 255, 255}, "This is %s.\n It works.", "example text");
+
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
 
@@ -1102,6 +1105,8 @@ int Game::exit() {
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
 
+    FontCache_FreeFont(font);
+
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
     metadot_thpool_destroy(GameIsolate_.updateDirtyPool2);
 
@@ -1109,11 +1114,6 @@ int Game::exit() {
         METADOT_DELETE(C, GameIsolate_.world, World);
         GameIsolate_.world = nullptr;
     }
-
-    R_Text_DeleteText(text1);
-    R_Text_DeleteText(text2);
-    R_Text_DeleteText(text3);
-    R_Text_Terminate();
 
     EndShaders(&global.shaderworker);
 
@@ -2939,19 +2939,8 @@ void Game::renderLate() {
 
 void Game::renderOverlays() {
 
-    R_Text_SetText(text1, MetaEngine::Format("{0} {1}", win_title_client, METADOT_VERSION_TEXT).c_str());
-
-    R_Text_BeginDraw();
-    R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
-    R_Text_DrawText2D(text1, 4, Screen.windowHeight - 20, 1.0f);
-    R_Text_EndDraw();
-
-    R_Text_SetText(text3, MetaEngine::Format("{0} ms/frame ({1}({2}) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps).c_str());
-
-    R_Text_BeginDraw();
-    R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
-    R_Text_DrawText2D(text3, Screen.windowWidth - 250, 4, 1.0f);
-    R_Text_EndDraw();
+    FontCache_DrawAlign(font, Render.target, Screen.windowWidth, 0, FontCache_ALIGN_RIGHT, "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
+                        Time.feelsLikeFps);
 
     R_Rect r1 = R_Rect{(float)(GameData_.ofsX + GameData_.camX), (float)(GameData_.ofsY + GameData_.camY), (float)(GameIsolate_.world->width * scale), (float)(GameIsolate_.world->height * scale)};
     R_Rect r2 = R_Rect{(float)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale), (float)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale),
@@ -3291,12 +3280,7 @@ ReadyToMerge ({16})
                                     (int)GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(), rbTriACt, rbTriCt, rbTriWCt, chCt,
                                     (int)GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(), (int)GameIsolate_.world->WorldIsolate_.readyToMerge.size());
 
-        R_Text_SetText(text2, a.c_str());
-
-        R_Text_BeginDraw();
-        R_Text_Color(1.0f, 1.0f, 1.0f, 1.0f);
-        R_Text_DrawText2D(text2, 4, 12, 1.0f);
-        R_Text_EndDraw();
+        FontCache_DrawAlign(font, Render.target, 10, 0, FontCache_ALIGN_LEFT, "%s", a.c_str());
 
         // for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
         //     char buff[10];

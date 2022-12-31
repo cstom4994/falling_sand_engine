@@ -1719,61 +1719,6 @@ void R_SetAttributeSource(int num_values, R_Attribute source);
 // End of ShaderInterface
 /*! @} */
 
-#define R_Text_NULL 0
-#define R_Text_NULL_HANDLE 0
-
-#define R_Text_LEFT 0
-#define R_Text_TOP 0
-
-#define R_Text_CENTER 1
-
-#define R_Text_RIGHT 2
-#define R_Text_BOTTOM 2
-
-static GLboolean R_Text_Initialized = GL_FALSE;
-
-typedef struct R_Texttext R_Texttext;
-
-GLboolean R_Text_Init(void);
-void R_Text_Terminate(void);
-
-R_Texttext *R_Text_CreateText(void);
-void R_Text_DeleteText(R_Texttext *text);
-#define R_Text_DestroyText R_Text_DeleteText
-
-R_bool R_Text_SetText(R_Texttext *text, const char *string);
-const char *R_Text_GetText(R_Texttext *text);
-
-void R_Text_Viewport(GLsizei width, GLsizei height);
-
-void R_Text_BeginDraw();
-void R_Text_EndDraw();
-
-void R_Text_DrawText(R_Texttext *text, const GLfloat mvp[16]);
-
-void R_Text_DrawText2D(R_Texttext *text, GLfloat x, GLfloat y, GLfloat scale);
-void R_Text_DrawText2DAligned(R_Texttext *text, GLfloat x, GLfloat y, GLfloat scale, int horizontalAlignment, int verticalAlignment);
-
-void R_Text_DrawText3D(R_Texttext *text, GLfloat x, GLfloat y, GLfloat z, GLfloat scale, GLfloat view[16], GLfloat projection[16]);
-
-void R_Text_Color(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
-void R_Text_GetColor(GLfloat *r, GLfloat *g, GLfloat *b, GLfloat *a);
-
-GLfloat R_Text_GetLineHeight(GLfloat scale);
-
-GLfloat R_Text_GetTextWidth(const R_Texttext *text, GLfloat scale);
-GLfloat R_Text_GetTextHeight(const R_Texttext *text, GLfloat scale);
-
-GLboolean R_Text_IsCharacterSupported(const char c);
-GLint R_Text_CountSupportedCharacters(const char *str);
-
-GLboolean R_Text_IsCharacterDrawable(const char c);
-GLint R_Text_CountDrawableCharacters(const char *str);
-
-GLint R_Text_CountNewLines(const char *str);
-
-// --------------------------------------------------------------------
-
 // --------------------------------------------------------------------
 
 // Internal API for managing window mappings
