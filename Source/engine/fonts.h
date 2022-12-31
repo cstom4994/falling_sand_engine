@@ -119,6 +119,15 @@ int fonsValidateTexture(FONScontext* s, int* dirty);
 // Draws the stash texture for debugging
 void fonsDrawDebug(FONScontext* s, float x, float y);
 
+#pragma region FontRender
+
+FONScontext* glfonsCreate(int width, int height, int flags);
+void glfonsDelete(FONScontext* ctx);
+
+unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+
+#pragma endregion FontRender
+
 #ifdef __cplusplus
 }
 #endif

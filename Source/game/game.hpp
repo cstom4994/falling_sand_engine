@@ -23,6 +23,7 @@
 #include "core/threadpool.h"
 #include "engine/audio.hpp"
 #include "engine/filesystem.h"
+#include "engine/fonts.h"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
@@ -69,6 +70,10 @@ public:
     R_Texttext *text1 = nullptr;
     R_Texttext *text2 = nullptr;
     R_Texttext *text3 = nullptr;
+
+    FONScontext* fs = NULL;
+
+    int fontNormal = FONS_INVALID;
 
 public:
     bool running = true;
@@ -168,7 +173,7 @@ public:
 
     int init(int argc, char *argv[]);
     int run(int argc, char *argv[]);
-    void exit();
+    int exit();
     void updateFrameEarly();
     void tick();
     void tickChunkLoading();
