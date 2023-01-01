@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "SDL_pixels.h"
 #include "core/core.h"
+#include "renderer/renderer_opengl.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 #define FontCache_GET_ALPHA(sdl_color) ((sdl_color).a)
@@ -72,7 +74,7 @@ static void set_clip(FontCache_Target* dest, FontCache_Rect* rect) {
         R_UnsetClip(dest);
 }
 
-static void set_color(FontCache_Image* src, Uint8 r, Uint8 g, Uint8 b, Uint8 a) { R_SetRGBA(src, r, g, b, a); }
+static void set_color(FontCache_Image* src, U8 r, U8 g, U8 b, U8 a) { R_SetRGBA(src, r, g, b, a); }
 
 static char* new_concat(const char* a, const char* b) {
     // Create new buffer
@@ -97,7 +99,7 @@ static char* replace_concat(char** a, const char* b) {
 static char* fc_buffer = NULL;
 static unsigned int fc_buffer_size = 1024;
 
-static Uint8 fc_has_render_target_support = 0;
+static U8 fc_has_render_target_support = 0;
 
 char* FontCache_GetStringASCII(void) {
     static char* buffer = NULL;
@@ -165,13 +167,13 @@ FontCache_Scale FontCache_MakeScale(float x, float y) {
     return s;
 }
 
-SDL_Color FontCache_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    SDL_Color c = {r, g, b, a};
+METAENGINE_Color FontCache_MakeColor(U8 r, U8 g, U8 b, U8 a) {
+    METAENGINE_Color c = {r, g, b, a};
 
     return c;
 }
 
-FontCache_Effect FontCache_MakeEffect(FontCache_AlignEnum alignment, FontCache_Scale scale, SDL_Color color) {
+FontCache_Effect FontCache_MakeEffect(FontCache_AlignEnum alignment, FontCache_Scale scale, METAENGINE_Color color) {
     FontCache_Effect e;
 
     e.alignment = alignment;
@@ -181,7 +183,7 @@ FontCache_Effect FontCache_MakeEffect(FontCache_AlignEnum alignment, FontCache_S
     return e;
 }
 
-FontCache_GlyphData FontCache_MakeGlyphData(int cache_level, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
+FontCache_GlyphData FontCache_MakeGlyphData(int cache_level, Sint16 x, Sint16 y, U16 w, U16 h) {
     FontCache_GlyphData gd;
 
     gd.rect.x = x;
@@ -197,7 +199,7 @@ FontCache_GlyphData FontCache_MakeGlyphData(int cache_level, Sint16 x, Sint16 y,
 #define FontCache_DEFAULT_NUM_BUCKETS 300
 
 typedef struct FontCache_MapNode {
-    Uint32 key;
+    U32 key;
     FontCache_GlyphData value;
     struct FontCache_MapNode* next;
 
@@ -264,8 +266,8 @@ static void FontCache_MapFree(FontCache_Map* map) {
 }
 
 // Note: Does not handle duplicates in any special way.
-static FontCache_GlyphData* FontCache_MapInsert(FontCache_Map* map, Uint32 codepoint, FontCache_GlyphData glyph) {
-    Uint32 index;
+static FontCache_GlyphData* FontCache_MapInsert(FontCache_Map* map, U32 codepoint, FontCache_GlyphData glyph) {
+    U32 index;
     FontCache_MapNode* node;
     if (map == NULL) return NULL;
 
@@ -297,8 +299,8 @@ static FontCache_GlyphData* FontCache_MapInsert(FontCache_Map* map, Uint32 codep
     return NULL;
 }
 
-static FontCache_GlyphData* FontCache_MapFind(FontCache_Map* map, Uint32 codepoint) {
-    Uint32 index;
+static FontCache_GlyphData* FontCache_MapFind(FontCache_Map* map, U32 codepoint) {
+    U32 index;
     FontCache_MapNode* node;
     if (map == NULL) return NULL;
 
@@ -315,16 +317,16 @@ static FontCache_GlyphData* FontCache_MapFind(FontCache_Map* map, Uint32 codepoi
 
 struct FontCache_Font {
 
-    TTF_Font* ttf_source;   // TTF_Font source of characters
-    Uint8 owns_ttf_source;  // Can we delete the TTF_Font ourselves?
+    TTF_Font* ttf_source;  // TTF_Font source of characters
+    U8 owns_ttf_source;    // Can we delete the TTF_Font ourselves?
 
     FontCache_FilterEnum filter;
 
-    SDL_Color default_color;
-    Uint16 height;
+    METAENGINE_Color default_color;
+    U16 height;
 
-    Uint16 maxWidth;
-    Uint16 baseline;
+    U16 maxWidth;
+    U16 baseline;
     int ascent;
     int descent;
 
@@ -344,13 +346,13 @@ struct FontCache_Font {
 };
 
 // Private
-static FontCache_GlyphData* FontCache_PackGlyphData(FontCache_Font* font, Uint32 codepoint, Uint16 width, Uint16 maxWidth, Uint16 maxHeight);
+static FontCache_GlyphData* FontCache_PackGlyphData(FontCache_Font* font, U32 codepoint, U16 width, U16 maxWidth, U16 maxHeight);
 
 static FontCache_Rect FontCache_RenderLeft(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_Scale scale, const char* text);
 static FontCache_Rect FontCache_RenderCenter(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_Scale scale, const char* text);
 static FontCache_Rect FontCache_RenderRight(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_Scale scale, const char* text);
 
-static_inline SDL_Surface* FontCache_CreateSurface32(Uint32 width, Uint32 height) {
+static_inline C_Surface* FontCache_CreateSurface32(U32 width, U32 height) {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     return SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
 #else
@@ -534,7 +536,7 @@ void FontCache_SetRenderCallback(FontCache_Rect (*callback)(FontCache_Image* src
         fc_render_callback = callback;
 }
 
-void FontCache_GetUTF8FromCodepoint(char* result, Uint32 codepoint) {
+void FontCache_GetUTF8FromCodepoint(char* result, U32 codepoint) {
     char a, b, c, d;
 
     if (result == NULL) return;
@@ -569,8 +571,8 @@ void FontCache_GetUTF8FromCodepoint(char* result, Uint32 codepoint) {
     }
 }
 
-Uint32 FontCache_GetCodepointFromUTF8(const char** c, Uint8 advance_pointer) {
-    Uint32 result = 0;
+U32 FontCache_GetCodepointFromUTF8(const char** c, U8 advance_pointer) {
+    U32 result = 0;
     const char* str;
     if (c == NULL || *c == NULL) return 0;
 
@@ -660,7 +662,7 @@ static void FontCache_Init(FontCache_Font* font) {
     if (fc_buffer == NULL) fc_buffer = (char*)malloc(fc_buffer_size);
 }
 
-static Uint8 FontCache_GrowGlyphCache(FontCache_Font* font) {
+static U8 FontCache_GrowGlyphCache(FontCache_Font* font) {
     if (font == NULL) return 0;
     R_Image* new_level = R_CreateImage(font->height * 12, font->height * 12, R_FORMAT_RGBA);
     R_SetAnchor(new_level, 0.5f, 0.5f);  // Just in case the default is different
@@ -672,7 +674,7 @@ static Uint8 FontCache_GrowGlyphCache(FontCache_Font* font) {
     return 1;
 }
 
-Uint8 FontCache_UploadGlyphCache(FontCache_Font* font, int cache_level, SDL_Surface* data_surface) {
+U8 FontCache_UploadGlyphCache(FontCache_Font* font, int cache_level, C_Surface* data_surface) {
     if (font == NULL || data_surface == NULL) return 0;
 
     R_Image* new_level = R_CopyImageFromSurface(data_surface);
@@ -691,10 +693,10 @@ Uint8 FontCache_UploadGlyphCache(FontCache_Font* font, int cache_level, SDL_Surf
     return 1;
 }
 
-static FontCache_GlyphData* FontCache_PackGlyphData(FontCache_Font* font, Uint32 codepoint, Uint16 width, Uint16 maxWidth, Uint16 maxHeight) {
+static FontCache_GlyphData* FontCache_PackGlyphData(FontCache_Font* font, U32 codepoint, U16 width, U16 maxWidth, U16 maxHeight) {
     FontCache_Map* glyphs = font->glyphs;
     FontCache_GlyphData* last_glyph = &font->last_glyph;
-    Uint16 height = font->height + FontCache_CACHE_PADDING;
+    U16 height = font->height + FontCache_CACHE_PADDING;
 
     if (last_glyph->rect.x + last_glyph->rect.w + width >= maxWidth - FontCache_CACHE_PADDING) {
         if (last_glyph->rect.y + height + height >= maxHeight - FontCache_CACHE_PADDING) {
@@ -725,7 +727,7 @@ FontCache_Image* FontCache_GetGlyphCacheLevel(FontCache_Font* font, int cache_le
     return font->glyph_cache[cache_level];
 }
 
-Uint8 FontCache_SetGlyphCacheLevel(FontCache_Font* font, int cache_level, FontCache_Image* cache_texture) {
+U8 FontCache_SetGlyphCacheLevel(FontCache_Font* font, int cache_level, FontCache_Image* cache_texture) {
     if (font == NULL || cache_level < 0) return 0;
 
     // Must be sequentially added
@@ -767,7 +769,7 @@ FontCache_Font* FontCache_CreateFont(void) {
 // Assume this many will be enough...
 #define FontCache_LOAD_MAX_SURFACES 10
 
-Uint8 FontCache_LoadFontFromTTF(FontCache_Font* font, TTF_Font* ttf, SDL_Color color) {
+U8 FontCache_LoadFontFromTTF(FontCache_Font* font, TTF_Font* ttf, METAENGINE_Color color) {
     if (font == NULL || ttf == NULL) return 0;
 
     FontCache_ClearFont(font);
@@ -791,19 +793,19 @@ Uint8 FontCache_LoadFontFromTTF(FontCache_Font* font, TTF_Font* ttf, SDL_Color c
     font->default_color = color;
 
     {
-        SDL_Color white = {255, 255, 255, 255};
-        SDL_Surface* glyph_surf;
+        METAENGINE_Color white = {255, 255, 255, 255};
+        C_Surface* glyph_surf;
         char buff[5];
         const char* buff_ptr = buff;
         const char* source_string;
-        Uint8 packed = 0;
+        U8 packed = 0;
 
         // Copy glyphs from the surface to the font texture and store the position data
         // Pack row by row into a square texture
         // Try figuring out dimensions that make sense for the font size.
         unsigned int w = font->height * 12;
         unsigned int h = font->height * 12;
-        SDL_Surface* surfaces[FontCache_LOAD_MAX_SURFACES];
+        C_Surface* surfaces[FontCache_LOAD_MAX_SURFACES];
         int num_surfaces = 1;
         surfaces[0] = FontCache_CreateSurface32(w, h);
         font->last_glyph.rect.x = FontCache_CACHE_PADDING;
@@ -815,7 +817,7 @@ Uint8 FontCache_LoadFontFromTTF(FontCache_Font* font, TTF_Font* ttf, SDL_Color c
         source_string = font->loading_string;
         for (; *source_string != '\0'; source_string = U8_next(source_string)) {
             if (!U8_charcpy(buff, source_string, 5)) continue;
-            glyph_surf = TTF_RenderUTF8_Blended(ttf, buff, white);
+            glyph_surf = TTF_RenderUTF8_Blended(ttf, buff, ToSDLColor(white));
             if (glyph_surf == NULL) continue;
 
             // Try packing.  If it fails, create a new surface for the next cache level.
@@ -860,7 +862,7 @@ Uint8 FontCache_LoadFontFromTTF(FontCache_Font* font, TTF_Font* ttf, SDL_Color c
     return 1;
 }
 
-Uint8 FontCache_LoadFont(FontCache_Font* font, const char* filename_ttf, Uint32 pointSize, SDL_Color color, int style) {
+U8 FontCache_LoadFont(FontCache_Font* font, const char* filename_ttf, U32 pointSize, METAENGINE_Color color, int style) {
     SDL_RWops* rwops;
 
     if (font == NULL) return 0;
@@ -875,10 +877,10 @@ Uint8 FontCache_LoadFont(FontCache_Font* font, const char* filename_ttf, Uint32 
     return FontCache_LoadFont_RW(font, rwops, 1, pointSize, color, style);
 }
 
-Uint8 FontCache_LoadFont_RW(FontCache_Font* font, SDL_RWops* file_rwops_ttf, Uint8 own_rwops, Uint32 pointSize, SDL_Color color, int style) {
-    Uint8 result;
+U8 FontCache_LoadFont_RW(FontCache_Font* font, SDL_RWops* file_rwops_ttf, U8 own_rwops, U32 pointSize, METAENGINE_Color color, int style) {
+    U8 result;
     TTF_Font* ttf;
-    Uint8 outline;
+    U8 outline;
 
     if (font == NULL) return 0;
 
@@ -965,7 +967,7 @@ void FontCache_FreeFont(FontCache_Font* font) {
 
 int FontCache_GetNumCacheLevels(FontCache_Font* font) { return font->glyph_cache_count; }
 
-Uint8 FontCache_AddGlyphToCache(FontCache_Font* font, SDL_Surface* glyph_surface) {
+U8 FontCache_AddGlyphToCache(FontCache_Font* font, C_Surface* glyph_surface) {
     if (font == NULL || glyph_surface == NULL) return 0;
 
     SDL_SetSurfaceBlendMode(glyph_surface, SDL_BLENDMODE_NONE);
@@ -1008,7 +1010,7 @@ unsigned int FontCache_GetNumCodepoints(FontCache_Font* font) {
     return result;
 }
 
-void FontCache_GetCodepoints(FontCache_Font* font, Uint32* result) {
+void FontCache_GetCodepoints(FontCache_Font* font, U32* result) {
     FontCache_Map* glyphs;
     int i;
     unsigned int count = 0;
@@ -1025,13 +1027,13 @@ void FontCache_GetCodepoints(FontCache_Font* font, Uint32* result) {
     }
 }
 
-Uint8 FontCache_GetGlyphData(FontCache_Font* font, FontCache_GlyphData* result, Uint32 codepoint) {
+U8 FontCache_GetGlyphData(FontCache_Font* font, FontCache_GlyphData* result, U32 codepoint) {
     FontCache_GlyphData* e = FontCache_MapFind(font->glyphs, codepoint);
     if (e == NULL) {
         char buff[5];
         int w, h;
-        SDL_Color white = {255, 255, 255, 255};
-        SDL_Surface* surf;
+        METAENGINE_Color white = {255, 255, 255, 255};
+        C_Surface* surf;
         FontCache_Image* cache_image;
 
         if (font->ttf_source == NULL) return 0;
@@ -1047,7 +1049,7 @@ Uint8 FontCache_GetGlyphData(FontCache_Font* font, FontCache_GlyphData* result, 
         w = cache_image->w;
         h = cache_image->h;
 
-        surf = TTF_RenderUTF8_Blended(font->ttf_source, buff, white);
+        surf = TTF_RenderUTF8_Blended(font->ttf_source, buff, ToSDLColor(white));
         if (surf == NULL) {
             return 0;
         }
@@ -1076,7 +1078,7 @@ Uint8 FontCache_GetGlyphData(FontCache_Font* font, FontCache_GlyphData* result, 
     return 1;
 }
 
-FontCache_GlyphData* FontCache_SetGlyphData(FontCache_Font* font, Uint32 codepoint, FontCache_GlyphData glyph_data) { return FontCache_MapInsert(font->glyphs, codepoint, glyph_data); }
+FontCache_GlyphData* FontCache_SetGlyphData(FontCache_Font* font, U32 codepoint, FontCache_GlyphData glyph_data) { return FontCache_MapInsert(font->glyphs, codepoint, glyph_data); }
 
 // Drawing
 static FontCache_Rect FontCache_RenderLeft(FontCache_Font* font, FontCache_Target* dest, float x, float y, FontCache_Scale scale, const char* text) {
@@ -1086,7 +1088,7 @@ static FontCache_Rect FontCache_RenderLeft(FontCache_Font* font, FontCache_Targe
     FontCache_Rect dirtyRect = FontCache_MakeRect(x, y, 0, 0);
 
     FontCache_GlyphData glyph;
-    Uint32 codepoint;
+    U32 codepoint;
 
     float destX = x;
     float destY = y;
@@ -1143,7 +1145,7 @@ static FontCache_Rect FontCache_RenderLeft(FontCache_Font* font, FontCache_Targe
     return dirtyRect;
 }
 
-static void set_color_for_all_caches(FontCache_Font* font, SDL_Color color) {
+static void set_color_for_all_caches(FontCache_Font* font, METAENGINE_Color color) {
     // TODO: How can I predict which glyph caches are to be used?
     FontCache_Image* img;
     int i;
@@ -1180,7 +1182,7 @@ void FontCache_StringListFree(FontCache_StringList* node) {
     }
 }
 
-FontCache_StringList** FontCache_StringListPushBack(FontCache_StringList** node, char* value, Uint8 copy) {
+FontCache_StringList** FontCache_StringListPushBack(FontCache_StringList** node, char* value, U8 copy) {
     if (node == NULL) {
         return node;
     }
@@ -1292,7 +1294,7 @@ static void FontCache_RenderAlign(FontCache_Font* font, FontCache_Target* dest, 
     }
 }
 
-static FontCache_StringList* FontCache_GetBufferFitToColumn(FontCache_Font* font, int width, FontCache_Scale scale, Uint8 keep_newlines) {
+static FontCache_StringList* FontCache_GetBufferFitToColumn(FontCache_Font* font, int width, FontCache_Scale scale, U8 keep_newlines) {
     FontCache_StringList* result = NULL;
     FontCache_StringList** current = &result;
 
@@ -1349,7 +1351,7 @@ static void FontCache_DrawColumnFromBuffer(FontCache_Font* font, FontCache_Targe
 }
 
 FontCache_Rect FontCache_DrawBox(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, const char* formatted_text, ...) {
-    Uint8 useClip;
+    U8 useClip;
     if (formatted_text == NULL || font == NULL) return FontCache_MakeRect(box.x, box.y, 0, 0);
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
@@ -1377,7 +1379,7 @@ FontCache_Rect FontCache_DrawBox(FontCache_Font* font, FontCache_Target* dest, F
 }
 
 FontCache_Rect FontCache_DrawBoxAlign(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, FontCache_AlignEnum align, const char* formatted_text, ...) {
-    Uint8 useClip;
+    U8 useClip;
     if (formatted_text == NULL || font == NULL) return FontCache_MakeRect(box.x, box.y, 0, 0);
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
@@ -1404,7 +1406,7 @@ FontCache_Rect FontCache_DrawBoxAlign(FontCache_Font* font, FontCache_Target* de
 }
 
 FontCache_Rect FontCache_DrawBoxScale(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, FontCache_Scale scale, const char* formatted_text, ...) {
-    Uint8 useClip;
+    U8 useClip;
     if (formatted_text == NULL || font == NULL) return FontCache_MakeRect(box.x, box.y, 0, 0);
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
@@ -1430,8 +1432,8 @@ FontCache_Rect FontCache_DrawBoxScale(FontCache_Font* font, FontCache_Target* de
     return box;
 }
 
-FontCache_Rect FontCache_DrawBoxColor(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, SDL_Color color, const char* formatted_text, ...) {
-    Uint8 useClip;
+FontCache_Rect FontCache_DrawBoxColor(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, METAENGINE_Color color, const char* formatted_text, ...) {
+    U8 useClip;
     if (formatted_text == NULL || font == NULL) return FontCache_MakeRect(box.x, box.y, 0, 0);
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
@@ -1458,7 +1460,7 @@ FontCache_Rect FontCache_DrawBoxColor(FontCache_Font* font, FontCache_Target* de
 }
 
 FontCache_Rect FontCache_DrawBoxEffect(FontCache_Font* font, FontCache_Target* dest, FontCache_Rect box, FontCache_Effect effect, const char* formatted_text, ...) {
-    Uint8 useClip;
+    U8 useClip;
     if (formatted_text == NULL || font == NULL) return FontCache_MakeRect(box.x, box.y, 0, 0);
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
@@ -1484,7 +1486,7 @@ FontCache_Rect FontCache_DrawBoxEffect(FontCache_Font* font, FontCache_Target* d
     return box;
 }
 
-FontCache_Rect FontCache_DrawColumn(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, const char* formatted_text, ...) {
+FontCache_Rect FontCache_DrawColumn(FontCache_Font* font, FontCache_Target* dest, float x, float y, U16 width, const char* formatted_text, ...) {
     FontCache_Rect box = {x, y, width, 0};
     int total_height;
 
@@ -1499,7 +1501,7 @@ FontCache_Rect FontCache_DrawColumn(FontCache_Font* font, FontCache_Target* dest
     return FontCache_MakeRect(box.x, box.y, width, total_height);
 }
 
-FontCache_Rect FontCache_DrawColumnAlign(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, FontCache_AlignEnum align, const char* formatted_text, ...) {
+FontCache_Rect FontCache_DrawColumnAlign(FontCache_Font* font, FontCache_Target* dest, float x, float y, U16 width, FontCache_AlignEnum align, const char* formatted_text, ...) {
     FontCache_Rect box = {x, y, width, 0};
     int total_height;
 
@@ -1525,7 +1527,7 @@ FontCache_Rect FontCache_DrawColumnAlign(FontCache_Font* font, FontCache_Target*
     return FontCache_MakeRect(box.x, box.y, width, total_height);
 }
 
-FontCache_Rect FontCache_DrawColumnScale(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, FontCache_Scale scale, const char* formatted_text, ...) {
+FontCache_Rect FontCache_DrawColumnScale(FontCache_Font* font, FontCache_Target* dest, float x, float y, U16 width, FontCache_Scale scale, const char* formatted_text, ...) {
     FontCache_Rect box = {x, y, width, 0};
     int total_height;
 
@@ -1540,7 +1542,7 @@ FontCache_Rect FontCache_DrawColumnScale(FontCache_Font* font, FontCache_Target*
     return FontCache_MakeRect(box.x, box.y, width, total_height);
 }
 
-FontCache_Rect FontCache_DrawColumnColor(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, SDL_Color color, const char* formatted_text, ...) {
+FontCache_Rect FontCache_DrawColumnColor(FontCache_Font* font, FontCache_Target* dest, float x, float y, U16 width, METAENGINE_Color color, const char* formatted_text, ...) {
     FontCache_Rect box = {x, y, width, 0};
     int total_height;
 
@@ -1555,7 +1557,7 @@ FontCache_Rect FontCache_DrawColumnColor(FontCache_Font* font, FontCache_Target*
     return FontCache_MakeRect(box.x, box.y, width, total_height);
 }
 
-FontCache_Rect FontCache_DrawColumnEffect(FontCache_Font* font, FontCache_Target* dest, float x, float y, Uint16 width, FontCache_Effect effect, const char* formatted_text, ...) {
+FontCache_Rect FontCache_DrawColumnEffect(FontCache_Font* font, FontCache_Target* dest, float x, float y, U16 width, FontCache_Effect effect, const char* formatted_text, ...) {
     FontCache_Rect box = {x, y, width, 0};
     int total_height;
 
@@ -1671,7 +1673,7 @@ FontCache_Rect FontCache_DrawAlign(FontCache_Font* font, FontCache_Target* dest,
     return result;
 }
 
-FontCache_Rect FontCache_DrawColor(FontCache_Font* font, FontCache_Target* dest, float x, float y, SDL_Color color, const char* formatted_text, ...) {
+FontCache_Rect FontCache_DrawColor(FontCache_Font* font, FontCache_Target* dest, float x, float y, METAENGINE_Color color, const char* formatted_text, ...) {
     if (formatted_text == NULL || font == NULL) return FontCache_MakeRect(x, y, 0, 0);
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
@@ -1715,18 +1717,18 @@ FontCache_FilterEnum FontCache_GetFilterMode(FontCache_Font* font) {
     return font->filter;
 }
 
-Uint16 FontCache_GetLineHeight(FontCache_Font* font) {
+U16 FontCache_GetLineHeight(FontCache_Font* font) {
     if (font == NULL) return 0;
 
     return font->height;
 }
 
-Uint16 FontCache_GetHeight(FontCache_Font* font, const char* formatted_text, ...) {
+U16 FontCache_GetHeight(FontCache_Font* font, const char* formatted_text, ...) {
     if (formatted_text == NULL || font == NULL) return 0;
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
 
-    Uint16 numLines = 1;
+    U16 numLines = 1;
     const char* c;
 
     for (c = fc_buffer; *c != '\0'; c++) {
@@ -1737,14 +1739,14 @@ Uint16 FontCache_GetHeight(FontCache_Font* font, const char* formatted_text, ...
     return font->height * numLines + font->lineSpacing * (numLines - 1);  // height*numLines;
 }
 
-Uint16 FontCache_GetWidth(FontCache_Font* font, const char* formatted_text, ...) {
+U16 FontCache_GetWidth(FontCache_Font* font, const char* formatted_text, ...) {
     if (formatted_text == NULL || font == NULL) return 0;
 
     FontCache_EXTRACT_VARARGS(fc_buffer, formatted_text);
 
     const char* c;
-    Uint16 width = 0;
-    Uint16 bigWidth = 0;  // Allows for multi-line strings
+    U16 width = 0;
+    U16 bigWidth = 0;  // Allows for multi-line strings
 
     for (c = fc_buffer; *c != '\0'; c++) {
         if (*c == '\n') {
@@ -1754,7 +1756,7 @@ Uint16 FontCache_GetWidth(FontCache_Font* font, const char* formatted_text, ...)
         }
 
         FontCache_GlyphData glyph;
-        Uint32 codepoint = FontCache_GetCodepointFromUTF8(&c, 1);
+        U32 codepoint = FontCache_GetCodepointFromUTF8(&c, 1);
         if (FontCache_GetGlyphData(font, &glyph, codepoint) || FontCache_GetGlyphData(font, &glyph, ' ')) width += glyph.rect.w;
     }
     bigWidth = bigWidth >= width ? bigWidth : width;
@@ -1763,11 +1765,11 @@ Uint16 FontCache_GetWidth(FontCache_Font* font, const char* formatted_text, ...)
 }
 
 // If width == -1, use no width limit
-FontCache_Rect FontCache_GetCharacterOffset(FontCache_Font* font, Uint16 position_index, int column_width, const char* formatted_text, ...) {
+FontCache_Rect FontCache_GetCharacterOffset(FontCache_Font* font, U16 position_index, int column_width, const char* formatted_text, ...) {
     FontCache_Rect result = {0, 0, 1, FontCache_GetLineHeight(font)};
     FontCache_StringList *ls, *iter;
     int num_lines = 0;
-    Uint8 done = 0;
+    U8 done = 0;
 
     if (formatted_text == NULL || column_width == 0 || position_index == 0 || font == NULL) return result;
 
@@ -1807,7 +1809,7 @@ FontCache_Rect FontCache_GetCharacterOffset(FontCache_Font* font, Uint16 positio
     return result;
 }
 
-Uint16 FontCache_GetColumnHeight(FontCache_Font* font, Uint16 width, const char* formatted_text, ...) {
+U16 FontCache_GetColumnHeight(FontCache_Font* font, U16 width, const char* formatted_text, ...) {
     int y = 0;
 
     FontCache_StringList *ls, *iter;
@@ -1827,7 +1829,7 @@ Uint16 FontCache_GetColumnHeight(FontCache_Font* font, Uint16 width, const char*
     return y;
 }
 
-static int FontCache_GetAscentFromCodepoint(FontCache_Font* font, Uint32 codepoint) {
+static int FontCache_GetAscentFromCodepoint(FontCache_Font* font, U32 codepoint) {
     FontCache_GlyphData glyph;
 
     if (font == NULL) return 0;
@@ -1837,7 +1839,7 @@ static int FontCache_GetAscentFromCodepoint(FontCache_Font* font, Uint32 codepoi
     return glyph.rect.h;
 }
 
-static int FontCache_GetDescentFromCodepoint(FontCache_Font* font, Uint32 codepoint) {
+static int FontCache_GetDescentFromCodepoint(FontCache_Font* font, U32 codepoint) {
     FontCache_GlyphData glyph;
 
     if (font == NULL) return 0;
@@ -1848,7 +1850,7 @@ static int FontCache_GetDescentFromCodepoint(FontCache_Font* font, Uint32 codepo
 }
 
 int FontCache_GetAscent(FontCache_Font* font, const char* formatted_text, ...) {
-    Uint32 codepoint;
+    U32 codepoint;
     int max, ascent;
     const char* c;
 
@@ -1873,7 +1875,7 @@ int FontCache_GetAscent(FontCache_Font* font, const char* formatted_text, ...) {
 }
 
 int FontCache_GetDescent(FontCache_Font* font, const char* formatted_text, ...) {
-    Uint32 codepoint;
+    U32 codepoint;
     int max, descent;
     const char* c;
 
@@ -1915,15 +1917,15 @@ int FontCache_GetLineSpacing(FontCache_Font* font) {
     return font->lineSpacing;
 }
 
-Uint16 FontCache_GetMaxWidth(FontCache_Font* font) {
+U16 FontCache_GetMaxWidth(FontCache_Font* font) {
     if (font == NULL) return 0;
 
     return font->maxWidth;
 }
 
-SDL_Color FontCache_GetDefaultColor(FontCache_Font* font) {
+METAENGINE_Color FontCache_GetDefaultColor(FontCache_Font* font) {
     if (font == NULL) {
-        SDL_Color c = {0, 0, 0, 255};
+        METAENGINE_Color c = {0, 0, 0, 255};
         return c;
     }
 
@@ -1956,14 +1958,14 @@ FontCache_Rect FontCache_GetBounds(FontCache_Font* font, float x, float y, FontC
     return result;
 }
 
-Uint8 FontCache_InRect(float x, float y, FontCache_Rect input_rect) { return (input_rect.x <= x && x <= input_rect.x + input_rect.w && input_rect.y <= y && y <= input_rect.y + input_rect.h); }
+U8 FontCache_InRect(float x, float y, FontCache_Rect input_rect) { return (input_rect.x <= x && x <= input_rect.x + input_rect.w && input_rect.y <= y && y <= input_rect.y + input_rect.h); }
 
 // TODO: Make it work with alignment
-Uint16 FontCache_GetPositionFromOffset(FontCache_Font* font, float x, float y, int column_width, FontCache_AlignEnum align, const char* formatted_text, ...) {
+U16 FontCache_GetPositionFromOffset(FontCache_Font* font, float x, float y, int column_width, FontCache_AlignEnum align, const char* formatted_text, ...) {
     FontCache_StringList *ls, *iter;
-    Uint8 done = 0;
+    U8 done = 0;
     int height = FontCache_GetLineHeight(font);
-    Uint16 position = 0;
+    U16 position = 0;
     int current_x = 0;
     int current_y = 0;
     FontCache_GlyphData glyph_data;
@@ -1998,7 +2000,7 @@ Uint16 FontCache_GetPositionFromOffset(FontCache_Font* font, float x, float y, i
     return position;
 }
 
-int FontCache_GetWrappedText(FontCache_Font* font, char* result, int max_result_size, Uint16 width, const char* formatted_text, ...) {
+int FontCache_GetWrappedText(FontCache_Font* font, char* result, int max_result_size, U16 width, const char* formatted_text, ...) {
     FontCache_StringList *ls, *iter;
 
     if (font == NULL) return 0;
@@ -2064,7 +2066,7 @@ void FontCache_SetLineSpacing(FontCache_Font* font, int LineSpacing) {
     font->lineSpacing = LineSpacing;
 }
 
-void FontCache_SetDefaultColor(FontCache_Font* font, SDL_Color color) {
+void FontCache_SetDefaultColor(FontCache_Font* font, METAENGINE_Color color) {
     if (font == NULL) return;
 
     font->default_color = color;
