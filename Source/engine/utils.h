@@ -76,6 +76,35 @@
 #define UTIL_dot(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
 // #define norm(v) sqrt(dot(v, v))// norm = length of  vector
 
+// vsnprintf replacement from Valentin Milea:
+// http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
+#if defined(_MSC_VER) && _MSC_VER < 1900
+
+#define snprintf c99_snprintf
+#define vsnprintf c99_vsnprintf
+
+__inline int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap) {
+    int count = -1;
+
+    if (size != 0) count = _vsnprintf_s(outBuf, size, _TRUNCATE, format, ap);
+    if (count == -1) count = _vscprintf(format, ap);
+
+    return count;
+}
+
+__inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...) {
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(outBuf, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+
+#endif
+
 #ifndef RE_DOT_MATCHES_NEWLINE
 /* Define to 0 if you DON'T want '.' to match '\r' + '\n' */
 #define RE_DOT_MATCHES_NEWLINE 1

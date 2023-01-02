@@ -222,7 +222,7 @@ void OptionsUI::Draw(Game *game) {
     ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
     ImGui::Text("返回");
     if (ImGui::Button("保存")) {
-        global.game->GameIsolate_.settings.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
+        // global.game->GameIsolate_.globaldef.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
     }
     // ImGui::PopFont();
 }
@@ -231,7 +231,7 @@ void OptionsUI::DrawGeneral(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "游戏内容");
     ImGui::Indent(4);
 
-    ImGui::Checkbox("材质工具提示", &global.game->GameIsolate_.settings.draw_material_info);
+    ImGui::Checkbox("材质工具提示", &global.game->GameIsolate_.globaldef.draw_material_info);
 
     ImGui::Unindent(4);
 }
@@ -285,7 +285,7 @@ void OptionsUI::DrawVideo(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Rendering");
     ImGui::Indent(4);
 
-    if (ImGui::Checkbox("高清贴图", &global.game->GameIsolate_.settings.hd_objects)) {
+    if (ImGui::Checkbox("高清贴图", &global.game->GameIsolate_.globaldef.hd_objects)) {
         R_FreeTarget(game->TexturePack_.textureObjects->target);
         R_FreeImage(game->TexturePack_.textureObjects);
         R_FreeTarget(game->TexturePack_.textureObjectsBack->target);
@@ -293,31 +293,31 @@ void OptionsUI::DrawVideo(Game *game) {
         R_FreeTarget(game->TexturePack_.textureEntities->target);
         R_FreeImage(game->TexturePack_.textureEntities);
 
-        game->TexturePack_.textureObjects =
-                R_CreateImage(game->GameIsolate_.world->width * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1),
-                              game->GameIsolate_.world->height * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        game->TexturePack_.textureObjects = R_CreateImage(game->GameIsolate_.world->width * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                                                          game->GameIsolate_.world->height * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                                                          R_FormatEnum::R_FORMAT_RGBA);
         R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
 
-        game->TexturePack_.textureObjectsBack =
-                R_CreateImage(game->GameIsolate_.world->width * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1),
-                              game->GameIsolate_.world->height * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        game->TexturePack_.textureObjectsBack = R_CreateImage(
+                game->GameIsolate_.world->width * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                game->GameIsolate_.world->height * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
         R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
 
         R_LoadTarget(game->TexturePack_.textureObjects);
         R_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-        game->TexturePack_.textureEntities =
-                R_CreateImage(game->GameIsolate_.world->width * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1),
-                              game->GameIsolate_.world->height * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        game->TexturePack_.textureEntities = R_CreateImage(
+                game->GameIsolate_.world->width * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                game->GameIsolate_.world->height * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
         R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
 
         R_LoadTarget(game->TexturePack_.textureEntities);
     }
 
     ImGui::SetNextItemWidth(100);
-    ImGui::SliderFloat("光照质量", &global.game->GameIsolate_.settings.lightingQuality, 0.0, 1.0, "", 0);
-    ImGui::Checkbox("简单光照", &global.game->GameIsolate_.settings.simpleLighting);
-    ImGui::Checkbox("抖动光照", &global.game->GameIsolate_.settings.lightingDithering);
+    ImGui::SliderFloat("光照质量", &global.game->GameIsolate_.globaldef.lightingQuality, 0.0, 1.0, "", 0);
+    ImGui::Checkbox("简单光照", &global.game->GameIsolate_.globaldef.simpleLighting);
+    ImGui::Checkbox("抖动光照", &global.game->GameIsolate_.globaldef.lightingDithering);
 
     ImGui::Unindent(4);
 }
@@ -685,9 +685,9 @@ void MainMenuUI::DrawMultiplayer(Game *game) {
 
     if (ImGui::Button("连接")) {
         METADOT_INFO("connectButton select");
-        // if (global.client->connect(global.game->GameIsolate_.settings.server_ip.c_str(),
-        //                            global.game->GameIsolate_.settings.server_port)) {
-        //     global.game->GameIsolate_.settings.networkMode = engine_networkmode::CLIENT;
+        // if (global.client->connect(global.game->GameIsolate_.globaldef.server_ip.c_str(),
+        //                            global.game->GameIsolate_.globaldef.server_port)) {
+        //     global.game->GameIsolate_.globaldef.networkMode = engine_networkmode::CLIENT;
         //     visible = false;
         //     game->setGameState(LOADING, INGAME);
         // }
@@ -742,26 +742,26 @@ void DebugUI::Draw(Game *game) {
     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     if (ImGui::TreeNode(CC("渲染"))) {
 
-        ImGui::Checkbox(CC("绘制帧率图"), &global.game->GameIsolate_.settings.draw_frame_graph);
-        ImGui::Checkbox(CC("绘制调试状态"), &global.game->GameIsolate_.settings.draw_debug_stats);
+        ImGui::Checkbox(CC("绘制帧率图"), &global.game->GameIsolate_.globaldef.draw_frame_graph);
+        ImGui::Checkbox(CC("绘制调试状态"), &global.game->GameIsolate_.globaldef.draw_debug_stats);
 
-        ImGui::Checkbox(CC("绘制区域块状态"), &global.game->GameIsolate_.settings.draw_chunk_state);
-        ImGui::Checkbox(CC("绘制加载区域"), &global.game->GameIsolate_.settings.draw_load_zones);
+        ImGui::Checkbox(CC("绘制区域块状态"), &global.game->GameIsolate_.globaldef.draw_chunk_state);
+        ImGui::Checkbox(CC("绘制加载区域"), &global.game->GameIsolate_.globaldef.draw_load_zones);
 
-        ImGui::Checkbox(CC("材料工具"), &global.game->GameIsolate_.settings.draw_material_info);
+        ImGui::Checkbox(CC("材料工具"), &global.game->GameIsolate_.globaldef.draw_material_info);
         ImGui::Indent(10.0f);
-        ImGui::Checkbox(CC("调试材料"), &global.game->GameIsolate_.settings.draw_detailed_material_info);
+        ImGui::Checkbox(CC("调试材料"), &global.game->GameIsolate_.globaldef.draw_detailed_material_info);
         ImGui::Unindent(10.0f);
 
         if (ImGui::TreeNode(CC("物理"))) {
-            ImGui::Checkbox(CC("绘制物理调试"), &global.game->GameIsolate_.settings.draw_physics_debug);
+            ImGui::Checkbox(CC("绘制物理调试"), &global.game->GameIsolate_.globaldef.draw_physics_debug);
 
             if (ImGui::TreeNode("Box2D")) {
-                ImGui::Checkbox("shape", &global.game->GameIsolate_.settings.draw_b2d_shape);
-                ImGui::Checkbox("joint", &global.game->GameIsolate_.settings.draw_b2d_joint);
-                ImGui::Checkbox("aabb", &global.game->GameIsolate_.settings.draw_b2d_aabb);
-                ImGui::Checkbox("pair", &global.game->GameIsolate_.settings.draw_b2d_pair);
-                ImGui::Checkbox("center of mass", &global.game->GameIsolate_.settings.draw_b2d_centerMass);
+                ImGui::Checkbox("shape", &global.game->GameIsolate_.globaldef.draw_b2d_shape);
+                ImGui::Checkbox("joint", &global.game->GameIsolate_.globaldef.draw_b2d_joint);
+                ImGui::Checkbox("aabb", &global.game->GameIsolate_.globaldef.draw_b2d_aabb);
+                ImGui::Checkbox("pair", &global.game->GameIsolate_.globaldef.draw_b2d_pair);
+                ImGui::Checkbox("center of mass", &global.game->GameIsolate_.globaldef.draw_b2d_centerMass);
 
                 ImGui::TreePop();
             }
@@ -773,28 +773,28 @@ void DebugUI::Draw(Game *game) {
             if (ImGui::Button(CC("重新加载GLSL"))) {
                 LoadShaders(&global.shaderworker);
             }
-            ImGui::Checkbox(CC("绘制GLSL"), &global.game->GameIsolate_.settings.draw_shaders);
+            ImGui::Checkbox(CC("绘制GLSL"), &global.game->GameIsolate_.globaldef.draw_shaders);
 
             if (ImGui::TreeNode(CC("光照"))) {
                 ImGui::SetNextItemWidth(80);
-                ImGui::SliderFloat(CC("质量"), &global.game->GameIsolate_.settings.lightingQuality, 0.0, 1.0, "", 0);
-                ImGui::Checkbox(CC("覆盖"), &global.game->GameIsolate_.settings.draw_light_overlay);
-                ImGui::Checkbox(CC("简单采样"), &global.game->GameIsolate_.settings.simpleLighting);
-                ImGui::Checkbox(CC("放射"), &global.game->GameIsolate_.settings.lightingEmission);
-                ImGui::Checkbox(CC("抖动"), &global.game->GameIsolate_.settings.lightingDithering);
+                ImGui::SliderFloat(CC("质量"), &global.game->GameIsolate_.globaldef.lightingQuality, 0.0, 1.0, "", 0);
+                ImGui::Checkbox(CC("覆盖"), &global.game->GameIsolate_.globaldef.draw_light_overlay);
+                ImGui::Checkbox(CC("简单采样"), &global.game->GameIsolate_.globaldef.simpleLighting);
+                ImGui::Checkbox(CC("放射"), &global.game->GameIsolate_.globaldef.lightingEmission);
+                ImGui::Checkbox(CC("抖动"), &global.game->GameIsolate_.globaldef.lightingDithering);
 
                 ImGui::TreePop();
             }
 
             if (ImGui::TreeNode(CC("水体"))) {
                 const char *items[] = {"off", "flow map", "distortion"};
-                const char *combo_label = items[global.game->GameIsolate_.settings.water_overlay];
+                const char *combo_label = items[global.game->GameIsolate_.globaldef.water_overlay];
                 ImGui::SetNextItemWidth(80 + 24);
                 if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
                     for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-                        const bool is_selected = (global.game->GameIsolate_.settings.water_overlay == n);
+                        const bool is_selected = (global.game->GameIsolate_.globaldef.water_overlay == n);
                         if (ImGui::Selectable(items[n], is_selected)) {
-                            global.game->GameIsolate_.settings.water_overlay = n;
+                            global.game->GameIsolate_.globaldef.water_overlay = n;
                         }
 
                         // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -805,8 +805,8 @@ void DebugUI::Draw(Game *game) {
                     ImGui::EndCombo();
                 }
 
-                ImGui::Checkbox(CC("显示流程"), &global.game->GameIsolate_.settings.water_showFlow);
-                ImGui::Checkbox(CC("像素化"), &global.game->GameIsolate_.settings.water_pixelated);
+                ImGui::Checkbox(CC("显示流程"), &global.game->GameIsolate_.globaldef.water_showFlow);
+                ImGui::Checkbox(CC("像素化"), &global.game->GameIsolate_.globaldef.water_pixelated);
 
                 ImGui::TreePop();
             }
@@ -816,9 +816,9 @@ void DebugUI::Draw(Game *game) {
 
         if (ImGui::TreeNode(CC("世界"))) {
 
-            ImGui::Checkbox("Draw Temperature Map", &global.game->GameIsolate_.settings.draw_temperature_map);
+            ImGui::Checkbox("Draw Temperature Map", &global.game->GameIsolate_.globaldef.draw_temperature_map);
 
-            if (ImGui::Checkbox("Draw Background", &global.game->GameIsolate_.settings.draw_background)) {
+            if (ImGui::Checkbox("Draw Background", &global.game->GameIsolate_.globaldef.draw_background)) {
                 for (int x = 0; x < game->GameIsolate_.world->width; x++) {
                     for (int y = 0; y < game->GameIsolate_.world->height; y++) {
                         game->GameIsolate_.world->dirty[x + y * game->GameIsolate_.world->width] = true;
@@ -827,7 +827,7 @@ void DebugUI::Draw(Game *game) {
                 }
             }
 
-            if (ImGui::Checkbox("Draw Background Grid", &global.game->GameIsolate_.settings.draw_background_grid)) {
+            if (ImGui::Checkbox("Draw Background Grid", &global.game->GameIsolate_.globaldef.draw_background_grid)) {
                 for (int x = 0; x < game->GameIsolate_.world->width; x++) {
                     for (int y = 0; y < game->GameIsolate_.world->height; y++) {
                         game->GameIsolate_.world->dirty[x + y * game->GameIsolate_.world->width] = true;
@@ -836,7 +836,7 @@ void DebugUI::Draw(Game *game) {
                 }
             }
 
-            if (ImGui::Checkbox("HD Objects", &global.game->GameIsolate_.settings.hd_objects)) {
+            if (ImGui::Checkbox("HD Objects", &global.game->GameIsolate_.globaldef.hd_objects)) {
                 R_FreeTarget(game->TexturePack_.textureObjects->target);
                 R_FreeImage(game->TexturePack_.textureObjects);
                 R_FreeTarget(game->TexturePack_.textureObjectsBack->target);
@@ -845,21 +845,21 @@ void DebugUI::Draw(Game *game) {
                 R_FreeImage(game->TexturePack_.textureEntities);
 
                 game->TexturePack_.textureObjects = R_CreateImage(
-                        game->GameIsolate_.world->width * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1),
-                        game->GameIsolate_.world->height * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                        game->GameIsolate_.world->width * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                        game->GameIsolate_.world->height * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
 
                 game->TexturePack_.textureObjectsBack = R_CreateImage(
-                        game->GameIsolate_.world->width * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1),
-                        game->GameIsolate_.world->height * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                        game->GameIsolate_.world->width * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                        game->GameIsolate_.world->height * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
 
                 R_LoadTarget(game->TexturePack_.textureObjects);
                 R_LoadTarget(game->TexturePack_.textureObjectsBack);
 
                 game->TexturePack_.textureEntities = R_CreateImage(
-                        game->GameIsolate_.world->width * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1),
-                        game->GameIsolate_.world->height * (global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                        game->GameIsolate_.world->width * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1),
+                        game->GameIsolate_.world->height * (global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
 
                 R_LoadTarget(game->TexturePack_.textureEntities);
@@ -873,9 +873,9 @@ void DebugUI::Draw(Game *game) {
 
     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     if (ImGui::TreeNode(CC("模拟"))) {
-        ImGui::Checkbox(CC("处理世界"), &global.game->GameIsolate_.settings.tick_world);
-        ImGui::Checkbox(CC("处理Box2D"), &global.game->GameIsolate_.settings.tick_box2d);
-        ImGui::Checkbox(CC("处理温度"), &global.game->GameIsolate_.settings.tick_temperature);
+        ImGui::Checkbox(CC("处理世界"), &global.game->GameIsolate_.globaldef.tick_world);
+        ImGui::Checkbox(CC("处理Box2D"), &global.game->GameIsolate_.globaldef.tick_box2d);
+        ImGui::Checkbox(CC("处理温度"), &global.game->GameIsolate_.globaldef.tick_temperature);
 
         ImGui::TreePop();
     }

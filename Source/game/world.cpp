@@ -3376,9 +3376,9 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
     LuaWrapper::LuaTable luat = LoadWorldMeta();
 
     if (!luat.isNilref()) {
-        LoadLuaConfig(meta, luat, worldName);
-        LoadLuaConfig(meta, luat, lastOpenedVersion);
-        LoadLuaConfig(meta, luat, lastOpenedTime);
+        LoadLuaConfig((&meta), luat, worldName);
+        LoadLuaConfig((&meta), luat, lastOpenedVersion);
+        LoadLuaConfig((&meta), luat, lastOpenedTime);
 
         // LoadLuaConfig(meta, &a);
 

@@ -429,7 +429,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 )markdown";
 
     auto cpos = editor.GetCursorPosition();
-    if (global.game->GameIsolate_.settings.ui_tweak) {
+    if (global.game->GameIsolate_.globaldef.ui_tweak) {
 
         ImGui::Begin(LANG("ui_tweaks"), NULL, ImGuiWindowFlags_MenuBar);
 

@@ -97,11 +97,10 @@ int Game::init(int argc, char *argv[]) {
     loadscript();
 
     global.I18N.Init();
-    global.game->GameIsolate_.settings.Init(false);
+    InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
+
     global.game->GameSystem_.console.Init();
-
     GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0001.ase");
-
     GameIsolate_.backgrounds->Load();
 
     font = FontCache_CreateFont();
@@ -209,7 +208,7 @@ void Game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
-                TexturePack_.worldTexture = R_CreateImage(GameIsolate_.world->width * GameIsolate_.settings.hd_objects_size, GameIsolate_.world->height * GameIsolate_.settings.hd_objects_size,
+                TexturePack_.worldTexture = R_CreateImage(GameIsolate_.world->width * GameIsolate_.globaldef.hd_objects_size, GameIsolate_.world->height * GameIsolate_.globaldef.hd_objects_size,
                                                           R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.worldTexture, R_FILTER_NEAREST);
@@ -261,8 +260,8 @@ void Game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
-                TexturePack_.textureObjects = R_CreateImage(GameIsolate_.world->width * (GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1),
-                                                            GameIsolate_.world->height * (GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.textureObjects = R_CreateImage(GameIsolate_.world->width * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1),
+                                                            GameIsolate_.world->height * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjects, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjects);
             },
@@ -275,8 +274,8 @@ void Game::createTexture() {
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack =
-                        R_CreateImage(GameIsolate_.world->width * (GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1),
-                                      GameIsolate_.world->height * (GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                        R_CreateImage(GameIsolate_.world->width * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1),
+                                      GameIsolate_.world->height * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsBack);
             },
@@ -288,8 +287,9 @@ void Game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
-                TexturePack_.textureEntities = R_CreateImage(GameIsolate_.world->width * (GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1),
-                                                             GameIsolate_.world->height * (GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.textureEntities =
+                        R_CreateImage(GameIsolate_.world->width * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1),
+                                      GameIsolate_.world->height * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
 
                 R_LoadTarget(TexturePack_.textureEntities);
 
@@ -872,18 +872,18 @@ int Game::run(int argc, char *argv[]) {
 #pragma region GameTick
         GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
 
-        // if(GameIsolate_.settings.tick_world)
+        // if(GameIsolate_.globaldef.tick_world)
         updateFrameEarly();
         global.scripts->UpdateTick();
 
         while (Time.now - Time.lastTick > Time.mspt) {
-            if (GameIsolate_.settings.tick_world) tick();
+            if (GameIsolate_.globaldef.tick_world) tick();
             Render.target = Render.realTarget;
             Time.lastTick = Time.now;
             tickTime++;
         }
 
-        if (GameIsolate_.settings.tick_world) updateFrameLate();
+        if (GameIsolate_.globaldef.tick_world) updateFrameLate();
         GameIsolate_.profiler.End(Profiler::Stage::GameTick);
 #pragma endregion GameTick
 
@@ -922,7 +922,7 @@ int Game::run(int argc, char *argv[]) {
         // render ImGui
         global.ImGuiCore->Render();
 
-        if (GameIsolate_.settings.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
+        if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
             int msx = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
             int msy = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
@@ -964,7 +964,7 @@ int Game::run(int argc, char *argv[]) {
                     ImGui::BeginTooltip();
                     ImGui::Text("%s", tile.mat->name.c_str());
 
-                    if (GameIsolate_.settings.draw_detailed_material_info) {
+                    if (GameIsolate_.globaldef.draw_detailed_material_info) {
 
                         if (tile.mat->physicsType == PhysicsType::SOUP) {
                             ImGui::Text("fluidAmount = %f", tile.fluidAmount);
@@ -1133,24 +1133,24 @@ void Game::updateFrameEarly() {
     // handle controls
     if (Controls::DEBUG_UI->get()) {
         GameUI::DebugDrawUI::visible ^= true;
-        GameIsolate_.settings.ui_tweak ^= true;
+        GameIsolate_.globaldef.ui_tweak ^= true;
     }
 
-    if (GameIsolate_.settings.draw_frame_graph) {
+    if (GameIsolate_.globaldef.draw_frame_graph) {
         if (Controls::STATS_DISPLAY->get()) {
-            GameIsolate_.settings.draw_frame_graph = false;
-            GameIsolate_.settings.draw_debug_stats = false;
-            GameIsolate_.settings.draw_chunk_state = false;
-            GameIsolate_.settings.draw_detailed_material_info = false;
+            GameIsolate_.globaldef.draw_frame_graph = false;
+            GameIsolate_.globaldef.draw_debug_stats = false;
+            GameIsolate_.globaldef.draw_chunk_state = false;
+            GameIsolate_.globaldef.draw_detailed_material_info = false;
         }
     } else {
         if (Controls::STATS_DISPLAY->get()) {
-            GameIsolate_.settings.draw_frame_graph = true;
-            GameIsolate_.settings.draw_debug_stats = true;
+            GameIsolate_.globaldef.draw_frame_graph = true;
+            GameIsolate_.globaldef.draw_debug_stats = true;
 
             if (Controls::STATS_DISPLAY_DETAILED->get()) {
-                GameIsolate_.settings.draw_chunk_state = true;
-                GameIsolate_.settings.draw_detailed_material_info = true;
+                GameIsolate_.globaldef.draw_chunk_state = true;
+                GameIsolate_.globaldef.draw_detailed_material_info = true;
             }
         }
     }
@@ -1529,7 +1529,7 @@ void Game::tick() {
         R_SetShapeBlendMode(R_BLEND_NORMAL);
         R_Clear(TexturePack_.textureObjectsBack->target);
 
-        if (GameIsolate_.settings.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.globaldef.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
             GameIsolate_.world->tickChunks();
         }
 
@@ -1554,7 +1554,7 @@ void Game::tick() {
 
             R_Target *tgt = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjects->target;
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
-            int scaleObjTex = GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1;
+            int scaleObjTex = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
             R_Rect r = {x * scaleObjTex, y * scaleObjTex, (float)cur->surface->w * scaleObjTex, (float)cur->surface->h * scaleObjTex};
 
@@ -1678,7 +1678,7 @@ void Game::tick() {
             }
         }
 
-        if (GameIsolate_.settings.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.globaldef.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
             GameIsolate_.world->tick();
         }
 
@@ -1787,7 +1787,7 @@ void Game::tick() {
                             //    }
                             //}
 
-                            // if(!GameIsolate_.settings.draw_load_zones) {
+                            // if(!GameIsolate_.globaldef.draw_load_zones) {
                             //     unsigned int offset = (wxd + wyd * GameIsolate_.world->width) * 4;
                             //     dpixels_ar[offset + 2] = 0;        // b
                             //     dpixels_ar[offset + 1] = 0;        // g
@@ -1826,7 +1826,7 @@ void Game::tick() {
         }
 
         if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
-            if (GameIsolate_.settings.tick_box2d) GameIsolate_.world->tickObjects();
+            if (GameIsolate_.globaldef.tick_box2d) GameIsolate_.world->tickObjects();
         }
 
         if (tickTime % 10 == 0) GameIsolate_.world->tickObjectsMesh();
@@ -1921,7 +1921,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                 if (GameIsolate_.world->layer2Dirty[i]) {
                     hadLayer2Dirty = true;
                     if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
-                        if (GameIsolate_.settings.draw_background_grid) {
+                        if (GameIsolate_.globaldef.draw_background_grid) {
                             U32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                             dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;   // b
                             dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;   // g
@@ -1995,10 +1995,10 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
         if (hadLayer2Dirty) memset(GameIsolate_.world->layer2Dirty, false, (size_t)GameIsolate_.world->width * GameIsolate_.world->height);
         if (hadBackgroundDirty) memset(GameIsolate_.world->backgroundDirty, false, (size_t)GameIsolate_.world->width * GameIsolate_.world->height);
 
-        if (GameIsolate_.settings.tick_temperature && tickTime % GameTick == 2) {
+        if (GameIsolate_.globaldef.tick_temperature && tickTime % GameTick == 2) {
             GameIsolate_.world->tickTemperature();
         }
-        if (GameIsolate_.settings.draw_temperature_map && tickTime % GameTick == 0) {
+        if (GameIsolate_.globaldef.draw_temperature_map && tickTime % GameTick == 0) {
             renderTemperatureMap(GameIsolate_.world);
         }
 
@@ -2026,7 +2026,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
             R_UpdateImageBytes(TexturePack_.textureFire, NULL, &TexturePack_.pixelsFire[0], GameIsolate_.world->width * 4);
         }
 
-        if (GameIsolate_.settings.draw_temperature_map) {
+        if (GameIsolate_.globaldef.draw_temperature_map) {
             R_UpdateImageBytes(TexturePack_.temperatureMap, NULL, &TexturePack_.pixelsTemp[0], GameIsolate_.world->width * 4);
         }
 
@@ -2037,7 +2037,7 @@ NULL,
 GameIsolate_.world->width * 4
 );*/
 
-        if (GameIsolate_.settings.tick_box2d && tickTime % GameTick == 0) GameIsolate_.world->updateWorldMesh();
+        if (GameIsolate_.globaldef.tick_box2d && tickTime % GameTick == 0) GameIsolate_.world->updateWorldMesh();
     }
 }
 
@@ -2074,7 +2074,7 @@ void Game::tickChunkLoading() {
 
             if (GameIsolate_.world->layer2Dirty[i]) {
                 if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
-                    if (GameIsolate_.settings.draw_background_grid) {
+                    if (GameIsolate_.globaldef.draw_background_grid) {
                         U32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
                     } else {
@@ -2631,7 +2631,7 @@ newState = true;
 
                 R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_ADD);
                 R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_ADD);
-                int scaleEnt = GameIsolate_.settings.hd_objects ? GameIsolate_.settings.hd_objects_size : 1;
+                int scaleEnt = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
                 for (auto &v : GameIsolate_.world->WorldIsolate_.entities) {
                     v->renderLQ(TexturePack_.textureEntitiesLQ->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
@@ -2699,7 +2699,7 @@ void Game::renderLate() {
         // draw backgrounds
 
         Background *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
-        if (GameIsolate_.settings.draw_background && scale <= bg->layers[0].surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
+        if (GameIsolate_.globaldef.draw_background && scale <= bg->layers[0].surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             R_SetShapeBlendMode(R_BLEND_SET);
             METAENGINE_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
@@ -2793,9 +2793,9 @@ void Game::renderLate() {
 
         // shader
 
-        if (GameIsolate_.settings.draw_shaders) {
+        if (GameIsolate_.globaldef.draw_shaders) {
 
-            if (global.shaderworker.waterFlowPassShader->dirty && GameIsolate_.settings.water_showFlow) {
+            if (global.shaderworker.waterFlowPassShader->dirty && GameIsolate_.globaldef.water_showFlow) {
 
                 ShaderActivate(&global.shaderworker.waterFlowPassShader->sb);
                 WaterFlowPassShader__update(global.shaderworker.waterFlowPassShader, GameIsolate_.world->width, GameIsolate_.world->height);
@@ -2808,7 +2808,7 @@ void Game::renderLate() {
             ShaderActivate(&global.shaderworker.waterShader->sb);
             float t = (Time.now - Time.startTime) / 1000.0;
             WaterShader__update(global.shaderworker.waterShader, t, Render.target->w * scale, Render.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale,
-                                TexturePack_.textureFlowSpead, GameIsolate_.settings.water_overlay, GameIsolate_.settings.water_showFlow, GameIsolate_.settings.water_pixelated);
+                                TexturePack_.textureFlowSpead, GameIsolate_.globaldef.water_overlay, GameIsolate_.globaldef.water_showFlow, GameIsolate_.globaldef.water_pixelated);
         }
 
         Render.target = Render.realTarget;
@@ -2840,7 +2840,7 @@ void Game::renderLate() {
         R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
-        if (GameIsolate_.settings.draw_shaders) ShaderActivate(&global.shaderworker.newLightingShader->sb);
+        if (GameIsolate_.globaldef.draw_shaders) ShaderActivate(&global.shaderworker.newLightingShader->sb);
 
         // I use this to only rerender the lighting when a parameter changes or N times per second anyway
         // Doing this massively reduces the GPU load of the shader
@@ -2853,7 +2853,7 @@ void Game::renderLate() {
             needToRerenderLighting = true;
         }
 
-        if (GameIsolate_.settings.draw_shaders && GameIsolate_.world) {
+        if (GameIsolate_.globaldef.draw_shaders && GameIsolate_.world) {
             float lightTx;
             float lightTy;
 
@@ -2867,10 +2867,10 @@ void Game::renderLate() {
 
             if (global.shaderworker.newLightingShader->lastLx != lightTx || global.shaderworker.newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
             NewLightingShader__update(global.shaderworker.newLightingShader, TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
-            if (global.shaderworker.newLightingShader->lastQuality != GameIsolate_.settings.lightingQuality) {
+            if (global.shaderworker.newLightingShader->lastQuality != GameIsolate_.globaldef.lightingQuality) {
                 needToRerenderLighting = true;
             }
-            NewLightingShader__setQuality(global.shaderworker.newLightingShader, GameIsolate_.settings.lightingQuality);
+            NewLightingShader__setQuality(global.shaderworker.newLightingShader, GameIsolate_.globaldef.lightingQuality);
 
             int nBg = 0;
             int range = 64;
@@ -2889,35 +2889,35 @@ void Game::renderLate() {
             float ins = global.shaderworker.newLightingShader_insideCur < 0.05 ? 0.0 : global.shaderworker.newLightingShader_insideCur;
             if (global.shaderworker.newLightingShader->lastInside != ins) needToRerenderLighting = true;
             NewLightingShader__setInside(global.shaderworker.newLightingShader, ins);
-            NewLightingShader__setBounds(global.shaderworker.newLightingShader, GameIsolate_.world->tickZone.x * GameIsolate_.settings.hd_objects_size,
-                                         GameIsolate_.world->tickZone.y * GameIsolate_.settings.hd_objects_size,
-                                         (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) * GameIsolate_.settings.hd_objects_size,
-                                         (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h) * GameIsolate_.settings.hd_objects_size);
+            NewLightingShader__setBounds(global.shaderworker.newLightingShader, GameIsolate_.world->tickZone.x * GameIsolate_.globaldef.hd_objects_size,
+                                         GameIsolate_.world->tickZone.y * GameIsolate_.globaldef.hd_objects_size,
+                                         (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) * GameIsolate_.globaldef.hd_objects_size,
+                                         (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h) * GameIsolate_.globaldef.hd_objects_size);
 
-            if (global.shaderworker.newLightingShader->lastSimpleMode != GameIsolate_.settings.simpleLighting) needToRerenderLighting = true;
-            NewLightingShader__setSimpleMode(global.shaderworker.newLightingShader, GameIsolate_.settings.simpleLighting);
+            if (global.shaderworker.newLightingShader->lastSimpleMode != GameIsolate_.globaldef.simpleLighting) needToRerenderLighting = true;
+            NewLightingShader__setSimpleMode(global.shaderworker.newLightingShader, GameIsolate_.globaldef.simpleLighting);
 
-            if (global.shaderworker.newLightingShader->lastEmissionEnabled != GameIsolate_.settings.lightingEmission) needToRerenderLighting = true;
-            NewLightingShader__setEmissionEnabled(global.shaderworker.newLightingShader, GameIsolate_.settings.lightingEmission);
+            if (global.shaderworker.newLightingShader->lastEmissionEnabled != GameIsolate_.globaldef.lightingEmission) needToRerenderLighting = true;
+            NewLightingShader__setEmissionEnabled(global.shaderworker.newLightingShader, GameIsolate_.globaldef.lightingEmission);
 
-            if (global.shaderworker.newLightingShader->lastDitheringEnabled != GameIsolate_.settings.lightingDithering) needToRerenderLighting = true;
-            NewLightingShader__setDitheringEnabled(global.shaderworker.newLightingShader, GameIsolate_.settings.lightingDithering);
+            if (global.shaderworker.newLightingShader->lastDitheringEnabled != GameIsolate_.globaldef.lightingDithering) needToRerenderLighting = true;
+            NewLightingShader__setDitheringEnabled(global.shaderworker.newLightingShader, GameIsolate_.globaldef.lightingDithering);
         }
 
-        if (GameIsolate_.settings.draw_shaders && needToRerenderLighting) {
+        if (GameIsolate_.globaldef.draw_shaders && needToRerenderLighting) {
             R_Clear(TexturePack_.lightingTexture->target);
             R_BlitRect(TexturePack_.worldTexture, NULL, TexturePack_.lightingTexture->target, NULL);
         }
-        if (GameIsolate_.settings.draw_shaders) R_ActivateShaderProgram(0, NULL);
+        if (GameIsolate_.globaldef.draw_shaders) R_ActivateShaderProgram(0, NULL);
 
         R_BlitRect(TexturePack_.worldTexture, NULL, Render.target, &r1);
 
-        if (GameIsolate_.settings.draw_shaders) {
-            R_SetBlendMode(TexturePack_.lightingTexture, GameIsolate_.settings.draw_light_overlay ? R_BLEND_NORMAL : R_BLEND_MULTIPLY);
+        if (GameIsolate_.globaldef.draw_shaders) {
+            R_SetBlendMode(TexturePack_.lightingTexture, GameIsolate_.globaldef.draw_light_overlay ? R_BLEND_NORMAL : R_BLEND_MULTIPLY);
             R_BlitRect(TexturePack_.lightingTexture, NULL, Render.target, &r1);
         }
 
-        if (GameIsolate_.settings.draw_shaders) {
+        if (GameIsolate_.globaldef.draw_shaders) {
             R_Clear(TexturePack_.texture2Fire->target);
 
             ShaderActivate(&global.shaderworker.fireShader->sb);
@@ -2946,12 +2946,12 @@ void Game::renderOverlays() {
     R_Rect r2 = R_Rect{(float)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale), (float)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale),
                        (float)(GameIsolate_.world->tickZone.w * scale), (float)(GameIsolate_.world->tickZone.h * scale)};
 
-    if (GameIsolate_.settings.draw_temperature_map) {
+    if (GameIsolate_.globaldef.draw_temperature_map) {
         R_SetBlendMode(TexturePack_.temperatureMap, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.temperatureMap, NULL, Render.target, &r1);
     }
 
-    if (GameIsolate_.settings.draw_load_zones) {
+    if (GameIsolate_.globaldef.draw_load_zones) {
         R_Rect r2m = R_Rect{(float)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->meshZone.x * scale), (float)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->meshZone.y * scale),
                             (float)(GameIsolate_.world->meshZone.w * scale), (float)(GameIsolate_.world->meshZone.h * scale)};
 
@@ -2959,7 +2959,7 @@ void Game::renderOverlays() {
         R_Rectangle2(Render.target, r2, {0xff, 0x00, 0x00, 0xff});
     }
 
-    if (GameIsolate_.settings.draw_load_zones) {
+    if (GameIsolate_.globaldef.draw_load_zones) {
 
         METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
@@ -2988,7 +2988,7 @@ void Game::renderOverlays() {
         R_Rectangle2(Render.target, r7, col);
     }
 
-    if (GameIsolate_.settings.draw_physics_debug) {
+    if (GameIsolate_.globaldef.draw_physics_debug) {
         //
         // for(size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
         //    RigidBody cur = *GameIsolate_.world->WorldIsolate_.rigidBodies[i];
@@ -3117,11 +3117,11 @@ void Game::renderOverlays() {
         debugDraw->xOfs = GameData_.ofsX + GameData_.camX;
         debugDraw->yOfs = GameData_.ofsY + GameData_.camY;
         debugDraw->SetFlags(0);
-        if (GameIsolate_.settings.draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
-        if (GameIsolate_.settings.draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
-        if (GameIsolate_.settings.draw_b2d_aabb) debugDraw->AppendFlags(DebugDraw::e_aabbBit);
-        if (GameIsolate_.settings.draw_b2d_pair) debugDraw->AppendFlags(DebugDraw::e_pairBit);
-        if (GameIsolate_.settings.draw_b2d_centerMass) debugDraw->AppendFlags(DebugDraw::e_centerOfMassBit);
+        if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
+        if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
+        if (GameIsolate_.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(DebugDraw::e_aabbBit);
+        if (GameIsolate_.globaldef.draw_b2d_pair) debugDraw->AppendFlags(DebugDraw::e_pairBit);
+        if (GameIsolate_.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(DebugDraw::e_centerOfMassBit);
         GameIsolate_.world->b2world->DebugDraw();
     }
 
@@ -3130,7 +3130,7 @@ void Game::renderOverlays() {
     //                               Time.feelsLikeFps),
     //                   Screen.windowWidth, 20);
 
-    if (GameIsolate_.settings.draw_chunk_state) {
+    if (GameIsolate_.globaldef.draw_chunk_state) {
 
         int chSize = 10;
 
@@ -3188,7 +3188,7 @@ void Game::renderOverlays() {
         R_Rectangle(Render.target, centerX - pchx + pchxf, centerY - pchy + pchyf, centerX + 1 - pchx + pchxf, centerY + 1 - pchy + pchyf, {0x00, 0xff, 0x00, 0xff});
     }
 
-    if (GameIsolate_.settings.draw_debug_stats) {
+    if (GameIsolate_.globaldef.draw_debug_stats) {
 
         int rbCt = 0;
         for (auto &r : GameIsolate_.world->WorldIsolate_.rigidBodies) {
@@ -3303,7 +3303,7 @@ ReadyToMerge ({16})
         // }
     }
 
-    if (GameIsolate_.settings.draw_frame_graph) {
+    if (GameIsolate_.globaldef.draw_frame_graph) {
 
         for (int i = 0; i <= 4; i++) {
             // Drawing::drawText(Render.target, dt_frameGraph[i], Screen.windowWidth - 20,

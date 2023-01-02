@@ -89,7 +89,7 @@ public:
     struct {
         Backgrounds *backgrounds = nullptr;
         Profiler profiler;
-        Settings settings;
+        GlobalDEF globaldef;
         World *world = nullptr;
         TexturePack *texturepack = nullptr;
 

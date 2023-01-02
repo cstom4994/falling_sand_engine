@@ -12,6 +12,7 @@
 #include "engine/internal/builtin_box2d.h"
 #include "engine/math.hpp"
 #include "engine/renderer/renderer_gpu.h"
+#include "engine/scripting/lua_wrapper.hpp"
 #include "engine/sdl_wrapper.h"
 
 struct Chunk;
@@ -301,7 +302,7 @@ struct Particle {
     Particle(const Particle &part) : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax), ay(part.ay) {}
 };
 
-struct Settings {
+struct GlobalDEF {
     bool draw_frame_graph;
     bool draw_background;
     bool draw_background_grid;
@@ -338,15 +339,15 @@ struct Settings {
     bool hd_objects;
 
     int hd_objects_size;
-
-    void Init(bool openDebugUIs);
-    void Load(std::string setting_file);
-    void Save(std::string setting_file);
 };
-METADOT_STRUCT(Settings, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones, draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
+METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones, draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
                draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info, draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor, ui_tweak, draw_shaders,
                water_overlay, water_showFlow, water_pixelated, lightingQuality, draw_light_overlay, simpleLighting, lightingEmission, lightingDithering, tick_world, tick_box2d, tick_temperature,
                hd_objects, hd_objects_size);
+
+void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs);
+void LoadGlobalDEF(std::string globaldef_src);
+void SaveGlobalDEF(std::string globaldef_src);
 
 struct Populator {
     virtual int getPhase() = 0;

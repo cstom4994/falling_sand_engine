@@ -486,7 +486,7 @@ void Console::Init() {
 
     console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
 
-    visit_struct::for_each(global.game->GameIsolate_.settings, [&](const char *name, auto &value) { console->System().RegisterVariable(name, value, CVar::Arg<int>("")); });
+    visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console->System().RegisterVariable(name, value, CVar::Arg<int>("")); });
 
     // Register custom commands
     console->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {

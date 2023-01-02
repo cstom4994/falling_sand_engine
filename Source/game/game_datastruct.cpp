@@ -19,6 +19,7 @@
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
 #include "game/utils.hpp"
+#include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
 
 GameData GameData_;
@@ -1144,7 +1145,7 @@ RigidBody::~RigidBody() {
 
 void Player::render(R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
-        int scaleEnt = global.game->GameIsolate_.settings.hd_objects ? global.game->GameIsolate_.settings.hd_objects_size : 1;
+        int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
 
         R_Rect *ir = new R_Rect{(float)(int)(ofsX + x + hw / 2.0 - heldItem->surface->w), (float)(int)(ofsY + y + hh / 2.0 - heldItem->surface->h / 2), (float)heldItem->surface->w,
                                 (float)heldItem->surface->h};
@@ -1233,86 +1234,71 @@ b2Vec2 rotate_point2(float cx, float cy, float angle, b2Vec2 p) {
     return b2Vec2(xn + cx, yn + cy);
 }
 
-void Settings::Save(std::string setting_file) {
-    std::string settings_data = "GetSettingsData = function()\nsettings_data = {}\n";
-    SaveLuaConfig(*this, "settings_data", settings_data);
-    settings_data += "return settings_data\nend";
-
-    std::ofstream o(setting_file);
-    o << settings_data;
-}
-
-void Settings::Init(bool openDebugUIs) {
-
-    auto setting_file = METADOT_RESLOC("data/scripts/settings.lua");
+void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
 
     auto L = global.scripts->LuaRuntime;
+    auto GlobalDEF = (*L->GetWrapper())["global_def"];
 
-    if (!FUtil_exists(setting_file)) {
-        this->Save(setting_file);
-    }
-
-    L->GetWrapper()->dofile(setting_file);
-
-    LuaWrapper::LuaFunction SettingsData = (*L->GetWrapper())["GetSettingsData"];
-    LuaWrapper::LuaTable luat = SettingsData();
-
-    if (!luat.isNilref()) {
-        LoadLuaConfig((*this), luat, draw_frame_graph);
-        LoadLuaConfig((*this), luat, draw_background);
-        LoadLuaConfig((*this), luat, draw_background_grid);
-        LoadLuaConfig((*this), luat, draw_load_zones);
-        LoadLuaConfig((*this), luat, draw_physics_debug);
-        LoadLuaConfig((*this), luat, draw_b2d_shape);
-        LoadLuaConfig((*this), luat, draw_b2d_joint);
-        LoadLuaConfig((*this), luat, draw_b2d_aabb);
-        LoadLuaConfig((*this), luat, draw_b2d_pair);
-        LoadLuaConfig((*this), luat, draw_b2d_centerMass);
-        LoadLuaConfig((*this), luat, draw_chunk_state);
-        LoadLuaConfig((*this), luat, draw_debug_stats);
-        LoadLuaConfig((*this), luat, draw_material_info);
-        LoadLuaConfig((*this), luat, draw_detailed_material_info);
-        LoadLuaConfig((*this), luat, draw_uinode_bounds);
-        LoadLuaConfig((*this), luat, draw_temperature_map);
-        LoadLuaConfig((*this), luat, draw_cursor);
-
-        LoadLuaConfig((*this), luat, ui_tweak);
-
-        LoadLuaConfig((*this), luat, draw_shaders);
-        LoadLuaConfig((*this), luat, water_overlay);
-        LoadLuaConfig((*this), luat, water_showFlow);
-        LoadLuaConfig((*this), luat, water_pixelated);
-        LoadLuaConfig((*this), luat, lightingQuality);
-        LoadLuaConfig((*this), luat, draw_light_overlay);
-        LoadLuaConfig((*this), luat, simpleLighting);
-        LoadLuaConfig((*this), luat, lightingEmission);
-        LoadLuaConfig((*this), luat, lightingDithering);
-
-        LoadLuaConfig((*this), luat, tick_world);
-        LoadLuaConfig((*this), luat, tick_box2d);
-        LoadLuaConfig((*this), luat, tick_temperature);
-        LoadLuaConfig((*this), luat, hd_objects);
-
-        LoadLuaConfig((*this), luat, hd_objects_size);
+    if (!GlobalDEF.isNilref()) {
+        LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);
+        LoadLuaConfig(_struct, GlobalDEF, draw_background);
+        LoadLuaConfig(_struct, GlobalDEF, draw_background_grid);
+        LoadLuaConfig(_struct, GlobalDEF, draw_load_zones);
+        LoadLuaConfig(_struct, GlobalDEF, draw_physics_debug);
+        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_shape);
+        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_joint);
+        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_aabb);
+        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_pair);
+        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_centerMass);
+        LoadLuaConfig(_struct, GlobalDEF, draw_chunk_state);
+        LoadLuaConfig(_struct, GlobalDEF, draw_debug_stats);
+        LoadLuaConfig(_struct, GlobalDEF, draw_material_info);
+        LoadLuaConfig(_struct, GlobalDEF, draw_detailed_material_info);
+        LoadLuaConfig(_struct, GlobalDEF, draw_uinode_bounds);
+        LoadLuaConfig(_struct, GlobalDEF, draw_temperature_map);
+        LoadLuaConfig(_struct, GlobalDEF, draw_cursor);
+        LoadLuaConfig(_struct, GlobalDEF, ui_tweak);
+        LoadLuaConfig(_struct, GlobalDEF, draw_shaders);
+        LoadLuaConfig(_struct, GlobalDEF, water_overlay);
+        LoadLuaConfig(_struct, GlobalDEF, water_showFlow);
+        LoadLuaConfig(_struct, GlobalDEF, water_pixelated);
+        LoadLuaConfig(_struct, GlobalDEF, lightingQuality);
+        LoadLuaConfig(_struct, GlobalDEF, draw_light_overlay);
+        LoadLuaConfig(_struct, GlobalDEF, simpleLighting);
+        LoadLuaConfig(_struct, GlobalDEF, lightingEmission);
+        LoadLuaConfig(_struct, GlobalDEF, lightingDithering);
+        LoadLuaConfig(_struct, GlobalDEF, tick_world);
+        LoadLuaConfig(_struct, GlobalDEF, tick_box2d);
+        LoadLuaConfig(_struct, GlobalDEF, tick_temperature);
+        LoadLuaConfig(_struct, GlobalDEF, hd_objects);
+        LoadLuaConfig(_struct, GlobalDEF, hd_objects_size);
 
     } else {
-        METADOT_ERROR("SettingsData WAS NULL");
+        METADOT_ERROR("GlobalDEF WAS NULL");
     }
 
     GameUI::DebugDrawUI::visible = openDebugUIs;
-    draw_frame_graph = openDebugUIs;
+    _struct->draw_frame_graph = openDebugUIs;
     if (!openDebugUIs) {
-        draw_background = true;
-        draw_background_grid = false;
-        draw_load_zones = false;
-        draw_physics_debug = false;
-        draw_chunk_state = false;
-        draw_debug_stats = false;
-        draw_detailed_material_info = false;
-        draw_temperature_map = false;
+        _struct->draw_background = true;
+        _struct->draw_background_grid = false;
+        _struct->draw_load_zones = false;
+        _struct->draw_physics_debug = false;
+        _struct->draw_chunk_state = false;
+        _struct->draw_debug_stats = false;
+        _struct->draw_detailed_material_info = false;
+        _struct->draw_temperature_map = false;
     }
 
     METADOT_INFO("SettingsData loaded");
 }
 
-void Settings::Load(std::string setting_file) {}
+void LoadGlobalDEF(std::string globaldef_src) {}
+
+void SaveGlobalDEF(std::string globaldef_src) {
+    // std::string settings_data = "GetSettingsData = function()\nsettings_data = {}\n";
+    // SaveLuaConfig(*_struct, "settings_data", settings_data);
+    // settings_data += "return settings_data\nend";
+    // std::ofstream o(globaldef_src);
+    // o << settings_data;
+}

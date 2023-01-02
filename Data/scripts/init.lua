@@ -8,6 +8,7 @@ require("game_datastruct")
 require("game_ui")
 require("graphics")
 require("audio")
+require("global")
 
 OnGameEngineLoad = function()
 
@@ -63,7 +64,7 @@ end
 -- function OnModSettingsChanged()
 -- function OnPausePreUpdate()
 
-OnGameEngineUnLoad = function ()
+OnGameEngineUnLoad = function()
     EndAudio()
     EndGraphics()
 end
