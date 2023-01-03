@@ -191,6 +191,8 @@ void LuaCore::Init() {
     metadot_bind_gpu(m_L);
     metadot_bind_fs(m_L);
     metadot_bind_lz4(m_L);
+    metadot_bind_cstructcore(m_L);
+    metadot_bind_cstructtest(m_L);
 
     LoadImguiBindings(m_L);
 

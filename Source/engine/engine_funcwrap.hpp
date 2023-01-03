@@ -19,5 +19,7 @@ int metadot_bind_image(lua_State *L);
 int metadot_bind_gpu(lua_State *L);
 int metadot_bind_fs(lua_State *L);
 int metadot_bind_lz4(lua_State *L);
+int metadot_bind_cstructcore(lua_State *L);
+int metadot_bind_cstructtest(lua_State *L);
 
 #endif
