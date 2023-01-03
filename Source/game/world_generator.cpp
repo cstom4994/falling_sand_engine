@@ -30,24 +30,24 @@ class MaterialTestGenerator : public WorldGenerator {
                 int py = y + ch->y * CHUNK_W;
 
                 if (py > 400 && py <= 450) {
-                    prop[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py);
+                    prop[x + y * CHUNK_W] = TilesCreateCobbleStone(px, py);
                 } else if (ch->y == 1 && ch->x >= 1 && ch->x <= 4) {
                     if (x < 8 || y < 8 || x >= CHUNK_H - 8 || (y >= CHUNK_W - 8 && (x < 60 || x >= 68))) {
-                        prop[x + y * CHUNK_W] = Tiles::createCobbleDirt(px, py);
+                        prop[x + y * CHUNK_W] = TilesCreateCobbleDirt(px, py);
                     } else if (y > CHUNK_H * 0.75) {
-                        prop[x + y * CHUNK_W] = Tiles::create(mat, px, py);
+                        prop[x + y * CHUNK_W] = TilesCreate(mat, px, py);
                     } else {
-                        prop[x + y * CHUNK_W] = Tiles::NOTHING;
+                        prop[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
                 } else if (ch->x == 1 && py <= 400 && py > 300 && x < (py - 300)) {
-                    prop[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py);
+                    prop[x + y * CHUNK_W] = TilesCreateCobbleStone(px, py);
                 } else if (ch->x == 4 && py <= 400 && py > 300 && (CHUNK_W - x) < (py - 300)) {
-                    prop[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py);
+                    prop[x + y * CHUNK_W] = TilesCreateCobbleStone(px, py);
                 } else {
-                    prop[x + y * CHUNK_W] = Tiles::NOTHING;
+                    prop[x + y * CHUNK_W] = Tiles_NOTHING;
                 }
 
-                layer2[x + y * CHUNK_W] = Tiles::NOTHING;
+                layer2[x + y * CHUNK_W] = Tiles_NOTHING;
             }
         }
 
@@ -118,13 +118,13 @@ class DefaultGenerator : public WorldGenerator {
         // std::cout << "generate " << cx << " " << cy << std::endl;
         /*for (int x = 0; x < CHUNK_W; x++) {
             for (int y = 0; y < CHUNK_H; y++) {
-                prop[x + y * CHUNK_W] = (x + y)%2 == 0 ? Tiles::TEST_SOLID : Tiles::createSmoothStone(x, y);
+                prop[x + y * CHUNK_W] = (x + y)%2 == 0 ? Tiles_TEST_SOLID : TilesCreateSmoothStone(x, y);
             }
         }*/
 
         /*for (int x = 0; x < CHUNK_W; x++) {
             for (int y = 0; y < CHUNK_H; y++) {
-                prop[x + y * CHUNK_W] = (cx + cy) % 2 == 0 ? Tiles::TEST_SOLID : Tiles::createSmoothStone(x, y);
+                prop[x + y * CHUNK_W] = (cx + cy) % 2 == 0 ? Tiles_TEST_SOLID : TilesCreateSmoothStone(x, y);
             }
         }*/
 
@@ -175,17 +175,17 @@ class DefaultGenerator : public WorldGenerator {
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
                         double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                     } else if (py > surf - 64) {
                         double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : Tiles::createSoftDirt(px, py);
+                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : TilesCreateSoftDirt(px, py);
                     } else if (py > surf - 65) {
-                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
+                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                     } else {
-                        prop[x + y * CHUNK_W] = Tiles::NOTHING;
+                        prop[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
 
-                    layer2[x + y * CHUNK_W] = Tiles::NOTHING;
+                    layer2[x + y * CHUNK_W] = Tiles_NOTHING;
                 } else if (b->id == BIOMEGETID("PLAINS")) {
                     if (py > surf) {
                         int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
@@ -198,17 +198,17 @@ class DefaultGenerator : public WorldGenerator {
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
                         double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                     } else if (py > surf - 64) {
                         double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
+                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
                     } else if (py > surf - 65) {
-                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
+                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                     } else {
-                        prop[x + y * CHUNK_W] = Tiles::NOTHING;
+                        prop[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
 
-                    layer2[x + y * CHUNK_W] = Tiles::NOTHING;
+                    layer2[x + y * CHUNK_W] = Tiles_NOTHING;
                 } else if (b->id == BIOMEGETID("MOUNTAINS")) {
                     if (py > surf) {
                         int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
@@ -221,17 +221,17 @@ class DefaultGenerator : public WorldGenerator {
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
                         double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                     } else if (py > surf - 64) {
                         double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00);
+                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00);
                     } else if (py > surf - 65) {
-                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
+                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                     } else {
-                        prop[x + y * CHUNK_W] = Tiles::NOTHING;
+                        prop[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
 
-                    layer2[x + y * CHUNK_W] = Tiles::NOTHING;
+                    layer2[x + y * CHUNK_W] = Tiles_NOTHING;
                 } else if (b->id == BIOMEGETID("FOREST")) {
                     if (py > surf) {
                         int tx = (global.game->GameIsolate_.texturepack->caveBG->w + (px % global.game->GameIsolate_.texturepack->caveBG->h)) % global.game->GameIsolate_.texturepack->caveBG->h;
@@ -244,17 +244,17 @@ class DefaultGenerator : public WorldGenerator {
 
                         double n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
                         double n2 = ((world->noise.GetPerlin(px * 2.0, py * 2.0, 8923) / 2.0 + 0.5) * 0.9 + (world->noise.GetPerlin(px * 8.0, py * 8.0, 7526) / 2.0 + 0.5) * 0.1) - 0.1;
-                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? Tiles::createSmoothStone(px, py) : Tiles::createSmoothDirt(px, py);
+                        prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                     } else if (py > surf - 64) {
                         double n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? Tiles::createSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0x0000ff);
+                        prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&Materials::GENERIC_SOLID, 0x0000ff);
                     } else if (py > surf - 65) {
-                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = Tiles::createGrass();
+                        if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                     } else {
-                        prop[x + y * CHUNK_W] = Tiles::NOTHING;
+                        prop[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
 
-                    layer2[x + y * CHUNK_W] = Tiles::NOTHING;
+                    layer2[x + y * CHUNK_W] = Tiles_NOTHING;
                 }
             }
         }

@@ -467,7 +467,7 @@ int Game::run(int argc, char *argv[]) {
                         for (int xx = -GameUI::DebugDrawUI::brushSize / 2; xx < (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
                             for (int yy = -GameUI::DebugDrawUI::brushSize / 2; yy < (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)); yy++) {
                                 if (lineX + xx < 0 || lineY + yy < 0 || lineX + xx >= GameIsolate_.world->width || lineY + yy >= GameIsolate_.world->height) continue;
-                                MaterialInstance tp = Tiles::create(GameUI::DebugDrawUI::selectedMaterial, lineX + xx, lineY + yy);
+                                MaterialInstance tp = TilesCreate(GameUI::DebugDrawUI::selectedMaterial, lineX + xx, lineY + yy);
                                 GameIsolate_.world->tiles[(lineX + xx) + (lineY + yy) * GameIsolate_.world->width] = tp;
                                 GameIsolate_.world->dirty[(lineX + xx) + (lineY + yy) * GameIsolate_.world->width] = true;
                             }
@@ -505,11 +505,11 @@ int Game::run(int argc, char *argv[]) {
 
                                 if (abs(xx) + abs(yy) == GameUI::DebugDrawUI::brushSize) continue;
                                 if (GameIsolate_.world->getTile(lineX + xx, lineY + yy).mat->physicsType != PhysicsType::AIR) {
-                                    GameIsolate_.world->setTile(lineX + xx, lineY + yy, Tiles::NOTHING);
+                                    GameIsolate_.world->setTile(lineX + xx, lineY + yy, Tiles_NOTHING);
                                     GameIsolate_.world->lastMeshZone.x--;
                                 }
                                 if (GameIsolate_.world->getTileLayer2(lineX + xx, lineY + yy).mat->physicsType != PhysicsType::AIR) {
-                                    GameIsolate_.world->setTileLayer2(lineX + xx, lineY + yy, Tiles::NOTHING);
+                                    GameIsolate_.world->setTileLayer2(lineX + xx, lineY + yy, Tiles_NOTHING);
                                 }
                             }
                         }
@@ -668,7 +668,7 @@ int Game::run(int argc, char *argv[]) {
 
                                     if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOLID) {
                                         R_GET_PIXEL(tex, xx, yy) = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
-                                        GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles::NOTHING;
+                                        GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
                                         GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
 
                                         n++;
@@ -1195,7 +1195,7 @@ void Game::updateFrameEarly() {
                                 GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + (ty - 1) * GameIsolate_.world->width] = true;
                             } else {
-                                GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width] = Tiles::createObsidian(tx, ty);
+                                GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width] = TilesCreateObsidian(tx, ty);
                                 GameIsolate_.world->dirty[tx + ty * GameIsolate_.world->width] = true;
                             }
                         }
@@ -1240,7 +1240,7 @@ void Game::updateFrameEarly() {
 
                 if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOLID) {
                     R_GET_PIXEL(tex, xx, yy) = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
-                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles::NOTHING;
+                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
                     GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
                     n++;
                 }
@@ -1393,7 +1393,7 @@ accLoadY = 0;*/
                                 GameIsolate_.world->WorldIsolate_.player->heldItem->texture = R_CopyImageFromSurface(GameIsolate_.world->WorldIsolate_.player->heldItem->surface);
                                 R_SetImageFilter(GameIsolate_.world->WorldIsolate_.player->heldItem->texture, R_FILTER_NEAREST);
 
-                                GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles::NOTHING;
+                                GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
                                 GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
                                 n++;
                             }
@@ -1664,13 +1664,13 @@ void Game::tick() {
                     int wy = (int)(ty + cur.y + GameIsolate_.world->loadZone.y);
                     if (wx < 0 || wy < 0 || wx >= GameIsolate_.world->width || wy >= GameIsolate_.world->height) continue;
                     if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::AIR) {
-                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles::OBJECT;
+                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles_OBJECT;
                         objectDelete[wx + wy * GameIsolate_.world->width] = true;
                     } else if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
                                GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
                         GameIsolate_.world->addParticle(new Particle(GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width], (float)(wx + rand() % 3 - 1 - cur.vx), (float)(wy - abs(cur.vy)),
                                                                      (float)(-cur.vx / 4 + (rand() % 10 - 5) / 5.0f), (float)(-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (float)0.1));
-                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles::OBJECT;
+                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles_OBJECT;
                         objectDelete[wx + wy * GameIsolate_.world->width] = true;
                         GameIsolate_.world->dirty[wx + wy * GameIsolate_.world->width] = true;
                     }
@@ -1767,7 +1767,7 @@ void Game::tick() {
                         if (wxd < 0 || wyd < 0 || wxd >= GameIsolate_.world->width || wyd >= GameIsolate_.world->height) continue;
                         if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] == rmat) {
                             cur->tiles[tx + ty * cur->matWidth] = GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width];
-                            GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = Tiles::NOTHING;
+                            GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = Tiles_NOTHING;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
                             found = true;
 
@@ -1801,7 +1801,7 @@ void Game::tick() {
 
                     if (!found) {
                         if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
-                            cur->tiles[tx + ty * cur->matWidth] = Tiles::NOTHING;
+                            cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
                         }
                     }
                 }
@@ -1975,7 +1975,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
             const unsigned int offset = i * 4;
 
             if (objectDelete[i]) {
-                GameIsolate_.world->tiles[i] = Tiles::NOTHING;
+                GameIsolate_.world->tiles[i] = Tiles_NOTHING;
             }
         }
 
@@ -2242,7 +2242,7 @@ void Game::tickPlayer() {
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
-                Particle *p = new Particle(Tiles::createLava(),
+                Particle *p = new Particle(TilesCreateLava(),
                                            (float)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->loadZone.x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + rand() % 5 - 2 +
                                                    GameIsolate_.world->WorldIsolate_.player->vx),
                                            (float)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->loadZone.y + GameIsolate_.world->WorldIsolate_.player->hh +
@@ -2368,8 +2368,8 @@ void Game::tickPlayer() {
                                 MaterialInstance tile = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width];
                                 if (tile.mat->physicsType == PhysicsType::SOLID || tile.mat->physicsType == PhysicsType::SAND || tile.mat->physicsType == PhysicsType::SOUP) {
                                     makeParticle(tile, x + xx, y + yy);
-                                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles::NOTHING;
-                                    // GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles::createFire();
+                                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
+                                    // GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = TilesCreateFire();
                                     GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
                                 }
                             }

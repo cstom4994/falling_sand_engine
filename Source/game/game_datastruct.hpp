@@ -159,45 +159,33 @@ public:
     bool operator==(const MaterialInstance &other);
 };
 
-class Tiles {
-public:
-    static const MaterialInstance NOTHING;
-    static const MaterialInstance TEST_SOLID;
-    static const MaterialInstance TEST_SAND;
-    static const MaterialInstance TEST_LIQUID;
-    static const MaterialInstance TEST_GAS;
-    static const MaterialInstance OBJECT;
+extern MaterialInstance Tiles_NOTHING;
+extern MaterialInstance Tiles_TEST_SOLID;
+extern MaterialInstance Tiles_TEST_SAND;
+extern MaterialInstance Tiles_TEST_LIQUID;
+extern MaterialInstance Tiles_TEST_GAS;
+extern MaterialInstance Tiles_OBJECT;
 
-    static MaterialInstance createTestSand();
-    static MaterialInstance createTestTexturedSand(int x, int y);
-    static MaterialInstance createTestLiquid();
-
-    static MaterialInstance createStone(int x, int y);
-    static MaterialInstance createGrass();
-    static MaterialInstance createDirt();
-
-    static MaterialInstance createSmoothStone(int x, int y);
-    static MaterialInstance createCobbleStone(int x, int y);
-    static MaterialInstance createSmoothDirt(int x, int y);
-    static MaterialInstance createCobbleDirt(int x, int y);
-
-    static MaterialInstance createSoftDirt(int x, int y);
-
-    static MaterialInstance createWater();
-    static MaterialInstance createLava();
-
-    static MaterialInstance createCloud(int x, int y);
-    static MaterialInstance createGold(int x, int y);
-    static MaterialInstance createIron(int x, int y);
-
-    static MaterialInstance createObsidian(int x, int y);
-
-    static MaterialInstance createSteam();
-
-    static MaterialInstance createFire();
-
-    static MaterialInstance create(Material *mat, int x, int y);
-};
+MaterialInstance TilesCreateTestSand();
+MaterialInstance TilesCreateTestTexturedSand(int x, int y);
+MaterialInstance TilesCreateTestLiquid();
+MaterialInstance TilesCreateStone(int x, int y);
+MaterialInstance TilesCreateGrass();
+MaterialInstance TilesCreateDirt();
+MaterialInstance TilesCreateSmoothStone(int x, int y);
+MaterialInstance TilesCreateCobbleStone(int x, int y);
+MaterialInstance TilesCreateSmoothDirt(int x, int y);
+MaterialInstance TilesCreateCobbleDirt(int x, int y);
+MaterialInstance TilesCreateSoftDirt(int x, int y);
+MaterialInstance TilesCreateWater();
+MaterialInstance TilesCreateLava();
+MaterialInstance TilesCreateCloud(int x, int y);
+MaterialInstance TilesCreateGold(int x, int y);
+MaterialInstance TilesCreateIron(int x, int y);
+MaterialInstance TilesCreateObsidian(int x, int y);
+MaterialInstance TilesCreateSteam();
+MaterialInstance TilesCreateFire();
+MaterialInstance TilesCreate(Material *mat, int x, int y);
 
 #pragma endregion Material
 

@@ -898,7 +898,7 @@ void DebugDrawUI::Setup() {
         C_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
         for (int x = 0; x < surface->w; x++) {
             for (int y = 0; y < surface->h; y++) {
-                MaterialInstance m = Tiles::create(mat, x, y);
+                MaterialInstance m = TilesCreate(mat, x, y);
                 R_GET_PIXEL(surface, x, y) = m.color + (m.mat->alpha << 24);
             }
         }

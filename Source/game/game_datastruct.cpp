@@ -260,21 +260,21 @@ MaterialInstance::MaterialInstance(Material *mat, U32 color, int32_t temperature
 
 bool MaterialInstance::operator==(const MaterialInstance &other) { return this->id == other.id; }
 
-const MaterialInstance Tiles::NOTHING = MaterialInstance(&Materials::GENERIC_AIR, 0x000000);
-const MaterialInstance Tiles::TEST_SOLID = MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
-const MaterialInstance Tiles::TEST_SAND = MaterialInstance(&Materials::GENERIC_SAND, 0xffff00);
-const MaterialInstance Tiles::TEST_LIQUID = MaterialInstance(&Materials::GENERIC_LIQUID, 0x0000ff);
-const MaterialInstance Tiles::TEST_GAS = MaterialInstance(&Materials::GENERIC_GAS, 0x800080);
-const MaterialInstance Tiles::OBJECT = MaterialInstance(&Materials::GENERIC_OBJECT, 0x00ff00);
+MaterialInstance Tiles_NOTHING = MaterialInstance(&Materials::GENERIC_AIR, 0x000000);
+MaterialInstance Tiles_TEST_SOLID = MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000);
+MaterialInstance Tiles_TEST_SAND = MaterialInstance(&Materials::GENERIC_SAND, 0xffff00);
+MaterialInstance Tiles_TEST_LIQUID = MaterialInstance(&Materials::GENERIC_LIQUID, 0x0000ff);
+MaterialInstance Tiles_TEST_GAS = MaterialInstance(&Materials::GENERIC_GAS, 0x800080);
+MaterialInstance Tiles_OBJECT = MaterialInstance(&Materials::GENERIC_OBJECT, 0x00ff00);
 
-MaterialInstance Tiles::createTestSand() {
+MaterialInstance TilesCreateTestSand() {
     U32 rgb = 220;
     rgb = (rgb << 8) + 155 + rand() % 30;
     rgb = (rgb << 8) + 100;
     return MaterialInstance(&Materials::TEST_SAND, rgb);
 }
 
-MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
+MaterialInstance TilesCreateTestTexturedSand(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->testTexture;
 
     int tx = x % tex->w;
@@ -284,14 +284,14 @@ MaterialInstance Tiles::createTestTexturedSand(int x, int y) {
     return MaterialInstance(&Materials::TEST_TEXTURED_SAND, rgb);
 }
 
-MaterialInstance Tiles::createTestLiquid() {
+MaterialInstance TilesCreateTestLiquid() {
     U32 rgb = 0;
     rgb = (rgb << 8) + 0;
     rgb = (rgb << 8) + 255;
     return MaterialInstance(&Materials::TEST_LIQUID, rgb);
 }
 
-MaterialInstance Tiles::createStone(int x, int y) {
+MaterialInstance TilesCreateStone(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->cobbleStone;
 
     int tx = x % tex->w;
@@ -305,21 +305,21 @@ MaterialInstance Tiles::createStone(int x, int y) {
     return MaterialInstance(&Materials::STONE, rgb);
 }
 
-MaterialInstance Tiles::createGrass() {
+MaterialInstance TilesCreateGrass() {
     U32 rgb = 40;
     rgb = (rgb << 8) + 120 + rand() % 20;
     rgb = (rgb << 8) + 20;
     return MaterialInstance(&Materials::GRASS, rgb);
 }
 
-MaterialInstance Tiles::createDirt() {
+MaterialInstance TilesCreateDirt() {
     U32 rgb = 60 + rand() % 10;
     rgb = (rgb << 8) + 40;
     rgb = (rgb << 8) + 20;
     return MaterialInstance(&Materials::DIRT, rgb);
 }
 
-MaterialInstance Tiles::createSmoothStone(int x, int y) {
+MaterialInstance TilesCreateSmoothStone(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->smoothStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -330,7 +330,7 @@ MaterialInstance Tiles::createSmoothStone(int x, int y) {
     return MaterialInstance(&Materials::SMOOTH_STONE, rgb);
 }
 
-MaterialInstance Tiles::createCobbleStone(int x, int y) {
+MaterialInstance TilesCreateCobbleStone(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->cobbleStone;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -341,7 +341,7 @@ MaterialInstance Tiles::createCobbleStone(int x, int y) {
     return MaterialInstance(&Materials::COBBLE_STONE, rgb);
 }
 
-MaterialInstance Tiles::createSmoothDirt(int x, int y) {
+MaterialInstance TilesCreateSmoothDirt(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->smoothDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -352,7 +352,7 @@ MaterialInstance Tiles::createSmoothDirt(int x, int y) {
     return MaterialInstance(&Materials::SMOOTH_DIRT, rgb);
 }
 
-MaterialInstance Tiles::createCobbleDirt(int x, int y) {
+MaterialInstance TilesCreateCobbleDirt(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->cobbleDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -363,7 +363,7 @@ MaterialInstance Tiles::createCobbleDirt(int x, int y) {
     return MaterialInstance(&Materials::COBBLE_DIRT, rgb);
 }
 
-MaterialInstance Tiles::createSoftDirt(int x, int y) {
+MaterialInstance TilesCreateSoftDirt(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->softDirt;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -374,19 +374,19 @@ MaterialInstance Tiles::createSoftDirt(int x, int y) {
     return MaterialInstance(&Materials::SOFT_DIRT, rgb);
 }
 
-MaterialInstance Tiles::createWater() {
+MaterialInstance TilesCreateWater() {
     U32 rgb = 0x00B69F;
 
     return MaterialInstance(&Materials::WATER, rgb, -1023);
 }
 
-MaterialInstance Tiles::createLava() {
+MaterialInstance TilesCreateLava() {
     U32 rgb = 0xFF7C00;
 
     return MaterialInstance(&Materials::LAVA, rgb, 1024);
 }
 
-MaterialInstance Tiles::createCloud(int x, int y) {
+MaterialInstance TilesCreateCloud(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->cloud;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -397,7 +397,7 @@ MaterialInstance Tiles::createCloud(int x, int y) {
     return MaterialInstance(&Materials::CLOUD, rgb);
 }
 
-MaterialInstance Tiles::createGold(int x, int y) {
+MaterialInstance TilesCreateGold(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->gold;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -408,7 +408,7 @@ MaterialInstance Tiles::createGold(int x, int y) {
     return MaterialInstance(&Materials::GOLD_ORE, rgb);
 }
 
-MaterialInstance Tiles::createIron(int x, int y) {
+MaterialInstance TilesCreateIron(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->iron;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -419,7 +419,7 @@ MaterialInstance Tiles::createIron(int x, int y) {
     return MaterialInstance(&Materials::IRON_ORE, rgb);
 }
 
-MaterialInstance Tiles::createObsidian(int x, int y) {
+MaterialInstance TilesCreateObsidian(int x, int y) {
     C_Surface *tex = global.game->GameIsolate_.texturepack->obsidian;
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
@@ -430,9 +430,9 @@ MaterialInstance Tiles::createObsidian(int x, int y) {
     return MaterialInstance(&Materials::OBSIDIAN, rgb);
 }
 
-MaterialInstance Tiles::createSteam() { return MaterialInstance(&Materials::STEAM, 0x666666); }
+MaterialInstance TilesCreateSteam() { return MaterialInstance(&Materials::STEAM, 0x666666); }
 
-MaterialInstance Tiles::createFire() {
+MaterialInstance TilesCreateFire() {
 
     U32 rgb = 255;
     rgb = (rgb << 8) + 100 + rand() % 50;
@@ -441,37 +441,37 @@ MaterialInstance Tiles::createFire() {
     return MaterialInstance(&Materials::FIRE, rgb);
 }
 
-MaterialInstance Tiles::create(Material *mat, int x, int y) {
+MaterialInstance TilesCreate(Material *mat, int x, int y) {
     if (mat->id == Materials::TEST_SAND.id) {
-        return createTestSand();
+        return TilesCreateTestSand();
     } else if (mat->id == Materials::TEST_TEXTURED_SAND.id) {
-        return createTestTexturedSand(x, y);
+        return TilesCreateTestTexturedSand(x, y);
     } else if (mat->id == Materials::TEST_LIQUID.id) {
-        return createTestLiquid();
+        return TilesCreateTestLiquid();
     } else if (mat->id == Materials::STONE.id) {
-        return createStone(x, y);
+        return TilesCreateStone(x, y);
     } else if (mat->id == Materials::GRASS.id) {
-        return createGrass();
+        return TilesCreateGrass();
     } else if (mat->id == Materials::DIRT.id) {
-        return createDirt();
+        return TilesCreateDirt();
     } else if (mat->id == Materials::SMOOTH_STONE.id) {
-        return createSmoothStone(x, y);
+        return TilesCreateSmoothStone(x, y);
     } else if (mat->id == Materials::COBBLE_STONE.id) {
-        return createCobbleStone(x, y);
+        return TilesCreateCobbleStone(x, y);
     } else if (mat->id == Materials::SMOOTH_DIRT.id) {
-        return createSmoothDirt(x, y);
+        return TilesCreateSmoothDirt(x, y);
     } else if (mat->id == Materials::COBBLE_DIRT.id) {
-        return createCobbleDirt(x, y);
+        return TilesCreateCobbleDirt(x, y);
     } else if (mat->id == Materials::SOFT_DIRT.id) {
-        return createSoftDirt(x, y);
+        return TilesCreateSoftDirt(x, y);
     } else if (mat->id == Materials::WATER.id) {
-        return createWater();
+        return TilesCreateWater();
     } else if (mat->id == Materials::LAVA.id) {
-        return createLava();
+        return TilesCreateLava();
     } else if (mat->id == Materials::CLOUD.id) {
-        return createCloud(x, y);
+        return TilesCreateCloud(x, y);
     } else if (mat->id == Materials::GOLD_ORE.id) {
-        return createGold(x, y);
+        return TilesCreateGold(x, y);
     } else if (mat->id == Materials::GOLD_MOLTEN.id) {
         C_Surface *tex = global.game->GameIsolate_.texturepack->goldMolten;
 
@@ -491,13 +491,13 @@ MaterialInstance Tiles::create(Material *mat, int x, int y) {
 
         return MaterialInstance(&Materials::GOLD_SOLID, rgb);
     } else if (mat->id == Materials::IRON_ORE.id) {
-        return createIron(x, y);
+        return TilesCreateIron(x, y);
     } else if (mat->id == Materials::OBSIDIAN.id) {
-        return createObsidian(x, y);
+        return TilesCreateObsidian(x, y);
     } else if (mat->id == Materials::STEAM.id) {
-        return createSteam();
+        return TilesCreateSteam();
     } else if (mat->id == Materials::FIRE.id) {
-        return createFire();
+        return TilesCreateFire();
     } else if (mat->id == Materials::FLAT_COBBLE_STONE.id) {
         C_Surface *tex = global.game->GameIsolate_.texturepack->flatCobbleStone;
 
@@ -627,7 +627,7 @@ Structure::Structure(C_Surface *texture, Material mat) {
             if (texture->format->format == SDL_PIXELFORMAT_ARGB8888) {
                 alpha = (color >> 24) & 0xff;
                 if (alpha == 0) {
-                    tiles[x + y * texture->w] = Tiles::NOTHING;
+                    tiles[x + y * texture->w] = Tiles_NOTHING;
                     continue;
                 }
             }
@@ -647,7 +647,7 @@ Structure Structures::makeTree(World world, int x, int y) {
 
     for (int tx = 0; tx < w; tx++) {
         for (int ty = 0; ty < h; ty++) {
-            tiles[tx + ty * w] = Tiles::NOTHING;
+            tiles[tx + ty * w] = Tiles_NOTHING;
         }
     }
 
@@ -728,28 +728,28 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 				if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
 // 					double nlav = world.perlin.noise(px / 250.0, py / 250.0, 7018);
 // 					if (nlav > 0.7) {
-// 						tiles[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch.y > 5 ? Tiles::createLava() : Tiles::createWater()) : Tiles::NOTHING;
+// 						tiles[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch.y > 5 ? TilesCreateLava() : TilesCreateWater()) : Tiles_NOTHING;
 // 					}
 // 					else {
-// 						tiles[x + y * CHUNK_W] = Tiles::NOTHING;
+// 						tiles[x + y * CHUNK_W] = Tiles_NOTHING;
 // 					}
 // 				}
 // 				else {
 // 					double n3 = world.perlin.noise(px / 64.0, py / 64.0, 9828);
 // 					if (n3 - 0.25 > py / 1000.0) {
-// 						tiles[x + y * CHUNK_W] = Tiles::NOTHING;
+// 						tiles[x + y * CHUNK_W] = Tiles_NOTHING;
 // 					}
 // 				}
 // 			}
 
 // 			if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
 // 				double n = world.perlin.noise(px / 48.0, py / 48.0, 5124);
-// 				if (n < 0.25) tiles[x + y * CHUNK_W] = Tiles::createIron(px, py);
+// 				if (n < 0.25) tiles[x + y * CHUNK_W] = TilesCreateIron(px, py);
 // 			}
 
 // 			if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
 // 				double n = world.perlin.noise(px / 32.0, py / 32.0, 7513);
-// 				if (n < 0.20) tiles[x + y * CHUNK_W] = Tiles::createGold(px, py);
+// 				if (n < 0.20) tiles[x + y * CHUNK_W] = TilesCreateGold(px, py);
 // 			}
 
 // 			MaterialInstance prop = tiles[x + y * CHUNK_W];
@@ -761,7 +761,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx)
 // + (y
 // + dy)
-// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = Tiles::createCobbleStone(px, py); 								goto nextTile;
+// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = TilesCreateCobbleStone(px, py); 								goto nextTile;
 // 							}
 // 						}
 // 					}
@@ -775,7 +775,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx)
 // + (y
 // + dy)
-// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = Tiles::createCobbleDirt(px, py); 								goto nextTile;
+// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = TilesCreateCobbleDirt(px, py); 								goto nextTile;
 // 							}
 // 						}
 // 					}
@@ -792,11 +792,11 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	//	TileProperties* str = new TileProperties[100 * 50];
 // 	//	for (int x = 0; x < 20; x++) {
 // 	//		for (int y = 0; y < 8; y++) {
-// 	//			str[x + y * 20] = Tiles::TEST_SOLID;
+// 	//			str[x + y * 20] = Tiles_TEST_SOLID;
 // 	//		}
 // 	//	}
 // 	//	PlacedStructure* ps = new PlacedStructure(Structure(20, 8, str), ch.x * CHUNK_W - 10, ch.y * CHUNK_H - 4);
-// 	//	//world.addParticle(new Particle(Tiles::TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+// 	//	//world.addParticle(new Particle(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 	//	structs.push_back(*ps);
 // 	//	//std::cout << "placestruct " << world.structures.size() << std::endl;
 // 	//}
@@ -806,14 +806,14 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	//	for (int x = 0; x < 100; x++) {
 // 	//		for (int y = 0; y < 50; y++) {
 // 	//			if (x == 0 || x == 99 || y == 0 || y == 49) {
-// 	//				str[x + y * 100] = Tiles::TEST_SOLID;
+// 	//				str[x + y * 100] = Tiles_TEST_SOLID;
 // 	//			}else {
-// 	//				str[x + y * 100] = Tiles::NOTHING;
+// 	//				str[x + y * 100] = Tiles_NOTHING;
 // 	//			}
 // 	//		}
 // 	//	}
 // 	//	PlacedStructure* ps = new PlacedStructure(Structure(100, 50, str), ch.x * CHUNK_W - 50, ch.y * CHUNK_H - 25);
-// 	//	//world.addParticle(new Particle(Tiles::TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+// 	//	//world.addParticle(new Particle(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 	//	structs.push_back(*ps);
 // 	//	//std::cout << "placestruct " << world.structures.size() << std::endl;
 // 	//}
@@ -824,7 +824,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 		int posY = ch.y * CHUNK_H + (rand() % CHUNK_H);
 // 		/*for (int x = 0; x < 100; x++) {
 // 			for (int y = 0; y < 50; y++) {
-// 				str[x + y * 100] = Tiles::createCloud(x + posX + ch.x * CHUNK_W, y + posY + ch.y * CHUNK_H);
+// 				str[x + y * 100] = TilesCreateCloud(x + posX + ch.x * CHUNK_W, y + posY + ch.y * CHUNK_H);
 // 			}
 // 		}*/
 // 		std::string m = "data/assets/objects/cloud_";
@@ -832,7 +832,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 		m.append(".png");
 // 		Structure st = Structure(LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
 // 		PlacedStructure* ps = new PlacedStructure(st, posX, posY);
-// 		//world.addParticle(new Particle(Tiles::TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+// 		//world.addParticle(new Particle(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 		structs.push_back(*ps);
 // 		//std::cout << "placestruct " << world.structures.size() << std::endl;
 // 	}
@@ -944,14 +944,14 @@ std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, Mater
                 if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
                     double nlav = world->noise.GetPerlin(px / 4.0, py / 4.0, 7018);
                     if (nlav > 0.45) {
-                        chunk[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch->y > 15 ? Tiles::createLava() : Tiles::createWater()) : Tiles::NOTHING;
+                        chunk[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch->y > 15 ? TilesCreateLava() : TilesCreateWater()) : Tiles_NOTHING;
                     } else {
-                        chunk[x + y * CHUNK_W] = Tiles::NOTHING;
+                        chunk[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
                 } else {
                     double n3 = world->noise.GetPerlin(px / 64.0, py / 64.0, 9828);
                     if (n3 - 0.25 > py / 1000.0) {
-                        chunk[x + y * CHUNK_W] = Tiles::NOTHING;
+                        chunk[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
                 }
             }
@@ -1017,21 +1017,21 @@ std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, Mat
                             if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_STONE.id ||
                                 area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == Materials::FLAT_COBBLE_STONE.id) {
 
-                                chunk[sdxx + sdyy * CHUNK_W] = Tiles::createCobbleStone(sx + dx, sy + dy);
+                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreateCobbleStone(sx + dx, sy + dy);
 
                             } else if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_DIRT.id ||
                                        area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == Materials::FLAT_COBBLE_DIRT.id) {
 
-                                chunk[sdxx + sdyy * CHUNK_W] = Tiles::createCobbleDirt(sx + dx, sy + dy);
+                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreateCobbleDirt(sx + dx, sy + dy);
                             }
                         } else {
                             if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
 
-                                chunk[sdxx + sdyy * CHUNK_W] = Tiles::create(&Materials::FLAT_COBBLE_STONE, sx + dx, sy + dy);
+                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreate(&Materials::FLAT_COBBLE_STONE, sx + dx, sy + dy);
 
                             } else if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == Materials::SMOOTH_DIRT.id) {
 
-                                chunk[sdxx + sdyy * CHUNK_W] = Tiles::create(&Materials::FLAT_COBBLE_DIRT, sx + dx, sy + dy);
+                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreate(&Materials::FLAT_COBBLE_DIRT, sx + dx, sy + dy);
                             }
                         }
                     }
@@ -1057,12 +1057,12 @@ std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, Materi
             MaterialInstance prop = chunk[x + y * CHUNK_W];
             if (chunk[x + y * CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
                 double n = (world->noise.GetNoise(px * 1.7, py * 1.7, 5124) + 1) / 2;
-                if (n < 0.25) chunk[x + y * CHUNK_W] = Tiles::createIron(px, py);
+                if (n < 0.25) chunk[x + y * CHUNK_W] = TilesCreateIron(px, py);
             }
 
             if (chunk[x + y * CHUNK_W].mat->id == Materials::SMOOTH_STONE.id) {
                 double n = (world->noise.GetNoise(px * 2, py * 2, 7513) + 1) / 2;
-                if (n < 0.20) chunk[x + y * CHUNK_W] = Tiles::createGold(px, py);
+                if (n < 0.20) chunk[x + y * CHUNK_W] = TilesCreateGold(px, py);
             }
         }
     }
