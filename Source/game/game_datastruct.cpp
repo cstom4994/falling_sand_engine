@@ -30,10 +30,6 @@ void ReleaseGameData() {
     }
 }
 
-void WorldEntity::render(R_Target *target, int ofsX, int ofsY) {}
-
-void WorldEntity::renderLQ(R_Target *target, int ofsX, int ofsY) {}
-
 WorldEntity::WorldEntity(bool isplayer) : is_player(isplayer) {}
 
 WorldEntity::~WorldEntity() {

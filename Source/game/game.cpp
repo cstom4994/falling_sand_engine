@@ -2634,8 +2634,8 @@ newState = true;
                 int scaleEnt = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
                 for (auto &v : GameIsolate_.world->WorldIsolate_.entities) {
-                    v->renderLQ(TexturePack_.textureEntitiesLQ->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
-                    v->render(TexturePack_.textureEntities->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
+                    ((Player *)v)->renderLQ(TexturePack_.textureEntitiesLQ->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
+                    ((Player *)v)->render(TexturePack_.textureEntities->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
                 }
 
                 if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {

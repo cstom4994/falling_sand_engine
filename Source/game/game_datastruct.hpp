@@ -35,8 +35,6 @@ struct WorldEntity {
     b2Body *body = nullptr;
     bool is_player = false;
 
-    virtual void render(R_Target *target, int ofsX, int ofsY);
-    virtual void renderLQ(R_Target *target, int ofsX, int ofsY);
     WorldEntity(bool isplayer);
     ~WorldEntity();
 };
@@ -460,8 +458,8 @@ public:
     int hammerX = 0;
     int hammerY = 0;
 
-    void render(R_Target *target, int ofsX, int ofsY) override;
-    void renderLQ(R_Target *target, int ofsX, int ofsY) override;
+    void render(R_Target *target, int ofsX, int ofsY);
+    void renderLQ(R_Target *target, int ofsX, int ofsY);
     void setItemInHand(Item *item, World *world);
 
     Player();
