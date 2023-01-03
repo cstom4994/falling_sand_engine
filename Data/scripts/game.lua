@@ -9,6 +9,7 @@ require("game_ui")
 require("graphics")
 require("audio")
 require("global")
+require("entities.entities")
 
 ecs = require("ecs")
 
@@ -33,6 +34,8 @@ OnGameEngineLoad = function()
     create_biome("PLAINS", 9)
     create_biome("MOUNTAINS", 10)
     create_biome("FOREST", 11)
+
+    OnEntitiesTypeLoad()
 
 end
 
