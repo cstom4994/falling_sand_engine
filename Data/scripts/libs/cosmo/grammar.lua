@@ -1,5 +1,5 @@
-local lpeg = require "lpeg"
-local re = require "re2"
+local lpeg = require("lpeg")
+local re = require("re2")
 
 local unpack = table.unpack or unpack
 

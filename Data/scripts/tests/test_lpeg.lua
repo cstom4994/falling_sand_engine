@@ -1,4 +1,4 @@
-local m = require "lpeg"
+local m = require("lpeg")
 
 
 -- for general use
@@ -1188,7 +1188,7 @@ checkeq(t, { 'a', 'aa', 20, 'a', 'aaa', 'aaa' })
 -- Tests for 're' module
 -------------------------------------------------------------------
 
-local re = require "re"
+local re = require("re")
 
 local match, compile = re.match, re.compile
 

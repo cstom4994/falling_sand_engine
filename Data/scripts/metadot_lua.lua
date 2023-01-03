@@ -1,8 +1,8 @@
 -- Copyright(c) 2022, KaoruXun All rights reserved.
 
-local lpeg = require "lpeg"
-local re = require "re2"
-local cosmo = require "cosmo"
+local lpeg = require("lpeg")
+local re = require("re2")
+local cosmo = require("cosmo")
 
 local metadot_lua = {}
 

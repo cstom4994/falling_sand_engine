@@ -8,13 +8,14 @@
 #include <utility>
 
 #include "core/const.h"
+#include "core/core.h"
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 
 typedef struct {
     U16 index;
     U32 color;
-    int32_t temperature;
+    I32 temperature;
 } MaterialInstanceData;
 
 class Chunk {
@@ -25,7 +26,7 @@ public:
     int y;
     bool hasMeta = false;
     // in order for a chunk to execute phase generationPhase+1, all surrounding chunks must be at least generationPhase
-    int8_t generationPhase = 0;
+    I8 generationPhase = 0;
     bool pleaseDelete = false;
 
     explicit Chunk(int x, int y, char *worldName)

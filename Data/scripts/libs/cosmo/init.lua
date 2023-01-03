@@ -1,11 +1,11 @@
-local coroutine = require "coroutine"
+local coroutine = require("coroutine")
 local ok, taggedcoro = pcall(require, "taggedcoro")
 if ok then
     coroutine = taggedcoro.fortag("cosmo")
 end
 
-local grammar = require "cosmo.grammar"
-local interpreter = require "cosmo.fill"
+local grammar = require("cosmo.grammar")
+local interpreter = require("cosmo.fill")
 local loadstring = loadstring or load
 
 local cosmo = {}

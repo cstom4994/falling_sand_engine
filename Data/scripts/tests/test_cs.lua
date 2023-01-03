@@ -1,5 +1,5 @@
 local test = _metadot_cstruct_test
-local cstruct = require "common.cstruct"
+local cstruct = require("common.cstruct")
 
 local code = [[
 

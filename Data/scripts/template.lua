@@ -137,7 +137,7 @@ end
 -- Template definition grammar
 --------------------------------------------------------------------------------
 
-local lpeg = require "lpeg"
+local lpeg = require ("lpeg")
 local P = lpeg.P
 local C = lpeg.C
 local Carg = lpeg.Carg

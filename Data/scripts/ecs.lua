@@ -1,13 +1,13 @@
 local ecs = {}
 
-ecs.class = require "common.class"
+ecs.class = require("common.class")
 
-ecs.world = require "ecs.world"
-ecs.entity_mgr = require "ecs.entity_mgr"
-ecs.system = require "ecs.system"
+ecs.world = require("ecs.world")
+ecs.entity_mgr = require("ecs.entity_mgr")
+ecs.system = require("ecs.system")
 
 --inject : ecs.all ecs.any ecs.no
-local filters = require "ecs.filter"
+local filters = require("ecs.filter")
 for k, filter in pairs(filters) do
 	ecs[k] = filter
 end

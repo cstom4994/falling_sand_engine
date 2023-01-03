@@ -49,4 +49,13 @@ static const int VERSION_MINOR = METADOT_VERSION_MINOR;
 static const int VERSION_REV = METADOT_VERSION_BUILD;
 static const char *VERSION_COMPATIBILITY[] = {METADOT_VERSION_TEXT, "0.0.1", 0};
 
+static const char *engine_funcs_name_gpu = "_metadot_gpu";
+static const char *engine_funcs_name_fs = "_metadot_fs";
+static const char *engine_funcs_name_fs_internal = "_metadot_fs_m";
+static const char *engine_funcs_name_image = "_metadot_image";
+static const char *engine_funcs_name_image_internal = "_metadot_image_m";
+static const char *engine_funcs_name_lz4 = "_metadot_lz4";
+static const char *engine_funcs_name_csc = "_metadot_cstruct_core";
+static const char *engine_funcs_name_cst = "_metadot_cstruct_test";
+
 #endif
