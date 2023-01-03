@@ -10,10 +10,13 @@ require("graphics")
 require("audio")
 require("global")
 
+ecs = require("ecs")
+
 OnGameEngineLoad = function()
 
     InitGraphics()
     InitAudio()
+    InitECS()
 
     controls_init()
 
@@ -30,6 +33,7 @@ OnGameEngineLoad = function()
     create_biome("PLAINS", 9)
     create_biome("MOUNTAINS", 10)
     create_biome("FOREST", 11)
+
 end
 
 -- function OnGameEngineLoad() {
@@ -53,9 +57,9 @@ end
 --     runImGui();
 -- }
 
--- function OnGameTickUpdate() {
-
--- }
+OnGameTickUpdate = function()
+    world:update()
+end
 
 -- function OnWorldInitialized()
 -- function OnWorldPreUpdate()

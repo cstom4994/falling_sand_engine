@@ -3,6 +3,7 @@
 #include "game_scriptingwrap.hpp"
 
 #include <string>
+#include <string_view>
 
 #include "core/core.hpp"
 #include "core/global.hpp"
@@ -39,6 +40,11 @@ static void textures_load(std::string name, std::string path) {}
 static void materials_init() { Materials::Init(); }
 static void controls_init() { Controls::initKey(); }
 
+static void init_ecs() {
+    auto luacore = global.scripts->LuaRuntime;
+    auto &luawrap = (*luacore->GetWrapper());
+}
+
 static void load_lua(std::string luafile) {}
 
 #pragma endregion GameScriptingBind_1
@@ -65,8 +71,9 @@ void GameScriptingWrap::Bind() {
     luawrap["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
     luawrap["audio_init"] = LuaWrapper::function(audio_init);
     luawrap["create_biome"] = LuaWrapper::function(create_biome);
+    luawrap["init_ecs"] = LuaWrapper::function(init_ecs);
 
-    luawrap.dofile(METADOT_RESLOC("data/scripts/init.lua"));
+    luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
     auto InitFunc = luawrap["OnGameEngineLoad"];
     InitFunc();
 }

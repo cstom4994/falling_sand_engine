@@ -403,6 +403,7 @@ void Scripts::UpdateRender() {
 
 void Scripts::UpdateTick() {
     METADOT_ASSERT_E(LuaRuntime);
-    // auto OnGameTickUpdate = (std::function<void(void)>) JsContext->eval("OnGameTickUpdate");
-    // OnGameTickUpdate();
+    auto &luawrap = (*LuaRuntime->GetWrapper());
+    auto OnGameTickUpdate = luawrap["OnGameTickUpdate"];
+    OnGameTickUpdate();
 }
