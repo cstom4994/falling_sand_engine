@@ -20,6 +20,9 @@ InitECS = function()
 
 	entity = entity_mgr:create_entity("move_info", "speed", "height")
 	entity_mgr:set_component(entity, "move_info", { x = 0, y = 0 })
+	entity_mgr:set_component(entity, "player", {x = 0, y = 0 })
+	
+
 	local move_info = entity_mgr:get_component(entity, "move_info")
 	entity_mgr:remove_component(entity, "move_info")
 	entity_mgr:destroy_entity(entity)

@@ -14,11 +14,8 @@ namespace parserlib {
 class _private {
 public:
     static _expr *get_expr(const expr &e) { return e.m_expr; }
-
     static expr construct_expr(_expr *e) { return e; }
-
     static _expr *get_expr(rule &r) { return r.m_expr; }
-
     static parse_proc get_parse_proc(rule &r) { return r.m_parse_proc; }
 };
 
@@ -106,16 +103,13 @@ public:
 
 private:
     bool _parse_non_term(rule &r);
-
     bool _parse_term(rule &r);
 };
 
 class _expr {
 public:
     virtual ~_expr() {}
-
     virtual bool parse_non_term(_context &con) const = 0;
-
     virtual bool parse_term(_context &con) const = 0;
 };
 

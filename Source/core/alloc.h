@@ -2,6 +2,9 @@
 
 // Now I'm using gc(https://github.com/mkirchner/gc) (MIT license)
 
+#ifndef _METADOT_ALLOC_H_
+#define _METADOT_ALLOC_H_
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -59,3 +62,5 @@ void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif

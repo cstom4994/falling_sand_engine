@@ -167,7 +167,7 @@ void ImGuiCore::Init() {
 
     float scale = 1.0f;
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 22.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 20.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
