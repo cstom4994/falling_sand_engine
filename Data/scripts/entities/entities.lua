@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 require("entities.player")
 
 local cstruct = require("common.cstruct")

@@ -1,6 +1,6 @@
 --[[
 Metadot muscript is enhanced based on moonscript and yuescript modification
-Metadot code copyright(c) 2022, KaoruXun All rights reserved.
+Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
 Moonscript code by Leaf Corcoran licensed under the MIT License
 Link to https://github.com/leafo/moonscript
 

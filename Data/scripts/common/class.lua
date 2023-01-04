@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 local call_construc
 call_construc = function(obj, cls, on_new, ...)
     local parent = cls.__parent_cls__

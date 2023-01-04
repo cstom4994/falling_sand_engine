@@ -1,5 +1,5 @@
 // Metadot muscript is enhanced based on yuescript modification
-// Metadot code copyright(c) 2022, KaoruXun All rights reserved.
+// Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // Yuescript code by Jin Li licensed under the MIT License
 // Link to https://github.com/pigpigyyy/Yuescript
 

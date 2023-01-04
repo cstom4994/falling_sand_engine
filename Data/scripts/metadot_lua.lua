@@ -1,4 +1,4 @@
--- Copyright(c) 2022, KaoruXun All rights reserved.
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 local lpeg = require("lpeg")
 local re = require("re2")

@@ -1,4 +1,4 @@
-// Copyright(c) 2022, KaoruXun All rights reserved.
+// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 // Now I'm using gc(https://github.com/mkirchner/gc)
 // and allocator(https://github.com/mtrebi/memory-allocators)

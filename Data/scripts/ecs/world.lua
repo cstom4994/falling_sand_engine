@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 local class = require("common.class")
 local entity_mgr = require("ecs.entity_mgr")
 

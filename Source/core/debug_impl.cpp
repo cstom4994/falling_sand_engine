@@ -1,4 +1,4 @@
-// Copyright(c) 2022, KaoruXun All rights reserved.
+// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #include "debug_impl.hpp"
 
@@ -34,7 +34,7 @@ int metadot_buildnum(void) {
 const std::string metadot_metadata() {
     static std::string result;
 
-    result += "Copyright(c) 2022, KaoruXun All rights reserved.\n";
+    result += "Copyright(c) 2022-2023, KaoruXun All rights reserved.\n";
     result += "MetaDot\n";
 
 #ifdef _WIN32

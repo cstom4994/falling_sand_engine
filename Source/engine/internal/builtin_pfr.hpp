@@ -1,5 +1,5 @@
 // Metadot builtin bfr is enhanced based on Boost.pfr modification
-// Metadot code copyright(c) 2022, KaoruXun All rights reserved.
+// Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // Boost.pfr code by BoostOrg distributed under the Boost Software License, Version 1.0.
 // https://github.com/boostorg/pfr
 

@@ -1,5 +1,5 @@
 // Metadot lpeg is enhanced based on lpeg modification
-// Metadot code copyright(c) 2022, KaoruXun All rights reserved.
+// Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // lpeg code by Lua.org, PUC-Rio licensed under following license
 // http://www.inf.puc-rio.br/~roberto/lpeg/
 

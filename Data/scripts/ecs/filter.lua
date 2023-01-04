@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 local mt = {}
 
 function mt.all(...)

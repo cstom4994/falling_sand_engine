@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 local core = _metadot_cstruct_core
 
 local M = {}

@@ -1,4 +1,4 @@
--- Copyright(c) 2022, KaoruXun All rights reserved.
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 function letOperator(code)
     code = code:gsub("let %s*(%w+)%s*=", "local %1 =")

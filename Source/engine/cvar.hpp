@@ -1,4 +1,4 @@
-// Metadot code copyright(c) 2022, KaoruXun All rights reserved.
+// Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #ifndef _METADOT_CVAR_HPP_
 #define _METADOT_CVAR_HPP_

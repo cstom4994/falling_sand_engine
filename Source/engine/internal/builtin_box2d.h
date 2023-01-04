@@ -1,5 +1,5 @@
 // Metadot physics engine is enhanced based on box2d modification
-// Metadot code copyright(c) 2022, KaoruXun All rights reserved.
+// Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // Box2d code by Erin Catto licensed under the MIT License
 // https://github.com/erincatto/box2d
 
