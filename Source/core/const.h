@@ -31,7 +31,7 @@ static const float FLUID_MaxFlow = 8.0f;
 // Adjusts flow speed (0.0f - 1.0f)
 static const float FLUID_FlowSpeed = 1.0f;
 
-static const int FrameTimeNum = 100;
+#define FrameTimeNum 100
 
 static const int GameTick = 4;
 
@@ -40,9 +40,8 @@ static const int GameTick = 4;
 #define METADOT_VERSION_MAJOR 0
 #define METADOT_VERSION_MINOR 0
 #define METADOT_VERSION_BUILD 3
-#define METADOT_VERSION Version(METADOT_VERSION_MAJOR, METADOT_VERSION_MINOR, METADOT_VERSION_BUILD)
 #define METADOT_COMPANY "MetaDot"
-#define METADOT_COPYRIGHT "Copyright (c) 2022 KaoruXun. All rights reserved."
+#define METADOT_COPYRIGHT "Copyright (c) 2022-2023 KaoruXun. All rights reserved."
 
 static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
 static const int VERSION_MINOR = METADOT_VERSION_MINOR;

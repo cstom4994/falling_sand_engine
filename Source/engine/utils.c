@@ -5,12 +5,12 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include "core/const.h"
 #include "core/core.h"
 
 // --------------- FPS counter functions ---------------
 
-#define STORED_FRAMES 10
-U32 frameTimes[STORED_FRAMES];
+U16 frameTimes[FrameTimeNum];
 U32 frameTicksLast;
 U32 frameCount;
 F32 framesPerSecond;
@@ -414,7 +414,7 @@ void ProcessFPS() {
     U32 count;
     U32 i;
 
-    frameTimesIndex = frameCount % STORED_FRAMES;
+    frameTimesIndex = frameCount % FrameTimeNum;
 
     currentTicks = SDL_GetTicks();
     // save the frame time value
@@ -428,11 +428,11 @@ void ProcessFPS() {
 
     // Work out the current framerate
     // I've included a test to see if the whole array has been written to or not. This will stop
-    // strange values on the first few (STORED_FRAMES) frames.
-    if (frameCount < STORED_FRAMES) {
+    // strange values on the first few (FrameTimeNum) frames.
+    if (frameCount < FrameTimeNum) {
         count = frameCount;
     } else {
-        count = STORED_FRAMES;
+        count = FrameTimeNum;
     }
 
     // add up all the values and divide to get the average frame time.

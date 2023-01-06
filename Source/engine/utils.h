@@ -14,12 +14,16 @@
 #include <zlib.h>
 
 #include "core/alloc.h"
+#include "core/const.h"
 #include "core/core.h"
 #include "libs/cJSON.h"
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 #include "sdl_wrapper.h"
+
+extern U16 frameTimes[FrameTimeNum];
+extern U32 frameCount;
 
 #define PI 3.14159265358979323846
 #define VECTOR3_ZERO \

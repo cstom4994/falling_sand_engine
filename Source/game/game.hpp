@@ -41,26 +41,24 @@ enum GameState { MAIN_MENU, LOADING, INGAME };
 
 class Game {
 public:
-    int argc;
+    I32 argc;
 
     GameState state = LOADING;
     GameState stateAfterLoad = MAIN_MENU;
 
-    uint16_t *frameTime = new uint16_t[FrameTimeNum];
-
     DebugDraw *debugDraw;
 
-    int ent_prevLoadZoneX = 0;
-    int ent_prevLoadZoneY = 0;
+    I32 ent_prevLoadZoneX = 0;
+    I32 ent_prevLoadZoneY = 0;
 
     U16 *movingTiles;
 
-    int mx = 0;
-    int my = 0;
-    int lastDrawMX = 0;
-    int lastDrawMY = 0;
-    int lastEraseMX = 0;
-    int lastEraseMY = 0;
+    I32 mx = 0;
+    I32 my = 0;
+    I32 lastDrawMX = 0;
+    I32 lastDrawMY = 0;
+    I32 lastEraseMX = 0;
+    I32 lastEraseMY = 0;
 
     U8 *objectDelete = nullptr;
 
@@ -72,18 +70,18 @@ public:
 public:
     bool running = true;
 
-    int tickTime = 0;
+    I32 tickTime = 0;
 
-    int scale = 4;
+    I32 scale = 4;
     F32 accLoadX = 0;
     F32 accLoadY = 0;
 
-    long long fadeInStart = 0;
-    long long fadeInLength = 0;
-    int fadeInWaitFrames = 0;
-    int fadeOutWaitFrames = 0;
-    long long fadeOutStart = 0;
-    long long fadeOutLength = 0;
+    I64 fadeInStart = 0;
+    I64 fadeInLength = 0;
+    I32 fadeInWaitFrames = 0;
+    I32 fadeOutWaitFrames = 0;
+    I64 fadeOutStart = 0;
+    I64 fadeOutLength = 0;
     std::function<void()> fadeOutCallback = []() {};
 
     struct {

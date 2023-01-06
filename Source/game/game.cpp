@@ -39,6 +39,7 @@
 #include "game/imgui_core.hpp"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
+#include "utils.h"
 #include "world_generator.cpp"
 
 extern void fuckme();
@@ -377,16 +378,15 @@ int Game::run(int argc, char *argv[]) {
 
     SDL_Event windowEvent;
 
-    long long lastFPS = Time::millis();
-    int frames = 0;
+    I64 lastFPS = Time::millis();
     Time.fps = 0;
 
     Time.lastTime = Time::millis();
     Time.lastTick = Time.lastTime;
-    long long lastTickPhysics = Time.lastTime;
+    I64 lastTickPhysics = Time.lastTime;
 
     Time.mspt = 33;
-    long msptPhysics = 16;
+    I32 msptPhysics = 16;
 
     scale = 3;
     GameData_.ofsX = (int)(-CHUNK_W * 4);
@@ -395,9 +395,7 @@ int Game::run(int argc, char *argv[]) {
     GameData_.ofsX = (GameData_.ofsX - Screen.windowWidth / 2) / 2 * 3 + Screen.windowWidth / 2;
     GameData_.ofsY = (GameData_.ofsY - Screen.windowHeight / 2) / 2 * 3 + Screen.windowHeight / 2;
 
-    for (int i = 0; i < FrameTimeNum; i++) {
-        frameTime[i] = 0;
-    }
+    InitFPS();
     METADOT_NEW_ARRAY(C, objectDelete, U8, GameIsolate_.world->width * GameIsolate_.world->height);
 
     fadeInStart = Time::millis();
@@ -1045,19 +1043,19 @@ int Game::run(int argc, char *argv[]) {
 
         EngineUpdateEnd();
 
-        frames++;
+        frameCount++;
         if (Time.now - lastFPS >= 1000) {
             lastFPS = Time.now;
-            Time.fps = frames;
-            frames = 0;
+            Time.fps = frameCount;
+            frameCount = 0;
 
             // calculate "feels like" fps
             F32 sum = 0;
             F32 num = 0.01;
 
             for (int i = 0; i < FrameTimeNum; i++) {
-                F32 weight = frameTime[i];
-                sum += weight * frameTime[i];
+                F32 weight = frameTimes[i];
+                sum += weight * frameTimes[i];
                 num += weight;
             }
 
@@ -1065,9 +1063,9 @@ int Game::run(int argc, char *argv[]) {
         }
 
         for (int i = 1; i < FrameTimeNum; i++) {
-            frameTime[i - 1] = frameTime[i];
+            frameTimes[i - 1] = frameTimes[i];
         }
-        frameTime[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
+        frameTimes[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
 
         Time.lastTime = Time.now;
     }
@@ -3313,7 +3311,7 @@ SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WID
 }*/
 
         for (int i = 0; i < FrameTimeNum; i++) {
-            int h = frameTime[i];
+            int h = frameTimes[i];
 
             METAENGINE_Color col;
             if (h <= (int)(1000 / 144.0)) {
