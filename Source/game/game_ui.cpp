@@ -2,8 +2,12 @@
 
 #include "game/game_ui.hpp"
 
+#include <stdio.h>
+
 #include <string>
 
+#include "core/core.h"
+#include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine.h"
 #include "engine/engine_cpp.h"
@@ -36,108 +40,59 @@ std::string I18N::Get(std::string text) { return (*global.scripts->LuaRuntime->G
 void GameUI::GameUI_Draw(Game *game) {
     DebugDrawUI::Draw(game);
     MainMenuUI::Draw(game);
-    IngameUI::Draw(game);
+    InGameUI::Draw(game);
 }
 
 namespace GameUI {
 
-int IngameUI::state = 0;
+int InGameUI::state = 0;
 
-bool IngameUI::visible = false;
-bool IngameUI::setup = false;
+bool InGameUI::visible = false;
+bool InGameUI::setup = false;
 
-void IngameUI::Setup() {}
+void InGameUI::Setup() {}
 
-void IngameUI::Draw(Game *game) {
+void InGameUI::Draw(Game *game) {
 
     if (!visible) return;
 
-    if (state == 0) {
-        DrawIngame(game);
-    } else if (state == 1) {
-        DrawOptions(game);
+    ImGui::SetNextWindowSize(ImVec2(400, 400));
+    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("游戏暂停", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::End();
+        return;
     }
+
+    if (state == 0) {
+        DrawInGame(game);
+    } else if (state == 1) {
+        OptionsUI::Draw(game);
+    }
+
+    ImGui::End();
 }
 
-void IngameUI::DrawIngame(Game *game) {
+void InGameUI::DrawInGame(Game *game) {
 
     if (!setup) {
         Setup();
     }
 
-    ImGui::SetNextWindowSize(ImVec2(400, 300));
-    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-        ImGui::End();
-        return;
-    }
-
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
     ImGui::Text("选项");
-    // ImGui::PopFont();
 
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
-
-    int mainMenuButtonsWidth = 250;
-    int mainMenuButtonsYOffset = 50;
-
-    ImVec2 selPos;
-
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 1));
-    selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##continue", ImVec2(mainMenuButtonsWidth, 36))) {
+    if (ImGui::Button("继续")) {
         visible = false;
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("继续").x / 2, selPos.y));
-    ImGui::Text("继续");
-    // ImGui::PopFont();
 
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 2));
-    selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##options", ImVec2(mainMenuButtonsWidth, 36))) {
+    if (ImGui::Button("选项")) {
         state = 1;
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("选项").x / 2, selPos.y));
-    ImGui::Text("选项");
-    // ImGui::PopFont();
 
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuButtonsWidth / 2, 25 + mainMenuButtonsYOffset * 4));
-    selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##quit", ImVec2(mainMenuButtonsWidth, 36))) {
+    if (ImGui::Button("离开到主菜单")) {
         visible = false;
         game->quitToMainMenu();
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize("离开到主菜单").x / 2, selPos.y));
-    ImGui::Text("离开到主菜单");
-    // ImGui::PopFont();
-
-    ImGui::End();
-}
-
-void IngameUI::DrawOptions(Game *game) {
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.11f, 0.11f, 0.9f));
-    ImGui::SetNextWindowSize(ImVec2(400, 400));
-    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Pause Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-        ImGui::End();
-        ImGui::PopStyleColor();
-        return;
-    }
-
-    OptionsUI::Draw(game);
-
-    ImGui::End();
-    ImGui::PopStyleColor();
 }
 
 #if defined(METADOT_BUILD_AUDIO)
@@ -149,21 +104,15 @@ bool OptionsUI::minimizeOnFocus = false;
 
 void OptionsUI::Draw(Game *game) {
 
-    int createWorldWidth = 350;
-
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
     ImGui::Text("选项");
-    // ImGui::PopFont();
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10);
 
     static int prevTab = 0;
     int tab = 0;
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("OptionsTabs", tab_bar_flags)) {
 
-        if (ImGui::BeginTabItem("General")) {
+        if (ImGui::BeginTabItem("全局")) {
             tab = 0;
             ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
 
@@ -210,21 +159,13 @@ void OptionsUI::Draw(Game *game) {
 
     ImGui::Separator();
 
-    ImGui::SetCursorPos(ImVec2(20, ImGui::GetCursorPosY() + 5));
-    ImVec2 selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("  ", ImVec2(150, 36))) {
+    if (ImGui::Button("返回")) {
         MainMenuUI::state = 0;
-        IngameUI::state = 0;
+        InGameUI::state = 0;
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
-    ImGui::Text("返回");
     if (ImGui::Button("保存")) {
         // global.game->GameIsolate_.globaldef.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
     }
-    // ImGui::PopFont();
 }
 
 void OptionsUI::DrawGeneral(Game *game) {
@@ -324,7 +265,7 @@ void OptionsUI::DrawVideo(Game *game) {
 
 void OptionsUI::DrawAudio(Game *game) {
 #if defined(METADOT_BUILD_AUDIO)
-    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Volume");
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "音频");
     ImGui::Indent(4);
 
     if (busMap.size() == 0) {
@@ -423,13 +364,11 @@ void MainMenuUI::Draw(Game *game) {
     if (state == 0) {
         DrawMainMenu(game);
     } else if (state == 1) {
-        DrawCreateWorld(game);
+        CreateWorldUI::Draw(game);
     } else if (state == 2) {
-        DrawSingleplayer(game);
-    } else if (state == 3) {
-        DrawMultiplayer(game);
+        DrawWorldLists(game);
     } else if (state == 4) {
-        DrawOptions(game);
+        OptionsUI::Draw(game);
     }
 
     ImGui::End();
@@ -440,11 +379,6 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     if (!setup) {
         Setup();
     }
-    // long long now = Time::millis();
-    // if (now - lastRefresh > 30000) {
-    //     RefreshWorlds(game);
-    //     lastRefresh = now;
-    // }
 
     pos = ImGui::GetWindowPos();
 
@@ -459,27 +393,20 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     ImGui::Image(texId, ImVec2(title->w / 2, title->h / 2), uv_min, uv_max, tint_col, border_col);
     ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
-    int mainMenuButtonsWidth = 250;
-    int mainMenuButtonsYOffset = 55;
-
-    if (ImGui::Button(CC("单人游戏"), ImVec2(mainMenuButtonsWidth, 36))) {
+    if (ImGui::Button(LANG("ui_play"))) {
         state = 2;
     }
 
-    if (ImGui::Button("多人游戏", ImVec2(mainMenuButtonsWidth, 36))) {
-        state = 2;
-    }
-
-    if (ImGui::Button("选项", ImVec2(mainMenuButtonsWidth, 36))) {
+    if (ImGui::Button(LANG("ui_option"))) {
         state = 4;
     }
 
-    if (ImGui::Button("退出", ImVec2(mainMenuButtonsWidth, 36))) {
+    if (ImGui::Button(LANG("ui_exit"))) {
         game->running = false;
     }
 }
 
-void MainMenuUI::DrawSingleplayer(Game *game) {
+void MainMenuUI::DrawWorldLists(Game *game) {
     long long now = Time::millis();
     if (now - lastRefresh > 3000) {
         RefreshWorlds(game);
@@ -487,28 +414,17 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
     }
     if (!visible) return;
 
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("单人游戏").x / 2);
-    ImGui::Text("单人游戏");
-    // ImGui::PopFont();
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize(LANG("ui_play")).x / 2);
+    ImGui::Text("%s", LANG("ui_play"));
 
-    int mainMenuButtonsWidth = 300;
-    int mainMenuButtonsYOffset = 50;
-    int mainMenuNewButtonWidth = 150;
-    ImGui::SetCursorPos(ImVec2(200 - mainMenuNewButtonWidth / 2, 10 + mainMenuButtonsYOffset));
-    ImVec2 selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##newworld", ImVec2(mainMenuNewButtonWidth, 36))) {
+    if (ImGui::Button(LANG("ui_newworld"))) {
         state = 1;
         CreateWorldUI::Reset(game);
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + mainMenuNewButtonWidth / 2 - ImGui::CalcTextSize("新世界").x / 2, selPos.y));
-    ImGui::Text("新世界");
-    // ImGui::PopFont();
 
-    ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX(), ImGui::GetCursorPosY() + 10));
+    if (ImGui::Button(LANG("ui_return"))) {
+        state = 0;
+    }
 
     ImGui::Separator();
 
@@ -522,10 +438,23 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
 
         ImGui::PushID(nMainMenuButtons);
 
-        ImGui::SetCursorPos(ImVec2(200 - 8 - mainMenuButtonsWidth / 2, 4 + (nMainMenuButtons++ * 60)));
-        selPos = ImGui::GetCursorScreenPos();
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-        if (ImGui::Button("", ImVec2(mainMenuButtonsWidth, 50))) {
+        // time_t t_times;
+        // tm *tm_utc = gmtime(&t_times);
+        // meta.lastOpenedTime = t_times;
+
+        // // convert to local time
+        // time_t time_utc = Time::mkgmtime(tm_utc);
+        // time_t time_local = mktime(tm_utc);
+        // time_local += time_utc - time_local;
+        // tm *tm_local = localtime(&time_local);
+
+        // char *formattedTime = new char[100];
+        // strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
+
+        char *filenameAndTimestamp = new char[200];
+        snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), "formattedTime");
+
+        if (ImGui::Button(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
             visible = false;
 
@@ -562,104 +491,13 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
                 game->fadeInWaitFrames = 4;
             };
         }
-        ImGui::PopStyleVar();
 
-        ImVec2 prevPos = ImGui::GetCursorScreenPos();
-        ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y));
-
-        // time_t t_times;
-        // tm *tm_utc = gmtime(&t_times);
-        // meta.lastOpenedTime = t_times;
-
-        // // convert to local time
-        // time_t time_utc = Time::mkgmtime(tm_utc);
-        // time_t time_local = mktime(tm_utc);
-        // time_local += time_utc - time_local;
-        // tm *tm_local = localtime(&time_local);
-
-        // char *formattedTime = new char[100];
-        // strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
-
-        char *filenameAndTimestamp = new char[200];
-        snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), "formattedTime");
-
-        // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-        ImGui::SetCursorScreenPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize(meta.worldName.c_str()).x / 2, selPos.y));
-        ImGui::Text("%s", meta.worldName.c_str());
-        // ImGui::PopFont();
-
-        ImGui::SetCursorScreenPos(ImVec2(selPos.x + mainMenuButtonsWidth / 2 - ImGui::CalcTextSize(filenameAndTimestamp).x / 2, selPos.y + 32));
-        ImGui::Text("%s", filenameAndTimestamp);
-
-        ImGui::SetCursorScreenPos(prevPos);
         ImGui::PopID();
     }
     ImGui::EndChild();
-
-    ImGui::Separator();
-
-    ImGui::SetCursorPos(ImVec2(20, ImGui::GetCursorPosY() + 5));
-    selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##back", ImVec2(150, 36))) {
-        state = 0;
-    }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
-    ImGui::Text("返回");
-    // ImGui::PopFont();
 }
 
-void MainMenuUI::DrawMultiplayer(Game *game) {
-
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    static char connectBuf[128] = "";
-    // 200 - connectWidth / 2 - 60 / 2, 60, connectWidth, 20
-    ImGui::PushItemWidth(200);
-    ImGui::SetCursorPos(ImVec2(200 - 200 / 2 - 60 / 2, 60));
-    if (ImGui::InputTextWithHint("", "ip:port", connectBuf, IM_ARRAYSIZE(connectBuf))) {
-        std::regex connectInputRegex("([^:]+):(\\d+)");
-        std::string str = std::string(connectBuf);
-        connectButtonEnabled = regex_match(str, connectInputRegex);
-    }
-    ImGui::PopItemWidth();
-    ImGui::PopStyleVar();
-    ImGui::SameLine();
-
-    if (!connectButtonEnabled) {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-    }
-
-    if (ImGui::Button("连接")) {
-        METADOT_INFO("connectButton select");
-        // if (global.client->connect(global.game->GameIsolate_.globaldef.server_ip.c_str(),
-        //                            global.game->GameIsolate_.globaldef.server_port)) {
-        //     global.game->GameIsolate_.globaldef.networkMode = engine_networkmode::CLIENT;
-        //     visible = false;
-        //     game->setGameState(LOADING, INGAME);
-        // }
-    }
-
-    if (!connectButtonEnabled) {
-        ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
-    }
-}
-
-void MainMenuUI::DrawCreateWorld(Game *game) { CreateWorldUI::Draw(game); }
-
-void MainMenuUI::DrawOptions(Game *game) { OptionsUI::Draw(game); }
-
-void DebugUI::Draw(Game *game) {
-
-    // ImGui::SetNextWindowSize(ImVec2(250, 0));
-    // ImGui::SetNextWindowPos(ImVec2(game->WIDTH - 200 - 15, 25), ImGuiCond_FirstUseEver);
-    // if (!ImGui::Begin("Debug Settings", NULL, ImGuiWindowFlags_NoResize)) {
-    //     ImGui::End();
-    //     return;
-    // }
+void DrawDebugUI(Game *game) {
 
     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     if (ImGui::TreeNode(CC("渲染"))) {
@@ -801,8 +639,6 @@ void DebugUI::Draw(Game *game) {
 
         ImGui::TreePop();
     }
-
-    // ImGui::End();
 }
 
 bool DebugDrawUI::visible = true;
@@ -1041,23 +877,21 @@ void DebugDrawUI::Draw(Game *game) {
 
 char CreateWorldUI::worldNameBuf[32] = "";
 bool CreateWorldUI::setup = false;
-R_Image *CreateWorldUI::materialTestWorld = nullptr;
-R_Image *CreateWorldUI::defaultWorld = nullptr;
 bool CreateWorldUI::createWorldButtonEnabled = false;
 std::string CreateWorldUI::worldFolderLabel = "";
 int CreateWorldUI::selIndex = 0;
 
 void CreateWorldUI::Setup() {
 
-    C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
-    materialTestWorld = R_CopyImageFromSurface(logoMT);
-    R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
-    SDL_FreeSurface(logoMT);
+    // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
+    // materialTestWorld = R_CopyImageFromSurface(logoMT);
+    // R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
+    // SDL_FreeSurface(logoMT);
 
-    C_Surface *logoDef = LoadTexture("data/assets/ui/prev_default.png");
-    defaultWorld = R_CopyImageFromSurface(logoDef);
-    R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
-    SDL_FreeSurface(logoDef);
+    // C_Surface *logoDef = LoadTexture("data/assets/ui/prev_default.png");
+    // defaultWorld = R_CopyImageFromSurface(logoDef);
+    // R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
+    // SDL_FreeSurface(logoDef);
 
     setup = true;
 }
@@ -1068,119 +902,26 @@ void CreateWorldUI::Draw(Game *game) {
 
     int createWorldWidth = 350;
 
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("Create World").x / 2);
-    ImGui::Text("Create World");
-    // ImGui::PopFont();
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("创建世界").x / 2);
+    ImGui::Text("%s", LANG("ui_create_world"));
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    ImGui::PushItemWidth(createWorldWidth);
-    ImGui::SetCursorPos(ImVec2(200 - createWorldWidth / 2, 70));
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    //  if(ImGui::InputTextWithHint("", "", worldNameBuf, IM_ARRAYSIZE(worldNameBuf))) {
-    //      std::string text = std::string(worldNameBuf);
-    //      inputChanged(text, game);
-    //  }
-    // ImGui::PopFont();
-    ImGui::PopItemWidth();
-    ImGui::PopStyleVar();
+    ImGui::Text("%s: %s", LANG("ui_worldname"), worldFolderLabel.c_str());
 
-    ImGui::SetCursorPos(ImVec2(200 - createWorldWidth / 2, 70 - 16));
-    ImGui::Text("World Name");
+    const char *world_types[] = {"Material Test World", "Default World (WIP)"};
 
-    ImGui::SetCursorPos(ImVec2(200 - createWorldWidth / 2, 70 + 40 + 2));
-    ImGui::Text("%s", worldFolderLabel.c_str());
+    ImGui::ListBox(LANG("ui_worldgenerator"), &selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
 
-    // generator selection
-
-    ImGui::PushID(0);
-
-    ImGui::SetCursorPos(ImVec2(400 / 2 - 100 - 24 - 4, 170));
-    ImVec2 selPos = ImGui::GetCursorPos();
-    if (ImGui::Selectable("", selIndex == 0, 0, ImVec2(111 - 4, 111))) {
-        selIndex = 0;
-    }
-
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::Text("Material Test World");
-        ImGui::EndTooltip();
-    }
-
-    ImVec2 prevPos = ImGui::GetCursorPos();
-    ImGuiStyle &style = ImGui::GetStyle();
-    ImGui::SetCursorPos(ImVec2(selPos.x - 1 + 4, selPos.y + 4));
-
-    // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-    ImTextureID texId = (ImTextureID)R_GetTextureHandle(materialTestWorld);
-
-    ImVec2 pos = ImGui::GetCursorPos();
-    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                // Top-left
-    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                // Lower-right
-    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
-    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
-
-    ImGui::Image(texId, ImVec2(100, 100), uv_min, uv_max, tint_col, border_col);
-
-    ImGui::SetCursorPos(prevPos);
-
-    ImGui::PopID();
-
-    ImGui::PushID(1);
-
-    ImGui::SetCursorPos(ImVec2(400 / 2 + 24 - 4, 170));
-    selPos = ImGui::GetCursorPos();
-    if (ImGui::Selectable("", selIndex == 1, 0, ImVec2(111 - 4, 111))) {
-        selIndex = 1;
-    }
-
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::Text("Default World (WIP)");
-        ImGui::EndTooltip();
-    }
-
-    prevPos = ImGui::GetCursorPos();
-    style = ImGui::GetStyle();
-    ImGui::SetCursorPos(ImVec2(selPos.x - 1 + 4, selPos.y + 4));
-
-    // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-    texId = (ImTextureID)R_GetTextureHandle(defaultWorld);
-
-    pos = ImGui::GetCursorPos();
-    uv_min = ImVec2(0.0f, 0.0f);                // Top-left
-    uv_max = ImVec2(1.0f, 1.0f);                // Lower-right
-    tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
-    border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f);
-
-    ImGui::Image(texId, ImVec2(100, 100), uv_min, uv_max, tint_col, border_col);
-
-    ImGui::SetCursorPos(prevPos);
-
-    ImGui::PopID();
-
-    ImGui::SetCursorPos(ImVec2(20, 360 - 52));
-    selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##back", ImVec2(150, 36))) {
+    if (ImGui::Button(LANG("ui_return"))) {
         MainMenuUI::state = 2;
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("返回").x / 2, selPos.y));
-    ImGui::Text("返回");
-    // ImGui::PopFont();
 
     if (!createWorldButtonEnabled) {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     }
 
-    ImGui::SetCursorPos(ImVec2(400 - 170, 360 - 52));
-    selPos = ImGui::GetCursorPos();
-    // ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-    if (ImGui::Button("##create", ImVec2(150, 36))) {
+    if (ImGui::Button(LANG("ui_create"))) {
+
         std::string pref = "Saved in: ";
 
         std::string worldName = worldFolderLabel.substr(pref.length());
@@ -1225,10 +966,6 @@ void CreateWorldUI::Draw(Game *game) {
             }
         }
     }
-    ImGui::PopStyleVar();
-    ImGui::SetCursorPos(ImVec2(selPos.x + 150 / 2 - ImGui::CalcTextSize("Create").x / 2, selPos.y));
-    ImGui::Text("Create");
-    // ImGui::PopFont();
 
     if (!createWorldButtonEnabled) {
         ImGui::PopItemFlag();

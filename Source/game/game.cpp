@@ -88,13 +88,9 @@ int Game::init(int argc, char *argv[]) {
     global.ImGuiCore->Init();
 
     // scripting system
-    auto loadscript = [&]() {
-        METADOT_LOG_SCOPE_FUNCTION(INFO);
-        METADOT_INFO("Loading Script...");
-        METADOT_NEW(C, global.scripts, Scripts);
-        global.scripts->Init();
-    };
-    loadscript();
+    METADOT_INFO("Loading Script...");
+    METADOT_NEW(C, global.scripts, Scripts);
+    global.scripts->Init();
 
     global.I18N.Init();
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
@@ -104,7 +100,7 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.backgrounds->Load();
 
     font = FontCache_CreateFont();
-    FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 18, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
+    FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/ark-pixel-12px-monospaced-zh_cn.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     // init the rng
     METADOT_INFO("Seeding RNG...");
@@ -913,8 +909,8 @@ int Game::run(int argc, char *argv[]) {
         // FontCache_Rect rightHalf = {0, 0, Screen.windowWidth / 4.0f, Screen.windowWidth / 1.0f};
         // R_RectangleFilled(Render.target, rightHalf.x, rightHalf.y, rightHalf.x + rightHalf.w, rightHalf.y + rightHalf.h, {255, 255, 255, 255});
 
-        METADOT_ASSERT_E(font);
-        FontCache_DrawColor(font, Render.target, 200, 200, {255, 144, 255, 255}, "This is %s.\n It works.", "example text");
+        // METADOT_ASSERT_E(font);
+        // FontCache_DrawColor(font, Render.target, 200, 200, {255, 144, 255, 255}, "This is %s.\n It works.", "example text");
 
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
@@ -1320,7 +1316,7 @@ accLoadY = 0;*/
 
     if (Controls::PAUSE->get()) {
         if (this->state == GameState::INGAME) {
-            GameUI::IngameUI::visible = !GameUI::IngameUI::visible;
+            GameUI::InGameUI::visible = !GameUI::InGameUI::visible;
         }
     }
 
@@ -1344,9 +1340,9 @@ accLoadY = 0;*/
                 GameIsolate_.world->WorldIsolate_.player->heldItem->carry.pop_back();
                 GameIsolate_.world->addParticle(new Particle(mat, (F32)x, (F32)y,
                                                              (F32)(GameIsolate_.world->WorldIsolate_.player->vx / 2 + (rand() % 10 - 5) / 10.0f +
-                                                                     1.5f * (F32)cos((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f)),
+                                                                   1.5f * (F32)cos((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f)),
                                                              (F32)(GameIsolate_.world->WorldIsolate_.player->vy / 2 + -(rand() % 5 + 5) / 10.0f +
-                                                                     1.5f * (F32)sin((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f)),
+                                                                   1.5f * (F32)sin((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f)),
                                                              0, (F32)0.1));
 
                 int i = (int)GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size();
@@ -1613,8 +1609,8 @@ void Game::tick() {
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND) {
-                            GameIsolate_.world->addParticle(new Particle(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
-                                                                         (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addParticle(new Particle(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
+                                                                         (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1622,8 +1618,8 @@ void Game::tick() {
                             cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (F32)0.98);
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            GameIsolate_.world->addParticle(new Particle(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
-                                                                         (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addParticle(new Particle(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
+                                                                         (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
@@ -2236,17 +2232,16 @@ void Game::tickPlayer() {
             }
         }
 
-        GameIsolate_.world->WorldIsolate_.player->vy +=
-                (F32)(((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
-                        (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
+        GameIsolate_.world->WorldIsolate_.player->vy += (F32)(((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
+                                                              (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
         if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 Particle *p = new Particle(TilesCreateLava(),
                                            (F32)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->loadZone.x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + rand() % 5 - 2 +
-                                                   GameIsolate_.world->WorldIsolate_.player->vx),
+                                                 GameIsolate_.world->WorldIsolate_.player->vx),
                                            (F32)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->loadZone.y + GameIsolate_.world->WorldIsolate_.player->hh +
-                                                   GameIsolate_.world->WorldIsolate_.player->vy),
+                                                 GameIsolate_.world->WorldIsolate_.player->vy),
                                            (F32)((rand() % 10 - 5) / 10.0f + GameIsolate_.world->WorldIsolate_.player->vx / 2.0f),
                                            (F32)((rand() % 10) / 10.0f + 1 + GameIsolate_.world->WorldIsolate_.player->vy / 2.0f), 0, (F32)0.025);
                 p->temporary = true;
@@ -2264,7 +2259,7 @@ void Game::tickPlayer() {
         }
 
         GameIsolate_.world->WorldIsolate_.player->vx += (F32)((Controls::PLAYER_LEFT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx > 0 ? -0.4 : -0.2) : 0) +
-                                                                (Controls::PLAYER_RIGHT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx < 0 ? 0.4 : 0.2) : 0));
+                                                              (Controls::PLAYER_RIGHT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx < 0 ? 0.4 : 0.2) : 0));
         if (!Controls::PLAYER_LEFT->get() && !Controls::PLAYER_RIGHT->get()) GameIsolate_.world->WorldIsolate_.player->vx *= (F32)(GameIsolate_.world->WorldIsolate_.player->ground ? 0.85 : 0.96);
         if (GameIsolate_.world->WorldIsolate_.player->vx > 4.5) GameIsolate_.world->WorldIsolate_.player->vx = 4.5;
         if (GameIsolate_.world->WorldIsolate_.player->vx < -4.5) GameIsolate_.world->WorldIsolate_.player->vx = -4.5;
@@ -2964,9 +2959,9 @@ void Game::renderOverlays() {
         R_Rect r3 = R_Rect{(F32)(0), (F32)(0), (F32)((GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale)), (F32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r4 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale), (F32)(0),
-                           (F32)((Screen.windowWidth) - (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale)),
-                           (F32)(Screen.windowHeight)};
+        R_Rect r4 =
+                R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale), (F32)(0),
+                       (F32)((Screen.windowWidth) - (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale)), (F32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
         R_Rect r5 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale), (F32)(0), (F32)(GameIsolate_.world->tickZone.w * scale),

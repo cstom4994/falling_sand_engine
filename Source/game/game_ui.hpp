@@ -23,10 +23,7 @@ namespace GameUI {
 
 void GameUI_Draw(Game *game);
 
-class DebugUI {
-public:
-    static void Draw(Game *game);
-};
+void DrawDebugUI(Game *game);
 
 class DebugDrawUI {
 public:
@@ -46,52 +43,30 @@ public:
 class MainMenuUI {
 public:
     static bool visible;
-
     static int state;
-
     static bool setup;
-
     static R_Image *title;
-
     static bool connectButtonEnabled;
-
     static ImVec2 pos;
-
     static std::vector<std::tuple<std::string, WorldMeta>> worlds;
-
     static long long lastRefresh;
 
     static void RefreshWorlds(Game *game);
-
     static void Setup();
-
     static void Draw(Game *game);
-
     static void DrawMainMenu(Game *game);
-
-    static void DrawSingleplayer(Game *game);
-    static void DrawMultiplayer(Game *game);
-
-    static void DrawCreateWorld(Game *game);
-
-    static void DrawOptions(Game *game);
+    static void DrawWorldLists(Game *game);
 };
 
-class IngameUI {
+class InGameUI {
 public:
     static bool visible;
-
     static int state;
-
     static bool setup;
 
     static void Setup();
-
     static void Draw(Game *game);
-
-    static void DrawIngame(Game *game);
-
-    static void DrawOptions(Game *game);
+    static void DrawInGame(Game *game);
 };
 
 class CreateWorldUI {
@@ -99,20 +74,13 @@ public:
     static bool setup;
     static char worldNameBuf[32];
 
-    static R_Image *materialTestWorld;
-    static R_Image *defaultWorld;
-
     static bool createWorldButtonEnabled;
-
     static std::string worldFolderLabel;
-
     static int selIndex;
 
     static void Setup();
     static void Reset(Game *game);
-
     static void Draw(Game *game);
-
     static void inputChanged(std::string text, Game *game);
 };
 

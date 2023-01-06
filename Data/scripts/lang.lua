@@ -48,7 +48,16 @@ local lang_pack = {
         ui_selectall = "全选",
         ui_view = "查看",
         ui_debug_materials = "材质",
-        ui_debug_items = "物品"
+        ui_debug_items = "物品",
+        ui_play = "单人游戏",
+        ui_newworld = "新世界",
+        ui_return = "返回",
+        ui_option = "选项",
+        ui_exit = "退出",
+        ui_create_world = "创建世界",
+        ui_worldname = "世界名",
+        ui_worldgenerator = "世界生成器",
+        ui_create = "创建"
     }
 }
 

@@ -167,7 +167,7 @@ void ImGuiCore::Init() {
 
     F32 scale = 1.0f;
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 20.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
@@ -487,7 +487,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         }
         if (ImGui::BeginTabItem(LANG("ui_debug"))) {
             if (myCollapsingHeader(LANG("ui_telemetry"))) {
-                GameUI::DebugUI::Draw(global.game);
+                GameUI::DrawDebugUI(global.game);
             }
 #define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->sb.shader)
             if (myCollapsingHeader(CC("GLSL"))) {
