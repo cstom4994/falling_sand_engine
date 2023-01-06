@@ -13,12 +13,12 @@
 #include "engine/internal/builtin_box2d.h"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/renderer_utils.h"
+#include "engine/utils.hpp"
 #include "game/chunk.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
-#include "game/utils.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
 

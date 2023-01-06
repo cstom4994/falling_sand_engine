@@ -28,6 +28,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "engine/sdl_wrapper.h"
+#include "engine/utils.hpp"
 #include "engine_platform.h"
 #include "fonts.h"
 #include "game/console.hpp"
@@ -36,7 +37,6 @@
 #include "game/game_shaders.hpp"
 #include "game/game_ui.hpp"
 #include "game/imgui_core.hpp"
-#include "game/utils.hpp"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
 #include "world_generator.cpp"
@@ -2614,12 +2614,9 @@ newState = true;
         }
         R_ActivateShaderProgram(0, NULL);
         R_BlitRect(TexturePack_.loadingTexture, NULL, Render.target, NULL);
-        Drawing::drawTextEx("loading", Screen.windowWidth / 2, Screen.windowHeight / 2 - 32, [&] {
-            const char *text = "Loading...";
-            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(176, 176, 176, 255));
-            ImGui::Text("%s", text);
-            ImGui::PopStyleColor();
-        });
+
+        FontCache_DrawAlign(font, Render.target, Screen.windowWidth / 2, Screen.windowHeight / 2 - 32, FontCache_ALIGN_CENTER, "Loading...");
+
     } else {
         // render entities with LERP
 

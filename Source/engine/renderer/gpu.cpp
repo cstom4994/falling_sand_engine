@@ -4,21 +4,6 @@
 #include "core/global.hpp"
 #include "game/imgui_core.hpp"
 
-void Drawing::drawText(std::string name, std::string text, uint8_t x, uint8_t y, ImVec4 col) {
-    auto func = [&] { ImGui::TextColored(col, "%s", text.c_str()); };
-    drawTextEx(name, x, y, func);
-}
-
-void Drawing::drawTextEx(std::string name, uint8_t x, uint8_t y, std::function<void()> func) {
-    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(x, y)));
-
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize;
-    ImGui::Begin(name.c_str(), NULL, flags);
-    func();
-    ImGui::End();
-}
-
 b2Vec2 Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     float s = sin(angle);
     float c = cos(angle);

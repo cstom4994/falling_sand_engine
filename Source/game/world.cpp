@@ -22,9 +22,9 @@
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
+#include "engine/utils.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
-#include "game/utils.hpp"
 #include "reflectionflat.hpp"
 #include "world_generator.cpp"
 

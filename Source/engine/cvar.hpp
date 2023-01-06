@@ -9,49 +9,12 @@
 #include <vector>
 
 #include "core/macros.h"
+#include "engine/utils.hpp"
 
 #pragma region CVar
 
 // Hack form https://github.com/rmxbalanque/csys
 namespace CVar {
-
-struct String {
-
-    String() = default;
-
-    String(const char *str [[maybe_unused]]) : m_String(str ? str : "") {}
-
-    String(std::string str) : m_String(std::move(str)) {}
-
-    operator const char *() { return m_String.c_str(); }
-
-    operator std::string() { return m_String; }
-
-    std::pair<size_t, size_t> NextPoi(size_t &start) const {
-        size_t end = m_String.size();
-        std::pair<size_t, size_t> range(end + 1, end);
-        size_t pos = start;
-
-        for (; pos < end; ++pos)
-            if (!std::isspace(m_String[pos])) {
-                range.first = pos;
-                break;
-            }
-
-        for (; pos < end; ++pos)
-            if (std::isspace(m_String[pos])) {
-                range.second = pos;
-                break;
-            }
-
-        start = range.second;
-        return range;
-    }
-
-    [[nodiscard]] size_t End() const { return m_String.size() + 1; }
-
-    std::string m_String;
-};
 
 class Exception : public std::exception {
 public:
@@ -135,7 +98,7 @@ struct ArgumentParser {
         }                                                                                                                                    \
     }
 
-ARG_PARSE_BASE_SPEC(CVar::String) {
+ARG_PARSE_BASE_SPEC(String) {
     m_Value.m_String.clear();
 
     static auto GetWord = [](std::string &str, size_t start, size_t end) {

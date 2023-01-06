@@ -130,19 +130,19 @@ void ImGuiConsole::RegisterConsoleCommands() {
 
     m_ConsoleSystem.RegisterCommand(
             "filter", "Set screen filter",
-            [this](const CVar::String &filter) {
+            [this](const String &filter) {
                 std::memset(m_TextFilter.InputBuf, '\0', 256);
 
                 std::copy(filter.m_String.c_str(), filter.m_String.c_str() + std::min(static_cast<int>(filter.m_String.length()), 255), m_TextFilter.InputBuf);
 
                 m_TextFilter.Build();
             },
-            CVar::Arg<CVar::String>("filter_str"));
+            CVar::Arg<String>("filter_str"));
 
     // m_ConsoleSystem.RegisterCommand(
     //         "run", "Run given script",
-    //         [this](const CVar::String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
-    //         CVar::Arg<CVar::String>("script_name"));
+    //         [this](const String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
+    //         CVar::Arg<String>("script_name"));
 }
 
 void ImGuiConsole::FilterBar() {
@@ -504,7 +504,7 @@ void Console::Init() {
                 auto l = global.scripts->LuaRuntime;
                 l->GetWrapper()->dostring(s);
             },
-            CVar::Arg<CVar::String>(""));
+            CVar::Arg<String>(""));
 
     console->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
     console->System().Log(CVar::ItemType::INFO) << "The following variables have been exposed to the console:" << CVar::endl << CVar::endl;
