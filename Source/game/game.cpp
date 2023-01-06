@@ -103,9 +103,10 @@ int Game::init(int argc, char *argv[]) {
     FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/ark-pixel-12px-monospaced-zh_cn.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     // init the rng
-    METADOT_INFO("Seeding RNG...");
     pcg32_random_t rng;
+    pcg32_srandom_r(&rng, Time::millis(), 1);
     unsigned int seed = pcg32_random_r(&rng);
+    METADOT_INFO("SeedRNG %d", seed);
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
