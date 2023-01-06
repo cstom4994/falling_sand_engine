@@ -348,7 +348,7 @@ void OptionsUI::DrawAudio(Game *game) {
             {"bus:/Master", "Master"}, {"bus:/Master/Underwater/Music", "Music"}, {"bus:/Master/GUI", "GUI"}, {"bus:/Master/Underwater/Player", "Player"}, {"bus:/Master/Underwater/World", "World"}};
 
     for (auto &v : disp) {
-        float volume = 0;
+        F32 volume = 0;
         busMap[v[0]]->getVolume(&volume);
         volume *= 100;
         if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
@@ -541,8 +541,8 @@ void MainMenuUI::DrawSingleplayer(Game *game) {
 
                 World *w = nullptr;
                 METADOT_NEW(C, w, World);
-                w->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (double)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                        (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (double)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audioEngine);
+                w->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
+                        (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audioEngine);
                 w->metadata.lastOpenedTime = Time::millis() / 1000;
                 w->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
                 w->metadata.save(w->worldName);
@@ -856,7 +856,7 @@ void DebugDrawUI::Draw(Game *game) {
 
     int width = 5;
 
-    int nRows = ceil(Materials::MATERIALS.size() / (float)width);
+    int nRows = ceil(Materials::MATERIALS.size() / (F32)width);
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
@@ -1211,7 +1211,7 @@ void CreateWorldUI::Draw(Game *game) {
         std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
 
         METADOT_NEW(C, game->GameIsolate_.world, World);
-        game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (double)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (double)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
+        game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                                        Render.target, &global.audioEngine, generator);
         game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
         game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;

@@ -7,11 +7,11 @@
 void WaterFlowPassShader__update(struct WaterFlowPassShader *shader_t, int w, int h) {
     int res_loc = R_GetUniformLocation(shader_t->sb.shader, "resolution");
 
-    float res[2] = {(float)w, (float)h};
+    F32 res[2] = {(F32)w, (F32)h};
     R_SetUniformfv(res_loc, 2, 1, res);
 }
 
-void WaterShader__update(struct WaterShader *shader_t, float t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow,
+void WaterShader__update(struct WaterShader *shader_t, F32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow,
                          bool pixelated) {
     int time_loc = R_GetUniformLocation(shader_t->sb.shader, "time");
     int res_loc = R_GetUniformLocation(shader_t->sb.shader, "resolution");
@@ -26,14 +26,14 @@ void WaterShader__update(struct WaterShader *shader_t, float t, int w, int h, R_
 
     R_SetUniformf(time_loc, t);
 
-    float res[2] = {(float)w, (float)h};
+    F32 res[2] = {(F32)w, (F32)h};
     R_SetUniformfv(res_loc, 2, 1, res);
 
     R_SetShaderImage(maskImg, mask_loc, 1);
 
-    float res2[2] = {(float)mask_x, (float)mask_y};
+    F32 res2[2] = {(F32)mask_x, (F32)mask_y};
     R_SetUniformfv(mask_pos_loc, 2, 1, res2);
-    float res3[2] = {(float)mask_w, (float)mask_h};
+    F32 res3[2] = {(F32)mask_w, (F32)mask_h};
     R_SetUniformfv(mask_size_loc, 2, 1, res3);
 
     R_SetUniformf(scale_loc, scale);
@@ -66,21 +66,21 @@ void NewLightingShader__setDitheringEnabled(struct NewLightingShader *shader_t, 
     shader_t->lastDitheringEnabled = ditheringEnabled;
 }
 
-void NewLightingShader__setQuality(struct NewLightingShader *shader_t, float quality) {
+void NewLightingShader__setQuality(struct NewLightingShader *shader_t, F32 quality) {
     int lightingQuality_loc = R_GetUniformLocation(shader_t->sb.shader, "lightingQuality");
     R_SetUniformf(lightingQuality_loc, quality);
 
     shader_t->lastQuality = quality;
 }
 
-void NewLightingShader__setInside(struct NewLightingShader *shader_t, float inside) {
+void NewLightingShader__setInside(struct NewLightingShader *shader_t, F32 inside) {
     int inside_loc = R_GetUniformLocation(shader_t->sb.shader, "inside");
     R_SetUniformf(inside_loc, inside);
 
     shader_t->lastInside = inside;
 }
 
-void NewLightingShader__setBounds(struct NewLightingShader *shader_t, float minX, float minY, float maxX, float maxY) {
+void NewLightingShader__setBounds(struct NewLightingShader *shader_t, F32 minX, F32 minY, F32 maxX, F32 maxY) {
     int minX_loc = R_GetUniformLocation(shader_t->sb.shader, "minX");
     int minY_loc = R_GetUniformLocation(shader_t->sb.shader, "minY");
     int maxX_loc = R_GetUniformLocation(shader_t->sb.shader, "maxX");
@@ -92,7 +92,7 @@ void NewLightingShader__setBounds(struct NewLightingShader *shader_t, float minX
     R_SetUniformf(maxY_loc, maxY);
 }
 
-void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex, R_Image *emit, float x, float y) {
+void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex, R_Image *emit, F32 x, F32 y) {
     int txrmap_loc = R_GetUniformLocation(shader_t->sb.shader, "txrmap");
     int emitmap_loc = R_GetUniformLocation(shader_t->sb.shader, "emitmap");
     int txrsize_loc = R_GetUniformLocation(shader_t->sb.shader, "texSize");
@@ -101,10 +101,10 @@ void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex,
     shader_t->lastLx = x;
     shader_t->lastLy = y;
 
-    float res[2] = {x, y};
+    F32 res[2] = {x, y};
     R_SetUniformfv(t0_loc, 2, 1, res);
 
-    float tres[2] = {(float)tex->w, (float)tex->h};
+    F32 tres[2] = {(F32)tex->w, (F32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
 
     R_SetShaderImage(tex, txrmap_loc, 1);
@@ -115,7 +115,7 @@ void FireShader__update(struct FireShader *shader_t, R_Image *tex) {
     int firemap_loc = R_GetUniformLocation(shader_t->sb.shader, "firemap");
     int txrsize_loc = R_GetUniformLocation(shader_t->sb.shader, "texSize");
 
-    float tres[2] = {(float)tex->w, (float)tex->h};
+    F32 tres[2] = {(F32)tex->w, (F32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
 
     R_SetShaderImage(tex, firemap_loc, 1);
@@ -125,7 +125,7 @@ void Fire2Shader__update(struct Fire2Shader *shader_t, R_Image *tex) {
     int firemap_loc = R_GetUniformLocation(shader_t->sb.shader, "firemap");
     int txrsize_loc = R_GetUniformLocation(shader_t->sb.shader, "texSize");
 
-    float tres[2] = {(float)tex->w, (float)tex->h};
+    F32 tres[2] = {(F32)tex->w, (F32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
 
     R_SetShaderImage(tex, firemap_loc, 1);

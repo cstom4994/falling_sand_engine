@@ -9,7 +9,7 @@
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
 
-BackgroundLayer::BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY) {
+BackgroundLayer::BackgroundLayer(C_Surface *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY) {
     this->surface = {ScaleTexture(texture, 1, 1), ScaleTexture(texture, 2, 2), ScaleTexture(texture, 3, 3)};
     this->parralaxX = parallaxX;
     this->parralaxY = parallaxY;

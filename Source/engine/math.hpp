@@ -16,29 +16,29 @@
 
 #include "engine/internal/builtin_box2d.h"
 
-float math_perlin(float x, float y, float z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
+F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
 
 #pragma region NewMATH
 
 namespace NewMaths {
-float clamp(float input, float min, float max);
+F32 clamp(F32 input, F32 min, F32 max);
 int rand_range(int min, int max);
 uint64_t rand_XOR();
-inline double random_double();
-inline double random_double(double min, double max);
+inline F64 random_double();
+inline F64 random_double(F64 min, F64 max);
 struct v2;
 struct RandState;
-float v2_distance_2Points(v2 A, v2 B);
+F32 v2_distance_2Points(v2 A, v2 B);
 v2 unitvec_AtoB(v2 A, v2 B);
-float signed_angle_v2(v2 A, v2 B);
-v2 Rotate2D(v2 P, float sine, float cosine);
-v2 Rotate2D(v2 P, float Angle);
-v2 Rotate2D(v2 p, v2 o, float angle);
+F32 signed_angle_v2(v2 A, v2 B);
+v2 Rotate2D(v2 P, F32 sine, F32 cosine);
+v2 Rotate2D(v2 P, F32 Angle);
+v2 Rotate2D(v2 p, v2 o, F32 angle);
 v2 Reflection2D(v2 P, v2 N);
 bool PointInRectangle(v2 P, v2 A, v2 B, v2 C);
-int sign(float x);
-static float dot(v2 A, v2 B);
-static float perpdot(v2 A, v2 B);
+int sign(F32 x);
+static F32 dot(v2 A, v2 B);
+static F32 perpdot(v2 A, v2 B);
 static bool operator==(v2 A, v2 B);
 }  // namespace NewMaths
 
@@ -51,9 +51,9 @@ typedef struct {
 
 uint32_t pcg32_random_r(pcg32_random_t *rng);
 
-void simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
-std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, float tolerance);
-float pDistance(float x, float y, float x1, float y1, float x2, float y2);
+void simplify_section(const std::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
+std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, F32 tolerance);
+F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2);
 
 //  * A simple implementation of the marching squares algorithm that can identify
 //  * perimeters in an supplied byte array. The array of data over which this
@@ -139,7 +139,7 @@ Result FindPerimeter(int width, int height, unsigned char *data, int lookX, int 
 Direction FindEdge(int width, int height, unsigned char *data, int lookX, int lookY);
 }  // namespace MarchingSquares
 
-typedef double tppl_float;
+typedef F64 tppl_float;
 
 #define TPPL_CCW 1
 #define TPPL_CW -1

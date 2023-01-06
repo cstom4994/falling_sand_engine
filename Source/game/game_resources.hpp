@@ -32,7 +32,7 @@ void EndTexture(TexturePack *tex);
 
 C_Surface *LoadTexture(const char *path);
 C_Surface *LoadTextureInternal(const char *path, U32 pixelFormat);
-C_Surface *ScaleTexture(C_Surface *, float x, float y);
+C_Surface *ScaleTexture(C_Surface *, F32 x, F32 y);
 C_Surface *LoadTextureData(const char *path);
 
 #endif

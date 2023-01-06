@@ -75,8 +75,8 @@ public:
     int tickTime = 0;
 
     int scale = 4;
-    float accLoadX = 0;
-    float accLoadY = 0;
+    F32 accLoadX = 0;
+    F32 accLoadY = 0;
 
     long long fadeInStart = 0;
     long long fadeInLength = 0;

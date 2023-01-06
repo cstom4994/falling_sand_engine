@@ -16,11 +16,11 @@ class BackgroundLayer {
 public:
     std::vector<C_Surface *> surface;
     std::vector<R_Image *> texture;
-    float parralaxX;
-    float parralaxY;
-    float moveX;
-    float moveY;
-    BackgroundLayer(C_Surface *texture, float parallaxX, float parallaxY, float moveX, float moveY);
+    F32 parralaxX;
+    F32 parralaxY;
+    F32 moveX;
+    F32 moveY;
+    BackgroundLayer(C_Surface *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY);
     void init();
 };
 

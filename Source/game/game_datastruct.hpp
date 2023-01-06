@@ -24,10 +24,10 @@ struct R_Target;
 struct Particle;
 
 struct WorldEntity {
-    float x = 0;
-    float y = 0;
-    float vx = 0;
-    float vy = 0;
+    F32 x = 0;
+    F32 y = 0;
+    F32 vx = 0;
+    F32 vy = 0;
     int hw = 14;
     int hh = 26;
     bool ground = false;
@@ -73,14 +73,14 @@ public:
     int id = 0;
     int physicsType = 0;
     U8 alpha = 0;
-    float density = 0;
+    F32 density = 0;
     int iterations = 0;
     int emit = 0;
     U32 emitColor = 0;
     U32 color = 0;
     U32 addTemp = 0;
-    float conductionSelf = 1.0;
-    float conductionOther = 1.0;
+    F32 conductionSelf = 1.0;
+    F32 conductionOther = 1.0;
 
     bool interact = false;
     int *nInteractions = nullptr;
@@ -91,11 +91,11 @@ public:
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations, int emit, U32 emitColor, U32 color);
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations, int emit, U32 emitColor)
+    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
+    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor)
         : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, float density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
-    Material(int id, std::string name, int physicsType, int slipperyness, float density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
+    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
+    Material(int id, std::string name, int physicsType, int slipperyness, F32 density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
     Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
 };
 
@@ -146,14 +146,14 @@ public:
 
     Material *mat;
     U32 color;
-    int32_t temperature;
-    uint32_t id = 0;
+    I32 temperature;
+    U32 id = 0;
     bool moved = false;
-    float fluidAmount = 2.0f;
-    float fluidAmountDiff = 0.0f;
-    uint8_t settleCount = 0;
+    F32 fluidAmount = 2.0f;
+    F32 fluidAmountDiff = 0.0f;
+    U8 settleCount = 0;
 
-    MaterialInstance(Material *mat, U32 color, int32_t temperature);
+    MaterialInstance(Material *mat, U32 color, I32 temperature);
     MaterialInstance(Material *mat, U32 color) : MaterialInstance(mat, color, 0){};
     MaterialInstance() : MaterialInstance(&Materials::GENERIC_AIR, 0x000000, 0){};
     bool operator==(const MaterialInstance &other);
@@ -211,10 +211,10 @@ public:
     R_Image *texture = nullptr;
     int pivotX = 0;
     int pivotY = 0;
-    float breakSize = 16;
+    F32 breakSize = 16;
     std::vector<MaterialInstance> carry;
     std::vector<U16Point> fill;
-    uint16_t capacity = 0;
+    U16 capacity = 0;
 
     std::vector<Particle *> vacuumParticles;
 
@@ -269,22 +269,22 @@ struct WorldGenerator {
 
 struct Particle {
     MaterialInstance tile{};
-    float x = 0;
-    float y = 0;
-    float vx = 0;
-    float vy = 0;
-    float ax = 0;
-    float ay = 0;
-    float targetX = 0;
-    float targetY = 0;
-    float targetForce = 0;
+    F32 x = 0;
+    F32 y = 0;
+    F32 vx = 0;
+    F32 vy = 0;
+    F32 ax = 0;
+    F32 ay = 0;
+    F32 targetX = 0;
+    F32 targetY = 0;
+    F32 targetForce = 0;
     bool phase = false;
     bool temporary = false;
     int lifetime = 0;
     int fadeTime = 60;
     unsigned short inObjectState = 0;
     std::function<void()> killCallback = []() {};
-    explicit Particle(MaterialInstance tile, float x, float y, float vx, float vy, float ax, float ay) : tile(std::move(tile)), x(x), y(y), vx(vx), vy(vy), ax(ax), ay(ay) {}
+    explicit Particle(MaterialInstance tile, F32 x, F32 y, F32 vx, F32 vy, F32 ax, F32 ay) : tile(std::move(tile)), x(x), y(y), vx(vx), vy(vy), ax(ax), ay(ay) {}
     Particle(const Particle &part) : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax), ay(part.ay) {}
 };
 
@@ -313,7 +313,7 @@ struct GlobalDEF {
     int water_overlay;
     bool water_showFlow;
     bool water_pixelated;
-    float lightingQuality;
+    F32 lightingQuality;
     bool draw_light_overlay;
     bool simpleLighting;
     bool lightingEmission;
@@ -424,7 +424,7 @@ public:
     bool back = false;
     std::list<TPPLPoly> outline;
     std::list<TPPLPoly> outline2;
-    float hover = 0;
+    F32 hover = 0;
 
     Item *item = nullptr;
 
@@ -439,7 +439,7 @@ public:
 class Player : public WorldEntity {
 public:
     Item *heldItem = nullptr;
-    float holdAngle = 0;
+    F32 holdAngle = 0;
     long long startThrow = 0;
     bool holdHammer = false;
     bool holdVacuum = false;

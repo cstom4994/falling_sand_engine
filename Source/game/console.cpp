@@ -151,10 +151,10 @@ void ImGuiConsole::FilterBar() {
 }
 
 void ImGuiConsole::LogWindow() {
-    const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+    const F32 footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
     if (ImGui::BeginChild("ScrollRegion##", ImVec2(0, -footerHeightToReserve), false, 0)) {
 
-        static const float timestamp_width = ImGui::CalcTextSize("00:00:00:0000").x;
+        static const F32 timestamp_width = ImGui::CalcTextSize("00:00:00:0000").x;
         int count = 0;
 
         ImGui::PushTextWrapPos();
@@ -280,12 +280,12 @@ void ImGuiConsole::MenuBar() {
 
             ImGui::TextUnformatted("Color Palette");
             ImGui::Indent();
-            ImGui::ColorEdit4("Command##", (float *)&m_ColorPalette[COL_COMMAND], flags);
-            ImGui::ColorEdit4("Log##", (float *)&m_ColorPalette[COL_LOG], flags);
-            ImGui::ColorEdit4("Warning##", (float *)&m_ColorPalette[COL_WARNING], flags);
-            ImGui::ColorEdit4("Error##", (float *)&m_ColorPalette[COL_ERROR], flags);
-            ImGui::ColorEdit4("Info##", (float *)&m_ColorPalette[COL_INFO], flags);
-            ImGui::ColorEdit4("Time Stamp##", (float *)&m_ColorPalette[COL_TIMESTAMP], flags);
+            ImGui::ColorEdit4("Command##", (F32 *)&m_ColorPalette[COL_COMMAND], flags);
+            ImGui::ColorEdit4("Log##", (F32 *)&m_ColorPalette[COL_LOG], flags);
+            ImGui::ColorEdit4("Warning##", (F32 *)&m_ColorPalette[COL_WARNING], flags);
+            ImGui::ColorEdit4("Error##", (F32 *)&m_ColorPalette[COL_ERROR], flags);
+            ImGui::ColorEdit4("Info##", (F32 *)&m_ColorPalette[COL_INFO], flags);
+            ImGui::ColorEdit4("Time Stamp##", (F32 *)&m_ColorPalette[COL_TIMESTAMP], flags);
             ImGui::Unindent();
 
             ImGui::Separator();
@@ -424,7 +424,7 @@ void ImGuiConsole::SettingsHandler_ReadLine(ImGuiContext *ctx, ImGuiSettingsHand
 #define INI_CONSOLE_LOAD_BOOL(var) \
     (std::sscanf(line, #var "=%i", &b) == 1) { console->var = b == 1; }
 
-    float f;
+    F32 f;
     int r, g, b, a;
 
     if INI_CONSOLE_LOAD_COLOR (COL_COMMAND)
@@ -481,8 +481,8 @@ void Console::Init() {
     // Register variables
     console->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    console->System().RegisterVariable("plPosX", GameData_.plPosX, CVar::Arg<float>(""));
-    console->System().RegisterVariable("plPosY", GameData_.plPosY, CVar::Arg<float>(""));
+    console->System().RegisterVariable("plPosX", GameData_.plPosX, CVar::Arg<F32>(""));
+    console->System().RegisterVariable("plPosY", GameData_.plPosY, CVar::Arg<F32>(""));
 
     console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
 

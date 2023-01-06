@@ -44,9 +44,9 @@ bool is_ready(std::future<R> const &f) {
     return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 }
 
-void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
+void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
 
-void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target, Audio *audioEngine, WorldGenerator *generator) {
+void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *audioEngine, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 
@@ -93,14 +93,14 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
     ha.set_empty_key(INT_MIN);
     WorldIsolate_.chunkCache = ha;
 
-    float distributedPointsDistance = 0.05f;
+    F32 distributedPointsDistance = 0.05f;
     for (int i = 0; i < (1 / distributedPointsDistance) * (1 / distributedPointsDistance); i++) {
-        float x = rand() % 1000 / 1000.0;
-        float y = rand() % 1000 / 1000.0;
+        F32 x = rand() % 1000 / 1000.0;
+        F32 y = rand() % 1000 / 1000.0;
 
         for (int j = 0; j < WorldIsolate_.distributedPoints.size(); j++) {
-            float dx = WorldIsolate_.distributedPoints[j].x - x;
-            float dy = WorldIsolate_.distributedPoints[j].y - y;
+            F32 dx = WorldIsolate_.distributedPoints[j].x - x;
+            F32 dy = WorldIsolate_.distributedPoints[j].y - y;
             if (dx * dx + dy * dy < distributedPointsDistance * distributedPointsDistance) {
                 goto tooClose;
             }
@@ -130,10 +130,10 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
     }
 
     tiles = new MaterialInstance[w * h];
-    flowX = new float[w * h];
-    flowY = new float[w * h];
-    prevFlowX = new float[w * h];
-    prevFlowY = new float[w * h];
+    flowX = new F32[w * h];
+    flowY = new F32[w * h];
+    prevFlowX = new F32[w * h];
+    prevFlowY = new F32[w * h];
     layer2 = new MaterialInstance[w * h];
     background = new U32[w * h];
     for (int x = 0; x < width; x++) {
@@ -176,7 +176,7 @@ void World::init(std::string worldPath, uint16_t w, uint16_t h, R_Target *target
     // updateRigidBodyHitbox(rb2);
 }
 
-RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle, b2PolygonShape shape, float density, float friction, C_Surface *texture) {
+RigidBody *World::makeRigidBody(b2BodyType type, F32 x, F32 y, F32 angle, b2PolygonShape shape, F32 density, F32 friction, C_Surface *texture) {
 
     b2BodyDef bodyDef;
     bodyDef.type = type;
@@ -229,7 +229,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, float x, float y, float angle, 
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(b2BodyType type, float x, float y, float angle, std::vector<b2PolygonShape> shape, float density, float friction, C_Surface *texture) {
+RigidBody *World::makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, std::vector<b2PolygonShape> shape, F32 density, F32 friction, C_Surface *texture) {
 
     b2BodyDef bodyDef;
     bodyDef.type = type;
@@ -342,16 +342,16 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         return;
     }
 
-    float s = sin(rb->body->GetAngle());
-    float c = cos(rb->body->GetAngle());
+    F32 s = sin(rb->body->GetAngle());
+    F32 c = cos(rb->body->GetAngle());
 
     // translate point back to origin:
     minX -= 0;
     minY -= 0;
 
     // rotate point
-    float xnew = minX * c - minY * s;
-    float ynew = minX * s + minY * c;
+    F32 xnew = minX * c - minY * s;
+    F32 ynew = minX * s + minY * c;
 
     // translate point back:
     rb->body->SetTransform(b2Vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
@@ -449,8 +449,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
         std::vector<b2Vec2> worldMesh;
 
-        float lastX = (float)r.initialX;
-        float lastY = (float)r.initialY;
+        F32 lastX = (F32)r.initialX;
+        F32 lastY = (F32)r.initialY;
         for (int i = 0; i < r.directions.size(); i++) {
             // if(r.directions[i].x != 0) r.directions[i].x = r.directions[i].x / abs(r.directions[i].x);
             // if(r.directions[i].y != 0) r.directions[i].y = r.directions[i].y / abs(r.directions[i].y);
@@ -474,8 +474,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                 }
             }
 
-            lastX += (float)r.directions[i].x;
-            lastY -= (float)r.directions[i].y;
+            lastX += (F32)r.directions[i].x;
+            lastY -= (F32)r.directions[i].y;
             worldMesh.push_back({lastX, lastY});
         }
 
@@ -538,7 +538,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         std::for_each(result.begin(), result.end(), [&](TPPLPoly cur) {
             if ((cur[0].x == cur[1].x && cur[1].x == cur[2].x) || (cur[0].y == cur[1].y && cur[1].y == cur[2].y)) return;
 
-            b2Vec2 vec[3] = {{(float)cur[0].x, (float)cur[0].y}, {(float)cur[1].x, (float)cur[1].y}, {(float)cur[2].x, (float)cur[2].y}};
+            b2Vec2 vec[3] = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
 
             b2PolygonShape sh;
             sh.Set(vec, 3);
@@ -802,8 +802,8 @@ found : {};
 
         std::vector<b2Vec2> worldMesh;
 
-        float lastX = (float)r.initialX;
-        float lastY = (float)r.initialY;
+        F32 lastX = (F32)r.initialX;
+        F32 lastY = (F32)r.initialY;
 
         for (int i = 0; i < r.directions.size(); i++) {
             // if(r.directions[i].x != 0) r.directions[i].x = r.directions[i].x / abs(r.directions[i].x);
@@ -828,8 +828,8 @@ found : {};
                 }
             }
 
-            lastX += (float)r.directions[i].x;
-            lastY -= (float)r.directions[i].y;
+            lastX += (F32)r.directions[i].x;
+            lastY -= (F32)r.directions[i].y;
             worldMesh.push_back({lastX, lastY});
         }
 
@@ -892,7 +892,7 @@ found : {};
             cur[0].y += 0.01f;
         }
 
-        std::vector<b2Vec2> vec = {{(float)cur[0].x, (float)cur[0].y}, {(float)cur[1].x, (float)cur[1].y}, {(float)cur[2].x, (float)cur[2].y}};
+        std::vector<b2Vec2> vec = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
 
         // worldTris.push_back(vec);
         b2PolygonShape sh;
@@ -975,9 +975,9 @@ void World::setTileLayer2(int x, int y, MaterialInstance type) {
     layer2Dirty[x + y * width] = true;
 }
 
-float CalculateVerticalFlowValue(float remainingLiquid, float destLiquid) {
-    float sum = remainingLiquid + destLiquid;
-    float value = 0;
+F32 CalculateVerticalFlowValue(F32 remainingLiquid, F32 destLiquid) {
+    F32 sum = remainingLiquid + destLiquid;
+    F32 value = 0;
 
     if (sum <= FLUID_MaxValue) {
         value = FLUID_MaxValue;
@@ -1249,7 +1249,7 @@ void World::tick() {
                                         if (n < 1) n = 1;
 
                                         for (int i = 0; i < n; i++) {
-                                            float amt = tile.fluidAmount / n;
+                                            F32 amt = tile.fluidAmount / n;
 
                                             MaterialInstance nt = MaterialInstance(tile.mat, tile.color, tile.temperature);
                                             nt.fluidAmount = amt;
@@ -1267,16 +1267,16 @@ void World::tick() {
 
                                     if (tile.moved) continue;
 
-                                    float startValue = tile.fluidAmount;
-                                    float remainingValue = tile.fluidAmount;
+                                    F32 startValue = tile.fluidAmount;
+                                    F32 remainingValue = tile.fluidAmount;
 
                                     MaterialInstance bottom = tiles[(x) + (y + 1) * width];
 
                                     bool airBelow = bottom.mat->physicsType == PhysicsType::AIR;
                                     if ((airBelow && iter <= 2) || (bottom.mat->id == tile.mat->id)) {
-                                        float dstFl = bottom.mat->physicsType == PhysicsType::SOUP ? bottom.fluidAmount : 0.0f;
+                                        F32 dstFl = bottom.mat->physicsType == PhysicsType::SOUP ? bottom.fluidAmount : 0.0f;
 
-                                        float flow = CalculateVerticalFlowValue(startValue, dstFl) - dstFl;
+                                        F32 flow = CalculateVerticalFlowValue(startValue, dstFl) - dstFl;
                                         if (bottom.fluidAmount > 0 && flow > FLUID_MinFlow) flow *= FLUID_FlowSpeed;
 
                                         flow = std::max(flow, 0.0f);
@@ -1314,9 +1314,9 @@ void World::tick() {
                                     bool canMoveRight = (right.mat->physicsType == PhysicsType::AIR || (right.mat->id == tile.mat->id)) && !airBelow;
 
                                     if (canMoveLeft) {
-                                        float dstFl = left.mat->physicsType == PhysicsType::SOUP ? left.fluidAmount : 0.0f;
+                                        F32 dstFl = left.mat->physicsType == PhysicsType::SOUP ? left.fluidAmount : 0.0f;
 
-                                        float flow = (remainingValue - dstFl) / (canMoveRight ? 3.0f : 2.0f);
+                                        F32 flow = (remainingValue - dstFl) / (canMoveRight ? 3.0f : 2.0f);
                                         if (flow > FLUID_MinFlow) flow *= FLUID_FlowSpeed;
 
                                         flow = std::max(flow, 0.0f);
@@ -1342,9 +1342,9 @@ void World::tick() {
                                     }
 
                                     if (canMoveRight) {
-                                        float dstFl = right.mat->physicsType == PhysicsType::SOUP ? right.fluidAmount : 0.0f;
+                                        F32 dstFl = right.mat->physicsType == PhysicsType::SOUP ? right.fluidAmount : 0.0f;
 
-                                        float flow = (remainingValue - dstFl) / (canMoveLeft ? 2.0f : 2.0f);
+                                        F32 flow = (remainingValue - dstFl) / (canMoveLeft ? 2.0f : 2.0f);
                                         if (flow > FLUID_MinFlow) flow *= FLUID_FlowSpeed;
 
                                         flow = std::max(flow, 0.0f);
@@ -1372,9 +1372,9 @@ void World::tick() {
                                     MaterialInstance top = tiles[(x) + (y - 1) * width];
 
                                     if (top.mat->physicsType == PhysicsType::AIR || (top.mat->id == tile.mat->id)) {
-                                        float dstFl = top.mat->physicsType == PhysicsType::SOUP ? top.fluidAmount : 0.0f;
+                                        F32 dstFl = top.mat->physicsType == PhysicsType::SOUP ? top.fluidAmount : 0.0f;
 
-                                        float flow = remainingValue - CalculateVerticalFlowValue(remainingValue, dstFl);
+                                        F32 flow = remainingValue - CalculateVerticalFlowValue(remainingValue, dstFl);
                                         if (flow > FLUID_MinFlow) flow *= FLUID_FlowSpeed;
 
                                         flow = std::max(flow, 0.0f);
@@ -1915,11 +1915,11 @@ void World::tickTemperature() {
 
     for (int y = (tickZone.y + tickZone.h) - 1; y >= tickZone.y; y--) {
         for (int x = tickZone.x; x < (tickZone.x + tickZone.w); x++) {
-            float n = 0.01;
-            float v = 0;
+            F32 n = 0.01;
+            F32 v = 0;
             // for (int xx = -1; xx <= 1; xx++) {
             //	for (int yy = -1; yy <= 1; yy++) {
-            //		float factor = abs(tiles[(x + xx) + (y + yy) * width].temperature) / 64 * tiles[(x + xx) + (y + yy) * width].mat->conductionOther;
+            //		F32 factor = abs(tiles[(x + xx) + (y + yy) * width].temperature) / 64 * tiles[(x + xx) + (y + yy) * width].mat->conductionOther;
             //		//factor = fmax(-1, fmin(factor, 1));
 
             //		v += tiles[(x + xx) + (y + yy) * width].temperature * factor;
@@ -1929,7 +1929,7 @@ void World::tickTemperature() {
             //		//=(v1 * f1) + (v2 * f2)
             //	}
             //}
-            float factor = 0;
+            F32 factor = 0;
 #define FN(xa, ya)                                                                                                                   \
     if (tiles[(x + xa) + (y + ya) * width].temperature != 0) {                                                                       \
         factor = abs(tiles[(x + xa) + (y + ya) * width].temperature) / 64 * tiles[(x + xa) + (y + ya) * width].mat->conductionOther; \
@@ -1971,13 +1971,13 @@ void World::renderParticles(unsigned char **texture) {
     for (auto &cur : WorldIsolate_.particles) {
         if (cur->x < 0 || cur->x >= width || cur->y < 0 || cur->y >= height) continue;
 
-        float alphaMod = 1;
+        F32 alphaMod = 1;
         if (cur->temporary) {
             if (cur->lifetime < cur->fadeTime) {
-                alphaMod = (cur->lifetime / (float)cur->fadeTime);
+                alphaMod = (cur->lifetime / (F32)cur->fadeTime);
             }
         }
-        // float alphaMod = 1;
+        // F32 alphaMod = 1;
 
         const unsigned int offset = (width * 4 * (int)cur->y) + (int)cur->x * 4;
         U32 color = cur->tile.color;
@@ -2005,9 +2005,9 @@ void World::tickParticles() {
         }
 
         if (cur->targetForce != 0) {
-            float tdx = cur->targetX - cur->x;
-            float tdy = cur->targetY - cur->y;
-            float normFac = sqrtf(tdx * tdx + tdy * tdy);
+            F32 tdx = cur->targetX - cur->x;
+            F32 tdy = cur->targetY - cur->y;
+            F32 normFac = sqrtf(tdx * tdx + tdy * tdy);
 
             cur->vx += tdx / normFac * cur->targetForce;
             cur->vy += tdy / normFac * cur->targetForce;
@@ -2033,8 +2033,8 @@ void World::tickParticles() {
 
         int div = (int)((abs(cur->vx) + abs(cur->vy)) + 1);
 
-        float dvx = cur->vx / div;
-        float dvy = cur->vy / div;
+        F32 dvx = cur->vx / div;
+        F32 dvy = cur->vy / div;
 
         for (int i = 0; i < div; i++) {
             cur->x += dvx;
@@ -2179,8 +2179,8 @@ void World::tickObjectBounds() {
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
-        float x = cur->body->GetWorldCenter().x;
-        float y = cur->body->GetWorldCenter().y;
+        F32 x = cur->body->GetWorldCenter().x;
+        F32 y = cur->body->GetWorldCenter().y;
         cur->body->SetEnabled(x >= tickZone.x && y >= tickZone.y && x < tickZone.x + tickZone.w && y < tickZone.y + tickZone.h);
     }
 }
@@ -2196,8 +2196,8 @@ void World::tickObjects() {
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
-        float x = cur->body->GetWorldCenter().x;
-        float y = cur->body->GetWorldCenter().y;
+        F32 x = cur->body->GetWorldCenter().x;
+        F32 y = cur->body->GetWorldCenter().y;
 
         if (cur->body->IsEnabled()) {
             if (x - 100 < minX) minX = (int)x - 100;
@@ -2215,17 +2215,17 @@ void World::tickObjects() {
     int meshZoneSnap = 16;
     int mzx = std::max((int)((minX - loadZone.x) / meshZoneSnap) * meshZoneSnap + loadZone.x, 0);
     int mzy = std::max((int)((minY - loadZone.y) / meshZoneSnap) * meshZoneSnap + loadZone.y, 0);
-    meshZone = {mzx, mzy, std::min((int)ceil(((double)maxX - mzx) / (double)meshZoneSnap) * meshZoneSnap, width - mzx - 1),
-                std::min((int)ceil(((double)maxY - mzy) / (double)meshZoneSnap) * meshZoneSnap, height - mzy - 1)};
+    meshZone = {mzx, mzy, std::min((int)ceil(((F64)maxX - mzx) / (F64)meshZoneSnap) * meshZoneSnap, width - mzx - 1),
+                std::min((int)ceil(((F64)maxY - mzy) / (F64)meshZoneSnap) * meshZoneSnap, height - mzy - 1)};
 
-    float timeStep = 33.0 / 1000.0;
+    F32 timeStep = 33.0 / 1000.0;
 
     I32 velocityIterations = 5;
     I32 positionIterations = 2;
 
     for (auto &cur : WorldIsolate_.entities) {
         cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
-        cur->rb->body->SetLinearVelocity({(float)(cur->vx * 1.0), (float)(cur->vy * 1.0)});
+        cur->rb->body->SetLinearVelocity({(F32)(cur->vx * 1.0), (F32)(cur->vy * 1.0)});
     }
 
     b2world->Step(timeStep, velocityIterations, positionIterations);
@@ -2444,8 +2444,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeX); i++) {
                     if (((loadZone.x - changeX - i) + loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y - CHUNK_W * 4; y <= -loadZone.y + tickZone.h + CHUNK_H * 9; y += CHUNK_H) {
-                            int cy = floor(y / (float)CHUNK_H);
-                            int cx = floor((-(loadZone.x - changeX - i) + tickZone.w) / (float)CHUNK_W) + 1;
+                            int cy = floor(y / (F32)CHUNK_H);
+                            int cx = floor((-(loadZone.x - changeX - i) + tickZone.w) / (F32)CHUNK_W) + 1;
                             for (int xx = 0; xx <= 4; xx++) {
                                 queueLoadChunk(cx + xx, cy, true, xx == 0 && y >= -loadZone.y + tickZone.y && y <= -loadZone.y + tickZone.h + CHUNK_H);
                             }
@@ -2456,8 +2456,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeX); i++) {
                     if (((loadZone.x - changeX - i - 1) + loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y; y <= -loadZone.y + tickZone.h + CHUNK_H; y += CHUNK_H) {
-                            int cy = floor(y / (float)CHUNK_H);
-                            int cx = ceil((-(loadZone.x - changeX + i)) / (float)CHUNK_W);
+                            int cy = floor(y / (F32)CHUNK_H);
+                            int cx = ceil((-(loadZone.x - changeX + i)) / (F32)CHUNK_W);
                             // unloadChunk(cx, cy);
                             chunkSaveCache(getChunk(cx, cy));
                         }
@@ -2467,8 +2467,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeX); i++) {
                     if (((loadZone.x - changeX + i) + loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y - CHUNK_W * 4; y <= -loadZone.y + tickZone.h + CHUNK_H * 9; y += CHUNK_H) {
-                            int cy = floor(y / (float)CHUNK_H);
-                            int cx = ceil((-(loadZone.x - changeX + i)) / (float)CHUNK_W);
+                            int cy = floor(y / (F32)CHUNK_H);
+                            int cx = ceil((-(loadZone.x - changeX + i)) / (F32)CHUNK_W);
                             for (int xx = 0; xx <= 4; xx++) {
                                 queueLoadChunk(cx - xx, cy, true, xx == 0 && y >= -loadZone.y + tickZone.y && y <= -loadZone.y + tickZone.h + CHUNK_H);
                             }
@@ -2479,8 +2479,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeX); i++) {
                     if (((loadZone.x - changeX + i + 1) + loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y; y <= -loadZone.y + tickZone.h + CHUNK_H; y += CHUNK_H) {
-                            int cy = floor(y / (float)CHUNK_H);
-                            int cx = floor((-(loadZone.x - changeX - i) + tickZone.w) / (float)CHUNK_W) + 1;
+                            int cy = floor(y / (F32)CHUNK_H);
+                            int cx = floor((-(loadZone.x - changeX - i) + tickZone.w) / (F32)CHUNK_W) + 1;
                             // unloadChunk(cx, cy);
                             chunkSaveCache(getChunk(cx, cy));
                         }
@@ -2492,8 +2492,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeY); i++) {
                     if (((loadZone.y - changeY - i) + loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x - CHUNK_W * 4; x <= -loadZone.x + tickZone.w + CHUNK_W * 9; x += CHUNK_W) {
-                            int cx = floor(x / (float)CHUNK_W);
-                            int cy = floor((-(loadZone.y - changeY - i) + tickZone.h) / (float)CHUNK_H) + 1;
+                            int cx = floor(x / (F32)CHUNK_W);
+                            int cy = floor((-(loadZone.y - changeY - i) + tickZone.h) / (F32)CHUNK_H) + 1;
                             for (int yy = 0; yy <= 4; yy++) {
                                 queueLoadChunk(cx, cy + yy, true, yy == 0 && x >= -loadZone.x + tickZone.x && x <= -loadZone.x + tickZone.w + CHUNK_W);
                             }
@@ -2504,8 +2504,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeY); i++) {
                     if (((loadZone.y - changeY - i - 1) + loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x; x <= -loadZone.x + tickZone.w + CHUNK_W; x += CHUNK_W) {
-                            int cx = floor(x / (float)CHUNK_W);
-                            int cy = ceil((-(loadZone.y - changeY + i)) / (float)CHUNK_H);
+                            int cx = floor(x / (F32)CHUNK_W);
+                            int cy = ceil((-(loadZone.y - changeY + i)) / (F32)CHUNK_H);
                             // unloadChunk(cx, cy);
                             chunkSaveCache(getChunk(cx, cy));
                         }
@@ -2515,8 +2515,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeY); i++) {
                     if (((loadZone.y - changeY + i) + loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x - CHUNK_W * 4; x <= -loadZone.x + tickZone.w + CHUNK_W * 9; x += CHUNK_W) {
-                            int cx = floor(x / (float)CHUNK_W);
-                            int cy = ceil((-(loadZone.y - changeY + i)) / (float)CHUNK_H);
+                            int cx = floor(x / (F32)CHUNK_W);
+                            int cy = ceil((-(loadZone.y - changeY + i)) / (F32)CHUNK_H);
                             for (int yy = 0; yy <= 4; yy++) {
                                 queueLoadChunk(cx, cy - yy, true, yy == 0 && x >= -loadZone.x + tickZone.x && x <= -loadZone.x + tickZone.w + CHUNK_W);
                             }
@@ -2527,8 +2527,8 @@ void World::tickChunks() {
                 for (int i = 0; i < abs(changeY); i++) {
                     if (((loadZone.y - changeY + i + 1) + loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x; x <= -loadZone.x + tickZone.w + CHUNK_W; x += CHUNK_W) {
-                            int cx = floor(x / (float)CHUNK_W);
-                            int cy = floor((-(loadZone.y - changeY - i) + tickZone.h) / (float)CHUNK_H) + 1;
+                            int cx = floor(x / (F32)CHUNK_W);
+                            int cy = floor((-(loadZone.y - changeY - i) + tickZone.h) / (F32)CHUNK_H) + 1;
                             // unloadChunk(cx, cy);
                             chunkSaveCache(getChunk(cx, cy));
                         }
@@ -2760,7 +2760,7 @@ Biome *World::getBiomeAt(int x, int y) {
     return ret;
 
     if (abs(CHUNK_H * 3 - y) < CHUNK_H * 10) {
-        float v = noise.GetCellular(x / 20.0, 0, 8592) / 2 + 0.5;
+        F32 v = noise.GetCellular(x / 20.0, 0, 8592) / 2 + 0.5;
         int biomeCatNum = 3;
         int biomeCat = (int)(v * biomeCatNum);
         if (biomeCat == 0) {
@@ -2774,8 +2774,8 @@ Biome *World::getBiomeAt(int x, int y) {
         noise.SetCellularDistanceFunction(FastNoise::CellularDistanceFunction::Natural);
         noise.SetCellularJitter(0.3);
         noise.SetCellularReturnType(FastNoise::CellularReturnType::CellValue);
-        float v = noise.GetCellular(x / 20.0, y / 20.0, 2039) / 2 + 0.5;
-        float v2 = noise.GetCellular(x / 3.0, y / 3.0, 3890) / 2 + 0.5;
+        F32 v = noise.GetCellular(x / 20.0, y / 20.0, 2039) / 2 + 0.5;
+        F32 v2 = noise.GetCellular(x / 3.0, y / 3.0, 3890) / 2 + 0.5;
         int biomeCatNum = 4;
         int biomeCat = (int)(v * biomeCatNum);
 
@@ -2810,15 +2810,15 @@ void World::addStructure(PlacedStructure str) {
     }
 }
 
-b2Vec2 World::getNearestPoint(float x, float y) {
-    float xm = fmod(1 + fmod(x, 1), 1);
-    float ym = fmod(1 + fmod(y, 1), 1);
-    float closestDist = 100;
+b2Vec2 World::getNearestPoint(F32 x, F32 y) {
+    F32 xm = fmod(1 + fmod(x, 1), 1);
+    F32 ym = fmod(1 + fmod(y, 1), 1);
+    F32 closestDist = 100;
     b2Vec2 closest;
     for (int i = 0; i < WorldIsolate_.distributedPoints.size(); i++) {
-        float dx = WorldIsolate_.distributedPoints[i].x - xm;
-        float dy = WorldIsolate_.distributedPoints[i].y - ym;
-        float d = dx * dx + dy * dy;
+        F32 dx = WorldIsolate_.distributedPoints[i].x - xm;
+        F32 dy = WorldIsolate_.distributedPoints[i].y - ym;
+        F32 d = dx * dx + dy * dy;
         if (d < closestDist) {
             closestDist = d;
             closest = WorldIsolate_.distributedPoints[i];
@@ -2827,13 +2827,13 @@ b2Vec2 World::getNearestPoint(float x, float y) {
     return {closest.x + (x - xm), closest.y + (y - ym)};
 }
 
-std::vector<b2Vec2> World::getPointsWithin(float x, float y, float w, float h) {
-    float xm = fmod(1 + fmod(x, 1), 1);
-    float ym = fmod(1 + fmod(y, 1), 1);
+std::vector<b2Vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
+    F32 xm = fmod(1 + fmod(x, 1), 1);
+    F32 ym = fmod(1 + fmod(y, 1), 1);
 
     std::vector<b2Vec2> pts;
-    for (float xo = floor(x) - 1; xo < ceil(x + w); xo++) {
-        for (float yo = floor(y) - 1; yo < ceil(y + h); yo++) {
+    for (F32 xo = floor(x) - 1; xo < ceil(x + w); xo++) {
+        for (F32 yo = floor(y) - 1; yo < ceil(y + h); yo++) {
             for (int i = 0; i < WorldIsolate_.distributedPoints.size(); i++) {
                 if (WorldIsolate_.distributedPoints[i].x + xo > x && WorldIsolate_.distributedPoints[i].y + yo > y && WorldIsolate_.distributedPoints[i].x + xo < x + w &&
                     WorldIsolate_.distributedPoints[i].y + yo < y + h) {
@@ -2899,8 +2899,8 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
             for (int j = 0; j < strs.size(); j++) {
                 for (int tx = 0; tx < strs[j].base.w; tx++) {
                     for (int ty = 0; ty < strs[j].base.h; ty++) {
-                        int chx = (int)floor((tx + strs[j].x) / (float)CHUNK_W) + 1 - ch->x;
-                        int chy = (int)floor((ty + strs[j].y) / (float)CHUNK_H) + 1 - ch->y;
+                        int chx = (int)floor((tx + strs[j].x) / (F32)CHUNK_W) + 1 - ch->x;
+                        int chy = (int)floor((ty + strs[j].y) / (F32)CHUNK_H) + 1 - ch->y;
                         int dxx = (CHUNK_W + ((tx + strs[j].x) % CHUNK_W)) % CHUNK_W;
                         int dyy = (CHUNK_H + ((ty + strs[j].y) % CHUNK_H)) % CHUNK_H;
                         if (strs[j].base.tiles[tx + ty * strs[j].base.w].mat->physicsType != PhysicsType::AIR) {
@@ -2974,10 +2974,10 @@ void World::tickEntities(R_Target *t) {
         cur->vy += 0.25;
 
         if (cur->vx > 0.001) {
-            float stx = cur->x;
-            for (float dx = 0; dx < cur->vx; dx += cur->vx / 8.0) {
-                float nx = stx + dx;
-                float ny = cur->y;
+            F32 stx = cur->x;
+            for (F32 dx = 0; dx < cur->vx; dx += cur->vx / 8.0) {
+                F32 nx = stx + dx;
+                F32 ny = cur->y;
 
                 bool collide = false;
                 for (int xx = 0; xx < cur->hw; xx++) {
@@ -3029,10 +3029,10 @@ void World::tickEntities(R_Target *t) {
                 }
             }
         } else if (cur->vx < -0.001) {
-            float stx = cur->x;
-            for (float dx = 0; dx > cur->vx; dx += cur->vx / 8.0) {
-                float nx = stx + dx;
-                float ny = cur->y;
+            F32 stx = cur->x;
+            for (F32 dx = 0; dx > cur->vx; dx += cur->vx / 8.0) {
+                F32 nx = stx + dx;
+                F32 ny = cur->y;
 
                 bool collide = false;
                 for (int xx = 0; xx < cur->hw; xx++) {
@@ -3088,10 +3088,10 @@ void World::tickEntities(R_Target *t) {
         cur->ground = false;
 
         if (cur->vy > 0.001) {
-            float sty = cur->y;
-            for (float dy = 0; dy < cur->vy; dy += cur->vy / 8.0) {
-                float ny = sty + dy;
-                float nx = cur->x;
+            F32 sty = cur->y;
+            for (F32 dy = 0; dy < cur->vy; dy += cur->vy / 8.0) {
+                F32 ny = sty + dy;
+                F32 nx = cur->x;
 
                 bool collide = false;
                 for (int xx = 0; xx < cur->hw; xx++) {
@@ -3116,10 +3116,10 @@ void World::tickEntities(R_Target *t) {
                 }
             }
         } else if (cur->vy < -0.001) {
-            float sty = cur->y;
-            for (float dy = 0; dy > cur->vy; dy += cur->vy / 8.0) {
-                float ny = sty + dy;
-                float nx = cur->x;
+            F32 sty = cur->y;
+            for (F32 dy = 0; dy > cur->vy; dy += cur->vy / 8.0) {
+                F32 ny = sty + dy;
+                F32 nx = cur->x;
 
                 bool collide = false;
                 for (int xx = 0; xx < cur->hw; xx++) {
@@ -3199,27 +3199,27 @@ void World::forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn)
 // Adapted from https://gamedev.stackexchange.com/a/182143
 void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn) {
 
-    float sx = x0;
-    float sy = y0;
-    float ex = x1;
-    float ey = y1;
+    F32 sx = x0;
+    F32 sy = y0;
+    F32 ex = x1;
+    F32 ey = y1;
 
-    float x = floor(sx);
-    float y = floor(sy);
-    float diffX = ex - sx;
-    float diffY = ey - sy;
-    float stepX = (diffX > 0) ? 1 : ((diffX < 0) ? -1 : 0);
-    float stepY = (diffY > 0) ? 1 : ((diffY < 0) ? -1 : 0);
+    F32 x = floor(sx);
+    F32 y = floor(sy);
+    F32 diffX = ex - sx;
+    F32 diffY = ey - sy;
+    F32 stepX = (diffX > 0) ? 1 : ((diffX < 0) ? -1 : 0);
+    F32 stepY = (diffY > 0) ? 1 : ((diffY < 0) ? -1 : 0);
 
-    float xOffset = ex > sx ? (ceil(sx) - sx) : (sx - floor(sx));
-    float yOffset = ey > sy ? (ceil(sy) - sy) : (sy - floor(sy));
-    float angle = atan2(-diffY, diffX);
-    float tMaxX = xOffset / cos(angle);
-    float tMaxY = yOffset / sin(angle);
-    float tDeltaX = 1.0 / cos(angle);
-    float tDeltaY = 1.0 / sin(angle);
+    F32 xOffset = ex > sx ? (ceil(sx) - sx) : (sx - floor(sx));
+    F32 yOffset = ey > sy ? (ceil(sy) - sy) : (sy - floor(sy));
+    F32 angle = atan2(-diffY, diffX);
+    F32 tMaxX = xOffset / cos(angle);
+    F32 tMaxY = yOffset / sin(angle);
+    F32 tDeltaX = 1.0 / cos(angle);
+    F32 tDeltaY = 1.0 / sin(angle);
 
-    float manhattanDistance = abs(floor(ex) - floor(sx)) + abs(floor(ey) - floor(sy));
+    F32 manhattanDistance = abs(floor(ex) - floor(sx)) + abs(floor(ey) - floor(sy));
     std::vector<int> visited = {};
     for (int t = 0; t <= manhattanDistance; ++t) {
         if (std::find(visited.begin(), visited.end(), x + y * width) == visited.end() && fn(x + y * width)) return;
@@ -3275,14 +3275,14 @@ RigidBody *World::physicsCheck(int x, int y) {
             // audioEngine.PlayEvent("event:/Player/Impact");
             b2PolygonShape s;
             s.SetAsBox(1, 1);
-            RigidBody *rb = makeRigidBody(b2_dynamicBody, (float)minX, (float)minY, 0, s, 1, (float)0.3, tex);
+            RigidBody *rb = makeRigidBody(b2_dynamicBody, (F32)minX, (F32)minY, 0, s, 1, (F32)0.3, tex);
 
             b2Filter bf = {};
             bf.categoryBits = 0x0001;
             bf.maskBits = 0xffff;
             rb->body->GetFixtureList()[0].SetFilterData(bf);
 
-            rb->body->SetLinearVelocity({(float)((rand() % 100) / 100.0 - 0.5), (float)((rand() % 100) / 100.0 - 0.5)});
+            rb->body->SetLinearVelocity({(F32)((rand() % 100) / 100.0 - 0.5), (F32)((rand() % 100) / 100.0 - 0.5)});
 
             WorldIsolate_.rigidBodies.push_back(rb);
             updateRigidBodyHitbox(rb);

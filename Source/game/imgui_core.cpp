@@ -165,7 +165,7 @@ void ImGuiCore::Init() {
     config.OversampleV = 1;
     config.PixelSnapH = 1;
 
-    float scale = 1.0f;
+    F32 scale = 1.0f;
 
     io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/zpix.ttf"), 20.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
@@ -342,7 +342,7 @@ void ImGuiCore::Render() {
             }
 
             // options panel
-            static float options_panel_bottom = 0;
+            static F32 options_panel_bottom = 0;
             {
                 ImGui::SetNextWindowSize({ layout::kRenderOptionsPanelWidth, 0 });
                 ImGui::SetNextWindowPos({ parent_pos.x + layout::kMargin, file_panel_bottom + layout::kPanelSpacing });

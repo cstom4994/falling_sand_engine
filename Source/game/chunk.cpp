@@ -205,7 +205,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     }
 
     /*if(compressed_data_size > 0){
-        METADOT_BUG("Compression ratio: {}", (float)compressed_data_size / src_size * 100);
+        METADOT_BUG("Compression ratio: {}", (F32)compressed_data_size / src_size * 100);
     }*/
 
     char *n_compressed_data = (char *)realloc(compressed_data, compressed_data_size);
@@ -227,7 +227,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     }
 
     /*if(compressed_data_size2 > 0){
-        METADOT_BUG("Compression ratio: {}", (float)compressed_data_size2 / src_size2 * 100);
+        METADOT_BUG("Compression ratio: {}", (F32)compressed_data_size2 / src_size2 * 100);
     }*/
 
     char *n_compressed_data2 = (char *)realloc(compressed_data2, (size_t)compressed_data_size2);

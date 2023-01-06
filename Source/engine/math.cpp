@@ -14,11 +14,11 @@
 
 #include "libs/external/stb_perlin.h"
 
-float math_perlin(float x, float y, float z, int x_wrap, int y_wrap, int z_wrap) { return stb_perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap); }
+F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { return stb_perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap); }
 
 #pragma region NewMATH
 
-float NewMaths::clamp(float input, float min, float max) {
+F32 NewMaths::clamp(F32 input, F32 min, F32 max) {
     if (input < min)
         return min;
     else if (input > max)
@@ -47,32 +47,32 @@ uint64_t NewMaths::rand_XOR() {
 int NewMaths::rand_range(int min, int max) {
     // return min + rand() / (RAND_MAX / (max - min + 1) + 1);
     return min + NewMaths::rand_XOR() % (max - min + 1);
-    // return (float)rand()/ RAND_MAX * (max - min + 1) + min;
+    // return (F32)rand()/ RAND_MAX * (max - min + 1) + min;
 }
 
-inline double NewMaths::random_double() {
+inline F64 NewMaths::random_double() {
     // Returns a random real in [0,1).
     return rand() / (RAND_MAX + 1.0);
 }
 
-inline double NewMaths::random_double(double min, double max) {
+inline F64 NewMaths::random_double(F64 min, F64 max) {
     // Returns a random real in [min,max).
     return min + (max - min) * random_double();
 }
 struct NewMaths::v2 {
     union {
-        float e[2];
+        F32 e[2];
         struct {
-            float x, y;
+            F32 x, y;
         };
     };
 
     v2() : e{0, 0} {}
-    v2(float e0, float e1) : e{e0, e1} {}
+    v2(F32 e0, F32 e1) : e{e0, e1} {}
 
     NewMaths::v2 operator-() const { return NewMaths::v2(-e[0], -e[1]); }
-    float operator[](int i) const { return e[i]; }
-    float &operator[](int i) { return e[i]; }
+    F32 operator[](int i) const { return e[i]; }
+    F32 &operator[](int i) { return e[i]; }
 
     NewMaths::v2 &operator+=(const NewMaths::v2 &v) {
         e[0] += v.e[0];
@@ -85,20 +85,20 @@ struct NewMaths::v2 {
         return *this;
     }
 
-    NewMaths::v2 &operator*=(const float t) {
+    NewMaths::v2 &operator*=(const F32 t) {
         e[0] *= t;
         e[1] *= t;
         return *this;
     }
 
-    NewMaths::v2 &operator/=(const float t) { return *this *= 1 / t; }
+    NewMaths::v2 &operator/=(const F32 t) { return *this *= 1 / t; }
 
-    float length_squared() const { return e[0] * e[0] + e[1] * e[1]; }
+    F32 length_squared() const { return e[0] * e[0] + e[1] * e[1]; }
 
-    float length() const { return sqrt(length_squared()); }
+    F32 length() const { return sqrt(length_squared()); }
 
     NewMaths::v2 normalize() {
-        float lengf = length();
+        F32 lengf = length();
 
         if (lengf > 0)
             return NewMaths::v2(x / lengf, y / lengf);
@@ -106,17 +106,17 @@ struct NewMaths::v2 {
             return NewMaths::v2(0, 0);
     }
 
-    float dot(NewMaths::v2 V) {
-        float result = x * V.x + y * V.y;
+    F32 dot(NewMaths::v2 V) {
+        F32 result = x * V.x + y * V.y;
         return result;
     }
     NewMaths::v2 perpendicular() { return NewMaths::v2(y, -x); }
-    float perpdot(NewMaths::v2 V) {
-        float result = x * V.y - y * V.x;
+    F32 perpdot(NewMaths::v2 V) {
+        F32 result = x * V.y - y * V.x;
         return result;
     }
-    float cross(NewMaths::v2 V) {
-        float result = x * V.y - y * V.x;
+    F32 cross(NewMaths::v2 V) {
+        F32 result = x * V.y - y * V.x;
         return result;
     }
 
@@ -125,7 +125,7 @@ struct NewMaths::v2 {
         return result;
     }
 
-    float angle(NewMaths::v2 V)  // returns signed angle in radians
+    F32 angle(NewMaths::v2 V)  // returns signed angle in radians
     {
         return atan2(x * V.y - y * V.x, x * V.x + y * V.y);
     }
@@ -139,17 +139,17 @@ NewMaths::v2 operator+(NewMaths::v2 a, NewMaths::v2 b) {
     NewMaths::v2 tojesus(a.x + b.x, a.y + b.y);
     return tojesus;
 }
-NewMaths::v2 operator-(NewMaths::v2 a, float b) {
+NewMaths::v2 operator-(NewMaths::v2 a, F32 b) {
     NewMaths::v2 tojesus(a.x - b, a.y - b);
     return tojesus;
 }
 
-NewMaths::v2 operator+(NewMaths::v2 a, float b) {
+NewMaths::v2 operator+(NewMaths::v2 a, F32 b) {
     NewMaths::v2 tojesus(a.x + b, a.y + b);
     return tojesus;
 }
 
-NewMaths::v2 operator*(NewMaths::v2 a, float b) {
+NewMaths::v2 operator*(NewMaths::v2 a, F32 b) {
     NewMaths::v2 tojesus(a.x * b, a.y * b);
     return tojesus;
 }
@@ -158,12 +158,12 @@ NewMaths::v2 operator*(NewMaths::v2 a, NewMaths::v2 b) {
     return tojesus;
 }
 
-NewMaths::v2 operator*(float b, NewMaths::v2 a) {
+NewMaths::v2 operator*(F32 b, NewMaths::v2 a) {
     NewMaths::v2 tojesus(a.x * b, a.y * b);
     return tojesus;
 }
 
-NewMaths::v2 operator/(NewMaths::v2 a, float b) {
+NewMaths::v2 operator/(NewMaths::v2 a, F32 b) {
     NewMaths::v2 tojesus(a.x / b, a.y / b);
     return tojesus;
 }
@@ -172,28 +172,28 @@ NewMaths::v2 operator/(NewMaths::v2 a, NewMaths::v2 b) {
     return tojesus;
 }
 
-float NewMaths::v2_distance_2Points(NewMaths::v2 A, NewMaths::v2 B) { return sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y)); }
+F32 NewMaths::v2_distance_2Points(NewMaths::v2 A, NewMaths::v2 B) { return sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y)); }
 
 NewMaths::v2 NewMaths::unitvec_AtoB(NewMaths::v2 A, NewMaths::v2 B) {
-    float n = NewMaths::v2_distance_2Points(A, B);
+    F32 n = NewMaths::v2_distance_2Points(A, B);
     return ((B - A) / n);
 }
 
-float NewMaths::signed_angle_v2(NewMaths::v2 A, NewMaths::v2 B) { return atan2(A.x * B.y - A.y * B.x, A.x * B.x + A.y * B.y); }
+F32 NewMaths::signed_angle_v2(NewMaths::v2 A, NewMaths::v2 B) { return atan2(A.x * B.y - A.y * B.x, A.x * B.x + A.y * B.y); }
 
-NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, float sine, float cosine) { return NewMaths::v2(NewMaths::v2(cosine, -sine).dot(P), NewMaths::v2(sine, cosine).dot(P)); }
-NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, float Angle) {
-    float sine = sin(Angle);
-    float cosine = cos(Angle);
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, F32 sine, F32 cosine) { return NewMaths::v2(NewMaths::v2(cosine, -sine).dot(P), NewMaths::v2(sine, cosine).dot(P)); }
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, F32 Angle) {
+    F32 sine = sin(Angle);
+    F32 cosine = cos(Angle);
     return NewMaths::Rotate2D(P, sine, cosine);
 }
-NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 p, NewMaths::v2 o, float angle) {
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 p, NewMaths::v2 o, F32 angle) {
     // Demonstration: https://www.desmos.com/calculator/8aaegifsba
-    float s = sin(angle);
-    float c = cos(angle);
+    F32 s = sin(angle);
+    F32 c = cos(angle);
 
-    float x = (p.x - o.x) * c - (p.y - o.y) * s + o.x;
-    float y = (p.x - o.x) * s + (p.y - o.y) * c + o.y;
+    F32 x = (p.x - o.x) * c - (p.y - o.y) * s + o.x;
+    F32 y = (p.x - o.x) * s + (p.y - o.y) * c + o.y;
 
     return NewMaths::v2(x, y);
 }
@@ -212,7 +212,7 @@ bool NewMaths::PointInRectangle(NewMaths::v2 P, NewMaths::v2 A, NewMaths::v2 B, 
         return false;
 }
 
-int NewMaths::sign(float x) {
+int NewMaths::sign(F32 x) {
     if (x > 0)
         return 1;
     else if (x < 0)
@@ -221,15 +221,15 @@ int NewMaths::sign(float x) {
         return 0;
 }
 
-static float NewMaths::dot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.x + A.y * B.y; }
+static F32 NewMaths::dot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.x + A.y * B.y; }
 
-static float NewMaths::perpdot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.y - A.y * B.x; }
+static F32 NewMaths::perpdot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.y - A.y * B.x; }
 
 static bool operator==(NewMaths::v2 A, NewMaths::v2 B) { return A.x == B.x && A.y == B.y; }
 
-static float abso(float F) { return F > 0 ? F : -F; };
+static F32 abso(F32 F) { return F > 0 ? F : -F; };
 
-static NewMaths::v2 rand_vector(float length) { return NewMaths::v2(NewMaths::rand_range(-100, 100) * 0.01f * length, NewMaths::rand_range(-100, 100) * 0.01f * length); }
+static NewMaths::v2 rand_vector(F32 length) { return NewMaths::v2(NewMaths::rand_range(-100, 100) * 0.01f * length, NewMaths::rand_range(-100, 100) * 0.01f * length); }
 
 #pragma endregion NewMATH
 
@@ -249,7 +249,7 @@ uint32_t pcg32_random_r(pcg32_random_t *rng) {
 
 #pragma endregion PCG32
 
-void simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
+void simplify_section(const std::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
     // make sure we always return 2 points
     if (pts.size() - omitted <= 2) return;
 
@@ -259,11 +259,11 @@ void simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i,
         return;
     }
 
-    float max_distance = -1.0f;
+    F32 max_distance = -1.0f;
     size_t max_index = i;
 
     for (size_t k = i + 1; k < j; k++) {
-        float distance = pDistance(pts[k].x, pts[k].y, pts[i].x, pts[i].y, pts[j].x, pts[j].y);
+        F32 distance = pDistance(pts[k].x, pts[k].y, pts[i].x, pts[i].y, pts[j].x, pts[j].y);
 
         if (distance > max_distance) {
             max_distance = distance;
@@ -282,7 +282,7 @@ void simplify_section(const std::vector<b2Vec2> &pts, float tolerance, size_t i,
     }
 }
 
-std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, float tolerance) {
+std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, F32 tolerance) {
     std::vector<bool> mark_map(vertices.size(), true);
 
     simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
@@ -297,20 +297,20 @@ std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, float toleranc
     return result;
 }
 
-float pDistance(float x, float y, float x1, float y1, float x2, float y2) {
+F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2) {
 
-    float A = x - x1;
-    float B = y - y1;
-    float C = x2 - x1;
-    float D = y2 - y1;
+    F32 A = x - x1;
+    F32 B = y - y1;
+    F32 C = x2 - x1;
+    F32 D = y2 - y1;
 
-    float dot = A * C + B * D;
-    float len_sq = C * C + D * D;
-    float param = -1;
+    F32 dot = A * C + B * D;
+    F32 len_sq = C * C + D * D;
+    F32 param = -1;
     if (len_sq != 0)  // in case of 0 length line
         param = dot / len_sq;
 
-    float xx, yy;
+    F32 xx, yy;
 
     if (param < 0) {
         xx = x1;
@@ -323,8 +323,8 @@ float pDistance(float x, float y, float x1, float y1, float x2, float y2) {
         yy = y1 + param * D;
     }
 
-    float dx = x - xx;
-    float dy = y - yy;
+    F32 dx = x - xx;
+    F32 dy = y - yy;
     return std::sqrt(dx * dx + dy * dy);
 }
 

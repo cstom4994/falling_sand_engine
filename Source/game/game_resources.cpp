@@ -87,7 +87,7 @@ C_Surface *LoadTextureInternal(const char *path, U32 pixelFormat) {
     return loadedSurface;
 }
 
-C_Surface *ScaleTexture(C_Surface *src, float x, float y) {
+C_Surface *ScaleTexture(C_Surface *src, F32 x, F32 y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
     C_Rect *srcR = (C_Rect *)gc_malloc(&gc, sizeof(C_Rect));

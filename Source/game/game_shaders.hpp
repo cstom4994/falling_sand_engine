@@ -19,10 +19,10 @@ struct WaterShader {
 struct NewLightingShader {
     metadot_shader_base sb;
 
-    float lastLx;
-    float lastLy;
-    float lastQuality;
-    float lastInside;
+    F32 lastLx;
+    F32 lastLy;
+    F32 lastQuality;
+    F32 lastInside;
     bool lastSimpleMode;
     bool lastEmissionEnabled;
     bool lastDitheringEnabled;
@@ -37,15 +37,15 @@ struct Fire2Shader {
 };
 
 void WaterFlowPassShader__update(struct WaterFlowPassShader *shader_t, int w, int h);
-void WaterShader__update(struct WaterShader *shader_t, float t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow,
+void WaterShader__update(struct WaterShader *shader_t, F32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow,
                          bool pixelated);
 void NewLightingShader__setSimpleMode(struct NewLightingShader *shader_t, bool simpleMode);
 void NewLightingShader__setEmissionEnabled(struct NewLightingShader *shader_t, bool emissionEnabled);
 void NewLightingShader__setDitheringEnabled(struct NewLightingShader *shader_t, bool ditheringEnabled);
-void NewLightingShader__setQuality(struct NewLightingShader *shader_t, float quality);
-void NewLightingShader__setInside(struct NewLightingShader *shader_t, float inside);
-void NewLightingShader__setBounds(struct NewLightingShader *shader_t, float minX, float minY, float maxX, float maxY);
-void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex, R_Image *emit, float x, float y);
+void NewLightingShader__setQuality(struct NewLightingShader *shader_t, F32 quality);
+void NewLightingShader__setInside(struct NewLightingShader *shader_t, F32 inside);
+void NewLightingShader__setBounds(struct NewLightingShader *shader_t, F32 minX, F32 minY, F32 maxX, F32 maxY);
+void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex, R_Image *emit, F32 x, F32 y);
 void FireShader__update(struct FireShader *shader_t, R_Image *tex);
 void Fire2Shader__update(struct Fire2Shader *shader_t, R_Image *tex);
 
@@ -53,8 +53,8 @@ typedef struct ShaderWorker {
     struct WaterShader *waterShader;
     struct WaterFlowPassShader *waterFlowPassShader;
     struct NewLightingShader *newLightingShader;
-    float newLightingShader_insideDes;
-    float newLightingShader_insideCur;
+    F32 newLightingShader_insideDes;
+    F32 newLightingShader_insideCur;
     struct FireShader *fireShader;
     struct Fire2Shader *fire2Shader;
 } ShaderWorker;

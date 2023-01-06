@@ -41,7 +41,7 @@ protected:
 
     static void HelpMaker(const char *desc);
 
-    float m_WindowAlpha;
+    F32 m_WindowAlpha;
 
     enum COLOR_PALETTE {
 
