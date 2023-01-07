@@ -10,7 +10,7 @@
 #include "game/game_resources.hpp"
 
 BackgroundLayer::BackgroundLayer(C_Surface *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY) {
-    this->surface = {ScaleTexture(texture, 1, 1), ScaleTexture(texture, 2, 2), ScaleTexture(texture, 3, 3)};
+    this->surface = {ScaleSurface(texture, 1, 1), ScaleSurface(texture, 2, 2), ScaleSurface(texture, 3, 3)};
     this->parralaxX = parallaxX;
     this->parralaxY = parallaxY;
     this->moveX = moveX;
@@ -41,10 +41,10 @@ Background *Backgrounds::Get(std::string name) {
 void Backgrounds::Load() {
     METADOT_INFO("Loading backgrounds...");
 
-    std::vector<BackgroundLayer> testOverworldLayers = {BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer2.png", SDL_PIXELFORMAT_ARGB8888), 0.125, 0.125, 1, 0),
-                                                        BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer3.png", SDL_PIXELFORMAT_ARGB8888), 0.25, 0.25, 0, 0),
-                                                        BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer4.png", SDL_PIXELFORMAT_ARGB8888), 0.375, 0.375, 4, 0),
-                                                        BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer5.png", SDL_PIXELFORMAT_ARGB8888), 0.5, 0.5, 0, 0)};
+    std::vector<BackgroundLayer> testOverworldLayers = {BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer2.png", SDL_PIXELFORMAT_ARGB8888)->surface, 0.125, 0.125, 1, 0),
+                                                        BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer3.png", SDL_PIXELFORMAT_ARGB8888)->surface, 0.25, 0.25, 0, 0),
+                                                        BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer4.png", SDL_PIXELFORMAT_ARGB8888)->surface, 0.375, 0.375, 4, 0),
+                                                        BackgroundLayer(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer5.png", SDL_PIXELFORMAT_ARGB8888)->surface, 0.5, 0.5, 0, 0)};
 
     METADOT_NEW(C, global.game->GameIsolate_.backgrounds, Backgrounds);
     METADOT_CREATE(C, bg, Background, 0x7EAFCB, testOverworldLayers);

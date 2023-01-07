@@ -43,7 +43,7 @@
 #include "world_generator.cpp"
 
 extern void fuckme();
-extern C_Surface *LoadAseprite(const char *path);
+extern Texture *LoadAseprite(const char *path);
 
 Global global;
 
@@ -76,12 +76,12 @@ int Game::init(int argc, char *argv[]) {
 
     R_Clear(Render.target);
     R_Flip(Render.target);
-    C_Surface *splashSurf = LoadTexture("data/assets/title/splash.png");
-    R_Image *splashImg = R_CopyImageFromSurface(splashSurf);
+    Texture *splashSurf = LoadTexture("data/assets/title/splash.png");
+    R_Image *splashImg = R_CopyImageFromSurface(splashSurf->surface);
     R_SetImageFilter(splashImg, R_FILTER_NEAREST);
     R_BlitRect(splashImg, NULL, Render.target, NULL);
     R_FreeImage(splashImg);
-    SDL_FreeSurface(splashSurf);
+    DestroyTexture(splashSurf);
     R_Flip(Render.target);
 
     METADOT_INFO("Loading ImGUI");
@@ -1294,7 +1294,7 @@ void Game::updateFrameEarly() {
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::VACUUM);
             i3->vacuumParticles = {};
-            i3->surface = LoadTexture("data/assets/objects/testVacuum.png");
+            i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
             i3->texture = R_CopyImageFromSurface(i3->surface);
             R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
             i3->pivotX = 6;

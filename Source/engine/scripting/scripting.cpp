@@ -212,6 +212,9 @@ void LuaCore::Init() {
     s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
     s_lua["metadot_metadata"] = LuaWrapper::function(metadot_metadata);
     s_lua["metadot_buildnum"] = LuaWrapper::function(metadot_buildnum);
+    s_lua["Eng_GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
+    s_lua["Eng_CreateTexture"] = LuaWrapper::function(CreateTexture);
+    s_lua["Eng_DestroyTexture"] = LuaWrapper::function(DestroyTexture);
 
     s_lua.dostring(MetaEngine::Format("package.path = "
                                       "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"

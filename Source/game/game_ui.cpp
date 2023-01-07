@@ -18,6 +18,7 @@
 #include "engine/scripting/scripting.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
+#include "game/game_resources.hpp"
 #include "game/imgui_core.hpp"
 #include "game/world_generator.cpp"
 #include "imgui/imgui.h"
@@ -342,10 +343,10 @@ void MainMenuUI::RefreshWorlds(Game *game) {
 
 void MainMenuUI::Setup() {
 
-    C_Surface *logoSfc = LoadTexture("data/assets/ui/logo.png");
-    title = R_CopyImageFromSurface(logoSfc);
+    Texture *logoSfc = LoadTexture("data/assets/ui/logo.png");
+    title = R_CopyImageFromSurface(logoSfc->surface);
     R_SetImageFilter(title, R_FILTER_NEAREST);
-    SDL_FreeSurface(logoSfc);
+    DestroyTexture(logoSfc);
 
     setup = true;
 }
@@ -666,22 +667,22 @@ void DebugDrawUI::Setup() {
     }
 
     tools_images = {};
-    C_Surface *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc));
+    Texture *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
+    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[0], R_FILTER_NEAREST);
-    SDL_FreeSurface(sfc);
+    DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testHammer.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc));
+    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[1], R_FILTER_NEAREST);
-    SDL_FreeSurface(sfc);
+    DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testVacuum.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc));
+    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[2], R_FILTER_NEAREST);
-    SDL_FreeSurface(sfc);
+    DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testBucket.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc));
+    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[3], R_FILTER_NEAREST);
-    SDL_FreeSurface(sfc);
+    DestroyTexture(sfc);
 }
 
 void DebugDrawUI::Draw(Game *game) {
@@ -788,7 +789,7 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::TOOL);
-                    i3->surface = LoadTexture("data/assets/objects/testPickaxe.png");
+                    i3->surface = LoadTexture("data/assets/objects/testPickaxe.png")->surface;
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
@@ -809,7 +810,7 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::HAMMER);
-                    i3->surface = LoadTexture("data/assets/objects/testHammer.png");
+                    i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
@@ -829,7 +830,7 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::VACUUM);
-                    i3->surface = LoadTexture("data/assets/objects/testVacuum.png");
+                    i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 6;
@@ -850,9 +851,9 @@ void DebugDrawUI::Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::FLUID_CONTAINER);
-                    i3->surface = LoadTexture("data/assets/objects/testBucket.png");
+                    i3->surface = LoadTexture("data/assets/objects/testBucket.png")->surface;
                     i3->capacity = 100;
-                    i3->loadFillTexture(LoadTexture("data/assets/objects/testBucket_fill.png"));
+                    i3->loadFillTexture(LoadTexture("data/assets/objects/testBucket_fill.png")->surface);
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 0;

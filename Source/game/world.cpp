@@ -28,8 +28,6 @@
 #include "reflectionflat.hpp"
 #include "world_generator.cpp"
 
-extern C_Surface *LoadAseprite(const char *path);
-
 #define W_PI 3.14159265358979323846
 
 #define BIOMEGET(_c) global.game->GameSystem_.gameScriptwrap.BiomeGet(_c)
@@ -156,13 +154,13 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
 
     b2PolygonShape nothingShape;
     nothingShape.SetAsBox(0, 0);
-    this->staticBody = makeRigidBody(b2_staticBody, 0, 0, 0, nothingShape, 0, 0, global.game->GameIsolate_.texturepack->cloud);
+    this->staticBody = makeRigidBody(b2_staticBody, 0, 0, 0, nothingShape, 0, 0, global.game->GameIsolate_.texturepack->cloud->surface);
 
     updateWorldMesh();
 
     b2PolygonShape dynamicBox3;
     dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
-    RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png"));
+    RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png")->surface);
 
     WorldIsolate_.rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
@@ -902,7 +900,7 @@ found : {};
 
 #pragma endregion
 
-    C_Surface *texture = LoadTexture("data/assets/objects/testObject3.png");
+    Texture *texture = LoadTexture("data/assets/objects/testObject3.png");
 
     if (chunk->rb) {
         delete[] chunk->rb->tiles;
@@ -910,7 +908,7 @@ found : {};
         SDL_FreeSurface(chunk->rb->surface);
         delete chunk->rb;
     }
-    chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture);
+    chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture->surface);
 
     for (b2Fixture *f = chunk->rb->body->GetFixtureList(); f; f = f->GetNext()) {
         b2Filter bf = {};

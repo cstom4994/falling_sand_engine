@@ -6,33 +6,39 @@
 #include "core/core.h"
 #include "engine/sdl_wrapper.h"
 
+typedef struct Texture {
+    C_Surface *surface;
+} Texture;
+
 typedef struct TexturePack {
-    C_Surface *testTexture;
-    C_Surface *dirt1Texture;
-    C_Surface *stone1Texture;
-    C_Surface *smoothStone;
-    C_Surface *cobbleStone;
-    C_Surface *flatCobbleStone;
-    C_Surface *smoothDirt;
-    C_Surface *cobbleDirt;
-    C_Surface *flatCobbleDirt;
-    C_Surface *softDirt;
-    C_Surface *cloud;
-    C_Surface *gold;
-    C_Surface *goldMolten;
-    C_Surface *goldSolid;
-    C_Surface *iron;
-    C_Surface *obsidian;
-    C_Surface *caveBG;
-    C_Surface *testAse;
+    Texture *testTexture;
+    Texture *dirt1Texture;
+    Texture *stone1Texture;
+    Texture *smoothStone;
+    Texture *cobbleStone;
+    Texture *flatCobbleStone;
+    Texture *smoothDirt;
+    Texture *cobbleDirt;
+    Texture *flatCobbleDirt;
+    Texture *softDirt;
+    Texture *cloud;
+    Texture *gold;
+    Texture *goldMolten;
+    Texture *goldSolid;
+    Texture *iron;
+    Texture *obsidian;
+    Texture *caveBG;
+    Texture *testAse;
 } TexturePack;
 
 void InitTexture(TexturePack *tex);
 void EndTexture(TexturePack *tex);
 
-C_Surface *LoadTexture(const char *path);
-C_Surface *LoadTextureInternal(const char *path, U32 pixelFormat);
-C_Surface *ScaleTexture(C_Surface *, F32 x, F32 y);
-C_Surface *LoadTextureData(const char *path);
+Texture *CreateTexture(C_Surface *surface);
+void DestroyTexture(Texture *tex);
+Texture *LoadTexture(const char *path);
+Texture *LoadTextureInternal(const char *path, U32 pixelFormat);
+C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y);
+Texture *LoadTextureData(const char *path);
 
 #endif

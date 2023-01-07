@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "SDL_surface.h"
 #include "core/alloc.h"
 #include "core/core.h"
 #include "engine/filesystem.h"
@@ -36,11 +37,23 @@ void InitTexture(TexturePack *tex) {
 
 void EndTexture(TexturePack *tex) { METADOT_ASSERT_E(tex); }
 
-C_Surface *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+Texture *CreateTexture(C_Surface *surface) {
+    Texture *tex = (Texture *)gc_malloc(&gc, sizeof(Texture));
+    tex->surface = surface;
+    return tex;
+}
 
-C_Surface *LoadTexture(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+void DestroyTexture(Texture *tex) {
+    METADOT_ASSERT_E(tex);
+    if (tex->surface) SDL_FreeSurface(tex->surface);
+    gc_free(&gc, tex);
+}
 
-C_Surface *LoadTextureInternal(const char *path, U32 pixelFormat) {
+Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+
+Texture *LoadTexture(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+
+Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
 
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
 
@@ -80,14 +93,16 @@ C_Surface *LoadTextureInternal(const char *path, U32 pixelFormat) {
 
     C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
 
-    // stbi_image_free(data);
-
     METADOT_ASSERT_E(loadedSurface);
 
-    return loadedSurface;
+    Texture *tex = CreateTexture(loadedSurface);
+
+    // stbi_image_free(data);
+
+    return tex;
 }
 
-C_Surface *ScaleTexture(C_Surface *src, F32 x, F32 y) {
+C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
     C_Rect *srcR = (C_Rect *)gc_malloc(&gc, sizeof(C_Rect));
@@ -108,10 +123,12 @@ C_Surface *ScaleTexture(C_Surface *src, F32 x, F32 y) {
     gc_free(&gc, srcR);
     gc_free(&gc, dstR);
 
-    return dest;
+    src = dest;
+
+    return src;
 }
 
-C_Surface *LoadAseprite(const char *path) {
+Texture *LoadAseprite(const char *path) {
 
     Ase_Output *ase = Ase_Load(METADOT_RESLOC(path));
 
@@ -132,5 +149,7 @@ C_Surface *LoadAseprite(const char *path) {
     SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.num_entries);
     SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
 
-    return surface;
+    Texture *tex = CreateTexture(surface);
+
+    return tex;
 }
