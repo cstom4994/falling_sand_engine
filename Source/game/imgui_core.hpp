@@ -48,8 +48,8 @@ public:
     ImGuiCore();
     void Init();
     void onDetach();
-    void begin();
-    void end();
+    void NewFrame();
+    void Draw();
     void Render();
     ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/core.h"
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
@@ -28,6 +29,7 @@
 #include "libs/lua/ffi.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
+#include "renderer/renderer_gpu.h"
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
@@ -148,6 +150,13 @@ static void add_packagepath(const char *p) {
                     s_lua->globalTable());
 }
 
+static int R_GetTextureAttr(R_Image *image, const char *attr) {
+    if (strcmp(attr, "w")) return image->w;
+    if (strcmp(attr, "h")) return image->h;
+    METADOT_ASSERT_E(0);
+    return 0;
+}
+
 void LuaCore::print_error(lua_State *state) {
     const char *message = lua_tostring(state, -1);
     METADOT_ERROR("LuaScript ERROR:\n  %s", (message ? message : "no message"));
@@ -215,6 +224,7 @@ void LuaCore::Init() {
     s_lua["Eng_GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
     s_lua["Eng_CreateTexture"] = LuaWrapper::function(CreateTexture);
     s_lua["Eng_DestroyTexture"] = LuaWrapper::function(DestroyTexture);
+    s_lua["R_GetTextureAttr"] = LuaWrapper::function(R_GetTextureAttr);
 
     s_lua.dostring(MetaEngine::Format("package.path = "
                                       "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"

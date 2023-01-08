@@ -40,23 +40,16 @@ public:
     static void Draw(Game *game);
 };
 
-class MainMenuUI {
-public:
-    static bool visible;
-    static int state;
-    static bool setup;
-    static R_Image *title;
-    static bool connectButtonEnabled;
-    static ImVec2 pos;
-    static std::vector<std::tuple<std::string, WorldMeta>> worlds;
-    static long long lastRefresh;
+extern bool MainMenuUI__visible;
 
-    static void RefreshWorlds(Game *game);
-    static void Setup();
-    static void Draw(Game *game);
-    static void DrawMainMenu(Game *game);
-    static void DrawWorldLists(Game *game);
-};
+void MainMenuUI__RefreshWorlds(Game *game);
+void MainMenuUI__Setup();
+void MainMenuUI__Draw(Game *game);
+void MainMenuUI__DrawMainMenu(Game *game);
+void MainMenuUI__DrawWorldLists(Game *game);
+void MainMenuUI__reset(Game *game);
+void MainMenuUI__DrawCreateWorldUI(Game *game);
+void MainMenuUI__inputChanged(std::string text, Game *game);
 
 class InGameUI {
 public:
@@ -71,17 +64,7 @@ public:
 
 class CreateWorldUI {
 public:
-    static bool setup;
-    static char worldNameBuf[32];
-
-    static bool createWorldButtonEnabled;
-    static std::string worldFolderLabel;
-    static int selIndex;
-
     static void Setup();
-    static void Reset(Game *game);
-    static void Draw(Game *game);
-    static void inputChanged(std::string text, Game *game);
 };
 
 class OptionsUI {

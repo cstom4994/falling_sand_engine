@@ -10,7 +10,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine.h"
-#include "engine/engine_cpp.h"
+#include "engine/engine.h"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
@@ -40,11 +40,24 @@ std::string I18N::Get(std::string text) { return (*global.scripts->LuaRuntime->G
 
 void GameUI::GameUI_Draw(Game *game) {
     DebugDrawUI::Draw(game);
-    MainMenuUI::Draw(game);
+    MainMenuUI__Draw(game);
     InGameUI::Draw(game);
 }
 
 namespace GameUI {
+
+int MainMenuUI__state = 0;
+bool MainMenuUI__visible = true;
+bool MainMenuUI__setup = false;
+R_Image *MainMenuUI__title = nullptr;
+bool MainMenuUI__connectButtonEnabled = false;
+ImVec2 MainMenuUI__pos = ImVec2(0, 0);
+std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI__worlds = {};
+long long MainMenuUI__lastRefresh = 0;
+char MainMenuUI__worldNameBuf[32] = "";
+bool MainMenuUI__createWorldButtonEnabled = false;
+std::string MainMenuUI__worldFolderLabel = "";
+int MainMenuUI__selIndex = 0;
 
 int InGameUI::state = 0;
 
@@ -161,7 +174,7 @@ void OptionsUI::Draw(Game *game) {
     ImGui::Separator();
 
     if (ImGui::Button("返回")) {
-        MainMenuUI::state = 0;
+        MainMenuUI__state = 0;
         InGameUI::state = 0;
     }
     if (ImGui::Button("保存")) {
@@ -307,26 +320,9 @@ void OptionsUI::DrawAudio(Game *game) {
 
 void OptionsUI::DrawInput(Game *game) {}
 
-int MainMenuUI::state = 0;
+void MainMenuUI__RefreshWorlds(Game *game) {
 
-bool MainMenuUI::visible = true;
-bool MainMenuUI::setup = false;
-R_Image *MainMenuUI::title = nullptr;
-bool MainMenuUI::connectButtonEnabled = false;
-ImVec2 MainMenuUI::pos = ImVec2(0, 0);
-std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI::worlds = {};
-long long MainMenuUI::lastRefresh = 0;
-
-bool sortWorlds(std::tuple<std::string, WorldMeta> w1, std::tuple<std::string, WorldMeta> w2) {
-    int64_t c1 = std::get<1>(w1).lastOpenedTime;
-    int64_t c2 = std::get<1>(w2).lastOpenedTime;
-
-    return (c1 > c2);
-}
-
-void MainMenuUI::RefreshWorlds(Game *game) {
-
-    worlds = {};
+    MainMenuUI__worlds = {};
 
     for (auto &p : std::filesystem::directory_iterator(METADOT_RESLOC("saves/"))) {
         std::string worldName = p.path().filename().generic_string();
@@ -335,25 +331,41 @@ void MainMenuUI::RefreshWorlds(Game *game) {
 
         WorldMeta meta = WorldMeta::loadWorldMeta(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()));
 
-        worlds.push_back(std::make_tuple(worldName, meta));
+        MainMenuUI__worlds.push_back(std::make_tuple(worldName, meta));
     }
 
-    sort(worlds.begin(), worlds.end(), sortWorlds);
+    auto sortWorlds = [](std::tuple<std::string, WorldMeta> w1, std::tuple<std::string, WorldMeta> w2) {
+        int64_t c1 = std::get<1>(w1).lastOpenedTime;
+        int64_t c2 = std::get<1>(w2).lastOpenedTime;
+        return (c1 > c2);
+    };
+
+    std::sort(MainMenuUI__worlds.begin(), MainMenuUI__worlds.end(), sortWorlds);
 }
 
-void MainMenuUI::Setup() {
+void MainMenuUI__Setup() {
 
     Texture *logoSfc = LoadTexture("data/assets/ui/logo.png");
-    title = R_CopyImageFromSurface(logoSfc->surface);
-    R_SetImageFilter(title, R_FILTER_NEAREST);
+    MainMenuUI__title = R_CopyImageFromSurface(logoSfc->surface);
+    R_SetImageFilter(MainMenuUI__title, R_FILTER_NEAREST);
     DestroyTexture(logoSfc);
 
-    setup = true;
+    // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
+    // materialTestWorld = R_CopyImageFromSurface(logoMT);
+    // R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
+    // SDL_FreeSurface(logoMT);
+
+    // C_Surface *logoDef = LoadTexture("data/assets/ui/prev_default.png");
+    // defaultWorld = R_CopyImageFromSurface(logoDef);
+    // R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
+    // SDL_FreeSurface(logoDef);
+
+    MainMenuUI__setup = true;
 }
 
-void MainMenuUI::Draw(Game *game) {
+void MainMenuUI__Draw(Game *game) {
 
-    if (!visible) return;
+    if (!MainMenuUI__visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(400, 400));
     ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 400 / 2, Screen.windowHeight / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
@@ -362,44 +374,44 @@ void MainMenuUI::Draw(Game *game) {
         return;
     }
 
-    if (state == 0) {
-        DrawMainMenu(game);
-    } else if (state == 1) {
-        CreateWorldUI::Draw(game);
-    } else if (state == 2) {
-        DrawWorldLists(game);
-    } else if (state == 4) {
+    if (MainMenuUI__state == 0) {
+        MainMenuUI__DrawMainMenu(game);
+    } else if (MainMenuUI__state == 1) {
+        MainMenuUI__DrawCreateWorldUI(game);
+    } else if (MainMenuUI__state == 2) {
+        MainMenuUI__DrawWorldLists(game);
+    } else if (MainMenuUI__state == 4) {
         OptionsUI::Draw(game);
     }
 
     ImGui::End();
 }
 
-void MainMenuUI::DrawMainMenu(Game *game) {
+void MainMenuUI__DrawMainMenu(Game *game) {
 
-    if (!setup) {
-        Setup();
+    if (!MainMenuUI__setup) {
+        MainMenuUI__Setup();
     }
 
-    pos = ImGui::GetWindowPos();
+    MainMenuUI__pos = ImGui::GetWindowPos();
 
-    ImTextureID texId = (ImTextureID)R_GetTextureHandle(title);
+    ImTextureID texId = (ImTextureID)R_GetTextureHandle(MainMenuUI__title);
 
     ImVec2 uv_min = ImVec2(0.0f, 0.0f);                // Top-left
     ImVec2 uv_max = ImVec2(1.0f, 1.0f);                // Lower-right
     ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
     ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
 
-    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
-    ImGui::Image(texId, ImVec2(title->w / 2, title->h / 2), uv_min, uv_max, tint_col, border_col);
+    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - MainMenuUI__title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
+    ImGui::Image(texId, ImVec2(MainMenuUI__title->w / 2, MainMenuUI__title->h / 2), uv_min, uv_max, tint_col, border_col);
     ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
     if (ImGui::Button(LANG("ui_play"))) {
-        state = 2;
+        MainMenuUI__state = 2;
     }
 
     if (ImGui::Button(LANG("ui_option"))) {
-        state = 4;
+        MainMenuUI__state = 4;
     }
 
     if (ImGui::Button(LANG("ui_exit"))) {
@@ -407,24 +419,144 @@ void MainMenuUI::DrawMainMenu(Game *game) {
     }
 }
 
-void MainMenuUI::DrawWorldLists(Game *game) {
-    long long now = Time::millis();
-    if (now - lastRefresh > 3000) {
-        RefreshWorlds(game);
-        lastRefresh = now;
+void MainMenuUI__DrawCreateWorldUI(Game *game) {
+
+    if (!MainMenuUI__setup) MainMenuUI__Setup();
+
+    int createWorldWidth = 350;
+
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("创建世界").x / 2);
+    ImGui::Text("%s", LANG("ui_create_world"));
+
+    ImGui::Text("%s: %s", LANG("ui_worldname"), MainMenuUI__worldFolderLabel.c_str());
+
+    const char *world_types[] = {"Material Test World", "Default World (WIP)"};
+
+    ImGui::ListBox(LANG("ui_worldgenerator"), &MainMenuUI__selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
+
+    if (ImGui::Button(LANG("ui_return"))) {
+        MainMenuUI__state = 2;
     }
-    if (!visible) return;
+
+    if (!MainMenuUI__createWorldButtonEnabled) {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    }
+
+    if (ImGui::Button(LANG("ui_create"))) {
+
+        std::string pref = "Saved in: ";
+
+        std::string worldName = MainMenuUI__worldFolderLabel.substr(pref.length());
+        char *wn = (char *)worldName.c_str();
+
+        std::string worldTitle = std::string(MainMenuUI__worldNameBuf);
+        std::regex trimWhitespaceRegex("^ *(.+?) *$");
+        worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
+
+        METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
+        MainMenuUI__visible = false;
+        game->setGameState(LOADING, INGAME);
+
+        METADOT_DELETE(C, game->GameIsolate_.world, World);
+        game->GameIsolate_.world = nullptr;
+
+        WorldGenerator *generator;
+
+        if (MainMenuUI__selIndex == 0) {
+            generator = new MaterialTestGenerator();
+        } else if (MainMenuUI__selIndex == 1) {
+            generator = new DefaultGenerator();
+        } else {
+            // create world UI is in invalid state
+            generator = new MaterialTestGenerator();
+        }
+
+        std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
+
+        METADOT_NEW(C, game->GameIsolate_.world, World);
+        game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
+                                       Render.target, &global.audioEngine, generator);
+        game->GameIsolate_.world->metadata.worldName = std::string(MainMenuUI__worldNameBuf);
+        game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
+        game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
+        game->GameIsolate_.world->metadata.save(wpStr);
+
+        METADOT_INFO("Queueing chunk loading...");
+        for (int x = -CHUNK_W * 4; x < game->GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
+            for (int y = -CHUNK_H * 3; y < game->GameIsolate_.world->height + CHUNK_H * 8; y += CHUNK_H) {
+                game->GameIsolate_.world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
+            }
+        }
+    }
+
+    if (!MainMenuUI__createWorldButtonEnabled) {
+        ImGui::PopItemFlag();
+        ImGui::PopStyleVar();
+    }
+}
+
+void MainMenuUI__inputChanged(std::string text, Game *game) {
+
+    std::regex trimWhitespaceRegex("^ *(.+?) *$");
+    text = regex_replace(text, trimWhitespaceRegex, "$1");
+    if (text.length() == 0 || text == " ") {
+        MainMenuUI__worldFolderLabel = "Saved in: ";
+        MainMenuUI__createWorldButtonEnabled = false;
+        return;
+    }
+
+    std::regex worldNameInputRegex("^[\\x20-\\x7E]+$");
+    MainMenuUI__createWorldButtonEnabled = regex_match(text, worldNameInputRegex);
+
+    std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
+
+    std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
+    std::string folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldFolderName).c_str());
+    struct stat buffer;
+    bool exists = (stat(folder.c_str(), &buffer) == 0);
+
+    std::string newWorldFolderName = worldFolderName;
+    int i = 2;
+    while (exists) {
+        newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
+        folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", newWorldFolderName).c_str());
+
+        exists = (stat(folder.c_str(), &buffer) == 0);
+
+        i++;
+    }
+
+    MainMenuUI__worldFolderLabel = "Saved in: " + newWorldFolderName;
+}
+
+void MainMenuUI__reset(Game *game) {
+#ifdef _WIN32
+    strcpy_s(worldNameBuf, "New World");
+#else
+    strcpy(MainMenuUI__worldNameBuf, "New World");
+#endif
+    MainMenuUI__inputChanged(std::string(MainMenuUI__worldNameBuf), game);
+}
+
+void MainMenuUI__DrawWorldLists(Game *game) {
+    long long now = Time::millis();
+    if (now - MainMenuUI__lastRefresh > 3000) {
+        MainMenuUI__RefreshWorlds(game);
+        MainMenuUI__lastRefresh = now;
+    }
+    if (!MainMenuUI__visible) return;
 
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize(LANG("ui_play")).x / 2);
     ImGui::Text("%s", LANG("ui_play"));
 
     if (ImGui::Button(LANG("ui_newworld"))) {
-        state = 1;
-        CreateWorldUI::Reset(game);
+        MainMenuUI__state = 1;
+        MainMenuUI__reset(game);
     }
 
     if (ImGui::Button(LANG("ui_return"))) {
-        state = 0;
+        MainMenuUI__state = 0;
     }
 
     ImGui::Separator();
@@ -432,7 +564,7 @@ void MainMenuUI::DrawWorldLists(Game *game) {
     ImGui::BeginChild("WorldList", ImVec2(0, 200), false);
 
     int nMainMenuButtons = 0;
-    for (auto &t : worlds) {
+    for (auto &t : MainMenuUI__worlds) {
         std::string worldName = std::get<0>(t);
 
         WorldMeta meta = std::get<1>(t);
@@ -457,7 +589,7 @@ void MainMenuUI::DrawWorldLists(Game *game) {
 
         if (ImGui::Button(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
-            visible = false;
+            MainMenuUI__visible = false;
 
             game->fadeOutStart = Time.now;
             game->fadeOutLength = 250;
@@ -874,147 +1006,6 @@ void DebugDrawUI::Draw(Game *game) {
     ImGui::EndTabBar();
 
     ImGui::End();
-}
-
-char CreateWorldUI::worldNameBuf[32] = "";
-bool CreateWorldUI::setup = false;
-bool CreateWorldUI::createWorldButtonEnabled = false;
-std::string CreateWorldUI::worldFolderLabel = "";
-int CreateWorldUI::selIndex = 0;
-
-void CreateWorldUI::Setup() {
-
-    // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
-    // materialTestWorld = R_CopyImageFromSurface(logoMT);
-    // R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
-    // SDL_FreeSurface(logoMT);
-
-    // C_Surface *logoDef = LoadTexture("data/assets/ui/prev_default.png");
-    // defaultWorld = R_CopyImageFromSurface(logoDef);
-    // R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
-    // SDL_FreeSurface(logoDef);
-
-    setup = true;
-}
-
-void CreateWorldUI::Draw(Game *game) {
-
-    if (!setup) Setup();
-
-    int createWorldWidth = 350;
-
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("创建世界").x / 2);
-    ImGui::Text("%s", LANG("ui_create_world"));
-
-    ImGui::Text("%s: %s", LANG("ui_worldname"), worldFolderLabel.c_str());
-
-    const char *world_types[] = {"Material Test World", "Default World (WIP)"};
-
-    ImGui::ListBox(LANG("ui_worldgenerator"), &selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
-
-    if (ImGui::Button(LANG("ui_return"))) {
-        MainMenuUI::state = 2;
-    }
-
-    if (!createWorldButtonEnabled) {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-    }
-
-    if (ImGui::Button(LANG("ui_create"))) {
-
-        std::string pref = "Saved in: ";
-
-        std::string worldName = worldFolderLabel.substr(pref.length());
-        char *wn = (char *)worldName.c_str();
-
-        std::string worldTitle = std::string(worldNameBuf);
-        std::regex trimWhitespaceRegex("^ *(.+?) *$");
-        worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
-
-        METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
-        MainMenuUI::visible = false;
-        game->setGameState(LOADING, INGAME);
-
-        METADOT_DELETE(C, game->GameIsolate_.world, World);
-        game->GameIsolate_.world = nullptr;
-
-        WorldGenerator *generator;
-
-        if (selIndex == 0) {
-            generator = new MaterialTestGenerator();
-        } else if (selIndex == 1) {
-            generator = new DefaultGenerator();
-        } else {
-            // create world UI is in invalid state
-            generator = new MaterialTestGenerator();
-        }
-
-        std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
-
-        METADOT_NEW(C, game->GameIsolate_.world, World);
-        game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                                       Render.target, &global.audioEngine, generator);
-        game->GameIsolate_.world->metadata.worldName = std::string(worldNameBuf);
-        game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
-        game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
-        game->GameIsolate_.world->metadata.save(wpStr);
-
-        METADOT_INFO("Queueing chunk loading...");
-        for (int x = -CHUNK_W * 4; x < game->GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
-            for (int y = -CHUNK_H * 3; y < game->GameIsolate_.world->height + CHUNK_H * 8; y += CHUNK_H) {
-                game->GameIsolate_.world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
-            }
-        }
-    }
-
-    if (!createWorldButtonEnabled) {
-        ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
-    }
-}
-
-void CreateWorldUI::inputChanged(std::string text, Game *game) {
-
-    std::regex trimWhitespaceRegex("^ *(.+?) *$");
-    text = regex_replace(text, trimWhitespaceRegex, "$1");
-    if (text.length() == 0 || text == " ") {
-        worldFolderLabel = "Saved in: ";
-        createWorldButtonEnabled = false;
-        return;
-    }
-
-    std::regex worldNameInputRegex("^[\\x20-\\x7E]+$");
-    createWorldButtonEnabled = regex_match(text, worldNameInputRegex);
-
-    std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
-
-    std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
-    std::string folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldFolderName).c_str());
-    struct stat buffer;
-    bool exists = (stat(folder.c_str(), &buffer) == 0);
-
-    std::string newWorldFolderName = worldFolderName;
-    int i = 2;
-    while (exists) {
-        newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
-        folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", newWorldFolderName).c_str());
-
-        exists = (stat(folder.c_str(), &buffer) == 0);
-
-        i++;
-    }
-
-    worldFolderLabel = "Saved in: " + newWorldFolderName;
-}
-
-void CreateWorldUI::Reset(Game *game) {
-#ifdef _WIN32
-    strcpy_s(worldNameBuf, "New World");
-#else
-    strcpy(worldNameBuf, "New World");
-#endif
-    inputChanged(std::string(worldNameBuf), game);
 }
 
 }  // namespace GameUI

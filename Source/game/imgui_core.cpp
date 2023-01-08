@@ -262,13 +262,13 @@ void ImGuiCore::onDetach() {
     ImGui::DestroyContext();
 }
 
-void ImGuiCore::begin() {
+void ImGuiCore::NewFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(Core.window);
     ImGui::NewFrame();
 }
 
-void ImGuiCore::end() {
+void ImGuiCore::Draw() {
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
 
@@ -611,8 +611,4 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::End();
     }
     GameUI::GameUI_Draw(global.game);
-
-    auto l = global.scripts->LuaRuntime->GetWrapper();
-    LuaWrapper::LuaFunction OnGameGUIUpdate = (*l)["OnGameGUIUpdate"];
-    OnGameGUIUpdate();
 }

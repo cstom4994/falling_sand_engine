@@ -18,7 +18,6 @@
 #include "core/threadpool.hpp"
 #include "engine.h"
 #include "engine/engine.h"
-#include "engine/engine.h"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/math.hpp"
@@ -917,6 +916,10 @@ int Game::run(int argc, char *argv[]) {
         // render ImGui
         global.ImGuiCore->Render();
 
+        auto l = global.scripts->LuaRuntime->GetWrapper();
+        LuaWrapper::LuaFunction OnGameGUIUpdate = (*l)["OnGameGUIUpdate"];
+        OnGameGUIUpdate();
+
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
             int msx = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
@@ -999,7 +1002,7 @@ int Game::run(int argc, char *argv[]) {
             }
         }
 
-        global.ImGuiCore->end();
+        global.ImGuiCore->Draw();
 
         // render fade in/out
         if (fadeInWaitFrames > 0) {
@@ -2537,7 +2540,7 @@ void Game::updateFrameLate() {
 
 void Game::renderEarly() {
 
-    global.ImGuiCore->begin();
+    global.ImGuiCore->NewFrame();
 
     if (state == LOADING) {
         if (Time.now - Time.lastLoadingTick > 20) {
@@ -3464,7 +3467,7 @@ void Game::quitToMainMenu() {
     char *wn = (char *)worldName.c_str();
 
     METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
-    GameUI::MainMenuUI::visible = false;
+    GameUI::MainMenuUI__visible = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
 
@@ -3509,7 +3512,7 @@ void Game::quitToMainMenu() {
 
     R_UpdateImageBytes(TexturePack_.textureParticles, NULL, &TexturePack_.pixelsParticles[0], GameIsolate_.world->width * 4);
 
-    GameUI::MainMenuUI::visible = true;
+    GameUI::MainMenuUI__visible = true;
 }
 
 int Game::getAimSolidSurface(int dist) {

@@ -1,5 +1,5 @@
 i18n = require("i18n")
-i18n_ex = require("i18n_ex")
+i18n_ex = require("common.i18n")
 
 local lang_pack = {
     en = {
