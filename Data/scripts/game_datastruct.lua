@@ -3,6 +3,6 @@ game_datastruct = {}
 
 local ui = {}
 
-ui.mainmenu_state = 1;
+ui.state = 0;
 
 game_datastruct.ui = ui

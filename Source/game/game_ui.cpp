@@ -38,15 +38,8 @@ void I18N::Load(std::string lang) { (*global.scripts->LuaRuntime->GetWrapper())[
 
 std::string I18N::Get(std::string text) { return (*global.scripts->LuaRuntime->GetWrapper())["translate"](text); }
 
-void GameUI::GameUI_Draw(Game *game) {
-    DebugDrawUI::Draw(game);
-    MainMenuUI__Draw(game);
-    InGameUI::Draw(game);
-}
-
 namespace GameUI {
 
-int MainMenuUI__state = 0;
 bool MainMenuUI__visible = true;
 bool MainMenuUI__setup = false;
 R_Image *MainMenuUI__title = nullptr;
@@ -58,56 +51,6 @@ char MainMenuUI__worldNameBuf[32] = "";
 bool MainMenuUI__createWorldButtonEnabled = false;
 std::string MainMenuUI__worldFolderLabel = "";
 int MainMenuUI__selIndex = 0;
-
-int InGameUI::state = 0;
-
-bool InGameUI::visible = false;
-bool InGameUI::setup = false;
-
-void InGameUI::Setup() {}
-
-void InGameUI::Draw(Game *game) {
-
-    if (!visible) return;
-
-    ImGui::SetNextWindowSize(ImVec2(400, 400));
-    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 200, Screen.windowHeight / 2 - 250)), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("游戏暂停", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-        ImGui::End();
-        return;
-    }
-
-    if (state == 0) {
-        DrawInGame(game);
-    } else if (state == 1) {
-        OptionsUI::Draw(game);
-    }
-
-    ImGui::End();
-}
-
-void InGameUI::DrawInGame(Game *game) {
-
-    if (!setup) {
-        Setup();
-    }
-
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
-    ImGui::Text("选项");
-
-    if (ImGui::Button("继续")) {
-        visible = false;
-    }
-
-    if (ImGui::Button("选项")) {
-        state = 1;
-    }
-
-    if (ImGui::Button("离开到主菜单")) {
-        visible = false;
-        game->quitToMainMenu();
-    }
-}
 
 #if defined(METADOT_BUILD_AUDIO)
 std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
@@ -174,8 +117,8 @@ void OptionsUI::Draw(Game *game) {
     ImGui::Separator();
 
     if (ImGui::Button("返回")) {
-        MainMenuUI__state = 0;
-        InGameUI::state = 0;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 0;
     }
     if (ImGui::Button("保存")) {
         // global.game->GameIsolate_.globaldef.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
@@ -365,23 +308,29 @@ void MainMenuUI__Setup() {
 
 void MainMenuUI__Draw(Game *game) {
 
+    METADOT_ASSERT_E(game);
+
     if (!MainMenuUI__visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(400, 400));
     ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 400 / 2, Screen.windowHeight / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Main Menu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+    if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
     }
 
-    if (MainMenuUI__state == 0) {
+    LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+
+    if (s["state"] == 0) {
         MainMenuUI__DrawMainMenu(game);
-    } else if (MainMenuUI__state == 1) {
+    } else if (s["state"] == 3) {
         MainMenuUI__DrawCreateWorldUI(game);
-    } else if (MainMenuUI__state == 2) {
+    } else if (s["state"] == 4) {
         MainMenuUI__DrawWorldLists(game);
-    } else if (MainMenuUI__state == 4) {
+    } else if (s["state"] == 1) {
         OptionsUI::Draw(game);
+    } else if (s["state"] == 5) {
+        MainMenuUI__DrawInGame(game);
     }
 
     ImGui::End();
@@ -407,11 +356,13 @@ void MainMenuUI__DrawMainMenu(Game *game) {
     ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
     if (ImGui::Button(LANG("ui_play"))) {
-        MainMenuUI__state = 2;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 4;
     }
 
     if (ImGui::Button(LANG("ui_option"))) {
-        MainMenuUI__state = 4;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 1;
     }
 
     if (ImGui::Button(LANG("ui_exit"))) {
@@ -419,13 +370,32 @@ void MainMenuUI__DrawMainMenu(Game *game) {
     }
 }
 
+void MainMenuUI__DrawInGame(Game *game) {
+
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
+    ImGui::Text("选项");
+
+    if (ImGui::Button("继续")) {
+        MainMenuUI__visible = false;
+    }
+
+    if (ImGui::Button("选项")) {
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 1;
+    }
+
+    if (ImGui::Button("离开到主菜单")) {
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 0;
+        game->quitToMainMenu();
+    }
+}
+
 void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
     if (!MainMenuUI__setup) MainMenuUI__Setup();
 
-    int createWorldWidth = 350;
-
-    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("创建世界").x / 2);
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize(LANG("ui_create_world")).x / 2);
     ImGui::Text("%s", LANG("ui_create_world"));
 
     ImGui::Text("%s: %s", LANG("ui_worldname"), MainMenuUI__worldFolderLabel.c_str());
@@ -435,7 +405,8 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
     ImGui::ListBox(LANG("ui_worldgenerator"), &MainMenuUI__selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
 
     if (ImGui::Button(LANG("ui_return"))) {
-        MainMenuUI__state = 2;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 4;
     }
 
     if (!MainMenuUI__createWorldButtonEnabled) {
@@ -456,6 +427,9 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
         MainMenuUI__visible = false;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 5;
+
         game->setGameState(LOADING, INGAME);
 
         METADOT_DELETE(C, game->GameIsolate_.world, World);
@@ -463,12 +437,12 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         WorldGenerator *generator;
 
+        // Delete generator in World::~World()
         if (MainMenuUI__selIndex == 0) {
             generator = new MaterialTestGenerator();
         } else if (MainMenuUI__selIndex == 1) {
             generator = new DefaultGenerator();
         } else {
-            // create world UI is in invalid state
             generator = new MaterialTestGenerator();
         }
 
@@ -551,17 +525,19 @@ void MainMenuUI__DrawWorldLists(Game *game) {
     ImGui::Text("%s", LANG("ui_play"));
 
     if (ImGui::Button(LANG("ui_newworld"))) {
-        MainMenuUI__state = 1;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 3;
         MainMenuUI__reset(game);
     }
 
     if (ImGui::Button(LANG("ui_return"))) {
-        MainMenuUI__state = 0;
+        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        s["state"] = 0;
     }
 
     ImGui::Separator();
 
-    ImGui::BeginChild("WorldList", ImVec2(0, 200), false);
+    // ImGui::BeginChild("WorldList", ImVec2(0, 200), false);
 
     int nMainMenuButtons = 0;
     for (auto &t : MainMenuUI__worlds) {
@@ -585,11 +561,14 @@ void MainMenuUI__DrawWorldLists(Game *game) {
         // strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
 
         char *filenameAndTimestamp = new char[200];
-        snprintf(filenameAndTimestamp, 100, "%s (%s)", worldName.c_str(), "formattedTime");
+        snprintf(filenameAndTimestamp, 100, "%s (%ld)", worldName.c_str(), meta.lastOpenedTime);
 
         if (ImGui::Button(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
+
             MainMenuUI__visible = false;
+            LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+            s["state"] = 5;
 
             game->fadeOutStart = Time.now;
             game->fadeOutLength = 250;
@@ -627,7 +606,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
 
         ImGui::PopID();
     }
-    ImGui::EndChild();
+    // ImGui::EndChild();
 }
 
 void DrawDebugUI(Game *game) {

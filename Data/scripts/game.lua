@@ -14,12 +14,15 @@ require("entities.entities")
 ecs = require("ecs")
 
 OnGameEngineLoad = function()
-
     InitGraphics()
     InitAudio()
     InitECS()
-
     controls_init()
+    OnEntitiesTypeLoad()
+end
+
+OnGameLoad = function(game)
+    Game = game
 
     create_biome("DEFAULT", 0)
     create_biome("TEST_1", 1)
@@ -34,9 +37,6 @@ OnGameEngineLoad = function()
     create_biome("PLAINS", 9)
     create_biome("MOUNTAINS", 10)
     create_biome("FOREST", 11)
-
-    OnEntitiesTypeLoad()
-
 end
 
 -- function OnGameEngineLoad() {

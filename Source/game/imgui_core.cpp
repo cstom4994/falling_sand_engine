@@ -610,5 +610,4 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::EndTabBar();
         ImGui::End();
     }
-    GameUI::GameUI_Draw(global.game);
 }

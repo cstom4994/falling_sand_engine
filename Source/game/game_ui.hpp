@@ -21,8 +21,6 @@ struct I18N {
 
 namespace GameUI {
 
-void GameUI_Draw(Game *game);
-
 void DrawDebugUI(Game *game);
 
 class DebugDrawUI {
@@ -46,21 +44,11 @@ void MainMenuUI__RefreshWorlds(Game *game);
 void MainMenuUI__Setup();
 void MainMenuUI__Draw(Game *game);
 void MainMenuUI__DrawMainMenu(Game *game);
+void MainMenuUI__DrawInGame(Game *game);
 void MainMenuUI__DrawWorldLists(Game *game);
 void MainMenuUI__reset(Game *game);
 void MainMenuUI__DrawCreateWorldUI(Game *game);
 void MainMenuUI__inputChanged(std::string text, Game *game);
-
-class InGameUI {
-public:
-    static bool visible;
-    static int state;
-    static bool setup;
-
-    static void Setup();
-    static void Draw(Game *game);
-    static void DrawInGame(Game *game);
-};
 
 class CreateWorldUI {
 public:

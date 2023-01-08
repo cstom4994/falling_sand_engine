@@ -213,18 +213,17 @@ void LuaCore::Init() {
 
     s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
     s_lua["add_packagepath"] = LuaWrapper::function(add_packagepath);
-
     s_lua["texture_load_data"] = LuaWrapper::function(LoadTextureData);
-    s_lua["R_CopyImageFromSurface"] = LuaWrapper::function(R_CopyImageFromSurface);
-    s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
-    s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
-    s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
     s_lua["metadot_metadata"] = LuaWrapper::function(metadot_metadata);
     s_lua["metadot_buildnum"] = LuaWrapper::function(metadot_buildnum);
     s_lua["Eng_GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
     s_lua["Eng_CreateTexture"] = LuaWrapper::function(CreateTexture);
     s_lua["Eng_DestroyTexture"] = LuaWrapper::function(DestroyTexture);
     s_lua["R_GetTextureAttr"] = LuaWrapper::function(R_GetTextureAttr);
+    s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
+    s_lua["R_CopyImageFromSurface"] = LuaWrapper::function(R_CopyImageFromSurface);
+    s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
+    s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
 
     s_lua.dostring(MetaEngine::Format("package.path = "
                                       "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
@@ -399,9 +398,8 @@ void Scripts::Init() {
     METADOT_NEW(C, LuaRuntime, LuaCore);
     LuaRuntime->Init();
 
-    // test_js();
-    global.game->GameSystem_.gameScriptwrap.Init();
     global.game->GameSystem_.gameScriptwrap.Bind();
+    global.game->GameSystem_.gameScriptwrap.Init();
 }
 
 void Scripts::End() {

@@ -13,6 +13,7 @@
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
+#include "game/game_ui.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
 
@@ -49,7 +50,13 @@ static void load_lua(std::string luafile) {}
 
 #pragma endregion GameScriptingBind_1
 
-void GameScriptingWrap::Init() {}
+void GameScriptingWrap::Init() {
+    auto luacore = global.scripts->LuaRuntime;
+    auto &luawrap = (*luacore->GetWrapper());
+    luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
+    luawrap["OnGameEngineLoad"]();
+    luawrap["OnGameLoad"](global.game);
+}
 
 Biome *GameScriptingWrap::BiomeGet(std::string name) {
     for (auto t : GameData_.biome_container) {
@@ -73,9 +80,8 @@ void GameScriptingWrap::Bind() {
     luawrap["create_biome"] = LuaWrapper::function(create_biome);
     luawrap["init_ecs"] = LuaWrapper::function(init_ecs);
 
-    luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
-    auto InitFunc = luawrap["OnGameEngineLoad"];
-    InitFunc();
+    luawrap["DrawMainMenuUI"] = LuaWrapper::function(GameUI::MainMenuUI__Draw);
+    luawrap["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI::Draw);
 }
 
 void GameScriptingWrap::End() {

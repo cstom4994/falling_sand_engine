@@ -1318,7 +1318,7 @@ accLoadY = 0;*/
 
     if (Controls::PAUSE->get()) {
         if (this->state == GameState::INGAME) {
-            GameUI::InGameUI::visible = !GameUI::InGameUI::visible;
+            GameUI::MainMenuUI__visible = !GameUI::MainMenuUI__visible;
         }
     }
 
