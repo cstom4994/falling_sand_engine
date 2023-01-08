@@ -15,7 +15,7 @@
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
-#include "engine/engine_cpp.h"
+#include "engine/engine.h"
 #include "engine/filesystem.h"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/math.hpp"

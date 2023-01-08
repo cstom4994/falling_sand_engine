@@ -9,7 +9,7 @@
 #include "core/alloc.h"
 #include "core/core.h"
 #include "engine/datapackage.h"
-#include "engine/engine_cpp.h"
+#include "engine/engine.h"
 #include "engine/engine_platform.h"
 #include "libs/physfs/physfs.h"
 #include "platform_detail.h"

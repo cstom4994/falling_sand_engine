@@ -5,7 +5,7 @@
 -- }
 
 require("game_datastruct")
-require("game_ui")
+require("ui.game_ui")
 require("graphics")
 require("audio")
 require("global")

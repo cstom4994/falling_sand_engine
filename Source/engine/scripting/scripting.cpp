@@ -228,7 +228,7 @@ void LuaCore::Init() {
                                       METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(), "dylib"),
                    s_lua.globalTable());
 
-    s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/coroutines.lua"));
+    s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/common/coroutines.lua"));
     RunScriptFromFile("data/scripts/startup.lua");
 }
 

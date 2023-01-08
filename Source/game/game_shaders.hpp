@@ -4,7 +4,7 @@
 #define _METADOT_GAMESHADERS_HPP_
 
 #include "core/core.hpp"
-#include "engine/engine_cpp.h"
+#include "engine/engine.h"
 
 struct WaterFlowPassShader {
     metadot_shader_base sb;

@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 local concat = table.concat
 local format = string.format
 
@@ -137,7 +139,7 @@ end
 -- Template definition grammar
 --------------------------------------------------------------------------------
 
-local lpeg = require ("lpeg")
+local lpeg = require("lpeg")
 local P = lpeg.P
 local C = lpeg.C
 local Carg = lpeg.Carg

@@ -17,7 +17,7 @@
 
 #include "core/const.h"
 #include "core/global.hpp"
-#include "engine/engine_cpp.h"
+#include "engine/engine.h"
 #include "engine/platform_detail.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"

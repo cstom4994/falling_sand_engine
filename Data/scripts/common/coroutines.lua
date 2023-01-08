@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 -- looks through all registered coroutes, resumes them and kill them if neccessary
 local n = #corouts
 for i = 1, n do

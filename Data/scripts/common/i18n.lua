@@ -1,3 +1,5 @@
+-- Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 local unpack = table.unpack or unpack
 
 local registry = {}
