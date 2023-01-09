@@ -6,37 +6,49 @@
 #include <string>
 #include <vector>
 
+#include "core/core.h"
 #include "core/core.hpp"
 #include "engine/engine_platform.h"
 #include "engine/utils.hpp"
 #include "lz4/lz4.h"
 
-std::vector<std::string> split(std::string strToSplit, char delimeter);
-std::vector<std::string> string_split(std::string s, const char delimiter);
-std::vector<std::string> split2(std::string const &original, char separator);
+// Chunk::~Chunk() {
+//     if (tiles) delete[] tiles;
+//     if (layer2) delete[] layer2;
+//     if (background) delete[] background;
+//     if (!biomes.empty()) biomes.resize(0);
+// }
 
-Chunk::~Chunk() {
-    if (tiles) delete[] tiles;
-    if (layer2) delete[] layer2;
-    if (background) delete[] background;
-    if (!biomes.empty()) biomes.resize(0);
+void Chunk_Init(Chunk *_struct, int x, int y, char *worldName) {
+    METADOT_ASSERT_E(_struct);
+    _struct->x = x;
+    _struct->y = y;
+    _struct->fname = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".region");
 }
 
-void Chunk::loadMeta() {
+void Chunk_Delete(Chunk *_struct) {
+    METADOT_ASSERT_E(_struct);
+    if (_struct->tiles) delete[] _struct->tiles;
+    if (_struct->layer2) delete[] _struct->layer2;
+    if (_struct->background) delete[] _struct->background;
+    if (!_struct->biomes.empty()) _struct->biomes.resize(0);
+}
+
+void Chunk_loadMeta(Chunk *_struct) {
     std::string line;
-    std::ifstream myfile(fname);
+    std::ifstream myfile(_struct->fname);
     if (myfile.is_open()) {
         getline(myfile, line, '\n');
 
         int phase = stoi(line);
-        generationPhase = phase;
-        hasMeta = true;
+        _struct->generationPhase = phase;
+        _struct->hasMeta = true;
     }
 }
 
 // MaterialInstanceData* Chunk::readBuf = (MaterialInstanceData*)malloc(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
 
-void Chunk::read() {
+void Chunk_read(Chunk *_struct) {
     // use malloc here instead of new so it doesn't call the constructor
     MaterialInstance *tiles = (MaterialInstance *)malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
     if (tiles == NULL) throw std::runtime_error("Failed to allocate memory for Chunk tiles array.");
@@ -47,14 +59,14 @@ void Chunk::read() {
     U32 *background = new U32[CHUNK_W * CHUNK_H];
 
     std::string line;
-    std::ifstream myfile(fname, std::ios::binary);
+    std::ifstream myfile(_struct->fname, std::ios::binary);
 
     if (myfile.is_open()) {
         int state = 0;
 
-        myfile.read((char *)&this->generationPhase, sizeof(int8_t));
+        myfile.read((char *)&_struct->generationPhase, sizeof(int8_t));
 
-        hasMeta = true;
+        _struct->hasMeta = true;
         state = 1;
 
         // unsigned int content;
@@ -110,9 +122,9 @@ void Chunk::read() {
         // basically, if either of these checks trigger, the chunk is unreadable, either due to miswriting it or corruption
         // TODO: have the chunk regenerate on corruption (maybe save copies of corrupt chunks as well?)
         if (decompressed_size < 0) {
-            METADOT_ERROR("Error decompressing chunk tile data @ %d,%d (err %d).", this->x, this->y, decompressed_size);
+            METADOT_ERROR("Error decompressing chunk tile data @ %d,%d (err %d).", _struct->x, _struct->y, decompressed_size);
         } else if (decompressed_size != src_size) {
-            METADOT_ERROR("Decompressed chunk tile data is corrupt! @ %d,%d (was %d, expected %d).", this->x, this->y, decompressed_size, src_size);
+            METADOT_ERROR("Decompressed chunk tile data is corrupt! @ %d,%d (was %d, expected %d).", _struct->x, _struct->y, decompressed_size, src_size);
         }
 
         // copy everything but the material pointer
@@ -150,9 +162,9 @@ void Chunk::read() {
         free(compressed_data2);
 
         if (decompressed_size2 < 0) {
-            METADOT_ERROR("Error decompressing chunk background data @ %d,%d (err %d).", this->x, this->y, decompressed_size2);
+            METADOT_ERROR("Error decompressing chunk background data @ %d,%d (err %d).", _struct->x, _struct->y, decompressed_size2);
         } else if (decompressed_size2 != src_size2) {
-            METADOT_ERROR("Decompressed chunk background data is corrupt! @ %d,%d (was %d, expected %d).", this->x, this->y, decompressed_size2, src_size2);
+            METADOT_ERROR("Decompressed chunk background data is corrupt! @ %d,%d (was %d, expected %d).", _struct->x, _struct->y, decompressed_size2, src_size2);
         }
 
         free(readBuf);
@@ -160,18 +172,18 @@ void Chunk::read() {
         myfile.close();
     }
 
-    this->tiles = tiles;
-    this->layer2 = layer2;
-    this->background = background;
-    hasTileCache = true;
+    _struct->tiles = tiles;
+    _struct->layer2 = layer2;
+    _struct->background = background;
+    _struct->hasTileCache = true;
 }
 
-void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *background) {
-    this->tiles = tiles;
-    this->layer2 = layer2;
-    this->background = background;
-    if (this->tiles == NULL || this->layer2 == NULL || this->background == NULL) return;
-    hasTileCache = true;
+void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background) {
+    _struct->tiles = tiles;
+    _struct->layer2 = layer2;
+    _struct->background = background;
+    if (_struct->tiles == NULL || _struct->layer2 == NULL || _struct->background == NULL) return;
+    _struct->hasTileCache = true;
 
     // TODO: make these loops faster
     /*for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
@@ -201,7 +213,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     const int compressed_data_size = LZ4_compress_fast(src, compressed_data, src_size, max_dst_size, 10);
 
     if (compressed_data_size <= 0) {
-        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", this->x, this->y, compressed_data_size);
+        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", _struct->x, _struct->y, compressed_data_size);
     }
 
     /*if(compressed_data_size > 0){
@@ -223,7 +235,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     const int compressed_data_size2 = LZ4_compress_fast(src2, compressed_data2, src_size2, max_dst_size2, 10);
 
     if (compressed_data_size2 <= 0) {
-        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", this->x, this->y, compressed_data_size2);
+        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", _struct->x, _struct->y, compressed_data_size2);
     }
 
     /*if(compressed_data_size2 > 0){
@@ -235,8 +247,8 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     compressed_data2 = n_compressed_data2;
 
     std::ofstream myfile;
-    myfile.open(fname, std::ios::binary);
-    myfile.write((char *)&generationPhase, sizeof(int8_t));
+    myfile.open(_struct->fname, std::ios::binary);
+    myfile.write((char *)&_struct->generationPhase, sizeof(int8_t));
 
     myfile.write((char *)&src_size, sizeof(int));
     myfile.write((char *)&compressed_data_size, sizeof(int));
@@ -254,49 +266,7 @@ void Chunk::write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *backgr
     myfile.close();
 }
 
-bool Chunk::hasFile() {
+bool Chunk_hasFile(Chunk *_struct) {
     struct stat buffer;
-    return (stat(fname.c_str(), &buffer) == 0);
-}
-
-std::vector<std::string> split(std::string strToSplit, char delimeter) {
-    std::stringstream ss(strToSplit);
-    std::string item;
-    std::vector<std::string> splittedStrings;
-    while (getline(ss, item, delimeter)) {
-        splittedStrings.push_back(item);
-    }
-    return splittedStrings;
-}
-
-std::vector<std::string> string_split(std::string s, const char delimiter) {
-    size_t start = 0;
-    size_t end = s.find_first_of(delimiter);
-
-    std::vector<std::string> output;
-
-    while (end <= std::string::npos) {
-        output.emplace_back(s.substr(start, end - start));
-
-        if (end == std::string::npos) break;
-
-        start = end + 1;
-        end = s.find_first_of(delimiter, start);
-    }
-
-    return output;
-}
-
-std::vector<std::string> split2(std::string const &original, char separator) {
-    std::vector<std::string> results;
-    std::string::const_iterator start = original.begin();
-    std::string::const_iterator end = original.end();
-    std::string::const_iterator next = std::find(start, end, separator);
-    while (next != end) {
-        results.push_back(std::string(start, next));
-        start = next + 1;
-        next = std::find(start, end, separator);
-    }
-    results.push_back(std::string(start, next));
-    return results;
+    return (stat(_struct->fname.c_str(), &buffer) == 0);
 }

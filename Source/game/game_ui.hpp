@@ -50,11 +50,6 @@ void MainMenuUI__reset(Game *game);
 void MainMenuUI__DrawCreateWorldUI(Game *game);
 void MainMenuUI__inputChanged(std::string text, Game *game);
 
-class CreateWorldUI {
-public:
-    static void Setup();
-};
-
 class OptionsUI {
 #if defined(METADOT_BUILD_AUDIO)
     static std::map<std::string, FMOD::Studio::Bus *> busMap;

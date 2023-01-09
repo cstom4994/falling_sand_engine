@@ -1,8 +1,5 @@
 
 game_datastruct = {}
+game_datastruct.ui = {}
 
-local ui = {}
-
-ui.state = 0;
-
-game_datastruct.ui = ui
+game_datastruct.ui.state = 0

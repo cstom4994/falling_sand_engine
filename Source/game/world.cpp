@@ -9,6 +9,7 @@
 #include <thread>
 #include <typeinfo>
 
+#include "core/alloc.h"
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
@@ -23,6 +24,7 @@
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "engine/utils.hpp"
+#include "game/chunk.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "reflectionflat.hpp"
@@ -2396,7 +2398,7 @@ void World::tickChunkGeneration() {
             m->generationPhase++;
             populateChunk(m, m->generationPhase, true);
 
-            m->write(m->tiles, m->layer2, m->background);
+            Chunk_write(m, m->tiles, m->layer2, m->background);
             // std::async(&Chunk::write, m, m->tiles);
 
             if (n++ > 4) {
@@ -2634,14 +2636,14 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 
     if (ch->hasTileCache) {
         // prop = ch->tiles;
-    } else if (ch->hasFile() && !noSaveLoad) {
-        ch->read();
+    } else if (Chunk_hasFile(ch) && !noSaveLoad) {
+        Chunk_read(ch);
     } else {
         generateChunk(ch);
         ch->generationPhase = 0;
         ch->hasTileCache = true;
         populateChunk(ch, 0, false);
-        if (!noSaveLoad) ch->write(ch->tiles, ch->layer2, ch->background);
+        if (!noSaveLoad) Chunk_write(ch, ch->tiles, ch->layer2, ch->background);
     }
 
     // if (populate) {
@@ -2714,13 +2716,13 @@ void World::unloadChunk(Chunk *ch) {
     if (!noSaveLoad) writeChunkToDisk(ch);
 
     WorldIsolate_.chunkCache[ch->x].erase(ch->y);
-    delete ch;
+    Chunk_Delete(ch);
     /*delete data;
     delete layer2;*/
     // delete data;
 }
 
-void World::writeChunkToDisk(Chunk *ch) { ch->write(ch->tiles, ch->layer2, ch->background); }
+void World::writeChunkToDisk(Chunk *ch) { Chunk_write(ch, ch->tiles, ch->layer2, ch->background); }
 
 void World::chunkSaveCache(Chunk *ch) {
     for (int x = 0; x < CHUNK_W; x++) {
@@ -2798,7 +2800,8 @@ void World::addStructure(PlacedStructure str) {
         for (int y = 0; y < str.base.h; y++) {
             int dx = x + loadZone.x + str.x;
             int dy = y + loadZone.y + str.y;
-            Chunk ch(floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
+            Chunk *ch = new Chunk;
+            Chunk_Init(ch, floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
             // if(ch.e)
             if (dx >= 0 && dy >= 0 && dx < width && dy < height) {
                 tiles[dx + dy * width] = str.base.tiles[x + y * str.base.w];
@@ -2856,7 +2859,8 @@ Chunk *World::getChunk(int cx, int cy) {
     /*for (int i = 0; i < chunkCache.size(); i++) {
         if (chunkCache[i]->x == cx && chunkCache[i]->y == cy) return chunkCache[i];
     }*/
-    Chunk *c = new Chunk(cx, cy, (char *)worldName.c_str());
+    Chunk *c = new Chunk;
+    Chunk_Init(c, cx, cy, (char *)worldName.c_str());
     c->generationPhase = -1;
     c->pleaseDelete = true;
     auto a = BIOMEGET("DEFAULT");
@@ -2878,6 +2882,13 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
     int ah = 1 + (phase * 2);
 
     Chunk **chs = new Chunk *[aw * ah];
+
+    // for (int cx = ax; cx < ax + aw; cx++) {
+    //     for (int cy = ay; cy < ay + ah; cy++) {
+    //         Chunk_Init(chs[cy + cx], 0, 0, (char *)"Chunks");
+    //     }
+    // }
+
     bool *dirtyChunk = new bool[aw * ah]();
 
     if (phase == 1) {
@@ -2915,7 +2926,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
         for (int y = 0; y < ah; y++) {
             if (dirtyChunk[x + y * aw]) {
                 if (x != aw / 2 && y != ah / 2) {
-                    chs[x + y * aw]->write(chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
+                    Chunk_write(chs[x + y * aw], chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
                     if (render) {
                         for (int i = 0; i < WorldIsolate_.readyToMerge.size(); i++) {
                             if (WorldIsolate_.readyToMerge[i] == chs[x + y * aw]) {
@@ -3465,7 +3476,7 @@ World::~World() {
     WorldIsolate_.readyToReadyToMerge.clear();
 
     for (auto &v : WorldIsolate_.readyToMerge) {
-        delete v;
+        Chunk_Delete(v);
     }
     WorldIsolate_.readyToMerge.clear();
 
@@ -3477,7 +3488,7 @@ World::~World() {
 
     for (auto &v : WorldIsolate_.chunkCache) {
         for (auto &v2 : v.second) {
-            delete v2.second;
+            Chunk_Delete(v2.second);
         }
         v.second.clear();
     }

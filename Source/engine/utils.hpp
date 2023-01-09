@@ -12,6 +12,10 @@
 #include "core/core.hpp"
 #include "engine/engine_platform.h"
 
+std::vector<std::string> split(std::string strToSplit, char delimeter);
+std::vector<std::string> string_split(std::string s, const char delimiter);
+std::vector<std::string> split2(std::string const &original, char separator);
+
 struct String {
 
     String() = default;

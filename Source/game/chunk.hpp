@@ -18,28 +18,15 @@ typedef struct {
     I32 temperature;
 } MaterialInstanceData;
 
-class Chunk {
+typedef struct Chunk {
     std::string fname;
 
-public:
     int x;
     int y;
     bool hasMeta = false;
     // in order for a chunk to execute phase generationPhase+1, all surrounding chunks must be at least generationPhase
     I8 generationPhase = 0;
     bool pleaseDelete = false;
-
-    explicit Chunk(int x, int y, char *worldName)
-        : x(std::move(x)), y(std::move(y)), fname(std::move(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".region")){};
-    Chunk() : Chunk(0, 0, (char *)"chunks"){};
-    ~Chunk();
-
-    void loadMeta();
-
-    // static MaterialInstanceData* readBuf;
-    void read();
-    void write(MaterialInstance *tiles, MaterialInstance *layer2, U32 *background);
-    bool hasFile();
 
     bool hasTileCache = false;
     MaterialInstance *tiles = nullptr;
@@ -48,7 +35,17 @@ public:
     std::vector<Biome *> biomes = {nullptr};
     std::vector<b2PolygonShape> polys = {};
     RigidBody *rb = nullptr;
-};
+} Chunk;
+
+void Chunk_Init(Chunk *_struct, int x, int y, char *worldName);
+void Chunk_Delete(Chunk *_struct);
+
+void Chunk_loadMeta(Chunk *_struct);
+
+// static MaterialInstanceData* readBuf;
+void Chunk_read(Chunk *_struct);
+void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background);
+bool Chunk_hasFile(Chunk *_struct);
 
 class ChunkReadyToMerge {
 public:

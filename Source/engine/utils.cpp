@@ -10,6 +10,48 @@
 #include "engine/code_reflection.hpp"
 #include "engine/memory.hpp"
 
+std::vector<std::string> split(std::string strToSplit, char delimeter) {
+    std::stringstream ss(strToSplit);
+    std::string item;
+    std::vector<std::string> splittedStrings;
+    while (getline(ss, item, delimeter)) {
+        splittedStrings.push_back(item);
+    }
+    return splittedStrings;
+}
+
+std::vector<std::string> string_split(std::string s, const char delimiter) {
+    size_t start = 0;
+    size_t end = s.find_first_of(delimiter);
+
+    std::vector<std::string> output;
+
+    while (end <= std::string::npos) {
+        output.emplace_back(s.substr(start, end - start));
+
+        if (end == std::string::npos) break;
+
+        start = end + 1;
+        end = s.find_first_of(delimiter, start);
+    }
+
+    return output;
+}
+
+std::vector<std::string> split2(std::string const &original, char separator) {
+    std::vector<std::string> results;
+    std::string::const_iterator start = original.begin();
+    std::string::const_iterator end = original.end();
+    std::string::const_iterator next = std::find(start, end, separator);
+    while (next != end) {
+        results.push_back(std::string(start, next));
+        start = next + 1;
+        next = std::find(start, end, separator);
+    }
+    results.push_back(std::string(start, next));
+    return results;
+}
+
 long long Time::millis() {
     long long ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     return ms;

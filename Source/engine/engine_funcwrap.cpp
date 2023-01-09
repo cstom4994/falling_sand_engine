@@ -813,7 +813,7 @@ int metadot_bind_gpu(lua_State *L) {
 
 #pragma region BindFS
 
-std::vector<std::string> split(const std::string &s, char delim) {
+std::vector<std::string> fs_split(const std::string &s, char delim) {
     std::vector<std::string> result;
     std::stringstream ss(s);
     std::string item;
@@ -836,7 +836,7 @@ bool checkPath(const char *luaInput, char *varName) {
     // Remove consecutive path seperators (e.g. a//b///c => a/b/c)
     sysPath.erase(std::unique(sysPath.begin(), sysPath.end(), [](const char a, const char b) { return a == b && b == PATH_SEPARATOR; }), sysPath.end());
 
-    auto pathComponents = split(sysPath, PATH_SEPARATOR);
+    auto pathComponents = fs_split(sysPath, PATH_SEPARATOR);
 
     auto builder = std::vector<std::string>();
     // For each component, evaluate it's effect
