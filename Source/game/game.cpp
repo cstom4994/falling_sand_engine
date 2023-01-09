@@ -46,8 +46,6 @@ extern Texture *LoadAseprite(const char *path);
 
 Global global;
 
-std::vector<Biome *> GameData::biome_container;
-
 IMPLENGINE();
 
 Game::Game(int argc, char *argv[]) {
@@ -113,7 +111,7 @@ int Game::init(int argc, char *argv[]) {
     // register & set up materials
     METADOT_INFO("Setting up materials...");
 
-    METADOT_NEW_ARRAY(C, movingTiles, U16, Materials::nMaterials);
+    METADOT_NEW_ARRAY(C, movingTiles, U16, global.GameData_.materials_count);
     METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
 
     // global.audioEngine.PlayEvent("event:/Music/Background1");
@@ -972,10 +970,10 @@ int Game::run(int argc, char *argv[]) {
 
                         int ln = 0;
                         if (tile.mat->interact) {
-                            for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
+                            for (size_t i = 0; i < global.GameData_.materials_container.size(); i++) {
                                 if (tile.mat->nInteractions[i] > 0) {
                                     char buff2[40];
-                                    snprintf(buff2, sizeof(buff2), "    %s", Materials::MATERIALS[i]->name.c_str());
+                                    snprintf(buff2, sizeof(buff2), "    %s", global.GameData_.materials_container[i]->name.c_str());
                                     // Drawing::drawText(target, buff2, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
                                     ImGui::Text("%s", buff2);
 
@@ -983,11 +981,11 @@ int Game::run(int argc, char *argv[]) {
                                         MaterialInteraction inter = tile.mat->interactions[i][j];
                                         char buff1[40];
                                         if (inter.type == INTERACT_TRANSFORM_MATERIAL) {
-                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", Materials::MATERIALS[inter.data1]->name.c_str(), inter.data2, inter.ofsX,
-                                                     inter.ofsY);
+                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", global.GameData_.materials_container[inter.data1]->name.c_str(), inter.data2,
+                                                     inter.ofsX, inter.ofsY);
                                         } else if (inter.type == INTERACT_SPAWN_MATERIAL) {
-                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", Materials::MATERIALS[inter.data1]->name.c_str(), inter.data2, inter.ofsX,
-                                                     inter.ofsY);
+                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", global.GameData_.materials_container[inter.data1]->name.c_str(), inter.data2,
+                                                     inter.ofsX, inter.ofsY);
                                         }
                                         // Drawing::drawText(target, buff1, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
                                         ImGui::Text("%s", buff1);
@@ -1831,7 +1829,7 @@ void Game::tick() {
 
         if (tickTime % 10 == 0) GameIsolate_.world->tickObjectsMesh();
 
-        for (int i = 0; i < Materials::nMaterials; i++) movingTiles[i] = 0;
+        for (int i = 0; i < global.GameData_.materials_count; i++) movingTiles[i] = 0;
 
         results.clear();
         results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {

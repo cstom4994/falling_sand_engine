@@ -763,8 +763,8 @@ Material *DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
 void DebugDrawUI::Setup() {
 
     images = {};
-    for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
-        Material *mat = Materials::MATERIALS[i];
+    for (size_t i = 0; i < global.GameData_.materials_container.size(); i++) {
+        Material *mat = global.GameData_.materials_container[i];
         C_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
         for (int x = 0; x < surface->w; x++) {
             for (int y = 0; y < surface->h; y++) {
@@ -804,7 +804,7 @@ void DebugDrawUI::Draw(Game *game) {
 
     int width = 5;
 
-    int nRows = ceil(Materials::MATERIALS.size() / (F32)width);
+    int nRows = ceil(global.GameData_.materials_container.size() / (F32)width);
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
@@ -825,7 +825,7 @@ void DebugDrawUI::Draw(Game *game) {
 
         ImGui::BeginChild("材料列表", ImVec2(0, 0), false);
         ImGui::Indent(5);
-        for (size_t i = 0; i < Materials::MATERIALS.size(); i++) {
+        for (size_t i = 0; i < global.GameData_.materials_container.size(); i++) {
             int x = (int)(i % width);
             int y = (int)(i / width);
 
@@ -836,12 +836,12 @@ void DebugDrawUI::Draw(Game *game) {
             ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y + (x != 0 ? -1 : 0)));
             if (ImGui::Selectable("", selIndex == i, 0, ImVec2(32, 36))) {
                 selIndex = (int)i;
-                selectedMaterial = Materials::MATERIALS[i];
+                selectedMaterial = global.GameData_.materials_container[i];
             }
 
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
-                ImGui::Text("%s", Materials::MATERIALS[i]->name.c_str());
+                ImGui::Text("%s", global.GameData_.materials_container[i]->name.c_str());
                 ImGui::EndTooltip();
             }
 

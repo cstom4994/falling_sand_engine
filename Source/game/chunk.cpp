@@ -8,6 +8,7 @@
 
 #include "core/core.h"
 #include "core/core.hpp"
+#include "core/global.hpp"
 #include "engine/engine_platform.h"
 #include "engine/utils.hpp"
 #include "lz4/lz4.h"
@@ -75,14 +76,14 @@ void Chunk_read(Chunk *_struct) {
         // 	int id = content;
         // 	myfile.read((char*)&content, sizeof(unsigned int));
         // 	U32 color = content;
-        // 	tiles[i] = MaterialInstance(Materials::MATERIALS[id], color);
+        // 	tiles[i] = MaterialInstance(global.GameData_.materials_container[id], color);
         // }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
         // 	myfile.read((char*)&content, sizeof(unsigned int));
         // 	int id = content;
         // 	myfile.read((char*)&content, sizeof(unsigned int));
         // 	U32 color = content;
-        // 	layer2[i] = MaterialInstance(Materials::MATERIALS[id], color);
+        // 	layer2[i] = MaterialInstance(global.GameData_.materials_container[id], color);
         // }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
         // 	myfile.read((char*)&content, sizeof(unsigned int));
@@ -136,7 +137,7 @@ void Chunk_read(Chunk *_struct) {
             // twice as fast to set fields instead of making new ones
             tiles[i].color = readBuf[i].color;
             tiles[i].temperature = readBuf[i].temperature;
-            tiles[i].mat = Materials::MATERIALS_ARRAY[readBuf[i].index];
+            tiles[i].mat = global.GameData_.materials_array[readBuf[i].index];
             tiles[i].id = MaterialInstance::_curID++;
             // tiles[i].color = readBuf[i].color;
             // tiles[i].temperature = readBuf[i].temperature;
@@ -144,7 +145,7 @@ void Chunk_read(Chunk *_struct) {
 
             layer2[i].color = readBuf[i + CHUNK_W * CHUNK_H].color;
             layer2[i].temperature = readBuf[i + CHUNK_W * CHUNK_H].temperature;
-            layer2[i].mat = Materials::MATERIALS_ARRAY[readBuf[CHUNK_W * CHUNK_H + i].index];
+            layer2[i].mat = global.GameData_.materials_array[readBuf[CHUNK_W * CHUNK_H + i].index];
             layer2[i].id = MaterialInstance::_curID++;
             // layer2[i].color = readBuf[CHUNK_W * CHUNK_H + i].color;
             // layer2[i].temperature = readBuf[CHUNK_W * CHUNK_H + i].temperature;

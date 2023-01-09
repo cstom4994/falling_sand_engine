@@ -38,7 +38,7 @@ static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(e
 static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack); }
 static void textures_end() { EndTexture(global.game->GameIsolate_.texturepack); }
 static void textures_load(std::string name, std::string path) {}
-static void materials_init() { Materials::Init(); }
+static void materials_init() { InitMaterials(); }
 static void controls_init() { Controls::initKey(); }
 
 static void init_ecs() {

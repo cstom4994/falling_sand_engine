@@ -23,6 +23,7 @@ struct b2Body;
 struct R_Target;
 struct Particle;
 struct Biome;
+struct Material;
 
 struct GameData {
     I32 ofsX = 0;
@@ -41,6 +42,9 @@ struct GameData {
     F32 freeCamY = 0;
 
     static std::vector<Biome *> biome_container;
+    static std::vector<Material *> materials_container;
+    static I32 materials_count;
+    static Material **materials_array;
 };
 
 void ReleaseGameData();
@@ -89,9 +93,10 @@ struct MaterialInteraction {
     int ofsY = 0;
 };
 
-class Material {
-public:
+struct Material {
     std::string name;
+    std::string index_name;
+
     int id = 0;
     int physicsType = 0;
     U8 alpha = 0;
@@ -113,20 +118,17 @@ public:
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor)
-        : Material(id, name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
-    Material(int id, std::string name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations) : Material(id, name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
-    Material(int id, std::string name, int physicsType, int slipperyness, F32 density, int iterations) : Material(id, name, physicsType, slipperyness, 0xff, density, iterations){};
-    Material() : Material(0, "Air", PhysicsType::AIR, 4, 0, 0){};
+    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
+    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor)
+        : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
+    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations)
+        : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
+    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, F32 density, int iterations)
+        : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations){};
+    Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0){};
 };
 
-class Materials {
-public:
-    static int nMaterials;
-    static std::vector<Material *> MATERIALS;
-    static Material **MATERIALS_ARRAY;
-
+struct Materials {
     static Material GENERIC_AIR;
     static Material GENERIC_SOLID;
     static Material GENERIC_SAND;
@@ -158,9 +160,9 @@ public:
     static Material FIRE;
     static Material FLAT_COBBLE_STONE;
     static Material FLAT_COBBLE_DIRT;
-
-    static void Init();
 };
+
+void InitMaterials();
 
 class MaterialInstance {
 public:

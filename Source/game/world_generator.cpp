@@ -18,7 +18,7 @@ class MaterialTestGenerator : public WorldGenerator {
         Material *mat;
 
         while (true) {
-            mat = Materials::MATERIALS[rand() % Materials::MATERIALS.size()];
+            mat = global.GameData_.materials_container[rand() % global.GameData_.materials_container.size()];
             if (mat->id >= 31 && (mat->physicsType == PhysicsType::SAND || mat->physicsType == PhysicsType::SOUP)) break;
         }
 
