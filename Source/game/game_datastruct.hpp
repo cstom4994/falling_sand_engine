@@ -22,6 +22,28 @@ struct RigidBody;
 struct b2Body;
 struct R_Target;
 struct Particle;
+struct Biome;
+
+struct GameData {
+    I32 ofsX = 0;
+    I32 ofsY = 0;
+
+    F32 plPosX = 0;
+    F32 plPosY = 0;
+
+    F32 camX = 0;
+    F32 camY = 0;
+
+    F32 desCamX = 0;
+    F32 desCamY = 0;
+
+    F32 freeCamX = 0;
+    F32 freeCamY = 0;
+
+    static std::vector<Biome *> biome_container;
+};
+
+void ReleaseGameData();
 
 struct WorldEntity {
     F32 x = 0;

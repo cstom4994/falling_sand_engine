@@ -46,6 +46,8 @@ extern Texture *LoadAseprite(const char *path);
 
 Global global;
 
+std::vector<Biome *> GameData::biome_container;
+
 IMPLENGINE();
 
 Game::Game(int argc, char *argv[]) {
@@ -365,14 +367,14 @@ int Game::run(int argc, char *argv[]) {
 
     // start game loop
     METADOT_INFO("Starting game loop...");
-    GameData_.freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2.0f;
-    GameData_.freeCamY = GameIsolate_.world->height / 2.0f - (int)(CHUNK_H * 0.75);
+    global.GameData_.freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2.0f;
+    global.GameData_.freeCamY = GameIsolate_.world->height / 2.0f - (int)(CHUNK_H * 0.75);
     if (GameIsolate_.world->WorldIsolate_.player) {
-        GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x;
-        GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y;
+        global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x;
+        global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y;
     } else {
-        GameData_.plPosX = GameData_.freeCamX;
-        GameData_.plPosY = GameData_.freeCamY;
+        global.GameData_.plPosX = global.GameData_.freeCamX;
+        global.GameData_.plPosY = global.GameData_.freeCamY;
     }
 
     SDL_Event windowEvent;
@@ -388,11 +390,11 @@ int Game::run(int argc, char *argv[]) {
     I32 msptPhysics = 16;
 
     scale = 3;
-    GameData_.ofsX = (int)(-CHUNK_W * 4);
-    GameData_.ofsY = (int)(-CHUNK_H * 2.5);
+    global.GameData_.ofsX = (int)(-CHUNK_W * 4);
+    global.GameData_.ofsY = (int)(-CHUNK_H * 2.5);
 
-    GameData_.ofsX = (GameData_.ofsX - Screen.windowWidth / 2) / 2 * 3 + Screen.windowWidth / 2;
-    GameData_.ofsY = (GameData_.ofsY - Screen.windowHeight / 2) / 2 * 3 + Screen.windowHeight / 2;
+    global.GameData_.ofsX = (global.GameData_.ofsX - Screen.windowWidth / 2) / 2 * 3 + Screen.windowWidth / 2;
+    global.GameData_.ofsY = (global.GameData_.ofsY - Screen.windowHeight / 2) / 2 * 3 + Screen.windowHeight / 2;
 
     InitFPS();
     METADOT_NEW_ARRAY(C, objectDelete, U8, GameIsolate_.world->width * GameIsolate_.world->height);
@@ -446,8 +448,8 @@ int Game::run(int argc, char *argv[]) {
                 if (Controls::DEBUG_DRAW->get()) {
                     // draw material
 
-                    int x = (int)((windowEvent.motion.x - GameData_.ofsX - GameData_.camX) / scale);
-                    int y = (int)((windowEvent.motion.y - GameData_.ofsY - GameData_.camY) / scale);
+                    int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                    int y = (int)((windowEvent.motion.y - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                     if (lastDrawMX == 0 && lastDrawMY == 0) {
                         lastDrawMX = x;
@@ -482,8 +484,8 @@ int Game::run(int argc, char *argv[]) {
                     // erase material
 
                     // erase from world
-                    int x = (int)((windowEvent.motion.x - GameData_.ofsX - GameData_.camX) / scale);
-                    int y = (int)((windowEvent.motion.y - GameData_.ofsY - GameData_.camY) / scale);
+                    int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                    int y = (int)((windowEvent.motion.y - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                     if (lastEraseMX == 0 && lastEraseMY == 0) {
                         lastEraseMX = x;
@@ -599,8 +601,8 @@ int Game::run(int argc, char *argv[]) {
                         } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::CHISEL)) {
                             // if hovering rigidbody, open in chisel
 
-                            int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-                            int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+                            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                             std::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;  // copy
                             for (size_t i = 0; i < rbs.size(); i++) {
@@ -710,8 +712,8 @@ int Game::run(int argc, char *argv[]) {
                                 }
                             } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::HAMMER)) {
                                 if (GameIsolate_.world->WorldIsolate_.player->holdHammer) {
-                                    int x = (int)((windowEvent.button.x - GameData_.ofsX - GameData_.camX) / scale);
-                                    int y = (int)((windowEvent.button.y - GameData_.ofsY - GameData_.camY) / scale);
+                                    int x = (int)((windowEvent.button.x - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                                    int y = (int)((windowEvent.button.y - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                                     int dx = GameIsolate_.world->WorldIsolate_.player->hammerX - x;
                                     int dy = GameIsolate_.world->WorldIsolate_.player->hammerY - y;
@@ -792,8 +794,8 @@ int Game::run(int argc, char *argv[]) {
                     Controls::rmouse = false;
                     // pick up / throw item
 
-                    int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-                    int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+                    int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                    int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                     bool swapped = false;
                     std::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
@@ -922,8 +924,8 @@ int Game::run(int argc, char *argv[]) {
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
-            int msx = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-            int msy = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+            int msx = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+            int msy = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
             MaterialInstance tile;
 
@@ -1219,16 +1221,16 @@ void Game::updateFrameEarly() {
     }
 
     if (Controls::DEBUG_EXPLODE->get()) {
-        int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-        int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+        int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+        int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
         GameIsolate_.world->explosion(x, y, 30);
     }
 
     if (Controls::DEBUG_CARVE->get()) {
         // carve square
 
-        int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale - 16);
-        int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale - 16);
+        int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale - 16);
+        int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale - 16);
 
         C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
 
@@ -1271,8 +1273,8 @@ void Game::updateFrameEarly() {
 
     if (Controls::DEBUG_TOGGLE_PLAYER->get()) {
         if (GameIsolate_.world->WorldIsolate_.player) {
-            GameData_.freeCamX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f;
-            GameData_.freeCamY = GameIsolate_.world->WorldIsolate_.player->y - GameIsolate_.world->WorldIsolate_.player->hh / 2.0f;
+            global.GameData_.freeCamX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f;
+            global.GameData_.freeCamY = GameIsolate_.world->WorldIsolate_.player->y - GameIsolate_.world->WorldIsolate_.player->hh / 2.0f;
             GameIsolate_.world->WorldIsolate_.entities.erase(
                     std::remove(GameIsolate_.world->WorldIsolate_.entities.begin(), GameIsolate_.world->WorldIsolate_.entities.end(), GameIsolate_.world->WorldIsolate_.player),
                     GameIsolate_.world->WorldIsolate_.entities.end());
@@ -1407,8 +1409,8 @@ accLoadY = 0;*/
 
         // rigidbody hover
 
-        int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-        int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+        int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+        int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
         bool swapped = false;
         F32 hoverDelta = 10.0 * Time.deltaTime / 1000.0;
@@ -1641,8 +1643,8 @@ void Game::tick() {
 
             if (GameIsolate_.world->WorldIsolate_.player) {
                 if (GameIsolate_.world->WorldIsolate_.player->holdHammer) {
-                    int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-                    int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+                    int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                    int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
                     R_Line(TexturePack_.textureEntitiesLQ->target, x, y, GameIsolate_.world->WorldIsolate_.player->hammerX, GameIsolate_.world->WorldIsolate_.player->hammerY,
                            {0xff, 0xff, 0x00, 0xff});
                 }
@@ -1695,8 +1697,8 @@ void Game::tick() {
             scale += deltaScale;
             if (scale < 1) scale = 1;
 
-            GameData_.ofsX = (GameData_.ofsX - Screen.windowWidth / 2) / oldScale * scale + Screen.windowWidth / 2;
-            GameData_.ofsY = (GameData_.ofsY - Screen.windowHeight / 2) / oldScale * scale + Screen.windowHeight / 2;
+            global.GameData_.ofsX = (global.GameData_.ofsX - Screen.windowWidth / 2) / oldScale * scale + Screen.windowWidth / 2;
+            global.GameData_.ofsY = (global.GameData_.ofsY - Screen.windowHeight / 2) / oldScale * scale + Screen.windowHeight / 2;
         } else {
         }
 
@@ -2209,8 +2211,8 @@ void Game::tickChunkLoading() {
             accLoadX -= subX;
             accLoadY -= subY;
 
-            GameData_.ofsX -= subX * scale;
-            GameData_.ofsY -= subY * scale;
+            global.GameData_.ofsX -= subX * scale;
+            global.GameData_.ofsY -= subY * scale;
         }
 
         GameIsolate_.world->tickChunks();
@@ -2267,23 +2269,23 @@ void Game::tickPlayer() {
         if (GameIsolate_.world->WorldIsolate_.player->vx < -4.5) GameIsolate_.world->WorldIsolate_.player->vx = -4.5;
     } else {
         if (state == INGAME) {
-            GameData_.freeCamX += (F32)((Controls::PLAYER_LEFT->get() ? -5 : 0) + (Controls::PLAYER_RIGHT->get() ? 5 : 0));
-            GameData_.freeCamY += (F32)((Controls::PLAYER_UP->get() ? -5 : 0) + (Controls::PLAYER_DOWN->get() ? 5 : 0));
+            global.GameData_.freeCamX += (F32)((Controls::PLAYER_LEFT->get() ? -5 : 0) + (Controls::PLAYER_RIGHT->get() ? 5 : 0));
+            global.GameData_.freeCamY += (F32)((Controls::PLAYER_UP->get() ? -5 : 0) + (Controls::PLAYER_DOWN->get() ? 5 : 0));
         } else {
         }
     }
 
     if (GameIsolate_.world->WorldIsolate_.player) {
-        GameData_.desCamX = (F32)(-(mx - (Screen.windowWidth / 2)) / 4);
-        GameData_.desCamY = (F32)(-(my - (Screen.windowHeight / 2)) / 4);
+        global.GameData_.desCamX = (F32)(-(mx - (Screen.windowWidth / 2)) / 4);
+        global.GameData_.desCamY = (F32)(-(my - (Screen.windowHeight / 2)) / 4);
 
-        GameIsolate_.world->WorldIsolate_.player->holdAngle = (F32)(atan2(GameData_.desCamY, GameData_.desCamX) * 180 / (F32)M_PI);
+        GameIsolate_.world->WorldIsolate_.player->holdAngle = (F32)(atan2(global.GameData_.desCamY, global.GameData_.desCamX) * 180 / (F32)M_PI);
 
-        GameData_.desCamX = 0;
-        GameData_.desCamY = 0;
+        global.GameData_.desCamX = 0;
+        global.GameData_.desCamY = 0;
     } else {
-        GameData_.desCamX = 0;
-        GameData_.desCamY = 0;
+        global.GameData_.desCamX = 0;
+        global.GameData_.desCamY = 0;
     }
 
     if (GameIsolate_.world->WorldIsolate_.player) {
@@ -2291,11 +2293,11 @@ void Game::tickPlayer() {
             if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::VACUUM)) {
                 if (GameIsolate_.world->WorldIsolate_.player->holdVacuum) {
 
-                    int wcx = (int)((Screen.windowWidth / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
-                    int wcy = (int)((Screen.windowHeight / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
+                    int wcx = (int)((Screen.windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                    int wcy = (int)((Screen.windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
-                    int wmx = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-                    int wmy = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+                    int wmx = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                    int wmy = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                     int mdx = wmx - wcx;
                     int mdy = wmy - wcy;
@@ -2505,8 +2507,8 @@ void Game::updateFrameLate() {
             if (Time.now - Time.lastTick <= Time.mspt) {
                 F32 thruTick = (F32)((Time.now - Time.lastTick) / (F64)Time.mspt);
 
-                GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x + (int)(GameIsolate_.world->WorldIsolate_.player->vx * thruTick);
-                GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y + (int)(GameIsolate_.world->WorldIsolate_.player->vy * thruTick);
+                global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x + (int)(GameIsolate_.world->WorldIsolate_.player->vx * thruTick);
+                global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y + (int)(GameIsolate_.world->WorldIsolate_.player->vy * thruTick);
             } else {
                 // plPosX = GameIsolate_.world->WorldIsolate_.player->x;
                 // plPosY = GameIsolate_.world->WorldIsolate_.player->y;
@@ -2515,26 +2517,26 @@ void Game::updateFrameLate() {
             // plPosX = (F32)(plPosX + (GameIsolate_.world->WorldIsolate_.player->x - plPosX) / 25.0);
             // plPosY = (F32)(plPosY + (GameIsolate_.world->WorldIsolate_.player->y - plPosY) / 25.0);
 
-            nofsX = (int)(-((int)GameData_.plPosX + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x) * scale + Screen.windowWidth / 2);
-            nofsY = (int)(-((int)GameData_.plPosY + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y) * scale + Screen.windowHeight / 2);
+            nofsX = (int)(-((int)global.GameData_.plPosX + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x) * scale + Screen.windowWidth / 2);
+            nofsY = (int)(-((int)global.GameData_.plPosY + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y) * scale + Screen.windowHeight / 2);
         } else {
-            GameData_.plPosX = (F32)(GameData_.plPosX + (GameData_.freeCamX - GameData_.plPosX) / 50.0f);
-            GameData_.plPosY = (F32)(GameData_.plPosY + (GameData_.freeCamY - GameData_.plPosY) / 50.0f);
+            global.GameData_.plPosX = (F32)(global.GameData_.plPosX + (global.GameData_.freeCamX - global.GameData_.plPosX) / 50.0f);
+            global.GameData_.plPosY = (F32)(global.GameData_.plPosY + (global.GameData_.freeCamY - global.GameData_.plPosY) / 50.0f);
 
-            nofsX = (int)(-(GameData_.plPosX + 0 + GameIsolate_.world->loadZone.x) * scale + Screen.windowWidth / 2.0f);
-            nofsY = (int)(-(GameData_.plPosY + 0 + GameIsolate_.world->loadZone.y) * scale + Screen.windowHeight / 2.0f);
+            nofsX = (int)(-(global.GameData_.plPosX + 0 + GameIsolate_.world->loadZone.x) * scale + Screen.windowWidth / 2.0f);
+            nofsY = (int)(-(global.GameData_.plPosY + 0 + GameIsolate_.world->loadZone.y) * scale + Screen.windowHeight / 2.0f);
         }
 
-        accLoadX += (nofsX - GameData_.ofsX) / (F32)scale;
-        accLoadY += (nofsY - GameData_.ofsY) / (F32)scale;
+        accLoadX += (nofsX - global.GameData_.ofsX) / (F32)scale;
+        accLoadY += (nofsY - global.GameData_.ofsY) / (F32)scale;
         // METADOT_BUG("{0:f} {0:f}", plPosX, plPosY);
         // METADOT_BUG("a {0:d} {0:d}", nofsX, nofsY);
         // METADOT_BUG("{0:d} {0:d}", nofsX - ofsX, nofsY - ofsY);
-        GameData_.ofsX += (nofsX - GameData_.ofsX);
-        GameData_.ofsY += (nofsY - GameData_.ofsY);
+        global.GameData_.ofsX += (nofsX - global.GameData_.ofsX);
+        global.GameData_.ofsY += (nofsY - global.GameData_.ofsY);
 
-        GameData_.camX = (F32)(GameData_.camX + (GameData_.desCamX - GameData_.camX) * (Time.now - Time.lastTime) / 250.0f);
-        GameData_.camY = (F32)(GameData_.camY + (GameData_.desCamY - GameData_.camY) * (Time.now - Time.lastTime) / 250.0f);
+        global.GameData_.camX = (F32)(global.GameData_.camX + (global.GameData_.desCamX - global.GameData_.camX) * (Time.now - Time.lastTime) / 250.0f);
+        global.GameData_.camY = (F32)(global.GameData_.camY + (global.GameData_.desCamY - global.GameData_.camY) * (Time.now - Time.lastTime) / 250.0f);
     }
 }
 
@@ -2635,8 +2637,8 @@ newState = true;
                 if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
                     if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::HAMMER)) {
                         if (GameIsolate_.world->WorldIsolate_.player->holdHammer) {
-                            int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-                            int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+                            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+                            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                             int dx = x - GameIsolate_.world->WorldIsolate_.player->hammerX;
                             int dy = y - GameIsolate_.world->WorldIsolate_.player->hammerY;
@@ -2665,15 +2667,15 @@ newState = true;
         }
 
         if (Controls::mmouse) {
-            int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-            int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
                               x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
                         x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
         } else if (Controls::DEBUG_DRAW->get()) {
-            int x = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-            int y = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
                               x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), {0x00, 0xff, 0xB0, 0x80});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
@@ -2729,9 +2731,9 @@ void Game::renderLate() {
                     src->w = tw;
                     src->h = th;
 
-                    dst->x = (((GameData_.ofsX + GameData_.camX) + GameIsolate_.world->loadZone.x * scale) + n * tw / cur.parralaxX) * cur.parralaxX + GameIsolate_.world->width / 2.0f * scale -
-                             tw / 2.0f;
-                    dst->y = ((GameData_.ofsY + GameData_.camY) + GameIsolate_.world->loadZone.y * scale) * cur.parralaxY + GameIsolate_.world->height / 2.0f * scale - th / 2.0f -
+                    dst->x = (((global.GameData_.ofsX + global.GameData_.camX) + GameIsolate_.world->loadZone.x * scale) + n * tw / cur.parralaxX) * cur.parralaxX +
+                             GameIsolate_.world->width / 2.0f * scale - tw / 2.0f;
+                    dst->y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * scale) * cur.parralaxY + GameIsolate_.world->height / 2.0f * scale - th / 2.0f -
                              Screen.windowHeight / 3.0f * (scale - 1);
                     dst->w = (F32)tw;
                     dst->h = (F32)th;
@@ -2775,7 +2777,8 @@ void Game::renderLate() {
             METADOT_DELETE(C, src, R_Rect);
         }
 
-        R_Rect r1 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX), (F32)(GameData_.ofsY + GameData_.camY), (F32)(GameIsolate_.world->width * scale), (F32)(GameIsolate_.world->height * scale)};
+        R_Rect r1 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * scale),
+                           (F32)(GameIsolate_.world->height * scale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, Render.target, &r1);
 
@@ -2814,8 +2817,8 @@ void Game::renderLate() {
 
         // done shader
 
-        int lmsx = (int)((mx - GameData_.ofsX - GameData_.camX) / scale);
-        int lmsy = (int)((my - GameData_.ofsY - GameData_.camY) / scale);
+        int lmsx = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+        int lmsy = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
         R_Clear(TexturePack_.worldTexture->target);
 
@@ -2936,9 +2939,11 @@ void Game::renderOverlays() {
     FontCache_DrawAlign(font, Render.target, Screen.windowWidth, 0, FontCache_ALIGN_RIGHT, "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
                         Time.feelsLikeFps);
 
-    R_Rect r1 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX), (F32)(GameData_.ofsY + GameData_.camY), (F32)(GameIsolate_.world->width * scale), (F32)(GameIsolate_.world->height * scale)};
-    R_Rect r2 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale), (F32)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale),
-                       (F32)(GameIsolate_.world->tickZone.w * scale), (F32)(GameIsolate_.world->tickZone.h * scale)};
+    R_Rect r1 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * scale),
+                       (F32)(GameIsolate_.world->height * scale)};
+    R_Rect r2 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale),
+                       (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale), (F32)(GameIsolate_.world->tickZone.w * scale),
+                       (F32)(GameIsolate_.world->tickZone.h * scale)};
 
     if (GameIsolate_.globaldef.draw_temperature_map) {
         R_SetBlendMode(TexturePack_.temperatureMap, R_BLEND_NORMAL);
@@ -2946,8 +2951,9 @@ void Game::renderOverlays() {
     }
 
     if (GameIsolate_.globaldef.draw_load_zones) {
-        R_Rect r2m = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->meshZone.x * scale), (F32)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->meshZone.y * scale),
-                            (F32)(GameIsolate_.world->meshZone.w * scale), (F32)(GameIsolate_.world->meshZone.h * scale)};
+        R_Rect r2m = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * scale),
+                            (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * scale), (F32)(GameIsolate_.world->meshZone.w * scale),
+                            (F32)(GameIsolate_.world->meshZone.h * scale)};
 
         R_Rectangle2(Render.target, r2m, {0x00, 0xff, 0xff, 0xff});
         R_Rectangle2(Render.target, r2, {0xff, 0x00, 0x00, 0xff});
@@ -2958,26 +2964,27 @@ void Game::renderOverlays() {
         METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        R_Rect r3 = R_Rect{(F32)(0), (F32)(0), (F32)((GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale)), (F32)(Screen.windowHeight)};
+        R_Rect r3 = R_Rect{(F32)(0), (F32)(0), (F32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale)), (F32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r4 =
-                R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale), (F32)(0),
-                       (F32)((Screen.windowWidth) - (GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale)), (F32)(Screen.windowHeight)};
+        R_Rect r4 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale), (F32)(0),
+                           (F32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale)),
+                           (F32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r5 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale), (F32)(0), (F32)(GameIsolate_.world->tickZone.w * scale),
-                           (F32)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale)};
+        R_Rect r5 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale), (F32)(0), (F32)(GameIsolate_.world->tickZone.w * scale),
+                           (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r6 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->tickZone.x * scale),
-                           (F32)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale + GameIsolate_.world->tickZone.h * scale), (F32)(GameIsolate_.world->tickZone.w * scale),
-                           (F32)(Screen.windowHeight - (GameData_.ofsY + GameData_.camY + GameIsolate_.world->tickZone.y * scale + GameIsolate_.world->tickZone.h * scale))};
+        R_Rect r6 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale),
+                           (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale + GameIsolate_.world->tickZone.h * scale),
+                           (F32)(GameIsolate_.world->tickZone.w * scale),
+                           (F32)(Screen.windowHeight - (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale + GameIsolate_.world->tickZone.h * scale))};
         R_Rectangle2(Render.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        R_Rect r7 = R_Rect{(F32)(GameData_.ofsX + GameData_.camX + GameIsolate_.world->width / 2 * scale - (Screen.windowWidth / 3 * scale / 2)),
-                           (F32)(GameData_.ofsY + GameData_.camY + GameIsolate_.world->height / 2 * scale - (Screen.windowHeight / 3 * scale / 2)), (F32)(Screen.windowWidth / 3 * scale),
+        R_Rect r7 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * scale - (Screen.windowWidth / 3 * scale / 2)),
+                           (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * scale - (Screen.windowHeight / 3 * scale / 2)), (F32)(Screen.windowWidth / 3 * scale),
                            (F32)(Screen.windowHeight / 3 * scale)};
         R_Rectangle2(Render.target, r7, col);
     }
@@ -3093,8 +3100,8 @@ void Game::renderOverlays() {
                 Chunk *ch = GameIsolate_.world->getChunk(cx, cy);
                 SDL_Color col = {255, 0, 0, 255};
 
-                F32 x = ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * scale + GameData_.ofsX + GameData_.camX);
-                F32 y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * scale + GameData_.ofsY + GameData_.camY);
+                F32 x = ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * scale + global.GameData_.ofsX + global.GameData_.camX);
+                F32 y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * scale + global.GameData_.ofsY + global.GameData_.camY);
 
                 R_Rectangle(Render.target, x, y, x + CHUNK_W * scale, y + CHUNK_H * scale, {50, 50, 0, 255});
 
@@ -3108,8 +3115,8 @@ void Game::renderOverlays() {
 
         GameIsolate_.world->b2world->SetDebugDraw(debugDraw);
         debugDraw->scale = scale;
-        debugDraw->xOfs = GameData_.ofsX + GameData_.camX;
-        debugDraw->yOfs = GameData_.ofsY + GameData_.camY;
+        debugDraw->xOfs = global.GameData_.ofsX + global.GameData_.camX;
+        debugDraw->yOfs = global.GameData_.ofsY + global.GameData_.camY;
         debugDraw->SetFlags(0);
         if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
         if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
@@ -3131,8 +3138,8 @@ void Game::renderOverlays() {
         int centerX = Screen.windowWidth / 2;
         int centerY = CHUNK_UNLOAD_DIST * chSize + 10;
 
-        int pposX = GameData_.plPosX;
-        int pposY = GameData_.plPosY;
+        int pposX = global.GameData_.plPosX;
+        int pposY = global.GameData_.plPosY;
         int pchx = (int)((pposX / CHUNK_W) * chSize);
         int pchy = (int)((pposY / CHUNK_H) * chSize);
         int pchxf = (int)(((F32)pposX / CHUNK_W) * chSize);
@@ -3267,7 +3274,7 @@ ReadyToMerge ({16})
         //                     (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size()),
         //         4, 12);
 
-        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX, GameData_.plPosY,
+        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY,
                                     GameIsolate_.world->WorldIsolate_.player ? GameIsolate_.world->WorldIsolate_.player->vx : 0.0f,
                                     GameIsolate_.world->WorldIsolate_.player ? GameIsolate_.world->WorldIsolate_.player->vy : 0.0f, (int)GameIsolate_.world->WorldIsolate_.particles.size(),
                                     (int)GameIsolate_.world->WorldIsolate_.entities.size(), rbCt, (int)GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
@@ -3438,11 +3445,11 @@ int Game::getAimSurface(int dist) {
     int mmx = Screen.windowWidth / 2.0f + udx * dist;
     int mmy = Screen.windowHeight / 2.0f + udy * dist;
 
-    int wcx = (int)((Screen.windowWidth / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
-    int wcy = (int)((Screen.windowHeight / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
+    int wcx = (int)((Screen.windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / scale);
+    int wcy = (int)((Screen.windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
-    int wmx = (int)((mmx - GameData_.ofsX - GameData_.camX) / scale);
-    int wmy = (int)((mmy - GameData_.ofsY - GameData_.camY) / scale);
+    int wmx = (int)((mmx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+    int wmy = (int)((mmy - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
     int startInd = -1;
     GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
@@ -3526,11 +3533,11 @@ int Game::getAimSolidSurface(int dist) {
     int mmx = Screen.windowWidth / 2.0f + udx * dist;
     int mmy = Screen.windowHeight / 2.0f + udy * dist;
 
-    int wcx = (int)((Screen.windowWidth / 2.0f - GameData_.ofsX - GameData_.camX) / scale);
-    int wcy = (int)((Screen.windowHeight / 2.0f - GameData_.ofsY - GameData_.camY) / scale);
+    int wcx = (int)((Screen.windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / scale);
+    int wcy = (int)((Screen.windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
-    int wmx = (int)((mmx - GameData_.ofsX - GameData_.camX) / scale);
-    int wmy = (int)((mmy - GameData_.ofsY - GameData_.camY) / scale);
+    int wmx = (int)((mmx - global.GameData_.ofsX - global.GameData_.camX) / scale);
+    int wmy = (int)((mmy - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
     int startInd = -1;
     GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {

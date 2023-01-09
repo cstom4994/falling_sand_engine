@@ -29,6 +29,7 @@ struct Global {
 
     ImGuiCore *ImGuiCore = nullptr;
 
+    GameData GameData_;
     ShaderWorker shaderworker;
     Audio audioEngine;
     I18N I18N;
@@ -42,8 +43,6 @@ struct Global {
         // CppSource Functions register
         void (*draw)(void);
     } HostData;
-
-    Global() {}
 };
 
 extern Global global;

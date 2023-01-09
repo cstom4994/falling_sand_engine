@@ -38,7 +38,7 @@ void InitTexture(TexturePack *tex) {
 void EndTexture(TexturePack *tex) { METADOT_ASSERT_E(tex); }
 
 Texture *CreateTexture(C_Surface *surface) {
-    Texture *tex = (Texture *)gc_malloc(&gc, sizeof(Texture));
+    Texture *tex = new Texture;
     tex->surface = surface;
     return tex;
 }
@@ -46,7 +46,7 @@ Texture *CreateTexture(C_Surface *surface) {
 void DestroyTexture(Texture *tex) {
     METADOT_ASSERT_E(tex);
     if (tex->surface) SDL_FreeSurface(tex->surface);
-    gc_free(&gc, tex);
+    delete tex;
 }
 
 Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }

@@ -481,8 +481,8 @@ void Console::Init() {
     // Register variables
     console->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    console->System().RegisterVariable("plPosX", GameData_.plPosX, CVar::Arg<F32>(""));
-    console->System().RegisterVariable("plPosY", GameData_.plPosY, CVar::Arg<F32>(""));
+    console->System().RegisterVariable("plPosX", global.GameData_.plPosX, CVar::Arg<F32>(""));
+    console->System().RegisterVariable("plPosY", global.GameData_.plPosY, CVar::Arg<F32>(""));
 
     console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
 

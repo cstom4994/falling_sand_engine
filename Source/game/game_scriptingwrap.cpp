@@ -21,7 +21,7 @@
 
 static void create_biome(std::string name, int id) {
     Biome *b = new Biome(name, id);
-    GameData_.biome_container.push_back(b);
+    global.GameData_.biome_container.push_back(b);
 }
 
 static void audio_init() { global.audioEngine.Init(); }
@@ -59,7 +59,7 @@ void GameScriptingWrap::Init() {
 }
 
 Biome *GameScriptingWrap::BiomeGet(std::string name) {
-    for (auto t : GameData_.biome_container) {
+    for (auto t : global.GameData_.biome_container) {
         if (t->name == name) return t;
     }
     return nullptr;
