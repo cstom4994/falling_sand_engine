@@ -19,7 +19,6 @@
 #include "engine.h"
 #include "engine/engine.h"
 #include "engine/filesystem.h"
-#include "engine/imgui_impl.hpp"
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
@@ -30,14 +29,14 @@
 #include "engine/utils.hpp"
 #include "engine_platform.h"
 #include "fonts.h"
-#include "game/console.hpp"
+#include "engine/console.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_shaders.hpp"
 #include "game/game_ui.hpp"
-#include "game/imgui_core.hpp"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
+#include "ui.hpp"
 #include "utils.h"
 #include "world_generator.cpp"
 
@@ -83,9 +82,7 @@ int Game::init(int argc, char *argv[]) {
     DestroyTexture(splashSurf);
     R_Flip(Render.target);
 
-    METADOT_INFO("Loading ImGUI");
-    METADOT_NEW(C, global.ImGuiCore, ImGuiCore);
-    global.ImGuiCore->Init();
+    UIRendererInit();
 
     // scripting system
     METADOT_INFO("Loading Script...");
@@ -914,11 +911,7 @@ int Game::run(int argc, char *argv[]) {
         R_FlushBlitBuffer();
 
         // render ImGui
-        global.ImGuiCore->Render();
-
-        auto l = global.scripts->LuaRuntime->GetWrapper();
-        LuaWrapper::LuaFunction OnGameGUIUpdate = (*l)["OnGameGUIUpdate"];
-        OnGameGUIUpdate();
+        UIRendererUpdate();
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1002,7 +995,7 @@ int Game::run(int argc, char *argv[]) {
             }
         }
 
-        global.ImGuiCore->Draw();
+        UIRendererDraw();
 
         // render fade in/out
         if (fadeInWaitFrames > 0) {
@@ -1092,8 +1085,7 @@ int Game::exit() {
 
     ReleaseGameData();
 
-    global.ImGuiCore->onDetach();
-    METADOT_DELETE(C, global.ImGuiCore, ImGuiCore);
+    UIRendererFree();
 
     METADOT_DELETE(C, objectDelete, U8);
     GameIsolate_.backgrounds->Unload();
@@ -2540,7 +2532,7 @@ void Game::updateFrameLate() {
 
 void Game::renderEarly() {
 
-    global.ImGuiCore->NewFrame();
+    UIRendererPostUpdate();
 
     if (state == LOADING) {
         if (Time.now - Time.lastLoadingTick > 20) {

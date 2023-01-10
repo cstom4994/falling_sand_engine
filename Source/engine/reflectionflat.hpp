@@ -8,7 +8,7 @@
 
 #include "core/core.h"
 #include "core/macros.h"
-#include "game/console.hpp"
+#include "engine/console.hpp"
 #include "game/game_scriptingwrap.hpp"
 
 METADOT_INLINE CVar::ItemLog &operator<<(CVar::ItemLog &log, ImVec4 &vec) {

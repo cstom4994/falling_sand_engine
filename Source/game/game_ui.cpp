@@ -12,6 +12,7 @@
 #include "engine.h"
 #include "engine/engine.h"
 #include "engine/filesystem.h"
+#include "engine/imgui_core.hpp"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
@@ -19,7 +20,6 @@
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
-#include "game/imgui_core.hpp"
 #include "game/world_generator.cpp"
 #include "imgui/imgui.h"
 
