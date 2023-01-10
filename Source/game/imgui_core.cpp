@@ -250,7 +250,7 @@ void ImGuiCore::Init() {
 #endif
     fileDialog.SetPwd(METADOT_RESLOC("data/scripts"));
     fileDialog.SetTitle("title");
-    fileDialog.SetTypeFilters({".js", ".lua"});
+    fileDialog.SetTypeFilters({".lua"});
 
     firstRun = true;
 }

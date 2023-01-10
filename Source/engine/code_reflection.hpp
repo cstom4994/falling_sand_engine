@@ -30,9 +30,6 @@ void func_log_info(std::string info);
 
 // any_function
 
-#ifndef ANY_FUNCTION_H
-#define ANY_FUNCTION_H
-
 namespace Meta {
 
 // https://stackoverflow.com/questions/26107041/how-can-i-determine-the-return-type-of-a-c11-member-function
@@ -188,8 +185,6 @@ private:
 };
 
 }  // namespace Meta
-
-#endif
 
 namespace tmp {
 
