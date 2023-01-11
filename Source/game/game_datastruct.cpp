@@ -55,6 +55,30 @@ Material::Material(int id, std::string name, std::string index_name, int physics
     this->color = color;
 }
 
+REFLECT_CLASS(Material);
+CLASS_META_DATA(META_DATA_DESCRIPTION, "Material data");
+REFLECT_MEMBER(name);
+REFLECT_MEMBER(index_name);
+REFLECT_MEMBER(id);
+REFLECT_MEMBER(physicsType);
+REFLECT_MEMBER(alpha);
+REFLECT_MEMBER(density);
+REFLECT_MEMBER(iterations);
+REFLECT_MEMBER(emit);
+REFLECT_MEMBER(emitColor);
+REFLECT_MEMBER(color);
+REFLECT_MEMBER(addTemp);
+REFLECT_MEMBER(conductionSelf);
+REFLECT_MEMBER(conductionOther);
+REFLECT_MEMBER(interact);
+REFLECT_MEMBER(nInteractions);
+REFLECT_MEMBER(interactions);
+REFLECT_MEMBER(react);
+REFLECT_MEMBER(nReactions);
+REFLECT_MEMBER(reactions);
+REFLECT_MEMBER(slipperyness);
+REFLECT_END(Material);
+
 #pragma region MATERIALSLIST
 
 #define INITMATERIAL(_index, _id, _name, _physics, _s, _a, _d, _i, _e, _c) Material MaterialsList::_index = Material(_id, _name, #_index, _physics, _s, _a, _d, _i, _e, _c)

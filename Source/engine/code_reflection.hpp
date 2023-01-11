@@ -699,7 +699,7 @@ ReturnType &ClassMember(void *class_ptr, TypeData &member_data) {
 //  Static variable added to class allows registration function to be added to list of classes to be registered
 #define REFLECT()           \
     static bool reflection; \
-    static bool initReflection();
+    static bool initReflection()
 
 // Define Registration Function
 #define REFLECT_CLASS(TYPE)                              \
@@ -713,15 +713,15 @@ ReturnType &ClassMember(void *class_ptr, TypeData &member_data) {
         CreateTitle(class_data.title);                   \
         RegisterClass<T>(class_data);                    \
         int member_index = -1;                           \
-        std::unordered_map<int, TypeData> mbrs{};
+        std::unordered_map<int, TypeData> mbrs {}
 
 // Meta data functions
 #define CLASS_META_TITLE(STRING) \
     class_data.title = #STRING;  \
-    RegisterClass(class_data);
+    RegisterClass(class_data)
 #define CLASS_META_DATA(KEY, VALUE)      \
     SetMetaData(class_data, KEY, VALUE); \
-    RegisterClass(class_data);
+    RegisterClass(class_data)
 
 // Member Registration
 #define REFLECT_MEMBER(MEMBER)                                    \
@@ -734,15 +734,15 @@ ReturnType &ClassMember(void *class_ptr, TypeData &member_data) {
     mbrs[member_index].size = sizeof(T::MEMBER);                  \
     mbrs[member_index].title = #MEMBER;                           \
     CreateTitle(mbrs[member_index].title);                        \
-    RegisterMember<decltype(T::MEMBER)>(class_data, mbrs[member_index]);
+    RegisterMember<decltype(T::MEMBER)>(class_data, mbrs[member_index])
 
 // Meta data functions
 #define MEMBER_META_TITLE(STRING)       \
     mbrs[member_index].title = #STRING; \
-    RegisterMember(class_data, mbrs[member_index]);
+    RegisterMember(class_data, mbrs[member_index])
 #define MEMBER_META_DATA(KEY, VALUE)             \
     SetMetaData(mbrs[member_index], KEY, VALUE); \
-    RegisterMember(class_data, mbrs[member_index]);
+    RegisterMember(class_data, mbrs[member_index])
 
 // Static definitions add registration function to list of classes to be registered
 #define REFLECT_END(TYPE)                                           \

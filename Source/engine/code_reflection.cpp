@@ -187,17 +187,17 @@ struct Transform2D {
 // ##    Register Reflection / Meta Data
 // ############################
 #ifdef REGISTER_REFLECTION
-REFLECT_CLASS(Transform2D)
-CLASS_META_DATA(META_DATA_DESCRIPTION, "Describes the location and positioning of an object.")
-REFLECT_MEMBER(width)
-REFLECT_MEMBER(height)
-REFLECT_MEMBER(position)
-MEMBER_META_TITLE("Object Position")
-MEMBER_META_DATA(META_DATA_DESCRIPTION, "Location of an object in space.")
-REFLECT_MEMBER(rotation)
-REFLECT_MEMBER(scale)
-REFLECT_MEMBER(text)
-REFLECT_END(Transform2D)
+REFLECT_CLASS(Transform2D);
+CLASS_META_DATA(META_DATA_DESCRIPTION, "Describes the location and positioning of an object.");
+REFLECT_MEMBER(width);
+REFLECT_MEMBER(height);
+REFLECT_MEMBER(position);
+MEMBER_META_TITLE("Object Position");
+MEMBER_META_DATA(META_DATA_DESCRIPTION, "Location of an object in space.");
+REFLECT_MEMBER(rotation);
+REFLECT_MEMBER(scale);
+REFLECT_MEMBER(text);
+REFLECT_END(Transform2D);
 #endif
 
 struct Node {

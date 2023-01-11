@@ -147,6 +147,8 @@ const char *u8Cpp20(T &&t) noexcept {
 #define METADOT_OPTMIZE_ON __pragma(optimize("", on))
 #define METADOT_DEBUGBREAK __debugbreak()
 
+#define METADOT_STATIC_ASSERT static_assert
+
 #endif  // end cplusplus
 
 #pragma endregion Cpp

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "core/core.hpp"
+#include "engine/code_reflection.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/math.hpp"
 #include "engine/renderer/renderer_gpu.h"
@@ -126,6 +127,8 @@ struct Material {
     Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, F32 density, int iterations)
         : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations){};
     Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0){};
+
+    REFLECT();
 };
 
 struct MaterialsList {

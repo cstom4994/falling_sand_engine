@@ -982,8 +982,6 @@ typedef int int32_t;
 typedef long long int64_t;
 #endif
 
-#define METAENGINE_LUAWRAPPER_STATIC_ASSERT static_assert
-
 #if LUA_VERSION_NUM > 502
 typedef lua_Integer luaInt;
 #else
@@ -5549,7 +5547,7 @@ struct FunctionInvokerType {
 
 template <typename T>
 inline FunctionInvokerType<fntuple::tuple<T>> function(T f) {
-    METAENGINE_LUAWRAPPER_STATIC_ASSERT(nativefunction::is_callable<typename traits::decay<T>::type>::value, "argument need callable");
+    METADOT_STATIC_ASSERT(nativefunction::is_callable<typename traits::decay<T>::type>::value, "argument need callable");
     return FunctionInvokerType<fntuple::tuple<T>>(fntuple::tuple<T>(f));
 }
 
@@ -6377,20 +6375,20 @@ public:
     UserdataMetatable() {
         addStaticFunction("__gc", &class_userdata::destructor<ObjectWrapperBase>);
 
-        METAENGINE_LUAWRAPPER_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
-                                            "std::vector is binding to lua-table by default.If "
-                                            "you wants register for std::vector yourself,"
-                                            "please define METAENGINE_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
+        METADOT_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
+                              "std::vector is binding to lua-table by default.If "
+                              "you wants register for std::vector yourself,"
+                              "please define METAENGINE_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
 
-        METAENGINE_LUAWRAPPER_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
-                                            "std::map is binding to lua-table by default.If you "
-                                            "wants register for std::map yourself,"
-                                            "please define METAENGINE_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
+        METADOT_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
+                              "std::map is binding to lua-table by default.If you "
+                              "wants register for std::map yourself,"
+                              "please define METAENGINE_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
 
         // can not register push specialized class
-        METAENGINE_LUAWRAPPER_STATIC_ASSERT(is_registerable<class_type>::value,
-                                            "Can not register specialized of type conversion "
-                                            "class. e.g. std::tuple");
+        METADOT_STATIC_ASSERT(is_registerable<class_type>::value,
+                              "Can not register specialized of type conversion "
+                              "class. e.g. std::tuple");
     }
 
     bool pushCreateMetatable(lua_State *state) const {
