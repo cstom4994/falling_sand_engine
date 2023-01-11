@@ -758,7 +758,7 @@ int DebugDrawUI::selIndex = -1;
 std::vector<R_Image *> DebugDrawUI::images = {};
 std::vector<R_Image *> DebugDrawUI::tools_images = {};
 U8 DebugDrawUI::brushSize = 5;
-Material *DebugDrawUI::selectedMaterial = &Materials::GENERIC_AIR;
+Material *DebugDrawUI::selectedMaterial = &MaterialsList::GENERIC_AIR;
 
 void DebugDrawUI::Setup() {
 
@@ -818,7 +818,7 @@ void DebugDrawUI::Draw(Game *game) {
     if (ImGui::BeginTabItem(LANG("ui_debug_materials"))) {
 
         auto a = selIndex == -1 ? "None" : selectedMaterial->name;
-        ImGui::Text("选择: %s", a.c_str());
+        ImGui::Text("选择: %s", a.data());
         ImGui::Text("放置大小: %d", brushSize);
 
         ImGui::Separator();
@@ -841,7 +841,7 @@ void DebugDrawUI::Draw(Game *game) {
 
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
-                ImGui::Text("%s", global.GameData_.materials_container[i]->name.c_str());
+                ImGui::Text("%s", global.GameData_.materials_container[i]->name.data());
                 ImGui::EndTooltip();
             }
 

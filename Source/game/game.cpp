@@ -17,6 +17,7 @@
 #include "core/macros.h"
 #include "core/threadpool.hpp"
 #include "engine.h"
+#include "engine/console.hpp"
 #include "engine/engine.h"
 #include "engine/filesystem.h"
 #include "engine/math.hpp"
@@ -29,7 +30,6 @@
 #include "engine/utils.hpp"
 #include "engine_platform.h"
 #include "fonts.h"
-#include "engine/console.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_shaders.hpp"
@@ -589,7 +589,7 @@ int Game::run(int argc, char *argv[]) {
                                 GameIsolate_.world->WorldIsolate_.player->holdHammer = true;
                                 // METADOT_BUG("hammer down: {0:d} {0:d} {0:d} {0:d} {0:d}", x, y, startInd, startInd % GameIsolate_.world->width, startInd / GameIsolate_.world->width);
                                 // GameIsolate_.world->setTile(GameIsolate_.world->WorldIsolate_.player->hammerX, GameIsolate_.world->WorldIsolate_.player->hammerY,
-                                // MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
+                                // MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00ff));
                             }
 #endif
 #undef HAMMER_DEBUG_PHYSICS
@@ -749,18 +749,18 @@ int Game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            GameIsolate_.world->tiles[index] = MaterialInstance(&Materials::GENERIC_SAND, Drawing::darkenColor(GameIsolate_.world->tiles[index].color, 0.5f));
+                                            GameIsolate_.world->tiles[index] = MaterialInstance(&MaterialsList::GENERIC_SAND, Drawing::darkenColor(GameIsolate_.world->tiles[index].color, 0.5f));
                                             GameIsolate_.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
                                             return false;
                                         });
 
-                                        // GameIsolate_.world->setTile(segSx, segSy, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
+                                        // GameIsolate_.world->setTile(segSx, segSy, MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00ff));
                                         if (broke) break;
                                     }
 
-                                    // GameIsolate_.world->setTile(ex, ey, MaterialInstance(&Materials::GENERIC_SOLID, 0xff0000ff));
+                                    // GameIsolate_.world->setTile(ex, ey, MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000ff));
 
                                     int hx = (GameIsolate_.world->WorldIsolate_.player->hammerX + (endInd % GameIsolate_.world->width)) / 2;
                                     int hy = (GameIsolate_.world->WorldIsolate_.player->hammerY + (endInd / GameIsolate_.world->width)) / 2;
@@ -777,9 +777,9 @@ int Game::run(int argc, char *argv[]) {
                                         global.audioEngine.PlayEvent("event:/Player/Impact");
                                     }
 
-                                    // GameIsolate_.world->setTile((int)(hx), (int)(hy), MaterialInstance(&Materials::GENERIC_SOLID, 0xffffffff));
-                                    // GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&Materials::GENERIC_SOLID, 0xffff00ff));
-                                    // GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&Materials::GENERIC_SOLID, 0x00ffffff));
+                                    // GameIsolate_.world->setTile((int)(hx), (int)(hy), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffffffff));
+                                    // GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffff00ff));
+                                    // GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ffffff));
                                 }
                                 GameIsolate_.world->WorldIsolate_.player->holdHammer = false;
                             }
@@ -924,7 +924,7 @@ int Game::run(int argc, char *argv[]) {
                 tile = GameIsolate_.world->tiles[msx + msy * GameIsolate_.world->width];
                 // Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
-                if (tile.mat->id == Materials::GENERIC_AIR.id) {
+                if (tile.mat->id == MaterialsList::GENERIC_AIR.id) {
                     std::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
@@ -947,7 +947,7 @@ int Game::run(int argc, char *argv[]) {
                     }
                 }
 
-                if (tile.mat->id != Materials::GENERIC_AIR.id) {
+                if (tile.mat->id != MaterialsList::GENERIC_AIR.id) {
 
                     ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.11f, 0.11f, 0.11f, 0.4f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.00f, 1.00f, 1.00f, 0.2f));
@@ -1168,20 +1168,20 @@ void Game::updateFrameEarly() {
                         int ty = xx * s + yy * c + cur->body->GetPosition().y;
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
-                        if (tt.mat->id != Materials::GENERIC_AIR.id) {
-                            if (GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
+                        if (tt.mat->id != MaterialsList::GENERIC_AIR.id) {
+                            if (GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + ty * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[(tx + 1) + ty * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[(tx + 1) + ty * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[(tx + 1) + ty * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[(tx + 1) + ty * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[(tx - 1) + ty * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[(tx - 1) + ty * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[(tx - 1) + ty * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[(tx - 1) + ty * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[tx + (ty + 1) * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[tx + (ty + 1) * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[tx + (ty + 1) * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + (ty + 1) * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + (ty - 1) * GameIsolate_.world->width] = true;
                             } else {
@@ -1586,7 +1586,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->matWidth; tx++) {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
-                    if (rmat.mat->id == Materials::GENERIC_AIR.id) continue;
+                    if (rmat.mat->id == MaterialsList::GENERIC_AIR.id) continue;
 
                     // rotate point
                     int wx = (int)(tx * c - (ty + 1) * s + x);
@@ -1743,7 +1743,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->matWidth; tx++) {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
-                    if (rmat.mat->id == Materials::GENERIC_AIR.id) continue;
+                    if (rmat.mat->id == MaterialsList::GENERIC_AIR.id) continue;
 
                     // rotate point
                     int wx = (int)(tx * c - (ty + 1) * s + x);
@@ -1790,7 +1790,7 @@ void Game::tick() {
                     }
 
                     if (!found) {
-                        if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == Materials::GENERIC_AIR.id) {
+                        if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                             cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
                         }
                     }
@@ -1800,7 +1800,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->surface->w; tx++) {
                 for (int ty = 0; ty < cur->surface->h; ty++) {
                     MaterialInstance mat = cur->tiles[tx + ty * cur->surface->w];
-                    if (mat.mat->id == Materials::GENERIC_AIR.id) {
+                    if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
                         R_GET_PIXEL(cur->surface, tx, ty) = 0x00000000;
                     } else {
                         R_GET_PIXEL(cur->surface, tx, ty) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
@@ -1863,7 +1863,7 @@ void Game::tick() {
                         dpixelsEmission_ar[offset + 0] = ((emit >> 16) & 0xff);  // r
                         dpixelsEmission_ar[offset + 3] = ((emit >> 24) & 0xff);  // a
 
-                        if (GameIsolate_.world->tiles[i].mat->id == Materials::FIRE.id) {
+                        if (GameIsolate_.world->tiles[i].mat->id == MaterialsList::FIRE.id) {
                             dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);                    // b
                             dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);                    // g
                             dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);                   // r
@@ -2432,7 +2432,7 @@ void Game::tickPlayer() {
                                                 R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
 
-                                                makeParticle(MaterialInstance(&Materials::GENERIC_SOLID, pixel), (x + xx), (y + yy));
+                                                makeParticle(MaterialInstance(&MaterialsList::GENERIC_SOLID, pixel), (x + xx), (y + yy));
                                             }
                                         }
                                     }
@@ -3542,7 +3542,7 @@ int Game::getAimSolidSurface(int dist) {
 }
 
 void Game::updateMaterialSounds() {
-    U16 waterCt = std::min(movingTiles[Materials::WATER.id], (U16)5000);
+    U16 waterCt = std::min(movingTiles[MaterialsList::WATER.id], (U16)5000);
     F32 water = (F32)waterCt / 3000;
     // METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
     global.audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);

@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#include "core/macros.h"
 #include "libs/visitstruct.hpp"
 #include "lua_wrapper.hpp"
 
@@ -65,8 +66,8 @@ private:
     void print_error(lua_State *state);
 
 public:
-    lua_State *getLuaState() { return m_L; }
-    LuaWrapper::State *GetWrapper() { return &s_lua; }
+    METADOT_INLINE lua_State *getLuaState() { return m_L; }
+    METADOT_INLINE LuaWrapper::State *GetWrapper() { return &s_lua; }
     void RunScriptInConsole(const char *c);
 
     void RunScriptFromFile(const char *filePath);

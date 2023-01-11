@@ -201,11 +201,11 @@ RigidBody *World::makeRigidBody(b2BodyType type, F32 x, F32 y, F32 angle, b2Poly
             for (int yy = 0; yy < rb->matHeight; yy++) {
                 U32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
-                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &Materials::FIRE : &Materials::OBSIDIAN, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &MaterialsList::FIRE : &MaterialsList::OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 } else {
-                    MaterialInstance inst = TilesCreate(&Materials::GENERIC_AIR, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(&MaterialsList::GENERIC_AIR, xx + (int)x, yy + (int)y);
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
@@ -256,11 +256,11 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, s
             for (int yy = 0; yy < rb->matHeight; yy++) {
                 U32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
-                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &Materials::FIRE : &Materials::OBSIDIAN, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &MaterialsList::FIRE : &MaterialsList::OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 } else {
-                    MaterialInstance inst = TilesCreate(&Materials::GENERIC_AIR, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(&MaterialsList::GENERIC_AIR, xx + (int)x, yy + (int)y);
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
@@ -294,7 +294,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
             MaterialInstance mat = rb->tiles[x + y * texture->w];
-            if (mat.mat->id == Materials::GENERIC_AIR.id) {
+            if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
                 R_GET_PIXEL(texture, x, y) = 0x00000000;
             } else {
                 R_GET_PIXEL(texture, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
@@ -1059,7 +1059,7 @@ void World::tick() {
 
                                 int type = tile.mat->physicsType;
 
-                                if (tile.mat->id == Materials::FIRE.id) {
+                                if (tile.mat->id == MaterialsList::FIRE.id) {
                                     if (rand() % 10 == 0) {
                                         U32 rgb = 255;
                                         rgb = (rgb << 8) + 100 + rand() % 50;
@@ -1843,7 +1843,7 @@ void World::tick() {
                                         dirty[(x + 1) + (y)*width] = true;
                                         tickVisited[(x + 1) + (y)*width] = true;
                                     } else {
-                                        if (tile.mat->id == Materials::STEAM.id) {
+                                        if (tile.mat->id == MaterialsList::STEAM.id) {
                                             if (rand() % 10 == 0) {
                                                 tiles[index] = TilesCreateWater();
                                                 dirty[index] = true;

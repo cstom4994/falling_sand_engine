@@ -128,7 +128,7 @@ struct Material {
     Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0){};
 };
 
-struct Materials {
+struct MaterialsList {
     static Material GENERIC_AIR;
     static Material GENERIC_SOLID;
     static Material GENERIC_SAND;
@@ -179,7 +179,7 @@ public:
 
     MaterialInstance(Material *mat, U32 color, I32 temperature);
     MaterialInstance(Material *mat, U32 color) : MaterialInstance(mat, color, 0){};
-    MaterialInstance() : MaterialInstance(&Materials::GENERIC_AIR, 0x000000, 0){};
+    MaterialInstance() : MaterialInstance(&MaterialsList::GENERIC_AIR, 0x000000, 0){};
     bool operator==(const MaterialInstance &other);
 };
 
