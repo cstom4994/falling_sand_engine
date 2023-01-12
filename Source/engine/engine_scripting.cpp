@@ -238,6 +238,10 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     REGISTER_LUAFUNC(metadot_buildnum);
     REGISTER_LUAFUNC(metadot_metadata);
     REGISTER_LUAFUNC(add_packagepath);
+    // REGISTER_LUAFUNC(FontCache_CreateFont);
+    // REGISTER_LUAFUNC(FontCache_LoadFont);
+    // REGISTER_LUAFUNC(FontCache_MakeColor);
+    // REGISTER_LUAFUNC(FontCache_FreeFont);
 
 #undef REGISTER_LUAFUNC
 
@@ -409,14 +413,14 @@ void integrationExample() {
 
 #endif
 
-void Scripts::Init(Meta::any_function &gamescriptwrap_init, Meta::any_function &gamescriptwrap_bind) {
+void Scripts::Init(Meta::AnyFunction &gamescriptwrap_init, Meta::AnyFunction &gamescriptwrap_bind) {
     LuaCoreCpp = new struct LuaCoreCpp;
     InitLuaCoreCpp(LuaCoreCpp);
     gamescriptwrap_bind.invoke({});
     gamescriptwrap_init.invoke({});
 }
 
-void Scripts::End(Meta::any_function &gamescriptwrap_end) {
+void Scripts::End(Meta::AnyFunction &gamescriptwrap_end) {
     gamescriptwrap_end.invoke({});
     EndLuaCoreCpp(LuaCoreCpp);
     delete LuaCoreCpp;

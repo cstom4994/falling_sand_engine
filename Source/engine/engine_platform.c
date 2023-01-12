@@ -120,8 +120,8 @@ int InitWindow() {
     // this->data->window = window;
     // this->data->imgui_context = m_ImGuiCore->getImGuiCtx();
 
-    // MetaEngine::any_function func1{&IamAfuckingNamespace::func1};
-    // MetaEngine::any_function func2{&IamAfuckingNamespace::func2};
+    // MetaEngine::AnyFunction func1{&IamAfuckingNamespace::func1};
+    // MetaEngine::AnyFunction func2{&IamAfuckingNamespace::func2};
 
     // this->data->Functions.insert(std::make_pair("func1", func1));
     // this->data->Functions.insert(std::make_pair("func2", func2));

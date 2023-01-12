@@ -141,7 +141,6 @@ FontCache_Scale FontCache_MakeScale(float x, float y) {
 
 METAENGINE_Color FontCache_MakeColor(U8 r, U8 g, U8 b, U8 a) {
     METAENGINE_Color c = {r, g, b, a};
-
     return c;
 }
 

@@ -20,7 +20,7 @@ class Scripts;
 class ImGuiCore;
 
 #define RegisterFunctions(name, func)              \
-    MetaEngine::any_function func_log_info{&func}; \
+    MetaEngine::AnyFunction func_log_info{&func}; \
     global->HostData->Functions.insert(std::make_pair(#name, name))
 
 struct Global {
@@ -38,7 +38,7 @@ struct Global {
         ImGuiContext *imgui_context = nullptr;
         void *wndh = nullptr;
 
-        std::map<std::string, Meta::any_function> Functions;
+        std::map<std::string, Meta::AnyFunction> Functions;
 
         // CppSource Functions register
         void (*draw)(void);

@@ -85,8 +85,8 @@ int Game::init(int argc, char *argv[]) {
     R_Flip(Render.target);
 
     // Test
-    Meta::any_function gamescriptwrap_init{&InitGameScriptingWrap};
-    Meta::any_function gamescriptwrap_bind{&BindGameScriptingWrap};
+    Meta::AnyFunction gamescriptwrap_init{&InitGameScriptingWrap};
+    Meta::AnyFunction gamescriptwrap_bind{&BindGameScriptingWrap};
 
     UIRendererInit();
 
@@ -1087,7 +1087,7 @@ int Game::exit() {
     // release resources & shutdown
 
     // Test
-    Meta::any_function gamescriptwrap_end{&EndGameScriptingWrap};
+    Meta::AnyFunction gamescriptwrap_end{&EndGameScriptingWrap};
 
     global.scripts->End(gamescriptwrap_end);
     METADOT_DELETE(C, global.scripts, Scripts);

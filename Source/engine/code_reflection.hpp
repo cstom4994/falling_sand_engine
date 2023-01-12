@@ -4,7 +4,6 @@
 #define _METADOT_CODEREFLECTION_HPP_
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <functional>
 #include <iostream>
@@ -19,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/core.h"
 #include "core/core.hpp"
 #include "libs/nameof.hpp"
 
@@ -30,7 +30,7 @@ void func_log_info(std::string info);
 
 void InitCppReflection();
 
-// any_function
+#pragma region AnyFunction
 
 namespace Meta {
 
@@ -61,7 +61,7 @@ struct return_type<R (C::*)(Args...) const volatile> {
 template <typename T>
 using return_type_t = typename return_type<T>::type;
 
-struct any_function {
+struct AnyFunction {
 public:
     struct type {
         const std::type_info *info;
@@ -112,7 +112,7 @@ public:
         void *get_address() { return p ? p->get_address() : nullptr; }
         template <class T>
         T get_value() {
-            assert(get_type() == type::capture<T>());
+            METADOT_ASSERT_E(get_type() == type::capture<T>());
             return get(p->get_address(), tag<T>{});
         }
 
@@ -123,14 +123,14 @@ public:
             return r;
         }
     };
-    any_function() : result_type{} {}
-    any_function(std::nullptr_t) : result_type{} {}
+    AnyFunction() : result_type{} {}
+    AnyFunction(std::nullptr_t) : result_type{} {}
     template <class R, class... A>
-    any_function(R (*p)(A...)) : any_function(p, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    AnyFunction(R (*p)(A...)) : AnyFunction(p, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
     template <class R, class... A>
-    any_function(std::function<R(A...)> f) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    AnyFunction(std::function<R(A...)> f) : AnyFunction(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
     template <class F>
-    any_function(F f) : any_function(f, &F::operator()) {}
+    AnyFunction(F f) : AnyFunction(f, &F::operator()) {}
 
     explicit operator bool() const { return static_cast<bool>(func); }
     const std::vector<type> &get_parameter_types() const { return parameter_types; }
@@ -161,25 +161,25 @@ private:
         return std::move(*reinterpret_cast<T *>(arg));
     }
     template <class F, class R, class... A, size_t... I>
-    any_function(F f, tag<R>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<R>()) {
+    AnyFunction(F f, tag<R>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<R>()) {
         func = [f](void *const args[]) mutable { return result::capture<R>(f(get(args[I], tag<A>{})...)); };
     }
     template <class F, class... A, size_t... I>
-    any_function(F f, tag<void>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<void>()) {
+    AnyFunction(F f, tag<void>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<void>()) {
         func = [f](void *const args[]) mutable { return f(get(args[I], tag<A>{})...), result{}; };
     }
     template <class F, class R>
-    any_function(F f, tag<R>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<R>()) {
+    AnyFunction(F f, tag<R>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<R>()) {
         func = [f](void *const args[]) mutable { return result::capture<R>(f()); };
     }
     template <class F>
-    any_function(F f, tag<void>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<void>()) {
+    AnyFunction(F f, tag<void>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<void>()) {
         func = [f](void *const args[]) mutable { return f(), result{}; };
     }
     template <class F, class R, class... A>
-    any_function(F f, R (F::*p)(A...)) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    AnyFunction(F f, R (F::*p)(A...)) : AnyFunction(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
     template <class F, class R, class... A>
-    any_function(F f, R (F::*p)(A...) const) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    AnyFunction(F f, R (F::*p)(A...) const) : AnyFunction(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
 
     std::function<result(void *const *)> func;
     std::vector<type> parameter_types;
@@ -187,6 +187,8 @@ private:
 };
 
 }  // namespace Meta
+
+#pragma endregion AnyFunction
 
 namespace tmp {
 
@@ -234,7 +236,7 @@ struct at<typelist<T, TS...>, 0> {
 
 template <typename T, typename... TS, size_t I>
 struct at<typelist<T, TS...>, I> {
-    static_assert(I < (1 + sizeof...(TS)), "Out of bounds access");
+    METADOT_STATIC_ASSERT(I < (1 + sizeof...(TS)), "Out of bounds access");
     using type = typename at<typelist<TS...>, I - 1>::type;
 };
 
@@ -297,7 +299,7 @@ struct find_ancestors<typelist<>, DESTLIST> {
 
 template <typename TL, typename T>
 struct find_ancestors {
-    static_assert(is_typelist<TL>::value, "The first parameter is not a typelist");
+    METADOT_STATIC_ASSERT(is_typelist<TL>::value, "The first parameter is not a typelist");
 
     template <typename U>
     using base_of_T = typename std::is_base_of<U, T>::type;
@@ -311,7 +313,7 @@ using namespace tmp;
 
 template <typename TL>
 struct hierarchy_iterator {
-    static_assert(is_typelist<TL>::value, "Not a typelist");
+    METADOT_STATIC_ASSERT(is_typelist<TL>::value, "Not a typelist");
     inline static void exec(void *_p) {
         using target_t = typename pop_front<TL>::type;
         if (auto ptr = static_cast<target_t *>(_p)) {
@@ -566,12 +568,12 @@ public:
 
 public:
     void AddClass(TypeData class_data) {
-        assert(class_data.type_hash != 0 && "Class type hash is 0, error in registration?");
+        METADOT_ASSERT_E(class_data.type_hash != 0 && "Class type hash is 0, error in registration?");
         classes[class_data.type_hash] = class_data;
     }
     void AddMember(TypeData class_data, TypeData member_data) {
-        assert(class_data.type_hash != 0 && "Class type hash is 0, error in registration?");
-        assert(classes.find(class_data.type_hash) != classes.end() && "Class never registered with AddClass before calling AddMember!");
+        METADOT_ASSERT_E(class_data.type_hash != 0 && "Class type hash is 0, error in registration?");
+        METADOT_ASSERT_E(classes.find(class_data.type_hash) != classes.end() && "Class never registered with AddClass before calling AddMember!");
         members[class_data.type_hash][member_data.offset] = member_data;
         classes[class_data.type_hash].member_count = members[class_data.type_hash].size();
     }
@@ -613,7 +615,7 @@ void InitiateClass(){};
 // Call this to register class / struct type with reflection / meta data system
 template <typename ClassType>
 void RegisterClass(TypeData class_data) {
-    // assert(std::is_standard_layout<ClassType>() && "Class is not standard layout!!");
+    // METADOT_ASSERT_E(std::is_standard_layout<ClassType>() && "Class is not standard layout!!");
     g_reflect->AddClass(class_data);
 }
 
@@ -690,8 +692,8 @@ TypeData &MemberData(T &class_instance, std::string member_name) {
 //      SnVec3 rotation = ((&et)->*off_rot);
 template <typename ReturnType>
 ReturnType &ClassMember(void *class_ptr, TypeData &member_data) {
-    assert(member_data.name != "unknown" && "Could not find member variable!");
-    assert(member_data.type_hash == TypeHashID<ReturnType>() && "Did not request correct return type!");
+    METADOT_ASSERT_E(member_data.name != "unknown" && "Could not find member variable!");
+    METADOT_ASSERT_E(member_data.type_hash == TypeHashID<ReturnType>() && "Did not request correct return type!");
     return *(reinterpret_cast<ReturnType *>(((char *)(class_ptr)) + member_data.offset));
 }
 

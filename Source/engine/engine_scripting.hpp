@@ -81,8 +81,8 @@ void EndLuaCoreCpp(LuaCoreCpp *_struct);
 struct Scripts {
     LuaCoreCpp *LuaCoreCpp;
 
-    void Init(Meta::any_function &gamescriptwrap_init, Meta::any_function &gamescriptwrap_bind);
-    void End(Meta::any_function &gamescriptwrap_end);
+    void Init(Meta::AnyFunction &gamescriptwrap_init, Meta::AnyFunction &gamescriptwrap_bind);
+    void End(Meta::AnyFunction &gamescriptwrap_end);
     void UpdateRender();
     void UpdateTick();
 };

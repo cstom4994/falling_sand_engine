@@ -10,6 +10,7 @@ require("graphics")
 require("audio")
 require("global")
 require("entities.entities")
+require("fonts")
 
 ecs = require("ecs")
 
@@ -17,6 +18,7 @@ OnGameEngineLoad = function()
     InitGraphics()
     InitAudio()
     InitECS()
+    InitFont()
     controls_init()
     OnEntitiesTypeLoad()
 end
@@ -72,6 +74,7 @@ end
 -- function OnPausePreUpdate()
 
 OnGameEngineUnLoad = function()
+    EndFont()
     EndAudio()
     EndGraphics()
 end

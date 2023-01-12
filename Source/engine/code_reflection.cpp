@@ -346,7 +346,7 @@ void func_log_info(std::string info) { METADOT_INFO(info.c_str()); }
 auto fuckme() -> void {
     // std::map<std::string, std::function<double(double)>> func_map;
 
-    Meta::any_function f{&TestRefleaction};
+    Meta::AnyFunction f{&TestRefleaction};
 
     METADOT_INFO(f.get_result_type().info->name());
 
@@ -362,9 +362,7 @@ auto fuckme() -> void {
     typeDesc->dump(&node);
 }
 
-void InitCppReflection() {
-
-}
+void InitCppReflection() { TestRefleaction(); }
 
 namespace MetaEngine {
 auto tedtH() -> void {
