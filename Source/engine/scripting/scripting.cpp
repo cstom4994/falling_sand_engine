@@ -20,7 +20,6 @@
 #include "engine/internal/builtin_lpeg.h"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/scripting/muscript.h"
 #include "engine/utils.hpp"
 #include "game/background.hpp"
 #include "game/game.hpp"
@@ -35,6 +34,9 @@ void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::end
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
 extern int LoadImguiBindings(lua_State *l);
+extern "C" {
+extern int luaopen_mu(lua_State *L);
+}
 
 struct MyStruct {
     void (*func1)(std::string);

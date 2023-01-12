@@ -9,7 +9,672 @@
 
 #pragma once
 
-#include "engine/scripting/parserlib.hpp"
+#include <algorithm>
+#include <cassert>
+#include <codecvt>
+#include <functional>
+#include <list>
+#include <locale>
+#include <memory>
+#include <sstream>
+#include <stack>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+#pragma region ParserLib
+
+namespace parserlib {
+
+typedef std::basic_string<wchar_t> input;
+typedef input::iterator input_it;
+typedef std::wstring_convert<std::codecvt_utf8_utf16<input::value_type>> Converter;
+
+class _private;
+class _expr;
+class _context;
+class rule;
+
+class pos {
+public:
+    input::iterator m_it;
+
+    int m_line;
+
+    int m_col;
+
+    pos() : m_line(0), m_col(0) {}
+
+    pos(input &i);
+};
+
+struct item_t {
+    pos *begin;
+    pos *end;
+    void *user_data;
+};
+typedef std::function<bool(const item_t &)> user_handler;
+
+class expr {
+public:
+    expr(char c);
+
+    expr(const char *s);
+
+    expr(rule &r);
+
+    expr operator*() const;
+
+    expr operator+() const;
+
+    expr operator-() const;
+
+    expr operator&() const;
+
+    expr operator!() const;
+
+private:
+    _expr *m_expr;
+
+    expr(_expr *e) : m_expr(e) {}
+
+    expr &operator=(expr &);
+
+    friend class _private;
+};
+
+typedef void (*parse_proc)(const pos &b, const pos &e, void *d);
+
+class input_range {
+public:
+    virtual ~input_range() {}
+
+    pos m_begin;
+
+    pos m_end;
+
+    input_range() {}
+
+    input_range(const pos &b, const pos &e);
+};
+
+enum ERROR_TYPE {
+
+    ERROR_SYNTAX_ERROR = 1,
+
+    ERROR_INVALID_EOF,
+
+    ERROR_USER = 100
+};
+
+class error : public input_range {
+public:
+    int m_type;
+
+    error(const pos &b, const pos &e, int t);
+
+    bool operator<(const error &e) const;
+};
+
+typedef std::list<error> error_list;
+
+class rule {
+public:
+    rule();
+    rule(char c);
+
+    rule(const char *s);
+
+    rule(const expr &e);
+
+    rule(rule &r);
+
+    rule(const rule &r);
+
+    ~rule();
+
+    expr operator*();
+
+    expr operator+();
+
+    expr operator-();
+
+    expr operator&();
+
+    expr operator!();
+
+    void set_parse_proc(parse_proc p);
+
+    rule *this_ptr() { return this; }
+
+    rule &operator=(rule &);
+
+    rule &operator=(const expr &);
+
+private:
+    enum _MODE { _PARSE, _REJECT, _ACCEPT };
+
+    struct _state {
+
+        size_t m_pos;
+
+        _MODE m_mode;
+
+        _state(size_t pos = -1, _MODE mode = _PARSE) : m_pos(pos), m_mode(mode) {}
+    };
+
+    _expr *m_expr;
+
+    parse_proc m_parse_proc;
+
+    _state m_state;
+
+    friend class _private;
+    friend class _context;
+};
+
+expr operator>>(const expr &left, const expr &right);
+
+expr operator|(const expr &left, const expr &right);
+
+expr term(const expr &e);
+
+expr set(const char *s);
+
+expr range(int min, int max);
+
+expr nl(const expr &e);
+
+expr eof();
+
+expr not_(const expr &e);
+
+expr and_(const expr &e);
+
+expr any();
+
+expr true_();
+
+expr false_();
+
+expr user(const expr &e, const user_handler &handler);
+
+bool parse(input &i, rule &g, error_list &el, void *d, void *ud);
+
+template <class T>
+T &operator<<(T &stream, const input_range &ir) {
+    for (input::const_iterator it = ir.m_begin.m_it; it != ir.m_end.m_it; ++it) {
+        stream << (typename T::char_type) * it;
+    }
+    return stream;
+}
+
+}  // namespace parserlib
+
+namespace parserlib {
+
+class ast_node;
+template <bool Required, class T>
+class ast_ptr;
+template <bool Required, class T>
+class ast_list;
+template <class T>
+class ast;
+
+typedef std::vector<ast_node *> ast_stack;
+typedef std::list<ast_node *> node_container;
+
+template <size_t Num>
+struct Counter {
+    enum { value = Counter<Num - 1>::value };
+};
+template <>
+struct Counter<0> {
+    enum { value = 0 };
+};
+
+#define COUNTER_READ Counter<__LINE__>::value
+#define COUNTER_INC                                        \
+    template <>                                            \
+    struct Counter<__LINE__> {                             \
+        enum { value = Counter<__LINE__ - 1>::value + 1 }; \
+    }
+
+class ast_node;
+template <class T>
+constexpr typename std::enable_if<std::is_base_of<ast_node, T>::value, int>::type id();
+
+enum class traversal { Continue, Return, Stop };
+
+class ast_node : public input_range {
+public:
+    ast_node() : _ref(0) {}
+
+    void retain() { ++_ref; }
+
+    void release() {
+        --_ref;
+        if (_ref == 0) {
+            delete this;
+        }
+    }
+
+    virtual void construct(ast_stack &) {}
+
+    virtual traversal traverse(const std::function<traversal(ast_node *)> &func);
+
+    template <typename... Ts>
+    struct select_last {
+        using type = typename decltype((std::enable_if<true, Ts>{}, ...))::type;
+    };
+    template <typename... Ts>
+    using select_last_t = typename select_last<Ts...>::type;
+
+    template <class... Args>
+    select_last_t<Args...> *getByPath() {
+        int types[] = {id<Args>()...};
+        return static_cast<select_last_t<Args...> *>(getByTypeIds(std::begin(types), std::end(types)));
+    }
+
+    virtual bool visitChild(const std::function<bool(ast_node *)> &func);
+
+    virtual int getId() const = 0;
+
+    virtual const std::string_view getName() const = 0;
+
+    template <class T>
+    inline ast_ptr<false, T> new_ptr() const {
+        auto item = new T;
+        item->m_begin.m_line = m_begin.m_line;
+        item->m_begin.m_col = m_begin.m_col;
+        item->m_end.m_line = m_end.m_line;
+        item->m_end.m_col = m_end.m_col;
+        return ast_ptr<false, T>(item);
+    }
+
+private:
+    int _ref;
+    ast_node *getByTypeIds(int *begin, int *end);
+};
+
+template <class T>
+constexpr typename std::enable_if<std::is_base_of<ast_node, T>::value, int>::type id() {
+    return 0;
+}
+
+template <class T>
+T *ast_cast(ast_node *node) {
+    return node && id<T>() == node->getId() ? static_cast<T *>(node) : nullptr;
+}
+
+template <class T>
+T *ast_to(ast_node *node) {
+    assert(node->getId() == id<T>());
+    return static_cast<T *>(node);
+}
+
+template <class... Args>
+bool ast_is(ast_node *node) {
+    if (!node) return false;
+    bool result = false;
+    int i = node->getId();
+    using swallow = bool[];
+    (void)swallow{result || (result = id<Args>() == i)...};
+    return result;
+}
+
+class ast_member;
+
+typedef std::vector<ast_member *> ast_member_vector;
+
+class ast_container : public ast_node {
+public:
+    void add_members(std::initializer_list<ast_member *> members) {
+        for (auto member : members) {
+            m_members.push_back(member);
+        }
+    }
+
+    const ast_member_vector &members() const { return m_members; }
+
+    virtual void construct(ast_stack &st) override;
+
+    virtual traversal traverse(const std::function<traversal(ast_node *)> &func) override;
+
+    virtual bool visitChild(const std::function<bool(ast_node *)> &func) override;
+
+private:
+    ast_member_vector m_members;
+
+    friend class ast_member;
+};
+
+enum class ast_holder_type { Pointer, List };
+
+class ast_member {
+public:
+    virtual ~ast_member() {}
+
+    virtual void construct(ast_stack &st) = 0;
+
+    virtual bool accept(ast_node *node) = 0;
+
+    virtual ast_holder_type get_type() const = 0;
+};
+
+class _ast_ptr : public ast_member {
+public:
+    _ast_ptr(ast_node *node) : m_ptr(node) {
+        if (node) node->retain();
+    }
+
+    virtual ~_ast_ptr() {
+        if (m_ptr) {
+            m_ptr->release();
+            m_ptr = nullptr;
+        }
+    }
+
+    ast_node *get() const { return m_ptr; }
+
+    template <class T>
+    T *as() const {
+        return ast_cast<T>(m_ptr);
+    }
+
+    template <class T>
+    T *to() const {
+        assert(m_ptr && m_ptr->getId() == id<T>());
+        return static_cast<T *>(m_ptr);
+    }
+
+    template <class T>
+    bool is() const {
+        return m_ptr && m_ptr->getId() == id<T>();
+    }
+
+    void set(ast_node *node) {
+        if (node == m_ptr) {
+            return;
+        } else if (!node) {
+            if (m_ptr) m_ptr->release();
+            m_ptr = nullptr;
+        } else {
+            assert(accept(node));
+            node->retain();
+            if (m_ptr) m_ptr->release();
+            m_ptr = node;
+        }
+    }
+
+    virtual ast_holder_type get_type() const override { return ast_holder_type::Pointer; }
+
+protected:
+    ast_node *m_ptr;
+};
+
+template <bool Required, class T>
+class ast_ptr : public _ast_ptr {
+public:
+    ast_ptr(T *node = nullptr) : _ast_ptr(node) {}
+
+    ast_ptr(const ast_ptr &other) : _ast_ptr(other.get()) {}
+
+    ast_ptr &operator=(const ast_ptr &other) {
+        set(other.get());
+        return *this;
+    }
+
+    T *get() const { return static_cast<T *>(m_ptr); }
+
+    operator T *() const { return static_cast<T *>(m_ptr); }
+
+    T *operator->() const {
+        assert(m_ptr);
+        return static_cast<T *>(m_ptr);
+    }
+
+    virtual void construct(ast_stack &st) override {
+
+        if (st.empty()) {
+            if (!Required) return;
+            throw std::logic_error("Invalid AST stack.");
+        }
+        ast_node *node = st.back();
+        if (!ast_ptr::accept(node)) {
+
+            if (!Required) return;
+
+            throw std::logic_error("Invalid AST node.");
+        }
+        st.pop_back();
+        m_ptr = node;
+        node->retain();
+    }
+
+private:
+    virtual bool accept(ast_node *node) override { return node && (std::is_same<ast_node, T>() || id<T>() == node->getId()); }
+};
+
+template <bool Required, class... Args>
+class ast_sel : public _ast_ptr {
+public:
+    ast_sel() : _ast_ptr(nullptr) {}
+
+    ast_sel(const ast_sel &other) : _ast_ptr(other.get()) {}
+
+    ast_sel &operator=(const ast_sel &other) {
+        set(other.get());
+        return *this;
+    }
+
+    operator ast_node *() const { return m_ptr; }
+
+    ast_node *operator->() const {
+        assert(m_ptr);
+        return m_ptr;
+    }
+
+    virtual void construct(ast_stack &st) override {
+        if (st.empty()) {
+            if (!Required) return;
+            throw std::logic_error("Invalid AST stack.");
+        }
+        ast_node *node = st.back();
+        if (!ast_sel::accept(node)) {
+            if (!Required) return;
+            throw std::logic_error("Invalid AST node.");
+        }
+        st.pop_back();
+        m_ptr = node;
+        node->retain();
+    }
+
+private:
+    virtual bool accept(ast_node *node) override {
+        if (!node) return false;
+        using swallow = bool[];
+        bool result = false;
+        (void)swallow{result || (result = id<Args>() == node->getId())...};
+        return result;
+    }
+};
+
+class _ast_list : public ast_member {
+public:
+    ~_ast_list() { clear(); }
+
+    inline ast_node *back() const { return m_objects.back(); }
+
+    inline ast_node *front() const { return m_objects.front(); }
+
+    inline size_t size() const { return m_objects.size(); }
+
+    inline bool empty() const { return m_objects.empty(); }
+
+    void push_back(ast_node *node) {
+        assert(node && accept(node));
+        m_objects.push_back(node);
+        node->retain();
+    }
+
+    void push_front(ast_node *node) {
+        assert(node && accept(node));
+        m_objects.push_front(node);
+        node->retain();
+    }
+
+    void pop_front() {
+        auto node = m_objects.front();
+        m_objects.pop_front();
+        node->release();
+    }
+
+    void pop_back() {
+        auto node = m_objects.back();
+        m_objects.pop_back();
+        node->release();
+    }
+
+    bool swap(ast_node *node, ast_node *other) {
+        for (auto it = m_objects.begin(); it != m_objects.end(); ++it) {
+            if (*it == node) {
+                *it = other;
+                other->retain();
+                node->release();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const node_container &objects() const { return m_objects; }
+
+    void clear() {
+        for (ast_node *obj : m_objects) {
+            if (obj) obj->release();
+        }
+        m_objects.clear();
+    }
+
+    void dup(const _ast_list &src) {
+        for (ast_node *obj : src.m_objects) {
+            push_back(obj);
+        }
+    }
+
+    virtual ast_holder_type get_type() const override { return ast_holder_type::List; }
+
+protected:
+    node_container m_objects;
+};
+
+template <bool Required, class T>
+class ast_list : public _ast_list {
+public:
+    ast_list() {}
+
+    ast_list(const ast_list &other) { dup(other); }
+
+    ast_list &operator=(const ast_list &other) {
+        clear();
+        dup(other);
+        return *this;
+    }
+
+    virtual void construct(ast_stack &st) override {
+        while (!st.empty()) {
+            ast_node *node = st.back();
+
+            if (!ast_list::accept(node)) {
+                if (Required && m_objects.empty()) {
+                    throw std::logic_error("Invalid AST node.");
+                }
+                return;
+            }
+            st.pop_back();
+
+            m_objects.push_front(node);
+            node->retain();
+        }
+        if (Required && m_objects.empty()) {
+            throw std::logic_error("Invalid AST stack.");
+        }
+    }
+
+private:
+    virtual bool accept(ast_node *node) override { return node && (std::is_same<ast_node, T>() || id<T>() == node->getId()); }
+};
+
+template <bool Required, class... Args>
+class ast_sel_list : public _ast_list {
+public:
+    ast_sel_list() {}
+
+    ast_sel_list(const ast_sel_list &other) { dup(other); }
+
+    ast_sel_list &operator=(const ast_sel_list &other) {
+        clear();
+        dup(other);
+        return *this;
+    }
+
+    virtual void construct(ast_stack &st) override {
+        while (!st.empty()) {
+            ast_node *node = st.back();
+            if (!ast_sel_list::accept(node)) {
+                if (Required && m_objects.empty()) {
+                    throw std::logic_error("Invalid AST node.");
+                }
+                return;
+            }
+            st.pop_back();
+            m_objects.push_front(node);
+            node->retain();
+        }
+        if (Required && m_objects.empty()) {
+            throw std::logic_error("Invalid AST stack.");
+        }
+    }
+
+private:
+    virtual bool accept(ast_node *node) override {
+        if (!node) return false;
+        using swallow = bool[];
+        bool result = false;
+        (void)swallow{result || (result = id<Args>() == node->getId())...};
+        return result;
+    }
+};
+
+template <class T>
+class ast {
+public:
+    ast(rule &r) { r.set_parse_proc(&_parse_proc); }
+
+private:
+    static void _parse_proc(const pos &b, const pos &e, void *d) {
+        ast_stack *st = reinterpret_cast<ast_stack *>(d);
+        T *obj = new T;
+        obj->m_begin = b;
+        obj->m_end = e;
+        obj->construct(*st);
+        st->push_back(obj);
+    }
+};
+
+ast_node *parse(input &i, rule &g, error_list &el, void *ud);
+
+}  // namespace parserlib
+
+#pragma endregion ParserLib
+
+#pragma region AST
 
 namespace parserlib {
 using namespace std::string_view_literals;
@@ -874,3 +1539,416 @@ AST_MEMBER(File, &block)
 AST_END(File, "file"sv)
 
 }
+
+#pragma endregion AST
+
+#pragma region Parser
+
+namespace mu {
+using namespace std::string_view_literals;
+using namespace std::string_literals;
+using namespace parserlib;
+
+struct ParseInfo {
+    ast_ptr<false, ast_node> node;
+    std::string error;
+    std::unique_ptr<input> codes;
+    bool exportDefault = false;
+    bool exportMacro = false;
+    std::string moduleName;
+    std::string errorMessage(std::string_view msg, const input_range *loc) const;
+};
+
+class ParserError : public std::logic_error {
+public:
+    explicit ParserError(const std::string &msg, const pos &begin, const pos &end) : std::logic_error(msg), loc(begin, end) {}
+
+    explicit ParserError(const char *msg, const pos &begin, const pos &end) : std::logic_error(msg), loc(begin, end) {}
+    input_range loc;
+};
+
+template <typename T>
+struct identity {
+    typedef T type;
+};
+
+#define AST_RULE(type)                \
+    rule type;                        \
+    ast<type##_t> type##_impl = type; \
+    inline rule &getRule(identity<type##_t>) { return type; }
+
+extern std::unordered_set<std::string> LuaKeywords;
+extern std::unordered_set<std::string> Keywords;
+
+class MuParser {
+public:
+    MuParser();
+
+    template <class AST>
+    ParseInfo parse(std::string_view codes) {
+        return parse(codes, getRule<AST>());
+    }
+
+    template <class AST>
+    bool match(std::string_view codes) {
+        auto rEnd = rule(getRule<AST>() >> eof());
+        return parse(codes, rEnd).node;
+    }
+
+    std::string toString(ast_node *node);
+    std::string toString(input::iterator begin, input::iterator end);
+
+    input encode(std::string_view input);
+    std::string decode(const input &input);
+
+protected:
+    ParseInfo parse(std::string_view codes, rule &r);
+
+    struct State {
+        State() { indents.push(0); }
+        bool exportDefault = false;
+        bool exportMacro = false;
+        int exportCount = 0;
+        int moduleFix = 0;
+        size_t stringOpen = 0;
+        std::string moduleName = "_module_0"s;
+        std::string buffer;
+        std::stack<int> indents;
+        std::stack<bool> noDoStack;
+        std::stack<bool> noChainBlockStack;
+        std::stack<bool> noTableBlockStack;
+    };
+
+    template <class T>
+    inline rule &getRule() {
+        return getRule(identity<T>());
+    }
+
+private:
+    Converter _converter;
+
+    template <class T>
+    inline rule &getRule(identity<T>) {
+        assert(false);
+        return Cut;
+    }
+
+    rule empty_block_error;
+    rule leading_spaces_error;
+    rule indentation_error;
+
+    rule num_char;
+    rule num_char_hex;
+    rule num_lit;
+    rule num_expo;
+    rule num_expo_hex;
+    rule lj_num;
+    rule plain_space;
+    rule Break;
+    rule Any;
+    rule White;
+    rule Stop;
+    rule Comment;
+    rule multi_line_open;
+    rule multi_line_close;
+    rule multi_line_content;
+    rule MultiLineComment;
+    rule Indent;
+    rule EscapeNewLine;
+    rule space_one;
+    rule Space;
+    rule SpaceBreak;
+    rule EmptyLine;
+    rule AlphaNum;
+    rule Cut;
+    rule check_indent;
+    rule CheckIndent;
+    rule advance;
+    rule Advance;
+    rule push_indent;
+    rule PushIndent;
+    rule PreventIndent;
+    rule PopIndent;
+    rule InBlock;
+    rule ImportName;
+    rule ImportNameList;
+    rule import_literal_chain;
+    rule ImportTabItem;
+    rule ImportTabList;
+    rule ImportTabLine;
+    rule import_tab_lines;
+    rule WithExp;
+    rule DisableDo;
+    rule EnableDo;
+    rule DisableChain;
+    rule EnableChain;
+    rule DisableDoChainArgTableBlock;
+    rule EnableDoChainArgTableBlock;
+    rule DisableArgTableBlock;
+    rule EnableArgTableBlock;
+    rule SwitchElse;
+    rule SwitchBlock;
+    rule IfElseIf;
+    rule IfElse;
+    rule for_args;
+    rule for_in;
+    rule CompClause;
+    rule Chain;
+    rule KeyValue;
+    rule single_string_inner;
+    rule interp;
+    rule double_string_plain;
+    rule lua_string_open;
+    rule lua_string_close;
+    rule FnArgsExpList;
+    rule FnArgs;
+    rule macro_args_def;
+    rule chain_call;
+    rule chain_index_chain;
+    rule ChainItems;
+    rule chain_dot_chain;
+    rule ColonChain;
+    rule chain_with_colon;
+    rule ChainItem;
+    rule chain_line;
+    rule chain_block;
+    rule meta_index;
+    rule Index;
+    rule invoke_chain;
+    rule TableValue;
+    rule table_lit_lines;
+    rule TableLitLine;
+    rule TableValueList;
+    rule TableBlockInner;
+    rule ClassLine;
+    rule KeyValueLine;
+    rule KeyValueList;
+    rule ArgLine;
+    rule ArgBlock;
+    rule invoke_args_with_table;
+    rule arg_table_block;
+    rule PipeOperator;
+    rule ExponentialOperator;
+    rule pipe_value;
+    rule pipe_exp;
+    rule expo_value;
+    rule expo_exp;
+    rule exp_not_tab;
+    rule local_const_item;
+    rule empty_line_break;
+    rule mu_comment;
+    rule mu_line_comment;
+    rule mu_multiline_comment;
+    rule Line;
+    rule Shebang;
+
+    AST_RULE(Num)
+    AST_RULE(Name)
+    AST_RULE(Variable)
+    AST_RULE(LabelName)
+    AST_RULE(LuaKeyword)
+    AST_RULE(self)
+    AST_RULE(self_name)
+    AST_RULE(self_class)
+    AST_RULE(self_class_name)
+    AST_RULE(SelfName)
+    AST_RULE(KeyName)
+    AST_RULE(VarArg)
+    AST_RULE(Seperator)
+    AST_RULE(NameList)
+    AST_RULE(local_flag)
+    AST_RULE(local_values)
+    AST_RULE(Local)
+    AST_RULE(const_attrib)
+    AST_RULE(close_attrib)
+    AST_RULE(LocalAttrib);
+    AST_RULE(colon_import_name)
+    AST_RULE(import_literal_inner)
+    AST_RULE(ImportLiteral)
+    AST_RULE(ImportFrom)
+    AST_RULE(macro_name_pair)
+    AST_RULE(import_all_macro)
+    AST_RULE(ImportTabLit)
+    AST_RULE(ImportAs)
+    AST_RULE(Import)
+    AST_RULE(Label)
+    AST_RULE(Goto)
+    AST_RULE(ShortTabAppending)
+    AST_RULE(fn_arrow_back)
+    AST_RULE(Backcall)
+    AST_RULE(PipeBody)
+    AST_RULE(ExpListLow)
+    AST_RULE(ExpList)
+    AST_RULE(Return)
+    AST_RULE(With)
+    AST_RULE(SwitchList)
+    AST_RULE(SwitchCase)
+    AST_RULE(Switch)
+    AST_RULE(assignment)
+    AST_RULE(IfCond)
+    AST_RULE(IfType)
+    AST_RULE(If)
+    AST_RULE(WhileType)
+    AST_RULE(While)
+    AST_RULE(Repeat)
+    AST_RULE(for_step_value)
+    AST_RULE(For)
+    AST_RULE(ForEach)
+    AST_RULE(Do)
+    AST_RULE(catch_block)
+    AST_RULE(Try)
+    AST_RULE(Comprehension)
+    AST_RULE(comp_value)
+    AST_RULE(TblComprehension)
+    AST_RULE(star_exp)
+    AST_RULE(CompForEach)
+    AST_RULE(CompFor)
+    AST_RULE(CompInner)
+    AST_RULE(Assign)
+    AST_RULE(update_op)
+    AST_RULE(Update)
+    AST_RULE(BinaryOperator)
+    AST_RULE(unary_operator)
+    AST_RULE(Assignable)
+    AST_RULE(AssignableChain)
+    AST_RULE(exp_op_value)
+    AST_RULE(Exp)
+    AST_RULE(Callable)
+    AST_RULE(ChainValue)
+    AST_RULE(simple_table)
+    AST_RULE(SimpleValue)
+    AST_RULE(Value)
+    AST_RULE(LuaStringOpen);
+    AST_RULE(LuaStringContent);
+    AST_RULE(LuaStringClose);
+    AST_RULE(LuaString)
+    AST_RULE(SingleString)
+    AST_RULE(double_string_inner)
+    AST_RULE(double_string_content)
+    AST_RULE(DoubleString)
+    AST_RULE(String)
+    AST_RULE(Parens)
+    AST_RULE(DotChainItem)
+    AST_RULE(ColonChainItem)
+    AST_RULE(Metatable)
+    AST_RULE(Metamethod)
+    AST_RULE(default_value)
+    AST_RULE(Slice)
+    AST_RULE(Invoke)
+    AST_RULE(existential_op)
+    AST_RULE(table_appending_op)
+    AST_RULE(SpreadExp)
+    AST_RULE(TableLit)
+    AST_RULE(TableBlock)
+    AST_RULE(TableBlockIndent)
+    AST_RULE(class_member_list)
+    AST_RULE(ClassBlock)
+    AST_RULE(ClassDecl)
+    AST_RULE(global_values)
+    AST_RULE(global_op)
+    AST_RULE(Global)
+    AST_RULE(export_default)
+    AST_RULE(Export)
+    AST_RULE(variable_pair)
+    AST_RULE(normal_pair)
+    AST_RULE(meta_variable_pair)
+    AST_RULE(meta_normal_pair)
+    AST_RULE(variable_pair_def)
+    AST_RULE(normal_pair_def)
+    AST_RULE(normal_def)
+    AST_RULE(meta_variable_pair_def)
+    AST_RULE(meta_normal_pair_def)
+    AST_RULE(FnArgDef)
+    AST_RULE(FnArgDefList)
+    AST_RULE(outer_var_shadow)
+    AST_RULE(FnArgsDef)
+    AST_RULE(fn_arrow)
+    AST_RULE(FunLit)
+    AST_RULE(MacroName)
+    AST_RULE(MacroLit)
+    AST_RULE(Macro)
+    AST_RULE(MacroInPlace)
+    AST_RULE(NameOrDestructure)
+    AST_RULE(AssignableNameList)
+    AST_RULE(InvokeArgs)
+    AST_RULE(const_value)
+    AST_RULE(unary_value)
+    AST_RULE(unary_exp)
+    AST_RULE(ExpListAssign)
+    AST_RULE(if_line)
+    AST_RULE(while_line)
+    AST_RULE(BreakLoop)
+    AST_RULE(statement_appendix)
+    AST_RULE(statement_sep)
+    AST_RULE(Statement)
+    AST_RULE(MuLineComment)
+    AST_RULE(MuMultilineComment)
+    AST_RULE(ChainAssign)
+    AST_RULE(Body)
+    AST_RULE(Block)
+    AST_RULE(BlockEnd)
+    AST_RULE(File)
+};
+
+namespace Utils {
+void replace(std::string &str, std::string_view from, std::string_view to);
+void trim(std::string &str);
+}  // namespace Utils
+
+}  // namespace mu
+
+#pragma endregion Parser
+
+#pragma region Compiler
+
+namespace mu {
+
+extern const std::string_view version;
+extern const std::string_view extension;
+
+using Options = std::unordered_map<std::string, std::string>;
+
+struct MuConfig {
+    bool lintGlobalVariable = false;
+    bool implicitReturnRoot = true;
+    bool reserveLineNumber = true;
+    bool useSpaceOverTab = false;
+    bool exporting = false;
+    bool profiling = false;
+    int lineOffset = 0;
+    std::string module;
+    Options options;
+};
+
+struct GlobalVar {
+    std::string name;
+    int line;
+    int col;
+};
+
+using GlobalVars = std::vector<GlobalVar>;
+
+struct CompileInfo {
+    std::string codes;
+    std::string error;
+    std::unique_ptr<GlobalVars> globals;
+    std::unique_ptr<Options> options;
+    double parseTime;
+    double compileTime;
+};
+
+class MuCompilerImpl;
+
+class MuCompiler {
+public:
+    MuCompiler(void *luaState = nullptr, const std::function<void(void *)> &luaOpen = nullptr, bool sameModule = false);
+    virtual ~MuCompiler();
+    CompileInfo compile(std::string_view codes, const MuConfig &config = {});
+
+private:
+    std::unique_ptr<MuCompilerImpl> _compiler;
+};
+
+}  // namespace mu
+
+#pragma endregion Compiler

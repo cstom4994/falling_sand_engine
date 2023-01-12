@@ -7,7 +7,7 @@
 // NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "engine/scripting/muscript.h"
+#include "engine/scripting/mu_core.h"
 
 #include <chrono>
 #include <cstdlib>
@@ -24,8 +24,6 @@
 #include <tuple>
 
 #include "engine/filesystem.h"
-#include "engine/scripting/mu_compiler.h"
-#include "engine/scripting/mu_parser.h"
 
 using namespace std::string_view_literals;
 using namespace std::string_literals;
