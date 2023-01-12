@@ -66,12 +66,23 @@ void OptionsUI::Draw(Game *game) {
 
     static int prevTab = 0;
     int tab = 0;
+
+    if (ImGui::Button("返回")) {
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
+        s["state"] = 0;
+    }
+    if (ImGui::Button("保存")) {
+        // global.game->GameIsolate_.globaldef.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
+    }
+
+    ImGui::Separator();
+
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("OptionsTabs", tab_bar_flags)) {
 
         if (ImGui::BeginTabItem("全局")) {
             tab = 0;
-            ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
+            ImGui::BeginChild("OptionsTabsCh");
 
             DrawGeneral(game);
 
@@ -80,7 +91,7 @@ void OptionsUI::Draw(Game *game) {
         }
         if (ImGui::BeginTabItem("视频")) {
             tab = 1;
-            ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
+            ImGui::BeginChild("OptionsTabsCh");
 
             DrawVideo(game);
 
@@ -89,7 +100,7 @@ void OptionsUI::Draw(Game *game) {
         }
         if (ImGui::BeginTabItem("音频")) {
             tab = 2;
-            ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
+            ImGui::BeginChild("OptionsTabsCh");
 
             DrawAudio(game);
 
@@ -98,7 +109,7 @@ void OptionsUI::Draw(Game *game) {
         }
         if (ImGui::BeginTabItem("输入")) {
             tab = 3;
-            ImGui::BeginChild("OptionsTabsCh", ImVec2(0, 250), false);
+            ImGui::BeginChild("OptionsTabsCh");
 
             DrawInput(game);
 
@@ -112,16 +123,6 @@ void OptionsUI::Draw(Game *game) {
     if (tab != prevTab) {
         global.audioEngine.PlayEvent("event:/GUI/GUI_Tab");
         prevTab = tab;
-    }
-
-    ImGui::Separator();
-
-    if (ImGui::Button("返回")) {
-        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
-        s["state"] = 0;
-    }
-    if (ImGui::Button("保存")) {
-        // global.game->GameIsolate_.globaldef.Save(METADOT_RESLOC("data/scripts/settings2.lua"));
     }
 }
 
@@ -140,7 +141,7 @@ void OptionsUI::DrawVideo(Game *game) {
 
     const char *items[] = {"Windowed", "Fullscreen Borderless", "Fullscreen"};
     const char *combo_label = items[item_current_idx];  // Label to preview before opening the combo (technically it could be anything)
-    ImGui::SetNextItemWidth(190);
+
     if (ImGui::BeginCombo("Display Mode", combo_label, 0)) {
         for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
             const bool is_selected = (item_current_idx == n);
@@ -312,9 +313,9 @@ void MainMenuUI__Draw(Game *game) {
 
     if (!MainMenuUI__visible) return;
 
-    ImGui::SetNextWindowSize(ImVec2(400, 400));
-    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(Screen.windowWidth / 2 - 400 / 2, Screen.windowHeight / 2 - 350 / 2)), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+    ImGui::SetNextWindowSize(ImVec2(200, 240));
+    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
     }

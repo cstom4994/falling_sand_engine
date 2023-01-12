@@ -59,9 +59,8 @@ void InitGameScriptingWrap() {
 }
 
 Biome *BiomeGet(std::string name) {
-    for (auto t : global.GameData_.biome_container) {
+    for (auto t : global.GameData_.biome_container)
         if (t->name == name) return t;
-    }
     return nullptr;
 }
 

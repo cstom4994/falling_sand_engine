@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // High level modern c programming
-// Link to https://libcello.org
+// Hack from https://libcello.org
 
 #ifndef METADOT_C_H
 #define METADOT_C_H
@@ -691,5 +691,83 @@ var exception_object(void);
 var exception_message(void);
 
 void mark(var self, var gc, void (*f)(var, void *));
+
+#pragma region Array
+
+#ifndef ARRAY_BOOL_T
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdbool.h>
+#define ARRAY_BOOL_T bool
+#endif
+
+#define array_t(type) \
+    struct {          \
+        int count;    \
+        type *items;  \
+    }
+#define array_param_t(type) void
+#define array_create(type) ARRAY_CAST((void *)internal_array_create(sizeof(type), NULL))
+#define array_create_memctx(type, memctx) ARRAY_CAST((void *)internal_array_create(sizeof(type), (memctx)))
+#define array_destroy(array) internal_array_destroy((struct internal_array_t *)(array))
+#define array_add(array, item) ARRAY_CAST(internal_array_add((struct internal_array_t *)(array), (void *)(item), (int)sizeof(*item)))
+#define array_remove(array, index) internal_array_remove((struct internal_array_t *)(array), (index))
+#define array_remove_ordered(array, index) internal_array_remove_ordered((struct internal_array_t *)(array), (index))
+#define array_get(array, index, item) internal_array_get((struct internal_array_t *)(array), (index), (void *)(item))
+#define array_set(array, index, item) internal_array_set((struct internal_array_t *)(array), (index), (void *)(item))
+#define array_count(array) internal_array_count((struct internal_array_t *)(array))
+#define array_sort(array, compare) internal_array_sort((struct internal_array_t *)(array), (compare))
+#define array_bsearch(array, key, compare) internal_array_bsearch((struct internal_array_t *)(array), (void *)(key), (compare))
+#define array_find(array, item) internal_array_find((struct internal_array_t *)(array), (void *)(item))
+#define array_item(array, index) ARRAY_CAST(internal_array_item((struct internal_array_t *)(array), (index)))
+
+// In C, a void* can be implicitly cast to any other kind of pointer, while in C++ you need an explicit cast. In most
+// cases, the explicit cast works for both C and C++, but if we consider the case where we have nested structs, then
+// the way you refer to them differs between C and C++ (in C++, `parent_type::nested_type`, in C just `nested_type`).
+// In addition, with the automatic cast in C, it is possible to use unnamed nested structs and still dynamically
+// allocate arrays of that type - this would be desirable when the code is compiled from C++ as well.
+// This VOID_CAST macro allows for automatic cast from void* in C++. In C, it does nothing, but for C++ it uses a
+// simple template function to define a cast-to-anything operator.
+// Use like this:
+//      struct {
+//          struct {
+//              int x;
+//          } *nested;
+//      } parent;
+//      parent.nested = VOID_CAST( malloc( sizeof( *parent.nested ) * count ) );
+//
+#ifndef ARRAY_CAST
+#ifdef __cplusplus
+struct array_cast {
+    inline array_cast(void *x_) : x(x_) {}
+    inline array_cast(void const *x_) : x((void *)x_) {}
+    template <typename T>
+    inline operator T() {
+        return (T)x;
+    }  // cast to whatever requested
+    void *x;
+};
+#define ARRAY_CAST(x) array_cast(x)
+#else
+#define ARRAY_CAST(x) x
+#endif
+#endif
+
+struct internal_array_t;
+
+struct internal_array_t *internal_array_create(int item_size, void *memctx);
+void internal_array_destroy(struct internal_array_t *array);
+void *internal_array_add(struct internal_array_t *array, void *item, int item_size);
+void internal_array_remove(struct internal_array_t *array, int index);
+void internal_array_remove_ordered(struct internal_array_t *array, int index);
+ARRAY_BOOL_T internal_array_get(struct internal_array_t *array, int index, void *item);
+ARRAY_BOOL_T internal_array_set(struct internal_array_t *array, int index, void const *item);
+int internal_array_count(struct internal_array_t *array);
+void internal_array_sort(struct internal_array_t *array, int (*compare)(void const *, void const *));
+int internal_array_bsearch(struct internal_array_t *array, void *key, int (*compare)(void const *, void const *));
+int internal_array_find(struct internal_array_t *array, void *item);
+void *internal_array_item(struct internal_array_t *array, int index);
+
+#pragma endregion Array
 
 #endif

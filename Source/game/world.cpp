@@ -17,12 +17,12 @@
 #include "core/macros.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
+#include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/engine_scripting.hpp"
 #include "engine/utils.hpp"
 #include "game/chunk.hpp"
 #include "game/game_datastruct.hpp"
@@ -67,7 +67,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     this->audioEngine = audioEngine;
     audioEngine->LoadEvent("event:/World/Explode");
 
-    newTemps = new int32_t[width * height];
+    newTemps = new I32[width * height];
 
     gen = generator;
 
@@ -168,7 +168,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     // b2PolygonShape dynamicBox4;
     // dynamicBox4.SetAsBox(64.0f, 64.0f, {32, -32}, 0);
     // // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
-    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadAseprite("data/assets/textures/Sprite-0001.ase"));
+    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 0, 0, dynamicBox4, 1, .3, LoadAseprite("data/assets/textures/Sprite-0003.ase")->surface);
 
     // WorldIsolate_.rigidBodies.push_back(rb2);
     // updateRigidBodyHitbox(rb2);

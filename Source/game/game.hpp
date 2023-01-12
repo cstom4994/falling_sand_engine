@@ -22,14 +22,14 @@
 #include "core/macros.h"
 #include "core/threadpool.h"
 #include "engine/audio.hpp"
+#include "engine/console.hpp"
+#include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/fonts.h"
 #include "engine/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/engine_scripting.hpp"
 #include "engine/utils.hpp"
-#include "engine/console.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"
@@ -38,6 +38,8 @@
 #include "world.hpp"
 
 enum GameState { MAIN_MENU, LOADING, INGAME };
+
+
 
 class Game {
 public:

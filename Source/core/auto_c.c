@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // High level modern c programming
-// Link to https://libcello.org
+// Hack from https://libcello.org
 
 #include "auto_c.h"
 
@@ -8550,3 +8550,159 @@ size_t size(var type) {
 
     return Type_Builtin_Size(type);
 }
+
+#pragma region Array
+
+#ifndef ARRAY_ASSERT
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <assert.h>
+#define ARRAY_ASSERT(condition, message) assert(condition &&message);
+#endif
+
+#ifndef ARRAY_MALLOC
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdlib.h>
+#define ARRAY_MALLOC(ctx, size) (malloc(size))
+#define ARRAY_FREE(ctx, ptr) (free(ptr))
+#endif
+
+#ifndef ARRAY_MEMCPY
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <string.h>
+#define ARRAY_MEMCPY(dst, src, cnt) (memcpy((dst), (src), (cnt)))
+#endif
+
+#ifndef ARRAY_MEMMOVE
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <string.h>
+#define ARRAY_MEMMOVE(dst, src, cnt) (memcpy((dst), (src), (cnt)))
+#endif
+
+#ifndef ARRAY_MEMCMP
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <string.h>
+#define ARRAY_MEMCMP(a, b, cnt) (memcmp((a), (b), (cnt)))
+#endif
+
+#ifndef ARRAY_QSORT
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdlib.h>
+#define ARRAY_QSORT(base, num, size, cmp) (qsort((base), (num), (size), (cmp)))
+#endif
+
+#ifndef ARRAY_BSEARCH
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdlib.h>
+#define ARRAY_BSEARCH(key, base, num, size, cmp) (bsearch((key), (base), (num), (size), (cmp)))
+#endif
+
+struct internal_array_t {
+    int count;
+    void *items;
+    void *memctx;
+    int item_size;
+    int capacity;
+};
+
+struct internal_array_t *internal_array_create(int item_size, void *memctx) {
+    struct internal_array_t *array = (struct internal_array_t *)ARRAY_MALLOC(memctx, sizeof(struct internal_array_t));
+    array->memctx = memctx;
+    array->item_size = item_size;
+    array->capacity = 256;
+    array->count = 0;
+    array->items = ARRAY_MALLOC(memctx, (size_t)array->capacity * item_size);
+    return array;
+}
+
+void internal_array_destroy(struct internal_array_t *array) {
+    ARRAY_FREE(array->memctx, array->items);
+    ARRAY_FREE(array->memctx, array);
+}
+
+void *internal_array_add(struct internal_array_t *array, void *item, int item_size) {
+    ARRAY_ASSERT(item_size == array->item_size, "Invalid item");
+    if (array->count >= array->capacity) {
+        array->capacity *= 2;
+        void *items = array->items;
+        array->items = ARRAY_MALLOC(array->memctx, (size_t)array->capacity * array->item_size);
+        ARRAY_MEMCPY(array->items, items, (size_t)array->count * array->item_size);
+        ARRAY_FREE(array->memctx, items);
+    }
+    ARRAY_MEMCPY((void *)(((uintptr_t)array->items) + array->count * array->item_size), item, (size_t)array->item_size);
+    ++array->count;
+    return (void *)(((uintptr_t)array->items) + (array->count - 1) * array->item_size);
+}
+
+void internal_array_remove(struct internal_array_t *array, int index) {
+    if (index >= 0 && index < array->count) {
+        --array->count;
+        ARRAY_MEMMOVE((void *)(((uintptr_t)array->items) + index * array->item_size), (void *)(((uintptr_t)array->items) + array->count * array->item_size), (size_t)array->item_size);
+    }
+}
+
+void internal_array_remove_ordered(struct internal_array_t *array, int index) {
+    if (index >= 0 && index < array->count) {
+        --array->count;
+        ARRAY_MEMMOVE((void *)(((uintptr_t)array->items) + index * array->item_size), (void *)(((uintptr_t)array->items) + (index + 1) * array->item_size),
+                      (size_t)array->item_size * (array->count - index));
+    }
+}
+
+ARRAY_BOOL_T internal_array_get(struct internal_array_t *array, int index, void *item) {
+    ARRAY_BOOL_T result = index >= 0 && index < array->count;
+    if (result) {
+        ARRAY_MEMCPY(item, (void *)(((uintptr_t)array->items) + index * array->item_size), (size_t)array->item_size);
+    }
+    return result;
+}
+
+ARRAY_BOOL_T internal_array_set(struct internal_array_t *array, int index, void const *item) {
+    ARRAY_BOOL_T result = index >= 0 && index < array->count;
+    if (result) {
+        ARRAY_MEMCPY((void *)(((uintptr_t)array->items) + index * array->item_size), item, (size_t)array->item_size);
+    }
+    return result;
+}
+
+int internal_array_count(struct internal_array_t *array) {
+    int count = array->count;
+    return count;
+}
+
+void internal_array_sort(struct internal_array_t *array, int (*compare)(void const *, void const *)) { ARRAY_QSORT(array->items, (size_t)array->count, (size_t)array->item_size, compare); }
+
+int internal_array_bsearch(struct internal_array_t *array, void *key, int (*compare)(void const *, void const *)) {
+    void *item = ARRAY_BSEARCH(key, array->items, (size_t)array->count, (size_t)array->item_size, compare);
+    int result = -1;
+    if (item) {
+        result = (int)((((uintptr_t)item) - ((uintptr_t)array->items)) / array->item_size);
+    }
+    return result;
+}
+
+int internal_array_find(struct internal_array_t *array, void *item) {
+    for (int i = 0; i < array->count; ++i) {
+        if (ARRAY_MEMCMP((void *)(((uintptr_t)array->items) + i * array->item_size), item, (size_t)array->item_size) == 0) {
+
+            return i;
+        }
+    }
+    return -1;
+}
+
+void *internal_array_item(struct internal_array_t *array, int index) {
+    if (index >= 0 && index < array->count) {
+        return (void *)(((uintptr_t)array->items) + index * array->item_size);
+    } else {
+        return NULL;
+    }
+}
+
+#pragma endregion Array

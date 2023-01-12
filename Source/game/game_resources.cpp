@@ -140,7 +140,7 @@ Texture *LoadAseprite(const char *path) {
     } else if (ase->bpp == 4) {
         pixel_format = SDL_PIXELFORMAT_RGBA32;
     } else {
-        METADOT_ERROR("Test %d BPP not supported!", ase->bpp);
+        METADOT_ERROR("Aseprite %d BPP not supported!", ase->bpp);
     }
 
     C_Surface *surface =

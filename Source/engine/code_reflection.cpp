@@ -200,6 +200,17 @@ REFLECT_MEMBER(text);
 REFLECT_END(Transform2D);
 #endif
 
+struct TestRefl {
+    int int1;
+    float float1;
+    REFLECT();
+};
+
+REFLECT_CLASS(TestRefl);
+REFLECT_MEMBER(int1);
+REFLECT_MEMBER(float1);
+REFLECT_END(TestRefl);
+
 struct Node {
     std::string key;
     int value;
@@ -362,7 +373,13 @@ auto fuckme() -> void {
     typeDesc->dump(&node);
 }
 
-void InitCppReflection() { TestRefleaction(); }
+void InitCppReflection() {
+    TestRefleaction();
+    TestRefl t{};
+    ClassMember<int>(&t, MemberData(t, "int1")) = 200;
+
+    METADOT_INFO("%d", t.int1);
+}
 
 namespace MetaEngine {
 auto tedtH() -> void {

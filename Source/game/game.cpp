@@ -43,7 +43,6 @@
 #include "world_generator.cpp"
 
 extern void fuckme();
-extern Texture *LoadAseprite(const char *path);
 
 Global global;
 
@@ -99,7 +98,7 @@ int Game::init(int argc, char *argv[]) {
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
 
     global.game->GameSystem_.console.Init();
-    GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0001.ase");
+    GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0003.ase");
     GameIsolate_.backgrounds->Load();
 
     font = FontCache_CreateFont();
