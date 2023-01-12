@@ -9,16 +9,18 @@
 
 #include "core/const.h"
 #include "core/core.hpp"
+#include "core/dbgtools.h"
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "engine.h"
 #include "engine/engine.h"
+#include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/engine_scripting.hpp"
+#include "engine/scripting/lua_wrapper.hpp"
 #include "engine/utils.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
@@ -26,7 +28,6 @@
 #include "imgui/imgui.h"
 #include "libs/glad/glad.h"
 #include "libs/imgui/implot.h"
-#include "scripting/lua_wrapper.hpp"
 
 IMPLENGINE();
 
@@ -473,6 +474,10 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
         if (ImGui::BeginTabItem(LANG("ui_test"))) {
             ImGui::BeginTabBar(CC("测试#haha"));
+            if (ImGui::BeginTabItem(CC("测试"))) {
+                if (ImGui::Button("调用回溯")) print_callstack();
+                ImGui::EndTabItem();
+            }
             if (ImGui::BeginTabItem(CC("自动序列测试"))) {
                 ShowAutoTestWindow();
                 ImGui::EndTabItem();
