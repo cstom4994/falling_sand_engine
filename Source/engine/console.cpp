@@ -501,8 +501,8 @@ void Console::Init() {
     console->System().RegisterCommand(
             "lua", "dostring",
             [&](const char *s) {
-                auto l = global.scripts->LuaRuntime;
-                l->GetWrapper()->dostring(s);
+                auto &l = global.scripts->LuaCoreCpp;
+                l->s_lua.dostring(s);
             },
             CVar::Arg<String>(""));
 

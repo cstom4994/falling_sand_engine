@@ -28,6 +28,8 @@ void func2(void);
 void func_log_info(std::string info);
 }  // namespace IamAfuckingNamespace
 
+void InitCppReflection();
+
 // any_function
 
 namespace Meta {

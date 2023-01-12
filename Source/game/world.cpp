@@ -22,7 +22,7 @@
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/scripting/scripting.hpp"
+#include "engine/engine_scripting.hpp"
 #include "engine/utils.hpp"
 #include "game/chunk.hpp"
 #include "game/game_datastruct.hpp"
@@ -31,8 +31,6 @@
 #include "world_generator.cpp"
 
 #define W_PI 3.14159265358979323846
-
-#define BIOMEGET(_c) global.game->GameSystem_.gameScriptwrap.BiomeGet(_c)
 
 ThreadPool *World::tickPool = nullptr;
 ThreadPool *World::tickVisitedPool = nullptr;
@@ -2742,7 +2740,7 @@ void World::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
 
 Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
 
-    if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id != BIOMEGET("DEFAULT")->id) {
+    if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id != BiomeGet("DEFAULT")->id) {
         Biome *b = ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
         if (ch->pleaseDelete) delete ch;
         return b;
@@ -2756,7 +2754,7 @@ Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
 }
 
 Biome *World::getBiomeAt(int x, int y) {
-    Biome *ret = BIOMEGET("DEFAULT");
+    Biome *ret = BiomeGet("DEFAULT");
     return ret;
 
     if (abs(CHUNK_H * 3 - y) < CHUNK_H * 10) {
@@ -2764,11 +2762,11 @@ Biome *World::getBiomeAt(int x, int y) {
         int biomeCatNum = 3;
         int biomeCat = (int)(v * biomeCatNum);
         if (biomeCat == 0) {
-            ret = BIOMEGET("PLAINS");
+            ret = BiomeGet("PLAINS");
         } else if (biomeCat == 1) {
-            ret = BIOMEGET("MOUNTAINS");
+            ret = BiomeGet("MOUNTAINS");
         } else if (biomeCat == 2) {
-            ret = BIOMEGET("FOREST");
+            ret = BiomeGet("FOREST");
         }
     } else {
         noise.SetCellularDistanceFunction(FastNoise::CellularDistanceFunction::Natural);
@@ -2780,13 +2778,13 @@ Biome *World::getBiomeAt(int x, int y) {
         int biomeCat = (int)(v * biomeCatNum);
 
         if (biomeCat == 0) {
-            ret = v2 >= 0.5 ? BIOMEGET("TEST_1_2") : BIOMEGET("TEST_1");
+            ret = v2 >= 0.5 ? BiomeGet("TEST_1_2") : BiomeGet("TEST_1");
         } else if (biomeCat == 1) {
-            ret = v2 >= 0.5 ? BIOMEGET("TEST_2_2") : BIOMEGET("TEST_2");
+            ret = v2 >= 0.5 ? BiomeGet("TEST_2_2") : BiomeGet("TEST_2");
         } else if (biomeCat == 2) {
-            ret = v2 >= 0.5 ? BIOMEGET("TEST_3_2") : BIOMEGET("TEST_3");
+            ret = v2 >= 0.5 ? BiomeGet("TEST_3_2") : BiomeGet("TEST_3");
         } else if (biomeCat == 3) {
-            ret = v2 >= 0.5 ? BIOMEGET("TEST_4_2") : BIOMEGET("TEST_4");
+            ret = v2 >= 0.5 ? BiomeGet("TEST_4_2") : BiomeGet("TEST_4");
         }
     }
 
@@ -2863,7 +2861,7 @@ Chunk *World::getChunk(int cx, int cy) {
     Chunk_Init(c, cx, cy, (char *)worldName.c_str());
     c->generationPhase = -1;
     c->pleaseDelete = true;
-    auto a = BIOMEGET("DEFAULT");
+    auto a = BiomeGet("DEFAULT");
     c->biomes.resize(CHUNK_W * CHUNK_H);
     std::fill(c->biomes.begin(), c->biomes.end(), a);
     return c;
@@ -3370,7 +3368,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     WorldMeta meta = WorldMeta();
 
-    auto L = global.scripts->LuaRuntime;
+    auto L = global.scripts->LuaCoreCpp;
 
     char *metaFile = new char[255];
     snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
@@ -3379,9 +3377,9 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
         meta.save(worldFileName);
     }
 
-    L->GetWrapper()->dofile(metaFile);
+    L->s_lua.dofile(metaFile);
 
-    LuaWrapper::LuaFunction LoadWorldMeta = (*L->GetWrapper())["LoadWorldMeta"];
+    LuaWrapper::LuaFunction LoadWorldMeta = L->s_lua["LoadWorldMeta"];
     LuaWrapper::LuaTable luat = LoadWorldMeta();
 
     if (!luat.isNilref()) {
@@ -3507,5 +3505,3 @@ World::~World() {
     WorldIsolate_.entities.clear();
     // delete player;
 }
-
-#undef BIOMEGET

@@ -27,7 +27,7 @@
 #include "engine/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting/scripting.hpp"
+#include "engine/engine_scripting.hpp"
 #include "engine/utils.hpp"
 #include "engine/console.hpp"
 #include "game/game_datastruct.hpp"
@@ -97,7 +97,6 @@ public:
 
     struct {
         Console console;
-        GameScriptingWrap gameScriptwrap;
     } GameSystem_;
 
     struct {

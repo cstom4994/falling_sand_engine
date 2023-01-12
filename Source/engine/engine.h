@@ -18,6 +18,7 @@ extern "C" {
 #include "engine_meta.h"
 #include "engine_platform.h"
 #include "engine_render.h"
+#include "engine_scripting.h"
 #include "engine_shaders.h"
 #include "util.h"
 
@@ -29,7 +30,7 @@ extern "C" {
     extern engine_time Time
 
 // Engine functions called from main
-int InitEngine();
+int InitEngine(void (*InitCppReflection)());
 void EngineUpdate();
 void EngineUpdateEnd();
 void EndEngine(int errorOcurred);

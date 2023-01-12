@@ -21,8 +21,8 @@ void UIRendererDraw() { global.ImGuiCore->Draw(); }
 
 void UIRendererUpdate() {
     global.ImGuiCore->Render();
-    auto l = global.scripts->LuaRuntime->GetWrapper();
-    LuaWrapper::LuaFunction OnGameGUIUpdate = (*l)["OnGameGUIUpdate"];
+    auto &l = global.scripts->LuaCoreCpp->s_lua;
+    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 }
 

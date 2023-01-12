@@ -37,19 +37,19 @@ void InitTexture(TexturePack *tex) {
 
 void EndTexture(TexturePack *tex) { METADOT_ASSERT_E(tex); }
 
-Texture *CreateTexture(C_Surface *surface) {
+Texture *Eng_CreateTexture(C_Surface *surface) {
     Texture *tex = new Texture;
     tex->surface = surface;
     return tex;
 }
 
-void DestroyTexture(Texture *tex) {
+void Eng_DestroyTexture(Texture *tex) {
     METADOT_ASSERT_E(tex);
     if (tex->surface) SDL_FreeSurface(tex->surface);
     delete tex;
 }
 
-Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+Texture *Eng_LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
 
 Texture *LoadTexture(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
 
@@ -95,7 +95,7 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
 
     METADOT_ASSERT_E(loadedSurface);
 
-    Texture *tex = CreateTexture(loadedSurface);
+    Texture *tex = Eng_CreateTexture(loadedSurface);
 
     // stbi_image_free(data);
 
@@ -149,7 +149,7 @@ Texture *LoadAseprite(const char *path) {
     SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.num_entries);
     SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
 
-    Texture *tex = CreateTexture(surface);
+    Texture *tex = Eng_CreateTexture(surface);
 
     return tex;
 }

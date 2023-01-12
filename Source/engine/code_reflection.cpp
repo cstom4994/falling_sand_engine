@@ -362,6 +362,10 @@ auto fuckme() -> void {
     typeDesc->dump(&node);
 }
 
+void InitCppReflection() {
+
+}
+
 namespace MetaEngine {
 auto tedtH() -> void {
 

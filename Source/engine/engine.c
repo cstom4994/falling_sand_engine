@@ -22,7 +22,7 @@ unsigned char initializedEngine = 0;
 
 // Engine initialization function
 // Return 1 if suceeded, 0 if failed
-int InitEngine() {
+int InitEngine(void (*InitCppReflection)()) {
     if (initializedEngine) {
         METADOT_WARN("InitEngine: Engine already initialized");
     }
@@ -43,6 +43,8 @@ int InitEngine() {
         EndEngine(1);
         return 0;
     }
+
+    InitCppReflection();
 
     // Call initialization function of all systems
     ListCellPointer current = GetFirstCell(ECS.SystemList);

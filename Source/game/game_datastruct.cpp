@@ -1268,8 +1268,7 @@ b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p) {
 
 void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
 
-    auto L = global.scripts->LuaRuntime;
-    auto GlobalDEF = (*L->GetWrapper())["global_def"];
+    auto GlobalDEF = global.scripts->LuaCoreCpp->s_lua["global_def"];
 
     if (!GlobalDEF.isNilref()) {
         LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);

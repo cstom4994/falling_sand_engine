@@ -63,7 +63,7 @@ class MaterialTestGenerator : public WorldGenerator {
 
 #pragma region DefaultGenerator
 
-#define BIOMEGETID(_c) global.game->GameSystem_.gameScriptwrap.BiomeGet(_c)->id
+#define BIOMEGETID(_c) BiomeGet(_c)->id
 
 class DefaultGenerator : public WorldGenerator {
 

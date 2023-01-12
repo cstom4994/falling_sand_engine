@@ -11,12 +11,12 @@
 #include "core/global.hpp"
 #include "engine.h"
 #include "engine/engine.h"
+#include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/imgui_core.hpp"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/scripting/scripting.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
@@ -28,15 +28,15 @@ IMPLENGINE();
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
 void I18N::Init() {
-    auto L = global.scripts->LuaRuntime;
+    auto L = global.scripts->LuaCoreCpp;
     METADOT_ASSERT(L, "Can't load I18N when luacore is invaild");
 
     Load("zh");
 }
 
-void I18N::Load(std::string lang) { (*global.scripts->LuaRuntime->GetWrapper())["setlocale"](lang); }
+void I18N::Load(std::string lang) { global.scripts->LuaCoreCpp->s_lua["setlocale"](lang); }
 
-std::string I18N::Get(std::string text) { return (*global.scripts->LuaRuntime->GetWrapper())["translate"](text); }
+std::string I18N::Get(std::string text) { return global.scripts->LuaCoreCpp->s_lua["translate"](text); }
 
 namespace GameUI {
 
@@ -117,7 +117,7 @@ void OptionsUI::Draw(Game *game) {
     ImGui::Separator();
 
     if (ImGui::Button("返回")) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
     }
     if (ImGui::Button("保存")) {
@@ -291,7 +291,7 @@ void MainMenuUI__Setup() {
     Texture *logoSfc = LoadTexture("data/assets/ui/logo.png");
     MainMenuUI__title = R_CopyImageFromSurface(logoSfc->surface);
     R_SetImageFilter(MainMenuUI__title, R_FILTER_NEAREST);
-    DestroyTexture(logoSfc);
+    Eng_DestroyTexture(logoSfc);
 
     // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
     // materialTestWorld = R_CopyImageFromSurface(logoMT);
@@ -319,7 +319,7 @@ void MainMenuUI__Draw(Game *game) {
         return;
     }
 
-    LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+    LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
 
     if (s["state"] == 0) {
         MainMenuUI__DrawMainMenu(game);
@@ -356,12 +356,12 @@ void MainMenuUI__DrawMainMenu(Game *game) {
     ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
     if (ImGui::Button(LANG("ui_play"))) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 4;
     }
 
     if (ImGui::Button(LANG("ui_option"))) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 1;
     }
 
@@ -380,12 +380,12 @@ void MainMenuUI__DrawInGame(Game *game) {
     }
 
     if (ImGui::Button("选项")) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 1;
     }
 
     if (ImGui::Button("离开到主菜单")) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
         game->quitToMainMenu();
     }
@@ -405,7 +405,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
     ImGui::ListBox(LANG("ui_worldgenerator"), &MainMenuUI__selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
 
     if (ImGui::Button(LANG("ui_return"))) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 4;
     }
 
@@ -427,7 +427,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
         MainMenuUI__visible = false;
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 5;
 
         game->setGameState(LOADING, INGAME);
@@ -525,13 +525,13 @@ void MainMenuUI__DrawWorldLists(Game *game) {
     ImGui::Text("%s", LANG("ui_play"));
 
     if (ImGui::Button(LANG("ui_newworld"))) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 3;
         MainMenuUI__reset(game);
     }
 
     if (ImGui::Button(LANG("ui_return"))) {
-        LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
     }
 
@@ -567,7 +567,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
 
             MainMenuUI__visible = false;
-            LuaWrapper::LuaRef s = (*global.scripts->LuaRuntime->GetWrapper())["game_datastruct"]["ui"];
+            LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
             s["state"] = 5;
 
             game->fadeOutStart = Time.now;
@@ -781,19 +781,19 @@ void DebugDrawUI::Setup() {
     Texture *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[0], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
+    Eng_DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testHammer.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[1], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
+    Eng_DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testVacuum.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[2], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
+    Eng_DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testBucket.png");
     tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(tools_images[3], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
+    Eng_DestroyTexture(sfc);
 }
 
 void DebugDrawUI::Draw(Game *game) {

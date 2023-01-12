@@ -9,13 +9,13 @@
 #include "core/global.hpp"
 #include "engine/filesystem.h"
 #include "engine/reflectionflat.hpp"
+#include "engine_scripting.hpp"
 #include "game/controls.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_ui.hpp"
 #include "scripting/lua_wrapper.hpp"
-#include "scripting/scripting.hpp"
 
 #pragma region GameScriptingBind_1
 
@@ -42,32 +42,32 @@ static void materials_init() { InitMaterials(); }
 static void controls_init() { Controls::initKey(); }
 
 static void init_ecs() {
-    auto luacore = global.scripts->LuaRuntime;
-    auto &luawrap = (*luacore->GetWrapper());
+    auto luacore = global.scripts->LuaCoreCpp;
+    auto &luawrap = luacore->s_lua;
 }
 
 static void load_lua(std::string luafile) {}
 
 #pragma endregion GameScriptingBind_1
 
-void GameScriptingWrap::Init() {
-    auto luacore = global.scripts->LuaRuntime;
-    auto &luawrap = (*luacore->GetWrapper());
+void InitGameScriptingWrap() {
+    auto luacore = global.scripts->LuaCoreCpp;
+    auto &luawrap = luacore->s_lua;
     luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
     luawrap["OnGameEngineLoad"]();
     luawrap["OnGameLoad"](global.game);
 }
 
-Biome *GameScriptingWrap::BiomeGet(std::string name) {
+Biome *BiomeGet(std::string name) {
     for (auto t : global.GameData_.biome_container) {
         if (t->name == name) return t;
     }
     return nullptr;
 }
 
-void GameScriptingWrap::Bind() {
-    auto luacore = global.scripts->LuaRuntime;
-    auto &luawrap = (*luacore->GetWrapper());
+void BindGameScriptingWrap() {
+    auto luacore = global.scripts->LuaCoreCpp;
+    auto &luawrap = luacore->s_lua;
     luawrap["controls_init"] = LuaWrapper::function(controls_init);
     luawrap["materials_init"] = LuaWrapper::function(materials_init);
     luawrap["textures_load"] = LuaWrapper::function(textures_load);
@@ -84,9 +84,9 @@ void GameScriptingWrap::Bind() {
     luawrap["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI::Draw);
 }
 
-void GameScriptingWrap::End() {
-    auto luacore = global.scripts->LuaRuntime;
-    auto &luawrap = (*luacore->GetWrapper());
+void EndGameScriptingWrap() {
+    auto luacore = global.scripts->LuaCoreCpp;
+    auto &luawrap = luacore->s_lua;
     auto EndFunc = luawrap["OnGameEngineUnLoad"];
     EndFunc();
 }

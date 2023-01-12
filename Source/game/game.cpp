@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
 #include <regex>
 #include <string>
@@ -17,15 +18,16 @@
 #include "core/macros.h"
 #include "core/threadpool.hpp"
 #include "engine.h"
+#include "engine/code_reflection.hpp"
 #include "engine/console.hpp"
 #include "engine/engine.h"
+#include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting/scripting.hpp"
 #include "engine/sdl_wrapper.h"
 #include "engine/utils.hpp"
 #include "engine_platform.h"
@@ -65,7 +67,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Starting game...");
 
     InitECS(128);
-    if (!InitEngine()) return METADOT_FAILED;
+    if (!InitEngine(InitCppReflection)) return METADOT_FAILED;
 
     GameIsolate_.texturepack = (TexturePack *)gc_malloc(&gc, sizeof(TexturePack));
 
@@ -79,15 +81,19 @@ int Game::init(int argc, char *argv[]) {
     R_SetImageFilter(splashImg, R_FILTER_NEAREST);
     R_BlitRect(splashImg, NULL, Render.target, NULL);
     R_FreeImage(splashImg);
-    DestroyTexture(splashSurf);
+    Eng_DestroyTexture(splashSurf);
     R_Flip(Render.target);
+
+    // Test
+    Meta::any_function gamescriptwrap_init{&InitGameScriptingWrap};
+    Meta::any_function gamescriptwrap_bind{&BindGameScriptingWrap};
 
     UIRendererInit();
 
     // scripting system
     METADOT_INFO("Loading Script...");
     METADOT_NEW(C, global.scripts, Scripts);
-    global.scripts->Init();
+    global.scripts->Init(gamescriptwrap_init, gamescriptwrap_bind);
 
     global.I18N.Init();
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
@@ -1080,7 +1086,10 @@ int Game::exit() {
 
     // release resources & shutdown
 
-    global.scripts->End();
+    // Test
+    Meta::any_function gamescriptwrap_end{&EndGameScriptingWrap};
+
+    global.scripts->End(gamescriptwrap_end);
     METADOT_DELETE(C, global.scripts, Scripts);
 
     ReleaseGameData();

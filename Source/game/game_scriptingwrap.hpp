@@ -7,17 +7,12 @@
 #include <string>
 #include <utility>
 
-#include "engine/scripting/scripting.hpp"
+#include "engine/engine_scripting.hpp"
 #include "game_datastruct.hpp"
 
-struct GameScriptingWrap {
-    LuaCore *MainLua = nullptr;
-
-    void Init();
-    void Bind();
-    void End();
-
-    Biome *BiomeGet(std::string name);
-};
+void InitGameScriptingWrap();
+void BindGameScriptingWrap();
+void EndGameScriptingWrap();
+Biome *BiomeGet(std::string name);
 
 #endif

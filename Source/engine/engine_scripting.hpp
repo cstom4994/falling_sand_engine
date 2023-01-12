@@ -3,12 +3,14 @@
 #ifndef _METADOT_SCRIPTING_HPP_
 #define _METADOT_SCRIPTING_HPP_
 
+#include <functional>
 #include <map>
 #include <string>
 
 #include "core/macros.h"
+#include "engine.h"
+#include "engine/scripting/lua_wrapper.hpp"
 #include "libs/visitstruct.hpp"
-#include "lua_wrapper.hpp"
 
 struct lua_State;
 
@@ -59,36 +61,28 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 //     });
 // }
 
-struct LuaCore {
-private:
+struct LuaCoreCpp {
     LuaWrapper::State s_lua;
-    lua_State *m_L;
-    void print_error(lua_State *state);
-
-public:
-    METADOT_INLINE lua_State *getLuaState() { return m_L; }
-    METADOT_INLINE LuaWrapper::State *GetWrapper() { return &s_lua; }
-    void RunScriptInConsole(const char *c);
-
-    void RunScriptFromFile(const char *filePath);
-    void Update();
-    void Init();
-    void End();
-
-    struct {
-        // LuaWrapper::LuaFunction Lang;
-    } Func_;
+    LuaCoreC *C;
 
     struct {
         LuaWrapper::LuaTable Biome;
     } Data_;
 };
 
-struct Scripts {
-    LuaCore *LuaRuntime;
+void print_error(lua_State *state);
+void RunScriptInConsole(const char *c);
+void RunScriptFromFile(const char *filePath);
 
-    void Init();
-    void End();
+void UpdateLuaCoreCpp(LuaCoreCpp *_struct);
+void InitLuaCoreCpp(LuaCoreCpp *_struct);
+void EndLuaCoreCpp(LuaCoreCpp *_struct);
+
+struct Scripts {
+    LuaCoreCpp *LuaCoreCpp;
+
+    void Init(Meta::any_function &gamescriptwrap_init, Meta::any_function &gamescriptwrap_bind);
+    void End(Meta::any_function &gamescriptwrap_end);
     void UpdateRender();
     void UpdateTick();
 };

@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine/scripting/scripting.hpp"
+#include "engine/engine_scripting.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "SDL_surface.h"
+#include "core/alloc.h"
 #include "core/core.h"
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
@@ -21,6 +23,7 @@
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/utils.hpp"
+#include "engine_scripting.h"
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
@@ -102,10 +105,10 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_run_lua_file_script(lua_State *L) {
     std::string string = lua_tostring(L, 1);
-    auto LuaCore = global.scripts->LuaRuntime;
-    METADOT_ASSERT_E(LuaCore);
+    auto &LuaCore = global.scripts->LuaCoreCpp->s_lua;
+    METADOT_ASSERT_E(&LuaCore);
     if (SUtil::startsWith(string, "Script:")) SUtil::replaceWith(string, "Script:", METADOT_RESLOC("data/scripts/"));
-    LuaCore->RunScriptFromFile(string.c_str());
+    RunScriptFromFile(string.c_str());
     return 0;
 }
 
@@ -144,12 +147,12 @@ static int ls(lua_State *L) {
 }
 
 static void add_packagepath(const char *p) {
-    auto s_lua = global.scripts->LuaRuntime->GetWrapper();
-    METADOT_ASSERT_E(s_lua);
-    s_lua->dostring(MetaEngine::Format("package.path = "
-                                       "'{0}/?.lua;' .. package.path",
-                                       p),
-                    s_lua->globalTable());
+    auto &s_lua = global.scripts->LuaCoreCpp->s_lua;
+    METADOT_ASSERT_E(&s_lua);
+    s_lua.dostring(MetaEngine::Format("package.path = "
+                                      "'{0}/?.lua;' .. package.path",
+                                      p),
+                   s_lua.globalTable());
 }
 
 static int R_GetTextureAttr(R_Image *image, const char *attr) {
@@ -159,7 +162,7 @@ static int R_GetTextureAttr(R_Image *image, const char *attr) {
     return 0;
 }
 
-void LuaCore::print_error(lua_State *state) {
+void print_error(lua_State *state) {
     const char *message = lua_tostring(state, -1);
     METADOT_ERROR("LuaScript ERROR:\n  %s", (message ? message : "no message"));
     lua_pop(state, 1);
@@ -180,104 +183,115 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-void LuaCore::Init() {
-    m_L = s_lua.state();
+lua_State *LuaCoreCppFunc(void *luacorecpp) { return ((LuaCoreCpp *)luacorecpp)->s_lua.state(); }
 
-    luaopen_base(m_L);
-    luaL_openlibs(m_L);
+void InitLuaCoreCpp(LuaCoreCpp *_struct) {
 
-    metadot_debug_setup(m_L, "debugger", "dbg", NULL, NULL);
+    // Init LuaCoreC
+    _struct->C = (LuaCoreC *)gc_malloc(&gc, sizeof(LuaCoreC));
 
-    lua_atpanic(m_L, catch_panic);
-    lua_register(m_L, "METADOT_TRACE", metadot_trace);
-    lua_register(m_L, "METADOT_INFO", metadot_info);
-    lua_register(m_L, "METADOT_WARN", metadot_warn);
-    lua_register(m_L, "METADOT_ERROR", metadot_error);
-    lua_register(m_L, "METADOT_RUN_FILE", metadot_run_lua_file_script);
-    lua_register(m_L, "runf", metadot_run_lua_file_script);
-    lua_register(m_L, "exit", metadot_exit);
-    lua_register(m_L, "ls", ls);
+    InitLuaCoreC(_struct->C, LuaCoreCppFunc, (void *)_struct);
 
-    metadot_bind_image(m_L);
-    metadot_bind_gpu(m_L);
-    metadot_bind_fs(m_L);
-    metadot_bind_lz4(m_L);
-    metadot_bind_cstructcore(m_L);
-    metadot_bind_cstructtest(m_L);
+    luaopen_base(_struct->C->L);
+    luaL_openlibs(_struct->C->L);
 
-    LoadImguiBindings(m_L);
+    metadot_debug_setup(_struct->C->L, "debugger", "dbg", NULL, NULL);
 
-    metadot_preload_auto(m_L, luaopen_ffi, "ffi");
-    metadot_preload_auto(m_L, luaopen_mu, "mu");
-    metadot_preload_auto(m_L, luaopen_lpeg, "lpeg");
+    lua_atpanic(_struct->C->L, catch_panic);
+    lua_register(_struct->C->L, "METADOT_TRACE", metadot_trace);
+    lua_register(_struct->C->L, "METADOT_INFO", metadot_info);
+    lua_register(_struct->C->L, "METADOT_WARN", metadot_warn);
+    lua_register(_struct->C->L, "METADOT_ERROR", metadot_error);
+    lua_register(_struct->C->L, "METADOT_RUN_FILE", metadot_run_lua_file_script);
+    lua_register(_struct->C->L, "runf", metadot_run_lua_file_script);
+    lua_register(_struct->C->L, "exit", metadot_exit);
+    lua_register(_struct->C->L, "ls", ls);
+
+    metadot_bind_image(_struct->C->L);
+    metadot_bind_gpu(_struct->C->L);
+    metadot_bind_fs(_struct->C->L);
+    metadot_bind_lz4(_struct->C->L);
+    metadot_bind_cstructcore(_struct->C->L);
+    metadot_bind_cstructtest(_struct->C->L);
+
+    LoadImguiBindings(_struct->C->L);
+
+    metadot_preload_auto(_struct->C->L, luaopen_ffi, "ffi");
+    metadot_preload_auto(_struct->C->L, luaopen_mu, "mu");
+    metadot_preload_auto(_struct->C->L, luaopen_lpeg, "lpeg");
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 
-    s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    s_lua["add_packagepath"] = LuaWrapper::function(add_packagepath);
-    s_lua["texture_load_data"] = LuaWrapper::function(LoadTextureData);
-    s_lua["metadot_metadata"] = LuaWrapper::function(metadot_metadata);
-    s_lua["metadot_buildnum"] = LuaWrapper::function(metadot_buildnum);
-    s_lua["Eng_GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
-    s_lua["Eng_CreateTexture"] = LuaWrapper::function(CreateTexture);
-    s_lua["Eng_DestroyTexture"] = LuaWrapper::function(DestroyTexture);
-    s_lua["R_GetTextureAttr"] = LuaWrapper::function(R_GetTextureAttr);
-    s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
-    s_lua["R_CopyImageFromSurface"] = LuaWrapper::function(R_CopyImageFromSurface);
-    s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
-    s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
+#define REGISTER_LUAFUNC(_f) _struct->s_lua[#_f] = LuaWrapper::function(_f)
 
-    s_lua.dostring(MetaEngine::Format("package.path = "
-                                      "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
-                                      "?/?.lua;' .. package.path",
-                                      METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath()),
-                   s_lua.globalTable());
+    _struct->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
+    _struct->s_lua["Eng_GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
 
-    s_lua.dostring(MetaEngine::Format("package.cpath = "
-                                      "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
-                                      "?/?.{2};' .. package.cpath",
-                                      METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(), "dylib"),
-                   s_lua.globalTable());
+    REGISTER_LUAFUNC(SDL_FreeSurface);
+    REGISTER_LUAFUNC(R_SetImageFilter);
+    REGISTER_LUAFUNC(R_CopyImageFromSurface);
+    REGISTER_LUAFUNC(R_GetTextureHandle);
+    REGISTER_LUAFUNC(R_GetTextureAttr);
+    REGISTER_LUAFUNC(Eng_LoadTextureData);
+    REGISTER_LUAFUNC(Eng_DestroyTexture);
+    REGISTER_LUAFUNC(Eng_CreateTexture);
+    REGISTER_LUAFUNC(metadot_buildnum);
+    REGISTER_LUAFUNC(metadot_metadata);
+    REGISTER_LUAFUNC(add_packagepath);
+
+#undef REGISTER_LUAFUNC
+
+    _struct->s_lua.dostring(MetaEngine::Format("package.path = "
+                                               "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                                               "?/?.lua;' .. package.path",
+                                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath()),
+                            _struct->s_lua.globalTable());
+
+    _struct->s_lua.dostring(MetaEngine::Format("package.cpath = "
+                                               "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
+                                               "?/?.{2};' .. package.cpath",
+                                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(), "dylib"),
+                            _struct->s_lua.globalTable());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/common/coroutines.lua"));
     RunScriptFromFile("data/scripts/startup.lua");
 }
 
-void LuaCore::End() {}
+void EndLuaCoreCpp(LuaCoreCpp *_struct) { gc_free(&gc, _struct->C); }
 
-void LuaCore::RunScriptInConsole(const char *c) {
-    luaL_loadstring(m_L, c);
-    auto result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
+void RunScriptInConsole(LuaCoreCpp *_struct, const char *c) {
+    luaL_loadstring(_struct->C->L, c);
+    auto result = metadot_debug_pcall(_struct->C->L, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {
-        print_error(m_L);
+        print_error(_struct->C->L);
         return;
     }
 }
 
-void LuaCore::RunScriptFromFile(const char *filePath) {
+void RunScriptFromFile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(m_L, METADOT_RESLOC(filePath));
+    int result = luaL_loadfile(global.scripts->LuaCoreCpp->C->L, METADOT_RESLOC(filePath));
     if (result != LUA_OK) {
-        print_error(m_L);
+        print_error(global.scripts->LuaCoreCpp->C->L);
         return;
     }
-    result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
+    result = metadot_debug_pcall(global.scripts->LuaCoreCpp->C->L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
-        print_error(m_L);
+        print_error(global.scripts->LuaCoreCpp->C->L);
     }
 }
 
-void LuaCore::Update() {
+void UpdateLuaCoreCpp(LuaCoreCpp *_struct) {
     // todo store lua bytecode version instead (dont load it every tick)
-    // lua_dump(m_L, &byteCodeWriterCallback, nullptr,false);
+    // lua_dump(_struct->C->L, &byteCodeWriterCallback, nullptr,false);
     // call coroutes
-    luaL_loadstring(m_L, s_couroutineFileSrc.c_str());
-    auto result = metadot_debug_pcall(m_L, 0, LUA_MULTRET, 0);
+    luaL_loadstring(_struct->C->L, s_couroutineFileSrc.c_str());
+    auto result = metadot_debug_pcall(_struct->C->L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
-        print_error(m_L);
+        print_error(_struct->C->L);
         return;
     }
 }
@@ -395,30 +409,27 @@ void integrationExample() {
 
 #endif
 
-void Scripts::Init() {
-
-    METADOT_NEW(C, LuaRuntime, LuaCore);
-    LuaRuntime->Init();
-
-    global.game->GameSystem_.gameScriptwrap.Bind();
-    global.game->GameSystem_.gameScriptwrap.Init();
+void Scripts::Init(Meta::any_function &gamescriptwrap_init, Meta::any_function &gamescriptwrap_bind) {
+    LuaCoreCpp = new struct LuaCoreCpp;
+    InitLuaCoreCpp(LuaCoreCpp);
+    gamescriptwrap_bind.invoke({});
+    gamescriptwrap_init.invoke({});
 }
 
-void Scripts::End() {
-    global.game->GameSystem_.gameScriptwrap.End();
-
-    LuaRuntime->End();
-    METADOT_DELETE(C, LuaRuntime, LuaCore);
+void Scripts::End(Meta::any_function &gamescriptwrap_end) {
+    gamescriptwrap_end.invoke({});
+    EndLuaCoreCpp(LuaCoreCpp);
+    delete LuaCoreCpp;
 }
 
 void Scripts::UpdateRender() {
-    METADOT_ASSERT_E(LuaRuntime);
-    LuaRuntime->Update();
+    METADOT_ASSERT_E(LuaCoreCpp);
+    UpdateLuaCoreCpp(LuaCoreCpp);
 }
 
 void Scripts::UpdateTick() {
-    METADOT_ASSERT_E(LuaRuntime);
-    auto &luawrap = (*LuaRuntime->GetWrapper());
+    METADOT_ASSERT_E(LuaCoreCpp);
+    auto &luawrap = LuaCoreCpp->s_lua;
     auto OnGameTickUpdate = luawrap["OnGameTickUpdate"];
     OnGameTickUpdate();
 }
