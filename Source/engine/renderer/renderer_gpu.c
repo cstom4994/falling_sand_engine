@@ -7,16 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/const.h"
 #include "core/core.h"
 #include "core/macros.h"
 #include "engine/sdl_wrapper.h"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "renderer_gpu.h"
-
-#ifndef PI
-#define PI 3.1415926f
-#endif
 
 #define RAD_PER_DEG 0.017453293f
 #define DEG_PER_RAD 57.2957795f

@@ -49,28 +49,33 @@ Global global;
 IMPLENGINE();
 
 Game::Game(int argc, char *argv[]) {
+    // Start memory management including GC
     METAENGINE_Memory_Init(argc, argv);
+    // Global game target
     global.game = this;
     METADOT_INFO("%s %s", METADOT_NAME, METADOT_VERSION_TEXT);
 }
 
 Game::~Game() {
     global.game = nullptr;
+    // Stop memory management and GC
     METAENGINE_Memory_End();
 }
 
 int Game::init(int argc, char *argv[]) {
-
+    // Parse args
     ParseRunArgs(argc, argv);
 
     METADOT_INFO("Starting game...");
 
+    // Initialization of ECSSystem and Engine
     InitECS(128);
     if (!InitEngine(InitCppReflection)) return METADOT_FAILED;
 
+    // Open up resource bundle memory space
     GameIsolate_.texturepack = (TexturePack *)gc_malloc(&gc, sizeof(TexturePack));
 
-    // load splash screen
+    // Load splash screen
     METADOT_INFO("Loading splash screen...");
 
     R_Clear(Render.target);
@@ -87,24 +92,35 @@ int Game::init(int argc, char *argv[]) {
     Meta::AnyFunction gamescriptwrap_init{&InitGameScriptingWrap};
     Meta::AnyFunction gamescriptwrap_bind{&BindGameScriptingWrap};
 
+    // UISystem including ImGui
     UIRendererInit();
 
-    // scripting system
+    // Initialize scripting system
     METADOT_INFO("Loading Script...");
     METADOT_NEW(C, global.scripts, Scripts);
     global.scripts->Init(gamescriptwrap_init, gamescriptwrap_bind);
 
+    // I18N must be initialized after scripting system
+    // It uses i18n.lua to function
     global.I18N.Init();
+
+    // GlobalDEF table initialization
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
 
+    // Console system
     global.game->GameSystem_.console.Init();
+
+    // Test aseprite
     GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0003.ase");
+
+    // Load backgrounds resources
     GameIsolate_.backgrounds->Load();
 
+    // Load fonts
     font = FontCache_CreateFont();
     FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/ark-pixel-12px-monospaced-zh_cn.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
-    // init the rng
+    // Initialize the rng seed
     pcg32_random_t rng;
     pcg32_srandom_r(&rng, Time::millis(), 1);
     unsigned int seed = pcg32_random_r(&rng);
@@ -116,10 +132,12 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW_ARRAY(C, movingTiles, U16, global.GameData_.materials_count);
     METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
 
+    // Play sound effects when the game starts
     // global.audioEngine.PlayEvent("event:/Music/Background1");
     global.audioEngine.PlayEvent("event:/Music/Title");
     global.audioEngine.Update();
 
+    // Initialize the world
     METADOT_INFO("Initializing world...");
     METADOT_NEW(C, GameIsolate_.world, World);
     GameIsolate_.world->noSaveLoad = true;

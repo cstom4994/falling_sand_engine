@@ -30,8 +30,6 @@
 #include "reflectionflat.hpp"
 #include "world_generator.cpp"
 
-#define W_PI 3.14159265358979323846
-
 ThreadPool *World::tickPool = nullptr;
 ThreadPool *World::tickVisitedPool = nullptr;
 ThreadPool *World::updateRigidBodyHitboxPool = nullptr;
@@ -179,7 +177,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, F32 x, F32 y, F32 angle, b2Poly
     b2BodyDef bodyDef;
     bodyDef.type = type;
     bodyDef.position.Set(x, y);
-    bodyDef.angle = angle * W_PI / 180;
+    bodyDef.angle = angle * PI / 180;
     b2Body *body = b2world->CreateBody(&bodyDef);
 
     b2FixtureDef fixtureDef;
@@ -232,7 +230,7 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, s
     b2BodyDef bodyDef;
     bodyDef.type = type;
     bodyDef.position.Set(x, y);
-    bodyDef.angle = angle * W_PI / 180;
+    bodyDef.angle = angle * PI / 180;
     b2Body *body = b2world->CreateBody(&bodyDef);
 
     for (int i = 0; i < shape.size(); i++) {

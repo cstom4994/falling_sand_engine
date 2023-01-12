@@ -8,6 +8,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "core/const.h"
+
 #ifndef INC_CVECTOR2_H
 #define INC_CVECTOR2_H
 
@@ -318,9 +320,6 @@ typedef BaseEngine::math::CXForm<float> xform;
 namespace BaseEngine {
 namespace math {
 
-//=============================================================================
-const float pi = 3.1415926f;
-
 //-----------------------------------------------------------------------------
 // returns a rounded value, if the value is less than 0, rounds it "down"
 // otherwise rounds it rounds it up by 0.5f
@@ -446,12 +445,12 @@ inline Type Square(Type x) {
 
 template <typename Type>
 inline Type ConvertRadToAngle(const Type &rad) {
-    return rad * (180.0f / pi);
+    return rad * (180.0f / PI);
 }
 
 template <typename Type>
 inline Type ConvertAngleToRad(const Type &angle) {
-    return angle * (pi / 180.0f);
+    return angle * (PI / 180.0f);
 }
 
 //=============================================================================
@@ -975,7 +974,7 @@ private:
 };
 
 template <typename T>
-const T CAngle<T>::TWO_PI = (T)(2 * BaseEngine::math::pi);
+const T CAngle<T>::TWO_PI = (T)(2 * PI);
 
 }  // end of namespace math
 }  // namespace BaseEngine

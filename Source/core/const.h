@@ -33,6 +33,8 @@ static const float FLUID_FlowSpeed = 1.0f;
 
 #define FrameTimeNum 100
 
+static const double PI = 3.14159265358979323846;
+
 static const int GameTick = 4;
 
 #define METADOT_NAME "MetaDot"

@@ -25,7 +25,6 @@
 extern U16 frameTimes[FrameTimeNum];
 extern U32 frameCount;
 
-#define PI 3.14159265358979323846
 #define VECTOR3_ZERO \
     (Vector3) { 0.0f, 0.0f, 0.0f }
 #define VECTOR3_FORWARD \

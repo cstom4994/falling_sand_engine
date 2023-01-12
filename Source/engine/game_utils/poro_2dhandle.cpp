@@ -1,6 +1,8 @@
 
 #include "poro_2dhandle.h"
 
+#include "core/const.h"
+
 namespace BaseEngine {
 /*
 template< class T >
@@ -473,10 +475,6 @@ TPoint RectFindCrossPointsLine(const TPoint &first_begin, const TPoint &first_en
 #include <math.h>
 
 #include <string>
-
-#ifndef PI
-#define PI 3.14159265
-#endif
 
 namespace BaseEngine {
 namespace easing {

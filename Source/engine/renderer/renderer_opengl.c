@@ -1,6 +1,7 @@
 
 #include "renderer_opengl.h"
 
+#include "core/const.h"
 #include "core/macros.h"
 #include "engine/sdl_wrapper.h"
 #include "external/stb_image.h"
@@ -26,10 +27,6 @@
 #else
 #define GLAPIENTRY
 #endif
-#endif
-
-#ifndef PI
-#define PI 3.1415926f
 #endif
 
 #define RAD_PER_DEG 0.017453293f
