@@ -74,6 +74,7 @@ end
 -- function OnPausePreUpdate()
 
 OnGameEngineUnLoad = function()
+    METADOT_BUG("OnGameEngineUnLoad called")
     EndFont()
     EndAudio()
     EndGraphics()

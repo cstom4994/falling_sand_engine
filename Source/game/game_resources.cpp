@@ -35,7 +35,28 @@ void InitTexture(TexturePack *tex) {
     tex->caveBG = LoadTexture("data/assets/backgrounds/testCave.png");
 }
 
-void EndTexture(TexturePack *tex) { METADOT_ASSERT_E(tex); }
+void EndTexture(TexturePack *tex) {
+    METADOT_ASSERT_E(tex);
+    
+    Eng_DestroyTexture(tex->testTexture);
+    Eng_DestroyTexture(tex->dirt1Texture);
+    Eng_DestroyTexture(tex->stone1Texture);
+    Eng_DestroyTexture(tex->smoothStone);
+    Eng_DestroyTexture(tex->cobbleStone);
+    Eng_DestroyTexture(tex->flatCobbleStone);
+    Eng_DestroyTexture(tex->smoothDirt);
+    Eng_DestroyTexture(tex->cobbleDirt);
+    Eng_DestroyTexture(tex->flatCobbleDirt);
+    Eng_DestroyTexture(tex->softDirt);
+    Eng_DestroyTexture(tex->cloud);
+    Eng_DestroyTexture(tex->gold);
+    Eng_DestroyTexture(tex->goldMolten);
+    Eng_DestroyTexture(tex->goldSolid);
+    Eng_DestroyTexture(tex->iron);
+    Eng_DestroyTexture(tex->obsidian);
+    Eng_DestroyTexture(tex->caveBG);
+    Eng_DestroyTexture(tex->testAse);
+}
 
 Texture *Eng_CreateTexture(C_Surface *surface) {
     Texture *tex = new Texture;

@@ -18,6 +18,7 @@ typedef struct {
     I32 temperature;
 } MaterialInstanceData;
 
+// Chunk data structure
 typedef struct Chunk {
     std::string fname;
 
@@ -37,9 +38,11 @@ typedef struct Chunk {
     RigidBody *rb = nullptr;
 } Chunk;
 
+// Initialize a chunk
 void Chunk_Init(Chunk *_struct, int x, int y, char *worldName);
+// Uninitialize a chunk
 void Chunk_Delete(Chunk *_struct);
-
+// Check chunk's meta data
 void Chunk_loadMeta(Chunk *_struct);
 
 // static MaterialInstanceData* readBuf;

@@ -60,12 +60,7 @@ static void bindBasic() {
     Meta::StructApply(myStruct, f);
 }
 
-#define LUACON_ERROR_PREF "[error]"
-#define LUACON_TRACE_PREF "[trace]"
-#define LUACON_INFO_PREF "[info_]"
-#define LUACON_WARN_PREF "[warn_]"
-
-static std::string proxy_print(lua_State *L, const char *channel) {
+static std::string proxy_print(lua_State *L) {
     auto argNumber = lua_gettop(L);
     std::string s;
     s.reserve(100);
@@ -73,27 +68,31 @@ static std::string proxy_print(lua_State *L, const char *channel) {
         s += lua_tostring(L, i);
         s += i != argNumber ? ", " : "";
     }
-    // (std::string(channel) + s).c_str()
     return s;
 }
 
+static int metadot_bug(lua_State *L) {
+    METADOT_BUG("[LUA] %s", proxy_print(L).c_str());
+    return 0;
+}
+
 static int metadot_info(lua_State *L) {
-    METADOT_INFO("[LUA] %s", proxy_print(L, LUACON_INFO_PREF).c_str());
+    METADOT_INFO("[LUA] %s", proxy_print(L).c_str());
     return 0;
 }
 
 static int metadot_trace(lua_State *L) {
-    METADOT_TRACE("[LUA] %s", proxy_print(L, LUACON_TRACE_PREF).c_str());
+    METADOT_TRACE("[LUA] %s", proxy_print(L).c_str());
     return 0;
 }
 
 static int metadot_error(lua_State *L) {
-    METADOT_ERROR("[LUA] %s", proxy_print(L, LUACON_ERROR_PREF).c_str());
+    METADOT_ERROR("[LUA] %s", proxy_print(L).c_str());
     return 0;
 }
 
 static int metadot_warn(lua_State *L) {
-    METADOT_WARN("[LUA] %s", proxy_print(L, LUACON_WARN_PREF).c_str());
+    METADOT_WARN("[LUA] %s", proxy_print(L).c_str());
     return 0;
 }
 
@@ -201,6 +200,7 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     lua_register(_struct->C->L, "METADOT_TRACE", metadot_trace);
     lua_register(_struct->C->L, "METADOT_INFO", metadot_info);
     lua_register(_struct->C->L, "METADOT_WARN", metadot_warn);
+    lua_register(_struct->C->L, "METADOT_BUG", metadot_bug);
     lua_register(_struct->C->L, "METADOT_ERROR", metadot_error);
     lua_register(_struct->C->L, "METADOT_RUN_FILE", metadot_run_lua_file_script);
     lua_register(_struct->C->L, "runf", metadot_run_lua_file_script);

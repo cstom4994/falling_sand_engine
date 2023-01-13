@@ -352,6 +352,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     // translate point back:
     rb->body->SetTransform(b2Vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
 
+    // If it is a single pixel rigid body, it will be deconstructed.
     if (maxX == 1 || maxY == 1) return;
 
     if (!static_cast<bool>(texture) && !static_cast<bool>(rb->surface) &&
@@ -3239,6 +3240,8 @@ void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
     }
 }
 
+bool World::isC2Ground(F32 x, F32 y) { return false; }
+
 RigidBody *World::physicsCheck(int x, int y) {
 
     if (getTile(x, y).mat->physicsType != PhysicsType::SOLID) return nullptr;
@@ -3274,8 +3277,8 @@ RigidBody *World::physicsCheck(int x, int y) {
                 }
             }
 
-            /*delete visited;
-            delete cols;*/
+            delete[] visited;
+            delete[] cols;
 
             // audioEngine.PlayEvent("event:/Player/Impact");
             b2PolygonShape s;
@@ -3297,7 +3300,7 @@ RigidBody *World::physicsCheck(int x, int y) {
 
             return rb;
         } else {
-            /*
+
             for (int yy = minY; yy <= maxY; yy++) {
                 for (int xx = minX; xx <= maxX; xx++) {
                     if (visited[xx + yy * width]) {
@@ -3306,12 +3309,12 @@ RigidBody *World::physicsCheck(int x, int y) {
                     }
                 }
             }
-            */
+
             return nullptr;
         }
     } else {
-        /*delete visited;
-        delete cols;*/
+        // delete[] visited;
+        // delete[] cols;
     }
 
     return nullptr;
