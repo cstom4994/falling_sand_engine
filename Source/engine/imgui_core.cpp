@@ -476,6 +476,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::BeginTabBar(CC("测试#haha"));
             if (ImGui::BeginTabItem(CC("测试"))) {
                 if (ImGui::Button("调用回溯")) print_callstack();
+                if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem(CC("自动序列测试"))) {

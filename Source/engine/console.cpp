@@ -473,32 +473,32 @@ void ImGuiConsole::SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHand
 }
 
 void Console::Init() {
-    METADOT_NEW(C, console, ImGuiConsole, global.I18N.Get("ui_console"));
+    METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
 
     // Our state
     ImVec4 clear_color = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 
     // Register variables
-    console->System().RegisterVariable("background_color", clear_color, imvec4_setter);
+    console_imgui->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    console->System().RegisterVariable("plPosX", global.GameData_.plPosX, CVar::Arg<F32>(""));
-    console->System().RegisterVariable("plPosY", global.GameData_.plPosY, CVar::Arg<F32>(""));
+    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, CVar::Arg<F32>(""));
+    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, CVar::Arg<F32>(""));
 
-    console->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
+    console_imgui->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
 
-    visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console->System().RegisterVariable(name, value, CVar::Arg<int>("")); });
+    visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, CVar::Arg<int>("")); });
 
     // Register custom commands
-    console->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
+    console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
         clear_color.x = (rand() % 256) / 256.f;
         clear_color.y = (rand() % 256) / 256.f;
         clear_color.z = (rand() % 256) / 256.f;
         clear_color.w = (rand() % 256) / 256.f;
     });
-    console->System().RegisterCommand("reset_background_color", "Reset background color to its original value", [&clear_color, val = clear_color]() { clear_color = val; });
+    console_imgui->System().RegisterCommand("reset_background_color", "Reset background color to its original value", [&clear_color, val = clear_color]() { clear_color = val; });
 
-    console->System().RegisterCommand("print_methods", "a", [this]() { PrintAllMethods(); });
-    console->System().RegisterCommand(
+    console_imgui->System().RegisterCommand("print_methods", "a", [this]() { PrintAllMethods(); });
+    console_imgui->System().RegisterCommand(
             "lua", "dostring",
             [&](const char *s) {
                 auto &l = global.scripts->LuaCoreCpp;
@@ -506,23 +506,27 @@ void Console::Init() {
             },
             CVar::Arg<String>(""));
 
-    console->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
-    console->System().Log(CVar::ItemType::INFO) << "The following variables have been exposed to the console:" << CVar::endl << CVar::endl;
-    console->System().Log(CVar::ItemType::INFO) << "\tbackground_color - set: [int int int int]" << CVar::endl;
-    console->System().Log(CVar::ItemType::INFO) << CVar::endl << "Try running the following command:" << CVar::endl;
-    console->System().Log(CVar::ItemType::INFO) << "\tset background_color [255 0 0 255]" << CVar::endl << CVar::endl;
+    console_imgui->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
+    console_imgui->System().Log(CVar::ItemType::INFO) << "The following variables have been exposed to the console:" << CVar::endl << CVar::endl;
+    console_imgui->System().Log(CVar::ItemType::INFO) << "\tbackground_color - set: [int int int int]" << CVar::endl;
+    console_imgui->System().Log(CVar::ItemType::INFO) << CVar::endl << "Try running the following command:" << CVar::endl;
+    console_imgui->System().Log(CVar::ItemType::INFO) << "\tset background_color [255 0 0 255]" << CVar::endl << CVar::endl;
 }
 
-void Console::End() { METADOT_DELETE(C, console, ImGuiConsole); }
+void Console::End() { METADOT_DELETE(C, console_imgui, ImGuiConsole); }
 
 void Console::DrawUI() {
-    METADOT_ASSERT_E(console);
-    console->Draw();
+    METADOT_ASSERT_E(console_imgui);
+    console_imgui->Draw();
+}
+
+void Console::Draw() {
+    
 }
 
 void Console::PrintAllMethods() {
-    METADOT_ASSERT_E(console);
-    for (auto &cmds : console->System().Commands()) {
-        console->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
+    METADOT_ASSERT_E(console_imgui);
+    for (auto &cmds : console_imgui->System().Commands()) {
+        console_imgui->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
     }
 }

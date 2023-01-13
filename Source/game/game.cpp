@@ -1114,7 +1114,7 @@ int Game::exit() {
     METADOT_DELETE(C, objectDelete, U8);
     GameIsolate_.backgrounds->Unload();
 
-    GameSystem_.console.End();
+    global.game->GameSystem_.console.End();
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);

@@ -5,13 +5,11 @@
 
 #include "core/core.hpp"
 #include "core/macros.h"
+#include "core/vector.hpp"
 #include "engine/imgui_impl.hpp"
 
 extern int metadot_buildnum(void);
 extern const std::string metadot_metadata(void);
-
-#ifndef DBG_MACRO_DBG_H
-#define DBG_MACRO_DBG_H
 
 #include <algorithm>
 #include <chrono>
@@ -161,6 +159,10 @@ inline std::string get_type_name(type_tag<std::string>) { return "std::string"; 
 template <typename T>
 std::string get_type_name(type_tag<std::vector<T, std::allocator<T>>>) {
     return "std::vector<" + type_name<T>() + ">";
+}
+template <typename T>
+std::string get_type_name(type_tag<MetaEngine::vector<T, std::allocator<T>>>) {
+    return "MetaEngine::vector<" + type_name<T>() + ">";
 }
 
 template <typename T1, typename T2>
@@ -762,10 +764,8 @@ auto identity(T &&, U &&...u) -> last_t<U...> {
 
 #define METADOT_DBG(...) dbg::DebugOutput(__FILE__, __LINE__, __func__).print({DBG_MAP(DBG_STRINGIFY, __VA_ARGS__)}, {DBG_MAP(DBG_TYPE_NAME, __VA_ARGS__)}, __VA_ARGS__)
 #else
-#define dbg(...) dbg::identity(__VA_ARGS__)
+#define METADOT_DBG(...) dbg::identity(__VA_ARGS__)
 #endif  // DBG_MACRO_DISABLE
-
-#endif  // DBG_MACRO_DBG_H
 
 // Unit-testing framework. zlib/libpng licensed.
 

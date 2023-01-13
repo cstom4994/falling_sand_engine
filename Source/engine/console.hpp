@@ -78,11 +78,12 @@ protected:
 };
 
 struct Console {
-    ImGuiConsole *console;
+    ImGuiConsole *console_imgui;
 
     void Init();
     void End();
     void DrawUI();
+    void Draw();
 
     // InternalFuncs
     void PrintAllMethods();
