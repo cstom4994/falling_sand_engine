@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <vector>
 
+#include "core/vector.hpp"
 #include "engine/sdl_wrapper.h"
 
 enum ControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };
@@ -42,9 +43,9 @@ class MultiControl : public Control {
 public:
     ControlCombine combine;
 
-    std::vector<Control *> controls;
+    MetaEngine::vector<Control *> controls;
 
-    MultiControl(ControlCombine combine, std::vector<Control *> controls) {
+    MultiControl(ControlCombine combine, MetaEngine::vector<Control *> controls) {
         this->combine = combine;
         this->controls = controls;
     }
@@ -87,7 +88,7 @@ public:
 
     static Control *PAUSE;
 
-    static std::vector<KeyControl *> keyControls;
+    static MetaEngine::vector<KeyControl *> keyControls;
 
     static bool initted;
 

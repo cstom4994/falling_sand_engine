@@ -307,7 +307,7 @@ uint32_t pcg32_boundedrand(uint32_t bound) { return pcg32_boundedrand_r(&pcg32_g
 
 #pragma endregion PCG
 
-void simplify_section(const std::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
+void simplify_section(const MetaEngine::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, MetaEngine::vector<bool> *mark_map, size_t omitted) {
     // make sure we always return 2 points
     if (pts.size() - omitted <= 2) return;
 
@@ -340,12 +340,12 @@ void simplify_section(const std::vector<b2Vec2> &pts, F32 tolerance, size_t i, s
     }
 }
 
-std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, F32 tolerance) {
-    std::vector<bool> mark_map(vertices.size(), true);
+MetaEngine::vector<b2Vec2> simplify(const MetaEngine::vector<b2Vec2> &vertices, F32 tolerance) {
+    MetaEngine::vector<bool> mark_map(vertices.size(), true);
 
     simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
 
-    std::vector<b2Vec2> result;
+    MetaEngine::vector<b2Vec2> result;
     for (size_t i = 0; i != vertices.size(); ++i) {
         if (mark_map[i]) {
             result.push_back(vertices[i]);

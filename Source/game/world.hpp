@@ -12,6 +12,7 @@
 #include "core/const.h"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
+#include "core/vector.hpp"
 #include "engine/Noise.h"
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"
@@ -59,22 +60,22 @@ public:
     ~World();
 
     struct {
-        std::vector<Particle *> particles;
-        std::vector<RigidBody *> rigidBodies;
-        std::vector<std::vector<b2Vec2>> worldMeshes;
-        std::vector<std::vector<b2Vec2>> worldTris;
-        std::vector<RigidBody *> worldRigidBodies;
+        MetaEngine::vector<Particle *> particles;
+        MetaEngine::vector<RigidBody *> rigidBodies;
+        MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldMeshes;
+        MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldTris;
+        MetaEngine::vector<RigidBody *> worldRigidBodies;
 
-        std::vector<LoadChunkParams> toLoad;
-        std::vector<std::future<Chunk *>> readyToReadyToMerge;
+        MetaEngine::vector<LoadChunkParams> toLoad;
+        MetaEngine::vector<std::future<Chunk *>> readyToReadyToMerge;
         std::deque<Chunk *> readyToMerge;
 
-        std::vector<PlacedStructure> structures;
-        std::vector<b2Vec2> distributedPoints;
+        MetaEngine::vector<PlacedStructure> structures;
+        MetaEngine::vector<b2Vec2> distributedPoints;
         google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;
         // std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
-        std::vector<Populator *> populators;
-        std::vector<WorldEntity *> entities;
+        MetaEngine::vector<Populator *> populators;
+        MetaEngine::vector<WorldEntity *> entities;
         Player *player = nullptr;
     } WorldIsolate_;
 
@@ -139,7 +140,7 @@ public:
     void addParticle(Particle *particle);
     void explosion(int x, int y, int radius);
     RigidBody *makeRigidBody(b2BodyType type, F32 x, F32 y, F32 angle, b2PolygonShape shape, F32 density, F32 friction, C_Surface *texture);
-    RigidBody *makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, std::vector<b2PolygonShape> shape, F32 density, F32 friction, C_Surface *texture);
+    RigidBody *makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, MetaEngine::vector<b2PolygonShape> shape, F32 density, F32 friction, C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
@@ -154,7 +155,7 @@ public:
     Biome *getBiomeAt(Chunk *ch, int x, int y);
     void addStructure(PlacedStructure str);
     b2Vec2 getNearestPoint(F32 x, F32 y);
-    std::vector<b2Vec2> getPointsWithin(F32 x, F32 y, F32 w, F32 h);
+    MetaEngine::vector<b2Vec2> getPointsWithin(F32 x, F32 y, F32 w, F32 h);
     Chunk *getChunk(int cx, int cy);
     void populateChunk(Chunk *ch, int phase, bool render);
     void tickEntities(R_Target *target);

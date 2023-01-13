@@ -56,7 +56,7 @@ class MaterialTestGenerator : public WorldGenerator {
         ch->background = background;
     }
 
-    std::vector<Populator *> getPopulators() override { return {}; }
+    MetaEngine::vector<Populator *> getPopulators() override { return {}; }
 };
 
 #pragma endregion MaterialTestGenerator
@@ -272,7 +272,7 @@ class DefaultGenerator : public WorldGenerator {
         ch->background = background;
     }
 
-    std::vector<Populator *> getPopulators() override { return {new CavePopulator(), new OrePopulator(), new CobblePopulator(), new TreePopulator()}; }
+    MetaEngine::vector<Populator *> getPopulators() override { return {new CavePopulator(), new OrePopulator(), new CobblePopulator(), new TreePopulator()}; }
 };
 
 #undef BIOMEGETID

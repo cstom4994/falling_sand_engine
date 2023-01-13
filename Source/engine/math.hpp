@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/vector.hpp"
 #include "engine/internal/builtin_box2d.h"
 
 F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
@@ -82,8 +83,8 @@ uint32_t pcg32_boundedrand_r(pcg32_random_t *rng, uint32_t bound);
 
 #pragma endregion PCG
 
-void simplify_section(const std::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
-std::vector<b2Vec2> simplify(const std::vector<b2Vec2> &vertices, F32 tolerance);
+void simplify_section(const MetaEngine::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, MetaEngine::vector<bool> *mark_map, size_t omitted = 0);
+MetaEngine::vector<b2Vec2> simplify(const MetaEngine::vector<b2Vec2> &vertices, F32 tolerance);
 F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2);
 
 //  * A simple implementation of the marching squares algorithm that can identify

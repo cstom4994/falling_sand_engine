@@ -339,34 +339,34 @@ void Game::createTexture() {
 
     // create texture pixel buffers
 
-    TexturePack_.pixels = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+    TexturePack_.pixels = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixels_ar = &TexturePack_.pixels[0];
 
-    TexturePack_.pixelsLayer2 = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+    TexturePack_.pixelsLayer2 = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
 
-    TexturePack_.pixelsBackground = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+    TexturePack_.pixelsBackground = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-    TexturePack_.pixelsObjects = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsObjects = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-    TexturePack_.pixelsTemp = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsTemp = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-    TexturePack_.pixelsParticles = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsParticles = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
 
-    TexturePack_.pixelsLoading = std::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
+    TexturePack_.pixelsLoading = MetaEngine::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
     TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
-    TexturePack_.pixelsFire = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+    TexturePack_.pixelsFire = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
-    TexturePack_.pixelsFlow = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+    TexturePack_.pixelsFlow = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
 
-    TexturePack_.pixelsEmission = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+    TexturePack_.pixelsEmission = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
     TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
 
     METADOT_INFO("Creating world textures done");
@@ -535,7 +535,7 @@ int Game::run(int argc, char *argv[]) {
 
                     // erase from rigidbodies
                     // this copies the vector
-                    std::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
@@ -622,7 +622,7 @@ int Game::run(int argc, char *argv[]) {
                             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
                             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
-                            std::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;  // copy
+                            MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;  // copy
                             for (size_t i = 0; i < rbs.size(); i++) {
                                 RigidBody *cur = rbs[i];
 
@@ -745,7 +745,7 @@ int Game::run(int argc, char *argv[]) {
                                     int endInd = -1;
 
                                     int nSegments = 1 + len / 10;
-                                    std::vector<std::tuple<int, int>> points = {};
+                                    MetaEngine::vector<std::tuple<int, int>> points = {};
                                     for (int i = 0; i < nSegments; i++) {
                                         int sx = GameIsolate_.world->WorldIsolate_.player->hammerX + (int)((F32)(dx / nSegments) * (i + 1));
                                         int sy = GameIsolate_.world->WorldIsolate_.player->hammerY + (int)((F32)(dy / nSegments) * (i + 1));
@@ -816,7 +816,7 @@ int Game::run(int argc, char *argv[]) {
                     int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
 
                     bool swapped = false;
-                    std::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
 
@@ -948,7 +948,7 @@ int Game::run(int argc, char *argv[]) {
                 // Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
                 if (tile.mat->id == MaterialsList::GENERIC_AIR.id) {
-                    std::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
@@ -1432,7 +1432,7 @@ accLoadY = 0;*/
         F32 hoverDelta = 10.0 * Time.deltaTime / 1000.0;
 
         // this copies the vector
-        std::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;
+        MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
 
@@ -2124,7 +2124,7 @@ void Game::tickChunkLoading() {
 
             int delta = 4 * (subX + subY * GameIsolate_.world->width);
 
-            std::vector<std::future<void>> results = {};
+            MetaEngine::vector<std::future<void>> results = {};
             if (delta > 0) {
                 results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[GameIsolate_.world->width * GameIsolate_.world->height * 4]) - delta,
@@ -2432,7 +2432,7 @@ void Game::tickPlayer() {
                         GameIsolate_.world->WorldIsolate_.particles.erase(std::remove_if(GameIsolate_.world->WorldIsolate_.particles.begin(), GameIsolate_.world->WorldIsolate_.particles.end(), func),
                                                                           GameIsolate_.world->WorldIsolate_.particles.end());
 
-                        std::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                        MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
 
                         for (size_t i = 0; i < rbs->size(); i++) {
                             RigidBody *cur = (*rbs)[i];

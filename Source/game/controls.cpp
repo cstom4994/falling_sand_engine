@@ -4,7 +4,7 @@
 
 #include "SDL_keycode.h"
 
-std::vector<KeyControl *> Controls::keyControls = {};
+MetaEngine::vector<KeyControl *> Controls::keyControls = {};
 bool Controls::initted = false;
 
 Control *Controls::STATS_DISPLAY = nullptr;

@@ -22,8 +22,8 @@
 #include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
 
-std::vector<Biome *> GameData::biome_container;
-std::vector<Material *> GameData::materials_container;
+MetaEngine::vector<Biome *> GameData::biome_container;
+MetaEngine::vector<Material *> GameData::materials_container;
 I32 GameData::materials_count = 0;
 Material **GameData::materials_array;
 
@@ -213,7 +213,7 @@ void InitMaterials() {
 
     for (int j = 0; j < GameData::materials_container.size(); j++) {
         GameData::materials_container[j]->interact = false;
-        GameData::materials_container[j]->interactions = new std::vector<MaterialInteraction>[GameData::materials_container.size()];
+        GameData::materials_container[j]->interactions = new MetaEngine::vector<MaterialInteraction>[GameData::materials_container.size()];
         GameData::materials_container[j]->nInteractions = new int[GameData::materials_container.size()];
 
         for (int k = 0; k < GameData::materials_container.size(); k++) {
@@ -751,7 +751,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // #include <string>
 // #include "structures.hpp"
 
-// std::vector<PlacedStructure> Populator::apply(MaterialInstance* tiles, Chunk ch, World world){
+// MetaEngine::vector<PlacedStructure> Populator::apply(MaterialInstance* tiles, Chunk ch, World world){
 
 // 	for (int x = 0; x < CHUNK_W; x++) {
 // 		for (int y = 0; y < CHUNK_H; y++) {
@@ -823,7 +823,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 		}
 // 	}
 
-// 	std::vector<PlacedStructure> structs;
+// 	MetaEngine::vector<PlacedStructure> structs;
 // 	//if (ch.x % 2 == 0) {
 // 	//	TileProperties* str = new TileProperties[100 * 50];
 // 	//	for (int x = 0; x < 20; x++) {
@@ -874,7 +874,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	}
 
 // 	F32 treePointsScale = 2000;
-// 	std::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 / treePointsScale);
+// 	MetaEngine::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 / treePointsScale);
 // 	Structure tree = Structures::makeTree1(world, ch.x * CHUNK_W, ch.y * CHUNK_H);
 // 	std::cout << treePts.size() << std::endl;
 // 	for (int i = 0; i < treePts.size(); i++) {
@@ -895,7 +895,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	return structs;
 // }
 
-std::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000);
@@ -905,7 +905,7 @@ std::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase2Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase2Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00);
@@ -915,7 +915,7 @@ std::vector<PlacedStructure> TestPhase2Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase3Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase3Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x0000ff);
@@ -925,7 +925,7 @@ std::vector<PlacedStructure> TestPhase3Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase4Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase4Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffff00);
@@ -935,7 +935,7 @@ std::vector<PlacedStructure> TestPhase4Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase5Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase5Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff00ff);
@@ -945,7 +945,7 @@ std::vector<PlacedStructure> TestPhase5Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase6Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase6Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ffff);
@@ -955,7 +955,7 @@ std::vector<PlacedStructure> TestPhase6Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase0Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+MetaEngine::vector<PlacedStructure> TestPhase0Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
     for (int x = 10; x < 20; x++) {
         for (int y = 10; y < 20; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffffff);
@@ -965,7 +965,7 @@ std::vector<PlacedStructure> TestPhase0Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+MetaEngine::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
 
     if (ch->y < 0) return {};
     for (int x = 0; x < CHUNK_W; x++) {
@@ -996,7 +996,7 @@ std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, Mater
     return {};
 }
 
-std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+MetaEngine::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
 
     if (ch->y < 0) return {};
 
@@ -1082,7 +1082,7 @@ std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, Mat
     return {};
 }
 
-std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+MetaEngine::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
 
     if (ch->y < 0) return {};
     for (int x = 0; x < CHUNK_W; x++) {
@@ -1106,7 +1106,7 @@ std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, Materi
     return {};
 }
 
-std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+MetaEngine::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
     if (ch->y < 0 || ch->y > 3) return {};
     int x = (rand() % (CHUNK_W / 2) + (CHUNK_W / 4)) * 1;
     if (area[1 + 2 * 3]->tiles[x + 0 * CHUNK_W].mat->id == MaterialsList::SOFT_DIRT.id) return {};

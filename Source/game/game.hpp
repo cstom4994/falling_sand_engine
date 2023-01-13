@@ -105,7 +105,7 @@ public:
         R_Image *backgroundImage = nullptr;
 
         R_Image *loadingTexture = nullptr;
-        std::vector<U8> pixelsLoading;
+        MetaEngine::vector<U8> pixelsLoading;
         U8 *pixelsLoading_ar = nullptr;
         int loadingScreenW = 0;
         int loadingScreenH = 0;
@@ -114,41 +114,41 @@ public:
         R_Image *lightingTexture = nullptr;
 
         R_Image *emissionTexture = nullptr;
-        std::vector<U8> pixelsEmission;
+        MetaEngine::vector<U8> pixelsEmission;
         U8 *pixelsEmission_ar = nullptr;
 
         R_Image *texture = nullptr;
-        std::vector<U8> pixels;
+        MetaEngine::vector<U8> pixels;
         U8 *pixels_ar = nullptr;
         R_Image *textureLayer2 = nullptr;
-        std::vector<U8> pixelsLayer2;
+        MetaEngine::vector<U8> pixelsLayer2;
         U8 *pixelsLayer2_ar = nullptr;
         R_Image *textureBackground = nullptr;
-        std::vector<U8> pixelsBackground;
+        MetaEngine::vector<U8> pixelsBackground;
         U8 *pixelsBackground_ar = nullptr;
         R_Image *textureObjects = nullptr;
         R_Image *textureObjectsLQ = nullptr;
-        std::vector<U8> pixelsObjects;
+        MetaEngine::vector<U8> pixelsObjects;
         U8 *pixelsObjects_ar = nullptr;
         R_Image *textureObjectsBack = nullptr;
         R_Image *textureParticles = nullptr;
-        std::vector<U8> pixelsParticles;
+        MetaEngine::vector<U8> pixelsParticles;
         U8 *pixelsParticles_ar = nullptr;
         R_Image *textureEntities = nullptr;
         R_Image *textureEntitiesLQ = nullptr;
 
         R_Image *textureFire = nullptr;
         R_Image *texture2Fire = nullptr;
-        std::vector<U8> pixelsFire;
+        MetaEngine::vector<U8> pixelsFire;
         U8 *pixelsFire_ar = nullptr;
 
         R_Image *textureFlowSpead = nullptr;
         R_Image *textureFlow = nullptr;
-        std::vector<U8> pixelsFlow;
+        MetaEngine::vector<U8> pixelsFlow;
         U8 *pixelsFlow_ar = nullptr;
 
         R_Image *temperatureMap = nullptr;
-        std::vector<U8> pixelsTemp;
+        MetaEngine::vector<U8> pixelsTemp;
         U8 *pixelsTemp_ar = nullptr;
     } TexturePack_;
 
