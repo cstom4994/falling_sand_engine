@@ -1996,7 +1996,7 @@ void World::tickParticles() {
 
     auto func = [&](Particle *cur) {
         if (cur->temporary && cur->lifetime <= 0) {
-            cur->killCallback();
+            cur->killCallback.invoke({});
             delete cur;
             return true;
         }
@@ -2019,7 +2019,7 @@ void World::tickParticles() {
         int ly = cur->y;
 
         if ((cur->x < 0 || (int)(cur->x) >= width || cur->y < 0 || (int)(cur->y) >= height)) {
-            cur->killCallback();
+            cur->killCallback.invoke({});
             return true;
         }
 
@@ -2038,7 +2038,7 @@ void World::tickParticles() {
             cur->y += dvy;
 
             if ((cur->x < 0 || (int)(cur->x) >= width || cur->y < 0 || (int)(cur->y) >= height)) {
-                cur->killCallback();
+                cur->killCallback.invoke({});
                 return true;
             }
 
@@ -2061,7 +2061,7 @@ void World::tickParticles() {
 
                 if (!isObject || cur->inObjectState == 2) {
                     if (cur->temporary) {
-                        cur->killCallback();
+                        cur->killCallback.invoke({});
                         delete cur;
                         return true;
                     }
@@ -2113,7 +2113,7 @@ void World::tickParticles() {
                         }
 
                         if (succeeded) {
-                            cur->killCallback();
+                            cur->killCallback.invoke({});
                             delete cur;
                             return true;
                         } else {
@@ -2124,7 +2124,7 @@ void World::tickParticles() {
                     } else {
                         tiles[(int)(lx) + (int)(ly)*width] = cur->tile;
                         dirty[(int)(lx) + (int)(ly)*width] = true;
-                        cur->killCallback();
+                        cur->killCallback.invoke({});
                         delete cur;
                         return true;
                     }

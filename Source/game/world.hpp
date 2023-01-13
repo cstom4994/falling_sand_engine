@@ -68,7 +68,8 @@ public:
 
         MetaEngine::vector<LoadChunkParams> toLoad;
         MetaEngine::vector<std::future<Chunk *>> readyToReadyToMerge;
-        std::deque<Chunk *> readyToMerge;
+
+        MetaEngine::vector<Chunk *> readyToMerge;  // deque, but MetaEngine::vector should work
 
         MetaEngine::vector<PlacedStructure> structures;
         MetaEngine::vector<b2Vec2> distributedPoints;

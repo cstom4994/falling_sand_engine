@@ -34,6 +34,7 @@
 #include "fonts.h"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
+#include "game/game_scriptingwrap.hpp"
 #include "game/game_shaders.hpp"
 #include "game/game_ui.hpp"
 #include "libs/glad/glad.h"
@@ -88,9 +89,10 @@ int Game::init(int argc, char *argv[]) {
     Eng_DestroyTexture(splashSurf);
     R_Flip(Render.target);
 
-    // Test
-    Meta::AnyFunction gamescriptwrap_init{&InitGameScriptingWrap};
-    Meta::AnyFunction gamescriptwrap_bind{&BindGameScriptingWrap};
+    // Register global functions to hostdata using AnyFunction
+    RegisterFunctions(gamescriptwrap_init, InitGameScriptingWrap);
+    RegisterFunctions(gamescriptwrap_bind, BindGameScriptingWrap);
+    RegisterFunctions(gamescriptwrap_end, EndGameScriptingWrap);
 
     // UISystem including ImGui
     UIRendererInit();
@@ -98,7 +100,7 @@ int Game::init(int argc, char *argv[]) {
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
     METADOT_NEW(C, global.scripts, Scripts);
-    global.scripts->Init(gamescriptwrap_init, gamescriptwrap_bind);
+    global.scripts->Init(GetFunctions("gamescriptwrap_init"), GetFunctions("gamescriptwrap_bind"));
 
     // I18N must be initialized after scripting system
     // It uses i18n.lua to function
@@ -1050,7 +1052,7 @@ int Game::run(int argc, char *argv[]) {
                 R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, 255});
                 fadeOutStart = 0;
                 fadeOutLength = 0;
-                fadeOutCallback();
+                fadeOutCallback.invoke({});
             }
         }
 
@@ -1102,11 +1104,7 @@ int Game::exit() {
     // TODO CppScript
 
     // release resources & shutdown
-
-    // Test
-    Meta::AnyFunction gamescriptwrap_end{&EndGameScriptingWrap};
-
-    global.scripts->End(gamescriptwrap_end);
+    global.scripts->End(GetFunctions("gamescriptwrap_end"));
     METADOT_DELETE(C, global.scripts, Scripts);
 
     ReleaseGameData();
@@ -1335,7 +1333,7 @@ accLoadY = 0;*/
     }
 
     if (Controls::PAUSE->get()) {
-        if (this->state == GameState::INGAME) {
+        if (this->state == EnumGameState::INGAME) {
             GameUI::MainMenuUI__visible = !GameUI::MainMenuUI__visible;
         }
     }

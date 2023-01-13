@@ -26,6 +26,13 @@ struct R_Target;
 struct Particle;
 struct Biome;
 struct Material;
+struct ImGuiContext;
+
+#define RegisterFunctions(name, func)    \
+    Meta::AnyFunction any_##func{&func}; \
+    global.GameData_.HostData.Functions.insert(std::make_pair(#name, any_##func))
+
+#define GetFunctions(name) global.GameData_.HostData.Functions[name]
 
 struct GameData {
     I32 ofsX = 0;
@@ -47,6 +54,16 @@ struct GameData {
     static MetaEngine::vector<Material *> materials_container;
     static I32 materials_count;
     static Material **materials_array;
+
+    struct {
+        ImGuiContext *imgui_context = nullptr;
+        void *wndh = nullptr;
+
+        std::unordered_map<std::string, Meta::AnyFunction> Functions;
+
+        // CppSource Functions register
+        void (*draw)(void);
+    } HostData;
 };
 
 void ReleaseGameData();
@@ -311,7 +328,7 @@ struct Particle {
     int lifetime = 0;
     int fadeTime = 60;
     unsigned short inObjectState = 0;
-    std::function<void()> killCallback = []() {};
+    Meta::AnyFunction killCallback = []() {};
     explicit Particle(MaterialInstance tile, F32 x, F32 y, F32 vx, F32 vy, F32 ax, F32 ay) : tile(std::move(tile)), x(x), y(y), vx(vx), vy(vy), ax(ax), ay(ay) {}
     Particle(const Particle &part) : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax), ay(part.ay) {}
 };

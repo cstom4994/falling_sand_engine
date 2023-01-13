@@ -4,6 +4,7 @@
 #define _METADOT_GLOBAL_HPP_
 
 #include <map>
+#include <unordered_map>
 
 #include "core/core.hpp"
 #include "engine/audio.hpp"
@@ -19,10 +20,6 @@ class Game;
 class Scripts;
 class ImGuiCore;
 
-#define RegisterFunctions(name, func)              \
-    MetaEngine::AnyFunction func_log_info{&func}; \
-    global->HostData->Functions.insert(std::make_pair(#name, name))
-
 struct Global {
     Game *game = nullptr;
     Scripts *scripts = nullptr;
@@ -33,16 +30,6 @@ struct Global {
     ShaderWorker shaderworker;
     Audio audioEngine;
     I18N I18N;
-
-    struct {
-        ImGuiContext *imgui_context = nullptr;
-        void *wndh = nullptr;
-
-        std::map<std::string, Meta::AnyFunction> Functions;
-
-        // CppSource Functions register
-        void (*draw)(void);
-    } HostData;
 };
 
 extern Global global;

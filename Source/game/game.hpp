@@ -16,6 +16,7 @@
 #include <unordered_map>
 
 #include "background.hpp"
+#include "code_reflection.hpp"
 #include "controls.hpp"
 #include "core/const.h"
 #include "core/debug_impl.hpp"
@@ -37,16 +38,14 @@
 #include "libs/sparsehash/sparse_hash_map.h"
 #include "world.hpp"
 
-enum GameState { MAIN_MENU, LOADING, INGAME };
-
-
+enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 
 class Game {
 public:
     I32 argc;
 
-    GameState state = LOADING;
-    GameState stateAfterLoad = MAIN_MENU;
+    EnumGameState state = LOADING;
+    EnumGameState stateAfterLoad = MAIN_MENU;
 
     DebugDraw *debugDraw;
 
@@ -84,7 +83,7 @@ public:
     I32 fadeOutWaitFrames = 0;
     I64 fadeOutStart = 0;
     I64 fadeOutLength = 0;
-    std::function<void()> fadeOutCallback = []() {};
+    Meta::AnyFunction fadeOutCallback = []() {};
 
     struct {
         Backgrounds *backgrounds = nullptr;
@@ -153,8 +152,8 @@ public:
     } TexturePack_;
 
 public:
-    GameState getGameState() const { return state; }
-    void setGameState(GameState state, std::optional<GameState> stateal) {
+    EnumGameState getGameState() const { return state; }
+    void setGameState(EnumGameState state, std::optional<EnumGameState> stateal) {
         this->state = state;
         if (stateal.has_value()) {
             this->stateAfterLoad = stateal.value();
