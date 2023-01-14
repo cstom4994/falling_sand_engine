@@ -17,6 +17,7 @@
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "engine/ui.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
@@ -314,7 +315,7 @@ void MainMenuUI__Draw(Game *game) {
     if (!MainMenuUI__visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(200, 240));
-    ImGui::SetNextWindowPos(global.ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(global.uidata->ImGuiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;

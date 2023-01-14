@@ -18,14 +18,12 @@
 
 class Game;
 class Scripts;
-class ImGuiCore;
+class UIData;
 
 struct Global {
     Game *game = nullptr;
     Scripts *scripts = nullptr;
-
-    ImGuiCore *ImGuiCore = nullptr;
-
+    UIData *uidata = nullptr;
     GameData GameData_;
     ShaderWorker shaderworker;
     Audio audioEngine;

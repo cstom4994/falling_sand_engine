@@ -997,9 +997,7 @@ void World::tick() {
 
 #ifdef DO_MULTITHREADING
     bool whichTickVisited = false;
-
     memset(tickVisited1, false, (size_t)width * height);
-
 #endif
 
     // TODO: try to figure out a way to optimize this loop since liquids want a high iteration count
@@ -1023,9 +1021,7 @@ void World::tick() {
             std::future<void> tickVisitedDone = tickVisitedPool->push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
 #else
             bool *tickVisited = tickVisited1;
-
             memset(tickVisited1, false, width * height);
-
 #endif
 
             for (int cx = tickZone.x + chOfsX * CHUNK_W; cx < (tickZone.x + tickZone.w); cx += CHUNK_W * 2) {
@@ -1072,7 +1068,7 @@ void World::tick() {
 #ifdef DO_MULTITHREADING
                                         parts.push_back(p);
 #else
-                                    particles.push_back(p);
+                                    WorldIsolate_.particles.push_back(p);
 #endif
                                     }
 
@@ -1179,7 +1175,7 @@ void World::tick() {
 #ifdef DO_MULTITHREADING
                                             parts.push_back(new Particle(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #else
-                                        particles.push_back(new Particle(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                        WorldIsolate_.particles.push_back(new Particle(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         } else {
                                             tiles[index] = belowTile;
@@ -1255,7 +1251,7 @@ void World::tick() {
 #ifdef DO_MULTITHREADING
                                             parts.push_back(new Particle(nt, x, y + 1, (rand() % 10 - 5) / 30.0f, -((rand() % 2) + 3) / 10.0f + 1.0f, 0, 0.1f));
 #else
-                                        particles.push_back(new Particle(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                        WorldIsolate_.particles.push_back(new Particle(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         }
 
@@ -2141,14 +2137,14 @@ void World::tickParticles() {
 
     WorldIsolate_.particles.erase(std::remove_if(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), func), WorldIsolate_.particles.end());
 
-    // std::for_each(particles.begin(), particles.end(), [](Particle* cur) {
-    //	cur->vx += cur->ax;
-    //	cur->vy += cur->ay;
-    //	cur->x += cur->vx;
-    //	cur->y += cur->vy;
-
-    //	//return cur->y > height;
-    //});
+    // Better particles removal effects
+    std::for_each(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), [](Particle *cur) {
+        cur->vx += cur->ax;
+        cur->vy += cur->ay;
+        cur->x += cur->vx;
+        cur->y += cur->vy;
+        // return cur->y > height;
+    });
 
     // std::remove_if(particles.begin(), particles.end(), [&](Particle* cur) {
     //	return cur->y > height;

@@ -935,7 +935,7 @@ int Game::run(int argc, char *argv[]) {
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
 
-        // render ImGui
+        // Update UI
         UIRendererUpdate();
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
