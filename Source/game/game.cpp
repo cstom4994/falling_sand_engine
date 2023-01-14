@@ -581,9 +581,9 @@ int Game::run(int argc, char *argv[]) {
                     lastEraseMY = 0;
                 }
             } else if (windowEvent.type == SDL_KEYDOWN) {
-                Controls::keyEvent(windowEvent.key);
+                Controls::KeyEvent(windowEvent.key);
             } else if (windowEvent.type == SDL_KEYUP) {
-                Controls::keyEvent(windowEvent.key);
+                Controls::KeyEvent(windowEvent.key);
             }
 
             if (windowEvent.type == SDL_MOUSEBUTTONDOWN) {

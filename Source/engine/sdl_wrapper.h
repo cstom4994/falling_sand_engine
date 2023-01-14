@@ -37,5 +37,7 @@ typedef SDL_Renderer C_Renderer;
 typedef SDL_Rect C_Rect;
 typedef SDL_Cursor C_Cursor;
 typedef SDL_GLContext C_GLContext;
+typedef SDL_Keycode C_Keycode;
+typedef SDL_KeyboardEvent C_KeyboardEvent;
 
 #endif
