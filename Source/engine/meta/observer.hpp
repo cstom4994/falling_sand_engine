@@ -1,13 +1,12 @@
 
 
-#pragma once
 #ifndef META_OBSERVER_HPP
 #define META_OBSERVER_HPP
 
 #include "engine/meta/config.hpp"
 
 namespace Meta {
-    
+
 class Class;
 class Enum;
 
@@ -19,10 +18,8 @@ class Enum;
  *
  * \sa Class, Enum
  */
-class Observer
-{
+class Observer {
 public:
-
     /**
      * \brief Destructor
      */
@@ -57,7 +54,6 @@ public:
     virtual void enumRemoved(const Enum& removed);
 
 protected:
-
     /**
      * \brief Default constructor
      */
@@ -78,6 +74,6 @@ void addObserver(Observer* observer);
  */
 void removeObserver(Observer* observer);
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_OBSERVER_HPP
+#endif  // META_OBSERVER_HPP

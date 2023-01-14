@@ -1,13 +1,13 @@
 
 
-#pragma once
 #ifndef META_ERROR_HPP
 #define META_ERROR_HPP
 
-#include "engine/meta/config.hpp"
-#include "engine/meta/util.hpp"
 #include <exception>
 #include <string>
+
+#include "engine/meta/config.hpp"
+#include "engine/meta/util.hpp"
 
 namespace Meta {
 

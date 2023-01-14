@@ -1,6 +1,5 @@
 
 
-#pragma once
 #ifndef META_DETAIL_VALUEPROVIDER_HPP
 #define META_DETAIL_VALUEPROVIDER_HPP
 
@@ -11,15 +10,14 @@
 
 namespace Meta {
 namespace detail {
-    
+
 /*
  * Implementation of ValueProvider
  * Generic version, use default constructor
  */
 template <typename T, ValueKind Type>
-struct ValueProviderImpl
-{
-    T operator()() {return T();}
+struct ValueProviderImpl {
+    T operator()() { return T(); }
 };
 
 /*
@@ -28,13 +26,12 @@ struct ValueProviderImpl
  * if the type has no default constructor
  */
 template <typename T>
-struct ValueProviderImpl<T, ValueKind::User>
-{
+struct ValueProviderImpl<T, ValueKind::User> {
     ValueProviderImpl()
-        :   m_value(0) //classByType<T>().construct(Args::empty).template get<T*>()) // XXXX
+        : m_value(0)  // classByType<T>().construct(Args::empty).template get<T*>()) // XXXX
     {}
-    ~ValueProviderImpl() {} // {classByType<T>().destroy(m_value);}
-    T& operator()() {return *m_value;}
+    ~ValueProviderImpl() {}  // {classByType<T>().destroy(m_value);}
+    T& operator()() { return *m_value; }
     T* m_value;
 };
 
@@ -43,9 +40,8 @@ struct ValueProviderImpl<T, ValueKind::User>
  * Here we assume that the caller will take ownership of the returned value
  */
 template <typename T, ValueKind Type>
-struct ValueProviderImpl<T*, Type>
-{
-    T* operator()() {return new T;}
+struct ValueProviderImpl<T*, Type> {
+    T* operator()() { return new T; }
 };
 
 /*
@@ -53,20 +49,17 @@ struct ValueProviderImpl<T*, Type>
  * Here we assume that the caller will take ownership of the returned value
  */
 template <typename T>
-struct ValueProviderImpl<T*, ValueKind::User>
-{
-    T* operator()() {return classByType<T>().construct().template get<T*>();}
+struct ValueProviderImpl<T*, ValueKind::User> {
+    T* operator()() { return classByType<T>().construct().template get<T*>(); }
 };
 
 /*
  * Helper structure to instantiate new values based on their type
  */
 template <typename T>
-struct ValueProvider : ValueProviderImpl<T, MetaExt::ValueMapper<T>::kind>
-{
-};
+struct ValueProvider : ValueProviderImpl<T, MetaExt::ValueMapper<T>::kind> {};
 
-} // namespace detail
-} // namespace Meta
+}  // namespace detail
+}  // namespace Meta
 
-#endif // META_DETAIL_VALUEPROVIDER_HPP
+#endif  // META_DETAIL_VALUEPROVIDER_HPP

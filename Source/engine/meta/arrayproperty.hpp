@@ -1,6 +1,5 @@
 
 
-#pragma once
 #ifndef META_ARRAYPROPERTY_HPP
 #define META_ARRAYPROPERTY_HPP
 

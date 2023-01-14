@@ -1,27 +1,25 @@
 
 
-#pragma once
 #ifndef META_DETAIL_OBSERVERNOTIFIER_HPP
 #define META_DETAIL_OBSERVERNOTIFIER_HPP
 
-#include "engine/meta/config.hpp"
 #include <set>
 
+#include "engine/meta/config.hpp"
+
 namespace Meta {
-    
+
 class Observer;
 class Class;
 class Enum;
 
 namespace detail {
-    
+
 /**
  * \brief Base class for classes that can notify global observers
  */
-class ObserverNotifier
-{
+class ObserverNotifier {
 public:
-
     /**
      * \brief Register a new observer
      *
@@ -44,7 +42,6 @@ public:
     void removeObserver(Observer* observer);
 
 protected:
-
     /**
      * \brief Default constructor
      */
@@ -79,13 +76,12 @@ protected:
     void notifyEnumRemoved(const Enum& theEnum);
 
 private:
-
     typedef std::set<Observer*> ObserverSet;
 
-    ObserverSet m_observers; ///< Sequence of registered observers
+    ObserverSet m_observers;  ///< Sequence of registered observers
 };
 
-} // namespace detail
-} // namespace Meta
+}  // namespace detail
+}  // namespace Meta
 
-#endif // META_DETAIL_OBSERVERNOTIFIER_HPP
+#endif  // META_DETAIL_OBSERVERNOTIFIER_HPP

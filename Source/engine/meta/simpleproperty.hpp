@@ -1,13 +1,11 @@
 
 
-#pragma once
 #ifndef META_SIMPLEPROPERTY_HPP
 #define META_SIMPLEPROPERTY_HPP
 
 #include "engine/meta/property.hpp"
 
-namespace Meta
-{
+namespace Meta {
 /**
  * \brief Base class for all simple types of properties
  *
@@ -16,10 +14,8 @@ namespace Meta
  *
  * \sa ArrayProperty, EnumProperty, ObjectProperty
  */
-class SimpleProperty : public Property
-{
+class SimpleProperty : public Property {
 public:
-
     /**
      * \brief Construct the property from its description
      *
@@ -41,6 +37,6 @@ public:
     void accept(ClassVisitor& visitor) const override;
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_SIMPLEPROPERTY_HPP
+#endif  // META_SIMPLEPROPERTY_HPP

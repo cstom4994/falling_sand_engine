@@ -1,11 +1,10 @@
 
 
-#pragma once
 #ifndef META_CONSTRUCTOR_HPP
 #define META_CONSTRUCTOR_HPP
 
 namespace Meta {
-    
+
 class Args;
 class UserObject;
 
@@ -16,15 +15,13 @@ class UserObject;
  *
  * \sa Property, Function
  */
-class Constructor : public Type
-{
+class Constructor : public Type {
 public:
-
     /**
      * \brief Destructor
      */
     virtual ~Constructor() {}
-    
+
     /**
      * \brief Check if the constructor matches the given set of arguments
      *
@@ -45,6 +42,6 @@ public:
     virtual UserObject create(void* ptr, const Args& args) const = 0;
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_CONSTRUCTOR_HPP
+#endif  // META_CONSTRUCTOR_HPP

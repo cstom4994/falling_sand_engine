@@ -1,6 +1,5 @@
 
 
-#pragma once
 #ifndef META_USERDATA_HPP
 #define META_USERDATA_HPP
 
@@ -17,36 +16,34 @@ namespace Meta {
  *
  * \snippet userdata.cpp userdata_example
  */
-class UserData
-{
+class UserData {
 public:
     /** \brief Constructor
      *  \param name : Id string
      *  \param value : user Value
      */
     UserData(IdRef name, Value&& value) : m_name(name), m_value(value) {}
-    
+
     /** \brief Get the UserData name.
      *  \return Id name
      */
     IdReturn getName() const { return m_name; }
-    
+
     /** \brief Get the Value
      *  \return const Value
-     */ 
+     */
     const Value& getValue() const { return m_value; }
-    //Value& getValue() { return m_value; }
+    // Value& getValue() { return m_value; }
 
 private:
     Id m_name;
     Value m_value;
 };
-    
+
 /**
  * \brief Interface to UserData store.
- */ 
-class IUserDataStore
-{
+ */
+class IUserDataStore {
 public:
     virtual ~IUserDataStore() {}
     virtual void setValue(const Type& t, IdRef name, const Value& v) = 0;
@@ -56,6 +53,6 @@ public:
 
 IUserDataStore* userDataStore();
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_USERDATA_HPP
+#endif  // META_USERDATA_HPP

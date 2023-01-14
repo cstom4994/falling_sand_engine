@@ -1,13 +1,13 @@
 
 
-#pragma once
 #ifndef META_DICTIONARY_HPP
 #define META_DICTIONARY_HPP
 
 #include <algorithm>  // std::lower_bound
-#include "engine/meta/config.hpp"
 #include <utility>
 #include <vector>
+
+#include "engine/meta/config.hpp"
 
 namespace Meta {
 namespace detail {

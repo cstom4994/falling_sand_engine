@@ -1,11 +1,11 @@
 
 
-#pragma once
 #ifndef META_ENUMOBJECT_HPP
 #define META_ENUMOBJECT_HPP
 
-#include "engine/meta/enumget.hpp"
 #include <string>
+
+#include "engine/meta/enumget.hpp"
 
 namespace Meta {
 

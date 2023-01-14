@@ -1,12 +1,12 @@
 
 
-#pragma once
 #ifndef META_ARRAYMAPPER_HPP
 #define META_ARRAYMAPPER_HPP
 
-#include "engine/meta/config.hpp"
 #include <list>
 #include <vector>
+
+#include "engine/meta/config.hpp"
 
 namespace MetaExt {
 

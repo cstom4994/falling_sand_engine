@@ -1,20 +1,20 @@
 
 
-#pragma once
 #ifndef META_CLASSBUILDER_HPP
 #define META_CLASSBUILDER_HPP
 
 #include <cassert>
+#include <string>
+
 #include "engine/meta/class.hpp"
 #include "engine/meta/classget.hpp"
 #include "engine/meta/constructorimpl.hpp"
 #include "engine/meta/functionimpl.hpp"
-#include "engine/meta/propertyfactory.hpp"
 #include "engine/meta/pondertype.hpp"
+#include "engine/meta/propertyfactory.hpp"
 #include "engine/meta/type.hpp"
 #include "engine/meta/userdata.hpp"
-#include "engine/meta/uses/uses.hpp"
-#include <string>
+#include "engine/meta/uses.hpp"
 
 namespace Meta {
 

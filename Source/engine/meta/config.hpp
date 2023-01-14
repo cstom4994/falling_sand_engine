@@ -1,6 +1,5 @@
 
 
-#pragma once
 #ifndef META_CONFIG_HPP
 #define META_CONFIG_HPP
 

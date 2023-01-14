@@ -1,17 +1,17 @@
 
 
-#pragma once
 #ifndef META_VALUE_HPP
 #define META_VALUE_HPP
 
-#include "engine/meta/valueimpl.hpp"
-#include "engine/meta/variant.hpp"
+#include <iosfwd>
+#include <string>
+
 #include "engine/meta/enumobject.hpp"
 #include "engine/meta/type.hpp"
 #include "engine/meta/userobject.hpp"
+#include "engine/meta/valueimpl.hpp"
 #include "engine/meta/valuemapper.hpp"
-#include <iosfwd>
-#include <string>
+#include "engine/meta/variant.hpp"
 
 namespace Meta {
 

@@ -1,12 +1,12 @@
 
 
-#pragma once
 #ifndef META_ARGS_HPP
 #define META_ARGS_HPP
 
-#include "engine/meta/config.hpp"
 #include <initializer_list>
 #include <vector>
+
+#include "engine/meta/config.hpp"
 
 namespace Meta {
 

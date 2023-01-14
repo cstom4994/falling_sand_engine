@@ -1,34 +1,33 @@
 
 
-#pragma once
 #ifndef META_FUNCTION_HPP
 #define META_FUNCTION_HPP
 
-#include "engine/meta/config.hpp"
-#include "engine/meta/getter.hpp"
-#include "engine/meta/args.hpp"
-#include "engine/meta/type.hpp"
-#include "engine/meta/value.hpp"
 #include <string>
 #include <vector>
 
+#include "engine/meta/args.hpp"
+#include "engine/meta/config.hpp"
+#include "engine/meta/getter.hpp"
+#include "engine/meta/type.hpp"
+#include "engine/meta/value.hpp"
+
 namespace Meta {
-    
+
 class Args;
 class UserObject;
 class ClassVisitor;
-    
+
 /**
  * \brief Abstract representation of a function
  *
  * Functions are members of metaclasses. Their purpose is to provide detailed information
  * about their prototype.
  */
-class Function : public Type
-{
+class Function : public Type {
     META__NON_COPYABLE(Function);
-public:
 
+public:
     /**
      * \brief Destructor
      */
@@ -40,12 +39,12 @@ public:
      * \return Name of the function
      */
     IdReturn name() const;
-    
-   /**
-    * \brief Get the kind of function represented here
-    *
-    * \return Kind of the function
-    */
+
+    /**
+     * \brief Get the kind of function represented here
+     *
+     * \return Kind of the function
+     */
     FunctionKind kind() const { return m_funcType; }
 
     /**
@@ -54,7 +53,7 @@ public:
      * \return Type of the result of the function
      */
     ValueKind returnType() const;
-    
+
     /**
      * \brief Get the kind of return policy this function uses
      *
@@ -86,18 +85,17 @@ public:
      * \param visitor Visitor to accept
      */
     virtual void accept(ClassVisitor& visitor) const;
-    
-   /**
-    * \brief Get the per-function uses data (internal)
-    *
-    * \note This data is private to the uses module that created it.
-    *
-    * \return Opaque data pointer
-    */
-    const void* getUsesData() const {return m_usesData;}
-    
-protected:
 
+    /**
+     * \brief Get the per-function uses data (internal)
+     *
+     * \note This data is private to the uses module that created it.
+     *
+     * \return Opaque data pointer
+     */
+    const void* getUsesData() const { return m_usesData; }
+
+protected:
     // FunctionImpl inherits from this and constructs.
     Function(IdRef name) : m_name(name) {}
 
@@ -105,9 +103,9 @@ protected:
     FunctionKind m_funcType;            // Kind of function
     ValueKind m_returnType;             // Runtime return type
     policy::ReturnKind m_returnPolicy;  // Return policy
-    const void *m_usesData;
+    const void* m_usesData;
 };
-    
-} // namespace Meta
 
-#endif // META_FUNCTION_HPP
+}  // namespace Meta
+
+#endif  // META_FUNCTION_HPP

@@ -1,22 +1,18 @@
 
 
-#pragma once
 #ifndef META_USERPROPERTY_HPP
 #define META_USERPROPERTY_HPP
 
 #include "engine/meta/property.hpp"
 
-namespace Meta
-{
+namespace Meta {
 class Class;
 
 /**
  * \brief Specialized type of property for user types.
  */
-class UserProperty : public Property
-{
+class UserProperty : public Property {
 public:
-
     /**
      * \brief Construct the property from its description
      *
@@ -45,10 +41,9 @@ public:
     void accept(ClassVisitor& visitor) const override;
 
 private:
-
-    const Class* m_class; ///< Owner class of the property
+    const Class* m_class;  ///< Owner class of the property
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_ENUMPROPERTY_HPP
+#endif  // META_ENUMPROPERTY_HPP

@@ -1,20 +1,18 @@
 
 
-#pragma once
 #ifndef META_DETAIL_ENUMMANAGER_HPP
 #define META_DETAIL_ENUMMANAGER_HPP
 
+#include <map>
+#include <string>
+
 #include "engine/meta/observernotifier.hpp"
 #include "engine/meta/util.hpp"
-#include <string>
-#include <map>
 
-namespace Meta
-{
+namespace Meta {
 class Enum;
 
-namespace detail
-{
+namespace detail {
 /**
  * \brief Manages creation, storage, retrieval and destruction of metaenums
  *
@@ -23,11 +21,10 @@ namespace detail
  *
  * \sa Enum
  */
-class EnumManager : public ObserverNotifier
-{
+class EnumManager : public ObserverNotifier {
     META__NON_COPYABLE(EnumManager);
-public:
 
+public:
     /**
      * \brief Get the unique instance of the class
      *
@@ -46,7 +43,7 @@ public:
      * \return Reference to the new metaenum
      */
     Enum& addClass(TypeId const& id, IdRef name);
-    
+
     /**
      * \brief Unregister a metaenum
      *
@@ -119,7 +116,6 @@ public:
     bool enumExists(TypeId const& id) const;
 
 private:
-
     /**
      * \brief Default constructor
      */
@@ -134,13 +130,12 @@ private:
 
     typedef std::map<TypeId, Enum*> EnumTable;
     typedef std::map<Id, Enum*> NameTable;
-    EnumTable m_enums; // Table storing enums indexed by their TypeId
-    NameTable m_names; // Table storing enums indexed by their name
+    EnumTable m_enums;  // Table storing enums indexed by their TypeId
+    NameTable m_names;  // Table storing enums indexed by their name
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Meta
+}  // namespace Meta
 
-
-#endif // META_DETAIL_ENUMMANAGER_HPP
+#endif  // META_DETAIL_ENUMMANAGER_HPP

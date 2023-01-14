@@ -1,14 +1,11 @@
 
 
-#pragma once
 #ifndef META_PROPERTY_HPP
 #define META_PROPERTY_HPP
 
-
 #include "engine/meta/value.hpp"
 
-namespace Meta
-{
+namespace Meta {
 
 class ClassVisitor;
 
@@ -20,11 +17,10 @@ class ClassVisitor;
  *
  * \sa SimpleProperty, ArrayProperty, EnumProperty, ObjectProperty
  */
-class Property : public Type
-{
+class Property : public Type {
     META__NON_COPYABLE(Property);
-public:
 
+public:
     /**
      * \brief Destructor
      */
@@ -50,7 +46,7 @@ public:
      * \return True if the property can be read, false otherwise
      */
     virtual bool isReadable() const;
-    
+
     /**
      * \brief Check if the property can be written
      *
@@ -90,8 +86,8 @@ public:
     virtual void accept(ClassVisitor& visitor) const;
 
 protected:
-
-    template <typename T> friend class ClassBuilder;
+    template <typename T>
+    friend class ClassBuilder;
     friend class UserObject;
 
     /**
@@ -124,12 +120,10 @@ protected:
     virtual void setValue(const UserObject& object, const Value& value) const = 0;
 
 private:
-
-    Id m_name; // Name of the property
-    ValueKind m_type; // Type of the property
+    Id m_name;         // Name of the property
+    ValueKind m_type;  // Type of the property
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-
-#endif // META_PROPERTY_HPP
+#endif  // META_PROPERTY_HPP

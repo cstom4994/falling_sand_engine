@@ -1,15 +1,14 @@
 
 
-#pragma once
 #ifndef META_USEROBJECT_HPP
 #define META_USEROBJECT_HPP
 
 #include "engine/meta/args.hpp"
 #include "engine/meta/classcast.hpp"
+#include "engine/meta/errors.hpp"
 #include "engine/meta/objectholder.hpp"
 #include "engine/meta/objecttraits.hpp"
 #include "engine/meta/util.hpp"
-#include "engine/meta/errors.hpp"
 
 namespace Meta {
 

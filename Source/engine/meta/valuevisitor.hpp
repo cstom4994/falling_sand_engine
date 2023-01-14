@@ -1,11 +1,10 @@
 
 
-#pragma once
 #ifndef META_VALUEVISITOR_HPP
 #define META_VALUEVISITOR_HPP
 
 namespace Meta {
-    
+
 /**
  * \brief Base class for writing custom Value visitors
  *
@@ -18,8 +17,8 @@ namespace Meta {
  *
  * The template parameter T is the type returned by the visitor.
  *
- * To handle one of the possible types of the value, just write the corresponding 
- * \c operator() function. Here is the list of the mapping between Meta types and their 
+ * To handle one of the possible types of the value, just write the corresponding
+ * \c operator() function. Here is the list of the mapping between Meta types and their
  * corresponding C++ types:
  *
  * \li Meta::ValueKind::None --> Meta::NoType
@@ -38,44 +37,43 @@ namespace Meta {
  *     {
  *         return new BooleanEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(long value)
  *     {
  *         return new IntegerEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(double value)
  *     {
  *         return new RealEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(IdRef value)
  *     {
  *         return new StringEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(const Meta::EnumObject& value)
  *     {
  *         return new EnumEditor(value);
  *     }
- * 
+ *
  *     PropertyEditor* operator()(const Meta::UserObject& value)
  *     {
  *         return new UserEditor(value);
  *     }
  * };
- * 
+ *
  * Meta::Value value(5.4);
  * PropertyEditor* editor = value.visit(EditorFactory());
  * \endcode
  */
 template <typename T = void>
-class ValueVisitor
-{
+class ValueVisitor {
 public:
-    using result_type = T; //!< Type of value visited.
+    using result_type = T;  //!< Type of value visited.
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_VALUEVISITOR_HPP
+#endif  // META_VALUEVISITOR_HPP

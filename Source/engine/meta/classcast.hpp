@@ -1,13 +1,11 @@
 
 
-#pragma once
 #ifndef META_CLASSCAST_HPP
 #define META_CLASSCAST_HPP
 
 #include "engine/meta/config.hpp"
 
-namespace Meta
-{
+namespace Meta {
 class Class;
 
 /**
@@ -23,6 +21,6 @@ class Class;
  */
 void* classCast(void* pointer, const Class& sourceClass, const Class& targetClass);
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_CLASSCAST_HPP
+#endif  // META_CLASSCAST_HPP

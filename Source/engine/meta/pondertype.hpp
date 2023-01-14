@@ -1,6 +1,5 @@
 
 
-#pragma once
 /** \cond NoDocumentation */
 #ifndef META_PONDERTYPE_HPP
 #define META_PONDERTYPE_HPP

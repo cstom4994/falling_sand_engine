@@ -1,31 +1,32 @@
 
 
 #include <cassert>
+
 #include "engine/meta/args.hpp"
 #include "engine/meta/arrayproperty.hpp"
 #include "engine/meta/class.hpp"
 #include "engine/meta/classcast.hpp"
+#include "engine/meta/classmanager.hpp"
 #include "engine/meta/classvisitor.hpp"
 #include "engine/meta/constructor.hpp"
-#include "engine/meta/classmanager.hpp"
 #include "engine/meta/dictionary.hpp"
-#include "engine/meta/enummanager.hpp"
-#include "engine/meta/observernotifier.hpp"
-#include "engine/meta/util.hpp"
 #include "engine/meta/enum.hpp"
 #include "engine/meta/enumbuilder.hpp"
+#include "engine/meta/enummanager.hpp"
 #include "engine/meta/enumobject.hpp"
 #include "engine/meta/enumproperty.hpp"
 #include "engine/meta/error.hpp"
 #include "engine/meta/errors.hpp"
 #include "engine/meta/function.hpp"
 #include "engine/meta/observer.hpp"
+#include "engine/meta/observernotifier.hpp"
 #include "engine/meta/pondertype.hpp"
 #include "engine/meta/property.hpp"
 #include "engine/meta/simpleproperty.hpp"
 #include "engine/meta/userdata.hpp"
 #include "engine/meta/userobject.hpp"
 #include "engine/meta/userproperty.hpp"
+#include "engine/meta/util.hpp"
 #include "engine/meta/value.hpp"
 
 namespace Meta {

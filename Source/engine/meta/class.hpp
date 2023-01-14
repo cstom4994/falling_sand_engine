@@ -1,18 +1,18 @@
 
 
-#pragma once
 #ifndef META_CLASS_HPP
 #define META_CLASS_HPP
+
+#include <map>
+#include <string>
 
 #include "engine/meta/classcast.hpp"
 #include "engine/meta/classget.hpp"
 #include "engine/meta/dictionary.hpp"
-#include "engine/meta/typeid.hpp"
 #include "engine/meta/function.hpp"
 #include "engine/meta/property.hpp"
+#include "engine/meta/typeid.hpp"
 #include "engine/meta/userobject.hpp"
-#include <map>
-#include <string>
 
 namespace Meta {
 

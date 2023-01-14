@@ -1,23 +1,20 @@
 
 
-#pragma once
 #ifndef META_ENUMPROPERTY_HPP
 #define META_ENUMPROPERTY_HPP
 
 #include "engine/meta/property.hpp"
 
 namespace Meta {
-    
+
 class Enum;
 
 /**
  * \brief Specialized type of property for enums
  *
  */
-class EnumProperty : public Property
-{
+class EnumProperty : public Property {
 public:
-
     /**
      * \brief Construct the property from its description
      *
@@ -46,10 +43,9 @@ public:
     void accept(ClassVisitor& visitor) const override;
 
 private:
-
-    const Enum* m_enum; // Owner enum of the property
+    const Enum* m_enum;  // Owner enum of the property
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_ENUMPROPERTY_HPP
+#endif  // META_ENUMPROPERTY_HPP

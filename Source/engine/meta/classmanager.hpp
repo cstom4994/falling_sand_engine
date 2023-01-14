@@ -1,19 +1,19 @@
 
 
-#pragma once
 #ifndef META_DETAIL_CLASSMANAGER_HPP
 #define META_DETAIL_CLASSMANAGER_HPP
 
-#include "observernotifier.hpp"
-#include "engine/meta/type.hpp"
 #include <map>
 
+#include "engine/meta/type.hpp"
+#include "observernotifier.hpp"
+
 namespace Meta {
-    
+
 class Class;
 
 namespace detail {
-    
+
 /**
  * \brief Manages creation, storage, retrieval and destruction of metaclasses
  *
@@ -22,14 +22,12 @@ namespace detail {
  *
  * \sa Class
  */
-class ClassManager : public ObserverNotifier
-{
+class ClassManager : public ObserverNotifier {
     // No need for shared pointers in here, we're the one and only instance holder
     typedef std::map<TypeId, Class*> ClassTable;
     typedef std::map<Id, Class*> NameTable;
 
 public:
-
     typedef View<const Class&, ClassTable::const_iterator> ClassView;
 
     /**
@@ -71,7 +69,7 @@ public:
      * \return Number of metaclasses that have been registered
      */
     size_t count() const;
-    
+
     /**
      * \brief Get a metaclass from a C++ type
      *
@@ -142,12 +140,11 @@ public:
     ClassView getClasses() const;
 
 private:
-
-    ClassTable m_classes;   // Table storing classes indexed by their ID
-    NameTable m_names;      // Name look up of classes
+    ClassTable m_classes;  // Table storing classes indexed by their ID
+    NameTable m_names;     // Name look up of classes
 };
 
-} // namespace detail
-} // namespace Meta
+}  // namespace detail
+}  // namespace Meta
 
-#endif // META_DETAIL_CLASSMANAGER_HPP
+#endif  // META_DETAIL_CLASSMANAGER_HPP

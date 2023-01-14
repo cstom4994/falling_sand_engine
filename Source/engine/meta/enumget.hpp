@@ -1,13 +1,13 @@
 
 
-#pragma once
 #ifndef META_ENUMGET_HPP
 #define META_ENUMGET_HPP
 
-#include "engine/meta/enummanager.hpp"
-#include "engine/meta/typeid.hpp"
-#include "engine/meta/error.hpp"
 #include <string>
+
+#include "engine/meta/enummanager.hpp"
+#include "engine/meta/error.hpp"
+#include "engine/meta/typeid.hpp"
 
 namespace Meta {
 

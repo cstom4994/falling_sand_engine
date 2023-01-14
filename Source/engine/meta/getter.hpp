@@ -1,11 +1,11 @@
 
 
-#pragma once
 #ifndef META_DETAIL_GETTER_HPP
 #define META_DETAIL_GETTER_HPP
 
-#include "engine/meta/userobject.hpp"
 #include <functional>
+
+#include "engine/meta/userobject.hpp"
 
 namespace Meta {
 namespace detail {

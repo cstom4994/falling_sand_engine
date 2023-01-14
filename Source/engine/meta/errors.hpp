@@ -1,6 +1,5 @@
 
 
-#pragma once
 #ifndef META_ERRORS_HPP
 #define META_ERRORS_HPP
 
@@ -8,16 +7,14 @@
 #include "engine/meta/type.hpp"
 
 namespace Meta {
-    
+
 class Class;
 
 /**
  * \brief Error thrown when providing a metavalue whose type is incompatible with what's expected
  */
-class BadType : public Error
-{
+class BadType : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -27,7 +24,6 @@ public:
     BadType(ValueKind provided, ValueKind expected);
 
 protected:
-
     /**
      * \brief Constructor for derived classes
      *
@@ -46,13 +42,11 @@ protected:
 };
 
 /**
- * \brief Error thrown when providing a function argument which is incompatible with 
+ * \brief Error thrown when providing a function argument which is incompatible with
  *        what the function expects
  */
-class BadArgument : public BadType
-{
+class BadArgument : public BadType {
 public:
-
     /**
      * \brief Constructor
      *
@@ -61,17 +55,14 @@ public:
      * \param index Index of the argument in the function prototype
      * \param functionName Name of the function
      */
-    BadArgument(ValueKind provided, ValueKind expected,
-                size_t index, IdRef functionName);
+    BadArgument(ValueKind provided, ValueKind expected, size_t index, IdRef functionName);
 };
 
 /**
  * \brief Error thrown when a declaring a metaclass that already exists
  */
-class ClassAlreadyCreated : public Error
-{
+class ClassAlreadyCreated : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -83,10 +74,8 @@ public:
 /**
  * \brief Error thrown when a metaclass couldn't be found (either by its name or its id)
  */
-class ClassNotFound : public Error
-{
+class ClassNotFound : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -96,13 +85,11 @@ public:
 };
 
 /**
- * \brief Error thrown when trying to convert an object to a class that is not a 
+ * \brief Error thrown when trying to convert an object to a class that is not a
  *        base nor a derived
  */
-class ClassUnrelated : public Error
-{
+class ClassUnrelated : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -115,10 +102,8 @@ public:
 /**
  * \brief Error thrown when a declaring a metaenum that already exists
  */
-class EnumAlreadyCreated : public Error
-{
+class EnumAlreadyCreated : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -130,10 +115,8 @@ public:
 /**
  * \brief Error thrown when the value of a metaenum couldn't be found by its name
  */
-class EnumNameNotFound : public Error
-{
+class EnumNameNotFound : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -146,10 +129,8 @@ public:
 /**
  * \brief Error thrown when a metaenum couldn't be found (either by its name or its id)
  */
-class EnumNotFound : public Error
-{
+class EnumNotFound : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -161,10 +142,8 @@ public:
 /**
  * \brief Error thrown when a value in a metaenum couldn't be found
  */
-class EnumValueNotFound : public Error
-{
+class EnumValueNotFound : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -177,10 +156,8 @@ public:
 /**
  * \brief Error thrown when calling a function that is not callable
  */
-class ForbiddenCall : public Error
-{
+class ForbiddenCall : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -192,10 +169,8 @@ public:
 /**
  * \brief Error thrown when trying to read a property that is not readable
  */
-class ForbiddenRead : public Error
-{
+class ForbiddenRead : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -207,10 +182,8 @@ public:
 /**
  * \brief Error thrown when trying to write a function that is not writable
  */
-class ForbiddenWrite : public Error
-{
+class ForbiddenWrite : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -222,10 +195,8 @@ public:
 /**
  * \brief Error thrown when a function can't be found in a metaclass (by its name)
  */
-class FunctionNotFound : public Error
-{
+class FunctionNotFound : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -234,14 +205,12 @@ public:
      */
     FunctionNotFound(IdRef name, IdRef className);
 };
-    
+
 /**
  * \brief Error thrown when a declaring a metaclass that already exists
  */
-class NotEnoughArguments : public Error
-{
+class NotEnoughArguments : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -249,18 +218,14 @@ public:
      * \param provided Number of arguments provided
      * \param expected Number of arguments expected
      */
-    NotEnoughArguments(IdRef functionName,
-                       size_t provided,
-                       size_t expected);
+    NotEnoughArguments(IdRef functionName, size_t provided, size_t expected);
 };
 
 /**
  * \brief Error thrown when trying to use an empty metaobject
  */
-class NullObject : public Error
-{
+class NullObject : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -272,10 +237,8 @@ public:
 /**
  * \brief Error thrown when using an index which is out of bounds
  */
-class OutOfRange : public Error
-{
+class OutOfRange : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -288,10 +251,8 @@ public:
 /**
  * \brief Error thrown when a property can't be found in a metaclass (by its name)
  */
-class PropertyNotFound : public Error
-{
+class PropertyNotFound : public Error {
 public:
-
     /**
      * \brief Constructor
      *
@@ -304,10 +265,8 @@ public:
 /**
  * \brief Error thrown when cannot distinguish between multiple type instance
  */
-class TypeAmbiguity : public Error
-{
+class TypeAmbiguity : public Error {
 public:
-    
     /**
      * \brief Constructor
      *
@@ -316,6 +275,6 @@ public:
     TypeAmbiguity(IdRef typeName);
 };
 
-} // namespace Meta
+}  // namespace Meta
 
-#endif // META_ERRORS_HPP
+#endif  // META_ERRORS_HPP

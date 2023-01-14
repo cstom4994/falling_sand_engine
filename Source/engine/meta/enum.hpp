@@ -1,16 +1,16 @@
 
 
-#pragma once
 #ifndef META_ENUM_HPP
 #define META_ENUM_HPP
 
+#include <string>
+
 #include "engine/meta/config.hpp"
 #include "engine/meta/dictionary.hpp"
-#include "engine/meta/typeid.hpp"
 #include "engine/meta/enumbuilder.hpp"
 #include "engine/meta/enumget.hpp"
 #include "engine/meta/pondertype.hpp"
-#include <string>
+#include "engine/meta/typeid.hpp"
 
 namespace Meta {
 

@@ -1,6 +1,5 @@
 
 
-#pragma once
 #ifndef META_DETAIL_OBJECTTRAITS_HPP
 #define META_DETAIL_OBJECTTRAITS_HPP
 
