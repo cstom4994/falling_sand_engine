@@ -9,7 +9,20 @@
 #include "game/game_resources.hpp"
 #include "renderer/renderer_gpu.h"
 
-typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement } ElementType;
+typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement } ElementType;
+
+typedef struct UIElementState_Button {
+    U8 state;
+} UI_Button;
+typedef struct UIElementState_Window {
+    U8 state;
+} UI_Window;
+
+typedef union UIElementData {
+    UI_Button button;
+    UI_Window window;
+} UIElementData;
+
 typedef struct UIElement {
     ElementType type;
 
@@ -22,6 +35,8 @@ typedef struct UIElement {
     METAENGINE_Color color;
     Texture* texture;
     std::string text;
+
+    UIElementData state;
 
     int textW, textH;
 

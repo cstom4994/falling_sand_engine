@@ -167,7 +167,7 @@ int Game::init(int argc, char *argv[]) {
         R_ResetProjection(Render.realTarget);
         resolu(w, h);
 
-        SetVSync(true);
+        SetVSync(false);
         SetMinimizeOnLostFocus(false);
     }
 
@@ -175,7 +175,6 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
     METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
 
-    global.shaderworker = {.newLightingShader_insideDes = 0.0f, .newLightingShader_insideCur = 0.0f};
     LoadShaders(&global.shaderworker);
 
     return this->run(argc, argv);
@@ -2894,10 +2893,11 @@ void Game::renderLate() {
                 }
             }
 
-            global.shaderworker.newLightingShader_insideDes = std::min(std::max(0.0f, (F32)nBg / ((range * 2) * (range * 2))), 1.0f);
-            global.shaderworker.newLightingShader_insideCur += (global.shaderworker.newLightingShader_insideDes - global.shaderworker.newLightingShader_insideCur) / 2.0f * (Time.deltaTime / 1000.0f);
+            global.shaderworker.newLightingShader->insideDes = std::min(std::max(0.0f, (F32)nBg / ((range * 2) * (range * 2))), 1.0f);
+            global.shaderworker.newLightingShader->insideCur +=
+                    (global.shaderworker.newLightingShader->insideDes - global.shaderworker.newLightingShader->insideCur) / 2.0f * (Time.deltaTime / 1000.0f);
 
-            F32 ins = global.shaderworker.newLightingShader_insideCur < 0.05 ? 0.0 : global.shaderworker.newLightingShader_insideCur;
+            F32 ins = global.shaderworker.newLightingShader->insideCur < 0.05 ? 0.0 : global.shaderworker.newLightingShader->insideCur;
             if (global.shaderworker.newLightingShader->lastInside != ins) needToRerenderLighting = true;
             NewLightingShader__setInside(global.shaderworker.newLightingShader, ins);
             NewLightingShader__setBounds(global.shaderworker.newLightingShader, GameIsolate_.world->tickZone.x * GameIsolate_.globaldef.hd_objects_size,

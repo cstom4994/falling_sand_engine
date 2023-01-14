@@ -162,6 +162,8 @@ void LoadShaders(ShaderWorker *shaderworker) {
     shaderworker->newLightingShader->lastSimpleMode = false;
     shaderworker->newLightingShader->lastEmissionEnabled = false;
     shaderworker->newLightingShader->lastDitheringEnabled = false;
+    shaderworker->newLightingShader->insideCur = 0.0f;
+    shaderworker->newLightingShader->insideDes = 0.0f;
 
     ShaderInit(&shaderworker->waterShader->sb);
     ShaderInit(&shaderworker->waterFlowPassShader->sb);

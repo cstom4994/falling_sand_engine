@@ -7,6 +7,7 @@
 #include <iterator>
 #include <map>
 
+#include "core/alloc.h"
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/dbgtools.h"
@@ -143,11 +144,14 @@ static bool firstRun = false;
 ImGUIIMMCommunication imguiIMMCommunication{};
 #endif
 
+static void *ImGuiMalloc(size_t sz, void *user_data) { return gc_malloc(&gc, sz); }
+static void ImGuiFree(void *ptr, void *user_data) { gc_free(&gc, ptr); }
+
 void ImGuiCore::Init() {
 
     IMGUI_CHECKVERSION();
 
-    // ImGui::SetAllocatorFunctions(myMalloc, myFree);
+    ImGui::SetAllocatorFunctions(ImGuiMalloc, ImGuiFree);
 
     m_imgui = ImGui::CreateContext();
     ImPlot::CreateContext();

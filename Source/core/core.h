@@ -46,16 +46,16 @@ typedef struct U16Point {
 } U16Point;
 
 typedef struct Vector3 {
-    float x;
-    float y;
-    float z;
+    F32 x;
+    F32 y;
+    F32 z;
 } Vector3;
 
 typedef struct Pixel {
-    unsigned char b;
-    unsigned char g;
-    unsigned char r;
-    unsigned char a;
+    U8 b;
+    U8 g;
+    U8 r;
+    U8 a;
 } Pixel;
 
 //--------------------------------------------------------------------------------------------------------------------------------//

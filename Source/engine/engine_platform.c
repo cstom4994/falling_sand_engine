@@ -4,12 +4,14 @@
 
 #include <string.h>
 
+#include "SDL_mouse.h"
 #include "core/const.h"
 #include "core/core.h"
 #include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
 #include "libs/glad/glad.h"
+#include "renderer/renderer_utils.h"
 
 IMPLENGINE();
 
@@ -214,3 +216,9 @@ void SetMinimizeOnLostFocus(bool minimize) {
 }
 
 void SetWindowTitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }
+
+R_vec2 GetMousePos() {
+    I32 x, y;
+    SDL_GetMouseState(&x, &y);
+    return (R_vec2){x, y};
+}

@@ -6,6 +6,7 @@
 #include "core/core.h"
 #include "core/macros.h"
 #include "platform_detail.h"
+#include "renderer/renderer_utils.h"
 #include "sdl_wrapper.h"
 
 typedef enum engine_displaymode { WINDOWED, BORDERLESS, FULLSCREEN } engine_displaymode;
@@ -26,6 +27,7 @@ void SetWindowFlash(engine_windowflashaction action, int count, int period);
 void SetVSync(bool vsync);
 void SetMinimizeOnLostFocus(bool minimize);
 void SetWindowTitle(const char* title);
+R_vec2 GetMousePos();
 inline ticks GetTime() { return (ticks)SDL_GetTicks(); }
 
 #endif

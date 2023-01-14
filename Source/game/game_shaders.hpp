@@ -26,6 +26,9 @@ struct NewLightingShader {
     bool lastSimpleMode;
     bool lastEmissionEnabled;
     bool lastDitheringEnabled;
+
+    F32 insideDes;
+    F32 insideCur;
 };
 
 struct FireShader {
@@ -53,8 +56,6 @@ typedef struct ShaderWorker {
     struct WaterShader *waterShader;
     struct WaterFlowPassShader *waterFlowPassShader;
     struct NewLightingShader *newLightingShader;
-    F32 newLightingShader_insideDes;
-    F32 newLightingShader_insideCur;
     struct FireShader *fireShader;
     struct Fire2Shader *fire2Shader;
 } ShaderWorker;
