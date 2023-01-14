@@ -5,7 +5,7 @@
 #define META_FUNCTION_HPP
 
 #include "engine/meta/config.hpp"
-#include "engine/meta/impl/getter.hpp"
+#include "engine/meta/getter.hpp"
 #include "engine/meta/args.hpp"
 #include "engine/meta/type.hpp"
 #include "engine/meta/value.hpp"

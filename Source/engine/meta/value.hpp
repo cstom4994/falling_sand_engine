@@ -4,8 +4,8 @@
 #ifndef META_VALUE_HPP
 #define META_VALUE_HPP
 
-#include "engine/meta/impl/valueimpl.hpp"
-#include "engine/meta/impl/variant.hpp"
+#include "engine/meta/valueimpl.hpp"
+#include "engine/meta/variant.hpp"
 #include "engine/meta/enumobject.hpp"
 #include "engine/meta/type.hpp"
 #include "engine/meta/userobject.hpp"

@@ -24,22 +24,18 @@ static_assert(_MSC_VER >= 1911, "MSVC 2017 required");
 // Debug build config?
 #define META_DEBUG (!defined(NDEBUG))
 
-#ifndef META_USING_LUA
-#define META_USING_LUA 0
-#endif
-
 // If user doesn't define traits use the default:
 #ifndef META_ID_TRAITS_USER
 // # define META_ID_TRAITS_STD_STRING      // Use std::string and const std::string&
 #define META_ID_TRAITS_STRING_VIEW  // Use std::string and Meta::string_view
-#endif                                // META_ID_TRAITS_USER
+#endif                              // META_ID_TRAITS_USER
 
 #include <cassert>
 
-#include "impl/idtraits.hpp"
+#include "engine/meta/idtraits.hpp"
 
 #define META__NON_COPYABLE(CLS) \
-    CLS(CLS const&) = delete;     \
+    CLS(CLS const&) = delete;   \
     CLS& operator=(CLS const&) = delete
 
 #define META__UNUSED(VAR) ((void)&(VAR))

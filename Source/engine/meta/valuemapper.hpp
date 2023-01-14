@@ -10,8 +10,8 @@
 #include "engine/meta/userobject.hpp"
 #include "engine/meta/arraymapper.hpp"
 #include "engine/meta/errors.hpp"
-#include "engine/meta/impl/util.hpp"
-#include "engine/meta/impl/valueref.hpp"
+#include "engine/meta/util.hpp"
+#include "engine/meta/valueref.hpp"
 
 /**
  * \namespace MetaExt

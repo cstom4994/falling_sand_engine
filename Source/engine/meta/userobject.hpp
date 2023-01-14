@@ -6,9 +6,9 @@
 
 #include "engine/meta/args.hpp"
 #include "engine/meta/classcast.hpp"
-#include "engine/meta/impl/objectholder.hpp"
-#include "engine/meta/impl/objecttraits.hpp"
-#include "engine/meta/impl/util.hpp"
+#include "engine/meta/objectholder.hpp"
+#include "engine/meta/objecttraits.hpp"
+#include "engine/meta/util.hpp"
 #include "engine/meta/errors.hpp"
 
 namespace Meta {

@@ -89,7 +89,7 @@ bool SimplePropertyImpl<A>::isWritable() const {
 
 #include "engine/meta/arraymapper.hpp"
 #include "engine/meta/arrayproperty.hpp"
-#include "engine/meta/impl/valueprovider.hpp"
+#include "engine/meta/valueprovider.hpp"
 
 namespace Meta {
 namespace detail {
@@ -354,8 +354,8 @@ bool UserPropertyImpl<A>::isWritable() const {
 }  // namespace detail
 }  // namespace Meta
 
-#include "engine/meta/impl/functiontraits.hpp"
-#include "engine/meta/impl/typeid.hpp"
+#include "engine/meta/functiontraits.hpp"
+#include "engine/meta/typeid.hpp"
 
 namespace Meta {
 namespace detail {

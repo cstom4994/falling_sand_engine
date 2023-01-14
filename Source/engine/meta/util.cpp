@@ -1,6 +1,6 @@
 
 
-#include "engine/meta/impl/util.hpp"
+#include "engine/meta/util.hpp"
 
 #if defined(__GNUWIN32__) && __cplusplus >= 201103L
     // MinGW support using C++11 defines __STRICT_ANSI__ which removes strcasecmp

@@ -6,8 +6,8 @@
 
 #include "engine/meta/classcast.hpp"
 #include "engine/meta/classget.hpp"
-#include "engine/meta/impl/dictionary.hpp"
-#include "engine/meta/impl/typeid.hpp"
+#include "engine/meta/dictionary.hpp"
+#include "engine/meta/typeid.hpp"
 #include "engine/meta/function.hpp"
 #include "engine/meta/property.hpp"
 #include "engine/meta/userobject.hpp"

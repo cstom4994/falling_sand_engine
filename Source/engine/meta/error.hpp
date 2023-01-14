@@ -5,7 +5,7 @@
 #define META_ERROR_HPP
 
 #include "engine/meta/config.hpp"
-#include "engine/meta/impl/util.hpp"
+#include "engine/meta/util.hpp"
 #include <exception>
 #include <string>
 

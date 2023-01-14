@@ -5,8 +5,8 @@
 #define META_ENUM_HPP
 
 #include "engine/meta/config.hpp"
-#include "engine/meta/impl/dictionary.hpp"
-#include "engine/meta/impl/typeid.hpp"
+#include "engine/meta/dictionary.hpp"
+#include "engine/meta/typeid.hpp"
 #include "engine/meta/enumbuilder.hpp"
 #include "engine/meta/enumget.hpp"
 #include "engine/meta/pondertype.hpp"

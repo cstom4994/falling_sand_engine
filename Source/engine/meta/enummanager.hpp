@@ -4,8 +4,8 @@
 #ifndef META_DETAIL_ENUMMANAGER_HPP
 #define META_DETAIL_ENUMMANAGER_HPP
 
-#include "engine/meta/impl/observernotifier.hpp"
-#include "engine/meta/impl/util.hpp"
+#include "engine/meta/observernotifier.hpp"
+#include "engine/meta/util.hpp"
 #include <string>
 #include <map>
 

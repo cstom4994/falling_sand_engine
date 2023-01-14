@@ -7,8 +7,7 @@
 /** \endcond NoDocumentation */
 
 #include "engine/meta/config.hpp"
-
-#include "impl/typeid.hpp"
+#include "engine/meta/typeid.hpp"
 #include "type.hpp"
 
 namespace Meta {
@@ -49,8 +48,8 @@ void ensureTypeRegistered(TypeId const& id, void (*registerFunc)());
  *
  * \sa META_TYPE(), META_AUTO_TYPE(), \ref eg_page_declare
  */
-#define META_TYPE(...)                                                        \
-    namespace Meta {                                                          \
+#define META_TYPE(...)                                                          \
+    namespace Meta {                                                            \
     namespace detail {                                                          \
     template <>                                                                 \
     struct StaticTypeDecl<__VA_ARGS__> {                                        \
@@ -95,8 +94,8 @@ void ensureTypeRegistered(TypeId const& id, void (*registerFunc)());
  *
  * \sa META_TYPE(), \ref eg_page_declare, \ref eg_page_shapes
  */
-#define META_AUTO_TYPE(TYPE, REGISTER_FN)                                                   \
-    namespace Meta {                                                                        \
+#define META_AUTO_TYPE(TYPE, REGISTER_FN)                                                     \
+    namespace Meta {                                                                          \
     namespace detail {                                                                        \
     template <>                                                                               \
     struct StaticTypeDecl<TYPE> {                                                             \
@@ -151,8 +150,8 @@ void ensureTypeRegistered(TypeId const& id, void (*registerFunc)());
  *
  * \sa META_TYPE()
  */
-#define META_TYPE_NONCOPYABLE(TYPE)                          \
-    namespace Meta {                                         \
+#define META_TYPE_NONCOPYABLE(TYPE)                            \
+    namespace Meta {                                           \
     namespace detail {                                         \
     template <>                                                \
     struct StaticTypeDecl<TYPE> {                              \
@@ -176,8 +175,8 @@ void ensureTypeRegistered(TypeId const& id, void (*registerFunc)());
  *
  * \sa META_AUTO_TYPE(), META_TYPE_NONCOPYABLE()
  */
-#define META_AUTO_TYPE_NONCOPYABLE(TYPE, REGISTER_FN)                                       \
-    namespace Meta {                                                                        \
+#define META_AUTO_TYPE_NONCOPYABLE(TYPE, REGISTER_FN)                                         \
+    namespace Meta {                                                                          \
     namespace detail {                                                                        \
     template <>                                                                               \
     struct StaticTypeDecl<TYPE> {                                                             \
@@ -224,10 +223,10 @@ void ensureTypeRegistered(TypeId const& id, void (*registerFunc)());
  *
  * \sa \ref eg_page_shapes
  */
-#define META_POLYMORPHIC()                                                                     \
-public:                                                                                          \
+#define META_POLYMORPHIC()                                                                   \
+public:                                                                                      \
     virtual Meta::TypeId ponderClassId() const { return Meta::detail::staticTypeId(*this); } \
-                                                                                                 \
+                                                                                             \
 private:
 
 }  // namespace Meta

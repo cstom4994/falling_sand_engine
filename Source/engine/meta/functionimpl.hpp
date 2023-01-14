@@ -5,7 +5,7 @@
 #define META_DETAIL_FUNCTIONIMPL_HPP
 
 #include "engine/meta/function.hpp"
-#include "engine/meta/impl/functiontraits.hpp"
+#include "engine/meta/functiontraits.hpp"
 #include "engine/meta/valuemapper.hpp"
 
 namespace Meta {

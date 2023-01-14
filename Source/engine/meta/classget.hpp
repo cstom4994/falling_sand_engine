@@ -7,9 +7,9 @@
 #define META_CLASSGET_HPP
 
 #include "engine/meta/config.hpp"
-#include "engine/meta/impl/classmanager.hpp"
-#include "engine/meta/impl/typeid.hpp"
-#include "engine/meta/impl/util.hpp"
+#include "engine/meta/classmanager.hpp"
+#include "engine/meta/typeid.hpp"
+#include "engine/meta/util.hpp"
 #include "engine/meta/error.hpp"
 #include <string>
 

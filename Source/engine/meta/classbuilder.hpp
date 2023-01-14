@@ -7,9 +7,9 @@
 #include <cassert>
 #include "engine/meta/class.hpp"
 #include "engine/meta/classget.hpp"
-#include "engine/meta/impl/constructorimpl.hpp"
-#include "engine/meta/impl/functionimpl.hpp"
-#include "engine/meta/impl/propertyfactory.hpp"
+#include "engine/meta/constructorimpl.hpp"
+#include "engine/meta/functionimpl.hpp"
+#include "engine/meta/propertyfactory.hpp"
 #include "engine/meta/pondertype.hpp"
 #include "engine/meta/type.hpp"
 #include "engine/meta/userdata.hpp"

@@ -30,7 +30,7 @@ struct IdTraits
 #elif defined(META_ID_TRAITS_STRING_VIEW)
 
 #include <string>
-#include "engine/meta/impl/string_view.hpp"
+#include "engine/meta/string_view.hpp"
 
 namespace Meta {
 

@@ -4,7 +4,7 @@
 #ifndef META_DETAIL_TYPEID_HPP
 #define META_DETAIL_TYPEID_HPP
 
-#include "engine/meta/impl/objecttraits.hpp"
+#include "engine/meta/objecttraits.hpp"
 #include "engine/meta/type.hpp"
 #include <typeindex>
 
