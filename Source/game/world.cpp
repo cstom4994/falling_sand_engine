@@ -23,7 +23,7 @@
 #include "engine/math.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/utils.hpp"
+#include "core/cpp/utils.hpp"
 #include "game/chunk.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"

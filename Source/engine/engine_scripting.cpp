@@ -22,7 +22,7 @@
 #include "engine/internal/builtin_lpeg.h"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/utils.hpp"
+#include "core/cpp/utils.hpp"
 #include "engine_scripting.h"
 #include "game/background.hpp"
 #include "game/game.hpp"

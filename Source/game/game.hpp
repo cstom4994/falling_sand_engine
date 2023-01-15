@@ -30,7 +30,7 @@
 #include "engine/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/utils.hpp"
+#include "core/cpp/utils.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"

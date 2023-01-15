@@ -22,7 +22,7 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/utils.hpp"
+#include "core/cpp/utils.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_ui.hpp"

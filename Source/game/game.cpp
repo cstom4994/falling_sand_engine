@@ -29,7 +29,7 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
-#include "engine/utils.hpp"
+#include "core/cpp/utils.hpp"
 #include "engine_platform.h"
 #include "fonts.h"
 #include "game/game_datastruct.hpp"
