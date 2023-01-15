@@ -1,7 +1,9 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
+#include <functional>
 #include <map>
 
+#include "code_reflection.hpp"
 #include "core/core.h"
 #include "engine/imgui_core.hpp"
 #include "engine/imgui_impl.hpp"
@@ -13,15 +15,16 @@ typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lin
 
 typedef struct UIElementState_Button {
     U8 state;
+    void (*func)(void);
 } UI_Button;
 typedef struct UIElementState_Window {
     U8 state;
 } UI_Window;
 
-typedef union UIElementData {
+typedef union UIElementClass {
     UI_Button button;
     UI_Window window;
-} UIElementData;
+} UIElementClass;
 
 typedef struct UIElement {
     ElementType type;
@@ -36,7 +39,7 @@ typedef struct UIElement {
     Texture* texture;
     std::string text;
 
-    UIElementData state;
+    UIElementClass cclass;
 
     int textW, textH;
 

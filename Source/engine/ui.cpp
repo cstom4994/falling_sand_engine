@@ -2,6 +2,8 @@
 
 #include "ui.hpp"
 
+#include <memory>
+
 #include "core/core.h"
 #include "core/global.hpp"
 #include "engine/engine.h"
@@ -36,8 +38,14 @@ void UIRendererInit() {
                            .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png")};
 
     UIElement testElement2{.type = ElementType::textElement, .minRectX = 55, .minRectY = 55, .maxRectX = 200, .maxRectY = 200, .color = {54, 54, 54, 255}, .text = "哈哈哈哈哈嗝"};
-    UIElement testElement3{
-            .type = ElementType::buttonElement, .minRectX = 55, .minRectY = 80, .maxRectX = 70, .maxRectY = 90, .color = {54, 54, 54, 255}, .text = "按钮捏", .state = {(UI_Button){.state = 0}}};
+    UIElement testElement3{.type = ElementType::buttonElement,
+                           .minRectX = 55,
+                           .minRectY = 80,
+                           .maxRectX = 70,
+                           .maxRectY = 90,
+                           .color = {54, 54, 54, 255},
+                           .text = "按钮捏",
+                           .cclass = {(UI_Button){.state = 0, .func = []() { METADOT_INFO("button pressed"); }}}};
 
     global.uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
     global.uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
@@ -75,6 +83,8 @@ void UIRendererDraw() {
         }
 
         if (Img) R_FreeImage(Img);
+
+        if (global.game->GameIsolate_.globaldef.draw_ui_debug) R_Rectangle(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, {255, 20, 147, 255});
     }
     global.uidata->ImGuiCore->Draw();
 }
@@ -93,8 +103,8 @@ void UIRendererUpdate() {
     for (auto &&e : global.uidata->elementLists) {
         R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
         if (e.second.type == ElementType::buttonElement) {
-            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse) {
-                METADOT_INFO("Button %s pressed", e.first.c_str());
+            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && e.second.cclass.button.func) {
+                e.second.cclass.button.func();
             }
         }
     }
