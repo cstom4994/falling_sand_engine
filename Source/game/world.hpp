@@ -12,7 +12,7 @@
 #include "core/const.h"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
-#include "core/vector.hpp"
+#include "core/cpp/vector.hpp"
 #include "engine/Noise.h"
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"

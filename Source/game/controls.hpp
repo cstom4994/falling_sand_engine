@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <vector>
 
-#include "core/vector.hpp"
+#include "core/cpp/vector.hpp"
 #include "engine/sdl_wrapper.h"
 
 enum EnumControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };

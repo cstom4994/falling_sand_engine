@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "core/vector.hpp"
+#include "core/cpp/vector.hpp"
 #include "engine/internal/builtin_box2d.h"
 
 F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);

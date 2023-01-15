@@ -5,7 +5,7 @@
 
 #include "core/core.hpp"
 #include "core/macros.h"
-#include "core/vector.hpp"
+#include "core/cpp/vector.hpp"
 #include "engine/imgui_impl.hpp"
 
 extern int metadot_buildnum(void);

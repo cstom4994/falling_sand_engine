@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "core/vector.hpp"
+#include "core/cpp/vector.hpp"
 #include "engine/code_reflection.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/math.hpp"
