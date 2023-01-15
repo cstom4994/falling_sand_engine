@@ -13,7 +13,8 @@
 #include "core/macros.h"
 #include "engine/code_reflection.hpp"
 #include "libs/lua/lua.hpp"
-#include "libs/nameof.hpp"
+#include "core/cpp/name.hpp"
+#include "core/cpp/type.hpp"
 #include "preprocesserflat.hpp"
 
 #if defined(__cplusplus)
@@ -102,7 +103,7 @@ int CallOnNamedStructCreate(lua_State *L, std::string_view struct_name);
 template <class T>
 int CallOnStructCreate(lua_State *L) {
     // #1 = target lua struct
-    auto struct_name = nameof::nameof_short_type<T>();
+    auto struct_name = MetaEngine::Type_of<T>.GetName();
     return CallOnNamedStructCreate(L, struct_name);
 }
 
@@ -168,7 +169,7 @@ public:
 template <class T, class Base>
 class TypeInterfaceDecoratorCommon : public Base {
 public:
-    std::string_view GetTypeName() const override { return nameof::nameof_type<T>(); }
+    std::string_view GetTypeName() const override { return MetaEngine::type_name<T>().View(); }
     bool IsConst() const override { return std::is_const<T>::value; }
 };
 namespace detail {
@@ -354,7 +355,7 @@ public:
     int MetaIndex(lua_State *L) const override {
         if (lua_type(L, 2) == LUA_TSTRING) {
             if (!strcmp(lua_tostring(L, 2), "self")) return this->Copy(L);
-            detail::TypeInterfaceStringIndexReplace(this, L, "struct/", nameof::nameof_short_type<typename std::decay<T>::type>());
+            detail::TypeInterfaceStringIndexReplace(this, L, "struct/", MetaEngine::Type_of<typename std::decay<T>::type>.GetName());
         }
         void *value = lua_touserdata(L, 1);
         int N = lua_tointeger(L, 2);
@@ -366,7 +367,7 @@ public:
 
         if (lua_type(L, 2) == LUA_TSTRING) {
             if (!strcmp(lua_tostring(L, 2), "self")) return this->Assign(L);
-            detail::TypeInterfaceStringIndexReplace(this, L, "struct/", nameof::nameof_short_type<typename std::decay<T>::type>());
+            detail::TypeInterfaceStringIndexReplace(this, L, "struct/", MetaEngine::Type_of<typename std::decay<T>::type>.GetName());
         }
         void *value = lua_touserdata(L, 1);
         int N = lua_tointeger(L, 2);
@@ -403,7 +404,7 @@ public:
         if (lua_type(L, 2) == LUA_TSTRING) {
             if (!strcmp(lua_tostring(L, 2), "self")) return this->Copy(L);
         }
-        detail::TypeInterfaceStringIndexReplace(this, L, "class/", nameof::nameof_short_type<typename std::decay<T>::type>());
+        detail::TypeInterfaceStringIndexReplace(this, L, "class/", MetaEngine::Type_of<typename std::decay<T>::type>.GetName());
         void *value = lua_touserdata(L, 1);
         int N = lua_tointeger(L, 2);
         if (T *object = reinterpret_cast<T *>(value)) return MetaIndexImpl(L, *object, N, std::make_index_sequence<MemberCount>());
@@ -413,7 +414,7 @@ public:
         if (lua_type(L, 2) == LUA_TSTRING) {
             if (!strcmp(lua_tostring(L, 2), "self")) return this->Assign(L);
         }
-        detail::TypeInterfaceStringIndexReplace(this, L, "class/", nameof::nameof_short_type<typename std::decay<T>::type>());
+        detail::TypeInterfaceStringIndexReplace(this, L, "class/", MetaEngine::Type_of<typename std::decay<T>::type>.GetName());
         void *value = lua_touserdata(L, 1);
         int N = lua_tointeger(L, 2);
         T *object = reinterpret_cast<T *>(value);

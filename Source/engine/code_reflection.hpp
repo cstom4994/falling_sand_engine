@@ -20,7 +20,6 @@
 
 #include "core/core.h"
 #include "core/core.hpp"
-#include "libs/nameof.hpp"
 
 namespace IamAfuckingNamespace {
 int func1(float f, char c);

@@ -16,8 +16,8 @@
 
 #include "core/alloc.h"
 #include "core/core.hpp"
+#include "core/cpp/type.hpp"
 #include "core/macros.h"
-#include "libs/nameof.hpp"
 
 class AllocatorUtils {
 public:
@@ -372,8 +372,8 @@ private:
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) realloc(ptr, size, alignment)
 
 #if defined(METADOT_DEBUG)
-#define ADDTODEBUGMAP(_c) GC::MemoryDebugMap.insert(std::make_pair(NAMEOF_TYPE(_c), sizeof(_c)))
-#define REMOVEDEBUGMAP(_c) GC::MemoryDebugMap.erase(NAMEOF_TYPE(_c))
+#define ADDTODEBUGMAP(_c) GC::MemoryDebugMap.insert(std::make_pair(MetaEngine::Type_of<_c>.GetName(), sizeof(_c)))
+#define REMOVEDEBUGMAP(_c) GC::MemoryDebugMap.erase(MetaEngine::Type_of<_c>.GetName())
 #else
 #define ADDTODEBUGMAP(_c)
 #define REMOVEDEBUGMAP(_c)
