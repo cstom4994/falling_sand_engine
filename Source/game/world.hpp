@@ -10,16 +10,16 @@
 
 #include "chunk.hpp"
 #include "core/const.h"
+#include "core/cpp/vector.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
-#include "core/cpp/vector.hpp"
 #include "engine/Noise.h"
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
-#include "libs/sparsehash/dense_hash_map.h"
+#include "libs/parallel_hashmap/phmap.h"
 
 class Populator;
 class WorldGenerator;
@@ -73,7 +73,7 @@ public:
 
         MetaEngine::vector<PlacedStructure> structures;
         MetaEngine::vector<b2Vec2> distributedPoints;
-        google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>> chunkCache;
+        phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         // std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
         MetaEngine::vector<Populator *> populators;
         MetaEngine::vector<WorldEntity *> entities;

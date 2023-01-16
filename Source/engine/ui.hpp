@@ -5,11 +5,11 @@
 
 #include "code_reflection.hpp"
 #include "core/core.h"
-#include "core/cpp/flat_hash_map.hpp"
 #include "engine/imgui_core.hpp"
 #include "engine/imgui_impl.hpp"
 #include "engine/renderer/renderer_opengl.h"
 #include "game/game_resources.hpp"
+#include "libs/parallel_hashmap/phmap.h"
 #include "renderer/renderer_gpu.h"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement } ElementType;
@@ -60,7 +60,7 @@ typedef struct UIElement {
 typedef struct UIData {
     ImGuiCore* ImGuiCore = nullptr;
     // std::map<std::string, UIElement> elementLists = {};
-    MetaEngine::flat_hash_map<std::string, UIElement> elementLists = {};
+    phmap::flat_hash_map<std::string, UIElement> elementLists = {};
 } UIData;
 
 void UIRendererInit();

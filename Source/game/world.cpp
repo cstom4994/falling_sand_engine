@@ -84,9 +84,9 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     noise.SetSeed((unsigned int)Time::millis());
     noise.SetNoiseType(FastNoise::Perlin);
 
-    auto ha = google::dense_hash_map<int, google::dense_hash_map<int, Chunk *>>();
-    ha.set_deleted_key(INT_MAX);
-    ha.set_empty_key(INT_MIN);
+    auto ha = phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>>();
+    // ha.set_deleted_key(INT_MAX);
+    // ha.set_empty_key(INT_MIN);
     WorldIsolate_.chunkCache = ha;
 
     F32 distributedPointsDistance = 0.05f;
@@ -2307,9 +2307,9 @@ void World::frame() {
 
             WorldIsolate_.readyToMerge.push_back(merge);
             if (!WorldIsolate_.chunkCache.count(merge->x)) {
-                auto h = google::dense_hash_map<int, Chunk *>();
-                h.set_deleted_key(INT_MAX);
-                h.set_empty_key(INT_MIN);
+                auto h = phmap::flat_hash_map<int, Chunk *>();
+                // h.set_deleted_key(INT_MAX);
+                // h.set_empty_key(INT_MIN);
                 WorldIsolate_.chunkCache[merge->x] = h;
             }
             WorldIsolate_.chunkCache[merge->x][merge->y] = merge;
@@ -2557,9 +2557,9 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         }
 
         if (!WorldIsolate_.chunkCache.count(ch->x)) {
-            auto h = google::dense_hash_map<int, Chunk *>();
-            h.set_deleted_key(INT_MAX);
-            h.set_empty_key(INT_MIN);
+            auto h = phmap::flat_hash_map<int, Chunk *>();
+            // h.set_deleted_key(INT_MAX);
+            // h.set_empty_key(INT_MIN);
             WorldIsolate_.chunkCache[ch->x] = h;
         }
 
@@ -2573,9 +2573,9 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
                 Chunk *chb = getChunk(cx + x, y);  // load chunk at ~x y
                 if (chb->pleaseDelete) {
                     if (!WorldIsolate_.chunkCache.count(chb->x)) {
-                        auto h = google::dense_hash_map<int, Chunk *>();
-                        h.set_deleted_key(INT_MAX);
-                        h.set_empty_key(INT_MIN);
+                        auto h = phmap::flat_hash_map<int, Chunk *>();
+                        // h.set_deleted_key(INT_MAX);
+                        // h.set_empty_key(INT_MIN);
                         WorldIsolate_.chunkCache[chb->x] = h;
                     }
                     auto a = &WorldIsolate_.chunkCache[chb->x];
@@ -2591,7 +2591,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         /*
         readyToMerge.push_back(ch);
         if(!chunkCache.count(ch->x)) {
-            chunkCache[ch->x] = google::dense_hash_map<int, Chunk*>();
+            chunkCache[ch->x] = phmap::flat_hash_map<int, Chunk*>();
             chunkCache[ch->x].set_deleted_key(INT_MAX);
             chunkCache[ch->x].set_empty_key(INT_MIN);
         }

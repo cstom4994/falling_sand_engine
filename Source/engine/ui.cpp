@@ -79,6 +79,23 @@ void UIRendererDraw() {
         if (e.second.type == ElementType::coloredRectangle) {
             R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
         }
+        if (e.second.type == ElementType::texturedRectangle) {
+            if (Img) {
+                R_SetImageFilter(Img, R_FILTER_NEAREST);
+                R_SetBlendMode(Img, R_BLEND_NORMAL);
+                R_Rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
+                R_BlitRect(Img, NULL, Render.target, &dest);
+            }
+        }
+    }
+
+    // Drawing controls
+    for (auto &&e : global.uidata->elementLists) {
+        R_Image *Img = nullptr;
+        if (e.second.texture) {
+            Img = R_CopyImageFromSurface(e.second.texture->surface);
+        }
+
         if (e.second.type == ElementType::progressBarElement) {
             int drect = e.second.maxRectX - e.second.minRectX;
             float p = e.second.cclass.progressbar.bar_current / e.second.cclass.progressbar.bar_limit;
@@ -90,8 +107,6 @@ void UIRendererDraw() {
                 FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.cclass.progressbar.bar_text_color, e.second.text.c_str());
         }
         if (e.second.type == ElementType::buttonElement) {
-        }
-        if (e.second.type == ElementType::texturedRectangle || e.second.type == ElementType::buttonElement) {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
@@ -107,6 +122,7 @@ void UIRendererDraw() {
 
         if (global.game->GameIsolate_.globaldef.draw_ui_debug) R_Rectangle(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, {255, 20, 147, 255});
     }
+
     global.uidata->ImGuiCore->Draw();
 }
 

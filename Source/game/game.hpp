@@ -35,7 +35,7 @@
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"
 #include "game/game_shaders.hpp"
-#include "libs/sparsehash/sparse_hash_map.h"
+#include "libs/parallel_hashmap/phmap.h"
 #include "world.hpp"
 
 enum EnumGameState { MAIN_MENU, LOADING, INGAME };
