@@ -4,12 +4,15 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
+#include "core/core.h"
 #include "core/global.hpp"
 #include "engine/memory.hpp"
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
 #include "renderer/renderer_gpu.h"
+#include "scripting/lua_wrapper.hpp"
 
 BackgroundLayer::BackgroundLayer(Texture *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY) {
     this->tex = texture;
@@ -39,6 +42,22 @@ void BackgroundObject::Init() {
     }
 }
 
+void NewBackgroundObject(std::string name, U32 solid, LuaWrapper::LuaRef table) {
+    auto &L = global.scripts->LuaCoreCpp->s_lua;
+    std::vector<LuaWrapper::LuaRef> b = table;
+    std::vector<std::shared_ptr<BackgroundLayer>> Layers;
+
+    for (auto &c : b) {
+        METADOT_BUG("NewBackgroundObject %s, [%f %f %f %f]", c["name"].get<std::string>().c_str(), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>());
+        Layers.push_back(std::make_shared<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>()));
+    }
+
+    METADOT_CREATE(C, bg, BackgroundObject, solid, Layers);
+
+    global.game->GameIsolate_.backgrounds->Push(name, bg);
+    global.game->GameIsolate_.backgrounds->Get(name)->Init();
+}
+
 void BackgroundSystem::Push(std::string name, BackgroundObject *bg) { m_backgrounds.insert(std::make_pair(name, bg)); }
 
 BackgroundObject *BackgroundSystem::Get(std::string name) {
@@ -47,18 +66,16 @@ BackgroundObject *BackgroundSystem::Get(std::string name) {
 }
 
 void BackgroundSystem::Create() {
-    std::vector<std::shared_ptr<BackgroundLayer>> testOverworldLayers = {
-            std::make_shared<BackgroundLayer>(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer2.png", SDL_PIXELFORMAT_ARGB8888), 0.125, 0.125, 1, 0),
-            std::make_shared<BackgroundLayer>(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer3.png", SDL_PIXELFORMAT_ARGB8888), 0.25, 0.25, 0, 0),
-            std::make_shared<BackgroundLayer>(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer4.png", SDL_PIXELFORMAT_ARGB8888), 0.375, 0.375, 4, 0),
-            std::make_shared<BackgroundLayer>(LoadTextureInternal("data/assets/backgrounds/TestOverworld/layer5.png", SDL_PIXELFORMAT_ARGB8888), 0.5, 0.5, 0, 0)};
 
-    METADOT_CREATE(C, bg, BackgroundObject, 0x7EAFCB, testOverworldLayers);
-    global.game->GameIsolate_.backgrounds->Push("TEST_OVERWORLD", bg);
-    global.game->GameIsolate_.backgrounds->Get("TEST_OVERWORLD")->Init();
+    // NewBackgroundObject("TEST_OVERWORLD");
+    auto &L = global.scripts->LuaCoreCpp->s_lua;
+
+    this->RegisterLua(L);
+
+    L["OnBackgroundLoad"]();
 }
 
 void BackgroundSystem::Destory() {
     for (auto &[name, bg] : m_backgrounds) METADOT_DELETE(C, bg, BackgroundObject);
 }
-void BackgroundSystem::RegisterLua() {}
+void BackgroundSystem::RegisterLua(LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = LuaWrapper::function(NewBackgroundObject); }

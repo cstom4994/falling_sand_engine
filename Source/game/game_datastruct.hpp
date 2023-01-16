@@ -73,7 +73,7 @@ public:
 
     virtual void Create();
     virtual void Destory();
-    virtual void RegisterLua();
+    virtual void RegisterLua(LuaWrapper::State &s_lua);
 };
 
 class IGameObject {
@@ -355,6 +355,8 @@ struct Particle {
 };
 
 struct GlobalDEF {
+    LuaWrapper::LuaRef G;
+
     bool draw_frame_graph;
     bool draw_background;
     bool draw_background_grid;

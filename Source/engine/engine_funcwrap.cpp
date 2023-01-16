@@ -2,6 +2,8 @@
 
 #include "engine_funcwrap.hpp"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -2282,9 +2284,6 @@ int metadot_bind_lz4(lua_State *L) {
 #pragma endregion BindLZ4
 
 #pragma region BindCStruct
-
-#include <stddef.h>
-#include <stdint.h>
 
 #define TYPEID_int8 0
 #define TYPEID_int16 1

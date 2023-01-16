@@ -14,11 +14,12 @@
 #include "engine/sdl_wrapper.h"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 struct BackgroundLayer {
     std::vector<C_Surface *> surface;
     std::vector<R_Image *> texture;
-    Texture* tex;
+    Texture *tex;
     F32 parralaxX;
     F32 parralaxY;
     F32 moveX;
@@ -45,7 +46,7 @@ public:
 
     void Create() override;
     void Destory() override;
-    void RegisterLua() override;
+    void RegisterLua(LuaWrapper::State &s_lua) override;
 };
 
 #endif
