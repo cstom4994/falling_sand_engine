@@ -37,7 +37,7 @@ void InitTexture(TexturePack *tex) {
 
 void EndTexture(TexturePack *tex) {
     METADOT_ASSERT_E(tex);
-    
+
     Eng_DestroyTexture(tex->testTexture);
     Eng_DestroyTexture(tex->dirt1Texture);
     Eng_DestroyTexture(tex->stone1Texture);
@@ -135,17 +135,13 @@ C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
     dstR->h = dest->h;
 
     SDL_FillRect(dest, dstR, 0x00000000);
-
     SDL_SetSurfaceBlendMode(src,
                             SDL_BLENDMODE_NONE);  // override instead of overlap (prevents transparent things darkening)
-
     SDL_BlitScaled(src, srcR, dest, dstR);
 
     gc_free(&gc, srcR);
     gc_free(&gc, dstR);
-
     src = dest;
-
     return src;
 }
 

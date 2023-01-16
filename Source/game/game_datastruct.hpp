@@ -66,9 +66,18 @@ struct GameData {
     } HostData;
 };
 
-void ReleaseGameData();
+class IGameSystem {
+public:
+    IGameSystem(){};
+    ~IGameSystem(){};
 
-struct WorldEntity {
+    virtual void Create();
+    virtual void Destory();
+    virtual void RegisterLua();
+};
+
+class WorldEntity {
+public:
     F32 x = 0;
     F32 y = 0;
     F32 vx = 0;
@@ -83,6 +92,8 @@ struct WorldEntity {
     WorldEntity(bool isplayer);
     ~WorldEntity();
 };
+
+void ReleaseGameData();
 
 #pragma region Material
 

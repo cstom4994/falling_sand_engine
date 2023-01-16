@@ -6,6 +6,7 @@
 
 #include "core/core.h"
 #include "core/core.hpp"
+#include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
@@ -13,7 +14,6 @@
 #include "engine/internal/builtin_box2d.h"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/renderer_utils.h"
-#include "core/cpp/utils.hpp"
 #include "game/chunk.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
@@ -874,12 +874,9 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	}
 
 // 	F32 treePointsScale = 2000;
-// 	MetaEngine::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 / treePointsScale);
-// 	Structure tree = Structures::makeTree1(world, ch.x * CHUNK_W, ch.y * CHUNK_H);
-// 	std::cout << treePts.size() << std::endl;
-// 	for (int i = 0; i < treePts.size(); i++) {
-// 		int px = treePts[i].x * treePointsScale - ch.x * CHUNK_W;
-// 		int py = treePts[i].y * treePointsScale - ch.y * CHUNK_H;
+// 	MetaEngine::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 /
+// treePointsScale); 	Structure tree = Structures::makeTree1(world, ch.x * CHUNK_W, ch.y * CHUNK_H); 	std::cout << treePts.size() << std::endl; 	for (int i = 0; i < treePts.size(); i++) { 		int
+// px = treePts[i].x * treePointsScale - ch.x * CHUNK_W; 		int py = treePts[i].y * treePointsScale - ch.y * CHUNK_H;
 
 // 		for (int xx = 0; xx < tree.w; xx++) {
 // 			for (int yy = 0; yy < tree.h; yy++) {
@@ -1334,3 +1331,8 @@ void SaveGlobalDEF(std::string globaldef_src) {
     // std::ofstream o(globaldef_src);
     // o << settings_data;
 }
+void IGameSystem::Create() {}
+
+void IGameSystem::Destory() {}
+
+void IGameSystem::RegisterLua() {}

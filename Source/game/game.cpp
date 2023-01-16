@@ -13,6 +13,7 @@
 #include "core/const.h"
 #include "core/core.h"
 #include "core/core.hpp"
+#include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
@@ -29,9 +30,9 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
-#include "core/cpp/utils.hpp"
 #include "engine_platform.h"
 #include "fonts.h"
+#include "game/background.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"
@@ -110,13 +111,15 @@ int Game::init(int argc, char *argv[]) {
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
 
     // Console system
-    global.game->GameSystem_.console.Init();
+    GameIsolate_.console.Init();
 
     // Test aseprite
     GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0003.ase");
 
     // Load backgrounds resources
-    GameIsolate_.backgrounds->Load();
+    METADOT_INFO("Loading backgrounds...");
+    METADOT_NEW(C, global.game->GameIsolate_.backgrounds, BackgroundSystem);
+    GameIsolate_.backgrounds->Create();
 
     // Load fonts
     font = FontCache_CreateFont();
@@ -1111,9 +1114,10 @@ int Game::exit() {
     UIRendererFree();
 
     METADOT_DELETE(C, objectDelete, U8);
-    GameIsolate_.backgrounds->Unload();
+    GameIsolate_.backgrounds->Destory();
+    METADOT_DELETE(C, GameIsolate_.backgrounds, BackgroundSystem);
 
-    global.game->GameSystem_.console.End();
+    GameIsolate_.console.End();
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
@@ -2707,8 +2711,8 @@ void Game::renderLate() {
     } else {
         // draw backgrounds
 
-        Background *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
-        if (GameIsolate_.globaldef.draw_background && scale <= bg->layers[0].surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
+        BackgroundObject *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
+        if (GameIsolate_.globaldef.draw_background && scale <= bg->layers[0]->surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             R_SetShapeBlendMode(R_BLEND_SET);
             METAENGINE_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
@@ -2718,19 +2722,19 @@ void Game::renderLate() {
             METADOT_NEW(C, dst, R_Rect);
             METADOT_NEW(C, src, R_Rect);
 
-            F32 arX = (F32)Screen.windowWidth / (bg->layers[0].surface[0]->w);
-            F32 arY = (F32)Screen.windowHeight / (bg->layers[0].surface[0]->h);
+            F32 arX = (F32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
+            F32 arY = (F32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
 
             F64 time = Time::millis() / 1000.0;
 
             R_SetShapeBlendMode(R_BLEND_NORMAL);
 
             for (size_t i = 0; i < bg->layers.size(); i++) {
-                BackgroundLayer cur = bg->layers[i];
+                BackgroundLayer *cur = bg->layers[i].get();
 
-                C_Surface *texture = cur.surface[(size_t)scale - 1];
+                C_Surface *texture = cur->surface[(size_t)scale - 1];
 
-                R_Image *tex = cur.texture[(size_t)scale - 1];
+                R_Image *tex = cur->texture[(size_t)scale - 1];
                 R_SetBlendMode(tex, R_BLEND_NORMAL);
 
                 int tw = texture->w;
@@ -2744,14 +2748,14 @@ void Game::renderLate() {
                     src->w = tw;
                     src->h = th;
 
-                    dst->x = (((global.GameData_.ofsX + global.GameData_.camX) + GameIsolate_.world->loadZone.x * scale) + n * tw / cur.parralaxX) * cur.parralaxX +
+                    dst->x = (((global.GameData_.ofsX + global.GameData_.camX) + GameIsolate_.world->loadZone.x * scale) + n * tw / cur->parralaxX) * cur->parralaxX +
                              GameIsolate_.world->width / 2.0f * scale - tw / 2.0f;
-                    dst->y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * scale) * cur.parralaxY + GameIsolate_.world->height / 2.0f * scale - th / 2.0f -
+                    dst->y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * scale) * cur->parralaxY + GameIsolate_.world->height / 2.0f * scale - th / 2.0f -
                              Screen.windowHeight / 3.0f * (scale - 1);
                     dst->w = (F32)tw;
                     dst->h = (F32)th;
 
-                    dst->x += (F32)(scale * fmod(cur.moveX * time, tw));
+                    dst->x += (F32)(scale * fmod(cur->moveX * time, tw));
 
                     // TODO: optimize
                     while (dst->x >= Screen.windowWidth - 10) dst->x -= (iter * tw);

@@ -19,6 +19,7 @@
 #include "code_reflection.hpp"
 #include "controls.hpp"
 #include "core/const.h"
+#include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/macros.h"
 #include "core/threadpool.h"
@@ -30,7 +31,6 @@
 #include "engine/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
-#include "core/cpp/utils.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "game/game_scriptingwrap.hpp"
@@ -86,7 +86,8 @@ public:
     Meta::AnyFunction fadeOutCallback = []() {};
 
     struct {
-        Backgrounds *backgrounds = nullptr;
+        BackgroundSystem *backgrounds = nullptr;
+        Console console;
         Profiler profiler;
         GlobalDEF globaldef;
         World *world = nullptr;
@@ -95,10 +96,6 @@ public:
         ThreadPool *updateDirtyPool = nullptr;
         ThreadPoolC updateDirtyPool2;
     } GameIsolate_;
-
-    struct {
-        Console console;
-    } GameSystem_;
 
     struct {
         R_Image *backgroundImage = nullptr;

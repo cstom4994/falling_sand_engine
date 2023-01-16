@@ -10,6 +10,7 @@
 #include "core/alloc.h"
 #include "core/const.h"
 #include "core/core.hpp"
+#include "core/cpp/utils.hpp"
 #include "core/dbgtools.h"
 #include "core/global.hpp"
 #include "core/macros.h"
@@ -22,7 +23,6 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "core/cpp/utils.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_ui.hpp"
@@ -441,7 +441,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::BeginTabBar("ui_tweaks_tabbar");
 
         if (ImGui::BeginTabItem(LANG("ui_console"))) {
-            global.game->GameSystem_.console.DrawUI();
+            global.game->GameIsolate_.console.DrawUI();
             ImGui::EndTabItem();
         }
 

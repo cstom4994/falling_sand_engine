@@ -372,8 +372,10 @@ private:
 #define METADOT_GC_REALLOC_ALIGNED(ptr, size, alignment) realloc(ptr, size, alignment)
 
 #if defined(METADOT_DEBUG)
-#define ADDTODEBUGMAP(_c) GC::MemoryDebugMap.insert(std::make_pair(MetaEngine::Type_of<_c>.GetName(), sizeof(_c)))
-#define REMOVEDEBUGMAP(_c) GC::MemoryDebugMap.erase(MetaEngine::Type_of<_c>.GetName())
+// #define ADDTODEBUGMAP(_c) GC::MemoryDebugMap.insert(std::make_pair(MetaEngine::Type_of<_c>.GetName(), sizeof(_c)))
+// #define REMOVEDEBUGMAP(_c) GC::MemoryDebugMap.erase(MetaEngine::Type_of<_c>.GetName())
+#define ADDTODEBUGMAP(_c) GC::MemoryDebugMap.insert(std::make_pair(METADOT_VARIABLE_NAME(_c), sizeof(_c)))
+#define REMOVEDEBUGMAP(_c) GC::MemoryDebugMap.erase(METADOT_VARIABLE_NAME(_c))
 #else
 #define ADDTODEBUGMAP(_c)
 #define REMOVEDEBUGMAP(_c)
