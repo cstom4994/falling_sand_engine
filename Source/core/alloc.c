@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "auto_c.h"
+#include "core/c/auto_c.h"
 
 #define PTRSIZE sizeof(char *)
 
