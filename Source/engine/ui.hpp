@@ -11,7 +11,7 @@
 #include "game/game_resources.hpp"
 #include "renderer/renderer_gpu.h"
 
-typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement } ElementType;
+typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement } ElementType;
 
 typedef struct UIElementState_Button {
     U8 state;
@@ -20,10 +20,19 @@ typedef struct UIElementState_Button {
 typedef struct UIElementState_Window {
     U8 state;
 } UI_Window;
+typedef struct UIElementState_ProgressBar {
+    U8 state;
+    U8 bar_type;
+    F32 bar_current;
+    F32 bar_limit;
+    METAENGINE_Color bar_color;
+    METAENGINE_Color bar_text_color;
+} UI_ProgressBar;
 
 typedef union UIElementClass {
     UI_Button button;
     UI_Window window;
+    UI_ProgressBar progressbar;
 } UIElementClass;
 
 typedef struct UIElement {

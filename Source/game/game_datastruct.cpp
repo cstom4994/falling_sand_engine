@@ -1267,8 +1267,6 @@ void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
 
     auto GlobalDEF = global.scripts->LuaCoreCpp->s_lua["global_def"];
 
-    _struct->G = global.scripts->LuaCoreCpp->s_lua["global_def"];
-
     if (!GlobalDEF.isNilref()) {
         LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);
         LoadLuaConfig(_struct, GlobalDEF, draw_background);

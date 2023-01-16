@@ -123,7 +123,7 @@ int Game::init(int argc, char *argv[]) {
 
     // Load fonts
     font = FontCache_CreateFont();
-    FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/ark-pixel-12px-monospaced-zh_cn.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
+    FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     // Initialize the rng seed
     pcg32_random_t rng;

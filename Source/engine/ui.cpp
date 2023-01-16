@@ -45,11 +45,22 @@ void UIRendererInit() {
                            .maxRectY = 90,
                            .color = {54, 54, 54, 255},
                            .text = "按钮捏",
-                           .cclass = {(UI_Button){.state = 0, .func = []() { METADOT_INFO("button pressed"); }}}};
+                           .cclass = {.button = (UI_Button){.state = 0, .func = []() { METADOT_INFO("button pressed"); }}}};
+
+    UIElement testElement4{
+            .type = ElementType::progressBarElement,
+            .minRectX = 55,
+            .minRectY = 95,
+            .maxRectX = 100,
+            .maxRectY = 120,
+            .color = {54, 54, 54, 255},
+            .text = "进度条",
+            .cclass = {.progressbar = (UI_ProgressBar){.state = 0, .bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}};
 
     global.uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
     global.uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
     global.uidata->elementLists.insert(std::make_pair("testElement3", testElement3));
+    global.uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
 }
 
 void UIRendererPostUpdate() { global.uidata->ImGuiCore->NewFrame(); }
@@ -67,6 +78,16 @@ void UIRendererDraw() {
         }
         if (e.second.type == ElementType::coloredRectangle) {
             R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
+        }
+        if (e.second.type == ElementType::progressBarElement) {
+            int drect = e.second.maxRectX - e.second.minRectX;
+            float p = e.second.cclass.progressbar.bar_current / e.second.cclass.progressbar.bar_limit;
+            int c = e.second.minRectX + p * drect;
+            R_RectangleRound(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, 2.0f, e.second.color);
+            R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, c, e.second.maxRectY, e.second.color);
+
+            if (e.second.cclass.progressbar.bar_type == 1)
+                FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.cclass.progressbar.bar_text_color, e.second.text.c_str());
         }
         if (e.second.type == ElementType::buttonElement) {
         }
@@ -106,6 +127,10 @@ void UIRendererUpdate() {
             if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && e.second.cclass.button.func) {
                 e.second.cclass.button.func();
             }
+        }
+        if (e.second.type == ElementType::progressBarElement) {
+            // Test haha
+            e.second.cclass.progressbar.bar_current = (e.second.cclass.progressbar.bar_current < e.second.cclass.progressbar.bar_limit) ? e.second.cclass.progressbar.bar_current + 1 : 0;
         }
     }
 }

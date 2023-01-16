@@ -253,8 +253,9 @@ void ImGuiCore::Init() {
         editor.SetErrorMarkers(markers);
 
 #endif
+
     fileDialog.SetPwd(METADOT_RESLOC("data/scripts"));
-    fileDialog.SetTitle("title");
+    fileDialog.SetTitle("选择文件");
     fileDialog.SetTypeFilters({".lua"});
 
     firstRun = true;

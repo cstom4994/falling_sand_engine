@@ -355,8 +355,6 @@ struct Particle {
 };
 
 struct GlobalDEF {
-    LuaWrapper::LuaRef G;
-
     bool draw_frame_graph;
     bool draw_background;
     bool draw_background_grid;
