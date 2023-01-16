@@ -1,13 +1,11 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine_shaders.h"
+#include "engine_shaders.hpp"
 
-#include <stdbool.h>
+#include "core/core.hpp"
+#include "engine/memory.hpp"
 
-#include "core/alloc.h"
-#include "core/core.h"
-
-U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename) {
+U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum thisype, const char *filename) {
 
     U32 shader;
     R_Renderer *renderer = R_GetCurrentRenderer();
@@ -20,7 +18,7 @@ U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename
     }
 
     // Compile the shader
-    shader = R_CompileShader(shader_type, source);
+    shader = R_CompileShader(thisype, source);
 
     gc_free(&gc, source);
 
@@ -55,12 +53,12 @@ R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(U32 *p, const char *vertex_sh
 
 void METAENGINE_Shaders_FreeShader(U32 p) { R_FreeShaderProgram(p); }
 
-U32 ShaderInit(metadot_shader_base *shader_t) {
-    shader_t->shader = 0;
-    shader_t->block = METAENGINE_Shaders_LoadShaderProgram(&shader_t->shader, shader_t->vertex_shader_file, shader_t->fragment_shader_file);
-    return shader_t->shader;
+U32 ShaderBase::Init() {
+    this->shader = 0;
+    this->block = METAENGINE_Shaders_LoadShaderProgram(&this->shader, this->vertex_shader_file, this->fragment_shader_file);
+    return this->shader;
 }
 
-void ShaderUnload(metadot_shader_base *shader_t) { METAENGINE_Shaders_FreeShader(shader_t->shader); }
+void ShaderBase::Unload() { METAENGINE_Shaders_FreeShader(this->shader); }
 
-void ShaderActivate(metadot_shader_base *shader_t) { R_ActivateShaderProgram(shader_t->shader, &shader_t->block); }
+void ShaderBase::Activate() { R_ActivateShaderProgram(this->shader, &this->block); }

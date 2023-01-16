@@ -1336,3 +1336,9 @@ void IGameSystem::Create() {}
 void IGameSystem::Destory() {}
 
 void IGameSystem::RegisterLua() {}
+
+void IGameObject::Create() {}
+
+void IGameObject::Destory() {}
+
+void IGameObject::RegisterReflection() {}

@@ -499,7 +499,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             if (myCollapsingHeader(LANG("ui_telemetry"))) {
                 GameUI::DrawDebugUI(global.game);
             }
-#define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->sb.shader)
+#define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->shader)
             if (myCollapsingHeader(CC("GLSL"))) {
                 INSPECTSHADER(newLightingShader);
                 INSPECTSHADER(fireShader);

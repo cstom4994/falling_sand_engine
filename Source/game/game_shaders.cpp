@@ -4,25 +4,24 @@
 
 #pragma region Shaders
 
-void WaterFlowPassShader__update(struct WaterFlowPassShader *shader_t, int w, int h) {
-    int res_loc = R_GetUniformLocation(shader_t->sb.shader, "resolution");
+void WaterFlowPassShader::Update(int w, int h) {
+    int res_loc = R_GetUniformLocation(this->shader, "resolution");
 
     F32 res[2] = {(F32)w, (F32)h};
     R_SetUniformfv(res_loc, 2, 1, res);
 }
 
-void WaterShader__update(struct WaterShader *shader_t, F32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow,
-                         bool pixelated) {
-    int time_loc = R_GetUniformLocation(shader_t->sb.shader, "time");
-    int res_loc = R_GetUniformLocation(shader_t->sb.shader, "resolution");
-    int mask_loc = R_GetUniformLocation(shader_t->sb.shader, "mask");
-    int mask_pos_loc = R_GetUniformLocation(shader_t->sb.shader, "maskPos");
-    int mask_size_loc = R_GetUniformLocation(shader_t->sb.shader, "maskSize");
-    int scale_loc = R_GetUniformLocation(shader_t->sb.shader, "scale");
-    int flowTex_loc = R_GetUniformLocation(shader_t->sb.shader, "flowTex");
-    int overlay_loc = R_GetUniformLocation(shader_t->sb.shader, "overlay");
-    int showFlow_loc = R_GetUniformLocation(shader_t->sb.shader, "showFlow");
-    int pixelated_loc = R_GetUniformLocation(shader_t->sb.shader, "pixelated");
+void WaterShader::Update(F32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow, bool pixelated) {
+    int time_loc = R_GetUniformLocation(this->shader, "time");
+    int res_loc = R_GetUniformLocation(this->shader, "resolution");
+    int mask_loc = R_GetUniformLocation(this->shader, "mask");
+    int mask_pos_loc = R_GetUniformLocation(this->shader, "maskPos");
+    int mask_size_loc = R_GetUniformLocation(this->shader, "maskSize");
+    int scale_loc = R_GetUniformLocation(this->shader, "scale");
+    int flowTex_loc = R_GetUniformLocation(this->shader, "flowTex");
+    int overlay_loc = R_GetUniformLocation(this->shader, "overlay");
+    int showFlow_loc = R_GetUniformLocation(this->shader, "showFlow");
+    int pixelated_loc = R_GetUniformLocation(this->shader, "pixelated");
 
     R_SetUniformf(time_loc, t);
 
@@ -45,46 +44,46 @@ void WaterShader__update(struct WaterShader *shader_t, F32 t, int w, int h, R_Im
     R_SetUniformi(pixelated_loc, pixelated);
 }
 
-void NewLightingShader__setSimpleMode(struct NewLightingShader *shader_t, bool simpleMode) {
-    int simpleOnly_loc = R_GetUniformLocation(shader_t->sb.shader, "simpleOnly");
+void NewLightingShader::SetSimpleMode(bool simpleMode) {
+    int simpleOnly_loc = R_GetUniformLocation(this->shader, "simpleOnly");
     R_SetUniformi(simpleOnly_loc, simpleMode);
 
-    shader_t->lastSimpleMode = simpleMode;
+    this->lastSimpleMode = simpleMode;
 }
 
-void NewLightingShader__setEmissionEnabled(struct NewLightingShader *shader_t, bool emissionEnabled) {
-    int emission_loc = R_GetUniformLocation(shader_t->sb.shader, "emission");
+void NewLightingShader::SetEmissionEnabled(bool emissionEnabled) {
+    int emission_loc = R_GetUniformLocation(this->shader, "emission");
     R_SetUniformi(emission_loc, emissionEnabled);
 
-    shader_t->lastEmissionEnabled = emissionEnabled;
+    this->lastEmissionEnabled = emissionEnabled;
 }
 
-void NewLightingShader__setDitheringEnabled(struct NewLightingShader *shader_t, bool ditheringEnabled) {
-    int dithering_loc = R_GetUniformLocation(shader_t->sb.shader, "dithering");
+void NewLightingShader::SetDitheringEnabled(bool ditheringEnabled) {
+    int dithering_loc = R_GetUniformLocation(this->shader, "dithering");
     R_SetUniformi(dithering_loc, ditheringEnabled);
 
-    shader_t->lastDitheringEnabled = ditheringEnabled;
+    this->lastDitheringEnabled = ditheringEnabled;
 }
 
-void NewLightingShader__setQuality(struct NewLightingShader *shader_t, F32 quality) {
-    int lightingQuality_loc = R_GetUniformLocation(shader_t->sb.shader, "lightingQuality");
+void NewLightingShader::SetQuality(F32 quality) {
+    int lightingQuality_loc = R_GetUniformLocation(this->shader, "lightingQuality");
     R_SetUniformf(lightingQuality_loc, quality);
 
-    shader_t->lastQuality = quality;
+    this->lastQuality = quality;
 }
 
-void NewLightingShader__setInside(struct NewLightingShader *shader_t, F32 inside) {
-    int inside_loc = R_GetUniformLocation(shader_t->sb.shader, "inside");
+void NewLightingShader::SetInside(F32 inside) {
+    int inside_loc = R_GetUniformLocation(this->shader, "inside");
     R_SetUniformf(inside_loc, inside);
 
-    shader_t->lastInside = inside;
+    this->lastInside = inside;
 }
 
-void NewLightingShader__setBounds(struct NewLightingShader *shader_t, F32 minX, F32 minY, F32 maxX, F32 maxY) {
-    int minX_loc = R_GetUniformLocation(shader_t->sb.shader, "minX");
-    int minY_loc = R_GetUniformLocation(shader_t->sb.shader, "minY");
-    int maxX_loc = R_GetUniformLocation(shader_t->sb.shader, "maxX");
-    int maxY_loc = R_GetUniformLocation(shader_t->sb.shader, "maxY");
+void NewLightingShader::SetBounds(F32 minX, F32 minY, F32 maxX, F32 maxY) {
+    int minX_loc = R_GetUniformLocation(this->shader, "minX");
+    int minY_loc = R_GetUniformLocation(this->shader, "minY");
+    int maxX_loc = R_GetUniformLocation(this->shader, "maxX");
+    int maxY_loc = R_GetUniformLocation(this->shader, "maxY");
 
     R_SetUniformf(minX_loc, minX);
     R_SetUniformf(minY_loc, minY);
@@ -92,14 +91,14 @@ void NewLightingShader__setBounds(struct NewLightingShader *shader_t, F32 minX, 
     R_SetUniformf(maxY_loc, maxY);
 }
 
-void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex, R_Image *emit, F32 x, F32 y) {
-    int txrmap_loc = R_GetUniformLocation(shader_t->sb.shader, "txrmap");
-    int emitmap_loc = R_GetUniformLocation(shader_t->sb.shader, "emitmap");
-    int txrsize_loc = R_GetUniformLocation(shader_t->sb.shader, "texSize");
-    int t0_loc = R_GetUniformLocation(shader_t->sb.shader, "t0");
+void NewLightingShader::Update(R_Image *tex, R_Image *emit, F32 x, F32 y) {
+    int txrmap_loc = R_GetUniformLocation(this->shader, "txrmap");
+    int emitmap_loc = R_GetUniformLocation(this->shader, "emitmap");
+    int txrsize_loc = R_GetUniformLocation(this->shader, "texSize");
+    int t0_loc = R_GetUniformLocation(this->shader, "t0");
 
-    shader_t->lastLx = x;
-    shader_t->lastLy = y;
+    this->lastLx = x;
+    this->lastLy = y;
 
     F32 res[2] = {x, y};
     R_SetUniformfv(t0_loc, 2, 1, res);
@@ -111,9 +110,9 @@ void NewLightingShader__update(struct NewLightingShader *shader_t, R_Image *tex,
     R_SetShaderImage(emit, emitmap_loc, 2);
 }
 
-void FireShader__update(struct FireShader *shader_t, R_Image *tex) {
-    int firemap_loc = R_GetUniformLocation(shader_t->sb.shader, "firemap");
-    int txrsize_loc = R_GetUniformLocation(shader_t->sb.shader, "texSize");
+void FireShader::Update(R_Image *tex) {
+    int firemap_loc = R_GetUniformLocation(this->shader, "firemap");
+    int txrsize_loc = R_GetUniformLocation(this->shader, "texSize");
 
     F32 tres[2] = {(F32)tex->w, (F32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
@@ -121,9 +120,9 @@ void FireShader__update(struct FireShader *shader_t, R_Image *tex) {
     R_SetShaderImage(tex, firemap_loc, 1);
 }
 
-void Fire2Shader__update(struct Fire2Shader *shader_t, R_Image *tex) {
-    int firemap_loc = R_GetUniformLocation(shader_t->sb.shader, "firemap");
-    int txrsize_loc = R_GetUniformLocation(shader_t->sb.shader, "texSize");
+void Fire2Shader::Update(R_Image *tex) {
+    int firemap_loc = R_GetUniformLocation(this->shader, "firemap");
+    int txrsize_loc = R_GetUniformLocation(this->shader, "texSize");
 
     F32 tres[2] = {(F32)tex->w, (F32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
@@ -136,22 +135,22 @@ void Fire2Shader__update(struct Fire2Shader *shader_t, R_Image *tex) {
 void LoadShaders(ShaderWorker *shaderworker) {
     EndShaders(shaderworker);
 
-    shaderworker->waterShader = (struct WaterShader *)malloc(sizeof(struct WaterShader));
-    shaderworker->waterFlowPassShader = (struct WaterFlowPassShader *)malloc(sizeof(struct WaterFlowPassShader));
-    shaderworker->newLightingShader = (struct NewLightingShader *)malloc(sizeof(struct NewLightingShader));
-    shaderworker->fireShader = (struct FireShader *)malloc(sizeof(struct FireShader));
-    shaderworker->fire2Shader = (struct Fire2Shader *)malloc(sizeof(struct Fire2Shader));
+    shaderworker->waterShader = new WaterShader;
+    shaderworker->waterFlowPassShader = new WaterFlowPassShader;
+    shaderworker->newLightingShader = new NewLightingShader;
+    shaderworker->fireShader = new FireShader;
+    shaderworker->fire2Shader = new Fire2Shader;
 
-    shaderworker->waterShader->sb.vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->waterShader->sb.fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
-    shaderworker->waterFlowPassShader->sb.vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->waterFlowPassShader->sb.fragment_shader_file = METADOT_RESLOC("data/shaders/waterFlow.frag");
-    shaderworker->newLightingShader->sb.vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->newLightingShader->sb.fragment_shader_file = METADOT_RESLOC("data/shaders/newLighting.frag");
-    shaderworker->fireShader->sb.vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->fireShader->sb.fragment_shader_file = METADOT_RESLOC("data/shaders/fire.frag");
-    shaderworker->fire2Shader->sb.vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->fire2Shader->sb.fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
+    shaderworker->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    shaderworker->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
+    shaderworker->waterFlowPassShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    shaderworker->waterFlowPassShader->fragment_shader_file = METADOT_RESLOC("data/shaders/waterFlow.frag");
+    shaderworker->newLightingShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    shaderworker->newLightingShader->fragment_shader_file = METADOT_RESLOC("data/shaders/newLighting.frag");
+    shaderworker->fireShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    shaderworker->fireShader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire.frag");
+    shaderworker->fire2Shader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    shaderworker->fire2Shader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
 
     shaderworker->waterFlowPassShader->dirty = false;
 
@@ -165,32 +164,32 @@ void LoadShaders(ShaderWorker *shaderworker) {
     shaderworker->newLightingShader->insideCur = 0.0f;
     shaderworker->newLightingShader->insideDes = 0.0f;
 
-    ShaderInit(&shaderworker->waterShader->sb);
-    ShaderInit(&shaderworker->waterFlowPassShader->sb);
-    ShaderInit(&shaderworker->newLightingShader->sb);
-    ShaderInit(&shaderworker->fireShader->sb);
-    ShaderInit(&shaderworker->fire2Shader->sb);
+    shaderworker->waterShader->Init();
+    shaderworker->waterFlowPassShader->Init();
+    shaderworker->newLightingShader->Init();
+    shaderworker->fireShader->Init();
+    shaderworker->fire2Shader->Init();
 }
 
 void EndShaders(ShaderWorker *shaderworker) {
     if (shaderworker->waterShader) {
-        ShaderUnload(&shaderworker->waterShader->sb);
-        free(shaderworker->waterShader);
+        shaderworker->waterShader->Unload();
+        delete shaderworker->waterShader;
     }
     if (shaderworker->waterFlowPassShader) {
-        ShaderUnload(&shaderworker->waterFlowPassShader->sb);
-        free(shaderworker->waterFlowPassShader);
+        shaderworker->waterFlowPassShader->Unload();
+        delete shaderworker->waterFlowPassShader;
     }
     if (shaderworker->newLightingShader) {
-        ShaderUnload(&shaderworker->newLightingShader->sb);
-        free(shaderworker->newLightingShader);
+        shaderworker->newLightingShader->Unload();
+        delete shaderworker->newLightingShader;
     }
     if (shaderworker->fireShader) {
-        ShaderUnload(&shaderworker->fireShader->sb);
-        free(shaderworker->fireShader);
+        shaderworker->fireShader->Unload();
+        delete shaderworker->fireShader;
     }
     if (shaderworker->fire2Shader) {
-        ShaderUnload(&shaderworker->fire2Shader->sb);
-        free(shaderworker->fire2Shader);
+        shaderworker->fire2Shader->Unload();
+        delete shaderworker->fire2Shader;
     }
 }

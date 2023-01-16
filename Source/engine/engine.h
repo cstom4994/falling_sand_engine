@@ -19,7 +19,6 @@ extern "C" {
 #include "engine_platform.h"
 #include "engine_render.h"
 #include "engine_scripting.h"
-#include "engine_shaders.h"
 #include "util.h"
 
 #define IMPLENGINE()             \

@@ -76,7 +76,17 @@ public:
     virtual void RegisterLua();
 };
 
-class WorldEntity {
+class IGameObject {
+public:
+    IGameObject(){};
+    ~IGameObject(){};
+
+    virtual void Create();
+    virtual void Destory();
+    virtual void RegisterReflection();
+};
+
+class WorldEntity : public IGameObject {
 public:
     F32 x = 0;
     F32 y = 0;

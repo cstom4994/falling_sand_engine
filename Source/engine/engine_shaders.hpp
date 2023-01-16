@@ -14,15 +14,16 @@ U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename
 R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(U32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
 void METAENGINE_Shaders_FreeShader(U32 p);
 
-typedef struct metadot_shader_base {
+class ShaderBase {
+public:
     U32 shader;
     R_ShaderBlock block;
     const char *vertex_shader_file;
     const char *fragment_shader_file;
-} metadot_shader_base;
 
-U32 ShaderInit(metadot_shader_base *shader_t);
-void ShaderUnload(metadot_shader_base *shader_t);
-void ShaderActivate(metadot_shader_base *shader_t);
+    U32 Init();
+    void Unload();
+    void Activate();
+};
 
 #endif
