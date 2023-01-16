@@ -19,6 +19,12 @@
 #endif
 #endif
 
+#ifdef _MSC_VER
+#define METADOT_NOINLINE(...) __declspec(noinline) __VA_ARGS__
+#else
+#define METADOT_NOINLINE(...) __VA_ARGS__ __attribute__((noinline))
+#endif
+
 // VS2013 doesn't support alignof
 #if defined(_MSC_VER) && _MSC_VER <= 1800
 #define METADOT_ALIGNOF(x) __alignof(x)

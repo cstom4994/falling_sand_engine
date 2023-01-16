@@ -5,6 +5,7 @@
 
 #include "code_reflection.hpp"
 #include "core/core.h"
+#include "core/cpp/flat_hash_map.hpp"
 #include "engine/imgui_core.hpp"
 #include "engine/imgui_impl.hpp"
 #include "engine/renderer/renderer_opengl.h"
@@ -58,7 +59,8 @@ typedef struct UIElement {
 
 typedef struct UIData {
     ImGuiCore* ImGuiCore = nullptr;
-    std::map<std::string, UIElement> elementLists = {};
+    // std::map<std::string, UIElement> elementLists = {};
+    MetaEngine::flat_hash_map<std::string, UIElement> elementLists = {};
 } UIData;
 
 void UIRendererInit();
