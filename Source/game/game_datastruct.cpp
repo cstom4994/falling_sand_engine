@@ -55,29 +55,29 @@ Material::Material(int id, std::string name, std::string index_name, int physics
     this->color = color;
 }
 
-REFLECT_CLASS(Material);
-CLASS_META_DATA(META_DATA_DESCRIPTION, "Material data");
-REFLECT_MEMBER(name);
-REFLECT_MEMBER(index_name);
-REFLECT_MEMBER(id);
-REFLECT_MEMBER(physicsType);
-REFLECT_MEMBER(alpha);
-REFLECT_MEMBER(density);
-REFLECT_MEMBER(iterations);
-REFLECT_MEMBER(emit);
-REFLECT_MEMBER(emitColor);
-REFLECT_MEMBER(color);
-REFLECT_MEMBER(addTemp);
-REFLECT_MEMBER(conductionSelf);
-REFLECT_MEMBER(conductionOther);
-REFLECT_MEMBER(interact);
-REFLECT_MEMBER(nInteractions);
-REFLECT_MEMBER(interactions);
-REFLECT_MEMBER(react);
-REFLECT_MEMBER(nReactions);
-REFLECT_MEMBER(reactions);
-REFLECT_MEMBER(slipperyness);
-REFLECT_END(Material);
+// REFLECT_CLASS(Material);
+// CLASS_META_DATA(META_DATA_DESCRIPTION, "Material data");
+// REFLECT_MEMBER(name);
+// REFLECT_MEMBER(index_name);
+// REFLECT_MEMBER(id);
+// REFLECT_MEMBER(physicsType);
+// REFLECT_MEMBER(alpha);
+// REFLECT_MEMBER(density);
+// REFLECT_MEMBER(iterations);
+// REFLECT_MEMBER(emit);
+// REFLECT_MEMBER(emitColor);
+// REFLECT_MEMBER(color);
+// REFLECT_MEMBER(addTemp);
+// REFLECT_MEMBER(conductionSelf);
+// REFLECT_MEMBER(conductionOther);
+// REFLECT_MEMBER(interact);
+// REFLECT_MEMBER(nInteractions);
+// REFLECT_MEMBER(interactions);
+// REFLECT_MEMBER(react);
+// REFLECT_MEMBER(nReactions);
+// REFLECT_MEMBER(reactions);
+// REFLECT_MEMBER(slipperyness);
+// REFLECT_END(Material);
 
 #pragma region MATERIALSLIST
 
@@ -283,6 +283,9 @@ void InitMaterials() {
     global.GameData_.materials_array = GameData::materials_container.data();
 
 #undef REGISTER
+
+    // Just test
+    MetaEngine::StaticRefl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
 }
 
 int MaterialInstance::_curID = 1;

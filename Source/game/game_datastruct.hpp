@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "core/core.hpp"
+#include "core/cpp/static_relfection.hpp"
 #include "core/cpp/vector.hpp"
 #include "engine/code_reflection.hpp"
 #include "engine/internal/builtin_box2d.h"
@@ -133,6 +134,15 @@ struct MaterialInteraction {
     int ofsY = 0;
 };
 
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<MaterialInteraction> : TypeInfoBase<MaterialInteraction> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("type"), &MaterialInteraction::type}, Field{TSTR("data1"), &MaterialInteraction::data1}, Field{TSTR("data2"), &MaterialInteraction::data2},
+            Field{TSTR("ofsX"), &MaterialInteraction::ofsX}, Field{TSTR("ofsY"), &MaterialInteraction::ofsY},
+    };
+};
+
 struct Material {
     std::string name;
     std::string index_name;
@@ -166,8 +176,33 @@ struct Material {
     Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, F32 density, int iterations)
         : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations){};
     Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0){};
+};
 
-    REFLECT();
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("name"), &Material::name},
+            Field{TSTR("index_name"), &Material::index_name},
+            Field{TSTR("id"), &Material::id},
+            Field{TSTR("physicsType"), &Material::physicsType},
+            Field{TSTR("alpha"), &Material::alpha},
+            Field{TSTR("density"), &Material::density},
+            Field{TSTR("iterations"), &Material::iterations},
+            Field{TSTR("emit"), &Material::emit},
+            Field{TSTR("emitColor"), &Material::emitColor},
+            Field{TSTR("color"), &Material::color},
+            Field{TSTR("addTemp"), &Material::addTemp},
+            Field{TSTR("conductionSelf"), &Material::conductionSelf},
+            Field{TSTR("conductionOther"), &Material::conductionOther},
+            Field{TSTR("interact"), &Material::interact},
+            Field{TSTR("nInteractions"), &Material::nInteractions},
+            Field{TSTR("interactions"), &Material::interactions},
+            Field{TSTR("react"), &Material::react},
+            Field{TSTR("nReactions"), &Material::nReactions},
+            Field{TSTR("reactions"), &Material::reactions},
+            Field{TSTR("slipperyness"), &Material::slipperyness},
+    };
 };
 
 struct MaterialsList {

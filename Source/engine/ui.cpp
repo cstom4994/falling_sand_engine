@@ -29,13 +29,14 @@ void UIRendererInit() {
     global.uidata->ImGuiCore->Init();
 
     // Test element drawing
-    UIElement testElement1{.type = ElementType::texturedRectangle,
+    UIElement testElement1{.type = ElementType::windowElement,
                            .minRectX = 50,
                            .minRectY = 50,
                            .maxRectX = 200,
                            .maxRectY = 200,
                            .color = {255, 255, 255, 255},
-                           .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png")};
+                           .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png"),
+                           .cclass = {.window = (UI_Window){.state = 0}}};
 
     UIElement testElement2{.type = ElementType::textElement, .minRectX = 55, .minRectY = 55, .maxRectX = 200, .maxRectY = 200, .color = {54, 54, 54, 255}, .text = "哈哈哈哈哈嗝"};
     UIElement testElement3{.type = ElementType::buttonElement,
@@ -79,23 +80,6 @@ void UIRendererDraw() {
         if (e.second.type == ElementType::coloredRectangle) {
             R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
         }
-        if (e.second.type == ElementType::texturedRectangle) {
-            if (Img) {
-                R_SetImageFilter(Img, R_FILTER_NEAREST);
-                R_SetBlendMode(Img, R_BLEND_NORMAL);
-                R_Rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
-                R_BlitRect(Img, NULL, Render.target, &dest);
-            }
-        }
-    }
-
-    // Drawing controls
-    for (auto &&e : global.uidata->elementLists) {
-        R_Image *Img = nullptr;
-        if (e.second.texture) {
-            Img = R_CopyImageFromSurface(e.second.texture->surface);
-        }
-
         if (e.second.type == ElementType::progressBarElement) {
             int drect = e.second.maxRectX - e.second.minRectX;
             float p = e.second.cclass.progressbar.bar_current / e.second.cclass.progressbar.bar_limit;
@@ -106,7 +90,7 @@ void UIRendererDraw() {
             if (e.second.cclass.progressbar.bar_type == 1)
                 FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.cclass.progressbar.bar_text_color, e.second.text.c_str());
         }
-        if (e.second.type == ElementType::buttonElement) {
+        if (e.second.type == ElementType::texturedRectangle || e.second.type == ElementType::buttonElement || e.second.type == ElementType::windowElement) {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
@@ -127,7 +111,7 @@ void UIRendererDraw() {
 }
 
 F32 BoxDistence(R_Rect box, R_vec2 A) {
-    if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.x <= box.y + box.h) return -1.0f;
+    if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
 
@@ -138,9 +122,15 @@ void UIRendererUpdate() {
     OnGameGUIUpdate();
 
     for (auto &&e : global.uidata->elementLists) {
-        R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
+        R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        if (e.second.type == ElementType::windowElement) {
+            // Move window
+            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && GetMousePos().y - e.second.minRectY < 15.0f) {
+            }
+        }
         if (e.second.type == ElementType::buttonElement) {
-            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && e.second.cclass.button.func) {
+            // Pressed button
+            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && NULL != e.second.cclass.button.func) {
                 e.second.cclass.button.func();
             }
         }
@@ -160,6 +150,16 @@ void UIRendererFree() {
     }
 
     delete global.uidata;
+}
+
+bool UIIsMouseOnControls() {
+    R_vec2 mousePos = GetMousePos();
+
+    for (auto &&e : global.uidata->elementLists) {
+        R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        if (BoxDistence(rect, mousePos) < 0.0f) return true;
+    }
+    return false;
 }
 
 void DrawPoint(Vector3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {

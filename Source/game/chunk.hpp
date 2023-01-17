@@ -9,6 +9,7 @@
 
 #include "core/const.h"
 #include "core/core.h"
+#include "core/cpp/static_relfection.hpp"
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 
@@ -37,6 +38,26 @@ typedef struct Chunk {
     MetaEngine::vector<b2PolygonShape> polys = {};
     RigidBody *rb = nullptr;
 } Chunk;
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("fname"), &Chunk::fname},
+            Field{TSTR("x"), &Chunk::x},
+            Field{TSTR("y"), &Chunk::y},
+            Field{TSTR("hasMeta"), &Chunk::hasMeta},
+            Field{TSTR("generationPhase"), &Chunk::generationPhase},
+            Field{TSTR("pleaseDelete"), &Chunk::pleaseDelete},
+            Field{TSTR("hasTileCache"), &Chunk::hasTileCache},
+            Field{TSTR("tiles"), &Chunk::tiles},
+            Field{TSTR("layer2"), &Chunk::layer2},
+            Field{TSTR("background"), &Chunk::background},
+            Field{TSTR("biomes"), &Chunk::biomes},
+            Field{TSTR("polys"), &Chunk::polys},
+            Field{TSTR("rb"), &Chunk::rb},
+    };
+};
 
 // Initialize a chunk
 void Chunk_Init(Chunk *_struct, int x, int y, char *worldName);

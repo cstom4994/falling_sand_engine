@@ -9,10 +9,10 @@
 #include "engine/imgui_impl.hpp"
 #include "engine/renderer/renderer_opengl.h"
 #include "game/game_resources.hpp"
-#include "libs/parallel_hashmap/phmap.h"
+#include "libs/parallel_hashmap/btree.h"
 #include "renderer/renderer_gpu.h"
 
-typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement } ElementType;
+typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement } ElementType;
 
 typedef struct UIElementState_Button {
     U8 state;
@@ -60,7 +60,7 @@ typedef struct UIElement {
 typedef struct UIData {
     ImGuiCore* ImGuiCore = nullptr;
     // std::map<std::string, UIElement> elementLists = {};
-    phmap::flat_hash_map<std::string, UIElement> elementLists = {};
+    phmap::btree_map<std::string, UIElement> elementLists = {};
 } UIData;
 
 void UIRendererInit();
@@ -68,6 +68,8 @@ void UIRendererPostUpdate();
 void UIRendererUpdate();
 void UIRendererDraw();
 void UIRendererFree();
+
+bool UIIsMouseOnControls();
 
 void DrawPoint(Vector3 pos, float size, Texture* texture, U8 r, U8 g, U8 b);
 void DrawLine(Vector3 min, Vector3 max, float thickness, U8 r, U8 g, U8 b);
