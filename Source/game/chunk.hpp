@@ -12,8 +12,8 @@
 #include "core/core.h"
 #include "engine/code_reflection.hpp"
 #include "engine/reflectionflat.hpp"
+#include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "game_scriptingwrap.hpp"
 
 typedef struct {
     U16 index;

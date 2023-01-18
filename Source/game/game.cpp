@@ -33,9 +33,9 @@
 #include "engine_platform.h"
 #include "fonts.h"
 #include "game/background.hpp"
+#include "game/game_basic.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
-#include "game/game_scriptingwrap.hpp"
 #include "game/game_shaders.hpp"
 #include "game/game_ui.hpp"
 #include "libs/glad/glad.h"
@@ -89,17 +89,21 @@ int Game::init(int argc, char *argv[]) {
     R_Flip(Render.target);
 
     // Register global functions to hostdata using AnyFunction
-    RegisterFunctions(gamescriptwrap_init, InitGameScriptingWrap);
-    RegisterFunctions(gamescriptwrap_bind, BindGameScriptingWrap);
-    RegisterFunctions(gamescriptwrap_end, EndGameScriptingWrap);
+    // RegisterFunctions(gamescriptwrap_init, InitGameScriptingWrap);
+    // RegisterFunctions(gamescriptwrap_bind, BindGameScriptingWrap);
+    // RegisterFunctions(gamescriptwrap_end, EndGameScriptingWrap);
 
     // UISystem including ImGui
     UIRendererInit();
 
+    // Initialize Gameplay script system before scripting system initialization
+    METADOT_INFO("Loading gameplay script...");
+    METADOT_NEW(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem);
+
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
     METADOT_NEW(C, global.scripts, Scripts);
-    global.scripts->Init(GetFunctions("gamescriptwrap_init"), GetFunctions("gamescriptwrap_bind"));
+    global.scripts->Init();
 
     // I18N must be initialized after scripting system
     // It uses i18n.lua to function
@@ -1105,7 +1109,8 @@ int Game::exit() {
     // TODO CppScript
 
     // release resources & shutdown
-    global.scripts->End(GetFunctions("gamescriptwrap_end"));
+    global.scripts->End();
+    METADOT_DELETE(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem);
     METADOT_DELETE(C, global.scripts, Scripts);
 
     ReleaseGameData();

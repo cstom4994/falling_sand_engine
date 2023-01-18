@@ -17,8 +17,8 @@
 #include "engine/audio.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
+#include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "game_scriptingwrap.hpp"
 #include "libs/parallel_hashmap/phmap.h"
 
 class Populator;

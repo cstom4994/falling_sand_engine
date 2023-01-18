@@ -506,7 +506,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 for (auto &p1 : global.game->GameIsolate_.world->WorldIsolate_.chunkCache)
                     for (auto &p2 : p1.second)
                         if (ImGui::TreeNode(p2.second->fname.c_str())) {
-                            MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*p2.second, [](const auto &field, auto &&var) {
+                            MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*p2.second, [&](const auto &field, auto &&var) {
                                 if (field.name == "fname") return;
 
                                 // constexpr auto tstr_range = TSTR("Meta::Msg");

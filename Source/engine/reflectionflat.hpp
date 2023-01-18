@@ -9,7 +9,7 @@
 #include "core/core.h"
 #include "core/macros.h"
 #include "engine/console.hpp"
-#include "game/game_scriptingwrap.hpp"
+#include "game/game_basic.hpp"
 
 METADOT_INLINE CVar::ItemLog &operator<<(CVar::ItemLog &log, ImVec4 &vec) {
     log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";

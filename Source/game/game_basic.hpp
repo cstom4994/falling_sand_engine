@@ -10,9 +10,13 @@
 #include "engine/engine_scripting.hpp"
 #include "game_datastruct.hpp"
 
-void InitGameScriptingWrap();
-void BindGameScriptingWrap();
-void EndGameScriptingWrap();
+class GameplayScriptSystem : public IGameSystem {
+public:
+    void Create() override;
+    void Destory() override;
+    void RegisterLua(LuaWrapper::State &s_lua) override;
+};
+
 Biome *BiomeGet(std::string name);
 
 #endif

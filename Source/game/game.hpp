@@ -31,9 +31,9 @@
 #include "engine/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
+#include "game/game_basic.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
-#include "game/game_scriptingwrap.hpp"
 #include "game/game_shaders.hpp"
 #include "libs/parallel_hashmap/phmap.h"
 #include "world.hpp"
@@ -87,6 +87,7 @@ public:
 
     struct {
         BackgroundSystem *backgrounds = nullptr;
+        GameplayScriptSystem *gameplayscript = nullptr;
         Console console;
         Profiler profiler;
         GlobalDEF globaldef;

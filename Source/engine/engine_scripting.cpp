@@ -13,6 +13,7 @@
 #include "core/alloc.h"
 #include "core/core.h"
 #include "core/core.hpp"
+#include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "engine/code_reflection.hpp"
@@ -22,7 +23,6 @@
 #include "engine/internal/builtin_lpeg.h"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "core/cpp/utils.hpp"
 #include "engine_scripting.h"
 #include "game/background.hpp"
 #include "game/game.hpp"
@@ -413,15 +413,16 @@ void integrationExample() {
 
 #endif
 
-void Scripts::Init(Meta::AnyFunction &gamescriptwrap_init, Meta::AnyFunction &gamescriptwrap_bind) {
+void Scripts::Init() {
     LuaCoreCpp = new struct LuaCoreCpp;
     InitLuaCoreCpp(LuaCoreCpp);
-    gamescriptwrap_bind.invoke({});
-    gamescriptwrap_init.invoke({});
+    global.game->GameIsolate_.gameplayscript->RegisterLua(LuaCoreCpp->s_lua);
+    global.game->GameIsolate_.gameplayscript->Create();
 }
 
-void Scripts::End(Meta::AnyFunction &gamescriptwrap_end) {
-    gamescriptwrap_end.invoke({});
+void Scripts::End() {
+    global.game->GameIsolate_.gameplayscript->Destory();
+
     EndLuaCoreCpp(LuaCoreCpp);
     delete LuaCoreCpp;
 }

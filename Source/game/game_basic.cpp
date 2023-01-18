@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "game_scriptingwrap.hpp"
+#include "game_basic.hpp"
 
 #include <string>
 #include <string_view>
@@ -50,7 +50,13 @@ static void load_lua(std::string luafile) {}
 
 #pragma endregion GameScriptingBind_1
 
-void InitGameScriptingWrap() {
+Biome *BiomeGet(std::string name) {
+    for (auto t : global.GameData_.biome_container)
+        if (t->name == name) return t;
+    return nullptr;
+}
+
+void GameplayScriptSystem::Create() {
     auto luacore = global.scripts->LuaCoreCpp;
     auto &luawrap = luacore->s_lua;
     luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
@@ -58,34 +64,26 @@ void InitGameScriptingWrap() {
     luawrap["OnGameLoad"](global.game);
 }
 
-Biome *BiomeGet(std::string name) {
-    for (auto t : global.GameData_.biome_container)
-        if (t->name == name) return t;
-    return nullptr;
-}
-
-void BindGameScriptingWrap() {
-    auto luacore = global.scripts->LuaCoreCpp;
-    auto &luawrap = luacore->s_lua;
-    luawrap["controls_init"] = LuaWrapper::function(controls_init);
-    luawrap["materials_init"] = LuaWrapper::function(materials_init);
-    luawrap["textures_load"] = LuaWrapper::function(textures_load);
-    luawrap["textures_init"] = LuaWrapper::function(textures_init);
-    luawrap["textures_end"] = LuaWrapper::function(textures_end);
-    luawrap["audio_load_event"] = LuaWrapper::function(audio_load_event);
-    luawrap["audio_play_event"] = LuaWrapper::function(audio_play_event);
-    luawrap["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
-    luawrap["audio_init"] = LuaWrapper::function(audio_init);
-    luawrap["create_biome"] = LuaWrapper::function(create_biome);
-    luawrap["init_ecs"] = LuaWrapper::function(init_ecs);
-
-    luawrap["DrawMainMenuUI"] = LuaWrapper::function(GameUI::MainMenuUI__Draw);
-    luawrap["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI::Draw);
-}
-
-void EndGameScriptingWrap() {
+void GameplayScriptSystem::Destory() {
     auto luacore = global.scripts->LuaCoreCpp;
     auto &luawrap = luacore->s_lua;
     auto EndFunc = luawrap["OnGameEngineUnLoad"];
     EndFunc();
+}
+
+void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
+    s_lua["controls_init"] = LuaWrapper::function(controls_init);
+    s_lua["materials_init"] = LuaWrapper::function(materials_init);
+    s_lua["textures_load"] = LuaWrapper::function(textures_load);
+    s_lua["textures_init"] = LuaWrapper::function(textures_init);
+    s_lua["textures_end"] = LuaWrapper::function(textures_end);
+    s_lua["audio_load_event"] = LuaWrapper::function(audio_load_event);
+    s_lua["audio_play_event"] = LuaWrapper::function(audio_play_event);
+    s_lua["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
+    s_lua["audio_init"] = LuaWrapper::function(audio_init);
+    s_lua["create_biome"] = LuaWrapper::function(create_biome);
+    s_lua["init_ecs"] = LuaWrapper::function(init_ecs);
+
+    s_lua["DrawMainMenuUI"] = LuaWrapper::function(GameUI::MainMenuUI__Draw);
+    s_lua["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI::Draw);
 }
