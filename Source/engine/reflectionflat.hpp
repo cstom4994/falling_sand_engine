@@ -32,4 +32,22 @@ static void imvec4_setter(ImVec4 &my_type, std::vector<int> vec) {
     my_type.w = vec[3] / 255.f;
 }
 
+namespace Meta {
+struct Msg {
+    float a;
+    float b;
+};
+}  // namespace Meta
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<Meta::Msg> : TypeInfoBase<Meta::Msg> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("a"), &Type::a},
+            Field{TSTR("b"), &Type::b},
+    };
+};
+
+TYPEOF_REGISTER(Meta::Msg);
+
 #endif

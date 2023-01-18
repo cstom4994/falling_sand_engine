@@ -44,8 +44,6 @@
 #include "utils.h"
 #include "world_generator.cpp"
 
-extern void fuckme();
-
 Global global;
 
 IMPLENGINE();

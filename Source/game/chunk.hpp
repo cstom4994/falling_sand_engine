@@ -5,11 +5,13 @@
 
 #include <fstream>
 #include <iostream>
+#include <tuple>
 #include <utility>
 
 #include "core/const.h"
 #include "core/core.h"
-#include "core/cpp/static_relfection.hpp"
+#include "engine/code_reflection.hpp"
+#include "engine/reflectionflat.hpp"
 #include "game_datastruct.hpp"
 #include "game_scriptingwrap.hpp"
 
@@ -43,19 +45,18 @@ template <>
 struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
-            Field{TSTR("fname"), &Chunk::fname},
-            Field{TSTR("x"), &Chunk::x},
-            Field{TSTR("y"), &Chunk::y},
-            Field{TSTR("hasMeta"), &Chunk::hasMeta},
-            Field{TSTR("generationPhase"), &Chunk::generationPhase},
-            Field{TSTR("pleaseDelete"), &Chunk::pleaseDelete},
-            Field{TSTR("hasTileCache"), &Chunk::hasTileCache},
-            Field{TSTR("tiles"), &Chunk::tiles},
-            Field{TSTR("layer2"), &Chunk::layer2},
-            Field{TSTR("background"), &Chunk::background},
-            Field{TSTR("biomes"), &Chunk::biomes},
-            Field{TSTR("polys"), &Chunk::polys},
-            Field{TSTR("rb"), &Chunk::rb},
+            Field{TSTR("fname"), &Type::fname}, Field{TSTR("x"), &Type::x}, Field{TSTR("y"), &Type::y},
+
+            Field{TSTR("hasMeta"), &Type::hasMeta, AttrList{Attr{TSTR("Meta::Msg"), std::tuple{1.0f, 2.0f}}}},
+            // Field{TSTR("generationPhase"), &Chunk::generationPhase},
+            Field{TSTR("pleaseDelete"), &Type::pleaseDelete},
+            // Field{TSTR("hasTileCache"), &Chunk::hasTileCache},
+            // Field{TSTR("tiles"), &Chunk::tiles},
+            // Field{TSTR("layer2"), &Chunk::layer2},
+            Field{TSTR("background"), &Type::background},
+            // Field{TSTR("biomes"), &Chunk::biomes},
+            // Field{TSTR("polys"), &Chunk::polys},
+            // Field{TSTR("rb"), &Chunk::rb},
     };
 };
 

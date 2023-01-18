@@ -10,19 +10,23 @@
 #include "core/alloc.h"
 #include "core/const.h"
 #include "core/core.hpp"
+#include "core/cpp/static_relfection.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/dbgtools.h"
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "engine.h"
+#include "engine/code_reflection.hpp"
 #include "engine/engine.h"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/imgui_impl.hpp"
 #include "engine/memory.hpp"
+#include "engine/reflectionflat.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "game/chunk.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_ui.hpp"
@@ -294,7 +298,7 @@ void ImGuiCore::Draw() {
     }
 }
 
-auto myCollapsingHeader = [](const char *name) -> bool {
+auto CollapsingHeader = [](const char *name) -> bool {
     ImGuiStyle &style = ImGui::GetStyle();
     ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
@@ -496,12 +500,31 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::EndTabBar();
             ImGui::EndTabItem();
         }
+
         if (ImGui::BeginTabItem(LANG("ui_debug"))) {
-            if (myCollapsingHeader(LANG("ui_telemetry"))) {
+            if (CollapsingHeader(LANG("ui_chunk"))) {
+                for (auto &p1 : global.game->GameIsolate_.world->WorldIsolate_.chunkCache)
+                    for (auto &p2 : p1.second)
+                        if (ImGui::TreeNode(p2.second->fname.c_str())) {
+                            MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*p2.second, [](const auto &field, auto &&var) {
+                                if (field.name == "fname") return;
+
+                                // constexpr auto tstr_range = TSTR("Meta::Msg");
+
+                                // if constexpr (decltype(field.attrs)::Contains(tstr_range)) {
+                                //     auto r = attr_init(tstr_range, field.attrs.Find(tstr_range).value);
+                                //     // cout << "[" << tstr_range.View() << "] " << r.minV << ", " << r.maxV << endl;
+                                // }
+                                ImGui::Auto(var, std::string(field.name));
+                            });
+                            ImGui::TreePop();
+                        }
+            }
+            if (CollapsingHeader(LANG("ui_telemetry"))) {
                 GameUI::DrawDebugUI(global.game);
             }
 #define INSPECTSHADER(_c) METAENGINE::IntrospectShader(#_c, global.shaderworker._c->shader)
-            if (myCollapsingHeader(CC("GLSL"))) {
+            if (CollapsingHeader(CC("GLSL"))) {
                 INSPECTSHADER(newLightingShader);
                 INSPECTSHADER(fireShader);
                 INSPECTSHADER(fire2Shader);

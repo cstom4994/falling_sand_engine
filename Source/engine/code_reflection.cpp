@@ -1,7 +1,5 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#define REGISTER_REFLECTION
-
 #include "code_reflection.hpp"
 
 #include <chrono>
@@ -11,125 +9,6 @@
 
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
-
-// ####################################################################################
-// ####################################################################################
-// ####################################################################################
-// ##    BEGIN REFLECT IMPLEMENTATION
-// ####################################################################################
-// ####################################################################################
-// ####################################################################################
-#ifdef REGISTER_REFLECTION
-
-// Gloabls
-std::shared_ptr<SnReflect> g_reflect{nullptr};  // Meta data singleton
-Functions g_register_list{};                    // Keeps list of registration functions
-
-// ########## General Registration ##########
-// Initializes global reflection object, registers classes with reflection system
-void InitializeReflection() {
-    // Create Singleton
-    g_reflect = std::make_shared<SnReflect>();
-
-    // Register Structs / Classes
-    for (int func = 0; func < g_register_list.size(); ++func) {
-        g_register_list[func]();
-    }
-    g_register_list.clear();  // Clean up
-}
-
-// Used in registration macros to automatically create nice display name from class / member variable names
-void CreateTitle(std::string &name) {
-    // Replace underscores, capitalize first letters
-    std::replace(name.begin(), name.end(), '_', ' ');
-    name[0] = toupper(name[0]);
-    for (int c = 1; c < name.length(); c++) {
-        if (name[c - 1] == ' ') name[c] = toupper(name[c]);
-    }
-
-    // Add spaces to seperate words
-    std::string title = "";
-    title += name[0];
-    for (int c = 1; c < name.length(); c++) {
-        if (islower(name[c - 1]) && isupper(name[c])) {
-            title += std::string(" ");
-        } else if ((isalpha(name[c - 1]) && isdigit(name[c]))) {
-            title += std::string(" ");
-        }
-        title += name[c];
-    }
-    name = title;
-}
-
-// ########## Class / Member Registration ##########
-// Update class TypeData
-void RegisterClass(TypeData class_data) { g_reflect->AddClass(class_data); }
-
-// Update member TypeData
-void RegisterMember(TypeData class_data, TypeData member_data) { g_reflect->AddMember(class_data, member_data); }
-
-// ####################################################################################
-// ##    TypeData Fetching
-// ####################################################################################
-//  ########## Class Data Fetching ##########
-//  Class TypeData fetching from passed in class TypeHash
-TypeData &ClassData(TypeHash class_hash) {
-    for (auto &pair : g_reflect->classes) {
-        if (pair.first == class_hash) return pair.second;
-    }
-    return unknown_type;
-}
-// Class TypeData fetching from passed in class name
-TypeData &ClassData(std::string class_name) {
-    for (auto &pair : g_reflect->classes) {
-        if (pair.second.name == class_name) return pair.second;
-    }
-    return unknown_type;
-}
-// Class TypeData fetching from passed in class name
-TypeData &ClassData(const char *class_name) { return ClassData(std::string(class_name)); }
-
-// ########## Member Data Fetching ##########
-// Member TypeData fetching by member variable index and class TypeHash
-TypeData &MemberData(TypeHash class_hash, int member_index) {
-    int count = 0;
-    for (auto &member : g_reflect->members[class_hash]) {
-        if (count == member_index) return member.second;
-        ++count;
-    }
-    return unknown_type;
-}
-// Member TypeData fetching by member variable name and class TypeHash
-TypeData &MemberData(TypeHash class_hash, std::string member_name) {
-    for (auto &member : g_reflect->members[class_hash]) {
-        if (member.second.name == member_name) return member.second;
-    }
-    return unknown_type;
-}
-
-// ####################################################################################
-// ##    Meta Data (User Info)
-// ####################################################################################
-void SetMetaData(TypeData &type_data, int key, std::string data) {
-    if (type_data.type_hash != 0) type_data.meta_int_map[key] = data;
-}
-void SetMetaData(TypeData &type_data, std::string key, std::string data) {
-    if (type_data.type_hash != 0) type_data.meta_string_map[key] = data;
-}
-std::string GetMetaData(TypeData &type_data, int key) {
-    if (type_data.type_hash != 0) {
-        if (type_data.meta_int_map.find(key) != type_data.meta_int_map.end()) return type_data.meta_int_map[key];
-    }
-    return "";
-}
-std::string GetMetaData(TypeData &type_data, std::string key) {
-    if (type_data.type_hash != 0) {
-        if (type_data.meta_string_map.find(key) != type_data.meta_string_map.end()) return type_data.meta_string_map[key];
-    }
-    return "";
-}
-
-#endif  // REGISTER_REFLECTION
 
 namespace reflect {
 
@@ -168,49 +47,6 @@ TypeDescriptor *getPrimitiveDescriptor<std::string>() {
 // Here is acknowledgement
 // https://stackoverflow.com/questions/41453/how-can-i-add-reflection-to-a-c-application/
 
-// ####################################################################################
-// ##    Component: Transform2D
-// ##        Sample component used to descibe a location of an object
-// ############################
-struct Transform2D {
-    int width;
-    int height;
-    std::vector<double> position;
-    std::vector<double> rotation;
-    std::vector<double> scale;
-    std::string text;
-
-    REFLECT();
-};
-
-// ####################################################################################
-// ##    Register Reflection / Meta Data
-// ############################
-#ifdef REGISTER_REFLECTION
-REFLECT_CLASS(Transform2D);
-CLASS_META_DATA(META_DATA_DESCRIPTION, "Describes the location and positioning of an object.");
-REFLECT_MEMBER(width);
-REFLECT_MEMBER(height);
-REFLECT_MEMBER(position);
-MEMBER_META_TITLE("Object Position");
-MEMBER_META_DATA(META_DATA_DESCRIPTION, "Location of an object in space.");
-REFLECT_MEMBER(rotation);
-REFLECT_MEMBER(scale);
-REFLECT_MEMBER(text);
-REFLECT_END(Transform2D);
-#endif
-
-struct TestRefl {
-    int int1;
-    float float1;
-    REFLECT();
-};
-
-REFLECT_CLASS(TestRefl);
-REFLECT_MEMBER(int1);
-REFLECT_MEMBER(float1);
-REFLECT_END(TestRefl);
-
 struct Node {
     std::string key;
     int value;
@@ -228,117 +64,14 @@ REFLECT_STRUCT_END()
 
 void TestRefleaction() {
 
-    // ########## Turn on reflection, register classes / member variables
-    InitializeReflection();
+    // Create an object of type Node
+    Node node = {"apple", 3, {{"banana", 7, {}}, {"cherry", 11, {}}}};
 
-    // ########## Create class instance
-    Transform2D t{};
-    t.width = 10;
-    t.height = 20;
-    t.position = std::vector<double>({1.0, 2.0, 3.0});
-    t.rotation = std::vector<double>({4.0, 5.0, 6.0});
-    t.scale = std::vector<double>({7.0, 8.0, 9.0});
-    t.text = "hello world!";
+    // Find Node's type descriptor
+    reflect::TypeDescriptor *typeDesc = reflect::TypeResolver<Node>::get();
 
-    // ########## Store TypeHash for later
-    TypeHash t_type_hash = TypeHashID<Transform2D>();
-
-    // ########## EXAMPLE: Get class TypeData by class type / instance / type hash / name
-    std::cout << "Class Data by Type     - Name:     " << ClassData<Transform2D>().name << std::endl;
-    std::cout << "Class Data by Instance - Members:  " << ClassData(t).member_count << std::endl;
-    std::cout << "Class Data by TypeHash - Title:    " << ClassData(t_type_hash).title << std::endl;
-    std::cout << "Class Data by Name     - TypeHash: " << ClassData("Transform2D").type_hash << std::endl;
-
-    // ########## EXAMPLE: Get member TypeData by member variable index / name
-    std::cout << "By Class Type, Member Index:       " << MemberData<Transform2D>(t, 2).name << std::endl;
-    std::cout << "By Class Type, Member Name:        " << MemberData<Transform2D>("position").index << std::endl;
-    std::cout << "By Class Instance, Member Index:   " << MemberData(t, 2).name << std::endl;
-    std::cout << "By Class Instance, Member Name:    " << MemberData(t, "position").index << std::endl;
-    std::cout << "By Class TypeHash, Member Index:   " << MemberData(t_type_hash, 2).name << std::endl;
-    std::cout << "By Class TypeHash, Member Name:    " << MemberData(t_type_hash, "position").index << std::endl;
-
-    // ########## EXAMPLE: Meta Data
-    // Class meta data
-    std::string description{};
-    description = GetMetaData(ClassData<Transform2D>(), META_DATA_DESCRIPTION);
-    std::cout << "Class Meta Data -  Description: " << description << std::endl;
-
-    // Member meta data
-    description = GetMetaData(MemberData<Transform2D>("position"), META_DATA_DESCRIPTION);
-    std::cout << "Member Meta Data - Description: " << description << std::endl;
-
-    // ########## Get Values
-    std::cout << "Transform2D instance 't' member variable values:" << std::endl;
-
-    // EXAMPLE: Return member variable by class instance, member variable index
-    TypeData member = MemberData(t, 0);
-    if (member.type_hash == TypeHashID<int>()) {
-        int &width = ClassMember<int>(&t, member);
-        std::cout << "  " << member.title << ": " << width << std::endl;
-    }
-
-    // EXAMPLE: Return member variable by class instance, member variable name
-    member = MemberData(t, "position");
-    if (member.type_hash == TypeHashID<std::vector<double>>()) {
-        std::vector<double> &position = ClassMember<std::vector<double>>(&t, member);
-        std::cout << "  " << MemberData(t, "position").title << " X: " << position[0] << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " Y: " << position[1] << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " Z: " << position[2] << std::endl;
-    }
-
-    // EXAMPLE: Return member variable by void* class, class type hash, and member variable name
-    member = MemberData(t_type_hash, "text");
-    if (member.type_hash == TypeHashID<std::string>()) {
-        std::string &txt = ClassMember<std::string>(&t, member);
-        std::cout << "  " << MemberData(t_type_hash, "text").title << ": " << txt << std::endl;
-    }
-
-    // ########## EXAMPLE: Iterating Members
-    std::cout << "Iterating Members (member count: " << ClassData("Transform2D").member_count << "): " << std::endl;
-    for (int p = 0; p < ClassData("Transform2D").member_count; ++p) {
-        std::cout << "  Member Index: " << p << ", Name: " << MemberData(t, p).name << ", Value(s): ";
-        member = MemberData(t, p);
-        if (member.type_hash == TypeHashID<int>()) {
-            std::cout << ClassMember<int>(&t, member);
-        } else if (member.type_hash == TypeHashID<std::vector<double>>()) {
-            std::vector<double> v = ClassMember<std::vector<double>>(&t, member);
-            for (size_t c = 0; c < v.size(); c++) std::cout << v[c] << ", ";
-        } else if (member.type_hash == TypeHashID<std::string>()) {
-            std::cout << ClassMember<std::string>(&t, member);
-        }
-        std::cout << std::endl;
-    }
-
-    // ########## EXAMPLE: SetValue by Name (can also be called by class type / member variable index, etc...)
-    member = MemberData(t, "position");
-    if (member.type_hash == TypeHashID<std::vector<double>>()) {
-        ClassMember<std::vector<double>>(&t, member) = {56.0, 58.5, 60.2};
-        std::cout << "After calling SetValue on 'position':" << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " X: " << ClassMember<std::vector<double>>(&t, member)[0] << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " Y: " << ClassMember<std::vector<double>>(&t, member)[1] << std::endl;
-        std::cout << "  " << MemberData(t, "position").title << " Z: " << ClassMember<std::vector<double>>(&t, member)[2] << std::endl;
-    }
-
-    // ########## EXAMPLE: GetValue from unknown class types
-    //
-    //  If using with an entity component system, it's possible you may not have access to class type at runtime. Often a
-    //  collection of components are stored in a container of void pointers. Somewhere in your code when your class is initialized,
-    //  store the component class TypeHash:
-    //
-    TypeHash saved_hash = ClassData(t).type_hash;
-    void *component_ptr = (void *)(&t);
-    //
-    //  Later (if your components are stored as void pointers in an array / vector / etc. with other components) you may still
-    //  access the member variables of the component back to the original type. This is done by using the saved_hash from earlier:
-    //
-    std::cout << "Getting member variable value from unknown class type:" << std::endl;
-    member = MemberData(saved_hash, 3);
-    if (member.type_hash == TypeHashID<std::vector<double>>()) {
-        std::vector<double> &rotation = ClassMember<std::vector<double>>(component_ptr, member);
-        std::cout << "  Rotation X: " << rotation[0] << ", Rotation Y: " << rotation[1] << ", Rotation Z: " << rotation[2] << std::endl;
-    }
-
-    // ########## END DEMO
+    // Dump a description of the Node object to the console
+    typeDesc->dump(&node);
 }
 
 namespace IamAfuckingNamespace {
@@ -362,23 +95,9 @@ auto fuckme() -> void {
     METADOT_INFO(f.get_result_type().info->name());
 
     f.invoke({});
-
-    // Create an object of type Node
-    Node node = {"apple", 3, {{"banana", 7, {}}, {"cherry", 11, {}}}};
-
-    // Find Node's type descriptor
-    reflect::TypeDescriptor *typeDesc = reflect::TypeResolver<Node>::get();
-
-    // Dump a description of the Node object to the console
-    typeDesc->dump(&node);
 }
 
 void InitCppReflection() {
-    TestRefleaction();
-    TestRefl t{};
-    ClassMember<int>(&t, MemberData(t, "int1")) = 200;
-
-    METADOT_INFO("%d", t.int1);
 }
 
 namespace MetaEngine {
