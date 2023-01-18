@@ -42,8 +42,6 @@ enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 
 class Game {
 public:
-    I32 argc;
-
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
 
@@ -88,6 +86,7 @@ public:
     struct {
         BackgroundSystem *backgrounds = nullptr;
         GameplayScriptSystem *gameplayscript = nullptr;
+        ShaderWorkerSystem *shaderworker = nullptr;
         Console console;
         Profiler profiler;
         GlobalDEF globaldef;

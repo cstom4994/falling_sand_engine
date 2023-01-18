@@ -25,7 +25,6 @@ struct Global {
     Scripts *scripts = nullptr;
     UIData *uidata = nullptr;
     GameData GameData_;
-    ShaderWorker shaderworker;
     Audio audioEngine;
     I18N I18N;
 };

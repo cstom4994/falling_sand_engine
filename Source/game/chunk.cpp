@@ -8,9 +8,9 @@
 
 #include "core/core.h"
 #include "core/core.hpp"
+#include "core/cpp/utils.hpp"
 #include "core/global.hpp"
 #include "engine/engine_platform.h"
-#include "core/cpp/utils.hpp"
 #include "lz4/lz4.h"
 
 // Chunk::~Chunk() {

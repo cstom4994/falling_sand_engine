@@ -180,7 +180,8 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
     METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
 
-    LoadShaders(&global.shaderworker);
+    METADOT_NEW(C, GameIsolate_.shaderworker, ShaderWorkerSystem);
+    GameIsolate_.shaderworker->Create();
 
     return this->run(argc, argv);
 }
@@ -1136,7 +1137,8 @@ int Game::exit() {
         GameIsolate_.world = nullptr;
     }
 
-    EndShaders(&global.shaderworker);
+    GameIsolate_.shaderworker->Destory();
+    METADOT_DELETE(C, GameIsolate_.shaderworker, ShaderWorkerSystem);
 
     EndWindow();
     global.audioEngine.Shutdown();
@@ -2040,7 +2042,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
         if (hadFlow) {
             R_UpdateImageBytes(TexturePack_.textureFlow, NULL, &TexturePack_.pixelsFlow[0], GameIsolate_.world->width * 4);
 
-            global.shaderworker.waterFlowPassShader->dirty = true;
+            GameIsolate_.shaderworker->waterFlowPassShader->dirty = true;
         }
 
         if (hadFire) {
@@ -2813,19 +2815,19 @@ void Game::renderLate() {
 
         if (GameIsolate_.globaldef.draw_shaders) {
 
-            if (global.shaderworker.waterFlowPassShader->dirty && GameIsolate_.globaldef.water_showFlow) {
-                global.shaderworker.waterFlowPassShader->Activate();
-                global.shaderworker.waterFlowPassShader->Update(GameIsolate_.world->width, GameIsolate_.world->height);
+            if (GameIsolate_.shaderworker->waterFlowPassShader->dirty && GameIsolate_.globaldef.water_showFlow) {
+                GameIsolate_.shaderworker->waterFlowPassShader->Activate();
+                GameIsolate_.shaderworker->waterFlowPassShader->Update(GameIsolate_.world->width, GameIsolate_.world->height);
                 R_SetBlendMode(TexturePack_.textureFlow, R_BLEND_SET);
                 R_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target, NULL);
 
-                global.shaderworker.waterFlowPassShader->dirty = false;
+                GameIsolate_.shaderworker->waterFlowPassShader->dirty = false;
             }
 
-            global.shaderworker.waterShader->Activate();
+            GameIsolate_.shaderworker->waterShader->Activate();
             F32 t = (Time.now - Time.startTime) / 1000.0;
-            global.shaderworker.waterShader->Update(t, Render.target->w * scale, Render.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead,
-                                                    GameIsolate_.globaldef.water_overlay, GameIsolate_.globaldef.water_showFlow, GameIsolate_.globaldef.water_pixelated);
+            GameIsolate_.shaderworker->waterShader->Update(t, Render.target->w * scale, Render.target->h * scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, scale, TexturePack_.textureFlowSpead,
+                                                           GameIsolate_.globaldef.water_overlay, GameIsolate_.globaldef.water_showFlow, GameIsolate_.globaldef.water_pixelated);
         }
 
         Render.target = Render.realTarget;
@@ -2857,7 +2859,7 @@ void Game::renderLate() {
         R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
-        if (GameIsolate_.globaldef.draw_shaders) global.shaderworker.newLightingShader->Activate();
+        if (GameIsolate_.globaldef.draw_shaders) GameIsolate_.shaderworker->newLightingShader->Activate();
 
         // I use this to only rerender the lighting when a parameter changes or N times per second anyway
         // Doing this massively reduces the GPU load of the shader
@@ -2882,12 +2884,12 @@ void Game::renderLate() {
                 lightTy = lmsy / (F32)GameIsolate_.world->height;
             }
 
-            if (global.shaderworker.newLightingShader->lastLx != lightTx || global.shaderworker.newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->Update(TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
-            if (global.shaderworker.newLightingShader->lastQuality != GameIsolate_.globaldef.lightingQuality) {
+            if (GameIsolate_.shaderworker->newLightingShader->lastLx != lightTx || GameIsolate_.shaderworker->newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
+            GameIsolate_.shaderworker->newLightingShader->Update(TexturePack_.worldTexture, TexturePack_.emissionTexture, lightTx, lightTy);
+            if (GameIsolate_.shaderworker->newLightingShader->lastQuality != GameIsolate_.globaldef.lightingQuality) {
                 needToRerenderLighting = true;
             }
-            global.shaderworker.newLightingShader->SetQuality(GameIsolate_.globaldef.lightingQuality);
+            GameIsolate_.shaderworker->newLightingShader->SetQuality(GameIsolate_.globaldef.lightingQuality);
 
             int nBg = 0;
             int range = 64;
@@ -2900,26 +2902,26 @@ void Game::renderLate() {
                 }
             }
 
-            global.shaderworker.newLightingShader->insideDes = std::min(std::max(0.0f, (F32)nBg / ((range * 2) * (range * 2))), 1.0f);
-            global.shaderworker.newLightingShader->insideCur +=
-                    (global.shaderworker.newLightingShader->insideDes - global.shaderworker.newLightingShader->insideCur) / 2.0f * (Time.deltaTime / 1000.0f);
+            GameIsolate_.shaderworker->newLightingShader->insideDes = std::min(std::max(0.0f, (F32)nBg / ((range * 2) * (range * 2))), 1.0f);
+            GameIsolate_.shaderworker->newLightingShader->insideCur +=
+                    (GameIsolate_.shaderworker->newLightingShader->insideDes - GameIsolate_.shaderworker->newLightingShader->insideCur) / 2.0f * (Time.deltaTime / 1000.0f);
 
-            F32 ins = global.shaderworker.newLightingShader->insideCur < 0.05 ? 0.0 : global.shaderworker.newLightingShader->insideCur;
-            if (global.shaderworker.newLightingShader->lastInside != ins) needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->SetInside(ins);
-            global.shaderworker.newLightingShader->SetBounds(GameIsolate_.world->tickZone.x * GameIsolate_.globaldef.hd_objects_size,
-                                                             GameIsolate_.world->tickZone.y * GameIsolate_.globaldef.hd_objects_size,
-                                                             (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) * GameIsolate_.globaldef.hd_objects_size,
-                                                             (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h) * GameIsolate_.globaldef.hd_objects_size);
+            F32 ins = GameIsolate_.shaderworker->newLightingShader->insideCur < 0.05 ? 0.0 : GameIsolate_.shaderworker->newLightingShader->insideCur;
+            if (GameIsolate_.shaderworker->newLightingShader->lastInside != ins) needToRerenderLighting = true;
+            GameIsolate_.shaderworker->newLightingShader->SetInside(ins);
+            GameIsolate_.shaderworker->newLightingShader->SetBounds(GameIsolate_.world->tickZone.x * GameIsolate_.globaldef.hd_objects_size,
+                                                                    GameIsolate_.world->tickZone.y * GameIsolate_.globaldef.hd_objects_size,
+                                                                    (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w) * GameIsolate_.globaldef.hd_objects_size,
+                                                                    (GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h) * GameIsolate_.globaldef.hd_objects_size);
 
-            if (global.shaderworker.newLightingShader->lastSimpleMode != GameIsolate_.globaldef.simpleLighting) needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->SetSimpleMode(GameIsolate_.globaldef.simpleLighting);
+            if (GameIsolate_.shaderworker->newLightingShader->lastSimpleMode != GameIsolate_.globaldef.simpleLighting) needToRerenderLighting = true;
+            GameIsolate_.shaderworker->newLightingShader->SetSimpleMode(GameIsolate_.globaldef.simpleLighting);
 
-            if (global.shaderworker.newLightingShader->lastEmissionEnabled != GameIsolate_.globaldef.lightingEmission) needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->SetEmissionEnabled(GameIsolate_.globaldef.lightingEmission);
+            if (GameIsolate_.shaderworker->newLightingShader->lastEmissionEnabled != GameIsolate_.globaldef.lightingEmission) needToRerenderLighting = true;
+            GameIsolate_.shaderworker->newLightingShader->SetEmissionEnabled(GameIsolate_.globaldef.lightingEmission);
 
-            if (global.shaderworker.newLightingShader->lastDitheringEnabled != GameIsolate_.globaldef.lightingDithering) needToRerenderLighting = true;
-            global.shaderworker.newLightingShader->SetDitheringEnabled(GameIsolate_.globaldef.lightingDithering);
+            if (GameIsolate_.shaderworker->newLightingShader->lastDitheringEnabled != GameIsolate_.globaldef.lightingDithering) needToRerenderLighting = true;
+            GameIsolate_.shaderworker->newLightingShader->SetDitheringEnabled(GameIsolate_.globaldef.lightingDithering);
         }
 
         if (GameIsolate_.globaldef.draw_shaders && needToRerenderLighting) {
@@ -2938,13 +2940,13 @@ void Game::renderLate() {
         if (GameIsolate_.globaldef.draw_shaders) {
             R_Clear(TexturePack_.texture2Fire->target);
 
-            global.shaderworker.fireShader->Activate();
-            global.shaderworker.fireShader->Update(TexturePack_.textureFire);
+            GameIsolate_.shaderworker->fireShader->Activate();
+            GameIsolate_.shaderworker->fireShader->Update(TexturePack_.textureFire);
             R_BlitRect(TexturePack_.textureFire, NULL, TexturePack_.texture2Fire->target, NULL);
             R_ActivateShaderProgram(0, NULL);
 
-            global.shaderworker.fire2Shader->Activate();
-            global.shaderworker.fire2Shader->Update(TexturePack_.texture2Fire);
+            GameIsolate_.shaderworker->fire2Shader->Activate();
+            GameIsolate_.shaderworker->fire2Shader->Update(TexturePack_.texture2Fire);
             R_BlitRect(TexturePack_.texture2Fire, NULL, Render.target, &r1);
             R_ActivateShaderProgram(0, NULL);
         }

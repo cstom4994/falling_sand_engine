@@ -2359,9 +2359,9 @@ void World::tickChunkGeneration() {
     int cenX = (-loadZone.x + loadZone.w / 2) / CHUNK_W;
     int cenY = (-loadZone.y + loadZone.h / 2) / CHUNK_H;
     for (auto &p : WorldIsolate_.chunkCache) {
-        if (p.first == INT_MIN) continue;
+        if (p.first == INT_MIN) continue;  // Should be change when using phmap::flat_hash_map
         for (auto &p2 : p.second) {
-            if (p2.first == INT_MIN) continue;
+            if (p2.first == INT_MIN) continue;  // Should be change when using phmap::flat_hash_map
             Chunk *m = p2.second;
 
             if (abs(m->x - cenX) >= CHUNK_UNLOAD_DIST || abs(m->y - cenY) >= CHUNK_UNLOAD_DIST) {

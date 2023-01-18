@@ -5,6 +5,7 @@
 
 #include "core/core.hpp"
 #include "engine/engine_shaders.hpp"
+#include "game/game_datastruct.hpp"
 
 class WaterFlowPassShader : public ShaderBase {
 public:
@@ -51,15 +52,17 @@ public:
     void Update(R_Image *tex);
 };
 
-typedef struct ShaderWorker {
+class ShaderWorkerSystem : IGameSystem {
+public:
     WaterShader *waterShader;
     WaterFlowPassShader *waterFlowPassShader;
     NewLightingShader *newLightingShader;
     FireShader *fireShader;
     Fire2Shader *fire2Shader;
-} ShaderWorker;
 
-void LoadShaders(ShaderWorker *shaderworker);
-void EndShaders(ShaderWorker *shaderworker);
+    void Create() override;
+    void Destory() override;
+    void RegisterLua(LuaWrapper::State &s_lua) override;
+};
 
 #endif

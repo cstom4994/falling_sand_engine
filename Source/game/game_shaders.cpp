@@ -132,64 +132,66 @@ void Fire2Shader::Update(R_Image *tex) {
 
 #pragma endregion Shaders
 
-void LoadShaders(ShaderWorker *shaderworker) {
-    EndShaders(shaderworker);
+void ShaderWorkerSystem::Create() {
+    this->Destory();
 
-    shaderworker->waterShader = new WaterShader;
-    shaderworker->waterFlowPassShader = new WaterFlowPassShader;
-    shaderworker->newLightingShader = new NewLightingShader;
-    shaderworker->fireShader = new FireShader;
-    shaderworker->fire2Shader = new Fire2Shader;
+    this->waterShader = new WaterShader;
+    this->waterFlowPassShader = new WaterFlowPassShader;
+    this->newLightingShader = new NewLightingShader;
+    this->fireShader = new FireShader;
+    this->fire2Shader = new Fire2Shader;
 
-    shaderworker->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
-    shaderworker->waterFlowPassShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->waterFlowPassShader->fragment_shader_file = METADOT_RESLOC("data/shaders/waterFlow.frag");
-    shaderworker->newLightingShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->newLightingShader->fragment_shader_file = METADOT_RESLOC("data/shaders/newLighting.frag");
-    shaderworker->fireShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->fireShader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire.frag");
-    shaderworker->fire2Shader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    shaderworker->fire2Shader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
+    this->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
+    this->waterFlowPassShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->waterFlowPassShader->fragment_shader_file = METADOT_RESLOC("data/shaders/waterFlow.frag");
+    this->newLightingShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->newLightingShader->fragment_shader_file = METADOT_RESLOC("data/shaders/newLighting.frag");
+    this->fireShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->fireShader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire.frag");
+    this->fire2Shader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->fire2Shader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
 
-    shaderworker->waterFlowPassShader->dirty = false;
+    this->waterFlowPassShader->dirty = false;
 
-    shaderworker->newLightingShader->lastLx = 0.0;
-    shaderworker->newLightingShader->lastLy = 0.0;
-    shaderworker->newLightingShader->lastQuality = 0.0;
-    shaderworker->newLightingShader->lastInside = 0.0;
-    shaderworker->newLightingShader->lastSimpleMode = false;
-    shaderworker->newLightingShader->lastEmissionEnabled = false;
-    shaderworker->newLightingShader->lastDitheringEnabled = false;
-    shaderworker->newLightingShader->insideCur = 0.0f;
-    shaderworker->newLightingShader->insideDes = 0.0f;
+    this->newLightingShader->lastLx = 0.0;
+    this->newLightingShader->lastLy = 0.0;
+    this->newLightingShader->lastQuality = 0.0;
+    this->newLightingShader->lastInside = 0.0;
+    this->newLightingShader->lastSimpleMode = false;
+    this->newLightingShader->lastEmissionEnabled = false;
+    this->newLightingShader->lastDitheringEnabled = false;
+    this->newLightingShader->insideCur = 0.0f;
+    this->newLightingShader->insideDes = 0.0f;
 
-    shaderworker->waterShader->Init();
-    shaderworker->waterFlowPassShader->Init();
-    shaderworker->newLightingShader->Init();
-    shaderworker->fireShader->Init();
-    shaderworker->fire2Shader->Init();
+    this->waterShader->Init();
+    this->waterFlowPassShader->Init();
+    this->newLightingShader->Init();
+    this->fireShader->Init();
+    this->fire2Shader->Init();
 }
 
-void EndShaders(ShaderWorker *shaderworker) {
-    if (shaderworker->waterShader) {
-        shaderworker->waterShader->Unload();
-        delete shaderworker->waterShader;
+void ShaderWorkerSystem::Destory() {
+    if (this->waterShader) {
+        this->waterShader->Unload();
+        delete this->waterShader;
     }
-    if (shaderworker->waterFlowPassShader) {
-        shaderworker->waterFlowPassShader->Unload();
-        delete shaderworker->waterFlowPassShader;
+    if (this->waterFlowPassShader) {
+        this->waterFlowPassShader->Unload();
+        delete this->waterFlowPassShader;
     }
-    if (shaderworker->newLightingShader) {
-        shaderworker->newLightingShader->Unload();
-        delete shaderworker->newLightingShader;
+    if (this->newLightingShader) {
+        this->newLightingShader->Unload();
+        delete this->newLightingShader;
     }
-    if (shaderworker->fireShader) {
-        shaderworker->fireShader->Unload();
-        delete shaderworker->fireShader;
+    if (this->fireShader) {
+        this->fireShader->Unload();
+        delete this->fireShader;
     }
-    if (shaderworker->fire2Shader) {
-        shaderworker->fire2Shader->Unload();
-        delete shaderworker->fire2Shader;
+    if (this->fire2Shader) {
+        this->fire2Shader->Unload();
+        delete this->fire2Shader;
     }
 }
+
+void ShaderWorkerSystem::RegisterLua(LuaWrapper::State &s_lua) {}
