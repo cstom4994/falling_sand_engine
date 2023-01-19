@@ -4,7 +4,7 @@
 #include "core/global.hpp"
 #include "engine/imgui_core.hpp"
 
-b2Vec2 Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
+b2Vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     float s = sin(angle);
     float c = cos(angle);
 
@@ -20,7 +20,7 @@ b2Vec2 Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     return b2Vec2(xnew + cx, ynew + cy);
 }
 
-void Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
+void MetaEngine::Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
     b2Vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
@@ -30,7 +30,7 @@ void Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts,
     }
 }
 
-U32 Drawing::darkenColor(U32 color, float brightness) {
+U32 MetaEngine::Drawing::darkenColor(U32 color, float brightness) {
     int a = (color >> 24) & 0xFF;
     int r = (int)(((color >> 16) & 0xFF) * brightness);
     int g = (int)(((color >> 8) & 0xFF) * brightness);
@@ -44,7 +44,7 @@ U32 Drawing::darkenColor(U32 color, float brightness) {
         return #x;               \
         break;
 
-const char *METAENGINE::GLEnumToString(GLenum e) {
+const char *MetaEngine::GLEnumToString(GLenum e) {
     switch (e) {
         // shader:
         R_TO_STRING_GENERATOR(GL_VERTEX_SHADER);
@@ -191,7 +191,7 @@ const char *METAENGINE::GLEnumToString(GLenum e) {
 }
 #undef R_TO_STRING_GENERATOR
 
-void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, const char *name, GLint location) {
+void MetaEngine::Detail::RenderUniformVariable(GLuint program, GLenum type, const char *name, GLint location) {
     static bool is_color = false;
     switch (type) {
         case GL_FLOAT:
@@ -282,9 +282,9 @@ void METAENGINE::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
 #undef R_INTROSPECTION_GENERATE_VARIABLE_RENDER
 #undef R_INTROSPECTION_GENERATE_MATRIX_RENDER
 
-float METAENGINE::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeight() * 16; }
+float MetaEngine::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeight() * 16; }
 
-void METAENGINE::IntrospectShader(const char *label, GLuint program) {
+void MetaEngine::IntrospectShader(const char *label, GLuint program) {
     METADOT_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
     METADOT_ASSERT(glIsProgram(program), ("The program: {} is not a valid shader program", program));
 
@@ -356,7 +356,7 @@ void METAENGINE::IntrospectShader(const char *label, GLuint program) {
     ImGui::PopID();
 }
 
-void METAENGINE::IntrospectVertexArray(const char *label, GLuint vao) {
+void MetaEngine::IntrospectVertexArray(const char *label, GLuint vao) {
     METADOT_ASSERT(label != nullptr, ("The label supplied with VAO: %u is nullptr", vao));
     METADOT_ASSERT(glIsVertexArray(vao), ("The VAO: %u is not a valid vertex array object", vao));
 

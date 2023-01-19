@@ -51,6 +51,7 @@ const char *FUtil_getExecutableFolderPath() {
     return out;
 }
 
+// Char pointer get form futil_readfilestring must be gc_free manually
 char *futil_readfilestring(const char *path) {
     char *source = NULL;
     FILE *fp = fopen(METADOT_RESLOC(path), "r");
@@ -83,4 +84,8 @@ char *futil_readfilestring(const char *path) {
     }
     gc_free(&gc, source); /* Don't forget to call free() later! */
     return R_null;
+}
+
+void futil_freestring(void *ptr) {
+    if (NULL != ptr) gc_free(&gc, ptr);
 }

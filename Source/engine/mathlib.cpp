@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "math.hpp"
+#include "mathlib.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "core/const.h"
 #include "libs/external/stb_perlin.h"
 
 F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { return stb_perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap); }
@@ -230,6 +231,183 @@ static bool operator==(NewMaths::v2 A, NewMaths::v2 B) { return A.x == B.x && A.
 static F32 abso(F32 F) { return F > 0 ? F : -F; };
 
 static NewMaths::v2 rand_vector(F32 length) { return NewMaths::v2(NewMaths::rand_range(-100, 100) * 0.01f * length, NewMaths::rand_range(-100, 100) * 0.01f * length); }
+
+// --------------- Vector Functions ---------------
+
+metadot_vec3 NewMaths::NormalizeVector(metadot_vec3 v) {
+    F32 l = sqrt((v.X * v.X) + (v.Y * v.Y) + (v.Z * v.Z));
+    if (l == 0) return VECTOR3_ZERO;
+
+    v.X *= 1 / l;
+    v.Y *= 1 / l;
+    v.Z *= 1 / l;
+    return v;
+}
+
+metadot_vec3 NewMaths::Add(metadot_vec3 a, metadot_vec3 b) {
+    a.X += b.X;
+    a.Y += b.Y;
+    a.Z += b.Z;
+    return a;
+}
+
+metadot_vec3 NewMaths::Subtract(metadot_vec3 a, metadot_vec3 b) {
+    a.X -= b.X;
+    a.Y -= b.Y;
+    a.Z -= b.Z;
+    return a;
+}
+
+metadot_vec3 NewMaths::ScalarMult(metadot_vec3 v, F32 s) { return (metadot_vec3){v.X * s, v.Y * s, v.Z * s}; }
+
+F64 NewMaths::Distance(metadot_vec3 a, metadot_vec3 b) {
+    metadot_vec3 AMinusB = Subtract(a, b);
+    return sqrt(UTIL_dot(AMinusB, AMinusB));
+}
+
+metadot_vec3 NewMaths::VectorProjection(metadot_vec3 a, metadot_vec3 b) {
+    // https://en.wikipedia.org/wiki/Vector_projection
+    metadot_vec3 normalizedB = NormalizeVector(b);
+    F64 a1 = UTIL_dot(a, normalizedB);
+    return ScalarMult(normalizedB, a1);
+}
+
+metadot_vec3 NewMaths::Reflection(metadot_vec3 *v1, metadot_vec3 *v2) {
+    F32 dotpr = UTIL_dot(*v2, *v1);
+    metadot_vec3 result;
+    result.X = v2->X * 2 * dotpr;
+    result.Y = v2->Y * 2 * dotpr;
+    result.Z = v2->Z * 2 * dotpr;
+
+    result.X = v1->X - result.X;
+    result.Y = v1->Y - result.Y;
+    result.Z = v1->Z - result.Z;
+
+    return result;
+}
+
+metadot_vec3 NewMaths::RotatePoint(metadot_vec3 p, metadot_vec3 r, metadot_vec3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
+
+F64 NewMaths::DistanceFromPointToLine2D(metadot_vec3 lP1, metadot_vec3 lP2, metadot_vec3 p) {
+    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+    return fabsf((lP2.Y - lP1.Y) * p.X - (lP2.X - lP1.X) * p.Y + lP2.X * lP1.Y - lP2.Y * lP1.X) / Distance(lP1, lP2);
+}
+
+// --------------- Matrix3x3 type ---------------
+
+inline NewMaths::Matrix3x3 NewMaths::Transpose(Matrix3x3 m) {
+    Matrix3x3 t;
+
+    t.m[0][1] = m.m[1][0];
+    t.m[1][0] = m.m[0][1];
+
+    t.m[0][2] = m.m[2][0];
+    t.m[2][0] = m.m[0][2];
+
+    t.m[1][2] = m.m[2][1];
+    t.m[2][1] = m.m[1][2];
+
+    t.m[0][0] = m.m[0][0];
+    t.m[1][1] = m.m[1][1];
+    t.m[2][2] = m.m[2][2];
+
+    return t;
+}
+
+NewMaths::Matrix3x3 NewMaths::Identity() {
+    Matrix3x3 m = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
+    return m;
+}
+
+// Based on the article: Extracting Euler Angles from a Rotation Matrix - Mike Day, Insomniac Games
+metadot_vec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
+    metadot_vec3 rotation = VECTOR3_ZERO;
+    rotation.X = atan2(m.m[1][2], m.m[2][2]);
+
+    F32 c2 = sqrt(m.m[0][0] * m.m[0][0] + m.m[0][1] * m.m[0][1]);
+    rotation.Y = atan2(-m.m[0][2], c2);
+
+    F32 s1 = sin(rotation.X);
+    F32 c1 = cos(rotation.X);
+    rotation.Z = atan2(s1 * m.m[2][0] - c1 * m.m[1][0], c1 * m.m[1][1] - s1 * m.m[2][1]);
+
+    return ScalarMult(rotation, 180.0 / PI);
+}
+
+NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(metadot_vec3 rotation) {
+
+    F32 s1 = sin(rotation.X * PI / 180.0);
+    F32 c1 = cos(rotation.X * PI / 180.0);
+    F32 s2 = sin(rotation.Y * PI / 180.0);
+    F32 c2 = cos(rotation.Y * PI / 180.0);
+    F32 s3 = sin(rotation.Z * PI / 180.0);
+    F32 c3 = cos(rotation.Z * PI / 180.0);
+
+    Matrix3x3 m = {{{c2 * c3, c2 * s3, -s2}, {s1 * s2 * c3 - c1 * s3, s1 * s2 * s3 + c1 * c3, s1 * c2}, {c1 * s2 * c3 + s1 * s3, c1 * s2 * s3 - s1 * c3, c1 * c2}}};
+
+    return m;
+}
+
+// Vectors are interpreted as rows
+inline metadot_vec3 NewMaths::RotateVector(metadot_vec3 v, Matrix3x3 m) {
+    return (metadot_vec3){v.X * m.m[0][0] + v.Y * m.m[1][0] + v.Z * m.m[2][0], v.X * m.m[0][1] + v.Y * m.m[1][1] + v.Z * m.m[2][1], v.X * m.m[0][2] + v.Y * m.m[1][2] + v.Z * m.m[2][2]};
+}
+
+NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
+    Matrix3x3 r;
+    int i, j, k;
+
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            r.m[i][j] = 0;
+            for (k = 0; k < 3; k++) {
+                r.m[i][j] += a.m[i][k] * b.m[k][j];
+            }
+        }
+    }
+
+    return r;
+}
+
+NewMaths::Matrix4x4 NewMaths::Identity4x4() { return (Matrix4x4){{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
+
+NewMaths::Matrix4x4 NewMaths::GetProjectionMatrix(F32 rightPlane, F32 leftPlane, F32 topPlane, F32 bottomPlane, F32 nearPlane, F32 farPlane) {
+    Matrix4x4 matrix = {{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
+
+    matrix.m[0][0] = 2.0f / (rightPlane - leftPlane);
+    matrix.m[1][1] = 2.0f / (topPlane - bottomPlane);
+    matrix.m[2][2] = -2.0f / (farPlane - nearPlane);
+    matrix.m[3][3] = 1;
+    matrix.m[3][0] = -(rightPlane + leftPlane) / (rightPlane - leftPlane);
+    matrix.m[3][1] = -(topPlane + bottomPlane) / (topPlane - bottomPlane);
+    matrix.m[3][2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
+
+    return matrix;
+}
+
+// --------------- Numeric functions ---------------
+
+F32 NewMaths::Lerp(F64 t, F32 a, F32 b) { return (1 - t) * a + t * b; }
+
+int NewMaths::Step(F32 edge, F32 x) { return x < edge ? 0 : 1; }
+
+F32 NewMaths::Smoothstep(F32 edge0, F32 edge1, F32 x) {
+    // Scale, bias and saturate x to 0..1 range
+    x = UTIL_clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    // Evaluate polynomial
+    return x * x * (3 - 2 * x);
+}
+
+// Modulus function, returning only positive values
+int NewMaths::Modulus(int a, int b) {
+    int r = a % b;
+    return r < 0 ? r + b : r;
+}
+
+F32 NewMaths::fModulus(F32 a, F32 b) {
+    F32 r = fmod(a, b);
+    return r < 0 ? r + b : r;
+}
 
 #pragma endregion NewMATH
 

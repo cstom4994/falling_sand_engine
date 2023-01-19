@@ -5,6 +5,7 @@
 
 #include "core/macros.h"
 #include "engine/engine.h"
+#include "engine/mathlib.h"
 
 #if defined(METADOT_BUILD_AUDIO)
 #include "engine/internal/builtin_fmod.h"
@@ -136,8 +137,8 @@ public:
     void LoadEvent(const std::string &strEventName);
     void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false, bool bStream = false);
     void UnLoadSound(const std::string &strSoundName);
-    void Set3dListenerAndOrientation(const Vector3 &vPosition, const Vector3 &vLook, const Vector3 &vUp);
-    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0}, float fVolumedB = 0.0f);
+    void Set3dListenerAndOrientation(const metadot_vec3 &vPosition, const metadot_vec3 &vLook, const metadot_vec3 &vUp);
+    int PlaySounds(const std::string &strSoundName, const metadot_vec3 &vPos = metadot_vec3{0, 0, 0}, float fVolumedB = 0.0f);
     void PlayEvent(const std::string &strEventName);
     FMOD::Studio::EventInstance *GetEvent(const std::string &strEventName);
     void StopChannel(int nChannelId);
@@ -147,13 +148,13 @@ public:
     void SetGlobalParameter(const std::string &strParameterName, float fValue);
     void GetGlobalParameter(const std::string &strEventParameter, float *parameter);
     void StopAllChannels();
-    void SetChannel3dPosition(int nChannelId, const Vector3 &vPosition);
+    void SetChannel3dPosition(int nChannelId, const metadot_vec3 &vPosition);
     void SetChannelVolume(int nChannelId, float fVolumedB);
     bool IsPlaying(int nChannelId) const;
     bool IsEventPlaying(const std::string &strEventName) const;
     float dbToVolume(float dB);
     float VolumeTodB(float volume);
-    FMOD_VECTOR VectorToFmod(const Vector3 &vPosition);
+    FMOD_VECTOR VectorToFmod(const metadot_vec3 &vPosition);
 };
 
 #else
@@ -167,14 +168,14 @@ public:
     void LoadEvent(const std::string &strEventName);
     void LoadSound(const std::string &strSoundName, bool b3d = true, bool bLooping = false, bool bStream = false);
     void UnLoadSound(const std::string &strSoundName);
-    int PlaySounds(const std::string &strSoundName, const Vector3 &vPos = Vector3{0, 0, 0}, float fVolumedB = 0.0f);
+    int PlaySounds(const std::string &strSoundName, const metadot_vec3 &vPos = metadot_vec3{0, 0, 0}, float fVolumedB = 0.0f);
     void PlayEvent(const std::string &strEventName);
     void StopEvent(const std::string &strEventName, bool bImmediate = false);
     void GetEventParameter(const std::string &strEventName, const std::string &strEventParameter, float *parameter);
     void SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue);
     void SetGlobalParameter(const std::string &strParameterName, float fValue);
     void GetGlobalParameter(const std::string &strEventParameter, float *parameter);
-    void SetChannel3dPosition(int nChannelId, const Vector3 &vPosition);
+    void SetChannel3dPosition(int nChannelId, const metadot_vec3 &vPosition);
     void SetChannelVolume(int nChannelId, float fVolumedB);
     bool IsEventPlaying(const std::string &strEventName) const;
 };

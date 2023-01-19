@@ -13,7 +13,7 @@
 #include "core/cpp/vector.hpp"
 #include "engine/code_reflection.hpp"
 #include "engine/internal/builtin_box2d.h"
-#include "engine/math.hpp"
+#include "engine/mathlib.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/sdl_wrapper.h"

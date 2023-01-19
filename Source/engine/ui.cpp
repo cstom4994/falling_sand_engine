@@ -7,15 +7,15 @@
 #include "core/core.h"
 #include "core/global.hpp"
 #include "engine/engine.h"
+#include "engine/mathlib.hpp"
 #include "engine/memory.hpp"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/renderer/renderer_opengl.h"
+#include "engine/renderer/renderer_utils.h"
 #include "engine_platform.h"
 #include "game/controls.hpp"
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
-#include "math.hpp"
-#include "renderer/renderer_gpu.h"
-#include "renderer/renderer_opengl.h"
-#include "renderer/renderer_utils.h"
 
 IMPLENGINE();
 
@@ -162,9 +162,9 @@ bool UIIsMouseOnControls() {
     return false;
 }
 
-void DrawPoint(Vector3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
-    Vector3 min = {pos.x - size, pos.y - size, 0};
-    Vector3 max = {pos.x + size, pos.y + size, 0};
+void DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
+    metadot_vec3 min = {pos.X - size, pos.Y - size, 0};
+    metadot_vec3 max = {pos.X + size, pos.Y + size, 0};
 
     if (texture) {
         // DrawRectangleTextured(min, max, texture, r, g, b);
@@ -173,4 +173,4 @@ void DrawPoint(Vector3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
     }
 }
 
-void DrawLine(Vector3 min, Vector3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
+void DrawLine(metadot_vec3 min, metadot_vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.X, min.Y, max.X, max.Y, {r, g, b, 255}); }

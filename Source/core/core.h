@@ -40,17 +40,6 @@ typedef double F64;
 
 typedef unsigned char Byte;
 
-typedef struct U16Point {
-    U16 x;
-    U16 y;
-} U16Point;
-
-typedef struct Vector3 {
-    F32 x;
-    F32 y;
-    F32 z;
-} Vector3;
-
 typedef struct Pixel {
     U8 b;
     U8 g;

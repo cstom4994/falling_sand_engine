@@ -606,8 +606,8 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
     glCompileShader(frag_handle);
     CheckShader(frag_handle, "fragment shader");
 
-    gc_free(&gc, vertex_shader);
-    gc_free(&gc, fragment_shader);
+    futil_freestring(vertex_shader);
+    futil_freestring(fragment_shader);
 
     // Link
     bd->ShaderHandle = glCreateProgram();

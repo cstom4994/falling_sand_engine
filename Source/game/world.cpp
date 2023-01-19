@@ -21,7 +21,7 @@
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/internal/builtin_box2d.h"
-#include "engine/math.hpp"
+#include "engine/mathlib.hpp"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "game/chunk.hpp"

@@ -16,6 +16,7 @@
 
 #include "core/cpp/vector.hpp"
 #include "engine/internal/builtin_box2d.h"
+#include "engine/mathlib.h"
 
 F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
 
@@ -41,6 +42,41 @@ int sign(F32 x);
 static F32 dot(v2 A, v2 B);
 static F32 perpdot(v2 A, v2 B);
 static bool operator==(v2 A, v2 B);
+
+metadot_vec3 NormalizeVector(metadot_vec3 v);
+metadot_vec3 Add(metadot_vec3 a, metadot_vec3 b);
+metadot_vec3 Subtract(metadot_vec3 a, metadot_vec3 b);
+metadot_vec3 ScalarMult(metadot_vec3 v, F32 s);
+F64 Distance(metadot_vec3 a, metadot_vec3 b);
+metadot_vec3 VectorProjection(metadot_vec3 a, metadot_vec3 b);
+metadot_vec3 Reflection(metadot_vec3 *v1, metadot_vec3 *v2);
+
+F64 DistanceFromPointToLine2D(metadot_vec3 lP1, metadot_vec3 lP2, metadot_vec3 p);
+
+typedef struct Matrix3x3 {
+    F32 m[3][3];
+} Matrix3x3;
+
+Matrix3x3 Transpose(Matrix3x3 m);
+Matrix3x3 Identity();
+metadot_vec3 Matrix3x3ToEulerAngles(Matrix3x3 m);
+Matrix3x3 EulerAnglesToMatrix3x3(metadot_vec3 rotation);
+metadot_vec3 RotateVector(metadot_vec3 v, Matrix3x3 m);
+metadot_vec3 RotatePoint(metadot_vec3 p, metadot_vec3 r, metadot_vec3 pivot);
+Matrix3x3 MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b);
+
+typedef struct Matrix4x4 {
+    F32 m[4][4];
+} Matrix4x4;
+
+Matrix4x4 Identity4x4();
+Matrix4x4 GetProjectionMatrix(F32 right, F32 left, F32 top, F32 bottom, F32 near, F32 far);
+
+F32 Lerp(F64 t, F32 a, F32 b);
+int Step(F32 edge, F32 x);
+F32 Smoothstep(F32 edge0, F32 edge1, F32 x);
+int Modulus(int a, int b);
+F32 fModulus(F32 a, F32 b);
 }  // namespace NewMaths
 
 #pragma endregion NewMATH

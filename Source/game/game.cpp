@@ -24,7 +24,7 @@
 #include "engine/engine.h"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
-#include "engine/math.hpp"
+#include "engine/mathlib.hpp"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/gpu.hpp"
@@ -779,7 +779,8 @@ int Game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            GameIsolate_.world->tiles[index] = MaterialInstance(&MaterialsList::GENERIC_SAND, Drawing::darkenColor(GameIsolate_.world->tiles[index].color, 0.5f));
+                                            GameIsolate_.world->tiles[index] =
+                                                    MaterialInstance(&MaterialsList::GENERIC_SAND, MetaEngine::Drawing::darkenColor(GameIsolate_.world->tiles[index].color, 0.5f));
                                             GameIsolate_.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
@@ -1603,7 +1604,7 @@ void Game::tick() {
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(F32)l.GetPoint(j).x / scale, (F32)l.GetPoint(j).y / scale};
                     }
-                    Drawing::drawPolygon(tgtLQ, col, vec, (int)x, (int)y, scale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
+                    MetaEngine::Drawing::drawPolygon(tgtLQ, col, vec, (int)x, (int)y, scale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
                     delete[] vec;
                 }
                 R_SetShapeBlendMode(R_BLEND_NORMAL);  // SDL_BLENDMODE_NONE

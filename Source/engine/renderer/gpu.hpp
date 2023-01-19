@@ -13,15 +13,15 @@
 #include "imgui.h"
 #include "libs/glad/glad.h"
 
+namespace MetaEngine {
+const char *GLEnumToString(GLenum e);
+
 class Drawing {
 public:
     static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
     static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
     static U32 darkenColor(U32 col, float brightness);
 };
-
-namespace METAENGINE {
-const char *GLEnumToString(GLenum e);
 
 namespace Detail {
 // Generator macro to avoid duplicating code all the time.
@@ -58,7 +58,7 @@ float GetScrollableHeight();
 
 void IntrospectShader(const char *label, GLuint program);
 void IntrospectVertexArray(const char *label, GLuint vao);
-}  // namespace METAENGINE
+}  // namespace MetaEngine
 
 #if 1
 

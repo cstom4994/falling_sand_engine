@@ -583,7 +583,7 @@ char *GetTrieElementAsString(Trie trie, const char *key, char *defaultValue) {
             return *data;                                                                                                         \
     }
 
-TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(Vector3)
+TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(metadot_vec3)
 TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(double)
 TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(float)
 TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(char)
@@ -643,183 +643,6 @@ void FreeTrieElementsArray(TrieElement *elementsArray, int elementsCount) {
     free(elementsArray);
 }
 
-// --------------- Vector Functions ---------------
-
-Vector3 NormalizeVector(Vector3 v) {
-    F32 l = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-    if (l == 0) return VECTOR3_ZERO;
-
-    v.x *= 1 / l;
-    v.y *= 1 / l;
-    v.z *= 1 / l;
-    return v;
-}
-
-Vector3 Add(Vector3 a, Vector3 b) {
-    a.x += b.x;
-    a.y += b.y;
-    a.z += b.z;
-    return a;
-}
-
-Vector3 Subtract(Vector3 a, Vector3 b) {
-    a.x -= b.x;
-    a.y -= b.y;
-    a.z -= b.z;
-    return a;
-}
-
-Vector3 ScalarMult(Vector3 v, F32 s) { return (Vector3){v.x * s, v.y * s, v.z * s}; }
-
-F64 Distance(Vector3 a, Vector3 b) {
-    Vector3 AMinusB = Subtract(a, b);
-    return sqrt(UTIL_dot(AMinusB, AMinusB));
-}
-
-Vector3 VectorProjection(Vector3 a, Vector3 b) {
-    // https://en.wikipedia.org/wiki/Vector_projection
-    Vector3 normalizedB = NormalizeVector(b);
-    F64 a1 = UTIL_dot(a, normalizedB);
-    return ScalarMult(normalizedB, a1);
-}
-
-Vector3 Reflection(Vector3 *v1, Vector3 *v2) {
-    F32 dotpr = UTIL_dot(*v2, *v1);
-    Vector3 result;
-    result.x = v2->x * 2 * dotpr;
-    result.y = v2->y * 2 * dotpr;
-    result.z = v2->z * 2 * dotpr;
-
-    result.x = v1->x - result.x;
-    result.y = v1->y - result.y;
-    result.z = v1->z - result.z;
-
-    return result;
-}
-
-Vector3 RotatePoint(Vector3 p, Vector3 r, Vector3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
-
-F64 DistanceFromPointToLine2D(Vector3 lP1, Vector3 lP2, Vector3 p) {
-    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-    return fabsf((lP2.y - lP1.y) * p.x - (lP2.x - lP1.x) * p.y + lP2.x * lP1.y - lP2.y * lP1.x) / Distance(lP1, lP2);
-}
-
-// --------------- Matrix3x3 type ---------------
-
-inline Matrix3x3 Transpose(Matrix3x3 m) {
-    Matrix3x3 t;
-
-    t.m[0][1] = m.m[1][0];
-    t.m[1][0] = m.m[0][1];
-
-    t.m[0][2] = m.m[2][0];
-    t.m[2][0] = m.m[0][2];
-
-    t.m[1][2] = m.m[2][1];
-    t.m[2][1] = m.m[1][2];
-
-    t.m[0][0] = m.m[0][0];
-    t.m[1][1] = m.m[1][1];
-    t.m[2][2] = m.m[2][2];
-
-    return t;
-}
-
-Matrix3x3 Identity() {
-    Matrix3x3 m = {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
-    return m;
-}
-
-// Based on the article: Extracting Euler Angles from a Rotation Matrix - Mike Day, Insomniac Games
-Vector3 Matrix3x3ToEulerAngles(Matrix3x3 m) {
-    Vector3 rotation = VECTOR3_ZERO;
-    rotation.x = atan2(m.m[1][2], m.m[2][2]);
-
-    F32 c2 = sqrt(m.m[0][0] * m.m[0][0] + m.m[0][1] * m.m[0][1]);
-    rotation.y = atan2(-m.m[0][2], c2);
-
-    F32 s1 = sin(rotation.x);
-    F32 c1 = cos(rotation.x);
-    rotation.z = atan2(s1 * m.m[2][0] - c1 * m.m[1][0], c1 * m.m[1][1] - s1 * m.m[2][1]);
-
-    return ScalarMult(rotation, 180.0 / PI);
-}
-
-Matrix3x3 EulerAnglesToMatrix3x3(Vector3 rotation) {
-
-    F32 s1 = sin(rotation.x * PI / 180.0);
-    F32 c1 = cos(rotation.x * PI / 180.0);
-    F32 s2 = sin(rotation.y * PI / 180.0);
-    F32 c2 = cos(rotation.y * PI / 180.0);
-    F32 s3 = sin(rotation.z * PI / 180.0);
-    F32 c3 = cos(rotation.z * PI / 180.0);
-
-    Matrix3x3 m = {{{c2 * c3, c2 * s3, -s2}, {s1 * s2 * c3 - c1 * s3, s1 * s2 * s3 + c1 * c3, s1 * c2}, {c1 * s2 * c3 + s1 * s3, c1 * s2 * s3 - s1 * c3, c1 * c2}}};
-
-    return m;
-}
-
-// Vectors are interpreted as rows
-inline Vector3 RotateVector(Vector3 v, Matrix3x3 m) {
-    return (Vector3){v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
-}
-
-Matrix3x3 MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
-    Matrix3x3 r;
-    int i, j, k;
-
-    for (i = 0; i < 3; i++) {
-        for (j = 0; j < 3; j++) {
-            r.m[i][j] = 0;
-            for (k = 0; k < 3; k++) {
-                r.m[i][j] += a.m[i][k] * b.m[k][j];
-            }
-        }
-    }
-
-    return r;
-}
-
-Matrix4x4 Identity4x4() { return (Matrix4x4){{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
-
-Matrix4x4 GetProjectionMatrix(F32 rightPlane, F32 leftPlane, F32 topPlane, F32 bottomPlane, F32 nearPlane, F32 farPlane) {
-    Matrix4x4 matrix = {{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
-
-    matrix.m[0][0] = 2.0f / (rightPlane - leftPlane);
-    matrix.m[1][1] = 2.0f / (topPlane - bottomPlane);
-    matrix.m[2][2] = -2.0f / (farPlane - nearPlane);
-    matrix.m[3][3] = 1;
-    matrix.m[3][0] = -(rightPlane + leftPlane) / (rightPlane - leftPlane);
-    matrix.m[3][1] = -(topPlane + bottomPlane) / (topPlane - bottomPlane);
-    matrix.m[3][2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
-
-    return matrix;
-}
-
-// --------------- Numeric functions ---------------
-
-F32 Lerp(F64 t, F32 a, F32 b) { return (1 - t) * a + t * b; }
-
-int Step(F32 edge, F32 x) { return x < edge ? 0 : 1; }
-
-F32 Smoothstep(F32 edge0, F32 edge1, F32 x) {
-    // Scale, bias and saturate x to 0..1 range
-    x = UTIL_clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    // Evaluate polynomial
-    return x * x * (3 - 2 * x);
-}
-
-// Modulus function, returning only positive values
-int Modulus(int a, int b) {
-    int r = a % b;
-    return r < 0 ? r + b : r;
-}
-
-F32 fModulus(F32 a, F32 b) {
-    F32 r = fmod(a, b);
-    return r < 0 ? r + b : r;
-}
-
 // --------------- cJSON wrapper functions ---------------
 
 cJSON *OpenJSON(char path[], char name[]) {
@@ -872,31 +695,31 @@ F64 JSON_GetObjectDouble(cJSON *object, char *string, F64 defaultValue) {
         return defaultValue;
 }
 
-Vector3 JSON_GetObjectVector3(cJSON *object, char *string, Vector3 defaultValue) {
+metadot_vec3 JSON_GetObjectVector3(cJSON *object, char *string, metadot_vec3 defaultValue) {
 
     cJSON *arr = cJSON_GetObjectItem(object, string);
     if (!arr) return defaultValue;
 
-    Vector3 v = VECTOR3_ZERO;
+    metadot_vec3 v = VECTOR3_ZERO;
 
     cJSON *item = cJSON_GetArrayItem(arr, 0);
-    if (item) v.x = item->valuedouble;
+    if (item) v.X = item->valuedouble;
 
     item = cJSON_GetArrayItem(arr, 1);
-    if (item) v.y = item->valuedouble;
+    if (item) v.Y = item->valuedouble;
 
     item = cJSON_GetArrayItem(arr, 2);
-    if (item) v.z = item->valuedouble;
+    if (item) v.Z = item->valuedouble;
 
     return v;
 }
 
-cJSON *JSON_CreateVector3(Vector3 value) {
+cJSON *JSON_CreateVector3(metadot_vec3 value) {
 
     cJSON *v = cJSON_CreateArray();
-    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.x));
-    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.y));
-    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.z));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.X));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.Y));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.Z));
 
     return v;
 }
@@ -904,19 +727,19 @@ cJSON *JSON_CreateVector3(Vector3 value) {
 // --------------- Lua stack manipulation functions ---------------
 
 // Creates an table with the xyz entries and populate with the vector values
-void Vector3ToTable(lua_State *L, Vector3 vector) {
+void Vector3ToTable(lua_State *L, metadot_vec3 vector) {
 
     lua_newtable(L);
     lua_pushliteral(L, "x");      // x index
-    lua_pushnumber(L, vector.x);  // x value
+    lua_pushnumber(L, vector.X);  // x value
     lua_rawset(L, -3);            // Store x in table
 
     lua_pushliteral(L, "y");      // y index
-    lua_pushnumber(L, vector.y);  // y value
+    lua_pushnumber(L, vector.Y);  // y value
     lua_rawset(L, -3);            // Store y in table
 
     lua_pushliteral(L, "z");      // z index
-    lua_pushnumber(L, vector.z);  // z value
+    lua_pushnumber(L, vector.Z);  // z value
     lua_rawset(L, -3);            // Store z in table
 }
 

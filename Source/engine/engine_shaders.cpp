@@ -20,7 +20,7 @@ U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum thisype, const char *filename) {
     // Compile the shader
     shader = R_CompileShader(thisype, source);
 
-    gc_free(&gc, source);
+    futil_freestring(source);
 
     return shader;
 }

@@ -136,7 +136,7 @@ void Audio::UnLoadSound(const std::string &strSoundName) {
     sgpImplementation->mSounds.erase(tFoundIt);
 }
 
-int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition, float fVolumedB) {
+int Audio::PlaySounds(const std::string &strSoundName, const metadot_vec3 &vPosition, float fVolumedB) {
     int nChannelId = sgpImplementation->mnNextChannelId++;
     auto tFoundIt = sgpImplementation->mSounds.find(strSoundName);
     if (tFoundIt == sgpImplementation->mSounds.end()) {
@@ -162,7 +162,7 @@ int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition,
     return nChannelId;
 }
 
-void Audio::SetChannel3dPosition(int nChannelId, const Vector3 &vPosition) {
+void Audio::SetChannel3dPosition(int nChannelId, const metadot_vec3 &vPosition) {
     auto tFoundIt = sgpImplementation->mChannels.find(nChannelId);
     if (tFoundIt == sgpImplementation->mChannels.end()) return;
 
@@ -259,11 +259,11 @@ void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue
 
 void Audio::GetGlobalParameter(const std::string &strParameterName, float *parameter) { get_fmod_system()->getParameterByName(strParameterName.c_str(), parameter); }
 
-FMOD_VECTOR Audio::VectorToFmod(const Vector3 &vPosition) {
+FMOD_VECTOR Audio::VectorToFmod(const metadot_vec3 &vPosition) {
     FMOD_VECTOR fVec;
-    fVec.x = vPosition.x;
-    fVec.y = vPosition.y;
-    fVec.z = vPosition.z;
+    fVec.x = vPosition.X;
+    fVec.y = vPosition.Y;
+    fVec.z = vPosition.Z;
     return fVec;
 }
 
@@ -292,9 +292,9 @@ void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, 
 
 void Audio::UnLoadSound(const std::string &strSoundName) {}
 
-int Audio::PlaySounds(const std::string &strSoundName, const Vector3 &vPosition, float fVolumedB) { return 1; }
+int Audio::PlaySounds(const std::string &strSoundName, const metadot_vec3 &vPosition, float fVolumedB) { return 1; }
 
-void Audio::SetChannel3dPosition(int nChannelId, const Vector3 &vPosition) {}
+void Audio::SetChannel3dPosition(int nChannelId, const metadot_vec3 &vPosition) {}
 
 void Audio::SetChannelVolume(int nChannelId, float fVolumedB) {}
 

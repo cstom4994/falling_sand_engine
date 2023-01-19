@@ -50,6 +50,7 @@ inline const char *FUtil_GetFileName(const char *path) {
 }
 
 char *futil_readfilestring(const char *path);
+void futil_freestring(void* ptr);
 
 #if defined(__cplusplus)
 }
