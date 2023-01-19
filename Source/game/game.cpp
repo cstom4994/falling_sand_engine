@@ -470,7 +470,7 @@ int Game::run(int argc, char *argv[]) {
             if (windowEvent.type == SDL_MOUSEWHEEL) {
 
             } else if (windowEvent.type == SDL_MOUSEMOTION) {
-                if (Controls::DEBUG_DRAW->get()) {
+                if (ControlSystem::DEBUG_DRAW->get()) {
                     // draw material
 
                     int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / scale);
@@ -505,7 +505,7 @@ int Game::run(int argc, char *argv[]) {
                     lastDrawMY = 0;
                 }
 
-                if (Controls::mmouse) {
+                if (ControlSystem::mmouse) {
                     // erase material
 
                     // erase from world
@@ -587,14 +587,14 @@ int Game::run(int argc, char *argv[]) {
                     lastEraseMY = 0;
                 }
             } else if (windowEvent.type == SDL_KEYDOWN) {
-                Controls::KeyEvent(windowEvent.key);
+                ControlSystem::KeyEvent(windowEvent.key);
             } else if (windowEvent.type == SDL_KEYUP) {
-                Controls::KeyEvent(windowEvent.key);
+                ControlSystem::KeyEvent(windowEvent.key);
             }
 
             if (windowEvent.type == SDL_MOUSEBUTTONDOWN) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    Controls::lmouse = true;
+                    ControlSystem::lmouse = true;
 
                     if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
                         if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::VACUUM)) {
@@ -720,14 +720,14 @@ int Game::run(int argc, char *argv[]) {
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    Controls::rmouse = true;
+                    ControlSystem::rmouse = true;
                     if (GameIsolate_.world->WorldIsolate_.player) GameIsolate_.world->WorldIsolate_.player->startThrow = Time::millis();
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
-                    Controls::mmouse = true;
+                    ControlSystem::mmouse = true;
                 }
             } else if (windowEvent.type == SDL_MOUSEBUTTONUP) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    Controls::lmouse = false;
+                    ControlSystem::lmouse = false;
 
                     if (GameIsolate_.world->WorldIsolate_.player) {
                         if (GameIsolate_.world->WorldIsolate_.player->heldItem) {
@@ -817,7 +817,7 @@ int Game::run(int argc, char *argv[]) {
                         }
                     }
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    Controls::rmouse = false;
+                    ControlSystem::rmouse = false;
                     // pick up / throw item
 
                     int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
@@ -874,7 +874,7 @@ int Game::run(int argc, char *argv[]) {
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
-                    Controls::mmouse = false;
+                    ControlSystem::mmouse = false;
                 }
             }
 
@@ -1155,31 +1155,31 @@ int Game::exit() {
 void Game::updateFrameEarly() {
 
     // handle controls
-    if (Controls::DEBUG_UI->get()) {
+    if (ControlSystem::DEBUG_UI->get()) {
         GameUI::DebugDrawUI::visible ^= true;
         GameIsolate_.globaldef.ui_tweak ^= true;
     }
 
     if (GameIsolate_.globaldef.draw_frame_graph) {
-        if (Controls::STATS_DISPLAY->get()) {
+        if (ControlSystem::STATS_DISPLAY->get()) {
             GameIsolate_.globaldef.draw_frame_graph = false;
             GameIsolate_.globaldef.draw_debug_stats = false;
             GameIsolate_.globaldef.draw_chunk_state = false;
             GameIsolate_.globaldef.draw_detailed_material_info = false;
         }
     } else {
-        if (Controls::STATS_DISPLAY->get()) {
+        if (ControlSystem::STATS_DISPLAY->get()) {
             GameIsolate_.globaldef.draw_frame_graph = true;
             GameIsolate_.globaldef.draw_debug_stats = true;
 
-            if (Controls::STATS_DISPLAY_DETAILED->get()) {
+            if (ControlSystem::STATS_DISPLAY_DETAILED->get()) {
                 GameIsolate_.globaldef.draw_chunk_state = true;
                 GameIsolate_.globaldef.draw_detailed_material_info = true;
             }
         }
     }
 
-    if (Controls::DEBUG_REFRESH->get()) {
+    if (ControlSystem::DEBUG_REFRESH->get()) {
         for (int x = 0; x < GameIsolate_.world->width; x++) {
             for (int y = 0; y < GameIsolate_.world->height; y++) {
                 GameIsolate_.world->dirty[x + y * GameIsolate_.world->width] = true;
@@ -1189,7 +1189,7 @@ void Game::updateFrameEarly() {
         }
     }
 
-    if (Controls::DEBUG_RIGID->get()) {
+    if (ControlSystem::DEBUG_RIGID->get()) {
         for (auto &cur : GameIsolate_.world->WorldIsolate_.rigidBodies) {
             if (cur->body->IsEnabled()) {
                 F32 s = sin(cur->body->GetAngle());
@@ -1240,17 +1240,17 @@ void Game::updateFrameEarly() {
         GameIsolate_.world->WorldIsolate_.rigidBodies.clear();
     }
 
-    if (Controls::DEBUG_UPDATE_WORLD_MESH->get()) {
+    if (ControlSystem::DEBUG_UPDATE_WORLD_MESH->get()) {
         GameIsolate_.world->updateWorldMesh();
     }
 
-    if (Controls::DEBUG_EXPLODE->get()) {
+    if (ControlSystem::DEBUG_EXPLODE->get()) {
         int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
         int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
         GameIsolate_.world->explosion(x, y, 30);
     }
 
-    if (Controls::DEBUG_CARVE->get()) {
+    if (ControlSystem::DEBUG_CARVE->get()) {
         // carve square
 
         int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale - 16);
@@ -1287,15 +1287,15 @@ void Game::updateFrameEarly() {
         }
     }
 
-    if (Controls::DEBUG_BRUSHSIZE_INC->get()) {
+    if (ControlSystem::DEBUG_BRUSHSIZE_INC->get()) {
         GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize < 50 ? GameUI::DebugDrawUI::brushSize + 1 : GameUI::DebugDrawUI::brushSize;
     }
 
-    if (Controls::DEBUG_BRUSHSIZE_DEC->get()) {
+    if (ControlSystem::DEBUG_BRUSHSIZE_DEC->get()) {
         GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize > 1 ? GameUI::DebugDrawUI::brushSize - 1 : GameUI::DebugDrawUI::brushSize;
     }
 
-    if (Controls::DEBUG_TOGGLE_PLAYER->get()) {
+    if (ControlSystem::DEBUG_TOGGLE_PLAYER->get()) {
         if (GameIsolate_.world->WorldIsolate_.player) {
             global.GameData_.freeCamX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f;
             global.GameData_.freeCamY = GameIsolate_.world->WorldIsolate_.player->y - GameIsolate_.world->WorldIsolate_.player->hh / 2.0f;
@@ -1342,7 +1342,7 @@ accLoadY = 0;*/
         }
     }
 
-    if (Controls::PAUSE->get()) {
+    if (ControlSystem::PAUSE->get()) {
         if (this->state == EnumGameState::INGAME) {
             GameUI::MainMenuUI__visible = !GameUI::MainMenuUI__visible;
         }
@@ -1356,7 +1356,7 @@ accLoadY = 0;*/
         global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
         if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL &&
             GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::FLUID_CONTAINER)) {
-            if (Controls::lmouse && GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() > 0) {
+            if (ControlSystem::lmouse && GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() > 0) {
                 // shoot fluid from container
 
                 int x = (int)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f + GameIsolate_.world->loadZone.x +
@@ -1706,15 +1706,15 @@ void Game::tick() {
             GameIsolate_.world->tick();
         }
 
-        if (Controls::DEBUG_TICK->get()) {
+        if (ControlSystem::DEBUG_TICK->get()) {
             GameIsolate_.world->tick();
         }
 
         // Tick Cam zoom
 
-        if (state == INGAME && (Controls::ZOOM_IN->get() || Controls::ZOOM_OUT->get())) {
-            F32 CamZoomIn = (F32)(Controls::ZOOM_IN->get());
-            F32 CamZoomOut = (F32)(Controls::ZOOM_OUT->get());
+        if (state == INGAME && (ControlSystem::ZOOM_IN->get() || ControlSystem::ZOOM_OUT->get())) {
+            F32 CamZoomIn = (F32)(ControlSystem::ZOOM_IN->get());
+            F32 CamZoomOut = (F32)(ControlSystem::ZOOM_OUT->get());
 
             F32 deltaScale = CamZoomIn - CamZoomOut;
             int oldScale = scale;
@@ -2253,16 +2253,16 @@ void Game::tickChunkLoading() {
 void Game::tickPlayer() {
 
     if (GameIsolate_.world->WorldIsolate_.player) {
-        if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
+        if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             if (GameIsolate_.world->WorldIsolate_.player->ground) {
                 GameIsolate_.world->WorldIsolate_.player->vy = -4;
                 global.audioEngine.PlayEvent("event:/Player/Jump");
             }
         }
 
-        GameIsolate_.world->WorldIsolate_.player->vy += (F32)(((Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
-                                                              (Controls::PLAYER_DOWN->get() ? 0.1 : 0));
-        if (Controls::PLAYER_UP->get() && !Controls::DEBUG_DRAW->get()) {
+        GameIsolate_.world->WorldIsolate_.player->vy += (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
+                                                              (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
+        if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 Particle *p = new Particle(TilesCreateLava(),
@@ -2286,15 +2286,15 @@ void Game::tickPlayer() {
             global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
-        GameIsolate_.world->WorldIsolate_.player->vx += (F32)((Controls::PLAYER_LEFT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx > 0 ? -0.4 : -0.2) : 0) +
-                                                              (Controls::PLAYER_RIGHT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx < 0 ? 0.4 : 0.2) : 0));
-        if (!Controls::PLAYER_LEFT->get() && !Controls::PLAYER_RIGHT->get()) GameIsolate_.world->WorldIsolate_.player->vx *= (F32)(GameIsolate_.world->WorldIsolate_.player->ground ? 0.85 : 0.96);
+        GameIsolate_.world->WorldIsolate_.player->vx += (F32)((ControlSystem::PLAYER_LEFT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx > 0 ? -0.4 : -0.2) : 0) +
+                                                              (ControlSystem::PLAYER_RIGHT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx < 0 ? 0.4 : 0.2) : 0));
+        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get()) GameIsolate_.world->WorldIsolate_.player->vx *= (F32)(GameIsolate_.world->WorldIsolate_.player->ground ? 0.85 : 0.96);
         if (GameIsolate_.world->WorldIsolate_.player->vx > 4.5) GameIsolate_.world->WorldIsolate_.player->vx = 4.5;
         if (GameIsolate_.world->WorldIsolate_.player->vx < -4.5) GameIsolate_.world->WorldIsolate_.player->vx = -4.5;
     } else {
         if (state == INGAME) {
-            global.GameData_.freeCamX += (F32)((Controls::PLAYER_LEFT->get() ? -5 : 0) + (Controls::PLAYER_RIGHT->get() ? 5 : 0));
-            global.GameData_.freeCamY += (F32)((Controls::PLAYER_UP->get() ? -5 : 0) + (Controls::PLAYER_DOWN->get() ? 5 : 0));
+            global.GameData_.freeCamX += (F32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
+            global.GameData_.freeCamY += (F32)((ControlSystem::PLAYER_UP->get() ? -5 : 0) + (ControlSystem::PLAYER_DOWN->get() ? 5 : 0));
         } else {
         }
     }
@@ -2690,14 +2690,14 @@ newState = true;
             }
         }
 
-        if (Controls::mmouse) {
+        if (ControlSystem::mmouse) {
             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
                               x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
                         x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
-        } else if (Controls::DEBUG_DRAW->get()) {
+        } else if (ControlSystem::DEBUG_DRAW->get()) {
             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / scale);
             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,

@@ -4,6 +4,8 @@
 #define _METADOT_CONTROLS_HPP_
 
 #include <cstdio>
+#include <map>
+#include <string>
 #include <vector>
 
 #include "core/cpp/vector.hpp"
@@ -37,7 +39,7 @@ public:
     virtual bool get();
 };
 
-class Controls {
+class ControlSystem {
 public:
     static bool lmouse;
     static bool mmouse;
@@ -65,6 +67,7 @@ public:
     static Control *PAUSE;
 
     static MetaEngine::vector<std::shared_ptr<KeyControl>> keyControls;
+    static std::map<std::string, int> SDLKeymap;
 
     static bool initted;
 
@@ -74,6 +77,10 @@ public:
     static void InitKey();
     // Add key binding
     static KeyControl *Add(std::shared_ptr<KeyControl> c);
+
+    static void InitKeymap();
+    static std::string SDLKeyToString(int sdlkey);
+    static int StringToSDLKey(const std::string &s);
 };
 
 #endif

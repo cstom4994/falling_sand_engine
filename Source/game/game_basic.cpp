@@ -39,7 +39,7 @@ static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack)
 static void textures_end() { EndTexture(global.game->GameIsolate_.texturepack); }
 static void textures_load(std::string name, std::string path) {}
 static void materials_init() { InitMaterials(); }
-static void controls_init() { Controls::InitKey(); }
+static void controls_init() { ControlSystem::InitKey(); }
 
 static void init_ecs() {
     auto luacore = global.scripts->LuaCoreCpp;

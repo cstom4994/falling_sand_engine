@@ -125,12 +125,12 @@ void UIRendererUpdate() {
         R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
         if (e.second.type == ElementType::windowElement) {
             // Move window
-            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && GetMousePos().y - e.second.minRectY < 15.0f) {
+            if (BoxDistence(rect, GetMousePos()) < 0.0f && ControlSystem::lmouse && GetMousePos().y - e.second.minRectY < 15.0f) {
             }
         }
         if (e.second.type == ElementType::buttonElement) {
             // Pressed button
-            if (BoxDistence(rect, GetMousePos()) < 0.0f && Controls::lmouse && NULL != e.second.cclass.button.func) {
+            if (BoxDistence(rect, GetMousePos()) < 0.0f && ControlSystem::lmouse && NULL != e.second.cclass.button.func) {
                 e.second.cclass.button.func();
             }
         }
