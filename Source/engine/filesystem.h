@@ -3,9 +3,9 @@
 #ifndef _METADOT_FILESYSTEM_HPP_
 #define _METADOT_FILESYSTEM_HPP_
 
-#include <string.h>
+#include <cstring>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/macros.h"
 #include "platform_detail.h"
 
@@ -14,10 +14,6 @@
 //                    ("%s", MetaEngine::Format("FILE: {0} does not exist", stringPath)))
 
 #define FUTIL_ASSERT_EXIST(stringPath)
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 extern char *FilesystemProjectRootPath;
 extern char *FilesystemDataPath;
@@ -50,10 +46,6 @@ inline const char *FUtil_GetFileName(const char *path) {
 }
 
 char *futil_readfilestring(const char *path);
-void futil_freestring(void* ptr);
-
-#if defined(__cplusplus)
-}
-#endif
+void futil_freestring(void *ptr);
 
 #endif

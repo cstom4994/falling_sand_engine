@@ -41,7 +41,6 @@
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
 #include "ui.hpp"
-#include "utils.h"
 #include "world_generator.cpp"
 
 Global global;

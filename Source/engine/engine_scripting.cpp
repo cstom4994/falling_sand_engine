@@ -23,15 +23,26 @@
 #include "engine/internal/builtin_lpeg.h"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine_scripting.h"
 #include "game/background.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"
 #include "libs/lua/ffi.h"
-#include "libs/lua/host/lua.h"
-#include "libs/lua/host/lualib.h"
 #include "renderer/renderer_gpu.h"
+
+void InitLuaCoreC(LuaCoreC *_struct, lua_State *LuaCoreCppFunc(void *), void *luacorecpp) {
+    METADOT_ASSERT_E(_struct);
+    _struct->L = LuaCoreCppFunc(luacorecpp);
+}
+
+void LuaCodeInit(LuaCode *_struct, const char *scriptPath) {
+    METADOT_ASSERT_E(_struct);
+    strcpy(_struct->scriptPath, scriptPath);
+}
+
+void LuaCodeUpdate(LuaCode *_struct) {}
+
+void LuaCodeFree(LuaCode *_struct) {}
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }

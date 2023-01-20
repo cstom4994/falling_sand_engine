@@ -7,11 +7,8 @@
 #include <time.h>
 
 #include "core/core.h"
-#include "libs/lua/host/lauxlib.h"
-#include "libs/lua/host/lua.h"
-#include "libs/lua/host/lualib.h"
 #include "sdl_wrapper.h"
-#include "utils.h"
+#include "core/cpp/utils.hpp"
 
 typedef struct engine_core {
     C_Window *window;

@@ -30,7 +30,7 @@ int InitECS(unsigned max_entities) {
     }
 
     ECS.maxEntities = max_entities;
-    ECS.Entities = calloc(max_entities, sizeof(Entity));
+    ECS.Entities = (Entity *)calloc(max_entities, sizeof(Entity));
     ECS.AvaliableEntitiesIndexes = InitList(sizeof(int));
 
     // Populate avaliable entities with all indexes
@@ -79,11 +79,11 @@ void FreeECS() {
 
 int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **data), void (*destructorFunc)(void **data), void *(*copyFunc)(void *)) {
     if (!ECS.Components) {
-        ECS.Components = malloc(sizeof(Component *));
-        ECS.Components[0] = calloc(ECS.maxEntities, sizeof(Component));
+        ECS.Components = (Component **)malloc(sizeof(Component *));
+        ECS.Components[0] = (Component *)calloc(ECS.maxEntities, sizeof(Component));
     } else {
-        ECS.Components = realloc(ECS.Components, (ECS.numberOfComponents + 1) * sizeof(Component *));
-        ECS.Components[ECS.numberOfComponents] = calloc(ECS.maxEntities, sizeof(Component));
+        ECS.Components = (Component **)realloc(ECS.Components, (ECS.numberOfComponents + 1) * sizeof(Component *));
+        ECS.Components[ECS.numberOfComponents] = (Component *)calloc(ECS.maxEntities, sizeof(Component));
     }
 
     ComponentType newType;
@@ -95,10 +95,10 @@ int RegisterNewComponent(char componentName[25], void (*constructorFunc)(void **
     // newType.decode = decodeFunc;
 
     if (!ECS.ComponentTypes) {
-        ECS.ComponentTypes = malloc(sizeof(ComponentType));
+        ECS.ComponentTypes = (ComponentType *)malloc(sizeof(ComponentType));
         ECS.ComponentTypes[0] = newType;
     } else {
-        ECS.ComponentTypes = realloc(ECS.ComponentTypes, (ECS.numberOfComponents + 1) * sizeof(ComponentType));
+        ECS.ComponentTypes = (ComponentType *)realloc(ECS.ComponentTypes, (ECS.numberOfComponents + 1) * sizeof(ComponentType));
         ECS.ComponentTypes[ECS.numberOfComponents] = newType;
     }
     ECS.numberOfComponents++;

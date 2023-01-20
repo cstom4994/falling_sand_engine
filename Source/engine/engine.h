@@ -9,16 +9,11 @@
 #include <string.h>
 #include <time.h>
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #include "engine_core.h"
 #include "engine_ecs.h"
 #include "engine_meta.h"
 #include "engine_platform.h"
 #include "engine_render.h"
-#include "engine_scripting.h"
 #include "util.h"
 
 #define IMPLENGINE()             \
@@ -33,9 +28,5 @@ int InitEngine(void (*InitCppReflection)());
 void EngineUpdate();
 void EngineUpdateEnd();
 void EndEngine(int errorOcurred);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif

@@ -3,6 +3,8 @@
 #ifndef _METADOT_CPP_TUTIL_HPP_
 #define _METADOT_CPP_TUTIL_HPP_
 
+#include <zlib.h>
+
 #include <algorithm>
 #include <bitset>
 #include <cassert>
@@ -14,8 +16,16 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "core/alloc.h"
+#include "core/c/list.h"
+#include "core/const.h"
 #include "core/core.hpp"
-#include "engine/engine.h"
+#include "engine/mathlib.h"
+// #include "engine/scripting/lua_wrapper.hpp"
+#include "libs/cJSON.h"
+// #include "engine/sdl_wrapper.h"
+
+struct lua_State;
 
 #pragma region Template
 
@@ -100,21 +110,21 @@ constexpr bool is_virtual_base_of_v = is_virtual_base_of<Base, Derived>::value;
 template <size_t N>
 constexpr std::size_t lengthof(const char (&str)[N]) noexcept;
 
-constexpr std::size_t string_hash_seed(std::size_t seed, const char *str, std::size_t N) noexcept;
+constexpr std::size_t string_hash_seed(std::size_t seed, const char* str, std::size_t N) noexcept;
 constexpr std::size_t string_hash_seed(std::size_t seed, std::string_view str) noexcept { return string_hash_seed(seed, str.data(), str.size()); }
 template <std::size_t N>
 constexpr std::size_t string_hash_seed(std::size_t seed, const char (&str)[N]) noexcept {
     return string_hash_seed(seed, str, N - 1);
 }
-constexpr std::size_t string_hash_seed(std::size_t seed, const char *str) noexcept;
+constexpr std::size_t string_hash_seed(std::size_t seed, const char* str) noexcept;
 
-constexpr std::size_t string_hash(const char *str, std::size_t N) noexcept;
+constexpr std::size_t string_hash(const char* str, std::size_t N) noexcept;
 constexpr std::size_t string_hash(std::string_view str) noexcept { return string_hash(str.data(), str.size()); }
 template <std::size_t N>
 constexpr std::size_t string_hash(const char (&str)[N]) noexcept {
     return string_hash(str, N - 1);
 }
-constexpr std::size_t string_hash(const char *str) noexcept;
+constexpr std::size_t string_hash(const char* str) noexcept;
 
 template <typename T>
 struct is_function_pointer;
@@ -161,12 +171,12 @@ template <typename T, std::size_t N>
 class TempArray {
 public:
     template <typename... Elems>
-    constexpr TempArray(Elems &&...elems) : data{static_cast<T>(elems)...} {}
+    constexpr TempArray(Elems&&... elems) : data{static_cast<T>(elems)...} {}
 
     constexpr operator std::add_lvalue_reference_t<T[N]>() & { return data; }
-    constexpr operator std::add_lvalue_reference_t<const T[N]>() const & { return data; }
+    constexpr operator std::add_lvalue_reference_t<const T[N]>() const& { return data; }
     constexpr operator std::add_rvalue_reference_t<T[N]>() && { return std::move(data); }
-    constexpr operator std::add_rvalue_reference_t<const T[N]>() const && { return std::move(data); }
+    constexpr operator std::add_rvalue_reference_t<const T[N]>() const&& { return std::move(data); }
 
     constexpr operator std::span<T>() { return data; }
     constexpr operator std::span<const T>() const { return data; }
@@ -325,7 +335,7 @@ struct has_virtual_base_helper<std::void_t<decltype(reinterpret_cast<has_virtual
 template <typename Void, typename Base, typename Derived>
 struct is_virtual_base_of_helper : std::is_base_of<Base, Derived> {};
 template <typename Base, typename Derived>
-struct is_virtual_base_of_helper<std::void_t<decltype(static_cast<Derived *>(std::declval<Base *>()))>, Base, Derived> : std::false_type {};
+struct is_virtual_base_of_helper<std::void_t<decltype(static_cast<Derived*>(std::declval<Base*>()))>, Base, Derived> : std::false_type {};
 
 template <class Void, template <class...> class Op, class... Args>
 struct is_valid : std::false_type {};
@@ -378,7 +388,7 @@ constexpr std::size_t MetaEngine::lengthof(const char (&str)[N]) noexcept {
     return N - 1;
 }
 
-constexpr std::size_t MetaEngine::string_hash_seed(std::size_t seed, const char *str, std::size_t N) noexcept {
+constexpr std::size_t MetaEngine::string_hash_seed(std::size_t seed, const char* str, std::size_t N) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     std::size_t value = seed;
 
@@ -387,7 +397,7 @@ constexpr std::size_t MetaEngine::string_hash_seed(std::size_t seed, const char 
     return value;
 }
 
-constexpr std::size_t MetaEngine::string_hash_seed(std::size_t seed, const char *curr) noexcept {
+constexpr std::size_t MetaEngine::string_hash_seed(std::size_t seed, const char* curr) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     std::size_t value = seed;
 
@@ -398,12 +408,12 @@ constexpr std::size_t MetaEngine::string_hash_seed(std::size_t seed, const char 
     return value;
 }
 
-constexpr std::size_t MetaEngine::string_hash(const char *str, std::size_t N) noexcept {
+constexpr std::size_t MetaEngine::string_hash(const char* str, std::size_t N) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     return string_hash_seed(Traits::offset, str, N);
 }
 
-constexpr std::size_t MetaEngine::string_hash(const char *str) noexcept {
+constexpr std::size_t MetaEngine::string_hash(const char* str) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     return string_hash_seed(Traits::offset, str);
 }
@@ -432,21 +442,21 @@ constexpr bool MetaEngine::member_pointer_equal(V1 Obj1::*p1, V2 Obj2::*p2) noex
 
 std::vector<std::string> split(std::string strToSplit, char delimeter);
 std::vector<std::string> string_split(std::string s, const char delimiter);
-std::vector<std::string> split2(std::string const &original, char separator);
+std::vector<std::string> split2(std::string const& original, char separator);
 
 struct String {
 
     String() = default;
 
-    String(const char *str [[maybe_unused]]) : m_String(str ? str : "") {}
+    String(const char* str [[maybe_unused]]) : m_String(str ? str : "") {}
 
     String(std::string str) : m_String(std::move(str)) {}
 
-    operator const char *() { return m_String.c_str(); }
+    operator const char*() { return m_String.c_str(); }
 
     operator std::string() { return m_String; }
 
-    std::pair<size_t, size_t> NextPoi(size_t &start) const {
+    std::pair<size_t, size_t> NextPoi(size_t& start) const {
         size_t end = m_String.size();
         std::pair<size_t, size_t> range(end + 1, end);
         size_t pos = start;
@@ -475,7 +485,7 @@ struct String {
 class Time {
 public:
     static long long millis();
-    static time_t mkgmtime(struct tm *unixdate);
+    static time_t mkgmtime(struct tm* unixdate);
 };
 
 class Timer {
@@ -485,11 +495,11 @@ public:
     Timer();
     virtual ~Timer();
 
-    virtual Timer &operator=(const Timer &other);
-    virtual Timer operator-(const Timer &other);
+    virtual Timer& operator=(const Timer& other);
+    virtual Timer operator-(const Timer& other);
     virtual Timer operator-(Ticks time);
-    virtual Timer &operator-=(const Timer &other);
-    virtual Timer &operator-=(Ticks time);
+    virtual Timer& operator-=(const Timer& other);
+    virtual Timer& operator-=(Ticks time);
 
     //! Returns the time in ms (int)
     virtual Ticks GetTime() const;
@@ -540,33 +550,33 @@ namespace SUtil {
 typedef std::string String;
 typedef std::string_view StringView;
 
-inline std::string ws2s(const std::wstring &wstr) {
+inline std::string ws2s(const std::wstring& wstr) {
     using convert_typeX = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_typeX, wchar_t> converterX;
 
     return converterX.to_bytes(wstr);
 }
 
-inline bool equals(const char *a, const char *c) { return strcmp(a, c) == 0; }
+inline bool equals(const char* a, const char* c) { return strcmp(a, c) == 0; }
 
 inline bool startsWith(StringView s, StringView prefix) { return prefix.size() <= s.size() && (strncmp(prefix.data(), s.data(), prefix.size()) == 0); }
 
 inline bool startsWith(StringView s, char prefix) { return !s.empty() && s[0] == prefix; }
 
-inline bool startsWith(const char *s, const char *prefix) { return strncmp(s, prefix, strlen(prefix)) == 0; }
+inline bool startsWith(const char* s, const char* prefix) { return strncmp(s, prefix, strlen(prefix)) == 0; }
 
 inline bool endsWith(StringView s, StringView suffix) { return suffix.size() <= s.size() && strncmp(suffix.data(), s.data() + s.size() - suffix.size(), suffix.size()) == 0; }
 
 inline bool endsWith(StringView s, char suffix) { return !s.empty() && s[s.size() - 1] == suffix; }
 
-inline bool endsWith(const char *s, const char *suffix) {
+inline bool endsWith(const char* s, const char* suffix) {
     auto sizeS = strlen(s);
     auto sizeSuf = strlen(suffix);
 
     return sizeSuf <= sizeS && strncmp(suffix, s + sizeS - sizeSuf, sizeSuf) == 0;
 }
 
-inline void toLower(char *s) {
+inline void toLower(char* s) {
     int l = strlen(s);
     int ind = 0;
     // spec of "simd"
@@ -583,7 +593,7 @@ inline void toLower(char *s) {
     }
 }
 
-inline void toLower(String &ss) {
+inline void toLower(String& ss) {
     int l = ss.size();
     auto s = ss.data();
     int ind = 0;
@@ -599,7 +609,7 @@ inline void toLower(String &ss) {
     for (int i = 0; i < (l & 3); ++i) s[ind++] = std::tolower(s[ind]);
 }
 
-inline void toUpper(char *s) {
+inline void toUpper(char* s) {
     int l = strlen(s);
     int ind = 0;
     // spec of "simd"
@@ -616,7 +626,7 @@ inline void toUpper(char *s) {
     }
 }
 
-inline void toUpper(String &ss) {
+inline void toUpper(String& ss) {
     int l = ss.size();
     auto s = ss.data();
     int ind = 0;
@@ -632,25 +642,25 @@ inline void toUpper(String &ss) {
     for (int i = 0; i < (l & 3); ++i) s[ind++] = std::toupper(s[ind]);
 }
 
-inline bool replaceWith(char *src, char what, char with) {
+inline bool replaceWith(char* src, char what, char with) {
     for (int i = 0; true; ++i) {
-        auto &id = src[i];
+        auto& id = src[i];
         if (id == '\0') return true;
         bool isWhat = id == what;
         id = isWhat * with + src[i] * (!isWhat);
     }
 }
 
-inline bool replaceWith(String &src, char what, char with) {
+inline bool replaceWith(String& src, char what, char with) {
     for (int i = 0; i < src.size(); ++i) {
-        auto &id = src.data()[i];
+        auto& id = src.data()[i];
         bool isWhat = id == what;
         id = isWhat * with + src[i] * (!isWhat);
     }
     return true;
 }
 
-inline bool replaceWith(String &src, const char *what, const char *with) {
+inline bool replaceWith(String& src, const char* what, const char* with) {
     String out;
     size_t whatlen = strlen(what);
     out.reserve(src.size());
@@ -670,7 +680,7 @@ inline bool replaceWith(String &src, const char *what, const char *with) {
     return true;
 }
 
-inline bool replaceWith(String &src, const char *what, const char *with, int times) {
+inline bool replaceWith(String& src, const char* what, const char* with, int times) {
     for (int i = 0; i < times; ++i) replaceWith(src, what, with);
     return true;
 }
@@ -697,7 +707,7 @@ void splitString(const Viewo& line, std::vector<StringOrView>& words, const char
         }
     }
 }*/
-inline void splitString(const String &line, std::vector<String> &words, const char *divider = " \n\t") {
+inline void splitString(const String& line, std::vector<String>& words, const char* divider = " \n\t") {
     auto beginIdx = line.find_first_not_of(divider, 0);
     while (beginIdx != String::npos) {
         auto endIdx = line.find_first_of(divider, beginIdx);
@@ -740,9 +750,9 @@ inline void splitString(const String &line, std::vector<String> &words, const ch
 //	if(operator bool()==false)
 //		-> on calling operator*() or operator->()
 //
-template <bool ignoreBlanks = false, typename DividerType = const char *, bool throwException = false>
+template <bool ignoreBlanks = false, typename DividerType = const char*, bool throwException = false>
 class SplitIterator {
-    static_assert(std::is_same<DividerType, const char *>::value || std::is_same<DividerType, char>::value);
+    static_assert(std::is_same<DividerType, const char*>::value || std::is_same<DividerType, char>::value);
 
 private:
     StringView m_source;
@@ -805,11 +815,11 @@ public:
         }
     }
 
-    SplitIterator(const SplitIterator &s) = default;
+    SplitIterator(const SplitIterator& s) = default;
 
     operator bool() const { return !m_source.empty() || m_ending; }
 
-    SplitIterator &operator+=(size_t delta) {
+    SplitIterator& operator+=(size_t delta) {
         while (this->operator bool() && delta) {
             delta--;
             step();
@@ -817,7 +827,7 @@ public:
         return (*this);
     }
 
-    SplitIterator &operator++() {
+    SplitIterator& operator++() {
         if (this->operator bool()) step();
         return (*this);
     }
@@ -828,13 +838,13 @@ public:
         return temp;
     }
 
-    const StringView &operator*() {
+    const StringView& operator*() {
         if (throwException && !operator bool())  // Attempt to access* it or it->when no word is left in the iterator
             throw String("No Word Left");
         return m_pointer;
     }
 
-    const StringView *operator->() {
+    const StringView* operator->() {
         if (throwException && !operator bool())  // Attempt to access *it or it-> when no word is left in the iterator
             throw String("No Word Left");
         return &m_pointer;
@@ -844,7 +854,7 @@ public:
 // removes comments: (replaces with ' ')
 //	1. one liner starting with "//"
 //	2. block comment bounded by "/*" and "*/"
-inline void removeComments(String &src) {
+inline void removeComments(String& src) {
     size_t offset = 0;
     bool opened = false;  // multiliner opened
     size_t openedStart = 0;
@@ -890,18 +900,18 @@ inline void removeComments(String &src) {
 // converts utf8 encoded string to zero terminated int array of codePoints
 // transfers ownership of returned array (don't forget free())
 // length will be set to size returned array (excluding zero terminator)
-const int *utf8toCodePointsArray(const char *c, int *length = nullptr);
+const int* utf8toCodePointsArray(const char* c, int* length = nullptr);
 
-std::u32string utf8toCodePoints(const char *c);
+std::u32string utf8toCodePoints(const char* c);
 
-inline std::u32string utf8toCodePoints(const String &c) { return utf8toCodePoints(c.c_str()); }
+inline std::u32string utf8toCodePoints(const String& c) { return utf8toCodePoints(c.c_str()); }
 
 // converts ascii u32 string to string
 // use only if you know that there are only ascii characters
 String u32StringToString(std::u32string_view s);
 
 // returns first occurrence of digit or nullptr
-inline const char *skipToNextDigit(const char *c) {
+inline const char* skipToNextDigit(const char* c) {
     c--;
     while (*(++c)) {
         if (*c >= '0' && *c <= '9') return c;
@@ -912,7 +922,7 @@ inline const char *skipToNextDigit(const char *c) {
 // keeps parsing numbers until size is reached or until there are no numbers
 // actualSize is set to number of numbers actually parsed
 template <int size, typename numberType>
-void parseNumbers(const char *c, numberType ray[size], int *actualSize = nullptr) {
+void parseNumbers(const char* c, numberType ray[size], int* actualSize = nullptr) {
     size_t chars = 0;
 
     for (int i = 0; i < size; ++i) {
@@ -936,10 +946,294 @@ void parseNumbers(const char *c, numberType ray[size], int *actualSize = nullptr
 // keeps parsing numbers until size is reached or until there are no numbers
 // actualSize is set to number of numbers actually parsed
 template <int size, typename numberType>
-void parseNumbers(const String &s, numberType ray[size], int *actualSize = nullptr) {
+void parseNumbers(const String& s, numberType ray[size], int* actualSize = nullptr) {
     parseNumbers<size>(s.c_str(), ray, actualSize);
 }
 
 }  // namespace SUtil
+
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
+#ifndef FILENAME_MAX
+#define FILENAME_MAX 256
+#endif
+
+// #define max(a, b)                                                                                  \
+//     ({                                                                                             \
+//         __typeof__(a) _a = (a);                                                                    \
+//         __typeof__(b) _b = (b);                                                                    \
+//         _a > _b ? _a : _b;                                                                         \
+//     })
+
+// #define min(a, b)                                                                                  \
+//     ({                                                                                             \
+//         __typeof__(a) _a = (a);                                                                    \
+//         __typeof__(b) _b = (b);                                                                    \
+//         _a < _b ? _a : _b;                                                                         \
+//     })
+
+/* --- PRINTF_BYTE_TO_BINARY macro's --- */
+#define PRINTF_BINARY_PATTERN_INT8 "%c%c%c%c%c%c%c%c"
+#define PRINTF_BYTE_TO_BINARY_INT8(i)                                                                                                                                       \
+    (((i)&0x80ll) ? '1' : '0'), (((i)&0x40ll) ? '1' : '0'), (((i)&0x20ll) ? '1' : '0'), (((i)&0x10ll) ? '1' : '0'), (((i)&0x08ll) ? '1' : '0'), (((i)&0x04ll) ? '1' : '0'), \
+            (((i)&0x02ll) ? '1' : '0'), (((i)&0x01ll) ? '1' : '0')
+
+#define PRINTF_BINARY_PATTERN_INT16 PRINTF_BINARY_PATTERN_INT8 PRINTF_BINARY_PATTERN_INT8
+#define PRINTF_BYTE_TO_BINARY_INT16(i) PRINTF_BYTE_TO_BINARY_INT8((i) >> 8), PRINTF_BYTE_TO_BINARY_INT8(i)
+#define PRINTF_BINARY_PATTERN_INT32 PRINTF_BINARY_PATTERN_INT16 PRINTF_BINARY_PATTERN_INT16
+#define PRINTF_BYTE_TO_BINARY_INT32(i) PRINTF_BYTE_TO_BINARY_INT16((i) >> 16), PRINTF_BYTE_TO_BINARY_INT16(i)
+#define PRINTF_BINARY_PATTERN_INT64 PRINTF_BINARY_PATTERN_INT32 PRINTF_BINARY_PATTERN_INT32
+#define PRINTF_BYTE_TO_BINARY_INT64(i) PRINTF_BYTE_TO_BINARY_INT32((i) >> 32), PRINTF_BYTE_TO_BINARY_INT32(i)
+/* --- end macros --- */
+
+// vsnprintf replacement from Valentin Milea:
+// http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
+#if defined(_MSC_VER) && _MSC_VER < 1900
+
+#define snprintf c99_snprintf
+#define vsnprintf c99_vsnprintf
+
+METADOT_INLINE int c99_vsnprintf(char* outBuf, size_t size, const char* format, va_list ap) {
+    int count = -1;
+
+    if (size != 0) count = _vsnprintf_s(outBuf, size, _TRUNCATE, format, ap);
+    if (count == -1) count = _vscprintf(format, ap);
+
+    return count;
+}
+
+METADOT_INLINE int c99_snprintf(char* outBuf, size_t size, const char* format, ...) {
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(outBuf, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+
+#endif
+
+#ifndef RE_DOT_MATCHES_NEWLINE
+/* Define to 0 if you DON'T want '.' to match '\r' + '\n' */
+#define RE_DOT_MATCHES_NEWLINE 1
+#endif
+
+/* Typedef'd pointer to get abstract datatype. */
+typedef struct regex_t* re_t;
+
+/* Compile regex string pattern to a regex_t-array. */
+re_t re_compile(const char* pattern);
+
+/* Find matches of the compiled pattern inside text. */
+int re_matchp(re_t pattern, const char* text, int* matchlength);
+
+/* Find matches of the txt pattern inside text (will compile automatically first). */
+int re_match(const char* pattern, const char* text, int* matchlength);
+
+// Trie structures and interface
+
+// Add all supported types here, as 'Trie_type'
+typedef enum TrieType { Trie_None, Trie_Pointer, Trie_String, Trie_metadot_vec3, Trie_double, Trie_float, Trie_char, Trie_int } TrieType;
+
+// Structure used to retrieve all the data from the trie
+// Add all supported types inside the union, as 'type* typeValue'
+typedef struct TrieElement {
+    char* key;
+    TrieType type;
+    unsigned size;
+    union {
+        void* pointerValue;
+        char* stringValue;
+        metadot_vec3* vector3Value;
+        F64* doubleValue;
+        F32* floatValue;
+        char* charValue;
+        int* intValue;
+    };
+} TrieElement;
+
+#define TRIE_ALPHABET_SIZE 256
+typedef struct TrieCell {
+    TrieType elementType;
+    unsigned maxKeySize;
+    union {
+        unsigned numberOfElements;
+        unsigned elementSize;
+    };
+    // In a leaf and branch, the '\0' points to the data stored, while in a trunk it points to NULL
+    // In both branch and trunk, all the other characters points to other Tries
+    void* branch[TRIE_ALPHABET_SIZE];
+} Trie;
+
+Trie InitTrie();
+void FreeTrie(Trie* trie);
+
+void InsertTrie(Trie* trie, const char* key, const void* value, int size, TrieType valueType);
+void InsertTrieString(Trie* trie, const char* key, const char* value);
+
+int TrieContainsKey(Trie trie, const char* key);
+void* GetTrieElement(Trie trie, const char* key);
+void* GetTrieElementWithProperties(Trie trie, const char* key, int* sizeOut, TrieType* typeOut);
+void* GetTrieElementAsPointer(Trie trie, const char* key, void* defaultValue);
+char* GetTrieElementAsString(Trie trie, const char* key, char* defaultValue);
+
+// Macro to generate headers for the insertion and retrieval functions
+// Remember to call the function template macro on utils.c and to modify the TrieType enum when adding more types
+#define TRIE_TYPE_FUNCTION_HEADER_MACRO(type)                        \
+    void InsertTrie_##type(Trie* trie, const char* key, type value); \
+    type GetTrieElementAs_##type(Trie trie, const char* key, type defaultValue);
+
+TRIE_TYPE_FUNCTION_HEADER_MACRO(metadot_vec3)
+TRIE_TYPE_FUNCTION_HEADER_MACRO(F64)
+TRIE_TYPE_FUNCTION_HEADER_MACRO(F32)
+TRIE_TYPE_FUNCTION_HEADER_MACRO(char)
+TRIE_TYPE_FUNCTION_HEADER_MACRO(int)
+
+// Functions to obtain all data inside a trie
+// The data returned should be used before any new replace modifications
+// are made in the trie, as the data pointed can be freed when replaced
+TrieElement* GetTrieElementsArray(Trie trie, int* outElementsCount);
+void FreeTrieElementsArray(TrieElement* elementsArray, int elementsCount);
+
+cJSON* OpenJSON(char path[], char name[]);
+F64 JSON_GetObjectDouble(cJSON* object, char* string, F64 defaultValue);
+metadot_vec3 JSON_GetObjectVector3(cJSON* object, char* string, metadot_vec3 defaultValue);
+cJSON* JSON_CreateVector3(metadot_vec3 value);
+
+void Vector3ToTable(lua_State* L, metadot_vec3 vector);
+
+int StringCompareEqual(char* stringA, char* stringB);
+int StringCompareEqualCaseInsensitive(char* stringA, char* stringB);
+
+inline R_bool startsWith(const char* s, const char* prefix) { return strlen(prefix) <= strlen(s) && (strncmp(prefix, s, strlen(prefix)) == 0); }
+
+#ifndef Z_DEFAULT_WINDOW_BITS
+#define Z_DEFAULT_WINDOW_BITS 15
+#endif
+
+#ifndef NBT_BUFFER_SIZE
+#define NBT_BUFFER_SIZE 32768
+#endif
+
+#define NBT_COMPRESSION_LEVEL 9
+
+typedef enum {
+    NBT_TYPE_END,
+    NBT_TYPE_BYTE,
+    NBT_TYPE_SHORT,
+    NBT_TYPE_INT,
+    NBT_TYPE_LONG,
+    NBT_TYPE_FLOAT,
+    NBT_TYPE_DOUBLE,
+    NBT_TYPE_BYTE_ARRAY,
+    NBT_TYPE_STRING,
+    NBT_TYPE_LIST,
+    NBT_TYPE_COMPOUND,
+    NBT_TYPE_INT_ARRAY,
+    NBT_TYPE_LONG_ARRAY,
+    NBT_NO_OVERRIDE  // Only used internally.
+} nbt_tag_type_t;
+
+typedef struct nbt_tag_t nbt_tag_t;
+
+struct nbt_tag_t {
+
+    nbt_tag_type_t type;
+
+    char* name;
+    size_t name_size;
+
+    union {
+        struct {
+            I8 value;
+        } tag_byte;
+        struct {
+            I16 value;
+        } tag_short;
+        struct {
+            I32 value;
+        } tag_int;
+        struct {
+            I64 value;
+        } tag_long;
+        struct {
+            F32 value;
+        } tag_float;
+        struct {
+            F64 value;
+        } tag_double;
+        struct {
+            I8* value;
+            size_t size;
+        } tag_byte_array;
+        struct {
+            char* value;
+            size_t size;
+        } tag_string;
+        struct {
+            nbt_tag_t** value;
+            nbt_tag_type_t type;
+            size_t size;
+        } tag_list;
+        struct {
+            nbt_tag_t** value;
+            size_t size;
+        } tag_compound;
+        struct {
+            I32* value;
+            size_t size;
+        } tag_int_array;
+        struct {
+            I64* value;
+            size_t size;
+        } tag_long_array;
+    };
+};
+
+typedef struct {
+    size_t (*read)(void* userdata, U8* data, size_t size);
+    void* userdata;
+} nbt_reader_t;
+
+typedef struct {
+    size_t (*write)(void* userdata, U8* data, size_t size);
+    void* userdata;
+} nbt_writer_t;
+
+typedef enum {
+    NBT_PARSE_FLAG_USE_GZIP = 1,
+    NBT_PARSE_FLAG_USE_ZLIB = 2,
+    NBT_PARSE_FLAG_USE_RAW = 3,
+} nbt_parse_flags_t;
+
+typedef enum { NBT_WRITE_FLAG_USE_GZIP = 1, NBT_WRITE_FLAG_USE_ZLIB = 2, NBT_WRITE_FLAG_USE_RAW = 3 } nbt_write_flags_t;
+
+nbt_tag_t* nbt_parse(nbt_reader_t reader, int parse_flags);
+void nbt_write(nbt_writer_t writer, nbt_tag_t* tag, int write_flags);
+
+nbt_tag_t* nbt_new_tag_byte(I8 value);
+nbt_tag_t* nbt_new_tag_short(I16 value);
+nbt_tag_t* nbt_new_tag_int(I32 value);
+nbt_tag_t* nbt_new_tag_long(I64 value);
+nbt_tag_t* nbt_new_tag_float(F32 value);
+nbt_tag_t* nbt_new_tag_double(F64 value);
+nbt_tag_t* nbt_new_tag_byte_array(I8* value, size_t size);
+nbt_tag_t* nbt_new_tag_string(const char* value, size_t size);
+nbt_tag_t* nbt_new_tag_list(nbt_tag_type_t type);
+nbt_tag_t* nbt_new_tag_compound(void);
+nbt_tag_t* nbt_new_tag_int_array(I32* value, size_t size);
+nbt_tag_t* nbt_new_tag_long_array(I64* value, size_t size);
+
+void nbt_set_tag_name(nbt_tag_t* tag, const char* name, size_t size);
+
+void nbt_tag_list_append(nbt_tag_t* list, nbt_tag_t* value);
+nbt_tag_t* nbt_tag_list_get(nbt_tag_t* tag, size_t index);
+void nbt_tag_compound_append(nbt_tag_t* compound, nbt_tag_t* value);
+nbt_tag_t* nbt_tag_compound_get(nbt_tag_t* tag, const char* key);
+
+void nbt__free_tag(nbt_tag_t* tag);
 
 #endif

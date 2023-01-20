@@ -11,7 +11,6 @@
 #include <sys/types.h>
 
 #include "core/alloc.h"
-#include "filesystem.h"
 
 #pragma region LuaA
 
@@ -3811,7 +3810,7 @@ SPLAY_GENERATE(luacenum_values, luacenum_value, treev, luacenum_value_cmp);
 #pragma endregion LuaCS
 
 int luaopen_debugger(lua_State *lua) {
-    if (luaL_dofile(lua, METADOT_RESLOC("data/scripts/libs/debugger.lua"))) lua_error(lua);
+    if (luaL_dofile(lua, ("data/scripts/libs/debugger.lua"))) lua_error(lua);
     return 1;
 }
 

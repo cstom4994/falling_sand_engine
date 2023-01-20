@@ -12,6 +12,25 @@
 #include "engine/scripting/lua_wrapper.hpp"
 #include "libs/visitstruct.hpp"
 
+typedef struct LuaCoreC {
+    lua_State *L;
+} LuaCoreC;
+
+typedef struct LuaCode {
+    // Status 0 = error, 1 = no problems, 2 = reloaded but not prime ran
+    char status;
+    char *loopFunction;
+    char *scriptPath;
+    char scriptName[256];
+} LuaCode;
+
+void InitLuaCoreC(LuaCoreC *_struct, lua_State *LuaCoreCppFunc(void *), void *luacorecpp);
+void FreeLuaCoreC(LuaCoreC *_struct);
+
+void LuaCodeInit(LuaCode *_struct, const char *scriptPath);
+void LuaCodeUpdate(LuaCode *_struct);
+void LuaCodeFree(LuaCode *_struct);
+
 struct lua_State;
 
 #pragma region struct_as

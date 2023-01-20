@@ -4,7 +4,7 @@
 #define _METADOT_ENGINEECS_H_
 
 #include "engine_core.h"
-#include "utils.h"
+#include "core/cpp/utils.hpp"
 
 // ECS Types
 typedef struct ComponentMask {

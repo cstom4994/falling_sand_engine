@@ -6,6 +6,10 @@
 // In this implementation, every new element added is copied to the list, not just referenced
 // If there is the need to use this list to reference an variable, initialize the list as a pointers list
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 typedef struct ListCell* ListCellPointer;
 typedef struct ListCell {
     void* element;
@@ -50,5 +54,9 @@ unsigned GetLength(List list);
 
 #define ListForEach(cellPointer, list) for (cellPointer = GetFirstCell(list); cellPointer != NULL; cellPointer = GetNextCell(cellPointer))
 #define GetElementAsType(cellPointer, type) (*((type*)GetElement(*cellPointer)))
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

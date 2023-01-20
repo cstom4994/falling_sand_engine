@@ -81,7 +81,7 @@ int InitWindow() {
 
     Render.realTarget = Render.target;
 
-    Core.glContext = Render.target->context->context;
+    Core.glContext = (C_GLContext *)Render.target->context->context;
 
     SDL_GL_MakeCurrent(Core.window, Core.glContext);
 
@@ -220,5 +220,5 @@ void SetWindowTitle(const char *title) { SDL_SetWindowTitle(Core.window, win_tit
 R_vec2 GetMousePos() {
     I32 x, y;
     SDL_GetMouseState(&x, &y);
-    return (R_vec2){x, y};
+    return (R_vec2){.x = (float)x, .y = (float)y};
 }

@@ -7,7 +7,6 @@
 
 #include "SDL_pixels.h"
 #include "core/core.h"
-#include "engine/utils.h"
 #include "renderer/renderer_opengl.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)

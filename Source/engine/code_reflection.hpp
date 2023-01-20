@@ -18,9 +18,8 @@
 #include <utility>
 #include <vector>
 
-#include "core/core.h"
 #include "core/core.hpp"
-#include "core/cpp/Name.hpp"
+#include "core/cpp/name.hpp"
 #include "core/cpp/static_relfection.hpp"
 
 namespace Meta {
