@@ -8,13 +8,6 @@
 #include "core/const.h"
 #include "core/core.h"
 
-// --------------- FPS counter functions ---------------
-
-U16 frameTimes[FrameTimeNum];
-U32 frameTicksLast;
-U32 frameCount;
-F32 framesPerSecond;
-
 /* Definitions: */
 
 #define MAX_REGEXP_OBJECTS 30 /* Max number of regex symbols in expression. */
@@ -396,55 +389,6 @@ static int matchpattern(regex_t *pattern, const char *text, int *matchlength) {
 
     *matchlength = pre;
     return 0;
-}
-
-F32 GetFPS() { return framesPerSecond; }
-
-void InitFPS() {
-    // Initialize FPS at 0
-    memset(frameTimes, 0, sizeof(frameTimes));
-    frameCount = 0;
-    framesPerSecond = 0;
-    frameTicksLast = SDL_GetTicks();
-}
-
-void ProcessFPS() {
-    U32 frameTimesIndex;
-    U32 currentTicks;
-    U32 count;
-    U32 i;
-
-    frameTimesIndex = frameCount % FrameTimeNum;
-
-    currentTicks = SDL_GetTicks();
-    // save the frame time value
-    frameTimes[frameTimesIndex] = currentTicks - frameTicksLast;
-
-    // save the last frame time for the next fpsthink
-    frameTicksLast = currentTicks;
-
-    // increment the frame count
-    frameCount++;
-
-    // Work out the current framerate
-    // I've included a test to see if the whole array has been written to or not. This will stop
-    // strange values on the first few (FrameTimeNum) frames.
-    if (frameCount < FrameTimeNum) {
-        count = frameCount;
-    } else {
-        count = FrameTimeNum;
-    }
-
-    // add up all the values and divide to get the average frame time.
-    framesPerSecond = 0;
-    for (i = 0; i < count; i++) {
-        framesPerSecond += frameTimes[i];
-    }
-
-    framesPerSecond /= count;
-
-    // now to make it an actual frames per second value...
-    framesPerSecond = 1000.f / framesPerSecond;
 }
 
 // --------------- Trie data structure ---------------

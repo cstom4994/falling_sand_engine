@@ -5,14 +5,18 @@
 #include <cstring>
 #include <string>
 
+#include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "cvar.hpp"
+#include "engine/engine.h"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
 #include "game/game.hpp"
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
+
+IMPLENGINE();
 
 namespace ImGui {
 struct InputTextCallback_UserData {
@@ -506,6 +510,8 @@ void Console::Init() {
             },
             CVar::Arg<String>(""));
 
+    console_imgui->System().RegisterVariable("mspt", Time.mspt, CVar::Arg<I32>(""));
+
     console_imgui->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
     console_imgui->System().Log(CVar::ItemType::INFO) << "The following variables have been exposed to the console:" << CVar::endl << CVar::endl;
     console_imgui->System().Log(CVar::ItemType::INFO) << "\tbackground_color - set: [int int int int]" << CVar::endl;
@@ -520,9 +526,7 @@ void Console::DrawUI() {
     console_imgui->Draw();
 }
 
-void Console::Draw() {
-    
-}
+void Console::Draw() {}
 
 void Console::PrintAllMethods() {
     METADOT_ASSERT_E(console_imgui);

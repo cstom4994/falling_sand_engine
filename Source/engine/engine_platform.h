@@ -17,8 +17,6 @@ typedef struct engine_platform {
 
 } engine_platform;
 
-typedef U32 ticks;
-
 int ParseRunArgs(int argc, char* argv[]);
 int InitWindow();
 void EndWindow();
@@ -28,6 +26,5 @@ void SetVSync(bool vsync);
 void SetMinimizeOnLostFocus(bool minimize);
 void SetWindowTitle(const char* title);
 R_vec2 GetMousePos();
-inline ticks GetTime() { return (ticks)SDL_GetTicks(); }
 
 #endif

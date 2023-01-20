@@ -34,15 +34,20 @@ typedef struct engine_screen {
 } engine_screen;
 
 typedef struct engine_time {
-    int fps;
-    int feelsLikeFps;
-    long long lastTime;
-    long long lastTick;
-    long long lastLoadingTick;
-    long long now;
-    long long startTime;
-    long long deltaTime;
-    long mspt;
+    I32 feelsLikeFps;
+    I64 lastTime;
+    I64 lastFPS;
+    I64 lastTick;
+    I64 lastLoadingTick;
+    I64 now;
+    I64 startTime;
+    I64 deltaTime;
+
+    I32 mspt;
+
+    U16 frameTimes[FrameTimeNum];
+    U32 frameCount;
+    F32 framesPerSecond;
 } engine_time;
 
 void ExitGame();
@@ -54,5 +59,9 @@ void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS);
 
 void UpdateTime();
 void WaitUntilNextFrame();
+
+void InitFPS();
+void ProcessFPS();
+F32 GetFPS();
 
 #endif

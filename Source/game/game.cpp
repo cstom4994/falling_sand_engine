@@ -381,6 +381,11 @@ void Game::createTexture() {
 
 int Game::run(int argc, char *argv[]) {
     Time.startTime = Time::millis();
+    Time.lastTime = Time.startTime;
+    Time.lastTick = Time.lastTime;
+    Time.lastFPS = Time.lastTime;
+    Time.mspt = 33;
+    Time.framesPerSecond = 0;
 
     // start loading chunks
     METADOT_INFO("Queueing chunk loading...");
@@ -403,16 +408,6 @@ int Game::run(int argc, char *argv[]) {
     }
 
     SDL_Event windowEvent;
-
-    I64 lastFPS = Time::millis();
-    Time.fps = 0;
-
-    Time.lastTime = Time::millis();
-    Time.lastTick = Time.lastTime;
-    I64 lastTickPhysics = Time.lastTime;
-
-    Time.mspt = 33;
-    I32 msptPhysics = 16;
 
     scale = 3;
     global.GameData_.ofsX = (int)(-CHUNK_W * 4);
@@ -894,18 +889,20 @@ int Game::run(int argc, char *argv[]) {
 #pragma region GameTick
         GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
 
-        // if(GameIsolate_.globaldef.tick_world)
-        updateFrameEarly();
-        global.scripts->UpdateTick();
+        if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
         while (Time.now - Time.lastTick > Time.mspt) {
-            if (GameIsolate_.globaldef.tick_world) tick();
+            global.scripts->UpdateTick();
+            if (GameIsolate_.globaldef.tick_world) {
+                tick();
+            }
             Render.target = Render.realTarget;
             Time.lastTick = Time.now;
             tickTime++;
         }
 
         if (GameIsolate_.globaldef.tick_world) updateFrameLate();
+
         GameIsolate_.profiler.End(Profiler::Stage::GameTick);
 #pragma endregion GameTick
 
@@ -1071,19 +1068,19 @@ int Game::run(int argc, char *argv[]) {
 
         EngineUpdateEnd();
 
-        frameCount++;
-        if (Time.now - lastFPS >= 1000) {
-            lastFPS = Time.now;
-            Time.fps = frameCount;
-            frameCount = 0;
+        Time.frameCount++;
+        if (Time.now - Time.lastFPS >= 1000) {
+            Time.lastFPS = Time.now;
+            Time.framesPerSecond = Time.frameCount;
+            Time.frameCount = 0;
 
             // calculate "feels like" fps
             F32 sum = 0;
             F32 num = 0.01;
 
             for (int i = 0; i < FrameTimeNum; i++) {
-                F32 weight = frameTimes[i];
-                sum += weight * frameTimes[i];
+                F32 weight = Time.frameTimes[i];
+                sum += weight * Time.frameTimes[i];
                 num += weight;
             }
 
@@ -1091,9 +1088,9 @@ int Game::run(int argc, char *argv[]) {
         }
 
         for (int i = 1; i < FrameTimeNum; i++) {
-            frameTimes[i - 1] = frameTimes[i];
+            Time.frameTimes[i - 1] = Time.frameTimes[i];
         }
-        frameTimes[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
+        Time.frameTimes[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
 
         Time.lastTime = Time.now;
     }
@@ -2260,8 +2257,9 @@ void Game::tickPlayer() {
             }
         }
 
-        GameIsolate_.world->WorldIsolate_.player->vy += (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
-                                                              (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
+        GameIsolate_.world->WorldIsolate_.player->vy +=
+                (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
+                      (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
@@ -2288,7 +2286,8 @@ void Game::tickPlayer() {
 
         GameIsolate_.world->WorldIsolate_.player->vx += (F32)((ControlSystem::PLAYER_LEFT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx > 0 ? -0.4 : -0.2) : 0) +
                                                               (ControlSystem::PLAYER_RIGHT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx < 0 ? 0.4 : 0.2) : 0));
-        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get()) GameIsolate_.world->WorldIsolate_.player->vx *= (F32)(GameIsolate_.world->WorldIsolate_.player->ground ? 0.85 : 0.96);
+        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get())
+            GameIsolate_.world->WorldIsolate_.player->vx *= (F32)(GameIsolate_.world->WorldIsolate_.player->ground ? 0.85 : 0.96);
         if (GameIsolate_.world->WorldIsolate_.player->vx > 4.5) GameIsolate_.world->WorldIsolate_.player->vx = 4.5;
         if (GameIsolate_.world->WorldIsolate_.player->vx < -4.5) GameIsolate_.world->WorldIsolate_.player->vx = -4.5;
     } else {
@@ -2527,15 +2526,14 @@ void Game::updateFrameLate() {
         int nofsY;
 
         if (GameIsolate_.world->WorldIsolate_.player) {
-
             if (Time.now - Time.lastTick <= Time.mspt) {
                 F32 thruTick = (F32)((Time.now - Time.lastTick) / (F64)Time.mspt);
 
                 global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x + (int)(GameIsolate_.world->WorldIsolate_.player->vx * thruTick);
                 global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y + (int)(GameIsolate_.world->WorldIsolate_.player->vy * thruTick);
             } else {
-                // plPosX = GameIsolate_.world->WorldIsolate_.player->x;
-                // plPosY = GameIsolate_.world->WorldIsolate_.player->y;
+                global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x;
+                global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y;
             }
 
             // plPosX = (F32)(plPosX + (GameIsolate_.world->WorldIsolate_.player->x - plPosX) / 25.0);
@@ -3345,7 +3343,7 @@ SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WID
 }*/
 
         for (int i = 0; i < FrameTimeNum; i++) {
-            int h = frameTimes[i];
+            int h = Time.frameTimes[i];
 
             METAENGINE_Color col;
             if (h <= (int)(1000 / 144.0)) {
@@ -3364,8 +3362,8 @@ SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WID
             // SDL_RenderDrawLine(renderer, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.fps), Screen.windowWidth - 25,
-               Screen.windowHeight - 10 - (int)(1000.0 / Time.fps), {0x00, 0xff, 0xff, 0xff});
+        R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.framesPerSecond), Screen.windowWidth - 25,
+               Screen.windowHeight - 10 - (int)(1000.0 / Time.framesPerSecond), {0x00, 0xff, 0xff, 0xff});
         R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.feelsLikeFps), Screen.windowWidth - 25,
                Screen.windowHeight - 10 - (int)(1000.0 / Time.feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
     }

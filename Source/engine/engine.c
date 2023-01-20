@@ -96,6 +96,8 @@ void EngineUpdate() {
 void EngineUpdateEnd() {
     // SDL_GL_SwapWindow(Core.window);
     WaitUntilNextFrame();
+
+    // ProcessFPS();
 }
 
 void EndEngine(int errorOcurred) {

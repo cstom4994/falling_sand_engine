@@ -466,11 +466,37 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             auto &entry = global.game->GameIsolate_.profiler._entries[global.game->GameIsolate_.profiler.GetCurrentEntryIndex()];
             ImGuiWidget::PlotFlame("CPU", &ProfilerValueGetter, &entry, Profiler::_StageCount, 0, "Main Thread", FLT_MAX, FLT_MAX, ImVec2(600, 0));
 
+            MarkdownData TickInfoPanel;
+            TickInfoPanel.data = R"(
+Info &nbsp; &nbsp; &nbsp; | Data &nbsp; | Comments &nbsp;
+:-----------|:------------|:--------
+TickTime | {0} | Nothing
+DeltaTime | {1} | Nothing
+Mspt | {2} | Nothing
+Delta | {3} | Nothing
+STDTime | {4} | Nothing
+CSTDTime | {5} | Nothing
+            )";
+
+            // ImGui::Text("TickTime: %d", global.game->tickTime);
+            // ImGui::Text("DeltaTime: %lld", Time.deltaTime);
+
+            time_t rawtime;
+            rawtime = time(NULL);
+            struct tm *timeinfo = localtime(&rawtime);
+
+            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, global.game->tickTime, Time.deltaTime, Time.mspt, Time.now - Time.lastTick, Time::millis(), rawtime);
+
+            ImGui::Auto(TickInfoPanel);
+
+            ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+            ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
             ImGui::Separator();
 
-            ImGui::Auto(md1);
-
 #if defined(METADOT_DEBUG)
+            ImGui::Dummy(ImVec2(0.0f, 10.0f));
             ImGui::Separator();
             ImGui::Text("GC:\n");
             for (auto [name, size] : GC::MemoryDebugMap) {
@@ -485,6 +511,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::BeginTabBar(CC("测试#haha"));
             if (ImGui::BeginTabItem(CC("测试"))) {
                 if (ImGui::Button("调用回溯")) print_callstack();
+                ImGui::SameLine();
                 if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
                 ImGui::EndTabItem();
             }

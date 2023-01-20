@@ -24,9 +24,6 @@
 #include "libs/lua/host/lualib.h"
 #include "sdl_wrapper.h"
 
-extern U16 frameTimes[FrameTimeNum];
-extern U32 frameCount;
-
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif
@@ -172,11 +169,6 @@ TRIE_TYPE_FUNCTION_HEADER_MACRO(int)
 // are made in the trie, as the data pointed can be freed when replaced
 TrieElement* GetTrieElementsArray(Trie trie, int* outElementsCount);
 void FreeTrieElementsArray(TrieElement* elementsArray, int elementsCount);
-
-void InitFPS();
-void ProcessFPS();
-F32 GetFPS();
-
 
 cJSON* OpenJSON(char path[], char name[]);
 F64 JSON_GetObjectDouble(cJSON* object, char* string, F64 defaultValue);

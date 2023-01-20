@@ -480,7 +480,7 @@ public:
 
 class Timer {
 public:
-    typedef ticks Ticks;
+    typedef U32 Ticks;
 
     Timer();
     virtual ~Timer();
