@@ -112,7 +112,8 @@ int Game::init(int argc, char *argv[]) {
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
 
     // Console system
-    GameIsolate_.console.Init();
+    METADOT_NEW(C, global.game->GameIsolate_.console, ConsoleSystem);
+    GameIsolate_.console->Create();
 
     // Test aseprite
     GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0003.ase");
@@ -424,9 +425,6 @@ int Game::run(int argc, char *argv[]) {
 
     // game loop
     while (this->running) {
-
-        Time.now = Time::millis();
-        Time.deltaTime = Time.now - Time.lastTime;
 
         GameIsolate_.profiler.Frame();
 
@@ -1066,32 +1064,6 @@ int Game::run(int argc, char *argv[]) {
 #pragma endregion Render
 
         EngineUpdateEnd();
-
-        Time.frameCount++;
-        if (Time.now - Time.lastFPS >= 1000) {
-            Time.lastFPS = Time.now;
-            Time.framesPerSecond = Time.frameCount;
-            Time.frameCount = 0;
-
-            // calculate "feels like" fps
-            F32 sum = 0;
-            F32 num = 0.01;
-
-            for (int i = 0; i < FrameTimeNum; i++) {
-                F32 weight = Time.frameTimes[i];
-                sum += weight * Time.frameTimes[i];
-                num += weight;
-            }
-
-            Time.feelsLikeFps = 1000 / (sum / num);
-        }
-
-        for (int i = 1; i < FrameTimeNum; i++) {
-            Time.frameTimes[i - 1] = Time.frameTimes[i];
-        }
-        Time.frameTimes[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
-
-        Time.lastTime = Time.now;
     }
 
     return exit();
@@ -1119,7 +1091,8 @@ int Game::exit() {
     GameIsolate_.backgrounds->Destory();
     METADOT_DELETE(C, GameIsolate_.backgrounds, BackgroundSystem);
 
-    GameIsolate_.console.End();
+    GameIsolate_.console->Destory();
+    METADOT_DELETE(C, GameIsolate_.console, ConsoleSystem);
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
@@ -1137,9 +1110,8 @@ int Game::exit() {
     GameIsolate_.shaderworker->Destory();
     METADOT_DELETE(C, GameIsolate_.shaderworker, ShaderWorkerSystem);
 
-    EndWindow();
     global.audioEngine.Shutdown();
-    SDL_DestroyWindow(Core.window);
+    EndWindow();
 
     EndEngine(0);
 

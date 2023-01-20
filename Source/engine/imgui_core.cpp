@@ -446,7 +446,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::BeginTabBar("ui_tweaks_tabbar");
 
         if (ImGui::BeginTabItem(LANG("ui_console"))) {
-            global.game->GameIsolate_.console.DrawUI();
+            global.game->GameIsolate_.console->DrawUI();
             ImGui::EndTabItem();
         }
 

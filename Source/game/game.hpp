@@ -87,7 +87,7 @@ public:
         BackgroundSystem *backgrounds = nullptr;
         GameplayScriptSystem *gameplayscript = nullptr;
         ShaderWorkerSystem *shaderworker = nullptr;
-        Console console;
+        ConsoleSystem *console;
         Profiler profiler;
         GlobalDEF globaldef;
         World *world = nullptr;

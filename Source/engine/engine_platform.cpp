@@ -140,7 +140,10 @@ int InitWindow() {
     return 1;
 }
 
-void EndWindow() { R_Quit(); }
+void EndWindow() {
+    if (Core.window) SDL_DestroyWindow(Core.window);
+    R_Quit();
+}
 
 void SetDisplayMode(engine_displaymode mode) {
     switch (mode) {

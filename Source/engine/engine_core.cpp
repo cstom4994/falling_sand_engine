@@ -28,7 +28,10 @@ void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
     Screen.gameScale = scale;
 }
 
-void UpdateTime() {}
+void UpdateTime() {
+    Time.now = Time::millis();
+    Time.deltaTime = Time.now - Time.lastTime;
+}
 
 void WaitUntilNextFrame() {}
 
@@ -42,5 +45,29 @@ void InitFPS() {
 }
 
 void ProcessFPS() {
+    Time.frameCount++;
+    if (Time.now - Time.lastFPS >= 1000) {
+        Time.lastFPS = Time.now;
+        Time.framesPerSecond = Time.frameCount;
+        Time.frameCount = 0;
 
+        // calculate "feels like" fps
+        F32 sum = 0;
+        F32 num = 0.01;
+
+        for (int i = 0; i < FrameTimeNum; i++) {
+            F32 weight = Time.frameTimes[i];
+            sum += weight * Time.frameTimes[i];
+            num += weight;
+        }
+
+        Time.feelsLikeFps = 1000 / (sum / num);
+    }
+
+    for (int i = 1; i < FrameTimeNum; i++) {
+        Time.frameTimes[i - 1] = Time.frameTimes[i];
+    }
+    Time.frameTimes[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
+
+    Time.lastTime = Time.now;
 }

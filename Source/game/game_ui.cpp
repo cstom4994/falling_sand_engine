@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <string>
+#include <thread>
 
 #include "core/core.h"
 #include "core/core.hpp"
@@ -280,8 +281,8 @@ void MainMenuUI__RefreshWorlds(Game *game) {
     }
 
     auto sortWorlds = [](std::tuple<std::string, WorldMeta> w1, std::tuple<std::string, WorldMeta> w2) {
-        int64_t c1 = std::get<1>(w1).lastOpenedTime;
-        int64_t c2 = std::get<1>(w2).lastOpenedTime;
+        time_t c1 = std::get<1>(w1).lastOpenedTime;
+        time_t c2 = std::get<1>(w2).lastOpenedTime;
         return (c1 > c2);
     };
 
@@ -549,21 +550,11 @@ void MainMenuUI__DrawWorldLists(Game *game) {
 
         ImGui::PushID(nMainMenuButtons);
 
-        // time_t t_times;
-        // tm *tm_utc = gmtime(&t_times);
-        // meta.lastOpenedTime = t_times;
-
-        // // convert to local time
-        // time_t time_utc = Time::mkgmtime(tm_utc);
-        // time_t time_local = mktime(tm_utc);
-        // time_local += time_utc - time_local;
-        // tm *tm_local = localtime(&time_local);
-
-        // char *formattedTime = new char[100];
-        // strftime(formattedTime, 100, "%#m/%#d/%y %#I:%M%p", tm_local);
+        struct tm *timeinfo = localtime(&meta.lastOpenedTime);
 
         char *filenameAndTimestamp = new char[200];
-        snprintf(filenameAndTimestamp, 100, "%s (%ld)", worldName.c_str(), meta.lastOpenedTime);
+        snprintf(filenameAndTimestamp, 100, "%s (%d-%02d-%02d %02d:%02d:%02d)", worldName.c_str(), timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour,
+                 timeinfo->tm_min, timeinfo->tm_sec);
 
         if (ImGui::Button(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
@@ -580,8 +571,6 @@ void MainMenuUI__DrawWorldLists(Game *game) {
                 METADOT_DELETE(C, game->GameIsolate_.world, World);
                 game->GameIsolate_.world = nullptr;
 
-                // std::thread loadWorldThread([&] () {
-
                 World *w = nullptr;
                 METADOT_NEW(C, w, World);
                 w->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
@@ -596,9 +585,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
                         w->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
                     }
                 }
-
                 game->GameIsolate_.world = w;
-                //});
 
                 game->fadeInStart = Time.now;
                 game->fadeInLength = 250;

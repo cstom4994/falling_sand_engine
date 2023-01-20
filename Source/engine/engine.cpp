@@ -97,14 +97,12 @@ void EngineUpdateEnd() {
     // SDL_GL_SwapWindow(Core.window);
     WaitUntilNextFrame();
 
-    // ProcessFPS();
+    ProcessFPS();
 }
 
 void EndEngine(int errorOcurred) {
 
     FreeECS();
-
-    if (Core.window) SDL_DestroyWindow(Core.window);
 
     if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) SDL_Quit();
 

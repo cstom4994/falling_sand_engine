@@ -476,7 +476,21 @@ void ImGuiConsole::SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHand
     buf->append("\n");
 }
 
-void Console::Init() {
+void ConsoleSystem::DrawUI() {
+    METADOT_ASSERT_E(console_imgui);
+    console_imgui->Draw();
+}
+
+void ConsoleSystem::Draw() {}
+
+void ConsoleSystem::PrintAllMethods() {
+    METADOT_ASSERT_E(console_imgui);
+    for (auto &cmds : console_imgui->System().Commands()) {
+        console_imgui->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
+    }
+}
+
+void ConsoleSystem::Create() {
     METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
 
     // Our state
@@ -519,18 +533,6 @@ void Console::Init() {
     console_imgui->System().Log(CVar::ItemType::INFO) << "\tset background_color [255 0 0 255]" << CVar::endl << CVar::endl;
 }
 
-void Console::End() { METADOT_DELETE(C, console_imgui, ImGuiConsole); }
+void ConsoleSystem::Destory() { METADOT_DELETE(C, console_imgui, ImGuiConsole); }
 
-void Console::DrawUI() {
-    METADOT_ASSERT_E(console_imgui);
-    console_imgui->Draw();
-}
-
-void Console::Draw() {}
-
-void Console::PrintAllMethods() {
-    METADOT_ASSERT_E(console_imgui);
-    for (auto &cmds : console_imgui->System().Commands()) {
-        console_imgui->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
-    }
-}
+void ConsoleSystem::RegisterLua(LuaWrapper::State &s_lua) {}

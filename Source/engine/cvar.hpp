@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/macros.h"
 #include "core/cpp/utils.hpp"
+#include "core/macros.h"
 
 #pragma region CVar
 

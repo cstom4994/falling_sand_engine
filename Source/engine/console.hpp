@@ -7,6 +7,7 @@
 
 #include "engine/cvar.hpp"
 #include "engine/imgui_impl.hpp"
+#include "game/game_datastruct.hpp"
 
 struct ImGuiSettingsHandler;
 class ImGuiConsole {
@@ -77,16 +78,19 @@ protected:
     static void SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf);
 };
 
-struct Console {
+class ConsoleSystem : public IGameSystem {
+public:
     ImGuiConsole *console_imgui;
 
-    void Init();
-    void End();
     void DrawUI();
     void Draw();
 
     // InternalFuncs
     void PrintAllMethods();
+
+    void Create() override;
+    void Destory() override;
+    void RegisterLua(LuaWrapper::State &s_lua) override;
 };
 
 #endif

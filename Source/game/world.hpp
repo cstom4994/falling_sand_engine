@@ -42,7 +42,7 @@ public:
 struct WorldMeta {
     std::string worldName;
     std::string lastOpenedVersion;
-    long lastOpenedTime = 0;
+    time_t lastOpenedTime = 0;
 
     static WorldMeta loadWorldMeta(std::string worldFileName);
     bool save(std::string worldFileName);

@@ -57,13 +57,7 @@ struct GameData {
     static Material **materials_array;
 
     struct {
-        ImGuiContext *imgui_context = nullptr;
-        void *wndh = nullptr;
-
         std::unordered_map<std::string, Meta::AnyFunction> Functions;
-
-        // CppSource Functions register
-        void (*draw)(void);
     } HostData;
 };
 
@@ -74,6 +68,8 @@ public:
 
     virtual void Create();
     virtual void Destory();
+
+    // Register Lua always been called before Create()
     virtual void RegisterLua(LuaWrapper::State &s_lua);
 };
 
