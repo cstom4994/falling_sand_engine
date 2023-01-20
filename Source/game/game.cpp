@@ -76,8 +76,7 @@ int Game::init(int argc, char *argv[]) {
     InitECS(128);
     if (!InitEngine(InitCppReflection)) return METADOT_FAILED;
 
-    // Open up resource bundle memory space
-    GameIsolate_.texturepack = (TexturePack *)gc_malloc(&gc, sizeof(TexturePack));
+
 
     // Load splash screen
     METADOT_INFO("Loading splash screen...");

@@ -64,7 +64,7 @@ end
 -- }
 
 OnGameTickUpdate = function()
-    world:update()
+    -- world:update()
 end
 
 -- function OnWorldInitialized()

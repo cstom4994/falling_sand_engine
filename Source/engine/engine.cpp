@@ -2,11 +2,15 @@
 
 #include "engine.h"
 
+#include "core/alloc.h"
 #include "core/core.h"
+#include "core/global.hpp"
 #include "engine_core.h"
 #include "engine_ecs.h"
 #include "engine_platform.h"
 #include "filesystem.h"
+#include "game/game.hpp"
+#include "game/game_resources.hpp"
 
 /////////////////////////////////External data//////////////////////////////////
 
@@ -57,6 +61,9 @@ int InitEngine(void (*InitCppReflection)()) {
     // Disable text input
     //  SDL_StopTextInput();
 
+    // Open up resource bundle memory space
+    global.game->GameIsolate_.texturepack = (TexturePack *)gc_malloc(&gc, sizeof(TexturePack));
+
     initializedEngine = 1;
     METADOT_INFO("Engine sucessfully initialized!");
     return 1;
@@ -101,6 +108,8 @@ void EngineUpdateEnd() {
 }
 
 void EndEngine(int errorOcurred) {
+
+    gc_free(&gc, global.game->GameIsolate_.texturepack);
 
     FreeECS();
 
