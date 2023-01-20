@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "controls.hpp"
+#include "engine_input.hpp"
 
 #include <map>
 #include <memory>
@@ -13,26 +13,26 @@ MetaEngine::vector<std::shared_ptr<KeyControl>> ControlSystem::keyControls = {};
 std::map<std::string, int> ControlSystem::SDLKeymap = {};
 bool ControlSystem::initted = false;
 
-Control *ControlSystem::STATS_DISPLAY = nullptr;
-Control *ControlSystem::STATS_DISPLAY_DETAILED = nullptr;
-Control *ControlSystem::DEBUG_UI = nullptr;
-Control *ControlSystem::DEBUG_REFRESH = nullptr;
-Control *ControlSystem::DEBUG_UPDATE_WORLD_MESH = nullptr;
-Control *ControlSystem::DEBUG_TICK = nullptr;
-Control *ControlSystem::DEBUG_EXPLODE = nullptr;
-Control *ControlSystem::DEBUG_CARVE = nullptr;
-Control *ControlSystem::DEBUG_RIGID = nullptr;
-Control *ControlSystem::DEBUG_DRAW = nullptr;
-Control *ControlSystem::DEBUG_BRUSHSIZE_INC = nullptr;
-Control *ControlSystem::DEBUG_BRUSHSIZE_DEC = nullptr;
-Control *ControlSystem::DEBUG_TOGGLE_PLAYER = nullptr;
-Control *ControlSystem::PLAYER_UP = nullptr;
-Control *ControlSystem::PLAYER_LEFT = nullptr;
-Control *ControlSystem::PLAYER_DOWN = nullptr;
-Control *ControlSystem::PLAYER_RIGHT = nullptr;
-Control *ControlSystem::ZOOM_IN = nullptr;
-Control *ControlSystem::ZOOM_OUT = nullptr;
-Control *ControlSystem::PAUSE = nullptr;
+KeyControl *ControlSystem::STATS_DISPLAY = nullptr;
+KeyControl *ControlSystem::STATS_DISPLAY_DETAILED = nullptr;
+KeyControl *ControlSystem::DEBUG_UI = nullptr;
+KeyControl *ControlSystem::DEBUG_REFRESH = nullptr;
+KeyControl *ControlSystem::DEBUG_UPDATE_WORLD_MESH = nullptr;
+KeyControl *ControlSystem::DEBUG_TICK = nullptr;
+KeyControl *ControlSystem::DEBUG_EXPLODE = nullptr;
+KeyControl *ControlSystem::DEBUG_CARVE = nullptr;
+KeyControl *ControlSystem::DEBUG_RIGID = nullptr;
+KeyControl *ControlSystem::DEBUG_DRAW = nullptr;
+KeyControl *ControlSystem::DEBUG_BRUSHSIZE_INC = nullptr;
+KeyControl *ControlSystem::DEBUG_BRUSHSIZE_DEC = nullptr;
+KeyControl *ControlSystem::DEBUG_TOGGLE_PLAYER = nullptr;
+KeyControl *ControlSystem::PLAYER_UP = nullptr;
+KeyControl *ControlSystem::PLAYER_LEFT = nullptr;
+KeyControl *ControlSystem::PLAYER_DOWN = nullptr;
+KeyControl *ControlSystem::PLAYER_RIGHT = nullptr;
+KeyControl *ControlSystem::ZOOM_IN = nullptr;
+KeyControl *ControlSystem::ZOOM_OUT = nullptr;
+KeyControl *ControlSystem::PAUSE = nullptr;
 
 bool ControlSystem::lmouse = false;
 bool ControlSystem::mmouse = false;

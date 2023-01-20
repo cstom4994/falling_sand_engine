@@ -249,3 +249,14 @@ do
     add_files("Source/engine/engine_meta.c")
     add_headerfiles("Source/tests/**.h")
 end
+
+target("TestPromise")
+do
+    set_kind("binary")
+    set_targetdir("./output")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_deps("libs")
+    add_files("Source/tests/test_promise.cpp")
+    add_headerfiles("Source/tests/**.h")
+end

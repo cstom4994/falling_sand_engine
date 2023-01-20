@@ -7,10 +7,10 @@
 
 #include "core/core.hpp"
 #include "core/global.hpp"
+#include "engine/engine_input.hpp"
 #include "engine/filesystem.h"
 #include "engine/reflectionflat.hpp"
 #include "engine_scripting.hpp"
-#include "game/controls.hpp"
 #include "game/game.hpp"
 #include "game/game_datastruct.hpp"
 #include "game/game_resources.hpp"

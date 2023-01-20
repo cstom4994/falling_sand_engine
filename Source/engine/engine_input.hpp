@@ -13,12 +13,7 @@
 
 enum EnumControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };
 
-class Control {
-public:
-    virtual bool get() = 0;
-};
-
-class KeyControl : public Control {
+class KeyControl {
 public:
     C_Keycode key;
     EnumControlMode mode;
@@ -36,7 +31,7 @@ public:
         lastState = false;
     }
 
-    virtual bool get();
+    bool get();
 };
 
 class ControlSystem {
@@ -45,26 +40,26 @@ public:
     static bool mmouse;
     static bool rmouse;
 
-    static Control *STATS_DISPLAY;
-    static Control *STATS_DISPLAY_DETAILED;
-    static Control *DEBUG_UI;
-    static Control *DEBUG_REFRESH;
-    static Control *DEBUG_UPDATE_WORLD_MESH;
-    static Control *DEBUG_TICK;
-    static Control *DEBUG_EXPLODE;
-    static Control *DEBUG_CARVE;
-    static Control *DEBUG_RIGID;
-    static Control *DEBUG_DRAW;
-    static Control *DEBUG_BRUSHSIZE_INC;
-    static Control *DEBUG_BRUSHSIZE_DEC;
-    static Control *DEBUG_TOGGLE_PLAYER;
-    static Control *PLAYER_UP;
-    static Control *PLAYER_DOWN;
-    static Control *PLAYER_LEFT;
-    static Control *PLAYER_RIGHT;
-    static Control *ZOOM_IN;
-    static Control *ZOOM_OUT;
-    static Control *PAUSE;
+    static KeyControl *STATS_DISPLAY;
+    static KeyControl *STATS_DISPLAY_DETAILED;
+    static KeyControl *DEBUG_UI;
+    static KeyControl *DEBUG_REFRESH;
+    static KeyControl *DEBUG_UPDATE_WORLD_MESH;
+    static KeyControl *DEBUG_TICK;
+    static KeyControl *DEBUG_EXPLODE;
+    static KeyControl *DEBUG_CARVE;
+    static KeyControl *DEBUG_RIGID;
+    static KeyControl *DEBUG_DRAW;
+    static KeyControl *DEBUG_BRUSHSIZE_INC;
+    static KeyControl *DEBUG_BRUSHSIZE_DEC;
+    static KeyControl *DEBUG_TOGGLE_PLAYER;
+    static KeyControl *PLAYER_UP;
+    static KeyControl *PLAYER_DOWN;
+    static KeyControl *PLAYER_LEFT;
+    static KeyControl *PLAYER_RIGHT;
+    static KeyControl *ZOOM_IN;
+    static KeyControl *ZOOM_OUT;
+    static KeyControl *PAUSE;
 
     static MetaEngine::vector<std::shared_ptr<KeyControl>> keyControls;
     static std::map<std::string, int> SDLKeymap;

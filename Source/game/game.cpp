@@ -76,8 +76,6 @@ int Game::init(int argc, char *argv[]) {
     InitECS(128);
     if (!InitEngine(InitCppReflection)) return METADOT_FAILED;
 
-
-
     // Load splash screen
     METADOT_INFO("Loading splash screen...");
 
@@ -348,37 +346,40 @@ void Game::createTexture() {
 
     MetaEngine::Promise::all(Funcs);
 
-    // create texture pixel buffers
+    auto init_pixels = [&]() {
+        // create texture pixel buffers
+        TexturePack_.pixels = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixels_ar = &TexturePack_.pixels[0];
 
-    TexturePack_.pixels = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
-    TexturePack_.pixels_ar = &TexturePack_.pixels[0];
+        TexturePack_.pixelsLayer2 = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
 
-    TexturePack_.pixelsLayer2 = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
-    TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
+        TexturePack_.pixelsBackground = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-    TexturePack_.pixelsBackground = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
-    TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
+        TexturePack_.pixelsObjects = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-    TexturePack_.pixelsObjects = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
-    TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
+        TexturePack_.pixelsTemp = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-    TexturePack_.pixelsTemp = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
-    TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
+        TexturePack_.pixelsParticles = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
 
-    TexturePack_.pixelsParticles = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
-    TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
+        TexturePack_.pixelsLoading = MetaEngine::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
-    TexturePack_.pixelsLoading = MetaEngine::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
-    TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
+        TexturePack_.pixelsFire = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
-    TexturePack_.pixelsFire = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
-    TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
+        TexturePack_.pixelsFlow = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
 
-    TexturePack_.pixelsFlow = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
-    TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
+        TexturePack_.pixelsEmission = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
+    };
 
-    TexturePack_.pixelsEmission = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
-    TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
+    init_pixels();
 
     METADOT_INFO("Creating world textures done");
 }

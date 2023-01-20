@@ -17,7 +17,6 @@
 
 #include "background.hpp"
 #include "code_reflection.hpp"
-#include "controls.hpp"
 #include "core/const.h"
 #include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
@@ -25,6 +24,7 @@
 #include "core/threadpool.h"
 #include "engine/audio.hpp"
 #include "engine/console.hpp"
+#include "engine/engine_input.hpp"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/fonts.h"
