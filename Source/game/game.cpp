@@ -13,6 +13,7 @@
 #include "core/const.h"
 #include "core/core.h"
 #include "core/core.hpp"
+#include "core/cpp/promise.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
@@ -48,6 +49,10 @@ Global global;
 IMPLENGINE();
 
 Game::Game(int argc, char *argv[]) {
+    // Initialize promise handle
+    MetaEngine::Promise::handleUncaughtException(
+            [](MetaEngine::Promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
+
     // Start memory management including GC
     METAENGINE_Memory_Init(argc, argv);
     // Global game target
@@ -216,21 +221,21 @@ void Game::createTexture() {
     loadingOnColor = 0xFFFFFFFF;
     loadingOffColor = 0x000000FF;
 
-    std::vector<std::function<void(void)>> Funcs = {
-            [&]() {
+    std::vector<MetaEngine::Promise::Promise> Funcs = {
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
                 TexturePack_.loadingTexture =
                         R_CreateImage(TexturePack_.loadingScreenW = (Screen.windowWidth / 20), TexturePack_.loadingScreenH = (Screen.windowHeight / 20), R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
                 TexturePack_.texture = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.texture, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
                 TexturePack_.worldTexture = R_CreateImage(GameIsolate_.world->width * GameIsolate_.globaldef.hd_objects_size, GameIsolate_.world->height * GameIsolate_.globaldef.hd_objects_size,
                                                           R_FormatEnum::R_FORMAT_RGBA);
@@ -238,78 +243,78 @@ void Game::createTexture() {
                 R_SetImageFilter(TexturePack_.worldTexture, R_FILTER_NEAREST);
 
                 R_LoadTarget(TexturePack_.worldTexture);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
                 TexturePack_.lightingTexture = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.lightingTexture, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.lightingTexture);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
                 TexturePack_.emissionTexture = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.emissionTexture, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
                 TexturePack_.textureFlow = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlow, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
                 TexturePack_.textureFlowSpead = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlowSpead, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureFlowSpead);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureFire");
                 TexturePack_.textureFire = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFire, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
                 TexturePack_.texture2Fire = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.texture2Fire, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.texture2Fire);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
                 TexturePack_.textureLayer2 = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureLayer2, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
                 TexturePack_.textureBackground = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureBackground, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
                 TexturePack_.textureObjects = R_CreateImage(GameIsolate_.world->width * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1),
                                                             GameIsolate_.world->height * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjects, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjects);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
                 TexturePack_.textureObjectsLQ = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsLQ, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsLQ);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack =
                         R_CreateImage(GameIsolate_.world->width * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1),
                                       GameIsolate_.world->height * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsBack);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureParticles");
                 TexturePack_.textureParticles = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.textureParticles, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
                 TexturePack_.textureEntities =
                         R_CreateImage(GameIsolate_.world->width * (GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1),
@@ -318,31 +323,31 @@ void Game::createTexture() {
                 R_LoadTarget(TexturePack_.textureEntities);
 
                 R_SetImageFilter(TexturePack_.textureEntities, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
                 TexturePack_.textureEntitiesLQ = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_LoadTarget(TexturePack_.textureEntitiesLQ);
 
                 R_SetImageFilter(TexturePack_.textureEntitiesLQ, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
                 TexturePack_.temperatureMap = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.temperatureMap, R_FILTER_NEAREST);
-            },
-            [&]() {
+            }),
+            MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
                 TexturePack_.backgroundImage = R_CreateImage(Screen.windowWidth, Screen.windowHeight, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.backgroundImage, R_FILTER_NEAREST);
 
                 R_LoadTarget(TexturePack_.backgroundImage);
-            }};
+            })};
 
-    for (auto f : Funcs) f();
+    MetaEngine::Promise::all(Funcs);
 
     // create texture pixel buffers
 
@@ -380,12 +385,6 @@ void Game::createTexture() {
 }
 
 int Game::run(int argc, char *argv[]) {
-    Time.startTime = Time::millis();
-    Time.lastTime = Time.startTime;
-    Time.lastTick = Time.lastTime;
-    Time.lastFPS = Time.lastTime;
-    Time.mspt = 33;
-    Time.framesPerSecond = 0;
 
     // start loading chunks
     METADOT_INFO("Queueing chunk loading...");

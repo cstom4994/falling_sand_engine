@@ -8,18 +8,20 @@ engine_time Time;
 
 // --------------- FPS counter functions ---------------
 
-int exitGame = 0;
+void ExitGame() {}
 
-void ExitGame() { exitGame = 1; }
+void GameExited() {}
 
-int GameExited() { return exitGame; }
+int InitCore() { return 1; }
 
-int InitCore() {
-    exitGame = 0;
-    return 1;
+void InitTime() {
+    Time.startTime = Time::millis();
+    Time.lastTime = Time.startTime;
+    Time.lastTick = Time.lastTime;
+    Time.lastFPS = Time.lastTime;
+    Time.mspt = 33;
+    Time.framesPerSecond = 0;
 }
-
-void InitTime() {}
 
 void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
     Screen.windowWidth = windowWidth;

@@ -7,8 +7,8 @@
 #include <time.h>
 
 #include "core/core.h"
-#include "sdl_wrapper.h"
 #include "core/cpp/utils.hpp"
+#include "sdl_wrapper.h"
 
 typedef struct engine_core {
     C_Window *window;
@@ -48,7 +48,7 @@ typedef struct engine_time {
 } engine_time;
 
 void ExitGame();
-int GameExited();
+void GameExited();
 
 int InitCore();
 void InitTime();
