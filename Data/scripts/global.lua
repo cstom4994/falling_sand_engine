@@ -39,3 +39,4 @@ global_def.hd_objects = false
 global_def.hd_objects_size = 3
 
 global_def.draw_ui_debug = false
+global_def.draw_imgui_debug =false

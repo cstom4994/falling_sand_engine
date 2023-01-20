@@ -438,6 +438,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
 )markdown";
 
+    if (global.game->GameIsolate_.globaldef.draw_imgui_debug) {
+        ImGui::ShowDemoWindow();
+        ImPlot::ShowDemoWindow();
+    }
+
     auto cpos = editor.GetCursorPosition();
     if (global.game->GameIsolate_.globaldef.ui_tweak) {
 
@@ -468,30 +473,67 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
             MarkdownData TickInfoPanel;
             TickInfoPanel.data = R"(
-Info &nbsp; &nbsp; &nbsp; | Data &nbsp; | Comments &nbsp;
+Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
 :-----------|:------------|:--------
 TickTime | {0} | Nothing
 DeltaTime | {1} | Nothing
-Mspt | {2} | Nothing
-Delta | {3} | Nothing
-STDTime | {4} | Nothing
-CSTDTime | {5} | Nothing
+TPS | {2} | Nothing
+Mspt | {3} | Nothing
+Delta | {4} | Nothing
+STDTime | {5} | Nothing
+CSTDTime | {6} | Nothing
             )";
-
-            // ImGui::Text("TickTime: %d", global.game->tickTime);
-            // ImGui::Text("DeltaTime: %lld", Time.deltaTime);
 
             time_t rawtime;
             rawtime = time(NULL);
             struct tm *timeinfo = localtime(&rawtime);
 
-            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, global.game->tickTime, Time.deltaTime, Time.mspt, Time.now - Time.lastTick, Time::millis(), rawtime);
+            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, global.game->tickTime, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTick, Time::millis(), rawtime);
 
             ImGui::Auto(TickInfoPanel);
 
             ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
             ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+            const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+
+            if (ImGui::BeginTable("table_nested1", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable)) {
+                ImGui::TableSetupColumn("A0");
+                ImGui::TableSetupColumn("A1");
+                ImGui::TableHeadersRow();
+
+                ImGui::TableNextColumn();
+                ImGui::Text("A0 Row 0");
+                {
+                    float rows_height = TEXT_BASE_HEIGHT * 2;
+                    if (ImGui::BeginTable("table_nested2", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable)) {
+                        ImGui::TableSetupColumn("B0");
+                        ImGui::TableSetupColumn("B1");
+                        ImGui::TableHeadersRow();
+
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("B0 Row 0");
+                        ImGui::TableNextColumn();
+                        ImGui::Text("B1 Row 0");
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("B0 Row 1");
+                        ImGui::TableNextColumn();
+                        ImGui::Text("B1 Row 1");
+
+                        ImGui::EndTable();
+                    }
+                }
+                ImGui::TableNextColumn();
+                ImGui::Text("A1 Row 0");
+                ImGui::TableNextColumn();
+                ImGui::Text("A0 Row 1");
+                ImGui::TableNextColumn();
+                ImGui::Text("A1 Row 1");
+                ImGui::EndTable();
+            }
 
             ImGui::Separator();
 
@@ -517,11 +559,6 @@ CSTDTime | {5} | Nothing
             }
             if (ImGui::BeginTabItem(CC("自动序列测试"))) {
                 ShowAutoTestWindow();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem(CC("ImPlot测试"))) {
-                static bool ui_implot_test = true;
-                ImPlot::ShowDemoWindow(&ui_implot_test);
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();

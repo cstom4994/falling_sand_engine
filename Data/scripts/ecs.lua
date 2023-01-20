@@ -14,7 +14,7 @@
 
 local ecs = require("ecs.cecs")
 
-local w = ecs.world()
+local w = ecs.cecs()
 
 InitECS = function()
 	init_ecs()

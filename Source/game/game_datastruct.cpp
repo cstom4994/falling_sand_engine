@@ -1304,6 +1304,7 @@ void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
         LoadLuaConfig(_struct, GlobalDEF, hd_objects);
         LoadLuaConfig(_struct, GlobalDEF, hd_objects_size);
         LoadLuaConfig(_struct, GlobalDEF, draw_ui_debug);
+        LoadLuaConfig(_struct, GlobalDEF, draw_imgui_debug);
 
     } else {
         METADOT_ERROR("GlobalDEF WAS NULL");

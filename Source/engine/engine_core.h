@@ -41,8 +41,11 @@ typedef struct engine_time {
     I64 deltaTime;
 
     I32 mspt;
+    I32 tpsTrace[TraceTimeNum];
+    I32 tpsCount;
+    F32 tps;
 
-    U16 frameTimes[FrameTimeNum];
+    U16 frameTimesTrace[TraceTimeNum];
     U32 frameCount;
     F32 framesPerSecond;
 } engine_time;
@@ -58,7 +61,7 @@ void UpdateTime();
 void WaitUntilNextFrame();
 
 void InitFPS();
-void ProcessFPS();
+void ProcessTickTime();
 F32 GetFPS();
 
 #endif

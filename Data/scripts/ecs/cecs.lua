@@ -606,8 +606,8 @@ do
     end
 end
 
-function cecs.world()
-    local w = cecs._world(M)
+function cecs.cecs()
+    local w = cecs._create(M)
     context[w].typenames.REMOVED = {
         name = "REMOVED",
         id = cecs._REMOVED,

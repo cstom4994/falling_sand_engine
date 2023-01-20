@@ -2,6 +2,8 @@
 
 #include "engine_core.h"
 
+#include "core/cpp/utils.hpp"
+
 engine_core Core;
 engine_screen Screen;
 engine_time Time;
@@ -20,6 +22,7 @@ void InitTime() {
     Time.lastTick = Time.lastTime;
     Time.lastFPS = Time.lastTime;
     Time.mspt = 33;
+    Time.tpsCount = 0;
     Time.framesPerSecond = 0;
 }
 
@@ -41,12 +44,13 @@ F32 GetFPS() { return Time.framesPerSecond; }
 
 void InitFPS() {
     // Initialize FPS at 0
-    memset(Time.frameTimes, 0, sizeof(Time.frameTimes));
+    memset(Time.tpsTrace, 0, sizeof(Time.tpsTrace));
+    memset(Time.frameTimesTrace, 0, sizeof(Time.frameTimesTrace));
     Time.frameCount = 0;
     Time.framesPerSecond = 0;
 }
 
-void ProcessFPS() {
+void ProcessTickTime() {
     Time.frameCount++;
     if (Time.now - Time.lastFPS >= 1000) {
         Time.lastFPS = Time.now;
@@ -57,19 +61,39 @@ void ProcessFPS() {
         F32 sum = 0;
         F32 num = 0.01;
 
-        for (int i = 0; i < FrameTimeNum; i++) {
-            F32 weight = Time.frameTimes[i];
-            sum += weight * Time.frameTimes[i];
+        for (int i = 0; i < TraceTimeNum; i++) {
+            F32 weight = Time.frameTimesTrace[i];
+            sum += weight * Time.frameTimesTrace[i];
             num += weight;
         }
 
         Time.feelsLikeFps = 1000 / (sum / num);
+
+        // Update tps trace
+        for (int i = 1; i < TraceTimeNum; i++) {
+            Time.tpsTrace[i - 1] = Time.tpsTrace[i];
+        }
+        Time.tpsTrace[TraceTimeNum - 1] = Time.tpsCount;
+
+        // Calculate tps
+        sum = 0;
+        num = 0.01;
+
+        for (int i = 0; i < TraceTimeNum; i++) {
+            F32 weight = Time.tpsTrace[i];
+            sum += weight * Time.tpsTrace[i];
+            num += weight;
+        }
+
+        Time.tps = 1000 / (sum / num);
+
+        Time.tpsCount = 0;
     }
 
-    for (int i = 1; i < FrameTimeNum; i++) {
-        Time.frameTimes[i - 1] = Time.frameTimes[i];
+    for (int i = 1; i < TraceTimeNum; i++) {
+        Time.frameTimesTrace[i - 1] = Time.frameTimesTrace[i];
     }
-    Time.frameTimes[FrameTimeNum - 1] = (U16)(Time::millis() - Time.now);
+    Time.frameTimesTrace[TraceTimeNum - 1] = (U16)(Time::millis() - Time.now);
 
     Time.lastTime = Time.now;
 }

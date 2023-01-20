@@ -891,6 +891,7 @@ int Game::run(int argc, char *argv[]) {
             global.scripts->UpdateTick();
             if (GameIsolate_.globaldef.tick_world) {
                 tick();
+                Time.tpsCount++;
             }
             Render.target = Render.realTarget;
             Time.lastTick = Time.now;
@@ -3301,7 +3302,7 @@ ReadyToMerge ({16})
         for (int i = 0; i <= 4; i++) {
             // Drawing::drawText(Render.target, dt_frameGraph[i], Screen.windowWidth - 20,
             //                   Screen.windowHeight - 15 - (i * 25) - 2);
-            R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5, Screen.windowHeight - 10 - (i * 25), Screen.windowWidth - 25, Screen.windowHeight - 10 - (i * 25),
+            R_Line(Render.target, Screen.windowWidth - 30 - TraceTimeNum - 5, Screen.windowHeight - 10 - (i * 25), Screen.windowWidth - 25, Screen.windowHeight - 10 - (i * 25),
                    {0xff, 0xff, 0xff, 0xff});
         }
         /*for (int i = 0; i <= 100; i += 25) {
@@ -3309,11 +3310,11 @@ char buff[20];
 snprintf(buff, sizeof(buff), "%d", i);
 std::string buffAsStdStr = buff;
 Drawing::drawText(renderer, buffAsStdStr.c_str(), font14, WIDTH - 20, HEIGHT - 15 - i - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
-SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
+SDL_RenderDrawLine(renderer, WIDTH - 30 - TraceTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
 }*/
 
-        for (int i = 0; i < FrameTimeNum; i++) {
-            int h = Time.frameTimes[i];
+        for (int i = 0; i < TraceTimeNum; i++) {
+            int h = Time.frameTimesTrace[i];
 
             METAENGINE_Color col;
             if (h <= (int)(1000 / 144.0)) {
@@ -3328,13 +3329,13 @@ SDL_RenderDrawLine(renderer, WIDTH - 30 - FrameTimeNum - 5, HEIGHT - 10 - i, WID
                 col = {0xff, 0x00, 0x00, 0xff};
             }
 
-            R_Line(Render.target, Screen.windowWidth - FrameTimeNum - 30 + i, Screen.windowHeight - 10 - h, Screen.windowWidth - FrameTimeNum - 30 + i, Screen.windowHeight - 10, col);
-            // SDL_RenderDrawLine(renderer, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - FrameTimeNum - 30 + i, HEIGHT - 10);
+            R_Line(Render.target, Screen.windowWidth - TraceTimeNum - 30 + i, Screen.windowHeight - 10 - h, Screen.windowWidth - TraceTimeNum - 30 + i, Screen.windowHeight - 10, col);
+            // SDL_RenderDrawLine(renderer, WIDTH - TraceTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - TraceTimeNum - 30 + i, HEIGHT - 10);
         }
 
-        R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.framesPerSecond), Screen.windowWidth - 25,
+        R_Line(Render.target, Screen.windowWidth - 30 - TraceTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.framesPerSecond), Screen.windowWidth - 25,
                Screen.windowHeight - 10 - (int)(1000.0 / Time.framesPerSecond), {0x00, 0xff, 0xff, 0xff});
-        R_Line(Render.target, Screen.windowWidth - 30 - FrameTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.feelsLikeFps), Screen.windowWidth - 25,
+        R_Line(Render.target, Screen.windowWidth - 30 - TraceTimeNum - 5, Screen.windowHeight - 10 - (int)(1000.0 / Time.feelsLikeFps), Screen.windowWidth - 25,
                Screen.windowHeight - 10 - (int)(1000.0 / Time.feelsLikeFps), {0xff, 0x00, 0xff, 0xff});
     }
 

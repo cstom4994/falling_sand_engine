@@ -3,7 +3,7 @@ local ecs = require "ecs.cecs"
 
 local N = 1
 
-local w = ecs.world()
+local w = ecs.cecs()
 print("memory:", w:memory())
 
 w:register {

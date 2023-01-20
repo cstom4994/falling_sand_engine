@@ -515,7 +515,7 @@ static int lcontext(lua_State *L) {
     return 1;
 }
 
-static int lnew_world(lua_State *L) {
+static int lcreate(lua_State *L) {
     size_t sz = sizeof(struct entity_world);
     struct entity_world *w = (struct entity_world *)lua_newuserdatauv(L, sz, MAX_COMPONENT - 1);  // REMOVED 0 don't need uservalue
     memset(w, 0, sz);
@@ -1912,7 +1912,7 @@ static int lmethods(lua_State *L) {
 int metadot_bind_ecs_core(lua_State *L) {
     luaL_checkversion(L);
     luaL_Reg l[] = {
-            {"_world", lnew_world},
+            {"_create", lcreate},
             {"_methods", lmethods},
             {"check_select", lcheck_iter},
 

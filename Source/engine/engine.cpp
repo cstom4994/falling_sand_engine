@@ -104,7 +104,7 @@ void EngineUpdateEnd() {
     // SDL_GL_SwapWindow(Core.window);
     WaitUntilNextFrame();
 
-    ProcessFPS();
+    ProcessTickTime();
 }
 
 void EndEngine(int errorOcurred) {
