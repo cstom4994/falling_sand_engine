@@ -280,6 +280,11 @@ typedef struct U16Point {
     U16 y;
 } U16Point;
 
+typedef struct metadot_rect {
+    float x, y;
+    float w, h;
+} metadot_rect;
+
 typedef signed int metadot_bool;
 
 typedef metadot_vec2 metadot_v2;

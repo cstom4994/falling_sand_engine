@@ -2,7 +2,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "engine/game_utils/poro_math.hpp"
+#include "engine/mathlib.hpp"
 
 namespace MetaEngine {
 

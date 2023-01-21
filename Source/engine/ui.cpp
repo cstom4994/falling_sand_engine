@@ -119,7 +119,7 @@ void UIRendererDraw() {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                R_Rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
+                metadot_rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
@@ -131,7 +131,7 @@ void UIRendererDraw() {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                R_Rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)(e.second.minRectX + win_s[0]), .h = (float)(e.second.minRectY +  win_s[1])};
+                metadot_rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)(e.second.minRectX + win_s[0]), .h = (float)(e.second.minRectY +  win_s[1])};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
@@ -144,7 +144,7 @@ void UIRendererDraw() {
     global.uidata->imguiCore->Draw();
 }
 
-F32 BoxDistence(R_Rect box, R_vec2 A) {
+F32 BoxDistence(metadot_rect box, R_vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
@@ -156,7 +156,7 @@ void UIRendererUpdate() {
     OnGameGUIUpdate();
 
     for (auto &&e : global.uidata->elementLists) {
-        R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        metadot_rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
         if (e.second.type == ElementType::windowElement) {
             // Move window
             if (BoxDistence(rect, GetMousePos()) < 0.0f && ControlSystem::lmouse && GetMousePos().y - e.second.minRectY < 15.0f) {
@@ -190,7 +190,7 @@ bool UIIsMouseOnControls() {
     R_vec2 mousePos = GetMousePos();
 
     for (auto &&e : global.uidata->elementLists) {
-        R_Rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        metadot_rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
         if (BoxDistence(rect, mousePos) < 0.0f) return true;
     }
     return false;

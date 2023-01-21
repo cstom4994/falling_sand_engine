@@ -486,7 +486,7 @@ FontCache_Rect FontCache_DefaultRenderCallback(FontCache_Image* src, FontCache_R
 
     // FIXME: Why does the scaled offset look so wrong?
     {
-        R_Rect r = *srcrect;
+        metadot_rect r = *srcrect;
         R_BlitScale(src, &r, dest, x + xscale * r.w / 2.0f, y + r.h / 2.0f, xscale, yscale);
     }
 

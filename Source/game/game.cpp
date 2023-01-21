@@ -1544,7 +1544,7 @@ void Game::tick() {
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-            R_Rect r = {x * scaleObjTex, y * scaleObjTex, (F32)cur->surface->w * scaleObjTex, (F32)cur->surface->h * scaleObjTex};
+            metadot_rect r = {x * scaleObjTex, y * scaleObjTex, (F32)cur->surface->w * scaleObjTex, (F32)cur->surface->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
                 if (cur->texture != nullptr) {
@@ -2689,10 +2689,10 @@ void Game::renderLate() {
             METAENGINE_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
-            R_Rect *dst = nullptr;
-            R_Rect *src = nullptr;
-            METADOT_NEW(C, dst, R_Rect);
-            METADOT_NEW(C, src, R_Rect);
+            metadot_rect *dst = nullptr;
+            metadot_rect *src = nullptr;
+            METADOT_NEW(C, dst, metadot_rect);
+            METADOT_NEW(C, src, metadot_rect);
 
             F32 arX = (F32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             F32 arY = (F32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
@@ -2762,11 +2762,11 @@ void Game::renderLate() {
                 }
             }
 
-            METADOT_DELETE(C, dst, R_Rect);
-            METADOT_DELETE(C, src, R_Rect);
+            METADOT_DELETE(C, dst, metadot_rect);
+            METADOT_DELETE(C, src, metadot_rect);
         }
 
-        R_Rect r1 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * scale),
+        metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * scale),
                            (F32)(GameIsolate_.world->height * scale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, Render.target, &r1);
@@ -2928,9 +2928,9 @@ void Game::renderOverlays() {
     FontCache_DrawAlign(font, Render.target, Screen.windowWidth, 0, FontCache_ALIGN_RIGHT, "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
                         Time.feelsLikeFps);
 
-    R_Rect r1 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * scale),
+    metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * scale),
                        (F32)(GameIsolate_.world->height * scale)};
-    R_Rect r2 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale),
+    metadot_rect r2 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale),
                        (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale), (F32)(GameIsolate_.world->tickZone.w * scale),
                        (F32)(GameIsolate_.world->tickZone.h * scale)};
 
@@ -2940,7 +2940,7 @@ void Game::renderOverlays() {
     }
 
     if (GameIsolate_.globaldef.draw_load_zones) {
-        R_Rect r2m = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * scale),
+        metadot_rect r2m = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * scale),
                             (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * scale), (F32)(GameIsolate_.world->meshZone.w * scale),
                             (F32)(GameIsolate_.world->meshZone.h * scale)};
 
@@ -2953,26 +2953,26 @@ void Game::renderOverlays() {
         METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        R_Rect r3 = R_Rect{(F32)(0), (F32)(0), (F32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale)), (F32)(Screen.windowHeight)};
+        metadot_rect r3 = metadot_rect{(F32)(0), (F32)(0), (F32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale)), (F32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r4 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale), (F32)(0),
+        metadot_rect r4 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale), (F32)(0),
                            (F32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale + GameIsolate_.world->tickZone.w * scale)),
                            (F32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r5 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale), (F32)(0), (F32)(GameIsolate_.world->tickZone.w * scale),
+        metadot_rect r5 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale), (F32)(0), (F32)(GameIsolate_.world->tickZone.w * scale),
                            (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale)};
         R_Rectangle2(Render.target, r3, col);
 
-        R_Rect r6 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale),
+        metadot_rect r6 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * scale),
                            (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale + GameIsolate_.world->tickZone.h * scale),
                            (F32)(GameIsolate_.world->tickZone.w * scale),
                            (F32)(Screen.windowHeight - (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * scale + GameIsolate_.world->tickZone.h * scale))};
         R_Rectangle2(Render.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        R_Rect r7 = R_Rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * scale - (Screen.windowWidth / 3 * scale / 2)),
+        metadot_rect r7 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * scale - (Screen.windowWidth / 3 * scale / 2)),
                            (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * scale - (Screen.windowHeight / 3 * scale / 2)), (F32)(Screen.windowWidth / 3 * scale),
                            (F32)(Screen.windowHeight / 3 * scale)};
         R_Rectangle2(Render.target, r7, col);
@@ -3137,7 +3137,7 @@ void Game::renderOverlays() {
         R_Rectangle(Render.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize, centerY - chSize * CHUNK_UNLOAD_DIST + chSize, centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
-        R_Rect r = {0, 0, (F32)chSize, (F32)chSize};
+        metadot_rect r = {0, 0, (F32)chSize, (F32)chSize};
         for (auto &p : GameIsolate_.world->WorldIsolate_.chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;

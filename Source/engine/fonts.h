@@ -15,7 +15,7 @@ extern "C" {
 // Let's pretend this exists...
 #define TTF_STYLE_OUTLINE 16
 
-#define FontCache_Rect R_Rect
+#define FontCache_Rect metadot_rect
 #define FontCache_Target R_Target
 #define FontCache_Image R_Image
 

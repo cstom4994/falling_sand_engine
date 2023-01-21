@@ -108,7 +108,7 @@ typedef struct ContextData_OpenGL_3 {
     unsigned int last_shape;
     bool last_use_blending;
     R_BlendMode last_blend_mode;
-    R_Rect last_viewport;
+    metadot_rect last_viewport;
     R_Camera last_camera;
     bool last_camera_inverted;
 

@@ -315,7 +315,7 @@ typedef CPoint<int> CCoord;
 
 #include <vector>
 
-#include "poro_math.hpp"
+#include "engine/mathlib.hpp"
 
 namespace MetaEngine {
 
@@ -382,8 +382,6 @@ VectorT CircleRectResolveByPushingCircle(const VectorT &circle_p, float circle_r
 
 #ifndef INC_COLLISION_CIRCLE_CIRCLE_H
 #define INC_COLLISION_CIRCLE_CIRCLE_H
-
-#include "poro_math.hpp"
 
 namespace MetaEngine {
 
