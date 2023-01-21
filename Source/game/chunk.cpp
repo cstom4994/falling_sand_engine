@@ -2,7 +2,10 @@
 
 #include "chunk.hpp"
 
+#include <malloc/_malloc.h>
+
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -10,6 +13,7 @@
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/global.hpp"
+#include "engine/datapackage.h"
 #include "engine/engine_platform.h"
 #include "lz4/lz4.h"
 
@@ -24,7 +28,7 @@ void Chunk_Init(Chunk *_struct, int x, int y, char *worldName) {
     METADOT_ASSERT_E(_struct);
     _struct->x = x;
     _struct->y = y;
-    _struct->fname = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".region");
+    _struct->pack_filename = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".pack");
 }
 
 void Chunk_Delete(Chunk *_struct) {
@@ -36,15 +40,37 @@ void Chunk_Delete(Chunk *_struct) {
 }
 
 void Chunk_loadMeta(Chunk *_struct) {
-    std::string line;
-    std::ifstream myfile(_struct->fname);
-    if (myfile.is_open()) {
-        getline(myfile, line, '\n');
+    datapack_node *dp;
+    char *s;
+    char *s1;
+    // char *compressed_data;
+    // char *compressed_data2;
 
-        int phase = stoi(line);
+    datapack_bin leveldata;
+    datapack_bin leveldata2;
+
+    int x, y, phase;
+
+    int src_size;
+    int compressed_size;
+    int src_size2;
+    int compressed_size2;
+
+    dp = datapack_map("ssiiiiiiiBB", &s, &s1, &phase, &x, &y, &src_size, &compressed_size, &src_size2, &compressed_size2, &leveldata, &leveldata2);
+    datapack_load(dp, DATAPACK_FILE, _struct->pack_filename.c_str());
+    datapack_unpack(dp, 0);
+
+    if (dp) {
         _struct->generationPhase = phase;
         _struct->hasMeta = true;
+        datapack_free(dp);
+    } else {
     }
+
+    if (s) free(s);
+    if (s1) free(s1);
+    if (leveldata.addr) free(leveldata.addr);
+    if (leveldata2.addr) free(leveldata2.addr);
 }
 
 // MaterialInstanceData* Chunk::readBuf = (MaterialInstanceData*)malloc(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
@@ -55,17 +81,42 @@ void Chunk_read(Chunk *_struct) {
     if (tiles == NULL) throw std::runtime_error("Failed to allocate memory for Chunk tiles array.");
     MaterialInstance *layer2 = (MaterialInstance *)malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
     if (layer2 == NULL) throw std::runtime_error("Failed to allocate memory for Chunk layer2 array.");
-    // MaterialInstance* tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
-    // MaterialInstance* layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
+    // MaterialInstance *tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
+    // MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     U32 *background = new U32[CHUNK_W * CHUNK_H];
 
-    std::string line;
-    std::ifstream myfile(_struct->fname, std::ios::binary);
+    datapack_node *dp;
+    char *s;
+    char *s1;
 
-    if (myfile.is_open()) {
+    // Read x y from pack
+    int x, y;
+
+    // Used to verify compressed data
+    int src_size;
+    int compressed_size;
+    int src_size2;
+    int compressed_size2;
+
+    datapack_bin leveldata;
+    datapack_bin leveldata2;
+
+    dp = datapack_map("ssiiiiiiiBB", &s, &s1, &_struct->generationPhase, &x, &y, &src_size, &compressed_size, &src_size2, &compressed_size2, &leveldata, &leveldata2);
+    datapack_load(dp, DATAPACK_FILE, _struct->pack_filename.c_str());
+    datapack_unpack(dp, 0);
+
+    if (dp) {
         int state = 0;
 
-        myfile.read((char *)&_struct->generationPhase, sizeof(int8_t));
+        // METADOT_BUG("Datapack test result1: %s, %d, %d, %d", s1, i1, i2, i3);
+        // METADOT_BUG("Datapack test result2: %d, %d, %d, %d", i4, i5, i6, i7);
+        // METADOT_BUG("Datapack test result3: %d, %d, %d, %d", leveldata.sz, compressed_size, leveldata2.sz, compressed_size2);
+
+        if (x != _struct->x || y != _struct->y)
+            throw std::runtime_error("Wrong region block read sequence (" + std::to_string(x) + "," + std::to_string(y) + " should be " + std::to_string(_struct->x) + "," +
+                                     std::to_string(_struct->y) + ")");
+
+        if (leveldata.sz != compressed_size || leveldata2.sz != compressed_size2) throw std::runtime_error("Unexpected block compression data");
 
         _struct->hasMeta = true;
         state = 1;
@@ -90,38 +141,20 @@ void Chunk_read(Chunk *_struct) {
         // 	background[i] = content;
         // }
 
-        int src_size;
-        myfile.read((char *)&src_size, sizeof(int));
-
         if (src_size != CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData))
             throw std::runtime_error("Chunk src_size was different from expected: " + std::to_string(src_size) + " vs " + std::to_string(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData)));
 
-        int compressed_size;
-        myfile.read((char *)&compressed_size, sizeof(int));
-
-        int src_size2;
-        myfile.read((char *)&src_size2, sizeof(int));
         int desSize = CHUNK_W * CHUNK_H * sizeof(unsigned int);
 
         if (src_size2 != desSize) throw std::runtime_error("Chunk src_size2 was different from expected: " + std::to_string(src_size2) + " vs " + std::to_string(desSize));
 
-        int compressed_size2;
-        myfile.read((char *)&compressed_size2, sizeof(int));
-
         MaterialInstanceData *readBuf = (MaterialInstanceData *)malloc(src_size);
-
         if (readBuf == NULL) throw std::runtime_error("Failed to allocate memory for Chunk readBuf.");
 
-        char *compressed_data = (char *)malloc(compressed_size);
+        const int decompressed_size = LZ4_decompress_safe((char *)leveldata.addr, (char *)readBuf, compressed_size, src_size);
 
-        myfile.read((char *)compressed_data, compressed_size);
-
-        const int decompressed_size = LZ4_decompress_safe(compressed_data, (char *)readBuf, compressed_size, src_size);
-
-        free(compressed_data);
-
-        // basically, if either of these checks trigger, the chunk is unreadable, either due to miswriting it or corruption
-        // TODO: have the chunk regenerate on corruption (maybe save copies of corrupt chunks as well?)
+        // 基本上，如果触发这两个检查中的任何一个，块都是不可读的，要么是因为写错了，要么是因为损坏。
+        // TODO：让区块在损坏时重新生成(可能还会保存损坏区块的副本？)
         if (decompressed_size < 0) {
             METADOT_ERROR("Error decompressing chunk tile data @ %d,%d (err %d).", _struct->x, _struct->y, decompressed_size);
         } else if (decompressed_size != src_size) {
@@ -152,15 +185,7 @@ void Chunk_read(Chunk *_struct) {
             // layer2[i] = MaterialInstance(Materials::MATERIALS_ARRAY[buf[CHUNK_W * CHUNK_H + i].index], buf[CHUNK_W * CHUNK_H + i].color, buf[CHUNK_W * CHUNK_H + i].temperature);
         }
 
-        // delete readBuf;
-
-        char *compressed_data2 = (char *)malloc(compressed_size2);
-
-        myfile.read((char *)compressed_data2, compressed_size2);
-
-        const int decompressed_size2 = LZ4_decompress_safe(compressed_data2, (char *)background, compressed_size2, src_size2);
-
-        free(compressed_data2);
+        const int decompressed_size2 = LZ4_decompress_safe((char *)leveldata2.addr, (char *)background, compressed_size2, src_size2);
 
         if (decompressed_size2 < 0) {
             METADOT_ERROR("Error decompressing chunk background data @ %d,%d (err %d).", _struct->x, _struct->y, decompressed_size2);
@@ -170,8 +195,15 @@ void Chunk_read(Chunk *_struct) {
 
         free(readBuf);
 
-        myfile.close();
+        datapack_free(dp);
+    } else {
+        METADOT_ERROR("Read chunk %d %d faild", _struct->x, _struct->y);
     }
+
+    if (s) free(s);
+    if (s1) free(s1);
+    if (leveldata.addr) free(leveldata.addr);
+    if (leveldata2.addr) free(leveldata2.addr);
 
     _struct->tiles = tiles;
     _struct->layer2 = layer2;
@@ -187,17 +219,17 @@ void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *laye
     _struct->hasTileCache = true;
 
     // TODO: make these loops faster
-    /*for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        myfile.write((char*)&tiles[i].mat.id, sizeof(unsigned int));
-        myfile.write((char*)&tiles[i].color, sizeof(unsigned int));
-    }
-    for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        myfile.write((char*)&layer2[i].mat.id, sizeof(unsigned int));
-        myfile.write((char*)&layer2[i].color, sizeof(unsigned int));
-    }*/
-    /*for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        myfile.write((char*)&background[i], sizeof(unsigned int));
-    }*/
+    // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
+    //     myfile.write((char *)&tiles[i].mat.id, sizeof(unsigned int));
+    //     myfile.write((char *)&tiles[i].color, sizeof(unsigned int));
+    // }
+    // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
+    //     myfile.write((char *)&layer2[i].mat.id, sizeof(unsigned int));
+    //     myfile.write((char *)&layer2[i].color, sizeof(unsigned int));
+    // }
+    // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
+    //     myfile.write((char *)&background[i], sizeof(unsigned int));
+    // }
 
     MaterialInstanceData *buf = new MaterialInstanceData[CHUNK_W * CHUNK_H * 2];
     for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
@@ -217,9 +249,9 @@ void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *laye
         METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", _struct->x, _struct->y, compressed_data_size);
     }
 
-    /*if(compressed_data_size > 0){
-        METADOT_BUG("Compression ratio: {}", (F32)compressed_data_size / src_size * 100);
-    }*/
+    // if(compressed_data_size > 0){
+    //     METADOT_BUG("Compression data1 ratio: %f", (F32)compressed_data_size / src_size * 100);
+    // }
 
     char *n_compressed_data = (char *)realloc(compressed_data, compressed_data_size);
     if (n_compressed_data == NULL) throw std::runtime_error("Failed to realloc memory for Chunk::write compressed_data.");
@@ -239,35 +271,39 @@ void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *laye
         METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", _struct->x, _struct->y, compressed_data_size2);
     }
 
-    /*if(compressed_data_size2 > 0){
-        METADOT_BUG("Compression ratio: {}", (F32)compressed_data_size2 / src_size2 * 100);
-    }*/
+    // if(compressed_data_size2 > 0){
+    //     METADOT_BUG("Compression data2 ratio: %f", (F32)compressed_data_size2 / src_size2 * 100);
+    // }
 
     char *n_compressed_data2 = (char *)realloc(compressed_data2, (size_t)compressed_data_size2);
     if (n_compressed_data2 == NULL) throw std::runtime_error("Failed to realloc memory for Chunk::write compressed_data2.");
     compressed_data2 = n_compressed_data2;
 
-    std::ofstream myfile;
-    myfile.open(_struct->fname, std::ios::binary);
-    myfile.write((char *)&_struct->generationPhase, sizeof(int8_t));
+    datapack_node *dp;
 
-    myfile.write((char *)&src_size, sizeof(int));
-    myfile.write((char *)&compressed_data_size, sizeof(int));
-    myfile.write((char *)&src_size2, sizeof(int));
-    myfile.write((char *)&compressed_data_size2, sizeof(int));
+    datapack_bin leveldata;
+    datapack_bin leveldata2;
 
-    myfile.write((char *)compressed_data, compressed_data_size);
-    myfile.write((char *)compressed_data2, compressed_data_size2);
+    const char *s = "Is man one of God's blunders? Or is God one of man's blunders?";
+    const char *s1 = _struct->pack_filename.c_str();
+    dp = datapack_map("ssiiiiiiiBB", &s, &s1, &_struct->generationPhase, &_struct->x, &_struct->y, &src_size, &compressed_data_size, &src_size2, &compressed_data_size2, &leveldata, &leveldata2);
+
+    leveldata.sz = compressed_data_size;
+    leveldata.addr = compressed_data;
+    leveldata2.sz = compressed_data_size2;
+    leveldata2.addr = compressed_data2;
+
+    datapack_pack(dp, 0);
+    datapack_dump(dp, DATAPACK_FILE, _struct->pack_filename.c_str());
+    datapack_free(dp);
 
     free(compressed_data);
     free(compressed_data2);
 
     delete[] buf;
-
-    myfile.close();
 }
 
 bool Chunk_hasFile(Chunk *_struct) {
     struct stat buffer;
-    return (stat(_struct->fname.c_str(), &buffer) == 0);
+    return (stat(_struct->pack_filename.c_str(), &buffer) == 0);
 }

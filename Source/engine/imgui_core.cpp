@@ -569,9 +569,9 @@ CSTDTime | {6} | Nothing
             if (CollapsingHeader(LANG("ui_chunk"))) {
                 for (auto &p1 : global.game->GameIsolate_.world->WorldIsolate_.chunkCache)
                     for (auto &p2 : p1.second)
-                        if (ImGui::TreeNode(p2.second->fname.c_str())) {
+                        if (ImGui::TreeNode(p2.second->pack_filename.c_str())) {
                             MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*p2.second, [&](const auto &field, auto &&var) {
-                                if (field.name == "fname") return;
+                                if (field.name == "pack_filename") return;
 
                                 // constexpr auto tstr_range = TSTR("Meta::Msg");
 

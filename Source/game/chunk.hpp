@@ -10,6 +10,7 @@
 
 #include "core/const.h"
 #include "core/core.h"
+#include "core/cpp/static_relfection.hpp"
 #include "engine/code_reflection.hpp"
 #include "engine/reflectionflat.hpp"
 #include "game_basic.hpp"
@@ -20,10 +21,19 @@ typedef struct {
     U32 color;
     I32 temperature;
 } MaterialInstanceData;
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<MaterialInstanceData> : TypeInfoBase<MaterialInstanceData> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("index"), &Type::index},
+            Field{TSTR("color"), &Type::color},
+            Field{TSTR("temperature"), &Type::temperature},
+    };
+};
 
 // Chunk data structure
 typedef struct Chunk {
-    std::string fname;
+    std::string pack_filename;
 
     int x;
     int y;
@@ -45,7 +55,7 @@ template <>
 struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
-            Field{TSTR("fname"), &Type::fname}, Field{TSTR("x"), &Type::x}, Field{TSTR("y"), &Type::y},
+            Field{TSTR("pack_filename"), &Type::pack_filename}, Field{TSTR("x"), &Type::x}, Field{TSTR("y"), &Type::y},
 
             Field{TSTR("hasMeta"), &Type::hasMeta, AttrList{Attr{TSTR("Meta::Msg"), std::tuple{1.0f, 2.0f}}}},
             // Field{TSTR("generationPhase"), &Chunk::generationPhase},

@@ -66,14 +66,12 @@ const char *GetPerfDirectory(const char *organization,
 #define DATAPACK_GATHER_MEM 3
 
 /* Hooks for error logging, memory allocation functions and fatal */
-typedef int(datapack_print_fcn)(const char *fmt, ...);
 typedef void *(datapack_malloc_fcn)(size_t sz);
 typedef void *(datapack_realloc_fcn)(void *ptr, size_t sz);
 typedef void(datapack_free_fcn)(void *ptr);
 typedef void(datapack_fatal_fcn)(const char *fmt, ...);
 
 typedef struct datapack_hook_t {
-    datapack_print_fcn *oops;
     datapack_malloc_fcn *malloc;
     datapack_realloc_fcn *realloc;
     datapack_free_fcn *free;
