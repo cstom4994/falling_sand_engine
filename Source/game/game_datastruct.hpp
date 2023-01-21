@@ -301,7 +301,6 @@ public:
     U8 flags = 0;
 
     void setFlag(U8 f) { flags |= f; }
-
     bool getFlag(U8 f) { return flags & f; }
 
     C_Surface *surface = nullptr;
@@ -320,6 +319,35 @@ public:
 
     static Item *makeItem(U8 flags, RigidBody *rb);
     void loadFillTexture(C_Surface *tex);
+};
+
+using ItemLuaPtr = std::shared_ptr<Item>;
+
+struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
+    static constexpr const char *class_name = "Item";
+    static luaL_Reg *members() { static luaL_Reg members[] = {{"setFlag", setFlag}, {"getFlag", getFlag}, {nullptr, nullptr}}; }
+    // Lua constructor
+    static int create(lua_State *L) {
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        const char *name = luaL_checkstring(L, 1);
+        int age = luaL_checkinteger(L, 2);
+        ItemLuaPtr sp = std::make_shared<Item>();
+        push(L, sp);
+        return 1;
+    }
+    // Bind functions
+    static int setFlag(lua_State *L) {
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ItemLuaPtr t = fromStack(L, 1);
+        t->setFlag(lua_tointeger(L, 2));
+        return 0;
+    }
+    static int getFlag(lua_State *L) {
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ItemLuaPtr t = fromStack(L, 1);
+        lua_pushboolean(L, t->getFlag(lua_tointeger(L, 2)));
+        return 1;
+    }
 };
 
 class Structure {

@@ -285,8 +285,9 @@ void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *laye
     datapack_bin leveldata2;
 
     const char *s = "Is man one of God's blunders? Or is God one of man's blunders?";
-    const char *s1 = _struct->pack_filename.c_str();
-    dp = datapack_map("ssiiiiiiiBB", &s, &s1, &_struct->generationPhase, &_struct->x, &_struct->y, &src_size, &compressed_data_size, &src_size2, &compressed_data_size2, &leveldata, &leveldata2);
+
+    const char *filename = _struct->pack_filename.c_str();
+    dp = datapack_map("ssiiiiiiiBB", &s, &filename, &_struct->generationPhase, &_struct->x, &_struct->y, &src_size, &compressed_data_size, &src_size2, &compressed_data_size2, &leveldata, &leveldata2);
 
     leveldata.sz = compressed_data_size;
     leveldata.addr = compressed_data;

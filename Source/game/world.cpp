@@ -3,11 +3,13 @@
 #include "world.hpp"
 
 #include <algorithm>
+#include <future>
 #include <iostream>
 #include <iterator>
 #include <string>
 #include <thread>
 #include <typeinfo>
+#include <vector>
 
 #include "core/alloc.h"
 #include "core/const.h"
@@ -2358,6 +2360,9 @@ void World::tickChunkGeneration() {
     long long start;
     int cenX = (-loadZone.x + loadZone.w / 2) / CHUNK_W;
     int cenY = (-loadZone.y + loadZone.h / 2) / CHUNK_H;
+
+    std::vector<std::future<void>> gen_results;
+
     for (auto &p : WorldIsolate_.chunkCache) {
         if (p.first == INT_MIN) continue;  // Should be change when using phmap::flat_hash_map
         for (auto &p2 : p.second) {
@@ -2391,8 +2396,7 @@ void World::tickChunkGeneration() {
             m->generationPhase++;
             populateChunk(m, m->generationPhase, true);
 
-            Chunk_write(m, m->tiles, m->layer2, m->background);
-            // std::async(&Chunk::write, m, m->tiles);
+            gen_results.push_back(std::async(std::launch::async, Chunk_write, m, m->tiles, m->layer2, m->background));
 
             if (n++ > 4) {
                 return;
@@ -2401,6 +2405,8 @@ void World::tickChunkGeneration() {
         nextChunk : {}
         }
     }
+
+    for (auto &async : gen_results) async.get();
 
     needToTickGeneration = false;
 }

@@ -168,5 +168,7 @@ Texture *LoadAseprite(const char *path) {
 
     Texture *tex = Eng_CreateTexture(surface);
 
+    Ase_Destroy_Output(ase);
+
     return tex;
 }
