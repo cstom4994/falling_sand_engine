@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-namespace BaseEngine {
+namespace MetaEngine {
 namespace math {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,4 +241,4 @@ bool TestLineAABB(const CVector2<PointType> &p0, const CVector2<PointType> &p1, 
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // end of namespace math
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine

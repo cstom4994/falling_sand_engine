@@ -343,7 +343,7 @@ std::string ControlSystem::SDLKeyToString(int sdlkey) {
 int ControlSystem::StringToSDLKey(const std::string &s) {
     InitKeymap();
 
-    std::map<std::string, int>::iterator i = SDLKeymap.find(BaseEngine::Lowercase(s));
+    std::map<std::string, int>::iterator i = SDLKeymap.find(MetaEngine::Lowercase(s));
     if (i == SDLKeymap.end()) return 0;
 
     return i->second;

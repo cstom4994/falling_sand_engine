@@ -4,7 +4,7 @@
 
 #include "engine/game_utils/poro_math.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 bool CColorUint8::masks_initialized = false;
 CColorUint8::uint32 CColorUint8::RMask;
@@ -170,7 +170,7 @@ types::color InvertColor(const types::color &c) {
 // ----------------------------------------------------------------------------
 
 float ColorDistance(const types::fcolor &c1, const types::fcolor &c2) {
-    float t = (float)(BaseEngine::math::Absolute(c1.GetR() - c2.GetR()) + BaseEngine::math::Absolute(c1.GetG() - c2.GetG()) + BaseEngine::math::Absolute(c1.GetB() - c2.GetB()));
+    float t = (float)(MetaEngine::math::Absolute(c1.GetR() - c2.GetR()) + MetaEngine::math::Absolute(c1.GetG() - c2.GetG()) + MetaEngine::math::Absolute(c1.GetB() - c2.GetB()));
 
     return t / 3.f;
 }
@@ -178,7 +178,7 @@ float ColorDistance(const types::fcolor &c1, const types::fcolor &c2) {
 // ----------------------------------------------------------------------------
 
 float ColorDistance(const types::color &c1, const types::color &c2) {
-    float t = (float)(BaseEngine::math::Absolute(c1.GetR() - c2.GetR()) + BaseEngine::math::Absolute(c1.GetG() - c2.GetG()) + BaseEngine::math::Absolute(c1.GetB() - c2.GetB()));
+    float t = (float)(MetaEngine::math::Absolute(c1.GetR() - c2.GetR()) + MetaEngine::math::Absolute(c1.GetG() - c2.GetG()) + MetaEngine::math::Absolute(c1.GetB() - c2.GetB()));
 
     return t / (255.f * 3);
 }
@@ -211,4 +211,4 @@ types::uint32 Blend2Colors(types::uint32 c1, types::uint32 c2, float how_much_of
 
 //-----------------------------------------------------------------------------
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine

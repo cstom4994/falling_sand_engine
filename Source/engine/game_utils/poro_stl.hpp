@@ -8,7 +8,7 @@
 
 #include "core/debug_impl.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <typename Type, typename SizeType = int>
 class CSafeArray {
@@ -106,7 +106,7 @@ private:
     SizeType _size;
 };
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine
 
 #endif
 
@@ -115,7 +115,7 @@ private:
 
 #include "core/debug_impl.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <class T, int N>
 class CStaticArray {
@@ -160,7 +160,7 @@ private:
     T data[N];
 };
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
@@ -169,7 +169,7 @@ private:
 
 #include "core/debug_impl.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <class T, int N>
 class StaticArray {
@@ -214,7 +214,7 @@ private:
     T data[N];
 };
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
@@ -228,7 +228,7 @@ private:
 // #include <vector>
 // #include <memory>
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 // #include "Poro/utils/../../config/cengdef.h"
 // __CENG_BEGIN
@@ -482,7 +482,7 @@ private:
     // std::vector< _Ty > myDataArray;
 };
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine
 // __CENG_END
 
 #endif
@@ -493,7 +493,7 @@ private:
 #include <algorithm>
 #include <list>
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <class T>
 class CAutoListInsertOperation {
@@ -547,7 +547,7 @@ private:
 template <class T>
 std::list<T *> *CAutoList<T>::myAutoListPointerList = NULL;
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 #endif
 
 #include <string>
@@ -573,7 +573,7 @@ std::string base64_decode(std::string const &s);
 
 //-----------------------------------------------------------------------------
 
-namespace BaseEngine {
+namespace MetaEngine {
 namespace bitmask {
 namespace types {
 
@@ -583,7 +583,7 @@ typedef float float32;
 
 }  // end of namespace types
 }  // end of namespace bitmask
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 //-----------------------------------------------------------------------------
 
@@ -592,7 +592,7 @@ typedef float float32;
 #ifndef INC_CBITMASK_MATH_H
 #define INC_CBITMASK_MATH_H
 
-namespace BaseEngine {
+namespace MetaEngine {
 namespace bitmask {
 
 struct PointMatrix;
@@ -873,11 +873,11 @@ inline types::int16 FloatToInt16(float x) {
 //-----------------------------------------------------------------------------
 
 }  // end of namespace bitmask
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <typename T>
 class CBitMask {
@@ -952,7 +952,7 @@ private:
     std::map<Pos, T> mData;
 };
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
@@ -964,7 +964,7 @@ private:
 
 #include "core/debug_impl.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 //! This is a map that can contain multiple elements under one key
 template <class T1, class T2, class PR = std::less<T1>>
@@ -1096,7 +1096,7 @@ private:
         }                                                                                    \
     }
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine
 
 #endif
 
@@ -1112,7 +1112,7 @@ private:
 #pragma warning(disable : 4503)
 #endif
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <class T>
 struct CMapHelperSorter {
@@ -1255,7 +1255,7 @@ private:
     typename std::list<T2>::iterator myListIterator;
 };
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
@@ -1298,7 +1298,7 @@ private:
 
 #include <string>
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 // Infrastructure.
 
@@ -1320,7 +1320,7 @@ namespace BaseEngine {
     }                                                            \
     static name fromString(const std::string &str) { list(FROM_STRING_CASE) return name(); /* assert? throw? */ }
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 #endif
 
 #ifndef INC_STRING_H
@@ -1335,7 +1335,7 @@ namespace BaseEngine {
 #include <string>
 #include <vector>
 
-namespace BaseEngine {
+namespace MetaEngine {
 // #include "Poro/utils/../config/cengdef.h"
 // __CENG_BEGIN	// NAMESPACE?
 
@@ -1459,7 +1459,7 @@ std::string CastToHexString(const T &what) {
 
 //-----------------------------------------------------------------------------
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 #endif
 
 #ifndef INC_VECTOR_UTILS_H
@@ -1473,7 +1473,7 @@ std::string CastToHexString(const T &what) {
 #include <string>
 #include <vector>
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 // adds an element to the vector if it doesn't exist in the container
 // returns true if the element was added
@@ -1633,6 +1633,6 @@ void VectorSaveToTxtFile(std::vector<T> &array, const std::string &filename) {
 
 //-----------------------------------------------------------------------------
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif

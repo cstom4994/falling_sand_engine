@@ -5,7 +5,7 @@
 
 // #include "Poro/utils/../config/cengtypes.h"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 /*
 template< class Ty >
@@ -129,13 +129,13 @@ Ty CRectCast(const CRect<Tx> &other) {
     return tmp;
 }
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 // ---------- types -------------------------
 
 namespace types {
-typedef BaseEngine::CRect<float> rect;
-typedef BaseEngine::CRect<int> irect;
+typedef MetaEngine::CRect<float> rect;
+typedef MetaEngine::CRect<int> irect;
 }  // end of namespace types
 
 #endif
@@ -154,7 +154,7 @@ typedef BaseEngine::CRect<int> irect;
 #pragma warning(disable : 4786)
 #endif
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 //! Creates a empty rect
 template <class TRect>
@@ -231,14 +231,14 @@ for optimation sake i use it this way.
 template <class TPoint>
 TPoint RectFindCrossPointsLine(const TPoint &first_begin, const TPoint &first_end, const TPoint &second_begin, const TPoint &second_end);
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine
 
 #endif
 
 #ifndef INC_CPOINT_H
 #define INC_CPOINT_H
 
-namespace BaseEngine {
+namespace MetaEngine {
 ///////////////////////////////////////////////////////////////////////////////
 
 //! 2d coordination class. Basic POD class
@@ -306,7 +306,7 @@ public:
 typedef CPoint<int> CCoord;
 
 ///////////////////////////////////////////////////////////////////////////////
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
@@ -317,11 +317,11 @@ typedef CPoint<int> CCoord;
 
 #include "poro_math.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <class VectorT, class RectT>
 bool CircleRectCollide(const VectorT &circle_p, float circle_r, const RectT &rect) {
-    if (BaseEngine::RectHit(RectT(circle_p.x - circle_r, circle_p.y - circle_r, circle_r * 2.f, circle_r * 2.f), rect) == false) {
+    if (MetaEngine::RectHit(RectT(circle_p.x - circle_r, circle_p.y - circle_r, circle_r * 2.f, circle_r * 2.f), rect) == false) {
         return false;
     }
 
@@ -332,10 +332,10 @@ bool CircleRectCollide(const VectorT &circle_p, float circle_r, const RectT &rec
     rect_p[2].Set(rect.x + rect.w, rect.y + rect.h);
     rect_p[3].Set(rect.x, rect.y + rect.h);
 
-    const float circle_r_squared = BaseEngine::math::Square(circle_r);
+    const float circle_r_squared = MetaEngine::math::Square(circle_r);
     float dist = 0;
     for (std::size_t i = 0; i < rect_p.size(); ++i) {
-        dist = BaseEngine::math::DistanceFromLineSquared(rect_p[i], rect_p[(i + 1) % 4], circle_p);
+        dist = MetaEngine::math::DistanceFromLineSquared(rect_p[i], rect_p[(i + 1) % 4], circle_p);
         if (dist <= circle_r_squared) return true;
     }
 
@@ -354,10 +354,10 @@ VectorT CircleRectResolveByPushingCircle(const VectorT &circle_p, float circle_r
 
     float dist = 0;
     VectorT point;
-    float closest_dist = BaseEngine::math::Square(circle_r);
+    float closest_dist = MetaEngine::math::Square(circle_r);
     VectorT closest_point;
     for (std::size_t i = 0; i < rect_p.size(); ++i) {
-        point = BaseEngine::math::ClosestPointOnLineSegment(rect_p[i], rect_p[(i + 1) % 4], circle_p);
+        point = MetaEngine::math::ClosestPointOnLineSegment(rect_p[i], rect_p[(i + 1) % 4], circle_p);
         dist = (circle_p - point).LengthSquared();
 
         if (dist < closest_dist) {
@@ -372,12 +372,12 @@ VectorT CircleRectResolveByPushingCircle(const VectorT &circle_p, float circle_r
     delta = (delta.Normalize() * (circle_r + extra_push));
 
     // to fix it so that if the point is inside the box it's pushed outside
-    if (BaseEngine::math::IsPointInsideAABB(circle_p, rect_p[0], rect_p[2])) delta = -delta;
+    if (MetaEngine::math::IsPointInsideAABB(circle_p, rect_p[0], rect_p[2])) delta = -delta;
 
     return closest_point + delta;
 }
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 #endif
 
 #ifndef INC_COLLISION_CIRCLE_CIRCLE_H
@@ -385,12 +385,12 @@ VectorT CircleRectResolveByPushingCircle(const VectorT &circle_p, float circle_r
 
 #include "poro_math.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 template <class VectorT>
 bool CircleCircleCollide(const VectorT &p1, float r1, const VectorT &p2, float r2) {
     const VectorT delta = p2 - p1;
-    if (delta.LengthSquared() <= BaseEngine::math::Square(r1 + r2)) {
+    if (delta.LengthSquared() <= MetaEngine::math::Square(r1 + r2)) {
         return true;
     }
 
@@ -407,7 +407,7 @@ VectorT CircleCircleResolveByPushingCircle(const VectorT &push_me_pos, float pus
     return immovable_pos + delta;
 }
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif
 
@@ -420,7 +420,7 @@ VectorT CircleCircleResolveByPushingCircle(const VectorT &push_me_pos, float pus
 // I converted them to a base class inheritance based utils.
 // - Petri
 
-namespace BaseEngine {
+namespace MetaEngine {
 namespace easing {
 
 //-------------------------------------------------------------------------
@@ -769,6 +769,6 @@ public:
 //-------------------------------------------------------------------------
 
 }  // namespace easing
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif

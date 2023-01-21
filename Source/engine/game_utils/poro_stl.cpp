@@ -1,7 +1,7 @@
 
 #include "poro_stl.hpp"
 
-namespace BaseEngine {}
+namespace MetaEngine {}
 
 #include <iostream>
 
@@ -97,7 +97,7 @@ std::string base64_decode(std::string const &encoded_string) {
 // #include "Poro/utils/../config/cengdef.h"
 
 // #include "Poro/utils/../outside resources/memory management/debug_memorymanager.h"
-namespace BaseEngine {
+namespace MetaEngine {
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -524,4 +524,4 @@ std::string ConvertToAlphaNumeric(const std::string &who) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine

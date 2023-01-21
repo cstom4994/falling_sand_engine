@@ -3,8 +3,11 @@
 #define INC_CSINGLETON_H
 
 #include <memory>
+#include <vector>
 
-namespace BaseEngine {
+#include "core/debug_impl.hpp"
+
+namespace MetaEngine {
 
 template <class T>
 class CSingleton {
@@ -56,17 +59,6 @@ protected:
     CStaticSingleton() {}
 };
 
-}  // end of namespace BaseEngine
-
-#endif
-
-#ifndef INC_CSINGLETONPTR_H
-#define INC_CSINGLETONPTR_H
-
-#include <memory>
-
-namespace BaseEngine {
-
 template <typename T>
 class CSingletonPtr {
 public:
@@ -105,15 +97,6 @@ inline T *GetSingletonPtr() {
     return CSingletonPtr<T>::GetSingletonPtr();
 }
 
-}  // namespace BaseEngine
-
-#endif
-
-#ifndef INC_POINTER_SORTER
-#define INC_POINTER_SORTER
-
-namespace BaseEngine {
-
 struct pointer_sorter {
     template <class T>
     bool operator()(const T *a, const T *b) const {
@@ -137,17 +120,6 @@ struct pointer_sorter {
         }
     }
 };
-
-}  // end of namespace BaseEngine
-#endif
-#ifndef INC_HANDLE_PTR_H
-#define INC_HANDLE_PTR_H
-
-#include <vector>
-
-#include "core/debug_impl.hpp"
-
-namespace BaseEngine {
 
 //=============================================================================
 
@@ -288,6 +260,6 @@ private:
 
 //-----------------------------------------------------------------------------
 
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine
 
 #endif

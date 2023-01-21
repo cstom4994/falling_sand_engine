@@ -3,7 +3,7 @@
 
 #include "core/const.h"
 
-namespace BaseEngine {
+namespace MetaEngine {
 /*
 template< class T >
 bool CRect< T >::operator <=( const CRect< T >& other ) const
@@ -26,7 +26,7 @@ return CRectIsInside( other, *this );
 
 #include "core/debug_impl.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 namespace {
 template <class TRect>
@@ -468,7 +468,7 @@ TPoint RectFindCrossPointsLine(const TPoint &first_begin, const TPoint &first_en
     return return_value;
 }
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine
 
 #endif
 
@@ -476,7 +476,7 @@ TPoint RectFindCrossPointsLine(const TPoint &first_begin, const TPoint &first_en
 
 #include <string>
 
-namespace BaseEngine {
+namespace MetaEngine {
 namespace easing {
 
 //-----------------------------------------------------------------------------
@@ -768,4 +768,4 @@ IEasingFunc &GetEasing(const char *ename) {
 //-----------------------------------------------------------------------------
 
 }  // end of namespace easing
-}  // end of namespace BaseEngine
+}  // end of namespace MetaEngine

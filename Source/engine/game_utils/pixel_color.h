@@ -7,7 +7,7 @@
 
 #include "engine/game_utils/poro_stl.hpp"
 
-namespace BaseEngine {
+namespace MetaEngine {
 
 class CColorFloat {
 public:
@@ -707,8 +707,8 @@ typedef CColorUint8 color;
 typedef CColorFloat fcolor;
 typedef color::uint8 uint8;
 typedef color::uint32 uint32;
-typedef BaseEngine::CStaticArray<unsigned char, 4> ccolor;
-typedef BaseEngine::CColorFloat fcolor;
+typedef MetaEngine::CStaticArray<unsigned char, 4> ccolor;
+typedef MetaEngine::CColorFloat fcolor;
 }  // namespace types
 
 // ----------------------------------------------------------------------------
@@ -740,6 +740,6 @@ types::uint32 Blend2Colors(types::uint32 c1, types::uint32 c2, float how_much_of
 
 // ----------------------------------------------------------------------------
 
-}  // namespace BaseEngine
+}  // namespace MetaEngine
 
 #endif
