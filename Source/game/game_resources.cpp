@@ -145,7 +145,7 @@ C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
     return src;
 }
 
-Texture *LoadAseprite(const char *path) {
+Texture *LoadAsepriteTexture(const char *path) {
 
     Ase_Output *ase = Ase_Load(METADOT_RESLOC(path));
 

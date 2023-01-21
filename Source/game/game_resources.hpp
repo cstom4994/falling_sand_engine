@@ -39,7 +39,7 @@ void Eng_DestroyTexture(Texture *tex);
 Texture *LoadTexture(const char *path);
 Texture *LoadTextureInternal(const char *path, U32 pixelFormat);
 C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y);
-Texture *LoadAseprite(const char *path);
+Texture *LoadAsepriteTexture(const char *path);
 Texture *Eng_LoadTextureData(const char *path);
 
 #endif

@@ -52,6 +52,11 @@ public:
     void Update(R_Image *tex);
 };
 
+class BlurShader : public ShaderBase {
+public:
+    void Update(R_Image *tex);
+};
+
 class ShaderWorkerSystem : IGameSystem {
 public:
     WaterShader *waterShader;
@@ -59,6 +64,7 @@ public:
     NewLightingShader *newLightingShader;
     FireShader *fireShader;
     Fire2Shader *fire2Shader;
+    BlurShader *blurShader;
 
     void Create() override;
     void Destory() override;

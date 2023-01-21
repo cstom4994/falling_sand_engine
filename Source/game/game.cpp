@@ -119,7 +119,7 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.console->Create();
 
     // Test aseprite
-    GameIsolate_.texturepack->testAse = LoadAseprite("data/assets/textures/Sprite-0003.ase");
+    GameIsolate_.texturepack->testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
 
     // Load backgrounds resources
     METADOT_INFO("Loading backgrounds...");

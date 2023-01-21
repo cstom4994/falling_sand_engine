@@ -130,6 +130,11 @@ void Fire2Shader::Update(R_Image *tex) {
     R_SetShaderImage(tex, firemap_loc, 1);
 }
 
+void BlurShader::Update(R_Image *tex) {
+    int colorTexture_loc = R_GetUniformLocation(this->shader, "colorTexture");
+    R_SetShaderImage(tex, colorTexture_loc, 1);
+}
+
 #pragma endregion Shaders
 
 void ShaderWorkerSystem::Create() {
@@ -140,6 +145,7 @@ void ShaderWorkerSystem::Create() {
     this->newLightingShader = new NewLightingShader;
     this->fireShader = new FireShader;
     this->fire2Shader = new Fire2Shader;
+    this->blurShader = new BlurShader;
 
     this->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
     this->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
@@ -151,6 +157,8 @@ void ShaderWorkerSystem::Create() {
     this->fireShader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire.frag");
     this->fire2Shader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
     this->fire2Shader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
+    this->blurShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->blurShader->fragment_shader_file = METADOT_RESLOC("data/shaders/gaussian_blur.frag");
 
     this->waterFlowPassShader->dirty = false;
 
@@ -169,6 +177,7 @@ void ShaderWorkerSystem::Create() {
     this->newLightingShader->Init();
     this->fireShader->Init();
     this->fire2Shader->Init();
+    this->blurShader->Init();
 }
 
 void ShaderWorkerSystem::Destory() {
@@ -191,6 +200,10 @@ void ShaderWorkerSystem::Destory() {
     if (this->fire2Shader) {
         this->fire2Shader->Unload();
         delete this->fire2Shader;
+    }
+    if (this->blurShader) {
+        this->blurShader->Unload();
+        delete this->blurShader;
     }
 }
 
