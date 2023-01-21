@@ -488,7 +488,7 @@ CSTDTime | {6} | Nothing
             rawtime = time(NULL);
             struct tm *timeinfo = localtime(&rawtime);
 
-            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, global.game->tickTime, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTick, Time::millis(), rawtime);
+            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTick, Time::millis(), rawtime);
 
             ImGui::Auto(TickInfoPanel);
 

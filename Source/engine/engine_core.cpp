@@ -24,6 +24,7 @@ void InitTime() {
     Time.mspt = 33;
     Time.tpsCount = 0;
     Time.framesPerSecond = 0;
+    Time.tickCount = 0;
 }
 
 void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {

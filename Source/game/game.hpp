@@ -69,8 +69,6 @@ public:
 public:
     bool running = true;
 
-    I32 tickTime = 0;
-
     I32 scale = 4;
     F32 accLoadX = 0;
     F32 accLoadY = 0;

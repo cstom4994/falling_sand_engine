@@ -25,6 +25,25 @@
 #define METADOT_NOINLINE(...) __VA_ARGS__ __attribute__((noinline))
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define METADOT_FORCE_INLINE __attribute__((always_inline)) inline
+#ifdef __cplusplus
+#define METADOT_RESTRICT __restrict
+#else
+#define METADOT_RESTRICT restrict
+#endif  // __cplusplus
+#elif defined(_MSC_VER)
+#define METADOT_FORCE_INLINE __forceinline
+#define METADOT_RESTRICT __restrict
+#else
+#define METADOT_FORCE_INLINE inline
+#ifdef __cplusplus
+#define METADOT_RESTRICT
+#else
+#define METADOT_RESTRICT restrict
+#endif  // __cplusplus
+#endif
+
 // VS2013 doesn't support alignof
 #if defined(_MSC_VER) && _MSC_VER <= 1800
 #define METADOT_ALIGNOF(x) __alignof(x)

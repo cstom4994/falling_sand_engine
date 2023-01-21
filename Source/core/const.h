@@ -59,5 +59,6 @@ static const char *engine_funcs_name_lz4 = "_metadot_lz4";
 static const char *engine_funcs_name_csc = "_metadot_cstruct_core";
 static const char *engine_funcs_name_cst = "_metadot_cstruct_test";
 static const char *engine_funcs_name_ecs = "_metadot_cecs";
+static const char *engine_funcs_name_uilayout = "_metadot_ui_layout";
 
 #endif

@@ -39,6 +39,7 @@
 #include "game/game_resources.hpp"
 #include "game/game_shaders.hpp"
 #include "game/game_ui.hpp"
+#include "imgui.h"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
 #include "ui.hpp"
@@ -446,14 +447,9 @@ int Game::run(int argc, char *argv[]) {
 
             ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
-            if (ImGui::GetIO().WantCaptureMouse) {
-                if (windowEvent.type == SDL_MOUSEBUTTONDOWN || windowEvent.type == SDL_MOUSEBUTTONUP || windowEvent.type == SDL_MOUSEMOTION || windowEvent.type == SDL_MOUSEWHEEL) {
-                    continue;
-                }
-            }
-
-            if (ImGui::GetIO().WantCaptureKeyboard) {
-                if (windowEvent.type == SDL_KEYDOWN || windowEvent.type == SDL_KEYUP) {
+            if (ImGui::GetIO().WantCaptureMouse && ImGui::GetIO().WantCaptureKeyboard) {
+                if (windowEvent.type == SDL_MOUSEBUTTONDOWN || windowEvent.type == SDL_MOUSEBUTTONUP || windowEvent.type == SDL_MOUSEMOTION || windowEvent.type == SDL_MOUSEWHEEL ||
+                    windowEvent.type == SDL_KEYDOWN || windowEvent.type == SDL_KEYUP) {
                     continue;
                 }
             }
@@ -895,7 +891,7 @@ int Game::run(int argc, char *argv[]) {
             }
             Render.target = Render.realTarget;
             Time.lastTick = Time.now;
-            tickTime++;
+            Time.tickCount++;
         }
 
         if (GameIsolate_.globaldef.tick_world) updateFrameLate();
@@ -1821,7 +1817,7 @@ void Game::tick() {
             if (GameIsolate_.globaldef.tick_box2d) GameIsolate_.world->tickObjects();
         }
 
-        if (tickTime % 10 == 0) GameIsolate_.world->tickObjectsMesh();
+        if (Time.tickCount % 10 == 0) GameIsolate_.world->tickObjectsMesh();
 
         for (int i = 0; i < global.GameData_.materials_count; i++) movingTiles[i] = 0;
 
@@ -1987,10 +1983,10 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
         if (hadLayer2Dirty) memset(GameIsolate_.world->layer2Dirty, false, (size_t)GameIsolate_.world->width * GameIsolate_.world->height);
         if (hadBackgroundDirty) memset(GameIsolate_.world->backgroundDirty, false, (size_t)GameIsolate_.world->width * GameIsolate_.world->height);
 
-        if (GameIsolate_.globaldef.tick_temperature && tickTime % GameTick == 2) {
+        if (GameIsolate_.globaldef.tick_temperature && Time.tickCount % GameTick == 2) {
             GameIsolate_.world->tickTemperature();
         }
-        if (GameIsolate_.globaldef.draw_temperature_map && tickTime % GameTick == 0) {
+        if (GameIsolate_.globaldef.draw_temperature_map && Time.tickCount % GameTick == 0) {
             renderTemperatureMap(GameIsolate_.world);
         }
 
@@ -2029,7 +2025,7 @@ NULL,
 GameIsolate_.world->width * 4
 );*/
 
-        if (GameIsolate_.globaldef.tick_box2d && tickTime % GameTick == 0) GameIsolate_.world->updateWorldMesh();
+        if (GameIsolate_.globaldef.tick_box2d && Time.tickCount % GameTick == 0) GameIsolate_.world->updateWorldMesh();
     }
 }
 

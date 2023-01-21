@@ -225,6 +225,7 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     metadot_bind_lz4(_struct->C->L);
     metadot_bind_cstructcore(_struct->C->L);
     metadot_bind_cstructtest(_struct->C->L);
+    metadot_bind_uilayout(_struct->C->L);
 
     LoadImguiBindings(_struct->C->L);
 

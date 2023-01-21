@@ -16,6 +16,7 @@
 #include "engine_platform.h"
 #include "game/game.hpp"
 #include "game/game_resources.hpp"
+#include "ui_layout.h"
 
 IMPLENGINE();
 
@@ -25,8 +26,10 @@ void UIRendererInit() {
     global.uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    METADOT_NEW(C, global.uidata->ImGuiCore, ImGuiCore);
-    global.uidata->ImGuiCore->Init();
+    METADOT_NEW(C, global.uidata->imguiCore, ImGuiCore);
+    global.uidata->imguiCore->Init();
+
+    layout_init_context(&global.uidata->layoutContext);
 
     // Test element drawing
     UIElement testElement1{.type = ElementType::windowElement,
@@ -64,11 +67,33 @@ void UIRendererInit() {
     global.uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
 }
 
-void UIRendererPostUpdate() { global.uidata->ImGuiCore->NewFrame(); }
+void UIRendererPostUpdate() {
+    global.uidata->imguiCore->NewFrame();
+
+    auto ctx = &global.uidata->layoutContext;
+
+    // Update UI layout context
+
+    for (auto &&e : global.uidata->elementLists) {
+        if (e.second.type == ElementType::windowElement) {
+            e.second.cclass.window.layout_id = layout_item(ctx);
+
+            layout_set_size_xy(ctx, e.second.cclass.window.layout_id, e.second.maxRectX - e.second.minRectX, e.second.maxRectY - e.second.minRectY);
+            // layout_set_behave(ctx, child, LAYOUT_FILL);
+            // layout_insert(ctx, root, child);
+        }
+    }
+
+    layout_run_context(ctx);
+}
+
 void UIRendererDraw() {
+
+    auto ctx = &global.uidata->layoutContext;
 
     // Drawing element
     for (auto &&e : global.uidata->elementLists) {
+        // Image cache
         R_Image *Img = nullptr;
         if (e.second.texture) {
             Img = R_CopyImageFromSurface(e.second.texture->surface);
@@ -90,7 +115,7 @@ void UIRendererDraw() {
             if (e.second.cclass.progressbar.bar_type == 1)
                 FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.cclass.progressbar.bar_text_color, e.second.text.c_str());
         }
-        if (e.second.type == ElementType::texturedRectangle || e.second.type == ElementType::buttonElement || e.second.type == ElementType::windowElement) {
+        if (e.second.type == ElementType::texturedRectangle || e.second.type == ElementType::buttonElement) {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
@@ -101,13 +126,22 @@ void UIRendererDraw() {
         if (e.second.type == ElementType::textElement || e.second.type == ElementType::buttonElement) {
             FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.color, e.second.text.c_str());
         }
+        if (e.second.type == ElementType::windowElement) {
+            layout_vec2 win_s = layout_get_size(ctx, e.second.cclass.window.layout_id);
+            if (Img) {
+                R_SetImageFilter(Img, R_FILTER_NEAREST);
+                R_SetBlendMode(Img, R_BLEND_NORMAL);
+                R_Rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)(e.second.minRectX + win_s[0]), .h = (float)(e.second.minRectY +  win_s[1])};
+                R_BlitRect(Img, NULL, Render.target, &dest);
+            }
+        }
 
         if (Img) R_FreeImage(Img);
 
         if (global.game->GameIsolate_.globaldef.draw_ui_debug) R_Rectangle(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, {255, 20, 147, 255});
     }
 
-    global.uidata->ImGuiCore->Draw();
+    global.uidata->imguiCore->Draw();
 }
 
 F32 BoxDistence(R_Rect box, R_vec2 A) {
@@ -116,7 +150,7 @@ F32 BoxDistence(R_Rect box, R_vec2 A) {
 }
 
 void UIRendererUpdate() {
-    global.uidata->ImGuiCore->Render();
+    global.uidata->imguiCore->Render();
     auto &l = global.scripts->LuaCoreCpp->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
@@ -142,8 +176,8 @@ void UIRendererUpdate() {
 }
 
 void UIRendererFree() {
-    global.uidata->ImGuiCore->onDetach();
-    METADOT_DELETE(C, global.uidata->ImGuiCore, ImGuiCore);
+    global.uidata->imguiCore->onDetach();
+    METADOT_DELETE(C, global.uidata->imguiCore, ImGuiCore);
 
     for (auto &&e : global.uidata->elementLists) {
         if (static_cast<bool>(e.second.texture)) Eng_DestroyTexture(e.second.texture);

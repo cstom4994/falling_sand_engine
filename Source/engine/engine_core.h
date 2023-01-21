@@ -40,6 +40,8 @@ typedef struct engine_time {
     I64 startTime;
     I64 deltaTime;
 
+    I32 tickCount;
+
     I32 mspt;
     I32 tpsTrace[TraceTimeNum];
     I32 tpsCount;

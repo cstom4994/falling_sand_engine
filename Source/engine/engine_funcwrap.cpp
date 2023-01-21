@@ -29,6 +29,7 @@
 #include "lz4/lz4.h"
 #include "lz4/lz4frame.h"
 #include "lz4/lz4hc.h"
+#include "scripting/lua_wrapper.h"
 
 #ifndef METADOT_PLATFORM_WINDOWS
 #include <dirent.h>
@@ -2946,3 +2947,268 @@ int metadot_bind_cstructtest(lua_State *L) {
 }
 
 #pragma endregion BindCStruct
+
+#pragma region UI_Layout
+
+#include "engine/ui_layout.h"
+
+#if LAYOUT_FLOAT == 1
+#define LUALAYOUT_CHECK_SCALAR luaL_checknumber
+#define LUALAYOUT_PUSH_SCALAR lua_pushnumber
+#else
+#define LUALAYOUT_CHECK_SCALAR luaL_checkinteger
+#define LUALAYOUT_PUSH_SCALAR lua_pushinteger
+#endif
+
+int lualayout_context_new(lua_State *L) {
+    lua_settop(L, 0);
+    layout_context *ctx = (layout_context *)lua_newuserdata(L, sizeof(layout_context));
+    layout_init_context(ctx);
+
+    luaL_getmetatable(L, "Layout");
+    lua_setmetatable(L, -2);
+    return 1;
+}
+
+layout_context *lualayout_context_check(lua_State *L) {
+    void *ud = luaL_checkudata(L, 1, "Layout");
+    luaL_argcheck(L, ud != NULL, 1, "`Layout` expected");
+    return (layout_context *)ud;
+}
+
+layout_id lualayout_id_check(lua_State *L, layout_context *ctx, int pos) {
+    int n = (int)luaL_checkinteger(L, pos);
+    luaL_argcheck(L, n >= 0, pos, "Item id must be non-negative");
+    luaL_argcheck(L, (layout_id)n <= ctx->count, pos, "Item id is not in valid range for layout context");
+    return (layout_id)n;
+}
+
+layout_id lualayout_id_check_notinserted(lua_State *L, layout_context *ctx, int pos) {
+    layout_id id = lualayout_id_check(L, ctx, pos);
+    const layout_item_t *pitem = layout_get_item(ctx, id);
+    uint32_t inserted = pitem->flags & LAYOUT_ITEM_INSERTED;
+    luaL_argcheck(L, !inserted, pos, "Item has already been inserted");
+    return id;
+}
+
+int lualayout_context_gc(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_destroy_context(ctx);
+    return 0;
+}
+
+int lualayout_context_capacity(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    lua_settop(L, 0);
+    layout_id cap = layout_items_capacity(ctx);
+    if (cap > (layout_id)INT_MAX)
+        lua_pushinteger(L, INT_MAX);
+    else
+        lua_pushinteger(L, (int)cap);
+    return 1;
+}
+
+int lualayout_reserve_items_capacity(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    int n = (int)luaL_checkinteger(L, 2);
+    luaL_argcheck(L, n >= 0, 2, "Zero or positive integer capacity expected");
+    layout_reserve_items_capacity(ctx, (layout_id)n);
+    return 0;
+}
+
+int lualayout_item_new(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    lua_pushinteger(L, layout_item(ctx));
+    return 1;
+}
+
+int lualayout_run_context(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_run_context(ctx);
+    return 0;
+}
+
+int lualayout_reset_context(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_reset_context(ctx);
+    return 0;
+}
+
+int lualayout_item_insert(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id parent = lualayout_id_check(L, ctx, 2);
+    layout_id child = lualayout_id_check_notinserted(L, ctx, 3);
+    layout_insert(ctx, parent, child);
+    return 0;
+}
+
+int lualayout_item_append(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id earlier = lualayout_id_check(L, ctx, 2);
+    layout_id later = lualayout_id_check_notinserted(L, ctx, 3);
+    layout_append(ctx, earlier, later);
+    return 0;
+}
+
+int lualayout_item_push(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id parent = lualayout_id_check(L, ctx, 2);
+    layout_id child = lualayout_id_check_notinserted(L, ctx, 3);
+    layout_push(ctx, parent, child);
+    return 0;
+}
+
+int lualayout_item_size_set(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    layout_scalar w = (layout_scalar)LUALAYOUT_CHECK_SCALAR(L, 3);
+    layout_scalar h = (layout_scalar)LUALAYOUT_CHECK_SCALAR(L, 4);
+    layout_set_size_xy(ctx, item, w, h);
+    return 0;
+}
+
+int lualayout_item_margins_set(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    layout_scalar l = (layout_scalar)LUALAYOUT_CHECK_SCALAR(L, 3);
+    layout_scalar t = (layout_scalar)LUALAYOUT_CHECK_SCALAR(L, 4);
+    layout_scalar r = (layout_scalar)LUALAYOUT_CHECK_SCALAR(L, 5);
+    layout_scalar b = (layout_scalar)LUALAYOUT_CHECK_SCALAR(L, 6);
+    layout_set_margins_ltrb(ctx, item, l, t, r, b);
+    return 0;
+}
+
+int lualayout_get_rect(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    layout_vec4 rect = layout_get_rect(ctx, item);
+    LUALAYOUT_PUSH_SCALAR(L, rect[0]);
+    LUALAYOUT_PUSH_SCALAR(L, rect[1]);
+    LUALAYOUT_PUSH_SCALAR(L, rect[2]);
+    LUALAYOUT_PUSH_SCALAR(L, rect[3]);
+    return 4;
+}
+
+// TODO make varargs
+
+int lualayout_item_contain_set(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    uint32_t flags = 0;
+    const int n = lua_gettop(L);
+    for (int i = 3; i <= n; ++i) {
+        flags |= luaL_checkinteger(L, i);
+        luaL_argcheck(L, (flags & LAYOUT_ITEM_BOX_MASK) == flags, i, "Invalid container flag");
+    }
+    layout_set_contain(ctx, item, flags);
+    return 0;
+}
+int lualayout_item_behave_set(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    uint32_t flags = 0;
+    const int n = lua_gettop(L);
+    for (int i = 3; i <= n; ++i) {
+        flags |= luaL_checkinteger(L, i);
+        luaL_argcheck(L, (flags & LAYOUT_ITEM_LAYOUT_MASK) == flags, i, "Invalid behavior flag");
+    }
+    layout_set_behave(ctx, item, flags);
+    return 0;
+}
+
+int lualayout_item_next_sibling(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    layout_id id_next = layout_next_sibling(ctx, item);
+    lua_settop(L, 0);
+    // layout_id is uint32_t by default, and LAYOUT_INVALID_ID is uint32_t max, so we
+    // need to check if it's out of range
+    if (id_next >= (layout_id)INT_MAX)
+        lua_pushinteger(L, -1);
+    else
+        lua_pushinteger(L, (layout_id)id_next);
+    return 1;
+}
+
+int lualayout_item_first_child(lua_State *L) {
+    layout_context *ctx = lualayout_context_check(L);
+    layout_id item = lualayout_id_check(L, ctx, 2);
+    layout_id id_child = layout_first_child(ctx, item);
+    lua_settop(L, 0);
+    if (id_child >= (layout_id)INT_MAX)
+        lua_pushinteger(L, -1);
+    else
+        lua_pushinteger(L, (layout_id)id_child);
+    return 1;
+}
+
+static const luaL_Reg laylib[] = {{"new", lualayout_context_new},
+                                  {"run", lualayout_run_context},
+                                  {"reset", lualayout_reset_context},
+                                  {"capacity", lualayout_context_capacity},
+                                  {"reserve", lualayout_reserve_items_capacity},
+                                  {"item", lualayout_item_new},
+                                  {"insert", lualayout_item_insert},
+                                  {"append", lualayout_item_append},
+                                  {"push", lualayout_item_push},
+                                  {"set_size", lualayout_item_size_set},
+                                  {"set_margins", lualayout_item_margins_set},
+                                  {"set_contain", lualayout_item_contain_set},
+                                  {"set_behave", lualayout_item_behave_set},
+                                  {"rect", lualayout_get_rect},
+                                  {"next_sibling", lualayout_item_next_sibling},
+                                  {"first_child", lualayout_item_first_child},
+                                  {"__gc", lualayout_context_gc},
+                                  {NULL, NULL}};
+
+int metadot_bind_uilayout(lua_State *L) {
+    // TODO update existing if hot reloading
+    luaL_newmetatable(L, "Layout");
+    lua_pushvalue(L, -1);
+
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -2);
+    lua_settable(L, -3);
+
+    // luaL_openlib(L, NULL, laylib, 0);
+    metadot_load(L, laylib, engine_funcs_name_uilayout);
+
+    lua_setglobal(L, "Layout");
+
+    // Set integer flag constants
+
+#define LUALAYOUT_VAL(flagsym, fieldname) \
+    lua_pushinteger(L, flagsym);          \
+    lua_setfield(L, -2, "" #fieldname "");
+
+    LUALAYOUT_VAL(LAYOUT_ROW, ROW);
+    LUALAYOUT_VAL(LAYOUT_COLUMN, COLUMN);
+    LUALAYOUT_VAL(LAYOUT_LAYOUT, OVERLAY);
+    LUALAYOUT_VAL(LAYOUT_FLEX, FLEX);
+    LUALAYOUT_VAL(LAYOUT_NOWRAP, NOWRAP);
+    LUALAYOUT_VAL(LAYOUT_WRAP, WRAP);
+    LUALAYOUT_VAL(LAYOUT_START, START);
+    LUALAYOUT_VAL(LAYOUT_MIDDLE, MIDDLE);
+    LUALAYOUT_VAL(LAYOUT_END, END);
+    LUALAYOUT_VAL(LAYOUT_JUSTIFY, JUSTIFY);
+
+    LUALAYOUT_VAL(LAYOUT_LEFT, LEFT);
+    LUALAYOUT_VAL(LAYOUT_TOP, TOP);
+    LUALAYOUT_VAL(LAYOUT_RIGHT, RIGHT);
+    LUALAYOUT_VAL(LAYOUT_BOTTOM, BOTTOM);
+    LUALAYOUT_VAL(LAYOUT_HFILL, HFILL);
+    LUALAYOUT_VAL(LAYOUT_VFILL, VFILL);
+    LUALAYOUT_VAL(LAYOUT_HCENTER, HCENTER);
+    LUALAYOUT_VAL(LAYOUT_VCENTER, VCENTER);
+    LUALAYOUT_VAL(LAYOUT_CENTER, CENTER);
+    LUALAYOUT_VAL(LAYOUT_FILL, FILL);
+    LUALAYOUT_VAL(LAYOUT_BREAK, BREAK);
+
+#undef LUALAYOUT_VAL
+
+    // TODO flags for preventing being squished (HFIXED/VFIXED)
+
+    return 0;
+}
+
+#pragma endregion UI_Layout

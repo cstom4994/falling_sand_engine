@@ -8,6 +8,7 @@
 #include "engine/imgui_core.hpp"
 #include "engine/imgui_impl.hpp"
 #include "engine/renderer/renderer_opengl.h"
+#include "engine/ui_layout.h"
 #include "game/game_resources.hpp"
 #include "libs/parallel_hashmap/btree.h"
 #include "renderer/renderer_gpu.h"
@@ -20,6 +21,7 @@ typedef struct UIElementState_Button {
 } UI_Button;
 typedef struct UIElementState_Window {
     U8 state;
+    layout_id layout_id;
 } UI_Window;
 typedef struct UIElementState_ProgressBar {
     U8 state;
@@ -58,7 +60,11 @@ typedef struct UIElement {
 } UIElement;
 
 typedef struct UIData {
-    ImGuiCore* ImGuiCore = nullptr;
+    ImGuiCore* imguiCore = nullptr;
+
+    // Layout caculate context
+    layout_context layoutContext;
+
     // std::map<std::string, UIElement> elementLists = {};
     phmap::btree_map<std::string, UIElement> elementLists = {};
 } UIData;
