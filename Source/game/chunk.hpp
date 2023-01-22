@@ -66,7 +66,7 @@ struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
             Field{TSTR("background"), &Type::background},
             // Field{TSTR("biomes"), &Chunk::biomes},
             // Field{TSTR("polys"), &Chunk::polys},
-            // Field{TSTR("rb"), &Chunk::rb},
+            Field{TSTR("rb"), &Chunk::rb},
     };
 };
 

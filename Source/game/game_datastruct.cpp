@@ -3,6 +3,7 @@
 #include "game_datastruct.hpp"
 
 #include <string>
+#include <string_view>
 
 #include "core/core.h"
 #include "core/core.hpp"
@@ -1169,7 +1170,10 @@ MetaEngine::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk
     return {};
 }
 
-RigidBody::RigidBody(b2Body *body) { this->body = body; }
+RigidBody::RigidBody(b2Body *body, std::string_view name) {
+    this->body = body;
+    this->name = std::string(name);
+}
 
 RigidBody::~RigidBody() {
     // if (item) delete item;
@@ -1179,8 +1183,8 @@ void Player::render(R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
 
-        metadot_rect *ir =
-                new metadot_rect{(F32)(int)(ofsX + x + hw / 2.0 - heldItem->surface->w), (F32)(int)(ofsY + y + hh / 2.0 - heldItem->surface->h / 2), (F32)heldItem->surface->w, (F32)heldItem->surface->h};
+        metadot_rect *ir = new metadot_rect{(F32)(int)(ofsX + x + hw / 2.0 - heldItem->surface->w), (F32)(int)(ofsY + y + hh / 2.0 - heldItem->surface->h / 2), (F32)heldItem->surface->w,
+                                            (F32)heldItem->surface->h};
         F32 fx = (F32)(int)(-ir->x + ofsX + x + hw / 2.0);
         F32 fy = (F32)(int)(-ir->y + ofsY + y + hh / 2.0);
         fx -= heldItem->pivotX;

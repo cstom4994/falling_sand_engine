@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "engine/game_utils/poro_stl.hpp"
+#include "core/cpp/stl.hpp"
 #include "engine/sdl_wrapper.h"
 
 MetaEngine::vector<std::shared_ptr<KeyControl>> ControlSystem::keyControls = {};

@@ -1,9 +1,9 @@
 
-
 #ifndef INC_CRECT_H
 #define INC_CRECT_H
 
 // #include "Poro/utils/../config/cengtypes.h"
+#include "engine/mathlib.hpp"
 
 namespace MetaEngine {
 
@@ -138,22 +138,6 @@ typedef MetaEngine::CRect<float> rect;
 typedef MetaEngine::CRect<int> irect;
 }  // end of namespace types
 
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4786)
-#endif
-
-#ifndef INC_CRECT_FUNCTIONS_H
-#define INC_CRECT_FUNCTIONS_H
-
-#include <list>
-#include <vector>
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4786)
-#endif
-
 namespace MetaEngine {
 
 //! Creates a empty rect
@@ -231,14 +215,6 @@ for optimation sake i use it this way.
 template <class TPoint>
 TPoint RectFindCrossPointsLine(const TPoint &first_begin, const TPoint &first_end, const TPoint &second_begin, const TPoint &second_end);
 
-}  // namespace MetaEngine
-
-#endif
-
-#ifndef INC_CPOINT_H
-#define INC_CPOINT_H
-
-namespace MetaEngine {
 ///////////////////////////////////////////////////////////////////////////////
 
 //! 2d coordination class. Basic POD class
@@ -305,20 +281,6 @@ public:
 
 typedef CPoint<int> CCoord;
 
-///////////////////////////////////////////////////////////////////////////////
-}  // end of namespace MetaEngine
-
-#endif
-
-#ifndef INC_COLLISION_CIRCLE_RECT_H
-#define INC_COLLISION_CIRCLE_RECT_H
-
-#include <vector>
-
-#include "engine/mathlib.hpp"
-
-namespace MetaEngine {
-
 template <class VectorT, class RectT>
 bool CircleRectCollide(const VectorT &circle_p, float circle_r, const RectT &rect) {
     if (MetaEngine::RectHit(RectT(circle_p.x - circle_r, circle_p.y - circle_r, circle_r * 2.f, circle_r * 2.f), rect) == false) {
@@ -377,14 +339,6 @@ VectorT CircleRectResolveByPushingCircle(const VectorT &circle_p, float circle_r
     return closest_point + delta;
 }
 
-}  // end of namespace MetaEngine
-#endif
-
-#ifndef INC_COLLISION_CIRCLE_CIRCLE_H
-#define INC_COLLISION_CIRCLE_CIRCLE_H
-
-namespace MetaEngine {
-
 template <class VectorT>
 bool CircleCircleCollide(const VectorT &p1, float r1, const VectorT &p2, float r2) {
     const VectorT delta = p2 - p1;
@@ -405,20 +359,6 @@ VectorT CircleCircleResolveByPushingCircle(const VectorT &push_me_pos, float pus
     return immovable_pos + delta;
 }
 
-}  // end of namespace MetaEngine
-
-#endif
-
-#ifndef INC_CENG_EASING_H
-#define INC_CENG_EASING_H
-
-// Robert Penner easing functions ported to C++ by Jesus Gollonet
-// http://www.jesusgollonet.com/blog/2007/09/24/penner-easing-cpp/
-//
-// I converted them to a base class inheritance based utils.
-// - Petri
-
-namespace MetaEngine {
 namespace easing {
 
 //-------------------------------------------------------------------------

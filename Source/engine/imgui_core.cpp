@@ -567,12 +567,19 @@ CSTDTime | {6} | Nothing
 
         if (ImGui::BeginTabItem(LANG("ui_debug"))) {
             if (CollapsingHeader(LANG("ui_chunk"))) {
+                static bool check_rigidbody = false;
+                ImGui::Checkbox(CC("只查看刚体有效"), &check_rigidbody);
+
                 for (auto &p1 : global.game->GameIsolate_.world->WorldIsolate_.chunkCache)
                     for (auto &p2 : p1.second)
                         if (ImGui::TreeNode(p2.second->pack_filename.c_str())) {
                             MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*p2.second, [&](const auto &field, auto &&var) {
                                 if (field.name == "pack_filename") return;
 
+                                if (check_rigidbody)
+                                    if (field.name == "rb" && &var) {
+                                        return;
+                                    }
                                 // constexpr auto tstr_range = TSTR("Meta::Msg");
 
                                 // if constexpr (decltype(field.attrs)::Contains(tstr_range)) {

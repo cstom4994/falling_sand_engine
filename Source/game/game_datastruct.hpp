@@ -533,6 +533,8 @@ class Item;
 
 class RigidBody {
 public:
+    std::string name;
+
     b2Body *body = nullptr;
     C_Surface *surface = nullptr;
     R_Image *texture = nullptr;
@@ -556,8 +558,17 @@ public:
 
     Item *item = nullptr;
 
-    RigidBody(b2Body *body);
+    RigidBody(b2Body *body, std::string_view name = "unknown");
     ~RigidBody();
+};
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("matWidth"), &Type::matWidth},
+            Field{TSTR("matHeight"), &Type::matHeight},
+    };
 };
 
 #pragma endregion Rigidbody

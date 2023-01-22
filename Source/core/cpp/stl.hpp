@@ -6,6 +6,14 @@
 // #include <stdio.h>
 // #include <string.h>
 
+#include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "core/debug_impl.hpp"
 
 namespace MetaEngine {
@@ -106,17 +114,6 @@ private:
     SizeType _size;
 };
 
-}  // namespace MetaEngine
-
-#endif
-
-#ifndef INC_CSTATICARRAY_H
-#define INC_CSTATICARRAY_H
-
-#include "core/debug_impl.hpp"
-
-namespace MetaEngine {
-
 template <class T, int N>
 class CStaticArray {
 public:
@@ -160,17 +157,6 @@ private:
     T data[N];
 };
 
-}  // end of namespace MetaEngine
-
-#endif
-
-#ifndef INC_STATICARRAY_H
-#define INC_STATICARRAY_H
-
-#include "core/debug_impl.hpp"
-
-namespace MetaEngine {
-
 template <class T, int N>
 class StaticArray {
 public:
@@ -213,22 +199,6 @@ public:
 private:
     T data[N];
 };
-
-}  // end of namespace MetaEngine
-
-#endif
-
-#ifndef INC_2D_ARRAY_H
-#define INC_2D_ARRAY_H
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4355)
-#endif
-
-// #include <vector>
-// #include <memory>
-
-namespace MetaEngine {
 
 // #include "Poro/utils/../../config/cengdef.h"
 // __CENG_BEGIN
@@ -482,19 +452,6 @@ private:
     // std::vector< _Ty > myDataArray;
 };
 
-}  // namespace MetaEngine
-// __CENG_END
-
-#endif
-
-#ifndef INC_CAUTOLIST_H
-#define INC_CAUTOLIST_H
-
-#include <algorithm>
-#include <list>
-
-namespace MetaEngine {
-
 template <class T>
 class CAutoListInsertOperation {
 public:
@@ -547,33 +504,9 @@ private:
 template <class T>
 std::list<T *> *CAutoList<T>::myAutoListPointerList = NULL;
 
-}  // end of namespace MetaEngine
-#endif
-
-#include <string>
-
 std::string base64_encode(std::string const &s);
 std::string base64_decode(std::string const &s);
 
-#ifndef INC_CBITMASK_H
-#define INC_CBITMASK_H
-
-#include <map>
-
-#ifndef INC_CBITMASK_TYPES_H
-#define INC_CBITMASK_TYPES_H
-
-#include <cmath>
-
-#include "core/debug_impl.hpp"
-
-#ifdef CENG_TESTER_ENABLED
-#include "Poro/utils/random/random.h"
-#endif
-
-//-----------------------------------------------------------------------------
-
-namespace MetaEngine {
 namespace bitmask {
 namespace types {
 
@@ -582,18 +515,6 @@ typedef signed int int32;
 typedef float float32;
 
 }  // end of namespace types
-}  // end of namespace bitmask
-}  // end of namespace MetaEngine
-
-//-----------------------------------------------------------------------------
-
-#endif
-
-#ifndef INC_CBITMASK_MATH_H
-#define INC_CBITMASK_MATH_H
-
-namespace MetaEngine {
-namespace bitmask {
 
 struct PointMatrix;
 struct PointXForm;
@@ -873,11 +794,6 @@ inline types::int16 FloatToInt16(float x) {
 //-----------------------------------------------------------------------------
 
 }  // end of namespace bitmask
-}  // end of namespace MetaEngine
-
-#endif
-
-namespace MetaEngine {
 
 template <typename T>
 class CBitMask {
@@ -951,20 +867,6 @@ private:
 
     std::map<Pos, T> mData;
 };
-
-}  // end of namespace MetaEngine
-
-#endif
-
-#ifndef INC_CMAPHELPER_H
-#define INC_CMAPHELPER_H
-
-#include <list>
-#include <map>
-
-#include "core/debug_impl.hpp"
-
-namespace MetaEngine {
 
 //! This is a map that can contain multiple elements under one key
 template <class T1, class T2, class PR = std::less<T1>>
@@ -1095,24 +997,6 @@ private:
             }                                                                                \
         }                                                                                    \
     }
-
-}  // namespace MetaEngine
-
-#endif
-
-#ifndef INC_CMAPHELPERSORTED_H
-#define INC_CMAPHELPERSORTED_H
-
-#include <list>
-#include <map>
-
-#include "core/debug_impl.hpp"
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4503)
-#endif
-
-namespace MetaEngine {
 
 template <class T>
 struct CMapHelperSorter {
@@ -1255,51 +1139,6 @@ private:
     typename std::list<T2>::iterator myListIterator;
 };
 
-}  // end of namespace MetaEngine
-
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// Macro magic
-//
-// Easy way to create a enum that can be converted into a string and from a
-// string
-//
-//.............................................................................
-/*
-
-  #define ENUM_LIST(_)                           \
-    _(RED,   0)                                  \
-    _(GREEN, 1)                                  \
-    _(BLUE,  87)
-
-    class Pertti
-    {
-    public:
-
-        DEFINE_ENUM(Color, ENUM_LIST)
-
-    };
-
-*/
-//
-// Created 20.02.2005 Pete
-//
-//.............................................................................
-//
-//=============================================================================
-#ifndef INC_ENUM_H
-#define INC_ENUM_H
-
-//  by Chad Austin
-//  on flipcode.com forum
-//  http://www.flipcode.com/cgi-bin/fcmsg.cgi?thread_show=24481
-
-#include <string>
-
-namespace MetaEngine {
-
 // Infrastructure.
 
 #define ENUM_BODY(name, value) name = value,
@@ -1320,22 +1159,6 @@ namespace MetaEngine {
     }                                                            \
     static name fromString(const std::string &str) { list(FROM_STRING_CASE) return name(); /* assert? throw? */ }
 
-}  // end of namespace MetaEngine
-#endif
-
-#ifndef INC_STRING_H
-#define INC_STRING_H
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4786)
-#endif
-
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <vector>
-
-namespace MetaEngine {
 // #include "Poro/utils/../config/cengdef.h"
 // __CENG_BEGIN	// NAMESPACE?
 
@@ -1458,22 +1281,6 @@ std::string CastToHexString(const T &what) {
 }
 
 //-----------------------------------------------------------------------------
-
-}  // end of namespace MetaEngine
-#endif
-
-#ifndef INC_VECTOR_UTILS_H
-#define INC_VECTOR_UTILS_H
-
-#include <assert.h>
-
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-
-namespace MetaEngine {
 
 // adds an element to the vector if it doesn't exist in the container
 // returns true if the element was added
