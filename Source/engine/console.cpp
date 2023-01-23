@@ -502,7 +502,7 @@ void ConsoleSystem::Create() {
     console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, CVar::Arg<F32>(""));
     console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, CVar::Arg<F32>(""));
 
-    console_imgui->System().RegisterVariable("scale", global.game->scale, CVar::Arg<int>(""));
+    console_imgui->System().RegisterVariable("scale", Screen.gameScale, CVar::Arg<I32>(""));
 
     visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, CVar::Arg<int>("")); });
 

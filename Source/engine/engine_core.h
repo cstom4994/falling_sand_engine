@@ -24,8 +24,7 @@ typedef struct engine_screen {
     int windowWidth;
     int windowHeight;
 
-    // Scale of division, as gameRes = windowRes/gameScale
-    int gameScale;
+    I32 gameScale = 4;
 
     unsigned maxFPS;
 } engine_screen;
