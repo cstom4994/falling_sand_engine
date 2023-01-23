@@ -161,7 +161,13 @@ end
 
 include_dir_list = {
     "Source", "Source/engine", "Source/libs", "Source/libs/imgui",
-    "Source/libs/glad"
+    "Source/libs/glad",
+    "Source/libs/libcss/libcss/include",
+    "Source/libs/libcss/libcss/src",
+    "Source/libs/libcss/libparserutils/include",
+    "Source/libs/libcss/libparserutils/src",
+    "Source/libs/libcss/libwapcaplet/include",
+    "Source/libs/libcss/libwapcaplet/src"
 }
 
 defines_list = {}
@@ -183,6 +189,7 @@ do
     if is_os("macosx") then
         add_files("Source/libs/physfs/**.m")
     end
+    add_files("Source/libs/libcss/**.c")
     add_files("Source/libs/lz4/**.c")
     add_files("Source/libs/lua/host/**.c", { unity_group = "unity_lua" })
     add_files("Source/libs/lua/*.c", { unity_group = "unity_luaffi" })
