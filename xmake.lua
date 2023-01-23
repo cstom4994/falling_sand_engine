@@ -16,10 +16,6 @@ if (is_os("windows")) then
 else
     add_requires("libsdl")
     add_packages("libsdl")
-    add_requires("libsdl_ttf")
-    add_packages("libsdl_ttf")
-    add_requires("zlib")
-    add_packages("zlib")
 end
 
 option("build_unity")

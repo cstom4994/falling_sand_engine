@@ -27,7 +27,6 @@
 #include "engine/engine_input.hpp"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
-#include "engine/fonts.h"
 #include "engine/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
@@ -63,8 +62,6 @@ public:
 
     U32 loadingOnColor = 0;
     U32 loadingOffColor = 0;
-
-    FontCache_Font *font = nullptr;
 
 public:
     bool running = true;

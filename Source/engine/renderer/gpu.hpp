@@ -21,6 +21,7 @@ public:
     static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
     static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
     static U32 darkenColor(U32 col, float brightness);
+    static void drawText(std::string text, METAENGINE_Color col, int x, int y);
 };
 
 namespace Detail {

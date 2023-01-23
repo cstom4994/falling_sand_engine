@@ -2,6 +2,8 @@
 
 #include "game.hpp"
 
+#include <stdio.h>
+
 #include <cstddef>
 #include <cstdlib>
 #include <functional>
@@ -32,7 +34,6 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
 #include "engine_platform.h"
-#include "fonts.h"
 #include "game/background.hpp"
 #include "game/game_basic.hpp"
 #include "game/game_datastruct.hpp"
@@ -127,8 +128,8 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.backgrounds->Create();
 
     // Load fonts
-    font = FontCache_CreateFont();
-    FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
+    // font = FontCache_CreateFont();
+    // FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     // Initialize the rng seed
     pcg32_random_t rng;
@@ -1093,7 +1094,7 @@ int Game::exit() {
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
 
-    FontCache_FreeFont(font);
+    // FontCache_FreeFont(font);
 
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
     metadot_thpool_destroy(GameIsolate_.updateDirtyPool2);
@@ -2603,7 +2604,7 @@ newState = true;
         R_ActivateShaderProgram(0, NULL);
         R_BlitRect(TexturePack_.loadingTexture, NULL, Render.target, NULL);
 
-        FontCache_DrawAlign(font, Render.target, Screen.windowWidth / 2, Screen.windowHeight / 2 - 32, FontCache_ALIGN_CENTER, "Loading...");
+        MetaEngine::Drawing::drawText("Loading...", {255, 255, 255, 255}, Screen.windowWidth / 2, Screen.windowHeight / 2 - 32);
 
     } else {
         // render entities with LERP
@@ -2926,8 +2927,9 @@ void Game::renderLate() {
 
 void Game::renderOverlays() {
 
-    FontCache_DrawAlign(font, Render.target, Screen.windowWidth, 0, FontCache_ALIGN_RIGHT, "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate,
-                        Time.feelsLikeFps);
+    std::string fpsText = MetaEngine::Format("{0} ms/frame ({1}({2}) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
+    MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255},
+                                  Screen.windowWidth - ImGui::CalcTextSize(fpsText.c_str()).x, 0);
 
     metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * Screen.gameScale),
                                    (F32)(GameIsolate_.world->height * Screen.gameScale)};
@@ -3274,7 +3276,7 @@ ReadyToMerge ({16})
                                     (int)GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(), rbTriACt, rbTriCt, rbTriWCt, chCt,
                                     (int)GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(), (int)GameIsolate_.world->WorldIsolate_.readyToMerge.size());
 
-        FontCache_DrawAlign(font, Render.target, 10, 0, FontCache_ALIGN_LEFT, "%s", a.c_str());
+        MetaEngine::Drawing::drawText(a, {255, 255, 255, 255}, 10, 0);
 
         // for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
         //     char buff[10];

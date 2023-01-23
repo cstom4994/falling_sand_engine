@@ -3,6 +3,7 @@
 
 #include "core/global.hpp"
 #include "engine/imgui_core.hpp"
+#include "imgui.h"
 
 b2Vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
     float s = sin(angle);
@@ -37,6 +38,11 @@ U32 MetaEngine::Drawing::darkenColor(U32 color, float brightness) {
     int b = (int)((color & 0xFF) * brightness);
 
     return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+void MetaEngine::Drawing::drawText(std::string text, METAENGINE_Color col, int x, int y) {
+    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+    draw_list->AddText(ImVec2(x, y), ImColor(col.r, col.g, col.b, col.a), text.c_str());
 }
 
 #define R_TO_STRING_GENERATOR(x) \

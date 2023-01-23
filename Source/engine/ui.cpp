@@ -10,6 +10,7 @@
 #include "engine/engine_input.hpp"
 #include "engine/mathlib.hpp"
 #include "engine/memory.hpp"
+#include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/renderer_opengl.h"
 #include "engine/renderer/renderer_utils.h"
@@ -112,8 +113,7 @@ void UIRendererDraw() {
             R_RectangleRound(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, 2.0f, e.second.color);
             R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, c, e.second.maxRectY, e.second.color);
 
-            if (e.second.cclass.progressbar.bar_type == 1)
-                FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.cclass.progressbar.bar_text_color, e.second.text.c_str());
+            if (e.second.cclass.progressbar.bar_type == 1) MetaEngine::Drawing::drawText(e.second.text, e.second.cclass.progressbar.bar_text_color, e.second.minRectX, e.second.minRectY);
         }
         if (e.second.type == ElementType::texturedRectangle || e.second.type == ElementType::buttonElement) {
             if (Img) {
@@ -123,17 +123,17 @@ void UIRendererDraw() {
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
-        if (e.second.type == ElementType::textElement || e.second.type == ElementType::buttonElement) {
-            FontCache_DrawColor(global.game->font, Render.target, e.second.minRectX, e.second.minRectY, e.second.color, e.second.text.c_str());
-        }
         if (e.second.type == ElementType::windowElement) {
             layout_vec2 win_s = layout_get_size(ctx, e.second.cclass.window.layout_id);
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                metadot_rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)(e.second.minRectX + win_s[0]), .h = (float)(e.second.minRectY +  win_s[1])};
+                metadot_rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)(e.second.minRectX + win_s[0]), .h = (float)(e.second.minRectY + win_s[1])};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
+        }
+        if (e.second.type == ElementType::textElement || e.second.type == ElementType::buttonElement) {
+            MetaEngine::Drawing::drawText(e.second.text, e.second.cclass.progressbar.bar_text_color, e.second.minRectX, e.second.minRectY);
         }
 
         if (Img) R_FreeImage(Img);
@@ -150,13 +150,10 @@ F32 BoxDistence(metadot_rect box, R_vec2 A) {
 }
 
 void UIRendererUpdate() {
-    global.uidata->imguiCore->Render();
-    auto &l = global.scripts->LuaCoreCpp->s_lua;
-    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
-    OnGameGUIUpdate();
 
     for (auto &&e : global.uidata->elementLists) {
-        metadot_rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        metadot_rect rect{
+                .x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
         if (e.second.type == ElementType::windowElement) {
             // Move window
             if (BoxDistence(rect, GetMousePos()) < 0.0f && ControlSystem::lmouse && GetMousePos().y - e.second.minRectY < 15.0f) {
@@ -173,6 +170,11 @@ void UIRendererUpdate() {
             e.second.cclass.progressbar.bar_current = (e.second.cclass.progressbar.bar_current < e.second.cclass.progressbar.bar_limit) ? e.second.cclass.progressbar.bar_current + 1 : 0;
         }
     }
+
+    global.uidata->imguiCore->Render();
+    auto &l = global.scripts->LuaCoreCpp->s_lua;
+    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
+    OnGameGUIUpdate();
 }
 
 void UIRendererFree() {
@@ -190,7 +192,8 @@ bool UIIsMouseOnControls() {
     R_vec2 mousePos = GetMousePos();
 
     for (auto &&e : global.uidata->elementLists) {
-        metadot_rect rect{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        metadot_rect rect{
+                .x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
         if (BoxDistence(rect, mousePos) < 0.0f) return true;
     }
     return false;
