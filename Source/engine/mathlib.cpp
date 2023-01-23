@@ -19,6 +19,8 @@ F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { retur
 
 #pragma region NewMATH
 
+F32 NewMaths::vec22angle(metadot_v2 v2) { return atan2f(v2.Y, v2.X); }
+
 F32 NewMaths::clamp(F32 input, F32 min, F32 max) {
     if (input < min)
         return min;

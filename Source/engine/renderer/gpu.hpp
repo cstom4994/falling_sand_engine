@@ -3,6 +3,9 @@
 /// Implementation - Introspection (In development)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _METADOT_GPU_HPP_
+#define _METADOT_GPU_HPP_
+
 #include <algorithm>
 #include <cinttypes>
 #include <vector>
@@ -120,4 +123,6 @@ public:
 
     void DrawAABB(b2AABB *aabb, const b2Color &color);
 };
+#endif
+
 #endif

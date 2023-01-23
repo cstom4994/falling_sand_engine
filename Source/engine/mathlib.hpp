@@ -23,6 +23,7 @@ F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap 
 #pragma region NewMATH
 
 namespace NewMaths {
+F32 vec22angle(metadot_v2 v2);
 F32 clamp(F32 input, F32 min, F32 max);
 int rand_range(int min, int max);
 uint64_t rand_XOR();

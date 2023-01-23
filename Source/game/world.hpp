@@ -24,6 +24,7 @@
 class Populator;
 class WorldGenerator;
 class Player;
+struct ParticleData;
 
 class LoadChunkParams {
 public:
@@ -60,7 +61,7 @@ public:
     ~World();
 
     struct {
-        MetaEngine::vector<Particle *> particles;
+        MetaEngine::vector<ParticleData *> particles;
         MetaEngine::vector<RigidBody *> rigidBodies;
         MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldMeshes;
         MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldTris;
@@ -138,7 +139,7 @@ public:
     void tickObjectsMesh();
     void tickChunks();
     void tickChunkGeneration();
-    void addParticle(Particle *particle);
+    void addParticle(ParticleData *particle);
     void explosion(int x, int y, int radius);
     RigidBody *makeRigidBody(b2BodyType type, F32 x, F32 y, F32 angle, b2PolygonShape shape, F32 density, F32 friction, C_Surface *texture);
     RigidBody *makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, MetaEngine::vector<b2PolygonShape> shape, F32 density, F32 friction, C_Surface *texture);

@@ -24,7 +24,7 @@ struct World;
 struct RigidBody;
 struct b2Body;
 struct R_Target;
-struct Particle;
+struct ParticleData;
 struct Biome;
 struct Material;
 struct ImGuiContext;
@@ -312,7 +312,7 @@ public:
     MetaEngine::vector<U16Point> fill;
     U16 capacity = 0;
 
-    MetaEngine::vector<Particle *> vacuumParticles;
+    MetaEngine::vector<ParticleData *> vacuumParticles;
 
     Item();
     ~Item();
@@ -390,27 +390,6 @@ struct Biome {
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;
     virtual MetaEngine::vector<Populator *> getPopulators() = 0;
-};
-
-struct Particle {
-    MaterialInstance tile{};
-    F32 x = 0;
-    F32 y = 0;
-    F32 vx = 0;
-    F32 vy = 0;
-    F32 ax = 0;
-    F32 ay = 0;
-    F32 targetX = 0;
-    F32 targetY = 0;
-    F32 targetForce = 0;
-    bool phase = false;
-    bool temporary = false;
-    int lifetime = 0;
-    int fadeTime = 60;
-    unsigned short inObjectState = 0;
-    Meta::AnyFunction killCallback = []() {};
-    explicit Particle(MaterialInstance tile, F32 x, F32 y, F32 vx, F32 vy, F32 ax, F32 ay) : tile(std::move(tile)), x(x), y(y), vx(vx), vy(vy), ax(ax), ay(ay) {}
-    Particle(const Particle &part) : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax), ay(part.ay) {}
 };
 
 struct GlobalDEF {
