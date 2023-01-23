@@ -83,7 +83,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     this->target = target;
     loadZone = {0, 0, w, h};
 
-    noise.SetSeed((unsigned int)Time::millis());
+    noise.SetSeed(RNG_Next(global.game->RNG));
     noise.SetNoiseType(FastNoise::Perlin);
 
     auto ha = phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>>();
@@ -2629,8 +2629,6 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
 
 Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 
-    long long st = Time::millis();
-
     ch->pleaseDelete = false;
 
     if (ch->hasTileCache) {
@@ -2872,8 +2870,6 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
 
     bool has = hasPopulator[phase];
     if (!hasPopulator[phase]) return;
-
-    long long start = Time::millis();
 
     int ax = (ch->x - phase);
     int ay = (ch->y - phase);

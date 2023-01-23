@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <functional>
 #include <iterator>
@@ -132,10 +133,8 @@ int Game::init(int argc, char *argv[]) {
     // FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     // Initialize the rng seed
-    pcg32_random_t rng;
-    pcg32_srandom_r(&rng, Time::millis(), 1);
-    unsigned int seed = pcg32_random_r(&rng);
-    METADOT_INFO("SeedRNG %d", seed);
+    this->RNG = RNG_Create();
+    METADOT_INFO("SeedRNG %d", RNG->root_seed);
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
@@ -2927,9 +2926,9 @@ void Game::renderLate() {
 
 void Game::renderOverlays() {
 
-    std::string fpsText = MetaEngine::Format("{0} ms/frame ({1}({2}) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
-    MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255},
-                                  Screen.windowWidth - ImGui::CalcTextSize(fpsText.c_str()).x, 0);
+    char fpsText[50];
+    snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
+    MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255}, Screen.windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
     metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * Screen.gameScale),
                                    (F32)(GameIsolate_.world->height * Screen.gameScale)};

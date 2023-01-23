@@ -41,7 +41,7 @@ int InitEngine(void (*InitCppReflection)()) {
 
     InitTime();
     InitFilesystem();
-    InitScreen(1280, 720, 1, 60);
+    InitScreen(960, 540, 1, 60);
 
     if (!InitCore() || !InitWindow()) {
         EndEngine(1);
