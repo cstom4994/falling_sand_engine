@@ -3,6 +3,7 @@
 #include "world.hpp"
 
 #include <algorithm>
+#include <cstdio>
 #include <future>
 #include <iostream>
 #include <iterator>
@@ -22,6 +23,7 @@
 #include "engine/engine.h"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
+#include "engine/game_utils/jsonwarp.h"
 #include "engine/game_utils/particles.h"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/mathlib.hpp"
@@ -3368,24 +3370,34 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     WorldMeta meta = WorldMeta();
 
-    auto L = global.scripts->LuaCoreCpp;
+    // auto L = global.scripts->LuaCoreCpp;
 
-    char *metaFile = new char[255];
-    snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
+    char *metaFilePath = new char[255];
+    snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
 
-    if (!FUtil_exists(METADOT_RESLOC(metaFile))) {
+    if (!FUtil_exists(METADOT_RESLOC(metaFilePath))) {
         meta.save(worldFileName);
     }
 
-    L->s_lua.dofile(metaFile);
+    // L->s_lua.dofile(metaFilePath);
+    // LuaWrapper::LuaFunction LoadWorldMeta = L->s_lua["LoadWorldMeta"];
+    // LuaWrapper::LuaTable luat = LoadWorldMeta();
 
-    LuaWrapper::LuaFunction LoadWorldMeta = L->s_lua["LoadWorldMeta"];
-    LuaWrapper::LuaTable luat = LoadWorldMeta();
+    using json = MetaEngine::Json::Json;
 
-    if (!luat.isNilref()) {
-        LoadLuaConfig((&meta), luat, worldName);
-        LoadLuaConfig((&meta), luat, lastOpenedVersion);
-        LoadLuaConfig((&meta), luat, lastOpenedTime);
+    json metafile = json::parse(futil_readfilestring(metaFilePath));
+
+    if (!metafile.empty()) {
+
+        json root = metafile["metadata"];
+
+        meta.worldName = root["worldName"].to<std::string>();
+        meta.lastOpenedVersion = root["lastOpenedVersion"].to<std::string>();
+        meta.lastOpenedTime = root["lastOpenedTime"].to<int>();
+
+        // LoadLuaConfig((&meta), luat, worldName);
+        // LoadLuaConfig((&meta), luat, lastOpenedVersion);
+        // LoadLuaConfig((&meta), luat, lastOpenedTime);
 
         // LoadLuaConfig(meta, &a);
 
@@ -3394,25 +3406,40 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
         METADOT_BUG("FP WAS NULL");
     }
 
-    delete[] metaFile;
+    delete[] metaFilePath;
 
     return meta;
 }
 
 bool WorldMeta::save(std::string worldFileName) {
-    char *metaFile = new char[255];
-    snprintf(metaFile, 255, "%s/world.lua", worldFileName.c_str());
+    char *metaFilePath = new char[255];
+    snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
     if (this->worldName.empty()) this->worldName = "WorldName";
     if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(metadot_buildnum());
 
-    std::string worldMetaData = "LoadWorldMeta = function()\nsettings_data = {}\n";
-    SaveLuaConfig(*this, "settings_data", worldMetaData);
-    worldMetaData += "return settings_data\nend";
+    using json = MetaEngine::Json::Json;
 
-    METADOT_INFO("Save World\n%s", worldMetaData.c_str());
-    std::ofstream o(metaFile);
-    o << worldMetaData;
-    delete[] metaFile;
+    json metafile = json::object();
+    json root = json::object();
+
+    visit_struct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
+
+    // for (auto it = root.begin(); it != root.end(); ++it) {
+    //     std::cout << it.key() << ":" << (*it).dump() << std::endl;
+    // }
+    metafile.add("metadata", root);
+    metafile.add("root_seed", global.game->RNG->root_seed);
+
+    std::cout << metafile.print() << std::endl;
+
+    // std::string worldMetaData = "LoadWorldMeta = function()\nsettings_data = {}\n";
+    // SaveLuaConfig(*this, "settings_data", worldMetaData);
+    // worldMetaData += "return settings_data\nend";
+
+    METADOT_INFO("Save World\n%s", metafile.print().c_str());
+    std::ofstream o(metaFilePath);
+    o << metafile.print();
+    delete[] metaFilePath;
     return true;
 }
 

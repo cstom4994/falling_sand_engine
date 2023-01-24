@@ -45,6 +45,8 @@ static const int GameTick = 4;
 #define METADOT_COMPANY "MetaDot"
 #define METADOT_COPYRIGHT "Copyright (c) 2022-2023 KaoruXun. All rights reserved."
 
+#define JRPC_VERSION "2.0"
+
 static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
 static const int VERSION_MINOR = METADOT_VERSION_MINOR;
 static const int VERSION_REV = METADOT_VERSION_BUILD;
