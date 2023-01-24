@@ -18,10 +18,10 @@
 #include "core/c/list.h"
 #include "core/const.h"
 #include "core/core.hpp"
-#include "engine/mathlib.h"
-// #include "engine/scripting/lua_wrapper.hpp"
+#include "mathlib.h"
+// #include "scripting/lua_wrapper.hpp"
 #include "libs/cJSON.h"
-// #include "engine/sdl_wrapper.h"
+// #include "sdl_wrapper.h"
 
 struct lua_State;
 

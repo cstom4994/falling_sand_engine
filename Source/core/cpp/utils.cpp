@@ -12,8 +12,8 @@
 #include "core/const.h"
 #include "core/core.h"
 #include "core/global.hpp"
-#include "engine/code_reflection.hpp"
-#include "engine/memory.hpp"
+#include "code_reflection.hpp"
+#include "memory.hpp"
 
 std::vector<std::string> split(std::string strToSplit, char delimeter) {
     std::stringstream ss(strToSplit);

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "engine/ui_layout.h"
+#include "ui_layout.h"
 
 #ifdef _WIN32
 #include <windows.h>

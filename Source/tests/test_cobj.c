@@ -3,8 +3,8 @@
 
 #define METADOT_CREFLECT_IMPL
 
-#include "engine/code_reflection.h"
-#include "engine/engine_meta.h"
+#include "code_reflection.h"
+#include "engine_meta.h"
 
 #include <stdio.h>
 

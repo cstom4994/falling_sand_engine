@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "core/macros.h"
-#include "engine/log.h"
+#include "log.h"
 
 #define METADOT_INT8_MAX 0x7F
 #define METADOT_UINT8_MAX 0xFF

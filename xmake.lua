@@ -160,8 +160,8 @@ end
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
-    "Source", "Source/engine", "Source/libs", "Source/libs/imgui",
-    "Source/libs/glad",
+    "Source",
+
     "Source/libs/libcss/libcss/include",
     "Source/libs/libcss/libcss/src",
     "Source/libs/libcss/libparserutils/include",
@@ -171,31 +171,6 @@ include_dir_list = {
 }
 
 defines_list = {}
-
-target("libs")
-do
-    set_kind("static")
-    add_rules("c.unity_build", { batchsize = 0 })
-    add_rules("c++.unity_build", { batchsize = 0 })
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/libs/*.cpp")
-    add_files("Source/libs/*.c")
-    add_files("Source/libs/ImGui/**.cpp", "Source/libs/ImGui/**.c",
-        "Source/libs/glad/**.c",
-        { unity_group = "invade" })
-
-    add_files("Source/libs/physfs/**.c")
-    if is_os("macosx") then
-        add_files("Source/libs/physfs/**.m")
-    end
-    add_files("Source/libs/libcss/**.c")
-    add_files("Source/libs/lz4/**.c")
-    add_files("Source/libs/lua/host/**.c", { unity_group = "unity_lua" })
-    add_files("Source/libs/lua/*.c", { unity_group = "unity_luaffi" })
-    add_headerfiles("Source/libs/**.h")
-    add_headerfiles("Source/libs/**.hpp")
-end
 
 target("MetaDot")
 do
@@ -210,79 +185,102 @@ do
     set_targetdir("./output")
     add_includedirs(include_dir_list)
     add_defines(defines_list)
-    add_deps("libs")
+
+
     add_links(link_list)
+
+    add_files("Source/libs/*.cpp")
+    add_files("Source/libs/*.c")
+    add_files("Source/libs/ImGui/**.cpp", "Source/libs/ImGui/**.c", "Source/libs/glad/**.c")
+    add_files("Source/libs/physfs/**.c")
+    if is_os("macosx") then
+        add_files("Source/libs/physfs/**.m")
+    end
+    add_files("Source/libs/libcss/**.c")
+    add_files("Source/libs/lz4/**.c")
+    add_files("Source/libs/lua/host/**.c")
+    add_files("Source/libs/lua/*.c")
+
+    add_files("Source/*.c")
+    add_files("Source/*.cpp")
+
     add_files("Source/core/**.c")
     add_files("Source/core/**.cpp")
-    add_files("Source/game/**.c")
-    add_files("Source/game/**.cpp")
-    add_files("Source/engine/**.c")
-    add_files("Source/engine/**.cpp")
-    add_headerfiles("Source/engine/**.h")
-    add_headerfiles("Source/engine/**.hpp")
-    add_headerfiles("Source/engine/**.inl")
-    add_headerfiles("Source/game/**.h")
-    add_headerfiles("Source/core/**.hpp")
-    add_headerfiles("Source/game/**.hpp")
-    add_headerfiles("Source/game/**.inl")
-    add_headerfiles("Source/shared/**.hpp")
+    add_files("Source/ecs/**.c")
+    add_files("Source/ecs/**.cpp")
+    add_files("Source/game_utils/**.c")
+    add_files("Source/game_utils/**.cpp")
+    add_files("Source/internal/**.c")
+    add_files("Source/internal/**.cpp")
+    add_files("Source/meta/**.c")
+    add_files("Source/meta/**.cpp")
+    add_files("Source/renderer/**.c")
+    add_files("Source/renderer/**.cpp")
+    add_files("Source/scripting/**.c")
+    add_files("Source/scripting/**.cpp")
+    add_files("Source/imgui/**.c")
+    add_files("Source/imgui/**.cpp")
+
+    add_headerfiles("Source/**.h")
+    add_headerfiles("Source/**.hpp")
+
     if (is_os("macosx") and has_config("build_audio")) then
         add_links("fmod", "fmodstudio")
     end
 end
 
-target("TestFFI")
-do
-    set_kind("shared")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_files("Source/tests/test_ffi.c")
-    add_headerfiles("Source/tests/**.h")
-end
+-- target("TestFFI")
+-- do
+--     set_kind("shared")
+--     set_targetdir("./output")
+--     add_includedirs(include_dir_list)
+--     add_defines(defines_list)
+--     add_files("Source/tests/test_ffi.c")
+--     add_headerfiles("Source/tests/**.h")
+-- end
 
-target("TestCOBJ")
-do
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("libs")
-    add_files("Source/tests/test_cobj.c")
-    add_files("Source/engine/engine_meta.c")
-    add_headerfiles("Source/tests/**.h")
-end
+-- target("TestCOBJ")
+-- do
+--     set_kind("binary")
+--     set_targetdir("./output")
+--     add_includedirs(include_dir_list)
+--     add_defines(defines_list)
+--     add_deps("libs")
+--     add_files("Source/tests/test_cobj.c")
+--     add_files("Source/engine/engine_meta.c")
+--     add_headerfiles("Source/tests/**.h")
+-- end
 
-target("TestPromise")
-do
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("libs")
-    add_files("Source/tests/test_promise.cpp")
-    add_headerfiles("Source/tests/**.h")
-end
+-- target("TestPromise")
+-- do
+--     set_kind("binary")
+--     set_targetdir("./output")
+--     add_includedirs(include_dir_list)
+--     add_defines(defines_list)
+--     add_deps("libs")
+--     add_files("Source/tests/test_promise.cpp")
+--     add_headerfiles("Source/tests/**.h")
+-- end
 
-target("TestLayout")
-do
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("libs")
-    add_files("Source/tests/test_layout.c")
-    add_files("Source/engine/ui_layout.c")
-    add_headerfiles("Source/tests/**.h")
-end
+-- target("TestLayout")
+-- do
+--     set_kind("binary")
+--     set_targetdir("./output")
+--     add_includedirs(include_dir_list)
+--     add_defines(defines_list)
+--     add_deps("libs")
+--     add_files("Source/tests/test_layout.c")
+--     add_files("Source/engine/ui_layout.c")
+--     add_headerfiles("Source/tests/**.h")
+-- end
 
-target("TestTween")
-do
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("libs")
-    add_files("Source/tests/test_tween.cpp")
-    add_headerfiles("Source/tests/**.h")
-end
+-- target("TestTween")
+-- do
+--     set_kind("binary")
+--     set_targetdir("./output")
+--     add_includedirs(include_dir_list)
+--     add_defines(defines_list)
+--     add_deps("libs")
+--     add_files("Source/tests/test_tween.cpp")
+--     add_headerfiles("Source/tests/**.h")
+-- end

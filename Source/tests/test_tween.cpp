@@ -1,7 +1,7 @@
 
 #include <cstdio>
 
-#include "engine/game_utils/tweeny.h"
+#include "game_utils/tweeny.h"
 
 using MetaEngine::Tweeny::easing;
 using std::getchar;

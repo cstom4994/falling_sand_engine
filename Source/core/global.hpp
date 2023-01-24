@@ -7,14 +7,14 @@
 #include <unordered_map>
 
 #include "core/core.hpp"
-#include "engine/audio.hpp"
-#include "engine/code_reflection.hpp"
-#include "engine/engine.h"
-#include "engine/engine_platform.h"
-#include "engine/filesystem.h"
-#include "engine/imgui/imgui_impl.hpp"
-#include "game/game_shaders.hpp"
-#include "game/game_ui.hpp"
+#include "audio.hpp"
+#include "code_reflection.hpp"
+#include "engine.h"
+#include "engine_platform.h"
+#include "filesystem.h"
+#include "imgui/imgui_impl.hpp"
+#include "game_shaders.hpp"
+#include "game_ui.hpp"
 
 class Game;
 class Scripts;
