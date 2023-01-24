@@ -201,7 +201,7 @@ void ImGuiCore::Init() {
     ctx->scale = ImVec2(scale, scale);
 
     document = new ImGuiCSS::Document(ctx);
-    const char *page = "Data/assets/ui/imguicss/simple.xml";
+    const char *page = "data/assets/ui/imguicss/simple.xml";
     char *data = ctx->fs->load(page);
     document->parse(data);
     ImGui::MemFree(data);

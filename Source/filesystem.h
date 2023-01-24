@@ -4,6 +4,7 @@
 #define _METADOT_FILESYSTEM_HPP_
 
 #include <cstring>
+#include <string_view>
 
 #include "core/core.hpp"
 #include "core/macros.h"
@@ -15,11 +16,7 @@
 
 #define FUTIL_ASSERT_EXIST(stringPath)
 
-extern char *FilesystemProjectRootPath;
-extern char *FilesystemDataPath;
-
-void InitFilesystem();
-char *GetGameDataPath();
+bool InitFilesystem();
 
 #define METADOT_RESLOC(x) x
 

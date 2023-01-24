@@ -224,7 +224,7 @@ typedef std::unordered_map<ImU32, ComponentProperty> ComponentProperties;
 inline char* getNodeData(Context* ctx, rapidxml::xml_node<>* node) {
     rapidxml::xml_attribute<>* src = node->first_attribute("src");
     if (src) {
-        char* data = ctx->fs->load(MetaEngine::Format("Data/assets/ui/imguicss/{0}", std::string(src->value())).c_str()
+        char* data = ctx->fs->load(MetaEngine::Format("data/assets/ui/imguicss/{0}", std::string(src->value())).c_str()
         );
         if (!data) {
             IMGUICSS_EXCEPTION(ImGui::ElementError, "failed to load file %s", src->value());

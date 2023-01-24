@@ -2,6 +2,7 @@
 
 #include "engine_core.h"
 
+#include "core/core.h"
 #include "core/cpp/utils.hpp"
 
 engine_core Core;
@@ -14,9 +15,9 @@ void ExitGame() {}
 
 void GameExited() {}
 
-int InitCore() { return 1; }
+int InitCore() { return METADOT_OK; }
 
-void InitTime() {
+bool InitTime() {
     Time.startTime = Time::millis();
     Time.lastTime = Time.startTime;
     Time.lastTick = Time.lastTime;
@@ -25,13 +26,16 @@ void InitTime() {
     Time.tpsCount = 0;
     Time.framesPerSecond = 0;
     Time.tickCount = 0;
+
+    return METADOT_OK;
 }
 
-void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
+bool InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
     Screen.windowWidth = windowWidth;
     Screen.windowHeight = windowHeight;
     Screen.maxFPS = maxFPS;
     Screen.gameScale = scale;
+    return METADOT_OK;
 }
 
 void UpdateTime() {

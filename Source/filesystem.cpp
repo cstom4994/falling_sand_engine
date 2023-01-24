@@ -2,49 +2,56 @@
 
 #include "filesystem.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <sys/malloc.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <filesystem>
 
 #include "core/alloc.h"
 #include "core/core.h"
+#include "core/cpp/utils.hpp"
 #include "datapackage.h"
 #include "engine.h"
 #include "engine_platform.h"
 #include "libs/physfs/physfs.h"
 #include "platform_detail.h"
 
-char *FilesystemProjectRootPath;
-char *FilesystemDataPath;
+IMPLENGINE();
 
-void InitFilesystem() {
+bool InitFilesystem() {
 
     InitPhysFS();
 
-    char currentDir[MAX_PATH];
-    strcpy(currentDir, FUtil_getExecutableFolderPath());
-    char dir[MAX_PATH];
-    strcpy(dir, currentDir);
-    strcat(dir, "data/");
-    if (!FUtil_exists(dir)) {
-        strcpy(dir, currentDir);
-        strcat(dir, "../");
-        FilesystemProjectRootPath = dir;
-        strcat(dir, "data/");
-        FilesystemDataPath = dir;
-        if (!FUtil_exists(dir)) {
-            METADOT_ERROR("Check runtime folder failed %s", dir);
-        }
-        METADOT_BUG("Runtime folder detected: %s", FilesystemProjectRootPath);
-        return;
-    }
-    FilesystemProjectRootPath = currentDir;
-    FilesystemDataPath = dir;
-    METADOT_BUG("Runtime folder detected: %s", FilesystemProjectRootPath);
-    return;
-}
+    auto currentDir = std::filesystem::path(FUtil_getExecutableFolderPath());
 
-char *GetGameDataPath() { return FilesystemDataPath; }
+#ifdef METADOT_DEBUG
+
+    for (int i = 0; i < 3; ++i) {
+        currentDir = currentDir.parent_path();
+        if (std::filesystem::exists(currentDir / "Data")) {
+            Core.gamepath = currentDir;
+            // s_DataPath = currentDir / "Data";
+            METADOT_INFO("Game data path detected: %s", Core.gamepath.c_str());
+            return METADOT_OK;
+        }
+    }
+
+    METADOT_ERROR("Game data path detect failed");
+    return METADOT_FAILED;
+
+#else
+
+    if (!std::filesystem::exists(currentDir / "Data")) {
+        METADOT_ERROR("Game data path detect failed");
+        return METADOT_FAILED;
+    } else {
+        Core.gamepath = currentDir;
+        METADOT_INFO("Game data path detected: %s", Core.gamepath.c_str());
+        return METADOT_OK;
+    }
+
+#endif
+}
 
 const char *FUtil_getExecutableFolderPath() {
     const char *out = PHYSFS_getBaseDir();

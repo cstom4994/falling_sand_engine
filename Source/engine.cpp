@@ -2,6 +2,8 @@
 
 #include "engine.h"
 
+#include <cstdlib>
+
 #include "core/alloc.h"
 #include "core/core.h"
 #include "core/global.hpp"
@@ -39,13 +41,11 @@ int InitEngine(void (*InitCppReflection)()) {
 
     METADOT_INFO("Initializing Engine...");
 
-    InitTime();
-    InitFilesystem();
-    InitScreen(960, 540, 1, 60);
+    bool init = InitTime() || InitFilesystem() || InitScreen(960, 540, 1, 60) || InitCore() || InitWindow();
 
-    if (!InitCore() || !InitWindow()) {
+    if (init) {
         EndEngine(1);
-        return 0;
+        return METADOT_FAILED;
     }
 
     InitCppReflection();
@@ -66,7 +66,7 @@ int InitEngine(void (*InitCppReflection)()) {
 
     initializedEngine = 1;
     METADOT_INFO("Engine sucessfully initialized!");
-    return 1;
+    return METADOT_OK;
 }
 
 void EngineUpdate() {
@@ -117,7 +117,7 @@ void EndEngine(int errorOcurred) {
 
     if (errorOcurred) {
         METADOT_WARN("Engine finished with errors!");
-        system("pause");
+        abort();
     } else {
         METADOT_INFO("Engine finished sucessfully");
     }

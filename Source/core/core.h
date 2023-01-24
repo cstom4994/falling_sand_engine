@@ -19,7 +19,7 @@
 #define METADOT_UINT64_MAX 0xFFFFFFFFFFFFFFFF
 
 #define METADOT_OK 0
-#define METADOT_FAILED -1
+#define METADOT_FAILED 1
 
 typedef int R_bool;
 #define R_false 0

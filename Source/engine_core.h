@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <string>
+
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
 #include "sdl_wrapper.h"
@@ -13,6 +15,8 @@
 typedef struct engine_core {
     C_Window *window;
     C_GLContext *glContext;
+
+    std::string gamepath;
 } engine_core;
 
 typedef struct engine_screen {
@@ -55,8 +59,8 @@ void ExitGame();
 void GameExited();
 
 int InitCore();
-void InitTime();
-void InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS);
+bool InitTime();
+bool InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS);
 
 void UpdateTime();
 void WaitUntilNextFrame();

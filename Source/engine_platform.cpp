@@ -38,7 +38,7 @@ int InitWindow() {
     METADOT_INFO("Initializing SDL...");
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         METADOT_ERROR("SDL_Init failed: %s", SDL_GetError());
-        return EXIT_FAILURE;
+        return METADOT_FAILED;
     }
 
     SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", SDL_HINT_OVERRIDE);
@@ -58,7 +58,7 @@ int InitWindow() {
 
     if (Core.window == R_null) {
         METADOT_ERROR("Could not create SDL_Window: %s", SDL_GetError());
-        return EXIT_FAILURE;
+        return METADOT_FAILED;
     }
 
     // SDL_SetWindowIcon(window, Textures::LoadTexture("data/assets/Icon_32x.png"));
@@ -73,7 +73,7 @@ int InitWindow() {
 
     if (Render.target == NULL) {
         METADOT_ERROR("Could not create R_Target: %s", SDL_GetError());
-        return EXIT_FAILURE;
+        return METADOT_FAILED;
     }
 
 #if defined(METADOT_ALLOW_HIGHDPI)
@@ -88,7 +88,7 @@ int InitWindow() {
 
     if (metadot_gl_global_init(NULL) == -1) {
         METADOT_ERROR("Failed to initialize OpenGL loader!");
-        return EXIT_FAILURE;
+        return METADOT_FAILED;
     }
 
 #ifdef METADOT_DEBUG
@@ -98,7 +98,7 @@ int InitWindow() {
     // METADOT_INFO("Initializing InitFont...");
     // if (!Drawing::InitFont(&gl_context)) {
     //     METADOT_ERROR("InitFont failed");
-    //     return EXIT_FAILURE;
+    //     return METADOT_FAILED;
     // }
 
     // if (global.game->GameIsolate_.settings.networkMode != NetworkMode::SERVER) {
@@ -142,7 +142,7 @@ int InitWindow() {
     // global.audioEngine.PlayEvent("event:/Music/Title");
     // global.audioEngine.Update();
 
-    return 1;
+    return METADOT_OK;
 }
 
 void EndWindow() {

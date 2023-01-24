@@ -81,7 +81,7 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialization of ECSSystem and Engine
     InitECS(128);
-    if (!InitEngine(InitCppReflection)) return METADOT_FAILED;
+    if (InitEngine(InitCppReflection)) return METADOT_FAILED;
 
     // Load splash screen
     METADOT_INFO("Loading splash screen...");

@@ -73,7 +73,7 @@ ImFont* FontManager::loadFontFromFile(const char* name, const char* path, ImVect
         fontCfg.GlyphRanges = mFonts[name].glyphRanges.Data;
     }
 
-    std::string fontPath = "Data/assets/fonts/test/";
+    std::string fontPath = "data/assets/fonts/test/";
     fontPath.append(path);
 
     // ImFont* font = io.Fonts->AddFontFromMemoryTTF(data, size, handle.size, &fontCfg);
