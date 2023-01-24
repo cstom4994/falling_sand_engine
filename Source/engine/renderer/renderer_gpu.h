@@ -10,7 +10,7 @@
 #include "libs/external/stb_image.h"
 #include "libs/external/stb_rect_pack.h"
 #include "libs/external/stb_truetype.h"
-#include "libs/glad/glad.h"
+#include "metadot_gl.h"
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES  // So M_PI and company get defined on MSVC when we include math.h

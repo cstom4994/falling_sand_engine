@@ -14,7 +14,7 @@
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "imgui.h"
-#include "libs/glad/glad.h"
+#include "metadot_gl.h"
 
 namespace MetaEngine {
 const char *GLEnumToString(GLenum e);

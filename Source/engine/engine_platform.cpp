@@ -7,10 +7,11 @@
 #include "SDL_mouse.h"
 #include "core/const.h"
 #include "core/core.h"
+#include "core/macros.h"
 #include "engine/engine.h"
+#include "engine/renderer/metadot_gl.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/sdl_wrapper.h"
-#include "libs/glad/glad.h"
 #include "renderer/renderer_utils.h"
 
 IMPLENGINE();
@@ -85,10 +86,14 @@ int InitWindow() {
 
     SDL_GL_MakeCurrent(Core.window, Core.glContext);
 
-    if (!gladLoadGL()) {
+    if (metadot_gl_global_init(NULL) == -1) {
         METADOT_ERROR("Failed to initialize OpenGL loader!");
         return EXIT_FAILURE;
     }
+
+#ifdef METADOT_DEBUG
+    metadot_gl_print_info();
+#endif
 
     // METADOT_INFO("Initializing InitFont...");
     // if (!Drawing::InitFont(&gl_context)) {
@@ -141,6 +146,8 @@ int InitWindow() {
 }
 
 void EndWindow() {
+    if (NULL != Render.target) R_FreeTarget(Render.target);
+    // if (Render.realTarget) R_FreeTarget(Render.realTarget);
     if (Core.window) SDL_DestroyWindow(Core.window);
     R_Quit();
 }

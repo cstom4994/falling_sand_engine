@@ -6,7 +6,7 @@
 #include "engine/sdl_wrapper.h"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
-#include "libs/glad/glad.h"
+#include "engine/renderer/metadot_gl.h"
 #include "renderer_gpu.h"  // For poor, dumb Intellisense
 
 // Most of the code pulled in from here...
