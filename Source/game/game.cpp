@@ -933,6 +933,10 @@ int Game::run(int argc, char *argv[]) {
         // METADOT_ASSERT_E(font);
         // FontCache_DrawColor(font, Render.target, 200, 200, {255, 144, 255, 255}, "This is %s.\n It works.", "example text");
 
+        MetaEngine::Drawing::begin_3d(Render.target);
+        // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);
+        MetaEngine::Drawing::end_3d(Render.target);
+
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
 

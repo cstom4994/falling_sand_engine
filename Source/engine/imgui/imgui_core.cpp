@@ -620,6 +620,8 @@ CSTDTime | {6} | Nothing
                 INSPECTSHADER(fire2Shader);
                 INSPECTSHADER(waterShader);
                 INSPECTSHADER(waterFlowPassShader);
+                INSPECTSHADER(untexturedShader);
+                INSPECTSHADER(blurShader);
             }
 #undef INSPECTSHADER
             ImGui::EndTabItem();

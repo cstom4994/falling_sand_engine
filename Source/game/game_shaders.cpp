@@ -135,6 +135,45 @@ void BlurShader::Update(R_Image *tex) {
     R_SetShaderImage(tex, colorTexture_loc, 1);
 }
 
+void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
+
+    // glUseProgram();
+    int vertex_loc = R_GetAttributeLocation(this->shader, "gpu_3d_Vertex");
+    int color_loc = R_GetAttributeLocation(this->shader, "gpu_3d_Color");
+    int modelViewProjection_loc = R_GetUniformLocation(this->shader, "gpu_3d_ModelViewProjectionMatrix");
+
+    R_GetModelViewProjection(mvp);
+    glUniformMatrix4fv(modelViewProjection_loc, 1, 0, mvp);
+
+    glEnableVertexAttribArray(vertex_loc);
+    glEnableVertexAttribArray(color_loc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, 8 * 21, gldata, GL_STREAM_DRAW);
+
+    glVertexAttribPointer(vertex_loc,
+                          3,                  // size
+                          GL_FLOAT,           // type
+                          GL_FALSE,           // normalize
+                          sizeof(float) * 7,  // stride
+                          (void *)0           // offset
+    );
+
+    glVertexAttribPointer(color_loc,
+                          4,                           // size
+                          GL_FLOAT,                    // type
+                          GL_FALSE,                    // normalize
+                          sizeof(float) * 7,           // stride
+                          (void *)(sizeof(float) * 3)  // offset
+    );
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glDisableVertexAttribArray(color_loc);
+    glDisableVertexAttribArray(vertex_loc);
+
+}
+
 #pragma endregion Shaders
 
 void ShaderWorkerSystem::Create() {
@@ -146,6 +185,7 @@ void ShaderWorkerSystem::Create() {
     this->fireShader = new FireShader;
     this->fire2Shader = new Fire2Shader;
     this->blurShader = new BlurShader;
+    this->untexturedShader = new UntexturedShader;
 
     this->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
     this->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
@@ -159,6 +199,8 @@ void ShaderWorkerSystem::Create() {
     this->fire2Shader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
     this->blurShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
     this->blurShader->fragment_shader_file = METADOT_RESLOC("data/shaders/gaussian_blur.frag");
+    this->untexturedShader->vertex_shader_file = METADOT_RESLOC("data/shaders/untextured.vert");
+    this->untexturedShader->fragment_shader_file = METADOT_RESLOC("data/shaders/untextured.frag");
 
     this->waterFlowPassShader->dirty = false;
 
@@ -172,12 +214,15 @@ void ShaderWorkerSystem::Create() {
     this->newLightingShader->insideCur = 0.0f;
     this->newLightingShader->insideDes = 0.0f;
 
+    glGenBuffers(1, &this->untexturedShader->VBO);
+
     this->waterShader->Init();
     this->waterFlowPassShader->Init();
     this->newLightingShader->Init();
     this->fireShader->Init();
     this->fire2Shader->Init();
     this->blurShader->Init();
+    this->untexturedShader->Init();
 }
 
 void ShaderWorkerSystem::Destory() {
@@ -204,6 +249,10 @@ void ShaderWorkerSystem::Destory() {
     if (this->blurShader) {
         this->blurShader->Unload();
         delete this->blurShader;
+    }
+    if (this->untexturedShader) {
+        this->untexturedShader->Unload();
+        delete this->untexturedShader;
     }
 }
 

@@ -57,6 +57,15 @@ public:
     void Update(R_Image *tex);
 };
 
+class UntexturedShader : public ShaderBase {
+public:
+    GLuint VBO;
+    // GLuint modelViewProjection_loc;
+    // GLuint vertex_loc;
+    // GLuint color_loc;
+    void Update(float mvp[], GLfloat gldata[]);
+};
+
 class ShaderWorkerSystem : IGameSystem {
 public:
     WaterShader *waterShader;
@@ -65,6 +74,7 @@ public:
     FireShader *fireShader;
     Fire2Shader *fire2Shader;
     BlurShader *blurShader;
+    UntexturedShader *untexturedShader;
 
     void Create() override;
     void Destory() override;

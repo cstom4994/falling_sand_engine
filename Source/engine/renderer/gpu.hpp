@@ -16,6 +16,8 @@
 #include "imgui.h"
 #include "metadot_gl.h"
 
+struct ShaderBase;
+
 namespace MetaEngine {
 const char *GLEnumToString(GLenum e);
 
@@ -25,6 +27,10 @@ public:
     static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
     static U32 darkenColor(U32 col, float brightness);
     static void drawText(std::string text, METAENGINE_Color col, int x, int y);
+
+    static void draw_spinning_triangle(R_Target *screen, ShaderBase *shader);
+    static void end_3d(R_Target *screen);
+    static void begin_3d(R_Target *screen);
 };
 
 namespace Detail {
