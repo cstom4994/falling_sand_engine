@@ -28,6 +28,7 @@
 #include "engine/engine.h"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
+#include "engine/game_utils/mdplot.h"
 #include "engine/game_utils/particles.h"
 #include "engine/imgui/imgui_css.h"
 #include "engine/mathlib.hpp"
