@@ -35,6 +35,7 @@ f = load(codes)
 f()
 
 add_packagepath(METADOT_RESLOC("data/scripts/samples"))
+add_packagepath(METADOT_RESLOC("data/assets/ui/imguicss"))
 
 -- runf("Script:tests/test_lpeg.lua")
 -- runf("Script:tests/test_ffi.lua")

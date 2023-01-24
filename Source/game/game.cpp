@@ -29,6 +29,7 @@
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/game_utils/particles.h"
+#include "engine/imgui/imgui_css.h"
 #include "engine/mathlib.hpp"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
@@ -43,6 +44,8 @@
 #include "game/game_shaders.hpp"
 #include "game/game_ui.hpp"
 #include "imgui.h"
+#include "imgui/imgui_generated.h"
+#include "imgui/lua/script.h"
 #include "libs/glad/glad.h"
 #include "physfs/physfs.h"
 #include "ui.hpp"
@@ -98,9 +101,6 @@ int Game::init(int argc, char *argv[]) {
     // RegisterFunctions(gamescriptwrap_bind, BindGameScriptingWrap);
     // RegisterFunctions(gamescriptwrap_end, EndGameScriptingWrap);
 
-    // UISystem including ImGui
-    UIRendererInit();
-
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
     METADOT_NEW(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem);
@@ -109,6 +109,9 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Loading Script...");
     METADOT_NEW(C, global.scripts, Scripts);
     global.scripts->Init();
+
+    // UISystem including ImGui
+    UIRendererInit();
 
     // I18N must be initialized after scripting system
     // It uses i18n.lua to function
@@ -1074,6 +1077,7 @@ int Game::exit() {
     running = false;
 
     // TODO CppScript
+    UIRendererFree();
 
     // release resources & shutdown
     global.scripts->End();
@@ -1081,8 +1085,6 @@ int Game::exit() {
     METADOT_DELETE(C, global.scripts, Scripts);
 
     ReleaseGameData();
-
-    UIRendererFree();
 
     METADOT_DELETE(C, objectDelete, U8);
     GameIsolate_.backgrounds->Destory();
@@ -1602,8 +1604,8 @@ void Game::tick() {
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND) {
-                            GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
-                                                                         (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
+                                                                             (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1611,8 +1613,8 @@ void Game::tick() {
                             cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (F32)0.98);
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
-                                                                         (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
+                                                                             (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1658,7 +1660,7 @@ void Game::tick() {
                     } else if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
                                GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
                         GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - cur.vx), (F32)(wy - abs(cur.vy)),
-                                                                     (F32)(-cur.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (F32)0.1));
+                                                                         (F32)(-cur.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (F32)0.1));
                         GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles_OBJECT;
                         objectDelete[wx + wy * GameIsolate_.world->width] = true;
                         GameIsolate_.world->dirty[wx + wy * GameIsolate_.world->width] = true;
@@ -2232,12 +2234,12 @@ void Game::tickPlayer() {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 ParticleData *p = new ParticleData(TilesCreateLava(),
-                                           (F32)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->loadZone.x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + rand() % 5 - 2 +
-                                                 GameIsolate_.world->WorldIsolate_.player->vx),
-                                           (F32)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->loadZone.y + GameIsolate_.world->WorldIsolate_.player->hh +
-                                                 GameIsolate_.world->WorldIsolate_.player->vy),
-                                           (F32)((rand() % 10 - 5) / 10.0f + GameIsolate_.world->WorldIsolate_.player->vx / 2.0f),
-                                           (F32)((rand() % 10) / 10.0f + 1 + GameIsolate_.world->WorldIsolate_.player->vy / 2.0f), 0, (F32)0.025);
+                                                   (F32)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->loadZone.x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + rand() % 5 -
+                                                         2 + GameIsolate_.world->WorldIsolate_.player->vx),
+                                                   (F32)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->loadZone.y + GameIsolate_.world->WorldIsolate_.player->hh +
+                                                         GameIsolate_.world->WorldIsolate_.player->vy),
+                                                   (F32)((rand() % 10 - 5) / 10.0f + GameIsolate_.world->WorldIsolate_.player->vx / 2.0f),
+                                                   (F32)((rand() % 10) / 10.0f + 1 + GameIsolate_.world->WorldIsolate_.player->vy / 2.0f), 0, (F32)0.025);
                 p->temporary = true;
                 p->lifetime = 120;
                 GameIsolate_.world->addParticle(p);

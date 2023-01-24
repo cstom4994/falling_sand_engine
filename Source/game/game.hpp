@@ -28,7 +28,7 @@
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
 #include "engine/game_utils/rng.h"
-#include "engine/imgui_core.hpp"
+#include "engine/imgui/imgui_core.hpp"
 #include "engine/internal/builtin_box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "game/game_basic.hpp"

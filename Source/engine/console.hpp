@@ -6,7 +6,7 @@
 #include <array>
 
 #include "engine/cvar.hpp"
-#include "engine/imgui_impl.hpp"
+#include "engine/imgui/imgui_impl.hpp"
 #include "game/game_datastruct.hpp"
 
 struct ImGuiSettingsHandler;

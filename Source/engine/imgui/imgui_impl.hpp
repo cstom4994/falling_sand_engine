@@ -13,6 +13,7 @@
 #include <atomic>
 #include <cctype>
 #include <cstring>
+#include <exception>
 #include <filesystem>
 #include <functional>
 #include <future>
@@ -70,6 +71,69 @@ static inline void ImGui_ImplSDL2_NewFrame(SDL_Window *) { ImGui_ImplSDL2_NewFra
 #endif
 
 #pragma once
+
+#pragma region ImGuiError
+
+namespace ImGui {
+
+static std::string format(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    char smallBuffer[1024];
+    size_t size = vsnprintf(smallBuffer, sizeof smallBuffer, format, args);
+    va_end(args);
+
+    if (size < 1024) return std::string(smallBuffer);
+
+    char *buffer = (char *)ImGui::MemAlloc(size + 1);
+
+    va_start(args, format);
+    vsnprintf(buffer, size + 1, format, args);
+    va_end(args);
+    return std::string(buffer);
+}
+
+#ifndef IMGUICSS_LOG_ERROR
+#define IMGUICSS_LOG_ERROR(desc, file, line) std::cout << desc << " " << file << ":" << line << "\n";
+#endif
+
+#if defined(IMGUICSS_NO_EXCEPTIONS)
+#if defined(IMGUICSS_LOG_ERROR)
+#define IMGUICSS_EXCEPTION(cls, ...) IMGUICSS_LOG_ERROR(format(__VA_ARGS__), __FILE__, __LINE__)
+#else
+#define IMGUICSS_EXCEPTION(cls, ...)
+#endif
+#else
+#define IMGUICSS_EXCEPTION(cls, ...) throw cls(ImGui::format(__VA_ARGS__))
+#endif
+
+/**
+ * Style related errors
+ */
+class StyleError : public std::runtime_error {
+public:
+    StyleError(const std::string &detailedMessage) : runtime_error("Style error: " + detailedMessage) {}
+};
+
+/**
+ * Raised when script execution fails
+ */
+class ScriptError : public std::runtime_error {
+public:
+    ScriptError(const std::string &detailedMessage) : runtime_error("Script execution error: " + detailedMessage) {}
+};
+
+/**
+ * Element creation failure (incorrect arguments, missing required arguments)
+ */
+class ElementError : public std::runtime_error {
+public:
+    ElementError(const std::string &detailedMessage) : runtime_error("Element build error: " + detailedMessage) {}
+};
+
+}  // namespace ImGui
+
+#pragma endregion ImGuiError
 
 #pragma region ImGuiAuto
 
@@ -388,8 +452,6 @@ void ImGui::detail::AutoTuple(const std::string &name,
     }
 #define METAENGINE_GUI_DEFINE_INLINE_P(template_spec, type_spec, code) METAENGINE_GUI_DEFINE_BEGIN_P(template_spec, type_spec) code METAENGINE_GUI_DEFINE_END
 #define METAENGINE_GUI_DEFINE_INLINE(template_spec, type_spec, code) METAENGINE_GUI_DEFINE_INLINE_P((template_spec), (type_spec), code)
-
-#include <imgui/imgui.h>
 
 #include <string>
 #include <type_traits>
@@ -876,54 +938,6 @@ ImGui::Text("RigidBody: %s", var.name.c_str());
 METAENGINE_GUI_DEFINE_END
 
 namespace ImGuiHelper {
-
-inline void init_style(const float pixel_ratio, const float dpi_scaling) {
-    ImGuiStyle &style = ImGui::GetStyle();
-    style.WindowRounding = 5.3f;
-    style.FrameRounding = 2.3f;
-    style.ScrollbarRounding = 0;
-
-    style.Colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 0.90f);
-    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.09f, 0.09f, 0.15f, 1.00f);
-    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.10f, 0.85f);
-    style.Colors[ImGuiCol_Border] = ImVec4(0.70f, 0.70f, 0.70f, 0.65f);
-    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.00f, 0.00f, 0.01f, 1.00f);
-    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.90f, 0.80f, 0.80f, 0.40f);
-    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.90f, 0.65f, 0.65f, 0.45f);
-    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.83f);
-    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.40f, 0.40f, 0.80f, 0.20f);
-    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.87f);
-    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.01f, 0.01f, 0.02f, 0.80f);
-    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.20f, 0.25f, 0.30f, 0.60f);
-    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.55f, 0.53f, 0.55f, 0.51f);
-    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.56f, 1.00f);
-    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.56f, 0.56f, 0.56f, 0.91f);
-    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.99f);
-    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.90f, 0.90f, 0.90f, 0.83f);
-    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.70f, 0.70f, 0.70f, 0.62f);
-    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.30f, 0.30f, 0.30f, 0.84f);
-    style.Colors[ImGuiCol_Button] = ImVec4(0.48f, 0.72f, 0.89f, 0.49f);
-    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.50f, 0.69f, 0.99f, 0.68f);
-    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.80f, 0.50f, 0.50f, 1.00f);
-    style.Colors[ImGuiCol_Header] = ImVec4(0.30f, 0.69f, 1.00f, 0.53f);
-    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.44f, 0.61f, 0.86f, 1.00f);
-    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.38f, 0.62f, 0.83f, 1.00f);
-    style.Colors[ImGuiCol_Separator] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-    style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.70f, 0.60f, 0.60f, 1.00f);
-    style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.90f, 0.70f, 0.70f, 1.00f);
-    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.85f);
-    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(1.00f, 1.00f, 1.00f, 0.60f);
-    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 1.00f, 1.00f, 0.90f);
-    style.Colors[ImGuiCol_PlotLines] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 0.00f, 1.00f, 0.35f);
-    style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
-}
 
 enum class Alignment : unsigned char {
     kHorizontalCenter = 1 << 0,

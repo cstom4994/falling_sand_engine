@@ -20,7 +20,9 @@
 #include "engine/engine.h"
 #include "engine/engine_scripting.hpp"
 #include "engine/filesystem.h"
-#include "engine/imgui_impl.hpp"
+#include "engine/imgui/imgui_generated.h"
+#include "engine/imgui/imgui_impl.hpp"
+#include "engine/imgui/lua/script.h"
 #include "engine/memory.hpp"
 #include "engine/reflectionflat.hpp"
 #include "engine/renderer/gpu.hpp"
@@ -31,6 +33,7 @@
 #include "game/game_datastruct.hpp"
 #include "game/game_ui.hpp"
 #include "imgui/imgui.h"
+#include "imgui/imgui_css.h"
 #include "libs/glad/glad.h"
 #include "libs/imgui/implot.h"
 
@@ -102,7 +105,7 @@ ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
 
 ImGuiCore::ImGuiCore() {}
 
-class OpenGL3TextureManager {
+class OpenGL3TextureManager : public ImGuiCSS::TextureManager {
 public:
     ~OpenGL3TextureManager() {
         for (int i = 0; i < mTextures.size(); ++i) {
@@ -191,7 +194,18 @@ void ImGuiCore::Init() {
 
     style.ScaleAllSizes(scale);
 
-    ImGuiHelper::init_style(0.5f, 0.5f);
+    ImGuiInitStyle(0.5f, 0.5f);
+
+    // LUA state
+    ImGuiCSS::registerBindings(global.scripts->LuaCoreCpp->C->L);
+    ctx = ImGuiCSS::createContext(ImGuiCSS::createElementFactory(), new ImGuiCSS::LuaScriptState(global.scripts->LuaCoreCpp->C->L), new OpenGL3TextureManager());
+    ctx->scale = ImVec2(scale, scale);
+
+    document = new ImGuiCSS::Document(ctx);
+    const char *page = "Data/assets/ui/imguicss/simple.xml";
+    char *data = ctx->fs->load(page);
+    document->parse(data);
+    ImGui::MemFree(data);
 
 #if defined(_METADOT_IMM32)
     common_control_initialize();
@@ -266,6 +280,9 @@ void ImGuiCore::Init() {
 }
 
 void ImGuiCore::onDetach() {
+
+    delete document;
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImPlot::DestroyContext();
@@ -404,6 +421,8 @@ void ImGuiCore::Render() {
         }
 
 #endif
+
+    document->render();
 
     MarkdownData md1;
     md1.data = R"markdown(

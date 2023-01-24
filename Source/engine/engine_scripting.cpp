@@ -20,7 +20,7 @@
 #include "engine/ecs/luaecs.h"
 #include "engine/engine_funcwrap.hpp"
 #include "engine/filesystem.h"
-#include "engine/imgui_impl.hpp"
+#include "engine/imgui/imgui_impl.hpp"
 #include "engine/internal/builtin_lpeg.h"
 #include "engine/memory.hpp"
 #include "engine/scripting/lua_wrapper.hpp"

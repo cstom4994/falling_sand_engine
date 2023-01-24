@@ -9,7 +9,8 @@
 
 #include "core/debug_impl.hpp"
 #include "engine/audio.hpp"
-#include "engine/imgui_impl.hpp"
+#include "engine/imgui/imgui_css.h"
+#include "engine/imgui/imgui_impl.hpp"
 #include "engine/sdl_wrapper.h"
 #include "libs/imgui/text_editor.h"
 
@@ -43,6 +44,8 @@ private:
     TextEditor editor;
     EditorView *view_editing = nullptr;
     ImGuiWidget::FileBrowser fileDialog;
+    ImGuiCSS::Context *ctx;
+    ImGuiCSS::Document *document;
 
 public:
     ImGuiCore();
@@ -56,6 +59,11 @@ public:
     ImGuiContext *getImGuiCtx() {
         METADOT_ASSERT(m_imgui, "Miss ImGuiContext");
         return m_imgui;
+    }
+
+    ImGuiCSS::Context *getImGuiCSSCtx() {
+        METADOT_ASSERT(ctx, "Miss ImGuiContext");
+        return ctx;
     }
 };
 

@@ -5,8 +5,8 @@
 
 #include "code_reflection.hpp"
 #include "core/core.h"
-#include "engine/imgui_core.hpp"
-#include "engine/imgui_impl.hpp"
+#include "engine/imgui/imgui_core.hpp"
+#include "engine/imgui/imgui_impl.hpp"
 #include "engine/renderer/renderer_opengl.h"
 #include "engine/ui_layout.h"
 #include "game/game_resources.hpp"
