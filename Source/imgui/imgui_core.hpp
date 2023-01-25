@@ -50,10 +50,10 @@ private:
 public:
     ImGuiCore();
     void Init();
-    void onDetach();
+    void End();
     void NewFrame();
     void Draw();
-    void Render();
+    void Update();
     ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
 
     ImGuiContext *getImGuiCtx() {

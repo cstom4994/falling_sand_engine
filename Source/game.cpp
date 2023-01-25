@@ -24,6 +24,7 @@
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
+#include "core/profiler/profiler.h"
 #include "core/threadpool.hpp"
 #include "engine.h"
 #include "engine_platform.h"
@@ -62,6 +63,10 @@ Game::Game(int argc, char *argv[]) {
 
     // Start memory management including GC
     METAENGINE_Memory_Init(argc, argv);
+
+    METADOT_INIT();
+    METADOT_REGISTER_THREAD("Application thread");
+
     // Global game target
     global.game = this;
     METADOT_INFO("%s %s", METADOT_NAME, METADOT_VERSION_TEXT);
@@ -69,6 +74,8 @@ Game::Game(int argc, char *argv[]) {
 
 Game::~Game() {
     global.game = nullptr;
+    METADOT_SHUTDOWN();
+
     // Stop memory management and GC
     METAENGINE_Memory_End();
 }
@@ -430,14 +437,15 @@ int Game::run(int argc, char *argv[]) {
     // game loop
     while (this->running) {
 
-        GameIsolate_.profiler.Frame();
+        METADOT_BEGIN_FRAME();
 
         EngineUpdate();
 
 #pragma region SDL_Input
 
+        METADOT_SCOPE("Loop");
+
         // handle window events
-        GameIsolate_.profiler.Begin(Profiler::Stage::SdlInput);
         while (SDL_PollEvent(&windowEvent)) {
 
             if (windowEvent.type == SDL_WINDOWEVENT) {
@@ -878,12 +886,11 @@ int Game::run(int argc, char *argv[]) {
                 running = false;
             }
         }
-        GameIsolate_.profiler.End(Profiler::Stage::SdlInput);
 
 #pragma endregion SDL_Input
 
 #pragma region GameTick
-        GameIsolate_.profiler.Begin(Profiler::Stage::GameTick);
+        METADOT_SCOPE("GameTick");
 
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
@@ -900,25 +907,22 @@ int Game::run(int argc, char *argv[]) {
 
         if (GameIsolate_.globaldef.tick_world) updateFrameLate();
 
-        GameIsolate_.profiler.End(Profiler::Stage::GameTick);
 #pragma endregion GameTick
 
 #pragma region Render
         // render
-        GameIsolate_.profiler.Begin(Profiler::Stage::Rendering);
+        METADOT_SCOPE("Rendering");
 
         Render.target = Render.realTarget;
         R_Clear(Render.target);
 
-        GameIsolate_.profiler.Begin(Profiler::Stage::RenderEarly);
+        METADOT_SCOPE("RenderEarly");
         renderEarly();
         Render.target = Render.realTarget;
-        GameIsolate_.profiler.End(Profiler::Stage::RenderEarly);
 
-        GameIsolate_.profiler.Begin(Profiler::Stage::RenderLate);
+        METADOT_SCOPE("RenderLate");
         renderLate();
         Render.target = Render.realTarget;
-        GameIsolate_.profiler.End(Profiler::Stage::RenderLate);
 
         global.scripts->UpdateRender();
 
@@ -1062,8 +1066,6 @@ int Game::run(int argc, char *argv[]) {
         }
 
         R_Flip(Render.target);
-
-        GameIsolate_.profiler.End(Profiler::Stage::Rendering);
 
 #pragma endregion Render
 

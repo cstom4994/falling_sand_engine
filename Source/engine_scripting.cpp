@@ -10,26 +10,26 @@
 #include <vector>
 
 #include "SDL_surface.h"
+#include "background.hpp"
+#include "code_reflection.hpp"
 #include "core/alloc.h"
 #include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
-#include "code_reflection.hpp"
 #include "ecs/luaecs.h"
 #include "engine_funcwrap.hpp"
 #include "filesystem.h"
-#include "imgui/imgui_impl.hpp"
-#include "internal/builtin_lpeg.h"
-#include "memory.hpp"
-#include "scripting/lua_wrapper.hpp"
-#include "background.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
+#include "imgui/imgui_impl.hpp"
+#include "internal/builtin_lpeg.h"
 #include "libs/lua/ffi.h"
+#include "memory.hpp"
 #include "renderer/renderer_gpu.h"
+#include "scripting/lua_wrapper.hpp"
 
 void InitLuaCoreC(LuaCoreC *_struct, lua_State *LuaCoreCppFunc(void *), void *luacorecpp) {
     METADOT_ASSERT_E(_struct);
@@ -206,8 +206,6 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     luaopen_base(_struct->C->L);
     luaL_openlibs(_struct->C->L);
 
-    metadot_debug_setup(_struct->C->L, "debugger", "dbg", NULL, NULL);
-
     lua_atpanic(_struct->C->L, catch_panic);
     lua_register(_struct->C->L, "METADOT_TRACE", metadot_trace);
     lua_register(_struct->C->L, "METADOT_INFO", metadot_info);
@@ -218,6 +216,8 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     lua_register(_struct->C->L, "runf", metadot_run_lua_file_script);
     lua_register(_struct->C->L, "exit", metadot_exit);
     lua_register(_struct->C->L, "ls", ls);
+
+    metadot_debug_setup(_struct->C->L, "debugger", "dbg", NULL, NULL);
 
     metadot_bind_image(_struct->C->L);
     metadot_bind_gpu(_struct->C->L);

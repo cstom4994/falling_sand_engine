@@ -78,11 +78,11 @@
 #define METADOT_INTERNAL_TAG_SYMBOL '!'
 
 // Platforms Macros
-#if defined(_WIN32) || defined(_WINDOWS)
+#if defined(_WIN32) || defined(_WIN64) || defined(__WINDOWS__)
 #define METADOT_PLATFORM_WINDOWS
-#elif defined(__linux)
+#elif defined(__linux__) || defined(linux)
 #define METADOT_PLATFORM_LINUX
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
 #include "TargetConditionals.h"
 #define METADOT_PLATFORM_APPLE
 #if defined(__METADOT_ARCH_ARM)
@@ -95,7 +95,8 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
 #define METADOT_PLATFORM_WIN32
 #else
-#define METADOT_PLATFORM_POSIX
+#define METADOT_PLATFORM_POSIX \
+    (METADOT_PLATFORM_LINUX || METADOT_PLATFORM_APPLE || 0)
 #endif
 
 #if defined(_MSC_VER)

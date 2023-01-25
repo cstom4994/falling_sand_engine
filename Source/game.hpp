@@ -85,7 +85,6 @@ public:
         GameplayScriptSystem *gameplayscript = nullptr;
         ShaderWorkerSystem *shaderworker = nullptr;
         ConsoleSystem *console;
-        Profiler profiler;
         GlobalDEF globaldef;
         World *world = nullptr;
         TexturePack *texturepack = nullptr;

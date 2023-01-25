@@ -8,15 +8,15 @@
 #include "core/global.hpp"
 #include "engine.h"
 #include "engine_input.hpp"
+#include "engine_platform.h"
+#include "game.hpp"
+#include "game_resources.hpp"
 #include "mathlib.hpp"
 #include "memory.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
 #include "renderer/renderer_utils.h"
-#include "engine_platform.h"
-#include "game.hpp"
-#include "game_resources.hpp"
 #include "ui_layout.h"
 
 IMPLENGINE();
@@ -151,6 +151,11 @@ F32 BoxDistence(metadot_rect box, R_vec2 A) {
 
 void UIRendererUpdate() {
 
+    global.uidata->imguiCore->Update();
+    auto &l = global.scripts->LuaCoreCpp->s_lua;
+    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
+    OnGameGUIUpdate();
+
     for (auto &&e : global.uidata->elementLists) {
         metadot_rect rect{
                 .x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
@@ -170,15 +175,10 @@ void UIRendererUpdate() {
             e.second.cclass.progressbar.bar_current = (e.second.cclass.progressbar.bar_current < e.second.cclass.progressbar.bar_limit) ? e.second.cclass.progressbar.bar_current + 1 : 0;
         }
     }
-
-    global.uidata->imguiCore->Render();
-    auto &l = global.scripts->LuaCoreCpp->s_lua;
-    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
-    OnGameGUIUpdate();
 }
 
 void UIRendererFree() {
-    global.uidata->imguiCore->onDetach();
+    global.uidata->imguiCore->End();
     METADOT_DELETE(C, global.uidata->imguiCore, ImGuiCore);
 
     for (auto &&e : global.uidata->elementLists) {

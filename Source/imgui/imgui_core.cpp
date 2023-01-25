@@ -17,6 +17,8 @@
 #include "core/dbgtools.h"
 #include "core/global.hpp"
 #include "core/macros.h"
+#include "core/profiler/profiler.h"
+#include "core/profiler/profiler_imgui.hpp"
 #include "engine.h"
 #include "engine_scripting.hpp"
 #include "filesystem.h"
@@ -278,7 +280,7 @@ void ImGuiCore::Init() {
     firstRun = true;
 }
 
-void ImGuiCore::onDetach() {
+void ImGuiCore::End() {
 
     delete document;
 
@@ -324,7 +326,7 @@ auto CollapsingHeader = [](const char *name) -> bool {
     return b;
 };
 
-void ImGuiCore::Render() {
+void ImGuiCore::Update() {
 
 #if defined(_METADOT_IMM32)
     imguiIMMCommunication();
@@ -461,6 +463,17 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImPlot::ShowDemoWindow();
     }
 
+    if (global.game->GameIsolate_.globaldef.draw_profiler) {
+        static ProfilerFrame data;
+        ProfilerGetFrame(&data);
+
+        // // if (g_multi) ProfilerDrawFrameNavigation(g_frameInfos.data(), g_frameInfos.size());
+
+        static char buffer[10 * 1024];
+        ProfilerDrawFrame(&data, buffer, 10 * 1024);
+        // // ProfilerDrawStats(&data);
+    }
+
     auto cpos = editor.GetCursorPosition();
     if (global.game->GameIsolate_.globaldef.ui_tweak) {
 
@@ -485,9 +498,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
 
             ImGui::Separator();
-
-            auto &entry = global.game->GameIsolate_.profiler._entries[global.game->GameIsolate_.profiler.GetCurrentEntryIndex()];
-            ImGuiWidget::PlotFlame("CPU", &ProfilerValueGetter, &entry, Profiler::_StageCount, 0, "Main Thread", FLT_MAX, FLT_MAX, ImVec2(600, 0));
 
             MarkdownData TickInfoPanel;
             TickInfoPanel.data = R"(
@@ -557,7 +567,6 @@ CSTDTime | {6} | Nothing
 
 #if defined(METADOT_DEBUG)
             ImGui::Dummy(ImVec2(0.0f, 10.0f));
-            ImGui::Separator();
             ImGui::Text("GC:\n");
             for (auto [name, size] : GC::MemoryDebugMap) {
                 ImGui::Text("%s", MetaEngine::Format("   {0} {1}", name, size).c_str());
