@@ -11,6 +11,7 @@
 #include "engine_platform.h"
 #include "game.hpp"
 #include "game_resources.hpp"
+#include "mathlib.h"
 #include "mathlib.hpp"
 #include "memory.hpp"
 #include "renderer/gpu.hpp"
@@ -20,6 +21,24 @@
 #include "ui_layout.h"
 
 IMPLENGINE();
+
+// Color definitions
+metadot_vec3 bgPanelColor = {0.02, 0.02, 0.05};
+metadot_vec3 bgLightColor = {0.2, 0.2, 0.35};
+metadot_vec3 bgMediumColor = {0.1, 0.1, 0.15};
+
+metadot_vec3 fieldColor = {0.2, 0.2, 0.2};
+metadot_vec3 fieldEditingColor = {0.3, 0.3, 0.3};
+metadot_vec3 buttonOverColor = {0.3, 0.3, 0.4};
+
+metadot_vec3 scrollbarInactiveColor = {0.3, 0.3, 0.3};
+metadot_vec3 scrollbarOverColor = {0.5, 0.5, 0.5};
+
+metadot_vec3 menuTabColor = {0.05, 0.05, 0.10};
+metadot_vec3 menuActiveTabColor = {0.15, 0.15, 0.2};
+
+metadot_vec3 brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
+metadot_vec3 lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 
 void UIRendererInit() {
     // UIData
@@ -38,8 +57,8 @@ void UIRendererInit() {
                            .minRectY = 50,
                            .maxRectX = 200,
                            .maxRectY = 200,
-                           .color = {255, 255, 255, 255},
-                           .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png"),
+                           .color = bgPanelColor,
+                              .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png"),
                            .cclass = {.window = (UI_Window){.state = 0}}};
 
     UIElement testElement2{.type = ElementType::textElement, .minRectX = 55, .minRectY = 55, .maxRectX = 200, .maxRectY = 200, .color = {54, 54, 54, 255}, .text = "哈哈哈哈哈嗝"};
@@ -103,8 +122,8 @@ void UIRendererDraw() {
         if (e.second.type == ElementType::lineElement) {
             R_Line(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
         }
-        if (e.second.type == ElementType::coloredRectangle) {
-            R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
+        if (e.second.type == ElementType::coloredRectangle || e.second.type == windowElement) {
+            if (!Img) R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
         }
         if (e.second.type == ElementType::progressBarElement) {
             int drect = e.second.maxRectX - e.second.minRectX;
@@ -140,9 +159,9 @@ void UIRendererDraw() {
 
         if (global.game->GameIsolate_.globaldef.draw_ui_debug) R_Rectangle(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, {255, 20, 147, 255});
     }
-
-    global.uidata->imguiCore->Draw();
 }
+
+void UIRendererDrawImGui() { global.uidata->imguiCore->Draw(); }
 
 F32 BoxDistence(metadot_rect box, R_vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;

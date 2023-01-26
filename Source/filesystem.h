@@ -8,7 +8,7 @@
 
 #include "core/core.hpp"
 #include "core/macros.h"
-#include "platform_detail.h"
+#include "core/platform.h"
 
 // #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
 //     METADOT_ASSERT(FUtil_exists(METADOT_RESLOC(stringPath)),                                       \

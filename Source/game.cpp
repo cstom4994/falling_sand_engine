@@ -940,11 +940,12 @@ int Game::run(int argc, char *argv[]) {
         // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);
         MetaEngine::Drawing::end_3d(Render.target);
 
-        R_ActivateShaderProgram(0, NULL);
-        R_FlushBlitBuffer();
-
         // Update UI
         UIRendererUpdate();
+        UIRendererDraw();
+
+        R_ActivateShaderProgram(0, NULL);
+        R_FlushBlitBuffer();
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1029,7 +1030,7 @@ int Game::run(int argc, char *argv[]) {
             }
         }
 
-        UIRendererDraw();
+        UIRendererDrawImGui();
 
         // render fade in/out
         if (fadeInWaitFrames > 0) {

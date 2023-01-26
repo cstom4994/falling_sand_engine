@@ -10,11 +10,11 @@
 #include "core/alloc.h"
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
+#include "core/platform.h"
 #include "datapackage.h"
 #include "engine.h"
 #include "engine_platform.h"
 #include "libs/physfs/physfs.h"
-#include "platform_detail.h"
 
 IMPLENGINE();
 

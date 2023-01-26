@@ -1,6 +1,10 @@
 
 #include "core/profiler/profiler_imgui.hpp"
 
+#include "core/global.hpp"
+
+#define LANG(_c) global.I18N.Get(_c).c_str()
+
 void ProfilerDrawFrameNavigation(FrameInfo* _infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(1510.0f, 140.0f), ImGuiCond_FirstUseEver);
@@ -68,7 +72,7 @@ int ProfilerDrawFrame(ProfilerFrame* _data, void* _buffer, size_t _bufferSize, b
 
     if (noMove) ImGui::SetNextWindowPos(winpos);
 
-    ImGui::Begin("Frame inspector", 0, noMove ? ImGuiWindowFlags_NoMove : 0);
+    ImGui::Begin(LANG("ui_frameinspector"), 0, noMove ? ImGuiWindowFlags_NoMove : 0);
 
     if (!noMove) winpos = ImGui::GetWindowPos();
 
@@ -83,7 +87,7 @@ int ProfilerDrawFrame(ProfilerFrame* _data, void* _buffer, size_t _bufferSize, b
     ImGui::Text("%.1f    ", 1000.0f / deltaTime);
     ImGui::PopStyleColor();
     ImGui::SameLine();
-    ImGui::Text("Frame time: ");
+    ImGui::Text("%s", LANG("ui_frametime"));
     ImGui::SameLine();
     ImGui::PushStyleColor(ImGuiCol_Text, col);
     ImGui::Text("%.3f ms   ", deltaTime);
@@ -124,11 +128,11 @@ int ProfilerDrawFrame(ProfilerFrame* _data, void* _buffer, size_t _bufferSize, b
 
     if (_inGame) {
         ImGui::PushItemWidth(210);
-        ImGui::SliderFloat("Threshold   ", &threshold, 0.0f, 15.0f);
+        ImGui::SliderFloat("阈值   ", &threshold, 0.0f, 15.0f);
 
         ImGui::SameLine();
         ImGui::PushItemWidth(120);
-        ImGui::SliderInt("Level", &thresholdLevel, 0, 23);
+        ImGui::SliderInt("阈值级别", &thresholdLevel, 0, 23);
 
         ImGui::SameLine();
         if (ImGui::Button("Save frame")) ret = ProfilerSave(_data, _buffer, _bufferSize);

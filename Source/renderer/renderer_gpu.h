@@ -101,11 +101,17 @@ extern "C" {
 #define R_PAD_7_TO_64 char _padding[7];
 #endif
 
-typedef struct {
+typedef struct METAENGINE_Color {
     U8 r;
     U8 g;
     U8 b;
     U8 a;
+#ifdef __cplusplus
+    METAENGINE_Color() : r(255), g(255), b(255), a(255) {}
+    METAENGINE_Color(U8 R, U8 G, U8 B, U8 A) : r(R), g(G), b(B), a(A) {}
+    METAENGINE_Color(metadot_vec3 &v3) : r(v3.R), g(v3.G), b(v3.B), a(255) {}
+    METAENGINE_Color(metadot_vec3 &v3, U8 A) : r(v3.R), g(v3.G), b(v3.B), a(A) {}
+#endif
 } METAENGINE_Color;
 
 typedef struct R_Renderer R_Renderer;

@@ -73,6 +73,7 @@ void UIRendererInit();
 void UIRendererPostUpdate();
 void UIRendererUpdate();
 void UIRendererDraw();
+void UIRendererDrawImGui();
 void UIRendererFree();
 
 bool UIIsMouseOnControls();

@@ -582,6 +582,7 @@ CSTDTime | {6} | Nothing
                 if (ImGui::Button("调用回溯")) print_callstack();
                 ImGui::SameLine();
                 if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
+                ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem(CC("自动序列测试"))) {

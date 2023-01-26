@@ -5,7 +5,7 @@
 
 #include "core/core.h"
 #include "core/macros.h"
-#include "platform_detail.h"
+#include "core/platform.h"
 #include "renderer/renderer_utils.h"
 #include "sdl_wrapper.h"
 

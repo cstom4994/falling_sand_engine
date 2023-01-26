@@ -59,7 +59,9 @@ local lang_pack = {
         ui_worldgenerator = "世界生成器",
         ui_create = "创建",
         ui_file_dialog = "选择文件",
-        ui_chunk = "区块"
+        ui_chunk = "区块",
+        ui_frametime = "帧耗时",
+        ui_frameinspector = "帧检查器"
     }
 }
 

@@ -25,7 +25,7 @@
 #include "libs/lz4/lz4.h"
 #include "libs/lz4/lz4frame.h"
 #include "libs/lz4/lz4hc.h"
-#include "platform_detail.h"
+#include "core/platform.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.h"
 #include "scripting/lua_wrapper.hpp"
