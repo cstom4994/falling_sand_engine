@@ -2,10 +2,12 @@
 
 #include "imgui_core.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <iterator>
 #include <map>
+#include <type_traits>
 
 #include "chunk.hpp"
 #include "code_reflection.hpp"
@@ -582,6 +584,99 @@ CSTDTime | {6} | Nothing
                 if (ImGui::Button("调用回溯")) print_callstack();
                 ImGui::SameLine();
                 if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
+                ImGui::SameLine();
+                if (ImGui::Button("StaticRefl")) {
+
+                    if (global.game->GameIsolate_.world == nullptr || !global.game->GameIsolate_.world->isPlayerInWorld()) {
+                    } else {
+                        using namespace MetaEngine::StaticRefl;
+
+                        TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
+                            for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
+                            std::cout << t.name << std::endl;
+                        });
+
+                        std::cout << "[non DFS]" << std::endl;
+                        TypeInfo<Player>::fields.ForEach([&](auto field) {
+                            std::cout << field.name << std::endl;
+                            if (field.name == "holdtype" && TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(field.value) == "hammer") {
+                                std::cout << "   Passed" << std::endl;
+                                // if constexpr (std::is_same<decltype(field.value), EnumPlayerHoldType>().value) {
+                                //     std::cout << "   " << field.value << std::endl;
+                                // }
+                            }
+                        });
+
+                        std::cout << "[DFS]" << std::endl;
+                        TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
+
+                        constexpr std::size_t fieldNum = TypeInfo<Player>::DFS_Acc(0, [](auto acc, auto, auto) { return acc + 1; });
+                        std::cout << "field number : " << fieldNum << std::endl;
+
+                        std::cout << "[var]" << std::endl;
+
+                        // std::cout << "[left]" << std::endl;
+                        // TypeInfo<Player>::ForEachVarOf(std::move(*global.game->GameIsolate_.world->WorldIsolate_.player), [](auto field, auto &&var) {
+                        //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
+                        //     std::cout << field.name << " : " << var << std::endl;
+                        // });
+                        // std::cout << "[right]" << std::endl;
+                        // TypeInfo<Player>::ForEachVarOf(*global.game->GameIsolate_.world->WorldIsolate_.player, [](auto field, auto &&var) {
+                        //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
+                        //     std::cout << field.name << " : " << var << std::endl;
+                        // });
+
+                        auto &p = *global.game->GameIsolate_.world->WorldIsolate_.player;
+
+                        // Just for test
+                        Item *i3 = new Item();
+                        i3->setFlag(ItemFlags::HAMMER);
+                        i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
+                        i3->texture = R_CopyImageFromSurface(i3->surface);
+                        R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                        i3->pivotX = 2;
+
+                        TypeInfo<Player>::fields.ForEach([&](auto field) {
+                            if constexpr (field.is_func) {
+                                if (field.name != "setItemInHand") return;
+                                if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item * item, World * world) /* const */>(&Player::setItemInHand)))
+                                    (p.*(field.value))(i3, global.game->GameIsolate_.world);
+                                // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
+                                //     std::cout << (p.*(field.value))(1.f) << std::endl;
+                                else
+                                    assert(false);
+                            }
+                        });
+
+                        // virtual
+
+                        std::cout << "[Virtual Bases]" << std::endl;
+                        constexpr auto vbs = TypeInfo<Player>::VirtualBases();
+                        vbs.ForEach([](auto info) { std::cout << info.name << std::endl; });
+
+                        std::cout << "[Tree]" << std::endl;
+                        TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
+                            for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
+                            std::cout << t.name << std::endl;
+                        });
+
+                        std::cout << "[field]" << std::endl;
+                        TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
+
+                        std::cout << "[var]" << std::endl;
+
+                        std::cout << "[var : left]" << std::endl;
+                        TypeInfo<Player>::ForEachVarOf(std::move(p), [](auto field, auto &&var) {
+                            static_assert(std::is_rvalue_reference_v<decltype(var)>);
+                            std::cout << var << std::endl;
+                        });
+                        std::cout << "[var : right]" << std::endl;
+                        TypeInfo<Player>::ForEachVarOf(p, [](auto field, auto &&var) {
+                            static_assert(std::is_lvalue_reference_v<decltype(var)>);
+                            std::cout << field.name << " : " << var << std::endl;
+                        });
+                    }
+                }
                 ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
                 ImGui::EndTabItem();
             }

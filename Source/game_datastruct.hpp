@@ -11,6 +11,7 @@
 #include "code_reflection.hpp"
 #include "core/core.hpp"
 #include "core/cpp/static_relfection.hpp"
+#include "core/cpp/type.hpp"
 #include "core/cpp/vector.hpp"
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
@@ -83,6 +84,12 @@ public:
     virtual void RegisterReflection();
 };
 
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {};
+};
+
 class WorldEntity : public IGameObject {
 public:
     F32 x = 0;
@@ -98,6 +105,18 @@ public:
 
     WorldEntity(bool isplayer);
     ~WorldEntity();
+};
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity, Base<IGameObject, true>> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("x"), &Type::x},           Field{TSTR("y"), &Type::y},       Field{TSTR("vx"), &Type::vx},
+            Field{TSTR("vy"), &Type::vy},         Field{TSTR("hw"), &Type::hw},     Field{TSTR("hh"), &Type::hh},
+            Field{TSTR("ground"), &Type::ground},
+
+            Field{TSTR("rb"), &Type::rb},         Field{TSTR("body"), &Type::body}, Field{TSTR("is_player"), &Type::is_player},
+    };
 };
 
 void ReleaseGameData();
@@ -555,13 +574,30 @@ struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
 
 #pragma region Player
 
+typedef enum EnumPlayerHoldType {
+    None = 0,
+    Hammer = 1,
+    Vacuum,
+} EnumPlayerHoldType;
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("None"), Type::None},
+            Field{TSTR("Hammer"), Type::Hammer},
+            Field{TSTR("Vacuum"), Type::Vacuum},
+    };
+};
+
 class Player : public WorldEntity {
 public:
     Item *heldItem = nullptr;
     F32 holdAngle = 0;
     long long startThrow = 0;
-    bool holdHammer = false;
-    bool holdVacuum = false;
+    // bool holdHammer = false;
+    // bool holdVacuum = false;
+    EnumPlayerHoldType holdtype = None;
     int hammerX = 0;
     int hammerY = 0;
 
@@ -571,6 +607,25 @@ public:
 
     Player();
     ~Player();
+};
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<WorldEntity>, Base<IGameObject, true>> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("heldItem"), &Type::heldItem},
+            Field{TSTR("holdAngle"), &Type::holdAngle},
+            Field{TSTR("startThrow"), &Type::startThrow},
+            // Field{TSTR("holdHammer"), &Type::holdHammer},
+            // Field{TSTR("holdVacuum"), &Type::holdVacuum},
+            Field{TSTR("holdtype"), &Type::holdtype},
+            Field{TSTR("hammerX"), &Type::hammerX},
+            Field{TSTR("hammerY"), &Type::hammerY},
+
+            Field{TSTR("render"), static_cast<void (Type::*)(R_Target *target, int ofsX, int ofsY) /* const */>(&Type::render)},
+            Field{TSTR("renderLQ"), static_cast<void (Type::*)(R_Target *target, int ofsX, int ofsY) /* const */>(&Type::renderLQ)},
+            Field{TSTR("setItemInHand"), static_cast<void (Type::*)(Item *item, World *world) /* const */>(&Type::setItemInHand)},
+    };
 };
 
 #pragma endregion Player

@@ -873,7 +873,7 @@ void DebugDrawUI::Draw(Game *game) {
 
         if (ImGui::CollapsingHeader("获得物品")) {
             ImGui::Indent();
-            if (game->GameIsolate_.world == nullptr || game->GameIsolate_.world->WorldIsolate_.player == nullptr) {
+            if (game->GameIsolate_.world == nullptr || !game->GameIsolate_.world->isPlayerInWorld()) {
                 ImGui::Text("世界中没有玩家");
             } else {
                 int i = 0;

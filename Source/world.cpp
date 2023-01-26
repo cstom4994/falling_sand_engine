@@ -12,6 +12,7 @@
 #include <typeinfo>
 #include <vector>
 
+#include "chunk.hpp"
 #include "core/alloc.h"
 #include "core/const.h"
 #include "core/core.hpp"
@@ -23,16 +24,15 @@
 #include "engine.h"
 #include "engine_scripting.hpp"
 #include "filesystem.h"
+#include "game_datastruct.hpp"
+#include "game_resources.hpp"
 #include "game_utils/jsonwarp.h"
 #include "game_utils/particles.h"
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
 #include "memory.hpp"
-#include "scripting/lua_wrapper.hpp"
-#include "chunk.hpp"
-#include "game_datastruct.hpp"
-#include "game_resources.hpp"
 #include "reflectionflat.hpp"
+#include "scripting/lua_wrapper.hpp"
 #include "world_generator.cpp"
 
 ThreadPool *World::tickPool = nullptr;
@@ -3242,6 +3242,8 @@ void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
 }
 
 bool World::isC2Ground(F32 x, F32 y) { return false; }
+
+bool World::isPlayerInWorld() { return WorldIsolate_.player != nullptr; }
 
 RigidBody *World::physicsCheck(int x, int y) {
 
