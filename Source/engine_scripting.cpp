@@ -1,7 +1,5 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine_scripting.hpp"
-
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -18,8 +16,10 @@
 #include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
+#include "core/profiler/profiler_lua.h"
 #include "ecs/luaecs.h"
 #include "engine_funcwrap.hpp"
+#include "engine_scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -226,6 +226,7 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     metadot_bind_cstructcore(_struct->C->L);
     metadot_bind_cstructtest(_struct->C->L);
     metadot_bind_uilayout(_struct->C->L);
+    metadot_bind_profiler(_struct->C->L);
 
     LoadImguiBindings(_struct->C->L);
 

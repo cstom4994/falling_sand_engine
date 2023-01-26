@@ -8,6 +8,8 @@ build/
 makefile
 CMakeLists.txt
 
+.luarc.json
+
 *.dylib
 
 Data/assets/

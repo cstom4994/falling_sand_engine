@@ -1,7 +1,5 @@
 ﻿// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "game.hpp"
-
 #include <stdio.h>
 
 #include <cstddef>
@@ -30,6 +28,7 @@
 #include "engine_platform.h"
 #include "engine_scripting.hpp"
 #include "filesystem.h"
+#include "game.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
