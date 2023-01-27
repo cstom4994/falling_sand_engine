@@ -305,25 +305,44 @@ MaterialInstance TilesCreate(Material *mat, int x, int y);
 
 #pragma endregion Material
 
-class ItemFlags {
-public:
-    static const U8 RIGIDBODY = 0b00000001;
-    static const U8 FLUID_CONTAINER = 0b00000010;
-    static const U8 TOOL = 0b00000100;
-    static const U8 CHISEL = 0b00001000;
-    static const U8 HAMMER = 0b00010000;
-    static const U8 VACUUM = 0b00100000;
+/* class ItemFlags { */
+/* public: */
+/*     static const U8 RIGIDBODY = 0b00000001; */
+/*     static const U8 FLUID_CONTAINER = 0b00000010; */
+/*     static const U8 TOOL = 0b00000100; */
+/*     static const U8 CHISEL = 0b00001000; */
+/*     static const U8 HAMMER = 0b00010000; */
+/*     static const U8 VACUUM = 0b00100000; */
+/* }; */
+
+enum ItemFlags_ {
+    ItemFlags_None = 0,
+    ItemFlags_Rigidbody = 1 << 0,
+    ItemFlags_Fluid_Container = 1 << 1,
+    ItemFlags_Tool = 1 << 2,
+    ItemFlags_Chisel = 1 << 3,
+    ItemFlags_Hammer = 1 << 4,
+    ItemFlags_Vacuum = 1 << 5,
 };
+
+typedef int ItemFlags;
+
+typedef enum EnumPlayerHoldType {
+    None = 0,
+    Hammer = 1,
+    Vacuum,
+} EnumPlayerHoldType;
 
 class Item {
 public:
-    U8 flags = 0;
+    ItemFlags flags = ItemFlags_None;
 
-    void setFlag(U8 f) { flags |= f; }
-    bool getFlag(U8 f) { return flags & f; }
+    void setFlag(ItemFlags f) { flags |= f; }
+    bool getFlag(ItemFlags f) { return flags & f; }
 
     C_Surface *surface = nullptr;
     R_Image *texture = nullptr;
+
     int pivotX = 0;
     int pivotY = 0;
     F32 breakSize = 16;
@@ -358,13 +377,13 @@ struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
     static int setFlag(lua_State *L) {
         LuaWrapper::PodBind::CheckArgCount(L, 2);
         ItemLuaPtr t = fromStack(L, 1);
-        t->setFlag(lua_tointeger(L, 2));
+        t->setFlag((ItemFlags)lua_tointeger(L, 2));
         return 0;
     }
     static int getFlag(lua_State *L) {
         LuaWrapper::PodBind::CheckArgCount(L, 2);
         ItemLuaPtr t = fromStack(L, 1);
-        lua_pushboolean(L, t->getFlag(lua_tointeger(L, 2)));
+        lua_pushboolean(L, t->getFlag((ItemFlags)lua_tointeger(L, 2)));
         return 1;
     }
 };
@@ -573,12 +592,6 @@ struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
 #pragma endregion Rigidbody
 
 #pragma region Player
-
-typedef enum EnumPlayerHoldType {
-    None = 0,
-    Hammer = 1,
-    Vacuum,
-} EnumPlayerHoldType;
 
 template <>
 struct MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {

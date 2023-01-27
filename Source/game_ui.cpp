@@ -11,19 +11,18 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine.h"
-#include "engine.h"
 #include "engine_scripting.hpp"
 #include "filesystem.h"
-#include "imgui/imgui_core.hpp"
-#include "imgui/imgui_impl.hpp"
-#include "memory.hpp"
-#include "scripting/lua_wrapper.hpp"
-#include "ui.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "world_generator.cpp"
+#include "imgui/imgui_core.hpp"
+#include "imgui/imgui_impl.hpp"
 #include "libs/imgui/imgui.h"
+#include "memory.hpp"
+#include "scripting/lua_wrapper.hpp"
+#include "ui.hpp"
+#include "world_generator.cpp"
 
 IMPLENGINE();
 
@@ -888,7 +887,7 @@ void DebugDrawUI::Draw(Game *game) {
                 ImTextureID texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::TOOL);
+                    i3->setFlag(ItemFlags_Tool);
                     i3->surface = LoadTexture("data/assets/objects/testPickaxe.png")->surface;
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
@@ -909,7 +908,7 @@ void DebugDrawUI::Draw(Game *game) {
                 texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::HAMMER);
+                    i3->setFlag(ItemFlags_Hammer);
                     i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
@@ -929,7 +928,7 @@ void DebugDrawUI::Draw(Game *game) {
                 texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::VACUUM);
+                    i3->setFlag(ItemFlags_Vacuum);
                     i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
@@ -950,7 +949,7 @@ void DebugDrawUI::Draw(Game *game) {
                 texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
-                    i3->setFlag(ItemFlags::FLUID_CONTAINER);
+                    i3->setFlag(ItemFlags_Fluid_Container);
                     i3->surface = LoadTexture("data/assets/objects/testBucket.png")->surface;
                     i3->capacity = 100;
                     i3->loadFillTexture(LoadTexture("data/assets/objects/testBucket_fill.png")->surface);

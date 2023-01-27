@@ -630,7 +630,7 @@ CSTDTime | {6} | Nothing
 
                         // Just for test
                         Item *i3 = new Item();
-                        i3->setFlag(ItemFlags::HAMMER);
+                        i3->setFlag(ItemFlags_Hammer);
                         i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
                         i3->texture = R_CopyImageFromSurface(i3->surface);
                         R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
