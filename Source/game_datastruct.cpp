@@ -1,10 +1,9 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "game_datastruct.hpp"
-
 #include <string>
 #include <string_view>
 
+#include "chunk.hpp"
 #include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
@@ -12,14 +11,13 @@
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "filesystem.h"
-#include "internal/builtin_box2d.h"
-#include "reflectionflat.hpp"
-#include "renderer/renderer_utils.h"
-#include "chunk.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_ui.hpp"
+#include "internal/builtin_box2d.h"
+#include "reflectionflat.hpp"
+#include "renderer/renderer_utils.h"
 #include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
 
@@ -570,7 +568,7 @@ Item::~Item() {
     SDL_FreeSurface(surface);
 }
 
-Item *Item::makeItem(U8 flags, RigidBody *rb) {
+Item *Item::makeItem(ItemFlags flags, RigidBody *rb) {
     Item *i;
 
     if (rb->item != NULL) {

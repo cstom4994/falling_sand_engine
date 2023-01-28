@@ -82,8 +82,8 @@ elseif is_mode("release") then
 	set_optimize("faster")
 end
 
--- set_fpmodels("strict")
--- set_exceptions("cxx", "objc")
+set_fpmodels("strict")
+set_exceptions("cxx", "objc")
 
 if is_os("windows") then
 	set_arch("x64")

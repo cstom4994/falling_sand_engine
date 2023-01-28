@@ -595,9 +595,9 @@ int Game::run(int argc, char *argv[]) {
                     ControlSystem::lmouse = true;
 
                     if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
-                        if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Vacuum)) {
+                        if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                             GameIsolate_.world->WorldIsolate_.player->holdtype = Vacuum;
-                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Hammer)) {
+                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
 // #define HAMMER_DEBUG_PHYSICS
 #ifdef HAMMER_DEBUG_PHYSICS
                             int x = (int)((windowEvent.button.x - ofsX - camX) / Screen.gameScale);
@@ -621,7 +621,7 @@ int Game::run(int argc, char *argv[]) {
                             }
 #endif
 #undef HAMMER_DEBUG_PHYSICS
-                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Chisel)) {
+                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Chisel)) {
                             // if hovering rigidbody, open in chisel
 
                             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
@@ -665,7 +665,7 @@ int Game::run(int argc, char *argv[]) {
                                 }
                             }
 
-                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Tool)) {
+                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Tool)) {
                             // break with pickaxe
 
                             F32 breakSize = GameIsolate_.world->WorldIsolate_.player->heldItem->breakSize;
@@ -729,11 +729,11 @@ int Game::run(int argc, char *argv[]) {
 
                     if (GameIsolate_.world->WorldIsolate_.player) {
                         if (GameIsolate_.world->WorldIsolate_.player->heldItem) {
-                            if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Vacuum)) {
+                            if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                                 if (GameIsolate_.world->WorldIsolate_.player->holdtype == Vacuum) {
                                     GameIsolate_.world->WorldIsolate_.player->holdtype = None;
                                 }
-                            } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Hammer)) {
+                            } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
                                 if (GameIsolate_.world->WorldIsolate_.player->holdtype == Hammer) {
                                     int x = (int)((windowEvent.button.x - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
                                     int y = (int)((windowEvent.button.y - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
@@ -854,7 +854,7 @@ int Game::run(int argc, char *argv[]) {
 
                         if (connect) {
                             if (GameIsolate_.world->WorldIsolate_.player) {
-                                GameIsolate_.world->WorldIsolate_.player->setItemInHand(Item::makeItem(ItemFlags_Rigidbody, cur), GameIsolate_.world);
+                                GameIsolate_.world->WorldIsolate_.player->setItemInHand(Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur), GameIsolate_.world);
 
                                 GameIsolate_.world->b2world->DestroyBody(cur->body);
                                 GameIsolate_.world->WorldIsolate_.rigidBodies.erase(
@@ -1294,7 +1294,7 @@ void Game::updateFrameEarly() {
             e->rb->body->SetAngularDamping(0);
 
             Item *i3 = new Item();
-            i3->setFlag(ItemFlags_Vacuum);
+            i3->setFlag(ItemFlags::ItemFlags_Vacuum);
             i3->vacuumParticles = {};
             i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
             i3->texture = R_CopyImageFromSurface(i3->surface);
@@ -1328,7 +1328,7 @@ accLoadY = 0;*/
     } else {
         global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
         if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL &&
-            GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Fluid_Container)) {
+            GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Fluid_Container)) {
             if (ControlSystem::lmouse && GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() > 0) {
                 // shoot fluid from container
 
@@ -2289,7 +2289,7 @@ void Game::tickPlayer() {
 
     if (GameIsolate_.world->WorldIsolate_.player) {
         if (GameIsolate_.world->WorldIsolate_.player->heldItem) {
-            if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Vacuum)) {
+            if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                 if (GameIsolate_.world->WorldIsolate_.player->holdtype == Vacuum) {
 
                     int wcx = (int)((Screen.windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
@@ -2633,7 +2633,7 @@ newState = true;
                 }
 
                 if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
-                    if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags_Hammer)) {
+                    if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
                         if (GameIsolate_.world->WorldIsolate_.player->holdtype == Hammer) {
                             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
                             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);

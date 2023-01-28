@@ -315,17 +315,10 @@ MaterialInstance TilesCreate(Material *mat, int x, int y);
 /*     static const U8 VACUUM = 0b00100000; */
 /* }; */
 
-enum ItemFlags_ {
-    ItemFlags_None = 0,
-    ItemFlags_Rigidbody = 1 << 0,
-    ItemFlags_Fluid_Container = 1 << 1,
-    ItemFlags_Tool = 1 << 2,
-    ItemFlags_Chisel = 1 << 3,
-    ItemFlags_Hammer = 1 << 4,
-    ItemFlags_Vacuum = 1 << 5,
+MAKE_ENUM_FLAGS(ItemFlags, int){
+        ItemFlags_None = 1 << 0,   ItemFlags_Rigidbody = 1 << 1, ItemFlags_Fluid_Container = 1 << 2, ItemFlags_Tool = 1 << 3,
+        ItemFlags_Chisel = 1 << 4, ItemFlags_Hammer = 1 << 5,    ItemFlags_Vacuum = 1 << 6,
 };
-
-typedef int ItemFlags;
 
 typedef enum EnumPlayerHoldType {
     None = 0,
@@ -335,10 +328,10 @@ typedef enum EnumPlayerHoldType {
 
 class Item {
 public:
-    ItemFlags flags = ItemFlags_None;
+    ItemFlags flags = ItemFlags::ItemFlags_None;
 
     void setFlag(ItemFlags f) { flags |= f; }
-    bool getFlag(ItemFlags f) { return flags & f; }
+    bool getFlag(ItemFlags f) { return static_cast<bool>(flags & f); }
 
     C_Surface *surface = nullptr;
     R_Image *texture = nullptr;
@@ -355,7 +348,7 @@ public:
     Item();
     ~Item();
 
-    static Item *makeItem(U8 flags, RigidBody *rb);
+    static Item *makeItem(ItemFlags flags, RigidBody *rb);
     void loadFillTexture(C_Surface *tex);
 };
 

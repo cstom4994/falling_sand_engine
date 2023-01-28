@@ -1,7 +1,5 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "imgui_core.hpp"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -31,6 +29,7 @@
 #include "imgui/imgui_generated.h"
 #include "imgui/imgui_impl.hpp"
 #include "imgui/lua/script.h"
+#include "imgui_core.hpp"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
 #include "memory.hpp"
@@ -630,7 +629,7 @@ CSTDTime | {6} | Nothing
 
                         // Just for test
                         Item *i3 = new Item();
-                        i3->setFlag(ItemFlags_Hammer);
+                        i3->setFlag(ItemFlags::ItemFlags_Hammer);
                         i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
                         i3->texture = R_CopyImageFromSurface(i3->surface);
                         R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
