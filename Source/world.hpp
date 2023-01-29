@@ -63,9 +63,9 @@ public:
     struct {
         MetaEngine::vector<ParticleData *> particles;
         MetaEngine::vector<RigidBody *> rigidBodies;
+        MetaEngine::vector<RigidBody *> worldRigidBodies;
         MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldMeshes;
         MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldTris;
-        MetaEngine::vector<RigidBody *> worldRigidBodies;
 
         MetaEngine::vector<LoadChunkParams> toLoad;
         MetaEngine::vector<std::future<Chunk *>> readyToReadyToMerge;

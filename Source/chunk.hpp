@@ -8,13 +8,13 @@
 #include <tuple>
 #include <utility>
 
+#include "code_reflection.hpp"
 #include "core/const.h"
 #include "core/core.h"
 #include "core/cpp/static_relfection.hpp"
-#include "code_reflection.hpp"
-#include "reflectionflat.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
+#include "reflectionflat.hpp"
 
 typedef struct {
     U16 index;
@@ -55,7 +55,9 @@ template <>
 struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
-            Field{TSTR("pack_filename"), &Type::pack_filename}, Field{TSTR("x"), &Type::x}, Field{TSTR("y"), &Type::y},
+            Field{TSTR("pack_filename"), &Type::pack_filename},
+            Field{TSTR("x"), &Type::x},
+            Field{TSTR("y"), &Type::y},
 
             Field{TSTR("hasMeta"), &Type::hasMeta, AttrList{Attr{TSTR("Meta::Msg"), std::tuple{1.0f, 2.0f}}}},
             // Field{TSTR("generationPhase"), &Chunk::generationPhase},
@@ -71,16 +73,16 @@ struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
 };
 
 // Initialize a chunk
-void Chunk_Init(Chunk *_struct, int x, int y, char *worldName);
+void ChunkInit(Chunk *_struct, int x, int y, char *worldName);
 // Uninitialize a chunk
-void Chunk_Delete(Chunk *_struct);
+void ChunkDelete(Chunk *_struct);
 // Check chunk's meta data
-void Chunk_loadMeta(Chunk *_struct);
+void ChunkLoadMeta(Chunk *_struct);
 
 // static MaterialInstanceData* readBuf;
-void Chunk_read(Chunk *_struct);
-void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background);
-bool Chunk_hasFile(Chunk *_struct);
+void ChunkRead(Chunk *_struct);
+void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background);
+bool ChunkHasFile(Chunk *_struct);
 
 class ChunkReadyToMerge {
 public:

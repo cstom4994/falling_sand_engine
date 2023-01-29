@@ -51,7 +51,7 @@ public:
     float f2;
     float a1[2];
 
-    REFLECT(ReflTestClass, capacity, currentLevel, tickMarks)
+    REFLECT(ReflTestClass, f1, f2, a1)
 };
 
 class Wheel {

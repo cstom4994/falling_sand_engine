@@ -24,14 +24,14 @@
 //     if (!biomes.empty()) biomes.resize(0);
 // }
 
-void Chunk_Init(Chunk *_struct, int x, int y, char *worldName) {
+void ChunkInit(Chunk *_struct, int x, int y, char *worldName) {
     METADOT_ASSERT_E(_struct);
     _struct->x = x;
     _struct->y = y;
     _struct->pack_filename = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".pack");
 }
 
-void Chunk_Delete(Chunk *_struct) {
+void ChunkDelete(Chunk *_struct) {
     METADOT_ASSERT_E(_struct);
     if (_struct->tiles) delete[] _struct->tiles;
     if (_struct->layer2) delete[] _struct->layer2;
@@ -39,7 +39,7 @@ void Chunk_Delete(Chunk *_struct) {
     if (!_struct->biomes.empty()) _struct->biomes.resize(0);
 }
 
-void Chunk_loadMeta(Chunk *_struct) {
+void ChunkLoadMeta(Chunk *_struct) {
     datapack_node *dp;
     char *s;
     char *s1;
@@ -75,7 +75,7 @@ void Chunk_loadMeta(Chunk *_struct) {
 
 // MaterialInstanceData* Chunk::readBuf = (MaterialInstanceData*)malloc(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
 
-void Chunk_read(Chunk *_struct) {
+void ChunkRead(Chunk *_struct) {
     // use malloc here instead of new so it doesn't call the constructor
     MaterialInstance *tiles = (MaterialInstance *)malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
     if (tiles == NULL) throw std::runtime_error("Failed to allocate memory for Chunk tiles array.");
@@ -211,7 +211,7 @@ void Chunk_read(Chunk *_struct) {
     _struct->hasTileCache = true;
 }
 
-void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background) {
+void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background) {
     _struct->tiles = tiles;
     _struct->layer2 = layer2;
     _struct->background = background;
@@ -304,7 +304,7 @@ void Chunk_write(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *laye
     delete[] buf;
 }
 
-bool Chunk_hasFile(Chunk *_struct) {
+bool ChunkHasFile(Chunk *_struct) {
     struct stat buffer;
     return (stat(_struct->pack_filename.c_str(), &buffer) == 0);
 }

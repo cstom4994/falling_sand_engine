@@ -2142,14 +2142,14 @@ void World::tickParticles() {
 
     WorldIsolate_.particles.erase(std::remove_if(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), func), WorldIsolate_.particles.end());
 
-    // Better particles removal effects
-    std::for_each(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), [](ParticleData *cur) {
-        cur->vx += cur->ax;
-        cur->vy += cur->ay;
-        cur->x += cur->vx;
-        cur->y += cur->vy;
-        // return cur->y > height;
-    });
+    // // Better particles removal effects
+    // std::for_each(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), [](ParticleData *cur) {
+    //     cur->vx += cur->ax;
+    //     cur->vy += cur->ay;
+    //     cur->x += cur->vx;
+    //     cur->y += cur->vy;
+    //     // return cur->y > height;
+    // });
 
     // std::remove_if(particles.begin(), particles.end(), [&](ParticleData* cur) {
     //	return cur->y > height;
@@ -2399,7 +2399,7 @@ void World::tickChunkGeneration() {
             m->generationPhase++;
             populateChunk(m, m->generationPhase, true);
 
-            gen_results.push_back(std::async(std::launch::async, Chunk_write, m, m->tiles, m->layer2, m->background));
+            gen_results.push_back(std::async(std::launch::async, ChunkWrite, m, m->tiles, m->layer2, m->background));
 
             if (n++ > 4) {
                 return;
@@ -2636,14 +2636,14 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 
     if (ch->hasTileCache) {
         // prop = ch->tiles;
-    } else if (Chunk_hasFile(ch) && !noSaveLoad) {
-        Chunk_read(ch);
+    } else if (ChunkHasFile(ch) && !noSaveLoad) {
+        ChunkRead(ch);
     } else {
         generateChunk(ch);
         ch->generationPhase = 0;
         ch->hasTileCache = true;
         populateChunk(ch, 0, false);
-        if (!noSaveLoad) Chunk_write(ch, ch->tiles, ch->layer2, ch->background);
+        if (!noSaveLoad) ChunkWrite(ch, ch->tiles, ch->layer2, ch->background);
     }
 
     // if (populate) {
@@ -2716,13 +2716,13 @@ void World::unloadChunk(Chunk *ch) {
     if (!noSaveLoad) writeChunkToDisk(ch);
 
     WorldIsolate_.chunkCache[ch->x].erase(ch->y);
-    Chunk_Delete(ch);
+    ChunkDelete(ch);
     /*delete data;
     delete layer2;*/
     // delete data;
 }
 
-void World::writeChunkToDisk(Chunk *ch) { Chunk_write(ch, ch->tiles, ch->layer2, ch->background); }
+void World::writeChunkToDisk(Chunk *ch) { ChunkWrite(ch, ch->tiles, ch->layer2, ch->background); }
 
 void World::chunkSaveCache(Chunk *ch) {
     for (int x = 0; x < CHUNK_W; x++) {
@@ -2801,7 +2801,7 @@ void World::addStructure(PlacedStructure str) {
             int dx = x + loadZone.x + str.x;
             int dy = y + loadZone.y + str.y;
             Chunk *ch = new Chunk;
-            Chunk_Init(ch, floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
+            ChunkInit(ch, floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
             // if(ch.e)
             if (dx >= 0 && dy >= 0 && dx < width && dy < height) {
                 tiles[dx + dy * width] = str.base.tiles[x + y * str.base.w];
@@ -2860,7 +2860,7 @@ Chunk *World::getChunk(int cx, int cy) {
         if (chunkCache[i]->x == cx && chunkCache[i]->y == cy) return chunkCache[i];
     }*/
     Chunk *c = new Chunk;
-    Chunk_Init(c, cx, cy, (char *)worldName.c_str());
+    ChunkInit(c, cx, cy, (char *)worldName.c_str());
     c->generationPhase = -1;
     c->pleaseDelete = true;
     auto a = BiomeGet("DEFAULT");
@@ -2924,7 +2924,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
         for (int y = 0; y < ah; y++) {
             if (dirtyChunk[x + y * aw]) {
                 if (x != aw / 2 && y != ah / 2) {
-                    Chunk_write(chs[x + y * aw], chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
+                    ChunkWrite(chs[x + y * aw], chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
                     if (render) {
                         for (int i = 0; i < WorldIsolate_.readyToMerge.size(); i++) {
                             if (WorldIsolate_.readyToMerge[i] == chs[x + y * aw]) {
@@ -3503,7 +3503,7 @@ World::~World() {
     WorldIsolate_.readyToReadyToMerge.clear();
 
     for (auto &v : WorldIsolate_.readyToMerge) {
-        Chunk_Delete(v);
+        ChunkDelete(v);
     }
     WorldIsolate_.readyToMerge.clear();
 
@@ -3515,7 +3515,7 @@ World::~World() {
 
     for (auto &v : WorldIsolate_.chunkCache) {
         for (auto &v2 : v.second) {
-            Chunk_Delete(v2.second);
+            ChunkDelete(v2.second);
         }
         v.second.clear();
     }

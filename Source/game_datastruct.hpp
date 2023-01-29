@@ -573,6 +573,73 @@ public:
     ~RigidBody();
 };
 
+using RigidBodyPtr = std::shared_ptr<RigidBody>;
+
+struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
+
+    static constexpr const char *class_name = "RigidBody";
+
+    static luaL_Reg *members() {
+        static luaL_Reg members[] = {{nullptr, nullptr}};
+        return members;
+    }
+
+    static LuaWrapper::PodBind::bind_properties *properties() {
+        static LuaWrapper::PodBind::bind_properties properties[] = {{"name", get_name, set_name}, {nullptr, nullptr, nullptr}};
+        return properties;
+    }
+
+    // Lua constructor
+    static int create(lua_State *L) {
+        std::cout << "Create called\n";
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        b2Body *body = (b2Body *)lua_touserdata(L, 1);
+        const char *name = luaL_checkstring(L, 2);
+        RigidBodyPtr sp = std::make_shared<RigidBody>(body, name);
+        push(L, sp);
+        return 1;
+    }
+
+    // Method glue functions
+    //
+
+    // static int walk(lua_State *L) {
+    //     LuaWrapper::PodBind::CheckArgCount(L, 1);
+    //     RigidBodyPtr a = fromStack(L, 1);
+    //     a->walk();
+    //     return 0;
+    // }
+
+    // static int setName(lua_State *L) {
+    //     LuaWrapper::PodBind::CheckArgCount(L, 2);
+    //     RigidBodyPtr a = fromStack(L, 1);
+    //     const char *name = lua_tostring(L, 2);
+    //     a->setName(name);
+    //     return 0;
+    // }
+
+    // Propertie getters and setters
+
+    // 1 - class metatable
+    // 2 - key
+    static int get_name(lua_State *L) {
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        RigidBodyPtr a = fromStack(L, 1);
+        lua_pushstring(L, a->name.c_str());
+        return 1;
+    }
+
+    // 1 - class metatable
+    // 2 - key
+    // 3 - value
+    static int set_name(lua_State *L) {
+        LuaWrapper::PodBind::CheckArgCount(L, 3);
+        RigidBodyPtr a = fromStack(L, 1);
+        a->name = lua_tostring(L, 3);
+        return 0;
+    }
+};
+
 template <>
 struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
     static constexpr AttrList attrs = {};

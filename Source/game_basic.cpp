@@ -5,16 +5,17 @@
 #include <string>
 #include <string_view>
 
+#include "core/core.h"
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine_input.hpp"
-#include "filesystem.h"
-#include "reflectionflat.hpp"
 #include "engine_scripting.hpp"
+#include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_ui.hpp"
+#include "reflectionflat.hpp"
 #include "scripting/lua_wrapper.hpp"
 
 #pragma region GameScriptingBind_1
@@ -88,4 +89,33 @@ void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
     s_lua["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI::Draw);
 
     // ItemBinding::register_class(s_lua.state());
+    RigidBodyBinding::register_class(s_lua.state());
+
+    // Test
+    s_lua(R"(
+a = RigidBody(1, "hello")
+    )");
+
+    {
+        lua_getglobal(s_lua.state(), "a");
+        auto b = RigidBodyBinding::fromStackThrow(s_lua.state(), -1);
+        lua_pop(s_lua.state(), 1);
+
+        METADOT_INFO("Use count is now: %ld", b.use_count());
+    }
+
+    // {
+    //     MyActorPtr actor = std::make_shared<MyActor>("Nigel", 39);
+    //     METADOT_INFO("Actor use count is: %ld", actor.use_count());
+    //     MyActorBinding::push(s_lua.state(), actor);
+    //     lua_setglobal(s_lua.state(), "actor");
+    //     METADOT_INFO("Pushed to Lua");
+    //     METADOT_INFO("Actor use count is: %ld", actor.use_count());
+    //     s_lua("actor:walk()");
+    //     s_lua("actor.age = actor.age + 1 print( 'Happy Birthday')");
+    //     s_lua("print( actor.age )");
+    //     METADOT_INFO("%d", actor->_age);
+    //     // Should print Coffee, nil as 'added' members/properties are per instance.
+    //     s_lua("print( a.extra, actor.extra )");
+    // }
 }
