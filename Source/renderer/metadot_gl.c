@@ -2,6 +2,8 @@
 
 #include "metadot_gl.h"
 
+#include "core/core.h"
+
 #if !defined(METADOT__GL_MALLOC) || !defined(METADOT__GL_FREE)
 #include <stdlib.h>
 #define METADOT__GL_MALLOC(size, ctx) (malloc(size))
@@ -19,7 +21,7 @@
 
 #ifndef METADOT__GL_LOG
 #include <stdio.h>
-#define METADOT__GL_LOG(...) (metadot_gl_log(__VA_ARGS__))
+#define METADOT__GL_LOG(...) (METADOT_INFO(__VA_ARGS__))
 #endif
 
 #include <string.h>  // memset, strcmp
@@ -1650,17 +1652,6 @@ static void metadot_gl_bind_attributes() {
     METADOT_GL_CHECK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(metadot_gl_vertex_t), (GLvoid *)offsetof(metadot_gl_vertex_t, uv)));
 
     METADOT_GL_CHECK(glEnableVertexAttribArray(2));
-}
-
-static void metadot_gl_log(const char *fmt, ...) {
-    METADOT_GL_ASSERT(fmt);
-
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-    printf("\n");
-    fflush(stdout);
 }
 
 static void metadot_gl_log_error(const char *file, unsigned line, const char *expr) {

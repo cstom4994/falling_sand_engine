@@ -4,11 +4,14 @@
 
 #include <chrono>
 #include <functional>
+#include <istream>
 #include <map>
 #include <string>
 
 #include "core/core.hpp"
 #include "core/debug_impl.hpp"
+#include "meta/json.h"
+#include "meta/reflect.hpp"
 
 namespace reflect {
 
@@ -97,7 +100,70 @@ auto fuckme() -> void {
     f.invoke({});
 }
 
+extern int test_reflection();
+
+class ReflTestClass {
+public:
+    float f1;
+    float f2;
+    float a1[2];
+
+    REFLECT(ReflTestClass, f1, f2, a1)
+};
+
 void InitCppReflection() {
+    // test_reflection();
+
+    ReflTestClass testclass;
+    testclass.f1 = 1200.f;
+    testclass.f2 = 2.f;
+    testclass.a1[0] = 1001.f;
+    testclass.a1[1] = 2002.f;
+
+    for (size_t i = 0; i < ReflTestClass::Class::TotalFields; i++) {
+        ReflTestClass::Class::FieldAt(testclass, i, [&](auto &field, auto &value) { std::cout << field.name << ": " << value << std::endl; });
+    }
+
+    /*
+    ExtendedTypeSupport defines many useful interfaces for these purposes...
+
+        pair_lhs<T>::type // Gets the type of the left-hand value in an std::pair
+        pair_rhs<T>::type // Gets the type of the right-hand value in an std::pair
+        element_type<T>::type // Gets the type of the element contained in some iterable (be it a static_array, or STL container)
+        is_pointable<T>::value // Checks whether a type is a regular or smart pointer
+        remove_pointer<T>::type // Gets the type pointed to by a regular or smart pointer type
+        static_array_size<T>::value // Gets the size of a static array, which may be a basic C++ array or the STL std::array type
+        is_static_array<T>::value // Checks whether a type is a static array
+        is_iterable<T>::value // Checks whether a type can be iterated, meaning it's a static array or other STL container
+        is_map<T>::value // Checks whether a type is a map (std::map, std::unordered_map, std::multimap, std::unordered_multimap)
+        is_stl_iterable<T>::value // Checks whether a type can be iterated with begin()/end()
+        is_adaptor<T>::value // Checks whether a type is an STL adaptor (std::stack, std::queue, std::priority_queue)
+        is_forward_list<T>::value // Checks whether a type is a forward list
+        is_pair<T>::value // Checks whether a type is a pair
+        is_bool<T>::value // Checks whether a type is a bool
+        is_string<T>::value // Checks whether a type is a std::string
+        has_push_back<T>::value // Checks whether a type is an STL container with a push_back method
+        has_push<T>::value // Checks whether a type is an STL container with a push method
+        has_insert<T>::value // Checks whether a type is an STL container with an insert method
+        has_clear<T>::value // Checks whether a type is an STL container with a clear method
+
+    Extended type support also provides several other pieces of functionality including...
+
+        The Append, Clear, and IsEmpty methods that work on all stl containers
+        The has_type interface to check whether a type is included in a list of types
+        A get_underlying_container method to retrieve a const version of the underlying container for an STL adaptor
+        An interface "get<T>::from(tuple)" to get the first instance of type T from a tuple
+        An interface "for_each<T>::in(tuple)" to iterate each tuple element of type T
+        An interface "for_each_in(tuple)" to iterate all tuple elements
+        A TypeToStr method to retrieve a string representation of a type
+    */
+    ReflTestClass::Class::ForEachField(testclass, [&](auto &field, auto &value) {
+        using Type = typename std::remove_reference<decltype(value)>::type;
+        if constexpr (ExtendedTypeSupport::is_static_array<Type>::value)
+            std::cout << field.name << ": " << value[0] << std::endl;
+        else
+            std::cout << field.name << ": " << value << std::endl;
+    });
 }
 
 namespace MetaEngine {
