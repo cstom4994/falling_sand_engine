@@ -86,7 +86,7 @@ void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
     s_lua["init_ecs"] = LuaWrapper::function(init_ecs);
 
     s_lua["DrawMainMenuUI"] = LuaWrapper::function(GameUI::MainMenuUI__Draw);
-    s_lua["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI::Draw);
+    s_lua["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI__Draw);
 
     // ItemBinding::register_class(s_lua.state());
     RigidBodyBinding::register_class(s_lua.state());

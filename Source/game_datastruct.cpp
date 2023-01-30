@@ -1,5 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
+#include "game_datastruct.hpp"
+
 #include <string>
 #include <string_view>
 
@@ -12,7 +14,6 @@
 #include "core/macros.h"
 #include "filesystem.h"
 #include "game.hpp"
-#include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_ui.hpp"
 #include "internal/builtin_box2d.h"
@@ -1313,7 +1314,7 @@ void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
         METADOT_ERROR("GlobalDEF WAS NULL");
     }
 
-    GameUI::DebugDrawUI::visible = openDebugUIs;
+    gameUI.visible_debugdraw = openDebugUIs;
     _struct->draw_frame_graph = openDebugUIs;
     if (!openDebugUIs) {
         _struct->draw_background = true;

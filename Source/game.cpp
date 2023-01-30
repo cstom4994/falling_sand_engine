@@ -1,5 +1,7 @@
 ﻿// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
+#include "game.hpp"
+
 #include <stdio.h>
 
 #include <cstddef>
@@ -28,7 +30,6 @@
 #include "engine_platform.h"
 #include "engine_scripting.hpp"
 #include "filesystem.h"
-#include "game.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -483,10 +484,10 @@ int Game::run(int argc, char *argv[]) {
                         int lineX = index % GameIsolate_.world->width;
                         int lineY = index / GameIsolate_.world->width;
 
-                        for (int xx = -GameUI::DebugDrawUI::brushSize / 2; xx < (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
-                            for (int yy = -GameUI::DebugDrawUI::brushSize / 2; yy < (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)); yy++) {
+                        for (int xx = -gameUI.DebugDrawUI__brushSize / 2; xx < (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)); xx++) {
+                            for (int yy = -gameUI.DebugDrawUI__brushSize / 2; yy < (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)); yy++) {
                                 if (lineX + xx < 0 || lineY + yy < 0 || lineX + xx >= GameIsolate_.world->width || lineY + yy >= GameIsolate_.world->height) continue;
-                                MaterialInstance tp = TilesCreate(GameUI::DebugDrawUI::selectedMaterial, lineX + xx, lineY + yy);
+                                MaterialInstance tp = TilesCreate(gameUI.DebugDrawUI__selectedMaterial, lineX + xx, lineY + yy);
                                 GameIsolate_.world->tiles[(lineX + xx) + (lineY + yy) * GameIsolate_.world->width] = tp;
                                 GameIsolate_.world->dirty[(lineX + xx) + (lineY + yy) * GameIsolate_.world->width] = true;
                             }
@@ -519,10 +520,10 @@ int Game::run(int argc, char *argv[]) {
                         int lineX = index % GameIsolate_.world->width;
                         int lineY = index / GameIsolate_.world->width;
 
-                        for (int xx = -GameUI::DebugDrawUI::brushSize / 2; xx < (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)); xx++) {
-                            for (int yy = -GameUI::DebugDrawUI::brushSize / 2; yy < (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)); yy++) {
+                        for (int xx = -gameUI.DebugDrawUI__brushSize / 2; xx < (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)); xx++) {
+                            for (int yy = -gameUI.DebugDrawUI__brushSize / 2; yy < (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)); yy++) {
 
-                                if (abs(xx) + abs(yy) == GameUI::DebugDrawUI::brushSize) continue;
+                                if (abs(xx) + abs(yy) == gameUI.DebugDrawUI__brushSize) continue;
                                 if (GameIsolate_.world->getTile(lineX + xx, lineY + yy).mat->physicsType != PhysicsType::AIR) {
                                     GameIsolate_.world->setTile(lineX + xx, lineY + yy, Tiles_NOTHING);
                                     GameIsolate_.world->lastMeshZone.x--;
@@ -1129,7 +1130,7 @@ void Game::updateFrameEarly() {
 
     // handle controls
     if (ControlSystem::DEBUG_UI->get()) {
-        GameUI::DebugDrawUI::visible ^= true;
+        gameUI.visible_debugdraw ^= true;
         GameIsolate_.globaldef.ui_tweak ^= true;
     }
 
@@ -1261,11 +1262,11 @@ void Game::updateFrameEarly() {
     }
 
     if (ControlSystem::DEBUG_BRUSHSIZE_INC->get()) {
-        GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize < 50 ? GameUI::DebugDrawUI::brushSize + 1 : GameUI::DebugDrawUI::brushSize;
+        gameUI.DebugDrawUI__brushSize = gameUI.DebugDrawUI__brushSize < 50 ? gameUI.DebugDrawUI__brushSize + 1 : gameUI.DebugDrawUI__brushSize;
     }
 
     if (ControlSystem::DEBUG_BRUSHSIZE_DEC->get()) {
-        GameUI::DebugDrawUI::brushSize = GameUI::DebugDrawUI::brushSize > 1 ? GameUI::DebugDrawUI::brushSize - 1 : GameUI::DebugDrawUI::brushSize;
+        gameUI.DebugDrawUI__brushSize = gameUI.DebugDrawUI__brushSize > 1 ? gameUI.DebugDrawUI__brushSize - 1 : gameUI.DebugDrawUI__brushSize;
     }
 
     if (ControlSystem::DEBUG_TOGGLE_PLAYER->get()) {
@@ -1317,7 +1318,7 @@ accLoadY = 0;*/
 
     if (ControlSystem::PAUSE->get()) {
         if (this->state == EnumGameState::INGAME) {
-            GameUI::MainMenuUI__visible = !GameUI::MainMenuUI__visible;
+            gameUI.visible_mainmenu ^= true;
         }
     }
 
@@ -2667,17 +2668,17 @@ newState = true;
         if (ControlSystem::mmouse) {
             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
-            R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                              x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
-            R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                        x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
+            R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
+                              x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
+            R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
+                        x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
         } else if (ControlSystem::DEBUG_DRAW->get()) {
             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
-            R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                              x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)), {0x00, 0xff, 0xB0, 0x80});
-            R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - GameUI::DebugDrawUI::brushSize / 2.0f, y - GameUI::DebugDrawUI::brushSize / 2.0f,
-                        x + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, y + (int)(ceil(GameUI::DebugDrawUI::brushSize / 2.0)) + 1, {0x00, 0xff, 0xB0, 0xE0});
+            R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
+                              x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), {0x00, 0xff, 0xB0, 0x80});
+            R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
+                        x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, {0x00, 0xff, 0xB0, 0xE0});
         }
     }
 }
@@ -3477,7 +3478,7 @@ void Game::quitToMainMenu() {
     char *wn = (char *)worldName.c_str();
 
     METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
-    GameUI::MainMenuUI__visible = false;
+    gameUI.visible_mainmenu = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
 
@@ -3522,7 +3523,7 @@ void Game::quitToMainMenu() {
 
     R_UpdateImageBytes(TexturePack_.textureParticles, NULL, &TexturePack_.pixelsParticles[0], GameIsolate_.world->width * 4);
 
-    GameUI::MainMenuUI__visible = true;
+    gameUI.visible_mainmenu = true;
 }
 
 int Game::getAimSolidSurface(int dist) {

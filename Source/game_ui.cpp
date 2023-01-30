@@ -1,5 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
+#include "game_ui.hpp"
+
 #include <stdio.h>
 
 #include <string>
@@ -14,7 +16,6 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "game_ui.hpp"
 #include "imgui/imgui_core.hpp"
 #include "imgui/imgui_impl.hpp"
 #include "libs/imgui/imgui.h"
@@ -26,6 +27,8 @@
 IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
+
+GameUI::GameUI gameUI;
 
 void I18N::Init() {
     auto L = global.scripts->LuaCoreCpp;
@@ -40,26 +43,7 @@ std::string I18N::Get(std::string text) { return global.scripts->LuaCoreCpp->s_l
 
 namespace GameUI {
 
-bool MainMenuUI__visible = true;
-bool MainMenuUI__setup = false;
-R_Image *MainMenuUI__title = nullptr;
-bool MainMenuUI__connectButtonEnabled = false;
-ImVec2 MainMenuUI__pos = ImVec2(0, 0);
-std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI__worlds = {};
-long long MainMenuUI__lastRefresh = 0;
-char MainMenuUI__worldNameBuf[32] = "";
-bool MainMenuUI__createWorldButtonEnabled = false;
-std::string MainMenuUI__worldFolderLabel = "";
-int MainMenuUI__selIndex = 0;
-
-#if defined(METADOT_BUILD_AUDIO)
-std::map<std::string, FMOD::Studio::Bus *> OptionsUI::busMap = {};
-#endif
-int OptionsUI::item_current_idx = 0;
-bool OptionsUI::vsync = false;
-bool OptionsUI::minimizeOnFocus = false;
-
-void OptionsUI::Draw(Game *game) {
+void OptionsUI__Draw(Game *game) {
 
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize("选项").x / 2);
     ImGui::Text("选项");
@@ -84,7 +68,7 @@ void OptionsUI::Draw(Game *game) {
             tab = 0;
             ImGui::BeginChild("OptionsTabsCh");
 
-            DrawGeneral(game);
+            OptionsUI__DrawGeneral(game);
 
             ImGui::EndChild();
             ImGui::EndTabItem();
@@ -93,7 +77,7 @@ void OptionsUI::Draw(Game *game) {
             tab = 1;
             ImGui::BeginChild("OptionsTabsCh");
 
-            DrawVideo(game);
+            OptionsUI__DrawVideo(game);
 
             ImGui::EndChild();
             ImGui::EndTabItem();
@@ -102,7 +86,7 @@ void OptionsUI::Draw(Game *game) {
             tab = 2;
             ImGui::BeginChild("OptionsTabsCh");
 
-            DrawAudio(game);
+            OptionsUI__DrawAudio(game);
 
             ImGui::EndChild();
             ImGui::EndTabItem();
@@ -111,7 +95,7 @@ void OptionsUI::Draw(Game *game) {
             tab = 3;
             ImGui::BeginChild("OptionsTabsCh");
 
-            DrawInput(game);
+            OptionsUI__DrawInput(game);
 
             ImGui::EndChild();
             ImGui::EndTabItem();
@@ -126,7 +110,7 @@ void OptionsUI::Draw(Game *game) {
     }
 }
 
-void OptionsUI::DrawGeneral(Game *game) {
+void OptionsUI__DrawGeneral(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "游戏内容");
     ImGui::Indent(4);
 
@@ -135,16 +119,16 @@ void OptionsUI::DrawGeneral(Game *game) {
     ImGui::Unindent(4);
 }
 
-void OptionsUI::DrawVideo(Game *game) {
+void OptionsUI__DrawVideo(Game *game) {
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "窗口");
     ImGui::Indent(4);
 
     const char *items[] = {"Windowed", "Fullscreen Borderless", "Fullscreen"};
-    const char *combo_label = items[item_current_idx];  // Label to preview before opening the combo (technically it could be anything)
+    const char *combo_label = items[gameUI.OptionsUI__item_current_idx];  // Label to preview before opening the combo (technically it could be anything)
 
     if (ImGui::BeginCombo("Display Mode", combo_label, 0)) {
         for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-            const bool is_selected = (item_current_idx == n);
+            const bool is_selected = (gameUI.OptionsUI__item_current_idx == n);
             if (ImGui::Selectable(items[n], is_selected)) {
 
                 switch (n) {
@@ -159,7 +143,7 @@ void OptionsUI::DrawVideo(Game *game) {
                         break;
                 }
 
-                item_current_idx = n;
+                gameUI.OptionsUI__item_current_idx = n;
             }
 
             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -170,12 +154,12 @@ void OptionsUI::DrawVideo(Game *game) {
         ImGui::EndCombo();
     }
 
-    if (ImGui::Checkbox("VSync", &vsync)) {
-        SetVSync(vsync);
+    if (ImGui::Checkbox("VSync", &gameUI.OptionsUI__vsync)) {
+        SetVSync(gameUI.OptionsUI__vsync);
     }
 
-    if (ImGui::Checkbox("失去焦点后最小化", &minimizeOnFocus)) {
-        SetMinimizeOnLostFocus(minimizeOnFocus);
+    if (ImGui::Checkbox("失去焦点后最小化", &gameUI.OptionsUI__minimizeOnFocus)) {
+        SetMinimizeOnLostFocus(gameUI.OptionsUI__minimizeOnFocus);
     }
 
     ImGui::Unindent(4);
@@ -221,17 +205,17 @@ void OptionsUI::DrawVideo(Game *game) {
     ImGui::Unindent(4);
 }
 
-void OptionsUI::DrawAudio(Game *game) {
+void OptionsUI__DrawAudio(Game *game) {
 #if defined(METADOT_BUILD_AUDIO)
     ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "音频");
     ImGui::Indent(4);
 
-    if (busMap.size() == 0) {
+    if (gameUI.OptionsUI__busMap.size() == 0) {
         FMOD::Studio::Bus *busses[20];
         int busCt = 0;
         global.audioEngine.GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))->getBusList(busses, 20, &busCt);
 
-        busMap = {};
+        gameUI.OptionsUI__busMap = {};
 
         for (int i = 0; i < busCt; i++) {
             FMOD::Studio::Bus *b = busses[i];
@@ -239,7 +223,7 @@ void OptionsUI::DrawAudio(Game *game) {
             int ctPath = 0;
             b->getPath(path, 100, &ctPath);
 
-            busMap[std::string(path)] = b;
+            gameUI.OptionsUI__busMap[std::string(path)] = b;
         }
     }
 
@@ -248,11 +232,11 @@ void OptionsUI::DrawAudio(Game *game) {
 
     for (auto &v : disp) {
         F32 volume = 0;
-        busMap[v[0]]->getVolume(&volume);
+        gameUI.OptionsUI__busMap[v[0]]->getVolume(&volume);
         volume *= 100;
         if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
             volume = std::max(0.0f, std::min(volume, 100.0f));
-            busMap[v[0]]->setVolume(volume / 100.0f);
+            gameUI.OptionsUI__busMap[v[0]]->setVolume(volume / 100.0f);
         }
     }
 
@@ -262,11 +246,11 @@ void OptionsUI::DrawAudio(Game *game) {
 #endif
 }
 
-void OptionsUI::DrawInput(Game *game) {}
+void OptionsUI__DrawInput(Game *game) {}
 
 void MainMenuUI__RefreshWorlds(Game *game) {
 
-    MainMenuUI__worlds = {};
+    gameUI.MainMenuUI__worlds = {};
 
     for (auto &p : std::filesystem::directory_iterator(METADOT_RESLOC("saves/"))) {
         std::string worldName = p.path().filename().generic_string();
@@ -275,7 +259,7 @@ void MainMenuUI__RefreshWorlds(Game *game) {
 
         WorldMeta meta = WorldMeta::loadWorldMeta(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()));
 
-        MainMenuUI__worlds.push_back(std::make_tuple(worldName, meta));
+        gameUI.MainMenuUI__worlds.push_back(std::make_tuple(worldName, meta));
     }
 
     auto sortWorlds = [](std::tuple<std::string, WorldMeta> w1, std::tuple<std::string, WorldMeta> w2) {
@@ -284,14 +268,14 @@ void MainMenuUI__RefreshWorlds(Game *game) {
         return (c1 > c2);
     };
 
-    std::sort(MainMenuUI__worlds.begin(), MainMenuUI__worlds.end(), sortWorlds);
+    std::sort(gameUI.MainMenuUI__worlds.begin(), gameUI.MainMenuUI__worlds.end(), sortWorlds);
 }
 
 void MainMenuUI__Setup() {
 
     Texture *logoSfc = LoadTexture("data/assets/ui/logo.png");
-    MainMenuUI__title = R_CopyImageFromSurface(logoSfc->surface);
-    R_SetImageFilter(MainMenuUI__title, R_FILTER_NEAREST);
+    gameUI.MainMenuUI__title = R_CopyImageFromSurface(logoSfc->surface);
+    R_SetImageFilter(gameUI.MainMenuUI__title, R_FILTER_NEAREST);
     Eng_DestroyTexture(logoSfc);
 
     // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
@@ -304,14 +288,14 @@ void MainMenuUI__Setup() {
     // R_SetImageFilter(defaultWorld, R_FILTER_NEAREST);
     // SDL_FreeSurface(logoDef);
 
-    MainMenuUI__setup = true;
+    gameUI.MainMenuUI__setup = true;
 }
 
 void MainMenuUI__Draw(Game *game) {
 
     METADOT_ASSERT_E(game);
 
-    if (!MainMenuUI__visible) return;
+    if (!gameUI.visible_mainmenu) return;
 
     ImGui::SetNextWindowSize(ImVec2(200, 240));
     ImGui::SetNextWindowPos(global.uidata->imguiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
@@ -329,7 +313,7 @@ void MainMenuUI__Draw(Game *game) {
     } else if (s["state"] == 4) {
         MainMenuUI__DrawWorldLists(game);
     } else if (s["state"] == 1) {
-        OptionsUI::Draw(game);
+        OptionsUI__Draw(game);
     } else if (s["state"] == 5) {
         MainMenuUI__DrawInGame(game);
     }
@@ -339,21 +323,21 @@ void MainMenuUI__Draw(Game *game) {
 
 void MainMenuUI__DrawMainMenu(Game *game) {
 
-    if (!MainMenuUI__setup) {
+    if (!gameUI.MainMenuUI__setup) {
         MainMenuUI__Setup();
     }
 
-    MainMenuUI__pos = ImGui::GetWindowPos();
+    gameUI.MainMenuUI__pos = ImGui::GetWindowPos();
 
-    ImTextureID texId = (ImTextureID)R_GetTextureHandle(MainMenuUI__title);
+    ImTextureID texId = (ImTextureID)R_GetTextureHandle(gameUI.MainMenuUI__title);
 
     ImVec2 uv_min = ImVec2(0.0f, 0.0f);                // Top-left
     ImVec2 uv_max = ImVec2(1.0f, 1.0f);                // Lower-right
     ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
     ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
 
-    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - MainMenuUI__title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
-    ImGui::Image(texId, ImVec2(MainMenuUI__title->w / 2, MainMenuUI__title->h / 2), uv_min, uv_max, tint_col, border_col);
+    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - gameUI.MainMenuUI__title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
+    ImGui::Image(texId, ImVec2(gameUI.MainMenuUI__title->w / 2, gameUI.MainMenuUI__title->h / 2), uv_min, uv_max, tint_col, border_col);
     ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
     if (ImGui::Button(LANG("ui_play"))) {
@@ -377,7 +361,7 @@ void MainMenuUI__DrawInGame(Game *game) {
     ImGui::Text("选项");
 
     if (ImGui::Button("继续")) {
-        MainMenuUI__visible = false;
+        gameUI.visible_mainmenu = false;
     }
 
     if (ImGui::Button("选项")) {
@@ -394,23 +378,23 @@ void MainMenuUI__DrawInGame(Game *game) {
 
 void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
-    if (!MainMenuUI__setup) MainMenuUI__Setup();
+    if (!gameUI.MainMenuUI__setup) MainMenuUI__Setup();
 
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize(LANG("ui_create_world")).x / 2);
     ImGui::Text("%s", LANG("ui_create_world"));
 
-    ImGui::Text("%s: %s", LANG("ui_worldname"), MainMenuUI__worldFolderLabel.c_str());
+    ImGui::Text("%s: %s", LANG("ui_worldname"), gameUI.MainMenuUI__worldFolderLabel.c_str());
 
     const char *world_types[] = {"Material Test World", "Default World (WIP)"};
 
-    ImGui::ListBox(LANG("ui_worldgenerator"), &MainMenuUI__selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
+    ImGui::ListBox(LANG("ui_worldgenerator"), &gameUI.MainMenuUI__selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
 
     if (ImGui::Button(LANG("ui_return"))) {
         LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 4;
     }
 
-    if (!MainMenuUI__createWorldButtonEnabled) {
+    if (!gameUI.MainMenuUI__createWorldButtonEnabled) {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     }
@@ -419,15 +403,15 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         std::string pref = "Saved in: ";
 
-        std::string worldName = MainMenuUI__worldFolderLabel.substr(pref.length());
+        std::string worldName = gameUI.MainMenuUI__worldFolderLabel.substr(pref.length());
         char *wn = (char *)worldName.c_str();
 
-        std::string worldTitle = std::string(MainMenuUI__worldNameBuf);
+        std::string worldTitle = std::string(gameUI.MainMenuUI__worldNameBuf);
         std::regex trimWhitespaceRegex("^ *(.+?) *$");
         worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
         METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
-        MainMenuUI__visible = false;
+        gameUI.visible_mainmenu = false;
         LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
         s["state"] = 5;
 
@@ -439,9 +423,9 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
         WorldGenerator *generator;
 
         // Delete generator in World::~World()
-        if (MainMenuUI__selIndex == 0) {
+        if (gameUI.MainMenuUI__selIndex == 0) {
             generator = new MaterialTestGenerator();
-        } else if (MainMenuUI__selIndex == 1) {
+        } else if (gameUI.MainMenuUI__selIndex == 1) {
             generator = new DefaultGenerator();
         } else {
             generator = new MaterialTestGenerator();
@@ -452,7 +436,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
         METADOT_NEW(C, game->GameIsolate_.world, World);
         game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                                        Render.target, &global.audioEngine, generator);
-        game->GameIsolate_.world->metadata.worldName = std::string(MainMenuUI__worldNameBuf);
+        game->GameIsolate_.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
         game->GameIsolate_.world->metadata.lastOpenedTime = Time::millis() / 1000;
         game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
         game->GameIsolate_.world->metadata.save(wpStr);
@@ -465,7 +449,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
         }
     }
 
-    if (!MainMenuUI__createWorldButtonEnabled) {
+    if (!gameUI.MainMenuUI__createWorldButtonEnabled) {
         ImGui::PopItemFlag();
         ImGui::PopStyleVar();
     }
@@ -476,13 +460,13 @@ void MainMenuUI__inputChanged(std::string text, Game *game) {
     std::regex trimWhitespaceRegex("^ *(.+?) *$");
     text = regex_replace(text, trimWhitespaceRegex, "$1");
     if (text.length() == 0 || text == " ") {
-        MainMenuUI__worldFolderLabel = "Saved in: ";
-        MainMenuUI__createWorldButtonEnabled = false;
+        gameUI.MainMenuUI__worldFolderLabel = "Saved in: ";
+        gameUI.MainMenuUI__createWorldButtonEnabled = false;
         return;
     }
 
     std::regex worldNameInputRegex("^[\\x20-\\x7E]+$");
-    MainMenuUI__createWorldButtonEnabled = regex_match(text, worldNameInputRegex);
+    gameUI.MainMenuUI__createWorldButtonEnabled = regex_match(text, worldNameInputRegex);
 
     std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
 
@@ -502,25 +486,25 @@ void MainMenuUI__inputChanged(std::string text, Game *game) {
         i++;
     }
 
-    MainMenuUI__worldFolderLabel = "Saved in: " + newWorldFolderName;
+    gameUI.MainMenuUI__worldFolderLabel = "Saved in: " + newWorldFolderName;
 }
 
 void MainMenuUI__reset(Game *game) {
 #ifdef _WIN32
     strcpy_s(worldNameBuf, "New World");
 #else
-    strcpy(MainMenuUI__worldNameBuf, "New World");
+    strcpy(gameUI.MainMenuUI__worldNameBuf, "New World");
 #endif
-    MainMenuUI__inputChanged(std::string(MainMenuUI__worldNameBuf), game);
+    MainMenuUI__inputChanged(std::string(gameUI.MainMenuUI__worldNameBuf), game);
 }
 
 void MainMenuUI__DrawWorldLists(Game *game) {
     long long now = Time::millis();
-    if (now - MainMenuUI__lastRefresh > 3000) {
+    if (now - gameUI.MainMenuUI__lastRefresh > 3000) {
         MainMenuUI__RefreshWorlds(game);
-        MainMenuUI__lastRefresh = now;
+        gameUI.MainMenuUI__lastRefresh = now;
     }
-    if (!MainMenuUI__visible) return;
+    if (!gameUI.visible_mainmenu) return;
 
     ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - ImGui::CalcTextSize(LANG("ui_play")).x / 2);
     ImGui::Text("%s", LANG("ui_play"));
@@ -541,7 +525,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
     // ImGui::BeginChild("WorldList", ImVec2(0, 200), false);
 
     int nMainMenuButtons = 0;
-    for (auto &t : MainMenuUI__worlds) {
+    for (auto &t : gameUI.MainMenuUI__worlds) {
         std::string worldName = std::get<0>(t);
 
         WorldMeta meta = std::get<1>(t);
@@ -557,7 +541,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
         if (ImGui::Button(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
 
-            MainMenuUI__visible = false;
+            gameUI.visible_mainmenu = false;
             LuaWrapper::LuaRef s = global.scripts->LuaCoreCpp->s_lua["game_datastruct"]["ui"];
             s["state"] = 5;
 
@@ -740,16 +724,9 @@ void DrawDebugUI(Game *game) {
     }
 }
 
-bool DebugDrawUI::visible = true;
-int DebugDrawUI::selIndex = -1;
-std::vector<R_Image *> DebugDrawUI::images = {};
-std::vector<R_Image *> DebugDrawUI::tools_images = {};
-U8 DebugDrawUI::brushSize = 5;
-Material *DebugDrawUI::selectedMaterial = &MaterialsList::GENERIC_AIR;
+void DebugDrawUI__Setup() {
 
-void DebugDrawUI::Setup() {
-
-    images = {};
+    gameUI.DebugDrawUI__images = {};
     for (size_t i = 0; i < global.GameData_.materials_container.size(); i++) {
         Material *mat = global.GameData_.materials_container[i];
         C_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
@@ -759,35 +736,35 @@ void DebugDrawUI::Setup() {
                 R_GET_PIXEL(surface, x, y) = m.color + (m.mat->alpha << 24);
             }
         }
-        images.push_back(R_CopyImageFromSurface(surface));
-        R_SetImageFilter(images[i], R_FILTER_NEAREST);
+        gameUI.DebugDrawUI__images.push_back(R_CopyImageFromSurface(surface));
+        R_SetImageFilter(gameUI.DebugDrawUI__images[i], R_FILTER_NEAREST);
         SDL_FreeSurface(surface);
     }
 
-    tools_images = {};
+    gameUI.DebugDrawUI__tools_images = {};
     Texture *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
-    R_SetImageFilter(tools_images[0], R_FILTER_NEAREST);
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    R_SetImageFilter(gameUI.DebugDrawUI__tools_images[0], R_FILTER_NEAREST);
     Eng_DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testHammer.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
-    R_SetImageFilter(tools_images[1], R_FILTER_NEAREST);
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    R_SetImageFilter(gameUI.DebugDrawUI__tools_images[1], R_FILTER_NEAREST);
     Eng_DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testVacuum.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
-    R_SetImageFilter(tools_images[2], R_FILTER_NEAREST);
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    R_SetImageFilter(gameUI.DebugDrawUI__tools_images[2], R_FILTER_NEAREST);
     Eng_DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testBucket.png");
-    tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
-    R_SetImageFilter(tools_images[3], R_FILTER_NEAREST);
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    R_SetImageFilter(gameUI.DebugDrawUI__tools_images[3], R_FILTER_NEAREST);
     Eng_DestroyTexture(sfc);
 }
 
-void DebugDrawUI::Draw(Game *game) {
+void DebugDrawUI__Draw(Game *game) {
 
-    if (images.empty()) Setup();
+    if (gameUI.DebugDrawUI__images.empty()) DebugDrawUI__Setup();
 
-    if (!visible) return;
+    if (!gameUI.visible_debugdraw) return;
 
     int width = 5;
 
@@ -804,9 +781,9 @@ void DebugDrawUI::Draw(Game *game) {
 
     if (ImGui::BeginTabItem(LANG("ui_debug_materials"))) {
 
-        auto a = selIndex == -1 ? "None" : selectedMaterial->name;
+        auto a = gameUI.DebugDrawUI__selIndex == -1 ? "None" : gameUI.DebugDrawUI__selectedMaterial->name;
         ImGui::Text("选择: %s", a.data());
-        ImGui::Text("放置大小: %d", brushSize);
+        ImGui::Text("放置大小: %d", gameUI.DebugDrawUI__brushSize);
 
         ImGui::Separator();
 
@@ -821,9 +798,9 @@ void DebugDrawUI::Draw(Game *game) {
 
             ImVec2 selPos = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(ImVec2(selPos.x, selPos.y + (x != 0 ? -1 : 0)));
-            if (ImGui::Selectable("", selIndex == i, 0, ImVec2(32, 36))) {
-                selIndex = (int)i;
-                selectedMaterial = global.GameData_.materials_container[i];
+            if (ImGui::Selectable("", gameUI.DebugDrawUI__selIndex == i, 0, ImVec2(32, 36))) {
+                gameUI.DebugDrawUI__selIndex = (int)i;
+                gameUI.DebugDrawUI__selectedMaterial = global.GameData_.materials_container[i];
             }
 
             if (ImGui::IsItemHovered()) {
@@ -837,7 +814,7 @@ void DebugDrawUI::Draw(Game *game) {
             ImGui::SetCursorScreenPos(ImVec2(selPos.x - 1, selPos.y + (x == 0 ? 1 : 0)));
 
             // imgui_impl_opengl3.cpp implements ImTextureID as GLuint
-            ImTextureID texId = (ImTextureID)R_GetTextureHandle(images[i]);
+            ImTextureID texId = (ImTextureID)R_GetTextureHandle(gameUI.DebugDrawUI__images[i]);
 
             ImVec2 pos = ImGui::GetCursorScreenPos();
             ImVec2 uv_min = ImVec2(0.0f, 0.0f);                // Top-left
@@ -883,7 +860,7 @@ void DebugDrawUI::Draw(Game *game) {
                 ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);    // Black background
                 ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
 
-                ImTextureID texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
+                ImTextureID texId = (ImTextureID)R_GetTextureHandle(gameUI.DebugDrawUI__tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Tool);
@@ -904,7 +881,7 @@ void DebugDrawUI::Draw(Game *game) {
                 i++;
 
                 ImGui::PushID(i);
-                texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
+                texId = (ImTextureID)R_GetTextureHandle(gameUI.DebugDrawUI__tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Hammer);
@@ -924,7 +901,7 @@ void DebugDrawUI::Draw(Game *game) {
                 i++;
 
                 ImGui::PushID(i);
-                texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
+                texId = (ImTextureID)R_GetTextureHandle(gameUI.DebugDrawUI__tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Vacuum);
@@ -945,7 +922,7 @@ void DebugDrawUI::Draw(Game *game) {
                 i++;
 
                 ImGui::PushID(i);
-                texId = (ImTextureID)R_GetTextureHandle(tools_images[i]);
+                texId = (ImTextureID)R_GetTextureHandle(gameUI.DebugDrawUI__tools_images[i]);
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Fluid_Container);

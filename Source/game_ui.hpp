@@ -5,11 +5,11 @@
 
 #include <vector>
 
+#include "game_datastruct.hpp"
 #include "imgui/imgui_impl.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
-#include "game_datastruct.hpp"
 
 class Game;
 
@@ -21,24 +21,44 @@ struct I18N {
 
 namespace GameUI {
 
-void DrawDebugUI(Game *game);
-
-class DebugDrawUI {
+class GameUI {
 public:
-    static bool visible;
-    static int selIndex;
-    static std::vector<R_Image *> images;
-    static std::vector<R_Image *> tools_images;
+    // GameUI visiable list
+    bool visible_mainmenu = true;
+    bool visible_debugdraw = true;
 
-    static Material *selectedMaterial;
-    static U8 brushSize;
+    // MainMenu
+    bool MainMenuUI__setup = false;
+    R_Image *MainMenuUI__title = nullptr;
+    bool MainMenuUI__connectButtonEnabled = false;
+    ImVec2 MainMenuUI__pos = ImVec2(0, 0);
+    std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI__worlds = {};
+    long long MainMenuUI__lastRefresh = 0;
+    char MainMenuUI__worldNameBuf[32] = "";
+    bool MainMenuUI__createWorldButtonEnabled = false;
+    std::string MainMenuUI__worldFolderLabel = "";
+    int MainMenuUI__selIndex = 0;
 
-    static void Setup();
+    // DebugDraw
+    int DebugDrawUI__selIndex = -1;
+    std::vector<R_Image *> DebugDrawUI__images = {};
+    std::vector<R_Image *> DebugDrawUI__tools_images = {};
+    Material *DebugDrawUI__selectedMaterial = &MaterialsList::GENERIC_AIR;
+    U8 DebugDrawUI__brushSize = 5;
 
-    static void Draw(Game *game);
+    // OptionsUI
+#if defined(METADOT_BUILD_AUDIO)
+    std::map<std::string, FMOD::Studio::Bus *> OptionsUI__busMap = {};
+#endif
+    int OptionsUI__item_current_idx = 0;
+    bool OptionsUI__vsync = false;
+    bool OptionsUI__minimizeOnFocus = false;
 };
 
-extern bool MainMenuUI__visible;
+void DrawDebugUI(Game *game);
+
+void DebugDrawUI__Setup();
+void DebugDrawUI__Draw(Game *game);
 
 void MainMenuUI__RefreshWorlds(Game *game);
 void MainMenuUI__Setup();
@@ -50,23 +70,14 @@ void MainMenuUI__reset(Game *game);
 void MainMenuUI__DrawCreateWorldUI(Game *game);
 void MainMenuUI__inputChanged(std::string text, Game *game);
 
-class OptionsUI {
-#if defined(METADOT_BUILD_AUDIO)
-    static std::map<std::string, FMOD::Studio::Bus *> busMap;
-#endif
-
-public:
-    static int item_current_idx;
-    static bool vsync;
-    static bool minimizeOnFocus;
-
-    static void Draw(Game *game);
-    static void DrawGeneral(Game *game);
-    static void DrawVideo(Game *game);
-    static void DrawAudio(Game *game);
-    static void DrawInput(Game *game);
-};
+void OptionsUI__Draw(Game *game);
+void OptionsUI__DrawGeneral(Game *game);
+void OptionsUI__DrawVideo(Game *game);
+void OptionsUI__DrawAudio(Game *game);
+void OptionsUI__DrawInput(Game *game);
 
 }  // namespace GameUI
+
+extern GameUI::GameUI gameUI;
 
 #endif
