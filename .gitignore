@@ -12,10 +12,10 @@ CMakeLists.txt
 
 *.dylib
 
-Data/assets/
+data/assets/
 
 Resources/
-Source/Generated
+source/generated
 
 build.bat
 compile_commands.json
@@ -24,6 +24,10 @@ imgui.ini
 # clangd
 .clangd/
 .cache/
+
+# ccls
+.ccls-cache
+.ccls
 
 # CLion
 cmake-build-debug
