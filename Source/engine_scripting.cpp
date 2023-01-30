@@ -264,13 +264,13 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     _struct->s_lua.dostring(MetaEngine::Format("package.path = "
                                                "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
                                                "?/?.lua;' .. package.path",
-                                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath()),
+                                               METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath()),
                             _struct->s_lua.globalTable());
 
     _struct->s_lua.dostring(MetaEngine::Format("package.cpath = "
                                                "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
                                                "?/?.{2};' .. package.cpath",
-                                               METADOT_RESLOC("data/scripts"), FUtil_getExecutableFolderPath(), "dylib"),
+                                               METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath(), "dylib"),
                             _struct->s_lua.globalTable());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/common/coroutines.lua"));

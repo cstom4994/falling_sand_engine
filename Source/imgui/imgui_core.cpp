@@ -1,5 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
+#include "imgui_core.hpp"
+
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -7,10 +9,12 @@
 #include <map>
 #include <type_traits>
 
+#include "audio/audio.h"
 #include "chunk.hpp"
 #include "code_reflection.hpp"
 #include "core/alloc.h"
 #include "core/const.h"
+#include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/static_relfection.hpp"
 #include "core/cpp/utils.hpp"
@@ -19,6 +23,7 @@
 #include "core/macros.h"
 #include "core/profiler/profiler.h"
 #include "core/profiler/profiler_imgui.hpp"
+#include "core/stl.h"
 #include "engine.h"
 #include "engine_scripting.hpp"
 #include "filesystem.h"
@@ -29,7 +34,6 @@
 #include "imgui/imgui_generated.h"
 #include "imgui/imgui_impl.hpp"
 #include "imgui/lua/script.h"
-#include "imgui_core.hpp"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
 #include "memory.hpp"
@@ -581,6 +585,15 @@ CSTDTime | {6} | Nothing
             ImGui::BeginTabBar(CC("测试#haha"));
             if (ImGui::BeginTabItem(CC("测试"))) {
                 if (ImGui::Button("调用回溯")) print_callstack();
+                ImGui::SameLine();
+                if (ImGui::Button("Audio")) {
+                    METAENGINE_Audio* test_audio =  metadot_audio_load_wav(METADOT_RESLOC("Data/assets/audio/02_c03_normal_135.wav"));
+                    METADOT_ASSERT_E(test_audio);
+                    // metadot_music_play(test_audio, 0.f);
+                    // metadot_audio_destroy(test_audio);
+                    METAENGINE_Result err;
+                    metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
+                }
                 ImGui::SameLine();
                 if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
                 ImGui::SameLine();

@@ -5,14 +5,17 @@
 #include <string.h>
 
 #include "SDL_mouse.h"
+#include "audio/audio.h"
+#include "audio/sound.h"
 #include "core/const.h"
 #include "core/core.h"
 #include "core/macros.h"
 #include "engine.h"
+#include "filesystem.h"
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
-#include "sdl_wrapper.h"
 #include "renderer/renderer_utils.h"
+#include "sdl_wrapper.h"
 
 IMPLENGINE();
 
@@ -95,6 +98,8 @@ int InitWindow() {
     metadot_gl_print_info();
 #endif
 
+    AudioEngineInit();
+
     // METADOT_INFO("Initializing InitFont...");
     // if (!Drawing::InitFont(&gl_context)) {
     //     METADOT_ERROR("InitFont failed");
@@ -146,6 +151,10 @@ int InitWindow() {
 }
 
 void EndWindow() {
+
+    cs_shutdown();
+    metadot_fs_destroy();
+
     if (NULL != Render.target) R_FreeTarget(Render.target);
     // if (Render.realTarget) R_FreeTarget(Render.realTarget);
     if (Core.window) SDL_DestroyWindow(Core.window);

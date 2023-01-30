@@ -10,7 +10,7 @@ U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum thisype, const char *filename) {
     U32 shader;
     R_Renderer *renderer = R_GetCurrentRenderer();
 
-    char *source = futil_readfilestring(filename);
+    char *source = metadot_fs_readfilestring(filename);
 
     if (!source) {
         R_PushErrorCode("load_shader", R_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found", filename);
@@ -20,7 +20,7 @@ U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum thisype, const char *filename) {
     // Compile the shader
     shader = R_CompileShader(thisype, source);
 
-    futil_freestring(source);
+    metadot_fs_freestring(source);
 
     return shader;
 }

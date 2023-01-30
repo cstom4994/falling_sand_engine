@@ -20,9 +20,9 @@ IMPLENGINE();
 
 bool InitFilesystem() {
 
-    InitPhysFS();
+    METAENGINE_Result err = metadot_fs_init(NULL);
 
-    auto currentDir = std::filesystem::path(FUtil_getExecutableFolderPath());
+    auto currentDir = std::filesystem::path(metadot_fs_getExecutableFolderPath());
 
 #ifdef METADOT_DEBUG
 
@@ -31,7 +31,15 @@ bool InitFilesystem() {
         if (std::filesystem::exists(currentDir / "Data")) {
             Core.gamepath = currentDir;
             // s_DataPath = currentDir / "Data";
-            METADOT_INFO("Game data path detected: %s", Core.gamepath.c_str());
+            METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), metadot_fs_getExecutableFolderPath());
+
+            if (metadot_is_error(err)) {
+                METADOT_ASSERT_E(0);
+            } else if (true) {
+                // Put the base directory (the path to the exe) onto the file system search path.
+                metadot_fs_mount(Core.gamepath.c_str(), "", true);
+            }
+
             return METADOT_OK;
         }
     }
@@ -53,15 +61,15 @@ bool InitFilesystem() {
 #endif
 }
 
-const char *FUtil_getExecutableFolderPath() {
-    const char *out = PHYSFS_getBaseDir();
+const char* metadot_fs_getExecutableFolderPath() {
+    const char* out = PHYSFS_getBaseDir();
     return out;
 }
 
 // Char pointer get form futil_readfilestring must be gc_free manually
-char *futil_readfilestring(const char *path) {
-    char *source = NULL;
-    FILE *fp = fopen(METADOT_RESLOC(path), "r");
+char* metadot_fs_readfilestring(const char* path) {
+    char* source = NULL;
+    FILE* fp = fopen(METADOT_RESLOC(path), "r");
     if (fp != NULL) {
         /* Go to the end of the file. */
         if (fseek(fp, 0L, SEEK_END) == 0) {
@@ -71,7 +79,7 @@ char *futil_readfilestring(const char *path) {
             }
 
             /* Allocate our buffer to that size. */
-            source = (char *)gc_malloc(&gc, sizeof(char) * (bufsize + 1));
+            source = (char*)gc_malloc(&gc, sizeof(char) * (bufsize + 1));
 
             /* Go back to the start of the file. */
             if (fseek(fp, 0L, SEEK_SET) != 0) { /* Error */
@@ -93,15 +101,13 @@ char *futil_readfilestring(const char *path) {
     return R_null;
 }
 
-void futil_freestring(void *ptr) {
+void metadot_fs_freestring(void* ptr) {
     if (NULL != ptr) gc_free(&gc, ptr);
 }
 
-
-
 #include "core/alloc.h"
-#include "libs/physfs/physfs.h"
 #include "core/stl.h"
+#include "libs/physfs/physfs.h"
 
 #define METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE (2 * METAENGINE_MB)
 
@@ -253,8 +259,6 @@ char* metadot_path_normalize(const char* path) {
 }
 
 //--------------------------------------------------------------------------------------------------
-
-const char* metadot_fs_get_base_directory() { return PHYSFS_getBaseDir(); }
 
 METAENGINE_Result metadot_fs_set_write_directory(const char* platform_dependent_directory) {
     if (!PHYSFS_setWriteDir(platform_dependent_directory)) {
@@ -420,7 +424,10 @@ size_t metadot_fs_size(METAENGINE_File* file) { return (size_t)PHYSFS_fileLength
 
 void* metadot_fs_read_entire_file_to_memory(const char* virtual_path, size_t* size) {
     METAENGINE_File* file = metadot_fs_open_file_for_read(virtual_path);
-    if (!file) return NULL;
+    if (!file) {
+        METADOT_BUG("Can't load file %s", virtual_path);
+        return NULL;
+    }
     size_t sz = metadot_fs_size(file);
     void* data = METAENGINE_FW_ALLOC(sz);
     size_t sz_read = metadot_fs_read(file, data, sz);

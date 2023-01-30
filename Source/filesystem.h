@@ -27,7 +27,7 @@ inline R_bool FUtil_exists(const char* path) {
 }
 
 // folder path of current executable
-const char* FUtil_getExecutableFolderPath();
+const char* metadot_fs_getExecutableFolderPath();
 
 inline const char* FUtil_GetFileName(const char* path) {
     int len = strlen(path);
@@ -43,8 +43,8 @@ inline const char* FUtil_GetFileName(const char* path) {
     return path;
 }
 
-char* futil_readfilestring(const char* path);
-void futil_freestring(void* ptr);
+char* metadot_fs_readfilestring(const char* path);
+void metadot_fs_freestring(void* ptr);
 
 #ifdef __cplusplus
 extern "C" {
@@ -289,13 +289,6 @@ typedef struct METAENGINE_Stat {
 } METAENGINE_Stat;
 
 /**
- * Returns the path of the base directory. This is not a virtual path, but the actual OS-path
- * where the executable was run from. This might not be the working directory, but probably is.
- * You should probably mount the base directory with `metadot_fs_mount`.
- */
-const char* METADOT_CDECL metadot_fs_get_base_directory();
-
-/**
  * Sets a path safe to store game-specific files, such as save data or profiles. The path is in
  * platform-dependent notation. It's highly recommend to use `metadot_fs_get_user_directory` and pass
  * it into this function when shipping your game. This function will fail if any files are from
@@ -524,7 +517,7 @@ METADOT_INLINE const char* to_string(FileType type) {
     }
 }
 
-METADOT_INLINE const char* fs_get_base_dir() { return metadot_fs_get_base_directory(); }
+// METADOT_INLINE const char* fs_get_base_dir() { return metadot_fs_get_base_directory(); }
 METADOT_INLINE Result fs_set_write_dir(const char* platform_dependent_directory) { return metadot_fs_set_write_directory(platform_dependent_directory); }
 METADOT_INLINE Result fs_mount(const char* archive, const char* mount_point, bool append_to_path = true) { return metadot_fs_mount(archive, mount_point, append_to_path); }
 METADOT_INLINE Result fs_dismount(const char* archive) { return metadot_fs_dismount(archive); }

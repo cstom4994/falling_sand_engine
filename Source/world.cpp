@@ -3387,7 +3387,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     using json = MetaEngine::Json::Json;
 
-    json metafile = json::parse(futil_readfilestring(metaFilePath));
+    json metafile = json::parse(metadot_fs_readfilestring(metaFilePath));
 
     if (!metafile.empty()) {
 
