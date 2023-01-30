@@ -14,7 +14,7 @@
 #include "core/macros.h"
 #include "core/threadpool.hpp"
 #include "Noise.h"
-#include "audio.hpp"
+#include "audio/audio.h"
 #include "internal/builtin_box2d.h"
 #include "renderer/renderer_gpu.h"
 #include "game_basic.hpp"

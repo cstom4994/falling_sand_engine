@@ -305,16 +305,6 @@ MaterialInstance TilesCreate(Material *mat, int x, int y);
 
 #pragma endregion Material
 
-/* class ItemFlags { */
-/* public: */
-/*     static const U8 RIGIDBODY = 0b00000001; */
-/*     static const U8 FLUID_CONTAINER = 0b00000010; */
-/*     static const U8 TOOL = 0b00000100; */
-/*     static const U8 CHISEL = 0b00001000; */
-/*     static const U8 HAMMER = 0b00010000; */
-/*     static const U8 VACUUM = 0b00100000; */
-/* }; */
-
 MAKE_ENUM_FLAGS(ItemFlags, int){
         ItemFlags_None = 1 << 0,   ItemFlags_Rigidbody = 1 << 1, ItemFlags_Fluid_Container = 1 << 2, ItemFlags_Tool = 1 << 3,
         ItemFlags_Chisel = 1 << 4, ItemFlags_Hammer = 1 << 5,    ItemFlags_Vacuum = 1 << 6,

@@ -263,7 +263,6 @@ cs__m128i cs_mm_packs_epi32(cs__m128i a, cs__m128i b) {
 #else  // METAENGINE_SOUND_SCALAR_MODE
 
 // TODO Fix on ARM
-
 #include "libs/sse2neon.h"
 
 // #include <emmintrin.h>

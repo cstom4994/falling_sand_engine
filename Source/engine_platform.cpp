@@ -4,7 +4,6 @@
 
 #include <string.h>
 
-#include "SDL_mouse.h"
 #include "audio/audio.h"
 #include "audio/sound.h"
 #include "core/const.h"
@@ -241,3 +240,18 @@ R_vec2 GetMousePos() {
     SDL_GetMouseState(&x, &y);
     return (R_vec2){.x = (float)x, .y = (float)y};
 }
+
+
+char* metadot_clipboard_get()
+{
+	char* text = SDL_GetClipboardText();
+	return text;
+}
+
+METAENGINE_Result metadot_clipboard_set(const char* string)
+{
+	int ret = SDL_SetClipboardText(string);
+	if (ret) return metadot_result_error("Unable to set clipboard data.");
+	else return metadot_result_success();
+}
+

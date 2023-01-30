@@ -6,6 +6,7 @@
 #include "core/core.h"
 #include "core/macros.h"
 #include "core/platform.h"
+#include "core/stl.h"
 #include "renderer/renderer_utils.h"
 #include "sdl_wrapper.h"
 
@@ -26,5 +27,7 @@ void SetVSync(bool vsync);
 void SetMinimizeOnLostFocus(bool minimize);
 void SetWindowTitle(const char* title);
 R_vec2 GetMousePos();
+char* metadot_clipboard_get();
+METAENGINE_Result metadot_clipboard_set(const char* string);
 
 #endif

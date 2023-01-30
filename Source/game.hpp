@@ -22,7 +22,7 @@
 #include "core/debug_impl.hpp"
 #include "core/macros.h"
 #include "core/threadpool.h"
-#include "audio.hpp"
+#include "audio/audio.h"
 #include "console.hpp"
 #include "engine_input.hpp"
 #include "engine_scripting.hpp"
