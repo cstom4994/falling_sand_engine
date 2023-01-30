@@ -287,10 +287,10 @@ typedef struct metadot_rect {
 
 typedef signed int metadot_bool;
 
-typedef metadot_vec2 metadot_v2;
-typedef metadot_vec3 metadot_v3;
-typedef metadot_vec4 metadot_v4;
-typedef metadot_mat4 metadot_m4;
+// typedef metadot_vec2 metadot_v2;
+// typedef metadot_vec3 metadot_v3;
+// typedef metadot_vec4 metadot_v4;
+// typedef metadot_mat4 metadot_m4;
 
 #define VECTOR3_ZERO \
     (metadot_vec3) { 0.0f, 0.0f, 0.0f }

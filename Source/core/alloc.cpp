@@ -9,7 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/c/auto_c.h"
+#include "core/stl.h"
+
+// #include "core/c/auto_c.h"
 
 #define PTRSIZE sizeof(char *)
 
@@ -545,8 +547,8 @@ void *lua_simple_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 }
 
 struct LuaAllocator *new_allocator(void) {
-    struct LuaAllocator *alloc = malloc(sizeof(struct LuaAllocator));
-    alloc->blocks = malloc(sizeof(struct LuaMemBlock) * 4);
+    struct LuaAllocator *alloc = (LuaAllocator *)malloc(sizeof(struct LuaAllocator));
+    alloc->blocks = (LuaMemBlock *)malloc(sizeof(struct LuaMemBlock) * 4);
     alloc->nb_blocks = 0;
     alloc->size_blocks = 4;
     alloc->total_allocated = 0;
@@ -567,7 +569,7 @@ void delete_allocator(struct LuaAllocator *alloc) {
 }
 
 void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
-    struct LuaAllocator *alloc = ud;
+    struct LuaAllocator *alloc = (LuaAllocator *)ud;
     size_t blk;
 #ifdef _DEBUG_ALLOC
     {
@@ -597,7 +599,7 @@ void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
         alloc->nb_blocks++;
         if (alloc->nb_blocks > alloc->size_blocks) {
             alloc->size_blocks *= 2;
-            alloc->blocks = realloc(alloc->blocks, sizeof(struct LuaMemBlock) * alloc->size_blocks);
+            alloc->blocks = (LuaMemBlock *)realloc(alloc->blocks, sizeof(struct LuaMemBlock) * alloc->size_blocks);
 #ifdef _DEBUG_ALLOC
             fprintf(stderr, "Growing block table to %u blocks\n", alloc->size_blocks);
 #endif
@@ -667,3 +669,140 @@ void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 }
 
 #pragma endregion lua_safe_alloc
+
+#pragma region engine_framework
+
+void *metadot_aligned_alloc(size_t size, int alignment) {
+    METADOT_ASSERT_E(alignment <= 256);
+    void *p = METAENGINE_FW_ALLOC(size + alignment);
+    if (!p) return NULL;
+    size_t offset = (size_t)p & (alignment - 1);
+    p = METAENGINE_ALIGN_FORWARD_PTR((char *)p + 1, alignment);
+    METADOT_ASSERT_E(!(((size_t)p) & (alignment - 1)));
+    *((char *)p - 1) = (char)(alignment - offset);
+    return p;
+}
+
+void metadot_aligned_free(void *p) {
+    if (!p) return;
+    size_t offset = (size_t) * ((uint8_t *)p - 1);
+    METAENGINE_FW_FREE((char *)p - (offset & 0xFF));
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void metadot_arena_init(METAENGINE_Arena *arena, int alignment, int block_size) {
+    METAENGINE_MEMSET(arena, 0, sizeof(*arena));
+    arena->alignment = alignment;
+    arena->block_size = block_size;
+}
+
+void *metadot_arena_alloc(METAENGINE_Arena *arena, size_t size) {
+    METADOT_ASSERT_E((int)size < arena->block_size);
+    if (size > (size_t)(arena->end - arena->ptr)) {
+        arena->ptr = (char *)metadot_aligned_alloc(arena->block_size, arena->alignment);
+        arena->end = arena->ptr + arena->block_size;
+        apush(arena->blocks, arena->ptr);
+    }
+    void *result = arena->ptr;
+    arena->ptr = (char *)METAENGINE_ALIGN_FORWARD_PTR(arena->ptr + size, arena->alignment);
+    METADOT_ASSERT_E(!(((size_t)(arena->ptr)) & (arena->alignment - 1)));
+    METADOT_ASSERT_E(arena->ptr <= arena->end);
+    return result;
+}
+
+void metadot_arena_reset(METAENGINE_Arena *arena) {
+    if (arena->blocks) {
+        for (int i = 0; i < alen(arena->blocks); ++i) {
+            metadot_aligned_free(arena->blocks[i]);
+        }
+        afree(arena->blocks);
+    }
+    arena->ptr = NULL;
+    arena->end = NULL;
+    arena->blocks = NULL;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+struct METAENGINE_MemoryPool {
+    int unaligned_element_size;
+    int element_size;
+    size_t arena_size;
+    int alignment;
+    uint8_t *arena;
+    void *free_list;
+    int overflow_count;
+};
+
+METAENGINE_MemoryPool *metadot_make_memory_pool(int element_size, int element_count, int alignment) {
+    element_size = element_size > sizeof(void *) ? element_size : sizeof(void *);
+    int unaligned_element_size = element_size;
+    element_size = METAENGINE_ALIGN_FORWARD(element_size, alignment);
+    size_t header_size = METAENGINE_ALIGN_FORWARD(sizeof(METAENGINE_MemoryPool), alignment);
+    METAENGINE_MemoryPool *pool = (METAENGINE_MemoryPool *)metadot_aligned_alloc(header_size + element_size * element_count, alignment);
+
+    pool->unaligned_element_size = unaligned_element_size;
+    pool->element_size = element_size;
+    pool->arena_size = (size_t)element_size * element_count;
+    pool->arena = (uint8_t *)((uintptr_t)pool + header_size);
+    pool->free_list = pool->arena;
+    pool->overflow_count = 0;
+
+    for (int i = 0; i < element_count - 1; ++i) {
+        void **element = (void **)(pool->arena + element_size * i);
+        void *next = (void *)(pool->arena + element_size * (i + 1));
+        *element = next;
+    };
+
+    void **last_element = (void **)(pool->arena + element_size * (element_count - 1));
+    *last_element = NULL;
+
+    return pool;
+}
+
+void metadot_destroy_memory_pool(METAENGINE_MemoryPool *pool) {
+    if (pool->overflow_count) {
+        // Attempted to destroy pool without freeing all overflow allocations.
+        METADOT_ASSERT_E(pool->overflow_count == 0);
+    }
+    METAENGINE_FW_FREE(pool);
+}
+
+void *metadot_memory_pool_alloc(METAENGINE_MemoryPool *pool) {
+    void *mem = METAENGINE_MemoryPoolry_alloc(pool);
+    if (!mem) {
+        mem = metadot_aligned_alloc(pool->unaligned_element_size, pool->alignment);
+        if (mem) {
+            pool->overflow_count++;
+        }
+    }
+    return mem;
+}
+
+void *METAENGINE_MemoryPoolry_alloc(METAENGINE_MemoryPool *pool) {
+    if (pool->free_list) {
+        void *mem = pool->free_list;
+        pool->free_list = *((void **)pool->free_list);
+        return mem;
+    } else {
+        return NULL;
+    }
+}
+
+void metadot_memory_pool_free(METAENGINE_MemoryPool *pool, void *element) {
+    int difference = (int)((uint8_t *)element - pool->arena);
+    bool in_bounds = (void *)element >= pool->arena && difference <= (pool->arena_size - pool->element_size);
+    if (pool->overflow_count && !in_bounds) {
+        metadot_aligned_free(element);
+        pool->overflow_count--;
+    } else if (in_bounds) {
+        *(void **)element = pool->free_list;
+        pool->free_list = element;
+    } else {
+        // Tried to free something that definitely didn't come from this pool.
+        METADOT_ASSERT_E(false);
+    }
+}
+
+#pragma endregion engine_framework

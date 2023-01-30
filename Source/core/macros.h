@@ -80,6 +80,15 @@
 // Platforms Macros
 #if defined(_WIN32) || defined(_WIN64) || defined(__WINDOWS__)
 #define METADOT_PLATFORM_WINDOWS
+
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#ifndef _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
 #elif defined(__linux__) || defined(linux)
 #define METADOT_PLATFORM_LINUX
 #elif defined(__APPLE__) || defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
@@ -138,6 +147,17 @@ const char *u8Cpp20(T &&t) noexcept {
 #endif
 #else
 #define CC(x) x
+#endif
+
+// Vista and later only. This helps MingW builds.
+#ifdef METADOT_PLATFORM_WINDOWS
+#include <sdkddkver.h>
+#ifdef _WIN32_WINNT
+#if _WIN32_WINNT < 0x0600
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#endif
 #endif
 
 #pragma region Cpp

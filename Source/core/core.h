@@ -180,4 +180,152 @@ typedef struct Pixel {
 
 #pragma endregion endian_h
 
+#pragma region engine_framework
+
+#include <stdint.h>
+
+#ifndef NOMINMAX
+#define NOMINMAX WINDOWS_IS_ANNOYING_AINT_IT
+#endif
+
+#ifdef METADOT_PLATFORM_WINDOWS
+#define METADOT_CDECL __cdecl
+#else
+#define METADOT_CDECL
+#endif
+
+#define METAENGINE_UNUSED(x) (void)x
+#define METAENGINE_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define METAENGINE_KB 1024
+#define METAENGINE_MB (METAENGINE_KB * METAENGINE_KB)
+#define METAENGINE_GB (METAENGINE_MB * METAENGINE_MB)
+#define METAENGINE_SERIALIZE_CHECK(x)                  \
+    do {                                               \
+        if ((x) != SERIALIZE_SUCCESS) goto cute_error; \
+    } while (0)
+#define METAENGINE_STATIC_ASSERT(condition, error_message_string) static_assert(condition, error_message_string)
+#define METAENGINE_STRINGIZE_INTERNAL(...) #__VA_ARGS__
+#define METAENGINE_STRINGIZE(...) METAENGINE_STRINGIZE_INTERNAL(__VA_ARGS__)
+#define METAENGINE_OFFSET_OF(T, member) ((size_t)((uintptr_t)(&(((T *)0)->member))))
+#define METAENGINE_DEBUG_PRINTF(...)
+#define METAENGINE_ALIGN_TRUNCATE(v, n) ((v) & ~((n)-1))
+#define METAENGINE_ALIGN_FORWARD(v, n) METAENGINE_ALIGN_TRUNCATE((v) + (n)-1, (n))
+#define METAENGINE_ALIGN_TRUNCATE_PTR(p, n) ((void *)METAENGINE_ALIGN_TRUNCATE((uintptr_t)(p), n))
+#define METAENGINE_ALIGN_FORWARD_PTR(p, n) ((void *)METAENGINE_ALIGN_FORWARD((uintptr_t)(p), n))
+
+#include <stdlib.h>
+
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
+#ifdef __cplusplus
+
+// -------------------------------------------------------------------------------------------------
+// Avoid including <utility> header to reduce compile times.
+
+template <typename T>
+struct metadot_remove_reference {
+    using type = T;
+};
+
+template <typename T>
+struct metadot_remove_reference<T &> {
+    using type = T;
+};
+
+template <typename T>
+struct metadot_remove_reference<T &&> {
+    using type = T;
+};
+
+template <typename T>
+constexpr typename metadot_remove_reference<T>::type &&metadot_move(T &&arg) noexcept {
+    return (typename metadot_remove_reference<T>::type &&) arg;
+}
+
+// -------------------------------------------------------------------------------------------------
+// Avoid including <initializer_list> header to reduce compile times.
+// Unfortunately this class *must* be in the std:: namespace or things won't compile. So we try to
+// avoid defining this class if someone already included <initializer_list> before including
+// cute framework <cute.h>.
+
+#ifdef METADOT_PLATFORM_WINDOWS
+
+#if !defined(_INITIALIZER_LIST_) && !defined(_INITIALIZER_LIST) && !defined(_LIBCPP_INITIALIZER_LIST)
+#define _INITIALIZER_LIST_        // MSVC
+#define _INITIALIZER_LIST         // GCC
+#define _LIBCPP_INITIALIZER_LIST  // Clang
+// Will probably need to add more here for more compilers later.
+
+namespace std {
+template <typename T>
+class initializer_list {
+public:
+    using value_type = T;
+    using reference = const T &;
+    using const_reference = const T &;
+    using size_type = size_t;
+
+    using iterator = const T *;
+    using const_iterator = const T *;
+
+    constexpr initializer_list() noexcept : m_first(0), m_last(0) {}
+
+    constexpr initializer_list(const T *first, const T *last) noexcept : m_first(first), m_last(last) {}
+
+    constexpr const T *begin() const noexcept { return m_first; }
+    constexpr const T *end() const noexcept { return m_last; }
+    constexpr size_t size() const noexcept { return (size_t)(m_last - m_first); }
+
+private:
+    const T *m_first;
+    const T *m_last;
+};
+
+template <class T>
+constexpr const T *begin(initializer_list<T> list) noexcept {
+    return list.begin();
+}
+template <class T>
+constexpr const T *end(initializer_list<T> list) noexcept {
+    return list.end();
+}
+}  // namespace std
+
+#endif
+
+#else  // METADOT_PLATFORM_WINDOWS
+
+#include <initializer_list>
+
+#endif  // METADOT_PLATFORM_WINDOWS
+
+template <typename T>
+using METAENGINE_InitializerList = std::initializer_list<T>;
+
+namespace MetaEngine {
+template <typename T>
+using initializer_list = METAENGINE_InitializerList<T>;
+
+template <typename T>
+using remove_reference = metadot_remove_reference<T>;
+}  // namespace MetaEngine
+
+#endif
+
+// Not sure where to put this... Here is good I guess.
+METADOT_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
+    const char *s = (const char *)data;
+    uint64_t h = 14695981039346656037ULL;
+    char c = 0;
+    while (size--) {
+        h = h ^ (uint64_t)(*s++);
+        h = h * 1099511628211ULL;
+    }
+    return h;
+}
+
+#pragma endregion engine_framework
+
 #endif

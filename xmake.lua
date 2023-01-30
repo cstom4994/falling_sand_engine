@@ -238,6 +238,8 @@ do
 	add_files("Source/game_utils/**.cpp")
 	add_files("Source/internal/**.c")
 	add_files("Source/internal/**.cpp")
+	add_files("Source/engine/**.c")
+	add_files("Source/engine/**.cpp")
 	-- add_files("Source/meta/**.c")
 	add_files("Source/meta/**.cpp")
 	add_files("Source/renderer/**.c")

@@ -168,29 +168,29 @@ static inline void metadot_mutex_unlock(metadot_mutex* _mutex) { pthread_mutex_u
 #error "Unsupported platform!"
 #endif
 
-class Mutex {
+class pthread_Mutex {
     metadot_mutex m_mutex;
 
-    Mutex(const Mutex& _rhs);
-    Mutex& operator=(const Mutex& _rhs);
+    pthread_Mutex(const pthread_Mutex& _rhs);
+    pthread_Mutex& operator=(const pthread_Mutex& _rhs);
 
 public:
-    inline Mutex() { metadot_mutex_init(&m_mutex); }
-    inline ~Mutex() { metadot_mutex_destroy(&m_mutex); }
+    inline pthread_Mutex() { metadot_mutex_init(&m_mutex); }
+    inline ~pthread_Mutex() { metadot_mutex_destroy(&m_mutex); }
     inline void lock() { metadot_mutex_lock(&m_mutex); }
     inline void unlock() { metadot_mutex_unlock(&m_mutex); }
     inline bool tryLock() { return (metadot_mutex_trylock(&m_mutex) == 0); }
 };
 
 class ScopedMutexLocker {
-    Mutex& m_mutex;
+    pthread_Mutex& m_mutex;
 
     ScopedMutexLocker();
     ScopedMutexLocker(const ScopedMutexLocker&);
     ScopedMutexLocker& operator=(const ScopedMutexLocker&);
 
 public:
-    inline ScopedMutexLocker(Mutex& _mutex) : m_mutex(_mutex) { m_mutex.lock(); }
+    inline ScopedMutexLocker(pthread_Mutex& _mutex) : m_mutex(_mutex) { m_mutex.lock(); }
     inline ~ScopedMutexLocker() { m_mutex.unlock(); }
 };
 

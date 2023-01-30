@@ -19,7 +19,7 @@ F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { retur
 
 #pragma region NewMATH
 
-F32 NewMaths::vec22angle(metadot_v2 v2) { return atan2f(v2.Y, v2.X); }
+F32 NewMaths::vec22angle(metadot_vec2 v2) { return atan2f(v2.Y, v2.X); }
 
 F32 NewMaths::clamp(F32 input, F32 min, F32 max) {
     if (input < min)
@@ -2576,3 +2576,144 @@ bool TestLineAABB(const CVector2<PointType> &p0, const CVector2<PointType> &p1, 
 }  // end of namespace MetaEngine
 
 #pragma endregion Poro
+
+#pragma region c2
+
+#define CUTE_C2_IMPLEMENTATION
+#include "libs/cute/cute_c2.h"
+
+METAENGINE_STATIC_ASSERT(METAENGINE_POLY_MAX_VERTS == C2_MAX_POLYGON_VERTS, "Must be equal.");
+
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_V2) == sizeof(c2v), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_SinCos) == sizeof(c2r), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Transform) == sizeof(c2x), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_M2x2) == sizeof(c2m), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Halfspace) == sizeof(c2h), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Ray) == sizeof(c2Ray), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Raycast) == sizeof(c2Raycast), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Manifold) == sizeof(c2Manifold), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_GjkCache) == sizeof(c2GJKCache), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Circle) == sizeof(c2Circle), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Aabb) == sizeof(c2AABB), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Capsule) == sizeof(c2Capsule), "Must be equal.");
+METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Poly) == sizeof(c2Poly), "Must be equal.");
+
+bool metadot_circle_to_circle(METAENGINE_Circle A, METAENGINE_Circle B) { return !!c2CircletoCircle(*(c2Circle *)&A, *(c2Circle *)&B); }
+
+bool metadot_circle_to_aabb(METAENGINE_Circle A, METAENGINE_Aabb B) { return !!c2CircletoAABB(*(c2Circle *)&A, *(c2AABB *)&B); }
+
+bool metadot_circle_to_capsule(METAENGINE_Circle A, METAENGINE_Capsule B) { return !!c2CircletoCapsule(*(c2Circle *)&A, *(c2Capsule *)&B); }
+
+bool metadot_aabb_to_aabb(METAENGINE_Aabb A, METAENGINE_Aabb B) { return !!c2AABBtoAABB(*(c2AABB *)&A, *(c2AABB *)&B); }
+
+bool metadot_aabb_to_capsule(METAENGINE_Aabb A, METAENGINE_Capsule B) { return !!c2AABBtoCapsule(*(c2AABB *)&A, *(c2Capsule *)&B); }
+
+bool metadot_capsule_to_capsule(METAENGINE_Capsule A, METAENGINE_Capsule B) { return !!c2CapsuletoCapsule(*(c2Capsule *)&A, *(c2Capsule *)&B); }
+
+bool metadot_circle_to_poly(METAENGINE_Circle A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) { return !!c2CircletoPoly(*(c2Circle *)&A, (c2Poly *)B, (c2x *)bx); }
+
+bool metadot_aabb_to_poly(METAENGINE_Aabb A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) { return !!c2AABBtoPoly(*(c2AABB *)&A, (c2Poly *)B, (c2x *)bx); }
+
+bool metadot_capsule_to_poly(METAENGINE_Capsule A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) { return !!c2CapsuletoPoly(*(c2Capsule *)&A, (c2Poly *)B, (c2x *)bx); }
+
+bool metadot_poly_to_poly(const METAENGINE_Poly *A, const METAENGINE_Transform *ax, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) {
+    return !!c2PolytoPoly((c2Poly *)A, (c2x *)ax, (c2Poly *)B, (c2x *)bx);
+}
+
+bool metadot_ray_to_circle(METAENGINE_Ray A, METAENGINE_Circle B, METAENGINE_Raycast *out) { return !!c2RaytoCircle(*(c2Ray *)&A, *(c2Circle *)&B, (c2Raycast *)out); }
+
+bool metadot_ray_to_aabb(METAENGINE_Ray A, METAENGINE_Aabb B, METAENGINE_Raycast *out) { return !!c2RaytoAABB(*(c2Ray *)&A, *(c2AABB *)&B, (c2Raycast *)out); }
+
+bool metadot_ray_to_capsule(METAENGINE_Ray A, METAENGINE_Capsule B, METAENGINE_Raycast *out) { return !!c2RaytoCapsule(*(c2Ray *)&A, *(c2Capsule *)&B, (c2Raycast *)out); }
+
+bool metadot_ray_to_poly(METAENGINE_Ray A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx_ptr, METAENGINE_Raycast *out) {
+    return !!c2RaytoPoly(*(c2Ray *)&A, (c2Poly *)B, (c2x *)bx_ptr, (c2Raycast *)out);
+}
+
+void metadot_circle_to_circle_manifold(METAENGINE_Circle A, METAENGINE_Circle B, METAENGINE_Manifold *m) { c2CircletoCircleManifold(*(c2Circle *)&A, *(c2Circle *)&B, (c2Manifold *)m); }
+
+void metadot_circle_to_aabb_manifold(METAENGINE_Circle A, METAENGINE_Aabb B, METAENGINE_Manifold *m) { c2CircletoAABBManifold(*(c2Circle *)&A, *(c2AABB *)&B, (c2Manifold *)m); }
+
+void metadot_circle_to_capsule_manifold(METAENGINE_Circle A, METAENGINE_Capsule B, METAENGINE_Manifold *m) { c2CircletoCapsuleManifold(*(c2Circle *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
+
+void metadot_aabb_to_aabb_manifold(METAENGINE_Aabb A, METAENGINE_Aabb B, METAENGINE_Manifold *m) { c2AABBtoAABBManifold(*(c2AABB *)&A, *(c2AABB *)&B, (c2Manifold *)m); }
+
+void metadot_aabb_to_capsule_manifold(METAENGINE_Aabb A, METAENGINE_Capsule B, METAENGINE_Manifold *m) { c2AABBtoCapsuleManifold(*(c2AABB *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
+
+void metadot_capsule_to_capsule_manifold(METAENGINE_Capsule A, METAENGINE_Capsule B, METAENGINE_Manifold *m) { c2CapsuletoCapsuleManifold(*(c2Capsule *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
+
+void metadot_circle_to_poly_manifold(METAENGINE_Circle A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+    c2CircletoPolyManifold(*(c2Circle *)&A, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
+}
+
+void metadot_aabb_to_poly_manifold(METAENGINE_Aabb A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+    c2AABBtoPolyManifold(*(c2AABB *)&A, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
+}
+
+void metadot_capsule_to_poly_manifold(METAENGINE_Capsule A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+    c2CapsuletoPolyManifold(*(c2Capsule *)&A, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
+}
+
+void metadot_poly_to_poly_manifold(const METAENGINE_Poly *A, const METAENGINE_Transform *ax, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+    c2PolytoPolyManifold((c2Poly *)A, (c2x *)ax, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
+}
+
+float metadot_gjk(const void *A, METAENGINE_ShapeType typeA, const METAENGINE_Transform *ax_ptr, const void *B, METAENGINE_ShapeType typeB, const METAENGINE_Transform *bx_ptr, METAENGINE_V2 *outA,
+                  METAENGINE_V2 *outB, int use_radius, int *iterations, METAENGINE_GjkCache *cache) {
+    return c2GJK(A, (C2_TYPE)typeA, (c2x *)ax_ptr, B, (C2_TYPE)typeB, (c2x *)bx_ptr, (c2v *)outA, (c2v *)outB, use_radius, iterations, (c2GJKCache *)cache);
+}
+
+METAENGINE_ToiResult metadot_toi(const void *A, METAENGINE_ShapeType typeA, const METAENGINE_Transform *ax_ptr, METAENGINE_V2 vA, const void *B, METAENGINE_ShapeType typeB,
+                                 const METAENGINE_Transform *bx_ptr, METAENGINE_V2 vB, int use_radius) {
+    METAENGINE_ToiResult result;
+    c2TOIResult c2result = c2TOI(A, (C2_TYPE)typeA, (c2x *)ax_ptr, *(c2v *)&vA, B, (C2_TYPE)typeB, (c2x *)bx_ptr, *(c2v *)&vB, use_radius);
+    result = *(METAENGINE_ToiResult *)&c2result;
+    return result;
+}
+
+void metadot_inflate(void *shape, METAENGINE_ShapeType type, float skin_factor) { c2Inflate(shape, (C2_TYPE)type, skin_factor); }
+
+int metadot_hull(METAENGINE_V2 *verts, int count) { return c2Hull((c2v *)verts, count); }
+
+void metadot_norms(METAENGINE_V2 *verts, METAENGINE_V2 *norms, int count) { c2Norms((c2v *)verts, (c2v *)norms, count); }
+
+void metadot_make_poly(METAENGINE_Poly *p) { c2MakePoly((c2Poly *)p); }
+
+METAENGINE_V2 metadot_centroid(const METAENGINE_V2 *metadot_verts, int count) {
+    using namespace MetaEngine;
+    const v2 *verts = (const v2 *)metadot_verts;
+    if (count == 0)
+        return metadot_v2(0, 0);
+    else if (count == 1)
+        return verts[0];
+    else if (count == 2)
+        return (verts[0] + verts[1]) * 0.5f;
+    METAENGINE_V2 c = metadot_v2(0, 0);
+    float area_sum = 0;
+    METAENGINE_V2 p0 = verts[0];
+    for (int i = 0; i < count; ++i) {
+        METAENGINE_V2 p1 = verts[0] - p0;
+        METAENGINE_V2 p2 = verts[i] - p0;
+        METAENGINE_V2 p3 = (i + 1 == count ? verts[0] : verts[i + 1]) - p0;
+        METAENGINE_V2 e1 = p2 - p1;
+        METAENGINE_V2 e2 = p3 - p1;
+        float area = 0.5f * metadot_cross(e1, e2);
+        area_sum += area;
+        c = c + (p1 + p2 + p3) * area * (1.0f / 3.0f);
+    }
+    return c * (1.0f / area_sum) + p0;
+}
+
+int metadot_collided(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB) {
+    return c2Collided(A, (c2x *)ax, (C2_TYPE)typeA, B, (c2x *)bx, (C2_TYPE)typeB);
+}
+
+void metadot_collide(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB, METAENGINE_Manifold *m) {
+    c2Collide(A, (c2x *)ax, (C2_TYPE)typeA, B, (c2x *)bx, (C2_TYPE)typeB, (c2Manifold *)m);
+}
+
+bool metadot_cast_ray(METAENGINE_Ray A, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB, METAENGINE_Raycast *out) {
+    return c2CastRay(*(c2Ray *)&A, B, (c2x *)bx, (C2_TYPE)typeB, (c2Raycast *)out);
+}
+
+#pragma endregion c2

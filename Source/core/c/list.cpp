@@ -28,7 +28,7 @@ void FreeList(List *list) {
 int IsListEmpty(List list) { return list.first == NULL ? 1 : 0; }
 
 void InsertListEnd(List *list, void *e) {
-    ListCellPointer newCell = malloc(sizeof(ListCell));
+    ListCellPointer newCell = (ListCellPointer)malloc(sizeof(ListCell));
     newCell->previous = list->last;
     newCell->next = NULL;
 
@@ -47,7 +47,7 @@ void InsertListEnd(List *list, void *e) {
 }
 
 void InsertListStart(List *list, void *e) {
-    ListCellPointer newCell = malloc(sizeof(ListCell));
+    ListCellPointer newCell = (ListCellPointer)malloc(sizeof(ListCell));
     newCell->previous = NULL;
     newCell->next = list->first;
 
@@ -79,7 +79,7 @@ void InsertListIndex(List *list, void *e, int index) {
 
     // If the index is already ocupied
     if (current != NULL) {
-        ListCellPointer newCell = malloc(sizeof(ListCell));
+        ListCellPointer newCell = (ListCellPointer)malloc(sizeof(ListCell));
         newCell->element = malloc(list->elementSize);
         memcpy(newCell->element, e, list->elementSize);
         newCell->next = current;

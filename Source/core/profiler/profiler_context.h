@@ -40,7 +40,7 @@ class ProfilerContext {
         Count
     };
 
-    MetaEngine::Mutex m_mutex;
+    MetaEngine::pthread_Mutex m_mutex;
     ProfilerFreeList_t m_scopesAllocator;
     uint32_t m_scopesOpen;
     ProfilerScope* m_scopesCapture[METADOT_SCOPES_MAX];
