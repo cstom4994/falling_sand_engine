@@ -7,7 +7,7 @@
 #include <cstring>
 #include <filesystem>
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
 #include "core/platform.h"
@@ -285,7 +285,7 @@ void metadot_fs_freestring(void* ptr) {
     if (NULL != ptr) gc_free(&gc, ptr);
 }
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/stl.h"
 #include "libs/physfs/physfs.h"
 

@@ -43,7 +43,7 @@
 #include "libs/imgui/imgui.h"
 #include "libs/physfs/physfs.h"
 #include "mathlib.hpp"
-#include "memory.hpp"
+
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -172,11 +172,11 @@ int Game::init(int argc, char *argv[]) {
         std::string displayMode = "windowed";
 
         if (displayMode == "windowed") {
-            SetDisplayMode(engine_displaymode::WINDOWED);
+            metadot_set_displaymode(engine_displaymode::WINDOWED);
         } else if (displayMode == "borderless") {
-            SetDisplayMode(engine_displaymode::BORDERLESS);
+            metadot_set_displaymode(engine_displaymode::BORDERLESS);
         } else if (displayMode == "fullscreen") {
-            SetDisplayMode(engine_displaymode::FULLSCREEN);
+            metadot_set_displaymode(engine_displaymode::FULLSCREEN);
         }
 
         int w;
@@ -186,8 +186,8 @@ int Game::init(int argc, char *argv[]) {
         R_ResetProjection(Render.realTarget);
         resolu(w, h);
 
-        SetVSync(false);
-        SetMinimizeOnLostFocus(false);
+        metadot_set_VSync(false);
+        metadot_set_minimize_onlostfocus(false);
     }
 
     // init threadpools
@@ -1117,7 +1117,7 @@ int Game::exit() {
     METADOT_DELETE(C, GameIsolate_.shaderworker, ShaderWorkerSystem);
 
     global.audioEngine.Shutdown();
-    EndWindow();
+    metadot_endwindow();
 
     EndEngine(0);
 
@@ -1505,7 +1505,7 @@ void Game::tick() {
                     state = stateAfterLoad;
                 };
 
-                SetWindowFlash(engine_windowflashaction::START_COUNT, 1, 333);
+                metadot_set_windowflash(engine_windowflashaction::START_COUNT, 1, 333);
             }
         }
     } else {

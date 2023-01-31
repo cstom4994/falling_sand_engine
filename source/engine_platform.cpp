@@ -34,7 +34,7 @@ int ParseRunArgs(int argc, char *argv[]) {
     return METADOT_OK;
 }
 
-int InitWindow() {
+int metadot_initwindow() {
 
     // init sdl
     METADOT_INFO("Initializing SDL...");
@@ -149,7 +149,7 @@ int InitWindow() {
     return METADOT_OK;
 }
 
-void EndWindow() {
+void metadot_endwindow() {
 
     cs_shutdown();
     metadot_fs_destroy();
@@ -160,7 +160,7 @@ void EndWindow() {
     R_Quit();
 }
 
-void SetDisplayMode(engine_displaymode mode) {
+void metadot_set_displaymode(engine_displaymode mode) {
     switch (mode) {
         case WINDOWED:
             SDL_SetWindowDisplayMode(Core.window, NULL);
@@ -192,7 +192,7 @@ void SetDisplayMode(engine_displaymode mode) {
     }
 }
 
-void SetWindowFlash(engine_windowflashaction action, int count, int period) {
+void metadot_set_windowflash(engine_windowflashaction action, int count, int period) {
     // TODO: look into alternatives for linux/crossplatform
 #ifdef METADOT_PLATFORM_WINDOWS
 
@@ -223,35 +223,33 @@ void SetWindowFlash(engine_windowflashaction action, int count, int period) {
 #endif
 }
 
-void SetVSync(bool vsync) {
+void metadot_set_VSync(bool vsync) {
     SDL_GL_SetSwapInterval(vsync ? 1 : 0);
     // GameUI::OptionsUI::vsync = vsync;
 }
 
-void SetMinimizeOnLostFocus(bool minimize) {
+void metadot_set_minimize_onlostfocus(bool minimize) {
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
     // GameUI::OptionsUI::minimizeOnFocus = minimize;
 }
 
-void SetWindowTitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }
+void metadot_set_windowtitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }
 
-R_vec2 GetMousePos() {
+R_vec2 metadot_get_mousepos() {
     I32 x, y;
     SDL_GetMouseState(&x, &y);
     return (R_vec2){.x = (float)x, .y = (float)y};
 }
 
-
-char* metadot_clipboard_get()
-{
-	char* text = SDL_GetClipboardText();
-	return text;
+char *metadot_clipboard_get() {
+    char *text = SDL_GetClipboardText();
+    return text;
 }
 
-METAENGINE_Result metadot_clipboard_set(const char* string)
-{
-	int ret = SDL_SetClipboardText(string);
-	if (ret) return metadot_result_error("Unable to set clipboard data.");
-	else return metadot_result_success();
+METAENGINE_Result metadot_clipboard_set(const char *string) {
+    int ret = SDL_SetClipboardText(string);
+    if (ret)
+        return metadot_result_error("Unable to set clipboard data.");
+    else
+        return metadot_result_success();
 }
-

@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/c/list.h"
 #include "core/const.h"
 #include "core/core.hpp"

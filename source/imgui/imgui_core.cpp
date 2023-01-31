@@ -12,7 +12,7 @@
 #include "audio/audio.h"
 #include "chunk.hpp"
 #include "code_reflection.hpp"
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/const.h"
 #include "core/core.h"
 #include "core/core.hpp"
@@ -36,7 +36,7 @@
 #include "imgui/lua/script.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
-#include "memory.hpp"
+
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -573,10 +573,10 @@ CSTDTime | {6} | Nothing
 #if defined(METADOT_DEBUG)
             ImGui::Dummy(ImVec2(0.0f, 10.0f));
             ImGui::Text("GC:\n");
-            for (auto [name, size] : GC::MemoryDebugMap) {
+            for (auto [name, size] : AllocationMetrics::MemoryDebugMap) {
                 ImGui::Text("%s", MetaEngine::Format("   {0} {1}", name, size).c_str());
             }
-            // ImGui::Auto(GC::MemoryDebugMap, "map");
+            // ImGui::Auto(AllocationMetrics::MemoryDebugMap, "map");
 #endif
             ImGui::EndTabItem();
         }

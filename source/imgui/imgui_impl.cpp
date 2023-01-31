@@ -15,7 +15,7 @@
 #include <string>
 #include <utility>
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.hpp"
 #include "filesystem.h"
 #include "renderer/renderer_gpu.h"

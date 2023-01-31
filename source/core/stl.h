@@ -6,7 +6,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "libs/cute/cute_sync.h"
 

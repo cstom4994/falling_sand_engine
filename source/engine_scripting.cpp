@@ -1,5 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
+#include "engine_scripting.hpp"
+
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -10,7 +12,7 @@
 #include "SDL_surface.h"
 #include "background.hpp"
 #include "code_reflection.hpp"
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
@@ -19,7 +21,6 @@
 #include "core/profiler/profiler_lua.h"
 #include "ecs/luaecs.h"
 #include "engine_funcwrap.hpp"
-#include "engine_scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -27,7 +28,6 @@
 #include "imgui/imgui_impl.hpp"
 #include "internal/builtin_lpeg.h"
 #include "libs/lua/ffi.h"
-#include "memory.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.hpp"
 

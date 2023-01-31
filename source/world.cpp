@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "chunk.hpp"
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
@@ -30,7 +30,7 @@
 #include "game_utils/particles.h"
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
-#include "memory.hpp"
+
 #include "reflectionflat.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "world_generator.cpp"

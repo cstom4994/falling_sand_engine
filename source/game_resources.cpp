@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "SDL_surface.h"
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "filesystem.h"
 #include "renderer/renderer_gpu.h"
@@ -126,11 +126,11 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
 C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
-    C_Rect *srcR = (C_Rect *)gc_malloc(&gc, sizeof(C_Rect));
+    C_Rect *srcR = new C_Rect;
     srcR->w = src->w;
     srcR->h = src->h;
 
-    C_Rect *dstR = (C_Rect *)gc_malloc(&gc, sizeof(C_Rect));
+    C_Rect *dstR = new C_Rect;
     dstR->w = dest->w;
     dstR->h = dest->h;
 
@@ -139,8 +139,8 @@ C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
                             SDL_BLENDMODE_NONE);  // override instead of overlap (prevents transparent things darkening)
     SDL_BlitScaled(src, srcR, dest, dstR);
 
-    gc_free(&gc, srcR);
-    gc_free(&gc, dstR);
+    delete srcR;
+    delete dstR;
     src = dest;
     return src;
 }

@@ -2,7 +2,7 @@
 
 #include "stl.h"
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "sdl_wrapper.h"
 
 #define CUTE_SYNC_IMPLEMENTATION

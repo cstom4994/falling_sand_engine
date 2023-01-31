@@ -19,14 +19,14 @@ typedef struct engine_platform {
 } engine_platform;
 
 int ParseRunArgs(int argc, char* argv[]);
-int InitWindow();
-void EndWindow();
-void SetDisplayMode(engine_displaymode mode);
-void SetWindowFlash(engine_windowflashaction action, int count, int period);
-void SetVSync(bool vsync);
-void SetMinimizeOnLostFocus(bool minimize);
-void SetWindowTitle(const char* title);
-R_vec2 GetMousePos();
+int metadot_initwindow();
+void metadot_endwindow();
+void metadot_set_displaymode(engine_displaymode mode);
+void metadot_set_windowflash(engine_windowflashaction action, int count, int period);
+void metadot_set_VSync(bool vsync);
+void metadot_set_minimize_onlostfocus(bool minimize);
+void metadot_set_windowtitle(const char* title);
+R_vec2 metadot_get_mousepos();
 char* metadot_clipboard_get();
 METAENGINE_Result metadot_clipboard_set(const char* string);
 

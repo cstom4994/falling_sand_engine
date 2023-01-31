@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 // Including some codes from https://github.com/mkirchner/gc
 
-#include "alloc.h"
+#include "alloc.hpp"
 
 #include <assert.h>
 #include <errno.h>
@@ -9,9 +9,133 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <iostream>
+#include <limits>
+#include <utility>
+
+#ifdef _DEBUG
+#include <iostream>
+#endif
+
 #include "core/stl.h"
 
 // #include "core/c/auto_c.h"
+
+AllocationMetrics g_AllocationMetrics{.TotalAllocated = 0, .TotalFree = 0};
+
+#if defined(METADOT_DEBUG)
+std::map<std::string_view, std::size_t> AllocationMetrics::MemoryDebugMap = {};
+#endif
+
+// Static GC Field
+GCField_S(CAllocator, C);
+GCField_S(LinearAllocator, S);
+
+U64 MemCurrentUsageBytes() { return g_AllocationMetrics.TotalAllocated - g_AllocationMetrics.TotalFree; }
+U64 MemCurrentUsageMB() {
+    U64 bytes = MemCurrentUsageBytes();
+    return (U64)(bytes / 1048576);
+}
+
+void *operator new(size_t size) {
+    // METADOT_BUG("Alloc %d memory", size);
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::malloc(size);
+}
+void operator delete(void *ptr, size_t size) throw() {
+    // METADOT_BUG("Free %d memory", size);
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new(size_t size, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::malloc(size);
+}
+
+void operator delete(void *ptr, size_t size, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new(size_t size, size_t alignment) noexcept(false) {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::aligned_alloc(alignment, size);
+}
+
+void operator delete(void *ptr, size_t size, size_t alignment) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new(size_t size, size_t alignment, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::aligned_alloc(alignment, size);
+}
+
+void operator delete(void *ptr, size_t size, size_t alignment, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new[](size_t size) noexcept(false) {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::malloc(size);
+}
+
+void operator delete[](void *ptr, size_t size) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new[](size_t size, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::malloc(size);
+}
+
+void operator delete[](void *ptr, size_t size, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new[](size_t size, size_t alignment) noexcept(false) {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::aligned_alloc(alignment, size);
+}
+
+void operator delete[](void *ptr, size_t size, size_t alignment) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
+
+void *operator new[](size_t size, size_t alignment, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalAllocated += size;
+
+    return std::aligned_alloc(alignment, size);
+}
+
+void operator delete[](void *ptr, size_t size, size_t alignment, const std::nothrow_t &) throw() {
+    g_AllocationMetrics.TotalFree += size;
+
+    return std::free(ptr);
+}
 
 #define PTRSIZE sizeof(char *)
 
@@ -286,14 +410,14 @@ static void gc_allocation_map_remove(AllocationMap *am, void *ptr, bool allow_re
     }
 }
 
-static void *gc_mcalloc(size_t count, size_t size) {
+static void *gc_mcalloc(size_t size, size_t count) {
     if (!count) return malloc(size);
     return calloc(count, size);
 }
 
 static bool gc_needs_sweep(GarbageCollector *gc) { return gc->allocs->size > gc->allocs->sweep_limit; }
 
-static void *gc_allocate(GarbageCollector *gc, size_t count, size_t size, void (*dtor)(void *)) {
+static void *gc_allocate(GarbageCollector *gc, size_t size, size_t count, void (*dtor)(void *)) {
     /* Allocation logic that generalizes over malloc/calloc. */
 
     /* Check if we reached the high-water mark and need to clean up */
@@ -348,9 +472,9 @@ void *gc_make_static(GarbageCollector *gc, void *ptr) {
 
 void *gc_malloc_ext(GarbageCollector *gc, size_t size, void (*dtor)(void *)) { return gc_allocate(gc, 0, size, dtor); }
 
-void *gc_calloc(GarbageCollector *gc, size_t count, size_t size) { return gc_calloc_ext(gc, count, size, NULL); }
+void *gc_calloc(GarbageCollector *gc, size_t size, size_t count) { return gc_calloc_ext(gc, count, size, NULL); }
 
-void *gc_calloc_ext(GarbageCollector *gc, size_t count, size_t size, void (*dtor)(void *)) { return gc_allocate(gc, count, size, dtor); }
+void *gc_calloc_ext(GarbageCollector *gc, size_t size, size_t count, void (*dtor)(void *)) { return gc_allocate(gc, count, size, dtor); }
 
 void *gc_realloc(GarbageCollector *gc, void *p, size_t size) {
     Allocation *alloc = gc_allocation_map_get(gc->allocs, p);
@@ -534,142 +658,6 @@ char *gc_strdup(GarbageCollector *gc, const char *s) {
     return (char *)memcpy(_new, s, len);
 }
 
-#pragma region lua_safe_alloc
-
-void *lua_simple_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
-    (void)ud;
-    (void)osize; /* not used */
-    if (nsize == 0) {
-        free(ptr);
-        return NULL;
-    } else
-        return realloc(ptr, nsize);
-}
-
-struct LuaAllocator *new_allocator(void) {
-    struct LuaAllocator *alloc = (LuaAllocator *)malloc(sizeof(struct LuaAllocator));
-    alloc->blocks = (LuaMemBlock *)malloc(sizeof(struct LuaMemBlock) * 4);
-    alloc->nb_blocks = 0;
-    alloc->size_blocks = 4;
-    alloc->total_allocated = 0;
-#ifdef _DEBUG_ALLOC
-    fprintf(stderr, "Created allocator %p\n", alloc);
-#endif
-    return alloc;
-}
-
-void delete_allocator(struct LuaAllocator *alloc) {
-    size_t blk;
-#ifdef _DEBUG_ALLOC
-    fprintf(stderr, "Deleting allocator %p\n", alloc);
-#endif
-    for (blk = 0; blk < alloc->nb_blocks; ++blk) free(alloc->blocks[blk].ptr);
-    free(alloc->blocks);
-    free(alloc);
-}
-
-void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
-    struct LuaAllocator *alloc = (LuaAllocator *)ud;
-    size_t blk;
-#ifdef _DEBUG_ALLOC
-    {
-        size_t i;
-        for (i = 0; i < alloc->nb_blocks; ++i) {
-            fprintf(stderr, "%p %u ", alloc->blocks[i].ptr, alloc->blocks[i].size);
-            if (i % 4 == 0) fprintf(stderr, "\n");
-        }
-        if (i % 4 != 1)
-            fprintf(stderr, "\n\n");
-        else
-            fprintf(stderr, "\n");
-    }
-    fprintf(stderr,
-            "Lua request on allocator %p: "
-            "ptr=%p, osize=%u, nsize=%u\n",
-            alloc, ptr, osize, nsize);
-#endif
-    if (ptr == NULL) {
-        if (nsize == 0) {
-#ifdef _DEBUG_ALLOC
-            fprintf(stderr, "Returning NULL...\n");
-#endif
-            return NULL;
-        }
-        blk = alloc->nb_blocks;
-        alloc->nb_blocks++;
-        if (alloc->nb_blocks > alloc->size_blocks) {
-            alloc->size_blocks *= 2;
-            alloc->blocks = (LuaMemBlock *)realloc(alloc->blocks, sizeof(struct LuaMemBlock) * alloc->size_blocks);
-#ifdef _DEBUG_ALLOC
-            fprintf(stderr, "Growing block table to %u blocks\n", alloc->size_blocks);
-#endif
-        }
-        alloc->blocks[blk].ptr = NULL;
-        alloc->blocks[blk].size = 0;
-#ifdef _DEBUG_ALLOC
-        fprintf(stderr, "Allocated new block %u\n", blk);
-#endif
-    } else {
-        /* Bisect to the block */
-        size_t low = 0, high = alloc->nb_blocks;
-        while (low < high) {
-            size_t mid = (low + high) / 2;
-            if (alloc->blocks[mid].ptr < ptr)
-                low = mid + 1;
-            else
-                high = mid;
-        }
-        blk = low;
-#ifdef _DEBUG_ALLOC
-        fprintf(stderr, "Found block %u\n", blk);
-#endif
-    }
-    assert(alloc->blocks[blk].ptr == ptr && (!ptr || alloc->blocks[blk].size == osize));
-    if (nsize == 0) {
-        free(ptr);
-        alloc->total_allocated -= osize;
-        memmove(&alloc->blocks[blk], &alloc->blocks[blk + 1], sizeof(struct LuaMemBlock) * (alloc->nb_blocks - blk - 1));
-        alloc->nb_blocks--;
-#ifdef _DEBUG_ALLOC
-        fprintf(stderr, "Removed block, now have %u blocks, %u bytes\n\n", alloc->nb_blocks, alloc->total_allocated);
-#endif
-        return NULL;
-    } else {
-        ptr = realloc(ptr, nsize);
-#ifdef _DEBUG_ALLOC
-        fprintf(stderr, "ptr=%p ", ptr);
-#endif
-        alloc->blocks[blk].ptr = ptr;
-        alloc->total_allocated += nsize - alloc->blocks[blk].size;
-        alloc->blocks[blk].size = nsize;
-        while (blk > 0 && alloc->blocks[blk].ptr < alloc->blocks[blk - 1].ptr) {
-            struct LuaMemBlock tmp = alloc->blocks[blk];
-            alloc->blocks[blk] = alloc->blocks[blk - 1];
-            alloc->blocks[blk - 1] = tmp;
-            blk--;
-#ifdef _DEBUG_ALLOC
-            fprintf(stderr, "< ");
-#endif
-        }
-        while (blk + 1 < alloc->nb_blocks && alloc->blocks[blk].ptr > alloc->blocks[blk + 1].ptr) {
-            struct LuaMemBlock tmp = alloc->blocks[blk];
-            alloc->blocks[blk] = alloc->blocks[blk + 1];
-            alloc->blocks[blk + 1] = tmp;
-            blk++;
-#ifdef _DEBUG_ALLOC
-            fprintf(stderr, "> ");
-#endif
-        }
-#ifdef _DEBUG_ALLOC
-        fprintf(stderr, "\n");
-        fprintf(stderr, "Moved block to %u, now have %u bytes\n\n", blk, alloc->total_allocated);
-#endif
-        return ptr;
-    }
-}
-
-#pragma endregion lua_safe_alloc
-
 #pragma region engine_framework
 
 void *metadot_aligned_alloc(size_t size, int alignment) {
@@ -806,3 +794,407 @@ void metadot_memory_pool_free(METAENGINE_MemoryPool *pool, void *element) {
 }
 
 #pragma endregion engine_framework
+
+#pragma region Allocator
+
+CAllocator::CAllocator() : Allocator(0) {}
+
+void CAllocator::Init() {}
+
+CAllocator::~CAllocator() {}
+
+void *CAllocator::Allocate(const std::size_t size, const std::size_t alignment) { return gc_malloc(&gc, size); }
+
+void CAllocator::Free(void *ptr) { gc_free(&gc, ptr); }
+
+FreeListAllocator::FreeListAllocator(const std::size_t totalSize, const PlacementPolicy pPolicy) : Allocator(totalSize) { m_pPolicy = pPolicy; }
+
+void FreeListAllocator::Init() {
+    if (m_start_ptr != nullptr) {
+        gc_free(&gc, m_start_ptr);
+        m_start_ptr = nullptr;
+    }
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
+
+    this->Reset();
+}
+
+FreeListAllocator::~FreeListAllocator() {
+    gc_free(&gc, m_start_ptr);
+    m_start_ptr = nullptr;
+}
+
+void *FreeListAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
+    const std::size_t allocationHeaderSize = sizeof(FreeListAllocator::AllocationHeader);
+    const std::size_t freeHeaderSize = sizeof(FreeListAllocator::FreeHeader);
+    assert("Allocation size must be bigger" && size >= sizeof(Node));
+    assert("Alignment must be 8 at least" && alignment >= 8);
+
+    // Search through the free list for a free block that has enough space to allocate our data
+    std::size_t padding;
+    Node *affectedNode, *previousNode;
+    this->Find(size, alignment, padding, previousNode, affectedNode);
+    assert(affectedNode != nullptr && "Not enough memory");
+
+    const std::size_t alignmentPadding = padding - allocationHeaderSize;
+    const std::size_t requiredSize = size + padding;
+
+    const std::size_t rest = affectedNode->data.blockSize - requiredSize;
+
+    if (rest > 0) {
+        // We have to split the block into the data block and a free block of size 'rest'
+        Node *newFreeNode = (Node *)((std::size_t)affectedNode + requiredSize);
+        newFreeNode->data.blockSize = rest;
+        m_freeList.insert(affectedNode, newFreeNode);
+    }
+    m_freeList.remove(previousNode, affectedNode);
+
+    // Setup data block
+    const std::size_t headerAddress = (std::size_t)affectedNode + alignmentPadding;
+    const std::size_t dataAddress = headerAddress + allocationHeaderSize;
+    ((FreeListAllocator::AllocationHeader *)headerAddress)->blockSize = requiredSize;
+    ((FreeListAllocator::AllocationHeader *)headerAddress)->padding = alignmentPadding;
+
+    m_used += requiredSize;
+    m_peak = std::max(m_peak, m_used);
+
+#ifdef _DEBUG
+    std::cout << "A"
+              << "\t@H " << (void *)headerAddress << "\tD@ " << (void *)dataAddress << "\tS " << ((FreeListAllocator::AllocationHeader *)headerAddress)->blockSize << "\tAP " << alignmentPadding
+              << "\tP " << padding << "\tM " << m_used << "\tR " << rest << std::endl;
+#endif
+
+    return (void *)dataAddress;
+}
+
+void FreeListAllocator::Find(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode) {
+    switch (m_pPolicy) {
+        case FIND_FIRST:
+            FindFirst(size, alignment, padding, previousNode, foundNode);
+            break;
+        case FIND_BEST:
+            FindBest(size, alignment, padding, previousNode, foundNode);
+            break;
+    }
+}
+
+void FreeListAllocator::FindFirst(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode) {
+    // Iterate list and return the first free block with a size >= than given size
+    Node *it = m_freeList.head, *itPrev = nullptr;
+
+    while (it != nullptr) {
+        padding = AllocatorUtils::CalculatePaddingWithHeader((std::size_t)it, alignment, sizeof(FreeListAllocator::AllocationHeader));
+        const std::size_t requiredSpace = size + padding;
+        if (it->data.blockSize >= requiredSpace) {
+            break;
+        }
+        itPrev = it;
+        it = it->next;
+    }
+    previousNode = itPrev;
+    foundNode = it;
+}
+
+void FreeListAllocator::FindBest(const std::size_t size, const std::size_t alignment, std::size_t &padding, Node *&previousNode, Node *&foundNode) {
+    // Iterate WHOLE list keeping a pointer to the best fit
+    std::size_t smallestDiff = std::numeric_limits<std::size_t>::max();
+    Node *bestBlock = nullptr;
+    Node *it = m_freeList.head, *itPrev = nullptr;
+    while (it != nullptr) {
+        padding = AllocatorUtils::CalculatePaddingWithHeader((std::size_t)it, alignment, sizeof(FreeListAllocator::AllocationHeader));
+        const std::size_t requiredSpace = size + padding;
+        if (it->data.blockSize >= requiredSpace && (it->data.blockSize - requiredSpace < smallestDiff)) {
+            bestBlock = it;
+        }
+        itPrev = it;
+        it = it->next;
+    }
+    previousNode = itPrev;
+    foundNode = bestBlock;
+}
+
+void FreeListAllocator::Free(void *ptr) {
+    // Insert it in a sorted position by the address number
+    const std::size_t currentAddress = (std::size_t)ptr;
+    const std::size_t headerAddress = currentAddress - sizeof(FreeListAllocator::AllocationHeader);
+    const FreeListAllocator::AllocationHeader *allocationHeader{(FreeListAllocator::AllocationHeader *)headerAddress};
+
+    Node *freeNode = (Node *)(headerAddress);
+    freeNode->data.blockSize = allocationHeader->blockSize + allocationHeader->padding;
+    freeNode->next = nullptr;
+
+    Node *it = m_freeList.head;
+    Node *itPrev = nullptr;
+    while (it != nullptr) {
+        if (ptr < it) {
+            m_freeList.insert(itPrev, freeNode);
+            break;
+        }
+        itPrev = it;
+        it = it->next;
+    }
+
+    m_used -= freeNode->data.blockSize;
+
+    // Merge contiguous nodes
+    Coalescence(itPrev, freeNode);
+
+#ifdef _DEBUG
+    std::cout << "F"
+              << "\t@ptr " << ptr << "\tH@ " << (void *)freeNode << "\tS " << freeNode->data.blockSize << "\tM " << m_used << std::endl;
+#endif
+}
+
+void FreeListAllocator::Coalescence(Node *previousNode, Node *freeNode) {
+    if (freeNode->next != nullptr && (std::size_t)freeNode + freeNode->data.blockSize == (std::size_t)freeNode->next) {
+        freeNode->data.blockSize += freeNode->next->data.blockSize;
+        m_freeList.remove(freeNode, freeNode->next);
+#ifdef _DEBUG
+        std::cout << "\tMerging(n) " << (void *)freeNode << " & " << (void *)freeNode->next << "\tS " << freeNode->data.blockSize << std::endl;
+#endif
+    }
+
+    if (previousNode != nullptr && (std::size_t)previousNode + previousNode->data.blockSize == (std::size_t)freeNode) {
+        previousNode->data.blockSize += freeNode->data.blockSize;
+        m_freeList.remove(previousNode, freeNode);
+#ifdef _DEBUG
+        std::cout << "\tMerging(p) " << (void *)previousNode << " & " << (void *)freeNode << "\tS " << previousNode->data.blockSize << std::endl;
+#endif
+    }
+}
+
+void FreeListAllocator::Reset() {
+    m_used = 0;
+    m_peak = 0;
+    Node *firstNode = (Node *)m_start_ptr;
+    firstNode->data.blockSize = m_totalSize;
+    firstNode->next = nullptr;
+    m_freeList.head = nullptr;
+    m_freeList.insert(nullptr, firstNode);
+}
+
+LinearAllocator::LinearAllocator(const std::size_t totalSize) : Allocator(totalSize) {}
+
+void LinearAllocator::Init() {
+    if (m_start_ptr != nullptr) {
+        gc_free(&gc, m_start_ptr);
+    }
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
+    m_offset = 0;
+}
+
+LinearAllocator::~LinearAllocator() {
+    gc_free(&gc, m_start_ptr);
+    m_start_ptr = nullptr;
+}
+
+void *LinearAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
+    std::size_t padding = 0;
+    std::size_t paddedAddress = 0;
+    const std::size_t currentAddress = (std::size_t)m_start_ptr + m_offset;
+
+    if (alignment != 0 && m_offset % alignment != 0) {
+        // Alignment is required. Find the next aligned memory address and update offset
+        padding = AllocatorUtils::CalculatePadding(currentAddress, alignment);
+    }
+
+    if (m_offset + padding + size > m_totalSize) {
+        return nullptr;
+    }
+
+    m_offset += padding;
+    const std::size_t nextAddress = currentAddress + padding;
+    m_offset += size;
+
+#ifdef _DEBUG
+    std::cout << "A"
+              << "\t@C " << (void *)currentAddress << "\t@R " << (void *)nextAddress << "\tO " << m_offset << "\tP " << padding << std::endl;
+#endif
+
+    m_used = m_offset;
+    m_peak = std::max(m_peak, m_used);
+
+    return (void *)nextAddress;
+}
+
+void LinearAllocator::Free(void *ptr) { assert(false && "Use Reset() method"); }
+
+void LinearAllocator::Reset() {
+    m_offset = 0;
+    m_used = 0;
+    m_peak = 0;
+}
+
+PoolAllocator::PoolAllocator(const std::size_t totalSize, const std::size_t chunkSize) : Allocator(totalSize) {
+    assert(chunkSize >= 8 && "Chunk size must be greater or equal to 8");
+    assert(totalSize % chunkSize == 0 && "Total Size must be a multiple of Chunk Size");
+    this->m_chunkSize = chunkSize;
+}
+
+void PoolAllocator::Init() {
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
+    this->Reset();
+}
+
+PoolAllocator::~PoolAllocator() { gc_free(&gc, m_start_ptr); }
+
+void *PoolAllocator::Allocate(const std::size_t allocationSize, const std::size_t alignment) {
+    assert(allocationSize == this->m_chunkSize && "Allocation size must be equal to chunk size");
+
+    Node *freePosition = m_freeList.pop();
+
+    assert(freePosition != nullptr && "The pool allocator is full");
+
+    m_used += m_chunkSize;
+    m_peak = std::max(m_peak, m_used);
+#ifdef _DEBUG
+    std::cout << "A"
+              << "\t@S " << m_start_ptr << "\t@R " << (void *)freePosition << "\tM " << m_used << std::endl;
+#endif
+
+    return (void *)freePosition;
+}
+
+void PoolAllocator::Free(void *ptr) {
+    m_used -= m_chunkSize;
+
+    m_freeList.push((Node *)ptr);
+
+#ifdef _DEBUG
+    std::cout << "F"
+              << "\t@S " << m_start_ptr << "\t@F " << ptr << "\tM " << m_used << std::endl;
+#endif
+}
+
+void PoolAllocator::Reset() {
+    m_used = 0;
+    m_peak = 0;
+    // Create a linked-list with all free positions
+    const int nChunks = m_totalSize / m_chunkSize;
+    for (int i = 0; i < nChunks; ++i) {
+        std::size_t address = (std::size_t)m_start_ptr + i * m_chunkSize;
+        m_freeList.push((Node *)address);
+    }
+}
+
+StackAllocator::StackAllocator(const std::size_t totalSize) : Allocator(totalSize) {}
+
+void StackAllocator::Init() {
+    if (m_start_ptr != nullptr) {
+        gc_free(&gc, m_start_ptr);
+    }
+    m_start_ptr = gc_malloc(&gc, m_totalSize);
+    m_offset = 0;
+}
+
+StackAllocator::~StackAllocator() {
+    gc_free(&gc, m_start_ptr);
+    m_start_ptr = nullptr;
+}
+
+void *StackAllocator::Allocate(const std::size_t size, const std::size_t alignment) {
+    const std::size_t currentAddress = (std::size_t)m_start_ptr + m_offset;
+
+    std::size_t padding = AllocatorUtils::CalculatePaddingWithHeader(currentAddress, alignment, sizeof(AllocationHeader));
+
+    if (m_offset + padding + size > m_totalSize) {
+        return nullptr;
+    }
+    m_offset += padding;
+
+    const std::size_t nextAddress = currentAddress + padding;
+    const std::size_t headerAddress = nextAddress - sizeof(AllocationHeader);
+    AllocationHeader allocationHeader{padding};
+    AllocationHeader *headerPtr = (AllocationHeader *)headerAddress;
+    headerPtr = &allocationHeader;
+
+    m_offset += size;
+
+#ifdef _DEBUG
+    std::cout << "A"
+              << "\t@C " << (void *)currentAddress << "\t@R " << (void *)nextAddress << "\tO " << m_offset << "\tP " << padding << std::endl;
+#endif
+    m_used = m_offset;
+    m_peak = std::max(m_peak, m_used);
+
+    return (void *)nextAddress;
+}
+
+void StackAllocator::Free(void *ptr) {
+    // Move offset back to clear address
+    const std::size_t currentAddress = (std::size_t)ptr;
+    const std::size_t headerAddress = currentAddress - sizeof(AllocationHeader);
+    const AllocationHeader *allocationHeader{(AllocationHeader *)headerAddress};
+
+    m_offset = currentAddress - allocationHeader->padding - (std::size_t)m_start_ptr;
+    m_used = m_offset;
+
+#ifdef _DEBUG
+    std::cout << "F"
+              << "\t@C " << (void *)currentAddress << "\t@F " << (void *)((char *)m_start_ptr + m_offset) << "\tO " << m_offset << std::endl;
+#endif
+}
+
+void StackAllocator::Reset() {
+    m_offset = 0;
+    m_used = 0;
+    m_peak = 0;
+}
+
+#pragma endregion Allocator
+
+#if defined(METADOT_LEAK_TEST)
+
+int const MY_SIZE = 1024 * 512;
+
+static std::array<void *, MY_SIZE> myAlloc{
+        nullptr,
+};
+
+void *operator new(std::size_t sz) {
+    static int counter{};
+    void *ptr = std::malloc(sz);
+    myAlloc.at(counter++) = ptr;
+    // std::cerr << "new." << counter << ".addr.: " << ptr << " size: " << sz << std::endl;
+    return ptr;
+}
+
+void operator delete(void *ptr) noexcept {
+    auto ind = std::distance(myAlloc.begin(), std::find(myAlloc.begin(), myAlloc.end(), ptr));
+    myAlloc[ind] = nullptr;
+    std::free(ptr);
+}
+
+void getInfo() {
+
+    std::cout << std::endl;
+
+    std::cout << "Not deallocated: " << std::endl;
+    for (auto i : myAlloc) {
+        if (i != nullptr) std::cout << " " << i << std::endl;
+    }
+
+    std::cout << std::endl;
+}
+
+#endif
+
+GarbageCollector gc;
+
+void METAENGINE_Memory_Init(int argc, char *argv[]) {
+    gc_start(&gc, &argc);
+    AllocationMetrics::C = (CAllocator *)gc_malloc(&gc, sizeof(CAllocator));
+    new (AllocationMetrics::C) CAllocator();
+    AllocationMetrics::C_Count++;
+}
+
+void METAENGINE_Memory_End() {
+    if (AllocationMetrics::C) {
+        AllocationMetrics::C->~CAllocator();
+        gc_free(&gc, AllocationMetrics::C);
+        AllocationMetrics::C_Count--;
+    }
+    gc_stop(&gc);
+}
+
+void METAENGINE_Memory_RunGC() { gc_run(&gc); }

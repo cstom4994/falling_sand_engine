@@ -19,7 +19,7 @@
 #include "imgui/imgui_core.hpp"
 #include "imgui/imgui_impl.hpp"
 #include "libs/imgui/imgui.h"
-#include "memory.hpp"
+
 #include "scripting/lua_wrapper.hpp"
 #include "ui.hpp"
 #include "world_generator.cpp"
@@ -133,13 +133,13 @@ void OptionsUI__DrawVideo(Game *game) {
 
                 switch (n) {
                     case 0:
-                        SetDisplayMode(engine_displaymode::WINDOWED);
+                        metadot_set_displaymode(engine_displaymode::WINDOWED);
                         break;
                     case 1:
-                        SetDisplayMode(engine_displaymode::BORDERLESS);
+                        metadot_set_displaymode(engine_displaymode::BORDERLESS);
                         break;
                     case 2:
-                        SetDisplayMode(engine_displaymode::FULLSCREEN);
+                        metadot_set_displaymode(engine_displaymode::FULLSCREEN);
                         break;
                 }
 
@@ -155,11 +155,11 @@ void OptionsUI__DrawVideo(Game *game) {
     }
 
     if (ImGui::Checkbox("VSync", &gameUI.OptionsUI__vsync)) {
-        SetVSync(gameUI.OptionsUI__vsync);
+        metadot_set_VSync(gameUI.OptionsUI__vsync);
     }
 
     if (ImGui::Checkbox("失去焦点后最小化", &gameUI.OptionsUI__minimizeOnFocus)) {
-        SetMinimizeOnLostFocus(gameUI.OptionsUI__minimizeOnFocus);
+        metadot_set_minimize_onlostfocus(gameUI.OptionsUI__minimizeOnFocus);
     }
 
     ImGui::Unindent(4);

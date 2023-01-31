@@ -154,6 +154,8 @@ int ProfilerDrawFrame(ProfilerFrame* _data, void* _buffer, size_t _bufferSize, b
     ImGui::SameLine();
     resetZoom = ImGui::Button("Reset zoom and pan");
 
+    ImGui::Text("MemCurrentUsage: %d mb", MemCurrentUsageMB());
+
     const ImVec2 p = ImGui::GetCursorScreenPos();
     const ImVec2 s = ImGui::GetWindowSize();
 

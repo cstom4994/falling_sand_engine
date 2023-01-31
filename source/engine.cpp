@@ -4,7 +4,7 @@
 
 #include <cstdlib>
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/global.hpp"
 #include "engine_core.h"
@@ -41,7 +41,7 @@ int InitEngine(void (*InitCppReflection)()) {
 
     METADOT_INFO("Initializing Engine...");
 
-    bool init = InitTime() || InitFilesystem() || InitScreen(960, 540, 1, 60) || InitCore() || InitWindow();
+    bool init = InitTime() || InitFilesystem() || InitScreen(960, 540, 1, 60) || InitCore() || metadot_initwindow();
 
     if (init) {
         EndEngine(1);
@@ -62,7 +62,7 @@ int InitEngine(void (*InitCppReflection)()) {
     //  SDL_StopTextInput();
 
     // Open up resource bundle memory space
-    global.game->GameIsolate_.texturepack = (TexturePack *)gc_malloc(&gc, sizeof(TexturePack));
+    global.game->GameIsolate_.texturepack = new TexturePack;
 
     initializedEngine = 1;
     METADOT_INFO("Engine sucessfully initialized!");
@@ -109,7 +109,7 @@ void EngineUpdateEnd() {
 
 void EndEngine(int errorOcurred) {
 
-    gc_free(&gc, global.game->GameIsolate_.texturepack);
+    delete global.game->GameIsolate_.texturepack;
 
     FreeECS();
 

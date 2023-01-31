@@ -7,6 +7,23 @@
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 
+struct LuaMemBlock {
+    void *ptr;
+    size_t size;
+};
+
+struct LuaAllocator {
+    struct LuaMemBlock *blocks;
+    size_t nb_blocks, size_blocks;
+    size_t total_allocated;
+};
+
+struct LuaAllocator *new_allocator(void);
+void delete_allocator(struct LuaAllocator *alloc);
+
+void *lua_simple_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
+
 #pragma region LuaA
 
 /*

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+#include "core/alloc.hpp"
 #include "core/macros.h"
 #include "imgui/imgui_core.hpp"
 #include "profiler.h"

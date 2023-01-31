@@ -13,7 +13,6 @@
 #include "game_resources.hpp"
 #include "mathlib.h"
 #include "mathlib.hpp"
-#include "memory.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
@@ -58,7 +57,7 @@ void UIRendererInit() {
                            .maxRectX = 200,
                            .maxRectY = 200,
                            .color = bgPanelColor,
-                              .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png"),
+                           .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png"),
                            .cclass = {.window = (UI_Window){.state = 0}}};
 
     UIElement testElement2{.type = ElementType::textElement, .minRectX = 55, .minRectY = 55, .maxRectX = 200, .maxRectY = 200, .color = {54, 54, 54, 255}, .text = "哈哈哈哈哈嗝"};
@@ -180,12 +179,12 @@ void UIRendererUpdate() {
                 .x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
         if (e.second.type == ElementType::windowElement) {
             // Move window
-            if (BoxDistence(rect, GetMousePos()) < 0.0f && ControlSystem::lmouse && GetMousePos().y - e.second.minRectY < 15.0f) {
+            if (BoxDistence(rect, metadot_get_mousepos()) < 0.0f && ControlSystem::lmouse && metadot_get_mousepos().y - e.second.minRectY < 15.0f) {
             }
         }
         if (e.second.type == ElementType::buttonElement) {
             // Pressed button
-            if (BoxDistence(rect, GetMousePos()) < 0.0f && ControlSystem::lmouse && NULL != e.second.cclass.button.func) {
+            if (BoxDistence(rect, metadot_get_mousepos()) < 0.0f && ControlSystem::lmouse && NULL != e.second.cclass.button.func) {
                 e.second.cclass.button.func();
             }
         }
@@ -208,7 +207,7 @@ void UIRendererFree() {
 }
 
 bool UIIsMouseOnControls() {
-    R_vec2 mousePos = GetMousePos();
+    R_vec2 mousePos = metadot_get_mousepos();
 
     for (auto &&e : global.uidata->elementLists) {
         metadot_rect rect{

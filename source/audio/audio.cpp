@@ -2,7 +2,7 @@
 
 #include "audio.h"
 
-#include "core/alloc.h"
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "filesystem.h"
 #include "sound.h"

@@ -35,6 +35,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/macros.h"
 #include "libs/visitstruct.hpp"
