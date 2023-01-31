@@ -138,10 +138,6 @@ uint64_t ProfilerGetClockFrequency();
 /* Calculates miliseconds from CPU clock. */
 float ProfilerClock2ms(uint64_t _clock, uint64_t _frequency);
 
-/* Returns name of the platform. */
-/* _platformID - platform identifier */
-const char* ProfilerGetPlatformName(uint8_t _platformID);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */

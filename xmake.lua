@@ -31,18 +31,18 @@ option_end()
 -- rule("metadot.uidsl")
 -- set_extensions('.uidsl')
 -- on_load(function(target)
---     local outdir = path.join(path.join(os.projectdir(), "Source/Generated"),
+--     local outdir = path.join(path.join(os.projectdir(), "source/Generated"),
 --                              "uidsl")
 --     if not os.isdir(outdir) then os.mkdir(outdir) end
 --     target:set('policy', 'build.across_targets_in_parallel', false)
 --     target:add('deps', 'luaexe')
---     -- target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
+--     -- target:add("includedirs", path.join(os.projectdir(), "source/Generated"))
 -- end)
 -- before_buildcmd_file(function(target, batchcmds, srcfile, opt)
 --     import('core.project.project')
---     local outdir = path.join(path.join(os.projectdir(), "Source/Generated"),
+--     local outdir = path.join(path.join(os.projectdir(), "source/Generated"),
 --                              "uidsl")
---     -- target:add("includedirs", path.join(os.projectdir(), "Source/Generated"))
+--     -- target:add("includedirs", path.join(os.projectdir(), "source/Generated"))
 
 --     batchcmds:show_progress(opt.progress,
 --                             "${color.build.object}Generating UIDSL %s", srcfile)
@@ -53,10 +53,10 @@ option_end()
 
 --     local args = {
 --         '-e', 'package.path="' ..
---             path.join(os.projectdir(), "Source/engine/UserInterface/IMGUI"):gsub(
+--             path.join(os.projectdir(), "source/engine/UserInterface/IMGUI"):gsub(
 --                 '\\', '/') .. '/?.lua"',
 --         path.join(
---             path.join(os.projectdir(), "Source/engine/UserInterface/IMGUI"),
+--             path.join(os.projectdir(), "source/engine/UserInterface/IMGUI"),
 --             'uidslparser.lua'), '-H', path(headerpath), '-I', path(implpath),
 --         '--cpp', outfile
 --     }
@@ -159,7 +159,10 @@ elseif is_os("linux") then
 elseif is_os("macosx") then
 	set_arch("aarch64")
 
-	set_toolchains("clang")
+	-- set_toolchains("clang")
+
+	set_toolset("mm", "clang")
+    set_toolset("mxx", "clang", "clang++")
 
 	add_cxflags("-fPIC")
 
@@ -187,14 +190,14 @@ end
 -- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
-	"Source",
+	"source",
 
-	"Source/libs/libcss/libcss/include",
-	"Source/libs/libcss/libcss/src",
-	"Source/libs/libcss/libparserutils/include",
-	"Source/libs/libcss/libparserutils/src",
-	"Source/libs/libcss/libwapcaplet/include",
-	"Source/libs/libcss/libwapcaplet/src",
+	"source/libs/libcss/libcss/include",
+	"source/libs/libcss/libcss/src",
+	"source/libs/libcss/libparserutils/include",
+	"source/libs/libcss/libparserutils/src",
+	"source/libs/libcss/libwapcaplet/include",
+	"source/libs/libcss/libwapcaplet/src",
 }
 
 defines_list = {}
@@ -215,37 +218,37 @@ do
 
 	add_links(link_list)
 
-	add_files("Source/libs/*.cpp")
-	add_files("Source/libs/*.c")
-	add_files("Source/libs/ImGui/**.cpp", "Source/libs/ImGui/**.c", "Source/libs/glad/**.c")
-	add_files("Source/libs/physfs/**.c")
+	add_files("source/libs/*.cpp")
+	add_files("source/libs/*.c")
+	add_files("source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c", "source/libs/glad/**.c")
+	add_files("source/libs/physfs/**.c")
 	if is_os("macosx") then
-		add_files("Source/libs/physfs/**.m")
+		add_files("source/libs/physfs/**.m")
 	end
-	add_files("Source/libs/libcss/**.c")
-	add_files("Source/libs/lz4/**.c")
-	add_files("Source/libs/lua/host/**.c")
-	add_files("Source/libs/lua/*.c")
+	add_files("source/libs/libcss/**.c")
+	add_files("source/libs/lz4/**.c")
+	add_files("source/libs/lua/host/**.c")
+	add_files("source/libs/lua/*.c")
 
-	add_files("Source/*.c")
-	add_files("Source/*.cpp")
+	add_files("source/*.c")
+	add_files("source/*.cpp")
 
-	add_files("Source/core/**.c")
-	add_files("Source/core/**.cpp")
-	add_files("Source/ecs/**.c")
-	add_files("Source/game_utils/**.cpp")
-	add_files("Source/internal/**.c")
-	add_files("Source/internal/**.cpp")
-	add_files("Source/audio/**.cpp")
-	add_files("Source/meta/**.cpp")
-	add_files("Source/renderer/**.c")
-	add_files("Source/renderer/**.cpp")
-	add_files("Source/scripting/**.c")
-	add_files("Source/scripting/**.cpp")
-	add_files("Source/imgui/**.cpp")
+	add_files("source/core/**.c")
+	add_files("source/core/**.cpp")
+	add_files("source/ecs/**.c")
+	add_files("source/game_utils/**.cpp")
+	add_files("source/internal/**.c")
+	add_files("source/internal/**.cpp")
+	add_files("source/audio/**.cpp")
+	add_files("source/meta/**.cpp")
+	add_files("source/renderer/**.c")
+	add_files("source/renderer/**.cpp")
+	add_files("source/scripting/**.c")
+	add_files("source/scripting/**.cpp")
+	add_files("source/imgui/**.cpp")
 
-	add_headerfiles("Source/**.h")
-	add_headerfiles("Source/**.hpp")
+	add_headerfiles("source/**.h")
+	add_headerfiles("source/**.hpp")
 
 	if is_os("macosx") and has_config("build_audio") then
 		add_links("fmod", "fmodstudio")
@@ -258,8 +261,8 @@ end
 --     set_targetdir("./output")
 --     add_includedirs(include_dir_list)
 --     add_defines(defines_list)
---     add_files("Source/tests/test_ffi.c")
---     add_headerfiles("Source/tests/**.h")
+--     add_files("source/tests/test_ffi.c")
+--     add_headerfiles("source/tests/**.h")
 -- end
 
 -- target("TestCOBJ")
@@ -269,9 +272,9 @@ end
 --     add_includedirs(include_dir_list)
 --     add_defines(defines_list)
 --     add_deps("libs")
---     add_files("Source/tests/test_cobj.c")
---     add_files("Source/engine/engine_meta.c")
---     add_headerfiles("Source/tests/**.h")
+--     add_files("source/tests/test_cobj.c")
+--     add_files("source/engine/engine_meta.c")
+--     add_headerfiles("source/tests/**.h")
 -- end
 
 -- target("TestPromise")
@@ -281,8 +284,8 @@ end
 --     add_includedirs(include_dir_list)
 --     add_defines(defines_list)
 --     add_deps("libs")
---     add_files("Source/tests/test_promise.cpp")
---     add_headerfiles("Source/tests/**.h")
+--     add_files("source/tests/test_promise.cpp")
+--     add_headerfiles("source/tests/**.h")
 -- end
 
 -- target("TestLayout")
@@ -292,9 +295,9 @@ end
 --     add_includedirs(include_dir_list)
 --     add_defines(defines_list)
 --     add_deps("libs")
---     add_files("Source/tests/test_layout.c")
---     add_files("Source/engine/ui_layout.c")
---     add_headerfiles("Source/tests/**.h")
+--     add_files("source/tests/test_layout.c")
+--     add_files("source/engine/ui_layout.c")
+--     add_headerfiles("source/tests/**.h")
 -- end
 
 -- target("TestTween")
@@ -304,6 +307,6 @@ end
 --     add_includedirs(include_dir_list)
 --     add_defines(defines_list)
 --     add_deps("libs")
---     add_files("Source/tests/test_tween.cpp")
---     add_headerfiles("Source/tests/**.h")
+--     add_files("source/tests/test_tween.cpp")
+--     add_headerfiles("source/tests/**.h")
 -- end

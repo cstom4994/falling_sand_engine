@@ -587,7 +587,7 @@ CSTDTime | {6} | Nothing
                 if (ImGui::Button("调用回溯")) print_callstack();
                 ImGui::SameLine();
                 if (ImGui::Button("Audio")) {
-                    METAENGINE_Audio* test_audio =  metadot_audio_load_wav(METADOT_RESLOC("Data/assets/audio/02_c03_normal_135.wav"));
+                    METAENGINE_Audio* test_audio =  metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
                     METADOT_ASSERT_E(test_audio);
                     // metadot_music_play(test_audio, 0.f);
                     // metadot_audio_destroy(test_audio);

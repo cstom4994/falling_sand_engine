@@ -32,7 +32,7 @@ int metadot_buildnum(void) {
 }
 
 const std::string metadot_metadata() {
-    static std::string result;
+    std::string result;
 
     result += "Copyright(c) 2022-2023, KaoruXun All rights reserved.\n";
     result += "MetaDot\n";
@@ -52,7 +52,7 @@ const std::string metadot_metadata() {
 #if defined(__clang__)
     result += "compiler.family = clang\n";
     result += "compiler.version = ";
-    result += __clang_version__;
+    result += std::to_string(__clang_major__) + "." + std::to_string(__clang_minor__) + "." + std::to_string(__clang_patchlevel__);
     result += "\n";
 #elif defined(__GNUC__) || defined(__GNUG__)
     result += "compiler.family = gcc\n";

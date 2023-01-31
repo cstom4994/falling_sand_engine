@@ -6,11 +6,11 @@ end
 
 OnGameGUIUpdate = function()
     local s = gd.ui.state
-    -- if s == 1 then
-    --     DrawMainMenuUI2()
-    -- elseif s == 1001 then
-    --     DrawAboutUI()
-    -- end
+    if s == 1002 then
+        DrawMainMenuUI2()
+    elseif s == 1001 then
+        DrawAboutUI()
+    end
 
     DrawMainMenuUI(Game)
     DrawDebugUI(Game)
@@ -23,9 +23,11 @@ DrawMainMenuUI2 = function()
     imgui.End()
 end
 
+local metadata = metadot_metadata()
+
 DrawAboutUI = function()
     imgui.SetNextWindowSize(200, 250, imgui.constant.Cond.FirstUseEver)
     imgui.Begin("About", true, imgui.constant.WindowFlags.ShowBorders)
-    imgui.Text(metadot_metadata())
+    imgui.Text(metadata)
     imgui.End()
 end

@@ -7,9 +7,9 @@
 #include "imgui/imgui_css.h"
 #include "imgui/imgui_element.h"
 #include "imgui/imgui_impl.hpp"
-#include "scripting/lua_wrapper.hpp"
 #include "libs/rapidxml/rapidxml.hpp"
 #include "libs/rapidxml/rapidxml_print.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 502
 #define IMGUICSS_LUA_VERSION LUA_VERSION_NUM
@@ -1448,7 +1448,7 @@ void registerBindings(lua_State* L) {
 
     if (lua_type(L, -1) != LUA_TSTRING) {
         lua_pushstring(L, "imcss_path");
-        lua_pushstring(L, "./Data/assets/ui/imguicss/?.imcss;");
+        lua_pushstring(L, "./data/assets/ui/imguicss/?.imcss;");
         lua_settable(L, package);
     }
 }

@@ -94,9 +94,6 @@ private:
     bool mLogAccess;
 };
 
-/**
- * Registers ImGuiCSS lua bindings
- */
 void registerBindings(lua_State* L);
 }  // namespace ImGuiCSS
 

@@ -93,34 +93,6 @@ static inline uint64_t getThreadID() {
 #endif
 }
 
-/*--------------------------------------------------------------------------*/
-static inline const char* getPlatformName(uint8_t _platformID) {
-    switch (_platformID) {
-        case 1:
-            return "Windows";
-        case 2:
-            return "Linux";
-        case 3:
-            return "iOS";
-        case 4:
-            return "OSX";
-        case 5:
-            return "PlayStation 3";
-        case 6:
-            return "PlayStation 4";
-        case 7:
-            return "Android";
-        case 8:
-            return "XboxOne";
-        case 9:
-            return "WebGL";
-        case 10:
-            return "Nintendo Switch";
-        default:
-            return "Unknown platform";
-    };
-}
-
 // Thread Local Storage(TLS)
 // msvc: https://learn.microsoft.com/en-us/cpp/parallel/thread-local-storage-tls
 

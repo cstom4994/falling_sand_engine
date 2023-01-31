@@ -194,7 +194,7 @@ void SetDisplayMode(engine_displaymode mode) {
 
 void SetWindowFlash(engine_windowflashaction action, int count, int period) {
     // TODO: look into alternatives for linux/crossplatform
-#ifdef _WIN32
+#ifdef METADOT_PLATFORM_WINDOWS
 
     FLASHWINFO flash;
     flash.cbSize = sizeof(FLASHWINFO);

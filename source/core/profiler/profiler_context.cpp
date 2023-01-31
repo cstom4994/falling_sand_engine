@@ -430,8 +430,6 @@ uint64_t ProfilerGetClockFrequency() {
 
 float ProfilerClock2ms(uint64_t _clock, uint64_t _frequency) { return (float(_clock) / float(_frequency)) * 1000.0f; }
 
-const char* ProfilerGetPlatformName(uint8_t _platformID) { return getPlatformName(_platformID); }
-
 }  // extern "C"
 
 void ProfilerFreeListCreate(size_t _blockSize, uint32_t _maxBlocks, struct ProfilerFreeList_t* _freeList) {
