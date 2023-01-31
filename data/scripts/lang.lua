@@ -61,7 +61,8 @@ local lang_pack = {
         ui_file_dialog = "选择文件",
         ui_chunk = "区块",
         ui_frametime = "帧耗时",
-        ui_frameinspector = "帧检查器"
+        ui_frameinspector = "帧检查器",
+        ui_profiler = "性能检查器"
     }
 }
 

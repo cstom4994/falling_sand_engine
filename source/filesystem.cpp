@@ -11,6 +11,7 @@
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
 #include "core/platform.h"
+#include "core/stl.h"
 #include "datapackage.h"
 #include "engine.h"
 #include "engine_platform.h"
@@ -259,7 +260,7 @@ char* metadot_fs_readfilestring(const char* path) {
             }
 
             /* Allocate our buffer to that size. */
-            source = (char*)gc_malloc(&gc, sizeof(char) * (bufsize + 1));
+            source = (char*)malloc(sizeof(char) * (bufsize + 1));
 
             /* Go back to the start of the file. */
             if (fseek(fp, 0L, SEEK_SET) != 0) { /* Error */
@@ -277,17 +278,13 @@ char* metadot_fs_readfilestring(const char* path) {
         fclose(fp);
         return source;
     }
-    gc_free(&gc, source); /* Don't forget to call free() later! */
+    free(source); /* Don't forget to call free() later! */
     return R_null;
 }
 
 void metadot_fs_freestring(void* ptr) {
-    if (NULL != ptr) gc_free(&gc, ptr);
+    if (NULL != ptr) free(ptr);
 }
-
-#include "core/alloc.hpp"
-#include "core/stl.h"
-#include "libs/physfs/physfs.h"
 
 #define METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE (2 * METAENGINE_MB)
 

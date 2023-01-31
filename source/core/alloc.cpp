@@ -35,9 +35,9 @@ GCField_S(CAllocator, C);
 GCField_S(LinearAllocator, S);
 
 U64 MemCurrentUsageBytes() { return g_AllocationMetrics.TotalAllocated - g_AllocationMetrics.TotalFree; }
-U64 MemCurrentUsageMB() {
+F32 MemCurrentUsageMB() {
     U64 bytes = MemCurrentUsageBytes();
-    return (U64)(bytes / 1048576);
+    return (F32)(bytes / 1048576.0f);
 }
 
 void *operator new(size_t size) {

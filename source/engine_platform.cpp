@@ -25,9 +25,10 @@ int ParseRunArgs(int argc, char *argv[]) {
         if (v1) {
             if (!strcmp(v1, "server")) {
                 // global.game->GameIsolate_.settings.networkMode = NetworkMode::SERVER;
+            } else {
+                // global.game->GameIsolate_.settings.networkMode = NetworkMode::HOST;
             }
         } else {
-            // global.game->GameIsolate_.settings.networkMode = NetworkMode::HOST;
         }
     }
 

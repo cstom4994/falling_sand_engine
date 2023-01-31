@@ -17,6 +17,9 @@ typedef struct engine_core {
     C_GLContext *glContext;
 
     std::string gamepath;
+
+    // Maximum memory that can be used
+    U64 max_mem = 4294967296;  // 4096mb
 } engine_core;
 
 typedef struct engine_screen {

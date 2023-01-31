@@ -21,8 +21,6 @@
 #include "core/dbgtools.h"
 #include "core/global.hpp"
 #include "core/macros.h"
-#include "core/profiler/profiler.h"
-#include "core/profiler/profiler_imgui.hpp"
 #include "core/stl.h"
 #include "engine.h"
 #include "engine_scripting.hpp"
@@ -36,7 +34,6 @@
 #include "imgui/lua/script.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
-
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -468,17 +465,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImPlot::ShowDemoWindow();
     }
 
-    if (global.game->GameIsolate_.globaldef.draw_profiler) {
-        static ProfilerFrame data;
-        ProfilerGetFrame(&data);
-
-        // // if (g_multi) ProfilerDrawFrameNavigation(g_frameInfos.data(), g_frameInfos.size());
-
-        static char buffer[10 * 1024];
-        ProfilerDrawFrame(&data, buffer, 10 * 1024);
-        // // ProfilerDrawStats(&data);
-    }
-
     auto cpos = editor.GetCursorPosition();
     if (global.game->GameIsolate_.globaldef.ui_tweak) {
 
@@ -568,16 +554,6 @@ CSTDTime | {6} | Nothing
                 ImGui::EndTable();
             }
 
-            ImGui::Separator();
-
-#if defined(METADOT_DEBUG)
-            ImGui::Dummy(ImVec2(0.0f, 10.0f));
-            ImGui::Text("GC:\n");
-            for (auto [name, size] : AllocationMetrics::MemoryDebugMap) {
-                ImGui::Text("%s", MetaEngine::Format("   {0} {1}", name, size).c_str());
-            }
-            // ImGui::Auto(AllocationMetrics::MemoryDebugMap, "map");
-#endif
             ImGui::EndTabItem();
         }
 
@@ -587,7 +563,7 @@ CSTDTime | {6} | Nothing
                 if (ImGui::Button("调用回溯")) print_callstack();
                 ImGui::SameLine();
                 if (ImGui::Button("Audio")) {
-                    METAENGINE_Audio* test_audio =  metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                    METAENGINE_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
                     METADOT_ASSERT_E(test_audio);
                     // metadot_music_play(test_audio, 0.f);
                     // metadot_audio_destroy(test_audio);

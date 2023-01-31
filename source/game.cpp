@@ -25,6 +25,7 @@
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/profiler/profiler.h"
+#include "core/profiler/profiler_imgui.hpp"
 #include "core/threadpool.hpp"
 #include "engine.h"
 #include "engine_platform.h"
@@ -43,7 +44,6 @@
 #include "libs/imgui/imgui.h"
 #include "libs/physfs/physfs.h"
 #include "mathlib.hpp"
-
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -1029,6 +1029,8 @@ int Game::run(int argc, char *argv[]) {
                 }
             }
         }
+
+        tickProfiler();
 
         UIRendererDrawImGui();
 
@@ -2488,6 +2490,23 @@ void Game::tickPlayer() {
                 }
             }
         }
+    }
+}
+
+void Game::tickProfiler() {
+
+    if (global.game->GameIsolate_.globaldef.draw_profiler) {
+        static ProfilerFrame data;
+        ProfilerGetFrame(&data);
+
+        // // if (g_multi) ProfilerDrawFrameNavigation(g_frameInfos.data(), g_frameInfos.size());
+
+        static char buffer[10 * 1024];
+        ProfilerDrawFrame(&data, buffer, 10 * 1024);
+        // // ProfilerDrawStats(&data);
+    }
+
+    if (MemCurrentUsageBytes() >= Core.max_mem) {
     }
 }
 

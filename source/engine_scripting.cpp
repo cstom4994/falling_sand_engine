@@ -199,7 +199,7 @@ lua_State *LuaCoreCppFunc(void *luacorecpp) { return ((LuaCoreCpp *)luacorecpp)-
 void InitLuaCoreCpp(LuaCoreCpp *_struct) {
 
     // Init LuaCoreC
-    _struct->C = (LuaCoreC *)gc_malloc(&gc, sizeof(LuaCoreC));
+    METADOT_NEW(C, _struct->C, LuaCoreC);
 
     InitLuaCoreC(_struct->C, LuaCoreCppFunc, (void *)_struct);
 
@@ -277,7 +277,7 @@ void InitLuaCoreCpp(LuaCoreCpp *_struct) {
     RunScriptFromFile("data/scripts/startup.lua");
 }
 
-void EndLuaCoreCpp(LuaCoreCpp *_struct) { gc_free(&gc, _struct->C); }
+void EndLuaCoreCpp(LuaCoreCpp *_struct) { METADOT_DELETE(C, _struct->C, LuaCoreC); }
 
 void RunScriptInConsole(LuaCoreCpp *_struct, const char *c) {
     luaL_loadstring(_struct->C->L, c);

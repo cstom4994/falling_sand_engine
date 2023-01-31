@@ -599,7 +599,7 @@ typedef struct AllocationMetrics {
 extern AllocationMetrics g_AllocationMetrics;
 
 U64 MemCurrentUsageBytes();
-U64 MemCurrentUsageMB();
+F32 MemCurrentUsageMB();
 
 void METAENGINE_Memory_Init(int argc, char *argv[]);
 void METAENGINE_Memory_End();

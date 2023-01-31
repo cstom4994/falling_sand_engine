@@ -163,6 +163,7 @@ public:
     void tick();
     void tickChunkLoading();
     void tickPlayer();
+    void tickProfiler();
     void updateFrameLate();
     void renderOverlays();
     void updateMaterialSounds();
