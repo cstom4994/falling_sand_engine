@@ -26,7 +26,7 @@ void metadot_set_windowflash(engine_windowflashaction action, int count, int per
 void metadot_set_VSync(bool vsync);
 void metadot_set_minimize_onlostfocus(bool minimize);
 void metadot_set_windowtitle(const char* title);
-R_vec2 metadot_get_mousepos();
+void metadot_get_mousepos(int* x, int* y);
 char* metadot_clipboard_get();
 METAENGINE_Result metadot_clipboard_set(const char* string);
 

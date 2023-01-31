@@ -125,66 +125,6 @@ R_public float R_lerp(float start, float end, float amount) { return start + amo
 
 #pragma endregion
 
-#pragma region base64
-
-R_public int R_get_size_base64(const unsigned char *input) {
-    int size = 0;
-
-    for (R_int i = 0; input[4 * i] != 0; i++) {
-        if (input[4 * i + 3] == '=') {
-            if (input[4 * i + 2] == '=')
-                size += 1;
-            else
-                size += 2;
-        } else
-            size += 3;
-    }
-
-    return size;
-}
-
-R_public R_base64_output R_decode_base64(const unsigned char *input, R_allocator allocator) {
-    static const unsigned char R_base64_table[] = {0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,
-                                                   0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  62, 0,  0,  0,  63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0, 0,
-                                                   0, 0, 0, 0, 1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 0,
-                                                   0, 0, 0, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
-
-    R_base64_output result;
-    result.size = R_get_size_base64(input);
-    result.buffer = (unsigned char *)R_alloc(allocator, result.size);
-
-    for (R_int i = 0; i < result.size / 3; i++) {
-        unsigned char a = R_base64_table[(int)input[4 * i + 0]];
-        unsigned char b = R_base64_table[(int)input[4 * i + 1]];
-        unsigned char c = R_base64_table[(int)input[4 * i + 2]];
-        unsigned char d = R_base64_table[(int)input[4 * i + 3]];
-
-        result.buffer[3 * i + 0] = (a << 2) | (b >> 4);
-        result.buffer[3 * i + 1] = (b << 4) | (c >> 2);
-        result.buffer[3 * i + 2] = (c << 6) | d;
-    }
-
-    int n = result.size / 3;
-
-    if (result.size % 3 == 1) {
-        unsigned char a = R_base64_table[(int)input[4 * n + 0]];
-        unsigned char b = R_base64_table[(int)input[4 * n + 1]];
-
-        result.buffer[result.size - 1] = (a << 2) | (b >> 4);
-    } else if (result.size % 3 == 2) {
-        unsigned char a = R_base64_table[(int)input[4 * n + 0]];
-        unsigned char b = R_base64_table[(int)input[4 * n + 1]];
-        unsigned char c = R_base64_table[(int)input[4 * n + 2]];
-
-        result.buffer[result.size - 2] = (a << 2) | (b >> 4);
-        result.buffer[result.size - 1] = (b << 4) | (c >> 2);
-    }
-
-    return result;
-}
-
-#pragma endregion
-
 #pragma region vec and matrix math
 
 // Add two vectors (v1 + v2)

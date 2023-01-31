@@ -1,7 +1,7 @@
 
 
-#ifndef METAENGINE_ARRAY_H
-#define METAENGINE_ARRAY_H
+#ifndef METAENGINE_STL_H
+#define METAENGINE_STL_H
 
 #include <inttypes.h>
 #include <stdarg.h>
@@ -458,7 +458,7 @@ template <typename T>
 T Array<T>::pop() {
     METADOT_ASSERT_E(!empty());
     T* slot = m_ptr + alen(m_ptr) - 1;
-    T val = move(apop(m_ptr));
+    T val = std::move(apop(m_ptr));
     slot->~T();
     return val;
 }
@@ -2481,4 +2481,16 @@ METADOT_INLINE void threadpool_kick(Threadpool* pool) { return metadot_threadpoo
 
 #pragma endregion concurrency
 
-#endif  // METAENGINE_ARRAY_H
+#pragma region base64
+
+// Info about base 64 encoding: https://tools.ietf.org/html/rfc4648
+
+#define METADOT_BASE64_ENCODED_SIZE(size) ((((size) + 2) / 3) * 4)
+#define METADOT_BASE64_DECODED_SIZE(size) ((((size) + 3) / 4) * 3)
+
+METAENGINE_Result metadot_base64_encode(void* dst, size_t dst_size, const void* src, size_t src_size);
+METAENGINE_Result metadot_base64_decode(void* dst, size_t dst_size, const void* src, size_t src_size);
+
+#pragma endregion base64
+
+#endif  // METAENGINE_STL_H

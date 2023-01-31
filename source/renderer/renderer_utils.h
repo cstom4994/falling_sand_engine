@@ -546,18 +546,6 @@ R_public R_ray_hit_info R_collision_ray_ground(R_ray ray,
 
 #pragma endregion
 
-#pragma region base64
-
-typedef struct R_base64_output {
-    int size;
-    unsigned char *buffer;
-} R_base64_output;
-
-R_public int R_get_size_base64(const unsigned char *input);
-R_public R_base64_output R_decode_base64(const unsigned char *input, R_allocator allocator);
-
-#pragma endregion
-
 #pragma endregion Math
 
 #pragma region ARRAY
