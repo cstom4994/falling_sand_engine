@@ -198,9 +198,46 @@ include_dir_list = {
 	"source/libs/libcss/libparserutils/src",
 	"source/libs/libcss/libwapcaplet/include",
 	"source/libs/libcss/libwapcaplet/src",
+
+	"source/libs/antlr4"
 }
 
 defines_list = {}
+
+target("MetaDotLibs")
+do
+	set_kind("static")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+
+	add_files("source/libs/*.cpp")
+	add_files("source/libs/*.c")
+	add_files("source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c", "source/libs/glad/**.c")
+	add_files("source/libs/physfs/**.c")
+	if is_os("macosx") then
+		add_files("source/libs/physfs/**.m")
+	end
+	add_files("source/libs/libcss/**.c")
+	add_files("source/libs/lz4/**.c")
+	add_files("source/libs/lua/host/**.c")
+	add_files("source/libs/lua/*.c")
+
+	add_files("source/libs/antlr4/**.cpp")
+end
+
+target("CppParser")
+do
+	set_languages("c17", "c++17")
+    set_kind("static")
+    set_targetdir("./output")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+
+	add_deps("MetaDotLibs")
+
+    add_files("source/meta/ParserCpp14/**.cpp")
+    add_headerfiles("source/meta/ParserCpp14/**.h")
+end
 
 target("MetaDot")
 do
@@ -217,18 +254,7 @@ do
 	add_defines(defines_list)
 
 	add_links(link_list)
-
-	add_files("source/libs/*.cpp")
-	add_files("source/libs/*.c")
-	add_files("source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c", "source/libs/glad/**.c")
-	add_files("source/libs/physfs/**.c")
-	if is_os("macosx") then
-		add_files("source/libs/physfs/**.m")
-	end
-	add_files("source/libs/libcss/**.c")
-	add_files("source/libs/lz4/**.c")
-	add_files("source/libs/lua/host/**.c")
-	add_files("source/libs/lua/*.c")
+	add_deps("MetaDotLibs", "CppParser")
 
 	add_files("source/*.c")
 	add_files("source/*.cpp")
@@ -241,7 +267,7 @@ do
 	add_files("source/internal/**.cpp")
 	add_files("source/network/**.cpp")
 	add_files("source/audio/**.cpp")
-	add_files("source/meta/**.cpp")
+	add_files("source/meta/*.cpp")
 	add_files("source/renderer/**.c")
 	add_files("source/renderer/**.cpp")
 	add_files("source/scripting/**.c")
@@ -254,6 +280,17 @@ do
 	if is_os("macosx") and has_config("build_audio") then
 		add_links("fmod", "fmodstudio")
 	end
+end
+
+target("TestAntlr")
+do
+    set_kind("binary")
+    set_targetdir("./output")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_deps("MetaDotLibs", "CppParser")
+    add_files("source/tests/test_antlr.cpp")
+    add_headerfiles("source/tests/**.h")
 end
 
 -- target("TestFFI")
