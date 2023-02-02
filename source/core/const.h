@@ -63,4 +63,22 @@ static const char *engine_funcs_name_cst = "_metadot_cstruct_test";
 static const char *engine_funcs_name_ecs = "_metadot_cecs";
 static const char *engine_funcs_name_uilayout = "_metadot_ui_layout";
 
+#ifdef __cplusplus
+
+namespace UMeta {
+static constexpr char nameof_namespace[] = "UMeta";
+
+static constexpr char initializer[] = "UMeta::initializer";
+static constexpr char default_functions[] = "UMeta::default_functions";
+static constexpr char constructor[] = "UMeta::constructor";
+static constexpr char destructor[] = "UMeta::destructor";
+
+static constexpr char nameof_initializer[] = "initializer";
+static constexpr char nameof_default_functions[] = "default_functions";
+static constexpr char nameof_constructor[] = "constructor";
+static constexpr char nameof_destructor[] = "destructor";
+}  // namespace UMeta
+
+#endif
+
 #endif

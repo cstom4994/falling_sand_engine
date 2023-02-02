@@ -16,6 +16,7 @@ data/assets/
 
 Resources/
 source/generated
+source/tools/.antlr/
 
 build.bat
 compile_commands.json

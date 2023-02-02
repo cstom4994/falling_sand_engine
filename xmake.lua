@@ -227,7 +227,6 @@ end
 
 target("CppParser")
 do
-	set_languages("c17", "c++17")
     set_kind("static")
     set_targetdir("./output")
     add_includedirs(include_dir_list)
@@ -280,6 +279,17 @@ do
 	if is_os("macosx") and has_config("build_audio") then
 		add_links("fmod", "fmodstudio")
 	end
+end
+
+target("AutoRefl")
+do
+    set_kind("binary")
+    set_targetdir("./output")
+    add_includedirs(include_dir_list)
+    add_defines(defines_list)
+    add_deps("MetaDotLibs", "CppParser")
+    add_files("source/tools/autorefl/**.cpp")
+    add_headerfiles("source/tools/autorefl/**.h")
 end
 
 target("TestAntlr")
