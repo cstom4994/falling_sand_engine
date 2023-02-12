@@ -57,7 +57,7 @@ void UIRendererInit() {
                            .maxRectX = 200,
                            .maxRectY = 200,
                            .color = bgPanelColor,
-                           .texture = LoadTexture("data/assets/minecraft/textures/gui/demo_background.png"),
+                           .texture = LoadTexture("data/assets/ui/demo_background.png"),
                            .cclass = {.window = (UI_Window){.state = 0}}};
 
     UIElement testElement2{.type = ElementType::textElement, .minRectX = 55, .minRectY = 55, .maxRectX = 200, .maxRectY = 200, .color = {54, 54, 54, 255}, .text = "哈哈哈哈哈嗝"};

@@ -14,7 +14,6 @@
 #include <string_view>
 
 #include "background.hpp"
-#include "meta/meta.hpp"
 #include "console.hpp"
 #include "core/const.h"
 #include "core/core.h"
@@ -44,6 +43,7 @@
 #include "libs/imgui/imgui.h"
 #include "libs/physfs/physfs.h"
 #include "mathlib.hpp"
+#include "meta/meta.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -2713,15 +2713,13 @@ void Game::renderLate() {
         // draw backgrounds
 
         BackgroundObject *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
-        if (GameIsolate_.globaldef.draw_background && Screen.gameScale <= bg->layers[0]->surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
+        if (!bg->layers.empty() && GameIsolate_.globaldef.draw_background && Screen.gameScale <= bg->layers[0]->surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             R_SetShapeBlendMode(R_BLEND_SET);
             METAENGINE_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
-            metadot_rect *dst = nullptr;
-            metadot_rect *src = nullptr;
-            METADOT_NEW(C, dst, metadot_rect);
-            METADOT_NEW(C, src, metadot_rect);
+            metadot_rect *dst = new metadot_rect;
+            metadot_rect *src = new metadot_rect;
 
             F32 arX = (F32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             F32 arY = (F32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
@@ -2791,8 +2789,8 @@ void Game::renderLate() {
                 }
             }
 
-            METADOT_DELETE(C, dst, metadot_rect);
-            METADOT_DELETE(C, src, metadot_rect);
+            delete dst;
+            delete src;
         }
 
         metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * Screen.gameScale),

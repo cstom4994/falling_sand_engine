@@ -27,6 +27,11 @@ OnBackgroundLoad = function()
         { name = "data/assets/backgrounds/TestOverworld/layer5.png", p1 = 0.5, p2 = 0.5, x1 = 0, x2 = 0 }
     }
 
+    local TEST_ROOM = {
+        -- { name = "data/assets/backgrounds/TestRoom/testTile.png", p1 = 0.125, p2 = 0.125, x1 = 0, x2 = 0 },
+    }
+
     -- 0x7EAFCB
     NewBackgroundObject("TEST_OVERWORLD", 8302539, TEST_OVERWORLD)
+    NewBackgroundObject("TEST_ROOM", tonumber("AAAAAA", 16), TEST_ROOM)
 end

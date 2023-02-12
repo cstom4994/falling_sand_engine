@@ -30,7 +30,6 @@
 #include "game_utils/particles.h"
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
-
 #include "reflectionflat.hpp"
 #include "scripting/lua_wrapper.hpp"
 #include "world_generator.cpp"
@@ -3280,8 +3279,8 @@ RigidBody *World::physicsCheck(int x, int y) {
                 }
             }
 
-            delete[] visited;
-            delete[] cols;
+            if (static_cast<bool>(visited)) delete[] visited;
+            if (static_cast<bool>(cols)) delete[] cols;
 
             // audioEngine.PlayEvent("event:/Player/Impact");
             b2PolygonShape s;

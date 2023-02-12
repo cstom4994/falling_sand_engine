@@ -8,10 +8,10 @@
 #include "core/alloc.hpp"
 #include "core/core.h"
 #include "filesystem.h"
-#include "renderer/renderer_gpu.h"
-#include "sdl_wrapper.h"
 #include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"
+#include "renderer/renderer_gpu.h"
+#include "sdl_wrapper.h"
 
 void InitTexture(TexturePack *tex) {
     METADOT_ASSERT_E(tex);
@@ -19,12 +19,12 @@ void InitTexture(TexturePack *tex) {
     tex->testTexture = LoadTexture("data/assets/textures/test.png");
     tex->dirt1Texture = LoadTexture("data/assets/textures/testDirt.png");
     tex->stone1Texture = LoadTexture("data/assets/textures/testStone.png");
-    tex->smoothStone = LoadTexture("data/assets/textures/smooth_stone_128x.png");
-    tex->cobbleStone = LoadTexture("data/assets/textures/cobble_stone_128x.png");
-    tex->flatCobbleStone = LoadTexture("data/assets/textures/flat_cobble_stone_128x.png");
-    tex->smoothDirt = LoadTexture("data/assets/textures/smooth_dirt_128x.png");
-    tex->cobbleDirt = LoadTexture("data/assets/textures/cobble_dirt_128x.png");
-    tex->flatCobbleDirt = LoadTexture("data/assets/textures/flat_cobble_dirt_128x.png");
+    tex->smoothStone = LoadTexture("data/assets/textures/smooth_stone.png");
+    tex->cobbleStone = LoadTexture("data/assets/textures/cobble_stone.png");
+    tex->flatCobbleStone = LoadTexture("data/assets/textures/flat_cobble_stone.png");
+    tex->smoothDirt = LoadTexture("data/assets/textures/smooth_dirt.png");
+    tex->cobbleDirt = LoadTexture("data/assets/textures/cobble_dirt.png");
+    tex->flatCobbleDirt = LoadTexture("data/assets/textures/flat_cobble_dirt.png");
     tex->softDirt = LoadTexture("data/assets/textures/soft_dirt.png");
     tex->cloud = LoadTexture("data/assets/textures/cloud.png");
     tex->gold = LoadTexture("data/assets/textures/gold.png");
@@ -112,13 +112,16 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
         pitch = 4 * width;
     }
 
-    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
+    C_Surface *loadedSurface = nullptr;
+
+    loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
+    loadedSurface = SDL_ConvertSurfaceFormat(loadedSurface, pixelFormat, 0);
 
     METADOT_ASSERT_E(loadedSurface);
 
     Texture *tex = Eng_CreateTexture(loadedSurface);
 
-    // stbi_image_free(data);
+    stbi_image_free(data);
 
     return tex;
 }
