@@ -3,15 +3,15 @@
 #include <functional>
 #include <map>
 
-#include "meta/meta.hpp"
 #include "core/core.h"
+#include "game_resources.hpp"
 #include "imgui/imgui_core.hpp"
 #include "imgui/imgui_impl.hpp"
+#include "libs/parallel_hashmap/btree.h"
+#include "meta/meta.hpp"
+#include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
 #include "ui_layout.h"
-#include "game_resources.hpp"
-#include "libs/parallel_hashmap/btree.h"
-#include "renderer/renderer_gpu.h"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement } ElementType;
 
@@ -19,10 +19,12 @@ typedef struct UIElementState_Button {
     U8 state;
     void (*func)(void);
 } UI_Button;
+
 typedef struct UIElementState_Window {
     U8 state;
     layout_id layout_id;
 } UI_Window;
+
 typedef struct UIElementState_ProgressBar {
     U8 state;
     U8 bar_type;
@@ -38,14 +40,20 @@ typedef union UIElementClass {
     UI_ProgressBar progressbar;
 } UIElementClass;
 
+typedef struct UIMovable {
+    int ox = 0, oy = 0;
+    int mx = 0, my = 0;
+    bool moving = false;
+} UIMovable;
+
 typedef struct UIElement {
     ElementType type;
 
-    int minRectX;
-    int minRectY;
+    UIElement* parent = nullptr;
 
-    int maxRectX;
-    int maxRectY;
+    UIMovable movable;
+
+    int x, y, w, h;
 
     METAENGINE_Color color;
     Texture* texture;
@@ -66,7 +74,7 @@ typedef struct UIData {
     layout_context layoutContext;
 
     // std::map<std::string, UIElement> elementLists = {};
-    phmap::btree_map<std::string, UIElement> elementLists = {};
+    phmap::btree_map<std::string, UIElement*> elementLists = {};
 } UIData;
 
 void UIRendererInit();

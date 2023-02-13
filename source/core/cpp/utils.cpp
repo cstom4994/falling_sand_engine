@@ -14,7 +14,6 @@
 #include "core/global.hpp"
 #include "meta/meta.hpp"
 
-
 std::vector<std::string> split(std::string strToSplit, char delimeter) {
     std::stringstream ss(strToSplit);
     std::string item;
@@ -57,12 +56,27 @@ std::vector<std::string> split2(std::string const &original, char separator) {
     return results;
 }
 
-long long Time::millis() {
+long long metadot_gettime() {
     long long ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     return ms;
 }
 
-time_t Time::mkgmtime(struct tm *unixdate) {
+double metadot_gettime_d() {
+    double t;
+#ifdef _WIN32
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    t = (ft.dwHighDateTime * 4294967296.0 / 1e7) + ft.dwLowDateTime / 1e7;
+    t -= 11644473600.0;
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    t = tv.tv_sec + tv.tv_usec / 1e6;
+#endif
+    return t;
+}
+
+time_t metadot_gettime_mkgmtime(struct tm *unixdate) {
     assert(unixdate != nullptr);
     time_t fakeUnixtime = mktime(unixdate);
     struct tm *fakeDate = gmtime(&fakeUnixtime);

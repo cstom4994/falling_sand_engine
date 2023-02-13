@@ -7,7 +7,7 @@
 
 RNG* RNG_Create() {
     pcg32_random_t rng;
-    pcg32_srandom_r(&rng, Time::millis(), 1);
+    pcg32_srandom_r(&rng, metadot_gettime(), 1);
     unsigned int seed = pcg32_random_r(&rng);
 
     RNG* sRNG = new RNG;

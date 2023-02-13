@@ -1225,7 +1225,7 @@ void Player::setItemInHand(Item *item, World *world) {
         // 270 -> -w/2  h/2
 
         F32 strength = 10;
-        int time = Time::millis() - startThrow;
+        int time = metadot_gettime() - startThrow;
 
         if (time > 1000) time = 1000;
 

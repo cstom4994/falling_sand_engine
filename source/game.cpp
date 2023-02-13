@@ -50,6 +50,7 @@
 #include "renderer/renderer_gpu.h"
 #include "sdl_wrapper.h"
 #include "ui.hpp"
+#include "ui/ttf.h"
 #include "world_generator.cpp"
 
 Global global;
@@ -430,7 +431,7 @@ int Game::run(int argc, char *argv[]) {
     InitFPS();
     METADOT_NEW_ARRAY(C, objectDelete, U8, GameIsolate_.world->width * GameIsolate_.world->height);
 
-    fadeInStart = Time::millis();
+    fadeInStart = metadot_gettime();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
 
@@ -460,8 +461,8 @@ int Game::run(int argc, char *argv[]) {
             ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
             if (ImGui::GetIO().WantCaptureMouse && ImGui::GetIO().WantCaptureKeyboard) {
-                if (windowEvent.type == SDL_MOUSEBUTTONDOWN || windowEvent.type == SDL_MOUSEBUTTONUP || windowEvent.type == SDL_MOUSEMOTION || windowEvent.type == SDL_MOUSEWHEEL ||
-                    windowEvent.type == SDL_KEYDOWN || windowEvent.type == SDL_KEYUP) {
+                if (windowEvent.type == SDL_MOUSEBUTTONDOWN || windowEvent.type == SDL_MOUSEMOTION || windowEvent.type == SDL_MOUSEWHEEL || windowEvent.type == SDL_KEYDOWN ||
+                    windowEvent.type == SDL_KEYUP) {
                     continue;
                 }
             }
@@ -720,7 +721,7 @@ int Game::run(int argc, char *argv[]) {
 
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
                     ControlSystem::rmouse = true;
-                    if (GameIsolate_.world->WorldIsolate_.player) GameIsolate_.world->WorldIsolate_.player->startThrow = Time::millis();
+                    if (GameIsolate_.world->WorldIsolate_.player) GameIsolate_.world->WorldIsolate_.player->startThrow = metadot_gettime();
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
                     ControlSystem::mmouse = true;
                 }
@@ -2724,7 +2725,7 @@ void Game::renderLate() {
             F32 arX = (F32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             F32 arY = (F32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
 
-            F64 time = Time::millis() / 1000.0;
+            F64 time = metadot_gettime() / 1000.0;
 
             R_SetShapeBlendMode(R_BLEND_NORMAL);
 
@@ -2860,7 +2861,7 @@ void Game::renderLate() {
         bool needToRerenderLighting = false;
 
         static long long lastLightingForceRefresh = 0;
-        long long now = Time::millis();
+        long long now = metadot_gettime();
         if (now - lastLightingForceRefresh > 100) {
             lastLightingForceRefresh = now;
             needToRerenderLighting = true;
@@ -3037,7 +3038,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((Time::millis() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3066,7 +3067,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((Time::millis() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3095,7 +3096,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((Time::millis() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3127,7 +3128,7 @@ void Game::renderOverlays() {
                 R_Rectangle(Render.target, x, y, x + CHUNK_W * Screen.gameScale, y + CHUNK_H * Screen.gameScale, {50, 50, 0, 255});
 
                 // for(int i = 0; i < ch->polys.size(); i++) {
-                //     Drawing::drawPolygon(target, col, ch->polys[i].m_vertices, (int)x, (int)y, Screen.gameScale, ch->polys[i].m_count, 0/* + fmod((Time::millis() / 1000.0), 360)*/, 0, 0);
+                //     Drawing::drawPolygon(target, col, ch->polys[i].m_vertices, (int)x, (int)y, Screen.gameScale, ch->polys[i].m_count, 0/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
                 // }
             }
         }

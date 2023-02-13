@@ -11,7 +11,6 @@
 
 #include "audio/audio.h"
 #include "chunk.hpp"
-#include "meta/meta.hpp"
 #include "core/alloc.hpp"
 #include "core/const.h"
 #include "core/core.h"
@@ -34,6 +33,7 @@
 #include "imgui/lua/script.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
+#include "meta/meta.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -507,7 +507,7 @@ CSTDTime | {6} | Nothing
             rawtime = time(NULL);
             struct tm *timeinfo = localtime(&rawtime);
 
-            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTick, Time::millis(), rawtime);
+            TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTick, metadot_gettime(), rawtime);
 
             ImGui::Auto(TickInfoPanel);
 

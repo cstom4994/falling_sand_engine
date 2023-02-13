@@ -18,7 +18,7 @@ void GameExited() {}
 int InitCore() { return METADOT_OK; }
 
 bool InitTime() {
-    Time.startTime = Time::millis();
+    Time.startTime = metadot_gettime();
     Time.lastTime = Time.startTime;
     Time.lastTick = Time.lastTime;
     Time.lastFPS = Time.lastTime;
@@ -39,7 +39,7 @@ bool InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
 }
 
 void UpdateTime() {
-    Time.now = Time::millis();
+    Time.now = metadot_gettime();
     Time.deltaTime = Time.now - Time.lastTime;
 }
 
@@ -98,7 +98,7 @@ void ProcessTickTime() {
     for (int i = 1; i < TraceTimeNum; i++) {
         Time.frameTimesTrace[i - 1] = Time.frameTimesTrace[i];
     }
-    Time.frameTimesTrace[TraceTimeNum - 1] = (U16)(Time::millis() - Time.now);
+    Time.frameTimesTrace[TraceTimeNum - 1] = (U16)(metadot_gettime() - Time.now);
 
     Time.lastTime = Time.now;
 }

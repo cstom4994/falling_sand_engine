@@ -480,11 +480,9 @@ struct String {
     std::string m_String;
 };
 
-class Time {
-public:
-    static long long millis();
-    static time_t mkgmtime(struct tm* unixdate);
-};
+long long metadot_gettime();
+double metadot_gettime_d();
+time_t metadot_gettime_mkgmtime(struct tm *unixdate);
 
 class Timer {
 public:

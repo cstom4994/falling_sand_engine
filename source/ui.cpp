@@ -51,31 +51,33 @@ void UIRendererInit() {
     layout_init_context(&global.uidata->layoutContext);
 
     // Test element drawing
-    UIElement testElement1{.type = ElementType::windowElement,
-                           .minRectX = 50,
-                           .minRectY = 50,
-                           .maxRectX = 200,
-                           .maxRectY = 200,
-                           .color = bgPanelColor,
-                           .texture = LoadTexture("data/assets/ui/demo_background.png"),
-                           .cclass = {.window = (UI_Window){.state = 0}}};
+    UIElement *testElement1 = new UIElement{.type = ElementType::windowElement,
+                                            .x = 50,
+                                            .y = 50,
+                                            .w = 200,
+                                            .h = 200,
+                                            .color = bgPanelColor,
+                                            .texture = LoadTexture("data/assets/ui/demo_background.png"),
+                                            .cclass = {.window = (UI_Window){.state = 0}}};
 
-    UIElement testElement2{.type = ElementType::textElement, .minRectX = 55, .minRectY = 55, .maxRectX = 200, .maxRectY = 200, .color = {54, 54, 54, 255}, .text = "哈哈哈哈哈嗝"};
-    UIElement testElement3{.type = ElementType::buttonElement,
-                           .minRectX = 55,
-                           .minRectY = 80,
-                           .maxRectX = 70,
-                           .maxRectY = 90,
-                           .color = {54, 54, 54, 255},
-                           .text = "按钮捏",
-                           .cclass = {.button = (UI_Button){.state = 0, .func = []() { METADOT_INFO("button pressed"); }}}};
+    UIElement *testElement2 = new UIElement{.type = ElementType::textElement, .x = 60, .y = 60, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"};
+    UIElement *testElement3 = new UIElement{.type = ElementType::buttonElement,
+                                            .parent = testElement1,
+                                            .x = 20,
+                                            .y = 40,
+                                            .w = 20,
+                                            .h = 20,
+                                            .color = {255, 0, 20, 255},
+                                            .text = "按钮捏",
+                                            .cclass = {.button = (UI_Button){.state = 0, .func = []() { METADOT_INFO("button pressed"); }}}};
 
-    UIElement testElement4{
+    UIElement *testElement4 = new UIElement{
             .type = ElementType::progressBarElement,
-            .minRectX = 55,
-            .minRectY = 95,
-            .maxRectX = 100,
-            .maxRectY = 120,
+            .parent = testElement1,
+            .x = 20,
+            .y = 20,
+            .w = 45,
+            .h = 25,
             .color = {54, 54, 54, 255},
             .text = "进度条",
             .cclass = {.progressbar = (UI_ProgressBar){.state = 0, .bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}};
@@ -94,10 +96,10 @@ void UIRendererPostUpdate() {
     // Update UI layout context
 
     for (auto &&e : global.uidata->elementLists) {
-        if (e.second.type == ElementType::windowElement) {
-            e.second.cclass.window.layout_id = layout_item(ctx);
+        if (e.second->type == ElementType::windowElement) {
+            e.second->cclass.window.layout_id = layout_item(ctx);
 
-            layout_set_size_xy(ctx, e.second.cclass.window.layout_id, e.second.maxRectX - e.second.minRectX, e.second.maxRectY - e.second.minRectY);
+            layout_set_size_xy(ctx, e.second->cclass.window.layout_id, e.second->w, e.second->h);
             // layout_set_behave(ctx, child, LAYOUT_FILL);
             // layout_insert(ctx, root, child);
         }
@@ -114,49 +116,61 @@ void UIRendererDraw() {
     for (auto &&e : global.uidata->elementLists) {
         // Image cache
         R_Image *Img = nullptr;
-        if (e.second.texture) {
-            Img = R_CopyImageFromSurface(e.second.texture->surface);
+        if (e.second->texture) {
+            Img = R_CopyImageFromSurface(e.second->texture->surface);
         }
 
-        if (e.second.type == ElementType::lineElement) {
-            R_Line(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
+        int p_x, p_y;
+        if (e.second->parent != nullptr) {
+            p_x = e.second->parent->x;
+            p_y = e.second->parent->y;
+            // METADOT_BUG("%s .parent %s", e.first.c_str(), e.second->parent->text.c_str());
+        } else {
+            p_x = 0;
+            p_y = 0;
         }
-        if (e.second.type == ElementType::coloredRectangle || e.second.type == windowElement) {
-            if (!Img) R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, e.second.color);
-        }
-        if (e.second.type == ElementType::progressBarElement) {
-            int drect = e.second.maxRectX - e.second.minRectX;
-            float p = e.second.cclass.progressbar.bar_current / e.second.cclass.progressbar.bar_limit;
-            int c = e.second.minRectX + p * drect;
-            R_RectangleRound(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, 2.0f, e.second.color);
-            R_RectangleFilled(Render.target, e.second.minRectX, e.second.minRectY, c, e.second.maxRectY, e.second.color);
 
-            if (e.second.cclass.progressbar.bar_type == 1) MetaEngine::Drawing::drawText(e.second.text, e.second.cclass.progressbar.bar_text_color, e.second.minRectX, e.second.minRectY);
+        if (e.second->type == ElementType::lineElement) {
+            R_Line(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
         }
-        if (e.second.type == ElementType::texturedRectangle || e.second.type == ElementType::buttonElement) {
+        if (e.second->type == ElementType::coloredRectangle || e.second->type == windowElement) {
+            if (!Img) R_RectangleFilled(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
+        }
+        if (e.second->type == ElementType::progressBarElement) {
+            // METADOT_BUG("parent xy %d %d", p_x, p_y);
+            int drect = e.second->w;
+            float p = e.second->cclass.progressbar.bar_current / e.second->cclass.progressbar.bar_limit;
+            int c = p_x + e.second->x + p * drect;
+            R_RectangleRound(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, 2.0f, e.second->color);
+            R_RectangleFilled(Render.target, p_x + e.second->x, p_y + e.second->y, c, p_y + e.second->y + e.second->h, e.second->color);
+
+            if (e.second->cclass.progressbar.bar_type == 1) MetaEngine::Drawing::drawText(e.second->text, e.second->cclass.progressbar.bar_text_color, p_x + e.second->x, p_y + e.second->y);
+        }
+        if (e.second->type == ElementType::texturedRectangle || e.second->type == ElementType::buttonElement) {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                metadot_rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX, .h = (float)e.second.maxRectY};
+                metadot_rect dest{.x = (float)(e.second->x + p_x), .y = (float)(e.second->y + p_y), .w = (float)e.second->w, .h = (float)e.second->h};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
-        if (e.second.type == ElementType::windowElement) {
-            layout_vec2 win_s = layout_get_size(ctx, e.second.cclass.window.layout_id);
+        if (e.second->type == ElementType::windowElement) {
+            layout_vec2 win_s = layout_get_size(ctx, e.second->cclass.window.layout_id);
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                metadot_rect dest{.x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)(e.second.minRectX + win_s[0]), .h = (float)(e.second.minRectY + win_s[1])};
+                metadot_rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(win_s[0]), .h = (float)(win_s[1])};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
-        if (e.second.type == ElementType::textElement || e.second.type == ElementType::buttonElement) {
-            MetaEngine::Drawing::drawText(e.second.text, e.second.cclass.progressbar.bar_text_color, e.second.minRectX, e.second.minRectY);
+        if (e.second->type == ElementType::textElement || e.second->type == ElementType::buttonElement) {
+            MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
         }
 
         if (Img) R_FreeImage(Img);
 
-        if (global.game->GameIsolate_.globaldef.draw_ui_debug) R_Rectangle(Render.target, e.second.minRectX, e.second.minRectY, e.second.maxRectX, e.second.maxRectY, {255, 20, 147, 255});
+        if (global.game->GameIsolate_.globaldef.draw_ui_debug)
+            R_Rectangle(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, {255, 20, 147, 255});
     }
 }
 
@@ -179,22 +193,48 @@ void UIRendererUpdate() {
     metadot_get_mousepos(&x, &y);
 
     for (auto &&e : global.uidata->elementLists) {
-        metadot_rect rect{
-                .x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
-        if (e.second.type == ElementType::windowElement) {
+
+        int p_x, p_y;
+        if (e.second->parent != nullptr) {
+            p_x = e.second->parent->x;
+            p_y = e.second->parent->y;
+            // METADOT_BUG("%s .parent %s", e.first.c_str(), e.second->parent->text.c_str());
+        } else {
+            p_x = 0;
+            p_y = 0;
+        }
+
+        metadot_rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
+        if (e.second->type == ElementType::windowElement) {
             // Move window
-            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f && ControlSystem::lmouse && y - e.second.minRectY < 15.0f) {
+            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
+                if (ControlSystem::lmouse) {  // && y - e.second->y < 15.0f
+                    if (!e.second->movable.moving) {
+                        e.second->movable.mx = x;
+                        e.second->movable.my = y;
+                        e.second->movable.moving = true;
+                    }
+                    // METADOT_INFO("window move %d %d", x, y);
+                    e.second->x = e.second->movable.ox + (x - e.second->movable.mx);
+                    e.second->y = e.second->movable.oy + (y - e.second->movable.my);
+                    // e.second->minRectX = (x - e.second->minRectX) + global.uidata->mouse_dx;
+                    // e.second->minRectY = (y - e.second->minRectY) + global.uidata->mouse_dy;
+                } else {
+                    e.second->movable.moving = false;
+                    e.second->movable.ox = e.second->x;
+                    e.second->movable.oy = e.second->y;
+                }
             }
         }
-        if (e.second.type == ElementType::buttonElement) {
+        if (e.second->type == ElementType::buttonElement) {
             // Pressed button
-            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f && ControlSystem::lmouse && NULL != e.second.cclass.button.func) {
-                e.second.cclass.button.func();
+            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f && ControlSystem::lmouse && NULL != e.second->cclass.button.func) {
+                e.second->cclass.button.func();
             }
         }
-        if (e.second.type == ElementType::progressBarElement) {
+        if (e.second->type == ElementType::progressBarElement) {
             // Test haha
-            e.second.cclass.progressbar.bar_current = (e.second.cclass.progressbar.bar_current < e.second.cclass.progressbar.bar_limit) ? e.second.cclass.progressbar.bar_current + 1 : 0;
+            e.second->cclass.progressbar.bar_current = (e.second->cclass.progressbar.bar_current < e.second->cclass.progressbar.bar_limit) ? e.second->cclass.progressbar.bar_current + 1 : 0;
         }
     }
 }
@@ -204,7 +244,8 @@ void UIRendererFree() {
     METADOT_DELETE(C, global.uidata->imguiCore, ImGuiCore);
 
     for (auto &&e : global.uidata->elementLists) {
-        if (static_cast<bool>(e.second.texture)) Eng_DestroyTexture(e.second.texture);
+        if (static_cast<bool>(e.second->texture)) Eng_DestroyTexture(e.second->texture);
+        if (static_cast<bool>(e.second)) delete e.second;
     }
 
     delete global.uidata;
@@ -216,8 +257,7 @@ bool UIIsMouseOnControls() {
     metadot_get_mousepos(&x, &y);
 
     for (auto &&e : global.uidata->elementLists) {
-        metadot_rect rect{
-                .x = (float)e.second.minRectX, .y = (float)e.second.minRectY, .w = (float)e.second.maxRectX - (float)e.second.minRectX, .h = (float)e.second.maxRectY - (float)e.second.minRectY};
+        metadot_rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) return true;
     }
     return false;
