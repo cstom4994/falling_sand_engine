@@ -619,32 +619,13 @@ U32 getpixel(C_Surface *surface, int x, int y) {
 void Item::loadFillTexture(C_Surface *tex) {
     fill.resize(capacity);
     U32 maxN = 0;
-    for (U16 x = 0; x < tex->w; x++) {
-        for (U16 y = 0; y < tex->h; y++) {
-
-            U32 color = R_GET_PIXEL(tex, x, y);
-
-            // SDL_Color rgb;
-            // U32 data = getpixel(tex, x, y);
-            // SDL_GetRGB(data, tex->format, &rgb.r, &rgb.g, &rgb.b);
-
-            // U32 j = data;
-
-            // if (rgb.a > (U8)0)
-            // {
-            //     if (j - 1 > maxN) maxN = j - 1;
-            //     fill.resize(maxN);
-            //     fill[j - 1] = { x,y };
-            // }
-
-            if (((color >> 32) & 0xff) > 0) {
-                U32 n = color & 0x00ffffff;
-
-                // U32 t = (n * 100) / col;
-                U32 t = n;
-
-                fill[t - 1] = {x, y};
-                if (t - 1 > maxN) maxN = t - 1;
+    for(U16 x = 0; x < tex->w; x++) {
+        for(U16 y = 0; y < tex->h; y++) {
+            U32 col = getpixel(tex, x, y);
+            if(((col >> 24) & 0xff) > 0) {
+                U32 n = col & 0x00ffffff;
+                fill[n - 1] = {x, y};
+                if(n - 1 > maxN) maxN = n - 1;
             }
         }
     }

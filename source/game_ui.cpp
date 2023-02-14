@@ -538,7 +538,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
         snprintf(filenameAndTimestamp, 100, "%s (%d-%02d-%02d %02d:%02d:%02d)", worldName.c_str(), timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour,
                  timeinfo->tm_min, timeinfo->tm_sec);
 
-        if (ImGui::Button(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
+        if (ImGui::Selectable(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
 
             gameUI.visible_mainmenu = false;

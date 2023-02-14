@@ -470,7 +470,7 @@ int Game::run(int argc, char *argv[]) {
             if (windowEvent.type == SDL_MOUSEWHEEL) {
 
             } else if (windowEvent.type == SDL_MOUSEMOTION) {
-                if (ControlSystem::DEBUG_DRAW->get()) {
+                if (ControlSystem::DEBUG_DRAW->get() && !UIIsMouseOnControls()) {
                     // draw material
 
                     int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
@@ -505,7 +505,7 @@ int Game::run(int argc, char *argv[]) {
                     lastDrawMY = 0;
                 }
 
-                if (ControlSystem::mmouse) {
+                if (ControlSystem::mmouse && !UIIsMouseOnControls()) {
                     // erase material
 
                     // erase from world
@@ -596,7 +596,7 @@ int Game::run(int argc, char *argv[]) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
                     ControlSystem::lmouse = true;
 
-                    if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
+                    if (!UIIsMouseOnControls() && GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
                         if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                             GameIsolate_.world->WorldIsolate_.player->holdtype = Vacuum;
                         } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
@@ -927,15 +927,8 @@ int Game::run(int argc, char *argv[]) {
 
         global.scripts->UpdateRender();
 
-        // auto image2 = R_CopyImageFromSurface(GameIsolate_.texturepack->testAse);
-        // METADOT_ASSERT_E(image2);
-        // R_BlitScale(image2, NULL, Render.target, 200, 200, 1.0f, 1.0f);
-
-        // FontCache_Rect rightHalf = {0, 0, Screen.windowWidth / 4.0f, Screen.windowWidth / 1.0f};
-        // R_RectangleFilled(Render.target, rightHalf.x, rightHalf.y, rightHalf.x + rightHalf.w, rightHalf.y + rightHalf.h, {255, 255, 255, 255});
-
-        // METADOT_ASSERT_E(font);
-        // FontCache_DrawColor(font, Render.target, 200, 200, {255, 144, 255, 255}, "This is %s.\n It works.", "example text");
+        // metadot_rect rct{0, 0, 150, 150};
+        // RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         MetaEngine::Drawing::begin_3d(Render.target);
         // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);

@@ -7,11 +7,14 @@
 #include "SDL_surface.h"
 #include "core/alloc.hpp"
 #include "core/core.h"
+#include "engine.h"
 #include "filesystem.h"
 #include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"
 #include "renderer/renderer_gpu.h"
 #include "sdl_wrapper.h"
+
+IMPLENGINE();
 
 void InitTexture(TexturePack *tex) {
     METADOT_ASSERT_E(tex);
@@ -165,6 +168,7 @@ Texture *LoadAsepriteTexture(const char *path) {
 
     C_Surface *surface =
             SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
+    surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
     if (!surface) METADOT_ERROR("Surface could not be created!, %s", SDL_GetError());
     SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.num_entries);
     SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
@@ -174,4 +178,17 @@ Texture *LoadAsepriteTexture(const char *path) {
     Ase_Destroy_Output(ase);
 
     return tex;
+}
+
+void RenderSprite(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip) {
+    metadot_rect dst;
+    dst.x = x;
+    dst.y = y;
+    if (clip != nullptr) {
+        dst.w = clip->w;
+        dst.h = clip->h;
+    }
+    auto image = R_CopyImageFromSurface(tex->surface);
+    METADOT_ASSERT_E(image);
+    R_BlitRect(image, clip, target, &dst);
 }

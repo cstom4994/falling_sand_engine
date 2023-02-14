@@ -60,7 +60,7 @@ void UIRendererInit() {
                                             .texture = LoadTexture("data/assets/ui/demo_background.png"),
                                             .cclass = {.window = (UI_Window){.state = 0}}};
 
-    UIElement *testElement2 = new UIElement{.type = ElementType::textElement, .x = 60, .y = 60, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"};
+    UIElement *testElement2 = new UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"};
     UIElement *testElement3 = new UIElement{.type = ElementType::buttonElement,
                                             .parent = testElement1,
                                             .x = 20,
@@ -109,6 +109,8 @@ void UIRendererPostUpdate() {
 }
 
 void UIRendererDraw() {
+
+    if (global.game->state == LOADING) return;
 
     auto ctx = &global.uidata->layoutContext;
 
@@ -188,6 +190,10 @@ void UIRendererUpdate() {
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 
+    if (global.game->state == LOADING) return;
+
+    bool ImGuiOnControl = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
+
     // Mouse pos
     int x, y;
     metadot_get_mousepos(&x, &y);
@@ -208,7 +214,7 @@ void UIRendererUpdate() {
         if (e.second->type == ElementType::windowElement) {
             // Move window
             if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
-                if (ControlSystem::lmouse) {  // && y - e.second->y < 15.0f
+                if (ControlSystem::lmouse && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
                     if (!e.second->movable.moving) {
                         e.second->movable.mx = x;
                         e.second->movable.my = y;
@@ -228,7 +234,7 @@ void UIRendererUpdate() {
         }
         if (e.second->type == ElementType::buttonElement) {
             // Pressed button
-            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f && ControlSystem::lmouse && NULL != e.second->cclass.button.func) {
+            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f && ControlSystem::lmouse && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
                 e.second->cclass.button.func();
             }
         }

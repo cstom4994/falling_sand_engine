@@ -171,7 +171,6 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
 
     glDisableVertexAttribArray(color_loc);
     glDisableVertexAttribArray(vertex_loc);
-
 }
 
 #pragma endregion Shaders
@@ -225,35 +224,22 @@ void ShaderWorkerSystem::Create() {
     this->untexturedShader->Init();
 }
 
+#define SAFEUNLOADSHADER(x) \
+    if (this->x) {          \
+        this->x->Unload();  \
+        delete this->x;     \
+    }
+
 void ShaderWorkerSystem::Destory() {
-    if (this->waterShader) {
-        this->waterShader->Unload();
-        delete this->waterShader;
-    }
-    if (this->waterFlowPassShader) {
-        this->waterFlowPassShader->Unload();
-        delete this->waterFlowPassShader;
-    }
-    if (this->newLightingShader) {
-        this->newLightingShader->Unload();
-        delete this->newLightingShader;
-    }
-    if (this->fireShader) {
-        this->fireShader->Unload();
-        delete this->fireShader;
-    }
-    if (this->fire2Shader) {
-        this->fire2Shader->Unload();
-        delete this->fire2Shader;
-    }
-    if (this->blurShader) {
-        this->blurShader->Unload();
-        delete this->blurShader;
-    }
-    if (this->untexturedShader) {
-        this->untexturedShader->Unload();
-        delete this->untexturedShader;
-    }
+    SAFEUNLOADSHADER(waterShader);
+    SAFEUNLOADSHADER(waterFlowPassShader);
+    SAFEUNLOADSHADER(newLightingShader);
+    SAFEUNLOADSHADER(fireShader);
+    SAFEUNLOADSHADER(fire2Shader);
+    SAFEUNLOADSHADER(blurShader);
+    SAFEUNLOADSHADER(untexturedShader);
 }
+
+#undef SAFEUNLOADSHADER
 
 void ShaderWorkerSystem::RegisterLua(LuaWrapper::State &s_lua) {}
