@@ -9,11 +9,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "engine_core.h"
-#include "engine_ecs.h"
-#include "engine_meta.h"
-#include "engine_platform.h"
-#include "engine_render.h"
+#include "engine/engine_core.h"
+#include "engine/engine_ecs.h"
+#include "engine/engine_meta.h"
+#include "engine/engine_platform.h"
+#include "engine/engine_render.h"
 #include "util.h"
 
 #define IMPLENGINE()             \

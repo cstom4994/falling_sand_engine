@@ -6,9 +6,9 @@
 
 #include "core/core.h"
 #include "core/global.hpp"
-#include "engine.h"
-#include "engine_input.hpp"
-#include "engine_platform.h"
+#include "engine/engine.h"
+#include "engine/engine_input.hpp"
+#include "engine/engine_platform.h"
 #include "game.hpp"
 #include "game_resources.hpp"
 #include "mathlib.h"

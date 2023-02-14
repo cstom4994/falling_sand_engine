@@ -268,6 +268,7 @@ do
 	add_files("source/audio/**.cpp")
 	add_files("source/meta/*.cpp")
 	add_files("source/ui/**.cpp")
+	add_files("source/engine/**.cpp")
 	add_files("source/renderer/**.c")
 	add_files("source/renderer/**.cpp")
 	add_files("source/scripting/**.c")

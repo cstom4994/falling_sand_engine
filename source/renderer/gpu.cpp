@@ -2,7 +2,7 @@
 #include "gpu.hpp"
 
 #include "core/global.hpp"
-#include "engine_shaders.hpp"
+#include "engine/engine_shaders.hpp"
 #include "game_shaders.hpp"
 #include "imgui/imgui_core.hpp"
 #include "libs/imgui/imgui.h"

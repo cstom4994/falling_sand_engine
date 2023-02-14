@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine_platform.h"
+#include "engine/engine_platform.h"
 
 #include <string.h>
 
@@ -9,7 +9,7 @@
 #include "core/const.h"
 #include "core/core.h"
 #include "core/macros.h"
-#include "engine.h"
+#include "engine/engine.h"
 #include "filesystem.h"
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"

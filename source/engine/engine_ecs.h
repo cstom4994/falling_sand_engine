@@ -3,7 +3,7 @@
 #ifndef _METADOT_ENGINEECS_H_
 #define _METADOT_ENGINEECS_H_
 
-#include "engine_core.h"
+#include "engine/engine_core.h"
 #include "core/cpp/utils.hpp"
 
 // ECS Types

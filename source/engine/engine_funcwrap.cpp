@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine_funcwrap.hpp"
+#include "engine/engine_funcwrap.hpp"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,8 +19,8 @@
 
 #include "core/const.h"
 #include "core/global.hpp"
-#include "engine.h"
-#include "engine_scripting.hpp"
+#include "engine/engine.h"
+#include "engine/engine_scripting.hpp"
 #include "game.hpp"
 #include "libs/lz4/lz4.h"
 #include "libs/lz4/lz4frame.h"

@@ -13,8 +13,8 @@
 #include "core/platform.h"
 #include "core/stl.h"
 #include "datapackage.h"
-#include "engine.h"
-#include "engine_platform.h"
+#include "engine/engine.h"
+#include "engine/engine_platform.h"
 #include "libs/physfs/physfs.h"
 
 IMPLENGINE();

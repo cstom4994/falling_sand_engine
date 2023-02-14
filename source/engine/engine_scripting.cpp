@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine_scripting.hpp"
+#include "engine/engine_scripting.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -20,7 +20,7 @@
 #include "core/global.hpp"
 #include "core/profiler/profiler_lua.h"
 #include "ecs/luaecs.h"
-#include "engine_funcwrap.hpp"
+#include "engine/engine_funcwrap.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"

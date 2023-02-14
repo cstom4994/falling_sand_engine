@@ -8,12 +8,12 @@
 #include <tuple>
 #include <utility>
 
-#include "meta/meta.hpp"
 #include "core/const.h"
 #include "core/core.h"
 #include "core/cpp/static_relfection.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
+#include "meta/meta.hpp"
 #include "reflectionflat.hpp"
 
 typedef struct {

@@ -7,7 +7,7 @@
 #include "SDL_surface.h"
 #include "core/alloc.hpp"
 #include "core/core.h"
-#include "engine.h"
+#include "engine/engine.h"
 #include "filesystem.h"
 #include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"

@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "engine_scripting.hpp"
+#include "engine/engine_scripting.hpp"
 #include "game_datastruct.hpp"
 
 class GameplayScriptSystem : public IGameSystem {

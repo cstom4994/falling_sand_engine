@@ -8,7 +8,7 @@
 #include <string>
 
 #include "core/macros.h"
-#include "engine.h"
+#include "engine/engine.h"
 #include "scripting/lua_wrapper.hpp"
 #include "libs/visitstruct.hpp"
 

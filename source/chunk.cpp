@@ -14,7 +14,7 @@
 #include "core/cpp/utils.hpp"
 #include "core/global.hpp"
 #include "datapackage.h"
-#include "engine_platform.h"
+#include "engine/engine_platform.h"
 #include "libs/lz4/lz4.h"
 
 // Chunk::~Chunk() {

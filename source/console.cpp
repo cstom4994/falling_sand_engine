@@ -9,10 +9,9 @@
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "cvar.hpp"
-#include "engine.h"
-
-#include "reflectionflat.hpp"
+#include "engine/engine.h"
 #include "game.hpp"
+#include "reflectionflat.hpp"
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 

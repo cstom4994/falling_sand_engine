@@ -6,7 +6,7 @@
 #include "core/core.h"
 #include "core/macros.h"
 #include "core/stl.h"
-#include "engine.h"
+#include "engine/engine.h"
 #include "mathlib.h"
 
 #if defined(METADOT_BUILD_AUDIO)
