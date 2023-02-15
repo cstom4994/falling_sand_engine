@@ -1252,7 +1252,7 @@ b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p) {
 
 void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
 
-    auto GlobalDEF = global.scripts->LuaCoreCpp->s_lua["global_def"];
+    auto GlobalDEF = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua["global_def"];
 
     if (!GlobalDEF.isNilref()) {
         LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);
@@ -1320,14 +1320,3 @@ void SaveGlobalDEF(std::string globaldef_src) {
     // std::ofstream o(globaldef_src);
     // o << settings_data;
 }
-void IGameSystem::Create() {}
-
-void IGameSystem::Destory() {}
-
-void IGameSystem::RegisterLua(LuaWrapper::State &s_lua) {}
-
-void IGameObject::Create() {}
-
-void IGameObject::Destory() {}
-
-void IGameObject::RegisterReflection() {}

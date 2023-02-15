@@ -17,13 +17,6 @@
 #include "engine/engine_platform.h"
 #include "libs/lz4/lz4.h"
 
-// Chunk::~Chunk() {
-//     if (tiles) delete[] tiles;
-//     if (layer2) delete[] layer2;
-//     if (background) delete[] background;
-//     if (!biomes.empty()) biomes.resize(0);
-// }
-
 void ChunkInit(Chunk *_struct, int x, int y, char *worldName) {
     METADOT_ASSERT_E(_struct);
     _struct->x = x;

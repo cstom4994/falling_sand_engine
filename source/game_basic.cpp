@@ -43,7 +43,7 @@ static void materials_init() { InitMaterials(); }
 static void controls_init() { ControlSystem::InitKey(); }
 
 static void init_ecs() {
-    auto luacore = global.scripts->LuaCoreCpp;
+    auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
     auto &luawrap = luacore->s_lua;
 }
 
@@ -58,7 +58,7 @@ Biome *BiomeGet(std::string name) {
 }
 
 void GameplayScriptSystem::Create() {
-    auto luacore = global.scripts->LuaCoreCpp;
+    auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
     auto &luawrap = luacore->s_lua;
     luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
     luawrap["OnGameEngineLoad"]();
@@ -66,7 +66,7 @@ void GameplayScriptSystem::Create() {
 }
 
 void GameplayScriptSystem::Destory() {
-    auto luacore = global.scripts->LuaCoreCpp;
+    auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
     auto &luawrap = luacore->s_lua;
     auto EndFunc = luawrap["OnGameEngineUnLoad"];
     EndFunc();
@@ -119,3 +119,15 @@ a = RigidBody(1, "hello")
     //     s_lua("print( a.extra, actor.extra )");
     // }
 }
+
+void IGameSystem::Create() {}
+
+void IGameSystem::Destory() {}
+
+void IGameSystem::RegisterLua(LuaWrapper::State &s_lua) {}
+
+void IGameObject::Create() {}
+
+void IGameObject::Destory() {}
+
+void IGameObject::RegisterReflection() {}

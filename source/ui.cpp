@@ -56,9 +56,10 @@ void UIRendererInit() {
                                             .y = 50,
                                             .w = 200,
                                             .h = 200,
+                                            .state = 0,
                                             .color = bgPanelColor,
                                             .texture = LoadTexture("data/assets/ui/demo_background.png"),
-                                            .cclass = {.window = (UI_Window){.state = 0}}};
+                                            .cclass = {.window = (UI_Window){}}};
 
     UIElement *testElement2 = new UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"};
     UIElement *testElement3 = new UIElement{.type = ElementType::buttonElement,
@@ -67,9 +68,10 @@ void UIRendererInit() {
                                             .y = 40,
                                             .w = 20,
                                             .h = 20,
+                                            .state = 0,
                                             .color = {255, 0, 20, 255},
                                             .text = "按钮捏",
-                                            .cclass = {.button = (UI_Button){.state = 0, .func = []() { METADOT_INFO("button pressed"); }}}};
+                                            .cclass = {.button = (UI_Button){.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}};
 
     UIElement *testElement4 = new UIElement{
             .type = ElementType::progressBarElement,
@@ -78,9 +80,10 @@ void UIRendererInit() {
             .y = 20,
             .w = 45,
             .h = 25,
+            .state = 0,
             .color = {54, 54, 54, 255},
             .text = "进度条",
-            .cclass = {.progressbar = (UI_ProgressBar){.state = 0, .bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}};
+            .cclass = {.progressbar = (UI_ProgressBar){.bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}};
 
     global.uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
     global.uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
@@ -165,7 +168,14 @@ void UIRendererDraw() {
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
-        if (e.second->type == ElementType::textElement || e.second->type == ElementType::buttonElement) {
+        if (e.second->type == ElementType::buttonElement) {
+            if (e.second->state == 1) {
+                MetaEngine::Drawing::drawText(e.second->text, e.second->cclass.button.hot_color, p_x + e.second->x, p_y + e.second->y);
+            } else {
+                MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
+            }
+        }
+        if (e.second->type == ElementType::textElement) {
             MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
         }
 
@@ -186,7 +196,7 @@ F32 BoxDistence(metadot_rect box, R_vec2 A) {
 void UIRendererUpdate() {
 
     global.uidata->imguiCore->Update();
-    auto &l = global.scripts->LuaCoreCpp->s_lua;
+    auto &l = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 
@@ -234,8 +244,14 @@ void UIRendererUpdate() {
         }
         if (e.second->type == ElementType::buttonElement) {
             // Pressed button
-            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f && ControlSystem::lmouse && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
-                e.second->cclass.button.func();
+            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
+                e.second->state = 1;
+                if (ControlSystem::lmouse && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
+                    e.second->state = 2;
+                    e.second->cclass.button.func();
+                }
+            } else {
+                e.second->state = 0;
             }
         }
         if (e.second->type == ElementType::progressBarElement) {

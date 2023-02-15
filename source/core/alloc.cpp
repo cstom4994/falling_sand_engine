@@ -40,6 +40,8 @@ F32 MemCurrentUsageMB() {
     return (F32)(bytes / 1048576.0f);
 }
 
+// https://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3536.html
+
 void *operator new(size_t size) {
     // METADOT_BUG("Alloc %d memory", size);
     g_AllocationMetrics.TotalAllocated += size;

@@ -7,10 +7,11 @@
 #include <map>
 #include <string>
 
+#include "core/cpp/csingleton.h"
 #include "core/macros.h"
 #include "engine/engine.h"
-#include "scripting/lua_wrapper.hpp"
 #include "libs/visitstruct.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 typedef struct LuaCoreC {
     lua_State *L;
@@ -97,13 +98,20 @@ void UpdateLuaCoreCpp(LuaCoreCpp *_struct);
 void InitLuaCoreCpp(LuaCoreCpp *_struct);
 void EndLuaCoreCpp(LuaCoreCpp *_struct);
 
-struct Scripts {
+class Scripts : public MetaEngine::CSingleton<Scripts> {
+public:
     LuaCoreCpp *LuaCoreCpp;
+
+    Scripts(){};
+    ~Scripts(){};
 
     void Init();
     void End();
     void UpdateRender();
     void UpdateTick();
+
+private:
+    friend class MetaEngine::CSingleton<Scripts>;
 };
 
 #endif

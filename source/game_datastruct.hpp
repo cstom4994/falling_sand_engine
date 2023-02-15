@@ -8,13 +8,14 @@
 #include <string>
 #include <vector>
 
-#include "meta/meta.hpp"
 #include "core/core.hpp"
 #include "core/cpp/static_relfection.hpp"
 #include "core/cpp/type.hpp"
 #include "core/cpp/vector.hpp"
+#include "game_basic.hpp"
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
+#include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.hpp"
 #include "sdl_wrapper.h"
@@ -60,28 +61,6 @@ struct GameData {
     struct {
         std::unordered_map<std::string, Meta::AnyFunction> Functions;
     } HostData;
-};
-
-class IGameSystem {
-public:
-    IGameSystem(){};
-    ~IGameSystem(){};
-
-    virtual void Create();
-    virtual void Destory();
-
-    // Register Lua always been called before Create()
-    virtual void RegisterLua(LuaWrapper::State &s_lua);
-};
-
-class IGameObject {
-public:
-    IGameObject(){};
-    ~IGameObject(){};
-
-    virtual void Create();
-    virtual void Destory();
-    virtual void RegisterReflection();
 };
 
 template <>
@@ -201,22 +180,22 @@ struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
             Field{TSTR("index_name"), &Material::index_name},
             Field{TSTR("id"), &Material::id},
             Field{TSTR("physicsType"), &Material::physicsType},
-            Field{TSTR("alpha"), &Material::alpha},
-            Field{TSTR("density"), &Material::density},
-            Field{TSTR("iterations"), &Material::iterations},
-            Field{TSTR("emit"), &Material::emit},
-            Field{TSTR("emitColor"), &Material::emitColor},
-            Field{TSTR("color"), &Material::color},
-            Field{TSTR("addTemp"), &Material::addTemp},
-            Field{TSTR("conductionSelf"), &Material::conductionSelf},
-            Field{TSTR("conductionOther"), &Material::conductionOther},
-            Field{TSTR("interact"), &Material::interact},
-            Field{TSTR("nInteractions"), &Material::nInteractions},
-            Field{TSTR("interactions"), &Material::interactions},
-            Field{TSTR("react"), &Material::react},
-            Field{TSTR("nReactions"), &Material::nReactions},
-            Field{TSTR("reactions"), &Material::reactions},
-            Field{TSTR("slipperyness"), &Material::slipperyness},
+            // Field{TSTR("alpha"), &Material::alpha},
+            // Field{TSTR("density"), &Material::density},
+            // Field{TSTR("iterations"), &Material::iterations},
+            // Field{TSTR("emit"), &Material::emit},
+            // Field{TSTR("emitColor"), &Material::emitColor},
+            // Field{TSTR("color"), &Material::color},
+            // Field{TSTR("addTemp"), &Material::addTemp},
+            // Field{TSTR("conductionSelf"), &Material::conductionSelf},
+            // Field{TSTR("conductionOther"), &Material::conductionOther},
+            // Field{TSTR("interact"), &Material::interact},
+            // Field{TSTR("nInteractions"), &Material::nInteractions},
+            // // Field{TSTR("interactions"), &Material::interactions},
+            // Field{TSTR("react"), &Material::react},
+            // Field{TSTR("nReactions"), &Material::nReactions},
+            // // Field{TSTR("reactions"), &Material::reactions},
+            // Field{TSTR("slipperyness"), &Material::slipperyness},
     };
 };
 
@@ -562,6 +541,10 @@ public:
     RigidBody(b2Body *body, std::string_view name = "unknown");
     ~RigidBody();
 };
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, RigidBody)
+ImGui::Text("RigidBody: %s", var.name.c_str());
+METAENGINE_GUI_DEFINE_END
 
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
 

@@ -116,7 +116,7 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_run_lua_file_script(lua_State *L) {
     std::string string = lua_tostring(L, 1);
-    auto &LuaCore = global.scripts->LuaCoreCpp->s_lua;
+    auto &LuaCore = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua;
     METADOT_ASSERT_E(&LuaCore);
     if (SUtil::startsWith(string, "Script:")) SUtil::replaceWith(string, "Script:", METADOT_RESLOC("data/scripts/"));
     RunScriptFromFile(string.c_str());
@@ -158,7 +158,7 @@ static int ls(lua_State *L) {
 }
 
 static void add_packagepath(const char *p) {
-    auto &s_lua = global.scripts->LuaCoreCpp->s_lua;
+    auto &s_lua = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua;
     METADOT_ASSERT_E(&s_lua);
     s_lua.dostring(MetaEngine::Format("package.path = "
                                       "'{0}/?.lua;' .. package.path",
@@ -291,15 +291,15 @@ void RunScriptInConsole(LuaCoreCpp *_struct, const char *c) {
 void RunScriptFromFile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(global.scripts->LuaCoreCpp->C->L, METADOT_RESLOC(filePath));
+    int result = luaL_loadfile(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L, METADOT_RESLOC(filePath));
     if (result != LUA_OK) {
-        print_error(global.scripts->LuaCoreCpp->C->L);
+        print_error(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L);
         return;
     }
-    result = metadot_debug_pcall(global.scripts->LuaCoreCpp->C->L, 0, LUA_MULTRET, 0);
+    result = metadot_debug_pcall(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
-        print_error(global.scripts->LuaCoreCpp->C->L);
+        print_error(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L);
     }
 }
 

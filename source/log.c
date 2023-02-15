@@ -2,6 +2,8 @@
 
 #include "log.h"
 
+#include "core/macros.h"
+
 #define MAX_CALLBACKS 32
 
 typedef struct {
@@ -17,6 +19,10 @@ static struct {
     bool quiet;
     Callback callbacks[MAX_CALLBACKS];
 } L;
+
+#ifdef METADOT_PLATFORM_APPLE
+#define LOG_USE_COLOR
+#endif
 
 static const char *level_strings[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 

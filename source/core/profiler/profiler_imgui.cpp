@@ -360,6 +360,8 @@ int ProfilerDrawFrame(ProfilerFrame* _data, void* _buffer, size_t _bufferSize, b
     if (ImGui::BeginTabItem("内存")) {
         ImGui::Text("MaximumMem: %llu mb", Core.max_mem / 1048576);
         ImGui::Text("MemCurrentUsage: %.2f mb", MemCurrentUsageMB());
+        ImGui::Text("MemTotalAllocated: %.2lf mb", (F64)(g_AllocationMetrics.TotalAllocated / 1048576.0f));
+        ImGui::Text("MemTotalFree: %.2lf mb", (F64)(g_AllocationMetrics.TotalFree / 1048576.0f));
 
 #if defined(METADOT_DEBUG)
         ImGui::Dummy(ImVec2(0.0f, 10.0f));

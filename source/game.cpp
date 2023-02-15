@@ -92,17 +92,7 @@ int Game::init(int argc, char *argv[]) {
     if (InitEngine(InitCppReflection)) return METADOT_FAILED;
 
     // Load splash screen
-    METADOT_INFO("Loading splash screen...");
-
-    R_Clear(Render.target);
-    R_Flip(Render.target);
-    Texture *splashSurf = LoadTexture("data/assets/title/splash.png");
-    R_Image *splashImg = R_CopyImageFromSurface(splashSurf->surface);
-    R_SetImageFilter(splashImg, R_FILTER_NEAREST);
-    R_BlitRect(splashImg, NULL, Render.target, NULL);
-    R_FreeImage(splashImg);
-    Eng_DestroyTexture(splashSurf);
-    R_Flip(Render.target);
+    DrawSplash();
 
     // Register global functions to hostdata using AnyFunction
     // RegisterFunctions(gamescriptwrap_init, InitGameScriptingWrap);
@@ -115,8 +105,7 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
-    METADOT_NEW(C, global.scripts, Scripts);
-    global.scripts->Init();
+    Scripts::GetSingletonPtr()->Init();
 
     // UISystem including ImGui
     UIRendererInit();
@@ -896,7 +885,7 @@ int Game::run(int argc, char *argv[]) {
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
         while (Time.now - Time.lastTick > Time.mspt) {
-            global.scripts->UpdateTick();
+            Scripts::GetSingletonPtr()->UpdateTick();
             if (GameIsolate_.globaldef.tick_world) {
                 tick();
                 Time.tpsCount++;
@@ -925,7 +914,7 @@ int Game::run(int argc, char *argv[]) {
         renderLate();
         Render.target = Render.realTarget;
 
-        global.scripts->UpdateRender();
+        Scripts::GetSingletonPtr()->UpdateRender();
 
         // metadot_rect rct{0, 0, 150, 150};
         // RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
@@ -989,6 +978,17 @@ int Game::run(int argc, char *argv[]) {
                         if (tile.mat->physicsType == PhysicsType::SOUP) {
                             ImGui::Text("fluidAmount = %f", tile.fluidAmount);
                         }
+
+                        // ImGui::Text("physicsType = %d", tile.mat->physicsType);
+                        // ImGui::Text("addTemp = %d", tile.mat->addTemp);
+                        // ImGui::Text("color = %d", tile.mat->color);
+
+                        using namespace MetaEngine::StaticRefl;
+
+                        TypeInfo<Material>::ForEachVarOf(*tile.mat, [](auto field, auto &&var) {
+                            static_assert(std::is_lvalue_reference_v<decltype(var)>);
+                            ImGui::Auto(var, std::string(field.name));
+                        });
 
                         int ln = 0;
                         if (tile.mat->interact) {
@@ -1083,9 +1083,9 @@ int Game::exit() {
     UIRendererFree();
 
     // release resources & shutdown
-    global.scripts->End();
+    Scripts::GetSingletonPtr()->End();
     METADOT_DELETE(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem);
-    METADOT_DELETE(C, global.scripts, Scripts);
+    Scripts::Delete();
 
     ReleaseGameData();
 
@@ -1098,8 +1098,6 @@ int Game::exit() {
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
-
-    // FontCache_FreeFont(font);
 
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
     metadot_thpool_destroy(GameIsolate_.updateDirtyPool2);

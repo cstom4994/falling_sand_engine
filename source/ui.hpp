@@ -16,17 +16,15 @@
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement } ElementType;
 
 typedef struct UIElementState_Button {
-    U8 state;
+    METAENGINE_Color hot_color;
     void (*func)(void);
 } UI_Button;
 
 typedef struct UIElementState_Window {
-    U8 state;
     layout_id layout_id;
 } UI_Window;
 
 typedef struct UIElementState_ProgressBar {
-    U8 state;
     U8 bar_type;
     F32 bar_current;
     F32 bar_limit;
@@ -55,6 +53,7 @@ typedef struct UIElement {
 
     int x, y, w, h;
 
+    U8 state;
     METAENGINE_Color color;
     Texture* texture;
     std::string text;

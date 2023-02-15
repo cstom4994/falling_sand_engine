@@ -122,3 +122,14 @@ void EndEngine(int errorOcurred) {
         METADOT_INFO("Engine finished sucessfully");
     }
 }
+void DrawSplash() {
+    R_Clear(Render.target);
+    R_Flip(Render.target);
+    Texture *splashSurf = LoadTexture("data/assets/title/splash.png");
+    R_Image *splashImg = R_CopyImageFromSurface(splashSurf->surface);
+    R_SetImageFilter(splashImg, R_FILTER_NEAREST);
+    R_BlitRect(splashImg, NULL, Render.target, NULL);
+    R_FreeImage(splashImg);
+    Eng_DestroyTexture(splashSurf);
+    R_Flip(Render.target);
+}

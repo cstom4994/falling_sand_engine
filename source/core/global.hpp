@@ -15,6 +15,7 @@
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
 #include "imgui/imgui_impl.hpp"
+#include "core/cpp/csingleton.h"
 
 class Game;
 class Scripts;
@@ -22,9 +23,8 @@ class UIData;
 
 struct Global {
     Game *game = nullptr;
-    Scripts *scripts = nullptr;
-    UIData *uidata = nullptr;
     GameData GameData_;
+    UIData *uidata = nullptr;
     Audio audioEngine;
     I18N I18N;
 };

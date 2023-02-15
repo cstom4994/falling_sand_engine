@@ -200,8 +200,8 @@ void ImGuiCore::Init() {
     ImGuiInitStyle(0.5f, 0.5f);
 
     // LUA state
-    ImGuiCSS::registerBindings(global.scripts->LuaCoreCpp->C->L);
-    ctx = ImGuiCSS::createContext(ImGuiCSS::createElementFactory(), new ImGuiCSS::LuaScriptState(global.scripts->LuaCoreCpp->C->L), new OpenGL3TextureManager());
+    ImGuiCSS::registerBindings(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L);
+    ctx = ImGuiCSS::createContext(ImGuiCSS::createElementFactory(), new ImGuiCSS::LuaScriptState(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L), new OpenGL3TextureManager());
     ctx->scale = ImVec2(scale, scale);
 
     document = new ImGuiCSS::Document(ctx);

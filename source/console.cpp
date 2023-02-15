@@ -518,7 +518,7 @@ void ConsoleSystem::Create() {
     console_imgui->System().RegisterCommand(
             "lua", "dostring",
             [&](const char *s) {
-                auto &l = global.scripts->LuaCoreCpp;
+                auto &l = Scripts::GetSingletonPtr()->LuaCoreCpp;
                 l->s_lua.dostring(s);
             },
             CVar::Arg<String>(""));

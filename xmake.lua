@@ -164,7 +164,7 @@ elseif is_os("macosx") then
 	set_toolset("mm", "clang")
     set_toolset("mxx", "clang", "clang++")
 
-	add_cxflags("-fPIC")
+	add_cxflags("-fPIC", "-fsized-deallocation")
 
 	-- add_mxflags("-fno-objc-arc", {force = true})
 	-- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
@@ -187,7 +187,7 @@ if has_config("build_audio") then
 	end
 end
 
--- add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
+add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
 	"source",

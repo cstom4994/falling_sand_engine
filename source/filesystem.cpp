@@ -205,7 +205,7 @@ bool InitFilesystem() {
 
     auto currentDir = std::filesystem::path(metadot_fs_getExecutableFolderPath());
 
-#ifdef METADOT_DEBUG
+#if 1
 
     for (int i = 0; i < 3; ++i) {
         currentDir = currentDir.parent_path();

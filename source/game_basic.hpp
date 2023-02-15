@@ -8,7 +8,30 @@
 #include <utility>
 
 #include "engine/engine_scripting.hpp"
-#include "game_datastruct.hpp"
+
+struct Biome;
+
+class IGameSystem {
+public:
+    IGameSystem(){};
+    ~IGameSystem(){};
+
+    virtual void Create();
+    virtual void Destory();
+
+    // Register Lua always been called before Create()
+    virtual void RegisterLua(LuaWrapper::State &s_lua);
+};
+
+class IGameObject {
+public:
+    IGameObject(){};
+    ~IGameObject(){};
+
+    virtual void Create();
+    virtual void Destory();
+    virtual void RegisterReflection();
+};
 
 class GameplayScriptSystem : public IGameSystem {
 public:

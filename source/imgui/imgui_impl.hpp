@@ -42,7 +42,6 @@
 #endif
 
 #include "core/core.hpp"
-#include "game_datastruct.hpp"
 #include "libs/imgui/md4c.h"
 
 // Backend API
@@ -931,10 +930,6 @@ private:
 METAENGINE_GUI_DEFINE_BEGIN(template <>, MarkdownData)
 ImGuiMarkdown markdown;
 markdown.print(var.data);
-METAENGINE_GUI_DEFINE_END
-
-METAENGINE_GUI_DEFINE_BEGIN(template <>, RigidBody)
-ImGui::Text("RigidBody: %s", var.name.c_str());
 METAENGINE_GUI_DEFINE_END
 
 namespace ImGuiHelper {

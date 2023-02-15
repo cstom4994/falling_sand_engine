@@ -28,5 +28,6 @@ int InitEngine(void (*InitCppReflection)());
 void EngineUpdate();
 void EngineUpdateEnd();
 void EndEngine(int errorOcurred);
+void DrawSplash();
 
 #endif

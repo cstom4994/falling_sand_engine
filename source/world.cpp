@@ -3371,7 +3371,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
 
     WorldMeta meta = WorldMeta();
 
-    // auto L = global.scripts->LuaCoreCpp;
+    // auto L = Scripts::GetSingletonPtr()->LuaCoreCpp;
 
     char *metaFilePath = new char[255];
     snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
