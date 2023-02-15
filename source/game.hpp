@@ -172,7 +172,7 @@ public:
     void renderEarly();
     void renderLate();
     void renderTemperatureMap(World *world);
-    void resolu(int newWidth, int newHeight);
+    void ResolutionChanged(int newWidth, int newHeight);
     int getAimSolidSurface(int dist);
     int getAimSurface(int dist);
     void quitToMainMenu();

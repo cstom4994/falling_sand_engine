@@ -119,20 +119,24 @@ void UIRendererDraw() {
 
     // Drawing element
     for (auto &&e : global.uidata->elementLists) {
-        // Image cache
-        R_Image *Img = nullptr;
-        if (e.second->texture) {
-            Img = R_CopyImageFromSurface(e.second->texture->surface);
-        }
+
+        if (!e.second->visible) return;
 
         int p_x, p_y;
         if (e.second->parent != nullptr) {
+            if (!e.second->parent->visible) return;
             p_x = e.second->parent->x;
             p_y = e.second->parent->y;
             // METADOT_BUG("%s .parent %s", e.first.c_str(), e.second->parent->text.c_str());
         } else {
             p_x = 0;
             p_y = 0;
+        }
+
+        // Image cache
+        R_Image *Img = nullptr;
+        if (e.second->texture) {
+            Img = R_CopyImageFromSurface(e.second->texture->surface);
         }
 
         if (e.second->type == ElementType::lineElement) {
@@ -298,6 +302,4 @@ void DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b)
 
 void DrawLine(metadot_vec3 min, metadot_vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.X, min.Y, max.X, max.Y, {r, g, b, 255}); }
 
-void DrawTextWithPlate() {
-    
-}
+void DrawTextWithPlate() {}

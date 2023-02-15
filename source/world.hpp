@@ -75,7 +75,6 @@ public:
         MetaEngine::vector<PlacedStructure> structures;
         MetaEngine::vector<b2Vec2> distributedPoints;
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
-        // std::unordered_map<int, std::unordered_map<int, Chunk*>> chunkCache;
         MetaEngine::vector<Populator *> populators;
         MetaEngine::vector<WorldEntity *> entities;
         Player *player = nullptr;

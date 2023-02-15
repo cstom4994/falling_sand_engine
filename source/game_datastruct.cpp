@@ -1150,7 +1150,7 @@ MetaEngine::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk
     return {};
 }
 
-RigidBody::RigidBody(b2Body *body, std::string_view name) {
+RigidBody::RigidBody(b2Body *body, std::string name) {
     this->body = body;
     this->name = std::string(name);
 }

@@ -16,9 +16,12 @@
 
 #include "core/cpp/vector.hpp"
 #include "internal/builtin_box2d.h"
+#include "libs/imgui/imgui.h"
 #include "mathlib.h"
 
 F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
+
+static_inline ImVec4 metadot_vec4_to_imvec4(const metadot_vec4 &v4) { return {v4.X, v4.Y, v4.Z, v4.W}; }
 
 template <class T>
 constexpr T pi = T(3.1415926535897932385L);

@@ -174,7 +174,7 @@ int Game::init(int argc, char *argv[]) {
         SDL_GetWindowSize(Core.window, &w, &h);
         R_SetWindowResolution(w, h);
         R_ResetProjection(Render.realTarget);
-        resolu(w, h);
+        ResolutionChanged(w, h);
 
         metadot_set_VSync(false);
         metadot_set_minimize_onlostfocus(false);
@@ -441,9 +441,10 @@ int Game::run(int argc, char *argv[]) {
             if (windowEvent.type == SDL_WINDOWEVENT) {
                 if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
                     // METADOT_INFO("Resizing window...");
-                    R_SetWindowResolution(windowEvent.window.data1, windowEvent.window.data2);
+                    int w = windowEvent.window.data1, h = windowEvent.window.data2;
+                    R_SetWindowResolution(w, h);
                     R_ResetProjection(Render.realTarget);
-                    resolu(windowEvent.window.data1, windowEvent.window.data2);
+                    ResolutionChanged(w, h);
                 }
             }
 
@@ -978,10 +979,6 @@ int Game::run(int argc, char *argv[]) {
                         if (tile.mat->physicsType == PhysicsType::SOUP) {
                             ImGui::Text("fluidAmount = %f", tile.fluidAmount);
                         }
-
-                        // ImGui::Text("physicsType = %d", tile.mat->physicsType);
-                        // ImGui::Text("addTemp = %d", tile.mat->addTemp);
-                        // ImGui::Text("color = %d", tile.mat->color);
 
                         using namespace MetaEngine::StaticRefl;
 
@@ -2966,6 +2963,7 @@ void Game::renderOverlays() {
                                         (F32)(GameIsolate_.world->meshZone.w * Screen.gameScale), (F32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
 
         R_Rectangle2(Render.target, r2m, {0x00, 0xff, 0xff, 0xff});
+        MetaEngine::Drawing::drawTextWithPlate(Render.target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
         R_Rectangle2(Render.target, r2, {0xff, 0x00, 0x00, 0xff});
     }
 
@@ -2981,12 +2979,12 @@ void Game::renderOverlays() {
                 (F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale), (F32)(0),
                 (F32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale)),
                 (F32)(Screen.windowHeight)};
-        R_Rectangle2(Render.target, r3, col);
+        R_Rectangle2(Render.target, r4, col);
 
         metadot_rect r5 =
                 metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (F32)(0),
                              (F32)(GameIsolate_.world->tickZone.w * Screen.gameScale), (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale)};
-        R_Rectangle2(Render.target, r3, col);
+        R_Rectangle2(Render.target, r5, col);
 
         metadot_rect r6 = metadot_rect{
                 (F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
@@ -3421,7 +3419,7 @@ void Game::renderTemperatureMap(World *world) {
     }
 }
 
-void Game::resolu(int newWidth, int newHeight) {
+void Game::ResolutionChanged(int newWidth, int newHeight) {
 
     int prevWidth = Screen.windowWidth;
     int prevHeight = Screen.windowHeight;

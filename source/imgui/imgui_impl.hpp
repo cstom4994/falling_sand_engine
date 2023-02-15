@@ -42,6 +42,7 @@
 #endif
 
 #include "core/core.hpp"
+#include "core/cpp/vector.hpp"
 #include "libs/imgui/md4c.h"
 
 // Backend API
@@ -301,11 +302,11 @@ bool ImGui::detail::AutoContainerTreeNode(const std::string &name, Container &co
     std::size_t size = cont.size();
     if (ImGui::CollapsingHeader(name.c_str())) {
         size_t elemsize = sizeof(decltype(*std::begin(cont)));
-        ImGui::Text("size = %d, non dynamic elemsize = %d bytes", (int)size, (int)elemsize);
+        ImGui::Text("大小: %d, 非动态元素大小: %d bytes", (int)size, (int)elemsize);
         return true;
     } else {
         float label_width = CalcTextSize(name.c_str()).x + ImGui::GetTreeNodeToLabelSpacing() + 5;
-        std::string sizetext = "(size = " + std::to_string(size) + ')';
+        std::string sizetext = "(大小 = " + std::to_string(size) + ')';
         float sizet_width = CalcTextSize(sizetext.c_str()).x;
         float avail_width = ImGui::GetContentRegionAvail().x;
         if (avail_width > label_width + sizet_width) {
@@ -763,6 +764,23 @@ METAENGINE_GUI_DEFINE_INLINE(template <>, std::add_pointer_t<void()>, if (ImGui:
 METAENGINE_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
 
 #pragma endregion
+
+
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, MetaEngine::vector<T>)
+if (ImGui::detail::AutoContainerValues<MetaEngine::vector<T>>("MetaEngineVector " + name, var)) {
+    ImGui::PushID(name.c_str());
+    ImGui::Indent();
+    ImGui::detail::AutoContainerPushBackButton(var);
+    if (!var.empty()) ImGui::SameLine();
+    ImGui::detail::AutoContainerPopBackButton(var);
+    ImGui::PopID();
+    ImGui::Unindent();
+}
+METAENGINE_GUI_DEFINE_END
+
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const MetaEngine::vector<T>)
+ImGui::detail::AutoContainerValues<const MetaEngine::vector<T>>("MetaEngineVector " + name, var);
+METAENGINE_GUI_DEFINE_END
 
 #pragma endregion ImGuiAuto
 

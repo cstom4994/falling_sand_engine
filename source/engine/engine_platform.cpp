@@ -140,13 +140,6 @@ int metadot_initwindow() {
 
     // RegisterFunctions(func_log_info, IamAfuckingNamespace::func_log_info);
 
-    // TODO CppScript
-
-    // initThread.get();
-
-    // global.audioEngine.PlayEvent("event:/Music/Title");
-    // global.audioEngine.Update();
-
     return METADOT_OK;
 }
 

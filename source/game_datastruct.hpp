@@ -321,6 +321,13 @@ public:
     void loadFillTexture(C_Surface *tex);
 };
 
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<Item> : TypeInfoBase<Item> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {Field{TSTR("pivotX"), &Type::pivotX}, Field{TSTR("pivotY"), &Type::pivotY}, Field{TSTR("breakSize"), &Type::breakSize},
+                                         Field{TSTR("capacity"), &Type::capacity}};
+};
+
 using ItemLuaPtr = std::shared_ptr<Item>;
 
 struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
@@ -538,12 +545,34 @@ public:
 
     Item *item = nullptr;
 
-    RigidBody(b2Body *body, std::string_view name = "unknown");
+    RigidBody(b2Body *body, std::string name = "unknown");
     ~RigidBody();
+};
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("matWidth"), &Type::matWidth},
+            Field{TSTR("matHeight"), &Type::matHeight},
+            Field{TSTR("needsUpdate"), &Type::needsUpdate},
+            Field{TSTR("texNeedsUpdate"), &Type::texNeedsUpdate},
+            Field{TSTR("weldX"), &Type::weldX},
+            Field{TSTR("weldY"), &Type::weldY},
+            Field{TSTR("back"), &Type::back},
+            Field{TSTR("hover"), &Type::hover},
+            // Field{TSTR("item"), &Type::item},
+    };
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, RigidBody)
 ImGui::Text("RigidBody: %s", var.name.c_str());
+ImGui::Text("matWidth: %d", var.matWidth);
+ImGui::Text("matHeight: %d", var.matHeight);
+ImGui::Text("weldX: %d", var.weldX);
+ImGui::Text("weldY: %d", var.weldY);
+ImGui::Text("needsUpdate: %s", BOOL_STRING(var.needsUpdate));
+ImGui::Text("texNeedsUpdate: %s", BOOL_STRING(var.texNeedsUpdate));
 METAENGINE_GUI_DEFINE_END
 
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
@@ -611,15 +640,6 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
         a->name = lua_tostring(L, 3);
         return 0;
     }
-};
-
-template <>
-struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {
-            Field{TSTR("matWidth"), &Type::matWidth},
-            Field{TSTR("matHeight"), &Type::matHeight},
-    };
 };
 
 #pragma endregion Rigidbody

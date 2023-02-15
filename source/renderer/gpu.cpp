@@ -47,6 +47,12 @@ void MetaEngine::Drawing::drawText(std::string text, METAENGINE_Color col, int x
     draw_list->AddText(ImVec2(x, y), ImColor(col.r, col.g, col.b, col.a), text.c_str());
 }
 
+void MetaEngine::Drawing::drawTextWithPlate(R_Target *target, std::string text, METAENGINE_Color col, int x, int y, METAENGINE_Color backcolor) {
+    auto text_size = ImGui::CalcTextSize(text.c_str());
+    R_RectangleFilled(target, x - 4, y - 4, x + text_size.x + 4, y + text_size.y + 4, backcolor);
+    drawText(text, col, x, y);
+}
+
 void MetaEngine::Drawing::begin_3d(R_Target *screen) {
     R_FlushBlitBuffer();
 

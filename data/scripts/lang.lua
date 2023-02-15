@@ -62,7 +62,11 @@ local lang_pack = {
         ui_chunk = "区块",
         ui_frametime = "帧耗时",
         ui_frameinspector = "帧检查器",
-        ui_profiler = "性能检查器"
+        ui_profiler = "性能检查器",
+        ui_inspecting = "监视",
+        ui_entities = "实体",
+        ui_scene = "场景",
+        ui_system = "系统"
     }
 }
 

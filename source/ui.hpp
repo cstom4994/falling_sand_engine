@@ -47,6 +47,8 @@ typedef struct UIMovable {
 typedef struct UIElement {
     ElementType type;
 
+    bool visible = true;
+
     UIElement* parent = nullptr;
 
     UIMovable movable;
