@@ -532,6 +532,7 @@ METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec2, METAENGINE_GUI_INPUT_FLOAT2(na
 METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec4, METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var.x);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const float, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const int, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+METAENGINE_GUI_DEFINE_INLINE(template <>, const U8, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const unsigned, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const bool, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec2, ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y);)

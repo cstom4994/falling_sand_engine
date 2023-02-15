@@ -31,6 +31,7 @@
 #include "imgui/imgui_generated.h"
 #include "imgui/imgui_impl.hpp"
 #include "imgui/lua/script.h"
+#include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
 #include "meta/meta.hpp"
@@ -43,6 +44,7 @@
 IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
+#define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
 extern void ShowAutoTestWindow();
 
@@ -97,7 +99,7 @@ constexpr auto kColorWidgetWidth = 250.0F;
 static bool s_is_animaiting = false;
 static const int view_size = 256;
 
-ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
+const ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowPos(ImGui::GetMainViewport());
@@ -161,7 +163,7 @@ void ImGuiCore::Init() {
 
     IMGUI_CHECKVERSION();
 
-    ImGui::SetAllocatorFunctions(ImGuiMalloc, ImGuiFree);
+    // ImGui::SetAllocatorFunctions(ImGuiMalloc, ImGuiFree);
 
     m_imgui = ImGui::CreateContext();
     ImPlot::CreateContext();
@@ -169,7 +171,7 @@ void ImGuiCore::Init() {
     ImGuiIO &io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
@@ -183,6 +185,27 @@ void ImGuiCore::Init() {
     F32 scale = 1.0f;
 
     io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+
+    {
+        // Font Awesome
+        static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+        ImFontConfig icons_config;
+        icons_config.MergeMode = true;
+        config.OversampleH = 2;
+        config.OversampleV = 2;
+        icons_config.PixelSnapH = true;
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-solid-900.ttf"), 13.0f, &icons_config, icons_ranges);
+    }
+    {
+        // Font Awesome
+        static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+        ImFontConfig icons_config;
+        icons_config.MergeMode = true;
+        config.OversampleH = 2;
+        config.OversampleV = 2;
+        icons_config.PixelSnapH = true;
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-regular-400.ttf"), 13.0f, &icons_config, icons_ranges);
+    }
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
@@ -330,100 +353,18 @@ auto CollapsingHeader = [](const char *name) -> bool {
 
 void ImGuiCore::Update() {
 
+    ImGuiIO &io = ImGui::GetIO();
+
 #if defined(_METADOT_IMM32)
     imguiIMMCommunication();
 #endif
 
     // ImGui::Begin("Progress Indicators");
-
     // const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
     // const ImU32 bg = ImGui::GetColorU32(ImGuiCol_Button);
-
     // ImGui::Spinner("##spinner", 15, 6, col);
     // ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
-
     // ImGui::End();
-
-#if 0
-
-        {
-
-            ImGuiWindowFlags option_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize;
-            const auto parent_size = ImGui::GetMainViewport()->WorkSize;
-            const auto parent_pos = ImGui::GetMainViewport()->WorkPos;
-
-            static auto file_panel_bottom = 0.0F;
-            // file panel
-            {
-                ImGui::SetNextWindowSize({ layout::kRenderOptionsPanelWidth, 0 });
-                ImGui::SetNextWindowPos({ parent_pos.x + layout::kMargin, parent_pos.y + layout::kMargin });
-                ImGui::SetNextWindowBgAlpha(0.5F);
-                ImGui::Begin("FilePanel", nullptr, option_flags | ImGuiWindowFlags_NoScrollbar);
-
-                ImGuiHelper::AlignedText(std::string("ICON_FA_FILE") + " ", ImGuiHelper::Alignment::kVerticalCenter);
-                ImGui::SameLine();
-
-                if (ImGui::Button("Load mesh from file...")) {
-                    //make_singleton<common::Switch>().OpenFile();
-                }
-                file_panel_bottom = ImGui::GetWindowPos().y + ImGui::GetWindowSize().y;
-
-                ImGui::End();
-            }
-
-            // options panel
-            static F32 options_panel_bottom = 0;
-            {
-                ImGui::SetNextWindowSize({ layout::kRenderOptionsPanelWidth, 0 });
-                ImGui::SetNextWindowPos({ parent_pos.x + layout::kMargin, file_panel_bottom + layout::kPanelSpacing });
-                ImGui::SetNextWindowBgAlpha(0.5F);
-                ImGui::Begin("RenderOptionsWindow", nullptr, option_flags | ImGuiWindowFlags_NoScrollbar);
-                // tabs
-                static auto tabs = std::vector<std::string>{ CC("Surface"), CC("Line"), CC("Points"), CC("全局") };
-                static auto selected_index = 0;
-                ImGuiHelper::ButtonTab(tabs, selected_index);
-
-                // detail options
-                {
-                    ImGui::Dummy({ 0, 10 });
-                    using func = std::function<void()>;
-                    //static std::array<func, 4> options{ SurfaceRenderOptions::show, LineRenderOptions::show, PointsRenderOptions::show,
-                    //                                   GlobRenderOptions::show };
-                    //options.at(selected_index)();
-                }
-                options_panel_bottom = ImGui::GetWindowPos().y + ImGui::GetWindowSize().y;
-                ImGui::End();
-            }
-
-            // debug panel
-            static auto debug_panel_bottom = 0.0F;
-            {
-                ImGui::SetNextWindowSize({ layout::kRenderOptionsPanelWidth, 0 });
-                ImGui::SetNextWindowPos({ parent_pos.x + layout::kMargin, options_panel_bottom + layout::kPanelSpacing });
-                ImGui::SetNextWindowBgAlpha(0.5F);
-                ImGui::Begin("DebugPanel", nullptr, option_flags | ImGuiWindowFlags_NoScrollbar);
-
-                auto static show_metrics = false;
-                ImGuiHelper::SwitchButton("ICON_FA_WRENCH", "Window Metrics", show_metrics);
-                ImGuiHelper::ListSeparator();
-                if (show_metrics) {
-                    ImGui::ShowMetricsWindow();
-                }
-
-                auto static show_demo = false;
-                ImGuiHelper::SwitchButton("ICON_FA_ROCKET", "Demo", show_demo);
-                if (show_demo) {
-                    ImGui::ShowDemoWindow();
-
-                    //m_ImGuiCore->Render();
-                }
-
-                debug_panel_bottom = ImGui::GetWindowSize().y;
-                ImGui::End();
-            }
-        }
-
-#endif
 
     document->render();
 
@@ -468,16 +409,40 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     auto cpos = editor.GetCursorPosition();
     if (global.game->GameIsolate_.globaldef.ui_tweak) {
 
+        ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+
+        const ImGuiViewport *viewport = ImGui::GetMainViewport();
+        static ImVec2 DockSpaceSize = {400.0f, viewport->Size.y};
+        ImGui::SetNextWindowSize(DockSpaceSize);
+
+        ImGui::SetNextWindowPos({viewport->Size.x - DockSpaceSize.x, 0});
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavFocus;
+        dockspace_flags |= ImGuiDockNodeFlags_PassthruCentralNode;
+
+        ImGui::Begin("DockSpace", NULL, window_flags);
+        DockSpaceSize = {ImGui::GetWindowSize().x, viewport->Size.y};
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+            dockspace_id = ImGui::GetID("MyDockSpace");
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        } else {
+            METADOT_ASSERT_E(0);
+        }
+        ImGui::End();
+
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::Begin(LANG("ui_tweaks"), NULL, ImGuiWindowFlags_MenuBar);
 
         ImGui::BeginTabBar("ui_tweaks_tabbar");
 
-        if (ImGui::BeginTabItem(LANG("ui_console"))) {
+        if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_TERMINAL, "ui_console"))) {
             global.game->GameIsolate_.console->DrawUI();
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem(LANG("ui_info"))) {
+        if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_INFO, "ui_info"))) {
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
             R_Renderer *renderer = R_GetCurrentRenderer();
@@ -557,7 +522,7 @@ CSTDTime | {6} | Nothing
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem(LANG("ui_test"))) {
+        if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_SPIDER, "ui_test"))) {
             ImGui::BeginTabBar(CC("测试#haha"));
             if (ImGui::BeginTabItem(CC("测试"))) {
                 if (ImGui::Button("调用回溯")) print_callstack();
@@ -676,7 +641,7 @@ CSTDTime | {6} | Nothing
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem(LANG("ui_debug"))) {
+        if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_DESKTOP, "ui_debug"))) {
             if (CollapsingHeader(LANG("ui_chunk"))) {
                 static bool check_rigidbody = false;
                 ImGui::Checkbox(CC("只查看刚体有效"), &check_rigidbody);
@@ -702,7 +667,7 @@ CSTDTime | {6} | Nothing
                             ImGui::TreePop();
                         }
             }
-            if (CollapsingHeader(LANG("ui_telemetry"))) {
+            if (CollapsingHeader(ICON_LANG(ICON_FA_VECTOR_SQUARE, "ui_telemetry"))) {
                 GameUI::DrawDebugUI(global.game);
             }
 #define INSPECTSHADER(_c) MetaEngine::IntrospectShader(#_c, global.game->GameIsolate_.shaderworker->_c->shader)
@@ -719,7 +684,7 @@ CSTDTime | {6} | Nothing
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem(LANG("ui_scripts_editor"))) {
+        if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_EDIT, "ui_scripts_editor"))) {
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu(LANG("ui_file"))) {
                     if (ImGui::MenuItem(LANG("ui_open"))) {

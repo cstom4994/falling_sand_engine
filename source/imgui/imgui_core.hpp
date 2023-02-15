@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "core/debug_impl.hpp"
 #include "audio/audio.h"
+#include "core/debug_impl.hpp"
 #include "imgui/imgui_css.h"
 #include "imgui/imgui_impl.hpp"
-#include "sdl_wrapper.h"
 #include "libs/imgui/text_editor.h"
+#include "sdl_wrapper.h"
 
 class Material;
 class WorldMeta;
@@ -46,6 +46,7 @@ private:
     ImGuiWidget::FileBrowser fileDialog;
     ImGuiCSS::Context *ctx;
     ImGuiCSS::Document *document;
+    ImGuiID dockspace_id;
 
 public:
     ImGuiCore();
@@ -54,7 +55,8 @@ public:
     void NewFrame();
     void Draw();
     void Update();
-    ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
+    const ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
+    const ImGuiID GetMainDockID() { return dockspace_id; } const
 
     ImGuiContext *getImGuiCtx() {
         METADOT_ASSERT(m_imgui, "Miss ImGuiContext");

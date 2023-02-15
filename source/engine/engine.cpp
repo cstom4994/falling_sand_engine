@@ -125,7 +125,7 @@ void EndEngine(int errorOcurred) {
 void DrawSplash() {
     R_Clear(Render.target);
     R_Flip(Render.target);
-    Texture *splashSurf = LoadTexture("data/assets/title/splash.png");
+    Texture *splashSurf = LoadTexture("data/assets/ui/splash.png");
     R_Image *splashImg = R_CopyImageFromSurface(splashSurf->surface);
     R_SetImageFilter(splashImg, R_FILTER_NEAREST);
     R_BlitRect(splashImg, NULL, Render.target, NULL);

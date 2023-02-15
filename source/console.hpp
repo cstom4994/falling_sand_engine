@@ -6,8 +6,8 @@
 #include <array>
 
 #include "cvar.hpp"
-#include "imgui/imgui_impl.hpp"
 #include "game_datastruct.hpp"
+#include "imgui/imgui_impl.hpp"
 
 struct ImGuiSettingsHandler;
 class ImGuiConsole {
@@ -84,6 +84,8 @@ public:
 
     void DrawUI();
     void Draw();
+
+    ConsoleSystem(U32 p) : IGameSystem(p){};
 
     // InternalFuncs
     void PrintAllMethods();

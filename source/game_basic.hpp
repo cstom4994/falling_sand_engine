@@ -12,8 +12,15 @@
 struct Biome;
 
 class IGameSystem {
+private:
+    U32 priority;
+
 public:
-    IGameSystem(){};
+    IGameSystem(U32 p = -1) {
+        if (p != -1) {
+            priority = p;
+        }
+    };
     ~IGameSystem(){};
 
     virtual void Create();
@@ -35,6 +42,8 @@ public:
 
 class GameplayScriptSystem : public IGameSystem {
 public:
+    GameplayScriptSystem(U32 p) : IGameSystem(p) {}
+
     void Create() override;
     void Destory() override;
     void RegisterLua(LuaWrapper::State &s_lua) override;

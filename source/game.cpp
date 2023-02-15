@@ -101,7 +101,7 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
-    METADOT_NEW(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem);
+    METADOT_NEW(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem, 2);
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
@@ -118,7 +118,7 @@ int Game::init(int argc, char *argv[]) {
     InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
 
     // Console system
-    METADOT_NEW(C, global.game->GameIsolate_.console, ConsoleSystem);
+    METADOT_NEW(C, global.game->GameIsolate_.console, ConsoleSystem, 4);
     GameIsolate_.console->Create();
 
     // Test aseprite
@@ -126,7 +126,7 @@ int Game::init(int argc, char *argv[]) {
 
     // Load backgrounds resources
     METADOT_INFO("Loading backgrounds...");
-    METADOT_NEW(C, global.game->GameIsolate_.backgrounds, BackgroundSystem);
+    METADOT_NEW(C, global.game->GameIsolate_.backgrounds, BackgroundSystem, 6);
     GameIsolate_.backgrounds->Create();
 
     // Load fonts
