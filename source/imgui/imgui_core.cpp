@@ -90,16 +90,6 @@ static int common_control_initialize() {
 
 #endif
 
-namespace layout {
-constexpr auto kRenderOptionsPanelWidth = 300;
-constexpr auto kMargin = 5;
-constexpr auto kPanelSpacing = 10;
-constexpr auto kColorWidgetWidth = 250.0F;
-}  // namespace layout
-
-static bool s_is_animaiting = false;
-static const int view_size = 256;
-
 const ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -111,7 +101,7 @@ const ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
 
 ImGuiCore::ImGuiCore() {}
 
-class OpenGL3TextureManager : public ImGuiCSS::TextureManager {
+class OpenGL3TextureManager : public ImGuiTextureManager {
 public:
     ~OpenGL3TextureManager() {
         for (int i = 0; i < mTextures.size(); ++i) {
@@ -479,60 +469,29 @@ CSTDTime | {6} | Nothing
 
                 ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-                const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
-
-                if (ImGui::BeginTable("table_nested1", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable)) {
-                    ImGui::TableSetupColumn("A0");
-                    ImGui::TableSetupColumn("A1");
-                    ImGui::TableHeadersRow();
-
-                    ImGui::TableNextColumn();
-                    ImGui::Text("A0 Row 0");
-                    {
-                        float rows_height = TEXT_BASE_HEIGHT * 2;
-                        if (ImGui::BeginTable("table_nested2", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable)) {
-                            ImGui::TableSetupColumn("B0");
-                            ImGui::TableSetupColumn("B1");
-                            ImGui::TableHeadersRow();
-
-                            ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
-                            ImGui::TableNextColumn();
-                            ImGui::Text("B0 Row 0");
-                            ImGui::TableNextColumn();
-                            ImGui::Text("B1 Row 0");
-                            ImGui::TableNextRow(ImGuiTableRowFlags_None, rows_height);
-                            ImGui::TableNextColumn();
-                            ImGui::Text("B0 Row 1");
-                            ImGui::TableNextColumn();
-                            ImGui::Text("B1 Row 1");
-
-                            ImGui::EndTable();
-                        }
-                    }
-                    ImGui::TableNextColumn();
-                    ImGui::Text("A1 Row 0");
-                    ImGui::TableNextColumn();
-                    ImGui::Text("A0 Row 1");
-                    ImGui::TableNextColumn();
-                    ImGui::Text("A1 Row 1");
-                    ImGui::EndTable();
-                }
+                ImGui::Text("About:\n%s", metadot_metadata().c_str());
 
                 ImGui::EndTabItem();
             }
 
             if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_SPIDER, "ui_test"))) {
                 ImGui::BeginTabBar(CC("测试#haha"));
+                static bool play;
                 if (ImGui::BeginTabItem(CC("测试"))) {
                     if (ImGui::Button("调用回溯")) print_callstack();
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
-                        METAENGINE_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
-                        METADOT_ASSERT_E(test_audio);
-                        // metadot_music_play(test_audio, 0.f);
-                        // metadot_audio_destroy(test_audio);
-                        METAENGINE_Result err;
-                        metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
+                        play ^= true;
+                        static METAENGINE_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                        if (play) {
+                            METADOT_ASSERT_E(test_audio);
+                            // metadot_music_play(test_audio, 0.f);
+                            // metadot_audio_destroy(test_audio);
+                            METAENGINE_Result err;
+                            metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
+                        } else {
+                            MetaEngine::audio_set_pause(false);
+                        }
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
@@ -661,112 +620,6 @@ CSTDTime | {6} | Nothing
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_EDIT, "ui_scripts_editor"))) {
-                if (ImGui::BeginMenuBar()) {
-                    if (ImGui::BeginMenu(LANG("ui_file"))) {
-                        if (ImGui::MenuItem(LANG("ui_open"))) {
-                            fileDialog.Open();
-                        }
-                        if (ImGui::MenuItem(LANG("ui_save"))) {
-                            if (view_editing && view_contents.size()) {
-                                auto textToSave = editor.GetText();
-                                std::ofstream o(view_editing->file);
-                                o << textToSave;
-                            }
-                        }
-                        if (ImGui::MenuItem(LANG("ui_close"))) {
-                            for (auto &code : view_contents) {
-                                if (code.file == view_editing->file) {
-                                    view_contents.erase(std::remove(std::begin(view_contents), std::end(view_contents), code), std::end(view_contents));
-                                }
-                            }
-                        }
-                        ImGui::EndMenu();
-                    }
-                    if (ImGui::BeginMenu(LANG("ui_edit"))) {
-                        bool ro = editor.IsReadOnly();
-                        if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) editor.SetReadOnly(ro);
-                        ImGui::Separator();
-
-                        if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr, !ro && editor.CanUndo())) editor.Undo();
-                        if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr, !ro && editor.CanRedo())) editor.Redo();
-
-                        ImGui::Separator();
-
-                        if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, editor.HasSelection())) editor.Copy();
-                        if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr, !ro && editor.HasSelection())) editor.Cut();
-                        if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr, !ro && editor.HasSelection())) editor.Delete();
-                        if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr)) editor.Paste();
-
-                        ImGui::Separator();
-
-                        if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr)) editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
-
-                        ImGui::EndMenu();
-                    }
-
-                    if (ImGui::BeginMenu(LANG("ui_view"))) {
-                        if (ImGui::MenuItem("Dark palette")) editor.SetPalette(TextEditor::GetDarkPalette());
-                        if (ImGui::MenuItem("Light palette")) editor.SetPalette(TextEditor::GetLightPalette());
-                        if (ImGui::MenuItem("Retro blue palette")) editor.SetPalette(TextEditor::GetRetroBluePalette());
-                        ImGui::EndMenu();
-                    }
-                    ImGui::EndMenuBar();
-                }
-
-                fileDialog.Display();
-
-                if (fileDialog.HasSelected()) {
-                    bool shouldopen = true;
-                    auto fileopen = fileDialog.GetSelected().string();
-                    for (auto code : view_contents)
-                        if (code.file == fileopen) shouldopen = false;
-                    if (shouldopen) {
-                        std::ifstream i(fileopen);
-                        if (i.good()) {
-                            std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                            view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = fileopen, .content = str});
-                        }
-                    }
-                    fileDialog.ClearSelected();
-                }
-
-                ImGui::BeginTabBar("ViewContents");
-
-                for (auto &view : view_contents) {
-                    if (ImGui::BeginTabItem(FUtil_GetFileName(view.file.c_str()))) {
-                        view_editing = &view;
-
-                        if (!view_editing->is_edited) {
-                            if (view.tags == EditorTags::Editor_Code) editor.SetText(view_editing->content);
-                            view_editing->is_edited = true;
-                        }
-
-                        ImGui::EndTabItem();
-                    } else {
-                        if (view.is_edited) {
-                            view.is_edited = false;
-                        }
-                    }
-                }
-
-                if (view_editing && view_contents.size()) {
-                    switch (view_editing->tags) {
-                        case Editor_Code:
-                            ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
-                                        editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(), FUtil_GetFileName(view_editing->file.c_str()));
-
-                            editor.Render("TextEditor");
-                            break;
-                        case Editor_Markdown:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                ImGui::EndTabBar();
-                ImGui::EndTabItem();
-            }
             ImGui::EndTabBar();
         }
         ImGui::End();
@@ -842,6 +695,116 @@ CSTDTime | {6} | Nothing
                 }
 
                 ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
+        ImGui::End();
+
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+        if (ImGui::Begin(LANG("ui_scripts_editor"), NULL, ImGuiWindowFlags_MenuBar)) {
+
+            // if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_EDIT, "ui_scripts_editor"))) {
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu(LANG("ui_file"))) {
+                    if (ImGui::MenuItem(LANG("ui_open"))) {
+                        fileDialog.Open();
+                    }
+                    if (ImGui::MenuItem(LANG("ui_save"))) {
+                        if (view_editing && view_contents.size()) {
+                            auto textToSave = editor.GetText();
+                            std::ofstream o(view_editing->file);
+                            o << textToSave;
+                        }
+                    }
+                    if (ImGui::MenuItem(LANG("ui_close"))) {
+                        for (auto &code : view_contents) {
+                            if (code.file == view_editing->file) {
+                                view_contents.erase(std::remove(std::begin(view_contents), std::end(view_contents), code), std::end(view_contents));
+                            }
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu(LANG("ui_edit"))) {
+                    bool ro = editor.IsReadOnly();
+                    if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) editor.SetReadOnly(ro);
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr, !ro && editor.CanUndo())) editor.Undo();
+                    if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr, !ro && editor.CanRedo())) editor.Redo();
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, editor.HasSelection())) editor.Copy();
+                    if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr, !ro && editor.HasSelection())) editor.Cut();
+                    if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr, !ro && editor.HasSelection())) editor.Delete();
+                    if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr)) editor.Paste();
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr)) editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
+
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu(LANG("ui_view"))) {
+                    if (ImGui::MenuItem("Dark palette")) editor.SetPalette(TextEditor::GetDarkPalette());
+                    if (ImGui::MenuItem("Light palette")) editor.SetPalette(TextEditor::GetLightPalette());
+                    if (ImGui::MenuItem("Retro blue palette")) editor.SetPalette(TextEditor::GetRetroBluePalette());
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
+
+            fileDialog.Display();
+
+            if (fileDialog.HasSelected()) {
+                bool shouldopen = true;
+                auto fileopen = fileDialog.GetSelected().string();
+                for (auto code : view_contents)
+                    if (code.file == fileopen) shouldopen = false;
+                if (shouldopen) {
+                    std::ifstream i(fileopen);
+                    if (i.good()) {
+                        std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                        view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = fileopen, .content = str});
+                    }
+                }
+                fileDialog.ClearSelected();
+            }
+
+            ImGui::BeginTabBar("ViewContents");
+
+            for (auto &view : view_contents) {
+                if (ImGui::BeginTabItem(FUtil_GetFileName(view.file.c_str()))) {
+                    view_editing = &view;
+
+                    if (!view_editing->is_edited) {
+                        if (view.tags == EditorTags::Editor_Code) editor.SetText(view_editing->content);
+                        view_editing->is_edited = true;
+                    }
+
+                    ImGui::EndTabItem();
+                } else {
+                    if (view.is_edited) {
+                        view.is_edited = false;
+                    }
+                }
+            }
+
+            if (view_editing && view_contents.size()) {
+                switch (view_editing->tags) {
+                    case Editor_Code:
+                        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
+                                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(), FUtil_GetFileName(view_editing->file.c_str()));
+
+                        editor.Render("TextEditor");
+                        break;
+                    case Editor_Markdown:
+                        break;
+                    default:
+                        break;
+                }
             }
             ImGui::EndTabBar();
         }

@@ -409,7 +409,6 @@ class ContainerElement;
 class ElementFactory;
 class EventHandler;
 class ElementBuilder;
-class TextureManager;
 
 /**
  * Represents basic scene element
@@ -703,7 +702,7 @@ protected:
     Element* mParent;
     ElementFactory* mFactory;
     ElementBuilder* mBuilder;
-    TextureManager* mTextureManager;
+    ImGuiTextureManager* mTextureManager;
     char* mClickHandler;
     ScriptState* mScriptState;
     ReactiveFields mReactiveFields;

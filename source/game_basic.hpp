@@ -52,7 +52,7 @@ METAENGINE_GUI_DEFINE_BEGIN(template <>, IGameSystem)
 ImGui::Text("%s %d", var.getName().c_str(), var.priority);
 METAENGINE_GUI_DEFINE_END
 
-#define REGISTER_SYSTEM(name) name(U32 p, SystemFlags f = SystemFlags::SystemFlags_None) : IGameSystem(p, f, #name){};
+#define REGISTER_SYSTEM(name) name(U32 p, SystemFlags f = SystemFlags::SystemFlags_Default) : IGameSystem(p, f, #name){};
 
 class IGameObject {
 public:

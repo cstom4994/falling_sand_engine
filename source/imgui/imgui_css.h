@@ -77,28 +77,6 @@ public:
 };
 
 /**
- * Texture manager can be used by elements to load images
- */
-class TextureManager {
-public:
-    virtual ~TextureManager(){};
-    /**
-     * Creates texture from raw data
-     *
-     * @param data image data in rgba format
-     * @param width texture width
-     * @param height texture height
-     * @returns generated texture id
-     */
-    virtual ImTextureID createTexture(void* data, int width, int height) = 0;
-
-    /**
-     * Deletes old texture
-     */
-    virtual void deleteTexture(ImTextureID id) = 0;
-};
-
-/**
  * Font manager
  */
 class FontManager {
@@ -149,7 +127,7 @@ public:
     ~Context();
 
     ScriptState* script;
-    TextureManager* texture;
+    ImGuiTextureManager* texture;
     ElementFactory* factory;
     FileSystem* fs;
     ComponentContainer* root;
@@ -167,7 +145,7 @@ public:
 /**
  * Create new context
  */
-Context* createContext(ElementFactory* factory, ScriptState* script = 0, TextureManager* texture = 0, FileSystem* fs = 0, void* userdata = 0);
+Context* createContext(ElementFactory* factory, ScriptState* script = 0, ImGuiTextureManager* texture = 0, FileSystem* fs = 0, void* userdata = 0);
 
 /**
  * Clone existing context

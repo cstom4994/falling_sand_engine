@@ -2053,6 +2053,25 @@ inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::u8string s) { retur
 
 inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::string s) { return s; }
 
+class ImGuiTextureManager {
+public:
+    virtual ~ImGuiTextureManager(){};
+    /**
+     * Creates texture from raw data
+     *
+     * @param data image data in rgba format
+     * @param width texture width
+     * @param height texture height
+     * @returns generated texture id
+     */
+    virtual ImTextureID createTexture(void *data, int width, int height) = 0;
+
+    /**
+     * Deletes old texture
+     */
+    virtual void deleteTexture(ImTextureID id) = 0;
+};
+
 #ifdef _WIN32
 
 #ifndef _INC_WINDOWS

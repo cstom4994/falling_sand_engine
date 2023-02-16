@@ -123,7 +123,7 @@ Context::~Context() {
     }
 }
 
-Context* createContext(ElementFactory* factory, ScriptState* script, TextureManager* texture, FileSystem* fs, FontManager* fontManager, Style* s, void* userdata) {
+Context* createContext(ElementFactory* factory, ScriptState* script, ImGuiTextureManager* texture, FileSystem* fs, FontManager* fontManager, Style* s, void* userdata) {
     Context* ctx = new Context();
     memset(ctx, 0, sizeof(Context));
     if (factory == 0) {
@@ -145,7 +145,7 @@ Context* createContext(ElementFactory* factory, ScriptState* script, TextureMana
     return ctx;
 }
 
-Context* createContext(ElementFactory* factory, ScriptState* script, TextureManager* texture, FileSystem* fs, void* userdata) {
+Context* createContext(ElementFactory* factory, ScriptState* script, ImGuiTextureManager* texture, FileSystem* fs, void* userdata) {
     FontManager* fontManager = new FontManager();
     Style* style = new Style();
     return createContext(factory, script, texture, fs, fontManager, style, userdata);
