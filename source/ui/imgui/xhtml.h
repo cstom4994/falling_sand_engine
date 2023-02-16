@@ -3,8 +3,8 @@
 #ifndef _METADOT_IMGUICSS_HTML_H__
 #define _METADOT_IMGUICSS_HTML_H__
 
-#include "imgui/imgui_element.h"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_element.h"
+#include "ui/imgui/imgui_impl.hpp"
 
 namespace ImGuiCSS {
 

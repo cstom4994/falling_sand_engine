@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "imgui/imgui_script.h"
+#include "ui/imgui/imgui_script.h"
 
 struct lua_State;
 struct luaL_Reg;

@@ -6,7 +6,7 @@
 #include "core/core.hpp"
 #include "core/cpp/vector.hpp"
 #include "core/macros.h"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 
 extern int metadot_buildnum(void);
 extern const std::string metadot_metadata(void);

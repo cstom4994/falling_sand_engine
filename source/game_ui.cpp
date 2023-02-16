@@ -16,11 +16,11 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "imgui/imgui_core.hpp"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 #include "libs/imgui/imgui.h"
 #include "scripting/lua_wrapper.hpp"
-#include "ui.hpp"
+#include "ui/ui.hpp"
 #include "world_generator.cpp"
 
 IMPLENGINE();

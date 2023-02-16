@@ -27,10 +27,10 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_ui.hpp"
-#include "imgui/imgui_css.h"
-#include "imgui/imgui_generated.h"
-#include "imgui/imgui_impl.hpp"
-#include "imgui/lua/script.h"
+#include "ui/imgui/imgui_css.h"
+#include "ui/imgui/imgui_generated.h"
+#include "ui/imgui/imgui_impl.hpp"
+#include "ui/imgui/script.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
@@ -40,7 +40,7 @@
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.hpp"
-#include "ui.hpp"
+#include "ui/ui.hpp"
 
 IMPLENGINE();
 

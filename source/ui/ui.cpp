@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "ui.hpp"
+#include "ui/ui.hpp"
 
 #include <memory>
 
@@ -17,7 +17,7 @@
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
 #include "renderer/renderer_utils.h"
-#include "ui_layout.h"
+#include "ui/ui_layout.h"
 
 IMPLENGINE();
 

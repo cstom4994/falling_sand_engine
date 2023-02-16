@@ -1,12 +1,12 @@
 
-#include "imgui/lua/script.h"
+#include "ui/imgui/script.h"
 
 #include <iostream>
 #include <sstream>
 
-#include "imgui/imgui_css.h"
-#include "imgui/imgui_element.h"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_css.h"
+#include "ui/imgui/imgui_element.h"
+#include "ui/imgui/imgui_impl.hpp"
 #include "libs/rapidxml/rapidxml.hpp"
 #include "libs/rapidxml/rapidxml_print.hpp"
 #include "scripting/lua_wrapper.hpp"

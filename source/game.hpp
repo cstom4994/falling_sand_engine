@@ -31,7 +31,7 @@
 #include "game_resources.hpp"
 #include "game_shaders.hpp"
 #include "game_utils/rng.h"
-#include "imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_core.hpp"
 #include "internal/builtin_box2d.h"
 #include "libs/parallel_hashmap/phmap.h"
 #include "meta/meta.hpp"

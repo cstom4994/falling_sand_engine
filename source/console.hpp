@@ -7,7 +7,7 @@
 
 #include "cvar.hpp"
 #include "game_datastruct.hpp"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 
 struct ImGuiSettingsHandler;
 class ImGuiConsole {

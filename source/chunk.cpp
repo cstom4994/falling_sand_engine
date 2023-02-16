@@ -36,8 +36,6 @@ void ChunkLoadMeta(Chunk *_struct) {
     datapack_node *dp;
     char *s;
     char *s1;
-    // char *compressed_data;
-    // char *compressed_data2;
 
     datapack_bin leveldata;
     datapack_bin leveldata2;

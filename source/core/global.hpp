@@ -14,7 +14,7 @@
 #include "filesystem.h"
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 #include "core/cpp/csingleton.h"
 
 class Game;

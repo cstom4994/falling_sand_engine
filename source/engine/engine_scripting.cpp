@@ -25,7 +25,7 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 #include "internal/builtin_lpeg.h"
 #include "libs/lua/ffi.h"
 #include "renderer/renderer_gpu.h"

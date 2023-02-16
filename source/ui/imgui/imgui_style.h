@@ -18,7 +18,7 @@ extern "C" {
 
 #include <iostream>
 
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 
 inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
     auto& style = ImGui::GetStyle();

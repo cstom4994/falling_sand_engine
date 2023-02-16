@@ -5,14 +5,14 @@
 #include <fstream>
 #include <iostream>
 
-#include "imgui/imgui_impl.hpp"
-#include "extras/svg.h"
-#include "extras/xhtml.h"
+#include "ui/imgui/imgui_impl.hpp"
 #include "imgui_element.h"
 #include "imgui_generated.h"
 #include "imgui_script.h"
 #include "imgui_style.h"
 #include "libs/rapidxml/rapidxml.hpp"
+#include "svg.h"
+#include "xhtml.h"
 
 namespace ImGuiCSS {
 

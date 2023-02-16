@@ -4,8 +4,8 @@ extern "C" {
 #include <libcss/libcss.h>
 }
 
-#include "imgui/css/select.h"
-#include "imgui/imgui_element.h"
+#include "ui/imgui/select.h"
+#include "ui/imgui/imgui_element.h"
 
 // This module implements libcss selector interface
 

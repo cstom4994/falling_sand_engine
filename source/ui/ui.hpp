@@ -5,13 +5,13 @@
 
 #include "core/core.h"
 #include "game_resources.hpp"
-#include "imgui/imgui_core.hpp"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 #include "libs/parallel_hashmap/btree.h"
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
-#include "ui_layout.h"
+#include "ui/ui_layout.h"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement } ElementType;
 

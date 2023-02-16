@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "game_datastruct.hpp"
-#include "imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
