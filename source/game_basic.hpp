@@ -43,6 +43,7 @@ public:
 
     virtual void Create() = 0;
     virtual void Destory() = 0;
+    virtual void Reload() = 0;
 
     // Register Lua always been called before Create()
     virtual void RegisterLua(LuaWrapper::State &s_lua) = 0;
@@ -76,6 +77,7 @@ public:
 
     void Create() override;
     void Destory() override;
+    void Reload() override;
     void RegisterLua(LuaWrapper::State &s_lua) override;
 };
 

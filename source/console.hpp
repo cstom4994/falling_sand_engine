@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "cvar.hpp"
+#include "command.hpp"
 #include "game_datastruct.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 
@@ -16,10 +16,10 @@ public:
 
     void Draw();
 
-    CVar::System &System();
+    Command::System &System();
 
 protected:
-    CVar::System m_ConsoleSystem;
+    Command::System m_ConsoleSystem;
     size_t m_HistoryIndex;
 
     std::string m_Buffer;
@@ -85,6 +85,7 @@ public:
 
     void Create() override;
     void Destory() override;
+    void Reload() override;
     void RegisterLua(LuaWrapper::State &s_lua) override;
 };
 

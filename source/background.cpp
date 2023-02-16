@@ -78,4 +78,7 @@ void BackgroundSystem::Create() {
 void BackgroundSystem::Destory() {
     for (auto &[name, bg] : m_backgrounds) METADOT_DELETE(C, bg, BackgroundObject);
 }
+void BackgroundSystem::Reload() {
+    
+}
 void BackgroundSystem::RegisterLua(LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = LuaWrapper::function(NewBackgroundObject); }

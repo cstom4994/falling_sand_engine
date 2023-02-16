@@ -613,7 +613,7 @@ void DrawDebugUI(Game *game) {
 
         if (ImGui::TreeNode(CC("GLSL方法"))) {
             if (ImGui::Button(CC("重新加载GLSL"))) {
-                global.game->GameIsolate_.shaderworker->Create();
+                global.game->GameIsolate_.shaderworker->Reload();
             }
             ImGui::Checkbox(CC("绘制GLSL"), &global.game->GameIsolate_.globaldef.draw_shaders);
 

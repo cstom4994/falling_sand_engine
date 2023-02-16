@@ -66,7 +66,8 @@ local lang_pack = {
         ui_inspecting = "监视",
         ui_entities = "实体",
         ui_scene = "场景",
-        ui_system = "系统"
+        ui_system = "系统",
+        ui_cvars = "CVars"
     }
 }
 

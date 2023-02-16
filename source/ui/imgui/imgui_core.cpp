@@ -27,10 +27,6 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_ui.hpp"
-#include "ui/imgui/imgui_css.h"
-#include "ui/imgui/imgui_generated.h"
-#include "ui/imgui/imgui_impl.hpp"
-#include "ui/imgui/script.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
@@ -40,6 +36,10 @@
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua_wrapper.hpp"
+#include "ui/imgui/imgui_css.h"
+#include "ui/imgui/imgui_generated.h"
+#include "ui/imgui/imgui_impl.hpp"
+#include "ui/imgui/script.h"
 #include "ui/ui.hpp"
 
 IMPLENGINE();
@@ -688,10 +688,43 @@ CSTDTime | {6} | Nothing
                 }
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_PROJECT_DIAGRAM, "ui_system"))) {
 
-                for (auto &s : global.game->GameIsolate_.systemList) {
-                    ImGui::Auto(*s.get());
+            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_PROJECT_DIAGRAM, "ui_system"))) {
+                if (ImGui::BeginTable("ui_system_table", 4,
+                                      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_NoSavedSettings)) {
+                    ImGui::TableSetupColumn("Priority", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0.0f, 1);
+                    ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 0.0f, 2);
+                    ImGui::TableSetupColumn("Description", ImGuiTableColumnFlags_None, 0.0f, 3);
+
+                    ImGui::TableHeadersRow();
+
+                    // visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
+                    // });
+                    int i = 0;
+
+                    for (auto &s : global.game->GameIsolate_.systemList) {
+
+                        ImGui::PushID(i++);
+                        ImGui::TableNextRow(ImGuiTableRowFlags_None);
+
+                        if (ImGui::TableSetColumnIndex(0)) ImGui::Text("%d", s->priority);
+                        if (ImGui::TableSetColumnIndex(1)) ImGui::TextUnformatted(s->getName().c_str());
+                        if (ImGui::TableSetColumnIndex(2)) {
+                            if (ImGui::SmallButton("Reload")) {
+                                METADOT_BUG("Reloading %s", s->getName().c_str());
+                                s->Reload();
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::SmallButton("Edit")) {
+                            }
+                        }
+                        if (ImGui::TableSetColumnIndex(3)) ImGui::Text("描述");
+
+                        ImGui::PopID();
+                    }
+
+                    ImGui::EndTable();
                 }
 
                 ImGui::EndTabItem();
@@ -807,6 +840,46 @@ CSTDTime | {6} | Nothing
                 }
             }
             ImGui::EndTabBar();
+        }
+        ImGui::End();
+
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+        if (ImGui::Begin(LANG("ui_cvars"))) {
+
+            if (ImGui::BeginTable("ui_cvars_table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+                ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);
+                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0.0f, 1);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 0.0f, 2);
+                ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_None, 0.0f, 3);
+
+                ImGui::TableHeadersRow();
+
+                int n;
+                auto ShowCVar = [&](const char *name, auto &value) {
+                    ImGui::TableNextRow(ImGuiTableRowFlags_None);
+
+                    if (ImGui::TableSetColumnIndex(0)) ImGui::Text("%d", n++);
+                    if (ImGui::TableSetColumnIndex(1)) ImGui::TextUnformatted(name);
+                    if (ImGui::TableSetColumnIndex(2)) {
+                        if constexpr (std::is_same_v<decltype(value), bool>) {
+                            ImGui::TextUnformatted(BOOL_STRING(value));
+                        } else {
+                            ImGui::TextUnformatted(std::to_string(value).c_str());
+                        }
+                    }
+                    if (ImGui::TableSetColumnIndex(3)) {
+                        if (ImGui::SmallButton("Reset")) {
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("Edit")) {
+                        }
+                    }
+                };
+
+                visit_struct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
+
+                ImGui::EndTable();
+            }
         }
         ImGui::End();
     }

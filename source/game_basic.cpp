@@ -81,6 +81,10 @@ void GameplayScriptSystem::Destory() {
     EndFunc();
 }
 
+void GameplayScriptSystem::Reload() {
+    
+}
+
 void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
     s_lua["controls_init"] = LuaWrapper::function(controls_init);
     s_lua["materials_init"] = LuaWrapper::function(materials_init);

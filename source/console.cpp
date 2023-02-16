@@ -8,7 +8,7 @@
 #include "core/cpp/utils.hpp"
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
-#include "cvar.hpp"
+#include "command.hpp"
 #include "engine/engine.h"
 #include "game.hpp"
 #include "reflectionflat.hpp"
@@ -91,7 +91,7 @@ void ImGuiConsole::Draw() {
     // ImGui::End();
 }
 
-CVar::System &ImGuiConsole::System() { return m_ConsoleSystem; }
+Command::System &ImGuiConsole::System() { return m_ConsoleSystem; }
 
 void ImGuiConsole::InitIniSettings() {
     ImGuiContext &g = *ImGui::GetCurrentContext();
@@ -140,12 +140,12 @@ void ImGuiConsole::RegisterConsoleCommands() {
 
                 m_TextFilter.Build();
             },
-            CVar::Arg<String>("filter_str"));
+            Command::Arg<String>("filter_str"));
 
     // m_ConsoleSystem.RegisterCommand(
     //         "run", "Run given script",
     //         [this](const String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
-    //         CVar::Arg<String>("script_name"));
+    //         Command::Arg<String>("script_name"));
 }
 
 void ImGuiConsole::FilterBar() {
@@ -166,7 +166,7 @@ void ImGuiConsole::LogWindow() {
 
             if (!m_TextFilter.PassFilter(item.Get().c_str())) continue;
 
-            if (item.m_Type == CVar::COMMAND) {
+            if (item.m_Type == Command::COMMAND) {
                 if (m_TimeStamps) ImGui::PushTextWrapPos(ImGui::GetColumnWidth() - timestamp_width);
                 if (count++ != 0) ImGui::Dummy(ImVec2(-1, ImGui::GetFontSize()));
             }
@@ -179,7 +179,7 @@ void ImGuiConsole::LogWindow() {
                 ImGui::TextUnformatted(item.Get().data());
             }
 
-            if (item.m_Type == CVar::COMMAND && m_TimeStamps) {
+            if (item.m_Type == Command::COMMAND && m_TimeStamps) {
 
                 ImGui::PopTextWrapPos();
 
@@ -334,7 +334,7 @@ int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
         case ImGuiInputTextFlags_CallbackCompletion: {
 
             size_t startSubtrPos = trim_str.find_last_of(' ');
-            CVar::AutoComplete *console_autocomplete;
+            Command::AutoComplete *console_autocomplete;
 
             if (startSubtrPos == std::string::npos) {
                 startSubtrPos = 0;
@@ -347,9 +347,9 @@ int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
             if (!trim_str.empty()) {
 
                 if (!console->m_CmdSuggestions.empty()) {
-                    console->m_ConsoleSystem.Log(CVar::COMMAND) << "Suggestions: " << CVar::endl;
+                    console->m_ConsoleSystem.Log(Command::COMMAND) << "Suggestions: " << Command::endl;
 
-                    for (const auto &suggestion : console->m_CmdSuggestions) console->m_ConsoleSystem.Log(CVar::LOG) << suggestion << CVar::endl;
+                    for (const auto &suggestion : console->m_CmdSuggestions) console->m_ConsoleSystem.Log(Command::LOG) << suggestion << Command::endl;
 
                     console->m_CmdSuggestions.clear();
                 }
@@ -485,7 +485,7 @@ void ConsoleSystem::Draw() {}
 void ConsoleSystem::PrintAllMethods() {
     METADOT_ASSERT_E(console_imgui);
     for (auto &cmds : console_imgui->System().Commands()) {
-        console_imgui->System().Log(CVar::ItemType::LOG) << "\t" << cmds.first << CVar::endl;
+        console_imgui->System().Log(Command::ItemType::LOG) << "\t" << cmds.first << Command::endl;
     }
 }
 
@@ -498,12 +498,12 @@ void ConsoleSystem::Create() {
     // Register variables
     console_imgui->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, CVar::Arg<F32>(""));
-    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, CVar::Arg<F32>(""));
+    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, Command::Arg<F32>(""));
+    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, Command::Arg<F32>(""));
 
-    console_imgui->System().RegisterVariable("scale", Screen.gameScale, CVar::Arg<I32>(""));
+    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<I32>(""));
 
-    visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, CVar::Arg<int>("")); });
+    visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
 
     // Register custom commands
     console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
@@ -521,17 +521,21 @@ void ConsoleSystem::Create() {
                 auto &l = Scripts::GetSingletonPtr()->LuaCoreCpp;
                 l->s_lua.dostring(s);
             },
-            CVar::Arg<String>(""));
+            Command::Arg<String>(""));
 
-    console_imgui->System().RegisterVariable("mspt", Time.mspt, CVar::Arg<I32>(""));
+    console_imgui->System().RegisterVariable("mspt", Time.mspt, Command::Arg<I32>(""));
 
-    console_imgui->System().Log(CVar::ItemType::INFO) << "Welcome to the console!" << CVar::endl;
-    console_imgui->System().Log(CVar::ItemType::INFO) << "The following variables have been exposed to the console:" << CVar::endl << CVar::endl;
-    console_imgui->System().Log(CVar::ItemType::INFO) << "\tbackground_color - set: [int int int int]" << CVar::endl;
-    console_imgui->System().Log(CVar::ItemType::INFO) << CVar::endl << "Try running the following command:" << CVar::endl;
-    console_imgui->System().Log(CVar::ItemType::INFO) << "\tset background_color [255 0 0 255]" << CVar::endl << CVar::endl;
+    console_imgui->System().Log(Command::ItemType::INFO) << "Welcome to the console!" << Command::endl;
+    console_imgui->System().Log(Command::ItemType::INFO) << "The following variables have been exposed to the console:" << Command::endl << Command::endl;
+    console_imgui->System().Log(Command::ItemType::INFO) << "\tbackground_color - set: [int int int int]" << Command::endl;
+    console_imgui->System().Log(Command::ItemType::INFO) << Command::endl << "Try running the following command:" << Command::endl;
+    console_imgui->System().Log(Command::ItemType::INFO) << "\tset background_color [255 0 0 255]" << Command::endl << Command::endl;
 }
 
 void ConsoleSystem::Destory() { METADOT_DELETE(C, console_imgui, ImGuiConsole); }
+
+void ConsoleSystem::Reload() {
+    
+}
 
 void ConsoleSystem::RegisterLua(LuaWrapper::State &s_lua) {}

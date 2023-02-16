@@ -1,5 +1,3 @@
-
-
 #ifndef __CSS_SELECT__
 #define __CSS_SELECT__
 

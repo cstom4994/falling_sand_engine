@@ -176,7 +176,6 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
 #pragma endregion Shaders
 
 void ShaderWorkerSystem::Create() {
-    this->Destory();
 
     this->waterShader = new WaterShader;
     this->waterFlowPassShader = new WaterFlowPassShader;
@@ -222,6 +221,8 @@ void ShaderWorkerSystem::Create() {
     this->fire2Shader->Init();
     this->blurShader->Init();
     this->untexturedShader->Init();
+
+    METADOT_BUG("ShaderWorker loaded");
 }
 
 #define SAFEUNLOADSHADER(x) \
@@ -238,6 +239,13 @@ void ShaderWorkerSystem::Destory() {
     SAFEUNLOADSHADER(fire2Shader);
     SAFEUNLOADSHADER(blurShader);
     SAFEUNLOADSHADER(untexturedShader);
+
+    METADOT_BUG("ShaderWorker destroyed");
+}
+
+void ShaderWorkerSystem::Reload() {
+    this->Destory();
+    this->Create();
 }
 
 #undef SAFEUNLOADSHADER

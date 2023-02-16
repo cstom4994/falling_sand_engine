@@ -11,7 +11,7 @@
 #include "console.hpp"
 #include "game_basic.hpp"
 
-METADOT_INLINE CVar::ItemLog &operator<<(CVar::ItemLog &log, ImVec4 &vec) {
+METADOT_INLINE Command::ItemLog &operator<<(Command::ItemLog &log, ImVec4 &vec) {
     log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";
     return log;
 }
