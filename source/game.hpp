@@ -82,10 +82,13 @@ public:
     Meta::AnyFunction fadeOutCallback = []() {};
 
     struct {
-        BackgroundSystem *backgrounds = nullptr;
-        GameplayScriptSystem *gameplayscript = nullptr;
-        ShaderWorkerSystem *shaderworker = nullptr;
-        ConsoleSystem *console;
+        std::shared_ptr<BackgroundSystem> backgrounds;
+        std::shared_ptr<GameplayScriptSystem> gameplayscript;
+        std::shared_ptr<ShaderWorkerSystem> shaderworker;
+        std::shared_ptr<ConsoleSystem> console;
+
+        MetaEngine::vector<std::shared_ptr<IGameSystem>> systemList = {};
+
         GlobalDEF globaldef;
         World *world = nullptr;
         TexturePack *texturepack = nullptr;

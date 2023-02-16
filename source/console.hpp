@@ -78,7 +78,7 @@ public:
     void DrawUI();
     void Draw();
 
-    ConsoleSystem(U32 p) : IGameSystem(p){};
+    REGISTER_SYSTEM(ConsoleSystem)
 
     // InternalFuncs
     void PrintAllMethods();

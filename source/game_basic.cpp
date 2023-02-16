@@ -58,11 +58,20 @@ Biome *BiomeGet(std::string name) {
 }
 
 void GameplayScriptSystem::Create() {
+    METADOT_BUG("GameplayScriptSystem created");
+
     auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
     auto &luawrap = luacore->s_lua;
     luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
     luawrap["OnGameEngineLoad"]();
     luawrap["OnGameLoad"](global.game);
+
+    // GlobalDEF table initialization
+    InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
+
+    // I18N must be initialized after scripting system
+    // It uses i18n.lua to function
+    global.I18N.Init();
 }
 
 void GameplayScriptSystem::Destory() {
@@ -119,12 +128,6 @@ a = RigidBody(1, "hello")
     //     s_lua("print( a.extra, actor.extra )");
     // }
 }
-
-void IGameSystem::Create() {}
-
-void IGameSystem::Destory() {}
-
-void IGameSystem::RegisterLua(LuaWrapper::State &s_lua) {}
 
 void IGameObject::Create() {}
 

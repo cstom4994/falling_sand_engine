@@ -44,7 +44,7 @@ public:
     void Push(std::string name, BackgroundObject *bg);
     BackgroundObject *Get(std::string name);
 
-    BackgroundSystem(U32 p) : IGameSystem(p) {}
+    REGISTER_SYSTEM(BackgroundSystem)
 
     void Create() override;
     void Destory() override;

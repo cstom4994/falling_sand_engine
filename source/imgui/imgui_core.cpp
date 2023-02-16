@@ -837,6 +837,9 @@ CSTDTime | {6} | Nothing
             }
             if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_PROJECT_DIAGRAM, "ui_system"))) {
 
+                for (auto &s : global.game->GameIsolate_.systemList) {
+                    ImGui::Auto(*s.get());
+                }
 
                 ImGui::EndTabItem();
             }

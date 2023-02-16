@@ -88,50 +88,48 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Starting game...");
 
     // Initialization of ECSSystem and Engine
-    InitECS(128);
     if (InitEngine(InitCppReflection)) return METADOT_FAILED;
 
     // Load splash screen
     DrawSplash();
 
-    // Register global functions to hostdata using AnyFunction
-    // RegisterFunctions(gamescriptwrap_init, InitGameScriptingWrap);
-    // RegisterFunctions(gamescriptwrap_bind, BindGameScriptingWrap);
-    // RegisterFunctions(gamescriptwrap_end, EndGameScriptingWrap);
-
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
-    METADOT_NEW(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem, 2);
+
+    GameIsolate_.gameplayscript = std::make_shared<GameplayScriptSystem>(2);
+    GameIsolate_.systemList.push_back(GameIsolate_.gameplayscript);
+
+    GameIsolate_.console = std::make_shared<ConsoleSystem>(4, SystemFlags::SystemFlags_ImGui);
+    GameIsolate_.systemList.push_back(GameIsolate_.console);
+
+    GameIsolate_.shaderworker = std::make_shared<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
+    GameIsolate_.systemList.push_back(GameIsolate_.shaderworker);
+
+    GameIsolate_.backgrounds = std::make_shared<BackgroundSystem>(8);
+    GameIsolate_.systemList.push_back(GameIsolate_.backgrounds);
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
     Scripts::GetSingletonPtr()->Init();
 
+    for (auto &s : GameIsolate_.systemList) {
+        s->RegisterLua(Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua);
+        if (!s->getFlag(SystemFlags::SystemFlags_ImGui)) {
+            s->Create();
+        }
+    }
+
     // UISystem including ImGui
     UIRendererInit();
 
-    // I18N must be initialized after scripting system
-    // It uses i18n.lua to function
-    global.I18N.Init();
-
-    // GlobalDEF table initialization
-    InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
-
-    // Console system
-    METADOT_NEW(C, global.game->GameIsolate_.console, ConsoleSystem, 4);
-    GameIsolate_.console->Create();
+    for (auto &s : GameIsolate_.systemList) {
+        if (s->getFlag(SystemFlags::SystemFlags_ImGui)) {
+            s->Create();
+        }
+    }
 
     // Test aseprite
     GameIsolate_.texturepack->testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
-
-    // Load backgrounds resources
-    METADOT_INFO("Loading backgrounds...");
-    METADOT_NEW(C, global.game->GameIsolate_.backgrounds, BackgroundSystem, 6);
-    GameIsolate_.backgrounds->Create();
-
-    // Load fonts
-    // font = FontCache_CreateFont();
-    // FontCache_LoadFont(font, METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12, FontCache_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     // Initialize the rng seed
     this->RNG = RNG_Create();
@@ -183,9 +181,6 @@ int Game::init(int argc, char *argv[]) {
     // init threadpools
     GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
     METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
-
-    METADOT_NEW(C, GameIsolate_.shaderworker, ShaderWorkerSystem);
-    GameIsolate_.shaderworker->Create();
 
     return this->run(argc, argv);
 }
@@ -1076,22 +1071,19 @@ int Game::exit() {
 
     running = false;
 
-    // TODO CppScript
     UIRendererFree();
 
     // release resources & shutdown
+    MetaEngine::vector<std::shared_ptr<IGameSystem>>::reverse_iterator backwardIterator;
+    for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
+        backwardIterator->get()->Destory();
+    }
     Scripts::GetSingletonPtr()->End();
-    METADOT_DELETE(C, global.game->GameIsolate_.gameplayscript, GameplayScriptSystem);
     Scripts::Delete();
 
     ReleaseGameData();
 
     METADOT_DELETE(C, objectDelete, U8);
-    GameIsolate_.backgrounds->Destory();
-    METADOT_DELETE(C, GameIsolate_.backgrounds, BackgroundSystem);
-
-    GameIsolate_.console->Destory();
-    METADOT_DELETE(C, GameIsolate_.console, ConsoleSystem);
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
     METADOT_DELETE(C, movingTiles, U16);
@@ -1103,9 +1095,6 @@ int Game::exit() {
         METADOT_DELETE(C, GameIsolate_.world, World);
         GameIsolate_.world = nullptr;
     }
-
-    GameIsolate_.shaderworker->Destory();
-    METADOT_DELETE(C, GameIsolate_.shaderworker, ShaderWorkerSystem);
 
     global.audioEngine.Shutdown();
     metadot_endwindow();

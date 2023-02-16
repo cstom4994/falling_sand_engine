@@ -432,12 +432,12 @@ void integrationExample() {
 void Scripts::Init() {
     LuaCoreCpp = new struct LuaCoreCpp;
     InitLuaCoreCpp(LuaCoreCpp);
-    global.game->GameIsolate_.gameplayscript->RegisterLua(LuaCoreCpp->s_lua);
-    global.game->GameIsolate_.gameplayscript->Create();
+    // global.game->GameIsolate_.gameplayscript->RegisterLua(LuaCoreCpp->s_lua);
+    // global.game->GameIsolate_.gameplayscript->Create();
 }
 
 void Scripts::End() {
-    global.game->GameIsolate_.gameplayscript->Destory();
+    // global.game->GameIsolate_.gameplayscript->Destory();
 
     EndLuaCoreCpp(LuaCoreCpp);
     delete LuaCoreCpp;

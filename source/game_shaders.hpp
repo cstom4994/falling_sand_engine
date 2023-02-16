@@ -66,15 +66,17 @@ public:
     void Update(float mvp[], GLfloat gldata[]);
 };
 
-class ShaderWorkerSystem : IGameSystem {
+class ShaderWorkerSystem : public IGameSystem {
 public:
-    WaterShader *waterShader;
-    WaterFlowPassShader *waterFlowPassShader;
-    NewLightingShader *newLightingShader;
-    FireShader *fireShader;
-    Fire2Shader *fire2Shader;
-    BlurShader *blurShader;
-    UntexturedShader *untexturedShader;
+    WaterShader *waterShader = nullptr;
+    WaterFlowPassShader *waterFlowPassShader = nullptr;
+    NewLightingShader *newLightingShader = nullptr;
+    FireShader *fireShader = nullptr;
+    Fire2Shader *fire2Shader = nullptr;
+    BlurShader *blurShader = nullptr;
+    UntexturedShader *untexturedShader = nullptr;
+
+    REGISTER_SYSTEM(ShaderWorkerSystem)
 
     void Create() override;
     void Destory() override;

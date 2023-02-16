@@ -29,6 +29,9 @@ unsigned char initializedEngine = 0;
 // Engine initialization function
 // Return 1 if suceeded, 0 if failed
 int InitEngine(void (*InitCppReflection)()) {
+
+    InitECS(128);
+
     if (initializedEngine) {
         METADOT_WARN("InitEngine: Engine already initialized");
     }
