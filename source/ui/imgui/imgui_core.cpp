@@ -448,7 +448,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 TickInfoPanel.data = R"(
 Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
 :-----------|:------------|:--------
-TickTime | {0} | Nothing
+TickCount | {0} | Nothing
 DeltaTime | {1} | Nothing
 TPS | {2} | Nothing
 Mspt | {3} | Nothing
@@ -461,7 +461,7 @@ CSTDTime | {6} | Nothing
                 rawtime = time(NULL);
                 struct tm *timeinfo = localtime(&rawtime);
 
-                TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTick, metadot_gettime(), rawtime);
+                TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, metadot_gettime(), rawtime);
 
                 ImGui::Auto(TickInfoPanel);
 

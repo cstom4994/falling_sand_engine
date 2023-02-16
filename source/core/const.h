@@ -31,7 +31,7 @@ static const float FLUID_MaxFlow = 8.0f;
 // Adjusts flow speed (0.0f - 1.0f)
 static const float FLUID_FlowSpeed = 1.0f;
 
-#define TraceTimeNum 100
+#define TraceTimeNum 60
 
 static const double PI = 3.14159265358979323846;
 

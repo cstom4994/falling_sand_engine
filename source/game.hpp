@@ -38,6 +38,7 @@
 #include "renderer/renderer_gpu.h"
 #include "ui/imgui/imgui_core.hpp"
 #include "ui/ttf.h"
+#include "ui/ui.hpp"
 #include "world.hpp"
 
 enum EnumGameState { MAIN_MENU, LOADING, INGAME };
@@ -87,6 +88,7 @@ public:
         std::shared_ptr<GameplayScriptSystem> gameplayscript;
         std::shared_ptr<ShaderWorkerSystem> shaderworker;
         std::shared_ptr<ConsoleSystem> console;
+        std::shared_ptr<UISystem> ui;
 
         MetaEngine::vector<std::shared_ptr<IGameSystem>> systemList = {};
 

@@ -39,7 +39,7 @@ metadot_vec3 menuActiveTabColor = {0.15, 0.15, 0.2};
 metadot_vec3 brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
 metadot_vec3 lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 
-void UIRendererInit() {
+void UISystem::UIRendererInit() {
     // UIData
     METADOT_INFO("Loading UIData");
     global.uidata = new UIData;
@@ -52,6 +52,7 @@ void UIRendererInit() {
 
     // Test element drawing
     UIElement *testElement1 = new UIElement{.type = ElementType::windowElement,
+                                            .resizable = {true},
                                             .x = 50,
                                             .y = 50,
                                             .w = 200,
@@ -91,7 +92,7 @@ void UIRendererInit() {
     global.uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
 }
 
-void UIRendererPostUpdate() {
+void UISystem::UIRendererPostUpdate() {
     global.uidata->imguiCore->NewFrame();
 
     auto ctx = &global.uidata->layoutContext;
@@ -111,7 +112,7 @@ void UIRendererPostUpdate() {
     layout_run_context(ctx);
 }
 
-void UIRendererDraw() {
+void UISystem::UIRendererDraw() {
 
     if (global.game->state == LOADING) return;
 
@@ -185,19 +186,24 @@ void UIRendererDraw() {
 
         if (Img) R_FreeImage(Img);
 
-        if (global.game->GameIsolate_.globaldef.draw_ui_debug)
+        if (global.game->GameIsolate_.globaldef.draw_ui_debug) {
             R_Rectangle(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, {255, 20, 147, 255});
+            if (e.second->resizable.resizable) {
+                R_Rectangle(Render.target, p_x + e.second->x + e.second->w - 20.0f, p_y + e.second->y + e.second->h - 20.0f, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h,
+                            {40, 20, 147, 255});
+            }
+        }
     }
 }
 
-void UIRendererDrawImGui() { global.uidata->imguiCore->Draw(); }
+void UISystem::UIRendererDrawImGui() { global.uidata->imguiCore->Draw(); }
 
 F32 BoxDistence(metadot_rect box, R_vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
 
-void UIRendererUpdate() {
+void UISystem::UIRendererUpdate() {
 
     global.uidata->imguiCore->Update();
     auto &l = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua;
@@ -226,8 +232,25 @@ void UIRendererUpdate() {
 
         metadot_rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (e.second->type == ElementType::windowElement) {
+            // Resize window
+            if (e.second->resizable.resizable && BoxDistence(rect, {(float)x, (float)y}) < 0.0f && abs(y - e.second->y - e.second->h) < 20.0f && abs(x - e.second->x - e.second->w) < 20.0f) {
+                if (ControlSystem::lmouse && !ImGuiOnControl) {
+                    if (!e.second->resizable.resizing) {
+                        e.second->resizable.mx = x;
+                        e.second->resizable.my = y;
+                        e.second->resizable.resizing = true;
+                    }
+                    e.second->w = e.second->resizable.ow + (x - e.second->resizable.mx);
+                    e.second->h = e.second->resizable.oh + (y - e.second->resizable.my);
+                } else {
+                    e.second->resizable.resizing = false;
+                    e.second->resizable.ow = e.second->w;
+                    e.second->resizable.oh = e.second->h;
+                }
+                continue;
+            }
             // Move window
-            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
+            if (!e.second->resizable.resizing && BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
                 if (ControlSystem::lmouse && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
                     if (!e.second->movable.moving) {
                         e.second->movable.mx = x;
@@ -265,7 +288,7 @@ void UIRendererUpdate() {
     }
 }
 
-void UIRendererFree() {
+void UISystem::UIRendererFree() {
     global.uidata->imguiCore->End();
     METADOT_DELETE(C, global.uidata->imguiCore, ImGuiCore);
 
@@ -277,7 +300,7 @@ void UIRendererFree() {
     delete global.uidata;
 }
 
-bool UIIsMouseOnControls() {
+bool UISystem::UIIsMouseOnControls() {
     // Mouse pos
     int x, y;
     metadot_get_mousepos(&x, &y);
@@ -289,7 +312,7 @@ bool UIIsMouseOnControls() {
     return false;
 }
 
-void DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
+void UISystem::DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
     metadot_vec3 min = {pos.X - size, pos.Y - size, 0};
     metadot_vec3 max = {pos.X + size, pos.Y + size, 0};
 
@@ -300,6 +323,16 @@ void DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b)
     }
 }
 
-void DrawLine(metadot_vec3 min, metadot_vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.X, min.Y, max.X, max.Y, {r, g, b, 255}); }
+void UISystem::DrawLine(metadot_vec3 min, metadot_vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.X, min.Y, max.X, max.Y, {r, g, b, 255}); }
 
-void DrawTextWithPlate() {}
+void UISystem::Create() {
+    UIRendererInit();
+}
+
+void UISystem::Destory() {
+    UIRendererFree();
+}
+
+void UISystem::Reload() {}
+
+void UISystem::RegisterLua(LuaWrapper::State &s_lua) {}

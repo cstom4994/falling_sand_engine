@@ -20,10 +20,11 @@ int InitCore() { return METADOT_OK; }
 bool InitTime() {
     Time.startTime = metadot_gettime();
     Time.lastTime = Time.startTime;
-    Time.lastTick = Time.lastTime;
-    Time.lastFPS = Time.lastTime;
-    Time.mspt = 33;
-    Time.tpsCount = 0;
+    Time.lastTickTime = Time.lastTime;
+    Time.lastCheckTime = Time.lastTime;
+
+    Time.mspt = 0;
+    Time.maxTps = 30;
     Time.framesPerSecond = 0;
     Time.tickCount = 0;
 
@@ -57,8 +58,8 @@ void InitFPS() {
 
 void ProcessTickTime() {
     Time.frameCount++;
-    if (Time.now - Time.lastFPS >= 1000) {
-        Time.lastFPS = Time.now;
+    if (Time.now - Time.lastCheckTime >= 1000.0f) {
+        Time.lastCheckTime = Time.now;
         Time.framesPerSecond = Time.frameCount;
         Time.frameCount = 0;
 
@@ -78,22 +79,25 @@ void ProcessTickTime() {
         for (int i = 1; i < TraceTimeNum; i++) {
             Time.tpsTrace[i - 1] = Time.tpsTrace[i];
         }
-        Time.tpsTrace[TraceTimeNum - 1] = Time.tpsCount;
+        Time.tpsTrace[TraceTimeNum - 1] = Time.tickCount;
 
         // Calculate tps
         sum = 0;
-        num = 0.01;
 
-        for (int i = 0; i < TraceTimeNum; i++) {
-            F32 weight = Time.tpsTrace[i];
-            sum += weight * Time.tpsTrace[i];
-            num += weight;
-        }
+        int n = 0;
+        for (int i = 0; i < TraceTimeNum; i++)
+            if (Time.tpsTrace[i]) {
+                sum += Time.tpsTrace[i];
+                n++;
+            }
 
-        Time.tps = 1000 / (sum / num);
+        // Time.tps = 1000.0f / (sum / num);
+        Time.tps = sum / n;
 
-        Time.tpsCount = 0;
+        Time.tickCount = 0;
     }
+
+    Time.mspt = 1000.0f / Time.tps;
 
     for (int i = 1; i < TraceTimeNum; i++) {
         Time.frameTimesTrace[i - 1] = Time.frameTimesTrace[i];

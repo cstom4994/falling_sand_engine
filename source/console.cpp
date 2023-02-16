@@ -523,7 +523,7 @@ void ConsoleSystem::Create() {
             },
             Command::Arg<String>(""));
 
-    console_imgui->System().RegisterVariable("mspt", Time.mspt, Command::Arg<I32>(""));
+    console_imgui->System().RegisterVariable("tps", Time.maxTps, Command::Arg<U32>(""));
 
     console_imgui->System().Log(Command::ItemType::INFO) << "Welcome to the console!" << Command::endl;
     console_imgui->System().Log(Command::ItemType::INFO) << "The following variables have been exposed to the console:" << Command::endl << Command::endl;

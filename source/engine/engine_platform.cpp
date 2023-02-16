@@ -224,7 +224,6 @@ void metadot_set_VSync(bool vsync) {
 
 void metadot_set_minimize_onlostfocus(bool minimize) {
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
-    // GameUI::OptionsUI::minimizeOnFocus = minimize;
 }
 
 void metadot_set_windowtitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }

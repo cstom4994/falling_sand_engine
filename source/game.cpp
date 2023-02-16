@@ -37,9 +37,6 @@
 #include "game_ui.hpp"
 #include "game_utils/mdplot.h"
 #include "game_utils/particles.h"
-#include "ui/imgui/imgui_css.h"
-#include "ui/imgui/imgui_generated.h"
-#include "ui/imgui/script.h"
 #include "libs/imgui/imgui.h"
 #include "libs/physfs/physfs.h"
 #include "mathlib.hpp"
@@ -49,7 +46,9 @@
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "sdl_wrapper.h"
-#include "ui/ui.hpp"
+#include "ui/imgui/imgui_css.h"
+#include "ui/imgui/imgui_generated.h"
+#include "ui/imgui/script.h"
 #include "ui/ttf.h"
 #include "world_generator.cpp"
 
@@ -99,6 +98,9 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.gameplayscript = std::make_shared<GameplayScriptSystem>(2);
     GameIsolate_.systemList.push_back(GameIsolate_.gameplayscript);
 
+    GameIsolate_.ui = std::make_shared<UISystem>(3);
+    GameIsolate_.systemList.push_back(GameIsolate_.ui);
+
     GameIsolate_.console = std::make_shared<ConsoleSystem>(4, SystemFlags::SystemFlags_ImGui);
     GameIsolate_.systemList.push_back(GameIsolate_.console);
 
@@ -114,18 +116,10 @@ int Game::init(int argc, char *argv[]) {
 
     for (auto &s : GameIsolate_.systemList) {
         s->RegisterLua(Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua);
-        if (!s->getFlag(SystemFlags::SystemFlags_ImGui)) {
-            s->Create();
-        }
-    }
-
-    // UISystem including ImGui
-    UIRendererInit();
-
-    for (auto &s : GameIsolate_.systemList) {
-        if (s->getFlag(SystemFlags::SystemFlags_ImGui)) {
-            s->Create();
-        }
+        s->Create();
+        // if (!s->getFlag(SystemFlags::SystemFlags_ImGui)) {
+        //     s->Create();
+        // }
     }
 
     // Test aseprite
@@ -137,12 +131,10 @@ int Game::init(int argc, char *argv[]) {
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
-
     METADOT_NEW_ARRAY(C, movingTiles, U16, global.GameData_.materials_count);
     METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
 
     // Play sound effects when the game starts
-    // global.audioEngine.PlayEvent("event:/Music/Background1");
     global.audioEngine.PlayEvent("event:/Music/Title");
     global.audioEngine.Update();
 
@@ -455,7 +447,7 @@ int Game::run(int argc, char *argv[]) {
             if (windowEvent.type == SDL_MOUSEWHEEL) {
 
             } else if (windowEvent.type == SDL_MOUSEMOTION) {
-                if (ControlSystem::DEBUG_DRAW->get() && !UIIsMouseOnControls()) {
+                if (ControlSystem::DEBUG_DRAW->get() && !GameIsolate_.ui->UIIsMouseOnControls()) {
                     // draw material
 
                     int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
@@ -490,7 +482,7 @@ int Game::run(int argc, char *argv[]) {
                     lastDrawMY = 0;
                 }
 
-                if (ControlSystem::mmouse && !UIIsMouseOnControls()) {
+                if (ControlSystem::mmouse && !GameIsolate_.ui->UIIsMouseOnControls()) {
                     // erase material
 
                     // erase from world
@@ -581,7 +573,7 @@ int Game::run(int argc, char *argv[]) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
                     ControlSystem::lmouse = true;
 
-                    if (!UIIsMouseOnControls() && GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
+                    if (!GameIsolate_.ui->UIIsMouseOnControls() && GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
                         if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                             GameIsolate_.world->WorldIsolate_.player->holdtype = Vacuum;
                         } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
@@ -880,14 +872,13 @@ int Game::run(int argc, char *argv[]) {
 
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
-        while (Time.now - Time.lastTick > Time.mspt) {
+        while (Time.now - Time.lastTickTime > (1000.0f / Time.maxTps)) {
             Scripts::GetSingletonPtr()->UpdateTick();
             if (GameIsolate_.globaldef.tick_world) {
                 tick();
-                Time.tpsCount++;
             }
             Render.target = Render.realTarget;
-            Time.lastTick = Time.now;
+            Time.lastTickTime = Time.now;
             Time.tickCount++;
         }
 
@@ -920,8 +911,8 @@ int Game::run(int argc, char *argv[]) {
         MetaEngine::Drawing::end_3d(Render.target);
 
         // Update UI
-        UIRendererUpdate();
-        UIRendererDraw();
+        GameIsolate_.ui->UIRendererUpdate();
+        GameIsolate_.ui->UIRendererDraw();
 
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
@@ -961,7 +952,7 @@ int Game::run(int argc, char *argv[]) {
                 }
 
                 // Draw Tooltop window
-                if (tile.mat->id != MaterialsList::GENERIC_AIR.id && !UIIsMouseOnControls()) {
+                if (tile.mat->id != MaterialsList::GENERIC_AIR.id && !GameIsolate_.ui->UIIsMouseOnControls()) {
 
                     ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.11f, 0.11f, 0.11f, 0.4f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.00f, 1.00f, 1.00f, 0.2f));
@@ -1018,7 +1009,7 @@ int Game::run(int argc, char *argv[]) {
 
         tickProfiler();
 
-        UIRendererDrawImGui();
+        GameIsolate_.ui->UIRendererDrawImGui();
 
         // render fade in/out
         if (fadeInWaitFrames > 0) {
@@ -1070,8 +1061,6 @@ int Game::exit() {
     GameIsolate_.world->saveWorld();
 
     running = false;
-
-    UIRendererFree();
 
     // release resources & shutdown
     MetaEngine::vector<std::shared_ptr<IGameSystem>>::reverse_iterator backwardIterator;
@@ -1657,11 +1646,7 @@ void Game::tick() {
             }
         }
 
-        if (GameIsolate_.globaldef.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
-            GameIsolate_.world->tick();
-        }
-
-        if (ControlSystem::DEBUG_TICK->get()) {
+        if ((GameIsolate_.globaldef.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) || ControlSystem::DEBUG_TICK->get()) {
             GameIsolate_.world->tick();
         }
 
@@ -1732,6 +1717,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->matWidth; tx++) {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
+                    METADOT_ASSERT_E(rmat.mat);
                     if (rmat.mat->id == MaterialsList::GENERIC_AIR.id) continue;
 
                     // rotate point
@@ -2501,8 +2487,8 @@ void Game::updateFrameLate() {
         int nofsY;
 
         if (GameIsolate_.world->WorldIsolate_.player) {
-            if (Time.now - Time.lastTick <= Time.mspt) {
-                F32 thruTick = (F32)((Time.now - Time.lastTick) / (F64)Time.mspt);
+            if (Time.now - Time.lastTickTime <= Time.mspt) {
+                F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
 
                 global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x + (int)(GameIsolate_.world->WorldIsolate_.player->vx * thruTick);
                 global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y + (int)(GameIsolate_.world->WorldIsolate_.player->vy * thruTick);
@@ -2539,7 +2525,7 @@ void Game::updateFrameLate() {
 
 void Game::renderEarly() {
 
-    UIRendererPostUpdate();
+    GameIsolate_.ui->UIRendererPostUpdate();
 
     if (state == LOADING) {
         if (Time.now - Time.lastLoadingTick > 20) {
@@ -2616,11 +2602,11 @@ newState = true;
     } else {
         // render entities with LERP
 
-        if (Time.now - Time.lastTick <= Time.mspt) {
+        if (Time.now - Time.lastTickTime <= Time.mspt) {
             R_Clear(TexturePack_.textureEntities->target);
             R_Clear(TexturePack_.textureEntitiesLQ->target);
             if (GameIsolate_.world->WorldIsolate_.player) {
-                F32 thruTick = (F32)((Time.now - Time.lastTick) / (F64)Time.mspt);
+                F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
 
                 R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_ADD);
                 R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_ADD);

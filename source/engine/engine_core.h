@@ -39,8 +39,8 @@ typedef struct engine_screen {
 typedef struct engine_time {
     I32 feelsLikeFps;
     I64 lastTime;
-    I64 lastFPS;
-    I64 lastTick;
+    I64 lastCheckTime;
+    I64 lastTickTime;
     I64 lastLoadingTick;
     I64 now;
     I64 startTime;
@@ -48,10 +48,10 @@ typedef struct engine_time {
 
     I32 tickCount;
 
-    I32 mspt;
+    F32 mspt;
     I32 tpsTrace[TraceTimeNum];
-    I32 tpsCount;
     F32 tps;
+    U32 maxTps;
 
     U16 frameTimesTrace[TraceTimeNum];
     U32 frameCount;
