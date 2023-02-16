@@ -40,6 +40,12 @@ public:
     virtual void RegisterReflection();
 };
 
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {};
+};
+
 class GameplayScriptSystem : public IGameSystem {
 public:
     GameplayScriptSystem(U32 p) : IGameSystem(p) {}

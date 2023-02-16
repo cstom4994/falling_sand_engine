@@ -29,6 +29,7 @@ struct R_Target;
 struct ParticleData;
 struct Biome;
 struct Material;
+struct Player;
 struct ImGuiContext;
 
 #define RegisterFunctions(name, func)    \
@@ -63,14 +64,10 @@ struct GameData {
     } HostData;
 };
 
-template <>
-struct MetaEngine::StaticRefl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {};
-};
-
 class WorldEntity : public IGameObject {
 public:
+    std::string name;
+
     F32 x = 0;
     F32 y = 0;
     F32 vx = 0;
@@ -82,7 +79,7 @@ public:
     b2Body *body = nullptr;
     bool is_player = false;
 
-    WorldEntity(bool isplayer);
+    WorldEntity(bool isplayer, std::string n = "unknown");
     ~WorldEntity();
 };
 
@@ -90,11 +87,17 @@ template <>
 struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity, Base<IGameObject, true>> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
-            Field{TSTR("x"), &Type::x},           Field{TSTR("y"), &Type::y},       Field{TSTR("vx"), &Type::vx},
-            Field{TSTR("vy"), &Type::vy},         Field{TSTR("hw"), &Type::hw},     Field{TSTR("hh"), &Type::hh},
+            Field{TSTR("x"), &Type::x},
+            Field{TSTR("y"), &Type::y},
+            Field{TSTR("vx"), &Type::vx},
+            Field{TSTR("vy"), &Type::vy},
+            Field{TSTR("hw"), &Type::hw},
+            Field{TSTR("hh"), &Type::hh},
             Field{TSTR("ground"), &Type::ground},
 
-            Field{TSTR("rb"), &Type::rb},         Field{TSTR("body"), &Type::body}, Field{TSTR("is_player"), &Type::is_player},
+            // Field{TSTR("body"), &Type::body},
+            Field{TSTR("rb"), &Type::rb},
+            Field{TSTR("is_player"), &Type::is_player},
     };
 };
 
@@ -180,7 +183,7 @@ struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
             Field{TSTR("index_name"), &Material::index_name},
             Field{TSTR("id"), &Material::id},
             Field{TSTR("physicsType"), &Material::physicsType},
-            // Field{TSTR("alpha"), &Material::alpha},
+            Field{TSTR("alpha"), &Material::alpha},
             Field{TSTR("density"), &Material::density},
             Field{TSTR("iterations"), &Material::iterations},
             Field{TSTR("emit"), &Material::emit},
@@ -295,8 +298,24 @@ typedef enum EnumPlayerHoldType {
     Vacuum,
 } EnumPlayerHoldType;
 
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("None"), Type::None},
+            Field{TSTR("Hammer"), Type::Hammer},
+            Field{TSTR("Vacuum"), Type::Vacuum},
+    };
+};
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, EnumPlayerHoldType)
+ImGui::Text("EnumPlayerHoldType: %s", MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(var).data());
+METAENGINE_GUI_DEFINE_END
+
 class Item {
 public:
+    std::string name;
+
     ItemFlags flags = ItemFlags::ItemFlags_None;
 
     void setFlag(ItemFlags f) { flags |= f; }
@@ -317,16 +336,20 @@ public:
     Item();
     ~Item();
 
-    static Item *makeItem(ItemFlags flags, RigidBody *rb);
+    static Item *makeItem(ItemFlags flags, RigidBody *rb, std::string n = "unknown");
     void loadFillTexture(C_Surface *tex);
 };
 
 template <>
 struct MetaEngine::StaticRefl::TypeInfo<Item> : TypeInfoBase<Item> {
     static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {Field{TSTR("pivotX"), &Type::pivotX}, Field{TSTR("pivotY"), &Type::pivotY}, Field{TSTR("breakSize"), &Type::breakSize},
+    static constexpr FieldList fields = {Field{TSTR("name"), &Type::name}, Field{TSTR("pivotX"), &Type::pivotX}, Field{TSTR("pivotY"), &Type::pivotY}, Field{TSTR("breakSize"), &Type::breakSize},
                                          Field{TSTR("capacity"), &Type::capacity}};
 };
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, Item)
+MetaEngine::StaticRefl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+METAENGINE_GUI_DEFINE_END
 
 using ItemLuaPtr = std::shared_ptr<Item>;
 
@@ -388,11 +411,26 @@ public:
 
 struct EntityComponents {};
 
-struct Biome {
+class Biome {
+public:
     int id;
     std::string name;
     explicit Biome(std::string name, int id) : name(std::move(name)), id(std::move(id)){};
 };
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<Biome> : TypeInfoBase<Biome> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("id"), &Type::id},
+            Field{TSTR("name"), &Type::name},
+    };
+};
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, Biome)
+ImGui::Text("Name: %s", var.name.c_str());
+ImGui::Text("ID: %d", var.id);
+METAENGINE_GUI_DEFINE_END
 
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;
@@ -578,7 +616,6 @@ METAENGINE_GUI_DEFINE_END
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
 
 struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
-
     static constexpr const char *class_name = "RigidBody";
 
     static luaL_Reg *members() {
@@ -646,23 +683,11 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
 
 #pragma region Player
 
-template <>
-struct MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {
-            Field{TSTR("None"), Type::None},
-            Field{TSTR("Hammer"), Type::Hammer},
-            Field{TSTR("Vacuum"), Type::Vacuum},
-    };
-};
-
 class Player : public WorldEntity {
 public:
     Item *heldItem = nullptr;
     F32 holdAngle = 0;
-    long long startThrow = 0;
-    // bool holdHammer = false;
-    // bool holdVacuum = false;
+    I64 startThrow = 0;
     EnumPlayerHoldType holdtype = None;
     int hammerX = 0;
     int hammerY = 0;
@@ -682,8 +707,6 @@ struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<Worl
             Field{TSTR("heldItem"), &Type::heldItem},
             Field{TSTR("holdAngle"), &Type::holdAngle},
             Field{TSTR("startThrow"), &Type::startThrow},
-            // Field{TSTR("holdHammer"), &Type::holdHammer},
-            // Field{TSTR("holdVacuum"), &Type::holdVacuum},
             Field{TSTR("holdtype"), &Type::holdtype},
             Field{TSTR("hammerX"), &Type::hammerX},
             Field{TSTR("hammerY"), &Type::hammerY},
@@ -693,6 +716,16 @@ struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<Worl
             Field{TSTR("setItemInHand"), static_cast<void (Type::*)(Item *item, World *world) /* const */>(&Type::setItemInHand)},
     };
 };
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
+if (var.is_player) {
+    auto p = (Player *)&var;
+    METADOT_ASSERT_E(p);
+    MetaEngine::StaticRefl::TypeInfo<Player>::ForEachVarOf(*p, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+} else {
+    MetaEngine::StaticRefl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+}
+METAENGINE_GUI_DEFINE_END
 
 #pragma endregion Player
 

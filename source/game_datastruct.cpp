@@ -33,7 +33,7 @@ void ReleaseGameData() {
     }
 }
 
-WorldEntity::WorldEntity(bool isplayer) : is_player(isplayer) {}
+WorldEntity::WorldEntity(bool isplayer, std::string n) : is_player(isplayer), name(n) {}
 
 WorldEntity::~WorldEntity() {
     // if (static_cast<bool>(rb)) delete rb;
@@ -569,19 +569,19 @@ Item::~Item() {
     SDL_FreeSurface(surface);
 }
 
-Item *Item::makeItem(ItemFlags flags, RigidBody *rb) {
+Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
     Item *i;
 
     if (rb->item != NULL) {
         i = rb->item;
-        i->surface = rb->surface;
-        i->texture = rb->texture;
     } else {
         i = new Item();
         i->flags = flags;
-        i->surface = rb->surface;
-        i->texture = rb->texture;
     }
+    
+    i->surface = rb->surface;
+    i->texture = rb->texture;
+    i->name = n;
 
     return i;
 }
@@ -619,13 +619,13 @@ U32 getpixel(C_Surface *surface, int x, int y) {
 void Item::loadFillTexture(C_Surface *tex) {
     fill.resize(capacity);
     U32 maxN = 0;
-    for(U16 x = 0; x < tex->w; x++) {
-        for(U16 y = 0; y < tex->h; y++) {
+    for (U16 x = 0; x < tex->w; x++) {
+        for (U16 y = 0; y < tex->h; y++) {
             U32 col = getpixel(tex, x, y);
-            if(((col >> 24) & 0xff) > 0) {
+            if (((col >> 24) & 0xff) > 0) {
                 U32 n = col & 0x00ffffff;
                 fill[n - 1] = {x, y};
-                if(n - 1 > maxN) maxN = n - 1;
+                if (n - 1 > maxN) maxN = n - 1;
             }
         }
     }
@@ -1228,7 +1228,7 @@ void Player::setItemInHand(Item *item, World *world) {
     heldItem = item;
 }
 
-Player::Player() : WorldEntity(true) {}
+Player::Player() : WorldEntity(true, "Player") {}
 
 Player::~Player() {
     if (heldItem) delete heldItem;

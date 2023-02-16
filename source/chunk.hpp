@@ -16,6 +16,8 @@
 #include "meta/meta.hpp"
 #include "reflectionflat.hpp"
 
+#define CHUNK_DATABASE_FORMAT "ssiiiiiiiBB"
+
 typedef struct {
     U16 index;
     U32 color;
@@ -62,11 +64,11 @@ struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
             Field{TSTR("hasMeta"), &Type::hasMeta, AttrList{Attr{TSTR("Meta::Msg"), std::tuple{1.0f, 2.0f}}}},
             // Field{TSTR("generationPhase"), &Chunk::generationPhase},
             Field{TSTR("pleaseDelete"), &Type::pleaseDelete},
-            // Field{TSTR("hasTileCache"), &Chunk::hasTileCache},
+            Field{TSTR("hasTileCache"), &Chunk::hasTileCache},
             // Field{TSTR("tiles"), &Chunk::tiles},
             // Field{TSTR("layer2"), &Chunk::layer2},
             Field{TSTR("background"), &Type::background},
-            // Field{TSTR("biomes"), &Chunk::biomes},
+            Field{TSTR("biomes"), &Chunk::biomes},
             // Field{TSTR("polys"), &Chunk::polys},
             Field{TSTR("rb"), &Chunk::rb},
     };

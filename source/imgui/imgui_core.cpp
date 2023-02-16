@@ -647,6 +647,7 @@ CSTDTime | {6} | Nothing
                 }
 #define INSPECTSHADER(_c) MetaEngine::IntrospectShader(#_c, global.game->GameIsolate_.shaderworker->_c->shader)
                 if (CollapsingHeader(CC("GLSL"))) {
+                    ImGui::Indent();
                     INSPECTSHADER(newLightingShader);
                     INSPECTSHADER(fireShader);
                     INSPECTSHADER(fire2Shader);
@@ -654,6 +655,7 @@ CSTDTime | {6} | Nothing
                     INSPECTSHADER(waterFlowPassShader);
                     INSPECTSHADER(untexturedShader);
                     INSPECTSHADER(blurShader);
+                    ImGui::Unindent();
                 }
 #undef INSPECTSHADER
                 ImGui::EndTabItem();
@@ -792,6 +794,7 @@ CSTDTime | {6} | Nothing
                         ImGui::EndCombo();
                     }
 
+                    ImGui::Indent();
                     if (check_chunk_ptr != nullptr)
                         MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*check_chunk_ptr, [&](const auto &field, auto &&var) {
                             if (field.name == "pack_filename") return;
@@ -808,12 +811,15 @@ CSTDTime | {6} | Nothing
                             // }
                             ImGui::Auto(var, std::string(field.name));
                         });
+                    ImGui::Unindent();
                 }
                 if (CollapsingHeader(LANG("ui_entities"))) {
 
+                    ImGui::Indent();
                     ImGui::Auto(global.game->GameIsolate_.world->WorldIsolate_.rigidBodies, "刚体");
                     ImGui::Auto(global.game->GameIsolate_.world->WorldIsolate_.worldRigidBodies, "世界刚体");
-
+                    ImGui::Auto(global.game->GameIsolate_.world->WorldIsolate_.entities, "实体");
+                    ImGui::Unindent();
                     // static RigidBody *check_rigidbody_ptr = nullptr;
 
                     // if (ImGui::BeginCombo("RigidbodyList", CC("选择检视刚体..."))) {

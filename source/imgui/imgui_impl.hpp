@@ -533,11 +533,21 @@ METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec2, METAENGINE_GUI_INPUT_FLOAT2(na
 METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec4, METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var.x);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const float, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const int, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const U8, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const unsigned, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const bool, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec2, ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y);)
 METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec4, ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y, var.z, var.w);)
+
+#define INTERNAL_NUM(_c, _imn)                                                                                   \
+    METAENGINE_GUI_DEFINE_INLINE(template <>, _c, ImGui::InputScalar(name.c_str(), ImGuiDataType_##_imn, &var);) \
+    METAENGINE_GUI_DEFINE_INLINE(template <>, const _c, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+
+INTERNAL_NUM(U8, U8)
+INTERNAL_NUM(U16, U16)
+INTERNAL_NUM(U64, U64)
+INTERNAL_NUM(I8, S8)
+INTERNAL_NUM(I16, S16)
+INTERNAL_NUM(I64, S64)
 
 METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 1>), METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var[0]);)
 METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 1>), ImGui::Text("%s%f", (name.empty() ? "" : name + "=").c_str(), var[0]);)
@@ -764,7 +774,6 @@ METAENGINE_GUI_DEFINE_INLINE(template <>, std::add_pointer_t<void()>, if (ImGui:
 METAENGINE_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
 
 #pragma endregion
-
 
 METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, MetaEngine::vector<T>)
 if (ImGui::detail::AutoContainerValues<MetaEngine::vector<T>>("MetaEngineVector " + name, var)) {

@@ -49,7 +49,7 @@ void ChunkLoadMeta(Chunk *_struct) {
     int src_size2;
     int compressed_size2;
 
-    dp = datapack_map("ssiiiiiiiBB", &s, &s1, &phase, &x, &y, &src_size, &compressed_size, &src_size2, &compressed_size2, &leveldata, &leveldata2);
+    dp = datapack_map(CHUNK_DATABASE_FORMAT, &s, &s1, &phase, &x, &y, &src_size, &compressed_size, &src_size2, &compressed_size2, &leveldata, &leveldata2);
     datapack_load(dp, DATAPACK_FILE, _struct->pack_filename.c_str());
     datapack_unpack(dp, 0);
 
@@ -94,7 +94,7 @@ void ChunkRead(Chunk *_struct) {
     datapack_bin leveldata;
     datapack_bin leveldata2;
 
-    dp = datapack_map("ssiiiiiiiBB", &s, &s1, &_struct->generationPhase, &x, &y, &src_size, &compressed_size, &src_size2, &compressed_size2, &leveldata, &leveldata2);
+    dp = datapack_map(CHUNK_DATABASE_FORMAT, &s, &s1, &_struct->generationPhase, &x, &y, &src_size, &compressed_size, &src_size2, &compressed_size2, &leveldata, &leveldata2);
     datapack_load(dp, DATAPACK_FILE, _struct->pack_filename.c_str());
     datapack_unpack(dp, 0);
 
@@ -280,7 +280,8 @@ void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer
     const char *s = "Is man one of God's blunders? Or is God one of man's blunders?";
 
     const char *filename = _struct->pack_filename.c_str();
-    dp = datapack_map("ssiiiiiiiBB", &s, &filename, &_struct->generationPhase, &_struct->x, &_struct->y, &src_size, &compressed_data_size, &src_size2, &compressed_data_size2, &leveldata, &leveldata2);
+    dp = datapack_map(CHUNK_DATABASE_FORMAT, &s, &filename, &_struct->generationPhase, &_struct->x, &_struct->y, &src_size, &compressed_data_size, &src_size2, &compressed_data_size2, &leveldata,
+                      &leveldata2);
 
     leveldata.sz = compressed_data_size;
     leveldata.addr = compressed_data;

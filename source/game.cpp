@@ -1290,6 +1290,7 @@ void Game::updateFrameEarly() {
             i3->vacuumParticles = {};
             i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
             i3->texture = R_CopyImageFromSurface(i3->surface);
+            i3->name = "初始物品";
             R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
             i3->pivotX = 6;
             e->setItemInHand(i3, GameIsolate_.world);
