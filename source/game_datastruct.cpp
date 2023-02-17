@@ -285,7 +285,7 @@ void InitMaterials() {
 #undef REGISTER
 
     // Just test
-    MetaEngine::StaticRefl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
+    // MetaEngine::StaticRefl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
 }
 
 int MaterialInstance::_curID = 1;

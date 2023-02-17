@@ -966,12 +966,7 @@ int Game::run(int argc, char *argv[]) {
                             ImGui::Text("fluidAmount = %f", tile.fluidAmount);
                         }
 
-                        using namespace MetaEngine::StaticRefl;
-
-                        TypeInfo<Material>::ForEachVarOf(*tile.mat, [](auto field, auto &&var) {
-                            static_assert(std::is_lvalue_reference_v<decltype(var)>);
-                            ImGui::Auto(var, std::string(field.name));
-                        });
+                        ImGui::Auto(*tile.mat);
 
                         int ln = 0;
                         if (tile.mat->interact) {
@@ -1134,6 +1129,7 @@ void Game::updateFrameEarly() {
 
     if (ControlSystem::DEBUG_RIGID->get()) {
         for (auto &cur : GameIsolate_.world->WorldIsolate_.rigidBodies) {
+            METADOT_ASSERT_E(cur);
             if (cur->body->IsEnabled()) {
                 F32 s = sin(cur->body->GetAngle());
                 F32 c = cos(cur->body->GetAngle());
@@ -1387,6 +1383,8 @@ accLoadY = 0;*/
         MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
+
+            METADOT_ASSERT_E(cur);
 
             if (swapped) {
                 cur->hover = (F32)std::fmax(0, cur->hover - hoverDelta);

@@ -45,6 +45,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "core/core.h"
+
 #ifdef ENABLE_LOCALES
 #include <locale.h>
 #endif
@@ -250,7 +253,7 @@ CJSON_PUBLIC(void) cJSON_Release(cJSON *item) {
 #if DEBUG
             --total;
             if (total == 0) {
-                printf("all cjson released\n");
+                METADOT_BUG("All cjson released");
             }
 #endif
         }

@@ -62,17 +62,21 @@ struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
             Field{TSTR("y"), &Type::y},
 
             Field{TSTR("hasMeta"), &Type::hasMeta, AttrList{Attr{TSTR("Meta::Msg"), std::tuple{1.0f, 2.0f}}}},
-            // Field{TSTR("generationPhase"), &Chunk::generationPhase},
+            Field{TSTR("generationPhase"), &Chunk::generationPhase},
             Field{TSTR("pleaseDelete"), &Type::pleaseDelete},
             Field{TSTR("hasTileCache"), &Chunk::hasTileCache},
-            // Field{TSTR("tiles"), &Chunk::tiles},
-            // Field{TSTR("layer2"), &Chunk::layer2},
+            Field{TSTR("tiles"), &Chunk::tiles},
+            Field{TSTR("layer2"), &Chunk::layer2},
             Field{TSTR("background"), &Type::background},
             Field{TSTR("biomes"), &Chunk::biomes},
-            // Field{TSTR("polys"), &Chunk::polys},
+            Field{TSTR("polys"), &Chunk::polys},
             Field{TSTR("rb"), &Chunk::rb},
     };
 };
+
+METAENGINE_GUI_DEFINE_BEGIN(template<>, b2PolygonShape)
+ImGui::Auto("b2PolygonShape");
+METAENGINE_GUI_DEFINE_END
 
 // Initialize a chunk
 void ChunkInit(Chunk *_struct, int x, int y, char *worldName);

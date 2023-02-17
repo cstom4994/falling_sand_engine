@@ -201,6 +201,13 @@ struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
     };
 };
 
+METAENGINE_GUI_DEFINE_BEGIN(template <>, Material)
+MetaEngine::StaticRefl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, auto &&value) {
+    static_assert(std::is_lvalue_reference_v<decltype(value)>);
+    ImGui::Auto(value, std::string(field.name));
+});
+METAENGINE_GUI_DEFINE_END
+
 struct MaterialsList {
     static Material GENERIC_AIR;
     static Material GENERIC_SOLID;
@@ -255,6 +262,17 @@ public:
     MaterialInstance() : MaterialInstance(&MaterialsList::GENERIC_AIR, 0x000000, 0){};
     bool operator==(const MaterialInstance &other);
 };
+
+template <>
+struct MetaEngine::StaticRefl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {};
+};
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, MaterialInstance)
+ImGui::Text("MaterialInstance:\n%d", var.id);
+ImGui::Auto(var.mat, "Material");
+METAENGINE_GUI_DEFINE_END
 
 extern MaterialInstance Tiles_NOTHING;
 extern MaterialInstance Tiles_TEST_SOLID;

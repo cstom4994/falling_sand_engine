@@ -3248,11 +3248,11 @@ RigidBody *World::physicsCheck(int x, int y) {
 
     if (getTile(x, y).mat->physicsType != PhysicsType::SOLID) return nullptr;
 
-    static bool *visited = new bool[width * height];
+    bool *visited = new bool[width * height];
 
     memset(visited, false, (size_t)width * height);
 
-    static U32 *cols = new U32[width * height];
+    U32 *cols = new U32[width * height];
 
     memset(cols, 0x00, (size_t)width * height * sizeof(U32));  // init to all 0s
 
@@ -3315,8 +3315,8 @@ RigidBody *World::physicsCheck(int x, int y) {
             return nullptr;
         }
     } else {
-        // delete[] visited;
-        // delete[] cols;
+        delete[] visited;
+        delete[] cols;
     }
 
     return nullptr;
@@ -3431,13 +3431,12 @@ bool WorldMeta::save(std::string worldFileName) {
     metafile.add("metadata", root);
     metafile.add("root_seed", global.game->RNG->root_seed);
 
-    std::cout << metafile.print() << std::endl;
-
+    // std::cout << metafile.print() << std::endl;
     // std::string worldMetaData = "LoadWorldMeta = function()\nsettings_data = {}\n";
     // SaveLuaConfig(*this, "settings_data", worldMetaData);
     // worldMetaData += "return settings_data\nend";
 
-    METADOT_INFO("Save World\n%s", metafile.print().c_str());
+    METADOT_INFO("Saving world (%s)", metafile["metadata"]["worldName"].to<std::string>().c_str());
     std::ofstream o(metaFilePath);
     o << metafile.print();
     delete[] metaFilePath;
