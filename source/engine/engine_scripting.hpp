@@ -11,7 +11,7 @@
 #include "core/macros.h"
 #include "engine/engine.h"
 #include "libs/visitstruct.hpp"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 
 typedef struct LuaCoreC {
     lua_State *L;

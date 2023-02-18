@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "ecs.h"
-#include "scripting/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.h"
 
 typedef unsigned int cid_t;
 

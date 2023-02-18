@@ -8,7 +8,7 @@
 #include "game_datastruct.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 #include "world.hpp"
 
 class Game;

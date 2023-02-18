@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "scripting/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.h"
 
 #define ENTITY_INIT_SIZE 4096
 

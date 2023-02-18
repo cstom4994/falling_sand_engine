@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "scripting/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.h"
 
 struct entity_world;
 

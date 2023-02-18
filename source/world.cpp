@@ -31,7 +31,7 @@
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
 #include "reflectionflat.hpp"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 #include "world_generator.cpp"
 
 ThreadPool *World::tickPool = nullptr;

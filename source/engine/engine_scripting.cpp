@@ -29,7 +29,7 @@
 #include "internal/builtin_lpeg.h"
 #include "libs/lua/ffi.h"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 
 void InitLuaCoreC(LuaCoreC *_struct, lua_State *LuaCoreCppFunc(void *), void *luacorecpp) {
     METADOT_ASSERT_E(_struct);

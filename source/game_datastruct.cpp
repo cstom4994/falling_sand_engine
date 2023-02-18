@@ -19,7 +19,7 @@
 #include "internal/builtin_box2d.h"
 #include "reflectionflat.hpp"
 #include "renderer/renderer_utils.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 #include "world.hpp"
 
 MetaEngine::vector<Biome *> GameData::biome_container;

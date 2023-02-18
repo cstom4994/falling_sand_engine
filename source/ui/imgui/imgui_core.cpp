@@ -35,7 +35,7 @@
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 #include "ui/imgui/imgui_css.h"
 #include "ui/imgui/imgui_generated.h"
 #include "ui/imgui/imgui_impl.hpp"
@@ -48,6 +48,7 @@ IMPLENGINE();
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
 extern void ShowAutoTestWindow();
+extern void meo_test();
 
 #if defined(_METADOT_IMM32)
 
@@ -590,6 +591,7 @@ CSTDTime | {6} | Nothing
                     }
                     ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
                     ImGui::Checkbox("UI", &global.uidata->elementLists["testElement1"]->visible);
+                    if (ImGui::Button("Meo")) meo_test();
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {

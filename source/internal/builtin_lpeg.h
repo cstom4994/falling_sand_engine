@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <limits.h>
 
-#include "scripting/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.h"
 
 #define VERSION "1.0.2"
 

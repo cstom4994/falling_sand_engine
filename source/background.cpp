@@ -12,7 +12,7 @@
 #include "game.hpp"
 #include "game_resources.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 
 BackgroundLayer::BackgroundLayer(Texture *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY) {
     this->tex = texture;

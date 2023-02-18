@@ -27,8 +27,8 @@
 #include "libs/lz4/lz4hc.h"
 #include "core/platform.h"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.hpp"
 #include "sdl_wrapper.h"
 
 #ifndef METADOT_PLATFORM_WINDOWS

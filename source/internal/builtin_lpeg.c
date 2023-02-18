@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "scripting/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.h"
 
 #define captype(cap) ((cap)->kind)
 

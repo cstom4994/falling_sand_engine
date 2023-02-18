@@ -9,7 +9,7 @@
 #include "ui/imgui/imgui_impl.hpp"
 #include "libs/rapidxml/rapidxml.hpp"
 #include "libs/rapidxml/rapidxml_print.hpp"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 
 #if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM >= 502
 #define IMGUICSS_LUA_VERSION LUA_VERSION_NUM

@@ -8,7 +8,7 @@ lua50_profiler.c:
 #include <string.h>
 
 #include "profiler_lua.h"
-#include "scripting/lua_wrapper.h"
+#include "scripting/lua/lua_wrapper.h"
 
 /* Indices for the main profiler stack and for the original exit function */
 static int exit_id;

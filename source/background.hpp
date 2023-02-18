@@ -13,7 +13,7 @@
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 #include "sdl_wrapper.h"
 
 struct BackgroundLayer {

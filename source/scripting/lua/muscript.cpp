@@ -22,7 +22,7 @@
 #include <tuple>
 
 #include "filesystem.h"
-#include "scripting/mu_core.h"
+#include "scripting/lua/mu_core.h"
 
 using namespace std::string_view_literals;
 using namespace std::string_literals;

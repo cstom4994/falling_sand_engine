@@ -16,7 +16,7 @@
 #include "game_resources.hpp"
 #include "game_ui.hpp"
 #include "reflectionflat.hpp"
-#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua/lua_wrapper.hpp"
 
 #pragma region GameScriptingBind_1
 
