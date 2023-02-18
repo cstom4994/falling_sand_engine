@@ -1260,13 +1260,18 @@ void Game::updateFrameEarly() {
 
     if (ControlSystem::DEBUG_TOGGLE_PLAYER->get()) {
         if (GameIsolate_.world->player) {
-            // global.GameData_.freeCamX = pl_we->x + pl_we->hw / 2.0f;
-            // global.GameData_.freeCamY = pl_we->y - pl_we->hh / 2.0f;
+
+            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+            global.GameData_.freeCamX = pl_we->x + pl_we->hw / 2.0f;
+            global.GameData_.freeCamY = pl_we->y - pl_we->hh / 2.0f;
             // GameIsolate_.world->worldEntities.erase(std::remove(GameIsolate_.world->worldEntities.begin(), GameIsolate_.world->worldEntities.end(), GameIsolate_.world->player),
             //                                         GameIsolate_.world->worldEntities.end());
-            // GameIsolate_.world->b2world->DestroyBody(pl->rb->body);
+            GameIsolate_.world->b2world->DestroyBody(pl_we->rb->body);
+            GameIsolate_.world->Reg().destroy_entity(GameIsolate_.world->player);
             // delete GameIsolate_.world->player;
-            // GameIsolate_.world->player = nullptr;
+            GameIsolate_.world->player = 0;
         } else {
 
             metadot_vec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
@@ -1297,7 +1302,7 @@ void Game::updateFrameEarly() {
             auto player = GameIsolate_.world->Reg().create_entity();
             MetaEngine::ECS::entity_filler(player)
                     .component<Controlable>()
-                    .component<WorldEntity>(true, pl_transform.pos.X, pl_transform.pos.Y, 0.0f, 0.0f, (int)pl_transform.rect.X, (int)pl_transform.rect.Y, rb)
+                    .component<WorldEntity>(true, pl_transform.pos.X, pl_transform.pos.Y, 0.0f, 0.0f, (int)pl_transform.rect.X, (int)pl_transform.rect.Y, rb, std::string("玩家"))
                     .component<Player>();
 
             auto pl = GameIsolate_.world->Reg().find_component<Player>(player);
@@ -1305,8 +1310,6 @@ void Game::updateFrameEarly() {
             GameIsolate_.world->player = player.id();
 
             pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), i3, GameIsolate_.world);
-
-            // GameIsolate_.world->worldEntities.push_back(e);
 
             // accLoadX = 0;
             // accLoadY = 0;
@@ -2635,7 +2638,7 @@ newState = true;
                 R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_ADD);
                 int scaleEnt = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-                update_event e{1.0f, thruTick, this};
+                move_player_event e{1.0f, thruTick, this};
                 GameIsolate_.world->Reg().process_event(e);
 
                 if (GameIsolate_.world->player) {

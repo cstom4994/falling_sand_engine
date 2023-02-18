@@ -453,7 +453,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 ImGui::Text("Using renderer: %s", glGetString(GL_RENDERER));
                 ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));
                 ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
-                ImGui::Text("Shader versions supported: %d to %d\n\n", renderer->min_shader_version, renderer->max_shader_version);
+                ImGui::Text("Shader versions supported: %d to %d\n", renderer->min_shader_version, renderer->max_shader_version);
+                ImGui::Text("Platform: %s\n", metadot_metadata().platform.c_str());
+                ImGui::Text("Compiler: %s %s (with cpp %s)\n", metadot_metadata().compiler.c_str(), metadot_metadata().compiler_version.c_str(), metadot_metadata().cpp.c_str());
 
                 ImGui::Separator();
 
@@ -467,8 +469,7 @@ TPS | {2} | Nothing
 Mspt | {3} | Nothing
 Delta | {4} | Nothing
 STDTime | {5} | Nothing
-CSTDTime | {6} | Nothing
-            )";
+CSTDTime | {6} | Nothing)";
 
                 time_t rawtime;
                 rawtime = time(NULL);
@@ -481,8 +482,6 @@ CSTDTime | {6} | Nothing
                 ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
                 ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-                ImGui::Text("About:\n%s", metadot_metadata().c_str());
 
                 ImGui::EndTabItem();
             }
@@ -688,6 +687,9 @@ CSTDTime | {6} | Nothing
                     ImGui::Auto(global.game->GameIsolate_.world->rigidBodies, "刚体");
                     ImGui::Auto(global.game->GameIsolate_.world->worldRigidBodies, "世界刚体");
                     // ImGui::Auto(global.game->GameIsolate_.world->worldEntities, "实体");
+
+                    ImGui::Text("ECS: %lu %lu", global.game->GameIsolate_.world->Reg().memory_usage().entities, global.game->GameIsolate_.world->Reg().memory_usage().components);
+
                     ImGui::Unindent();
                     // static RigidBody *check_rigidbody_ptr = nullptr;
 

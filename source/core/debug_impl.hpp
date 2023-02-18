@@ -8,8 +8,15 @@
 #include "core/macros.h"
 #include "ui/imgui/imgui_impl.hpp"
 
-extern int metadot_buildnum(void);
-extern const std::string metadot_metadata(void);
+struct DebugInfo {
+    std::string platform;
+    std::string compiler;
+    std::string compiler_version;
+    std::string cpp;
+};
+
+int metadot_buildnum(void);
+DebugInfo metadot_metadata(void);
 
 #include <algorithm>
 #include <cassert>
@@ -903,7 +910,5 @@ public:
 };
 }  // namespace METADOT_UNIT
 #endif
-
-int metadot_buildnum(void);
 
 #endif

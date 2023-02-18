@@ -153,7 +153,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     b2world = new b2World(gravity);
 
     struct gameplay_feature {};
-    registry.assign_feature<gameplay_feature>().add_system<PlayerSystem>();
+    registry.assign_feature<gameplay_feature>().add_system<ControableSystem>().add_system<WorldEntitySystem>();
 
     b2PolygonShape nothingShape;
     nothingShape.SetAsBox(0, 0);
@@ -3173,6 +3173,13 @@ void World::tickEntities(R_Target *t) {
     };
 
     // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
+    registry.for_each_component<WorldEntity>([&](MetaEngine::ECS::entity e, WorldEntity &we) {
+        bool destory = func(&we);
+        if (destory) {
+            if ((MetaEngine::ECS::exists<Player>{})(e)) this->player = 0;
+            registry.destroy_entity(e);
+        }
+    });
 }
 
 // Adapted from https://stackoverflow.com/a/52859805/8267529
@@ -3527,9 +3534,7 @@ World::~World() {
 
     delete[] hasPopulator;
 
-    // for (auto &v : worldEntities) {
-    //     delete v;
-    // }
-    // worldEntities.clear();
-    // delete player;
+    registry.for_each_component<WorldEntity>([&](const MetaEngine::ECS::entity e, WorldEntity &we) {
+        if (static_cast<bool>(we.rb)) delete we.rb;
+    });
 }

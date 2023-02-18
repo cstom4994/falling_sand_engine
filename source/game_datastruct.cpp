@@ -1247,7 +1247,7 @@ b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p) {
     return b2Vec2(xn + cx, yn + cy);
 }
 
-void PlayerSystem::process(MetaEngine::ECS::registry &world, const update_event &evt) {
+void ControableSystem::process(MetaEngine::ECS::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Player>(
             [&evt](MetaEngine::ECS::entity, WorldEntity &we, Player &pl) {
                 pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),

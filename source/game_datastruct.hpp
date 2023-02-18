@@ -77,7 +77,6 @@ public:
     int hh = 26;
     bool ground = false;
     RigidBody *rb = nullptr;
-    b2Body *body = nullptr;
     bool is_player = false;
 
     WorldEntity(const WorldEntity&) = default;
@@ -433,8 +432,6 @@ public:
     // PlacedStructure(const PlacedStructure &p2) { this->base = Structure(base); this->x = x; this->y = y; }
 };
 
-struct EntityComponents {};
-
 class Biome {
 public:
     int id;
@@ -704,7 +701,7 @@ METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
 // }
 METAENGINE_GUI_DEFINE_END
 
-struct update_event {
+struct move_player_event {
     F32 dt;
     F32 thruTick;
     Game *g;
@@ -714,9 +711,9 @@ struct entity_update_event {
     Game *g;
 };
 
-class PlayerSystem : public MetaEngine::ECS::system<update_event> {
+class ControableSystem : public MetaEngine::ECS::system<move_player_event> {
 public:
-    void process(MetaEngine::ECS::registry &world, const update_event &evt) override;
+    void process(MetaEngine::ECS::registry &world, const move_player_event &evt) override;
 };
 
 class WorldEntitySystem : public MetaEngine::ECS::system<entity_update_event> {

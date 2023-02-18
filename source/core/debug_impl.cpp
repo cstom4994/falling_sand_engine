@@ -31,51 +31,40 @@ int metadot_buildnum(void) {
     return b;
 }
 
-const std::string metadot_metadata() {
-    std::string result;
+DebugInfo metadot_metadata() {
 
-    result += "Copyright(c) 2022-2023, KaoruXun All rights reserved.\n";
-    result += "MetaDot\n";
+    DebugInfo dinfo;
 
 #ifdef _WIN32
-    result += "platform win32\n";
+    dinfo.platform = "win32";
 #elif defined __linux__
-    result += "platform linux\n";
+    dinfo.platform = "linux";
 #elif defined __APPLE__
-    result += "platform apple\n";
+    dinfo.platform = "apple";
 #elif defined __unix__
-    result += "platform unix\n";
+    dinfo.platform = "unix";
 #else
-    result += "platform unknown\n";
+    dinfo.platform = "unknown";
 #endif
 
 #if defined(__clang__)
-    result += "compiler.family = clang\n";
-    result += "compiler.version = ";
-    result += std::to_string(__clang_major__) + "." + std::to_string(__clang_minor__) + "." + std::to_string(__clang_patchlevel__);
-    result += "\n";
+    dinfo.compiler = "clang";
+    dinfo.compiler_version = std::to_string(__clang_major__) + "." + std::to_string(__clang_minor__) + "." + std::to_string(__clang_patchlevel__);
 #elif defined(__GNUC__) || defined(__GNUG__)
-    result += "compiler.family = gcc\n";
-    result += "compiler.version = ";
-    result += std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__);
-    result += "\n";
+    dinfo.compiler = "gcc";
+    dinfo.compiler_version = std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__);
 #elif defined(_MSC_VER)
-    result += "compiler.family = msvc\n";
-    result += "compiler.version = ";
-    result += _MSC_VER;
-    result += "\n";
+    dinfo.compiler = "msvc";
+    dinfo.compiler_version = _MSC_VER;
 #else
-    result += "compiler.family = unknown\n";
-    result += "compiler.version = unknown";
-    result += "\n";
+    dinfo.compiler = "unknown";
+    dinfo.compiler_version = "unknown";
 #endif
 
 #ifdef __cplusplus
-    result += "compiler.c++ = ";
-    result += std::to_string(__cplusplus);
-    result += "\n";
+    dinfo.cpp = std::to_string(__cplusplus);
 #else
-    result += "compiler.c++ = unknown\n";
+    dinfo.cpp = "unknown";
 #endif
-    return result;
+    return dinfo;
 }
