@@ -104,8 +104,7 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
 #define METADOT_PLATFORM_WIN32
 #else
-#define METADOT_PLATFORM_POSIX \
-    (METADOT_PLATFORM_LINUX || METADOT_PLATFORM_APPLE || 0)
+#define METADOT_PLATFORM_POSIX (METADOT_PLATFORM_LINUX || METADOT_PLATFORM_APPLE || 0)
 #endif
 
 #if defined(_MSC_VER)
@@ -163,6 +162,10 @@ const char *u8Cpp20(T &&t) noexcept {
 #pragma region Cpp
 
 #if defined(__cplusplus)
+
+#define BIT(x) (1 << x)
+
+#define METADOT_BIND_EVENT_FN(fn) [this](auto &&...args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 #define METADOT_MAKE_MOVEONLY(class_name)               \
     class_name(const class_name &) = delete;            \

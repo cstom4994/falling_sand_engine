@@ -25,7 +25,8 @@
 #include "core/threadpool.h"
 #include "cvar.hpp"
 #include "engine/engine_input.hpp"
-#include "scripting/scripting.hpp"
+#include "event/applicationevent.hpp"
+#include "event/event.hpp"
 #include "filesystem.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -36,6 +37,7 @@
 #include "libs/parallel_hashmap/phmap.h"
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
+#include "scripting/scripting.hpp"
 #include "ui/imgui/imgui_core.hpp"
 #include "ui/ttf.h"
 #include "ui/ui.hpp"
@@ -44,6 +46,9 @@
 enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 
 class Game {
+public:
+    using EventCallbackFn = std::function<void(MetaEngine::Event &)>;
+
 public:
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
@@ -82,6 +87,8 @@ public:
     I64 fadeOutStart = 0;
     I64 fadeOutLength = 0;
     Meta::AnyFunction fadeOutCallback = []() {};
+
+    EventCallbackFn EventCallback;
 
     struct {
         std::shared_ptr<BackgroundSystem> backgrounds;
@@ -167,6 +174,10 @@ public:
     int run(int argc, char *argv[]);
     int exit();
     void updateFrameEarly();
+    void onEvent(MetaEngine::Event &e);
+    bool onWindowClose(MetaEngine::WindowCloseEvent &e);
+    bool onWindowResize(MetaEngine::WindowResizeEvent &e);
+    void setEventCallback(const EventCallbackFn &callback) { EventCallback = callback; }
     void tick();
     void tickChunkLoading();
     void tickPlayer();

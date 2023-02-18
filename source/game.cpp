@@ -28,7 +28,7 @@
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
 #include "engine/engine_platform.h"
-#include "scripting/scripting.hpp"
+#include "event/applicationevent.hpp"
 #include "filesystem.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -45,6 +45,7 @@
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
+#include "scripting/scripting.hpp"
 #include "sdl_wrapper.h"
 #include "ui/imgui/imgui_css.h"
 #include "ui/imgui/imgui_generated.h"
@@ -91,6 +92,8 @@ int Game::init(int argc, char *argv[]) {
 
     // Load splash screen
     DrawSplash();
+
+    setEventCallback(METADOT_BIND_EVENT_FN(onEvent));
 
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
@@ -427,11 +430,8 @@ int Game::run(int argc, char *argv[]) {
 
             if (windowEvent.type == SDL_WINDOWEVENT) {
                 if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    // METADOT_INFO("Resizing window...");
-                    int w = windowEvent.window.data1, h = windowEvent.window.data2;
-                    R_SetWindowResolution(w, h);
-                    R_ResetProjection(Render.realTarget);
-                    ResolutionChanged(w, h);
+                    MetaEngine::WindowResizeEvent event(windowEvent.window.data1, windowEvent.window.data2);
+                    EventCallback(event);
                 }
             }
 
@@ -1440,6 +1440,23 @@ accLoadY = 0;*/
             GameIsolate_.world->tickZone.y = GameIsolate_.world->height - GameIsolate_.world->tickZone.h;
         }
     }
+}
+
+void Game::onEvent(MetaEngine::Event &e) {
+    MetaEngine::EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<MetaEngine::WindowCloseEvent>(METADOT_BIND_EVENT_FN(onWindowClose));
+    dispatcher.Dispatch<MetaEngine::WindowResizeEvent>(METADOT_BIND_EVENT_FN(onWindowResize));
+}
+
+bool Game::onWindowClose(MetaEngine::WindowCloseEvent &e) {
+    return true;
+}
+
+bool Game::onWindowResize(MetaEngine::WindowResizeEvent &e) {
+    R_SetWindowResolution(e.GetWidth(), e.GetHeight());
+    R_ResetProjection(Render.realTarget);
+    ResolutionChanged(e.GetWidth(), e.GetHeight());
+    return true;
 }
 
 void update_ParticlePixels(void *arg) {
