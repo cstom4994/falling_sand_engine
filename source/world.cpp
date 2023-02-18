@@ -22,7 +22,6 @@
 #include "core/macros.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
-#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -32,6 +31,7 @@
 #include "mathlib.hpp"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/scripting.hpp"
 #include "world_generator.cpp"
 
 ThreadPool *World::tickPool = nullptr;
@@ -73,13 +73,13 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
 
     gen = generator;
 
-    WorldIsolate_.populators = gen->getPopulators();
+    populators = gen->getPopulators();
 
     hasPopulator = new bool[6];
     for (int i = 0; i < 6; i++) hasPopulator[i] = false;
-    for (int i = 0; i < WorldIsolate_.populators.size(); i++) {
-        hasPopulator[WorldIsolate_.populators[i]->getPhase()] = true;
-        if (WorldIsolate_.populators[i]->getPhase() > highestPopulator) highestPopulator = WorldIsolate_.populators[i]->getPhase();
+    for (int i = 0; i < populators.size(); i++) {
+        hasPopulator[populators[i]->getPhase()] = true;
+        if (populators[i]->getPhase() > highestPopulator) highestPopulator = populators[i]->getPhase();
     }
 
     this->target = target;
@@ -91,26 +91,26 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     auto ha = phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>>();
     // ha.set_deleted_key(INT_MAX);
     // ha.set_empty_key(INT_MIN);
-    WorldIsolate_.chunkCache = ha;
+    chunkCache = ha;
 
     F32 distributedPointsDistance = 0.05f;
     for (int i = 0; i < (1 / distributedPointsDistance) * (1 / distributedPointsDistance); i++) {
         F32 x = rand() % 1000 / 1000.0;
         F32 y = rand() % 1000 / 1000.0;
 
-        for (int j = 0; j < WorldIsolate_.distributedPoints.size(); j++) {
-            F32 dx = WorldIsolate_.distributedPoints[j].x - x;
-            F32 dy = WorldIsolate_.distributedPoints[j].y - y;
+        for (int j = 0; j < distributedPoints.size(); j++) {
+            F32 dx = distributedPoints[j].x - x;
+            F32 dy = distributedPoints[j].y - y;
             if (dx * dx + dy * dy < distributedPointsDistance * distributedPointsDistance) {
                 goto tooClose;
             }
         }
 
-        WorldIsolate_.distributedPoints.push_back({x, y});
+        distributedPoints.push_back({x, y});
     tooClose : {}
     }
 
-    WorldIsolate_.rigidBodies.reserve(1);
+    rigidBodies.reserve(1);
 
     dirty = new bool[width * height];
     layer2Dirty = new bool[width * height];
@@ -152,7 +152,8 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     gravity = b2Vec2(0, 20);
     b2world = new b2World(gravity);
 
-    WorldIsolate_.entities = {};
+    struct gameplay_feature {};
+    registry.assign_feature<gameplay_feature>().add_system<PlayerSystem>();
 
     b2PolygonShape nothingShape;
     nothingShape.SetAsBox(0, 0);
@@ -164,7 +165,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
     RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png")->surface);
 
-    WorldIsolate_.rigidBodies.push_back(rb);
+    rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
 
     // b2PolygonShape dynamicBox4;
@@ -172,7 +173,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     // // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
     // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 0, 0, dynamicBox4, 1, .3, LoadAseprite("data/assets/textures/Sprite-0003.ase")->surface);
 
-    // WorldIsolate_.rigidBodies.push_back(rb2);
+    // rigidBodies.push_back(rb2);
     // updateRigidBodyHitbox(rb2);
 }
 
@@ -330,7 +331,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         if (static_cast<bool>(rb->surface)) {
             if (rb->surface->w <= 1 || rb->surface->h <= 1) {
                 b2world->DestroyBody(rb->body);
-                WorldIsolate_.rigidBodies.erase(std::remove(WorldIsolate_.rigidBodies.begin(), WorldIsolate_.rigidBodies.end(), rb), WorldIsolate_.rigidBodies.end());
+                rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
                 return;
             }
             rb->surface = sf;
@@ -666,7 +667,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             }
 
             rbn->item = rb->item;
-            WorldIsolate_.rigidBodies.push_back(rbn);
+            rigidBodies.push_back(rbn);
 
             if (result2.size() > 1) {
                 if (result2.size() == 2 && (result2.front().GetNumPoints() <= 3 || result2.back().GetNumPoints() <= 3)) {
@@ -681,7 +682,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     b2world->DestroyBody(rb->body);
 
-    WorldIsolate_.rigidBodies.erase(std::remove(WorldIsolate_.rigidBodies.begin(), WorldIsolate_.rigidBodies.end(), rb), WorldIsolate_.rigidBodies.end());
+    rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
 
     delete[] rb->tiles;
     R_FreeImage(rb->texture);
@@ -919,7 +920,7 @@ found : {};
         f->SetFilterData(bf);
     }
 
-    WorldIsolate_.worldRigidBodies.push_back(chunk->rb);
+    worldRigidBodies.push_back(chunk->rb);
 }
 
 void World::updateWorldMesh() {
@@ -940,10 +941,10 @@ void World::updateWorldMesh() {
     int maxChX = (int)ceil((meshZone.x + meshZone.w - loadZone.x) / CHUNK_W);
     int maxChY = (int)ceil((meshZone.y + meshZone.h - loadZone.y) / CHUNK_H);
 
-    for (int i = 0; i < WorldIsolate_.worldRigidBodies.size(); i++) {
-        b2world->DestroyBody(WorldIsolate_.worldRigidBodies[i]->body);
+    for (int i = 0; i < worldRigidBodies.size(); i++) {
+        b2world->DestroyBody(worldRigidBodies[i]->body);
     }
-    WorldIsolate_.worldRigidBodies.clear();
+    worldRigidBodies.clear();
 
     if (meshZone.w == 0 || meshZone.h == 0) return;
 
@@ -1072,7 +1073,7 @@ void World::tick() {
 #ifdef DO_MULTITHREADING
                                         parts.push_back(p);
 #else
-                                    WorldIsolate_.particles.push_back(p);
+                                    particles.push_back(p);
 #endif
                                     }
 
@@ -1179,7 +1180,7 @@ void World::tick() {
 #ifdef DO_MULTITHREADING
                                             parts.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #else
-                                        WorldIsolate_.particles.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                        particles.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         } else {
                                             tiles[index] = belowTile;
@@ -1255,7 +1256,7 @@ void World::tick() {
 #ifdef DO_MULTITHREADING
                                             parts.push_back(new ParticleData(nt, x, y + 1, (rand() % 10 - 5) / 30.0f, -((rand() % 2) + 3) / 10.0f + 1.0f, 0, 0.1f));
 #else
-                                        WorldIsolate_.particles.push_back(new ParticleData(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                        particles.push_back(new ParticleData(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         }
 
@@ -1864,7 +1865,7 @@ void World::tick() {
 
                 MetaEngine::vector<ParticleData *> pts = results[i].get();
 
-                WorldIsolate_.particles.insert(WorldIsolate_.particles.end(), pts.begin(), pts.end());
+                particles.insert(particles.end(), pts.begin(), pts.end());
             }
             tickVisitedDone.get();
 
@@ -1965,7 +1966,7 @@ void World::tickTemperature() {
 
 void World::renderParticles(unsigned char **texture) {
 
-    for (auto &cur : WorldIsolate_.particles) {
+    for (auto &cur : particles) {
         if (cur->x < 0 || cur->x >= width || cur->y < 0 || cur->y >= height) continue;
 
         F32 alphaMod = 1;
@@ -2139,10 +2140,10 @@ void World::tickParticles() {
         return false;
     };
 
-    WorldIsolate_.particles.erase(std::remove_if(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), func), WorldIsolate_.particles.end());
+    particles.erase(std::remove_if(particles.begin(), particles.end(), func), particles.end());
 
     // // Better particles removal effects
-    // std::for_each(WorldIsolate_.particles.begin(), WorldIsolate_.particles.end(), [](ParticleData *cur) {
+    // std::for_each(particles.begin(), particles.end(), [](ParticleData *cur) {
     //     cur->vx += cur->ax;
     //     cur->vy += cur->ay;
     //     cur->x += cur->vx;
@@ -2157,11 +2158,11 @@ void World::tickParticles() {
 
 void World::tickObjectsMesh() {
 
-    MetaEngine::vector<RigidBody *> *rbs = &WorldIsolate_.rigidBodies;
+    MetaEngine::vector<RigidBody *> *rbs = &rigidBodies;
     for (int i = 0; i < rbs->size(); i++) {
         RigidBody *cur = (*rbs)[i];
         if (!static_cast<bool>(cur->surface)) {
-            WorldIsolate_.rigidBodies.erase(std::remove(WorldIsolate_.rigidBodies.begin(), WorldIsolate_.rigidBodies.end(), cur), WorldIsolate_.rigidBodies.end());
+            rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), cur), rigidBodies.end());
             continue;
         };
         if (cur->needsUpdate && cur->body->IsEnabled()) {
@@ -2172,7 +2173,7 @@ void World::tickObjectsMesh() {
 
 void World::tickObjectBounds() {
 
-    MetaEngine::vector<RigidBody *> rbs = WorldIsolate_.rigidBodies;
+    MetaEngine::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
@@ -2189,7 +2190,7 @@ void World::tickObjects() {
     int maxX = 0;
     int maxY = 0;
 
-    MetaEngine::vector<RigidBody *> rbs = WorldIsolate_.rigidBodies;
+    MetaEngine::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
@@ -2220,26 +2221,27 @@ void World::tickObjects() {
     I32 velocityIterations = 5;
     I32 positionIterations = 2;
 
-    for (auto &cur : WorldIsolate_.entities) {
-        cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
-        cur->rb->body->SetLinearVelocity({(F32)(cur->vx * 1.0), (F32)(cur->vy * 1.0)});
-    }
+    registry.for_each_component<WorldEntity>([this](MetaEngine::ECS::entity, WorldEntity &we) {
+        we.rb->body->SetTransform(b2Vec2(we.x + loadZone.x + we.hw / 2 - 0.5, we.y + loadZone.y + we.hh / 2 - 1.5), 0);
+        we.rb->body->SetLinearVelocity({(F32)(we.vx * 1.0), (F32)(we.vy * 1.0)});
+    });
 
     b2world->Step(timeStep, velocityIterations, positionIterations);
 
     b2world->Step(timeStep, velocityIterations, positionIterations);
 
-    for (auto &cur : WorldIsolate_.entities) {
+    registry.for_each_component<WorldEntity>([this](MetaEngine::ECS::entity, WorldEntity &we) {
         /*cur->x = cur->rb->body->GetPosition().x + 0.5 - cur->hw / 2 - loadZone.x;
         cur->y = cur->rb->body->GetPosition().y + 1.5 - cur->hh / 2 - loadZone.y;*/
         // cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
         // cur->rb->body->SetLinearVelocity({ cur->vx * 25, cur->vy * (cur->vy > 0 ? 0 : 25) });
-        cur->vx = cur->rb->body->GetLinearVelocity().x / 1.0;
-        cur->vy = cur->rb->body->GetLinearVelocity().y / 1.0;
-    }
+
+        we.vx = we.rb->body->GetLinearVelocity().x / 1.0;
+        we.vy = we.rb->body->GetLinearVelocity().y / 1.0;
+    });
 }
 
-void World::addParticle(ParticleData *particle) { WorldIsolate_.particles.push_back(particle); }
+void World::addParticle(ParticleData *particle) { particles.push_back(particle); }
 
 void World::explosion(int cx, int cy, int radius) {
     audioEngine->PlayEvent("event:/Explode");
@@ -2267,11 +2269,11 @@ void World::explosion(int cx, int cy, int radius) {
 
                     tile.color = rgb;
 
-                    WorldIsolate_.particles.push_back(new ParticleData(tile, x, y + 1, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
+                    particles.push_back(new ParticleData(tile, x, y + 1, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
                     setTile(x, y, Tiles_NOTHING);
                 }
             } else if (dx * dx + dy * dy < outerRadius * outerRadius && tile.mat->physicsType != PhysicsType::SOLID) {
-                WorldIsolate_.particles.push_back(new ParticleData(tile, x, y, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
+                particles.push_back(new ParticleData(tile, x, y, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
                 setTile(x, y, Tiles_NOTHING);
             }
         }
@@ -2282,43 +2284,43 @@ void World::explosion(int cx, int cy, int radius) {
 
 void World::frame() {
 
-    while (WorldIsolate_.toLoad.size() > 0) {
-        LoadChunkParams para = WorldIsolate_.toLoad[0];
+    while (toLoad.size() > 0) {
+        LoadChunkParams para = toLoad[0];
 
         // std::future<ChunkReadyToMerge> fut = ;
         // fut.wait();
         // readyToMerge.push_back(fut.get());
         // MetaEngine::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
 
-        WorldIsolate_.readyToReadyToMerge.push_back(loadChunkPool->push([&](int id) { return World::loadChunk(getChunk(para.x, para.y), para.populate, true); }));
+        readyToReadyToMerge.push_back(loadChunkPool->push([&](int id) { return World::loadChunk(getChunk(para.x, para.y), para.populate, true); }));
         // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
 
         // std::thread t(&World::loadChunk, this, para.x, para.y, para.populate);
         // t.join();
-        WorldIsolate_.toLoad.erase(WorldIsolate_.toLoad.begin());
+        toLoad.erase(toLoad.begin());
     }
 
-    for (int i = 0; i < WorldIsolate_.readyToReadyToMerge.size(); i++) {
-        if (is_ready(WorldIsolate_.readyToReadyToMerge[i])) {
-            Chunk *merge = WorldIsolate_.readyToReadyToMerge[i].get();
+    for (int i = 0; i < readyToReadyToMerge.size(); i++) {
+        if (is_ready(readyToReadyToMerge[i])) {
+            Chunk *merge = readyToReadyToMerge[i].get();
 
-            for (int j = 0; j < WorldIsolate_.readyToMerge.size(); j++) {
-                if (WorldIsolate_.readyToMerge[j] == merge) {
-                    WorldIsolate_.readyToMerge.erase(WorldIsolate_.readyToMerge.begin() + j);
+            for (int j = 0; j < readyToMerge.size(); j++) {
+                if (readyToMerge[j] == merge) {
+                    readyToMerge.erase(readyToMerge.begin() + j);
                     j--;
                 }
             }
 
-            WorldIsolate_.readyToMerge.push_back(merge);
-            if (!WorldIsolate_.chunkCache.count(merge->x)) {
+            readyToMerge.push_back(merge);
+            if (!chunkCache.count(merge->x)) {
                 auto h = phmap::flat_hash_map<int, Chunk *>();
                 // h.set_deleted_key(INT_MAX);
                 // h.set_empty_key(INT_MIN);
-                WorldIsolate_.chunkCache[merge->x] = h;
+                chunkCache[merge->x] = h;
             }
-            WorldIsolate_.chunkCache[merge->x][merge->y] = merge;
+            chunkCache[merge->x][merge->y] = merge;
             needToTickGeneration = true;
-            WorldIsolate_.readyToReadyToMerge.erase(WorldIsolate_.readyToReadyToMerge.begin() + i);
+            readyToReadyToMerge.erase(readyToReadyToMerge.begin() + i);
             i--;
         }
     }
@@ -2330,12 +2332,12 @@ void World::frame() {
         readyToReadyToMerge.erase(readyToReadyToMerge.begin());
     }*/
 
-    int rtm = (int)WorldIsolate_.readyToMerge.size();
+    int rtm = (int)readyToMerge.size();
     int n = 0;
 
-    while (WorldIsolate_.readyToMerge.size() > 0 && n++ < 16) {
-        Chunk *merge = WorldIsolate_.readyToMerge[0];
-        WorldIsolate_.readyToMerge.pop_front();
+    while (readyToMerge.size() > 0 && n++ < 16) {
+        Chunk *merge = readyToMerge[0];
+        readyToMerge.pop_front();
 
         for (int x = 0; x < CHUNK_W; x++) {
             for (int y = 0; y < CHUNK_H; y++) {
@@ -2365,7 +2367,7 @@ void World::tickChunkGeneration() {
 
     std::vector<std::future<void>> gen_results;
 
-    for (auto &p : WorldIsolate_.chunkCache) {
+    for (auto &p : chunkCache) {
         if (p.first == INT_MIN) continue;  // Should be change when using phmap::flat_hash_map
         for (auto &p2 : p.second) {
             if (p2.first == INT_MIN) continue;  // Should be change when using phmap::flat_hash_map
@@ -2537,13 +2539,13 @@ void World::tickChunks() {
                 }
             }
 
-            for (int i = 0; i < WorldIsolate_.particles.size(); i++) {
-                WorldIsolate_.particles[i]->x += changeX;
-                WorldIsolate_.particles[i]->y += changeY;
+            for (int i = 0; i < particles.size(); i++) {
+                particles[i]->x += changeX;
+                particles[i]->y += changeY;
             }
 
-            for (int i = 0; i < WorldIsolate_.rigidBodies.size(); i++) {
-                RigidBody cur = *WorldIsolate_.rigidBodies[i];
+            for (int i = 0; i < rigidBodies.size(); i++) {
+                RigidBody cur = *rigidBodies[i];
                 cur.body->SetTransform(b2Vec2(cur.body->GetPosition().x + changeX, cur.body->GetPosition().y + changeY), cur.body->GetAngle());
             }
         }
@@ -2560,18 +2562,18 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
 
         if (render) {
 
-            WorldIsolate_.readyToMerge.erase(std::remove(WorldIsolate_.readyToMerge.begin(), WorldIsolate_.readyToMerge.end(), ch), WorldIsolate_.readyToMerge.end());
-            WorldIsolate_.readyToMerge.push_back(ch);
+            readyToMerge.erase(std::remove(readyToMerge.begin(), readyToMerge.end(), ch), readyToMerge.end());
+            readyToMerge.push_back(ch);
         }
 
-        if (!WorldIsolate_.chunkCache.count(ch->x)) {
+        if (!chunkCache.count(ch->x)) {
             auto h = phmap::flat_hash_map<int, Chunk *>();
             // h.set_deleted_key(INT_MAX);
             // h.set_empty_key(INT_MIN);
-            WorldIsolate_.chunkCache[ch->x] = h;
+            chunkCache[ch->x] = h;
         }
 
-        WorldIsolate_.chunkCache[ch->x][ch->y] = ch;
+        chunkCache[ch->x][ch->y] = ch;
         needToTickGeneration = true;
 
     } else {
@@ -2580,14 +2582,14 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
             for (int y = 0; y <= 0; y++) {
                 Chunk *chb = getChunk(cx + x, y);  // load chunk at ~x y
                 if (chb->pleaseDelete) {
-                    if (!WorldIsolate_.chunkCache.count(chb->x)) {
+                    if (!chunkCache.count(chb->x)) {
                         auto h = phmap::flat_hash_map<int, Chunk *>();
                         // h.set_deleted_key(INT_MAX);
                         // h.set_empty_key(INT_MIN);
-                        WorldIsolate_.chunkCache[chb->x] = h;
+                        chunkCache[chb->x] = h;
                     }
-                    auto a = &WorldIsolate_.chunkCache[chb->x];
-                    WorldIsolate_.chunkCache[chb->x][chb->y] = chb;
+                    auto a = &chunkCache[chb->x];
+                    chunkCache[chb->x][chb->y] = chb;
                     chb->pleaseDelete = false;
                     chb->generationPhase = -1;
                 }
@@ -2607,7 +2609,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         needToTickGeneration = true;
         */
 
-        WorldIsolate_.readyToReadyToMerge.push_back(loadChunkPool->push([&, ch](int id) { return World::loadChunk(ch, populate, render); }));
+        readyToReadyToMerge.push_back(loadChunkPool->push([&, ch](int id) { return World::loadChunk(ch, populate, render); }));
 
         // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, ch, populate, render));
     }
@@ -2714,7 +2716,7 @@ void World::unloadChunk(Chunk *ch) {
     chunkSaveCache(ch);
     if (!noSaveLoad) writeChunkToDisk(ch);
 
-    WorldIsolate_.chunkCache[ch->x].erase(ch->y);
+    chunkCache[ch->x].erase(ch->y);
     ChunkDelete(ch);
     /*delete data;
     delete layer2;*/
@@ -2793,7 +2795,7 @@ Biome *World::getBiomeAt(int x, int y) {
 }
 
 void World::addStructure(PlacedStructure str) {
-    WorldIsolate_.structures.push_back(str);
+    structures.push_back(str);
 
     for (int x = 0; x < str.base.w; x++) {
         for (int y = 0; y < str.base.h; y++) {
@@ -2815,13 +2817,13 @@ b2Vec2 World::getNearestPoint(F32 x, F32 y) {
     F32 ym = fmod(1 + fmod(y, 1), 1);
     F32 closestDist = 100;
     b2Vec2 closest;
-    for (int i = 0; i < WorldIsolate_.distributedPoints.size(); i++) {
-        F32 dx = WorldIsolate_.distributedPoints[i].x - xm;
-        F32 dy = WorldIsolate_.distributedPoints[i].y - ym;
+    for (int i = 0; i < distributedPoints.size(); i++) {
+        F32 dx = distributedPoints[i].x - xm;
+        F32 dy = distributedPoints[i].y - ym;
         F32 d = dx * dx + dy * dy;
         if (d < closestDist) {
             closestDist = d;
-            closest = WorldIsolate_.distributedPoints[i];
+            closest = distributedPoints[i];
         }
     }
     return {closest.x + (x - xm), closest.y + (y - ym)};
@@ -2834,10 +2836,9 @@ MetaEngine::vector<b2Vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
     MetaEngine::vector<b2Vec2> pts;
     for (F32 xo = floor(x) - 1; xo < ceil(x + w); xo++) {
         for (F32 yo = floor(y) - 1; yo < ceil(y + h); yo++) {
-            for (int i = 0; i < WorldIsolate_.distributedPoints.size(); i++) {
-                if (WorldIsolate_.distributedPoints[i].x + xo > x && WorldIsolate_.distributedPoints[i].y + yo > y && WorldIsolate_.distributedPoints[i].x + xo < x + w &&
-                    WorldIsolate_.distributedPoints[i].y + yo < y + h) {
-                    pts.push_back({WorldIsolate_.distributedPoints[i].x + xo, WorldIsolate_.distributedPoints[i].y + yo});
+            for (int i = 0; i < distributedPoints.size(); i++) {
+                if (distributedPoints[i].x + xo > x && distributedPoints[i].y + yo > y && distributedPoints[i].x + xo < x + w && distributedPoints[i].y + yo < y + h) {
+                    pts.push_back({distributedPoints[i].x + xo, distributedPoints[i].y + yo});
                 }
             }
         }
@@ -2848,8 +2849,8 @@ MetaEngine::vector<b2Vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
 
 Chunk *World::getChunk(int cx, int cy) {
 
-    auto xx = WorldIsolate_.chunkCache.find(cx);
-    if (xx != WorldIsolate_.chunkCache.end()) {
+    auto xx = chunkCache.find(cx);
+    if (xx != chunkCache.end()) {
         auto yy = xx->second.find(cy);
         if (yy != xx->second.end()) {
             return yy->second;
@@ -2899,9 +2900,9 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
         }
     }
 
-    for (int i = 0; i < WorldIsolate_.populators.size(); i++) {
-        if (WorldIsolate_.populators[i]->getPhase() == phase) {
-            MetaEngine::vector<PlacedStructure> strs = WorldIsolate_.populators[i]->apply(ch->tiles, ch->layer2, chs, dirtyChunk, ax * CHUNK_W, ay * CHUNK_H, aw * CHUNK_W, ah * CHUNK_H, ch, this);
+    for (int i = 0; i < populators.size(); i++) {
+        if (populators[i]->getPhase() == phase) {
+            MetaEngine::vector<PlacedStructure> strs = populators[i]->apply(ch->tiles, ch->layer2, chs, dirtyChunk, ax * CHUNK_W, ay * CHUNK_H, aw * CHUNK_W, ah * CHUNK_H, ch, this);
             for (int j = 0; j < strs.size(); j++) {
                 for (int tx = 0; tx < strs[j].base.w; tx++) {
                     for (int ty = 0; ty < strs[j].base.h; ty++) {
@@ -2925,13 +2926,13 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
                 if (x != aw / 2 && y != ah / 2) {
                     ChunkWrite(chs[x + y * aw], chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
                     if (render) {
-                        for (int i = 0; i < WorldIsolate_.readyToMerge.size(); i++) {
-                            if (WorldIsolate_.readyToMerge[i] == chs[x + y * aw]) {
-                                WorldIsolate_.readyToMerge.erase(WorldIsolate_.readyToMerge.begin() + i);
+                        for (int i = 0; i < readyToMerge.size(); i++) {
+                            if (readyToMerge[i] == chs[x + y * aw]) {
+                                readyToMerge.erase(readyToMerge.begin() + i);
                                 i--;
                             }
                         }
-                        WorldIsolate_.readyToMerge.push_back(chs[x + y * aw]);
+                        readyToMerge.push_back(chs[x + y * aw]);
                     }
                 }
             }
@@ -2940,13 +2941,13 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
 
     // delete chs;
     if (render) {
-        for (int i = 0; i < WorldIsolate_.readyToMerge.size(); i++) {
-            if (WorldIsolate_.readyToMerge[i] == ch) {
-                WorldIsolate_.readyToMerge.erase(WorldIsolate_.readyToMerge.begin() + i);
+        for (int i = 0; i < readyToMerge.size(); i++) {
+            if (readyToMerge[i] == ch) {
+                readyToMerge.erase(readyToMerge.begin() + i);
                 i--;
             }
         }
-        WorldIsolate_.readyToMerge.push_back(ch);
+        readyToMerge.push_back(ch);
     }
 }
 
@@ -3171,7 +3172,7 @@ void World::tickEntities(R_Target *t) {
         return false;
     };
 
-    WorldIsolate_.entities.erase(std::remove_if(WorldIsolate_.entities.begin(), WorldIsolate_.entities.end(), func), WorldIsolate_.entities.end());
+    // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
 }
 
 // Adapted from https://stackoverflow.com/a/52859805/8267529
@@ -3242,7 +3243,7 @@ void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
 
 bool World::isC2Ground(F32 x, F32 y) { return false; }
 
-bool World::isPlayerInWorld() { return WorldIsolate_.player != nullptr; }
+bool World::isPlayerInWorld() { return player != 0; }
 
 RigidBody *World::physicsCheck(int x, int y) {
 
@@ -3294,7 +3295,7 @@ RigidBody *World::physicsCheck(int x, int y) {
 
             rb->body->SetLinearVelocity({(F32)((rand() % 100) / 100.0 - 0.5), (F32)((rand() % 100) / 100.0 - 0.5)});
 
-            WorldIsolate_.rigidBodies.push_back(rb);
+            rigidBodies.push_back(rb);
             updateRigidBodyHitbox(rb);
 
             lastMeshLoadZone.x--;
@@ -3350,7 +3351,7 @@ void World::saveWorld() {
 
     MetaEngine::vector<std::future<void>> results = {};
 
-    for (auto &p : this->WorldIsolate_.chunkCache) {
+    for (auto &p : this->chunkCache) {
         if (p.first == INT_MIN) continue;
         for (auto &p2 : p.second) {
             if (p2.first == INT_MIN) continue;
@@ -3451,10 +3452,10 @@ World::~World() {
     delete[] layer2;
     delete[] background;
 
-    for (auto &v : WorldIsolate_.particles) {
+    for (auto &v : particles) {
         delete v;
     }
-    WorldIsolate_.particles.clear();
+    particles.clear();
 
     tickPool->clear_queue();
     loadChunkPool->clear_queue();
@@ -3482,53 +3483,53 @@ World::~World() {
 
     delete b2world;
 
-    for (auto &v : WorldIsolate_.rigidBodies) {
+    for (auto &v : rigidBodies) {
         delete v;
     }
-    WorldIsolate_.rigidBodies.clear();
+    rigidBodies.clear();
     delete staticBody;
 
-    WorldIsolate_.worldMeshes.clear();
-    WorldIsolate_.worldTris.clear();
+    worldMeshes.clear();
+    worldTris.clear();
 
-    for (auto &v : WorldIsolate_.worldRigidBodies) {
+    for (auto &v : worldRigidBodies) {
         delete v;
     }
-    WorldIsolate_.worldRigidBodies.clear();
+    worldRigidBodies.clear();
 
-    WorldIsolate_.toLoad.clear();
+    toLoad.clear();
 
-    WorldIsolate_.readyToReadyToMerge.clear();
+    readyToReadyToMerge.clear();
 
-    for (auto &v : WorldIsolate_.readyToMerge) {
+    for (auto &v : readyToMerge) {
         ChunkDelete(v);
     }
-    WorldIsolate_.readyToMerge.clear();
+    readyToMerge.clear();
 
     delete gen;
 
-    WorldIsolate_.structures.clear();
+    structures.clear();
 
-    WorldIsolate_.distributedPoints.clear();
+    distributedPoints.clear();
 
-    for (auto &v : WorldIsolate_.chunkCache) {
+    for (auto &v : chunkCache) {
         for (auto &v2 : v.second) {
             ChunkDelete(v2.second);
         }
         v.second.clear();
     }
-    WorldIsolate_.chunkCache.clear();
+    chunkCache.clear();
 
-    for (auto &v : WorldIsolate_.populators) {
+    for (auto &v : populators) {
         delete v;
     }
-    WorldIsolate_.populators.clear();
+    populators.clear();
 
     delete[] hasPopulator;
 
-    for (auto &v : WorldIsolate_.entities) {
-        delete v;
-    }
-    WorldIsolate_.entities.clear();
+    // for (auto &v : worldEntities) {
+    //     delete v;
+    // }
+    // worldEntities.clear();
     // delete player;
 }

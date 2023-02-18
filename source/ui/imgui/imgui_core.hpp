@@ -9,10 +9,10 @@
 
 #include "audio/audio.h"
 #include "core/debug_impl.hpp"
-#include "ui/imgui/imgui_css.h"
-#include "ui/imgui/imgui_impl.hpp"
 #include "libs/imgui/text_editor.h"
 #include "sdl_wrapper.h"
+#include "ui/imgui/imgui_css.h"
+#include "ui/imgui/imgui_impl.hpp"
 
 class Material;
 class WorldMeta;
@@ -48,6 +48,15 @@ private:
     ImGuiCSS::Document *document;
     ImGuiID dockspace_id;
 
+private:
+    static void (*RendererShutdownFunction)();
+    static void (*PlatformShutdownFunction)();
+
+    static void (*RendererNewFrameFunction)();
+    static void (*PlatformNewFrameFunction)();
+
+    static void (*RenderFunction)(ImDrawData *);
+
 public:
     ImGuiCore();
     void Init();
@@ -56,9 +65,11 @@ public:
     void Draw();
     void Update();
     const ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
-    const ImGuiID GetMainDockID() { return dockspace_id; } const
+    const ImGuiID GetMainDockID() { return dockspace_id; }
+    const
 
-    ImGuiContext *getImGuiCtx() {
+            ImGuiContext *
+            getImGuiCtx() {
         METADOT_ASSERT(m_imgui, "Miss ImGuiContext");
         return m_imgui;
     }

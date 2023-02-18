@@ -19,7 +19,7 @@
 #define IMPLENGINE()             \
     extern engine_core Core;     \
     extern engine_render Render; \
-    extern engine_screen Screen; \
+    extern windows Screen;       \
     extern engine_ecs ECS;       \
     extern engine_time Time
 

@@ -6,7 +6,7 @@
 #include "core/cpp/utils.hpp"
 
 engine_core Core;
-engine_screen Screen;
+windows Screen;
 engine_time Time;
 
 // --------------- FPS counter functions ---------------

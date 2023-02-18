@@ -390,9 +390,9 @@ int Game::run(int argc, char *argv[]) {
     METADOT_INFO("Starting game loop...");
     global.GameData_.freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2.0f;
     global.GameData_.freeCamY = GameIsolate_.world->height / 2.0f - (int)(CHUNK_H * 0.75);
-    if (GameIsolate_.world->WorldIsolate_.player) {
-        global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x;
-        global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y;
+    if (GameIsolate_.world->player) {
+        // global.GameData_.plPosX = pl_we->x;
+        // global.GameData_.plPosY = pl_we->y;
     } else {
         global.GameData_.plPosX = global.GameData_.freeCamX;
         global.GameData_.plPosY = global.GameData_.freeCamY;
@@ -519,7 +519,7 @@ int Game::run(int argc, char *argv[]) {
 
                     // erase from rigidbodies
                     // this copies the vector
-                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
@@ -573,132 +573,142 @@ int Game::run(int argc, char *argv[]) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
                     ControlSystem::lmouse = true;
 
-                    if (!GameIsolate_.ui->UIIsMouseOnControls() && GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
-                        if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
-                            GameIsolate_.world->WorldIsolate_.player->holdtype = Vacuum;
-                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
+                    if (GameIsolate_.world->player) {
+
+                        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                        if (!GameIsolate_.ui->UIIsMouseOnControls() && pl && pl->heldItem != NULL) {
+                            if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
+                                pl->holdtype = Vacuum;
+                            } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
 // #define HAMMER_DEBUG_PHYSICS
 #ifdef HAMMER_DEBUG_PHYSICS
-                            int x = (int)((windowEvent.button.x - ofsX - camX) / Screen.gameScale);
-                            int y = (int)((windowEvent.button.y - ofsY - camY) / Screen.gameScale);
+                                int x = (int)((windowEvent.button.x - ofsX - camX) / Screen.gameScale);
+                                int y = (int)((windowEvent.button.y - ofsY - camY) / Screen.gameScale);
 
-                            GameIsolate_.world->physicsCheck(x, y);
+                                GameIsolate_.world->physicsCheck(x, y);
 #else
-                            mx = windowEvent.button.x;
-                            my = windowEvent.button.y;
-                            int startInd = getAimSolidSurface(64);
+                                mx = windowEvent.button.x;
+                                my = windowEvent.button.y;
+                                int startInd = getAimSolidSurface(64);
 
-                            if (startInd != -1) {
-                                // GameIsolate_.world->WorldIsolate_.player->hammerX = x;
-                                // GameIsolate_.world->WorldIsolate_.player->hammerY = y;
-                                GameIsolate_.world->WorldIsolate_.player->hammerX = startInd % GameIsolate_.world->width;
-                                GameIsolate_.world->WorldIsolate_.player->hammerY = startInd / GameIsolate_.world->width;
-                                GameIsolate_.world->WorldIsolate_.player->holdtype = Hammer;
-                                // METADOT_BUG("hammer down: {0:d} {0:d} {0:d} {0:d} {0:d}", x, y, startInd, startInd % GameIsolate_.world->width, startInd / GameIsolate_.world->width);
-                                // GameIsolate_.world->setTile(GameIsolate_.world->WorldIsolate_.player->hammerX, GameIsolate_.world->WorldIsolate_.player->hammerY,
-                                // MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00ff));
-                            }
+                                if (startInd != -1) {
+                                    // pl->hammerX = x;
+                                    // pl->hammerY = y;
+                                    pl->hammerX = startInd % GameIsolate_.world->width;
+                                    pl->hammerY = startInd / GameIsolate_.world->width;
+                                    pl->holdtype = Hammer;
+                                    // METADOT_BUG("hammer down: {0:d} {0:d} {0:d} {0:d} {0:d}", x, y, startInd, startInd % GameIsolate_.world->width, startInd / GameIsolate_.world->width);
+                                    // GameIsolate_.world->setTile(pl->hammerX, pl->hammerY,
+                                    // MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00ff));
+                                }
 #endif
 #undef HAMMER_DEBUG_PHYSICS
-                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Chisel)) {
-                            // if hovering rigidbody, open in chisel
+                            } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Chisel)) {
+                                // if hovering rigidbody, open in chisel
 
-                            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
-                            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
+                                int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
+                                int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
-                            MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;  // copy
-                            for (size_t i = 0; i < rbs.size(); i++) {
-                                RigidBody *cur = rbs[i];
+                                MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;  // copy
+                                for (size_t i = 0; i < rbs.size(); i++) {
+                                    RigidBody *cur = rbs[i];
 
-                                bool connect = false;
-                                if (cur->body->IsEnabled()) {
-                                    F32 s = sin(-cur->body->GetAngle());
-                                    F32 c = cos(-cur->body->GetAngle());
-                                    bool upd = false;
-                                    for (F32 xx = -3; xx <= 3; xx += 0.5) {
-                                        for (F32 yy = -3; yy <= 3; yy += 0.5) {
-                                            if (abs(xx) + abs(yy) == 6) continue;
-                                            // rotate point
+                                    bool connect = false;
+                                    if (cur->body->IsEnabled()) {
+                                        F32 s = sin(-cur->body->GetAngle());
+                                        F32 c = cos(-cur->body->GetAngle());
+                                        bool upd = false;
+                                        for (F32 xx = -3; xx <= 3; xx += 0.5) {
+                                            for (F32 yy = -3; yy <= 3; yy += 0.5) {
+                                                if (abs(xx) + abs(yy) == 6) continue;
+                                                // rotate point
 
-                                            F32 tx = x + xx - cur->body->GetPosition().x;
-                                            F32 ty = y + yy - cur->body->GetPosition().y;
+                                                F32 tx = x + xx - cur->body->GetPosition().x;
+                                                F32 ty = y + yy - cur->body->GetPosition().y;
 
-                                            int ntx = (int)(tx * c - ty * s);
-                                            int nty = (int)(tx * s + ty * c);
+                                                int ntx = (int)(tx * c - ty * s);
+                                                int nty = (int)(tx * s + ty * c);
 
-                                            if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                                U32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
-                                                if (((pixel >> 24) & 0xff) != 0x00) {
-                                                    connect = true;
+                                                if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
+                                                    U32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                                    if (((pixel >> 24) & 0xff) != 0x00) {
+                                                        connect = true;
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                if (connect) {
+                                    if (connect) {
 
-                                    // previously: open chisel ui
+                                        // previously: open chisel ui
 
-                                    break;
-                                }
-                            }
-
-                        } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Tool)) {
-                            // break with pickaxe
-
-                            F32 breakSize = GameIsolate_.world->WorldIsolate_.player->heldItem->breakSize;
-
-                            int x = (int)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f + GameIsolate_.world->loadZone.x +
-                                          10 * (F32)cos((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-                            int y = (int)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2.0f + GameIsolate_.world->loadZone.y +
-                                          10 * (F32)sin((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-
-                            C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int)breakSize, (int)breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
-
-                            int n = 0;
-                            for (int xx = 0; xx < breakSize; xx++) {
-                                for (int yy = 0; yy < breakSize; yy++) {
-                                    F32 cx = (F32)((xx / breakSize) - 0.5);
-                                    F32 cy = (F32)((yy / breakSize) - 0.5);
-
-                                    if (cx * cx + cy * cy > 0.25f) continue;
-
-                                    if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOLID) {
-                                        R_GET_PIXEL(tex, xx, yy) = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
-                                        GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
-                                        GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
-
-                                        n++;
+                                        break;
                                     }
                                 }
-                            }
 
-                            if (n > 0) {
-                                global.audioEngine.PlayEvent("event:/Player/Impact");
-                                b2PolygonShape s;
-                                s.SetAsBox(1, 1);
-                                RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (F32)x, (F32)y, 0, s, 1, (F32)0.3, tex);
+                            } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Tool)) {
+                                // break with pickaxe
 
-                                b2Filter bf = {};
-                                bf.categoryBits = 0x0001;
-                                bf.maskBits = 0xffff;
-                                rb->body->GetFixtureList()[0].SetFilterData(bf);
+                                F32 breakSize = pl->heldItem->breakSize;
 
-                                rb->body->SetLinearVelocity({(F32)((rand() % 100) / 100.0 - 0.5), (F32)((rand() % 100) / 100.0 - 0.5)});
+                                int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                                int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
 
-                                GameIsolate_.world->WorldIsolate_.rigidBodies.push_back(rb);
-                                GameIsolate_.world->updateRigidBodyHitbox(rb);
+                                C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int)breakSize, (int)breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
 
-                                GameIsolate_.world->lastMeshLoadZone.x--;
-                                GameIsolate_.world->updateWorldMesh();
+                                int n = 0;
+                                for (int xx = 0; xx < breakSize; xx++) {
+                                    for (int yy = 0; yy < breakSize; yy++) {
+                                        F32 cx = (F32)((xx / breakSize) - 0.5);
+                                        F32 cy = (F32)((yy / breakSize) - 0.5);
+
+                                        if (cx * cx + cy * cy > 0.25f) continue;
+
+                                        if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOLID) {
+                                            R_GET_PIXEL(tex, xx, yy) = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
+                                            GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
+                                            GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
+
+                                            n++;
+                                        }
+                                    }
+                                }
+
+                                if (n > 0) {
+                                    global.audioEngine.PlayEvent("event:/Player/Impact");
+                                    b2PolygonShape s;
+                                    s.SetAsBox(1, 1);
+                                    RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (F32)x, (F32)y, 0, s, 1, (F32)0.3, tex);
+
+                                    b2Filter bf = {};
+                                    bf.categoryBits = 0x0001;
+                                    bf.maskBits = 0xffff;
+                                    rb->body->GetFixtureList()[0].SetFilterData(bf);
+
+                                    rb->body->SetLinearVelocity({(F32)((rand() % 100) / 100.0 - 0.5), (F32)((rand() % 100) / 100.0 - 0.5)});
+
+                                    GameIsolate_.world->rigidBodies.push_back(rb);
+                                    GameIsolate_.world->updateRigidBodyHitbox(rb);
+
+                                    GameIsolate_.world->lastMeshLoadZone.x--;
+                                    GameIsolate_.world->updateWorldMesh();
+                                }
                             }
                         }
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
                     ControlSystem::rmouse = true;
-                    if (GameIsolate_.world->WorldIsolate_.player) GameIsolate_.world->WorldIsolate_.player->startThrow = metadot_gettime();
+                    if (GameIsolate_.world->player) {
+
+                        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                        pl->startThrow = metadot_gettime();
+                    }
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
                     ControlSystem::mmouse = true;
                 }
@@ -706,33 +716,37 @@ int Game::run(int argc, char *argv[]) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
                     ControlSystem::lmouse = false;
 
-                    if (GameIsolate_.world->WorldIsolate_.player) {
-                        if (GameIsolate_.world->WorldIsolate_.player->heldItem) {
-                            if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
-                                if (GameIsolate_.world->WorldIsolate_.player->holdtype == Vacuum) {
-                                    GameIsolate_.world->WorldIsolate_.player->holdtype = None;
+                    if (GameIsolate_.world->player) {
+
+                        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                        if (pl->heldItem) {
+                            if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
+                                if (pl->holdtype == Vacuum) {
+                                    pl->holdtype = None;
                                 }
-                            } else if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
-                                if (GameIsolate_.world->WorldIsolate_.player->holdtype == Hammer) {
+                            } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
+                                if (pl->holdtype == Hammer) {
                                     int x = (int)((windowEvent.button.x - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
                                     int y = (int)((windowEvent.button.y - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
-                                    int dx = GameIsolate_.world->WorldIsolate_.player->hammerX - x;
-                                    int dy = GameIsolate_.world->WorldIsolate_.player->hammerY - y;
+                                    int dx = pl->hammerX - x;
+                                    int dy = pl->hammerY - y;
                                     F32 len = sqrtf(dx * dx + dy * dy);
                                     F32 udx = dx / len;
                                     F32 udy = dy / len;
 
-                                    int ex = GameIsolate_.world->WorldIsolate_.player->hammerX + dx;
-                                    int ey = GameIsolate_.world->WorldIsolate_.player->hammerY + dy;
+                                    int ex = pl->hammerX + dx;
+                                    int ey = pl->hammerY + dy;
                                     METADOT_BUG("hammer up: %d %d %d %d", ex, ey, dx, dy);
                                     int endInd = -1;
 
                                     int nSegments = 1 + len / 10;
                                     MetaEngine::vector<std::tuple<int, int>> points = {};
                                     for (int i = 0; i < nSegments; i++) {
-                                        int sx = GameIsolate_.world->WorldIsolate_.player->hammerX + (int)((F32)(dx / nSegments) * (i + 1));
-                                        int sy = GameIsolate_.world->WorldIsolate_.player->hammerY + (int)((F32)(dy / nSegments) * (i + 1));
+                                        int sx = pl->hammerX + (int)((F32)(dx / nSegments) * (i + 1));
+                                        int sy = pl->hammerY + (int)((F32)(dy / nSegments) * (i + 1));
                                         sx += rand() % 3 - 1;
                                         sy += rand() % 3 - 1;
                                         points.push_back(std::tuple<int, int>(sx, sy));
@@ -740,8 +754,8 @@ int Game::run(int argc, char *argv[]) {
 
                                     int nTilesChanged = 0;
                                     for (size_t i = 0; i < points.size(); i++) {
-                                        int segSx = i == 0 ? GameIsolate_.world->WorldIsolate_.player->hammerX : std::get<0>(points[i - 1]);
-                                        int segSy = i == 0 ? GameIsolate_.world->WorldIsolate_.player->hammerY : std::get<1>(points[i - 1]);
+                                        int segSx = i == 0 ? pl->hammerX : std::get<0>(points[i - 1]);
+                                        int segSy = i == 0 ? pl->hammerY : std::get<1>(points[i - 1]);
                                         int segEx = std::get<0>(points[i]);
                                         int segEy = std::get<1>(points[i]);
 
@@ -770,8 +784,8 @@ int Game::run(int argc, char *argv[]) {
 
                                     // GameIsolate_.world->setTile(ex, ey, MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000ff));
 
-                                    int hx = (GameIsolate_.world->WorldIsolate_.player->hammerX + (endInd % GameIsolate_.world->width)) / 2;
-                                    int hy = (GameIsolate_.world->WorldIsolate_.player->hammerY + (endInd / GameIsolate_.world->width)) / 2;
+                                    int hx = (pl->hammerX + (endInd % GameIsolate_.world->width)) / 2;
+                                    int hy = (pl->hammerY + (endInd / GameIsolate_.world->width)) / 2;
 
                                     if (GameIsolate_.world->getTile((int)(hx + udy * 2), (int)(hy - udx * 2)).mat->physicsType == PhysicsType::SOLID) {
                                         GameIsolate_.world->physicsCheck((int)(hx + udy * 2), (int)(hy - udx * 2));
@@ -789,7 +803,7 @@ int Game::run(int argc, char *argv[]) {
                                     // GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffff00ff));
                                     // GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ffffff));
                                 }
-                                GameIsolate_.world->WorldIsolate_.player->holdtype = None;
+                                pl->holdtype = None;
                             }
                         }
                     }
@@ -801,7 +815,7 @@ int Game::run(int argc, char *argv[]) {
                     int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
                     bool swapped = false;
-                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
 
@@ -832,13 +846,17 @@ int Game::run(int argc, char *argv[]) {
                         }
 
                         if (connect) {
-                            if (GameIsolate_.world->WorldIsolate_.player) {
-                                GameIsolate_.world->WorldIsolate_.player->setItemInHand(Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur), GameIsolate_.world);
+                            if (GameIsolate_.world->player) {
+
+                                auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                                auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                                pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur),
+                                                  GameIsolate_.world);
 
                                 GameIsolate_.world->b2world->DestroyBody(cur->body);
-                                GameIsolate_.world->WorldIsolate_.rigidBodies.erase(
-                                        std::remove(GameIsolate_.world->WorldIsolate_.rigidBodies.begin(), GameIsolate_.world->WorldIsolate_.rigidBodies.end(), cur),
-                                        GameIsolate_.world->WorldIsolate_.rigidBodies.end());
+                                GameIsolate_.world->rigidBodies.erase(std::remove(GameIsolate_.world->rigidBodies.begin(), GameIsolate_.world->rigidBodies.end(), cur),
+                                                                      GameIsolate_.world->rigidBodies.end());
 
                                 swapped = true;
                             }
@@ -847,7 +865,13 @@ int Game::run(int argc, char *argv[]) {
                     }
 
                     if (!swapped) {
-                        if (GameIsolate_.world->WorldIsolate_.player) GameIsolate_.world->WorldIsolate_.player->setItemInHand(NULL, GameIsolate_.world);
+                        if (GameIsolate_.world->player) {
+
+                            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                            pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), NULL, GameIsolate_.world);
+                        }
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
@@ -929,7 +953,7 @@ int Game::run(int argc, char *argv[]) {
                 // Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
                 if (tile.mat->id == MaterialsList::GENERIC_AIR.id) {
-                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
@@ -1128,7 +1152,7 @@ void Game::updateFrameEarly() {
     }
 
     if (ControlSystem::DEBUG_RIGID->get()) {
-        for (auto &cur : GameIsolate_.world->WorldIsolate_.rigidBodies) {
+        for (auto &cur : GameIsolate_.world->rigidBodies) {
             METADOT_ASSERT_E(cur);
             if (cur->body->IsEnabled()) {
                 F32 s = sin(cur->body->GetAngle());
@@ -1176,7 +1200,7 @@ void Game::updateFrameEarly() {
 
             GameIsolate_.world->b2world->DestroyBody(cur->body);
         }
-        GameIsolate_.world->WorldIsolate_.rigidBodies.clear();
+        GameIsolate_.world->rigidBodies.clear();
     }
 
     if (ControlSystem::DEBUG_UPDATE_WORLD_MESH->get()) {
@@ -1219,7 +1243,7 @@ void Game::updateFrameEarly() {
                 bf.maskBits = 0x0001;
                 rb->body->GetFixtureList()[0].SetFilterData(bf);
             }
-            GameIsolate_.world->WorldIsolate_.rigidBodies.push_back(rb);
+            GameIsolate_.world->rigidBodies.push_back(rb);
             GameIsolate_.world->updateRigidBodyHitbox(rb);
 
             GameIsolate_.world->updateWorldMesh();
@@ -1235,29 +1259,26 @@ void Game::updateFrameEarly() {
     }
 
     if (ControlSystem::DEBUG_TOGGLE_PLAYER->get()) {
-        if (GameIsolate_.world->WorldIsolate_.player) {
-            global.GameData_.freeCamX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f;
-            global.GameData_.freeCamY = GameIsolate_.world->WorldIsolate_.player->y - GameIsolate_.world->WorldIsolate_.player->hh / 2.0f;
-            GameIsolate_.world->WorldIsolate_.entities.erase(
-                    std::remove(GameIsolate_.world->WorldIsolate_.entities.begin(), GameIsolate_.world->WorldIsolate_.entities.end(), GameIsolate_.world->WorldIsolate_.player),
-                    GameIsolate_.world->WorldIsolate_.entities.end());
-            GameIsolate_.world->b2world->DestroyBody(GameIsolate_.world->WorldIsolate_.player->rb->body);
-            delete GameIsolate_.world->WorldIsolate_.player;
-            GameIsolate_.world->WorldIsolate_.player = nullptr;
+        if (GameIsolate_.world->player) {
+            // global.GameData_.freeCamX = pl_we->x + pl_we->hw / 2.0f;
+            // global.GameData_.freeCamY = pl_we->y - pl_we->hh / 2.0f;
+            // GameIsolate_.world->worldEntities.erase(std::remove(GameIsolate_.world->worldEntities.begin(), GameIsolate_.world->worldEntities.end(), GameIsolate_.world->player),
+            //                                         GameIsolate_.world->worldEntities.end());
+            // GameIsolate_.world->b2world->DestroyBody(pl->rb->body);
+            // delete GameIsolate_.world->player;
+            // GameIsolate_.world->player = nullptr;
         } else {
-            Player *e = new Player();
-            e->x = -GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f;
-            e->y = -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f;
-            e->vx = 0;
-            e->vy = 0;
-            e->hw = 10;
-            e->hh = 20;
+
+            metadot_vec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
+                                      -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
+
             b2PolygonShape sh;
-            sh.SetAsBox(e->hw / 2.0f + 1, e->hh / 2.0f);
-            e->rb = GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, e->x + e->hw / 2.0f - 0.5, e->y + e->hh / 2.0f - 0.5, 0, sh, 1, 1, NULL);
-            e->rb->body->SetGravityScale(0);
-            e->rb->body->SetLinearDamping(0);
-            e->rb->body->SetAngularDamping(0);
+            sh.SetAsBox(pl_transform.Elements[2] / 2.0f + 1, pl_transform.Elements[3] / 2.0f);
+            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.pos.X + pl_transform.rect.X / 2.0f - 0.5,
+                                                              pl_transform.pos.Y + pl_transform.rect.Y / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            rb->body->SetGravityScale(0);
+            rb->body->SetLinearDamping(0);
+            rb->body->SetAngularDamping(0);
 
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
@@ -1267,18 +1288,28 @@ void Game::updateFrameEarly() {
             i3->name = "初始物品";
             R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
             i3->pivotX = 6;
-            e->setItemInHand(i3, GameIsolate_.world);
 
             b2Filter bf = {};
             bf.categoryBits = 0x0001;
             // bf.maskBits = 0x0000;
-            e->rb->body->GetFixtureList()[0].SetFilterData(bf);
+            rb->body->GetFixtureList()[0].SetFilterData(bf);
 
-            GameIsolate_.world->WorldIsolate_.entities.push_back(e);
-            GameIsolate_.world->WorldIsolate_.player = e;
+            auto player = GameIsolate_.world->Reg().create_entity();
+            MetaEngine::ECS::entity_filler(player)
+                    .component<Controlable>()
+                    .component<WorldEntity>(true, pl_transform.pos.X, pl_transform.pos.Y, 0.0f, 0.0f, (int)pl_transform.rect.X, (int)pl_transform.rect.Y, rb)
+                    .component<Player>();
 
-            /*accLoadX = 0;
-accLoadY = 0;*/
+            auto pl = GameIsolate_.world->Reg().find_component<Player>(player);
+
+            GameIsolate_.world->player = player.id();
+
+            pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), i3, GameIsolate_.world);
+
+            // GameIsolate_.world->worldEntities.push_back(e);
+
+            // accLoadX = 0;
+            // accLoadY = 0;
         }
     }
 
@@ -1294,79 +1325,74 @@ accLoadY = 0;*/
 
     } else {
         global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
-        if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL &&
-            GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Fluid_Container)) {
-            if (ControlSystem::lmouse && GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() > 0) {
-                // shoot fluid from container
+        if (GameIsolate_.world->player) {
 
-                int x = (int)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f + GameIsolate_.world->loadZone.x +
-                              10 * (F32)cos((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f));
-                int y = (int)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2.0f + GameIsolate_.world->loadZone.y +
-                              10 * (F32)sin((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f));
+            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
 
-                MaterialInstance mat = GameIsolate_.world->WorldIsolate_.player->heldItem->carry[GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() - 1];
-                GameIsolate_.world->WorldIsolate_.player->heldItem->carry.pop_back();
-                GameIsolate_.world->addParticle(new ParticleData(mat, (F32)x, (F32)y,
-                                                                 (F32)(GameIsolate_.world->WorldIsolate_.player->vx / 2 + (rand() % 10 - 5) / 10.0f +
-                                                                       1.5f * (F32)cos((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f)),
-                                                                 (F32)(GameIsolate_.world->WorldIsolate_.player->vy / 2 + -(rand() % 5 + 5) / 10.0f +
-                                                                       1.5f * (F32)sin((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f)),
-                                                                 0, (F32)0.1));
+            if (pl->heldItem != NULL && pl->heldItem->getFlag(ItemFlags::ItemFlags_Fluid_Container)) {
+                if (ControlSystem::lmouse && pl->heldItem->carry.size() > 0) {
+                    // shoot fluid from container
 
-                int i = (int)GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size();
-                i = (int)((i / (F32)GameIsolate_.world->WorldIsolate_.player->heldItem->capacity) * GameIsolate_.world->WorldIsolate_.player->heldItem->fill.size());
-                U16Point pt = GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
-                R_GET_PIXEL(GameIsolate_.world->WorldIsolate_.player->heldItem->surface, pt.x, pt.y) = 0x00;
+                    int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f));
+                    int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f));
 
-                GameIsolate_.world->WorldIsolate_.player->heldItem->texture = R_CopyImageFromSurface(GameIsolate_.world->WorldIsolate_.player->heldItem->surface);
-                R_SetImageFilter(GameIsolate_.world->WorldIsolate_.player->heldItem->texture, R_FILTER_NEAREST);
+                    MaterialInstance mat = pl->heldItem->carry[pl->heldItem->carry.size() - 1];
+                    pl->heldItem->carry.pop_back();
+                    GameIsolate_.world->addParticle(new ParticleData(mat, (F32)x, (F32)y, (F32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
+                                                                     (F32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (F32)0.1));
 
-                global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
+                    int i = (int)pl->heldItem->carry.size();
+                    i = (int)((i / (F32)pl->heldItem->capacity) * pl->heldItem->fill.size());
+                    U16Point pt = pl->heldItem->fill[i];
+                    R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = 0x00;
 
-            } else {
-                // pick up fluid into container
+                    pl->heldItem->texture = R_CopyImageFromSurface(pl->heldItem->surface);
+                    R_SetImageFilter(pl->heldItem->texture, R_FILTER_NEAREST);
 
-                F32 breakSize = GameIsolate_.world->WorldIsolate_.player->heldItem->breakSize;
+                    global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
 
-                int x = (int)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f + GameIsolate_.world->loadZone.x +
-                              10 * (F32)cos((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-                int y = (int)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2.0f + GameIsolate_.world->loadZone.y +
-                              10 * (F32)sin((GameIsolate_.world->WorldIsolate_.player->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                } else {
+                    // pick up fluid into container
 
-                int n = 0;
-                for (int xx = 0; xx < breakSize; xx++) {
-                    for (int yy = 0; yy < breakSize; yy++) {
-                        if (GameIsolate_.world->WorldIsolate_.player->heldItem->capacity == 0 ||
-                            (GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() < GameIsolate_.world->WorldIsolate_.player->heldItem->capacity)) {
-                            F32 cx = (F32)((xx / breakSize) - 0.5);
-                            F32 cy = (F32)((yy / breakSize) - 0.5);
+                    F32 breakSize = pl->heldItem->breakSize;
 
-                            if (cx * cx + cy * cy > 0.25f) continue;
+                    int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                    int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
 
-                            if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
-                                GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                                GameIsolate_.world->WorldIsolate_.player->heldItem->carry.push_back(GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]);
+                    int n = 0;
+                    for (int xx = 0; xx < breakSize; xx++) {
+                        for (int yy = 0; yy < breakSize; yy++) {
+                            if (pl->heldItem->capacity == 0 || (pl->heldItem->carry.size() < pl->heldItem->capacity)) {
+                                F32 cx = (F32)((xx / breakSize) - 0.5);
+                                F32 cy = (F32)((yy / breakSize) - 0.5);
 
-                                int i = (int)GameIsolate_.world->WorldIsolate_.player->heldItem->carry.size() - 1;
-                                i = (int)((i / (F32)GameIsolate_.world->WorldIsolate_.player->heldItem->capacity) * GameIsolate_.world->WorldIsolate_.player->heldItem->fill.size());
-                                U16Point pt = GameIsolate_.world->WorldIsolate_.player->heldItem->fill[i];
-                                U32 c = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
-                                R_GET_PIXEL(GameIsolate_.world->WorldIsolate_.player->heldItem->surface, pt.x, pt.y) =
-                                        (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->alpha << 24) + c;
+                                if (cx * cx + cy * cy > 0.25f) continue;
 
-                                GameIsolate_.world->WorldIsolate_.player->heldItem->texture = R_CopyImageFromSurface(GameIsolate_.world->WorldIsolate_.player->heldItem->surface);
-                                R_SetImageFilter(GameIsolate_.world->WorldIsolate_.player->heldItem->texture, R_FILTER_NEAREST);
+                                if (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
+                                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
+                                    pl->heldItem->carry.push_back(GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]);
 
-                                GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
-                                GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
-                                n++;
+                                    int i = (int)pl->heldItem->carry.size() - 1;
+                                    i = (int)((i / (F32)pl->heldItem->capacity) * pl->heldItem->fill.size());
+                                    U16Point pt = pl->heldItem->fill[i];
+                                    U32 c = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
+                                    R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->alpha << 24) + c;
+
+                                    pl->heldItem->texture = R_CopyImageFromSurface(pl->heldItem->surface);
+                                    R_SetImageFilter(pl->heldItem->texture, R_FILTER_NEAREST);
+
+                                    GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
+                                    GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
+                                    n++;
+                                }
                             }
                         }
                     }
-                }
 
-                if (n > 0) {
-                    global.audioEngine.PlayEvent("event:/Player/Impact");
+                    if (n > 0) {
+                        global.audioEngine.PlayEvent("event:/Player/Impact");
+                    }
                 }
             }
         }
@@ -1380,7 +1406,7 @@ accLoadY = 0;*/
         F32 hoverDelta = 10.0 * Time.deltaTime / 1000.0;
 
         // this copies the vector
-        MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->WorldIsolate_.rigidBodies;
+        MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
 
@@ -1448,9 +1474,7 @@ void Game::onEvent(MetaEngine::Event &e) {
     dispatcher.Dispatch<MetaEngine::WindowResizeEvent>(METADOT_BIND_EVENT_FN(onWindowResize));
 }
 
-bool Game::onWindowClose(MetaEngine::WindowCloseEvent &e) {
-    return true;
-}
+bool Game::onWindowClose(MetaEngine::WindowCloseEvent &e) { return true; }
 
 bool Game::onWindowResize(MetaEngine::WindowResizeEvent &e) {
     R_SetWindowResolution(e.GetWidth(), e.GetHeight());
@@ -1480,7 +1504,7 @@ void Game::tick() {
         if (GameIsolate_.world) {
             // tick chunkloading
             GameIsolate_.world->frame();
-            if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0 && fadeOutStart == 0) {
+            if (GameIsolate_.world->readyToMerge.size() == 0 && fadeOutStart == 0) {
                 fadeOutStart = Time.now;
                 fadeOutLength = 250;
                 fadeOutCallback = [&]() {
@@ -1495,7 +1519,7 @@ void Game::tick() {
         }
     } else {
 
-        int lastReadyToMergeSize = (int)GameIsolate_.world->WorldIsolate_.readyToMerge.size();
+        int lastReadyToMergeSize = (int)GameIsolate_.world->readyToMerge.size();
 
         // check chunk loading
         tickChunkLoading();
@@ -1512,7 +1536,7 @@ void Game::tick() {
         R_SetShapeBlendMode(R_BLEND_NORMAL);
         R_Clear(TexturePack_.textureObjectsBack->target);
 
-        if (GameIsolate_.globaldef.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.globaldef.tick_world && GameIsolate_.world->readyToMerge.size() == 0) {
             GameIsolate_.world->tickChunks();
         }
 
@@ -1524,8 +1548,8 @@ void Game::tick() {
         R_SetBlendMode(TexturePack_.textureObjectsLQ, R_BLEND_NORMAL);
         R_SetBlendMode(TexturePack_.textureObjectsBack, R_BLEND_NORMAL);
 
-        for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
-            RigidBody *cur = GameIsolate_.world->WorldIsolate_.rigidBodies[i];
+        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+            RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->surface == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
@@ -1624,44 +1648,23 @@ void Game::tick() {
         if (lastReadyToMergeSize == 0) {
             GameIsolate_.world->tickEntities(TexturePack_.textureEntities->target);
 
-            if (GameIsolate_.world->WorldIsolate_.player) {
-                if (GameIsolate_.world->WorldIsolate_.player->holdtype == Hammer) {
+            if (GameIsolate_.world->player) {
+                auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                if (pl->holdtype == Hammer) {
                     int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
                     int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
-                    R_Line(TexturePack_.textureEntitiesLQ->target, x, y, GameIsolate_.world->WorldIsolate_.player->hammerX, GameIsolate_.world->WorldIsolate_.player->hammerY,
-                           {0xff, 0xff, 0x00, 0xff});
+                    R_Line(TexturePack_.textureEntitiesLQ->target, x, y, pl->hammerX, pl->hammerY, {0xff, 0xff, 0x00, 0xff});
                 }
             }
         }
         R_SetShapeBlendMode(R_BLEND_NORMAL);  // SDL_BLENDMODE_NONE
 
-        // entity fluid displacement & make solid
+        entity_update_event e{this};
+        GameIsolate_.world->Reg().process_event(e);
 
-        for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.entities.size(); i++) {
-            WorldEntity cur = *GameIsolate_.world->WorldIsolate_.entities[i];
-
-            for (int tx = 0; tx < cur.hw; tx++) {
-                for (int ty = 0; ty < cur.hh; ty++) {
-
-                    int wx = (int)(tx + cur.x + GameIsolate_.world->loadZone.x);
-                    int wy = (int)(ty + cur.y + GameIsolate_.world->loadZone.y);
-                    if (wx < 0 || wy < 0 || wx >= GameIsolate_.world->width || wy >= GameIsolate_.world->height) continue;
-                    if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::AIR) {
-                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles_OBJECT;
-                        objectDelete[wx + wy * GameIsolate_.world->width] = true;
-                    } else if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
-                               GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                        GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - cur.vx), (F32)(wy - abs(cur.vy)),
-                                                                         (F32)(-cur.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-cur.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (F32)0.1));
-                        GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width] = Tiles_OBJECT;
-                        objectDelete[wx + wy * GameIsolate_.world->width] = true;
-                        GameIsolate_.world->dirty[wx + wy * GameIsolate_.world->width] = true;
-                    }
-                }
-            }
-        }
-
-        if ((GameIsolate_.globaldef.tick_world && GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) || ControlSystem::DEBUG_TICK->get()) {
+        if ((GameIsolate_.globaldef.tick_world && GameIsolate_.world->readyToMerge.size() == 0) || ControlSystem::DEBUG_TICK->get()) {
             GameIsolate_.world->tick();
         }
 
@@ -1706,7 +1709,7 @@ void Game::tick() {
         int i = 1;
         metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ParticlePixels, (void *)(uintptr_t)i);
 
-        if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.world->readyToMerge.size() == 0) {
             metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ObjectBounds, (void *)(uintptr_t)i);
         }
 
@@ -1716,8 +1719,8 @@ void Game::tick() {
 
         metadot_thpool_wait(GameIsolate_.updateDirtyPool2);
 
-        for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
-            RigidBody *cur = GameIsolate_.world->WorldIsolate_.rigidBodies[i];
+        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+            RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->surface == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
@@ -1805,7 +1808,7 @@ void Game::tick() {
             cur->needsUpdate = true;
         }
 
-        if (GameIsolate_.world->WorldIsolate_.readyToMerge.size() == 0) {
+        if (GameIsolate_.world->readyToMerge.size() == 0) {
             if (GameIsolate_.globaldef.tick_box2d) GameIsolate_.world->tickObjects();
         }
 
@@ -2025,7 +2028,7 @@ void Game::tickChunkLoading() {
 
     // if need to load chunks
     if ((abs(accLoadX) > CHUNK_W / 2 || abs(accLoadY) > CHUNK_H / 2)) {
-        while (GameIsolate_.world->WorldIsolate_.toLoad.size() > 0) {
+        while (GameIsolate_.world->toLoad.size() > 0) {
             // tick chunkloading
             GameIsolate_.world->frame();
         }
@@ -2208,27 +2211,25 @@ void Game::tickChunkLoading() {
 
 void Game::tickPlayer() {
 
-    if (GameIsolate_.world->WorldIsolate_.player) {
+    if (GameIsolate_.world->player) {
+
+        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
-            if (GameIsolate_.world->WorldIsolate_.player->ground) {
-                GameIsolate_.world->WorldIsolate_.player->vy = -4;
+            if (pl_we->ground) {
+                pl_we->vy = -4;
                 global.audioEngine.PlayEvent("event:/Player/Jump");
             }
         }
 
-        GameIsolate_.world->WorldIsolate_.player->vy +=
-                (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (GameIsolate_.world->WorldIsolate_.player->vy > -1 ? -0.8 : -0.35) : 0) +
-                      (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
+        pl_we->vy += (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (pl_we->vy > -1 ? -0.8 : -0.35) : 0) + (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
-                ParticleData *p = new ParticleData(TilesCreateLava(),
-                                                   (F32)(GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->loadZone.x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + rand() % 5 -
-                                                         2 + GameIsolate_.world->WorldIsolate_.player->vx),
-                                                   (F32)(GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->loadZone.y + GameIsolate_.world->WorldIsolate_.player->hh +
-                                                         GameIsolate_.world->WorldIsolate_.player->vy),
-                                                   (F32)((rand() % 10 - 5) / 10.0f + GameIsolate_.world->WorldIsolate_.player->vx / 2.0f),
-                                                   (F32)((rand() % 10) / 10.0f + 1 + GameIsolate_.world->WorldIsolate_.player->vy / 2.0f), 0, (F32)0.025);
+                ParticleData *p = new ParticleData(TilesCreateLava(), (F32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
+                                                   (F32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (F32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
+                                                   (F32)((rand() % 10) / 10.0f + 1 + pl_we->vy / 2.0f), 0, (F32)0.025);
                 p->temporary = true;
                 p->lifetime = 120;
                 GameIsolate_.world->addParticle(p);
@@ -2237,18 +2238,16 @@ void Game::tickPlayer() {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 0);
         }
 
-        if (GameIsolate_.world->WorldIsolate_.player->vy > 0) {
-            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", (F32)(GameIsolate_.world->WorldIsolate_.player->vy / 12.0));
+        if (pl_we->vy > 0) {
+            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", (F32)(pl_we->vy / 12.0));
         } else {
             global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
-        GameIsolate_.world->WorldIsolate_.player->vx += (F32)((ControlSystem::PLAYER_LEFT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx > 0 ? -0.4 : -0.2) : 0) +
-                                                              (ControlSystem::PLAYER_RIGHT->get() ? (GameIsolate_.world->WorldIsolate_.player->vx < 0 ? 0.4 : 0.2) : 0));
-        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get())
-            GameIsolate_.world->WorldIsolate_.player->vx *= (F32)(GameIsolate_.world->WorldIsolate_.player->ground ? 0.85 : 0.96);
-        if (GameIsolate_.world->WorldIsolate_.player->vx > 4.5) GameIsolate_.world->WorldIsolate_.player->vx = 4.5;
-        if (GameIsolate_.world->WorldIsolate_.player->vx < -4.5) GameIsolate_.world->WorldIsolate_.player->vx = -4.5;
+        pl_we->vx += (F32)((ControlSystem::PLAYER_LEFT->get() ? (pl_we->vx > 0 ? -0.4 : -0.2) : 0) + (ControlSystem::PLAYER_RIGHT->get() ? (pl_we->vx < 0 ? 0.4 : 0.2) : 0));
+        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get()) pl_we->vx *= (F32)(pl_we->ground ? 0.85 : 0.96);
+        if (pl_we->vx > 4.5) pl_we->vx = 4.5;
+        if (pl_we->vx < -4.5) pl_we->vx = -4.5;
     } else {
         if (state == INGAME) {
             global.GameData_.freeCamX += (F32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
@@ -2257,11 +2256,15 @@ void Game::tickPlayer() {
         }
     }
 
-    if (GameIsolate_.world->WorldIsolate_.player) {
+    if (GameIsolate_.world->player) {
+
+        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
         global.GameData_.desCamX = (F32)(-(mx - (Screen.windowWidth / 2)) / 4);
         global.GameData_.desCamY = (F32)(-(my - (Screen.windowHeight / 2)) / 4);
 
-        GameIsolate_.world->WorldIsolate_.player->holdAngle = (F32)(atan2(global.GameData_.desCamY, global.GameData_.desCamX) * 180 / (F32)M_PI);
+        pl->holdAngle = (F32)(atan2(global.GameData_.desCamY, global.GameData_.desCamX) * 180 / (F32)M_PI);
 
         global.GameData_.desCamX = 0;
         global.GameData_.desCamY = 0;
@@ -2270,10 +2273,14 @@ void Game::tickPlayer() {
         global.GameData_.desCamY = 0;
     }
 
-    if (GameIsolate_.world->WorldIsolate_.player) {
-        if (GameIsolate_.world->WorldIsolate_.player->heldItem) {
-            if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
-                if (GameIsolate_.world->WorldIsolate_.player->holdtype == Vacuum) {
+    if (GameIsolate_.world->player) {
+
+        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+        if (pl->heldItem) {
+            if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
+                if (pl->holdtype == Vacuum) {
 
                     int wcx = (int)((Screen.windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
                     int wcy = (int)((Screen.windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
@@ -2318,18 +2325,18 @@ void Game::tickPlayer() {
                             par->ay = -par->vy / 10.0f;
                             if (par->ay == 0 && par->ax == 0) par->ay = 0.01f;
 
-                            // par->targetX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x;
-                            // par->targetY = GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y;
+                            // par->targetX = pl_we->x + pl_we->hw / 2 + GameIsolate_.world->loadZone.x;
+                            // par->targetY = pl_we->y + pl_we->hh / 2 + GameIsolate_.world->loadZone.y;
                             // par->targetForce = 0.35f;
 
                             par->lifetime = 6;
 
                             par->phase = true;
 
-                            GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.push_back(par);
+                            pl->heldItem->vacuumParticles.push_back(par);
 
                             par->killCallback = [&]() {
-                                auto &v = GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles;
+                                auto &v = pl->heldItem->vacuumParticles;
                                 v.erase(std::remove(v.begin(), v.end(), par), v.end());
                             };
 
@@ -2371,18 +2378,18 @@ void Game::tickPlayer() {
                                             cur->ay = -cur->vy / 10.0f;
                                             if (cur->ay == 0 && cur->ax == 0) cur->ay = 0.01f;
 
-                                            // par->targetX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x;
-                                            // par->targetY = GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y;
+                                            // par->targetX = pl_we->x + pl_we->hw / 2 + GameIsolate_.world->loadZone.x;
+                                            // par->targetY = pl_we->y + pl_we->hh / 2 + GameIsolate_.world->loadZone.y;
                                             // par->targetForce = 0.35f;
 
                                             cur->lifetime = 6;
 
                                             cur->phase = true;
 
-                                            GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.push_back(cur);
+                                            pl->heldItem->vacuumParticles.push_back(cur);
 
                                             cur->killCallback = [&]() {
-                                                auto &v = GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles;
+                                                auto &v = pl->heldItem->vacuumParticles;
                                                 v.erase(std::remove(v.begin(), v.end(), cur), v.end());
                                             };
 
@@ -2395,10 +2402,9 @@ void Game::tickPlayer() {
                             return false;
                         };
 
-                        GameIsolate_.world->WorldIsolate_.particles.erase(std::remove_if(GameIsolate_.world->WorldIsolate_.particles.begin(), GameIsolate_.world->WorldIsolate_.particles.end(), func),
-                                                                          GameIsolate_.world->WorldIsolate_.particles.end());
+                        GameIsolate_.world->particles.erase(std::remove_if(GameIsolate_.world->particles.begin(), GameIsolate_.world->particles.end(), func), GameIsolate_.world->particles.end());
 
-                        MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->WorldIsolate_.rigidBodies;
+                        MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                         for (size_t i = 0; i < rbs->size(); i++) {
                             RigidBody *cur = (*rbs)[i];
@@ -2442,31 +2448,30 @@ void Game::tickPlayer() {
                     }
                 }
 
-                if (GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.size() > 0) {
-                    GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.erase(
-                            std::remove_if(GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.begin(), GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.end(),
-                                           [&](ParticleData *cur) {
-                                               if (cur->lifetime <= 0) {
-                                                   cur->targetForce = 0.45f;
-                                                   cur->targetX = GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f + GameIsolate_.world->loadZone.x;
-                                                   cur->targetY = GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2.0f + GameIsolate_.world->loadZone.y;
-                                                   cur->ax = 0;
-                                                   cur->ay = 0.01f;
-                                               }
+                if (pl->heldItem->vacuumParticles.size() > 0) {
+                    pl->heldItem->vacuumParticles.erase(std::remove_if(pl->heldItem->vacuumParticles.begin(), pl->heldItem->vacuumParticles.end(),
+                                                                       [&](ParticleData *cur) {
+                                                                           if (cur->lifetime <= 0) {
+                                                                               cur->targetForce = 0.45f;
+                                                                               cur->targetX = pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x;
+                                                                               cur->targetY = pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y;
+                                                                               cur->ax = 0;
+                                                                               cur->ay = 0.01f;
+                                                                           }
 
-                                               F32 tdx = cur->targetX - cur->x;
-                                               F32 tdy = cur->targetY - cur->y;
+                                                                           F32 tdx = cur->targetX - cur->x;
+                                                                           F32 tdy = cur->targetY - cur->y;
 
-                                               if (tdx * tdx + tdy * tdy < 10 * 10) {
-                                                   cur->temporary = true;
-                                                   cur->lifetime = 0;
-                                                   // METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
-                                                   return true;
-                                               }
+                                                                           if (tdx * tdx + tdy * tdy < 10 * 10) {
+                                                                               cur->temporary = true;
+                                                                               cur->lifetime = 0;
+                                                                               // METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
+                                                                               return true;
+                                                                           }
 
-                                               return false;
-                                           }),
-                            GameIsolate_.world->WorldIsolate_.player->heldItem->vacuumParticles.end());
+                                                                           return false;
+                                                                       }),
+                                                        pl->heldItem->vacuumParticles.end());
                 }
             }
         }
@@ -2501,22 +2506,25 @@ void Game::updateFrameLate() {
         int nofsX;
         int nofsY;
 
-        if (GameIsolate_.world->WorldIsolate_.player) {
+        if (GameIsolate_.world->player) {
+            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
             if (Time.now - Time.lastTickTime <= Time.mspt) {
                 F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
 
-                global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x + (int)(GameIsolate_.world->WorldIsolate_.player->vx * thruTick);
-                global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y + (int)(GameIsolate_.world->WorldIsolate_.player->vy * thruTick);
+                global.GameData_.plPosX = pl_we->x + (int)(pl_we->vx * thruTick);
+                global.GameData_.plPosY = pl_we->y + (int)(pl_we->vy * thruTick);
             } else {
-                global.GameData_.plPosX = GameIsolate_.world->WorldIsolate_.player->x;
-                global.GameData_.plPosY = GameIsolate_.world->WorldIsolate_.player->y;
+                global.GameData_.plPosX = pl_we->x;
+                global.GameData_.plPosY = pl_we->y;
             }
 
-            // plPosX = (F32)(plPosX + (GameIsolate_.world->WorldIsolate_.player->x - plPosX) / 25.0);
-            // plPosY = (F32)(plPosY + (GameIsolate_.world->WorldIsolate_.player->y - plPosY) / 25.0);
+            // plPosX = (F32)(plPosX + (pl_we->x - plPosX) / 25.0);
+            // plPosY = (F32)(plPosY + (pl_we->y - plPosY) / 25.0);
 
-            nofsX = (int)(-((int)global.GameData_.plPosX + GameIsolate_.world->WorldIsolate_.player->hw / 2 + GameIsolate_.world->loadZone.x) * Screen.gameScale + Screen.windowWidth / 2);
-            nofsY = (int)(-((int)global.GameData_.plPosY + GameIsolate_.world->WorldIsolate_.player->hh / 2 + GameIsolate_.world->loadZone.y) * Screen.gameScale + Screen.windowHeight / 2);
+            nofsX = (int)(-((int)global.GameData_.plPosX + pl_we->hw / 2 + GameIsolate_.world->loadZone.x) * Screen.gameScale + Screen.windowWidth / 2);
+            nofsY = (int)(-((int)global.GameData_.plPosY + pl_we->hh / 2 + GameIsolate_.world->loadZone.y) * Screen.gameScale + Screen.windowHeight / 2);
         } else {
             global.GameData_.plPosX = (F32)(global.GameData_.plPosX + (global.GameData_.freeCamX - global.GameData_.plPosX) / 50.0f);
             global.GameData_.plPosY = (F32)(global.GameData_.plPosY + (global.GameData_.freeCamY - global.GameData_.plPosY) / 50.0f);
@@ -2620,41 +2628,43 @@ newState = true;
         if (Time.now - Time.lastTickTime <= Time.mspt) {
             R_Clear(TexturePack_.textureEntities->target);
             R_Clear(TexturePack_.textureEntitiesLQ->target);
-            if (GameIsolate_.world->WorldIsolate_.player) {
+            if (GameIsolate_.world->player) {
                 F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
 
                 R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_ADD);
                 R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_ADD);
                 int scaleEnt = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-                for (auto &v : GameIsolate_.world->WorldIsolate_.entities) {
-                    ((Player *)v)->renderLQ(TexturePack_.textureEntitiesLQ->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
-                    ((Player *)v)->render(TexturePack_.textureEntities->target, GameIsolate_.world->loadZone.x + (int)(v->vx * thruTick), GameIsolate_.world->loadZone.y + (int)(v->vy * thruTick));
-                }
+                update_event e{1.0f, thruTick, this};
+                GameIsolate_.world->Reg().process_event(e);
 
-                if (GameIsolate_.world->WorldIsolate_.player && GameIsolate_.world->WorldIsolate_.player->heldItem != NULL) {
-                    if (GameIsolate_.world->WorldIsolate_.player->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
-                        if (GameIsolate_.world->WorldIsolate_.player->holdtype == Hammer) {
-                            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
-                            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
+                if (GameIsolate_.world->player) {
+                    auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                    auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
 
-                            int dx = x - GameIsolate_.world->WorldIsolate_.player->hammerX;
-                            int dy = y - GameIsolate_.world->WorldIsolate_.player->hammerY;
-                            F32 len = sqrt(dx * dx + dy * dy);
-                            if (len > 40) {
-                                dx = dx / len * 40;
-                                dy = dy / len * 40;
-                            }
+                    if (pl->heldItem != NULL) {
+                        if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
+                            if (pl->holdtype == Hammer) {
+                                int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
+                                int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
-                            R_Line(TexturePack_.textureEntitiesLQ->target, GameIsolate_.world->WorldIsolate_.player->hammerX + dx, GameIsolate_.world->WorldIsolate_.player->hammerY + dy,
-                                   GameIsolate_.world->WorldIsolate_.player->hammerX, GameIsolate_.world->WorldIsolate_.player->hammerY, {0xff, 0xff, 0x00, 0xff});
-                        } else {
-                            int startInd = getAimSolidSurface(64);
+                                int dx = x - pl->hammerX;
+                                int dy = y - pl->hammerY;
+                                F32 len = sqrt(dx * dx + dy * dy);
+                                if (len > 40) {
+                                    dx = dx / len * 40;
+                                    dy = dy / len * 40;
+                                }
 
-                            if (startInd != -1) {
-                                int x = startInd % GameIsolate_.world->width;
-                                int y = startInd / GameIsolate_.world->width;
-                                R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - 1, y - 1, x + 1, y + 1, {0xff, 0xff, 0x00, 0xE0});
+                                R_Line(TexturePack_.textureEntitiesLQ->target, pl->hammerX + dx, pl->hammerY + dy, pl->hammerX, pl->hammerY, {0xff, 0xff, 0x00, 0xff});
+                            } else {
+                                int startInd = getAimSolidSurface(64);
+
+                                if (startInd != -1) {
+                                    int x = startInd % GameIsolate_.world->width;
+                                    int y = startInd / GameIsolate_.world->width;
+                                    R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - 1, y - 1, x + 1, y + 1, {0xff, 0xff, 0x00, 0xE0});
+                                }
                             }
                         }
                     }
@@ -2850,9 +2860,12 @@ void Game::renderLate() {
             F32 lightTx;
             F32 lightTy;
 
-            if (GameIsolate_.world->WorldIsolate_.player) {
-                lightTx = (GameIsolate_.world->loadZone.x + GameIsolate_.world->WorldIsolate_.player->x + GameIsolate_.world->WorldIsolate_.player->hw / 2.0f) / (F32)GameIsolate_.world->width;
-                lightTy = (GameIsolate_.world->loadZone.y + GameIsolate_.world->WorldIsolate_.player->y + GameIsolate_.world->WorldIsolate_.player->hh / 2.0f) / (F32)GameIsolate_.world->height;
+            if (GameIsolate_.world->player) {
+                auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+                auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+                lightTx = (GameIsolate_.world->loadZone.x + pl_we->x + pl_we->hw / 2.0f) / (F32)GameIsolate_.world->width;
+                lightTy = (GameIsolate_.world->loadZone.y + pl_we->y + pl_we->hh / 2.0f) / (F32)GameIsolate_.world->height;
             } else {
                 lightTx = lmsx / (F32)GameIsolate_.world->width;
                 lightTy = lmsy / (F32)GameIsolate_.world->height;
@@ -2993,8 +3006,8 @@ void Game::renderOverlays() {
 
     if (GameIsolate_.globaldef.draw_physics_debug) {
         //
-        // for(size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
-        //    RigidBody cur = *GameIsolate_.world->WorldIsolate_.rigidBodies[i];
+        // for(size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+        //    RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
         //    F32 x = cur.body->GetPosition().x;
         //    F32 y = cur.body->GetPosition().y;
@@ -3027,8 +3040,8 @@ void Game::renderOverlays() {
         //    }
         //}
 
-        // if(GameIsolate_.world->WorldIsolate_.player) {
-        //     RigidBody cur = *GameIsolate_.world->WorldIsolate_.player->rb;
+        // if(GameIsolate_.world->player) {
+        //     RigidBody cur = *pl->rb;
 
         //    F32 x = cur.body->GetPosition().x;
         //    F32 y = cur.body->GetPosition().y;
@@ -3056,8 +3069,8 @@ void Game::renderOverlays() {
         //    }
         //}
 
-        // for(size_t i = 0; i < GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(); i++) {
-        //     RigidBody cur = *GameIsolate_.world->WorldIsolate_.worldRigidBodies[i];
+        // for(size_t i = 0; i < GameIsolate_.world->worldRigidBodies.size(); i++) {
+        //     RigidBody cur = *GameIsolate_.world->worldRigidBodies[i];
 
         //    F32 x = cur.body->GetPosition().x;
         //    F32 y = cur.body->GetPosition().y;
@@ -3151,7 +3164,7 @@ void Game::renderOverlays() {
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
         metadot_rect r = {0, 0, (F32)chSize, (F32)chSize};
-        for (auto &p : GameIsolate_.world->WorldIsolate_.chunkCache) {
+        for (auto &p : GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
             for (auto &p2 : p.second) {
@@ -3194,14 +3207,14 @@ void Game::renderOverlays() {
     if (GameIsolate_.globaldef.draw_debug_stats) {
 
         int rbCt = 0;
-        for (auto &r : GameIsolate_.world->WorldIsolate_.rigidBodies) {
+        for (auto &r : GameIsolate_.world->rigidBodies) {
             if (r->body->IsEnabled()) rbCt++;
         }
 
         int rbTriACt = 0;
         int rbTriCt = 0;
-        for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.rigidBodies.size(); i++) {
-            RigidBody cur = *GameIsolate_.world->WorldIsolate_.rigidBodies[i];
+        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+            RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
             b2Fixture *fix = cur.body->GetFixtureList();
             while (fix) {
@@ -3235,7 +3248,7 @@ void Game::renderOverlays() {
         }
 
         int chCt = 0;
-        for (auto &p : GameIsolate_.world->WorldIsolate_.chunkCache) {
+        for (auto &p : GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
             for (auto &p2 : p.second) {
@@ -3261,27 +3274,35 @@ ReadyToMerge ({16})
         //         "info",
         //         MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
         //                     GameData_.plPosY,
-        //                     GameIsolate_.world->WorldIsolate_.player
-        //                             ? GameIsolate_.world->WorldIsolate_.player->vx
+        //                     GameIsolate_.world->player
+        //                             ? pl_we->vx
         //                             : 0.0f,
-        //                     GameIsolate_.world->WorldIsolate_.player
-        //                             ? GameIsolate_.world->WorldIsolate_.player->vy
+        //                     GameIsolate_.world->player
+        //                             ? pl_we->vy
         //                             : 0.0f,
-        //                     (int) GameIsolate_.world->WorldIsolate_.particles.size(),
-        //                     (int) GameIsolate_.world->WorldIsolate_.entities.size(), rbCt,
-        //                     (int) GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
-        //                     (int) GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(),
+        //                     (int) GameIsolate_.world->particles.size(),
+        //                     (int) GameIsolate_.world->worldEntities.size(), rbCt,
+        //                     (int) GameIsolate_.world->rigidBodies.size(),
+        //                     (int) GameIsolate_.world->worldRigidBodies.size(),
         //                     rbTriACt, rbTriCt, rbTriWCt, chCt,
-        //                     (int) GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(),
-        //                     (int) GameIsolate_.world->WorldIsolate_.readyToMerge.size()),
+        //                     (int) GameIsolate_.world->readyToReadyToMerge.size(),
+        //                     (int) GameIsolate_.world->readyToMerge.size()),
         //         4, 12);
 
-        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY,
-                                    GameIsolate_.world->WorldIsolate_.player ? GameIsolate_.world->WorldIsolate_.player->vx : 0.0f,
-                                    GameIsolate_.world->WorldIsolate_.player ? GameIsolate_.world->WorldIsolate_.player->vy : 0.0f, (int)GameIsolate_.world->WorldIsolate_.particles.size(),
-                                    (int)GameIsolate_.world->WorldIsolate_.entities.size(), rbCt, (int)GameIsolate_.world->WorldIsolate_.rigidBodies.size(),
-                                    (int)GameIsolate_.world->WorldIsolate_.worldRigidBodies.size(), rbTriACt, rbTriCt, rbTriWCt, chCt,
-                                    (int)GameIsolate_.world->WorldIsolate_.readyToReadyToMerge.size(), (int)GameIsolate_.world->WorldIsolate_.readyToMerge.size());
+        float pl_vx = 0.0f;
+        float pl_vy = 0.0f;
+
+        if (GameIsolate_.world->player) {
+            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
+            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+
+            pl_vx = pl_we->vx;
+            pl_vy = pl_we->vy;
+        }
+
+        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->particles.size(),
+                                    (int)GameIsolate_.world->Reg().entity_count(), rbCt, (int)GameIsolate_.world->rigidBodies.size(), (int)GameIsolate_.world->worldRigidBodies.size(), rbTriACt,
+                                    rbTriCt, rbTriWCt, chCt, (int)GameIsolate_.world->readyToReadyToMerge.size(), (int)GameIsolate_.world->readyToMerge.size());
 
         MetaEngine::Drawing::drawText(a, {255, 255, 255, 255}, 10, 0);
 
@@ -3294,11 +3315,11 @@ ReadyToMerge ({16})
         //                         {0x00, 0x00, 0x00, 0x40}, ALIGN_LEFT);
         // }
 
-        // for (size_t i = 0; i < GameIsolate_.world->WorldIsolate_.readyToMerge.size(); i++) {
+        // for (size_t i = 0; i < GameIsolate_.world->readyToMerge.size(); i++) {
         //     char buff[20];
         //     snprintf(buff, sizeof(buff), "    #%d (%d, %d)", (int) i,
-        //              GameIsolate_.world->WorldIsolate_.readyToMerge[i]->x,
-        //              GameIsolate_.world->WorldIsolate_.readyToMerge[i]->y);
+        //              GameIsolate_.world->readyToMerge[i]->x,
+        //              GameIsolate_.world->readyToMerge[i]->y);
         //     std::string buffAsStdStr = buff;
         //     Drawing::drawTextBG(Render.target, buffAsStdStr.c_str(), font16, 4,
         //                         2 + (lineHeight * dbgIndex++), 0xff, 0xff, 0xff,

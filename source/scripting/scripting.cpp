@@ -17,7 +17,6 @@
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "core/profiler/profiler_lua.h"
-#include "ecs/luaecs.h"
 #include "engine/engine_funcwrap.hpp"
 #include "filesystem.h"
 #include "game.hpp"
@@ -224,8 +223,6 @@ static void InitLua(LuaCore *_struct) {
     metadot_preload_auto(_struct->L, luaopen_ffi, "ffi");
     metadot_preload_auto(_struct->L, luaopen_mu, "mu");
     metadot_preload_auto(_struct->L, luaopen_lpeg, "lpeg");
-    metadot_preload_auto(_struct->L, metadot_bind_ecs_core, "cecs");
-    metadot_preload_auto(_struct->L, metadot_bind_ecs_test, "cecs_test");
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
 

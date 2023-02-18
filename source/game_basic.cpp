@@ -9,7 +9,6 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine/engine_input.hpp"
-#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -17,6 +16,7 @@
 #include "game_ui.hpp"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/scripting.hpp"
 
 #pragma region GameScriptingBind_1
 
@@ -81,9 +81,7 @@ void GameplayScriptSystem::Destory() {
     EndFunc();
 }
 
-void GameplayScriptSystem::Reload() {
-    
-}
+void GameplayScriptSystem::Reload() {}
 
 void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
     s_lua["controls_init"] = LuaWrapper::function(controls_init);
@@ -132,9 +130,3 @@ a = RigidBody(1, "hello")
     //     s_lua("print( a.extra, actor.extra )");
     // }
 }
-
-void IGameObject::Create() {}
-
-void IGameObject::Destory() {}
-
-void IGameObject::RegisterReflection() {}

@@ -8,18 +8,19 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Noise.h"
+#include "audio/audio.h"
 #include "chunk.hpp"
 #include "core/const.h"
 #include "core/cpp/vector.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
-#include "Noise.h"
-#include "audio/audio.h"
-#include "internal/builtin_box2d.h"
-#include "renderer/renderer_gpu.h"
+#include "ecs/ecs.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
+#include "internal/builtin_box2d.h"
 #include "libs/parallel_hashmap/phmap.h"
+#include "renderer/renderer_gpu.h"
 
 class Populator;
 class WorldGenerator;
@@ -76,9 +77,16 @@ public:
         MetaEngine::vector<b2Vec2> distributedPoints;
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         MetaEngine::vector<Populator *> populators;
-        MetaEngine::vector<WorldEntity *> entities;
-        Player *player = nullptr;
-    } WorldIsolate_;
+        // MetaEngine::vector<WorldEntity *> worldEntities;
+        // Player *player = nullptr;
+        MetaEngine::ECS::entity_id player;
+    };
+
+    struct {
+        MetaEngine::ECS::registry registry;
+    };
+
+    MetaEngine::ECS::registry &Reg() { return registry; }
 
     bool *hasPopulator = nullptr;
     int highestPopulator = 0;

@@ -12,19 +12,8 @@
 -- 	ecs[k] = filter
 -- end
 
-local ecs = require("ecs.cecs")
-
-local w = ecs.cecs()
-
 InitECS = function()
 	init_ecs()
-
-	w:register {
-		name = "System",
-		"ptr:userdata"
-	}
-
-
 
 	-- world = ecs.world:new()
 	-- entity_mgr = world.entity_mgr
@@ -52,9 +41,3 @@ InitECS = function()
 
 
 end
-
-GetECSWorld = function ()
-	return w
-end
-
-return ecs

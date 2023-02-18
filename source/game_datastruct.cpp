@@ -12,10 +12,11 @@
 #include "core/debug_impl.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
+#include "cvar.hpp"
 #include "filesystem.h"
 #include "game.hpp"
-#include "cvar.hpp"
 #include "game_resources.hpp"
+#include "game_utils/particles.h"
 #include "internal/builtin_box2d.h"
 #include "reflectionflat.hpp"
 #include "renderer/renderer_utils.h"
@@ -31,12 +32,6 @@ void ReleaseGameData() {
     for (auto b : global.GameData_.biome_container) {
         if (static_cast<bool>(b)) delete b;
     }
-}
-
-WorldEntity::WorldEntity(bool isplayer, std::string n) : is_player(isplayer), name(n) {}
-
-WorldEntity::~WorldEntity() {
-    // if (static_cast<bool>(rb)) delete rb;
 }
 
 #pragma region Material
@@ -578,7 +573,7 @@ Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
         i = new Item();
         i->flags = flags;
     }
-    
+
     i->surface = rb->surface;
     i->texture = rb->texture;
     i->name = n;
@@ -1141,7 +1136,7 @@ MetaEngine::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk
                     break;
                 }
             }
-            world->WorldIsolate_.rigidBodies.push_back(rb);
+            world->rigidBodies.push_back(rb);
             world->updateRigidBodyHitbox(rb);
 
             return {};
@@ -1159,14 +1154,14 @@ RigidBody::~RigidBody() {
     // if (item) delete item;
 }
 
-void Player::render(R_Target *target, int ofsX, int ofsY) {
+void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
 
-        metadot_rect *ir = new metadot_rect{(F32)(int)(ofsX + x + hw / 2.0 - heldItem->surface->w), (F32)(int)(ofsY + y + hh / 2.0 - heldItem->surface->h / 2), (F32)heldItem->surface->w,
-                                            (F32)heldItem->surface->h};
-        F32 fx = (F32)(int)(-ir->x + ofsX + x + hw / 2.0);
-        F32 fy = (F32)(int)(-ir->y + ofsY + y + hh / 2.0);
+        metadot_rect *ir = new metadot_rect{(F32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (F32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2),
+                                            (F32)heldItem->surface->w, (F32)heldItem->surface->h};
+        F32 fx = (F32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
+        F32 fy = (F32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
         fx -= heldItem->pivotX;
         ir->x += heldItem->pivotX;
         fy -= heldItem->pivotY;
@@ -1183,11 +1178,13 @@ void Player::render(R_Target *target, int ofsX, int ofsY) {
     }
 }
 
-void Player::renderLQ(R_Target *target, int ofsX, int ofsY) { R_Rectangle(target, x + ofsX, y + ofsY, x + ofsX + hw, y + ofsY + hh, {0xff, 0xff, 0xff, 0xff}); }
+void Player::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
+    R_Rectangle(target, we->x + ofsX, we->y + ofsY, we->x + ofsX + we->hw, we->y + ofsY + we->hh, {0xff, 0xff, 0xff, 0xff});
+}
 
 b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p);
 
-void Player::setItemInHand(Item *item, World *world) {
+void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
     RigidBody *r;
     if (heldItem != NULL) {
         b2PolygonShape ps;
@@ -1197,8 +1194,8 @@ void Player::setItemInHand(Item *item, World *world) {
 
         b2Vec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(F32)(heldItem->surface->w / 2.0), (F32)(heldItem->surface->h / 2.0)});
 
-        r = world->makeRigidBody(b2_dynamicBody, x + hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
-                                 y + hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
+        r = world->makeRigidBody(b2_dynamicBody, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
+                                 we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
 
         //  0 -> -w/2 -h/2
         // 90 ->  w/2 -h/2
@@ -1220,7 +1217,7 @@ void Player::setItemInHand(Item *item, World *world) {
         r->body->GetFixtureList()[0].SetFilterData(bf);
 
         r->item = heldItem;
-        world->WorldIsolate_.rigidBodies.push_back(r);
+        world->rigidBodies.push_back(r);
         world->updateRigidBodyHitbox(r);
         // SDL_DestroyTexture(heldItem->texture);
     }
@@ -1228,7 +1225,7 @@ void Player::setItemInHand(Item *item, World *world) {
     heldItem = item;
 }
 
-Player::Player() : WorldEntity(true, "Player") {}
+Player::Player() {}
 
 Player::~Player() {
     if (heldItem) delete heldItem;
@@ -1250,3 +1247,42 @@ b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p) {
     return b2Vec2(xn + cx, yn + cy);
 }
 
+void PlayerSystem::process(MetaEngine::ECS::registry &world, const update_event &evt) {
+    world.for_joined_components<WorldEntity, Player>(
+            [&evt](MetaEngine::ECS::entity, WorldEntity &we, Player &pl) {
+                pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
+                            evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
+                pl.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
+                          evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
+            },
+            MetaEngine::ECS::exists<Player>{} && MetaEngine::ECS::exists<Controlable>{});
+}
+
+void WorldEntitySystem::process(MetaEngine::ECS::registry &world, const entity_update_event &evt) {
+    world.for_joined_components<WorldEntity>(
+            [&evt](MetaEngine::ECS::entity, WorldEntity &pl) {
+                // entity fluid displacement & make solid
+
+                for (int tx = 0; tx < pl.hw; tx++) {
+                    for (int ty = 0; ty < pl.hh; ty++) {
+
+                        int wx = (int)(tx + pl.x + evt.g->GameIsolate_.world->loadZone.x);
+                        int wy = (int)(ty + pl.y + evt.g->GameIsolate_.world->loadZone.y);
+                        if (wx < 0 || wy < 0 || wx >= evt.g->GameIsolate_.world->width || wy >= evt.g->GameIsolate_.world->height) continue;
+                        if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::AIR) {
+                            evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;
+                            evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
+                        } else if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
+                                   evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
+                            evt.g->GameIsolate_.world->addParticle(new ParticleData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - pl.vx),
+                                                                                    (F32)(wy - abs(pl.vy)), (F32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f),
+                                                                                    0, (F32)0.1));
+                            evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;
+                            evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
+                            evt.g->GameIsolate_.world->dirty[wx + wy * evt.g->GameIsolate_.world->width] = true;
+                        }
+                    }
+                }
+            },
+            MetaEngine::ECS::exists<WorldEntity>{});
+}

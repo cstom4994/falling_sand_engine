@@ -261,7 +261,7 @@ do
 	add_files("source/core/**.c")
 	add_files("source/core/**.cpp")
 	add_files("source/event/**.cpp")
-	add_files("source/ecs/**.c")
+	add_files("source/ecs/**.cpp")
 	add_files("source/game_utils/**.cpp")
 	add_files("source/internal/**.c")
 	add_files("source/internal/**.cpp")

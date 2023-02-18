@@ -22,7 +22,6 @@
 #include "core/macros.h"
 #include "core/stl.h"
 #include "engine/engine.h"
-#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -36,6 +35,7 @@
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/scripting.hpp"
 #include "ui/imgui/imgui_css.h"
 #include "ui/imgui/imgui_generated.h"
 #include "ui/imgui/imgui_impl.hpp"
@@ -99,7 +99,19 @@ const ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     return pos;
 }
 
-ImGuiCore::ImGuiCore() {}
+void (*ImGuiCore::RendererShutdownFunction)();
+void (*ImGuiCore::PlatformShutdownFunction)();
+void (*ImGuiCore::RendererNewFrameFunction)();
+void (*ImGuiCore::PlatformNewFrameFunction)();
+void (*ImGuiCore::RenderFunction)(ImDrawData *);
+
+ImGuiCore::ImGuiCore() {
+    RendererShutdownFunction = ImGui_ImplOpenGL3_Shutdown;
+    PlatformShutdownFunction = ImGui_ImplSDL2_Shutdown;
+    RendererNewFrameFunction = ImGui_ImplOpenGL3_NewFrame;
+    PlatformNewFrameFunction = ImGui_ImplSDL2_NewFrame;
+    RenderFunction = ImGui_ImplOpenGL3_RenderDrawData;
+}
 
 class OpenGL3TextureManager : public ImGuiTextureManager {
 public:
@@ -300,15 +312,15 @@ void ImGuiCore::End() {
 
     delete document;
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    RendererShutdownFunction();
+    PlatformShutdownFunction();
     ImPlot::DestroyContext();
     ImGui::DestroyContext();
 }
 
 void ImGuiCore::NewFrame() {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(Core.window);
+    RendererNewFrameFunction();
+    PlatformNewFrameFunction();
     ImGui::NewFrame();
 }
 
@@ -318,7 +330,8 @@ void ImGuiCore::Draw() {
 
     ImGui::Render();
     SDL_GL_MakeCurrent(Core.window, Core.glContext);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    RenderFunction(ImGui::GetDrawData());
 
     // Update and Render additional Platform Windows
     // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
@@ -527,17 +540,17 @@ CSTDTime | {6} | Nothing
                             std::cout << "[var]" << std::endl;
 
                             // std::cout << "[left]" << std::endl;
-                            // TypeInfo<Player>::ForEachVarOf(std::move(*global.game->GameIsolate_.world->WorldIsolate_.player), [](auto field, auto &&var) {
+                            // TypeInfo<Player>::ForEachVarOf(std::move(*global.game->GameIsolate_.world->player), [](auto field, auto &&var) {
                             //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
                             //     std::cout << field.name << " : " << var << std::endl;
                             // });
                             // std::cout << "[right]" << std::endl;
-                            // TypeInfo<Player>::ForEachVarOf(*global.game->GameIsolate_.world->WorldIsolate_.player, [](auto field, auto &&var) {
+                            // TypeInfo<Player>::ForEachVarOf(*global.game->GameIsolate_.world->player, [](auto field, auto &&var) {
                             //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
                             //     std::cout << field.name << " : " << var << std::endl;
                             // });
 
-                            auto &p = *global.game->GameIsolate_.world->WorldIsolate_.player;
+                            auto p = global.game->GameIsolate_.world->Reg().find_component<Player>(global.game->GameIsolate_.world->player);
 
                             // Just for test
                             Item *i3 = new Item();
@@ -550,8 +563,9 @@ CSTDTime | {6} | Nothing
                             TypeInfo<Player>::fields.ForEach([&](auto field) {
                                 if constexpr (field.is_func) {
                                     if (field.name != "setItemInHand") return;
-                                    if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item * item, World * world) /* const */>(&Player::setItemInHand)))
-                                        (p.*(field.value))(i3, global.game->GameIsolate_.world);
+                                    if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, World * world) /* const */>(&Player::setItemInHand)))
+                                        (p->*(field.value))(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
+                                                            global.game->GameIsolate_.world);
                                     // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
                                     //     std::cout << (p.*(field.value))(1.f) << std::endl;
                                     else
@@ -574,23 +588,24 @@ CSTDTime | {6} | Nothing
                             std::cout << "[field]" << std::endl;
                             TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
 
-                            std::cout << "[var]" << std::endl;
+                            // std::cout << "[var]" << std::endl;
 
-                            std::cout << "[var : left]" << std::endl;
-                            TypeInfo<Player>::ForEachVarOf(std::move(p), [](auto field, auto &&var) {
-                                static_assert(std::is_rvalue_reference_v<decltype(var)>);
-                                std::cout << var << std::endl;
-                            });
-                            std::cout << "[var : right]" << std::endl;
-                            TypeInfo<Player>::ForEachVarOf(p, [](auto field, auto &&var) {
-                                static_assert(std::is_lvalue_reference_v<decltype(var)>);
-                                std::cout << field.name << " : " << var << std::endl;
-                            });
+                            // std::cout << "[var : left]" << std::endl;
+                            // TypeInfo<Player>::ForEachVarOf(std::move(p), [](auto field, auto &&var) {
+                            //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
+                            //     std::cout << var << std::endl;
+                            // });
+                            // std::cout << "[var : right]" << std::endl;
+                            // TypeInfo<Player>::ForEachVarOf(p, [](auto field, auto &&var) {
+                            //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
+                            //     std::cout << field.name << " : " << var << std::endl;
+                            // });
                         }
                     }
                     ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
                     ImGui::Checkbox("UI", &global.uidata->elementLists["testElement1"]->visible);
-                    if (ImGui::Button("Meo")) {}
+                    if (ImGui::Button("Meo")) {
+                    }
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {
@@ -637,7 +652,7 @@ CSTDTime | {6} | Nothing
                     static Chunk *check_chunk_ptr = nullptr;
 
                     if (ImGui::BeginCombo("ChunkList", CC("选择检视区块..."))) {
-                        for (auto &p1 : global.game->GameIsolate_.world->WorldIsolate_.chunkCache)
+                        for (auto &p1 : global.game->GameIsolate_.world->chunkCache)
                             for (auto &p2 : p1.second) {
                                 if (ImGui::Selectable(p2.second->pack_filename.c_str())) {
                                     check_chunk.X = p2.second->x;
@@ -670,14 +685,14 @@ CSTDTime | {6} | Nothing
                 if (CollapsingHeader(LANG("ui_entities"))) {
 
                     ImGui::Indent();
-                    ImGui::Auto(global.game->GameIsolate_.world->WorldIsolate_.rigidBodies, "刚体");
-                    ImGui::Auto(global.game->GameIsolate_.world->WorldIsolate_.worldRigidBodies, "世界刚体");
-                    ImGui::Auto(global.game->GameIsolate_.world->WorldIsolate_.entities, "实体");
+                    ImGui::Auto(global.game->GameIsolate_.world->rigidBodies, "刚体");
+                    ImGui::Auto(global.game->GameIsolate_.world->worldRigidBodies, "世界刚体");
+                    // ImGui::Auto(global.game->GameIsolate_.world->worldEntities, "实体");
                     ImGui::Unindent();
                     // static RigidBody *check_rigidbody_ptr = nullptr;
 
                     // if (ImGui::BeginCombo("RigidbodyList", CC("选择检视刚体..."))) {
-                    //     for (auto p1 : global.game->GameIsolate_.world->WorldIsolate_.rigidBodies)
+                    //     for (auto p1 : global.game->GameIsolate_.world->rigidBodies)
                     //         if (ImGui::Selectable(p1->name.c_str())) check_rigidbody_ptr = p1;
                     //     ImGui::EndCombo();
                     // }

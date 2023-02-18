@@ -12,8 +12,7 @@ require("global")
 require("entities.entities")
 require("fonts")
 require("backgrounds.backgrounds")
-
-ecs = require("ecs")
+require("ecs")
 
 OnGameEngineLoad = function()
     InitGraphics()

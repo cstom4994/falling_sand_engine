@@ -191,6 +191,12 @@ typedef union metadot_vec4 {
 
         float W;
     };
+
+    struct {
+        metadot_vec2 pos;
+        metadot_vec2 rect;
+    };
+
     struct {
         union {
             metadot_vec3 RGB;

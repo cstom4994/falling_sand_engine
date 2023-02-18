@@ -10,16 +10,17 @@
 #include "core/core.h"
 #include "core/core.hpp"
 #include "core/global.hpp"
+#include "ecs/ecs.hpp"
 #include "engine/engine.h"
-#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "ui/imgui/imgui_core.hpp"
-#include "ui/imgui/imgui_impl.hpp"
 #include "libs/imgui/imgui.h"
 #include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/scripting.hpp"
+#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_impl.hpp"
 #include "ui/ui.hpp"
 #include "world_generator.cpp"
 
@@ -868,7 +869,9 @@ void DebugDrawUI__Draw(Game *game) {
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(i3, game->GameIsolate_.world);
+
+                    auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -889,7 +892,8 @@ void DebugDrawUI__Draw(Game *game) {
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(i3, game->GameIsolate_.world);
+                    auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -909,7 +913,8 @@ void DebugDrawUI__Draw(Game *game) {
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 6;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(i3, game->GameIsolate_.world);
+                    auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -932,7 +937,8 @@ void DebugDrawUI__Draw(Game *game) {
                     i3->texture = R_CopyImageFromSurface(i3->surface);
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 0;
-                    game->GameIsolate_.world->WorldIsolate_.player->setItemInHand(i3, game->GameIsolate_.world);
+                    auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();

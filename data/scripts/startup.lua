@@ -46,7 +46,6 @@ add_packagepath(METADOT_RESLOC("data/assets/ui/imguicss"))
 -- runf("Script:tests/test_csv.lua")
 -- runf("Script:tests/test_p1.lua")
 -- runf("Script:tests/test_cs.lua")
-runf("Script:tests/test_cecs.lua")
 runf("Script:tests/test_string.lua")
 
 function starts_with(str, start)

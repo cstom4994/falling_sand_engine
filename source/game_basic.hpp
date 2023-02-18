@@ -55,22 +55,6 @@ METAENGINE_GUI_DEFINE_END
 
 #define REGISTER_SYSTEM(name) name(U32 p, SystemFlags f = SystemFlags::SystemFlags_Default) : IGameSystem(p, f, #name){};
 
-class IGameObject {
-public:
-    IGameObject(){};
-    ~IGameObject(){};
-
-    virtual void Create();
-    virtual void Destory();
-    virtual void RegisterReflection();
-};
-
-template <>
-struct MetaEngine::StaticRefl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {};
-};
-
 class GameplayScriptSystem : public IGameSystem {
 public:
     REGISTER_SYSTEM(GameplayScriptSystem)
@@ -82,5 +66,21 @@ public:
 };
 
 Biome *BiomeGet(std::string name);
+
+// class IGameObject {
+// public:
+//     IGameObject(){};
+//     ~IGameObject(){};
+
+//     virtual void Create();
+//     virtual void Destory();
+//     virtual void RegisterReflection();
+// };
+
+// template <>
+// struct MetaEngine::StaticRefl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
+//     static constexpr AttrList attrs = {};
+//     static constexpr FieldList fields = {};
+// };
 
 #endif

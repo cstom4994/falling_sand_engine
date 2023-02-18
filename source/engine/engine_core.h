@@ -22,7 +22,7 @@ typedef struct engine_core {
     U64 max_mem = 4294967296;  // 4096mb
 } engine_core;
 
-typedef struct engine_screen {
+typedef struct windows {
     // Internal resolution, used in rendering
     //  int gameWidth;
     //  int gameHeight;
@@ -34,7 +34,7 @@ typedef struct engine_screen {
     I32 gameScale = 4;
 
     unsigned maxFPS;
-} engine_screen;
+} windows;
 
 typedef struct engine_time {
     I32 feelsLikeFps;

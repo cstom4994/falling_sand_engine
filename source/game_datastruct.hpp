@@ -12,6 +12,7 @@
 #include "core/cpp/static_relfection.hpp"
 #include "core/cpp/type.hpp"
 #include "core/cpp/vector.hpp"
+#include "ecs/ecs.hpp"
 #include "game_basic.hpp"
 #include "internal/builtin_box2d.h"
 #include "mathlib.hpp"
@@ -29,6 +30,7 @@ struct ParticleData;
 struct Biome;
 struct Material;
 struct Player;
+struct Game;
 struct ImGuiContext;
 
 #define RegisterFunctions(name, func)    \
@@ -63,7 +65,7 @@ struct GameData {
     } HostData;
 };
 
-class WorldEntity : public IGameObject {
+class WorldEntity {
 public:
     std::string name;
 
@@ -78,12 +80,17 @@ public:
     b2Body *body = nullptr;
     bool is_player = false;
 
-    WorldEntity(bool isplayer, std::string n = "unknown");
-    ~WorldEntity();
+    WorldEntity(const WorldEntity&) = default;
+
+    WorldEntity(bool isplayer, F32 x, F32 y, F32 vx, F32 vy, int hw, int hh, RigidBody *rb, std::string n = "unknown")
+        : is_player(isplayer), x(x), y(y), vx(vx), vy(vy), hw(hw), hh(hh), rb(rb), name(n) {}
+    ~WorldEntity() {
+        // if (static_cast<bool>(rb)) delete rb;
+    }
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity, Base<IGameObject, true>> {
+struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("x"), &Type::x},
@@ -649,7 +656,9 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
 
 #pragma region Player
 
-class Player : public WorldEntity {
+struct Controlable {};
+
+class Player {
 public:
     Item *heldItem = nullptr;
     F32 holdAngle = 0;
@@ -658,16 +667,18 @@ public:
     int hammerX = 0;
     int hammerY = 0;
 
-    void render(R_Target *target, int ofsX, int ofsY);
-    void renderLQ(R_Target *target, int ofsX, int ofsY);
-    void setItemInHand(Item *item, World *world);
+    void render(WorldEntity *we, R_Target *target, int ofsX, int ofsY);
+    void renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY);
+    void setItemInHand(WorldEntity *we, Item *item, World *world);
+
+    Player(const Player &p) = default;
 
     Player();
     ~Player();
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<WorldEntity>, Base<IGameObject, true>> {
+struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<WorldEntity>> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("heldItem"), &Type::heldItem},
@@ -677,21 +688,41 @@ struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<Worl
             Field{TSTR("hammerX"), &Type::hammerX},
             Field{TSTR("hammerY"), &Type::hammerY},
 
-            Field{TSTR("render"), static_cast<void (Type::*)(R_Target *target, int ofsX, int ofsY) /* const */>(&Type::render)},
-            Field{TSTR("renderLQ"), static_cast<void (Type::*)(R_Target *target, int ofsX, int ofsY) /* const */>(&Type::renderLQ)},
-            Field{TSTR("setItemInHand"), static_cast<void (Type::*)(Item *item, World *world) /* const */>(&Type::setItemInHand)},
+            Field{TSTR("render"), static_cast<void (Type::*)(WorldEntity *we, R_Target *target, int ofsX, int ofsY) /* const */>(&Type::render)},
+            Field{TSTR("renderLQ"), static_cast<void (Type::*)(WorldEntity *we, R_Target *target, int ofsX, int ofsY) /* const */>(&Type::renderLQ)},
+            Field{TSTR("setItemInHand"), static_cast<void (Type::*)(WorldEntity *we, Item *item, World *world) /* const */>(&Type::setItemInHand)},
     };
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
-if (var.is_player) {
-    auto p = (Player *)&var;
-    METADOT_ASSERT_E(p);
-    MetaEngine::StaticRefl::TypeInfo<Player>::ForEachVarOf(*p, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-} else {
-    MetaEngine::StaticRefl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-}
+// if (var.is_player) {
+//     auto p = (Player *)&var;
+//     METADOT_ASSERT_E(p);
+//     MetaEngine::StaticRefl::TypeInfo<Player>::ForEachVarOf(*p, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+// } else {
+//     MetaEngine::StaticRefl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+// }
 METAENGINE_GUI_DEFINE_END
+
+struct update_event {
+    F32 dt;
+    F32 thruTick;
+    Game *g;
+};
+
+struct entity_update_event {
+    Game *g;
+};
+
+class PlayerSystem : public MetaEngine::ECS::system<update_event> {
+public:
+    void process(MetaEngine::ECS::registry &world, const update_event &evt) override;
+};
+
+class WorldEntitySystem : public MetaEngine::ECS::system<entity_update_event> {
+public:
+    void process(MetaEngine::ECS::registry &world, const entity_update_event &evt) override;
+};
 
 #pragma endregion Player
 
