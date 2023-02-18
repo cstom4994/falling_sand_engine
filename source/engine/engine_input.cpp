@@ -9,7 +9,7 @@
 #include "core/cpp/stl.hpp"
 #include "sdl_wrapper.h"
 
-MetaEngine::vector<std::shared_ptr<KeyControl>> ControlSystem::keyControls = {};
+MetaEngine::vector<MetaEngine::Ref<KeyControl>> ControlSystem::keyControls = {};
 std::map<std::string, int> ControlSystem::SDLKeymap = {};
 bool ControlSystem::initted = false;
 
@@ -60,29 +60,29 @@ void ControlSystem::KeyEvent(C_KeyboardEvent event) {
 }
 
 void ControlSystem::InitKey() {
-    STATS_DISPLAY = Add(std::make_shared<KeyControl>(SDLK_o, RISING));
-    STATS_DISPLAY_DETAILED = Add(std::make_shared<KeyControl>(SDLK_LSHIFT, MOMENTARY));
-    DEBUG_UI = Add(std::make_shared<KeyControl>(SDLK_TAB, RISING));
-    DEBUG_REFRESH = Add(std::make_shared<KeyControl>(SDLK_KP_0, RISING));
-    DEBUG_UPDATE_WORLD_MESH = Add(std::make_shared<KeyControl>(SDLK_KP_1, RISING));
-    DEBUG_TICK = Add(std::make_shared<KeyControl>(SDLK_KP_2, RISING));
-    DEBUG_EXPLODE = Add(std::make_shared<KeyControl>(SDLK_e, RISING));
-    DEBUG_CARVE = Add(std::make_shared<KeyControl>(SDLK_c, RISING));
-    DEBUG_RIGID = Add(std::make_shared<KeyControl>(SDLK_r, RISING));
-    DEBUG_DRAW = Add(std::make_shared<KeyControl>(SDLK_x, MOMENTARY));
-    DEBUG_BRUSHSIZE_INC = Add(std::make_shared<KeyControl>(']', TYPE));
-    DEBUG_BRUSHSIZE_DEC = Add(std::make_shared<KeyControl>('[', TYPE));
-    DEBUG_TOGGLE_PLAYER = Add(std::make_shared<KeyControl>(SDLK_p, RISING));
-    PLAYER_UP = Add(std::make_shared<KeyControl>(SDLK_w, MOMENTARY));
-    PLAYER_LEFT = Add(std::make_shared<KeyControl>(SDLK_a, MOMENTARY));
-    PLAYER_DOWN = Add(std::make_shared<KeyControl>(SDLK_s, MOMENTARY));
-    PLAYER_RIGHT = Add(std::make_shared<KeyControl>(SDLK_d, MOMENTARY));
-    ZOOM_IN = Add(std::make_shared<KeyControl>(SDLK_PAGEUP, MOMENTARY));
-    ZOOM_OUT = Add(std::make_shared<KeyControl>(SDLK_PAGEDOWN, MOMENTARY));
-    PAUSE = Add(std::make_shared<KeyControl>(SDLK_ESCAPE, RISING));
+    STATS_DISPLAY = Add(MetaEngine::CreateRef<KeyControl>(SDLK_o, RISING));
+    STATS_DISPLAY_DETAILED = Add(MetaEngine::CreateRef<KeyControl>(SDLK_LSHIFT, MOMENTARY));
+    DEBUG_UI = Add(MetaEngine::CreateRef<KeyControl>(SDLK_TAB, RISING));
+    DEBUG_REFRESH = Add(MetaEngine::CreateRef<KeyControl>(SDLK_KP_0, RISING));
+    DEBUG_UPDATE_WORLD_MESH = Add(MetaEngine::CreateRef<KeyControl>(SDLK_KP_1, RISING));
+    DEBUG_TICK = Add(MetaEngine::CreateRef<KeyControl>(SDLK_KP_2, RISING));
+    DEBUG_EXPLODE = Add(MetaEngine::CreateRef<KeyControl>(SDLK_e, RISING));
+    DEBUG_CARVE = Add(MetaEngine::CreateRef<KeyControl>(SDLK_c, RISING));
+    DEBUG_RIGID = Add(MetaEngine::CreateRef<KeyControl>(SDLK_r, RISING));
+    DEBUG_DRAW = Add(MetaEngine::CreateRef<KeyControl>(SDLK_x, MOMENTARY));
+    DEBUG_BRUSHSIZE_INC = Add(MetaEngine::CreateRef<KeyControl>(']', TYPE));
+    DEBUG_BRUSHSIZE_DEC = Add(MetaEngine::CreateRef<KeyControl>('[', TYPE));
+    DEBUG_TOGGLE_PLAYER = Add(MetaEngine::CreateRef<KeyControl>(SDLK_p, RISING));
+    PLAYER_UP = Add(MetaEngine::CreateRef<KeyControl>(SDLK_w, MOMENTARY));
+    PLAYER_LEFT = Add(MetaEngine::CreateRef<KeyControl>(SDLK_a, MOMENTARY));
+    PLAYER_DOWN = Add(MetaEngine::CreateRef<KeyControl>(SDLK_s, MOMENTARY));
+    PLAYER_RIGHT = Add(MetaEngine::CreateRef<KeyControl>(SDLK_d, MOMENTARY));
+    ZOOM_IN = Add(MetaEngine::CreateRef<KeyControl>(SDLK_PAGEUP, MOMENTARY));
+    ZOOM_OUT = Add(MetaEngine::CreateRef<KeyControl>(SDLK_PAGEDOWN, MOMENTARY));
+    PAUSE = Add(MetaEngine::CreateRef<KeyControl>(SDLK_ESCAPE, RISING));
 }
 
-KeyControl *ControlSystem::Add(std::shared_ptr<KeyControl> c) {
+KeyControl *ControlSystem::Add(MetaEngine::Ref<KeyControl> c) {
 
     if (!initted) {
         keyControls = {};

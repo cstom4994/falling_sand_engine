@@ -270,7 +270,7 @@ int luaopen_mu(lua_State *L) {
 }
 
 #if not(defined METADOT_MU_NO_MACRO && defined METADOT_MU_COMPILER_ONLY)
-#define _DEFER(code, line) std::shared_ptr<void> _defer_##line(nullptr, [&](auto) { code; })
+#define _DEFER(code, line) MetaEngine::Ref<void> _defer_##line(nullptr, [&](auto) { code; })
 #define DEFER(code) _DEFER(code, __LINE__)
 
 static void openlibs(void *state) {

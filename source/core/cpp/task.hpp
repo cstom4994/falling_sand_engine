@@ -33,7 +33,7 @@ class Service {
     Tasks tasks_;
 #if METADOT_PROMISE_MULTITHREAD
     // std::recursive_mutex mutex_;
-    std::shared_ptr<Mutex> mutex_;
+    MetaEngine::Ref<Mutex> mutex_;
 #endif
     std::condition_variable_any cond_;
     std::atomic<bool> isAutoStop_;
@@ -41,9 +41,9 @@ class Service {
     // Unlock and then lock
 #if METADOT_PROMISE_MULTITHREAD
     struct unlock_guard_t {
-        inline unlock_guard_t(std::shared_ptr<Mutex> mutex) : mutex_(mutex), lock_count_(mutex->lock_count()) { mutex_->unlock(lock_count_); }
+        inline unlock_guard_t(MetaEngine::Ref<Mutex> mutex) : mutex_(mutex), lock_count_(mutex->lock_count()) { mutex_->unlock(lock_count_); }
         inline ~unlock_guard_t() { mutex_->lock(lock_count_); }
-        std::shared_ptr<Mutex> mutex_;
+        MetaEngine::Ref<Mutex> mutex_;
         size_t lock_count_;
     };
 #endif
@@ -53,7 +53,7 @@ public:
           isStop_(false)
 #if METADOT_PROMISE_MULTITHREAD
           ,
-          mutex_(std::make_shared<Mutex>())
+          mutex_(MetaEngine::CreateRef<Mutex>())
 #endif
     {
     }

@@ -23,6 +23,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "core/core.hpp"
+
 #pragma region ParserLib
 
 namespace parserlib {
@@ -1687,7 +1689,7 @@ namespace mu {
 #define BREAK_IF(cond) \
     if (cond) break
 
-#define _DEFER(code, line) std::shared_ptr<void> _defer_##line(nullptr, [&](auto) { code; })
+#define _DEFER(code, line) MetaEngine::Ref<void> _defer_##line(nullptr, [&](auto) { code; })
 #define DEFER(code) _DEFER(code, __LINE__)
 #define SERROR(msg, node) throw std::logic_error(_info.errorMessage("[File] "s + __FILE__ + ",\n[Func] "s + __FUNCTION__ + ",\n[Line] "s + std::to_string(__LINE__) + ",\n[Error] "s + msg, node))
 

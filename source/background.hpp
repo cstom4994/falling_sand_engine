@@ -32,8 +32,8 @@ struct BackgroundLayer {
 class BackgroundObject {
 public:
     U32 solid;
-    std::vector<std::shared_ptr<BackgroundLayer>> layers;
-    explicit BackgroundObject(U32 solid, std::vector<std::shared_ptr<BackgroundLayer>> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    std::vector<MetaEngine::Ref<BackgroundLayer>> layers;
+    explicit BackgroundObject(U32 solid, std::vector<MetaEngine::Ref<BackgroundLayer>> layers) : solid(std::move(solid)), layers(std::move(layers)){};
     void Init();
 };
 

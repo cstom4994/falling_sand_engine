@@ -45,11 +45,11 @@ void BackgroundObject::Init() {
 void NewBackgroundObject(std::string name, U32 solid, LuaWrapper::LuaRef table) {
     auto &L = Scripting::GetSingletonPtr()->Lua->s_lua;
     std::vector<LuaWrapper::LuaRef> b = table;
-    std::vector<std::shared_ptr<BackgroundLayer>> Layers;
+    std::vector<MetaEngine::Ref<BackgroundLayer>> Layers;
 
     for (auto &c : b) {
         METADOT_BUG("NewBackgroundObject %s, [%f %f %f %f]", c["name"].get<std::string>().c_str(), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>());
-        Layers.push_back(std::make_shared<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>()));
+        Layers.push_back(MetaEngine::CreateRef<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>()));
     }
 
     METADOT_CREATE(C, bg, BackgroundObject, solid, Layers);

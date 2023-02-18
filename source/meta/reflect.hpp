@@ -18,6 +18,8 @@
 #include <utility>
 #include <vector>
 
+#include "core/core.hpp"
+
 #ifndef enum_t
 /// enum_t "enum type (scoped)" assumes the property of enum classes that encloses the enum values within a particular scope
 /// e.g. MyClass::MyEnum::Value cannot be accessed via MyClass::Value (as it could with regular enums) and potentially cause redefinition errors
@@ -1635,7 +1637,7 @@ constexpr inline void map_default(To &to, const From &from) {
                     if constexpr (std::is_same_v<From, To>)
                         to = from;  // Share shared pointer
                     else {
-                        to = std::make_shared<ToDereferenced>();
+                        to = MetaEngine::CreateRef<ToDereferenced>();
                         ObjectMapper::map(*to, *from);
                     }
                 } else if constexpr (std::is_same_v<std::unique_ptr<ToDereferenced>, To>) {
@@ -1643,7 +1645,7 @@ constexpr inline void map_default(To &to, const From &from) {
                     ObjectMapper::map(*to, *from);
                 }
             } else if constexpr (std::is_same_v<std::shared_ptr<ToDereferenced>, To>) {
-                to = std::make_shared<ToDereferenced>();
+                to = MetaEngine::CreateRef<ToDereferenced>();
                 ObjectMapper::map(*to, from);
             } else if constexpr (std::is_same_v<std::unique_ptr<ToDereferenced>, To>) {
                 to = std::make_unique<ToDereferenced>();

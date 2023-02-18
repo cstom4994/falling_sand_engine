@@ -98,19 +98,19 @@ int Game::init(int argc, char *argv[]) {
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
 
-    GameIsolate_.gameplayscript = std::make_shared<GameplayScriptSystem>(2);
+    GameIsolate_.gameplayscript = MetaEngine::CreateRef<GameplayScriptSystem>(2);
     GameIsolate_.systemList.push_back(GameIsolate_.gameplayscript);
 
-    GameIsolate_.ui = std::make_shared<UISystem>(3);
+    GameIsolate_.ui = MetaEngine::CreateRef<UISystem>(3);
     GameIsolate_.systemList.push_back(GameIsolate_.ui);
 
-    GameIsolate_.console = std::make_shared<ConsoleSystem>(4, SystemFlags::SystemFlags_ImGui);
+    GameIsolate_.console = MetaEngine::CreateRef<ConsoleSystem>(4, SystemFlags::SystemFlags_ImGui);
     GameIsolate_.systemList.push_back(GameIsolate_.console);
 
-    GameIsolate_.shaderworker = std::make_shared<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
+    GameIsolate_.shaderworker = MetaEngine::CreateRef<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
     GameIsolate_.systemList.push_back(GameIsolate_.shaderworker);
 
-    GameIsolate_.backgrounds = std::make_shared<BackgroundSystem>(8);
+    GameIsolate_.backgrounds = MetaEngine::CreateRef<BackgroundSystem>(8);
     GameIsolate_.systemList.push_back(GameIsolate_.backgrounds);
 
     // Initialize scripting system
@@ -1058,7 +1058,7 @@ int Game::exit() {
     running = false;
 
     // release resources & shutdown
-    MetaEngine::vector<std::shared_ptr<IGameSystem>>::reverse_iterator backwardIterator;
+    MetaEngine::vector<MetaEngine::Ref<IGameSystem>>::reverse_iterator backwardIterator;
     for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->Destory();
     }

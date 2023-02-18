@@ -48,6 +48,7 @@ enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 class Game {
 public:
     using EventCallbackFn = std::function<void(MetaEngine::Event &)>;
+    using SystemList = MetaEngine::vector<MetaEngine::Ref<IGameSystem>>;
 
 public:
     EnumGameState state = LOADING;
@@ -91,13 +92,13 @@ public:
     EventCallbackFn EventCallback;
 
     struct {
-        std::shared_ptr<BackgroundSystem> backgrounds;
-        std::shared_ptr<GameplayScriptSystem> gameplayscript;
-        std::shared_ptr<ShaderWorkerSystem> shaderworker;
-        std::shared_ptr<ConsoleSystem> console;
-        std::shared_ptr<UISystem> ui;
+        MetaEngine::Ref<BackgroundSystem> backgrounds;
+        MetaEngine::Ref<GameplayScriptSystem> gameplayscript;
+        MetaEngine::Ref<ShaderWorkerSystem> shaderworker;
+        MetaEngine::Ref<ConsoleSystem> console;
+        MetaEngine::Ref<UISystem> ui;
 
-        MetaEngine::vector<std::shared_ptr<IGameSystem>> systemList = {};
+        SystemList systemList = {};
 
         GlobalDEF globaldef;
         World *world = nullptr;

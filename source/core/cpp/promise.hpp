@@ -1139,7 +1139,7 @@ PromiseHolder::PromiseHolder()
       value_()
 #if METADOT_PROMISE_MULTITHREAD
       ,
-      mutex_(std::make_shared<Mutex>())
+      mutex_(MetaEngine::CreateRef<Mutex>())
 #endif
 {
 }
@@ -1274,7 +1274,7 @@ Promise &Promise::then(const any &onResolved, const any &onRejected) {
         std::lock_guard<Mutex> lock(*mutex, std::adopt_lock_t());
 #endif
 
-        task = std::make_shared<Task>(Task{TaskState::kPending, sharedPromise_->promiseHolder_, onResolved, onRejected});
+        task = MetaEngine::CreateRef<Task>(Task{TaskState::kPending, sharedPromise_->promiseHolder_, onResolved, onRejected});
         sharedPromise_->promiseHolder_->pendingTasks_.push_back(task);
     }
     call(task);
@@ -1355,8 +1355,8 @@ Promise::operator bool() const { return sharedPromise_.operator bool(); }
 
 Promise newPromise(const std::function<void(Defer &defer)> &run) {
     Promise promise;
-    promise.sharedPromise_ = std::make_shared<SharedPromise>();
-    promise.sharedPromise_->promiseHolder_ = std::make_shared<PromiseHolder>();
+    promise.sharedPromise_ = MetaEngine::CreateRef<SharedPromise>();
+    promise.sharedPromise_->promiseHolder_ = MetaEngine::CreateRef<PromiseHolder>();
     promise.sharedPromise_->promiseHolder_->owners_.push_back(promise.sharedPromise_);
 
     // return as is
@@ -1375,8 +1375,8 @@ Promise newPromise(const std::function<void(Defer &defer)> &run) {
 
 Promise newPromise() {
     Promise promise;
-    promise.sharedPromise_ = std::make_shared<SharedPromise>();
-    promise.sharedPromise_->promiseHolder_ = std::make_shared<PromiseHolder>();
+    promise.sharedPromise_ = MetaEngine::CreateRef<SharedPromise>();
+    promise.sharedPromise_->promiseHolder_ = MetaEngine::CreateRef<PromiseHolder>();
     promise.sharedPromise_->promiseHolder_->owners_.push_back(promise.sharedPromise_);
 
     // return as is
@@ -1430,9 +1430,9 @@ Promise all(const std::list<Promise> &promise_list) {
         return resolve();
     }
 
-    std::shared_ptr<size_t> finished = std::make_shared<size_t>(0);
-    std::shared_ptr<size_t> size = std::make_shared<size_t>(promise_list.size());
-    std::shared_ptr<std::vector<any>> retArr = std::make_shared<std::vector<any>>();
+    std::shared_ptr<size_t> finished = MetaEngine::CreateRef<size_t>(0);
+    std::shared_ptr<size_t> size = MetaEngine::CreateRef<size_t>(promise_list.size());
+    std::shared_ptr<std::vector<any>> retArr = MetaEngine::CreateRef<std::vector<any>>();
     retArr->resize(*size);
 
     return newPromise([=](Defer &defer) {
@@ -1473,12 +1473,12 @@ static Promise race(const std::list<Promise> &promise_list, std::shared_ptr<int>
 }
 
 Promise race(const std::list<Promise> &promise_list) {
-    std::shared_ptr<int> winner = std::make_shared<int>(-1);
+    std::shared_ptr<int> winner = MetaEngine::CreateRef<int>(-1);
     return race(promise_list, winner);
 }
 
 Promise raceAndReject(const std::list<Promise> &promise_list) {
-    std::shared_ptr<int> winner = std::make_shared<int>(-1);
+    std::shared_ptr<int> winner = MetaEngine::CreateRef<int>(-1);
     return race(promise_list, winner).finally([promise_list, winner] {
         int index = 0;
         for (auto it = promise_list.begin(); it != promise_list.end(); ++it, ++index) {
@@ -1491,7 +1491,7 @@ Promise raceAndReject(const std::list<Promise> &promise_list) {
 }
 
 Promise raceAndResolve(const std::list<Promise> &promise_list) {
-    std::shared_ptr<int> winner = std::make_shared<int>(-1);
+    std::shared_ptr<int> winner = MetaEngine::CreateRef<int>(-1);
     return race(promise_list, winner).finally([promise_list, winner] {
         int index = 0;
         for (auto it = promise_list.begin(); it != promise_list.end(); ++it, ++index) {

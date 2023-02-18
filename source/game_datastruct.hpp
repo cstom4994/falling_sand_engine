@@ -368,7 +368,7 @@ METAENGINE_GUI_DEFINE_BEGIN(template <>, Item)
 MetaEngine::StaticRefl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
 METAENGINE_GUI_DEFINE_END
 
-using ItemLuaPtr = std::shared_ptr<Item>;
+using ItemLuaPtr = MetaEngine::Ref<Item>;
 
 struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
     static constexpr const char *class_name = "Item";
@@ -378,7 +378,7 @@ struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
         LuaWrapper::PodBind::CheckArgCount(L, 2);
         const char *name = luaL_checkstring(L, 1);
         int age = luaL_checkinteger(L, 2);
-        ItemLuaPtr sp = std::make_shared<Item>();
+        ItemLuaPtr sp = MetaEngine::CreateRef<Item>();
         push(L, sp);
         return 1;
     }
@@ -579,7 +579,7 @@ ImGui::Text("needsUpdate: %s", BOOL_STRING(var.needsUpdate));
 ImGui::Text("texNeedsUpdate: %s", BOOL_STRING(var.texNeedsUpdate));
 METAENGINE_GUI_DEFINE_END
 
-using RigidBodyPtr = std::shared_ptr<RigidBody>;
+using RigidBodyPtr = MetaEngine::Ref<RigidBody>;
 
 struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
     static constexpr const char *class_name = "RigidBody";
@@ -600,7 +600,7 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
         LuaWrapper::PodBind::CheckArgCount(L, 2);
         b2Body *body = (b2Body *)lua_touserdata(L, 1);
         const char *name = luaL_checkstring(L, 2);
-        RigidBodyPtr sp = std::make_shared<RigidBody>(body, name);
+        RigidBodyPtr sp = MetaEngine::CreateRef<RigidBody>(body, name);
         push(L, sp);
         return 1;
     }

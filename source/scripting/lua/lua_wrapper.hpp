@@ -1935,31 +1935,31 @@ private:
 
 struct ObjectSharedPointerWrapper : ObjectWrapperBase {
     template <typename T>
-    ObjectSharedPointerWrapper(const std::shared_ptr<T> &sptr)
+    ObjectSharedPointerWrapper(const MetaEngine::Ref<T> &sptr)
         : object_(std::const_pointer_cast<typename std::remove_const<T>::type>(sptr)),
           type_(metatableType<T>()),
-          shared_ptr_type_(metatableType<std::shared_ptr<typename traits::decay<T>::type>>()),
+          shared_ptr_type_(metatableType<MetaEngine::Ref<typename traits::decay<T>::type>>()),
           const_value_(traits::is_const<T>::value) {}
 
     template <typename T>
-    ObjectSharedPointerWrapper(std::shared_ptr<T> &&sptr)
+    ObjectSharedPointerWrapper(MetaEngine::Ref<T> &&sptr)
         : object_(std::move(std::const_pointer_cast<typename std::remove_const<T>::type>(sptr))),
           type_(metatableType<T>()),
-          shared_ptr_type_(metatableType<std::shared_ptr<typename traits::decay<T>::type>>()),
+          shared_ptr_type_(metatableType<MetaEngine::Ref<typename traits::decay<T>::type>>()),
           const_value_(traits::is_const<T>::value) {}
 
     virtual const std::type_info &type() { return type_; }
     virtual void *get() { return const_value_ ? 0 : object_.get(); }
     virtual const void *cget() { return object_.get(); }
-    std::shared_ptr<void> object() const { return const_value_ ? std::shared_ptr<void>() : object_; }
-    std::shared_ptr<const void> const_object() const { return object_; }
+    MetaEngine::Ref<void> object() const { return const_value_ ? MetaEngine::Ref<void>() : object_; }
+    MetaEngine::Ref<const void> const_object() const { return object_; }
     const std::type_info &shared_ptr_type() const { return shared_ptr_type_; }
 
-    virtual const std::type_info &native_type() { return metatableType<std::shared_ptr<void>>(); }
+    virtual const std::type_info &native_type() { return metatableType<MetaEngine::Ref<void>>(); }
     virtual void *native_get() { return &object_; }
 
 private:
-    std::shared_ptr<void> object_;
+    MetaEngine::Ref<void> object_;
     const std::type_info &type_;
 
     const std::type_info &shared_ptr_type_;
@@ -2012,18 +2012,18 @@ struct PointerConverter {
         return static_cast<T *>(static_cast<F *>(from));
     }
     template <typename T, typename F>
-    static std::shared_ptr<void> base_shared_pointer_cast(const std::shared_ptr<void> &from) {
-        return std::shared_ptr<T>(std::static_pointer_cast<F>(from));
+    static MetaEngine::Ref<void> base_shared_pointer_cast(const MetaEngine::Ref<void> &from) {
+        return MetaEngine::Ref<T>(std::static_pointer_cast<F>(from));
     }
 
     typedef void *(*convert_function_type)(void *);
-    typedef std::shared_ptr<void> (*shared_ptr_convert_function_type)(const std::shared_ptr<void> &);
+    typedef MetaEngine::Ref<void> (*shared_ptr_convert_function_type)(const MetaEngine::Ref<void> &);
     typedef std::pair<std::string, std::string> convert_map_key;
 
     template <typename ToType, typename FromType>
     void add_type_conversion() {
         add_function(metatableType<ToType>(), metatableType<FromType>(), &base_pointer_cast<ToType, FromType>);
-        add_function(metatableType<std::shared_ptr<ToType>>(), metatableType<std::shared_ptr<FromType>>(), &base_shared_pointer_cast<ToType, FromType>);
+        add_function(metatableType<MetaEngine::Ref<ToType>>(), metatableType<MetaEngine::Ref<FromType>>(), &base_shared_pointer_cast<ToType, FromType>);
     }
 
     template <typename TO>
@@ -2056,8 +2056,8 @@ struct PointerConverter {
     }
 
     template <typename TO>
-    std::shared_ptr<TO> get_shared_pointer(ObjectSharedPointerWrapper *from) const {
-        const std::type_info &to_type = metatableType<std::shared_ptr<typename traits::decay<TO>::type>>();
+    MetaEngine::Ref<TO> get_shared_pointer(ObjectSharedPointerWrapper *from) const {
+        const std::type_info &to_type = metatableType<MetaEngine::Ref<typename traits::decay<TO>::type>>();
         // unreachable
         //			if (to_type == from->type())
         //			{
@@ -2067,7 +2067,7 @@ struct PointerConverter {
         const std::type_info &from_type = from->shared_ptr_type();
         std::map<convert_map_key, std::vector<shared_ptr_convert_function_type>>::const_iterator match = shared_ptr_function_map_.find(convert_map_key(to_type.name(), from_type.name()));
         if (match != shared_ptr_function_map_.end()) {
-            std::shared_ptr<void> sptr = from->object();
+            MetaEngine::Ref<void> sptr = from->object();
 
             if (!sptr && std::is_const<TO>::value) {
                 sptr = std::const_pointer_cast<void>(from->const_object());
@@ -2075,7 +2075,7 @@ struct PointerConverter {
 
             return std::static_pointer_cast<TO>(pcvt_list_apply(sptr, match->second));
         }
-        return std::shared_ptr<TO>();
+        return MetaEngine::Ref<TO>();
     }
 
     template <class T>
@@ -2083,12 +2083,12 @@ struct PointerConverter {
         return get_pointer<T>(from);
     }
     template <class T>
-    std::shared_ptr<T> get_pointer(ObjectWrapperBase *from, types::typetag<std::shared_ptr<T>>) {
+    MetaEngine::Ref<T> get_pointer(ObjectWrapperBase *from, types::typetag<MetaEngine::Ref<T>>) {
         ObjectSharedPointerWrapper *ptr = dynamic_cast<ObjectSharedPointerWrapper *>(from);
         if (ptr) {
             return get_shared_pointer<T>(ptr);
         }
-        return std::shared_ptr<T>();
+        return MetaEngine::Ref<T>();
     }
 
     static int deleter(lua_State *state) {
@@ -2173,7 +2173,7 @@ private:
         }
         return ptr;
     }
-    std::shared_ptr<void> pcvt_list_apply(std::shared_ptr<void> ptr, const std::vector<shared_ptr_convert_function_type> &flist) const {
+    MetaEngine::Ref<void> pcvt_list_apply(MetaEngine::Ref<void> ptr, const std::vector<shared_ptr_convert_function_type> &flist) const {
         for (std::vector<shared_ptr_convert_function_type>::const_iterator i = flist.begin(); i != flist.end(); ++i) {
             ptr = (*i)(std::move(ptr));
         }
@@ -2295,11 +2295,11 @@ const T *get_pointer(lua_State *l, int index, types::typetag<const T>) {
 }
 
 template <class T>
-std::shared_ptr<T> get_shared_pointer(lua_State *l, int index, types::typetag<T>) {
+MetaEngine::Ref<T> get_shared_pointer(lua_State *l, int index, types::typetag<T>) {
     ObjectSharedPointerWrapper *ptr = dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
     if (ptr) {
         const std::type_info &from_type = ptr->shared_ptr_type();
-        const std::type_info &to_type = metatableType<std::shared_ptr<typename traits::decay<T>::type>>();
+        const std::type_info &to_type = metatableType<MetaEngine::Ref<typename traits::decay<T>::type>>();
 #if METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK
         if (strcmp(from_type.name(), to_type.name()) == 0) {
 #else
@@ -2314,21 +2314,21 @@ std::shared_ptr<T> get_shared_pointer(lua_State *l, int index, types::typetag<T>
         PointerConverter &pcvt = PointerConverter::get(l);
         return pcvt.get_shared_pointer<T>(ptr);
     }
-    return std::shared_ptr<T>();
+    return MetaEngine::Ref<T>();
 }
-inline std::shared_ptr<void> get_shared_pointer(lua_State *l, int index, types::typetag<void>) {
+inline MetaEngine::Ref<void> get_shared_pointer(lua_State *l, int index, types::typetag<void>) {
     ObjectSharedPointerWrapper *ptr = dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
     if (ptr) {
         return ptr->object();
     }
-    return std::shared_ptr<void>();
+    return MetaEngine::Ref<void>();
 }
-inline std::shared_ptr<const void> get_shared_pointer(lua_State *l, int index, types::typetag<const void>) {
+inline MetaEngine::Ref<const void> get_shared_pointer(lua_State *l, int index, types::typetag<const void>) {
     ObjectSharedPointerWrapper *ptr = dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
     if (ptr) {
         return ptr->const_object();
     }
-    return std::shared_ptr<const void>();
+    return MetaEngine::Ref<const void>();
 }
 
 namespace class_userdata {
@@ -2498,7 +2498,7 @@ private:
     private:
         DataType data_;
     };
-    std::shared_ptr<DataHolderBase> holder_;
+    MetaEngine::Ref<DataHolderBase> holder_;
 };
 
 template <typename T>
@@ -2841,16 +2841,16 @@ struct lua_type_traits<optional<T>> {
 /// @ingroup lua_type_traits
 /// @brief lua_type_traits for shared_ptr
 template <typename T>
-struct lua_type_traits<std::shared_ptr<T>> {
-    typedef const std::shared_ptr<T> &push_type;
-    typedef std::shared_ptr<T> get_type;
+struct lua_type_traits<MetaEngine::Ref<T>> {
+    typedef const MetaEngine::Ref<T> &push_type;
+    typedef MetaEngine::Ref<T> get_type;
 
     static bool strictCheckType(lua_State *l, int index) {
         ObjectSharedPointerWrapper *wrapper = dynamic_cast<ObjectSharedPointerWrapper *>(object_wrapper(l, index));
         if (!wrapper) {
             return false;
         }
-        const std::type_info &type = metatableType<std::shared_ptr<typename traits::decay<T>::type>>();
+        const std::type_info &type = metatableType<MetaEngine::Ref<typename traits::decay<T>::type>>();
 #if METAENGINE_LUAWRAPPER_NAME_BASED_TYPE_CHECK
         return strcmp(wrapper->shared_ptr_type().name(), type.name()) == 0;
 #else
@@ -3676,7 +3676,7 @@ public:
 
     private:
         lua_State *state_;
-        std::shared_ptr<int> ref_;
+        MetaEngine::Ref<int> ref_;
     };
 #else
     struct RefHolder {
@@ -5108,7 +5108,7 @@ struct FunctionImpl {
     virtual ~FunctionImpl() {}
 };
 struct PolymorphicInvoker {
-    typedef std::shared_ptr<FunctionImpl> holder_type;
+    typedef MetaEngine::Ref<FunctionImpl> holder_type;
     PolymorphicInvoker(const holder_type &fptr) : fnc(fptr) {}
     int invoke(lua_State *state) const { return fnc->invoke(state); }
     std::string argTypesName() const { return fnc->argTypesName(); }
@@ -5880,7 +5880,7 @@ private:
     struct DataHolder<char[N]> : DataHolder<std::string> {
         explicit DataHolder(const char *v) : DataHolder<std::string>(std::string(v, v[N - 1] != '\0' ? v + N : v + N - 1)) {}
     };
-    std::shared_ptr<DataHolderBase> holder_;
+    MetaEngine::Ref<DataHolderBase> holder_;
 };
 
 /// @ingroup lua_type_traits
@@ -7312,7 +7312,7 @@ struct DefaultAllocator {
 
 /// lua_State wrap class
 class State {
-    std::shared_ptr<void> allocator_holder_;
+    MetaEngine::Ref<void> allocator_holder_;
     lua_State *state_;
     bool created_;
 
@@ -7373,7 +7373,7 @@ public:
     /// bit target'
     /// @param allocator allocator for memory allocation @see DefaultAllocator
     template <typename Allocator>
-    State(std::shared_ptr<Allocator> allocator) : allocator_holder_(allocator), state_(lua_newstate(&AllocatorFunction<Allocator>, allocator_holder_.get())), created_(true) {
+    State(MetaEngine::Ref<Allocator> allocator) : allocator_holder_(allocator), state_(lua_newstate(&AllocatorFunction<Allocator>, allocator_holder_.get())), created_(true) {
         init(AllLoadLibs());
     }
 
@@ -7390,7 +7390,7 @@ public:
     /// @param libs load libraries
     /// @param allocator allocator for memory allocation @see DefaultAllocator
     template <typename Allocator>
-    State(const LoadLibs &libs, std::shared_ptr<Allocator> allocator) : allocator_holder_(allocator), state_(lua_newstate(&AllocatorFunction<Allocator>, allocator_holder_.get())), created_(true) {
+    State(const LoadLibs &libs, MetaEngine::Ref<Allocator> allocator) : allocator_holder_(allocator), state_(lua_newstate(&AllocatorFunction<Allocator>, allocator_holder_.get())), created_(true) {
         init(libs);
     }
 
@@ -8104,16 +8104,16 @@ template <class B, class T>
 struct Binding {
 
     // Push the object on to the Lua stack
-    static void push(lua_State *L, const std::shared_ptr<T> &sp) {
+    static void push(lua_State *L, const MetaEngine::Ref<T> &sp) {
 
         if (sp == nullptr) {
             lua_pushnil(L);
             return;
         }
 
-        void *ud = lua_newuserdata(L, sizeof(std::shared_ptr<T>));
+        void *ud = lua_newuserdata(L, sizeof(MetaEngine::Ref<T>));
 
-        new (ud) std::shared_ptr<T>(sp);
+        new (ud) MetaEngine::Ref<T>(sp);
 
         luaL_setmetatable(L, B::class_name);
     }
@@ -8200,7 +8200,7 @@ struct Binding {
     static int destroy(lua_State *L) {
         void *ud = luaL_checkudata(L, 1, B::class_name);
 
-        auto sp = static_cast<std::shared_ptr<T> *>(ud);
+        auto sp = static_cast<MetaEngine::Ref<T> *>(ud);
 
         // Explicitly called, as this was 'placement new'd
         sp->~shared_ptr();
@@ -8212,7 +8212,7 @@ struct Binding {
     static int close(lua_State *L) {
         void *ud = luaL_checkudata(L, 1, B::class_name);
 
-        auto sp = static_cast<std::shared_ptr<T> *>(ud);
+        auto sp = static_cast<MetaEngine::Ref<T> *>(ud);
 
         sp->reset();
 
@@ -8220,20 +8220,20 @@ struct Binding {
     }
 
     // Grab object shared pointer from the Lua stack
-    static const std::shared_ptr<T> &fromStack(lua_State *L, int index) {
+    static const MetaEngine::Ref<T> &fromStack(lua_State *L, int index) {
         void *ud = luaL_checkudata(L, index, B::class_name);
 
-        auto sp = static_cast<std::shared_ptr<T> *>(ud);
+        auto sp = static_cast<MetaEngine::Ref<T> *>(ud);
 
         return *sp;
     }
 
-    static const std::shared_ptr<T> &fromStackThrow(lua_State *L, int index) {
+    static const MetaEngine::Ref<T> &fromStackThrow(lua_State *L, int index) {
         void *ud = luaL_testudata(L, index, B::class_name);
 
         if (ud == nullptr) throw LuaException("Unexpected item on Lua stack.");
 
-        auto sp = static_cast<std::shared_ptr<T> *>(ud);
+        auto sp = static_cast<MetaEngine::Ref<T> *>(ud);
 
         return *sp;
     }

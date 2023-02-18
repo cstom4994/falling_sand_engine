@@ -220,7 +220,7 @@ public:
 private:
     bool setValue(void* value, ObjectType type);
 
-    std::shared_ptr<ObjectImpl> mObject;
+    MetaEngine::Ref<ObjectImpl> mObject;
 };
 
 template <>
