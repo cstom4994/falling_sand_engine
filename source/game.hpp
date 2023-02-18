@@ -25,7 +25,7 @@
 #include "core/threadpool.h"
 #include "cvar.hpp"
 #include "engine/engine_input.hpp"
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"

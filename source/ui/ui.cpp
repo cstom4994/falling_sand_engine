@@ -206,7 +206,7 @@ F32 BoxDistence(metadot_rect box, R_vec2 A) {
 void UISystem::UIRendererUpdate() {
 
     global.uidata->imguiCore->Update();
-    auto &l = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua;
+    auto &l = Scripting::GetSingletonPtr()->Lua->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 

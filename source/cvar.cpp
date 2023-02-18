@@ -1,12 +1,12 @@
 
 #include "cvar.hpp"
 
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "game_ui.hpp"
 
 void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
 
-    auto GlobalDEF = Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua["global_def"];
+    auto GlobalDEF = Scripting::GetSingletonPtr()->Lua->s_lua["global_def"];
 
     if (!GlobalDEF.isNilref()) {
         LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);

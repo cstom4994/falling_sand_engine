@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "meo/meo.h"
+#include "meo.h"
 
 namespace MetaEngine::Meo {
 

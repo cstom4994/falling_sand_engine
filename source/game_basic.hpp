@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 
 struct Biome;
 

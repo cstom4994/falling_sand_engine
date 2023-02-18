@@ -20,7 +20,7 @@
 #include "core/const.h"
 #include "core/global.hpp"
 #include "engine/engine.h"
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "game.hpp"
 #include "libs/lz4/lz4.h"
 #include "libs/lz4/lz4frame.h"

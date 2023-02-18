@@ -22,7 +22,7 @@
 #include "core/macros.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"

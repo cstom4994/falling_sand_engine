@@ -6,6 +6,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "core/core.hpp"
+
 namespace {
 struct BoundState {
     std::unordered_map<std::size_t, MeoForeignMethodFn> methods{};
@@ -146,7 +148,8 @@ LoadModuleFn VM::loadModuleFn = [](const char* mod) -> MeoLoadModuleResult {
     std::string source;
     try {
         source = MetaEngine::Meo::detail::fileToString(path);
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        METADOT_ERROR("%s", e.what());
         return MeoLoadModuleResult{NULL};
     }
     char* buffer = (char*)malloc(source.size());

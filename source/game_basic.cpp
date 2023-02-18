@@ -9,7 +9,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "engine/engine_input.hpp"
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -43,7 +43,7 @@ static void materials_init() { InitMaterials(); }
 static void controls_init() { ControlSystem::InitKey(); }
 
 static void init_ecs() {
-    auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
+    auto luacore = Scripting::GetSingletonPtr()->Lua;
     auto &luawrap = luacore->s_lua;
 }
 
@@ -60,7 +60,7 @@ Biome *BiomeGet(std::string name) {
 void GameplayScriptSystem::Create() {
     METADOT_BUG("GameplayScriptSystem created");
 
-    auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
+    auto luacore = Scripting::GetSingletonPtr()->Lua;
     auto &luawrap = luacore->s_lua;
     luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
     luawrap["OnGameEngineLoad"]();
@@ -75,7 +75,7 @@ void GameplayScriptSystem::Create() {
 }
 
 void GameplayScriptSystem::Destory() {
-    auto luacore = Scripts::GetSingletonPtr()->LuaCoreCpp;
+    auto luacore = Scripting::GetSingletonPtr()->Lua;
     auto &luawrap = luacore->s_lua;
     auto EndFunc = luawrap["OnGameEngineUnLoad"];
     EndFunc();

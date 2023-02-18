@@ -22,7 +22,7 @@
 #include "core/macros.h"
 #include "core/stl.h"
 #include "engine/engine.h"
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -48,7 +48,6 @@ IMPLENGINE();
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
 extern void ShowAutoTestWindow();
-extern void meo_test();
 
 #if defined(_METADOT_IMM32)
 
@@ -215,8 +214,8 @@ void ImGuiCore::Init() {
     ImGuiInitStyle(0.5f, 0.5f);
 
     // LUA state
-    ImGuiCSS::registerBindings(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L);
-    ctx = ImGuiCSS::createContext(ImGuiCSS::createElementFactory(), new ImGuiCSS::LuaScriptState(Scripts::GetSingletonPtr()->LuaCoreCpp->C->L), new OpenGL3TextureManager());
+    ImGuiCSS::registerBindings(Scripting::GetSingletonPtr()->Lua->L);
+    ctx = ImGuiCSS::createContext(ImGuiCSS::createElementFactory(), new ImGuiCSS::LuaScriptState(Scripting::GetSingletonPtr()->Lua->L), new OpenGL3TextureManager());
     ctx->scale = ImVec2(scale, scale);
 
     document = new ImGuiCSS::Document(ctx);
@@ -591,7 +590,7 @@ CSTDTime | {6} | Nothing
                     }
                     ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
                     ImGui::Checkbox("UI", &global.uidata->elementLists["testElement1"]->visible);
-                    if (ImGui::Button("Meo")) meo_test();
+                    if (ImGui::Button("Meo")) {}
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {

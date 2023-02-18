@@ -28,7 +28,7 @@
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
 #include "engine/engine_platform.h"
-#include "engine/engine_scripting.hpp"
+#include "scripting/scripting.hpp"
 #include "filesystem.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -112,10 +112,10 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
-    Scripts::GetSingletonPtr()->Init();
+    Scripting::GetSingletonPtr()->Init();
 
     for (auto &s : GameIsolate_.systemList) {
-        s->RegisterLua(Scripts::GetSingletonPtr()->LuaCoreCpp->s_lua);
+        s->RegisterLua(Scripting::GetSingletonPtr()->Lua->s_lua);
         s->Create();
         // if (!s->getFlag(SystemFlags::SystemFlags_ImGui)) {
         //     s->Create();
@@ -873,7 +873,7 @@ int Game::run(int argc, char *argv[]) {
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
         while (Time.now - Time.lastTickTime > (1000.0f / Time.maxTps)) {
-            Scripts::GetSingletonPtr()->UpdateTick();
+            Scripting::GetSingletonPtr()->UpdateTick();
             if (GameIsolate_.globaldef.tick_world) {
                 tick();
             }
@@ -901,7 +901,7 @@ int Game::run(int argc, char *argv[]) {
         renderLate();
         Render.target = Render.realTarget;
 
-        Scripts::GetSingletonPtr()->UpdateRender();
+        Scripting::GetSingletonPtr()->Update();
 
         // metadot_rect rct{0, 0, 150, 150};
         // RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
@@ -1062,8 +1062,8 @@ int Game::exit() {
     for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->Destory();
     }
-    Scripts::GetSingletonPtr()->End();
-    Scripts::Delete();
+    Scripting::GetSingletonPtr()->End();
+    Scripting::Delete();
 
     ReleaseGameData();
 

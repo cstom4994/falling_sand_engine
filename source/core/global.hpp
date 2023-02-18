@@ -18,7 +18,7 @@
 #include "core/cpp/csingleton.h"
 
 class Game;
-class Scripts;
+class Scripting;
 class UIData;
 
 struct Global {

@@ -44,40 +44,40 @@
 // These macros cast a Value to one of the specific object types. These do *not*
 // perform any validation, so must only be used after the Value has been
 // ensured to be the right type.
-#define AS_CLASS(value)     ((ObjClass*)AS_OBJ(value))          // ObjClass*
-#define AS_CLOSURE(value)   ((ObjClosure*)AS_OBJ(value))        // ObjClosure*
-#define AS_FIBER(v)         ((ObjFiber*)AS_OBJ(v))              // ObjFiber*
-#define AS_FN(value)        ((ObjFn*)AS_OBJ(value))             // ObjFn*
-#define AS_FOREIGN(v)       ((ObjForeign*)AS_OBJ(v))            // ObjForeign*
-#define AS_INSTANCE(value)  ((ObjInstance*)AS_OBJ(value))       // ObjInstance*
-#define AS_LIST(value)      ((ObjList*)AS_OBJ(value))           // ObjList*
-#define AS_MAP(value)       ((ObjMap*)AS_OBJ(value))            // ObjMap*
-#define AS_MODULE(value)    ((ObjModule*)AS_OBJ(value))         // ObjModule*
-#define AS_NUM(value)       (meoValueToNum(value))             // double
-#define AS_RANGE(v)         ((ObjRange*)AS_OBJ(v))              // ObjRange*
-#define AS_STRING(v)        ((ObjString*)AS_OBJ(v))             // ObjString*
-#define AS_CSTRING(v)       (AS_STRING(v)->value)               // const char*
+#define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))        // ObjClass*
+#define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))    // ObjClosure*
+#define AS_FIBER(v) ((ObjFiber*)AS_OBJ(v))                // ObjFiber*
+#define AS_FN(value) ((ObjFn*)AS_OBJ(value))              // ObjFn*
+#define AS_FOREIGN(v) ((ObjForeign*)AS_OBJ(v))            // ObjForeign*
+#define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))  // ObjInstance*
+#define AS_LIST(value) ((ObjList*)AS_OBJ(value))          // ObjList*
+#define AS_MAP(value) ((ObjMap*)AS_OBJ(value))            // ObjMap*
+#define AS_MODULE(value) ((ObjModule*)AS_OBJ(value))      // ObjModule*
+#define AS_NUM(value) (meoValueToNum(value))              // double
+#define AS_RANGE(v) ((ObjRange*)AS_OBJ(v))                // ObjRange*
+#define AS_STRING(v) ((ObjString*)AS_OBJ(v))              // ObjString*
+#define AS_CSTRING(v) (AS_STRING(v)->value)               // const char*
 
 // These macros promote a primitive C value to a full Meo Value. There are
 // more defined below that are specific to the Nan tagged or other
 // representation.
-#define BOOL_VAL(boolean) ((boolean) ? TRUE_VAL : FALSE_VAL)    // boolean
-#define NUM_VAL(num) (meoNumToValue(num))                      // double
-#define OBJ_VAL(obj) (meoObjectToValue((Obj*)(obj)))           // Any Obj___*
+#define BOOL_VAL(boolean) ((boolean) ? TRUE_VAL : FALSE_VAL)  // boolean
+#define NUM_VAL(num) (meoNumToValue(num))                     // double
+#define OBJ_VAL(obj) (meoObjectToValue((Obj*)(obj)))          // Any Obj___*
 
 // These perform type tests on a Value, returning `true` if the Value is of the
 // given type.
-#define IS_BOOL(value) (meoIsBool(value))                      // Bool
-#define IS_CLASS(value) (meoIsObjType(value, OBJ_CLASS))       // ObjClass
-#define IS_CLOSURE(value) (meoIsObjType(value, OBJ_CLOSURE))   // ObjClosure
-#define IS_FIBER(value) (meoIsObjType(value, OBJ_FIBER))       // ObjFiber
-#define IS_FN(value) (meoIsObjType(value, OBJ_FN))             // ObjFn
-#define IS_FOREIGN(value) (meoIsObjType(value, OBJ_FOREIGN))   // ObjForeign
-#define IS_INSTANCE(value) (meoIsObjType(value, OBJ_INSTANCE)) // ObjInstance
-#define IS_LIST(value) (meoIsObjType(value, OBJ_LIST))         // ObjList
-#define IS_MAP(value) (meoIsObjType(value, OBJ_MAP))           // ObjMap
-#define IS_RANGE(value) (meoIsObjType(value, OBJ_RANGE))       // ObjRange
-#define IS_STRING(value) (meoIsObjType(value, OBJ_STRING))     // ObjString
+#define IS_BOOL(value) (meoIsBool(value))                       // Bool
+#define IS_CLASS(value) (meoIsObjType(value, OBJ_CLASS))        // ObjClass
+#define IS_CLOSURE(value) (meoIsObjType(value, OBJ_CLOSURE))    // ObjClosure
+#define IS_FIBER(value) (meoIsObjType(value, OBJ_FIBER))        // ObjFiber
+#define IS_FN(value) (meoIsObjType(value, OBJ_FN))              // ObjFn
+#define IS_FOREIGN(value) (meoIsObjType(value, OBJ_FOREIGN))    // ObjForeign
+#define IS_INSTANCE(value) (meoIsObjType(value, OBJ_INSTANCE))  // ObjInstance
+#define IS_LIST(value) (meoIsObjType(value, OBJ_LIST))          // ObjList
+#define IS_MAP(value) (meoIsObjType(value, OBJ_MAP))            // ObjMap
+#define IS_RANGE(value) (meoIsObjType(value, OBJ_RANGE))        // ObjRange
+#define IS_STRING(value) (meoIsObjType(value, OBJ_STRING))      // ObjString
 
 // Creates a new string object from [text], which should be a bare C string
 // literal. This determines the length of the string automatically at compile
@@ -85,35 +85,21 @@
 #define CONST_STRING(vm, text) meoNewStringLength((vm), (text), sizeof(text) - 1)
 
 // Identifies which specific type a heap-allocated object is.
-typedef enum {
-  OBJ_CLASS,
-  OBJ_CLOSURE,
-  OBJ_FIBER,
-  OBJ_FN,
-  OBJ_FOREIGN,
-  OBJ_INSTANCE,
-  OBJ_LIST,
-  OBJ_MAP,
-  OBJ_MODULE,
-  OBJ_RANGE,
-  OBJ_STRING,
-  OBJ_UPVALUE
-} ObjType;
+typedef enum { OBJ_CLASS, OBJ_CLOSURE, OBJ_FIBER, OBJ_FN, OBJ_FOREIGN, OBJ_INSTANCE, OBJ_LIST, OBJ_MAP, OBJ_MODULE, OBJ_RANGE, OBJ_STRING, OBJ_UPVALUE } ObjType;
 
 typedef struct sObjClass ObjClass;
 
 // Base struct for all heap-allocated objects.
 typedef struct sObj Obj;
-struct sObj
-{
-  ObjType type;
-  bool isDark;
+struct sObj {
+    ObjType type;
+    bool isDark;
 
-  // The object's class.
-  ObjClass* classObj;
+    // The object's class.
+    ObjClass* classObj;
 
-  // The next object in the linked list of all currently allocated objects.
-  struct sObj* next;
+    // The next object in the linked list of all currently allocated objects.
+    struct sObj* next;
 };
 
 #if MEO_NAN_TAGGING
@@ -122,24 +108,14 @@ typedef uint64_t Value;
 
 #else
 
-typedef enum
-{
-  VAL_FALSE,
-  VAL_NULL,
-  VAL_NUM,
-  VAL_TRUE,
-  VAL_UNDEFINED,
-  VAL_OBJ
-} ValueType;
+typedef enum { VAL_FALSE, VAL_NULL, VAL_NUM, VAL_TRUE, VAL_UNDEFINED, VAL_OBJ } ValueType;
 
-typedef struct
-{
-  ValueType type;
-  union
-  {
-    double num;
-    Obj* obj;
-  } as;
+typedef struct {
+    ValueType type;
+    union {
+        double num;
+        Obj* obj;
+    } as;
 } Value;
 
 #endif
@@ -147,18 +123,17 @@ typedef struct
 DECLARE_BUFFER(Value, Value);
 
 // A heap-allocated string object.
-struct sObjString
-{
-  Obj obj;
+struct sObjString {
+    Obj obj;
 
-  // Number of bytes in the string, not including the null terminator.
-  uint32_t length;
+    // Number of bytes in the string, not including the null terminator.
+    uint32_t length;
 
-  // The hash value of the string's contents.
-  uint32_t hash;
+    // The hash value of the string's contents.
+    uint32_t hash;
 
-  // Inline array of the string's bytes followed by a null terminator.
-  char value[FLEXIBLE_ARRAY];
+    // Inline array of the string's bytes followed by a null terminator.
+    char value[FLEXIBLE_ARRAY];
 };
 
 // The dynamically allocated data structure for a variable that has been used
@@ -173,23 +148,22 @@ struct sObjString
 // be closed. When that happens, the value gets copied off the stack into the
 // upvalue itself. That way, it can have a longer lifetime than the stack
 // variable.
-typedef struct sObjUpvalue
-{
-  // The object header. Note that upvalues have this because they are garbage
-  // collected, but they are not first class Meo objects.
-  Obj obj;
+typedef struct sObjUpvalue {
+    // The object header. Note that upvalues have this because they are garbage
+    // collected, but they are not first class Meo objects.
+    Obj obj;
 
-  // Pointer to the variable this upvalue is referencing.
-  Value* value;
+    // Pointer to the variable this upvalue is referencing.
+    Value* value;
 
-  // If the upvalue is closed (i.e. the local variable it was pointing to has
-  // been popped off the stack) then the closed-over value will be hoisted out
-  // of the stack into here. [value] will then be changed to point to this.
-  Value closed;
+    // If the upvalue is closed (i.e. the local variable it was pointing to has
+    // been popped off the stack) then the closed-over value will be hoisted out
+    // of the stack into here. [value] will then be changed to point to this.
+    Value closed;
 
-  // Open upvalues are stored in a linked list by the fiber. This points to the
-  // next upvalue in that list.
-  struct sObjUpvalue* next;
+    // Open upvalues are stored in a linked list by the fiber. This points to the
+    // next upvalue in that list.
+    struct sObjUpvalue* next;
 } ObjUpvalue;
 
 // The type of a primitive function.
@@ -204,34 +178,32 @@ typedef bool (*Primitive)(MeoVM* vm, Value* args);
 // struct instead of in ObjFn.
 // Stores debugging information for a function used for things like stack
 // traces.
-typedef struct
-{
-  // The name of the function. Heap allocated and owned by the FnDebug.
-  char* name;
+typedef struct {
+    // The name of the function. Heap allocated and owned by the FnDebug.
+    char* name;
 
-  // An array of line numbers. There is one element in this array for each
-  // bytecode in the function's bytecode array. The value of that element is
-  // the line in the source code that generated that instruction.
-  IntBuffer sourceLines;
+    // An array of line numbers. There is one element in this array for each
+    // bytecode in the function's bytecode array. The value of that element is
+    // the line in the source code that generated that instruction.
+    IntBuffer sourceLines;
 } FnDebug;
 
 // A loaded module and the top-level variables it defines.
 //
 // While this is an Obj and is managed by the GC, it never appears as a
 // first-class object in Meo.
-typedef struct
-{
-  Obj obj;
+typedef struct {
+    Obj obj;
 
-  // The currently defined top-level variables.
-  ValueBuffer variables;
+    // The currently defined top-level variables.
+    ValueBuffer variables;
 
-  // Symbol table for the names of all module variables. Indexes here directly
-  // correspond to entries in [variables].
-  SymbolTable variableNames;
+    // Symbol table for the names of all module variables. Indexes here directly
+    // correspond to entries in [variables].
+    SymbolTable variableNames;
 
-  // The name of the module.
-  ObjString* name;
+    // The name of the module.
+    ObjString* name;
 } ObjModule;
 
 // A function object. It wraps and owns the bytecode and other debug information
@@ -242,206 +214,193 @@ typedef struct
 // representation of a function. This isn't strictly necessary if they function
 // has no upvalues, but lets the rest of the VM assume all called objects will
 // be closures.
-typedef struct
-{
-  Obj obj;
-  
-  ByteBuffer code;
-  ValueBuffer constants;
-  
-  // The module where this function was defined.
-  ObjModule* module;
+typedef struct {
+    Obj obj;
 
-  // The maximum number of stack slots this function may use.
-  int maxSlots;
-  
-  // The number of upvalues this function closes over.
-  int numUpvalues;
-  
-  // The number of parameters this function expects. Used to ensure that .call
-  // handles a mismatch between number of parameters and arguments. This will
-  // only be set for fns, and not ObjFns that represent methods or scripts.
-  int arity;
-  FnDebug* debug;
+    ByteBuffer code;
+    ValueBuffer constants;
+
+    // The module where this function was defined.
+    ObjModule* module;
+
+    // The maximum number of stack slots this function may use.
+    int maxSlots;
+
+    // The number of upvalues this function closes over.
+    int numUpvalues;
+
+    // The number of parameters this function expects. Used to ensure that .call
+    // handles a mismatch between number of parameters and arguments. This will
+    // only be set for fns, and not ObjFns that represent methods or scripts.
+    int arity;
+    FnDebug* debug;
 } ObjFn;
 
 // An instance of a first-class function and the environment it has closed over.
 // Unlike [ObjFn], this has captured the upvalues that the function accesses.
-typedef struct
-{
-  Obj obj;
+typedef struct {
+    Obj obj;
 
-  // The function that this closure is an instance of.
-  ObjFn* fn;
+    // The function that this closure is an instance of.
+    ObjFn* fn;
 
-  // The upvalues this function has closed over.
-  ObjUpvalue* upvalues[FLEXIBLE_ARRAY];
+    // The upvalues this function has closed over.
+    ObjUpvalue* upvalues[FLEXIBLE_ARRAY];
 } ObjClosure;
 
-typedef struct
-{
-  // Pointer to the current (really next-to-be-executed) instruction in the
-  // function's bytecode.
-  uint8_t* ip;
-  
-  // The closure being executed.
-  ObjClosure* closure;
-  
-  // Pointer to the first stack slot used by this call frame. This will contain
-  // the receiver, followed by the function's parameters, then local variables
-  // and temporaries.
-  Value* stackStart;
+typedef struct {
+    // Pointer to the current (really next-to-be-executed) instruction in the
+    // function's bytecode.
+    uint8_t* ip;
+
+    // The closure being executed.
+    ObjClosure* closure;
+
+    // Pointer to the first stack slot used by this call frame. This will contain
+    // the receiver, followed by the function's parameters, then local variables
+    // and temporaries.
+    Value* stackStart;
 } CallFrame;
 
 // Tracks how this fiber has been invoked, aside from the ways that can be
 // detected from the state of other fields in the fiber.
-typedef enum
-{
-  // The fiber is being run from another fiber using a call to `try()`.
-  FIBER_TRY,
-  
-  // The fiber was directly invoked by `runInterpreter()`. This means it's the
-  // initial fiber used by a call to `meoCall()` or `meoInterpret()`.
-  FIBER_ROOT,
-  
-  // The fiber is invoked some other way. If [caller] is `NULL` then the fiber
-  // was invoked using `call()`. If [numFrames] is zero, then the fiber has
-  // finished running and is done. If [numFrames] is one and that frame's `ip`
-  // points to the first byte of code, the fiber has not been started yet.
-  FIBER_OTHER,
+typedef enum {
+    // The fiber is being run from another fiber using a call to `try()`.
+    FIBER_TRY,
+
+    // The fiber was directly invoked by `runInterpreter()`. This means it's the
+    // initial fiber used by a call to `meoCall()` or `meoInterpret()`.
+    FIBER_ROOT,
+
+    // The fiber is invoked some other way. If [caller] is `NULL` then the fiber
+    // was invoked using `call()`. If [numFrames] is zero, then the fiber has
+    // finished running and is done. If [numFrames] is one and that frame's `ip`
+    // points to the first byte of code, the fiber has not been started yet.
+    FIBER_OTHER,
 } FiberState;
 
-typedef struct sObjFiber
-{
-  Obj obj;
-  
-  // The stack of value slots. This is used for holding local variables and
-  // temporaries while the fiber is executing. It is heap-allocated and grown
-  // as needed.
-  Value* stack;
-  
-  // A pointer to one past the top-most value on the stack.
-  Value* stackTop;
-  
-  // The number of allocated slots in the stack array.
-  int stackCapacity;
-  
-  // The stack of call frames. This is a dynamic array that grows as needed but
-  // never shrinks.
-  CallFrame* frames;
-  
-  // The number of frames currently in use in [frames].
-  int numFrames;
-  
-  // The number of [frames] allocated.
-  int frameCapacity;
-  
-  // Pointer to the first node in the linked list of open upvalues that are
-  // pointing to values still on the stack. The head of the list will be the
-  // upvalue closest to the top of the stack, and then the list works downwards.
-  ObjUpvalue* openUpvalues;
-  
-  // The fiber that ran this one. If this fiber is yielded, control will resume
-  // to this one. May be `NULL`.
-  struct sObjFiber* caller;
-  
-  // If the fiber failed because of a runtime error, this will contain the
-  // error object. Otherwise, it will be null.
-  Value error;
-  
-  FiberState state;
+typedef struct sObjFiber {
+    Obj obj;
+
+    // The stack of value slots. This is used for holding local variables and
+    // temporaries while the fiber is executing. It is heap-allocated and grown
+    // as needed.
+    Value* stack;
+
+    // A pointer to one past the top-most value on the stack.
+    Value* stackTop;
+
+    // The number of allocated slots in the stack array.
+    int stackCapacity;
+
+    // The stack of call frames. This is a dynamic array that grows as needed but
+    // never shrinks.
+    CallFrame* frames;
+
+    // The number of frames currently in use in [frames].
+    int numFrames;
+
+    // The number of [frames] allocated.
+    int frameCapacity;
+
+    // Pointer to the first node in the linked list of open upvalues that are
+    // pointing to values still on the stack. The head of the list will be the
+    // upvalue closest to the top of the stack, and then the list works downwards.
+    ObjUpvalue* openUpvalues;
+
+    // The fiber that ran this one. If this fiber is yielded, control will resume
+    // to this one. May be `NULL`.
+    struct sObjFiber* caller;
+
+    // If the fiber failed because of a runtime error, this will contain the
+    // error object. Otherwise, it will be null.
+    Value error;
+
+    FiberState state;
 } ObjFiber;
 
-typedef enum
-{
-  // A primitive method implemented in C in the VM. Unlike foreign methods,
-  // this can directly manipulate the fiber's stack.
-  METHOD_PRIMITIVE,
+typedef enum {
+    // A primitive method implemented in C in the VM. Unlike foreign methods,
+    // this can directly manipulate the fiber's stack.
+    METHOD_PRIMITIVE,
 
-  // A primitive that handles .call on Fn.
-  METHOD_FUNCTION_CALL,
+    // A primitive that handles .call on Fn.
+    METHOD_FUNCTION_CALL,
 
-  // A externally-defined C method.
-  METHOD_FOREIGN,
+    // A externally-defined C method.
+    METHOD_FOREIGN,
 
-  // A normal user-defined method.
-  METHOD_BLOCK,
-  
-  // No method for the given symbol.
-  METHOD_NONE
+    // A normal user-defined method.
+    METHOD_BLOCK,
+
+    // No method for the given symbol.
+    METHOD_NONE
 } MethodType;
 
-typedef struct
-{
-  MethodType type;
+typedef struct {
+    MethodType type;
 
-  // The method function itself. The [type] determines which field of the union
-  // is used.
-  union
-  {
-    Primitive primitive;
-    MeoForeignMethodFn foreign;
-    ObjClosure* closure;
-  } as;
+    // The method function itself. The [type] determines which field of the union
+    // is used.
+    union {
+        Primitive primitive;
+        MeoForeignMethodFn foreign;
+        ObjClosure* closure;
+    } as;
 } Method;
 
 DECLARE_BUFFER(Method, Method);
 
-struct sObjClass
-{
-  Obj obj;
-  ObjClass* superclass;
+struct sObjClass {
+    Obj obj;
+    ObjClass* superclass;
 
-  // The number of fields needed for an instance of this class, including all
-  // of its superclass fields.
-  int numFields;
+    // The number of fields needed for an instance of this class, including all
+    // of its superclass fields.
+    int numFields;
 
-  // The table of methods that are defined in or inherited by this class.
-  // Methods are called by symbol, and the symbol directly maps to an index in
-  // this table. This makes method calls fast at the expense of empty cells in
-  // the list for methods the class doesn't support.
-  //
-  // You can think of it as a hash table that never has collisions but has a
-  // really low load factor. Since methods are pretty small (just a type and a
-  // pointer), this should be a worthwhile trade-off.
-  MethodBuffer methods;
+    // The table of methods that are defined in or inherited by this class.
+    // Methods are called by symbol, and the symbol directly maps to an index in
+    // this table. This makes method calls fast at the expense of empty cells in
+    // the list for methods the class doesn't support.
+    //
+    // You can think of it as a hash table that never has collisions but has a
+    // really low load factor. Since methods are pretty small (just a type and a
+    // pointer), this should be a worthwhile trade-off.
+    MethodBuffer methods;
 
-  // The name of the class.
-  ObjString* name;
-  
-  // The ClassAttribute for the class, if any
-  Value attributes;
+    // The name of the class.
+    ObjString* name;
+
+    // The ClassAttribute for the class, if any
+    Value attributes;
 };
 
-typedef struct
-{
-  Obj obj;
-  uint8_t data[FLEXIBLE_ARRAY];
+typedef struct {
+    Obj obj;
+    uint8_t data[FLEXIBLE_ARRAY];
 } ObjForeign;
 
-typedef struct
-{
-  Obj obj;
-  Value fields[FLEXIBLE_ARRAY];
+typedef struct {
+    Obj obj;
+    Value fields[FLEXIBLE_ARRAY];
 } ObjInstance;
 
-typedef struct
-{
-  Obj obj;
+typedef struct {
+    Obj obj;
 
-  // The elements in the list.
-  ValueBuffer elements;
+    // The elements in the list.
+    ValueBuffer elements;
 } ObjList;
 
-typedef struct
-{
-  // The entry's key, or UNDEFINED_VAL if the entry is not in use.
-  Value key;
+typedef struct {
+    // The entry's key, or UNDEFINED_VAL if the entry is not in use.
+    Value key;
 
-  // The value associated with the key. If the key is UNDEFINED_VAL, this will
-  // be false to indicate an open available entry or true to indicate a
-  // tombstone -- an entry that was previously in use but was then deleted.
-  Value value;
+    // The value associated with the key. If the key is UNDEFINED_VAL, this will
+    // be false to indicate an open available entry or true to indicate a
+    // tombstone -- an entry that was previously in use but was then deleted.
+    Value value;
 } MapEntry;
 
 // A hash table mapping keys to values.
@@ -461,32 +420,30 @@ typedef struct
 // for a key, we will continue past tombstones, because the desired key may be
 // found after them if the key that was removed was part of a prior collision.
 // When the array gets resized, all tombstones are discarded.
-typedef struct
-{
-  Obj obj;
+typedef struct {
+    Obj obj;
 
-  // The number of entries allocated.
-  uint32_t capacity;
+    // The number of entries allocated.
+    uint32_t capacity;
 
-  // The number of entries in the map.
-  uint32_t count;
+    // The number of entries in the map.
+    uint32_t count;
 
-  // Pointer to a contiguous array of [capacity] entries.
-  MapEntry* entries;
+    // Pointer to a contiguous array of [capacity] entries.
+    MapEntry* entries;
 } ObjMap;
 
-typedef struct
-{
-  Obj obj;
+typedef struct {
+    Obj obj;
 
-  // The beginning of the range.
-  double from;
+    // The beginning of the range.
+    double from;
 
-  // The end of the range. May be greater or less than [from].
-  double to;
+    // The end of the range. May be greater or less than [from].
+    double to;
 
-  // True if [to] is included in the range.
-  bool isInclusive;
+    // True if [to] is included in the range.
+    bool isInclusive;
 } ObjRange;
 
 // An IEEE 754 double-precision float is a 64-bit value with bits laid out like:
@@ -554,27 +511,27 @@ typedef struct
 #define QNAN ((uint64_t)0x7ffc000000000000)
 
 // If the NaN bits are set, it's not a number.
-#define IS_NUM(value) (((value) & QNAN) != QNAN)
+#define IS_NUM(value) (((value)&QNAN) != QNAN)
 
 // An object pointer is a NaN with a set sign bit.
 #define IS_OBJ(value) (((value) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
 
-#define IS_FALSE(value)     ((value) == FALSE_VAL)
-#define IS_NULL(value)      ((value) == NULL_VAL)
+#define IS_FALSE(value) ((value) == FALSE_VAL)
+#define IS_NULL(value) ((value) == NULL_VAL)
 #define IS_UNDEFINED(value) ((value) == UNDEFINED_VAL)
 
 // Masks out the tag bits used to identify the singleton value.
 #define MASK_TAG (7)
 
 // Tag values for the different singleton values.
-#define TAG_NAN       (0)
-#define TAG_NULL      (1)
-#define TAG_FALSE     (2)
-#define TAG_TRUE      (3)
+#define TAG_NAN (0)
+#define TAG_NULL (1)
+#define TAG_FALSE (2)
+#define TAG_TRUE (3)
 #define TAG_UNDEFINED (4)
-#define TAG_UNUSED2   (5)
-#define TAG_UNUSED3   (6)
-#define TAG_UNUSED4   (7)
+#define TAG_UNUSED2 (5)
+#define TAG_UNUSED3 (6)
+#define TAG_UNUSED4 (7)
 
 // Value -> 0 or 1.
 #define AS_BOOL(value) ((value) == TRUE_VAL)
@@ -583,13 +540,13 @@ typedef struct
 #define AS_OBJ(value) ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 
 // Singleton values.
-#define NULL_VAL      ((Value)(uint64_t)(QNAN | TAG_NULL))
-#define FALSE_VAL     ((Value)(uint64_t)(QNAN | TAG_FALSE))
-#define TRUE_VAL      ((Value)(uint64_t)(QNAN | TAG_TRUE))
+#define NULL_VAL ((Value)(uint64_t)(QNAN | TAG_NULL))
+#define FALSE_VAL ((Value)(uint64_t)(QNAN | TAG_FALSE))
+#define TRUE_VAL ((Value)(uint64_t)(QNAN | TAG_TRUE))
 #define UNDEFINED_VAL ((Value)(uint64_t)(QNAN | TAG_UNDEFINED))
 
 // Gets the singleton type tag for a Value (which must be a singleton).
-#define GET_TAG(value) ((int)((value) & MASK_TAG))
+#define GET_TAG(value) ((int)((value)&MASK_TAG))
 
 #else
 
@@ -602,16 +559,16 @@ typedef struct
 // Determines if [value] is a garbage-collected object or not.
 #define IS_OBJ(value) ((value).type == VAL_OBJ)
 
-#define IS_FALSE(value)     ((value).type == VAL_FALSE)
-#define IS_NULL(value)      ((value).type == VAL_NULL)
-#define IS_NUM(value)       ((value).type == VAL_NUM)
+#define IS_FALSE(value) ((value).type == VAL_FALSE)
+#define IS_NULL(value) ((value).type == VAL_NULL)
+#define IS_NUM(value) ((value).type == VAL_NUM)
 #define IS_UNDEFINED(value) ((value).type == VAL_UNDEFINED)
 
 // Singleton values.
-#define FALSE_VAL     ((Value){ VAL_FALSE, { 0 } })
-#define NULL_VAL      ((Value){ VAL_NULL, { 0 } })
-#define TRUE_VAL      ((Value){ VAL_TRUE, { 0 } })
-#define UNDEFINED_VAL ((Value){ VAL_UNDEFINED, { 0 } })
+#define FALSE_VAL ((Value){VAL_FALSE, {0}})
+#define NULL_VAL ((Value){VAL_NULL, {0}})
+#define TRUE_VAL ((Value){VAL_TRUE, {0}})
+#define UNDEFINED_VAL ((Value){VAL_UNDEFINED, {0}})
 
 #endif
 
@@ -626,8 +583,7 @@ ObjClass* meoNewSingleClass(MeoVM* vm, int numFields, ObjString* name);
 void meoBindSuperclass(MeoVM* vm, ObjClass* subclass, ObjClass* superclass);
 
 // Creates a new class object as well as its associated metaclass.
-ObjClass* meoNewClass(MeoVM* vm, ObjClass* superclass, int numFields,
-                       ObjString* name);
+ObjClass* meoNewClass(MeoVM* vm, ObjClass* superclass, int numFields, ObjString* name);
 
 void meoBindMethod(MeoVM* vm, ObjClass* classObj, int symbol, Method method);
 
@@ -640,25 +596,20 @@ ObjFiber* meoNewFiber(MeoVM* vm, ObjClosure* closure);
 
 // Adds a new [CallFrame] to [fiber] invoking [closure] whose stack starts at
 // [stackStart].
-static inline void meoAppendCallFrame(MeoVM* vm, ObjFiber* fiber,
-                                       ObjClosure* closure, Value* stackStart)
-{
-  // The caller should have ensured we already have enough capacity.
-  ASSERT(fiber->frameCapacity > fiber->numFrames, "No memory for call frame.");
-  
-  CallFrame* frame = &fiber->frames[fiber->numFrames++];
-  frame->stackStart = stackStart;
-  frame->closure = closure;
-  frame->ip = closure->fn->code.data;
+static inline void meoAppendCallFrame(MeoVM* vm, ObjFiber* fiber, ObjClosure* closure, Value* stackStart) {
+    // The caller should have ensured we already have enough capacity.
+    ASSERT(fiber->frameCapacity > fiber->numFrames, "No memory for call frame.");
+
+    CallFrame* frame = &fiber->frames[fiber->numFrames++];
+    frame->stackStart = stackStart;
+    frame->closure = closure;
+    frame->ip = closure->fn->code.data;
 }
 
 // Ensures [fiber]'s stack has at least [needed] slots.
 void meoEnsureStack(MeoVM* vm, ObjFiber* fiber, int needed);
 
-static inline bool meoHasError(const ObjFiber* fiber)
-{
-  return !IS_NULL(fiber->error);
-}
+static inline bool meoHasError(const ObjFiber* fiber) { return !IS_NULL(fiber->error); }
 
 ObjForeign* meoNewForeign(MeoVM* vm, ObjClass* classObj, size_t size);
 
@@ -724,8 +675,7 @@ Value meoNewStringLength(MeoVM* vm, const char* text, size_t length);
 // Creates a new string object by taking a range of characters from [source].
 // The range starts at [start], contains [count] bytes, and increments by
 // [step].
-Value meoNewStringFromRange(MeoVM* vm, ObjString* source, int start,
-                             uint32_t count, int step);
+Value meoNewStringFromRange(MeoVM* vm, ObjString* source, int start, uint32_t count, int step);
 
 // Produces a string representation of [value].
 Value meoNumToString(MeoVM* vm, double value);
@@ -755,15 +705,10 @@ Value meoStringCodePointAt(MeoVM* vm, ObjString* string, uint32_t index);
 // Search for the first occurence of [needle] within [haystack] and returns its
 // zero-based offset. Returns `UINT32_MAX` if [haystack] does not contain
 // [needle].
-uint32_t meoStringFind(ObjString* haystack, ObjString* needle,
-                        uint32_t startIndex);
+uint32_t meoStringFind(ObjString* haystack, ObjString* needle, uint32_t startIndex);
 
 // Returns true if [a] and [b] represent the same string.
-static inline bool meoStringEqualsCString(const ObjString* a,
-                                           const char* b, size_t length)
-{
-  return a->length == length && memcmp(a->value, b, length) == 0;
-}
+static inline bool meoStringEqualsCString(const ObjString* a, const char* b, size_t length) { return a->length == length && memcmp(a->value, b, length) == 0; }
 
 // Creates a new open upvalue pointing to [value] on the stack.
 ObjUpvalue* meoNewUpvalue(MeoVM* vm, Value* value);
@@ -798,16 +743,15 @@ ObjClass* meoGetClass(MeoVM* vm, Value value);
 
 // Returns true if [a] and [b] are strictly the same value. This is identity
 // for object values, and value equality for unboxed values.
-static inline bool meoValuesSame(Value a, Value b)
-{
+static inline bool meoValuesSame(Value a, Value b) {
 #if MEO_NAN_TAGGING
-  // Value types have unique bit representations and we compare object types
-  // by identity (i.e. pointer), so all we need to do is compare the bits.
-  return a == b;
+    // Value types have unique bit representations and we compare object types
+    // by identity (i.e. pointer), so all we need to do is compare the bits.
+    return a == b;
 #else
-  if (a.type != b.type) return false;
-  if (a.type == VAL_NUM) return a.as.num == b.as.num;
-  return a.as.obj == b.as.obj;
+    if (a.type != b.type) return false;
+    if (a.type == VAL_NUM) return a.as.num == b.as.num;
+    return a.as.obj == b.as.obj;
 #endif
 }
 
@@ -818,71 +762,56 @@ bool meoValuesEqual(Value a, Value b);
 
 // Returns true if [value] is a bool. Do not call this directly, instead use
 // [IS_BOOL].
-static inline bool meoIsBool(Value value)
-{
+static inline bool meoIsBool(Value value) {
 #if MEO_NAN_TAGGING
-  return value == TRUE_VAL || value == FALSE_VAL;
+    return value == TRUE_VAL || value == FALSE_VAL;
 #else
-  return value.type == VAL_FALSE || value.type == VAL_TRUE;
+    return value.type == VAL_FALSE || value.type == VAL_TRUE;
 #endif
 }
 
 // Returns true if [value] is an object of type [type]. Do not call this
 // directly, instead use the [IS___] macro for the type in question.
-static inline bool meoIsObjType(Value value, ObjType type)
-{
-  return IS_OBJ(value) && AS_OBJ(value)->type == type;
-}
+static inline bool meoIsObjType(Value value, ObjType type) { return IS_OBJ(value) && AS_OBJ(value)->type == type; }
 
 // Converts the raw object pointer [obj] to a [Value].
-static inline Value meoObjectToValue(Obj* obj)
-{
+static inline Value meoObjectToValue(Obj* obj) {
 #if MEO_NAN_TAGGING
-  // The triple casting is necessary here to satisfy some compilers:
-  // 1. (uintptr_t) Convert the pointer to a number of the right size.
-  // 2. (uint64_t)  Pad it up to 64 bits in 32-bit builds.
-  // 3. Or in the bits to make a tagged Nan.
-  // 4. Cast to a typedef'd value.
-  return (Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj));
+    // The triple casting is necessary here to satisfy some compilers:
+    // 1. (uintptr_t) Convert the pointer to a number of the right size.
+    // 2. (uint64_t)  Pad it up to 64 bits in 32-bit builds.
+    // 3. Or in the bits to make a tagged Nan.
+    // 4. Cast to a typedef'd value.
+    return (Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj));
 #else
-  Value value;
-  value.type = VAL_OBJ;
-  value.as.obj = obj;
-  return value;
+    Value value;
+    value.type = VAL_OBJ;
+    value.as.obj = obj;
+    return value;
 #endif
 }
 
 // Interprets [value] as a [double].
-static inline double meoValueToNum(Value value)
-{
+static inline double meoValueToNum(Value value) {
 #if MEO_NAN_TAGGING
-  return meoDoubleFromBits(value);
+    return meoDoubleFromBits(value);
 #else
-  return value.as.num;
+    return value.as.num;
 #endif
 }
 
 // Converts [num] to a [Value].
-static inline Value meoNumToValue(double num)
-{
+static inline Value meoNumToValue(double num) {
 #if MEO_NAN_TAGGING
-  return meoDoubleToBits(num);
+    return meoDoubleToBits(num);
 #else
-  Value value;
-  value.type = VAL_NUM;
-  value.as.num = num;
-  return value;
+    Value value;
+    value.type = VAL_NUM;
+    value.as.num = num;
+    return value;
 #endif
 }
 
-static inline bool meoMapIsValidKey(Value arg)
-{
-  return IS_BOOL(arg)
-      || IS_CLASS(arg)
-      || IS_NULL(arg)
-      || IS_NUM(arg)
-      || IS_RANGE(arg)
-      || IS_STRING(arg);
-}
+static inline bool meoMapIsValidKey(Value arg) { return IS_BOOL(arg) || IS_CLASS(arg) || IS_NULL(arg) || IS_NUM(arg) || IS_RANGE(arg) || IS_STRING(arg); }
 
 #endif

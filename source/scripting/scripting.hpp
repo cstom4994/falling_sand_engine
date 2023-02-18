@@ -12,10 +12,7 @@
 #include "engine/engine.h"
 #include "libs/visitstruct.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
-
-typedef struct LuaCoreC {
-    lua_State *L;
-} LuaCoreC;
+#include "scripting/meo/meo.hpp"
 
 typedef struct LuaCode {
     // Status 0 = error, 1 = no problems, 2 = reloaded but not prime ran
@@ -24,9 +21,6 @@ typedef struct LuaCode {
     char *scriptPath;
     char scriptName[256];
 } LuaCode;
-
-void InitLuaCoreC(LuaCoreC *_struct, lua_State *LuaCoreCppFunc(void *), void *luacorecpp);
-void FreeLuaCoreC(LuaCoreC *_struct);
 
 void LuaCodeInit(LuaCode *_struct, const char *scriptPath);
 void LuaCodeUpdate(LuaCode *_struct);
@@ -81,9 +75,9 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 //     });
 // }
 
-struct LuaCoreCpp {
+struct LuaCore {
     LuaWrapper::State s_lua;
-    LuaCoreC *C;
+    lua_State *L;
 
     struct {
         LuaWrapper::LuaTable Biome;
@@ -94,24 +88,21 @@ void print_error(lua_State *state);
 void RunScriptInConsole(const char *c);
 void RunScriptFromFile(const char *filePath);
 
-void UpdateLuaCoreCpp(LuaCoreCpp *_struct);
-void InitLuaCoreCpp(LuaCoreCpp *_struct);
-void EndLuaCoreCpp(LuaCoreCpp *_struct);
-
-class Scripts : public MetaEngine::CSingleton<Scripts> {
+class Scripting : public MetaEngine::CSingleton<Scripting> {
 public:
-    LuaCoreCpp *LuaCoreCpp;
+    LuaCore *Lua;
+    MetaEngine::Meo::VM meo;
 
-    Scripts(){};
-    ~Scripts(){};
+    Scripting(){};
+    ~Scripting(){};
 
     void Init();
     void End();
-    void UpdateRender();
+    void Update();
     void UpdateTick();
 
 private:
-    friend class MetaEngine::CSingleton<Scripts>;
+    friend class MetaEngine::CSingleton<Scripting>;
 };
 
 #endif
