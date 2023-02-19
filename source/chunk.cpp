@@ -13,7 +13,7 @@
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/global.hpp"
-#include "datapackage.h"
+#include "core/io/datapackage.h"
 #include "engine/engine_platform.h"
 #include "libs/lz4/lz4.h"
 

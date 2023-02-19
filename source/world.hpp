@@ -77,8 +77,7 @@ public:
         MetaEngine::vector<b2Vec2> distributedPoints;
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         MetaEngine::vector<Populator *> populators;
-        // MetaEngine::vector<WorldEntity *> worldEntities;
-        // Player *player = nullptr;
+
         MetaEngine::ECS::entity_id player;
     };
 

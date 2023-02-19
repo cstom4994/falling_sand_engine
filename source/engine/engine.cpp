@@ -7,10 +7,10 @@
 #include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/global.hpp"
+#include "core/io/filesystem.h"
 #include "engine/engine_core.h"
 #include "engine/engine_ecs.h"
 #include "engine/engine_platform.h"
-#include "filesystem.h"
 #include "game.hpp"
 #include "game_resources.hpp"
 

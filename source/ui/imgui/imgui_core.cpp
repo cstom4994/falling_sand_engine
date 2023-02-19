@@ -19,10 +19,10 @@
 #include "core/cpp/utils.hpp"
 #include "core/dbgtools.h"
 #include "core/global.hpp"
+#include "core/io/filesystem.h"
 #include "core/macros.h"
 #include "core/stl.h"
 #include "engine/engine.h"
-#include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_ui.hpp"
@@ -686,9 +686,13 @@ CSTDTime | {6} | Nothing)";
                     ImGui::Indent();
                     ImGui::Auto(global.game->GameIsolate_.world->rigidBodies, "刚体");
                     ImGui::Auto(global.game->GameIsolate_.world->worldRigidBodies, "世界刚体");
-                    // ImGui::Auto(global.game->GameIsolate_.world->worldEntities, "实体");
 
                     ImGui::Text("ECS: %lu %lu", global.game->GameIsolate_.world->Reg().memory_usage().entities, global.game->GameIsolate_.world->Reg().memory_usage().components);
+
+                    global.game->GameIsolate_.world->Reg().for_joined_components<WorldEntity, Player>([&](MetaEngine::ECS::entity, WorldEntity &we, Player &p) {
+                        ImGui::Auto(we, "实体");
+                        ImGui::Auto(p, "玩家");
+                    });
 
                     ImGui::Unindent();
                     // static RigidBody *check_rigidbody_ptr = nullptr;

@@ -4,7 +4,7 @@
 #define _R_H__
 
 #include "core/core.h"
-#include "mathlib.h"
+#include "core/math/mathlib.h"
 // #include "game_utils/PixelColor.h"
 
 #include "libs/external/stb_image.h"

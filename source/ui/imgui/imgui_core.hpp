@@ -9,8 +9,8 @@
 
 #include "audio/audio.h"
 #include "core/debug.hpp"
+#include "core/sdl_wrapper.h"
 #include "libs/imgui/text_editor.h"
-#include "sdl_wrapper.h"
 #include "ui/imgui/imgui_css.h"
 #include "ui/imgui/imgui_impl.hpp"
 

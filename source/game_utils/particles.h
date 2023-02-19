@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "mathlib.hpp"
-#include "renderer/gpu.hpp"
+#include "core/math/mathlib.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
+#include "renderer/gpu.hpp"
 
 struct ParticleData {
     float posx = 0;

@@ -5,10 +5,10 @@
 #include <cstring>
 #include <string>
 
+#include "core/cpp/command.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
 #include "core/global.hpp"
-#include "command.hpp"
 #include "engine/engine.h"
 #include "game.hpp"
 #include "reflectionflat.hpp"
@@ -534,8 +534,6 @@ void ConsoleSystem::Create() {
 
 void ConsoleSystem::Destory() { METADOT_DELETE(C, console_imgui, ImGuiConsole); }
 
-void ConsoleSystem::Reload() {
-    
-}
+void ConsoleSystem::Reload() {}
 
 void ConsoleSystem::RegisterLua(LuaWrapper::State &s_lua) {}

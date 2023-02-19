@@ -18,7 +18,7 @@
 #include "core/c/list.h"
 #include "core/const.h"
 #include "core/core.hpp"
-#include "mathlib.h"
+#include "core/math/mathlib.h"
 // #include "scripting/lua/lua_wrapper.hpp"
 #include "libs/cJSON.h"
 // #include "sdl_wrapper.h"

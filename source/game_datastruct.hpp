@@ -12,13 +12,13 @@
 #include "core/cpp/static_relfection.hpp"
 #include "core/cpp/type.hpp"
 #include "core/cpp/vector.hpp"
+#include "core/math/mathlib.hpp"
+#include "core/sdl_wrapper.h"
 #include "ecs/ecs.hpp"
 #include "game_basic.hpp"
 #include "internal/builtin_box2d.h"
-#include "mathlib.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
-#include "sdl_wrapper.h"
 
 struct Chunk;
 struct Populator;
@@ -79,7 +79,7 @@ public:
     RigidBody *rb = nullptr;
     bool is_player = false;
 
-    WorldEntity(const WorldEntity&) = default;
+    WorldEntity(const WorldEntity &) = default;
 
     WorldEntity(bool isplayer, F32 x, F32 y, F32 vx, F32 vy, int hw, int hh, RigidBody *rb, std::string n = "unknown")
         : is_player(isplayer), x(x), y(y), vx(vx), vy(vy), hw(hw), hh(hh), rb(rb), name(n) {}
@@ -105,6 +105,10 @@ struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity>
             Field{TSTR("is_player"), &Type::is_player},
     };
 };
+
+METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
+MetaEngine::StaticRefl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+METAENGINE_GUI_DEFINE_END
 
 void ReleaseGameData();
 
@@ -163,10 +167,13 @@ struct Material {
 
     bool interact = false;
     int *nInteractions = nullptr;
-    MetaEngine::vector<MaterialInteraction> *interactions = nullptr;
+
+    [[not_serialize]] MetaEngine::vector<MaterialInteraction> *interactions = nullptr;
+
     bool react = false;
     int nReactions = 0;
-    MetaEngine::vector<MaterialInteraction> reactions;
+
+    [[not_serialize]] MetaEngine::vector<MaterialInteraction> reactions;
 
     int slipperyness = 1;
 
@@ -675,7 +682,7 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<WorldEntity>> {
+struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("heldItem"), &Type::heldItem},
@@ -691,14 +698,8 @@ struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player, Base<Worl
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
-// if (var.is_player) {
-//     auto p = (Player *)&var;
-//     METADOT_ASSERT_E(p);
-//     MetaEngine::StaticRefl::TypeInfo<Player>::ForEachVarOf(*p, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-// } else {
-//     MetaEngine::StaticRefl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-// }
+METAENGINE_GUI_DEFINE_BEGIN(template <>, Player)
+MetaEngine::StaticRefl::TypeInfo<Player>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
 METAENGINE_GUI_DEFINE_END
 
 struct move_player_event {

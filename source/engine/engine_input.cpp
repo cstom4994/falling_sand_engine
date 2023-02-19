@@ -7,7 +7,7 @@
 #include <string>
 
 #include "core/cpp/stl.hpp"
-#include "sdl_wrapper.h"
+#include "core/sdl_wrapper.h"
 
 MetaEngine::vector<MetaEngine::Ref<KeyControl>> ControlSystem::keyControls = {};
 std::map<std::string, int> ControlSystem::SDLKeymap = {};

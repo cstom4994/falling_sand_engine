@@ -1,8 +1,7 @@
 #include "pixel_color.h"
 
-#include <SDL2/SDL.h>
-
-#include "mathlib.hpp"
+#include "core/math/mathlib.hpp"
+#include "core/sdl_wrapper.h"
 
 namespace MetaEngine {
 

@@ -19,17 +19,17 @@
 
 #include "core/const.h"
 #include "core/global.hpp"
+#include "core/platform.h"
+#include "core/sdl_wrapper.h"
 #include "engine/engine.h"
-#include "scripting/scripting.hpp"
 #include "game.hpp"
 #include "libs/lz4/lz4.h"
 #include "libs/lz4/lz4frame.h"
 #include "libs/lz4/lz4hc.h"
-#include "core/platform.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.h"
 #include "scripting/lua/lua_wrapper.hpp"
-#include "sdl_wrapper.h"
+#include "scripting/scripting.hpp"
 
 #ifndef METADOT_PLATFORM_WINDOWS
 #include <dirent.h>

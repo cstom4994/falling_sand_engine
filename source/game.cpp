@@ -22,14 +22,16 @@
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
 #include "core/global.hpp"
+#include "core/io/filesystem.h"
 #include "core/macros.h"
+#include "core/math/mathlib.hpp"
 #include "core/profiler/profiler.h"
 #include "core/profiler/profiler_imgui.hpp"
+#include "core/sdl_wrapper.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
 #include "engine/engine_platform.h"
 #include "event/applicationevent.hpp"
-#include "filesystem.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -38,14 +40,12 @@
 #include "game_utils/mdplot.h"
 #include "game_utils/particles.h"
 #include "libs/imgui/imgui.h"
-#include "mathlib.hpp"
 #include "meta/meta.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/scripting.hpp"
-#include "sdl_wrapper.h"
 #include "ui/imgui/imgui_css.h"
 #include "ui/imgui/imgui_generated.h"
 #include "ui/imgui/script.h"
@@ -175,8 +175,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    GameIsolate_.updateDirtyPool2 = metadot_thpool_init(2);
     METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
+    METADOT_NEW(C, GameIsolate_.updateDirtyPool2, ThreadPool, 2);
 
     return this->run(argc, argv);
 }
@@ -1098,7 +1098,7 @@ int Game::exit() {
     METADOT_DELETE(C, movingTiles, U16);
 
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
-    metadot_thpool_destroy(GameIsolate_.updateDirtyPool2);
+    METADOT_DELETE(C, GameIsolate_.updateDirtyPool2, ThreadPool);
 
     if (GameIsolate_.world.get()) {
         GameIsolate_.world.reset();
@@ -1486,20 +1486,6 @@ bool Game::onWindowResize(MetaEngine::WindowResizeEvent &e) {
     return true;
 }
 
-void update_ParticlePixels(void *arg) {
-    // SDL_SetRenderTarget(renderer, textureParticles);
-    void *particlePixels = global.game->TexturePack_.pixelsParticles_ar;
-
-    memset(particlePixels, 0, (size_t)global.game->GameIsolate_.world->width * global.game->GameIsolate_.world->height * 4);
-
-    global.game->GameIsolate_.world->renderParticles((U8 **)&particlePixels);
-    global.game->GameIsolate_.world->tickParticles();
-
-    // SDL_SetRenderTarget(renderer, NULL);
-}
-
-void update_ObjectBounds(void *arg) { global.game->GameIsolate_.world->tickObjectBounds(); }
-
 void Game::tick() {
 
     // METADOT_BUG("{0:d} {0:d}", accLoadX, accLoadY);
@@ -1710,17 +1696,26 @@ void Game::tick() {
         std::vector<std::future<void>> results = {};
 
         int i = 1;
-        metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ParticlePixels, (void *)(uintptr_t)i);
+
+        results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
+            // SDL_SetRenderTarget(renderer, textureParticles);
+            void *particlePixels = TexturePack_.pixelsParticles_ar;
+
+            memset(particlePixels, 0, (size_t)GameIsolate_.world->width * GameIsolate_.world->height * 4);
+
+            GameIsolate_.world->renderParticles((U8 **)&particlePixels);
+            GameIsolate_.world->tickParticles();
+
+            // SDL_SetRenderTarget(renderer, NULL);
+        }));
 
         if (GameIsolate_.world->readyToMerge.size() == 0) {
-            metadot_thpool_addwork(GameIsolate_.updateDirtyPool2, update_ObjectBounds, (void *)(uintptr_t)i);
+            results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) { GameIsolate_.world->tickObjectBounds(); }));
         }
 
         for (int i = 0; i < results.size(); i++) {
             results[i].get();
         }
-
-        metadot_thpool_wait(GameIsolate_.updateDirtyPool2);
 
         for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
             RigidBody *cur = GameIsolate_.world->rigidBodies[i];

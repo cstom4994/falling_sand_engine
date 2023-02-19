@@ -8,7 +8,7 @@
 #include "core/platform.h"
 #include "core/stl.h"
 #include "renderer/renderer_utils.h"
-#include "sdl_wrapper.h"
+#include "core/sdl_wrapper.h"
 
 typedef enum engine_displaymode { WINDOWED, BORDERLESS, FULLSCREEN } engine_displaymode;
 

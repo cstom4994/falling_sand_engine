@@ -10,7 +10,7 @@
 
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
-#include "sdl_wrapper.h"
+#include "core/sdl_wrapper.h"
 
 typedef struct engine_core {
     C_Window *window;

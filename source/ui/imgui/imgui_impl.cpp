@@ -17,10 +17,10 @@
 
 #include "core/alloc.hpp"
 #include "core/core.hpp"
-#include "filesystem.h"
-#include "renderer/renderer_gpu.h"
-#include "sdl_wrapper.h"
+#include "core/io/filesystem.h"
+#include "core/sdl_wrapper.h"
 #include "imgui_impl.hpp"
+#include "renderer/renderer_gpu.h"
 
 #pragma region ImGuiImplementGL3
 

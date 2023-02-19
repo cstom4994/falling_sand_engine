@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "core/core.hpp"
+#include "core/sdl_wrapper.h"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
-#include "sdl_wrapper.h"
 
 struct BackgroundLayer {
     std::vector<C_Surface *> surface;

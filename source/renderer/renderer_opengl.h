@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sdl_wrapper.h"
+#include "core/sdl_wrapper.h"
 #include "renderer_gpu.h"
 
 // Hacks to fix compile errors due to polluted namespace

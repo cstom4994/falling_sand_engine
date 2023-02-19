@@ -21,7 +21,7 @@
 #include <thread>
 #include <tuple>
 
-#include "filesystem.h"
+#include "core/io/filesystem.h"
 #include "scripting/lua/mu_core.h"
 
 using namespace std::string_view_literals;

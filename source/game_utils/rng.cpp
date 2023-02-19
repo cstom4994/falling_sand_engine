@@ -3,7 +3,7 @@
 #include "rng.h"
 
 #include "core/cpp/utils.hpp"
-#include "mathlib.hpp"
+#include "core/math/mathlib.hpp"
 
 RNG* RNG_Create() {
     pcg32_random_t rng;

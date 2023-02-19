@@ -4,7 +4,7 @@
 
 #include "core/alloc.hpp"
 #include "core/core.h"
-#include "filesystem.h"
+#include "core/io/filesystem.h"
 #include "sound.h"
 
 #if defined(METADOT_BUILD_AUDIO)

@@ -4,8 +4,8 @@
 #include <string>
 
 #include "core/core.hpp"
+#include "core/math/mathlib.hpp"
 #include "game_resources.hpp"
-#include "mathlib.hpp"
 
 inline float Deg2Rad(float a) { return a * 0.01745329252f; }
 

@@ -4,9 +4,9 @@
 #define _METADOT_GAMERESOURCES_HPP_
 
 #include "core/core.h"
+#include "core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "renderer/renderer_gpu.h"
-#include "sdl_wrapper.h"
 
 typedef struct Texture {
     C_Surface *surface;

@@ -6,13 +6,12 @@
 
 #include "core/core.h"
 #include "core/global.hpp"
+#include "core/math/mathlib.hpp"
 #include "engine/engine.h"
 #include "engine/engine_input.hpp"
 #include "engine/engine_platform.h"
 #include "game.hpp"
 #include "game_resources.hpp"
-#include "mathlib.h"
-#include "mathlib.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
@@ -325,13 +324,9 @@ void UISystem::DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U
 
 void UISystem::DrawLine(metadot_vec3 min, metadot_vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.X, min.Y, max.X, max.Y, {r, g, b, 255}); }
 
-void UISystem::Create() {
-    UIRendererInit();
-}
+void UISystem::Create() { UIRendererInit(); }
 
-void UISystem::Destory() {
-    UIRendererFree();
-}
+void UISystem::Destory() { UIRendererFree(); }
 
 void UISystem::Reload() {}
 

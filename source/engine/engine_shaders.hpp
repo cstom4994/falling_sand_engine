@@ -5,9 +5,9 @@
 
 #include <stdlib.h>
 
-#include "filesystem.h"
+#include "core/io/filesystem.h"
+#include "core/sdl_wrapper.h"
 #include "renderer/renderer_gpu.h"
-#include "sdl_wrapper.h"
 
 // Loads a shader and prepends version/compatibility info before compiling it.
 U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename);

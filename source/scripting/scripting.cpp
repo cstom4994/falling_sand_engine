@@ -16,9 +16,9 @@
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
 #include "core/global.hpp"
+#include "core/io/filesystem.h"
 #include "core/profiler/profiler_lua.h"
 #include "engine/engine_funcwrap.hpp"
-#include "filesystem.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -304,9 +304,7 @@ static void UpdateLua(LuaCore *_struct) {
     }
 }
 
-static void InitMeo(MetaEngine::Meo::VM &vm) {
-    
-}
+static void InitMeo(MetaEngine::Meo::VM &vm) {}
 
 static void EndMeo(MetaEngine::Meo::VM &vm) {}
 

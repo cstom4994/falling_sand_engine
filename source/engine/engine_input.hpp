@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "core/cpp/vector.hpp"
 #include "core/core.hpp"
-#include "sdl_wrapper.h"
+#include "core/cpp/vector.hpp"
+#include "core/sdl_wrapper.h"
 
 enum EnumControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };
 

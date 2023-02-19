@@ -7,11 +7,11 @@
 #include "SDL_surface.h"
 #include "core/alloc.hpp"
 #include "core/core.h"
+#include "core/io/filesystem.h"
+#include "core/sdl_wrapper.h"
 #include "engine/engine.h"
-#include "filesystem.h"
 #include "libs/external/stb_image.h"
 #include "renderer/renderer_gpu.h"
-#include "sdl_wrapper.h"
 
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "libs/cute/cute_aseprite.h"

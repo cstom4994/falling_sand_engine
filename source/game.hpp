@@ -22,12 +22,11 @@
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
 #include "core/macros.h"
-#include "core/threadpool.h"
 #include "cvar.hpp"
 #include "engine/engine_input.hpp"
 #include "event/applicationevent.hpp"
 #include "event/event.hpp"
-#include "filesystem.h"
+#include "core/io/filesystem.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -105,7 +104,7 @@ public:
         TexturePack *texturepack = nullptr;
 
         ThreadPool *updateDirtyPool = nullptr;
-        ThreadPoolC updateDirtyPool2;
+        ThreadPool *updateDirtyPool2 = nullptr;
     } GameIsolate_;
 
     struct {

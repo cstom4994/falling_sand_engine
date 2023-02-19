@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #include "core/core.hpp"
-#include "mathlib.hpp"
+#include "core/math/mathlib.hpp"
 
 // Random number generation
 typedef struct RNG {

@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "command.hpp"
+#include "core/cpp/command.hpp"
 #include "game_datastruct.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 
