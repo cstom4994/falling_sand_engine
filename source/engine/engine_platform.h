@@ -18,6 +18,8 @@ typedef struct engine_platform {
 
 } engine_platform;
 
+#define RUNNER_EXIT 2
+
 int ParseRunArgs(int argc, char* argv[]);
 int metadot_initwindow();
 void metadot_endwindow();

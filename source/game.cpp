@@ -82,7 +82,9 @@ Game::~Game() {
 
 int Game::init(int argc, char *argv[]) {
     // Parse args
-    ParseRunArgs(argc, argv);
+    int ret = ParseRunArgs(argc, argv);
+    if (ret == METADOT_FAILED) return METADOT_FAILED;
+    if (ret == RUNNER_EXIT) return METADOT_OK;
 
     METADOT_INFO("Starting game...");
 
@@ -926,8 +928,8 @@ int Game::run(int argc, char *argv[]) {
 
         Scripting::GetSingletonPtr()->Update();
 
-        metadot_rect rct{0, 0, 150, 150};
-        RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
+        // metadot_rect rct{0, 0, 150, 150};
+        // RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         MetaEngine::Drawing::begin_3d(Render.target);
         // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);

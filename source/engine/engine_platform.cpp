@@ -8,6 +8,7 @@
 #include "audio/sound.h"
 #include "core/const.h"
 #include "core/core.h"
+#include "core/io/packer.h"
 #include "core/macros.h"
 #include "engine/engine.h"
 #include "filesystem.h"
@@ -23,10 +24,81 @@ int ParseRunArgs(int argc, char *argv[]) {
     if (argc > 1) {
         char *v1 = argv[1];
         if (v1) {
-            if (!strcmp(v1, "server")) {
-                // global.game->GameIsolate_.settings.networkMode = NetworkMode::SERVER;
-            } else {
-                // global.game->GameIsolate_.settings.networkMode = NetworkMode::HOST;
+            if (!strcmp(v1, "packer")) {
+                if (argc <= 3) {
+                    printf("Incorrect parameters\n");
+                    return METADOT_FAILED;
+                }
+
+                pack_result result = packFiles(argv[2], argc - 3, (const char **)argv + 3, true);
+
+                if (result != SUCCESS_PACK_RESULT) {
+                    printf("\nError: %s.\n", packResultToString(result));
+                    return METADOT_FAILED;
+                }
+
+                return RUNNER_EXIT;
+
+            } else if (!strcmp(v1, "unpacker")) {
+                if (argc != 3) {
+                    printf("Incorrect parameters\n");
+                    return METADOT_FAILED;
+                }
+
+                pack_result result = unpackFiles(argv[2], true);
+
+                if (result != SUCCESS_PACK_RESULT) {
+                    printf("\nError: %s.\n", packResultToString(result));
+                    return METADOT_FAILED;
+                }
+                return RUNNER_EXIT;
+
+            } else if (!strcmp(v1, "packinfo")) {
+                if (argc != 3) {
+                    printf("Incorrect parameters\n");
+                    return METADOT_FAILED;
+                }
+
+                uint8_t majorVersion;
+                uint8_t minorVersion;
+                uint8_t patchVersion;
+                bool isLittleEndian;
+                uint64_t itemCount;
+
+                pack_result result = getPackInfo(argv[2], &majorVersion, &minorVersion, &patchVersion, &isLittleEndian, &itemCount);
+
+                if (result != SUCCESS_PACK_RESULT) {
+                    printf("\nError: %s.\n", packResultToString(result));
+                    return METADOT_FAILED;
+                }
+
+                printf("MetaDot Pack [v%d.%d.%d]\n"
+                       "Pack information:\n"
+                       " Version: %d.%d.%d.\n"
+                       " Little endian: %s.\n"
+                       " Item count: %llu.\n\n",
+                       PACK_VERSION_MAJOR, PACK_VERSION_MINOR, PACK_VERSION_PATCH, majorVersion, minorVersion, patchVersion, isLittleEndian ? "true" : "false", (long long unsigned int)itemCount);
+
+                pack_reader packReader;
+
+                result = createFilePackReader(argv[2], 0, false, &packReader);
+
+                if (result != SUCCESS_PACK_RESULT) {
+                    printf("\nError: %s.\n", packResultToString(result));
+                    return METADOT_FAILED;
+                }
+
+                itemCount = getPackItemCount(packReader);
+
+                for (uint64_t i = 0; i < itemCount; ++i) {
+                    printf("Item %llu:\n"
+                           " Path: %s.\n"
+                           " Size: %u.\n",
+                           (long long unsigned int)i, getPackItemPath(packReader, i), getPackItemDataSize(packReader, i));
+                    fflush(stdout);
+                }
+
+                return RUNNER_EXIT;
             }
         } else {
         }
@@ -221,9 +293,7 @@ void metadot_set_VSync(bool vsync) {
     // GameUI::OptionsUI::vsync = vsync;
 }
 
-void metadot_set_minimize_onlostfocus(bool minimize) {
-    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0");
-}
+void metadot_set_minimize_onlostfocus(bool minimize) { SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0"); }
 
 void metadot_set_windowtitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }
 
