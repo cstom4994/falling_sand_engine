@@ -213,10 +213,6 @@ do
 	add_files("source/libs/*.cpp")
 	add_files("source/libs/*.c")
 	add_files("source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c", "source/libs/glad/**.c")
-	add_files("source/libs/physfs/**.c")
-	if is_os("macosx") then
-		add_files("source/libs/physfs/**.m")
-	end
 	add_files("source/libs/libcss/**.c")
 	add_files("source/libs/lz4/**.c")
 	add_files("source/libs/lua/host/**.c")
@@ -258,6 +254,10 @@ do
 	add_files("source/*.c")
 	add_files("source/*.cpp")
 
+	if is_os("macosx") then
+		add_files("source/core/**.m")
+	end
+	
 	add_files("source/core/**.c")
 	add_files("source/core/**.cpp")
 	add_files("source/event/**.cpp")

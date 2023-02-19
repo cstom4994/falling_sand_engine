@@ -335,10 +335,11 @@ void AudioEngineInit() {
 
 METAENGINE_Audio *metadot_audio_load_ogg(const char *path) {
     size_t size;
-    void *data = fs_read_entire_file_to_memory(path, &size);
+    auto vc = fs_read_entire_file_to_memory(path, size);
+    void *data = vc.data();
     if (data) {
         auto src = metadot_audio_load_ogg_from_memory(data, (int)size);
-        METAENGINE_FW_FREE(data);
+        // METAENGINE_FW_FREE(data);
         return (METAENGINE_Audio *)src;
     } else {
         return NULL;
@@ -347,10 +348,11 @@ METAENGINE_Audio *metadot_audio_load_ogg(const char *path) {
 
 METAENGINE_Audio *metadot_audio_load_wav(const char *path) {
     size_t size;
-    void *data = fs_read_entire_file_to_memory(path, &size);
+    auto vc = fs_read_entire_file_to_memory(path, size);
+    void *data = vc.data();
     if (data) {
         auto src = metadot_audio_load_wav_from_memory(data, (int)size);
-        METAENGINE_FW_FREE(data);
+        // METAENGINE_FW_FREE(data);
         return (METAENGINE_Audio *)src;
     } else {
         return NULL;

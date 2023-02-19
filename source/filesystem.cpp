@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 
 #include "core/alloc.hpp"
 #include "core/core.h"
@@ -15,214 +16,31 @@
 #include "datapackage.h"
 #include "engine/engine.h"
 #include "engine/engine_platform.h"
-#include "libs/physfs/physfs.h"
 
 IMPLENGINE();
 
-void TracePhysFSError(const char* detail) {}
-
-unsigned char* LoadFileDataFromPhysFS(const char* fileName, unsigned int* bytesRead) {
-    if (!FileExistsInPhysFS(fileName)) {
-
-        *bytesRead = 0;
-        return 0;
-    }
-
-    PHYSFS_File* handle = PHYSFS_openRead(fileName);
-    if (handle == 0) {
-        TracePhysFSError(fileName);
-        *bytesRead = 0;
-        return 0;
-    }
-
-    int size = PHYSFS_fileLength(handle);
-    if (size == -1) {
-        *bytesRead = 0;
-        PHYSFS_close(handle);
-
-        return 0;
-    }
-
-    if (size == 0) {
-        PHYSFS_close(handle);
-        *bytesRead = 0;
-        return 0;
-    }
-
-    unsigned char* buffer = (unsigned char*)malloc(size);
-    int read = PHYSFS_readBytes(handle, buffer, size);
-    if (read < 0) {
-        *bytesRead = 0;
-        free(buffer);
-        PHYSFS_close(handle);
-        TracePhysFSError(fileName);
-        return 0;
-    }
-
-    PHYSFS_close(handle);
-    *bytesRead = read;
-    return buffer;
-}
-
-R_bool InitPhysFS() {
-
-    if (PHYSFS_init(0) == 0) {
-        TracePhysFSError("InitPhysFS() failed");
-        return false;
-    }
-
-    // SetPhysFSWriteDirectory(GetWorkingDirectory());
-
-    return true;
-}
-
-R_bool InitPhysFSEx(const char* newDir, const char* mountPoint) {
-    if (InitPhysFS()) {
-        return MountPhysFS(newDir, mountPoint);
-    }
-    return false;
-}
-
-R_bool IsPhysFSReady() { return PHYSFS_isInit() != 0; }
-
-R_bool MountPhysFS(const char* newDir, const char* mountPoint) {
-    if (PHYSFS_mount(newDir, mountPoint, 1) == 0) {
-        TracePhysFSError(mountPoint);
-        return false;
-    }
-
-    return true;
-}
-
-R_bool MountPhysFSFromMemory(const unsigned char* fileData, int dataSize, const char* newDir, const char* mountPoint) {
-    if (dataSize <= 0) {
-        return false;
-    }
-
-    if (PHYSFS_mountMemory(fileData, dataSize, 0, newDir, mountPoint, 1) == 0) {
-        // TracePhysFSError(sprintf("Failed to mount '%s' at '%s'", newDir, mountPoint));
-        return false;
-    }
-
-    return true;
-}
-
-R_bool UnmountPhysFS(const char* oldDir) {
-    if (PHYSFS_unmount(oldDir) == 0) {
-        return false;
-    }
-
-    return true;
-}
-
-R_bool FileExistsInPhysFS(const char* fileName) {
-    PHYSFS_Stat stat;
-    if (PHYSFS_stat(fileName, &stat) == 0) {
-        return false;
-    }
-    return stat.filetype == PHYSFS_FILETYPE_REGULAR;
-}
-
-R_bool DirectoryExistsInPhysFS(const char* dirPath) {
-    PHYSFS_Stat stat;
-    if (PHYSFS_stat(dirPath, &stat) == 0) {
-        return false;
-    }
-    return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
-}
-
-R_bool SetPhysFSWriteDirectory(const char* newDir) {
-    if (PHYSFS_setWriteDir(newDir) == 0) {
-        TracePhysFSError(newDir);
-        return false;
-    }
-
-    return true;
-}
-
-R_bool SaveFileDataToPhysFS(const char* fileName, void* data, unsigned int bytesToWrite) {
-
-    if (bytesToWrite == 0) {
-        return true;
-    }
-
-    PHYSFS_File* handle = PHYSFS_openWrite(fileName);
-    if (handle == 0) {
-        TracePhysFSError(fileName);
-        return false;
-    }
-
-    if (PHYSFS_writeBytes(handle, data, bytesToWrite) < 0) {
-        PHYSFS_close(handle);
-        TracePhysFSError(fileName);
-        return false;
-    }
-
-    PHYSFS_close(handle);
-    return true;
-}
-
-R_bool SaveFileTextToPhysFS(const char* fileName, char* text) { return SaveFileDataToPhysFS(fileName, text, strlen(text)); }
-
-long GetFileModTimeFromPhysFS(const char* fileName) {
-    PHYSFS_Stat stat;
-    if (PHYSFS_stat(fileName, &stat) == 0) {
-        return -1;
-    }
-
-    return stat.modtime;
-}
-
-R_bool ClosePhysFS() {
-    if (PHYSFS_deinit() == 0) {
-        TracePhysFSError("ClosePhysFS() unsuccessful");
-        return false;
-    }
-
-    return true;
-}
-
-void SetPhysFSCallbacks() {
-    // SetLoadFileDataCallback(LoadFileDataFromPhysFS);
-    // SetSaveFileDataCallback(SaveFileDataToPhysFS);
-    // SetLoadFileTextCallback(LoadFileTextFromPhysFS);
-    // SetSaveFileTextCallback(SaveFileTextToPhysFS);
-}
-
-const char* GetPerfDirectory(const char* organization, const char* application) {
-    const char* output = PHYSFS_getPrefDir(organization, application);
-    if (output == 0) {
-        TracePhysFSError("Failed to get perf directory");
-        return 0;
-    }
-
-    return output;
-}
-
 bool InitFilesystem() {
-
-    METAENGINE_Result err = metadot_fs_init(NULL);
 
     auto currentDir = std::filesystem::path(metadot_fs_getExecutableFolderPath());
 
 #if 1
 
     for (int i = 0; i < 3; ++i) {
-        currentDir = currentDir.parent_path();
         if (std::filesystem::exists(currentDir / "Data")) {
             Core.gamepath = currentDir;
             // s_DataPath = currentDir / "Data";
             METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), metadot_fs_getExecutableFolderPath());
 
-            if (metadot_is_error(err)) {
-                METADOT_ASSERT_E(0);
-            } else if (true) {
-                // Put the base directory (the path to the exe) onto the file system search path.
-                metadot_fs_mount(Core.gamepath.c_str(), "", true);
-            }
+            // if (metadot_is_error(err)) {
+            //     METADOT_ASSERT_E(0);
+            // } else if (true) {
+            //     // Put the base directory (the path to the exe) onto the file system search path.
+            //     // metadot_fs_mount(Core.gamepath.c_str(), "", true);
+            // }
 
             return METADOT_OK;
         }
+        currentDir = currentDir.parent_path();
     }
 
     METADOT_ERROR("Game data path detect failed");
@@ -243,7 +61,7 @@ bool InitFilesystem() {
 }
 
 const char* metadot_fs_getExecutableFolderPath() {
-    const char* out = PHYSFS_getBaseDir();
+    const char* out = std::filesystem::current_path().c_str();
     return out;
 }
 
@@ -435,216 +253,17 @@ char* metadot_path_normalize(const char* path) {
     return result;
 }
 
-//--------------------------------------------------------------------------------------------------
+std::vector<char> fs_read_entire_file_to_memory(const char* path, size_t &size) {
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::streamsize size_ = file.tellg();
+    file.seekg(0, std::ios::beg);
 
-METAENGINE_Result metadot_fs_set_write_directory(const char* platform_dependent_directory) {
-    if (!PHYSFS_setWriteDir(platform_dependent_directory)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+    std::vector<char> buffer(size_);
+    if (file.read(buffer.data(), size_)) {
+        size = size_;
+        return buffer;
     } else {
-        return metadot_result_success();
+        METADOT_ERROR("Unable to load file %s", path);
+        return std::vector<char>();
     }
 }
-
-METAENGINE_Result metadot_fs_mount(const char* archive, const char* mount_point, bool append_to_path) {
-    if (!PHYSFS_mount(archive, mount_point, (int)append_to_path)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-METAENGINE_Result metadot_fs_dismount(const char* archive) {
-    if (!PHYSFS_unmount(archive)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-static METADOT_INLINE METAENGINE_FileType s_file_type(PHYSFS_FileType type) {
-    switch (type) {
-        case PHYSFS_FILETYPE_REGULAR:
-            return METAENGINE_FILE_TYPE_REGULAR;
-        case PHYSFS_FILETYPE_DIRECTORY:
-            return METAENGINE_FILE_TYPE_DIRECTORY;
-        case PHYSFS_FILETYPE_SYMLINK:
-            return METAENGINE_FILE_TYPE_SYMLINK;
-        default:
-            return METAENGINE_FILE_TYPE_OTHER;
-    }
-}
-
-METAENGINE_Result metadot_fs_stat(const char* virtual_path, METAENGINE_Stat* stat) {
-    PHYSFS_Stat physfs_stat;
-    if (!PHYSFS_stat(virtual_path, &physfs_stat)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        stat->type = s_file_type(physfs_stat.filetype);
-        stat->is_read_only = physfs_stat.readonly;
-        stat->size = physfs_stat.filesize;
-        stat->last_modified_time = physfs_stat.modtime;
-        stat->created_time = physfs_stat.createtime;
-        stat->last_accessed_time = physfs_stat.accesstime;
-        return metadot_result_success();
-    }
-}
-
-METAENGINE_File* metadot_fs_create_file(const char* virtual_path) {
-    PHYSFS_file* file = PHYSFS_openWrite(virtual_path);
-    if (!file) {
-        return NULL;
-    } else if (!PHYSFS_setBuffer(file, METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE)) {
-        PHYSFS_close(file);
-        return NULL;
-    }
-    return (METAENGINE_File*)file;
-}
-
-METAENGINE_File* metadot_fs_open_file_for_write(const char* virtual_path) {
-    PHYSFS_file* file = PHYSFS_openWrite(virtual_path);
-    if (!file) {
-        return NULL;
-    } else if (!PHYSFS_setBuffer(file, METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE)) {
-        PHYSFS_close(file);
-        return NULL;
-    }
-    return (METAENGINE_File*)file;
-}
-
-METAENGINE_File* metadot_fs_open_file_for_append(const char* virtual_path) {
-    PHYSFS_file* file = PHYSFS_openAppend(virtual_path);
-    if (!file) {
-        return NULL;
-    } else if (!PHYSFS_setBuffer(file, METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE)) {
-        PHYSFS_close(file);
-        return NULL;
-    }
-    return (METAENGINE_File*)file;
-}
-
-METAENGINE_File* metadot_fs_open_file_for_read(const char* virtual_path) {
-    PHYSFS_file* file = PHYSFS_openRead(virtual_path);
-    if (!file) {
-        return NULL;
-    } else if (!PHYSFS_setBuffer(file, METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE)) {
-        PHYSFS_close(file);
-        return NULL;
-    }
-    return (METAENGINE_File*)file;
-}
-
-METAENGINE_Result metadot_fs_close(METAENGINE_File* file) {
-    if (!PHYSFS_close((PHYSFS_file*)file)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-METAENGINE_Result metadot_fs_delete(const char* virtual_path) {
-    if (!PHYSFS_delete(virtual_path)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-METAENGINE_Result metadot_fs_create_directory(const char* virtual_path) {
-    if (!PHYSFS_mkdir(virtual_path)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-const char** metadot_fs_enumerate_directory(const char* virtual_path) {
-    const char** file_list = (const char**)PHYSFS_enumerateFiles(virtual_path);
-    if (!file_list) {
-        return NULL;
-    }
-    return file_list;
-}
-
-void metadot_fs_free_enumerated_directory(const char** directory_list) { PHYSFS_freeList(directory_list); }
-
-const char* metadot_fs_get_backend_specific_error_message() { return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()); }
-
-const char* metadot_fs_get_user_directory(const char* company_name, const char* game_name) { return PHYSFS_getPrefDir(company_name, game_name); }
-
-const char* metadot_fs_get_actual_path(const char* virtual_path) { return PHYSFS_getRealDir(virtual_path); }
-
-bool metadot_fs_file_exists(const char* virtual_path) { return PHYSFS_exists(virtual_path) ? true : false; }
-
-size_t metadot_fs_read(METAENGINE_File* file, void* buffer, size_t bytes) { return (size_t)PHYSFS_readBytes((PHYSFS_file*)file, buffer, (PHYSFS_uint64)bytes); }
-
-size_t metadot_fs_write(METAENGINE_File* file, const void* buffer, size_t bytes) { return (size_t)PHYSFS_writeBytes((PHYSFS_file*)file, buffer, (PHYSFS_uint64)bytes); }
-
-METAENGINE_Result metadot_fs_eof(METAENGINE_File* file) {
-    if (!PHYSFS_eof((PHYSFS_file*)file)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-size_t metadot_fs_tell(METAENGINE_File* file) { return (size_t)PHYSFS_tell((PHYSFS_file*)file); }
-
-METAENGINE_Result metadot_fs_seek(METAENGINE_File* file, size_t position) {
-    if (!PHYSFS_seek((PHYSFS_file*)file, (PHYSFS_uint64)position)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-size_t metadot_fs_size(METAENGINE_File* file) { return (size_t)PHYSFS_fileLength((PHYSFS_file*)file); }
-
-void* metadot_fs_read_entire_file_to_memory(const char* virtual_path, size_t* size) {
-    METAENGINE_File* file = metadot_fs_open_file_for_read(virtual_path);
-    if (!file) {
-        METADOT_BUG("Can't load file %s", virtual_path);
-        return NULL;
-    }
-    size_t sz = metadot_fs_size(file);
-    void* data = METAENGINE_FW_ALLOC(sz);
-    size_t sz_read = metadot_fs_read(file, data, sz);
-    METADOT_ASSERT_E(sz == sz_read);
-    if (size) *size = sz_read;
-    metadot_fs_close(file);
-    return data;
-}
-
-char* metadot_fs_read_entire_file_to_memory_and_nul_terminate(const char* virtual_path, size_t* size) {
-    METAENGINE_File* file = metadot_fs_open_file_for_read(virtual_path);
-    void* data = NULL;
-    if (!file) return NULL;
-    size_t sz = metadot_fs_size(file) + 1;
-    data = METAENGINE_FW_ALLOC(sz);
-    size_t sz_read = metadot_fs_read(file, data, sz);
-    METADOT_ASSERT_E(sz == sz_read + 1);
-    ((char*)data)[sz - 1] = 0;
-    if (size) *size = sz;
-    metadot_fs_close(file);
-    return (char*)data;
-}
-
-METAENGINE_Result metadot_fs_write_entire_buffer_to_file(const char* virtual_path, const void* data, size_t size) {
-    METAENGINE_File* file = metadot_fs_open_file_for_write(virtual_path);
-    if (!file) return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    uint64_t sz = metadot_fs_write(file, data, (PHYSFS_uint64)size);
-    if (sz != size) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    }
-    metadot_fs_close(file);
-    return metadot_result_success();
-}
-
-METAENGINE_Result metadot_fs_init(const char* argv0) {
-    if (!PHYSFS_init(argv0)) {
-        return metadot_result_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
-    } else {
-        return metadot_result_success();
-    }
-}
-
-void metadot_fs_destroy() { PHYSFS_deinit(); }

@@ -38,7 +38,6 @@
 #include "game_utils/mdplot.h"
 #include "game_utils/particles.h"
 #include "libs/imgui/imgui.h"
-#include "libs/physfs/physfs.h"
 #include "mathlib.hpp"
 #include "meta/meta.hpp"
 #include "reflectionflat.hpp"

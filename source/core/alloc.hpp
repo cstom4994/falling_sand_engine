@@ -14,7 +14,6 @@
 #include <map>
 
 #include "core/core.h"
-#include "core/core.hpp"
 #include "core/macros.h"
 
 struct AllocationMap;

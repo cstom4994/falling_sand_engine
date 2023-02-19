@@ -247,19 +247,6 @@ METADOT_STRUCT(MarkdownData, data);
     }                                                                               \
     enum class TEnum : TBase
 
-namespace MetaEngine {
-
-template <class T>
-using Ref = std::shared_ptr<T>;
-
-template <class _Ty, class... _Types>
-Ref<_Ty> MakeRef(_Types &&..._Args) {
-    // make a shared_ptr
-    return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);
-}
-
-}  // namespace MetaEngine
-
 //--------------------------------------------------------------------------------------------------------------------------------//
 // MEMORY FUNCTIONS USED BY LIBRARY
 

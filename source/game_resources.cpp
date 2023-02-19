@@ -9,10 +9,12 @@
 #include "core/core.h"
 #include "engine/engine.h"
 #include "filesystem.h"
-#include "libs/Ase_Loader.h"
 #include "libs/external/stb_image.h"
 #include "renderer/renderer_gpu.h"
 #include "sdl_wrapper.h"
+
+#define CUTE_ASEPRITE_IMPLEMENTATION
+#include "libs/cute/cute_aseprite.h"
 
 IMPLENGINE();
 
@@ -153,29 +155,36 @@ C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
 
 Texture *LoadAsepriteTexture(const char *path) {
 
-    Ase_Output *ase = Ase_Load(METADOT_RESLOC(path));
-
-    if (NULL == ase) return nullptr;
-
-    SDL_PixelFormatEnum pixel_format;
-    if (ase->bpp == 1) {
-        pixel_format = SDL_PIXELFORMAT_INDEX8;
-    } else if (ase->bpp == 4) {
-        pixel_format = SDL_PIXELFORMAT_RGBA32;
-    } else {
-        METADOT_ERROR("Aseprite %d BPP not supported!", ase->bpp);
+    ase_t *ase = cute_aseprite_load_from_file(METADOT_RESLOC(path), NULL);
+    if (NULL == ase) {
+        METADOT_ERROR("Unable to load ase %s", path);
+        return nullptr;
     }
 
-    C_Surface *surface =
-            SDL_CreateRGBSurfaceWithFormatFrom(ase->pixels, ase->frame_width * ase->num_frames, ase->frame_height, ase->bpp * 8, ase->bpp * ase->frame_width * ase->num_frames, pixel_format);
+    ase_frame_t *frame = ase->frames;
+
+    SDL_PixelFormatEnum pixel_format;
+    // if (ase->bpp == 1) {
+    //     pixel_format = SDL_PIXELFORMAT_INDEX8;
+    // } else if (ase->bpp == 4) {
+    //     pixel_format = SDL_PIXELFORMAT_RGBA32;
+    // } else {
+    //     METADOT_ERROR("Aseprite %d BPP not supported!", ase->bpp);
+    // }
+    pixel_format = SDL_PIXELFORMAT_RGBA32;
+    int bpp = 4;
+
+    METADOT_BUG("Aseprite %d %d", ase->frame_count, ase->palette.entry_count);
+
+    C_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(frame->pixels, ase->w * ase->frame_count, ase->h, bpp * 8, bpp * ase->w * ase->frame_count, pixel_format);
     surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
     if (!surface) METADOT_ERROR("Surface could not be created!, %s", SDL_GetError());
-    SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.num_entries);
-    SDL_SetColorKey(surface, SDL_TRUE, ase->palette.color_key);
+    SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.entry_count);
+    // SDL_SetColorKey(surface, SDL_TRUE, ase->color_profile);
 
     Texture *tex = Eng_CreateTexture(surface);
 
-    Ase_Destroy_Output(ase);
+    cute_aseprite_free(ase);
 
     return tex;
 }

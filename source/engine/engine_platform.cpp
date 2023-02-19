@@ -146,7 +146,6 @@ int metadot_initwindow() {
 void metadot_endwindow() {
 
     cs_shutdown();
-    metadot_fs_destroy();
 
     if (NULL != Render.target) R_FreeTarget(Render.target);
     // if (Render.realTarget) R_FreeTarget(Render.realTarget);
