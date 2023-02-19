@@ -564,7 +564,7 @@ CSTDTime | {6} | Nothing)";
                                     if (field.name != "setItemInHand") return;
                                     if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, World * world) /* const */>(&Player::setItemInHand)))
                                         (p->*(field.value))(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
-                                                            global.game->GameIsolate_.world);
+                                                            global.game->GameIsolate_.world.get());
                                     // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
                                     //     std::cout << (p.*(field.value))(1.f) << std::endl;
                                     else

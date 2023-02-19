@@ -24,7 +24,7 @@ return CRectIsInside( other, *this );
 
 #include <assert.h>
 
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 
 namespace MetaEngine {
 

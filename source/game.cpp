@@ -20,7 +20,7 @@
 #include "core/core.hpp"
 #include "core/cpp/promise.hpp"
 #include "core/cpp/utils.hpp"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/profiler/profiler.h"
@@ -143,7 +143,7 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize the world
     METADOT_INFO("Initializing world...");
-    METADOT_NEW(C, GameIsolate_.world, World);
+    GameIsolate_.world = MetaEngine::CreateScope<World>();
     GameIsolate_.world->noSaveLoad = true;
     GameIsolate_.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                              (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audioEngine);
@@ -852,7 +852,7 @@ int Game::run(int argc, char *argv[]) {
                                 auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
 
                                 pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur),
-                                                  GameIsolate_.world);
+                                                  GameIsolate_.world.get());
 
                                 GameIsolate_.world->b2world->DestroyBody(cur->body);
                                 GameIsolate_.world->rigidBodies.erase(std::remove(GameIsolate_.world->rigidBodies.begin(), GameIsolate_.world->rigidBodies.end(), cur),
@@ -870,7 +870,7 @@ int Game::run(int argc, char *argv[]) {
                             auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
                             auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
 
-                            pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), NULL, GameIsolate_.world);
+                            pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), NULL, GameIsolate_.world.get());
                         }
                     }
 
@@ -927,8 +927,8 @@ int Game::run(int argc, char *argv[]) {
 
         Scripting::GetSingletonPtr()->Update();
 
-        // metadot_rect rct{0, 0, 150, 150};
-        // RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
+        metadot_rect rct{0, 0, 150, 150};
+        RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         MetaEngine::Drawing::begin_3d(Render.target);
         // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);
@@ -1099,9 +1099,8 @@ int Game::exit() {
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
     metadot_thpool_destroy(GameIsolate_.updateDirtyPool2);
 
-    if (GameIsolate_.world) {
-        METADOT_DELETE(C, GameIsolate_.world, World);
-        GameIsolate_.world = nullptr;
+    if (GameIsolate_.world.get()) {
+        GameIsolate_.world.reset();
     }
 
     global.audioEngine.Shutdown();
@@ -1309,7 +1308,7 @@ void Game::updateFrameEarly() {
 
             GameIsolate_.world->player = player.id();
 
-            pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), i3, GameIsolate_.world);
+            pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), i3, GameIsolate_.world.get());
 
             // accLoadX = 0;
             // accLoadY = 0;
@@ -1985,7 +1984,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
             GameIsolate_.world->tickTemperature();
         }
         if (GameIsolate_.globaldef.draw_temperature_map && Time.tickCount % GameTick == 0) {
-            renderTemperatureMap(GameIsolate_.world);
+            renderTemperatureMap(GameIsolate_.world.get());
         }
 
         if (hadDirty) {
@@ -3504,14 +3503,13 @@ void Game::quitToMainMenu() {
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
 
-    METADOT_DELETE(C, GameIsolate_.world, World);
-    GameIsolate_.world = nullptr;
+    GameIsolate_.world.reset();
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
     std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
 
-    METADOT_NEW(C, GameIsolate_.world, World);
+    GameIsolate_.world = MetaEngine::CreateScope<World>();
     GameIsolate_.world->noSaveLoad = true;
     GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                              (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audioEngine, generator);

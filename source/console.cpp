@@ -6,7 +6,7 @@
 #include <string>
 
 #include "core/cpp/utils.hpp"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "core/global.hpp"
 #include "command.hpp"
 #include "engine/engine.h"

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "core/core.hpp"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "meta/json.h"
 #include "meta/reflect.hpp"
 

@@ -3,6 +3,26 @@
 #ifndef _METADOT_DEBUGIMPL_HPP_
 #define _METADOT_DEBUGIMPL_HPP_
 
+#include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <deque>
+#include <functional>
+#include <iomanip>
+#include <ios>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <variant>
+#include <vector>
+
 #include "core/core.hpp"
 #include "core/cpp/vector.hpp"
 #include "core/macros.h"
@@ -17,31 +37,6 @@ struct DebugInfo {
 
 int metadot_buildnum(void);
 DebugInfo metadot_metadata(void);
-
-#include <algorithm>
-#include <cassert>
-#include <chrono>
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <deque>
-#include <functional>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <tuple>
-#include <type_traits>
-#include <vector>
-
-#define DBG_MACRO_CXX_STANDARD 17
-
-#if DBG_MACRO_CXX_STANDARD >= 17
-#include <optional>
-#include <variant>
-#endif
 
 namespace dbg {
 
@@ -188,11 +183,7 @@ std::string type_list_to_string() {
     auto unused = {(result += type_name<T>() + ", ", 0)..., 0};
     static_cast<void>(unused);
 
-#if DBG_MACRO_CXX_STANDARD >= 17
     if constexpr (sizeof...(T) > 0) {
-#else
-    if (sizeof...(T) > 0) {
-#endif
         result.pop_back();
         result.pop_back();
     }
@@ -245,7 +236,6 @@ namespace detail {
 namespace {
 using std::begin;
 using std::end;
-#if DBG_MACRO_CXX_STANDARD < 17
 template <typename T>
 constexpr auto size(const T &c) -> decltype(c.size()) {
     return c.size();
@@ -254,9 +244,6 @@ template <typename T, std::size_t N>
 constexpr std::size_t size(const T (&)[N]) {
     return N;
 }
-#else
-using std::size;
-#endif
 }  // namespace
 
 template <typename T>
@@ -341,24 +328,16 @@ inline typename std::enable_if<std::is_enum<Enum>::value, bool>::type pretty_pri
 
 inline bool pretty_print(std::ostream &stream, const std::string &value);
 
-#if DBG_MACRO_CXX_STANDARD >= 17
-
 inline bool pretty_print(std::ostream &stream, const std::string_view &value);
-
-#endif
 
 template <typename T1, typename T2>
 inline bool pretty_print(std::ostream &stream, const std::pair<T1, T2> &value);
-
-#if DBG_MACRO_CXX_STANDARD >= 17
 
 template <typename T>
 inline bool pretty_print(std::ostream &stream, const std::optional<T> &value);
 
 template <typename... Ts>
 inline bool pretty_print(std::ostream &stream, const std::variant<Ts...> &value);
-
-#endif
 
 template <typename Container>
 inline typename std::enable_if<detail::is_container<const Container &>::value, bool>::type pretty_print(std::ostream &stream, const Container &value);
@@ -568,14 +547,10 @@ inline bool pretty_print(std::ostream &stream, const std::string &value) {
     return true;
 }
 
-#if DBG_MACRO_CXX_STANDARD >= 17
-
 inline bool pretty_print(std::ostream &stream, const std::string_view &value) {
     stream << '"' << std::string(value) << '"';
     return true;
 }
-
-#endif
 
 template <typename T1, typename T2>
 inline bool pretty_print(std::ostream &stream, const std::pair<T1, T2> &value) {
@@ -586,8 +561,6 @@ inline bool pretty_print(std::ostream &stream, const std::pair<T1, T2> &value) {
     stream << "}";
     return true;
 }
-
-#if DBG_MACRO_CXX_STANDARD >= 17
 
 template <typename T>
 inline bool pretty_print(std::ostream &stream, const std::optional<T> &value) {
@@ -610,8 +583,6 @@ inline bool pretty_print(std::ostream &stream, const std::variant<Ts...> &value)
 
     return true;
 }
-
-#endif
 
 template <typename Container>
 inline typename std::enable_if<detail::is_container<const Container &>::value, bool>::type pretty_print(std::ostream &stream, const Container &value) {
@@ -778,137 +749,5 @@ auto identity(T &&, U &&...u) -> last_t<U...> {
 #else
 #define METADOT_DBG(...) dbg::identity(__VA_ARGS__)
 #endif  // DBG_MACRO_DISABLE
-
-// Unit-testing framework. zlib/libpng licensed.
-
-#ifndef METADOT_UNIT_TESING
-#define METADOT_UNIT_TESING
-
-#define METADOT_UNIT(...) (!!(__VA_ARGS__) ? (METADOT_UNIT::suite(#__VA_ARGS__, __FILE__, __LINE__, 1) < __VA_ARGS__) : (METADOT_UNIT::suite(#__VA_ARGS__, __FILE__, __LINE__, 0) < __VA_ARGS__))
-#define METADOT_UNITS(...)                                                        \
-    static void METADOT_UNIT$line(METADOT_UNIT)();                                \
-    static const bool METADOT_UNIT$line(dsstSuite_) = METADOT_UNIT::suite::queue( \
-            []() {                                                                \
-                std::string title = "" __VA_ARGS__;                               \
-                if (title.empty()) title = "Suite";                               \
-                fprintf(stderr, "------  %s\n", title.c_str());                   \
-                METADOT_UNIT$line(METADOT_UNIT)();                                \
-            },                                                                    \
-            "" #__VA_ARGS__);                                                     \
-    void METADOT_UNIT$line(METADOT_UNIT)()
-#define throws(...)      \
-    ([&]() {             \
-        try {            \
-            __VA_ARGS__; \
-        } catch (...) {  \
-            return true; \
-        }                \
-        return false;    \
-    }())
-
-namespace METADOT_UNIT {
-using namespace std;
-using timer = chrono::high_resolution_clock;
-template <typename T>
-inline string to_str(const T &t) {
-    stringstream ss;
-    return (ss << t) ? ss.str() : string("??");
-}
-template <>
-inline string to_str(const timer::time_point &start) {
-    return to_str(double((timer::now() - start).count()) * timer::period::num / timer::period::den);
-}
-class suite {
-    timer::time_point start = timer::now();
-    deque<string> xpr;
-    int ok = false, has_bp = false;
-    enum { BREAKPOINT, BREAKPOINTS, PASSED, FAILED, TESTNO };
-    static unsigned &get(int i) {
-        static unsigned var[TESTNO + 1] = {};
-        return var[i];
-    }
-
-public:
-    static bool queue(const function<void()> &fn, const string &text) {
-        static auto start = timer::now();
-        static struct install : public deque<function<void()>> {
-            install() : deque<function<void()>>() { get(BREAKPOINT) = stoul(getenv("BREAKON") ? getenv("BREAKON") : "0"); }
-            ~install() {
-                for (auto &fn : *this) fn();
-                string ss, run = to_str(get(PASSED) + get(FAILED)), res = get(FAILED) ? "[FAIL]  " : "[ OK ]  ";
-                if (get(FAILED))
-                    ss += res + "Failure! " + to_str(get(FAILED)) + '/' + run + " tests failed :(\n";
-                else
-                    ss += res + "Success: " + run + " tests passed :)\n";
-                ss += "        Breakpoints: " + to_str(get(BREAKPOINTS)) + " (*)\n";
-                ss += "        Total time: " + to_str(start) + " seconds.\n";
-                fprintf(stderr, "\n%s", ss.c_str());
-                if (get(FAILED)) std::exit(get(FAILED));
-            }
-        } queue;
-        return text.find("before main()") == string::npos ? (queue.push_back(fn), 0) : (fn(), 1);
-    }
-    suite(const char *const text, const char *const file, int line, bool result) : xpr({string(file) + ':' + to_str(line), " - ", text, ""}), ok(result) {
-        xpr[0] = "Test " + to_str(++get(TESTNO)) + " at " + xpr[0];
-        if (0 != (has_bp = (get(TESTNO) == get(BREAKPOINT)))) {
-            get(BREAKPOINTS)++;
-            fprintf(stderr, "MetaDotUnitTest : breaking on test #%d\n\t", get(TESTNO));
-            assert(!"MetaDotUnitTest : breakpoint requested");
-            fprintf(stderr, "%s", "\nMetaDotUnitTest : breakpoint failed!\n");
-        }
-    }
-    ~suite() {
-        if (xpr.empty()) return;
-        operator bool(), queue([&]() { get(ok ? PASSED : FAILED)++; }, "before main()");
-        string res[] = {"[FAIL]", "[ OK ]", "  ", " *", "        ", ""}, *bp = &res[2], *tab = &res[4];
-        xpr[0] = res[ok] + bp[has_bp] + xpr[0] + " (" + to_str(start) + " s)" + (xpr[1].size() > 3 && !ok ? xpr[1] : tab[1]);
-        xpr.erase(xpr.begin() + 1);
-        if (ok)
-            xpr = {xpr[0]};
-        else {
-            xpr[1].resize((xpr[1] != (xpr[2] = xpr[2].substr(xpr[2][2] == ' ' ? 3 : 4))) * xpr[1].size());
-            xpr.push_back("(unexpected)");
-        }
-        for (auto end = xpr.size(), it = end - end; it < end; ++it) {
-            fprintf(stderr, &"\0%s%s\n"[!xpr[it].empty()], tab[!it].c_str(), xpr[it].c_str());
-        }
-    }
-#define METADOT_UNIT$join(str, num) str##num
-#define METADOT_UNIT$glue(str, num) METADOT_UNIT$join(str, num)
-#define METADOT_UNIT$line(str) METADOT_UNIT$glue(str, __LINE__)
-#define METADOT_UNIT$(OP)                                  \
-    template <typename T>                                  \
-    suite &operator OP(const T &rhs) {                     \
-        return xpr[3] += " " #OP " " + to_str(rhs), *this; \
-    }                                                      \
-    template <unsigned N>                                  \
-    suite &operator OP(const char(&rhs)[N]) {              \
-        return xpr[3] += " " #OP " " + to_str(rhs), *this; \
-    }
-    template <typename T>
-    suite &operator<<(const T &t) {
-        return xpr[1] += to_str(t), *this;
-    }
-    template <unsigned N>
-    suite &operator<<(const char (&str)[N]) {
-        return xpr[1] += to_str(str), *this;
-    }
-    operator bool() {
-        return xpr.size() >= 3 && xpr[3].size() >= 6 && [&]() -> bool {
-            char signR = xpr[3].at(2);
-            bool equal = xpr[3].substr(4 + xpr[3].size() / 2) == xpr[3].substr(3, xpr[3].size() / 2 - 3);
-            return ok = (signR == '=' ? equal : (signR == '!' ? !equal : ok));
-        }(),
-               ok;
-    }
-    METADOT_UNIT$(<)
-    METADOT_UNIT$(<=)
-    METADOT_UNIT$(>)
-    METADOT_UNIT$(>=)
-    METADOT_UNIT$(!=)
-    METADOT_UNIT$(==) METADOT_UNIT$(&&) METADOT_UNIT$(||)
-};
-}  // namespace METADOT_UNIT
-#endif
 
 #endif

@@ -417,8 +417,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         game->setGameState(LOADING, INGAME);
 
-        METADOT_DELETE(C, game->GameIsolate_.world, World);
-        game->GameIsolate_.world = nullptr;
+        game->GameIsolate_.world.reset();
 
         WorldGenerator *generator;
 
@@ -433,7 +432,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
 
-        METADOT_NEW(C, game->GameIsolate_.world, World);
+        game->GameIsolate_.world = MetaEngine::CreateScope<World>();
         game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                                        Render.target, &global.audioEngine, generator);
         game->GameIsolate_.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
@@ -550,24 +549,21 @@ void MainMenuUI__DrawWorldLists(Game *game) {
             game->fadeOutCallback = [&, game, worldName]() {
                 game->setGameState(LOADING, INGAME);
 
-                METADOT_DELETE(C, game->GameIsolate_.world, World);
-                game->GameIsolate_.world = nullptr;
+                game->GameIsolate_.world.reset();
 
-                World *w = nullptr;
-                METADOT_NEW(C, w, World);
-                w->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                        (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audioEngine);
-                w->metadata.lastOpenedTime = metadot_gettime() / 1000;
-                w->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
-                w->metadata.save(w->worldName);
+                game->GameIsolate_.world = MetaEngine::CreateScope<World>();
+                game->GameIsolate_.world->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
+                                               (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audioEngine);
+                game->GameIsolate_.world->metadata.lastOpenedTime = metadot_gettime() / 1000;
+                game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
+                game->GameIsolate_.world->metadata.save(game->GameIsolate_.world->worldName);
 
                 METADOT_INFO("Queueing chunk loading...");
-                for (int x = -CHUNK_W * 4; x < w->width + CHUNK_W * 4; x += CHUNK_W) {
-                    for (int y = -CHUNK_H * 3; y < w->height + CHUNK_H * 8; y += CHUNK_H) {
-                        w->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
+                for (int x = -CHUNK_W * 4; x < game->GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
+                    for (int y = -CHUNK_H * 3; y < game->GameIsolate_.world->height + CHUNK_H * 8; y += CHUNK_H) {
+                        game->GameIsolate_.world->queueLoadChunk(x / CHUNK_W, y / CHUNK_H, true, true);
                     }
                 }
-                game->GameIsolate_.world = w;
 
                 game->fadeInStart = Time.now;
                 game->fadeInLength = 250;
@@ -871,7 +867,7 @@ void DebugDrawUI__Draw(Game *game) {
                     i3->pivotX = 2;
 
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
-                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -893,7 +889,7 @@ void DebugDrawUI__Draw(Game *game) {
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 2;
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
-                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -914,7 +910,7 @@ void DebugDrawUI__Draw(Game *game) {
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 6;
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
-                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
@@ -938,7 +934,7 @@ void DebugDrawUI__Draw(Game *game) {
                     R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
                     i3->pivotX = 0;
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
-                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world);
+                    pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();

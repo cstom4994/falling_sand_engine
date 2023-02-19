@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 
 namespace MetaEngine {
 

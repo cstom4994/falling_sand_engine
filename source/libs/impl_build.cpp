@@ -15,6 +15,3 @@
 
 #define STB_DS_IMPLEMENTATION
 #include "libs/external/stb_ds.h"
-
-#define ASE_LOADER_IMPLEMENTATION
-#include "Ase_Loader.h"

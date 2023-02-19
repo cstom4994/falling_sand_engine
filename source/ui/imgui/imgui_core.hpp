@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "audio/audio.h"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "libs/imgui/text_editor.h"
 #include "sdl_wrapper.h"
 #include "ui/imgui/imgui_css.h"

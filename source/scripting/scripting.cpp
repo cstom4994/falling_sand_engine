@@ -14,7 +14,7 @@
 #include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/profiler/profiler_lua.h"
 #include "engine/engine_funcwrap.hpp"

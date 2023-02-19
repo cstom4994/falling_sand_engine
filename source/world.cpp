@@ -17,7 +17,7 @@
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/macros.h"
 #include "core/threadpool.hpp"
@@ -171,7 +171,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     // b2PolygonShape dynamicBox4;
     // dynamicBox4.SetAsBox(64.0f, 64.0f, {32, -32}, 0);
     // // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
-    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 0, 0, dynamicBox4, 1, .3, LoadAseprite("data/assets/textures/Sprite-0003.ase")->surface);
+    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 0, 0, dynamicBox4, 1, .3, LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase")->surface);
 
     // rigidBodies.push_back(rb2);
     // updateRigidBodyHitbox(rb2);

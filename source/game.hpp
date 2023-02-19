@@ -20,7 +20,7 @@
 #include "console.hpp"
 #include "core/const.h"
 #include "core/cpp/utils.hpp"
-#include "core/debug_impl.hpp"
+#include "core/debug.hpp"
 #include "core/macros.h"
 #include "core/threadpool.h"
 #include "cvar.hpp"
@@ -101,7 +101,7 @@ public:
         SystemList systemList = {};
 
         GlobalDEF globaldef;
-        World *world = nullptr;
+        MetaEngine::Scope<World> world;
         TexturePack *texturepack = nullptr;
 
         ThreadPool *updateDirtyPool = nullptr;
