@@ -29,21 +29,12 @@
 #include "scripting/lua/lua_wrapper.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 
-void LuaCodeInit(LuaCode *_struct, const char *scriptPath) {
-    METADOT_ASSERT_E(_struct);
-    strcpy(_struct->scriptPath, scriptPath);
-}
-
-void LuaCodeUpdate(LuaCode *_struct) {}
-
-void LuaCodeFree(LuaCode *_struct) {}
-
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
 extern int LoadImGuiBindings(lua_State *l);
 extern "C" {
-extern int luaopen_mu(lua_State *L);
+extern int luaopen_meo(lua_State *L);
 }
 
 struct MyStruct {
@@ -221,7 +212,7 @@ static void InitLua(LuaCore *_struct) {
     LoadImGuiBindings(_struct->L);
 
     metadot_preload_auto(_struct->L, luaopen_ffi, "ffi");
-    metadot_preload_auto(_struct->L, luaopen_mu, "mu");
+    metadot_preload_auto(_struct->L, luaopen_meo, "meo");
     metadot_preload_auto(_struct->L, luaopen_lpeg, "lpeg");
 
     // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });

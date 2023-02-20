@@ -20,11 +20,11 @@ METADOT_INFO(i18n("loaded_vec"))
 
 content = i18n("welcome")
 
-local mu = require("mu")
-local codes, err, globals = mu.to_lua(
+local meo = require("meo")
+local codes, err, globals = meo.to_lua(
 	[[
 f = ->
-  print "hello world"
+  print "hello meo"
 f!
 ]],
 	{

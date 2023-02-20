@@ -1,7 +1,7 @@
 --[[
-Metadot muscript is enhanced based on moonscript and yuescript modification
-Metadot code Copyright(c) 2022-2023, KaoruXun All rights reserved.
-Moonscript code by Leaf Corcoran licensed under the MIT License
+Metadot MeoScript is enhanced based on moonscript
+Metadot Code Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 Link to https://github.com/leafo/moonscript
 
 Copyright (C) 2020 by Leaf Corcoran
@@ -13,11 +13,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
-local mu = select(1, ...)
+local meo = select(1, ...)
 local concat, insert = table.concat, table.insert
 local unpack = unpack or table.unpack
-mu.mu_compiled = {}
-mu.file_exist = function(fname)
+meo.meo_compiled = {}
+meo.file_exist = function(fname)
     local file = io.open(fname)
     if file then
         file:close()
@@ -26,7 +26,7 @@ mu.file_exist = function(fname)
         return false
     end
 end
-mu.read_file = function(fname)
+meo.read_file = function(fname)
     local file, err = io.open(fname)
     if not file then
         return nil, err
@@ -48,17 +48,17 @@ local function get_options(...)
 end
 
 local function find_modulepath(name)
-    local suffix = "." .. mu.options.extension
-    local dirsep = mu.options.dirsep
+    local suffix = "." .. meo.options.extension
+    local dirsep = meo.options.dirsep
     local name_path = name:match("[\\/]") and name or name:gsub("%.", dirsep)
     local file_exist, file_path
     local tried = {}
-    local paths = { package.path, mu.options.path }
+    local paths = { package.path, meo.options.path }
     for i = 1, #paths do
-        local mu_path = paths[i]
-        for path in mu_path:gmatch("[^;]+") do
+        local meo_path = paths[i]
+        for path in meo_path:gmatch("[^;]+") do
             file_path = path:gsub("?", name_path):gsub("%.lua$", suffix)
-            file_exist = mu.file_exist(file_path)
+            file_exist = meo.file_exist(file_path)
             if file_exist then
                 break
             else
@@ -73,13 +73,13 @@ local function find_modulepath(name)
     end
 end
 
-local mu_loadstring
-local function mu_loader(name)
-    local file_path, tried = mu.find_modulepath(name)
+local meo_loadstring
+local function meo_loader(name)
+    local file_path, tried = meo.find_modulepath(name)
     if file_path then
-        local text = mu.read_file(file_path)
+        local text = meo.read_file(file_path)
         if text then
-            local res, err = mu_loadstring(text, file_path)
+            local res, err = meo_loadstring(text, file_path)
             if not res then
                 error(file_path .. ": " .. err)
             end
@@ -94,40 +94,40 @@ local function mu_loader(name)
     return concat(tried, "\n\t")
 end
 
-local function mu_call(f, ...)
+local function meo_call(f, ...)
     local args = {
         ...
     }
     return xpcall((function()
         return f(unpack(args))
     end), function(err)
-        return mu.traceback(err, 1)
+        return meo.traceback(err, 1)
     end)
 end
 
-mu_loadstring = function(...)
+meo_loadstring = function(...)
     local options, str, chunk_name, mode, env = get_options(...)
-    chunk_name = chunk_name or "=(muscript.loadstring)"
+    chunk_name = chunk_name or "=(meoscript.loadstring)"
     options.module = chunk_name
-    local code, err = mu.to_lua(str, options)
+    local code, err = meo.to_lua(str, options)
     if not code then
         return nil, err
     end
     if chunk_name then
-        mu.mu_compiled["@" .. chunk_name] = code
+        meo.meo_compiled["@" .. chunk_name] = code
     end
     return (loadstring or load)(code, chunk_name, unpack({
         mode,
         env
     }))
 end
-local function mu_loadfile(fname, ...)
-    local text = mu.read_file(fname)
-    return mu_loadstring(text, fname, ...)
+local function meo_loadfile(fname, ...)
+    local text = meo.read_file(fname)
+    return meo_loadstring(text, fname, ...)
 end
 
-local function mu_dofile(...)
-    local f = assert(mu_loadfile(...))
+local function meo_dofile(...)
+    local f = assert(meo_loadfile(...))
     return f()
 end
 
@@ -138,34 +138,34 @@ local function insert_loader(pos)
     local loaders = package.loaders or package.searchers
     for i = 1, #loaders do
         local loader = loaders[i]
-        if loader == mu_loader then
+        if loader == meo_loader then
             return false
         end
     end
-    insert(loaders, pos, mu_loader)
+    insert(loaders, pos, meo_loader)
     return true
 end
 
-mu.options.dump_locals = false
-mu.options.simplified = true
-local load_stacktraceplus = mu.load_stacktraceplus
-mu.load_stacktraceplus = nil
+meo.options.dump_locals = false
+meo.options.simplified = true
+local load_stacktraceplus = meo.load_stacktraceplus
+meo.load_stacktraceplus = nil
 local stp
-local function mu_traceback(err, level)
+local function meo_traceback(err, level)
     if not stp then
         stp = load_stacktraceplus()
     end
-    stp.dump_locals = mu.options.dump_locals
-    stp.simplified = mu.options.simplified
+    stp.dump_locals = meo.options.dump_locals
+    stp.simplified = meo.options.simplified
     return stp.stacktrace(err, level)
 end
 
-local function mu_require(name)
+local function meo_require(name)
     insert_loader()
     local success, res = xpcall(function()
         return require(name)
     end, function(err)
-        return mu_traceback(err, 2)
+        return meo_traceback(err, 2)
     end)
     if success then
         return res
@@ -175,7 +175,7 @@ local function mu_require(name)
     end
 end
 
-setmetatable(mu, {
+setmetatable(meo, {
     __call = function(self, name)
         return self.require(name)
     end
@@ -215,14 +215,14 @@ local function p(...)
     print(concat(args))
 end
 
-mu.find_modulepath = find_modulepath
-mu.insert_loader = insert_loader
-mu.dofile = mu_dofile
-mu.loadfile = mu_loadfile
-mu.loadstring = mu_loadstring
-mu.pcall = mu_call
-mu.require = mu_require
-mu.p = p
-mu.traceback = mu_traceback
+meo.find_modulepath = find_modulepath
+meo.insert_loader = insert_loader
+meo.dofile = meo_dofile
+meo.loadfile = meo_loadfile
+meo.loadstring = meo_loadstring
+meo.pcall = meo_call
+meo.require = meo_require
+meo.p = p
+meo.traceback = meo_traceback
 
-METADOT_INFO("MuScript initialized!")
+METADOT_INFO("MeoScript initialized!")
