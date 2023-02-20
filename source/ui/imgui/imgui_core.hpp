@@ -11,7 +11,6 @@
 #include "core/debug.hpp"
 #include "core/sdl_wrapper.h"
 #include "libs/imgui/text_editor.h"
-#include "ui/imgui/imgui_css.h"
 #include "ui/imgui/imgui_impl.hpp"
 
 class Material;
@@ -44,8 +43,6 @@ private:
     TextEditor editor;
     EditorView *view_editing = nullptr;
     ImGuiWidget::FileBrowser fileDialog;
-    ImGuiCSS::Context *ctx;
-    ImGuiCSS::Document *document;
     ImGuiID dockspace_id;
 
 private:
@@ -66,17 +63,9 @@ public:
     void Update();
     const ImVec2 GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos);
     const ImGuiID GetMainDockID() { return dockspace_id; }
-    const
-
-            ImGuiContext *
-            getImGuiCtx() {
+    const ImGuiContext *getImGuiCtx() {
         METADOT_ASSERT(m_imgui, "Miss ImGuiContext");
         return m_imgui;
-    }
-
-    ImGuiCSS::Context *getImGuiCSSCtx() {
-        METADOT_ASSERT(ctx, "Miss ImGuiContext");
-        return ctx;
     }
 };
 

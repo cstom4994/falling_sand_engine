@@ -36,16 +36,57 @@
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
-#include "ui/imgui/imgui_css.h"
-#include "ui/imgui/imgui_generated.h"
 #include "ui/imgui/imgui_impl.hpp"
-#include "ui/imgui/script.h"
 #include "ui/ui.hpp"
 
 IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
+
+inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
+    auto &style = ImGui::GetStyle();
+    auto &colors = style.Colors;
+
+    ImGui::StyleColorsDark();
+
+    colors[ImGuiCol_WindowBg] = ImVec4{0.1f, 0.105f, 0.11f, 1.0f};
+
+    // Headers
+    colors[ImGuiCol_Header] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
+    colors[ImGuiCol_HeaderHovered] = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};
+    colors[ImGuiCol_HeaderActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+
+    // Buttons
+    colors[ImGuiCol_Button] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
+    colors[ImGuiCol_ButtonHovered] = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};
+    colors[ImGuiCol_ButtonActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+
+    // Frame BG
+    colors[ImGuiCol_FrameBg] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
+    colors[ImGuiCol_FrameBgHovered] = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};
+    colors[ImGuiCol_FrameBgActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+
+    // Tabs
+    colors[ImGuiCol_Tab] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+    colors[ImGuiCol_TabHovered] = ImVec4{0.38f, 0.3805f, 0.381f, 1.0f};
+    colors[ImGuiCol_TabActive] = ImVec4{0.28f, 0.2805f, 0.281f, 1.0f};
+    colors[ImGuiCol_TabUnfocused] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
+
+    // Title
+    colors[ImGuiCol_TitleBg] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+    colors[ImGuiCol_TitleBgActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+
+    // Rounding
+    // style.WindowPadding = ImVec2(4.0f, 4.0f);
+    // style.FramePadding = ImVec2(6.0f, 4.0f);
+    style.WindowRounding = 10.0f;
+    style.ChildRounding = 4.0f;
+    style.FrameRounding = 4.0f;
+    style.GrabRounding = 4.0f;
+}
 
 extern void ShowAutoTestWindow();
 
@@ -225,17 +266,6 @@ void ImGuiCore::Init() {
 
     ImGuiInitStyle(0.5f, 0.5f);
 
-    // LUA state
-    ImGuiCSS::registerBindings(Scripting::GetSingletonPtr()->Lua->L);
-    ctx = ImGuiCSS::createContext(ImGuiCSS::createElementFactory(), new ImGuiCSS::LuaScriptState(Scripting::GetSingletonPtr()->Lua->L), new OpenGL3TextureManager());
-    ctx->scale = ImVec2(scale, scale);
-
-    document = new ImGuiCSS::Document(ctx);
-    const char *page = "data/assets/ui/imguicss/simple.xml";
-    char *data = ctx->fs->load(page);
-    document->parse(data);
-    ImGui::MemFree(data);
-
 #if defined(_METADOT_IMM32)
     common_control_initialize();
     VERIFY(imguiIMMCommunication.subclassify(window));
@@ -310,8 +340,6 @@ void ImGuiCore::Init() {
 
 void ImGuiCore::End() {
 
-    delete document;
-
     RendererShutdownFunction();
     PlatformShutdownFunction();
     ImPlot::DestroyContext();
@@ -369,8 +397,6 @@ void ImGuiCore::Update() {
     // ImGui::Spinner("##spinner", 15, 6, col);
     // ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
     // ImGui::End();
-
-    document->render();
 
     MarkdownData md1;
     md1.data = R"markdown(

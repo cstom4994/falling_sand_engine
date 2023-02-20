@@ -46,9 +46,6 @@
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/scripting.hpp"
-#include "ui/imgui/imgui_css.h"
-#include "ui/imgui/imgui_generated.h"
-#include "ui/imgui/script.h"
 #include "ui/ttf.h"
 #include "world_generator.cpp"
 

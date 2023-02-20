@@ -180,47 +180,45 @@ static std::string readStringFromFile(const char *filePath) {
 
 lua_State *LuaCoreCppFunc(void *luacorecpp) { return ((LuaCore *)luacorecpp)->s_lua.state(); }
 
-static void InitLua(LuaCore *_struct) {
+static void InitLua(LuaCore *lc) {
 
-    _struct->L = _struct->s_lua.state();
+    lc->L = lc->s_lua.state();
 
-    luaopen_base(_struct->L);
-    luaL_openlibs(_struct->L);
+    luaopen_base(lc->L);
+    luaL_openlibs(lc->L);
 
-    lua_atpanic(_struct->L, catch_panic);
-    lua_register(_struct->L, "METADOT_TRACE", metadot_trace);
-    lua_register(_struct->L, "METADOT_INFO", metadot_info);
-    lua_register(_struct->L, "METADOT_WARN", metadot_warn);
-    lua_register(_struct->L, "METADOT_BUG", metadot_bug);
-    lua_register(_struct->L, "METADOT_ERROR", metadot_error);
-    lua_register(_struct->L, "METADOT_RUN_FILE", metadot_run_lua_file_script);
-    lua_register(_struct->L, "runf", metadot_run_lua_file_script);
-    lua_register(_struct->L, "exit", metadot_exit);
-    lua_register(_struct->L, "ls", ls);
+    lua_atpanic(lc->L, catch_panic);
+    lua_register(lc->L, "METADOT_TRACE", metadot_trace);
+    lua_register(lc->L, "METADOT_INFO", metadot_info);
+    lua_register(lc->L, "METADOT_WARN", metadot_warn);
+    lua_register(lc->L, "METADOT_BUG", metadot_bug);
+    lua_register(lc->L, "METADOT_ERROR", metadot_error);
+    lua_register(lc->L, "METADOT_RUN_FILE", metadot_run_lua_file_script);
+    lua_register(lc->L, "runf", metadot_run_lua_file_script);
+    lua_register(lc->L, "exit", metadot_exit);
+    lua_register(lc->L, "ls", ls);
 
-    metadot_debug_setup(_struct->L, "debugger", "dbg", NULL, NULL);
+    metadot_debug_setup(lc->L, "debugger", "dbg", NULL, NULL);
 
-    metadot_bind_image(_struct->L);
-    metadot_bind_gpu(_struct->L);
-    metadot_bind_fs(_struct->L);
-    metadot_bind_lz4(_struct->L);
-    metadot_bind_cstructcore(_struct->L);
-    metadot_bind_cstructtest(_struct->L);
-    metadot_bind_uilayout(_struct->L);
-    metadot_bind_profiler(_struct->L);
+    metadot_bind_image(lc->L);
+    metadot_bind_gpu(lc->L);
+    metadot_bind_fs(lc->L);
+    metadot_bind_lz4(lc->L);
+    metadot_bind_cstructcore(lc->L);
+    metadot_bind_cstructtest(lc->L);
+    metadot_bind_uilayout(lc->L);
+    metadot_bind_profiler(lc->L);
 
-    LoadImGuiBindings(_struct->L);
+    LoadImGuiBindings(lc->L);
 
-    metadot_preload_auto(_struct->L, luaopen_ffi, "ffi");
-    metadot_preload_auto(_struct->L, luaopen_meo, "meo");
-    metadot_preload_auto(_struct->L, luaopen_lpeg, "lpeg");
+    metadot_preload_auto(lc->L, luaopen_ffi, "ffi");
+    metadot_preload_auto(lc->L, luaopen_meo, "meo");
+    metadot_preload_auto(lc->L, luaopen_lpeg, "lpeg");
 
-    // s_lua.set_function("METADOT_RESLOC", [](const std::string &a) { return METADOT_RESLOC(a); });
+#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)
 
-#define REGISTER_LUAFUNC(_f) _struct->s_lua[#_f] = LuaWrapper::function(_f)
-
-    _struct->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    _struct->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
+    lc->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
+    lc->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
 
     REGISTER_LUAFUNC(SDL_FreeSurface);
     REGISTER_LUAFUNC(R_SetImageFilter);
@@ -236,17 +234,17 @@ static void InitLua(LuaCore *_struct) {
 
 #undef REGISTER_LUAFUNC
 
-    _struct->s_lua.dostring(MetaEngine::Format("package.path = "
-                                               "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
-                                               "?/?.lua;' .. package.path",
-                                               METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath()),
-                            _struct->s_lua.globalTable());
+    lc->s_lua.dostring(MetaEngine::Format("package.path = "
+                                          "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                                          "?/?.lua;' .. package.path",
+                                          METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath()),
+                       lc->s_lua.globalTable());
 
-    _struct->s_lua.dostring(MetaEngine::Format("package.cpath = "
-                                               "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
-                                               "?/?.{2};' .. package.cpath",
-                                               METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath(), "dylib"),
-                            _struct->s_lua.globalTable());
+    lc->s_lua.dostring(MetaEngine::Format("package.cpath = "
+                                          "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
+                                          "?/?.{2};' .. package.cpath",
+                                          METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath(), "dylib"),
+                       lc->s_lua.globalTable());
 
     s_couroutineFileSrc = readStringFromFile(METADOT_RESLOC("data/scripts/common/coroutines.lua"));
     RunScriptFromFile("data/scripts/startup.lua");
@@ -315,14 +313,14 @@ static void UpdateMeo(){
 #endif
 
 void Scripting::Init() {
-    Lua = new struct LuaCore;
+    METADOT_NEW(C, Lua, LuaCore);
     InitLua(Lua);
 }
 
 void Scripting::End() {
 
     EndLua(Lua);
-    delete Lua;
+    METADOT_DELETE(C, Lua, LuaCore);
 }
 
 void Scripting::Update() {

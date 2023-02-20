@@ -28,51 +28,6 @@ set_default(false)
 set_description("Toggle to enable audio module")
 option_end()
 
--- rule("metadot.uidsl")
--- set_extensions('.uidsl')
--- on_load(function(target)
---     local outdir = path.join(path.join(os.projectdir(), "source/Generated"),
---                              "uidsl")
---     if not os.isdir(outdir) then os.mkdir(outdir) end
---     target:set('policy', 'build.across_targets_in_parallel', false)
---     target:add('deps', 'luaexe')
---     -- target:add("includedirs", path.join(os.projectdir(), "source/Generated"))
--- end)
--- before_buildcmd_file(function(target, batchcmds, srcfile, opt)
---     import('core.project.project')
---     local outdir = path.join(path.join(os.projectdir(), "source/Generated"),
---                              "uidsl")
---     -- target:add("includedirs", path.join(os.projectdir(), "source/Generated"))
-
---     batchcmds:show_progress(opt.progress,
---                             "${color.build.object}Generating UIDSL %s", srcfile)
---     local name = srcfile:match('[\\/]?(%w+)%.%w+$')
---     local headerpath = path.join(outdir, name:lower() .. '.h')
---     local implpath = path.join(outdir, name:lower() .. '_imgui_inspector.cpp')
---     local outfile = os.projectdir() .. '/' .. path(srcfile)
-
---     local args = {
---         '-e', 'package.path="' ..
---             path.join(os.projectdir(), "source/engine/UserInterface/IMGUI"):gsub(
---                 '\\', '/') .. '/?.lua"',
---         path.join(
---             path.join(os.projectdir(), "source/engine/UserInterface/IMGUI"),
---             'uidslparser.lua'), '-H', path(headerpath), '-I', path(implpath),
---         '--cpp', outfile
---     }
---     batchcmds:vrunv(project.target('luaexe'):targetfile(), args)
-
---     -- local objfile=target:objectfile(implpath)
---     -- table.insert(target:objectfiles(), objfile)
---     -- batchcmds:compile(implpath, objfile)
-
---     batchcmds:add_depfiles(srcfile)
---     local dependfile = target:dependfile(implpath)
---     batchcmds:set_depmtime(os.mtime(dependfile))
---     batchcmds:set_depcache(dependfile)
--- end)
--- rule_end()
-
 if is_mode("debug") then
 	add_defines("DEBUG", "_DEBUG")
 	set_optimize("none")
@@ -191,14 +146,6 @@ add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-f
 
 include_dir_list = {
 	"source",
-
-	"source/libs/libcss/libcss/include",
-	"source/libs/libcss/libcss/src",
-	"source/libs/libcss/libparserutils/include",
-	"source/libs/libcss/libparserutils/src",
-	"source/libs/libcss/libwapcaplet/include",
-	"source/libs/libcss/libwapcaplet/src",
-
 	"source/libs/antlr4"
 }
 
@@ -213,7 +160,6 @@ do
 	add_files("source/libs/*.cpp")
 	add_files("source/libs/*.c")
 	add_files("source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c", "source/libs/glad/**.c")
-	add_files("source/libs/libcss/**.c")
 	add_files("source/libs/lz4/**.c")
 	add_files("source/libs/lua/host/**.c")
 	add_files("source/libs/lua/*.c")
