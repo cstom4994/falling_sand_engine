@@ -9,7 +9,6 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "engine/engine_core.h"
-#include "engine/engine_ecs.h"
 #include "engine/engine_platform.h"
 #include "game.hpp"
 #include "game_resources.hpp"
@@ -17,8 +16,6 @@
 /////////////////////////////////External data//////////////////////////////////
 
 IMPLENGINE();
-
-extern unsigned char initializedECS;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,16 +27,8 @@ unsigned char initializedEngine = 0;
 // Return 1 if suceeded, 0 if failed
 int InitEngine(void (*InitCppReflection)()) {
 
-    InitECS(128);
-
     if (initializedEngine) {
         METADOT_WARN("InitEngine: Engine already initialized");
-    }
-    if (!initializedECS) {
-        METADOT_WARN(
-                "InitEngine: ECS not initialized! Initialize and configure ECS before "
-                "initializing the engine!");
-        return 0;
     }
 
     METADOT_INFO("Initializing Engine...");
@@ -53,17 +42,6 @@ int InitEngine(void (*InitCppReflection)()) {
 
     InitCppReflection();
 
-    // Call initialization function of all systems
-    ListCellPointer current = GetFirstCell(ECS.SystemList);
-    while (current) {
-        System *curSystem = ((System *)GetElement(*current));
-        curSystem->systemInit();
-        current = GetNextCell(current);
-    }
-
-    // Disable text input
-    //  SDL_StopTextInput();
-
     // Open up resource bundle memory space
     global.game->GameIsolate_.texturepack = new TexturePack;
 
@@ -75,33 +53,6 @@ int InitEngine(void (*InitCppReflection)()) {
 void EngineUpdate() {
     UpdateTime();
 
-    // Run systems updates
-
-    // Remove missing child connections from parents
-    int e;
-    for (e = 0; e <= ECS.maxUsedIndex; e++) {
-        if (IsValidEntity(e) && EntityIsParent(e)) {
-            int i = 0;
-            ListCellPointer child = GetFirstCell(*GetChildsList(e));
-            while (child) {
-                if (!IsValidEntity(GetElementAsType(child, EntityID))) {
-                    child = GetNextCell(child);
-                    RemoveListIndex(GetChildsList(e), i);
-                } else {
-                    i++;
-                    child = GetNextCell(child);
-                }
-            }
-        }
-    }
-
-    // Iterate through the systems list
-    ListCellPointer currentSystem = GetFirstCell(ECS.SystemList);
-    ListForEach(currentSystem, ECS.SystemList) {
-        System sys = GetElementAsType(currentSystem, System);
-        if (!sys.enabled) continue;
-        sys.systemUpdate();
-    }
 }
 void EngineUpdateEnd() {
     // SDL_GL_SwapWindow(Core.window);
@@ -113,8 +64,6 @@ void EngineUpdateEnd() {
 void EndEngine(int errorOcurred) {
 
     delete global.game->GameIsolate_.texturepack;
-
-    FreeECS();
 
     if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) SDL_Quit();
 
@@ -133,6 +82,6 @@ void DrawSplash() {
     R_SetImageFilter(splashImg, R_FILTER_NEAREST);
     R_BlitRect(splashImg, NULL, Render.target, NULL);
     R_FreeImage(splashImg);
-    Eng_DestroyTexture(splashSurf);
+    DestroyTexture(splashSurf);
     R_Flip(Render.target);
 }

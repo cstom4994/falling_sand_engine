@@ -137,9 +137,9 @@ public:
         MetaEngine::vector<U8> pixelsObjects;
         U8 *pixelsObjects_ar = nullptr;
         R_Image *textureObjectsBack = nullptr;
-        R_Image *textureParticles = nullptr;
-        MetaEngine::vector<U8> pixelsParticles;
-        U8 *pixelsParticles_ar = nullptr;
+        R_Image *textureCells = nullptr;
+        MetaEngine::vector<U8> pixelsCells;
+        U8 *pixelsCells_ar = nullptr;
         R_Image *textureEntities = nullptr;
         R_Image *textureEntitiesLQ = nullptr;
 

@@ -38,7 +38,7 @@
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
 #include "game_utils/mdplot.h"
-#include "game_utils/particles.h"
+#include "game_utils/cells.h"
 #include "libs/imgui/imgui.h"
 #include "meta/meta.hpp"
 #include "reflectionflat.hpp"
@@ -200,7 +200,7 @@ void Game::createTexture() {
         R_FreeImage(TexturePack_.textureObjects);
         R_FreeImage(TexturePack_.textureObjectsLQ);
         R_FreeImage(TexturePack_.textureObjectsBack);
-        R_FreeImage(TexturePack_.textureParticles);
+        R_FreeImage(TexturePack_.textureCells);
         R_FreeImage(TexturePack_.textureEntities);
         R_FreeImage(TexturePack_.textureEntitiesLQ);
         R_FreeImage(TexturePack_.temperatureMap);
@@ -299,10 +299,10 @@ void Game::createTexture() {
                 R_LoadTarget(TexturePack_.textureObjectsBack);
             }),
             MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
-                METADOT_LOG_SCOPE_F(INFO, "textureParticles");
-                TexturePack_.textureParticles = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
+                METADOT_LOG_SCOPE_F(INFO, "textureCells");
+                TexturePack_.textureCells = R_CreateImage(GameIsolate_.world->width, GameIsolate_.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.textureParticles, R_FILTER_NEAREST);
+                R_SetImageFilter(TexturePack_.textureCells, R_FILTER_NEAREST);
             }),
             MetaEngine::Promise::newPromise([&](MetaEngine::Promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
@@ -356,8 +356,8 @@ void Game::createTexture() {
         TexturePack_.pixelsTemp = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
         TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-        TexturePack_.pixelsParticles = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
-        TexturePack_.pixelsParticles_ar = &TexturePack_.pixelsParticles[0];
+        TexturePack_.pixelsCells = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsCells_ar = &TexturePack_.pixelsCells[0];
 
         TexturePack_.pixelsLoading = MetaEngine::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
         TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
@@ -1287,7 +1287,7 @@ void Game::updateFrameEarly() {
 
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
-            i3->vacuumParticles = {};
+            i3->vacuumCells = {};
             i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
             i3->texture = R_CopyImageFromSurface(i3->surface);
             i3->name = "初始物品";
@@ -1342,7 +1342,7 @@ void Game::updateFrameEarly() {
 
                     MaterialInstance mat = pl->heldItem->carry[pl->heldItem->carry.size() - 1];
                     pl->heldItem->carry.pop_back();
-                    GameIsolate_.world->addParticle(new ParticleData(mat, (F32)x, (F32)y, (F32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
+                    GameIsolate_.world->addCell(new CellData(mat, (F32)x, (F32)y, (F32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
                                                                      (F32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (F32)0.1));
 
                     int i = (int)pl->heldItem->carry.size();
@@ -1609,7 +1609,7 @@ void Game::tick() {
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND) {
-                            GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
+                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
                                                                              (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1618,7 +1618,7 @@ void Game::tick() {
                             cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (F32)0.98);
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            GameIsolate_.world->addParticle(new ParticleData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
+                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
                                                                              (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1676,8 +1676,8 @@ void Game::tick() {
         // player movement
         tickPlayer();
 
-        // update particles, tickObjects, update dirty
-        // TODO: this is not entirely thread safe since tickParticles changes World::tiles and World::dirty
+        // update cells, tickObjects, update dirty
+        // TODO: this is not entirely thread safe since tickCells changes World::tiles and World::dirty
 
         bool hadDirty = false;
         bool hadLayer2Dirty = false;
@@ -1698,13 +1698,14 @@ void Game::tick() {
         int i = 1;
 
         results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
-            // SDL_SetRenderTarget(renderer, textureParticles);
-            void *particlePixels = TexturePack_.pixelsParticles_ar;
+            // SDL_SetRenderTarget(renderer, textureCells);
+            void *cellPixels = TexturePack_.pixelsCells_ar;
 
-            memset(particlePixels, 0, (size_t)GameIsolate_.world->width * GameIsolate_.world->height * 4);
+            memset(cellPixels, 0, (size_t)GameIsolate_.world->width * GameIsolate_.world->height * 4);
 
-            GameIsolate_.world->renderParticles((U8 **)&particlePixels);
-            GameIsolate_.world->tickParticles();
+            
+            GameIsolate_.world->renderCells((U8 **)&cellPixels);
+            GameIsolate_.world->tickCells();
 
             // SDL_SetRenderTarget(renderer, NULL);
         }));
@@ -1970,7 +1971,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
 
         updateMaterialSounds();
 
-        R_UpdateImageBytes(TexturePack_.textureParticles, NULL, &TexturePack_.pixelsParticles_ar[0], GameIsolate_.world->width * 4);
+        R_UpdateImageBytes(TexturePack_.textureCells, NULL, &TexturePack_.pixelsCells_ar[0], GameIsolate_.world->width * 4);
 
         if (hadDirty) memset(GameIsolate_.world->dirty, false, (size_t)GameIsolate_.world->width * GameIsolate_.world->height);
         if (hadLayer2Dirty) memset(GameIsolate_.world->layer2Dirty, false, (size_t)GameIsolate_.world->width * GameIsolate_.world->height);
@@ -2225,12 +2226,12 @@ void Game::tickPlayer() {
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
-                ParticleData *p = new ParticleData(TilesCreateLava(), (F32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
+                CellData *p = new CellData(TilesCreateLava(), (F32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
                                                    (F32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (F32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
                                                    (F32)((rand() % 10) / 10.0f + 1 + pl_we->vy / 2.0f), 0, (F32)0.025);
                 p->temporary = true;
                 p->lifetime = 120;
-                GameIsolate_.world->addParticle(p);
+                GameIsolate_.world->addCell(p);
             }
         } else {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 0);
@@ -2315,8 +2316,8 @@ void Game::tickPlayer() {
                         int x = sind == -1 ? wmx : sind % GameIsolate_.world->width;
                         int y = sind == -1 ? wmy : sind / GameIsolate_.world->width;
 
-                        std::function<void(MaterialInstance, int, int)> makeParticle = [&](MaterialInstance tile, int xPos, int yPos) {
-                            ParticleData *par = new ParticleData(tile, xPos, yPos, 0, 0, 0, (F32)0.01f);
+                        std::function<void(MaterialInstance, int, int)> makeCell = [&](MaterialInstance tile, int xPos, int yPos) {
+                            CellData *par = new CellData(tile, xPos, yPos, 0, 0, 0, (F32)0.01f);
                             par->vx = (rand() % 10 - 5) / 5.0f * 1.0f;
                             par->vy = (rand() % 10 - 5) / 5.0f * 1.0f;
                             par->ax = -par->vx / 10.0f;
@@ -2331,14 +2332,14 @@ void Game::tickPlayer() {
 
                             par->phase = true;
 
-                            pl->heldItem->vacuumParticles.push_back(par);
+                            pl->heldItem->vacuumCells.push_back(par);
 
                             par->killCallback = [&]() {
-                                auto &v = pl->heldItem->vacuumParticles;
+                                auto &v = pl->heldItem->vacuumCells;
                                 v.erase(std::remove(v.begin(), v.end(), par), v.end());
                             };
 
-                            GameIsolate_.world->addParticle(par);
+                            GameIsolate_.world->addCell(par);
                         };
 
                         int rad = 5;
@@ -2353,7 +2354,7 @@ void Game::tickPlayer() {
 
                                 MaterialInstance tile = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width];
                                 if (tile.mat->physicsType == PhysicsType::SOLID || tile.mat->physicsType == PhysicsType::SAND || tile.mat->physicsType == PhysicsType::SOUP) {
-                                    makeParticle(tile, x + xx, y + yy);
+                                    makeCell(tile, x + xx, y + yy);
                                     GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
                                     // GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = TilesCreateFire();
                                     GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
@@ -2361,7 +2362,7 @@ void Game::tickPlayer() {
                             }
                         }
 
-                        auto func = [&](ParticleData *cur) {
+                        auto func = [&](CellData *cur) {
                             if (cur->targetForce == 0 && !cur->phase) {
                                 int rad = 5;
                                 for (int xx = -rad; xx <= rad; xx++) {
@@ -2384,10 +2385,10 @@ void Game::tickPlayer() {
 
                                             cur->phase = true;
 
-                                            pl->heldItem->vacuumParticles.push_back(cur);
+                                            pl->heldItem->vacuumCells.push_back(cur);
 
                                             cur->killCallback = [&]() {
-                                                auto &v = pl->heldItem->vacuumParticles;
+                                                auto &v = pl->heldItem->vacuumCells;
                                                 v.erase(std::remove(v.begin(), v.end(), cur), v.end());
                                             };
 
@@ -2400,7 +2401,7 @@ void Game::tickPlayer() {
                             return false;
                         };
 
-                        GameIsolate_.world->particles.erase(std::remove_if(GameIsolate_.world->particles.begin(), GameIsolate_.world->particles.end(), func), GameIsolate_.world->particles.end());
+                        GameIsolate_.world->cells.erase(std::remove_if(GameIsolate_.world->cells.begin(), GameIsolate_.world->cells.end(), func), GameIsolate_.world->cells.end());
 
                         MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
@@ -2428,7 +2429,7 @@ void Game::tickPlayer() {
                                                 R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
 
-                                                makeParticle(MaterialInstance(&MaterialsList::GENERIC_SOLID, pixel), (x + xx), (y + yy));
+                                                makeCell(MaterialInstance(&MaterialsList::GENERIC_SOLID, pixel), (x + xx), (y + yy));
                                             }
                                         }
                                     }
@@ -2446,9 +2447,9 @@ void Game::tickPlayer() {
                     }
                 }
 
-                if (pl->heldItem->vacuumParticles.size() > 0) {
-                    pl->heldItem->vacuumParticles.erase(std::remove_if(pl->heldItem->vacuumParticles.begin(), pl->heldItem->vacuumParticles.end(),
-                                                                       [&](ParticleData *cur) {
+                if (pl->heldItem->vacuumCells.size() > 0) {
+                    pl->heldItem->vacuumCells.erase(std::remove_if(pl->heldItem->vacuumCells.begin(), pl->heldItem->vacuumCells.end(),
+                                                                       [&](CellData *cur) {
                                                                            if (cur->lifetime <= 0) {
                                                                                cur->targetForce = 0.45f;
                                                                                cur->targetX = pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x;
@@ -2469,7 +2470,7 @@ void Game::tickPlayer() {
 
                                                                            return false;
                                                                        }),
-                                                        pl->heldItem->vacuumParticles.end());
+                                                        pl->heldItem->vacuumCells.end());
                 }
             }
         }
@@ -2569,11 +2570,11 @@ void Game::renderEarly() {
                         if (rand() % 6 == 0) {
                             newState = true;
                         }
-                        /*if (x >= drop - 1 && x <= drop + 1) {
-newState = true;
-}else if (x >= drop2 - 1 && x <= drop2 + 1) {
-newState = true;
-}*/
+                        // if (x >= drop - 1 && x <= drop + 1) {
+                        //     newState = true;
+                        // } else if (x >= drop2 - 1 && x <= drop2 + 1) {
+                        //     newState = true;
+                        // }
                     }
 
                     if (state && y < TexturePack_.loadingScreenH - 1) {
@@ -2833,8 +2834,8 @@ void Game::renderLate() {
         R_SetBlendMode(TexturePack_.textureObjectsLQ, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureObjectsLQ, NULL, TexturePack_.worldTexture->target, NULL);
 
-        R_SetBlendMode(TexturePack_.textureParticles, R_BLEND_NORMAL);
-        R_BlitRect(TexturePack_.textureParticles, NULL, TexturePack_.worldTexture->target, NULL);
+        R_SetBlendMode(TexturePack_.textureCells, R_BLEND_NORMAL);
+        R_BlitRect(TexturePack_.textureCells, NULL, TexturePack_.worldTexture->target, NULL);
 
         R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureEntitiesLQ, NULL, TexturePack_.worldTexture->target, NULL);
@@ -3259,7 +3260,7 @@ void Game::renderOverlays() {
 {0} {1}
 XY: {2:.2f} / {3:.2f}
 V: {4:.2f} / {5:.2f}
-Particles: {6}
+Cells: {6}
 Entities: {7}
 RigidBodies: {8}/{9} O, {10} W
 Tris: {11}/{12} O, {13} W
@@ -3278,7 +3279,7 @@ ReadyToMerge ({16})
         //                     GameIsolate_.world->player
         //                             ? pl_we->vy
         //                             : 0.0f,
-        //                     (int) GameIsolate_.world->particles.size(),
+        //                     (int) GameIsolate_.world->cells.size(),
         //                     (int) GameIsolate_.world->worldEntities.size(), rbCt,
         //                     (int) GameIsolate_.world->rigidBodies.size(),
         //                     (int) GameIsolate_.world->worldRigidBodies.size(),
@@ -3298,7 +3299,7 @@ ReadyToMerge ({16})
             pl_vy = pl_we->vy;
         }
 
-        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->particles.size(),
+        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->cells.size(),
                                     (int)GameIsolate_.world->Reg().entity_count(), rbCt, (int)GameIsolate_.world->rigidBodies.size(), (int)GameIsolate_.world->worldRigidBodies.size(), rbTriACt,
                                     rbTriCt, rbTriWCt, chCt, (int)GameIsolate_.world->readyToReadyToMerge.size(), (int)GameIsolate_.world->readyToMerge.size());
 
@@ -3333,13 +3334,6 @@ ReadyToMerge ({16})
             R_Line(Render.target, Screen.windowWidth - 30 - TraceTimeNum - 5, Screen.windowHeight - 10 - (i * 25), Screen.windowWidth - 25, Screen.windowHeight - 10 - (i * 25),
                    {0xff, 0xff, 0xff, 0xff});
         }
-        /*for (int i = 0; i <= 100; i += 25) {
-char buff[20];
-snprintf(buff, sizeof(buff), "%d", i);
-std::string buffAsStdStr = buff;
-Drawing::drawText(renderer, buffAsStdStr.c_str(), font14, WIDTH - 20, HEIGHT - 15 - i - 2, 0xff, 0xff, 0xff, ALIGN_LEFT);
-SDL_RenderDrawLine(renderer, WIDTH - 30 - TraceTimeNum - 5, HEIGHT - 10 - i, WIDTH - 25, HEIGHT - 10 - i);
-}*/
 
         for (int i = 0; i < TraceTimeNum; i++) {
             int h = Time.frameTimesTrace[i];
@@ -3523,7 +3517,7 @@ void Game::quitToMainMenu() {
     std::fill(TexturePack_.pixelsFire.begin(), TexturePack_.pixelsFire.end(), 0);
     std::fill(TexturePack_.pixelsFlow.begin(), TexturePack_.pixelsFlow.end(), 0);
     std::fill(TexturePack_.pixelsEmission.begin(), TexturePack_.pixelsEmission.end(), 0);
-    std::fill(TexturePack_.pixelsParticles.begin(), TexturePack_.pixelsParticles.end(), 0);
+    std::fill(TexturePack_.pixelsCells.begin(), TexturePack_.pixelsCells.end(), 0);
 
     R_UpdateImageBytes(TexturePack_.texture, NULL, &TexturePack_.pixels[0], GameIsolate_.world->width * 4);
 
@@ -3537,7 +3531,7 @@ void Game::quitToMainMenu() {
 
     R_UpdateImageBytes(TexturePack_.emissionTexture, NULL, &TexturePack_.pixelsEmission[0], GameIsolate_.world->width * 4);
 
-    R_UpdateImageBytes(TexturePack_.textureParticles, NULL, &TexturePack_.pixelsParticles[0], GameIsolate_.world->width * 4);
+    R_UpdateImageBytes(TexturePack_.textureCells, NULL, &TexturePack_.pixelsCells[0], GameIsolate_.world->width * 4);
 
     gameUI.visible_mainmenu = true;
 }

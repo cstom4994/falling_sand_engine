@@ -16,7 +16,7 @@
 #include "cvar.hpp"
 #include "game.hpp"
 #include "game_resources.hpp"
-#include "game_utils/particles.h"
+#include "game_utils/cells.h"
 #include "internal/builtin_box2d.h"
 #include "reflectionflat.hpp"
 #include "renderer/renderer_utils.h"
@@ -811,7 +811,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	//		}
 // 	//	}
 // 	//	PlacedStructure* ps = new PlacedStructure(Structure(20, 8, str), ch.x * CHUNK_W - 10, ch.y * CHUNK_H - 4);
-// 	//	//world.addParticle(new Particle(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+// 	//	//world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 	//	structs.push_back(*ps);
 // 	//	//std::cout << "placestruct " << world.structures.size() << std::endl;
 // 	//}
@@ -828,7 +828,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 	//		}
 // 	//	}
 // 	//	PlacedStructure* ps = new PlacedStructure(Structure(100, 50, str), ch.x * CHUNK_W - 50, ch.y * CHUNK_H - 25);
-// 	//	//world.addParticle(new Particle(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+// 	//	//world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 	//	structs.push_back(*ps);
 // 	//	//std::cout << "placestruct " << world.structures.size() << std::endl;
 // 	//}
@@ -847,7 +847,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 // 		m.append(".png");
 // 		Structure st = Structure(LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
 // 		PlacedStructure* ps = new PlacedStructure(st, posX, posY);
-// 		//world.addParticle(new Particle(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+// 		//world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
 // 		structs.push_back(*ps);
 // 		//std::cout << "placestruct " << world.structures.size() << std::endl;
 // 	}
@@ -1274,7 +1274,7 @@ void WorldEntitySystem::process(MetaEngine::ECS::registry &world, const entity_u
                             evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
                         } else if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
                                    evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            evt.g->GameIsolate_.world->addParticle(new ParticleData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - pl.vx),
+                            evt.g->GameIsolate_.world->addCell(new CellData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - pl.vx),
                                                                                     (F32)(wy - abs(pl.vy)), (F32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f),
                                                                                     0, (F32)0.1));
                             evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;

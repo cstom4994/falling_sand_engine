@@ -41,7 +41,7 @@ void LuaCodeFree(LuaCode *_struct) {}
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
-extern int LoadImguiBindings(lua_State *l);
+extern int LoadImGuiBindings(lua_State *l);
 extern "C" {
 extern int luaopen_mu(lua_State *L);
 }
@@ -218,7 +218,7 @@ static void InitLua(LuaCore *_struct) {
     metadot_bind_uilayout(_struct->L);
     metadot_bind_profiler(_struct->L);
 
-    LoadImguiBindings(_struct->L);
+    LoadImGuiBindings(_struct->L);
 
     metadot_preload_auto(_struct->L, luaopen_ffi, "ffi");
     metadot_preload_auto(_struct->L, luaopen_mu, "mu");
@@ -229,23 +229,19 @@ static void InitLua(LuaCore *_struct) {
 #define REGISTER_LUAFUNC(_f) _struct->s_lua[#_f] = LuaWrapper::function(_f)
 
     _struct->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    _struct->s_lua["Eng_GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
+    _struct->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
 
     REGISTER_LUAFUNC(SDL_FreeSurface);
     REGISTER_LUAFUNC(R_SetImageFilter);
     REGISTER_LUAFUNC(R_CopyImageFromSurface);
     REGISTER_LUAFUNC(R_GetTextureHandle);
     REGISTER_LUAFUNC(R_GetTextureAttr);
-    REGISTER_LUAFUNC(Eng_LoadTextureData);
-    REGISTER_LUAFUNC(Eng_DestroyTexture);
-    REGISTER_LUAFUNC(Eng_CreateTexture);
+    REGISTER_LUAFUNC(LoadTextureData);
+    REGISTER_LUAFUNC(DestroyTexture);
+    REGISTER_LUAFUNC(CreateTexture);
     REGISTER_LUAFUNC(metadot_buildnum);
     REGISTER_LUAFUNC(metadot_metadata);
     REGISTER_LUAFUNC(add_packagepath);
-    // REGISTER_LUAFUNC(FontCache_CreateFont);
-    // REGISTER_LUAFUNC(FontCache_LoadFont);
-    // REGISTER_LUAFUNC(FontCache_MakeColor);
-    // REGISTER_LUAFUNC(FontCache_FreeFont);
 
 #undef REGISTER_LUAFUNC
 
@@ -304,11 +300,11 @@ static void UpdateLua(LuaCore *_struct) {
     }
 }
 
-static void InitMeo(MetaEngine::Meo::VM &vm) {}
+static void InitMeo() {}
 
-static void EndMeo(MetaEngine::Meo::VM &vm) {}
+static void EndMeo() {}
 
-static void UpdateMeo(MetaEngine::Meo::VM &vm){
+static void UpdateMeo(){
 
 }
 

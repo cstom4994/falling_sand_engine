@@ -33,10 +33,10 @@ InitGraphics = function()
 
     materials_init();
 
-    logoSfc = Eng_LoadTextureData("data/assets/ui/logo.png")
-    title = R_CopyImageFromSurface(Eng_GetSurfaceFromTexture(logoSfc))
+    logoSfc = LoadTextureData("data/assets/ui/logo.png")
+    title = R_CopyImageFromSurface(GetSurfaceFromTexture(logoSfc))
     R_SetImageFilter(title, 0)
-    Eng_DestroyTexture(logoSfc)
+    DestroyTexture(logoSfc)
 
 end
 

@@ -10,7 +10,6 @@
 #include <time.h>
 
 #include "engine/engine_core.h"
-#include "engine/engine_ecs.h"
 #include "engine/engine_meta.h"
 #include "engine/engine_platform.h"
 #include "engine/engine_render.h"
@@ -20,7 +19,6 @@
     extern engine_core Core;     \
     extern engine_render Render; \
     extern windows Screen;       \
-    extern engine_ecs ECS;       \
     extern engine_time Time
 
 // Engine functions called from main

@@ -43,39 +43,39 @@ void InitTexture(TexturePack *tex) {
 void EndTexture(TexturePack *tex) {
     METADOT_ASSERT_E(tex);
 
-    Eng_DestroyTexture(tex->testTexture);
-    Eng_DestroyTexture(tex->dirt1Texture);
-    Eng_DestroyTexture(tex->stone1Texture);
-    Eng_DestroyTexture(tex->smoothStone);
-    Eng_DestroyTexture(tex->cobbleStone);
-    Eng_DestroyTexture(tex->flatCobbleStone);
-    Eng_DestroyTexture(tex->smoothDirt);
-    Eng_DestroyTexture(tex->cobbleDirt);
-    Eng_DestroyTexture(tex->flatCobbleDirt);
-    Eng_DestroyTexture(tex->softDirt);
-    Eng_DestroyTexture(tex->cloud);
-    Eng_DestroyTexture(tex->gold);
-    Eng_DestroyTexture(tex->goldMolten);
-    Eng_DestroyTexture(tex->goldSolid);
-    Eng_DestroyTexture(tex->iron);
-    Eng_DestroyTexture(tex->obsidian);
-    Eng_DestroyTexture(tex->caveBG);
-    Eng_DestroyTexture(tex->testAse);
+    DestroyTexture(tex->testTexture);
+    DestroyTexture(tex->dirt1Texture);
+    DestroyTexture(tex->stone1Texture);
+    DestroyTexture(tex->smoothStone);
+    DestroyTexture(tex->cobbleStone);
+    DestroyTexture(tex->flatCobbleStone);
+    DestroyTexture(tex->smoothDirt);
+    DestroyTexture(tex->cobbleDirt);
+    DestroyTexture(tex->flatCobbleDirt);
+    DestroyTexture(tex->softDirt);
+    DestroyTexture(tex->cloud);
+    DestroyTexture(tex->gold);
+    DestroyTexture(tex->goldMolten);
+    DestroyTexture(tex->goldSolid);
+    DestroyTexture(tex->iron);
+    DestroyTexture(tex->obsidian);
+    DestroyTexture(tex->caveBG);
+    DestroyTexture(tex->testAse);
 }
 
-Texture *Eng_CreateTexture(C_Surface *surface) {
+Texture *CreateTexture(C_Surface *surface) {
     Texture *tex = new Texture;
     tex->surface = surface;
     return tex;
 }
 
-void Eng_DestroyTexture(Texture *tex) {
+void DestroyTexture(Texture *tex) {
     METADOT_ASSERT_E(tex);
     if (tex->surface) SDL_FreeSurface(tex->surface);
     delete tex;
 }
 
-Texture *Eng_LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
 
 Texture *LoadTexture(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
 
@@ -124,7 +124,7 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
 
     METADOT_ASSERT_E(loadedSurface);
 
-    Texture *tex = Eng_CreateTexture(loadedSurface);
+    Texture *tex = CreateTexture(loadedSurface);
 
     stbi_image_free(data);
 
@@ -182,7 +182,7 @@ Texture *LoadAsepriteTexture(const char *path) {
     SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.entry_count);
     // SDL_SetColorKey(surface, SDL_TRUE, ase->color_profile);
 
-    Texture *tex = Eng_CreateTexture(surface);
+    Texture *tex = CreateTexture(surface);
 
     cute_aseprite_free(ase);
 

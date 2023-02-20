@@ -12,7 +12,6 @@
 #include "engine/engine.h"
 #include "libs/visitstruct.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
-#include "scripting/meo/meo.hpp"
 
 typedef struct LuaCode {
     // Status 0 = error, 1 = no problems, 2 = reloaded but not prime ran
@@ -91,7 +90,6 @@ void RunScriptFromFile(const char *filePath);
 class Scripting : public MetaEngine::CSingleton<Scripting> {
 public:
     LuaCore *Lua;
-    MetaEngine::Meo::VM meo;
 
     Scripting(){};
     ~Scripting(){};

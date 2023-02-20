@@ -595,7 +595,7 @@ static void PushImguiEnums(lua_State *lState, const char *tableName) {
     lua_rawset(lState, -3);
 };
 
-void LoadImguiBindings(lua_State *l) {
+void LoadImGuiBindings(lua_State *l) {
     if (!lState) {
         if (!l) METADOT_ERROR("Load imgui binding with no lua state");
         lState = l;

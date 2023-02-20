@@ -276,7 +276,7 @@ void MainMenuUI__Setup() {
     Texture *logoSfc = LoadTexture("data/assets/ui/logo.png");
     gameUI.MainMenuUI__title = R_CopyImageFromSurface(logoSfc->surface);
     R_SetImageFilter(gameUI.MainMenuUI__title, R_FILTER_NEAREST);
-    Eng_DestroyTexture(logoSfc);
+    DestroyTexture(logoSfc);
 
     // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
     // materialTestWorld = R_CopyImageFromSurface(logoMT);
@@ -741,19 +741,19 @@ void DebugDrawUI__Setup() {
     Texture *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
     gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[0], R_FILTER_NEAREST);
-    Eng_DestroyTexture(sfc);
+    DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testHammer.png");
     gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[1], R_FILTER_NEAREST);
-    Eng_DestroyTexture(sfc);
+    DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testVacuum.png");
     gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[2], R_FILTER_NEAREST);
-    Eng_DestroyTexture(sfc);
+    DestroyTexture(sfc);
     sfc = LoadTexture("data/assets/objects/testBucket.png");
     gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[3], R_FILTER_NEAREST);
-    Eng_DestroyTexture(sfc);
+    DestroyTexture(sfc);
 }
 
 void DebugDrawUI__Draw(Game *game) {

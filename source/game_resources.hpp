@@ -36,13 +36,13 @@ typedef struct TexturePack {
 void InitTexture(TexturePack *tex);
 void EndTexture(TexturePack *tex);
 
-Texture *Eng_CreateTexture(C_Surface *surface);
-void Eng_DestroyTexture(Texture *tex);
+Texture *CreateTexture(C_Surface *surface);
+void DestroyTexture(Texture *tex);
 Texture *LoadTexture(const char *path);
 Texture *LoadTextureInternal(const char *path, U32 pixelFormat);
 C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y);
 Texture *LoadAsepriteTexture(const char *path);
-Texture *Eng_LoadTextureData(const char *path);
+Texture *LoadTextureData(const char *path);
 void RenderSprite(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip = nullptr);
 
 #endif

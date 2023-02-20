@@ -26,7 +26,7 @@ struct World;
 struct RigidBody;
 struct b2Body;
 struct R_Target;
-struct ParticleData;
+struct CellData;
 struct Biome;
 struct Material;
 struct Player;
@@ -361,7 +361,7 @@ public:
     MetaEngine::vector<U16Point> fill;
     U16 capacity = 0;
 
-    MetaEngine::vector<ParticleData *> vacuumParticles;
+    MetaEngine::vector<CellData *> vacuumCells;
 
     Item();
     ~Item();

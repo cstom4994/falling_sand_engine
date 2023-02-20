@@ -292,7 +292,7 @@ void UISystem::UIRendererFree() {
     METADOT_DELETE(C, global.uidata->imguiCore, ImGuiCore);
 
     for (auto &&e : global.uidata->elementLists) {
-        if (static_cast<bool>(e.second->texture)) Eng_DestroyTexture(e.second->texture);
+        if (static_cast<bool>(e.second->texture)) DestroyTexture(e.second->texture);
         if (static_cast<bool>(e.second)) delete e.second;
     }
 

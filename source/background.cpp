@@ -25,7 +25,7 @@ BackgroundLayer::BackgroundLayer(Texture *texture, F32 parallaxX, F32 parallaxY,
 
 BackgroundLayer::~BackgroundLayer() {
     for (auto &&image : this->texture) R_FreeImage(image);
-    if (this->tex) Eng_DestroyTexture(this->tex);
+    if (this->tex) DestroyTexture(this->tex);
 }
 
 void BackgroundLayer::init() {

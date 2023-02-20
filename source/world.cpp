@@ -27,7 +27,7 @@
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_utils/jsonwarp.h"
-#include "game_utils/particles.h"
+#include "game_utils/cells.h"
 #include "internal/builtin_box2d.h"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -145,7 +145,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
             flowY[x + y * width] = 0;
             prevFlowX[x + y * width] = 0;
             prevFlowY[x + y * width] = 0;
-            // particles.push_back(new ParticleData(x, y, 0, 0, 0, 0.1, 0xffff00));
+            // cells.push_back(new CellData(x, y, 0, 0, 0, 0.1, 0xffff00));
         }
     }
 
@@ -1019,7 +1019,7 @@ void World::tick() {
             int chOfsY = 1 - ((tk % 4) / 2);  // 1 1 0 0
 
 #ifdef DO_MULTITHREADING
-            MetaEngine::vector<std::future<MetaEngine::vector<ParticleData *>>> results = {};
+            MetaEngine::vector<std::future<MetaEngine::vector<CellData *>>> results = {};
 #endif
 #ifdef DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
@@ -1034,7 +1034,7 @@ void World::tick() {
 
 #ifdef DO_MULTITHREADING
                     results.push_back(tickPool->push([&, cx, cy](int id) {
-                        MetaEngine::vector<ParticleData *> parts = {};
+                        MetaEngine::vector<CellData *> parts = {};
 
 #else
 
@@ -1066,14 +1066,14 @@ void World::tick() {
                                     }
 
                                     if (rand() % 10 == 0) {
-                                        ParticleData *p = new ParticleData(tile, x, y - 1, (rand() % 10 - 5) / 20.0f, -((rand() % 10) / 10.0f) / 3.0f + -0.5f, 0, 0.01f);
+                                        CellData *p = new CellData(tile, x, y - 1, (rand() % 10 - 5) / 20.0f, -((rand() % 10) / 10.0f) / 3.0f + -0.5f, 0, 0.01f);
                                         p->temporary = true;
                                         p->lifetime = 30;
                                         p->fadeTime = 10;
 #ifdef DO_MULTITHREADING
                                         parts.push_back(p);
 #else
-                                    particles.push_back(p);
+                                    cells.push_back(p);
 #endif
                                     }
 
@@ -1178,9 +1178,9 @@ void World::tick() {
                                             getTile(x, y + 3).mat->physicsType == PhysicsType::AIR && getTile(x, y + 4).mat->physicsType == PhysicsType::AIR) {
                                             setTile(x, y, belowTile);
 #ifdef DO_MULTITHREADING
-                                            parts.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                            parts.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #else
-                                        particles.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                        cells.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         } else {
                                             tiles[index] = belowTile;
@@ -1254,9 +1254,9 @@ void World::tick() {
                                             nt.fluidAmountDiff = 0;
                                             nt.moved = false;
 #ifdef DO_MULTITHREADING
-                                            parts.push_back(new ParticleData(nt, x, y + 1, (rand() % 10 - 5) / 30.0f, -((rand() % 2) + 3) / 10.0f + 1.0f, 0, 0.1f));
+                                            parts.push_back(new CellData(nt, x, y + 1, (rand() % 10 - 5) / 30.0f, -((rand() % 2) + 3) / 10.0f + 1.0f, 0, 0.1f));
 #else
-                                        particles.push_back(new ParticleData(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                        cells.push_back(new CellData(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         }
 
@@ -1513,9 +1513,9 @@ void World::tick() {
                                     //     PhysicsType::AIR && getTile(x, y + 4).mat->physicsType == PhysicsType::AIR) {
                                     //         setTile(x, y, belowTile);
                                     //         #ifdef DO_MULTITHREADING
-                                    //         parts.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                    //         parts.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
                                     //         #else
-                                    //         particles.push_back(new ParticleData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
+                                    //         cells.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
                                     //         #endif
                                     //     } else {
                                     //         tiles[index] = belowTile;
@@ -1863,9 +1863,9 @@ void World::tick() {
 
             for (int i = 0; i < results.size(); i++) {
 
-                MetaEngine::vector<ParticleData *> pts = results[i].get();
+                MetaEngine::vector<CellData *> pts = results[i].get();
 
-                particles.insert(particles.end(), pts.begin(), pts.end());
+                cells.insert(cells.end(), pts.begin(), pts.end());
             }
             tickVisitedDone.get();
 
@@ -1964,9 +1964,9 @@ void World::tickTemperature() {
     // copy
 }
 
-void World::renderParticles(unsigned char **texture) {
+void World::renderCells(unsigned char **texture) {
 
-    for (auto &cur : particles) {
+    for (auto &cur : cells) {
         if (cur->x < 0 || cur->x >= width || cur->y < 0 || cur->y >= height) continue;
 
         F32 alphaMod = 1;
@@ -1988,14 +1988,14 @@ void World::renderParticles(unsigned char **texture) {
     }
 }
 
-void World::tickParticles() {
+void World::tickCells() {
 
     /*C_Rect* fr = new C_Rect{ 0, 0, width, height };
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     delete fr;*/
 
-    auto func = [&](ParticleData *cur) {
+    auto func = [&](CellData *cur) {
         if (cur->temporary && cur->lifetime <= 0) {
             cur->killCallback.invoke({});
             delete cur;
@@ -2140,10 +2140,10 @@ void World::tickParticles() {
         return false;
     };
 
-    particles.erase(std::remove_if(particles.begin(), particles.end(), func), particles.end());
+    cells.erase(std::remove_if(cells.begin(), cells.end(), func), cells.end());
 
-    // // Better particles removal effects
-    // std::for_each(particles.begin(), particles.end(), [](ParticleData *cur) {
+    // // Better cells removal effects
+    // std::for_each(cells.begin(), cells.end(), [](CellData *cur) {
     //     cur->vx += cur->ax;
     //     cur->vy += cur->ay;
     //     cur->x += cur->vx;
@@ -2151,7 +2151,7 @@ void World::tickParticles() {
     //     // return cur->y > height;
     // });
 
-    // std::remove_if(particles.begin(), particles.end(), [&](ParticleData* cur) {
+    // std::remove_if(cells.begin(), cells.end(), [&](CellData* cur) {
     //	return cur->y > height;
     // });
 }
@@ -2241,7 +2241,7 @@ void World::tickObjects() {
     });
 }
 
-void World::addParticle(ParticleData *particle) { particles.push_back(particle); }
+void World::addCell(CellData *cell) { cells.push_back(cell); }
 
 void World::explosion(int cx, int cy, int radius) {
     audioEngine->PlayEvent("event:/Explode");
@@ -2269,11 +2269,11 @@ void World::explosion(int cx, int cy, int radius) {
 
                     tile.color = rgb;
 
-                    particles.push_back(new ParticleData(tile, x, y + 1, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
+                    cells.push_back(new CellData(tile, x, y + 1, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
                     setTile(x, y, Tiles_NOTHING);
                 }
             } else if (dx * dx + dy * dy < outerRadius * outerRadius && tile.mat->physicsType != PhysicsType::SOLID) {
-                particles.push_back(new ParticleData(tile, x, y, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
+                cells.push_back(new CellData(tile, x, y, dx / 10.0f + (rand() % 10 - 5) / 10.0f, dy / 6.0f + (rand() % 10 - 5) / 10.0f, 0, 0.1f));
                 setTile(x, y, Tiles_NOTHING);
             }
         }
@@ -2539,9 +2539,9 @@ void World::tickChunks() {
                 }
             }
 
-            for (int i = 0; i < particles.size(); i++) {
-                particles[i]->x += changeX;
-                particles[i]->y += changeY;
+            for (int i = 0; i < cells.size(); i++) {
+                cells[i]->x += changeX;
+                cells[i]->y += changeY;
             }
 
             for (int i = 0; i < rigidBodies.size(); i++) {
@@ -3013,7 +3013,7 @@ void World::tickEntities(R_Target *t) {
                                 } else {
                                     MaterialInstance tp = tiles[sx + sy * width];
                                     if (tp.mat->physicsType == PhysicsType::SAND) {
-                                        addParticle(new ParticleData(tp, sx, sy, (rand() % 10 - 5) / 10.0f + 0.5f, (rand() % 10 - 5) / 10.0f, 0, 0.1f));
+                                        addCell(new CellData(tp, sx, sy, (rand() % 10 - 5) / 10.0f + 0.5f, (rand() % 10 - 5) / 10.0f, 0, 0.1f));
                                         tiles[sx + sy * width] = Tiles_NOTHING;
                                         dirty[sx + sy * width] = true;
 
@@ -3068,7 +3068,7 @@ void World::tickEntities(R_Target *t) {
                                 } else {
                                     MaterialInstance tp = tiles[sx + sy * width];
                                     if (tp.mat->physicsType == PhysicsType::SAND) {
-                                        addParticle(new ParticleData(tp, sx, sy, (rand() % 10 - 5) / 10.0f - 0.5f, (rand() % 10 - 5) / 10.0f, 0, 0.1f));
+                                        addCell(new CellData(tp, sx, sy, (rand() % 10 - 5) / 10.0f - 0.5f, (rand() % 10 - 5) / 10.0f, 0, 0.1f));
                                         tiles[sx + sy * width] = Tiles_NOTHING;
                                         dirty[sx + sy * width] = true;
 
@@ -3138,7 +3138,7 @@ void World::tickEntities(R_Target *t) {
                                 tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
                                 MaterialInstance tp = tiles[sx + sy * width];
                                 if (tp.mat->physicsType == PhysicsType::SAND) {
-                                    addParticle(new ParticleData(tp, sx, sy, (rand() % 10 - 5) / 10.0f, (rand() % 10 - 5) / 10.0f - 0.5f, 0, 0.1f));
+                                    addCell(new CellData(tp, sx, sy, (rand() % 10 - 5) / 10.0f, (rand() % 10 - 5) / 10.0f - 0.5f, 0, 0.1f));
                                     tiles[sx + sy * width] = Tiles_NOTHING;
                                     dirty[sx + sy * width] = true;
 
@@ -3459,10 +3459,10 @@ World::~World() {
     delete[] layer2;
     delete[] background;
 
-    for (auto &v : particles) {
+    for (auto &v : cells) {
         delete v;
     }
-    particles.clear();
+    cells.clear();
 
     tickPool->clear_queue();
     loadChunkPool->clear_queue();
