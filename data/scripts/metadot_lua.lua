@@ -191,13 +191,23 @@ metadot_lua.define("require_for_syntax",
         return ""
     end)
 
-metadot_lua.define("mu",
+metadot_lua.define("meo",
     "{.*} -> build_chunk",
     function(c)
         return ""
     end,
     { build_chunk = function(c)
-        return print(c)
+        local meo_core = require("meo")
+        local codes, err, globals = meo_core.to_lua(c,
+            {
+                implicit_return_root = true,
+                reserve_line_number = true,
+                lint_global = true,
+            }
+        )
+        local v = load(codes)
+        assert(v, "Error")
+        return v()
     end })
 
 metadot_lua.define("meta_js",

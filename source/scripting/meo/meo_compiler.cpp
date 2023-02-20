@@ -1,7 +1,9 @@
 // Metadot Code Copyright(c) 2022-2023, KaoruXun All rights reserved.
+
 // https://github.com/pigpigyyy/Yuescript
 // https://github.com/axilmar/parserlib
-#include "meo_core.h"
+
+#include "meo_compiler.h"
 
 #include <cassert>
 #include <chrono>
@@ -17,94 +19,137 @@
 #include <unordered_set>
 #include <vector>
 
-#include "core/core.hpp"
-
-#pragma region ParserLib
-
 namespace parserlib {
+// internal private class that manages access to the public classes' internals.
 class _private {
 public:
-    static _expr *get_expr(const expr &e) { return e.m_expr; }
-    static expr construct_expr(_expr *e) { return e; }
-    static _expr *get_expr(rule &r) { return r.m_expr; }
-    static parse_proc get_parse_proc(rule &r) { return r.m_parse_proc; }
+    // get the internal expression object from the expression.
+    static _expr* get_expr(const expr& e) { return e.m_expr; }
+    // create new expression from given expression
+    static expr construct_expr(_expr* e) { return e; }
+    // get the internal expression object from the rule.
+    static _expr* get_expr(rule& r) { return r.m_expr; }
+    // get the internal parse proc from the rule.
+    static parse_proc get_parse_proc(rule& r) { return r.m_parse_proc; }
 };
 class _context;
+// parser state
 class _state {
 public:
+    // position
     pos m_pos;
+    // size of match vector
     size_t m_matches;
-    _state(_context &con);
+    // constructor
+    _state(_context& con);
 };
+// match
 class _match {
 public:
-    rule *m_rule;
+    // rule matched
+    rule* m_rule;
+    // begin position
     pos m_begin;
+    // end position
     pos m_end;
+    // null constructor
     _match() {}
-    _match(rule *r, const pos &b, const pos &e) : m_rule(r), m_begin(b), m_end(e) {}
+    // constructor from parameters
+    _match(rule* r, const pos& b, const pos& e) : m_rule(r), m_begin(b), m_end(e) {}
 };
+// match vector
 typedef std::vector<_match> _match_vector;
+// parsing context
 class _context {
 public:
-    void *m_user_data;
+    // user data
+    void* m_user_data;
+    // current position
     pos m_pos;
+    // error position
     pos m_error_pos;
+    // input begin
     input::iterator m_begin;
+    // input end
     input::iterator m_end;
+    // matches
     _match_vector m_matches;
-    _context(input &i, void *ud) : m_user_data(ud), m_pos(i), m_error_pos(i), m_begin(i.begin()), m_end(i.end()) {}
+    // constructor
+    _context(input& i, void* ud) : m_user_data(ud), m_pos(i), m_error_pos(i), m_begin(i.begin()), m_end(i.end()) {}
+    // check if the end is reached
     bool end() const { return m_pos.m_it == m_end; }
+    // get the current symbol
     input::value_type symbol() const {
         assert(!end());
         return *m_pos.m_it;
     }
+    // set the longest possible error
     void set_error_pos() {
         if (m_pos.m_it > m_error_pos.m_it) {
             m_error_pos = m_pos;
         }
     }
+    // next column
     void next_col() {
         ++m_pos.m_it;
         ++m_pos.m_col;
     }
+    // next line
     void next_line() {
         ++m_pos.m_line;
         m_pos.m_col = 1;
     }
-    void restore(const _state &st) {
+    // restore the state
+    void restore(const _state& st) {
         m_pos = st.m_pos;
         m_matches.resize(st.m_matches);
     }
-    bool parse_non_term(rule &r);
-    bool parse_term(rule &r);
-    void do_parse_procs(void *d) const {
+    // parse non-term rule.
+    bool parse_non_term(rule& r);
+    // parse term rule.
+    bool parse_term(rule& r);
+    // execute all the parse procs
+    void do_parse_procs(void* d) const {
         for (_match_vector::const_iterator it = m_matches.begin(); it != m_matches.end(); ++it) {
-            const _match &m = *it;
+            const _match& m = *it;
             parse_proc p = _private::get_parse_proc(*m.m_rule);
             p(m.m_begin, m.m_end, d);
         }
     }
 
 private:
-    bool _parse_non_term(rule &r);
-    bool _parse_term(rule &r);
+    // parse non-term rule.
+    bool _parse_non_term(rule& r);
+    // parse term rule.
+    bool _parse_term(rule& r);
 };
+enum class EXPR_TYPE { NORMAL, SEQ_TWO, SEQ_LIST, CHOICE_TWO, CHOICE_LIST };
+// base class for expressions
 class _expr {
 public:
+    // destructor.
     virtual ~_expr() {}
-    virtual bool parse_non_term(_context &con) const = 0;
-    virtual bool parse_term(_context &con) const = 0;
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const = 0;
+    // parse terminal
+    virtual bool parse_term(_context& con) const = 0;
+    virtual EXPR_TYPE get_type() const { return EXPR_TYPE::NORMAL; }
 };
+// single character expression.
 class _char : public _expr {
 public:
+    // constructor.
     _char(char c) : m_char(c) {}
-    virtual bool parse_non_term(_context &con) const { return _parse(con); }
-    virtual bool parse_term(_context &con) const { return _parse(con); }
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return _parse(con); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override { return _parse(con); }
 
 private:
+    // character
     input::value_type m_char;
-    bool _parse(_context &con) const {
+    // internal parse
+    bool _parse(_context& con) const {
         if (!con.end()) {
             input::value_type ch = con.symbol();
             if (ch == m_char) {
@@ -116,16 +161,22 @@ private:
         return false;
     }
 };
+// string expression.
 class _string : public _expr {
 public:
-    _string(const char *s) : m_string(Converter{}.from_bytes(s)) {}
-    virtual bool parse_non_term(_context &con) const { return _parse(con); }
-    virtual bool parse_term(_context &con) const { return _parse(con); }
+    // constructor from ansi string.
+    _string(const char* s) : m_string(Converter{}.from_bytes(s)) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return _parse(con); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override { return _parse(con); }
 
 private:
+    // string
     input m_string;
-    bool _parse(_context &con) const {
-        for (input::const_iterator it = m_string.begin(), end = m_string.end();;) {
+    // parse the string
+    bool _parse(_context& con) const {
+        for (auto it = m_string.begin(), end = m_string.end();;) {
             if (it == end) return true;
             if (con.end()) break;
             if (con.symbol() != *it) break;
@@ -136,14 +187,17 @@ private:
         return false;
     }
 };
+// set expression.
 class _set : public _expr {
 public:
-    _set(const char *s) {
+    // constructor from ansi string.
+    _set(const char* s) {
         auto str = Converter{}.from_bytes(s);
         for (auto ch : str) {
             _add(ch);
         }
     }
+    // constructor from range.
     _set(int min, int max) {
         assert(min >= 0);
         assert(min <= max);
@@ -152,12 +206,16 @@ public:
             m_quick_set[(size_t)min] = true;
         }
     }
-    virtual bool parse_non_term(_context &con) const { return _parse(con); }
-    virtual bool parse_term(_context &con) const { return _parse(con); }
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return _parse(con); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override { return _parse(con); }
 
 private:
+    // set is kept as an array of flags, for quick access
     std::vector<bool> m_quick_set;
     std::unordered_set<size_t> m_large_set;
+    // add character
     void _add(size_t i) {
         if (i <= m_quick_set.size() || i <= 255) {
             if (i >= m_quick_set.size()) {
@@ -168,7 +226,8 @@ private:
             m_large_set.insert(i);
         }
     }
-    bool _parse(_context &con) const {
+    // internal parse
+    bool _parse(_context& con) const {
         if (!con.end()) {
             size_t ch = con.symbol();
             if (ch < m_quick_set.size()) {
@@ -185,24 +244,35 @@ private:
         return false;
     }
 };
+// base class for unary expressions
 class _unary : public _expr {
 public:
-    _unary(_expr *e) : m_expr(e) {}
+    // constructor.
+    _unary(_expr* e) : m_expr(e) {}
+    // destructor.
     virtual ~_unary() { delete m_expr; }
 
 protected:
-    _expr *m_expr;
+    // expression
+    _expr* m_expr;
 };
+// terminal
 class _term : public _unary {
 public:
-    _term(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const { return m_expr->parse_term(con); }
-    virtual bool parse_term(_context &con) const { return m_expr->parse_term(con); }
+    // constructor.
+    _term(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return m_expr->parse_term(con); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override { return m_expr->parse_term(con); }
 };
+// user
 class _user : public _unary {
 public:
-    _user(_expr *e, const user_handler &callback) : _unary(e), m_handler(callback) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _user(_expr* e, const user_handler& callback) : _unary(e), m_handler(callback) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         pos pos = con.m_pos;
         if (m_expr->parse_non_term(con)) {
             item_t item = {&pos, &con.m_pos, con.m_user_data};
@@ -210,7 +280,8 @@ public:
         }
         return false;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         pos pos = con.m_pos;
         if (m_expr->parse_term(con)) {
             item_t item = {&pos, &con.m_pos, con.m_user_data};
@@ -222,15 +293,20 @@ public:
 private:
     user_handler m_handler;
 };
+// loop 0
 class _loop0 : public _unary {
 public:
-    _loop0(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _loop0(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
+        // if parsing of the first fails, restore the context and stop
         _state st(con);
         if (!m_expr->parse_non_term(con)) {
             con.restore(st);
             return true;
         }
+        // parse the rest
         for (;;) {
             _state st(con);
             if (!m_expr->parse_non_term(con)) {
@@ -240,12 +316,15 @@ public:
         }
         return true;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
+        // if parsing of the first fails, restore the context and stop
         _state st(con);
         if (!m_expr->parse_term(con)) {
             con.restore(st);
             return true;
         }
+        // parse the rest until no more parsing is possible
         for (;;) {
             _state st(con);
             if (!m_expr->parse_term(con)) {
@@ -256,11 +335,16 @@ public:
         return true;
     }
 };
+// loop 1
 class _loop1 : public _unary {
 public:
-    _loop1(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _loop1(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
+        // parse the first; if the first fails, stop
         if (!m_expr->parse_non_term(con)) return false;
+        // parse the rest until no more parsing is possible
         for (;;) {
             _state st(con);
             if (!m_expr->parse_non_term(con)) {
@@ -270,8 +354,11 @@ public:
         }
         return true;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
+        // parse the first; if the first fails, stop
         if (!m_expr->parse_term(con)) return false;
+        // parse the rest until no more parsing is possible
         for (;;) {
             _state st(con);
             if (!m_expr->parse_term(con)) {
@@ -282,123 +369,243 @@ public:
         return true;
     }
 };
+// optional
 class _optional : public _unary {
 public:
-    _optional(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _optional(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         _state st(con);
         if (!m_expr->parse_non_term(con)) con.restore(st);
         return true;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         _state st(con);
         if (!m_expr->parse_term(con)) con.restore(st);
         return true;
     }
 };
+// and
 class _and : public _unary {
 public:
-    _and(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _and(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         _state st(con);
         bool ok = m_expr->parse_non_term(con);
         con.restore(st);
         return ok;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         _state st(con);
         bool ok = m_expr->parse_term(con);
         con.restore(st);
         return ok;
     }
 };
+// not
 class _not : public _unary {
 public:
-    _not(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _not(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         _state st(con);
         bool ok = !m_expr->parse_non_term(con);
         con.restore(st);
         return ok;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         _state st(con);
         bool ok = !m_expr->parse_term(con);
         con.restore(st);
         return ok;
     }
 };
+// newline
 class _nl : public _unary {
 public:
-    _nl(_expr *e) : _unary(e) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _nl(_expr* e) : _unary(e) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         if (!m_expr->parse_non_term(con)) return false;
         con.next_line();
         return true;
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         if (!m_expr->parse_term(con)) return false;
         con.next_line();
         return true;
     }
 };
+// base class for binary expressions
 class _binary : public _expr {
 public:
-    _binary(_expr *left, _expr *right) : m_left(left), m_right(right) {}
+    // constructor.
+    _binary(_expr* left, _expr* right) : m_left(left), m_right(right) {}
+    // destructor.
     virtual ~_binary() {
-        delete m_left;
-        delete m_right;
+        if (m_left) delete m_left;
+        if (m_right) delete m_right;
     }
 
 protected:
-    _expr *m_left, *m_right;
+    // left and right expressions
+    _expr* m_left;
+    _expr* m_right;
+    friend expr operator>>(expr&& left, expr&& right);
+    friend expr operator|(expr&& left, expr&& right);
 };
+// sequence
 class _seq : public _binary {
 public:
-    _seq(_expr *left, _expr *right) : _binary(left, right) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _seq(_expr* left, _expr* right) : _binary(left, right) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         if (!m_left->parse_non_term(con)) return false;
         return m_right->parse_non_term(con);
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         if (!m_left->parse_term(con)) return false;
         return m_right->parse_term(con);
     }
+    virtual EXPR_TYPE get_type() const override { return EXPR_TYPE::SEQ_TWO; }
 };
+// sequence list
+class _seq_list : public _expr {
+public:
+    // constructor.
+    _seq_list(std::initializer_list<_expr*> list) {
+        m_list.reserve(list.size());
+        for (_expr* expr : list) {
+            m_list.push_back(expr);
+        }
+    }
+    _seq_list() {}
+    virtual ~_seq_list() {
+        for (_expr* expr : m_list) {
+            delete expr;
+        }
+    }
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
+        for (_expr* expr : m_list) {
+            if (!expr->parse_non_term(con)) return false;
+        }
+        return true;
+    }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
+        for (_expr* expr : m_list) {
+            if (!expr->parse_term(con)) return false;
+        }
+        return true;
+    }
+    virtual EXPR_TYPE get_type() const override { return EXPR_TYPE::SEQ_LIST; }
+
+private:
+    std::vector<_expr*> m_list;
+    friend expr operator>>(expr&& left, expr&& right);
+};
+// choice
 class _choice : public _binary {
 public:
-    _choice(_expr *left, _expr *right) : _binary(left, right) {}
-    virtual bool parse_non_term(_context &con) const {
+    // constructor.
+    _choice(_expr* left, _expr* right) : _binary(left, right) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
         _state st(con);
         if (m_left->parse_non_term(con)) return true;
         con.restore(st);
         return m_right->parse_non_term(con);
     }
-    virtual bool parse_term(_context &con) const {
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         _state st(con);
         if (m_left->parse_term(con)) return true;
         con.restore(st);
         return m_right->parse_term(con);
     }
+    virtual EXPR_TYPE get_type() const override { return EXPR_TYPE::CHOICE_TWO; }
 };
-class _ref : public _expr {
+// choice list
+class _choice_list : public _expr {
 public:
-    _ref(rule &r) : m_rule(r) {}
-    virtual bool parse_non_term(_context &con) const { return con.parse_non_term(m_rule); }
-    virtual bool parse_term(_context &con) const { return con.parse_term(m_rule); }
+    // constructor.
+    _choice_list(std::initializer_list<_expr*> list) {
+        m_list.reserve(list.size());
+        for (_expr* expr : list) {
+            m_list.push_back(expr);
+        }
+    }
+    _choice_list() {}
+    virtual ~_choice_list() {
+        for (_expr* expr : m_list) {
+            delete expr;
+        }
+    }
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override {
+        _state st(con);
+        for (_expr* expr : m_list) {
+            if (expr->parse_non_term(con)) return true;
+            if (expr != m_list.back()) con.restore(st);
+        }
+        return false;
+    }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
+        _state st(con);
+        for (_expr* expr : m_list) {
+            if (expr->parse_term(con)) return true;
+            if (expr != m_list.back()) con.restore(st);
+        }
+        return false;
+    }
+    virtual EXPR_TYPE get_type() const override { return EXPR_TYPE::CHOICE_LIST; }
 
 private:
-    rule &m_rule;
+    std::vector<_expr*> m_list;
+    friend expr operator|(expr&& left, expr&& right);
 };
+// reference to rule
+class _ref : public _expr {
+public:
+    // constructor.
+    _ref(rule& r) : m_rule(r) {}
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return con.parse_non_term(m_rule); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override { return con.parse_term(m_rule); }
+
+private:
+    // reference
+    rule& m_rule;
+};
+// eof
 class _eof : public _expr {
 public:
-    virtual bool parse_non_term(_context &con) const { return parse_term(con); }
-    virtual bool parse_term(_context &con) const { return con.end(); }
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return parse_term(con); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override { return con.end(); }
 };
+// any
 class _any : public _expr {
 public:
-    virtual bool parse_non_term(_context &con) const { return parse_term(con); }
-    virtual bool parse_term(_context &con) const {
+    // parse with whitespace
+    virtual bool parse_non_term(_context& con) const override { return parse_term(con); }
+    // parse terminal
+    virtual bool parse_term(_context& con) const override {
         if (!con.end()) {
             con.next_col();
             return true;
@@ -407,49 +614,77 @@ public:
         return false;
     }
 };
+// true
 class _true : public _expr {
 public:
-    virtual bool parse_non_term(_context &) const { return true; }
-    virtual bool parse_term(_context &) const { return true; }
+    // parse with whitespace
+    virtual bool parse_non_term(_context&) const override { return true; }
+    // parse terminal
+    virtual bool parse_term(_context&) const override { return true; }
 };
+// false
 class _false : public _expr {
 public:
-    virtual bool parse_non_term(_context &) const { return false; }
-    virtual bool parse_term(_context &) const { return false; }
+    // parse with whitespace
+    virtual bool parse_non_term(_context&) const override { return false; }
+    // parse terminal
+    virtual bool parse_term(_context&) const override { return false; }
 };
+// exception thrown when left recursion terminates successfully
 struct _lr_ok {
-    rule *m_rule;
-    _lr_ok(rule *r) : m_rule(r) {}
+    rule* m_rule;
+    _lr_ok(rule* r) : m_rule(r) {}
 };
-_state::_state(_context &con) : m_pos(con.m_pos), m_matches(con.m_matches.size()) {}
-bool _context::parse_non_term(rule &r) {
+// constructor
+_state::_state(_context& con) : m_pos(con.m_pos), m_matches(con.m_matches.size()) {}
+// parse non-term rule.
+bool _context::parse_non_term(rule& r) {
+    // save the state of the rule
     rule::_state old_state = r.m_state;
+    // success/failure result
     bool ok = false;
+    // compute the new position
     size_t new_pos = m_pos.m_it - m_begin;
+    // check if we have left recursion
     bool lr = new_pos == r.m_state.m_pos;
+    // update the rule's state
     r.m_state.m_pos = new_pos;
+    // handle the mode of the rule
     switch (r.m_state.m_mode) {
+        // normal parse
         case rule::_PARSE:
             if (lr) {
+                // first try to parse the rule by rejecting it, so alternative branches are examined
                 r.m_state.m_mode = rule::_REJECT;
                 ok = _parse_non_term(r);
+                // if the first try is successful, try accepting the rule,
+                // so other elements of the sequence are parsed
                 if (ok) {
                     r.m_state.m_mode = rule::_ACCEPT;
+                    // loop until no more parsing can be done
                     for (;;) {
+                        // store the correct state, in order to backtrack if the call fails
                         _state st(*this);
+                        // update the rule position to the current position,
+                        // because at this state the rule is resolving the left recursion
                         r.m_state.m_pos = m_pos.m_it - m_begin;
+                        // if parsing fails, restore the last good state and stop
                         if (!_parse_non_term(r)) {
                             restore(st);
                             break;
                         }
                     }
+                    // since the left recursion was resolved successfully,
+                    // return via a non-local exit
                     r.m_state = old_state;
                     throw _lr_ok(r.this_ptr());
                 }
             } else {
                 try {
                     ok = _parse_non_term(r);
-                } catch (const _lr_ok &ex) {
+                } catch (const _lr_ok& ex) {
+                    // since left recursions may be mutual, we must test which rule's left recursion
+                    // was ended successfully
                     if (ex.m_rule == r.this_ptr()) {
                         ok = true;
                     } else {
@@ -459,6 +694,7 @@ bool _context::parse_non_term(rule &r) {
                 }
             }
             break;
+        // reject the left recursive rule
         case rule::_REJECT:
             if (lr) {
                 ok = false;
@@ -468,6 +704,7 @@ bool _context::parse_non_term(rule &r) {
                 r.m_state.m_mode = rule::_REJECT;
             }
             break;
+        // accept the left recursive rule
         case rule::_ACCEPT:
             if (lr) {
                 ok = true;
@@ -478,37 +715,58 @@ bool _context::parse_non_term(rule &r) {
             }
             break;
     }
+    // restore the rule's state
     r.m_state = old_state;
     return ok;
 }
-bool _context::parse_term(rule &r) {
+// parse term rule.
+bool _context::parse_term(rule& r) {
+    // save the state of the rule
     rule::_state old_state = r.m_state;
+    // success/failure result
     bool ok = false;
+    // compute the new position
     size_t new_pos = m_pos.m_it - m_begin;
+    // check if we have left recursion
     bool lr = new_pos == r.m_state.m_pos;
+    // update the rule's state
     r.m_state.m_pos = new_pos;
+    // handle the mode of the rule
     switch (r.m_state.m_mode) {
+        // normal parse
         case rule::_PARSE:
             if (lr) {
+                // first try to parse the rule by rejecting it, so alternative branches are examined
                 r.m_state.m_mode = rule::_REJECT;
                 ok = _parse_term(r);
+                // if the first try is successful, try accepting the rule,
+                // so other elements of the sequence are parsed
                 if (ok) {
                     r.m_state.m_mode = rule::_ACCEPT;
+                    // loop until no more parsing can be done
                     for (;;) {
+                        // store the correct state, in order to backtrack if the call fails
                         _state st(*this);
+                        // update the rule position to the current position,
+                        // because at this state the rule is resolving the left recursion
                         r.m_state.m_pos = m_pos.m_it - m_begin;
+                        // if parsing fails, restore the last good state and stop
                         if (!_parse_term(r)) {
                             restore(st);
                             break;
                         }
                     }
+                    // since the left recursion was resolved successfully,
+                    // return via a non-local exit
                     r.m_state = old_state;
                     throw _lr_ok(r.this_ptr());
                 }
             } else {
                 try {
                     ok = _parse_term(r);
-                } catch (const _lr_ok &ex) {
+                } catch (const _lr_ok& ex) {
+                    // since left recursions may be mutual, we must test which rule's left recursion
+                    // was ended successfully
                     if (ex.m_rule == r.this_ptr()) {
                         ok = true;
                     } else {
@@ -518,6 +776,7 @@ bool _context::parse_term(rule &r) {
                 }
             }
             break;
+        // reject the left recursive rule
         case rule::_REJECT:
             if (lr) {
                 ok = false;
@@ -527,6 +786,7 @@ bool _context::parse_term(rule &r) {
                 r.m_state.m_mode = rule::_REJECT;
             }
             break;
+        // accept the left recursive rule
         case rule::_ACCEPT:
             if (lr) {
                 ok = true;
@@ -537,10 +797,12 @@ bool _context::parse_term(rule &r) {
             }
             break;
     }
+    // restore the rule's state
     r.m_state = old_state;
     return ok;
 }
-bool _context::_parse_non_term(rule &r) {
+// parse non-term rule internal.
+bool _context::_parse_non_term(rule& r) {
     bool ok = false;
     if (_private::get_parse_proc(r)) {
         pos b = m_pos;
@@ -553,7 +815,8 @@ bool _context::_parse_non_term(rule &r) {
     }
     return ok;
 }
-bool _context::_parse_term(rule &r) {
+// parse term rule internal.
+bool _context::_parse_term(rule& r) {
     bool ok = false;
     if (_private::get_parse_proc(r)) {
         pos b = m_pos;
@@ -566,63 +829,344 @@ bool _context::_parse_term(rule &r) {
     }
     return ok;
 }
-static error _syntax_error(_context &con) { return error(con.m_error_pos, con.m_error_pos, ERROR_SYNTAX_ERROR); }
-static error _eof_error(_context &con) { return error(con.m_error_pos, con.m_error_pos, ERROR_INVALID_EOF); }
-pos::pos(input &i) : m_it(i.begin()), m_line(1), m_col(1) {}
+// get syntax error
+static error _syntax_error(_context& con) { return error(con.m_error_pos, con.m_error_pos, ERROR_SYNTAX_ERROR); }
+// get eof error
+static error _eof_error(_context& con) { return error(con.m_error_pos, con.m_error_pos, ERROR_INVALID_EOF); }
+/** constructor from input.
+    @param i input.
+*/
+pos::pos(input& i) : m_it(i.begin()), m_line(1), m_col(1) {}
+/** character terminal constructor.
+    @param c character.
+*/
 expr::expr(char c) : m_expr(new _char(c)) {}
-expr::expr(const char *s) : m_expr(new _string(s)) {}
-expr::expr(rule &r) : m_expr(new _ref(r)) {}
+/** null-terminated string terminal constructor.
+    @param s null-terminated string.
+*/
+expr::expr(const char* s) : m_expr(new _string(s)) {}
+/** rule reference constructor.
+    @param r rule.
+*/
+expr::expr(rule& r) : m_expr(new _ref(r)) {}
+/** creates a zero-or-more loop out of this expression.
+    @return a zero-or-more loop expression.
+*/
 expr expr::operator*() const { return _private::construct_expr(new _loop0(m_expr)); }
+/** creates a one-or-more loop out of this expression.
+    @return a one-or-more loop expression.
+*/
 expr expr::operator+() const { return _private::construct_expr(new _loop1(m_expr)); }
+/** creates an optional out of this expression.
+    @return an optional expression.
+*/
 expr expr::operator-() const { return _private::construct_expr(new _optional(m_expr)); }
+/** creates an AND-expression.
+    @return an AND-expression.
+*/
 expr expr::operator&() const { return _private::construct_expr((new _and(m_expr))); }
+/** creates a NOT-expression.
+    @return a NOT-expression.
+*/
 expr expr::operator!() const { return _private::construct_expr(new _not(m_expr)); }
-input_range::input_range(const pos &b, const pos &e) : m_begin(b), m_end(e) {}
-error::error(const pos &b, const pos &e, int t) : input_range(b, e), m_type(t) {}
-bool error::operator<(const error &e) const { return m_begin.m_it < e.m_begin.m_it; }
+/** constructor.
+    @param b begin position.
+    @param e end position.
+*/
+input_range::input_range(const pos& b, const pos& e) : m_begin(b), m_end(e) {}
+/** constructor.
+    @param b begin position.
+    @param e end position.
+    @param t error type.
+*/
+error::error(const pos& b, const pos& e, int t) : input_range(b, e), m_type(t) {}
+/** compare on begin position.
+    @param e the other error to compare this with.
+    @return true if this comes before the previous error, false otherwise.
+*/
+bool error::operator<(const error& e) const { return m_begin.m_it < e.m_begin.m_it; }
 rule::rule() : m_expr(nullptr), m_parse_proc(nullptr) {}
+/** character terminal constructor.
+    @param c character.
+*/
 rule::rule(char c) : m_expr(new _char(c)), m_parse_proc(nullptr) {}
-rule::rule(const char *s) : m_expr(new _string(s)), m_parse_proc(nullptr) {}
-rule::rule(const expr &e) : m_expr(_private::get_expr(e)), m_parse_proc(nullptr) {}
-rule::rule(rule &r) : m_expr(new _ref(r)), m_parse_proc(nullptr) {}
-rule &rule::operator=(rule &r) {
+/** null-terminated string terminal constructor.
+    @param s null-terminated string.
+*/
+rule::rule(const char* s) : m_expr(new _string(s)), m_parse_proc(nullptr) {}
+/** constructor from expression.
+    @param e expression.
+*/
+rule::rule(const expr& e) : m_expr(_private::get_expr(e)), m_parse_proc(nullptr) {}
+#ifndef NDEBUG
+/** constructor from a expression name.
+    @param name name of expression.
+*/
+rule::rule(const char* name, rule::initTag) : m_expr(nullptr), m_name(name), m_parse_proc(nullptr) {}
+#endif  // NDEBUG
+/** constructor from rule.
+    @param r rule.
+*/
+rule::rule(rule& r) : m_expr(new _ref(r)), m_parse_proc(nullptr) {}
+rule& rule::operator=(rule& r) {
     m_expr = new _ref(r);
     return *this;
 }
-rule &rule::operator=(const expr &e) {
+rule& rule::operator=(const expr& e) {
     m_expr = _private::get_expr(e);
     return *this;
 }
-rule::rule(const rule &) { throw std::logic_error("invalid operation"); }
+/** invalid constructor from rule (required by gcc).
+    @exception std::logic_error always thrown.
+*/
+rule::rule(const rule&) { throw std::logic_error("invalid operation"); }
+/** deletes the internal object that represents the expression.
+ */
 rule::~rule() { delete m_expr; }
+/** creates a zero-or-more loop out of this rule.
+    @return a zero-or-more loop rule.
+*/
 expr rule::operator*() { return _private::construct_expr(new _loop0(new _ref(*this))); }
+/** creates a one-or-more loop out of this rule.
+    @return a one-or-more loop rule.
+*/
 expr rule::operator+() { return _private::construct_expr(new _loop1(new _ref(*this))); }
+/** creates an optional out of this rule.
+    @return an optional rule.
+*/
 expr rule::operator-() { return _private::construct_expr(new _optional(new _ref(*this))); }
+/** creates an AND-expression out of this rule.
+    @return an AND-expression out of this rule.
+*/
 expr rule::operator&() { return _private::construct_expr(new _and(new _ref(*this))); }
+/** creates a NOT-expression out of this rule.
+    @return a NOT-expression out of this rule.
+*/
 expr rule::operator!() { return _private::construct_expr(new _not(new _ref(*this))); }
+/** sets the parse procedure.
+    @param p procedure.
+*/
 void rule::set_parse_proc(parse_proc p) {
     assert(p);
     m_parse_proc = p;
 }
-expr operator>>(const expr &left, const expr &right) { return _private::construct_expr(new _seq(_private::get_expr(left), _private::get_expr(right))); }
-expr operator|(const expr &left, const expr &right) { return _private::construct_expr(new _choice(_private::get_expr(left), _private::get_expr(right))); }
-expr term(const expr &e) { return _private::construct_expr(new _term(_private::get_expr(e))); }
-expr set(const char *s) { return _private::construct_expr(new _set(s)); }
+/** creates a sequence of expressions.
+    @param left left operand.
+    @param right right operand.
+    @return an expression which parses a sequence.
+*/
+expr operator>>(const expr& left, const expr& right) { return _private::construct_expr(new _seq(_private::get_expr(left), _private::get_expr(right))); }
+expr operator>>(expr&& left, expr&& right) {
+    auto left_expr = _private::get_expr(left);
+    auto right_expr = _private::get_expr(right);
+    switch (left_expr->get_type()) {
+        case EXPR_TYPE::SEQ_TWO: {
+            auto l_seq = static_cast<_seq*>(left_expr);
+            switch (right_expr->get_type()) {
+                case EXPR_TYPE::SEQ_TWO: {
+                    auto r_seq = static_cast<_seq*>(right_expr);
+                    auto list = new _seq_list{l_seq->m_left, l_seq->m_right, r_seq->m_left, r_seq->m_right};
+                    l_seq->m_left = nullptr;
+                    l_seq->m_right = nullptr;
+                    r_seq->m_left = nullptr;
+                    r_seq->m_right = nullptr;
+                    delete l_seq;
+                    delete r_seq;
+                    return _private::construct_expr(list);
+                }
+                case EXPR_TYPE::SEQ_LIST: {
+                    auto r_list = static_cast<_seq_list*>(right_expr);
+                    auto list = new _seq_list{};
+                    list->m_list.reserve(2 + list->m_list.size());
+                    list->m_list.push_back(l_seq->m_left);
+                    list->m_list.push_back(l_seq->m_right);
+                    list->m_list.insert(list->m_list.end(), r_list->m_list.begin(), r_list->m_list.end());
+                    l_seq->m_left = nullptr;
+                    l_seq->m_right = nullptr;
+                    r_list->m_list.clear();
+                    delete l_seq;
+                    delete r_list;
+                    return _private::construct_expr(list);
+                }
+                default: {
+                    auto list = new _seq_list{l_seq->m_left, l_seq->m_right, right_expr};
+                    l_seq->m_left = nullptr;
+                    l_seq->m_right = nullptr;
+                    delete l_seq;
+                    return _private::construct_expr(list);
+                }
+            }
+        }
+        case EXPR_TYPE::SEQ_LIST: {
+            auto l_list = static_cast<_seq_list*>(left_expr);
+            switch (right_expr->get_type()) {
+                case EXPR_TYPE::SEQ_TWO: {
+                    auto r_seq = static_cast<_seq*>(right_expr);
+                    l_list->m_list.insert(l_list->m_list.end(), {r_seq->m_left, r_seq->m_right});
+                    r_seq->m_left = nullptr;
+                    r_seq->m_right = nullptr;
+                    delete r_seq;
+                    return _private::construct_expr(l_list);
+                }
+                case EXPR_TYPE::SEQ_LIST: {
+                    auto r_list = static_cast<_seq_list*>(right_expr);
+                    l_list->m_list.insert(l_list->m_list.end(), r_list->m_list.begin(), r_list->m_list.end());
+                    r_list->m_list.clear();
+                    delete r_list;
+                    return _private::construct_expr(l_list);
+                }
+                default: {
+                    l_list->m_list.push_back(right_expr);
+                    return _private::construct_expr(l_list);
+                }
+            }
+        }
+        default:
+            return _private::construct_expr(new _seq(left_expr, right_expr));
+    }
+}
+/** creates a choice of expressions.
+    @param left left operand.
+    @param right right operand.
+    @return an expression which parses a choice.
+*/
+expr operator|(const expr& left, const expr& right) { return _private::construct_expr(new _choice(_private::get_expr(left), _private::get_expr(right))); }
+expr operator|(expr&& left, expr&& right) {
+    auto left_expr = _private::get_expr(left);
+    auto right_expr = _private::get_expr(right);
+    switch (left_expr->get_type()) {
+        case EXPR_TYPE::CHOICE_TWO: {
+            auto l_choice = static_cast<_choice*>(left_expr);
+            switch (right_expr->get_type()) {
+                case EXPR_TYPE::CHOICE_TWO: {
+                    auto r_choice = static_cast<_choice*>(right_expr);
+                    auto list = new _choice_list{l_choice->m_left, l_choice->m_right, r_choice->m_left, r_choice->m_right};
+                    l_choice->m_left = nullptr;
+                    l_choice->m_right = nullptr;
+                    r_choice->m_left = nullptr;
+                    r_choice->m_right = nullptr;
+                    delete l_choice;
+                    delete r_choice;
+                    return _private::construct_expr(list);
+                }
+                case EXPR_TYPE::CHOICE_LIST: {
+                    auto r_list = static_cast<_choice_list*>(right_expr);
+                    auto list = new _choice_list{};
+                    list->m_list.reserve(2 + list->m_list.size());
+                    list->m_list.insert(list->m_list.end(), {l_choice->m_left, l_choice->m_right});
+                    list->m_list.insert(list->m_list.end(), r_list->m_list.begin(), r_list->m_list.end());
+                    l_choice->m_left = nullptr;
+                    l_choice->m_right = nullptr;
+                    r_list->m_list.clear();
+                    delete l_choice;
+                    delete r_list;
+                    return _private::construct_expr(list);
+                }
+                default: {
+                    auto list = new _choice_list{l_choice->m_left, l_choice->m_right, right_expr};
+                    l_choice->m_left = nullptr;
+                    l_choice->m_right = nullptr;
+                    delete l_choice;
+                    return _private::construct_expr(list);
+                }
+            }
+        }
+        case EXPR_TYPE::CHOICE_LIST: {
+            auto l_list = static_cast<_choice_list*>(left_expr);
+            switch (right_expr->get_type()) {
+                case EXPR_TYPE::CHOICE_TWO: {
+                    auto r_choice = static_cast<_choice*>(right_expr);
+                    l_list->m_list.insert(l_list->m_list.end(), {r_choice->m_left, r_choice->m_right});
+                    r_choice->m_left = nullptr;
+                    r_choice->m_right = nullptr;
+                    delete r_choice;
+                    return _private::construct_expr(l_list);
+                }
+                case EXPR_TYPE::CHOICE_LIST: {
+                    auto r_list = static_cast<_choice_list*>(right_expr);
+                    l_list->m_list.insert(l_list->m_list.end(), r_list->m_list.begin(), r_list->m_list.end());
+                    r_list->m_list.clear();
+                    delete r_list;
+                    return _private::construct_expr(l_list);
+                }
+                default: {
+                    l_list->m_list.push_back(right_expr);
+                    return _private::construct_expr(l_list);
+                }
+            }
+        }
+        default:
+            return _private::construct_expr(new _choice(left_expr, right_expr));
+    }
+}
+/** converts a parser expression into a terminal.
+    @param e expression.
+    @return an expression which parses a terminal.
+*/
+expr term(const expr& e) { return _private::construct_expr(new _term(_private::get_expr(e))); }
+/** creates a set expression from a null-terminated string.
+    @param s null-terminated string with characters of the set.
+    @return an expression which parses a single character out of a set.
+*/
+expr set(const char* s) { return _private::construct_expr(new _set(s)); }
+/** creates a range expression.
+    @param min min character.
+    @param max max character.
+    @return an expression which parses a single character out of range.
+*/
 expr range(int min, int max) { return _private::construct_expr(new _set(min, max)); }
-expr nl(const expr &e) { return _private::construct_expr(new _nl(_private::get_expr(e))); }
+/** creates an expression which increments the line counter
+    and resets the column counter when the given expression
+    is parsed successfully; used for newline characters.
+    @param e expression to wrap into a newline parser.
+    @return an expression that handles newlines.
+*/
+expr nl(const expr& e) { return _private::construct_expr(new _nl(_private::get_expr(e))); }
+/** creates an expression which tests for the end of input.
+    @return an expression that handles the end of input.
+*/
 expr eof() { return _private::construct_expr(new _eof()); }
-expr not_(const expr &e) { return !e; }
-expr and_(const expr &e) { return &e; }
+/** creates a not expression.
+    @param e expression.
+    @return the appropriate expression.
+*/
+expr not_(const expr& e) { return !e; }
+/** creates an and expression.
+    @param e expression.
+    @return the appropriate expression.
+*/
+expr and_(const expr& e) { return &e; }
+/** creates an expression that parses any character.
+    @return the appropriate expression.
+*/
 expr any() { return _private::construct_expr(new _any()); }
+/** parsing succeeds without consuming any input.
+ */
 expr true_() { return _private::construct_expr(new _true()); }
+/** parsing fails without consuming any input.
+ */
 expr false_() { return _private::construct_expr(new _false()); }
-expr user(const expr &e, const user_handler &handler) { return _private::construct_expr(new _user(_private::get_expr(e), handler)); }
-bool parse(input &i, rule &g, error_list &el, void *d, void *ud) {
+/** parse with target expression and let user handle result.
+ */
+expr user(const expr& e, const user_handler& handler) { return _private::construct_expr(new _user(_private::get_expr(e), handler)); }
+/** parses the given input.
+    The parse procedures of each rule parsed are executed
+    before this function returns, if parsing succeeds.
+    @param i input.
+    @param g root rule of grammar.
+    @param el list of errors.
+    @param d user data, passed to the parse procedures.
+    @return true on parsing success, false on failure.
+*/
+bool parse(input& i, rule& g, error_list& el, void* d, void* ud) {
+    // prepare context
     _context con(i, ud);
+    // parse grammar
     if (!con.parse_non_term(g)) {
         el.push_back(_syntax_error(con));
         return false;
     }
+    // if end is not reached, there was an error
     if (!con.end()) {
         if (con.m_error_pos.m_it < con.m_end) {
             el.push_back(_syntax_error(con));
@@ -631,20 +1175,19 @@ bool parse(input &i, rule &g, error_list &el, void *d, void *ud) {
         }
         return false;
     }
+    // success; execute the parse procedures
     con.do_parse_procs(d);
     return true;
 }
 
-#pragma region AST
-
-traversal ast_node::traverse(const std::function<traversal(ast_node *)> &func) { return func(this); }
-ast_node *ast_node::getByTypeIds(int *begin, int *end) {
-    ast_node *current = this;
+traversal ast_node::traverse(const std::function<traversal(ast_node*)>& func) { return func(this); }
+ast_node* ast_node::getByTypeIds(int* begin, int* end) {
+    ast_node* current = this;
     auto it = begin;
     while (it != end) {
-        ast_node *findNode = nullptr;
+        ast_node* findNode = nullptr;
         int i = *it;
-        current->visitChild([&](ast_node *node) {
+        current->visitChild([&](ast_node* node) {
             if (node->getId() == i) {
                 findNode = node;
                 return true;
@@ -661,14 +1204,19 @@ ast_node *ast_node::getByTypeIds(int *begin, int *end) {
     }
     return current;
 }
-bool ast_node::visitChild(const std::function<bool(ast_node *)> &) { return false; }
-void ast_container::construct(ast_stack &st) {
+bool ast_node::visitChild(const std::function<bool(ast_node*)>&) { return false; }
+/** Asks all members to construct themselves from the stack.
+    The members are asked to construct themselves in reverse order.
+    from a node stack.
+    @param st stack.
+*/
+void ast_container::construct(ast_stack& st) {
     for (ast_member_vector::reverse_iterator it = m_members.rbegin(); it != m_members.rend(); ++it) {
-        ast_member *member = *it;
+        ast_member* member = *it;
         member->construct(st);
     }
 }
-traversal ast_container::traverse(const std::function<traversal(ast_node *)> &func) {
+traversal ast_container::traverse(const std::function<traversal(ast_node*)>& func) {
     traversal action = func(this);
     switch (action) {
         case traversal::Stop:
@@ -678,18 +1226,18 @@ traversal ast_container::traverse(const std::function<traversal(ast_node *)> &fu
         default:
             break;
     }
-    const auto &members = this->members();
+    const auto& members = this->members();
     for (auto member : members) {
         switch (member->get_type()) {
             case ast_holder_type::Pointer: {
-                _ast_ptr *ptr = static_cast<_ast_ptr *>(member);
+                _ast_ptr* ptr = static_cast<_ast_ptr*>(member);
                 if (ptr->get() && ptr->get()->traverse(func) == traversal::Stop) {
                     return traversal::Stop;
                 }
                 break;
             }
             case ast_holder_type::List: {
-                _ast_list *list = static_cast<_ast_list *>(member);
+                _ast_list* list = static_cast<_ast_list*>(member);
                 for (auto obj : list->objects()) {
                     if (obj->traverse(func) == traversal::Stop) {
                         return traversal::Stop;
@@ -701,19 +1249,19 @@ traversal ast_container::traverse(const std::function<traversal(ast_node *)> &fu
     }
     return traversal::Continue;
 }
-bool ast_container::visitChild(const std::function<bool(ast_node *)> &func) {
-    const auto &members = this->members();
+bool ast_container::visitChild(const std::function<bool(ast_node*)>& func) {
+    const auto& members = this->members();
     for (auto member : members) {
         switch (member->get_type()) {
             case ast_holder_type::Pointer: {
-                _ast_ptr *ptr = static_cast<_ast_ptr *>(member);
+                _ast_ptr* ptr = static_cast<_ast_ptr*>(member);
                 if (ptr->get()) {
                     if (func(ptr->get())) return true;
                 }
                 break;
             }
             case ast_holder_type::List: {
-                _ast_list *list = static_cast<_ast_list *>(member);
+                _ast_list* list = static_cast<_ast_list*>(member);
                 for (auto obj : list->objects()) {
                     if (obj) {
                         if (func(obj)) return true;
@@ -725,7 +1273,15 @@ bool ast_container::visitChild(const std::function<bool(ast_node *)> &func) {
     }
     return false;
 }
-ast_node *parse(input &i, rule &g, error_list &el, void *ud) {
+/** parses the given input.
+    @param i input.
+    @param g root rule of grammar.
+    @param el list of errors.
+    @param ud user data, passed to the parse procedures.
+    @return pointer to ast node created, or null if there was an error.
+        The return object must be deleted by the caller.
+*/
+ast_node* parse(input& i, rule& g, error_list& el, void* ud) {
     ast_stack st;
     if (!parse(i, g, el, &st, ud)) {
         for (auto node : st) {
@@ -737,497 +1293,866 @@ ast_node *parse(input &i, rule &g, error_list &el, void *ud) {
     assert(st.size() == 1);
     return st.front();
 }
-
-#pragma endregion AST
-
 }  // namespace parserlib
 
-#pragma endregion ParserLib
-
-#pragma region Parser
-
 namespace pl = parserlib;
-namespace Meo {
+
+namespace meo {
+
 std::unordered_set<std::string> LuaKeywords = {"and"s, "break"s, "do"s,  "else"s, "elseif"s, "end"s,    "false"s,  "for"s,  "function"s, "goto"s,  "if"s,
                                                "in"s,  "local"s, "nil"s, "not"s,  "or"s,     "repeat"s, "return"s, "then"s, "true"s,     "until"s, "while"s};
-std::unordered_set<std::string> Keywords = {"and"s,     "break"s, "do"s,     "else"s,   "elseif"s, "end"s,    "false"s, "for"s,    "function"s, "goto"s, "if"s,    "in"s,       "local"s,
-                                            "nil"s,     "not"s,   "or"s,     "repeat"s, "return"s, "then"s,   "true"s,  "until"s,  "while"s,    "as"s,   "class"s, "continue"s, "export"s,
-                                            "extends"s, "from"s,  "global"s, "import"s, "macro"s,  "switch"s, "try"s,   "unless"s, "using"s,    "when"s, "with"s};
+
+std::unordered_set<std::string> Keywords = {
+        "and"s, "break"s,  "do"s,       "else"s,   "elseif"s,  "end"s,   "false"s,  "for"s,    "function"s, "goto"s,   "if"s,  "in"s,     "local"s, "nil"s,  "not"s,
+        "or"s,  "repeat"s, "return"s,   "then"s,   "true"s,    "until"s, "while"s,                                                                                    // Lua keywords
+        "as"s,  "class"s,  "continue"s, "export"s, "extends"s, "from"s,  "global"s, "import"s, "macro"s,    "switch"s, "try"s, "unless"s, "using"s, "when"s, "with"s  // Meo keywords
+};
+
+// clang-format off
 MeoParser::MeoParser() {
-    plain_space = *set(" \t");
-    Break = nl(-expr('\r') >> '\n');
-    Any = Break | any();
-    Stop = Break | eof();
-    Indent = plain_space;
-    Comment = "--" >> *(not_(set("\r\n")) >> Any) >> and_(Stop);
-    multi_line_open = expr("--[[");
-    multi_line_close = expr("]]");
-    multi_line_content = *(not_(multi_line_close) >> Any);
-    MultiLineComment = multi_line_open >> multi_line_content >> multi_line_close;
-    EscapeNewLine = expr('\\') >> *(set(" \t") | MultiLineComment) >> -Comment >> Break;
-    space_one = set(" \t") | and_(set("-\\")) >> (MultiLineComment | EscapeNewLine);
-    Space = *space_one >> -Comment;
-    SpaceBreak = Space >> Break;
-    White = Space >> *(Break >> Space);
-    EmptyLine = SpaceBreak;
-    AlphaNum = range('a', 'z') | range('A', 'Z') | range('0', '9') | '_';
-    Name = (range('a', 'z') | range('A', 'Z') | '_') >> *AlphaNum;
-    num_expo = set("eE") >> -set("+-") >> num_char;
-    num_expo_hex = set("pP") >> -set("+-") >> num_char;
-    lj_num = -set("uU") >> set("lL") >> set("lL");
-    num_char = range('0', '9') >> *(range('0', '9') | expr('_') >> and_(range('0', '9')));
-    num_char_hex = range('0', '9') | range('a', 'f') | range('A', 'F');
-    num_lit = num_char_hex >> *(num_char_hex | expr('_') >> and_(num_char_hex));
-    Num = ("0x" >> (+num_lit >> ('.' >> +num_lit >> -num_expo_hex | num_expo_hex | lj_num | true_()) | ('.' >> +num_lit >> -num_expo_hex))) |
-          (+num_char >> ('.' >> +num_char >> -num_expo | num_expo | lj_num | true_())) | ('.' >> +num_char >> -num_expo);
-    Cut = false_();
-    Seperator = true_();
-    empty_block_error = pl::user(true_(), [](const item_t &item) {
-        throw ParserError("must be followed by a statement or an indented block", *item.begin, *item.end);
-        return false;
-    });
-#define sym(str) (Space >> str)
-#define symx(str) expr(str)
-#define ensure(patt, finally) ((patt) >> (finally) | (finally) >> Cut)
-#define key(str) (str >> not_(AlphaNum))
-#define disable_do(patt) (DisableDo >> ((patt) >> EnableDo | EnableDo >> Cut))
-#define disable_chain(patt) (DisableChain >> ((patt) >> EnableChain | EnableChain >> Cut))
-#define disable_do_chain_arg_table_block(patt) (DisableDoChainArgTableBlock >> ((patt) >> EnableDoChainArgTableBlock | EnableDoChainArgTableBlock >> Cut))
-#define disable_arg_table_block(patt) (DisableArgTableBlock >> ((patt) >> EnableArgTableBlock | EnableArgTableBlock >> Cut))
-#define body_with(str) (Space >> (key(str) >> Space >> (InBlock | Statement) | InBlock | empty_block_error))
-#define opt_body_with(str) (Space >> (key(str) >> Space >> (InBlock | Statement) | InBlock))
-#define body (Space >> (InBlock | Statement | empty_block_error))
-    Variable = pl::user(Name, [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        for (auto it = item.begin->m_it; it != item.end->m_it; ++it) st->buffer += static_cast<char>(*it);
-        auto isValid = Keywords.find(st->buffer) == Keywords.end();
-        if (isValid) {
-            if (st->buffer == st->moduleName) {
-                st->moduleFix++;
-                st->moduleName = "_module_"s + std::to_string(st->moduleFix);
-            }
-        }
-        st->buffer.clear();
-        return isValid;
-    });
-    LabelName = pl::user(Name, [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        for (auto it = item.begin->m_it; it != item.end->m_it; ++it) st->buffer += static_cast<char>(*it);
-        auto isValid = LuaKeywords.find(st->buffer) == LuaKeywords.end();
-        st->buffer.clear();
-        return isValid;
-    });
-    LuaKeyword = pl::user(Name, [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        for (auto it = item.begin->m_it; it != item.end->m_it; ++it) st->buffer += static_cast<char>(*it);
-        auto it = LuaKeywords.find(st->buffer);
-        st->buffer.clear();
-        return it != LuaKeywords.end();
-    });
-    self = expr('@');
-    self_name = '@' >> Name;
-    self_class = expr("@@");
-    self_class_name = "@@" >> Name;
-    SelfName = self_class_name | self_class | self_name | self;
-    KeyName = Space >> (SelfName | Name);
-    VarArg = expr("...");
-    check_indent = pl::user(Indent, [](const item_t &item) {
-        int indent = 0;
-        for (input_it i = item.begin->m_it; i != item.end->m_it; ++i) {
-            switch (*i) {
-                case ' ':
-                    indent++;
-                    break;
-                case '\t':
-                    indent += 4;
-                    break;
-            }
-        }
-        State *st = reinterpret_cast<State *>(item.user_data);
-        return st->indents.top() == indent;
-    });
-    CheckIndent = and_(check_indent);
-    advance = pl::user(Indent, [](const item_t &item) {
-        int indent = 0;
-        for (input_it i = item.begin->m_it; i != item.end->m_it; ++i) {
-            switch (*i) {
-                case ' ':
-                    indent++;
-                    break;
-                case '\t':
-                    indent += 4;
-                    break;
-            }
-        }
-        State *st = reinterpret_cast<State *>(item.user_data);
-        int top = st->indents.top();
-        if (top != -1 && indent > top) {
-            st->indents.push(indent);
-            return true;
-        }
-        return false;
-    });
-    Advance = and_(advance);
-    push_indent = pl::user(Indent, [](const item_t &item) {
-        int indent = 0;
-        for (input_it i = item.begin->m_it; i != item.end->m_it; ++i) {
-            switch (*i) {
-                case ' ':
-                    indent++;
-                    break;
-                case '\t':
-                    indent += 4;
-                    break;
-            }
-        }
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->indents.push(indent);
-        return true;
-    });
-    PushIndent = and_(push_indent);
-    PreventIndent = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->indents.push(-1);
-        return true;
-    });
-    PopIndent = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->indents.pop();
-        return true;
-    });
-    InBlock = Space >> +(plain_space >> Break) >> Advance >> ensure(Block, PopIndent);
-    local_flag = expr('*') | expr('^');
-    local_values = NameList >> -(sym('=') >> (TableBlock | ExpListLow));
-    Local = key("local") >> (Space >> local_flag | local_values);
-    const_attrib = key("const");
-    close_attrib = key("close");
-    local_const_item = (Space >> Variable | simple_table | TableLit);
-    LocalAttrib = (const_attrib >> Seperator >> local_const_item >> *(sym(',') >> local_const_item) | close_attrib >> Seperator >> Space >> Variable >> *(sym(',') >> Space >> Variable)) >> Assign;
-    colon_import_name = sym('\\') >> Space >> Variable;
-    ImportName = colon_import_name | Space >> Variable;
-    ImportNameList = Seperator >> *SpaceBreak >> ImportName >> *((+SpaceBreak | sym(',') >> *SpaceBreak) >> ImportName);
-    ImportFrom = ImportNameList >> *SpaceBreak >> Space >> key("from") >> Exp;
-    import_literal_inner = (range('a', 'z') | range('A', 'Z') | set("_-")) >> *(AlphaNum | '-');
-    import_literal_chain = Seperator >> import_literal_inner >> *(expr('.') >> import_literal_inner);
-    ImportLiteral = sym('\'') >> import_literal_chain >> symx('\'') | sym('"') >> import_literal_chain >> symx('"');
-    macro_name_pair = Space >> MacroName >> Space >> symx(':') >> Space >> MacroName;
-    import_all_macro = expr('$');
-    ImportTabItem = variable_pair | normal_pair | sym(':') >> MacroName | macro_name_pair | Space >> import_all_macro | meta_variable_pair | meta_normal_pair | Exp;
-    ImportTabList = ImportTabItem >> *(sym(',') >> ImportTabItem);
-    ImportTabLine = (PushIndent >> (ImportTabList >> PopIndent | PopIndent)) | Space;
-    import_tab_lines = SpaceBreak >> ImportTabLine >> *(-sym(',') >> SpaceBreak >> ImportTabLine) >> -sym(',');
-    ImportTabLit = Seperator >> (sym('{') >> -ImportTabList >> -sym(',') >> -import_tab_lines >> White >> sym('}') | KeyValue >> *(sym(',') >> KeyValue));
-    ImportAs = ImportLiteral >> -(Space >> key("as") >> Space >> (ImportTabLit | Variable | import_all_macro));
-    Import = key("import") >> (ImportAs | ImportFrom);
-    Label = expr("::") >> LabelName >> expr("::");
-    Goto = key("goto") >> Space >> LabelName;
-    ShortTabAppending = expr("[]") >> Assign;
-    BreakLoop = (expr("break") | expr("continue")) >> not_(AlphaNum);
-    Return = key("return") >> -(TableBlock | ExpListLow);
-    WithExp = ExpList >> -Assign;
-    With = Space >> key("with") >> -existential_op >> disable_do_chain_arg_table_block(WithExp) >> body_with("do");
-    SwitchCase = Space >> key("when") >> disable_chain(disable_arg_table_block(SwitchList)) >> body_with("then");
-    SwitchElse = Space >> key("else") >> body;
-    SwitchBlock = *(Break >> *EmptyLine >> CheckIndent >> SwitchCase) >> -(Break >> *EmptyLine >> CheckIndent >> SwitchElse);
-    exp_not_tab = not_(simple_table | TableLit) >> Exp;
-    SwitchList = Seperator >> (and_(simple_table | TableLit) >> Exp | exp_not_tab >> *(sym(',') >> exp_not_tab));
-    Switch = Space >> key("switch") >> Exp >> Seperator >> (SwitchCase >> Space >> (Break >> *EmptyLine >> CheckIndent >> SwitchCase >> SwitchBlock | *SwitchCase >> -SwitchElse) |
-                                                            SpaceBreak >> *EmptyLine >> Advance >> SwitchCase >> SwitchBlock >> PopIndent) >>
-             SwitchBlock;
-    assignment = ExpList >> Assign;
-    IfCond = disable_chain(disable_arg_table_block(assignment | Exp));
-    IfElseIf = -(Break >> *EmptyLine >> CheckIndent) >> Space >> key("elseif") >> IfCond >> body_with("then");
-    IfElse = -(Break >> *EmptyLine >> CheckIndent) >> Space >> key("else") >> body;
-    IfType = (expr("if") | expr("unless")) >> not_(AlphaNum);
-    If = Space >> IfType >> IfCond >> opt_body_with("then") >> *IfElseIf >> -IfElse;
-    WhileType = (expr("while") | expr("until")) >> not_(AlphaNum);
-    While = WhileType >> disable_do_chain_arg_table_block(Exp) >> opt_body_with("do");
-    Repeat = key("repeat") >> Body >> Break >> *EmptyLine >> CheckIndent >> Space >> key("until") >> Exp;
-    for_step_value = sym(',') >> Exp;
-    for_args = Space >> Variable >> sym('=') >> Exp >> sym(',') >> Exp >> -for_step_value;
-    For = key("for") >> disable_do_chain_arg_table_block(for_args) >> opt_body_with("do");
-    for_in = star_exp | ExpList;
-    ForEach = key("for") >> AssignableNameList >> Space >> key("in") >> disable_do_chain_arg_table_block(for_in) >> opt_body_with("do");
-    Do = pl::user(Space >> key("do"),
-                  [](const item_t &item) {
-                      State *st = reinterpret_cast<State *>(item.user_data);
-                      return st->noDoStack.empty() || !st->noDoStack.top();
-                  }) >>
-         Body;
-    DisableDo = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noDoStack.push(true);
-        return true;
-    });
-    EnableDo = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noDoStack.pop();
-        return true;
-    });
-    DisableDoChainArgTableBlock = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noDoStack.push(true);
-        st->noChainBlockStack.push(true);
-        st->noTableBlockStack.push(true);
-        return true;
-    });
-    EnableDoChainArgTableBlock = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noDoStack.pop();
-        st->noChainBlockStack.pop();
-        st->noTableBlockStack.pop();
-        return true;
-    });
-    DisableArgTableBlock = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noTableBlockStack.push(true);
-        return true;
-    });
-    EnableArgTableBlock = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noTableBlockStack.pop();
-        return true;
-    });
-    catch_block = Break >> *EmptyLine >> CheckIndent >> Space >> key("catch") >> Space >> Variable >> InBlock;
-    Try = Space >> key("try") >> (InBlock | Exp) >> -catch_block;
-    Comprehension = sym('[') >> not_('[') >> Exp >> Space >> CompInner >> sym(']');
-    comp_value = sym(',') >> Exp;
-    TblComprehension = sym('{') >> Exp >> -comp_value >> Space >> CompInner >> sym('}');
-    CompInner = Seperator >> (CompForEach | CompFor) >> *CompClause;
-    star_exp = sym('*') >> Exp;
-    CompForEach = key("for") >> AssignableNameList >> Space >> key("in") >> (star_exp | Exp);
-    CompFor = key("for") >> Space >> Variable >> sym('=') >> Exp >> sym(',') >> Exp >> -for_step_value;
-    CompClause = Space >> (CompFor | CompForEach | key("when") >> Exp);
-    Assign = sym('=') >> Seperator >> (With | If | Switch | TableBlock | Exp >> *(Space >> set(",;") >> Exp));
-    update_op = expr("..") | expr("//") | expr("or") | expr("and") | expr(">>") | expr("<<") | expr("??") | set("+-*/%&|");
-    Update = Space >> update_op >> expr("=") >> Exp;
-    Assignable = Space >> (AssignableChain | Variable | SelfName);
-    unary_value = unary_operator >> *(Space >> unary_operator) >> Value;
-    ExponentialOperator = expr('^');
-    expo_value = Space >> ExponentialOperator >> *SpaceBreak >> Value;
-    expo_exp = Value >> *expo_value;
-    unary_operator = expr('-') >> not_(set(">=") | space_one) | expr('#') | expr('~') >> not_(expr('=') | space_one) | expr("not") >> not_(AlphaNum);
-    unary_exp = *(Space >> unary_operator) >> expo_exp;
-    PipeOperator = expr("|>");
-    pipe_value = Space >> PipeOperator >> *SpaceBreak >> unary_exp;
-    pipe_exp = unary_exp >> *pipe_value;
-    BinaryOperator = (expr("or") >> not_(AlphaNum)) | (expr("and") >> not_(AlphaNum)) | expr("<=") | expr(">=") | expr("~=") | expr("!=") | expr("==") | expr("..") | expr("<<") | expr(">>") |
-                     expr("//") | set("+-*/%><|&~");
-    exp_op_value = Space >> BinaryOperator >> *SpaceBreak >> pipe_exp;
-    Exp = Seperator >> pipe_exp >> *exp_op_value >> -(Space >> expr("??") >> Exp);
-    DisableChain = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noChainBlockStack.push(true);
-        return true;
-    });
-    EnableChain = pl::user(true_(), [](const item_t &item) {
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->noChainBlockStack.pop();
-        return true;
-    });
-    chain_line = CheckIndent >> Space >> (chain_dot_chain | ColonChain) >> -InvokeArgs;
-    chain_block = pl::user(true_(),
-                           [](const item_t &item) {
-                               State *st = reinterpret_cast<State *>(item.user_data);
-                               return st->noChainBlockStack.empty() || !st->noChainBlockStack.top();
-                           }) >>
-                  +SpaceBreak >> Advance >> ensure(chain_line >> *(+SpaceBreak >> chain_line), PopIndent);
-    ChainValue = Space >> Seperator >> (Chain | Callable) >> -existential_op >> -(InvokeArgs | chain_block) >> -table_appending_op;
-    simple_table = Seperator >> KeyValue >> *(sym(',') >> KeyValue);
-    Value = SimpleValue | simple_table | ChainValue | Space >> String;
-    single_string_inner = expr('\\') >> set("'\\") | not_(expr('\'')) >> Any;
-    SingleString = symx('\'') >> *single_string_inner >> symx('\'');
-    interp = symx("#{") >> Exp >> sym('}');
-    double_string_plain = expr('\\') >> set("\"\\") | not_(expr('"')) >> Any;
-    double_string_inner = +(not_(interp) >> double_string_plain);
-    double_string_content = double_string_inner | interp;
-    DoubleString = symx('"') >> Seperator >> *double_string_content >> symx('"');
-    String = DoubleString | SingleString | LuaString;
-    lua_string_open = '[' >> *expr('=') >> '[';
-    lua_string_close = ']' >> *expr('=') >> ']';
-    LuaStringOpen = pl::user(lua_string_open, [](const item_t &item) {
-        size_t count = std::distance(item.begin->m_it, item.end->m_it);
-        State *st = reinterpret_cast<State *>(item.user_data);
-        st->stringOpen = count;
-        return true;
-    });
-    LuaStringClose = pl::user(lua_string_close, [](const item_t &item) {
-        size_t count = std::distance(item.begin->m_it, item.end->m_it);
-        State *st = reinterpret_cast<State *>(item.user_data);
-        return st->stringOpen == count;
-    });
-    LuaStringContent = *(not_(LuaStringClose) >> Any);
-    LuaString = LuaStringOpen >> -Break >> LuaStringContent >> LuaStringClose;
-    Parens = symx('(') >> *SpaceBreak >> Exp >> *SpaceBreak >> sym(')');
-    Callable = Variable | SelfName | MacroName | VarArg | Parens;
-    FnArgsExpList = Exp >> *((Break | sym(',')) >> White >> Exp);
-    FnArgs = (symx('(') >> *SpaceBreak >> -FnArgsExpList >> *SpaceBreak >> sym(')')) | (sym('!') >> not_(expr('=')));
-    meta_index = Name | Index | String;
-    Metatable = expr('<') >> sym('>');
-    Metamethod = expr('<') >> Space >> meta_index >> sym('>');
-    existential_op = expr('?') >> not_(expr('?'));
-    table_appending_op = expr("[]");
-    chain_call = (Callable | String) >> -existential_op >> ChainItems;
-    chain_index_chain = Index >> -existential_op >> -ChainItems;
-    chain_dot_chain = DotChainItem >> -existential_op >> -ChainItems;
-    Chain = chain_call | chain_dot_chain | ColonChain | chain_index_chain;
-    AssignableChain = Seperator >> Chain;
-    chain_with_colon = +ChainItem >> -ColonChain;
-    ChainItems = chain_with_colon | ColonChain;
-    Index = symx('[') >> not_('[') >> Exp >> sym(']');
-    ChainItem = Invoke >> -existential_op | DotChainItem >> -existential_op | Slice | Index >> -existential_op;
-    DotChainItem = symx('.') >> (Name | Metatable | Metamethod);
-    ColonChainItem = (expr('\\') | expr("::")) >> (LuaKeyword | Name | Metamethod);
-    invoke_chain = Invoke >> -existential_op >> -ChainItems;
-    ColonChain = ColonChainItem >> -existential_op >> -invoke_chain;
-    default_value = true_();
-    Slice = symx('[') >> not_('[') >> (Exp | default_value) >> sym(',') >> (Exp | default_value) >> (sym(',') >> Exp | default_value) >> sym(']');
-    Invoke = Seperator >> (FnArgs | SingleString | DoubleString | and_(expr('[')) >> LuaString | and_(expr('{')) >> TableLit);
-    SpreadExp = sym("...") >> Exp;
-    TableValue = variable_pair_def | normal_pair_def | meta_variable_pair_def | meta_normal_pair_def | SpreadExp | normal_def;
-    table_lit_lines = SpaceBreak >> TableLitLine >> *(-sym(',') >> SpaceBreak >> TableLitLine) >> -sym(',');
-    TableLit = sym('{') >> Seperator >> -TableValueList >> -sym(',') >> -table_lit_lines >> White >> sym('}');
-    TableValueList = TableValue >> *(sym(',') >> TableValue);
-    TableLitLine = (PushIndent >> (TableValueList >> PopIndent | PopIndent)) | (Space);
-    TableBlockInner = Seperator >> KeyValueLine >> *(+SpaceBreak >> KeyValueLine);
-    TableBlock = +SpaceBreak >> Advance >> ensure(TableBlockInner, PopIndent);
-    TableBlockIndent =
-            sym('*') >> Seperator >> disable_arg_table_block(KeyValueList >> -sym(',') >> -(+SpaceBreak >> Advance >> ensure(KeyValueList >> -sym(',') >> *(+SpaceBreak >> KeyValueLine), PopIndent)));
-    class_member_list = Seperator >> KeyValue >> *(sym(',') >> KeyValue);
-    ClassLine = CheckIndent >> (class_member_list | Space >> Statement) >> -sym(',');
-    ClassBlock = +SpaceBreak >> Advance >> Seperator >> ClassLine >> *(+SpaceBreak >> ClassLine) >> PopIndent;
-    ClassDecl = Space >> key("class") >> not_(expr(':')) >> disable_arg_table_block(-Assignable >> -(Space >> key("extends") >> PreventIndent >> ensure(Exp, PopIndent)) >>
-                                                                                    -(Space >> key("using") >> PreventIndent >> ensure(ExpList, PopIndent))) >>
-                -ClassBlock;
-    global_values = NameList >> -(sym('=') >> (TableBlock | ExpListLow));
-    global_op = expr('*') | expr('^');
-    Global = key("global") >> (ClassDecl | (Space >> global_op) | global_values);
-    export_default = key("default");
-    Export = pl::user(key("export"),
-                      [](const item_t &item) {
-                          State *st = reinterpret_cast<State *>(item.user_data);
-                          st->exportCount++;
-                          return true;
-                      }) >>
-             (pl::user(Space >> export_default >> Exp,
-                       [](const item_t &item) {
-                           State *st = reinterpret_cast<State *>(item.user_data);
-                           if (st->exportDefault) {
-                               throw ParserError("export default has already been declared", *item.begin, *item.end);
-                           }
-                           if (st->exportCount > 1) {
-                               throw ParserError("there are items already being exported", *item.begin, *item.end);
-                           }
-                           st->exportDefault = true;
-                           return true;
-                       }) |
-              (not_(Space >> export_default) >> pl::user(true_(),
-                                                         [](const item_t &item) {
-                                                             State *st = reinterpret_cast<State *>(item.user_data);
-                                                             if (st->exportDefault && st->exportCount > 1) {
-                                                                 throw ParserError(
-                                                                         "can not export any more items when 'export "
-                                                                         "default' is declared",
-                                                                         *item.begin, *item.end);
-                                                             }
-                                                             return true;
-                                                         }) >>
-               ExpList >> -Assign) |
-              Space >> pl::user(Macro,
-                                [](const item_t &item) {
-                                    State *st = reinterpret_cast<State *>(item.user_data);
-                                    st->exportMacro = true;
-                                    return true;
-                                })) >>
-             not_(Space >> statement_appendix);
-    variable_pair = sym(':') >> Variable;
-    normal_pair = (KeyName | sym('[') >> not_('[') >> Exp >> sym(']') | Space >> String) >> symx(':') >> not_(':') >> (Exp | TableBlock | +SpaceBreak >> Exp);
-    meta_variable_pair = sym(":<") >> Space >> Variable >> sym('>');
-    meta_normal_pair = sym('<') >> Space >> -meta_index >> sym(">:") >> (Exp | TableBlock | +(SpaceBreak) >> Exp);
-    variable_pair_def = variable_pair >> -(sym('=') >> Exp);
-    normal_pair_def = normal_pair >> -(sym('=') >> Exp);
-    meta_variable_pair_def = meta_variable_pair >> -(sym('=') >> Exp);
-    meta_normal_pair_def = meta_normal_pair >> -(sym('=') >> Exp);
-    normal_def = Exp >> Seperator >> -(sym('=') >> Exp);
-    KeyValue = variable_pair | normal_pair | meta_variable_pair | meta_normal_pair;
-    KeyValueList = KeyValue >> *(sym(',') >> KeyValue);
-    KeyValueLine = CheckIndent >> (KeyValueList >> -sym(',') | TableBlockIndent | Space >> expr('*') >> (SpreadExp | Exp | TableBlock));
-    FnArgDef = (Variable | SelfName >> -existential_op) >> -(sym('=') >> Space >> Exp);
-    FnArgDefList = Space >> Seperator >> ((FnArgDef >> *((sym(',') | Break) >> White >> FnArgDef) >> -((sym(',') | Break) >> White >> VarArg)) | (VarArg));
-    outer_var_shadow = Space >> key("using") >> (NameList | Space >> expr("nil"));
-    FnArgsDef = sym('(') >> White >> -FnArgDefList >> -outer_var_shadow >> White >> sym(')');
-    fn_arrow = expr("->") | expr("=>");
-    FunLit = -FnArgsDef >> Space >> fn_arrow >> -Body;
-    MacroName = expr('$') >> Name;
-    macro_args_def = sym('(') >> White >> -FnArgDefList >> White >> sym(')');
-    MacroLit = -macro_args_def >> Space >> expr("->") >> Body;
-    Macro = key("macro") >> Space >> Name >> sym('=') >> MacroLit;
-    MacroInPlace = expr('$') >> Space >> expr("->") >> Body;
-    NameList = Seperator >> Space >> Variable >> *(sym(',') >> Space >> Variable);
-    NameOrDestructure = Space >> Variable | TableLit;
-    AssignableNameList = Seperator >> NameOrDestructure >> *(sym(',') >> NameOrDestructure);
-    fn_arrow_back = expr('<') >> set("-=");
-    Backcall = -FnArgsDef >> Space >> fn_arrow_back >> Space >> ChainValue;
-    PipeBody = Seperator >> PipeOperator >> unary_exp >> *(+SpaceBreak >> CheckIndent >> Space >> PipeOperator >> unary_exp);
-    ExpList = Seperator >> Exp >> *(sym(',') >> Exp);
-    ExpListLow = Seperator >> Exp >> *(Space >> set(",;") >> Exp);
-    ArgLine = CheckIndent >> Exp >> *(sym(',') >> Exp);
-    ArgBlock = ArgLine >> *(sym(',') >> SpaceBreak >> ArgLine) >> PopIndent;
-    arg_table_block = pl::user(true_(),
-                               [](const item_t &item) {
-                                   State *st = reinterpret_cast<State *>(item.user_data);
-                                   return st->noTableBlockStack.empty() || !st->noTableBlockStack.top();
-                               }) >>
-                      TableBlock;
-    invoke_args_with_table = sym(',') >> (TableBlock | SpaceBreak >> Advance >> ArgBlock >> -arg_table_block) | arg_table_block;
-    leading_spaces_error = pl::user(+space_one >> expr('(') >> Exp >> +(sym(',') >> Exp) >> sym(')'), [](const item_t &item) {
-        throw ParserError(
-                "write invoke arguments in parentheses without leading spaces or "
-                "just leading spaces without parentheses",
-                *item.begin, *item.end);
-        return false;
-    });
-    InvokeArgs = not_(set("-~")) >> Seperator >> ((Exp >> *(sym(',') >> Exp) >> -invoke_args_with_table) | arg_table_block | leading_spaces_error);
-    const_value = (expr("nil") | expr("true") | expr("false")) >> not_(AlphaNum);
-    SimpleValue = Space >> (const_value | If | Switch | Try | With | ClassDecl | ForEach | For | While | Do | unary_value | TblComprehension | TableLit | Comprehension | FunLit | Num);
-    ExpListAssign = ExpList >> -(Update | Assign) >> not_(Space >> expr('='));
-    if_line = Space >> IfType >> IfCond;
-    while_line = Space >> WhileType >> Exp;
-    MuLineComment = *(not_(set("\r\n")) >> Any);
-    mu_line_comment = expr("--") >> MuLineComment >> and_(Stop);
-    MuMultilineComment = multi_line_content;
-    mu_multiline_comment = multi_line_open >> MuMultilineComment >> multi_line_close;
-    mu_comment = check_indent >> (mu_multiline_comment >> *(set(" \t") | mu_multiline_comment) >> -mu_line_comment | mu_line_comment) >> and_(Break);
-    ChainAssign = Seperator >> Exp >> +(sym('=') >> Exp >> Space >> and_('=')) >> Assign;
-    statement_appendix = (if_line | while_line | CompInner) >> Space;
-    statement_sep = and_(*SpaceBreak >> CheckIndent >> Space >> (set("($'\"") | expr("[[") | expr("[=")));
-    Statement = Seperator >> -(mu_comment >> *(Break >> mu_comment) >> Break >> CheckIndent) >> Space >>
-                (Import | While | Repeat | For | ForEach | Return | Local | Global | Export | Macro | MacroInPlace | BreakLoop | Label | Goto | ShortTabAppending | LocalAttrib | Backcall | PipeBody |
-                 ExpListAssign | ChainAssign | statement_appendix >> empty_block_error) >>
-                Space >> -statement_appendix >> -statement_sep;
-    Body = InBlock | Space >> Statement;
-    empty_line_break = (check_indent >> (MultiLineComment >> Space | Comment) | advance >> ensure(MultiLineComment >> Space | Comment, PopIndent) | plain_space) >> and_(Break);
-    indentation_error = pl::user(not_(PipeOperator | eof()), [](const item_t &item) {
-        throw ParserError("unexpected indent", *item.begin, *item.end);
-        return false;
-    });
-    Line = CheckIndent >> Statement | empty_line_break | Advance >> ensure(Space >> (indentation_error | Statement), PopIndent);
-    Block = Seperator >> Line >> *(+Break >> Line);
-    Shebang = expr("#!") >> *(not_(Stop) >> Any);
-    BlockEnd = Block >> White >> Stop;
-    File = -Shebang >> -Block >> White >> Stop;
+	plain_space = *set(" \t");
+	line_break = nl(-expr('\r') >> '\n');
+	any_char = line_break | any();
+	stop = line_break | eof();
+	comment = "--" >> *(not_(set("\r\n")) >> any_char) >> and_(stop);
+	multi_line_open = "--[[";
+	multi_line_close = "]]";
+	multi_line_content = *(not_(multi_line_close) >> any_char);
+	multi_line_comment = multi_line_open >> multi_line_content >> multi_line_close;
+	escape_new_line = '\\' >> *(set(" \t") | multi_line_comment) >> -comment >> line_break;
+	space_one = set(" \t") | and_(set("-\\")) >> (multi_line_comment | escape_new_line);
+	space = -(and_(set(" \t-\\")) >> *space_one >> -comment);
+	space_break = space >> line_break;
+	white = space >> *(line_break >> space);
+	alpha_num = range('a', 'z') | range('A', 'Z') | range('0', '9') | '_';
+	not_alpha_num = not_(alpha_num);
+	Name = (range('a', 'z') | range('A', 'Z') | '_') >> *alpha_num;
+	num_expo = set("eE") >> -set("+-") >> num_char;
+	num_expo_hex = set("pP") >> -set("+-") >> num_char;
+	lj_num = -set("uU") >> set("lL") >> set("lL");
+	num_char = range('0', '9') >> *(range('0', '9') | '_' >> and_(range('0', '9')));
+	num_char_hex = range('0', '9') | range('a', 'f') | range('A', 'F');
+	num_lit = num_char_hex >> *(num_char_hex | '_' >> and_(num_char_hex));
+	Num =
+		"0x" >> (
+			+num_lit >> (
+				'.' >> +num_lit >> -num_expo_hex |
+				num_expo_hex |
+				lj_num |
+				true_()
+			) | (
+				'.' >> +num_lit >> -num_expo_hex
+			)
+		) |
+		+num_char >> (
+			'.' >> +num_char >> -num_expo |
+			num_expo |
+			lj_num |
+			true_()
+		) |
+		'.' >> +num_char >> -num_expo;
+
+	cut = false_();
+	Seperator = true_();
+
+	empty_block_error = pl::user(true_(), [](const item_t& item) {
+		throw ParserError("must be followed by a statement or an indented block", *item.begin, *item.end);
+		return false;
+	});
+
+	#define ensure(patt, finally) ((patt) >> (finally) | (finally) >> cut)
+
+	#define key(str) (expr(str) >> not_alpha_num)
+
+	#define disable_do_rule(patt) ( \
+		disable_do >> ( \
+			(patt) >> enable_do | \
+			enable_do >> cut \
+		) \
+	)
+
+	#define disable_chain_rule(patt) ( \
+		disable_chain >> ( \
+			(patt) >> enable_chain | \
+			enable_chain >> cut \
+		) \
+	)
+
+	#define disable_do_chain_arg_table_block_rule(patt) ( \
+		disable_do_chain_arg_table_block >> ( \
+			(patt) >> enable_do_chain_arg_table_block | \
+			enable_do_chain_arg_table_block >> cut \
+		) \
+	)
+
+	#define disable_arg_table_block_rule(patt) ( \
+		disable_arg_table_block >> ( \
+			(patt) >> enable_arg_table_block | \
+			enable_arg_table_block >> cut \
+		) \
+	)
+
+	#define disable_for_rule(patt) ( \
+		disable_for >> ( \
+			(patt) >> enable_for | \
+			enable_for >> cut \
+		) \
+	)
+
+	#define body_with(str) ( \
+		key(str) >> space >> (in_block | Statement) | \
+		in_block | \
+		empty_block_error \
+	)
+
+	#define opt_body_with(str) ( \
+		key(str) >> space >> (in_block | Statement) | \
+		in_block \
+	)
+
+	#define body (in_block | Statement | empty_block_error)
+
+	Variable = pl::user(Name, [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		for (auto it = item.begin->m_it; it != item.end->m_it; ++it) st->buffer += static_cast<char>(*it);
+		auto isValid = Keywords.find(st->buffer) == Keywords.end();
+		if (isValid) {
+			if (st->buffer == st->moduleName) {
+				st->moduleFix++;
+				st->moduleName = "_module_"s + std::to_string(st->moduleFix);
+			}
+		}
+		st->buffer.clear();
+		return isValid;
+	});
+
+	LabelName = pl::user(Name, [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		for (auto it = item.begin->m_it; it != item.end->m_it; ++it) st->buffer += static_cast<char>(*it);
+		auto isValid = LuaKeywords.find(st->buffer) == LuaKeywords.end();
+		st->buffer.clear();
+		return isValid;
+	});
+
+	LuaKeyword = pl::user(Name, [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		for (auto it = item.begin->m_it; it != item.end->m_it; ++it) st->buffer += static_cast<char>(*it);
+		auto it = LuaKeywords.find(st->buffer);
+		st->buffer.clear();
+		return it != LuaKeywords.end();
+	});
+
+	Self = '@';
+	SelfName = '@' >> Name;
+	SelfClass = "@@";
+	SelfClassName = "@@" >> Name;
+
+	SelfItem = SelfClassName | SelfClass | SelfName | Self;
+	KeyName = SelfItem | Name;
+	VarArg = "...";
+
+	check_indent = pl::user(plain_space, [](const item_t& item) {
+		int indent = 0;
+		for (input_it i = item.begin->m_it; i != item.end->m_it; ++i) {
+			switch (*i) {
+				case ' ': indent++; break;
+				case '\t': indent += 4; break;
+			}
+		}
+		State* st = reinterpret_cast<State*>(item.user_data);
+		return st->indents.top() == indent;
+	});
+	check_indent_match = and_(check_indent);
+
+	advance = pl::user(plain_space, [](const item_t& item) {
+		int indent = 0;
+		for (input_it i = item.begin->m_it; i != item.end->m_it; ++i) {
+			switch (*i) {
+				case ' ': indent++; break;
+				case '\t': indent += 4; break;
+			}
+		}
+		State* st = reinterpret_cast<State*>(item.user_data);
+		int top = st->indents.top();
+		if (top != -1 && indent > top) {
+			st->indents.push(indent);
+			return true;
+		}
+		return false;
+	});
+	advance_match = and_(advance);
+
+	push_indent = pl::user(plain_space, [](const item_t& item) {
+		int indent = 0;
+		for (input_it i = item.begin->m_it; i != item.end->m_it; ++i) {
+			switch (*i) {
+				case ' ': indent++; break;
+				case '\t': indent += 4; break;
+			}
+		}
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->indents.push(indent);
+		return true;
+	});
+	push_indent_match = and_(push_indent);
+
+	prevent_indent = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->indents.push(-1);
+		return true;
+	});
+
+	pop_indent = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->indents.pop();
+		return true;
+	});
+
+	in_block = +space_break >> advance_match >> ensure(Block, pop_indent);
+
+	LocalFlag = expr('*') | '^';
+	LocalValues = NameList >> -(space >> '=' >> space >> (TableBlock | ExpListLow));
+	Local = key("local") >> space >> (LocalFlag | LocalValues);
+
+	ConstAttrib = key("const");
+	CloseAttrib = key("close");
+	local_const_item = Variable | SimpleTable | TableLit;
+	LocalAttrib = (
+		ConstAttrib >> Seperator >> space >> local_const_item >> *(space >> ',' >> space >> local_const_item) |
+		CloseAttrib >> Seperator >> space >> Variable >> *(space >> ',' >> space >> Variable)
+	) >> space >> Assign;
+
+	ColonImportName = '\\' >> space >> Variable;
+	import_name = ColonImportName | Variable;
+	import_name_list = Seperator >> *space_break >> space >> import_name >> *((+space_break | space >> ',' >> *space_break) >> space >> import_name);
+	ImportFrom = import_name_list >> *space_break >> space >> key("from") >> space >> Exp;
+
+	ImportLiteralInner = (range('a', 'z') | range('A', 'Z') | set("_-")) >> *(alpha_num | '-');
+	import_literal_chain = Seperator >> ImportLiteralInner >> *('.' >> ImportLiteralInner);
+	ImportLiteral = (
+			'\'' >> import_literal_chain >> '\''
+		) | (
+			'"' >> import_literal_chain >> '"'
+		);
+
+	MacroNamePair = MacroName >> ':' >> space >> MacroName;
+	ImportAllMacro = '$';
+	import_tab_item =
+		VariablePair |
+		NormalPair |
+		':' >> MacroName |
+		MacroNamePair |
+		ImportAllMacro |
+		MetaVariablePair |
+		MetaNormalPair |
+		Exp;
+	import_tab_list = import_tab_item >> *(space >> ',' >> space >> import_tab_item);
+	import_tab_line = (
+		push_indent_match >> (space >> import_tab_list >> pop_indent | pop_indent)
+	) | space;
+	import_tab_lines = space_break >> import_tab_line >> *(-(space >> ',') >> space_break >> import_tab_line) >> -(space >> ',');
+	ImportTabLit = (
+		'{' >> Seperator >>
+		-(space >> import_tab_list) >>
+		-(space >> ',') >>
+		-import_tab_lines >>
+		white >>
+		'}'
+	) | (
+		Seperator >> key_value >> *(space >> ',' >> space >> key_value)
+	);
+
+	ImportAs = ImportLiteral >> -(space >> key("as") >> space >> (ImportTabLit | Variable | ImportAllMacro));
+
+	Import = key("import") >> space >> (ImportAs | ImportFrom);
+
+	Label = "::" >> LabelName >> "::";
+
+	Goto = key("goto") >> space >> LabelName;
+
+	ShortTabAppending = "[]" >> space >> Assign;
+
+	BreakLoop = (expr("break") | "continue") >> not_alpha_num;
+
+	Return = key("return") >> -(space >> (TableBlock | ExpListLow));
+
+	with_exp = ExpList >> -(space >> Assign);
+
+	With = key("with") >> -ExistentialOp >> space >> disable_do_chain_arg_table_block_rule(with_exp) >> space >> body_with("do");
+	SwitchCase = key("when") >> disable_chain_rule(disable_arg_table_block_rule(SwitchList)) >> space >> body_with("then");
+	switch_else = key("else") >> space >> body;
+
+	switch_block =
+		*(line_break >> *space_break >> check_indent_match >> space >> SwitchCase) >>
+		-(line_break >> *space_break >> check_indent_match >> space >> switch_else);
+
+	exp_not_tab = not_(SimpleTable | TableLit) >> space >> Exp;
+
+	SwitchList = Seperator >> (
+		and_(SimpleTable | TableLit) >> space >> Exp |
+		exp_not_tab >> *(space >> ',' >> exp_not_tab)
+	);
+	Switch = key("switch") >> space >> Exp >>
+		space >> Seperator >> (
+			SwitchCase >> space >> (
+				line_break >> *space_break >> check_indent_match >> space >> SwitchCase >> switch_block |
+				*(space >> SwitchCase) >> -(space >> switch_else)
+			) |
+			+space_break >> advance_match >> space >> SwitchCase >> switch_block >> pop_indent
+		) >> switch_block;
+
+	Assignment = ExpList >> space >> Assign;
+	IfCond = disable_chain_rule(disable_arg_table_block_rule(Assignment | Exp));
+	if_else_if = -(line_break >> *space_break >> check_indent_match) >> space >> key("elseif") >> space >> IfCond >> space >> body_with("then");
+	if_else = -(line_break >> *space_break >> check_indent_match) >> space >> key("else") >> space >> body;
+	IfType = (expr("if") | "unless") >> not_alpha_num;
+	If = IfType >> space >> IfCond >> space >> opt_body_with("then") >> *if_else_if >> -if_else;
+
+	WhileType = (expr("while") | "until") >> not_alpha_num;
+	While = WhileType >> space >> disable_do_chain_arg_table_block_rule(Exp) >> space >> opt_body_with("do");
+	Repeat = key("repeat") >> space >> Body >> line_break >> *space_break >> check_indent_match >> space >> key("until") >> space >> Exp;
+
+	for_key = pl::user(key("for"), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		return st->noForStack.empty() || !st->noForStack.top();
+	});
+	ForStepValue = ',' >> space >> Exp;
+	for_args = Variable >> space >> '=' >> space >> Exp >> space >> ',' >> space >> Exp >> space >> -ForStepValue;
+
+	For = for_key >> space >> disable_do_chain_arg_table_block_rule(for_args) >> space >> opt_body_with("do");
+
+	for_in = StarExp | ExpList;
+
+	ForEach = for_key >> space >> AssignableNameList >> space >> key("in") >> space >>
+		disable_do_chain_arg_table_block_rule(for_in) >> space >> opt_body_with("do");
+
+	Do = pl::user(key("do"), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		return st->noDoStack.empty() || !st->noDoStack.top();
+	}) >> space >> Body;
+
+	disable_do = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noDoStack.push(true);
+		return true;
+	});
+
+	enable_do = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noDoStack.pop();
+		return true;
+	});
+
+	disable_do_chain_arg_table_block = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noDoStack.push(true);
+		st->noChainBlockStack.push(true);
+		st->noTableBlockStack.push(true);
+		return true;
+	});
+
+	enable_do_chain_arg_table_block = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noDoStack.pop();
+		st->noChainBlockStack.pop();
+		st->noTableBlockStack.pop();
+		return true;
+	});
+
+	disable_arg_table_block = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noTableBlockStack.push(true);
+		return true;
+	});
+
+	enable_arg_table_block = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noTableBlockStack.pop();
+		return true;
+	});
+
+	disable_for = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noForStack.push(true);
+		return true;
+	});
+
+	enable_for = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noForStack.pop();
+		return true;
+	});
+
+	CatchBlock = line_break >> *space_break >> check_indent_match >> space >> key("catch") >> space >> Variable >> space >> in_block;
+	Try = key("try") >> space >> (in_block | Exp) >> -CatchBlock;
+
+	Comprehension = '[' >> not_('[') >> space >> disable_for_rule(Exp) >> space >> CompInner >> space >> ']';
+	CompValue = ',' >> space >> Exp;
+	TblComprehension = and_('{') >> ('{' >> space >> disable_for_rule(Exp >> space >> -(CompValue >> space)) >> CompInner >> space >> '}' | braces_expression_error);
+
+	CompInner = Seperator >> (CompForEach | CompFor) >> *(space >> comp_clause);
+	StarExp = '*' >> space >> Exp;
+	CompForEach = key("for") >> space >> AssignableNameList >> space >> key("in") >> space >> (StarExp | Exp);
+	CompFor = key("for") >> space >> Variable >> space >> '=' >> space >> Exp >> space >> ',' >> space >> Exp >> -ForStepValue;
+	comp_clause = CompFor | CompForEach | key("when") >> space >> Exp;
+
+	Assign = '=' >> space >> Seperator >> (
+		With | If | Switch | TableBlock |
+		Exp >> *(space >> set(",;") >> space >> Exp)
+	);
+
+	UpdateOp =
+		expr("..") | "//" | "or" | "and" |
+		">>" | "<<" | "??" |
+		set("+-*/%&|");
+
+	Update = UpdateOp >> '=' >> space >> Exp;
+
+	Assignable = AssignableChain | Variable | SelfItem;
+
+	UnaryValue = +(UnaryOperator >> space) >> Value;
+
+	exponential_operator = '^';
+	expo_value = exponential_operator >> *space_break >> space >> Value;
+	expo_exp = Value >> *(space >> expo_value);
+
+	UnaryOperator =
+		'-' >> not_(set(">=") | space_one) |
+		'#' |
+		'~' >> not_('=' | space_one) |
+		key("not");
+	UnaryExp = *(UnaryOperator >> space) >> expo_exp;
+
+	pipe_operator = "|>";
+	pipe_value = pipe_operator >> *space_break >> space >> UnaryExp;
+	pipe_exp = UnaryExp >> *(space >> pipe_value);
+
+	BinaryOperator =
+		key("or") |
+		key("and") |
+		"<=" | ">=" | "~=" | "!=" | "==" |
+		".." | "<<" | ">>" | "//" |
+		set("+-*/%><|&~");
+
+	ExpOpValue = BinaryOperator >> *space_break >> space >> pipe_exp;
+	Exp = Seperator >> pipe_exp >> *(space >> ExpOpValue) >> -(space >> "??" >> space >> Exp);
+
+	disable_chain = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noChainBlockStack.push(true);
+		return true;
+	});
+
+	enable_chain = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->noChainBlockStack.pop();
+		return true;
+	});
+
+	chain_line = check_indent_match >> space >> (chain_dot_chain | colon_chain) >> -InvokeArgs;
+	chain_block = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		return st->noChainBlockStack.empty() || !st->noChainBlockStack.top();
+	}) >> +space_break >> advance_match >> ensure(
+		chain_line >> *(+space_break >> chain_line), pop_indent);
+	ChainValue =
+		Seperator >>
+		chain >>
+		-ExistentialOp >>
+		-(InvokeArgs | chain_block) >>
+		-TableAppendingOp;
+
+	inc_exp_level = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->expLevel++;
+		const int max_exp_level = 100;
+		if (st->expLevel > max_exp_level) {
+			throw ParserError("nesting expressions exceeds 100 levels", *item.begin, *item.end);
+		}
+		return true;
+	});
+
+	dec_exp_level = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->expLevel--;
+		return true;
+	});
+
+	SimpleTable = Seperator >> key_value >> *(space >> ',' >> space >> key_value);
+	Value = inc_exp_level >> ensure(SimpleValue | SimpleTable | ChainValue | String, dec_exp_level);
+
+	single_string_inner = '\\' >> set("'\\") | not_('\'') >> any_char;
+	SingleString = '\'' >> *single_string_inner >> '\'';
+
+	interp = "#{" >> space >> Exp >> space >> '}';
+	double_string_plain = '\\' >> set("\"\\") | not_('"') >> any_char;
+	DoubleStringInner = +(not_(interp) >> double_string_plain);
+	DoubleStringContent = DoubleStringInner | interp;
+	DoubleString = '"' >> Seperator >> *DoubleStringContent >> '"';
+	String = DoubleString | SingleString | LuaString;
+
+	lua_string_open = '[' >> *expr('=') >> '[';
+	lua_string_close = ']' >> *expr('=') >> ']';
+
+	LuaStringOpen = pl::user(lua_string_open, [](const item_t& item) {
+		size_t count = std::distance(item.begin->m_it, item.end->m_it);
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->stringOpen = count;
+		return true;
+	});
+
+	LuaStringClose = pl::user(lua_string_close, [](const item_t& item) {
+		size_t count = std::distance(item.begin->m_it, item.end->m_it);
+		State* st = reinterpret_cast<State*>(item.user_data);
+		return st->stringOpen == count;
+	});
+
+	LuaStringContent = *(not_(LuaStringClose) >> any_char);
+
+	LuaString = LuaStringOpen >> -line_break >> LuaStringContent >> LuaStringClose;
+
+	Parens = '(' >> *space_break >> space >> Exp >> *space_break >> space >> ')';
+	Callable = Variable | SelfItem | MacroName | Parens;
+	fn_args_exp_list = space >> Exp >> space >> *((line_break | ',') >> white >> Exp);
+
+	fn_args =
+		'(' >> *space_break >> -fn_args_exp_list >> *space_break >> space >> ')' |
+		space >> '!' >> not_('=');
+
+	meta_index = Name | index | String;
+	Metatable = '<' >> space >> '>';
+	Metamethod = '<' >> space >> meta_index >> space >> '>';
+
+	ExistentialOp = '?' >> not_('?');
+	TableAppendingOp = and_('[') >> ("[]" | brackets_expression_error);
+	chain_call = (
+		Callable >> -ExistentialOp >> -chain_items
+	) | (
+		String >> chain_items
+	);
+	chain_index_chain = index >> -ExistentialOp >> -chain_items;
+	chain_dot_chain = DotChainItem >> -ExistentialOp >> -chain_items;
+
+	chain = chain_call | chain_dot_chain | colon_chain | chain_index_chain;
+
+	chain_call_list = (
+		Callable >> -ExistentialOp >> chain_items
+	) | (
+		String >> chain_items
+	);
+	chain_list = chain_call_list | chain_dot_chain | colon_chain | chain_index_chain;
+
+	AssignableChain = Seperator >> chain_list;
+
+	chain_with_colon = +chain_item >> -colon_chain;
+	chain_items = chain_with_colon | colon_chain;
+
+	index = '[' >> not_('[') >> space >> Exp >> space >> ']';
+	chain_item =
+		Invoke >> -ExistentialOp |
+		DotChainItem >> -ExistentialOp |
+		Slice |
+		index >> -ExistentialOp;
+	DotChainItem = '.' >> (Name | Metatable | Metamethod);
+	ColonChainItem = (expr('\\') | "::") >> (LuaKeyword | Name | Metamethod);
+	invoke_chain = Invoke >> -ExistentialOp >> -chain_items;
+	colon_chain = ColonChainItem >> -ExistentialOp >> -invoke_chain;
+
+	DefaultValue = true_();
+	Slice =
+		'[' >> not_('[') >>
+		space >> (Exp | DefaultValue) >>
+		space >> ',' >>
+		space >> (Exp | DefaultValue) >>
+		space >> (',' >> space >> Exp | DefaultValue) >>
+		space >> ']';
+
+	Invoke = Seperator >> (
+		fn_args |
+		SingleString |
+		DoubleString |
+		and_('[') >> LuaString |
+		and_('{') >> TableLit
+	);
+
+	SpreadExp = "..." >> space >> Exp;
+
+	table_value =
+		VariablePairDef |
+		NormalPairDef |
+		MetaVariablePairDef |
+		MetaNormalPairDef |
+		SpreadExp |
+		NormalDef;
+
+	table_lit_lines = space_break >> table_lit_line >> *(-(space >> ',') >> space_break >> table_lit_line) >> -(space >> ',');
+
+	TableLit =
+		space >> '{' >> Seperator >>
+		-(space >> table_value_list) >>
+		-(space >> ',') >>
+		-table_lit_lines >>
+		white >> '}';
+
+	table_value_list = table_value >> *(space >> ',' >> space >> table_value);
+
+	table_lit_line = (
+		push_indent_match >> (space >> table_value_list >> pop_indent | pop_indent)
+	) | (
+		space
+	);
+
+	table_block_inner = Seperator >> key_value_line >> *(+space_break >> key_value_line);
+	TableBlock = +space_break >> advance_match >> ensure(table_block_inner, pop_indent);
+	TableBlockIndent = '*' >> Seperator >> disable_arg_table_block_rule(
+		space >> key_value_list >> -(space >> ',') >>
+		-(+space_break >> advance_match >> space >> ensure(key_value_list >> -(space >> ',') >> *(+space_break >> key_value_line), pop_indent)));
+
+	ClassMemberList = Seperator >> key_value >> *(space >> ',' >> space >> key_value);
+	class_line = check_indent_match >> space >> (ClassMemberList | Statement) >> -(space >> ',');
+	ClassBlock =
+		+space_break >>
+		advance_match >> Seperator >>
+		class_line >> *(+space_break >> class_line) >>
+		pop_indent;
+
+	ClassDecl =
+		key("class") >> not_(':') >> disable_arg_table_block_rule(
+			-(space >> Assignable) >>
+			-(space >> key("extends") >> prevent_indent >> space >> ensure(Exp, pop_indent)) >>
+			-(space >> key("using") >> prevent_indent >> space >> ensure(ExpList, pop_indent))
+		) >> -ClassBlock;
+
+	GlobalValues = NameList >> -(space >> '=' >> space >> (TableBlock | ExpListLow));
+	GlobalOp = expr('*') | '^';
+	Global = key("global") >> space >> (ClassDecl | GlobalOp | GlobalValues);
+
+	ExportDefault = key("default");
+
+	Export = pl::user(key("export"), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->exportCount++;
+		return true;
+	}) >> (pl::user(space >> ExportDefault >> space >> Exp, [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		if (st->exportDefault) {
+			throw ParserError("export default has already been declared", *item.begin, *item.end);
+		}
+		if (st->exportCount > 1) {
+			throw ParserError("there are items already being exported", *item.begin, *item.end);
+		}
+		st->exportDefault = true;
+		return true;
+	})
+	| (not_(space >> ExportDefault) >> pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		if (st->exportDefault && st->exportCount > 1) {
+			throw ParserError("can not export any more items when 'export default' is declared", *item.begin, *item.end);
+		}
+		return true;
+	}) >> space >> ExpList >> -(space >> Assign))
+	| space >> pl::user(Macro, [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		st->exportMacro = true;
+		return true;
+	})) >> not_(space >> StatementAppendix);
+
+	VariablePair = ':' >> Variable;
+
+	NormalPair =
+		(
+			KeyName |
+			'[' >> not_('[') >> space >> Exp >> space >> ']' |
+			String
+		) >> ':' >> not_(':') >> space >>
+		(Exp | TableBlock | +space_break >> space >> Exp);
+
+	MetaVariablePair = ":<" >> space >> Variable >> space >> '>';
+
+	MetaNormalPair = '<' >> space >> -meta_index >> space >> ">:" >> space >>
+		(Exp | TableBlock | +space_break >> space >> Exp);
+
+	destruct_def = -(space >> '=' >> space >> Exp);
+	VariablePairDef = VariablePair >> destruct_def;
+	NormalPairDef = NormalPair >> destruct_def;
+	MetaVariablePairDef = MetaVariablePair >> destruct_def;
+	MetaNormalPairDef = MetaNormalPair >> destruct_def;
+	NormalDef = Exp >> Seperator >> destruct_def;
+
+	key_value =
+		VariablePair |
+		NormalPair |
+		MetaVariablePair |
+		MetaNormalPair;
+	key_value_list = key_value >> *(space >> ',' >> space >> key_value);
+	key_value_line = check_indent_match >> space >> (
+		key_value_list >> -(space >> ',') |
+		TableBlockIndent |
+		'*' >> space >> (SpreadExp | Exp | TableBlock)
+	);
+
+	FnArgDef = (Variable | SelfItem >> -ExistentialOp) >> -(space >> '=' >> space >> Exp);
+
+	FnArgDefList = Seperator >> ((
+			FnArgDef >>
+			*(space >> (',' | line_break) >> white >> FnArgDef) >>
+			-(space >> (',' | line_break) >> white >> VarArg)
+		) | VarArg);
+
+	OuterVarShadow = key("using") >> space >> (NameList | key("nil"));
+
+	FnArgsDef = '(' >> white >> -FnArgDefList >> -(space >> OuterVarShadow) >> white >> ')';
+	FnArrow = expr("->") | "=>";
+	FunLit = -FnArgsDef >> space >> FnArrow >> -(space >> Body);
+
+	MacroName = '$' >> Name;
+	macro_args_def = '(' >> white >> -FnArgDefList >> white >> ')';
+	MacroLit = -(macro_args_def >> space) >> "->" >> space >> Body;
+	Macro = key("macro") >> space >> Name >> space >> '=' >> space >> MacroLit;
+	MacroInPlace = '$' >> space >> "->" >> space >> Body;
+
+	NameList = Seperator >> Variable >> *(space >> ',' >> space >> Variable);
+	NameOrDestructure = Variable | TableLit;
+	AssignableNameList = Seperator >> NameOrDestructure >> *(space >> ',' >> space >> NameOrDestructure);
+
+	FnArrowBack = '<' >> set("-=");
+	Backcall = -(FnArgsDef >> space) >> FnArrowBack >> space >> ChainValue;
+
+	PipeBody = Seperator >>
+		pipe_operator >> space >> UnaryExp >>
+		*(+space_break >> check_indent_match >> space >> pipe_operator >> space >> UnaryExp);
+
+	ExpList = Seperator >> Exp >> *(space >> ',' >> space >> Exp);
+	ExpListLow = Seperator >> Exp >> *(space >> set(",;") >> space >> Exp);
+
+	arg_line = check_indent_match >> space >> Exp >> *(space >> ',' >> space >> Exp);
+	arg_block = arg_line >> *(space >> ',' >> space_break >> arg_line) >> pop_indent;
+
+	arg_table_block = pl::user(true_(), [](const item_t& item) {
+		State* st = reinterpret_cast<State*>(item.user_data);
+		return st->noTableBlockStack.empty() || !st->noTableBlockStack.top();
+	}) >> TableBlock;
+
+	invoke_args_with_table =
+		',' >> (
+			TableBlock |
+			space_break >> advance_match >> arg_block >> -arg_table_block
+		) | arg_table_block;
+
+	leading_spaces_error = pl::user(+space_one >> '(' >> space >> Exp >> +(space >> ',' >> space >> Exp) >> space >> ')', [](const item_t& item) {
+		throw ParserError("write invoke arguments in parentheses without leading spaces or just leading spaces without parentheses", *item.begin, *item.end);
+		return false;
+	});
+
+	InvokeArgs =
+		not_(set("-~")) >> space >> Seperator >> (
+			Exp >> *(space >> ',' >> space >> Exp) >> -(space >> invoke_args_with_table) |
+			arg_table_block |
+			leading_spaces_error
+		);
+
+	ConstValue = (expr("nil") | "true" | "false") >> not_alpha_num;
+
+	braces_expression_error = pl::user(true_(), [](const item_t& item) {
+		throw ParserError("syntax error in brace expression", *item.begin, *item.end);
+		return false;
+	});
+
+	brackets_expression_error = pl::user(true_(), [](const item_t& item) {
+		throw ParserError("syntax error in bracket expression", *item.begin, *item.end);
+		return false;
+	});
+
+	SimpleValue =
+		TableLit | ConstValue | If | Switch | Try | With |
+		ClassDecl | ForEach | For | While | Do |
+		UnaryValue | TblComprehension | Comprehension |
+		FunLit | Num | VarArg;
+
+	ExpListAssign = ExpList >> -(space >> (Update | Assign)) >> not_(space >> '=');
+
+	IfLine = IfType >> space >> IfCond;
+	WhileLine = WhileType >> space >> Exp;
+
+	MeoLineComment = *(not_(set("\r\n")) >> any_char);
+	meo_line_comment = "--" >> MeoLineComment >> and_(stop);
+	MeoMultilineComment = multi_line_content;
+	meo_multiline_comment = multi_line_open >> MeoMultilineComment >> multi_line_close;
+	meo_comment = check_indent >> (
+		(
+			meo_multiline_comment >>
+			*(set(" \t") | meo_multiline_comment) >>
+			-meo_line_comment
+		) | meo_line_comment
+	) >> and_(line_break);
+
+	ChainAssign = Seperator >> Exp >> +(space >> '=' >> space >> Exp >> space >> and_('=')) >> space >> Assign;
+
+	StatementAppendix = (IfLine | WhileLine | CompInner) >> space;
+	StatementSep = and_(
+		*space_break >> check_indent_match >> space >> (
+			set("($'\"") |
+			"[[" |
+			"[="
+		)
+	);
+	Statement =
+		Seperator >>
+		-(
+			meo_comment >>
+			*(line_break >> meo_comment) >>
+			line_break >>
+			check_indent_match
+		) >>
+		space >> (
+			Import | While | Repeat | For | ForEach |
+			Return | Local | Global | Export | Macro |
+			MacroInPlace | BreakLoop | Label | Goto | ShortTabAppending |
+			LocalAttrib | Backcall | PipeBody | ExpListAssign | ChainAssign |
+			StatementAppendix >> empty_block_error
+		) >>
+		space >>
+		-StatementAppendix >>
+		-StatementSep;
+
+	Body = in_block | Statement;
+
+	empty_line_break = (
+		check_indent >> (multi_line_comment >> space | comment) |
+		advance >> ensure(multi_line_comment >> space | comment, pop_indent) |
+		plain_space
+	) >> and_(line_break);
+
+	indentation_error = pl::user(not_(pipe_operator | eof()), [](const item_t& item) {
+		throw ParserError("unexpected indent", *item.begin, *item.end);
+		return false;
+	});
+
+	line = (
+		check_indent_match >> Statement |
+		empty_line_break |
+		advance_match >> ensure(space >> (indentation_error | Statement), pop_indent)
+	);
+	Block = Seperator >> line >> *(+line_break >> line);
+
+	shebang = "#!" >> *(not_(stop) >> any_char);
+	BlockEnd = Block >> white >> stop;
+	File = -shebang >> -Block >> white >> stop;
 }
-ParseInfo MeoParser::parse(std::string_view codes, rule &r) {
+// clang-format on
+
+ParseInfo MeoParser::parse(std::string_view codes, rule& r) {
     ParseInfo res;
     if (codes.substr(0, 3) == "\xEF\xBB\xBF"sv) {
         codes = codes.substr(3);
     }
     try {
-        res.codes = std::make_unique<input>();
         if (!codes.empty()) {
-            *(res.codes) = _converter.from_bytes(&codes.front(), &codes.back() + 1);
+            res.codes = std::make_unique<input>(_converter.from_bytes(&codes.front(), &codes.back() + 1));
+        } else {
+            res.codes = std::make_unique<input>();
         }
-    } catch (const std::range_error &) {
+    } catch (const std::range_error&) {
         res.error = "invalid text encoding"sv;
         return res;
     }
@@ -1240,17 +2165,17 @@ ParseInfo MeoParser::parse(std::string_view codes, rule &r) {
             res.exportDefault = state.exportDefault;
             res.exportMacro = state.exportMacro;
         }
-    } catch (const ParserError &err) {
+    } catch (const ParserError& err) {
         res.error = res.errorMessage(err.what(), &err.loc);
         return res;
-    } catch (const std::logic_error &err) {
+    } catch (const std::logic_error& err) {
         res.error = err.what();
         return res;
     }
     if (!errors.empty()) {
         std::ostringstream buf;
         for (error_list::iterator it = errors.begin(); it != errors.end(); ++it) {
-            const error &err = *it;
+            const error& err = *it;
             switch (err.m_type) {
                 case ERROR_TYPE::ERROR_SYNTAX_ERROR:
                     buf << res.errorMessage("syntax error"sv, &err);
@@ -1264,25 +2189,32 @@ ParseInfo MeoParser::parse(std::string_view codes, rule &r) {
     }
     return res;
 }
-std::string MeoParser::toString(ast_node *node) { return _converter.to_bytes(std::wstring(node->m_begin.m_it, node->m_end.m_it)); }
+
+std::string MeoParser::toString(ast_node* node) { return _converter.to_bytes(std::wstring(node->m_begin.m_it, node->m_end.m_it)); }
+
 std::string MeoParser::toString(input::iterator begin, input::iterator end) { return _converter.to_bytes(std::wstring(begin, end)); }
+
 input MeoParser::encode(std::string_view codes) { return _converter.from_bytes(&codes.front(), &codes.back() + 1); }
-std::string MeoParser::decode(const input &codes) { return _converter.to_bytes(codes); }
+
+std::string MeoParser::decode(const input& codes) { return _converter.to_bytes(codes); }
+
 namespace Utils {
-void replace(std::string &str, std::string_view from, std::string_view to) {
+void replace(std::string& str, std::string_view from, std::string_view to) {
     size_t start_pos = 0;
     while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.size(), to);
         start_pos += to.size();
     }
 }
-void trim(std::string &str) {
+
+void trim(std::string& str) {
     if (str.empty()) return;
     str.erase(0, str.find_first_not_of(" \t\r\n"));
     str.erase(str.find_last_not_of(" \t\r\n") + 1);
 }
 }  // namespace Utils
-std::string ParseInfo::errorMessage(std::string_view msg, const input_range *loc) const {
+
+std::string ParseInfo::errorMessage(std::string_view msg, const input_range* loc) const {
     const int ASCII = 255;
     int length = loc->m_begin.m_line;
     auto begin = codes->begin();
@@ -1317,28 +2249,34 @@ std::string ParseInfo::errorMessage(std::string_view msg, const input_range *loc
     buf << loc->m_begin.m_line << ": "sv << msg << '\n' << line << '\n' << std::string(col, ' ') << "^"sv;
     return buf.str();
 }
+
 #undef body
-}  // namespace Meo
 
-#pragma endregion Parser
-
-#pragma region Compiler
+}  // namespace meo
 
 #ifndef MEO_NO_MACRO
+
 extern "C" {
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 }  // extern "C"
+
 // name of table stored in lua registry
 #define MEO_MODULE "__meo_modules__"
+
 #if LUA_VERSION_NUM > 501
 #ifndef LUA_COMPAT_5_1
+#ifndef lua_objlen
 #define lua_objlen lua_rawlen
+#endif  // lua_objlen
 #endif  // LUA_COMPAT_5_1
 #endif  // LUA_VERSION_NUM
+
 #endif  // MEO_NO_MACRO
-namespace Meo {
+
+namespace meo {
+
 #define BLOCK_START do {
 #define BLOCK_END \
     }             \
@@ -1346,15 +2284,26 @@ namespace Meo {
         ;
 #define BREAK_IF(cond) \
     if (cond) break
-#define _DEFER(code, line) MetaEngine::Ref<void> _defer_##line(nullptr, [&](auto) { code; })
+
+#define _DEFER(code, line) std::shared_ptr<void> _defer_##line(nullptr, [&](auto) { code; })
 #define DEFER(code) _DEFER(code, __LINE__)
-#define SERROR(msg, node) throw std::logic_error(_info.errorMessage("[File] "s + __FILE__ + ",\n[Func] "s + __FUNCTION__ + ",\n[Line] "s + std::to_string(__LINE__) + ",\n[Error] "s + msg, node))
+#define MEO_E(msg, node) throw std::logic_error(_info.errorMessage("[File] "s + __FILE__ + ",\n[Func] "s + __FUNCTION__ + ",\n[Line] "s + std::to_string(__LINE__) + ",\n[Error] "s + msg, node))
+
 typedef std::list<std::string> str_list;
+
+static std::unordered_set<std::string> Metamethods = {
+        "add"s,   "sub"s,    "mul"s,  "div"s, "mod"s,  "pow"s,  "unm"s, "concat"s, "len"s, "eq"s, "lt"s, "le"s, "index"s, "newindex"s, "call"s, "gc"s, "mode"s, "tostring"s, "metatable"s,  // Lua 5.1
+        "pairs"s, "ipairs"s,                                                                                                                                                                // Lua 5.2
+        "name"s,  "idiv"s,   "band"s, "bor"s, "bxor"s, "bnot"s, "shl"s, "shr"s,  // Lua 5.3 ipairs deprecated
+        "close"s                                                                 // Lua 5.4
+};
+
 const std::string_view extension = "meo"sv;
+
 class MeoCompilerImpl {
 public:
 #ifndef MEO_NO_MACRO
-    MeoCompilerImpl(lua_State *sharedState, const std::function<void(void *)> &luaOpen, bool sameModule) : L(sharedState), _luaOpen(luaOpen) {
+    MeoCompilerImpl(lua_State* sharedState, const std::function<void(void*)>& luaOpen, bool sameModule) : L(sharedState), _luaOpen(luaOpen) {
         BLOCK_START
         BREAK_IF(!sameModule);
         BREAK_IF(!L);
@@ -1369,6 +2318,7 @@ public:
         _useModule = true;
         BLOCK_END
     }
+
     ~MeoCompilerImpl() {
         if (L && _stateOwner) {
             lua_close(L);
@@ -1376,7 +2326,8 @@ public:
         }
     }
 #endif  // MEO_NO_MACRO
-    CompileInfo compile(std::string_view codes, const MuConfig &config) {
+
+    CompileInfo compile(std::string_view codes, const MeoConfig& config) {
         _config = config;
 #ifndef MEO_NO_MACRO
         if (L) passOptions();
@@ -1403,7 +2354,7 @@ public:
                 auto block = _info.node.to<File_t>()->block.get();
                 if (_info.exportMacro) {
                     for (auto stmt_ : block->statements.objects()) {
-                        auto stmt = static_cast<Statement_t *>(stmt_);
+                        auto stmt = static_cast<Statement_t*>(stmt_);
                         switch (stmt->content->getId()) {
                             case id<MacroInPlace_t>():
                             case id<Macro_t>():
@@ -1412,12 +2363,12 @@ public:
                             case id<Export_t>():
                                 if (auto importNode = stmt->content.as<Import_t>()) {
                                     if (auto importAs = importNode->content.as<ImportAs_t>()) {
-                                        if (importAs->target.is<import_all_macro_t>()) {
+                                        if (importAs->target.is<ImportAllMacro_t>()) {
                                             break;
                                         } else if (auto tab = importAs->target.as<ImportTabLit_t>()) {
                                             bool macroImportingOnly = true;
                                             for (auto item : tab->items.objects()) {
-                                                if (!ast_is<MacroName_t, macro_name_pair_t, import_all_macro_t>(item)) {
+                                                if (!ast_is<MacroName_t, MacroNamePair_t, ImportAllMacro_t>(item)) {
                                                     macroImportingOnly = false;
                                                 }
                                             }
@@ -1428,10 +2379,7 @@ public:
                                     if (exportNode->target.is<Macro_t>()) break;
                                 }
                             default:
-                                throw std::logic_error(
-                                        _info.errorMessage("macro exporting module only accepts macro definition, "
-                                                           "macro importing and macro expansion in place",
-                                                           stmt));
+                                throw std::logic_error(_info.errorMessage("macro exporting module only accepts macro definition, macro importing and macro expansion in place", stmt));
                                 break;
                         }
                     }
@@ -1453,12 +2401,12 @@ public:
                 }
                 popScope();
                 if (!gotos.empty()) {
-                    for (const auto &gotoNode : gotos) {
+                    for (const auto& gotoNode : gotos) {
                         bool noLabel = true;
                         BLOCK_START
                         BREAK_IF(static_cast<int>(_labels.size()) <= gotoNode.scope);
                         BREAK_IF(_labels[gotoNode.scope] == std::nullopt);
-                        const auto &scope = _labels[gotoNode.scope].value();
+                        const auto& scope = _labels[gotoNode.scope].value();
                         auto it = scope.find(gotoNode.label);
                         BREAK_IF(it == scope.end());
                         BREAK_IF(gotoNode.level < it->second.level);
@@ -1471,12 +2419,12 @@ public:
                 }
                 if (config.lintGlobalVariable) {
                     globals = std::make_unique<GlobalVars>();
-                    for (const auto &var : _globals) {
+                    for (const auto& var : _globals) {
                         int line, col;
                         std::tie(line, col) = var.second;
                         globals->push_back({var.first, line, col});
                     }
-                    std::sort(globals->begin(), globals->end(), [](const GlobalVar &varA, const GlobalVar &varB) {
+                    std::sort(globals->begin(), globals->end(), [](const GlobalVar& varA, const GlobalVar& varB) {
                         if (varA.line < varB.line) {
                             return true;
                         } else if (varA.line == varB.line) {
@@ -1507,13 +2455,14 @@ public:
                 }
 #endif  // MEO_NO_MACRO
                 return {std::move(out.back()), Empty, std::move(globals), std::move(options), parseTime, compileTime};
-            } catch (const std::logic_error &error) {
+            } catch (const std::logic_error& error) {
                 return {Empty, error.what(), std::move(globals), std::move(options), parseTime, compileTime};
             }
         } else {
             return {Empty, std::move(_info.error), std::move(globals), std::move(options), parseTime, compileTime};
         }
     }
+
     void clear() {
         _indentOffset = 0;
         _scopes.clear();
@@ -1549,10 +2498,10 @@ private:
     bool _stateOwner = false;
     bool _useModule = false;
     bool _sameModule = false;
-    lua_State *L = nullptr;
-    std::function<void(void *)> _luaOpen;
+    lua_State* L = nullptr;
+    std::function<void(void*)> _luaOpen;
 #endif  // MEO_NO_MACRO
-    MuConfig _config;
+    MeoConfig _config;
     MeoParser _parser;
     ParseInfo _info;
     int _indentOffset = 0;
@@ -1562,6 +2511,7 @@ private:
     };
     std::stack<VarArgState> _varArgs;
     std::stack<bool> _enableReturn;
+    std::stack<bool> _enableBreakLoop;
     std::stack<std::string> _withVars;
     struct ContinueVar {
         std::string var;
@@ -1587,6 +2537,7 @@ private:
         int level;
     };
     std::list<GotoNode> gotos;
+
     enum class LocalMode { None = 0, Capital = 1, Any = 2 };
     enum class GlobalMode { None = 0, Capital = 1, Any = 2 };
     enum class VarType { Local = 0, Const = 1, Global = 2 };
@@ -1598,34 +2549,42 @@ private:
     };
     std::list<Scope> _scopes;
     static const std::string Empty;
+
     enum class MemType { Builtin, Common, Property };
+
     struct ClassMember {
         std::string item;
         MemType type;
-        ast_node *node;
+        ast_node* node;
     };
+
     struct DestructItem {
         ast_ptr<true, Exp_t> target;
         std::string targetVar;
         ast_ptr<false, ChainValue_t> structure;
         ast_ptr<true, Exp_t> defVal;
     };
+
     struct Destructure {
         ast_ptr<true, ast_node> value;
         std::string valueVar;
         std::list<DestructItem> items;
         ast_ptr<false, ExpListAssign_t> inlineAssignment;
     };
+
     enum class ExpUsage { Return, Assignment, Common, Closure };
+
     void pushScope() {
         _scopes.emplace_back();
         _scopes.back().vars = std::make_unique<std::unordered_map<std::string, VarType>>();
     }
+
     void popScope() { _scopes.pop_back(); }
-    bool isDefined(const std::string &name) const {
+
+    bool isDefined(const std::string& name) const {
         bool isDefined = false;
         int mode = int(std::isupper(name[0]) ? GlobalMode::Capital : GlobalMode::Any);
-        const auto &current = _scopes.back();
+        const auto& current = _scopes.back();
         if (int(current.mode) >= mode) {
             if (!current.globals) {
                 isDefined = true;
@@ -1650,7 +2609,21 @@ private:
         }
         return isDefined;
     }
-    bool isLocal(const std::string &name) const {
+
+    bool isSolidDefined(const std::string& name) const {
+        bool defined = false;
+        for (auto it = _scopes.rbegin(); it != _scopes.rend(); ++it) {
+            auto vars = it->vars.get();
+            auto vit = vars->find(name);
+            if (vit != vars->end()) {
+                defined = true;
+                break;
+            }
+        }
+        return defined;
+    }
+
+    bool isLocal(const std::string& name) const {
         bool local = false;
         for (auto it = _scopes.rbegin(); it != _scopes.rend(); ++it) {
             auto vars = it->vars.get();
@@ -1662,7 +2635,8 @@ private:
         }
         return local;
     }
-    bool isGlobal(const std::string &name) const {
+
+    bool isGlobal(const std::string& name) const {
         bool global = false;
         for (auto it = _scopes.rbegin(); it != _scopes.rend(); ++it) {
             auto vars = it->vars.get();
@@ -1674,7 +2648,8 @@ private:
         }
         return global;
     }
-    bool isConst(const std::string &name) const {
+
+    bool isConst(const std::string& name) const {
         bool isConst = false;
         decltype(_scopes.back().allows.get()) allows = nullptr;
         for (auto it = _scopes.rbegin(); it != _scopes.rend(); ++it) {
@@ -1695,49 +2670,59 @@ private:
         }
         return isConst;
     }
-    void checkConst(const std::string &name, ast_node *x) const {
+
+    void checkConst(const std::string& name, ast_node* x) const {
         if (isConst(name)) {
             throw std::logic_error(_info.errorMessage("attempt to assign to const variable '"s + name + '\'', x));
         }
     }
-    void markVarConst(const std::string &name) {
-        auto &scope = _scopes.back();
+
+    void markVarConst(const std::string& name) {
+        auto& scope = _scopes.back();
         scope.vars->insert_or_assign(name, VarType::Const);
     }
+
     void markVarShadowed() {
-        auto &scope = _scopes.back();
+        auto& scope = _scopes.back();
         scope.allows = std::make_unique<std::unordered_set<std::string>>();
     }
+
     void markVarsGlobal(GlobalMode mode) {
-        auto &scope = _scopes.back();
+        auto& scope = _scopes.back();
         scope.mode = mode;
     }
-    void addGlobalVar(const std::string &name, ast_node *x) {
+
+    void addGlobalVar(const std::string& name, ast_node* x) {
         if (isLocal(name)) throw std::logic_error(_info.errorMessage("can not declare a local variable to be global"sv, x));
-        auto &scope = _scopes.back();
+        auto& scope = _scopes.back();
         if (!scope.globals) {
             scope.globals = std::make_unique<std::unordered_set<std::string>>();
         }
         scope.globals->insert(name);
         scope.vars->insert_or_assign(name, VarType::Global);
     }
-    void addToAllowList(const std::string &name) {
-        auto &scope = _scopes.back();
+
+    void addToAllowList(const std::string& name) {
+        auto& scope = _scopes.back();
         scope.allows->insert(name);
     }
-    void forceAddToScope(const std::string &name) {
-        auto &scope = _scopes.back();
+
+    void forceAddToScope(const std::string& name) {
+        auto& scope = _scopes.back();
         scope.vars->insert_or_assign(name, VarType::Local);
     }
-    Scope &currentScope() { return _scopes.back(); }
-    bool addToScope(const std::string &name) {
+
+    Scope& currentScope() { return _scopes.back(); }
+
+    bool addToScope(const std::string& name) {
         bool defined = isDefined(name);
         if (!defined) {
-            auto &scope = currentScope();
+            auto& scope = currentScope();
             scope.vars->insert_or_assign(name, VarType::Local);
         }
         return !defined;
     }
+
     std::string getUnusedName(std::string_view name) const {
         int index = 0;
         std::string newName;
@@ -1745,15 +2730,16 @@ private:
         do {
             newName = nameStr + std::to_string(index);
             index++;
-        } while (isLocal(newName));
+        } while (isSolidDefined(newName));
         return newName;
     }
+
     std::string getUnusedLabel(std::string_view label) const {
         int scopeIndex = _gotoScopes.top();
         if (static_cast<int>(_labels.size()) <= scopeIndex || _labels[scopeIndex] == std::nullopt) {
             return std::string(label) + '0';
         }
-        auto &scope = _labels[scopeIndex].value();
+        auto& scope = _labels[scopeIndex].value();
         int index = 0;
         std::string newLabel;
         std::string labelStr(label);
@@ -1763,7 +2749,8 @@ private:
         } while (scope.find(newLabel) != scope.end());
         return newLabel;
     }
-    std::string transformCondExp(Exp_t *cond, bool unless) {
+
+    std::string transformCondExp(Exp_t* cond, bool unless) {
         str_list tmp;
         if (unless) {
             if (auto value = singleValueFrom(cond)) {
@@ -1778,22 +2765,27 @@ private:
             return tmp.back();
         }
     }
-    const std::string nll(ast_node *node) const {
+
+    const std::string nll(ast_node* node) const {
         if (_config.reserveLineNumber) {
             return " -- "s + std::to_string(node->m_begin.m_line + _config.lineOffset) + _newLine;
         } else {
             return _newLine;
         }
     }
-    const std::string nlr(ast_node *node) const {
+
+    const std::string nlr(ast_node* node) const {
         if (_config.reserveLineNumber) {
             return " -- "s + std::to_string(node->m_end.m_line + _config.lineOffset) + _newLine;
         } else {
             return _newLine;
         }
     }
+
     void incIndentOffset() { _indentOffset++; }
+
     void decIndentOffset() { _indentOffset--; }
+
     std::string indent() const {
         if (_config.useSpaceOverTab) {
             return std::string((_scopes.size() - 1 + _indentOffset) * 2, ' ');
@@ -1801,6 +2793,7 @@ private:
             return std::string(_scopes.size() - 1 + _indentOffset, '\t');
         }
     }
+
     std::string indent(int offset) const {
         if (_config.useSpaceOverTab) {
             return std::string((_scopes.size() - 1 + _indentOffset + offset) * 2, ' ');
@@ -1808,18 +2801,20 @@ private:
             return std::string(_scopes.size() - 1 + _indentOffset + offset, '\t');
         }
     }
+
     std::string clearBuf() {
         std::string str = _buf.str();
         _buf.str("");
         _buf.clear();
         return str;
     }
-    std::string join(const str_list &items) {
+
+    std::string join(const str_list& items) {
         if (items.empty())
             return Empty;
         else if (items.size() == 1)
             return items.front();
-        for (const auto &item : items) {
+        for (const auto& item : items) {
             _joinBuf << item;
         }
         auto result = _joinBuf.str();
@@ -1827,7 +2822,8 @@ private:
         _joinBuf.clear();
         return result;
     }
-    std::string join(const str_list &items, std::string_view sep) {
+
+    std::string join(const str_list& items, std::string_view sep) {
         if (items.empty())
             return Empty;
         else if (items.size() == 1)
@@ -1843,35 +2839,36 @@ private:
         _joinBuf.clear();
         return result;
     }
-    unary_exp_t *singleUnaryExpFrom(ast_node *item) const {
-        Exp_t *exp = nullptr;
+
+    UnaryExp_t* singleUnaryExpFrom(ast_node* item) const {
+        Exp_t* exp = nullptr;
         switch (item->getId()) {
             case id<Exp_t>():
-                exp = static_cast<Exp_t *>(item);
+                exp = static_cast<Exp_t*>(item);
                 break;
             case id<ExpList_t>(): {
-                auto expList = static_cast<ExpList_t *>(item);
+                auto expList = static_cast<ExpList_t*>(item);
                 if (expList->exprs.size() == 1) {
-                    exp = static_cast<Exp_t *>(expList->exprs.front());
+                    exp = static_cast<Exp_t*>(expList->exprs.front());
                 }
                 break;
             }
             case id<ExpListLow_t>(): {
-                auto expList = static_cast<ExpListLow_t *>(item);
+                auto expList = static_cast<ExpListLow_t*>(item);
                 if (expList->exprs.size() == 1) {
-                    exp = static_cast<Exp_t *>(expList->exprs.front());
+                    exp = static_cast<Exp_t*>(expList->exprs.front());
                 }
                 break;
             }
             case id<SwitchList_t>(): {
-                auto expList = static_cast<SwitchList_t *>(item);
+                auto expList = static_cast<SwitchList_t*>(item);
                 if (expList->exprs.size() == 1) {
-                    exp = static_cast<Exp_t *>(expList->exprs.front());
+                    exp = static_cast<Exp_t*>(expList->exprs.front());
                 }
                 break;
             }
-            case id<unary_exp_t>(): {
-                auto unary = static_cast<unary_exp_t *>(item);
+            case id<UnaryExp_t>(): {
+                auto unary = static_cast<UnaryExp_t*>(item);
                 if (unary->expos.size() == 1) {
                     return unary;
                 }
@@ -1885,48 +2882,54 @@ private:
         BREAK_IF(exp->nilCoalesed);
         BREAK_IF(!exp->opValues.empty());
         BREAK_IF(exp->pipeExprs.size() != 1);
-        auto unary = static_cast<unary_exp_t *>(exp->pipeExprs.back());
+        auto unary = static_cast<UnaryExp_t*>(exp->pipeExprs.back());
         BREAK_IF(unary->expos.size() != 1);
         return unary;
         BLOCK_END
         return nullptr;
     }
-    Value_t *singleValueFrom(ast_node *item) const {
+
+    Value_t* singleValueFrom(ast_node* item) const {
         if (auto unary = singleUnaryExpFrom(item)) {
             if (unary->ops.empty()) {
-                return static_cast<Value_t *>(unary->expos.back());
+                return static_cast<Value_t*>(unary->expos.back());
             }
         }
         return nullptr;
     }
-    ast_ptr<false, Exp_t> newExp(SimpleValue_t *simpleValue, ast_node *x) {
+
+    ast_ptr<false, Exp_t> newExp(SimpleValue_t* simpleValue, ast_node* x) {
         auto value = x->new_ptr<Value_t>();
         value->item.set(simpleValue);
         return newExp(value, x);
     }
-    ast_ptr<false, Exp_t> newExp(String_t *string, ast_node *x) {
+
+    ast_ptr<false, Exp_t> newExp(String_t* string, ast_node* x) {
         auto value = x->new_ptr<Value_t>();
         value->item.set(string);
         return newExp(value, x);
     }
-    ast_ptr<false, Exp_t> newExp(ChainValue_t *chainValue, ast_node *x) {
+
+    ast_ptr<false, Exp_t> newExp(ChainValue_t* chainValue, ast_node* x) {
         auto value = x->new_ptr<Value_t>();
         value->item.set(chainValue);
         return newExp(value, x);
     }
-    ast_ptr<false, Exp_t> newExp(Value_t *value, ast_node *x) {
-        auto unary = x->new_ptr<unary_exp_t>();
+
+    ast_ptr<false, Exp_t> newExp(Value_t* value, ast_node* x) {
+        auto unary = x->new_ptr<UnaryExp_t>();
         unary->expos.push_back(value);
         auto exp = x->new_ptr<Exp_t>();
         exp->pipeExprs.push_back(unary);
         return exp;
     }
-    ast_ptr<false, Exp_t> newExp(Value_t *left, BinaryOperator_t *op, Value_t *right, ast_node *x) {
-        auto lunary = x->new_ptr<unary_exp_t>();
+
+    ast_ptr<false, Exp_t> newExp(Value_t* left, BinaryOperator_t* op, Value_t* right, ast_node* x) {
+        auto lunary = x->new_ptr<UnaryExp_t>();
         lunary->expos.push_back(left);
-        auto opValue = x->new_ptr<exp_op_value_t>();
+        auto opValue = x->new_ptr<ExpOpValue_t>();
         {
-            auto runary = x->new_ptr<unary_exp_t>();
+            auto runary = x->new_ptr<UnaryExp_t>();
             runary->expos.push_back(right);
             opValue->op.set(op);
             opValue->pipeExprs.push_back(runary);
@@ -1936,80 +2939,88 @@ private:
         exp->opValues.push_back(opValue);
         return exp;
     }
-    ast_ptr<false, Exp_t> newExp(unary_exp_t *unary, ast_node *x) {
+
+    ast_ptr<false, Exp_t> newExp(UnaryExp_t* unary, ast_node* x) {
         auto exp = x->new_ptr<Exp_t>();
         exp->pipeExprs.push_back(unary);
         return exp;
     }
-    SimpleValue_t *simpleSingleValueFrom(ast_node *node) const {
+
+    SimpleValue_t* simpleSingleValueFrom(ast_node* node) const {
         auto value = singleValueFrom(node);
         if (value && value->item.is<SimpleValue_t>()) {
-            return static_cast<SimpleValue_t *>(value->item.get());
+            return static_cast<SimpleValue_t*>(value->item.get());
         }
         return nullptr;
     }
-    Statement_t *lastStatementFrom(ast_node *body) const {
+
+    Statement_t* lastStatementFrom(ast_node* body) const {
         switch (body->getId()) {
             case id<Block_t>():
-                return lastStatementFrom(static_cast<Block_t *>(body));
+                return lastStatementFrom(static_cast<Block_t*>(body));
             case id<Statement_t>(): {
-                return static_cast<Statement_t *>(body);
+                return static_cast<Statement_t*>(body);
             }
             default:
-                SERROR("AST node mismatch", body);
+                MEO_E("AST node mismatch", body);
                 break;
         }
         return nullptr;
     }
-    Statement_t *lastStatementFrom(const node_container &stmts) const {
+
+    Statement_t* lastStatementFrom(const node_container& stmts) const {
         if (!stmts.empty()) {
             auto it = stmts.end();
             --it;
-            while (!static_cast<Statement_t *>(*it)->content && it != stmts.begin()) {
+            while (!static_cast<Statement_t*>(*it)->content && it != stmts.begin()) {
                 --it;
             }
-            return static_cast<Statement_t *>(*it);
+            return static_cast<Statement_t*>(*it);
         }
         return nullptr;
     }
-    Statement_t *lastStatementFrom(Body_t *body) const {
+
+    Statement_t* lastStatementFrom(Body_t* body) const {
         if (auto stmt = body->content.as<Statement_t>()) {
             return stmt;
         } else {
-            const auto &stmts = body->content.to<Block_t>()->statements.objects();
+            const auto& stmts = body->content.to<Block_t>()->statements.objects();
             return lastStatementFrom(stmts);
         }
     }
-    Statement_t *lastStatementFrom(Block_t *block) const {
-        const auto &stmts = block->statements.objects();
+
+    Statement_t* lastStatementFrom(Block_t* block) const {
+        const auto& stmts = block->statements.objects();
         return lastStatementFrom(stmts);
     }
-    Exp_t *lastExpFromAssign(ast_node *action) {
+
+    Exp_t* lastExpFromAssign(ast_node* action) {
         switch (action->getId()) {
             case id<Update_t>(): {
-                auto update = static_cast<Update_t *>(action);
+                auto update = static_cast<Update_t*>(action);
                 return update->value;
             }
             case id<Assign_t>(): {
-                auto assign = static_cast<Assign_t *>(action);
+                auto assign = static_cast<Assign_t*>(action);
                 return ast_cast<Exp_t>(assign->values.back());
             }
         }
         return nullptr;
     }
-    Exp_t *lastExpFromStatement(Statement_t *stmt) {
+
+    Exp_t* lastExpFromStatement(Statement_t* stmt) {
         if (!stmt->content) return nullptr;
         switch (stmt->content->getId()) {
             case id<ExpListAssign_t>(): {
-                auto expListAssign = static_cast<ExpListAssign_t *>(stmt->content.get());
+                auto expListAssign = static_cast<ExpListAssign_t*>(stmt->content.get());
                 if (auto action = expListAssign->action.get()) {
                     return lastExpFromAssign(action);
                 } else {
-                    return static_cast<Exp_t *>(expListAssign->expList->exprs.back());
+                    return static_cast<Exp_t*>(expListAssign->expList->exprs.back());
                 }
             }
             case id<Export_t>(): {
-                auto exportNode = static_cast<Export_t *>(stmt->content.get());
+                auto exportNode = static_cast<Export_t*>(stmt->content.get());
                 if (auto action = exportNode->assign.get()) {
                     return lastExpFromAssign(action);
                 } else {
@@ -2017,23 +3028,23 @@ private:
                         case id<Exp_t>():
                             return exportNode->target.to<Exp_t>();
                         case id<ExpList_t>():
-                            return static_cast<Exp_t *>(exportNode->target.to<ExpList_t>()->exprs.back());
+                            return static_cast<Exp_t*>(exportNode->target.to<ExpList_t>()->exprs.back());
                     }
                 }
                 return nullptr;
             }
             case id<Local_t>(): {
-                if (auto localValues = static_cast<Local_t *>(stmt->content.get())->item.as<local_values_t>()) {
+                if (auto localValues = static_cast<Local_t*>(stmt->content.get())->item.as<LocalValues_t>()) {
                     if (auto expList = localValues->valueList.as<ExpListLow_t>()) {
-                        return static_cast<Exp_t *>(expList->exprs.back());
+                        return static_cast<Exp_t*>(expList->exprs.back());
                     }
                 }
                 return nullptr;
             }
             case id<Global_t>(): {
-                if (auto globalValues = static_cast<Global_t *>(stmt->content.get())->item.as<global_values_t>()) {
+                if (auto globalValues = static_cast<Global_t*>(stmt->content.get())->item.as<GlobalValues_t>()) {
                     if (auto expList = globalValues->valueList.as<ExpListLow_t>()) {
-                        return static_cast<Exp_t *>(expList->exprs.back());
+                        return static_cast<Exp_t*>(expList->exprs.back());
                     }
                 }
                 return nullptr;
@@ -2041,10 +3052,11 @@ private:
         }
         return nullptr;
     }
+
     template <class T>
-    ast_ptr<false, T> toAst(std::string_view codes, ast_node *parent) {
+    ast_ptr<false, T> toAst(std::string_view codes, ast_node* parent) {
         auto res = _parser.parse<T>(std::string(codes));
-        res.node->traverse([&](ast_node *node) {
+        res.node->traverse([&](ast_node* node) {
             node->m_begin.m_line = parent->m_begin.m_line;
             node->m_begin.m_col = parent->m_begin.m_col;
             node->m_end.m_line = parent->m_end.m_line;
@@ -2054,16 +3066,19 @@ private:
         _codeCache.push_back(std::move(res.codes));
         return ast_ptr<false, T>(res.node.template to<T>());
     }
-    bool isChainValueCall(ChainValue_t *chainValue) const { return ast_is<InvokeArgs_t, Invoke_t>(chainValue->items.back()); }
+
+    bool isChainValueCall(ChainValue_t* chainValue) const { return ast_is<InvokeArgs_t, Invoke_t>(chainValue->items.back()); }
+
     enum class ChainType { Common, EndWithColon, EndWithEOP, HasEOP, HasKeyword, Macro, Metatable, MetaFieldInvocation };
-    ChainType specialChainValue(ChainValue_t *chainValue) const {
+
+    ChainType specialChainValue(ChainValue_t* chainValue) const {
         if (isMacroChain(chainValue)) {
             return ChainType::Macro;
         }
         if (ast_is<ColonChainItem_t>(chainValue->items.back())) {
             return ChainType::EndWithColon;
         }
-        if (ast_is<existential_op_t>(chainValue->items.back())) {
+        if (ast_is<ExistentialOp_t>(chainValue->items.back())) {
             return ChainType::EndWithEOP;
         }
         if (auto dot = ast_cast<DotChainItem_t>(chainValue->items.back())) {
@@ -2079,22 +3094,23 @@ private:
                 } else if (auto meta = colonChain->name.as<Metamethod_t>(); meta && !meta->item.is<Name_t>()) {
                     return ChainType::MetaFieldInvocation;
                 }
-            } else if (ast_is<existential_op_t>(item)) {
+            } else if (ast_is<ExistentialOp_t>(item)) {
                 return ChainType::HasEOP;
             }
         }
         return type;
     }
-    std::string singleVariableFrom(ChainValue_t *chainValue) {
+
+    std::string singleVariableFrom(ChainValue_t* chainValue) {
         BLOCK_START
         BREAK_IF(!chainValue);
         BREAK_IF(chainValue->items.size() != 1);
         auto callable = ast_cast<Callable_t>(chainValue->items.front());
         BREAK_IF(!callable);
-        ast_node *var = callable->item.as<Variable_t>();
+        ast_node* var = callable->item.as<Variable_t>();
         if (!var) {
-            if (auto self = callable->item.as<SelfName_t>()) {
-                var = self->name.as<self_t>();
+            if (auto self = callable->item.as<SelfItem_t>()) {
+                var = self->name.as<Self_t>();
             }
         }
         BREAK_IF(!var);
@@ -2104,7 +3120,8 @@ private:
         BLOCK_END
         return Empty;
     }
-    std::string singleVariableFrom(ast_node *expList, bool accessing) {
+
+    std::string singleVariableFrom(ast_node* expList, bool accessing) {
         if (!ast_is<Exp_t, ExpList_t>(expList)) return Empty;
         BLOCK_START
         auto value = singleValueFrom(expList);
@@ -2113,7 +3130,7 @@ private:
         BREAK_IF(!chainValue);
         BREAK_IF(chainValue->items.size() != 1);
         auto callable = ast_cast<Callable_t>(chainValue->items.front());
-        BREAK_IF(!callable || !(callable->item.is<Variable_t>() || callable->getByPath<SelfName_t, self_t>()));
+        BREAK_IF(!callable || !(callable->item.is<Variable_t>() || callable->getByPath<SelfItem_t, Self_t>()));
         str_list tmp;
         if (accessing) {
             transformCallable(callable, tmp);
@@ -2127,7 +3144,8 @@ private:
         BLOCK_END
         return Empty;
     }
-    Variable_t *variableFrom(Exp_t *exp) {
+
+    Variable_t* variableFrom(Exp_t* exp) {
         BLOCK_START
         auto value = singleValueFrom(exp);
         BREAK_IF(!value);
@@ -2140,7 +3158,8 @@ private:
         BLOCK_END
         return nullptr;
     }
-    bool isAssignable(const node_container &chainItems) {
+
+    bool isAssignable(const node_container& chainItems) {
         if (chainItems.size() == 1) {
             auto firstItem = chainItems.back();
             if (auto callable = ast_cast<Callable_t>(firstItem)) {
@@ -2148,7 +3167,7 @@ private:
                     case id<Variable_t>():
                         checkConst(_parser.toString(callable->item.get()), callable->item.get());
                         return true;
-                    case id<SelfName_t>():
+                    case id<SelfItem_t>():
                         return true;
                 }
             } else
@@ -2158,41 +3177,43 @@ private:
                         return true;
                 }
         } else {
-            if (std::find_if(chainItems.begin(), chainItems.end(), [](ast_node *node) { return ast_is<existential_op_t>(node); }) != chainItems.end()) {
+            if (std::find_if(chainItems.begin(), chainItems.end(), [](ast_node* node) { return ast_is<ExistentialOp_t>(node); }) != chainItems.end()) {
                 return false;
             }
             auto lastItem = chainItems.back();
             switch (lastItem->getId()) {
                 case id<DotChainItem_t>():
                 case id<Exp_t>():
-                case id<table_appending_op_t>():
+                case id<TableAppendingOp_t>():
                     return true;
             }
         }
         return false;
     }
-    bool isAssignable(Exp_t *exp) {
+
+    bool isAssignable(Exp_t* exp) {
         if (auto value = singleValueFrom(exp)) {
             auto item = value->item.get();
             switch (item->getId()) {
-                case id<simple_table_t>():
+                case id<SimpleTable_t>():
                     return true;
                 case id<SimpleValue_t>(): {
-                    auto simpleValue = static_cast<SimpleValue_t *>(item);
+                    auto simpleValue = static_cast<SimpleValue_t*>(item);
                     if (simpleValue->value.is<TableLit_t>()) {
                         return true;
                     }
                     return false;
                 }
                 case id<ChainValue_t>(): {
-                    auto chainValue = static_cast<ChainValue_t *>(item);
+                    auto chainValue = static_cast<ChainValue_t*>(item);
                     return isAssignable(chainValue->items.objects());
                 }
             }
         }
         return false;
     }
-    bool isAssignable(Assignable_t *assignable) {
+
+    bool isAssignable(Assignable_t* assignable) {
         if (auto assignableChain = ast_cast<AssignableChain_t>(assignable->item)) {
             return isAssignable(assignableChain->items.objects());
         } else if (auto variable = assignable->item.as<Variable_t>()) {
@@ -2200,33 +3221,42 @@ private:
         }
         return true;
     }
-    void checkAssignable(ExpList_t *expList) {
+
+    void checkAssignable(ExpList_t* expList) {
         for (auto exp_ : expList->exprs.objects()) {
-            Exp_t *exp = static_cast<Exp_t *>(exp_);
+            Exp_t* exp = static_cast<Exp_t*>(exp_);
             if (!isAssignable(exp)) {
                 throw std::logic_error(_info.errorMessage("left hand expression is not assignable"sv, exp));
             }
         }
     }
-    bool isPureBackcall(Exp_t *exp) const { return exp->opValues.empty() && exp->pipeExprs.size() > 1; }
-    bool isPureNilCoalesed(Exp_t *exp) const { return exp->nilCoalesed && exp->opValues.empty(); }
-    bool isMacroChain(ChainValue_t *chainValue) const {
-        const auto &chainList = chainValue->items.objects();
+
+    bool isPureBackcall(Exp_t* exp) const { return exp->opValues.empty() && exp->pipeExprs.size() > 1; }
+
+    bool isPureNilCoalesed(Exp_t* exp) const { return exp->nilCoalesed && exp->opValues.empty(); }
+
+    bool isMacroChain(ChainValue_t* chainValue) const {
+        const auto& chainList = chainValue->items.objects();
         auto callable = ast_cast<Callable_t>(chainList.front());
         if (callable && callable->item.is<MacroName_t>()) {
             return true;
         }
         return false;
     }
+
     void pushFunctionScope() {
         _enableReturn.push(true);
+        _enableBreakLoop.push(false);
         _gotoScopes.push(_gotoScope);
         _gotoScope++;
     }
+
     void popFunctionScope() {
         _enableReturn.pop();
+        _enableBreakLoop.pop();
         _gotoScopes.pop();
     }
+
     void pushAnonVarArg() {
         if (!_varArgs.empty() && _varArgs.top().hasVar) {
             _varArgs.push({true, false});
@@ -2234,10 +3264,14 @@ private:
             _varArgs.push({false, false});
         }
     }
+
     void popAnonVarArg() { _varArgs.pop(); }
+
     std::string anonFuncStart() const { return !_varArgs.empty() && _varArgs.top().hasVar && _varArgs.top().usedVar ? "(function(...)"s : "(function()"s; }
+
     std::string anonFuncEnd() const { return !_varArgs.empty() && _varArgs.top().usedVar ? "end)(...)"s : "end)()"s; }
-    std::string globalVar(std::string_view var, ast_node *x) {
+
+    std::string globalVar(std::string_view var, ast_node* x) {
         std::string str(var);
         if (_config.lintGlobalVariable) {
             if (!isDefined(str)) {
@@ -2248,7 +3282,47 @@ private:
         }
         return str;
     }
-    void transformStatement(Statement_t *statement, str_list &out) {
+
+    void checkMetamethod(const std::string& name, ast_node* x) {
+        if (Metamethods.find(name) == Metamethods.end()) {
+            throw std::logic_error(_info.errorMessage("invalid metamethod name"sv, x));
+        }
+        int target = getLuaTarget(x);
+        switch (target) {
+            case 501:
+                goto metamethod51;
+            case 502:
+                goto metamethod52;
+            case 503: {
+                if (name == "ipairs"sv) {
+                    throw std::logic_error(_info.errorMessage("metamethod is deprecated since Lua 5.3"sv, x));
+                }
+                goto metamethod53;
+            }
+            case 504: {
+                if (name == "ipairs"sv) {
+                    throw std::logic_error(_info.errorMessage("metamethod is not supported since Lua 5.4"sv, x));
+                }
+                goto metamethod54;
+            }
+        }
+    metamethod51:
+        if (name == "pairs"sv || name == "ipairs"sv) {
+            throw std::logic_error(_info.errorMessage("metamethod is not supported until Lua 5.2"sv, x));
+        }
+    metamethod52:
+        if (name == "name"sv || name == "idiv"sv || name == "band"sv || name == "bor"sv || name == "bxor"sv || name == "bnot"sv || name == "shl"sv || name == "shr"sv) {
+            throw std::logic_error(_info.errorMessage("metamethod is not supported until Lua 5.3"sv, x));
+        }
+    metamethod53:
+        if (name == "close"sv) {
+            throw std::logic_error(_info.errorMessage("metamethod is not supported until Lua 5.4"sv, x));
+        }
+    metamethod54:
+        return;
+    }
+
+    void transformStatement(Statement_t* statement, str_list& out) {
         auto x = statement;
         if (statement->appendix) {
             if (auto assignment = assignmentFrom(statement)) {
@@ -2262,11 +3336,12 @@ private:
             } else if (auto attrib = statement->content.as<LocalAttrib_t>()) {
                 auto appendix = statement->appendix.get();
                 switch (appendix->item->getId()) {
-                    case id<if_line_t>(): {
-                        auto if_line = static_cast<if_line_t *>(appendix->item.get());
+                    case id<IfLine_t>(): {
+                        auto if_line = static_cast<IfLine_t*>(appendix->item.get());
                         auto ifNode = x->new_ptr<If_t>();
                         ifNode->type.set(if_line->type);
                         ifNode->nodes.push_back(if_line->condition);
+
                         auto expList = x->new_ptr<ExpList_t>();
                         for (auto val : attrib->assign->values.objects()) {
                             switch (val->getId()) {
@@ -2280,7 +3355,7 @@ private:
                                     break;
                                 }
                                 case id<TableBlock_t>(): {
-                                    auto tableBlock = static_cast<TableBlock_t *>(val);
+                                    auto tableBlock = static_cast<TableBlock_t*>(val);
                                     auto tabLit = x->new_ptr<TableLit_t>();
                                     tabLit->values.dup(tableBlock->values);
                                     auto simpleValue = x->new_ptr<SimpleValue_t>();
@@ -2294,7 +3369,7 @@ private:
                                     break;
                                 }
                                 default:
-                                    SERROR("AST node mismatch", val);
+                                    MEO_E("AST node mismatch", val);
                                     break;
                             }
                         }
@@ -2303,13 +3378,14 @@ private:
                         auto stmt = x->new_ptr<Statement_t>();
                         stmt->content.set(expListAssign);
                         ifNode->nodes.push_back(stmt);
+
                         statement->appendix.set(nullptr);
                         attrib->assign->values.clear();
                         attrib->assign->values.push_back(ifNode);
                         transformStatement(statement, out);
                         return;
                     }
-                    case id<while_line_t>(): {
+                    case id<WhileLine_t>(): {
                         throw std::logic_error(_info.errorMessage("while-loop line decorator is not supported here"sv, appendix->item.get()));
                         break;
                     }
@@ -2318,20 +3394,32 @@ private:
                         break;
                     }
                     default:
-                        SERROR("AST node mismatch", appendix->item.get());
+                        MEO_E("AST node mismatch", appendix->item.get());
+                        break;
+                }
+            } else if (!statement->appendix->item.is<IfLine_t>()) {
+                auto appendix = statement->appendix->item.get();
+                switch (statement->content->getId()) {
+                    case id<Return_t>():
+                        throw std::logic_error(_info.errorMessage("loop line decorator can not be used in a return statement"sv, appendix));
+                        break;
+                    case id<BreakLoop_t>():
+                        throw std::logic_error(_info.errorMessage("loop line decorator can not be used in a break-loop statement"sv, appendix));
                         break;
                 }
             }
             auto appendix = statement->appendix.get();
             switch (appendix->item->getId()) {
-                case id<if_line_t>(): {
-                    auto if_line = static_cast<if_line_t *>(appendix->item.get());
+                case id<IfLine_t>(): {
+                    auto if_line = static_cast<IfLine_t*>(appendix->item.get());
                     auto ifNode = x->new_ptr<If_t>();
                     ifNode->type.set(if_line->type);
                     ifNode->nodes.push_back(if_line->condition);
+
                     auto stmt = x->new_ptr<Statement_t>();
                     stmt->content.set(statement->content);
                     ifNode->nodes.push_back(stmt);
+
                     statement->appendix.set(nullptr);
                     auto simpleValue = x->new_ptr<SimpleValue_t>();
                     simpleValue->value.set(ifNode);
@@ -2343,14 +3431,16 @@ private:
                     statement->content.set(expListAssign);
                     break;
                 }
-                case id<while_line_t>(): {
-                    auto while_line = static_cast<while_line_t *>(appendix->item.get());
+                case id<WhileLine_t>(): {
+                    auto while_line = static_cast<WhileLine_t*>(appendix->item.get());
                     auto whileNode = x->new_ptr<While_t>();
                     whileNode->type.set(while_line->type);
                     whileNode->condition.set(while_line->condition);
+
                     auto stmt = x->new_ptr<Statement_t>();
                     stmt->content.set(statement->content);
                     whileNode->body.set(stmt);
+
                     statement->appendix.set(nullptr);
                     auto simpleValue = x->new_ptr<SimpleValue_t>();
                     simpleValue->value.set(whileNode);
@@ -2381,7 +3471,7 @@ private:
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", appendix->item.get());
+                    MEO_E("AST node mismatch", appendix->item.get());
                     break;
             }
         }
@@ -2392,58 +3482,58 @@ private:
         }
         switch (content->getId()) {
             case id<Import_t>():
-                transformImport(static_cast<Import_t *>(content), out);
+                transformImport(static_cast<Import_t*>(content), out);
                 break;
             case id<While_t>():
-                transformWhile(static_cast<While_t *>(content), out);
+                transformWhile(static_cast<While_t*>(content), out);
                 break;
             case id<Repeat_t>():
-                transformRepeat(static_cast<Repeat_t *>(content), out);
+                transformRepeat(static_cast<Repeat_t*>(content), out);
                 break;
             case id<For_t>():
-                transformFor(static_cast<For_t *>(content), out);
+                transformFor(static_cast<For_t*>(content), out);
                 break;
             case id<ForEach_t>():
-                transformForEach(static_cast<ForEach_t *>(content), out);
+                transformForEach(static_cast<ForEach_t*>(content), out);
                 break;
             case id<Return_t>():
-                transformReturn(static_cast<Return_t *>(content), out);
+                transformReturn(static_cast<Return_t*>(content), out);
                 break;
             case id<Local_t>():
-                transformLocal(static_cast<Local_t *>(content), out);
+                transformLocal(static_cast<Local_t*>(content), out);
                 break;
             case id<Global_t>():
-                transformGlobal(static_cast<Global_t *>(content), out);
+                transformGlobal(static_cast<Global_t*>(content), out);
                 break;
             case id<Export_t>():
-                transformExport(static_cast<Export_t *>(content), out);
+                transformExport(static_cast<Export_t*>(content), out);
                 break;
             case id<Macro_t>():
-                transformMacro(static_cast<Macro_t *>(content), out, false);
+                transformMacro(static_cast<Macro_t*>(content), out, false);
                 break;
             case id<MacroInPlace_t>():
-                transformMacroInPlace(static_cast<MacroInPlace_t *>(content));
+                transformMacroInPlace(static_cast<MacroInPlace_t*>(content));
                 break;
             case id<BreakLoop_t>():
-                transformBreakLoop(static_cast<BreakLoop_t *>(content), out);
+                transformBreakLoop(static_cast<BreakLoop_t*>(content), out);
                 break;
             case id<Label_t>():
-                transformLabel(static_cast<Label_t *>(content), out);
+                transformLabel(static_cast<Label_t*>(content), out);
                 break;
             case id<Goto_t>():
-                transformGoto(static_cast<Goto_t *>(content), out);
+                transformGoto(static_cast<Goto_t*>(content), out);
                 break;
             case id<ShortTabAppending_t>():
-                transformShortTabAppending(static_cast<ShortTabAppending_t *>(content), out);
+                transformShortTabAppending(static_cast<ShortTabAppending_t*>(content), out);
                 break;
             case id<LocalAttrib_t>():
-                transformLocalAttrib(static_cast<LocalAttrib_t *>(content), out);
+                transformLocalAttrib(static_cast<LocalAttrib_t*>(content), out);
                 break;
             case id<PipeBody_t>():
                 throw std::logic_error(_info.errorMessage("pipe chain must be following a value"sv, x));
                 break;
             case id<ExpListAssign_t>(): {
-                auto expListAssign = static_cast<ExpListAssign_t *>(content);
+                auto expListAssign = static_cast<ExpListAssign_t*>(content);
                 if (expListAssign->action) {
                     transformAssignment(expListAssign, out);
                 } else {
@@ -2458,34 +3548,34 @@ private:
                             bool specialSingleValue = true;
                             switch (value->getId()) {
                                 case id<If_t>():
-                                    transformIf(static_cast<If_t *>(value), out, ExpUsage::Common);
+                                    transformIf(static_cast<If_t*>(value), out, ExpUsage::Common);
                                     break;
                                 case id<ClassDecl_t>():
-                                    transformClassDecl(static_cast<ClassDecl_t *>(value), out, ExpUsage::Common);
+                                    transformClassDecl(static_cast<ClassDecl_t*>(value), out, ExpUsage::Common);
                                     break;
                                 case id<Switch_t>():
-                                    transformSwitch(static_cast<Switch_t *>(value), out, ExpUsage::Common);
+                                    transformSwitch(static_cast<Switch_t*>(value), out, ExpUsage::Common);
                                     break;
                                 case id<With_t>():
-                                    transformWith(static_cast<With_t *>(value), out);
+                                    transformWith(static_cast<With_t*>(value), out);
                                     break;
                                 case id<ForEach_t>():
-                                    transformForEach(static_cast<ForEach_t *>(value), out);
+                                    transformForEach(static_cast<ForEach_t*>(value), out);
                                     break;
                                 case id<For_t>():
-                                    transformFor(static_cast<For_t *>(value), out);
+                                    transformFor(static_cast<For_t*>(value), out);
                                     break;
                                 case id<While_t>():
-                                    transformWhile(static_cast<While_t *>(value), out);
+                                    transformWhile(static_cast<While_t*>(value), out);
                                     break;
                                 case id<Do_t>():
-                                    transformDo(static_cast<Do_t *>(value), out, ExpUsage::Common);
+                                    transformDo(static_cast<Do_t*>(value), out, ExpUsage::Common);
                                     break;
                                 case id<Try_t>():
-                                    transformTry(static_cast<Try_t *>(value), out, ExpUsage::Common);
+                                    transformTry(static_cast<Try_t*>(value), out, ExpUsage::Common);
                                     break;
                                 case id<Comprehension_t>():
-                                    transformCompCommon(static_cast<Comprehension_t *>(value), out);
+                                    transformCompCommon(static_cast<Comprehension_t*>(value), out);
                                     break;
                                 default:
                                     specialSingleValue = false;
@@ -2502,21 +3592,21 @@ private:
                             }
                         }
                     } else if (expList->exprs.size() == 1) {
-                        auto exp = static_cast<Exp_t *>(expList->exprs.back());
+                        auto exp = static_cast<Exp_t*>(expList->exprs.back());
                         if (isPureBackcall(exp)) {
                             transformExp(exp, out, ExpUsage::Common);
                             break;
                         }
                     }
-                    throw std::logic_error(_info.errorMessage("expression list is not supported here"sv, expList));
+                    throw std::logic_error(_info.errorMessage("unexpected expression"sv, expList));
                 }
                 break;
             }
             case id<ChainAssign_t>():
-                transformChainAssign(static_cast<ChainAssign_t *>(content), out);
+                transformChainAssign(static_cast<ChainAssign_t*>(content), out);
                 break;
             default:
-                SERROR("AST node mismatch", content);
+                MEO_E("AST node mismatch", content);
                 break;
         }
         if (statement->needSep && !out.empty() && !out.back().empty()) {
@@ -2539,7 +3629,8 @@ private:
             }
         }
     }
-    str_list getAssignVars(ExpListAssign_t *assignment) {
+
+    str_list getAssignVars(ExpListAssign_t* assignment) {
         str_list vars;
         bool lintGlobal = _config.lintGlobalVariable;
         _config.lintGlobalVariable = false;
@@ -2551,7 +3642,8 @@ private:
         _config.lintGlobalVariable = lintGlobal;
         return vars;
     }
-    str_list getAssignVars(With_t *with) {
+
+    str_list getAssignVars(With_t* with) {
         str_list vars;
         bool lintGlobal = _config.lintGlobalVariable;
         _config.lintGlobalVariable = false;
@@ -2562,11 +3654,13 @@ private:
         _config.lintGlobalVariable = lintGlobal;
         return vars;
     }
+
     enum class DefOp { Get, Check, Mark };
-    str_list transformAssignDefs(ExpList_t *expList, DefOp op) {
+
+    str_list transformAssignDefs(ExpList_t* expList, DefOp op) {
         str_list defs;
         for (auto exp_ : expList->exprs.objects()) {
-            auto exp = static_cast<Exp_t *>(exp_);
+            auto exp = static_cast<Exp_t*>(exp_);
             if (auto value = singleValueFrom(exp)) {
                 if (auto chain = value->item.as<ChainValue_t>()) {
                     BLOCK_START
@@ -2576,8 +3670,8 @@ private:
                     std::string name;
                     if (auto var = callable->item.as<Variable_t>()) {
                         name = _parser.toString(var);
-                    } else if (auto self = callable->item.as<SelfName_t>()) {
-                        if (self->name.is<self_t>()) name = "self"sv;
+                    } else if (auto self = callable->item.as<SelfItem_t>()) {
+                        if (self->name.is<Self_t>()) name = "self"sv;
                     }
                     BREAK_IF(name.empty());
                     switch (op) {
@@ -2599,19 +3693,21 @@ private:
         }
         return defs;
     }
-    std::string toLocalDecl(const str_list &defs) {
+
+    std::string toLocalDecl(const str_list& defs) {
         if (defs.empty()) return Empty;
         return indent() + "local "s + join(defs, ", "sv);
     }
-    std::string getDestrucureDefine(ExpListAssign_t *assignment) {
+
+    std::string getDestrucureDefine(ExpListAssign_t* assignment) {
         auto info = extractDestructureInfo(assignment, true, false);
         if (info.assignment) {
             _buf << getPreDefineLine(info.assignment);
         }
         if (!info.destructures.empty()) {
-            for (const auto &destruct : info.destructures) {
+            for (const auto& destruct : info.destructures) {
                 str_list defs;
-                for (const auto &item : destruct.items) {
+                for (const auto& item : destruct.items) {
                     if (!item.targetVar.empty()) {
                         if (addToScope(item.targetVar)) {
                             defs.push_back(item.targetVar);
@@ -2623,19 +3719,22 @@ private:
         }
         return clearBuf();
     }
-    std::string getPreDefine(ExpListAssign_t *assignment) {
+
+    std::string getPreDefine(ExpListAssign_t* assignment) {
         auto preDefine = getDestrucureDefine(assignment);
         if (preDefine.empty()) {
             preDefine = toLocalDecl(transformAssignDefs(assignment->expList, DefOp::Mark));
         }
         return preDefine;
     }
-    std::string getPreDefineLine(ExpListAssign_t *assignment) {
+
+    std::string getPreDefineLine(ExpListAssign_t* assignment) {
         auto preDefine = getPreDefine(assignment);
         if (!preDefine.empty()) preDefine += nll(assignment);
         return preDefine;
     }
-    ExpList_t *expListFrom(Statement_t *statement) {
+
+    ExpList_t* expListFrom(Statement_t* statement) {
         if (auto expListAssign = statement->content.as<ExpListAssign_t>()) {
             if (!expListAssign->action) {
                 return expListAssign->expList.get();
@@ -2643,7 +3742,8 @@ private:
         }
         return nullptr;
     }
-    ExpListAssign_t *assignmentFrom(Statement_t *statement) {
+
+    ExpListAssign_t* assignmentFrom(Statement_t* statement) {
         if (auto expListAssign = statement->content.as<ExpListAssign_t>()) {
             if (expListAssign->action) {
                 return expListAssign;
@@ -2651,7 +3751,8 @@ private:
         }
         return nullptr;
     }
-    ast_ptr<false, ExpListAssign_t> assignmentFrom(Exp_t *target, ast_node *value, ast_node *x) {
+
+    ast_ptr<false, ExpListAssign_t> assignmentFrom(Exp_t* target, ast_node* value, ast_node* x) {
         auto assignment = x->new_ptr<ExpListAssign_t>();
         auto assignList = x->new_ptr<ExpList_t>();
         assignList->exprs.push_back(target);
@@ -2661,10 +3762,11 @@ private:
         assignment->action.set(assign);
         return assignment;
     }
-    void markDestructureConst(ExpListAssign_t *assignment) {
+
+    void markDestructureConst(ExpListAssign_t* assignment) {
         auto info = extractDestructureInfo(assignment, true, false);
-        for (auto &destruct : info.destructures) {
-            for (auto &item : destruct.items) {
+        for (auto& destruct : info.destructures) {
+            for (auto& item : destruct.items) {
                 if (item.targetVar.empty()) {
                     throw std::logic_error(_info.errorMessage("can only declare variable as const"sv, item.target));
                 }
@@ -2672,14 +3774,15 @@ private:
             }
         }
     }
-    void transformAssignment(ExpListAssign_t *assignment, str_list &out, bool optionalDestruct = false) {
+
+    void transformAssignment(ExpListAssign_t* assignment, str_list& out, bool optionalDestruct = false) {
         checkAssignable(assignment->expList);
         BLOCK_START
         auto assign = ast_cast<Assign_t>(assignment->action);
         BREAK_IF(!assign);
         auto x = assignment;
-        const auto &exprs = x->expList->exprs.objects();
-        const auto &values = assign->values.objects();
+        const auto& exprs = x->expList->exprs.objects();
+        const auto& values = assign->values.objects();
         if (exprs.size() < values.size()) {
             auto num = exprs.size();
             if (num > 1) {
@@ -2734,7 +3837,7 @@ private:
                 BLOCK_START
                 auto value = singleValueFrom(*it);
                 BREAK_IF(!value);
-                if (value->item.is<simple_table_t>() || value->getByPath<SimpleValue_t, TableLit_t>()) {
+                if (value->item.is<SimpleTable_t>() || value->getByPath<SimpleValue_t, TableLit_t>()) {
                     holdItem = true;
                     break;
                 }
@@ -2744,7 +3847,7 @@ private:
                 if (auto dot = ast_cast<DotChainItem_t>(chainValue->items.back())) {
                     BREAK_IF(!dot->name.is<Metatable_t>());
                     holdItem = true;
-                } else if (ast_is<table_appending_op_t>(chainValue->items.back())) {
+                } else if (ast_is<TableAppendingOp_t>(chainValue->items.back())) {
                     holdItem = true;
                 }
                 BLOCK_END
@@ -2768,7 +3871,7 @@ private:
             preAssign->values.push_back(funcCall);
             preAssignment->action.set(preAssign);
             auto preExplist = funcCall->new_ptr<ExpList_t>();
-            for (const auto &item : extraExprs) {
+            for (const auto& item : extraExprs) {
                 preExplist->exprs.push_back(item.get());
                 assign->values.push_back(item.get());
             }
@@ -2815,7 +3918,7 @@ private:
                     transformAssignItem(*vit, args);
                     _buf << indent() << globalVar("setmetatable"sv, x) << '(' << join(args, ", "sv) << ')' << nll(x);
                     temp.push_back(clearBuf());
-                } else if (ast_is<table_appending_op_t>(chainValue->items.back())) {
+                } else if (ast_is<TableAppendingOp_t>(chainValue->items.back())) {
                     auto tmpChain = chainValue->new_ptr<ChainValue_t>();
                     tmpChain->items.dup(chainValue->items);
                     tmpChain->items.pop_back();
@@ -2893,7 +3996,7 @@ private:
         }
         switch (value->getId()) {
             case id<If_t>(): {
-                auto ifNode = static_cast<If_t *>(value);
+                auto ifNode = static_cast<If_t*>(value);
                 auto assignList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
                 transformIf(ifNode, out, ExpUsage::Assignment, assignList);
@@ -2901,7 +4004,7 @@ private:
                 return;
             }
             case id<Switch_t>(): {
-                auto switchNode = static_cast<Switch_t *>(value);
+                auto switchNode = static_cast<Switch_t*>(value);
                 auto assignList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
                 transformSwitch(switchNode, out, ExpUsage::Assignment, assignList);
@@ -2909,7 +4012,7 @@ private:
                 return;
             }
             case id<With_t>(): {
-                auto withNode = static_cast<With_t *>(value);
+                auto withNode = static_cast<With_t*>(value);
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
                 transformWith(withNode, out, expList);
@@ -2918,7 +4021,7 @@ private:
             }
             case id<Do_t>(): {
                 auto expList = assignment->expList.get();
-                auto doNode = static_cast<Do_t *>(value);
+                auto doNode = static_cast<Do_t*>(value);
                 std::string preDefine = getPreDefineLine(assignment);
                 transformDo(doNode, out, ExpUsage::Assignment, expList);
                 out.back().insert(0, preDefine);
@@ -2927,47 +4030,47 @@ private:
             case id<Comprehension_t>(): {
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
-                transformComprehension(static_cast<Comprehension_t *>(value), out, ExpUsage::Assignment, expList);
+                transformComprehension(static_cast<Comprehension_t*>(value), out, ExpUsage::Assignment, expList);
                 out.back().insert(0, preDefine);
                 return;
             }
             case id<TblComprehension_t>(): {
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
-                transformTblComprehension(static_cast<TblComprehension_t *>(value), out, ExpUsage::Assignment, expList);
+                transformTblComprehension(static_cast<TblComprehension_t*>(value), out, ExpUsage::Assignment, expList);
                 out.back().insert(0, preDefine);
                 return;
             }
             case id<For_t>(): {
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
-                transformForInPlace(static_cast<For_t *>(value), out, expList);
+                transformForInPlace(static_cast<For_t*>(value), out, expList);
                 out.back().insert(0, preDefine);
                 return;
             }
             case id<ForEach_t>(): {
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
-                transformForEachInPlace(static_cast<ForEach_t *>(value), out, expList);
+                transformForEachInPlace(static_cast<ForEach_t*>(value), out, expList);
                 out.back().insert(0, preDefine);
                 return;
             }
             case id<ClassDecl_t>(): {
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
-                transformClassDecl(static_cast<ClassDecl_t *>(value), out, ExpUsage::Assignment, expList);
+                transformClassDecl(static_cast<ClassDecl_t*>(value), out, ExpUsage::Assignment, expList);
                 out.back().insert(0, preDefine);
                 return;
             }
             case id<While_t>(): {
                 auto expList = assignment->expList.get();
                 std::string preDefine = getPreDefineLine(assignment);
-                transformWhileInPlace(static_cast<While_t *>(value), out, expList);
+                transformWhileInPlace(static_cast<While_t*>(value), out, expList);
                 out.back().insert(0, preDefine);
                 return;
             }
             case id<TableLit_t>(): {
-                auto tableLit = static_cast<TableLit_t *>(value);
+                auto tableLit = static_cast<TableLit_t*>(value);
                 if (hasSpreadExp(tableLit->values.objects())) {
                     auto expList = assignment->expList.get();
                     std::string preDefine = getPreDefineLine(assignment);
@@ -2977,7 +4080,7 @@ private:
                 }
             }
             case id<TableBlock_t>(): {
-                auto tableBlock = static_cast<TableBlock_t *>(value);
+                auto tableBlock = static_cast<TableBlock_t*>(value);
                 if (hasSpreadExp(tableBlock->values.objects())) {
                     auto expList = assignment->expList.get();
                     std::string preDefine = getPreDefineLine(assignment);
@@ -3027,16 +4130,37 @@ private:
         if (info.destructures.empty()) {
             transformAssignmentCommon(assignment, out);
         } else {
+            auto x = assignment;
             str_list temp;
+            if (info.extraScope) {
+                str_list defs;
+                for (auto& destruct : info.destructures) {
+                    for (auto& item : destruct.items) {
+                        if (!item.targetVar.empty()) {
+                            if (!isDefined(item.targetVar)) {
+                                defs.push_back(item.targetVar);
+                            }
+                        }
+                    }
+                }
+                if (!defs.empty()) {
+                    for (const auto& def : defs) {
+                        checkConst(def, x);
+                        addToScope(def);
+                    }
+                    temp.push_back(indent() + "local "s + join(defs, ", "sv) + nll(x));
+                }
+                temp.push_back(indent() + "do"s + nll(x));
+                pushScope();
+            }
             if (info.assignment) {
                 transformAssignmentCommon(info.assignment, temp);
             }
-            auto x = assignment;
-            for (auto &destruct : info.destructures) {
+            for (auto& destruct : info.destructures) {
                 std::list<std::pair<ast_ptr<true, Exp_t>, ast_ptr<true, Exp_t>>> leftPairs;
                 bool extraScope = false;
                 if (!destruct.inlineAssignment && destruct.items.size() == 1) {
-                    auto &pair = destruct.items.front();
+                    auto& pair = destruct.items.front();
                     if (pair.targetVar.empty() && pair.defVal) {
                         extraScope = true;
                         auto objVar = getUnusedName("_tmp_"sv);
@@ -3045,7 +4169,7 @@ private:
                         pair.target.set(objExp);
                         pair.targetVar = objVar;
                     } else if (auto val = singleValueFrom(destruct.value); val->item.is<ChainValue_t>()) {
-                        auto chainValue = static_cast<ChainValue_t *>(val->item.get());
+                        auto chainValue = static_cast<ChainValue_t*>(val->item.get());
                         auto newChain = val->item->new_ptr<ChainValue_t>();
                         newChain->items.dup(chainValue->items);
                         if (pair.structure) {
@@ -3057,13 +4181,13 @@ private:
                             bool isNil = false;
                             if (auto v1 = singleValueFrom(pair.defVal)) {
                                 if (auto v2 = v1->item.as<SimpleValue_t>()) {
-                                    if (auto v3 = v2->value.as<const_value_t>()) {
+                                    if (auto v3 = v2->value.as<ConstValue_t>()) {
                                         isNil = _parser.toString(v3) == "nil"sv;
                                     }
                                 }
                             }
                             if (!isNil) {
-                                auto stmt = toAst<Statement_t>(pair.targetVar + "=nil if "s + pair.targetVar + "==nil", pair.defVal);
+                                auto stmt = toAst<Statement_t>(pair.targetVar + "=nil if "s + pair.targetVar + "==nil"s, pair.defVal);
                                 auto defAssign = stmt->content.as<ExpListAssign_t>();
                                 auto assign = defAssign->action.as<Assign_t>();
                                 assign->values.clear();
@@ -3109,9 +4233,9 @@ private:
                 } else {
                     str_list defs;
                     std::list<ast_ptr<false, ChainValue_t>> values;
-                    std::list<Exp_t *> names;
+                    std::list<Exp_t*> names;
                     pushScope();
-                    for (auto &item : destruct.items) {
+                    for (auto& item : destruct.items) {
                         if (!item.targetVar.empty()) {
                             if (!isDefined(item.targetVar)) {
                                 defs.push_back(item.targetVar);
@@ -3131,12 +4255,12 @@ private:
                     popScope();
                     if (_parser.match<Name_t>(destruct.valueVar) && isLocal(destruct.valueVar)) {
                         auto callable = toAst<Callable_t>(destruct.valueVar, destruct.value);
-                        for (auto &v : values) {
+                        for (auto& v : values) {
                             v->items.push_front(callable);
                         }
                         if (extraScope) {
                             if (!defs.empty()) {
-                                for (const auto &def : defs) {
+                                for (const auto& def : defs) {
                                     checkConst(def, x);
                                     addToScope(def);
                                 }
@@ -3147,7 +4271,7 @@ private:
                         }
                     } else {
                         if (!defs.empty()) {
-                            for (const auto &def : defs) {
+                            for (const auto& def : defs) {
                                 checkConst(def, x);
                                 addToScope(def);
                             }
@@ -3161,7 +4285,7 @@ private:
                         auto newAssignment = assignmentFrom(targetVar, destruct.value, destruct.value);
                         transformAssignment(newAssignment, temp);
                         auto callable = singleValueFrom(targetVar)->item.to<ChainValue_t>()->items.front();
-                        for (auto &v : values) {
+                        for (auto& v : values) {
                             v->items.push_front(callable);
                         }
                     }
@@ -3192,7 +4316,7 @@ private:
                         }
                     } else {
                         auto valueList = x->new_ptr<ExpList_t>();
-                        for (const auto &v : values) {
+                        for (const auto& v : values) {
                             valueList->exprs.push_back(newExp(v, v));
                         }
                         auto newAssignment = x->new_ptr<ExpListAssign_t>();
@@ -3207,12 +4331,12 @@ private:
                         transformAssignment(newAssignment, temp);
                     }
                 }
-                for (const auto &item : destruct.items) {
+                for (const auto& item : destruct.items) {
                     if (item.defVal) {
                         bool isNil = false;
                         if (auto v1 = singleValueFrom(item.defVal)) {
                             if (auto v2 = v1->item.as<SimpleValue_t>()) {
-                                if (auto v3 = v2->value.as<const_value_t>()) {
+                                if (auto v3 = v2->value.as<ConstValue_t>()) {
                                     isNil = _parser.toString(v3) == "nil"sv;
                                 }
                             }
@@ -3227,7 +4351,7 @@ private:
                         }
                     }
                 }
-                for (const auto &item : leftPairs) {
+                for (const auto& item : leftPairs) {
                     auto newAssignment = assignmentFrom(item.first, item.second, x);
                     transformAssignment(newAssignment, temp);
                 }
@@ -3237,34 +4361,40 @@ private:
                     temp.push_back(clearBuf());
                 }
             }
+            if (info.extraScope) {
+                popScope();
+                temp.push_back(indent() + "end"s + nlr(x));
+            }
             out.push_back(join(temp));
         }
     }
-    void transformAssignItem(ast_node *value, str_list &out) {
+
+    void transformAssignItem(ast_node* value, str_list& out) {
         switch (value->getId()) {
             case id<With_t>():
-                transformWithClosure(static_cast<With_t *>(value), out);
+                transformWithClosure(static_cast<With_t*>(value), out);
                 break;
             case id<If_t>():
-                transformIf(static_cast<If_t *>(value), out, ExpUsage::Closure);
+                transformIf(static_cast<If_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<Switch_t>():
-                transformSwitch(static_cast<Switch_t *>(value), out, ExpUsage::Closure);
+                transformSwitch(static_cast<Switch_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<TableBlock_t>():
-                transformTableBlock(static_cast<TableBlock_t *>(value), out);
+                transformTableBlock(static_cast<TableBlock_t*>(value), out);
                 break;
             case id<Exp_t>():
-                transformExp(static_cast<Exp_t *>(value), out, ExpUsage::Closure);
+                transformExp(static_cast<Exp_t*>(value), out, ExpUsage::Closure);
                 break;
             default:
-                SERROR("AST node mismatch", value);
+                MEO_E("AST node mismatch", value);
                 break;
         }
     }
-    std::list<DestructItem> destructFromExp(ast_node *node, bool optional) {
-        const node_container *tableItems = nullptr;
-        ast_ptr<false, existential_op_t> sep = optional ? node->new_ptr<existential_op_t>() : nullptr;
+
+    std::list<DestructItem> destructFromExp(ast_node* node, bool optional) {
+        const node_container* tableItems = nullptr;
+        ast_ptr<false, ExistentialOp_t> sep = optional ? node->new_ptr<ExistentialOp_t>() : nullptr;
         switch (node->getId()) {
             case id<Exp_t>(): {
                 auto item = singleValueFrom(node)->item.get();
@@ -3273,7 +4403,7 @@ private:
                 if (tbA) {
                     tableItems = &tbA->values.objects();
                 } else {
-                    auto tbB = ast_cast<simple_table_t>(item);
+                    auto tbB = ast_cast<SimpleTable_t>(item);
                     if (tbB) tableItems = &tbB->pairs.objects();
                 }
                 break;
@@ -3293,13 +4423,13 @@ private:
                 tableItems = &table->values.objects();
                 break;
             }
-            case id<simple_table_t>(): {
-                auto table = ast_cast<simple_table_t>(node);
+            case id<SimpleTable_t>(): {
+                auto table = ast_cast<SimpleTable_t>(node);
                 tableItems = &table->pairs.objects();
                 break;
             }
             default:
-                SERROR("AST node mismatch", node);
+                MEO_E("AST node mismatch", node);
                 break;
         }
         if (!tableItems) throw std::logic_error(_info.errorMessage("invalid destructure value"sv, node));
@@ -3309,19 +4439,19 @@ private:
         for (auto pair : *tableItems) {
             switch (pair->getId()) {
                 case id<Exp_t>():
-                case id<normal_def_t>(): {
-                    Exp_t *defVal = nullptr;
-                    if (auto nd = ast_cast<normal_def_t>(pair)) {
+                case id<NormalDef_t>(): {
+                    Exp_t* defVal = nullptr;
+                    if (auto nd = ast_cast<NormalDef_t>(pair)) {
                         pair = nd->item.get();
                         defVal = nd->defVal.get();
                     }
                     ++index;
-                    if (!isAssignable(static_cast<Exp_t *>(pair))) {
+                    if (!isAssignable(static_cast<Exp_t*>(pair))) {
                         throw std::logic_error(_info.errorMessage("can't destructure value"sv, pair));
                     }
                     auto value = singleValueFrom(pair);
                     auto item = value->item.get();
-                    if (ast_is<simple_table_t>(item) || item->getByPath<TableLit_t>()) {
+                    if (ast_is<SimpleTable_t>(item) || item->getByPath<TableLit_t>()) {
                         auto subPairs = destructFromExp(pair, optional);
                         if (!subPairs.empty()) {
                             if (defVal) {
@@ -3329,13 +4459,13 @@ private:
                             }
                         }
                         auto indexItem = toAst<Exp_t>(std::to_string(index), value);
-                        for (auto &p : subPairs) {
+                        for (auto& p : subPairs) {
                             if (sep) p.structure->items.push_front(sep);
                             p.structure->items.push_front(indexItem);
                             pairs.push_back(p);
                         }
                     } else {
-                        auto exp = static_cast<Exp_t *>(pair);
+                        auto exp = static_cast<Exp_t*>(pair);
                         auto varName = singleVariableFrom(exp, false);
                         if (varName == "_"sv) break;
                         auto chain = exp->new_ptr<ChainValue_t>();
@@ -3345,27 +4475,27 @@ private:
                     }
                     break;
                 }
-                case id<variable_pair_t>():
-                case id<variable_pair_def_t>(): {
-                    Exp_t *defVal = nullptr;
-                    if (auto vpd = ast_cast<variable_pair_def_t>(pair)) {
+                case id<VariablePair_t>():
+                case id<VariablePairDef_t>(): {
+                    Exp_t* defVal = nullptr;
+                    if (auto vpd = ast_cast<VariablePairDef_t>(pair)) {
                         pair = vpd->pair.get();
                         defVal = vpd->defVal.get();
                     }
-                    auto vp = static_cast<variable_pair_t *>(pair);
+                    auto vp = static_cast<VariablePair_t*>(pair);
                     auto name = _parser.toString(vp->name);
                     auto chain = toAst<ChainValue_t>('.' + name, vp->name);
                     pairs.push_back({toAst<Exp_t>(name, vp).get(), name, chain, defVal});
                     break;
                 }
-                case id<normal_pair_t>():
-                case id<normal_pair_def_t>(): {
-                    Exp_t *defVal = nullptr;
-                    if (auto npd = ast_cast<normal_pair_def_t>(pair)) {
+                case id<NormalPair_t>():
+                case id<NormalPairDef_t>(): {
+                    Exp_t* defVal = nullptr;
+                    if (auto npd = ast_cast<NormalPairDef_t>(pair)) {
                         pair = npd->pair.get();
                         defVal = npd->defVal.get();
                     }
-                    auto np = static_cast<normal_pair_t *>(pair);
+                    auto np = static_cast<NormalPair_t*>(pair);
                     ast_ptr<true, ast_node> keyIndex;
                     if (np->key) {
                         if (auto key = np->key->getByPath<Name_t>()) {
@@ -3375,7 +4505,7 @@ private:
                             } else {
                                 keyIndex = toAst<DotChainItem_t>('.' + keyNameStr, key).get();
                             }
-                        } else if (auto key = np->key->getByPath<SelfName_t>()) {
+                        } else if (auto key = np->key->getByPath<SelfItem_t>()) {
                             auto callable = np->new_ptr<Callable_t>();
                             callable->item.set(key);
                             auto chainValue = np->new_ptr<ChainValue_t>();
@@ -3392,14 +4522,14 @@ private:
                     if (auto exp = np->value.as<Exp_t>()) {
                         if (!isAssignable(exp)) throw std::logic_error(_info.errorMessage("can't do destructure value"sv, exp));
                         auto item = singleValueFrom(exp)->item.get();
-                        if (ast_is<simple_table_t>(item) || item->getByPath<TableLit_t>()) {
+                        if (ast_is<SimpleTable_t>(item) || item->getByPath<TableLit_t>()) {
                             auto subPairs = destructFromExp(exp, optional);
                             if (!subPairs.empty()) {
                                 if (defVal) {
                                     throw std::logic_error(_info.errorMessage("default value is not supported here"sv, defVal));
                                 }
                             }
-                            for (auto &p : subPairs) {
+                            for (auto& p : subPairs) {
                                 if (keyIndex) {
                                     if (sep) p.structure->items.push_front(sep);
                                     p.structure->items.push_front(keyIndex);
@@ -3421,7 +4551,7 @@ private:
                                 throw std::logic_error(_info.errorMessage("default value is not supported here"sv, defVal));
                             }
                         }
-                        for (auto &p : subPairs) {
+                        for (auto& p : subPairs) {
                             if (keyIndex) {
                                 if (sep) p.structure->items.push_front(sep);
                                 p.structure->items.push_front(keyIndex);
@@ -3432,45 +4562,47 @@ private:
                     break;
                 }
                 case id<TableBlockIndent_t>(): {
-                    auto tb = static_cast<TableBlockIndent_t *>(pair);
+                    auto tb = static_cast<TableBlockIndent_t*>(pair);
                     ++index;
                     auto subPairs = destructFromExp(tb, optional);
                     auto indexItem = toAst<Exp_t>(std::to_string(index), tb);
-                    for (auto &p : subPairs) {
+                    for (auto& p : subPairs) {
                         if (sep) p.structure->items.push_front(sep);
                         p.structure->items.push_front(indexItem);
                         pairs.push_back(p);
                     }
                     break;
                 }
-                case id<meta_variable_pair_t>():
-                case id<meta_variable_pair_def_t>(): {
-                    Exp_t *defVal = nullptr;
-                    if (auto mvpd = ast_cast<meta_variable_pair_def_t>(pair)) {
+                case id<MetaVariablePair_t>():
+                case id<MetaVariablePairDef_t>(): {
+                    Exp_t* defVal = nullptr;
+                    if (auto mvpd = ast_cast<MetaVariablePairDef_t>(pair)) {
                         pair = mvpd->pair.get();
                         defVal = mvpd->defVal.get();
                     }
-                    auto mp = static_cast<meta_variable_pair_t *>(pair);
+                    auto mp = static_cast<MetaVariablePair_t*>(pair);
                     auto name = _parser.toString(mp->name);
+                    checkMetamethod(name, mp->name);
                     _buf << "__"sv << name << ':' << name;
-                    auto newPairDef = toAst<normal_pair_def_t>(clearBuf(), pair);
+                    auto newPairDef = toAst<NormalPairDef_t>(clearBuf(), pair);
                     newPairDef->defVal.set(defVal);
                     subMetaDestruct->values.push_back(newPairDef);
                     break;
                 }
-                case id<meta_normal_pair_t>():
-                case id<meta_normal_pair_def_t>(): {
-                    Exp_t *defVal = nullptr;
-                    if (auto mnpd = ast_cast<meta_normal_pair_def_t>(pair)) {
+                case id<MetaNormalPair_t>():
+                case id<MetaNormalPairDef_t>(): {
+                    Exp_t* defVal = nullptr;
+                    if (auto mnpd = ast_cast<MetaNormalPairDef_t>(pair)) {
                         pair = mnpd->pair.get();
                         defVal = mnpd->defVal.get();
                     }
-                    auto mp = static_cast<meta_normal_pair_t *>(pair);
-                    auto newPair = pair->new_ptr<normal_pair_t>();
+                    auto mp = static_cast<MetaNormalPair_t*>(pair);
+                    auto newPair = pair->new_ptr<NormalPair_t>();
                     if (mp->key) {
                         switch (mp->key->getId()) {
                             case id<Name_t>(): {
                                 auto key = _parser.toString(mp->key);
+                                checkMetamethod(key, mp->key);
                                 _buf << "__"sv << key;
                                 auto newKey = toAst<KeyName_t>(clearBuf(), mp->key);
                                 newPair->key.set(newKey);
@@ -3481,19 +4613,19 @@ private:
                                 newPair->key.set(mp->key);
                                 break;
                             default:
-                                SERROR("AST node mismatch", mp->key);
+                                MEO_E("AST node mismatch", mp->key);
                                 break;
                         }
                     }
                     newPair->value.set(mp->value);
-                    auto newPairDef = mp->new_ptr<normal_pair_def_t>();
+                    auto newPairDef = mp->new_ptr<NormalPairDef_t>();
                     newPairDef->pair.set(newPair);
                     newPairDef->defVal.set(defVal);
                     subMetaDestruct->values.push_back(newPairDef);
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", pair);
+                    MEO_E("AST node mismatch", pair);
                     break;
             }
         }
@@ -3504,7 +4636,7 @@ private:
             auto mt = simpleValue->new_ptr<Metatable_t>();
             auto dot = mt->new_ptr<DotChainItem_t>();
             dot->name.set(mt);
-            for (const auto &p : subPairs) {
+            for (const auto& p : subPairs) {
                 if (!p.structure->items.empty()) {
                     if (sep) p.structure->items.push_front(sep);
                 }
@@ -3514,12 +4646,16 @@ private:
         }
         return pairs;
     }
+
     struct DestructureInfo {
         std::list<Destructure> destructures;
         ast_ptr<false, ExpListAssign_t> assignment;
+        bool extraScope = false;
     };
-    DestructureInfo extractDestructureInfo(ExpListAssign_t *assignment, bool varDefOnly, bool optional) {
+
+    DestructureInfo extractDestructureInfo(ExpListAssign_t* assignment, bool varDefOnly, bool optional) {
         auto x = assignment;
+        bool extraScope = false;
         std::list<Destructure> destructs;
         if (!assignment->action.is<Assign_t>()) return {destructs, nullptr};
         auto exprs = assignment->expList->exprs.objects();
@@ -3538,12 +4674,12 @@ private:
         for (auto i = exprs.begin(), j = values.begin(); i != exprs.end(); ++i, ++j) {
             auto expr = *i;
             auto value = singleValueFrom(expr);
-            ast_node *destructNode = value->getByPath<SimpleValue_t, TableLit_t>();
-            if (destructNode || (destructNode = value->item.as<simple_table_t>())) {
+            ast_node* destructNode = value->getByPath<SimpleValue_t, TableLit_t>();
+            if (destructNode || (destructNode = value->item.as<SimpleTable_t>())) {
                 if (*j != nil) {
                     if (auto ssVal = simpleSingleValueFrom(*j)) {
                         switch (ssVal->value->getId()) {
-                            case id<const_value_t>():
+                            case id<ConstValue_t>():
                                 throw std::logic_error(_info.errorMessage("can not destructure a constant"sv, ssVal->value));
                                 break;
                             case id<Num_t>():
@@ -3558,38 +4694,40 @@ private:
                 destructPairs.push_back({i, j});
                 auto subDestruct = destructNode->new_ptr<TableLit_t>();
                 auto subMetaDestruct = destructNode->new_ptr<TableLit_t>();
-                const node_container *dlist = nullptr;
+                const node_container* dlist = nullptr;
                 switch (destructNode->getId()) {
                     case id<TableLit_t>():
-                        dlist = &static_cast<TableLit_t *>(destructNode)->values.objects();
+                        dlist = &static_cast<TableLit_t*>(destructNode)->values.objects();
                         break;
-                    case id<simple_table_t>():
-                        dlist = &static_cast<simple_table_t *>(destructNode)->pairs.objects();
+                    case id<SimpleTable_t>():
+                        dlist = &static_cast<SimpleTable_t*>(destructNode)->pairs.objects();
                         break;
                     default:
-                        SERROR("AST node mismatch", destructNode);
+                        MEO_E("AST node mismatch", destructNode);
                         break;
                 }
                 for (auto item : *dlist) {
                     switch (item->getId()) {
-                        case id<meta_variable_pair_def_t>(): {
-                            auto mvp = static_cast<meta_variable_pair_def_t *>(item);
+                        case id<MetaVariablePairDef_t>(): {
+                            auto mvp = static_cast<MetaVariablePairDef_t*>(item);
                             auto mp = mvp->pair.get();
                             auto name = _parser.toString(mp->name);
+                            checkMetamethod(name, mp->name);
                             _buf << "__"sv << name << ':' << name;
-                            auto newPairDef = toAst<normal_pair_def_t>(clearBuf(), item);
+                            auto newPairDef = toAst<NormalPairDef_t>(clearBuf(), item);
                             newPairDef->defVal.set(mvp->defVal);
                             subMetaDestruct->values.push_back(newPairDef);
                             break;
                         }
-                        case id<meta_normal_pair_def_t>(): {
-                            auto mnp = static_cast<meta_normal_pair_def_t *>(item);
+                        case id<MetaNormalPairDef_t>(): {
+                            auto mnp = static_cast<MetaNormalPairDef_t*>(item);
                             auto mp = mnp->pair.get();
-                            auto newPair = item->new_ptr<normal_pair_t>();
+                            auto newPair = item->new_ptr<NormalPair_t>();
                             if (mp->key) {
                                 switch (mp->key->getId()) {
                                     case id<Name_t>(): {
                                         auto key = _parser.toString(mp->key);
+                                        checkMetamethod(key, mp->key);
                                         _buf << "__"sv << key;
                                         auto newKey = toAst<KeyName_t>(clearBuf(), mp->key);
                                         newPair->key.set(newKey);
@@ -3603,32 +4741,34 @@ private:
                                         newPair->key.set(mp->key);
                                         break;
                                     default:
-                                        SERROR("AST node mismatch", mp->key);
+                                        MEO_E("AST node mismatch", mp->key);
                                         break;
                                 }
                             }
                             newPair->value.set(mp->value);
-                            auto newPairDef = item->new_ptr<normal_pair_def_t>();
+                            auto newPairDef = item->new_ptr<NormalPairDef_t>();
                             newPairDef->pair.set(newPair);
                             newPairDef->defVal.set(mnp->defVal);
                             subMetaDestruct->values.push_back(newPairDef);
                             break;
                         }
-                        case id<meta_variable_pair_t>(): {
-                            auto mp = static_cast<meta_variable_pair_t *>(item);
+                        case id<MetaVariablePair_t>(): {
+                            auto mp = static_cast<MetaVariablePair_t*>(item);
                             auto name = _parser.toString(mp->name);
+                            checkMetamethod(name, mp->name);
                             _buf << "__"sv << name << ':' << name;
-                            auto newPairDef = toAst<normal_pair_def_t>(clearBuf(), item);
+                            auto newPairDef = toAst<NormalPairDef_t>(clearBuf(), item);
                             subMetaDestruct->values.push_back(newPairDef);
                             break;
                         }
-                        case id<meta_normal_pair_t>(): {
-                            auto mp = static_cast<meta_normal_pair_t *>(item);
-                            auto newPair = item->new_ptr<normal_pair_t>();
+                        case id<MetaNormalPair_t>(): {
+                            auto mp = static_cast<MetaNormalPair_t*>(item);
+                            auto newPair = item->new_ptr<NormalPair_t>();
                             if (mp->key) {
                                 switch (mp->key->getId()) {
                                     case id<Name_t>(): {
                                         auto key = _parser.toString(mp->key);
+                                        checkMetamethod(key, mp->key);
                                         _buf << "__"sv << key;
                                         auto newKey = toAst<KeyName_t>(clearBuf(), mp->key);
                                         newPair->key.set(newKey);
@@ -3644,26 +4784,26 @@ private:
                                         break;
                                     }
                                     default:
-                                        SERROR("AST node mismatch", mp->key);
+                                        MEO_E("AST node mismatch", mp->key);
                                         break;
                                 }
                             }
                             newPair->value.set(mp->value);
-                            auto newPairDef = item->new_ptr<normal_pair_def_t>();
+                            auto newPairDef = item->new_ptr<NormalPairDef_t>();
                             newPairDef->pair.set(newPair);
                             subMetaDestruct->values.push_back(newPairDef);
                             break;
                         }
-                        case id<variable_pair_t>(): {
-                            auto pair = static_cast<variable_pair_t *>(item);
-                            auto newPairDef = item->new_ptr<variable_pair_def_t>();
+                        case id<VariablePair_t>(): {
+                            auto pair = static_cast<VariablePair_t*>(item);
+                            auto newPairDef = item->new_ptr<VariablePairDef_t>();
                             newPairDef->pair.set(pair);
                             subDestruct->values.push_back(newPairDef);
                             break;
                         }
-                        case id<normal_pair_t>(): {
-                            auto pair = static_cast<normal_pair_t *>(item);
-                            auto newPairDef = item->new_ptr<normal_pair_def_t>();
+                        case id<NormalPair_t>(): {
+                            auto pair = static_cast<NormalPair_t*>(item);
+                            auto newPairDef = item->new_ptr<NormalPairDef_t>();
                             newPairDef->pair.set(pair);
                             subDestruct->values.push_back(newPairDef);
                             break;
@@ -3675,17 +4815,21 @@ private:
                 }
                 valueItems.push_back(*j);
                 if (!varDefOnly && !subDestruct->values.empty() && !subMetaDestruct->values.empty()) {
-                    auto objVar = getUnusedName("_obj_"sv);
-                    addToScope(objVar);
-                    valueItems.pop_back();
-                    valueItems.push_back(toAst<Exp_t>(objVar, *j));
-                    exprs.push_back(valueItems.back());
-                    values.push_back(*j);
+                    auto var = singleVariableFrom(*j, false);
+                    if (var.empty() || !isLocal(var)) {
+                        auto objVar = getUnusedName("_obj_"sv);
+                        addToScope(objVar);
+                        valueItems.pop_back();
+                        valueItems.push_back(toAst<Exp_t>(objVar, *j));
+                        exprs.push_back(valueItems.back());
+                        values.push_back(*j);
+                        extraScope = true;
+                    }
                 }
-                TableLit_t *tabs[] = {subDestruct.get(), subMetaDestruct.get()};
+                TableLit_t* tabs[] = {subDestruct.get(), subMetaDestruct.get()};
                 for (auto tab : tabs) {
                     if (!tab->values.empty()) {
-                        auto &destruct = destructs.emplace_back();
+                        auto& destruct = destructs.emplace_back();
                         if (!varDefOnly) {
                             destruct.value = valueItems.back();
                             destruct.valueVar = singleVariableFrom(destruct.value, false);
@@ -3699,13 +4843,13 @@ private:
                         destruct.items = std::move(pairs);
                         if (!varDefOnly) {
                             if (*j == nil) {
-                                for (auto &item : destruct.items) {
+                                for (auto& item : destruct.items) {
                                     item.structure = nullptr;
                                 }
                             } else if (tab == subMetaDestruct.get()) {
                                 auto p = destruct.value.get();
                                 auto chainValue = toAst<ChainValue_t>("getmetatable()", p);
-                                static_cast<Invoke_t *>(chainValue->items.back())->args.push_back(destruct.value);
+                                static_cast<Invoke_t*>(chainValue->items.back())->args.push_back(destruct.value);
                                 auto exp = newExp(chainValue, p);
                                 destruct.value.set(exp);
                                 destruct.valueVar.clear();
@@ -3726,7 +4870,7 @@ private:
                 }
             }
         }
-        for (const auto &p : destructPairs) {
+        for (const auto& p : destructPairs) {
             exprs.erase(p.first);
             values.erase(p.second);
         }
@@ -3743,12 +4887,12 @@ private:
             newAssignment = newAssign;
         }
         if (!varDefOnly) {
-            for (auto &des : destructs) {
-                for (const auto &item : des.items) {
+            for (auto& des : destructs) {
+                for (const auto& item : des.items) {
                     for (auto node : item.structure->items.objects()) {
                         if (auto exp = ast_cast<Exp_t>(node)) {
                             if (auto value = simpleSingleValueFrom(node)) {
-                                if (ast_is<Num_t, const_value_t>(value->value)) {
+                                if (ast_is<Num_t, ConstValue_t>(value->value)) {
                                     continue;
                                 }
                             }
@@ -3786,9 +4930,10 @@ private:
             }
         }
         popScope();
-        return {std::move(destructs), newAssignment};
+        return {std::move(destructs), newAssignment, extraScope};
     }
-    void transformAssignmentCommon(ExpListAssign_t *assignment, str_list &out) {
+
+    void transformAssignmentCommon(ExpListAssign_t* assignment, str_list& out) {
         auto x = assignment;
         str_list temp;
         auto expList = assignment->expList.get();
@@ -3796,8 +4941,8 @@ private:
         switch (action->getId()) {
             case id<Update_t>(): {
                 if (expList->exprs.size() > 1) throw std::logic_error(_info.errorMessage("can not apply update to multiple values"sv, expList));
-                auto update = static_cast<Update_t *>(action);
-                auto leftExp = static_cast<Exp_t *>(expList->exprs.objects().front());
+                auto update = static_cast<Update_t*>(action);
+                auto leftExp = static_cast<Exp_t*>(expList->exprs.objects().front());
                 auto leftValue = singleValueFrom(leftExp);
                 if (!leftValue) throw std::logic_error(_info.errorMessage("left hand expression is not assignable"sv, leftExp));
                 auto chain = leftValue->item.as<ChainValue_t>();
@@ -3810,9 +4955,9 @@ private:
                     BREAK_IF(chain->items.size() < 2);
                     if (chain->items.size() == 2) {
                         if (auto callable = ast_cast<Callable_t>(chain->items.front())) {
-                            ast_node *var = callable->item.as<Variable_t>();
-                            if (auto self = callable->item.as<SelfName_t>()) {
-                                var = self->name.as<self_t>();
+                            ast_node* var = callable->item.as<Variable_t>();
+                            if (auto self = callable->item.as<SelfItem_t>()) {
+                                var = self->name.as<Self_t>();
                             }
                             BREAK_IF(var && isLocal(_parser.toString(var)));
                         }
@@ -3892,7 +5037,7 @@ private:
                 break;
             }
             case id<Assign_t>(): {
-                auto assign = static_cast<Assign_t *>(action);
+                auto assign = static_cast<Assign_t*>(action);
                 auto defs = transformAssignDefs(expList, DefOp::Check);
                 bool oneLined = defs.size() == expList->exprs.objects().size();
                 for (auto val : assign->values.objects()) {
@@ -3910,7 +5055,7 @@ private:
                         transformAssignItem(value, temp);
                     }
                     std::string preDefine = toLocalDecl(defs);
-                    for (const auto &def : defs) {
+                    for (const auto& def : defs) {
                         addToScope(def);
                     }
                     if (preDefine.empty()) {
@@ -3923,7 +5068,7 @@ private:
                     }
                 } else {
                     std::string preDefine = toLocalDecl(defs);
-                    for (const auto &def : defs) {
+                    for (const auto& def : defs) {
                         addToScope(def);
                     }
                     transformExpList(expList, temp);
@@ -3937,16 +5082,17 @@ private:
                 break;
             }
             default:
-                SERROR("AST node mismatch", action);
+                MEO_E("AST node mismatch", action);
                 break;
         }
     }
-    void transformCond(const node_container &nodes, str_list &out, ExpUsage usage, bool unless, ExpList_t *assignList) {
+
+    void transformCond(const node_container& nodes, str_list& out, ExpUsage usage, bool unless, ExpList_t* assignList) {
         std::vector<ast_ptr<false, ast_node>> ns;
         for (auto it = nodes.rbegin(); it != nodes.rend(); ++it) {
             ns.push_back(*it);
             if (auto cond = ast_cast<IfCond_t>(*it)) {
-                if (*it != nodes.front() && cond->condition.is<assignment_t>()) {
+                if (*it != nodes.front() && cond->condition.is<Assignment_t>()) {
                     auto x = *it;
                     auto newIf = x->new_ptr<If_t>();
                     newIf->type.set(toAst<IfType_t>("if"sv, x));
@@ -3978,19 +5124,19 @@ private:
             return;
         }
         str_list temp;
-        std::string *funcStart = nullptr;
+        std::string* funcStart = nullptr;
         if (usage == ExpUsage::Closure) {
             pushFunctionScope();
             pushAnonVarArg();
             funcStart = &temp.emplace_back();
             pushScope();
         }
-        std::list<std::pair<IfCond_t *, ast_node *>> ifCondPairs;
+        std::list<std::pair<IfCond_t*, ast_node*>> ifCondPairs;
         ifCondPairs.emplace_back();
         for (auto node : nodes) {
             switch (node->getId()) {
                 case id<IfCond_t>():
-                    ifCondPairs.back().first = static_cast<IfCond_t *>(node);
+                    ifCondPairs.back().first = static_cast<IfCond_t*>(node);
                     break;
                 case id<Block_t>():
                 case id<Statement_t>():
@@ -3998,11 +5144,11 @@ private:
                     ifCondPairs.emplace_back();
                     break;
                 default:
-                    SERROR("AST node mismatch", node);
+                    MEO_E("AST node mismatch", node);
                     break;
             }
         }
-        auto asmt = ifCondPairs.front().first->condition.as<assignment_t>();
+        auto asmt = ifCondPairs.front().first->condition.as<Assignment_t>();
         bool storingValue = false;
         ast_ptr<false, ExpListAssign_t> extraAssignment;
         if (asmt) {
@@ -4067,7 +5213,7 @@ private:
                 ifCondPairs.front().first->condition.set(exp);
             }
         }
-        for (const auto &pair : ifCondPairs) {
+        for (const auto& pair : ifCondPairs) {
             if (pair.first) {
                 str_list tmp;
                 auto condition = pair.first->condition.to<Exp_t>();
@@ -4109,43 +5255,47 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transformIf(If_t *ifNode, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformIf(If_t* ifNode, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         bool unless = _parser.toString(ifNode->type) == "unless"sv;
         transformCond(ifNode->nodes.objects(), out, usage, unless, assignList);
     }
-    void transformExpList(ExpList_t *expList, str_list &out) {
+
+    void transformExpList(ExpList_t* expList, str_list& out) {
         str_list temp;
         for (auto exp : expList->exprs.objects()) {
-            transformExp(static_cast<Exp_t *>(exp), temp, ExpUsage::Closure);
+            transformExp(static_cast<Exp_t*>(exp), temp, ExpUsage::Closure);
         }
         out.push_back(join(temp, ", "sv));
     }
-    void transformExpListLow(ExpListLow_t *expListLow, str_list &out) {
+
+    void transformExpListLow(ExpListLow_t* expListLow, str_list& out) {
         str_list temp;
         for (auto exp : expListLow->exprs.objects()) {
-            transformExp(static_cast<Exp_t *>(exp), temp, ExpUsage::Closure);
+            transformExp(static_cast<Exp_t*>(exp), temp, ExpUsage::Closure);
         }
         out.push_back(join(temp, ", "sv));
     }
-    void transform_pipe_exp(const node_container &values, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transform_pipe_exp(const node_container& values, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         if (values.size() == 1 && usage == ExpUsage::Closure) {
-            transform_unary_exp(static_cast<unary_exp_t *>(values.front()), out);
+            transform_unary_exp(static_cast<UnaryExp_t*>(values.front()), out);
         } else {
             auto x = values.front();
-            auto arg = newExp(static_cast<unary_exp_t *>(x), x);
+            auto arg = newExp(static_cast<UnaryExp_t*>(x), x);
             auto begin = values.begin();
             begin++;
             for (auto it = begin; it != values.end(); ++it) {
-                auto unary = static_cast<unary_exp_t *>(*it);
-                auto value = static_cast<Value_t *>(singleUnaryExpFrom(unary) ? unary->expos.back() : nullptr);
+                auto unary = static_cast<UnaryExp_t*>(*it);
+                auto value = static_cast<Value_t*>(singleUnaryExpFrom(unary) ? unary->expos.back() : nullptr);
                 if (values.back() == *it && !unary->ops.empty() && usage == ExpUsage::Common) {
-                    throw std::logic_error(_info.errorMessage("expression list is not supported here"sv, x));
+                    throw std::logic_error(_info.errorMessage("unexpected expression"sv, x));
                 }
                 if (!value) throw std::logic_error(_info.errorMessage("pipe operator must be followed by chain value"sv, *it));
                 if (auto chainValue = value->item.as<ChainValue_t>()) {
                     if (isChainValueCall(chainValue)) {
                         auto last = chainValue->items.back();
-                        _ast_list *args = nullptr;
+                        _ast_list* args = nullptr;
                         if (auto invoke = ast_cast<InvokeArgs_t>(last)) {
                             args = &invoke->args;
                         } else {
@@ -4210,18 +5360,19 @@ private:
                     return;
                 }
                 default:
-                    SERROR("invalid expression usage", x);
+                    MEO_E("invalid expression usage", x);
                     return;
             }
         }
     }
-    void transformExp(Exp_t *exp, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformExp(Exp_t* exp, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         if (exp->opValues.empty() && !exp->nilCoalesed) {
             transform_pipe_exp(exp->pipeExprs.objects(), out, usage, assignList);
             return;
         }
         if (usage != ExpUsage::Closure) {
-            SERROR("invalid expression usage", exp);
+            MEO_E("invalid expression usage", exp);
         }
         if (exp->nilCoalesed) {
             transformNilCoalesedExp(exp, out, ExpUsage::Closure);
@@ -4230,13 +5381,14 @@ private:
         str_list temp;
         transform_pipe_exp(exp->pipeExprs.objects(), temp, ExpUsage::Closure);
         for (auto _opValue : exp->opValues.objects()) {
-            auto opValue = static_cast<exp_op_value_t *>(_opValue);
+            auto opValue = static_cast<ExpOpValue_t*>(_opValue);
             transformBinaryOperator(opValue->op, temp);
             transform_pipe_exp(opValue->pipeExprs.objects(), temp, ExpUsage::Closure);
         }
         out.push_back(join(temp, " "sv));
     }
-    void transformNilCoalesedExp(Exp_t *exp, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr, bool nilBranchOnly = false) {
+
+    void transformNilCoalesedExp(Exp_t* exp, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr, bool nilBranchOnly = false) {
         auto x = exp;
         str_list temp;
         std::string prefix;
@@ -4245,12 +5397,12 @@ private:
             left->pipeExprs.dup(exp->pipeExprs);
         } else {
             if (usage != ExpUsage::Closure) {
-                SERROR("invalid expression usage", exp);
+                MEO_E("invalid expression usage", exp);
             }
             transform_pipe_exp(exp->pipeExprs.objects(), temp, ExpUsage::Closure);
             auto last = exp->opValues.objects().back();
             for (auto _opValue : exp->opValues.objects()) {
-                auto opValue = static_cast<exp_op_value_t *>(_opValue);
+                auto opValue = static_cast<ExpOpValue_t*>(_opValue);
                 transformBinaryOperator(opValue->op, temp);
                 if (opValue == last) {
                     left->pipeExprs.dup(opValue->pipeExprs);
@@ -4262,7 +5414,7 @@ private:
             temp.clear();
             temp.push_back(prefix);
         }
-        std::string *funcStart = nullptr;
+        std::string* funcStart = nullptr;
         if (usage == ExpUsage::Closure) {
             pushFunctionScope();
             pushAnonVarArg();
@@ -4290,7 +5442,7 @@ private:
         };
         switch (usage) {
             case ExpUsage::Common:
-                SERROR("AST node mismatch", x);
+                MEO_E("AST node mismatch", x);
                 return;
             case ExpUsage::Return:
             case ExpUsage::Closure: {
@@ -4358,31 +5510,33 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transformValue(Value_t *value, str_list &out) {
+
+    void transformValue(Value_t* value, str_list& out) {
         auto item = value->item.get();
         switch (item->getId()) {
             case id<SimpleValue_t>():
-                transformSimpleValue(static_cast<SimpleValue_t *>(item), out);
+                transformSimpleValue(static_cast<SimpleValue_t*>(item), out);
                 break;
-            case id<simple_table_t>():
-                transform_simple_table(static_cast<simple_table_t *>(item), out);
+            case id<SimpleTable_t>():
+                transform_simple_table(static_cast<SimpleTable_t*>(item), out);
                 break;
             case id<ChainValue_t>():
-                transformChainValue(static_cast<ChainValue_t *>(item), out, ExpUsage::Closure);
+                transformChainValue(static_cast<ChainValue_t*>(item), out, ExpUsage::Closure);
                 break;
             case id<String_t>():
-                transformString(static_cast<String_t *>(item), out);
+                transformString(static_cast<String_t*>(item), out);
                 break;
             default:
-                SERROR("AST node mismatch", value);
+                MEO_E("AST node mismatch", value);
                 break;
         }
     }
-    void transformCallable(Callable_t *callable, str_list &out, const ast_sel<false, Invoke_t, InvokeArgs_t> &invoke = {}) {
+
+    void transformCallable(Callable_t* callable, str_list& out, const ast_sel<false, Invoke_t, InvokeArgs_t>& invoke = {}) {
         auto item = callable->item.get();
         switch (item->getId()) {
             case id<Variable_t>(): {
-                transformVariable(static_cast<Variable_t *>(item), out);
+                transformVariable(static_cast<Variable_t*>(item), out);
                 if (_config.lintGlobalVariable && !isLocal(out.back())) {
                     if (_globals.find(out.back()) == _globals.end()) {
                         _globals[out.back()] = {item->m_begin.m_line, item->m_begin.m_col};
@@ -4390,88 +5544,87 @@ private:
                 }
                 break;
             }
-            case id<SelfName_t>(): {
-                transformSelfName(static_cast<SelfName_t *>(item), out, invoke);
+            case id<SelfItem_t>(): {
+                transformSelfName(static_cast<SelfItem_t*>(item), out, invoke);
                 globalVar("self"sv, item);
                 break;
             }
-            case id<VarArg_t>():
-                if (_varArgs.empty() || !_varArgs.top().hasVar) {
-                    throw std::logic_error(_info.errorMessage("cannot use '...' outside a vararg function near '...'"sv, item));
-                }
-                _varArgs.top().usedVar = true;
-                out.push_back("..."s);
-                break;
             case id<Parens_t>():
-                transformParens(static_cast<Parens_t *>(item), out);
+                transformParens(static_cast<Parens_t*>(item), out);
                 break;
             default:
-                SERROR("AST node mismatch", item);
+                MEO_E("AST node mismatch", item);
                 break;
         }
     }
-    void transformParens(Parens_t *parans, str_list &out) {
+
+    void transformParens(Parens_t* parans, str_list& out) {
         str_list temp;
         transformExp(parans->expr, temp, ExpUsage::Closure);
         out.push_back('(' + temp.front() + ')');
     }
-    void transformSimpleValue(SimpleValue_t *simpleValue, str_list &out) {
+
+    void transformSimpleValue(SimpleValue_t* simpleValue, str_list& out) {
         auto value = simpleValue->value.get();
         switch (value->getId()) {
-            case id<const_value_t>():
-                transform_const_value(static_cast<const_value_t *>(value), out);
+            case id<ConstValue_t>():
+                transform_const_value(static_cast<ConstValue_t*>(value), out);
                 break;
             case id<If_t>():
-                transformIf(static_cast<If_t *>(value), out, ExpUsage::Closure);
+                transformIf(static_cast<If_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<Switch_t>():
-                transformSwitch(static_cast<Switch_t *>(value), out, ExpUsage::Closure);
+                transformSwitch(static_cast<Switch_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<With_t>():
-                transformWithClosure(static_cast<With_t *>(value), out);
+                transformWithClosure(static_cast<With_t*>(value), out);
                 break;
             case id<ClassDecl_t>():
-                transformClassDeclClosure(static_cast<ClassDecl_t *>(value), out);
+                transformClassDeclClosure(static_cast<ClassDecl_t*>(value), out);
                 break;
             case id<ForEach_t>():
-                transformForEachClosure(static_cast<ForEach_t *>(value), out);
+                transformForEachClosure(static_cast<ForEach_t*>(value), out);
                 break;
             case id<For_t>():
-                transformForClosure(static_cast<For_t *>(value), out);
+                transformForClosure(static_cast<For_t*>(value), out);
                 break;
             case id<While_t>():
-                transformWhileClosure(static_cast<While_t *>(value), out);
+                transformWhileClosure(static_cast<While_t*>(value), out);
                 break;
             case id<Do_t>():
-                transformDo(static_cast<Do_t *>(value), out, ExpUsage::Closure);
+                transformDo(static_cast<Do_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<Try_t>():
-                transformTry(static_cast<Try_t *>(value), out, ExpUsage::Closure);
+                transformTry(static_cast<Try_t*>(value), out, ExpUsage::Closure);
                 break;
-            case id<unary_value_t>():
-                transform_unary_value(static_cast<unary_value_t *>(value), out);
+            case id<UnaryValue_t>():
+                transform_unary_value(static_cast<UnaryValue_t*>(value), out);
                 break;
             case id<TblComprehension_t>():
-                transformTblComprehension(static_cast<TblComprehension_t *>(value), out, ExpUsage::Closure);
+                transformTblComprehension(static_cast<TblComprehension_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<TableLit_t>():
-                transformTableLit(static_cast<TableLit_t *>(value), out);
+                transformTableLit(static_cast<TableLit_t*>(value), out);
                 break;
             case id<Comprehension_t>():
-                transformComprehension(static_cast<Comprehension_t *>(value), out, ExpUsage::Closure);
+                transformComprehension(static_cast<Comprehension_t*>(value), out, ExpUsage::Closure);
                 break;
             case id<FunLit_t>():
-                transformFunLit(static_cast<FunLit_t *>(value), out);
+                transformFunLit(static_cast<FunLit_t*>(value), out);
                 break;
             case id<Num_t>():
-                transformNum(static_cast<Num_t *>(value), out);
+                transformNum(static_cast<Num_t*>(value), out);
+                break;
+            case id<VarArg_t>():
+                transformVarArg(static_cast<VarArg_t*>(value), out);
                 break;
             default:
-                SERROR("AST node mismatch", value);
+                MEO_E("AST node mismatch", value);
                 break;
         }
     }
-    void transformFunLit(FunLit_t *funLit, str_list &out) {
+
+    void transformFunLit(FunLit_t* funLit, str_list& out) {
         pushFunctionScope();
         _varArgs.push({false, false});
         bool isFatArrow = _parser.toString(funLit->arrow) == "=>"sv;
@@ -4488,9 +5641,9 @@ private:
                 temp.push_back(Empty);
             }
             auto it = temp.begin();
-            auto &args = *it;
-            auto &initArgs = *(++it);
-            auto &bodyCodes = *(++it);
+            auto& args = *it;
+            auto& initArgs = *(++it);
+            auto& bodyCodes = *(++it);
             _buf << "function("sv;
             if (isFatArrow) {
                 _buf << "self"sv;
@@ -4511,7 +5664,7 @@ private:
             } else {
                 temp.push_back(Empty);
             }
-            auto &bodyCodes = temp.back();
+            auto& bodyCodes = temp.back();
             _buf << "function("sv << (isFatArrow ? "self"s : Empty) << ')';
             if (!bodyCodes.empty()) {
                 _buf << nll(funLit) << bodyCodes;
@@ -4526,7 +5679,8 @@ private:
         popFunctionScope();
         _varArgs.pop();
     }
-    void transformBody(Body_t *body, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformBody(Body_t* body, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         auto x = body;
         if (auto stmt = body->content.as<Statement_t>()) {
             auto block = x->new_ptr<Block_t>();
@@ -4536,17 +5690,18 @@ private:
             transformBlock(body->content.to<Block_t>(), out, usage, assignList);
         }
     }
-    void transformBlock(Block_t *block, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr, bool isRoot = false) {
+
+    void transformBlock(Block_t* block, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr, bool isRoot = false) {
         if (!block) {
             out.push_back(Empty);
             return;
         }
-        const auto &nodes = block->statements.objects();
+        const auto& nodes = block->statements.objects();
         LocalMode mode = LocalMode::None;
         Local_t *any = nullptr, *capital = nullptr;
         for (auto it = nodes.begin(); it != nodes.end(); ++it) {
             auto node = *it;
-            auto stmt = static_cast<Statement_t *>(node);
+            auto stmt = static_cast<Statement_t*>(node);
             if (auto pipeBody = stmt->content.as<PipeBody_t>()) {
                 auto x = stmt;
                 bool cond = false;
@@ -4554,7 +5709,7 @@ private:
                 BREAK_IF(it == nodes.begin());
                 auto last = it;
                 --last;
-                auto lst = static_cast<Statement_t *>(*last);
+                auto lst = static_cast<Statement_t*>(*last);
                 if (lst->appendix) {
                     throw std::logic_error(_info.errorMessage("statement decorator must be placed at the end of pipe chain"sv, lst->appendix.get()));
                 }
@@ -4575,7 +5730,7 @@ private:
                 ++next;
                 BLOCK_START
                 BREAK_IF(next == nodes.end());
-                BREAK_IF(!static_cast<Statement_t *>(*next)->content.as<PipeBody_t>());
+                BREAK_IF(!static_cast<Statement_t*>(*next)->content.as<PipeBody_t>());
                 throw std::logic_error(_info.errorMessage("indent mismatch in pipe chain"sv, *next));
                 BLOCK_END
             } else if (auto backcall = stmt->content.as<Backcall_t>()) {
@@ -4602,7 +5757,7 @@ private:
                     auto funLit = x->new_ptr<FunLit_t>();
                     funLit->argsDef.set(backcall->argsDef);
                     auto arrow = _parser.toString(backcall->arrow);
-                    funLit->arrow.set(toAst<fn_arrow_t>(arrow == "<-"sv ? "->"sv : "=>"sv, x));
+                    funLit->arrow.set(toAst<FnArrow_t>(arrow == "<-"sv ? "->"sv : "=>"sv, x));
                     funLit->body.set(body);
                     auto simpleValue = x->new_ptr<SimpleValue_t>();
                     simpleValue->value.set(funLit);
@@ -4610,7 +5765,7 @@ private:
                 }
                 if (isChainValueCall(backcall->value)) {
                     auto last = backcall->value->items.back();
-                    _ast_list *args = nullptr;
+                    _ast_list* args = nullptr;
                     if (auto invoke = ast_cast<InvokeArgs_t>(last)) {
                         args = &invoke->args;
                     } else {
@@ -4655,8 +5810,8 @@ private:
                 if (!local->collected) {
                     local->collected = true;
                     switch (local->item->getId()) {
-                        case id<local_flag_t>(): {
-                            auto flag = static_cast<local_flag_t *>(local->item.get());
+                        case id<LocalFlag_t>(): {
+                            auto flag = static_cast<LocalFlag_t*>(local->item.get());
                             LocalMode newMode = _parser.toString(flag) == "*"sv ? LocalMode::Any : LocalMode::Capital;
                             if (int(newMode) > int(mode)) {
                                 mode = newMode;
@@ -4669,20 +5824,20 @@ private:
                             }
                             break;
                         }
-                        case id<local_values_t>(): {
-                            auto values = local->item.to<local_values_t>();
+                        case id<LocalValues_t>(): {
+                            auto values = local->item.to<LocalValues_t>();
                             for (auto name : values->nameList->names.objects()) {
                                 local->forceDecls.push_back(_parser.toString(name));
                             }
                             break;
                         }
                         default:
-                            SERROR("AST node mismatch", local->item);
+                            MEO_E("AST node mismatch", local->item);
                             break;
                     }
                 }
             } else if (mode != LocalMode::None) {
-                ClassDecl_t *classDecl = nullptr;
+                ClassDecl_t* classDecl = nullptr;
                 ast_ptr<false, ExpListAssign_t> assignment;
                 if (auto exportNode = stmt->content.as<Export_t>()) {
                     if (exportNode->assign) {
@@ -4694,7 +5849,7 @@ private:
                 if (!assignment) assignment = assignmentFrom(stmt);
                 if (assignment) {
                     auto vars = getAssignVars(assignment);
-                    for (const auto &var : vars) {
+                    for (const auto& var : vars) {
                         if (var.empty()) continue;
                         if (std::isupper(var[0]) && capital) {
                             capital->decls.push_back(var);
@@ -4704,8 +5859,8 @@ private:
                     }
                     auto info = extractDestructureInfo(assignment, true, false);
                     if (!info.destructures.empty()) {
-                        for (const auto &destruct : info.destructures)
-                            for (const auto &item : destruct.items)
+                        for (const auto& destruct : info.destructures)
+                            for (const auto& item : destruct.items)
                                 if (!item.targetVar.empty()) {
                                     if (std::isupper(item.targetVar[0]) && capital) {
                                         capital->decls.push_back(item.targetVar);
@@ -4716,7 +5871,7 @@ private:
                     }
                     if (info.assignment) {
                         auto defs = transformAssignDefs(info.assignment->expList, DefOp::Get);
-                        for (const auto &def : defs) {
+                        for (const auto& def : defs) {
                             if (std::isupper(def[0]) && capital) {
                                 capital->decls.push_back(def);
                             } else if (any) {
@@ -4765,7 +5920,7 @@ private:
                 auto x = last;
                 auto expList = expListFrom(last);
                 BREAK_IF(!expList);
-                BREAK_IF(last->appendix && !last->appendix->item.is<if_line_t>());
+                BREAK_IF(last->appendix && !last->appendix->item.is<IfLine_t>());
                 auto expListLow = x->new_ptr<ExpListLow_t>();
                 expListLow->exprs.dup(expList->exprs);
                 auto returnNode = x->new_ptr<Return_t>();
@@ -4778,9 +5933,9 @@ private:
                     bool isMacro = false;
                     BLOCK_START
                     BREAK_IF(expListLow->exprs.size() != 1);
-                    auto exp = static_cast<Exp_t *>(expListLow->exprs.back());
+                    auto exp = static_cast<Exp_t*>(expListLow->exprs.back());
                     BREAK_IF(!exp->opValues.empty());
-                    auto chainValue = exp->getByPath<unary_exp_t, Value_t, ChainValue_t>();
+                    auto chainValue = exp->getByPath<UnaryExp_t, Value_t, ChainValue_t>();
                     BREAK_IF(!chainValue);
                     isMacro = isMacroChain(chainValue);
                     BLOCK_END
@@ -4793,8 +5948,19 @@ private:
             }
             case ExpUsage::Assignment: {
                 auto last = lastStatementFrom(block);
-                if (!last) return;
-                bool lastAssignable = expListFrom(last) || ast_is<For_t, ForEach_t, While_t>(last->content);
+                if (!last) throw std::logic_error(_info.errorMessage("block is not assignable"sv, block));
+                if (last->appendix) {
+                    auto appendix = last->appendix->item.get();
+                    switch (appendix->getId()) {
+                        case id<WhileLine_t>():
+                            throw std::logic_error(_info.errorMessage("while-loop line decorator is not supported here"sv, appendix));
+                            break;
+                        case id<CompFor_t>():
+                            throw std::logic_error(_info.errorMessage("for-loop line decorator is not supported here"sv, appendix));
+                            break;
+                    }
+                }
+                bool lastAssignable = (expListFrom(last) || ast_is<For_t, ForEach_t, While_t>(last->content));
                 if (lastAssignable) {
                     auto x = last;
                     auto newAssignment = x->new_ptr<ExpListAssign_t>();
@@ -4813,8 +5979,10 @@ private:
                     last->needSep.set(nullptr);
                     auto bLast = ++nodes.rbegin();
                     if (bLast != nodes.rend()) {
-                        static_cast<Statement_t *>(*bLast)->needSep.set(nullptr);
+                        static_cast<Statement_t*>(*bLast)->needSep.set(nullptr);
                     }
+                } else if (!last->content.is<BreakLoop_t>()) {
+                    throw std::logic_error(_info.errorMessage("expecting assignable statement or break loop"sv, last));
                 }
                 break;
             }
@@ -4824,7 +5992,7 @@ private:
         if (!nodes.empty()) {
             str_list temp;
             for (auto node : nodes) {
-                transformStatement(static_cast<Statement_t *>(node), temp);
+                transformStatement(static_cast<Statement_t*>(node), temp);
             }
             out.push_back(join(temp));
         } else {
@@ -4834,6 +6002,7 @@ private:
             out.back().append(indent() + "return "s + _info.moduleName + nlr(block));
         }
     }
+
     std::optional<std::string> getOption(std::string_view key) {
 #ifndef MEO_NO_MACRO
         if (L) {
@@ -4844,7 +6013,7 @@ private:
             lua_gettable(L, -2);
             if (lua_isstring(L, -1) != 0) {
                 size_t size = 0;
-                const char *str = lua_tolstring(L, -1, &size);
+                const char* str = lua_tolstring(L, -1, &size);
                 return std::string(str, size);
             }
         }
@@ -4855,7 +6024,8 @@ private:
         }
         return std::nullopt;
     }
-    int getLuaTarget(ast_node *x) {
+
+    int getLuaTarget(ast_node* x) {
         if (auto target = getOption("target")) {
             if (target.value() == "5.1"sv) {
                 return 501;
@@ -4875,17 +6045,19 @@ private:
         return 504;
 #endif  // MEO_NO_MACRO
     }
+
 #ifndef MEO_NO_MACRO
     void passOptions() {
         if (!_config.options.empty()) {
             pushMeo("options"sv);  // options
-            for (const auto &option : _config.options) {
+            for (const auto& option : _config.options) {
                 lua_pushlstring(L, option.second.c_str(), option.second.size());
                 lua_setfield(L, -2, option.first.c_str());
             }
             lua_pop(L, 1);
         }
     }
+
     void pushCurrentModule() {
         if (_useModule) {
             lua_pushliteral(L, MEO_MODULE);                 // MEO_MODULE
@@ -4899,7 +6071,7 @@ private:
         if (!L) {
             L = luaL_newstate();
             if (_luaOpen) {
-                _luaOpen(static_cast<void *>(L));
+                _luaOpen(static_cast<void*>(L));
             }
             passOptions();
             _stateOwner = true;
@@ -4919,6 +6091,7 @@ private:
         lua_rawseti(L, -3, idx + 1);                    // tb[idx + 1] = cur, tb cur
         lua_remove(L, -2);                              // cur
     }
+
     void pushMeo(std::string_view name) {
         lua_getglobal(L, "package");                     // package
         lua_getfield(L, -1, "loaded");                   // package loaded
@@ -4928,6 +6101,7 @@ private:
         lua_insert(L, -4);                               // item package loaded meo
         lua_pop(L, 3);                                   // item
     }
+
     bool isModuleLoaded(std::string_view name) {
         int top = lua_gettop(L);
         DEFER(lua_settop(L, top));
@@ -4940,6 +6114,7 @@ private:
         }
         return true;
     }
+
     void pushModuleTable(std::string_view name) {
         lua_pushliteral(L, MEO_MODULE);    // MEO_MODULE
         lua_rawget(L, LUA_REGISTRYINDEX);  // modules
@@ -4954,6 +6129,7 @@ private:
         }
         lua_remove(L, -2);  // module
     }
+
     void pushOptions(int lineOffset) {
         lua_newtable(L);
         lua_pushliteral(L, "lint_global");
@@ -4972,7 +6148,8 @@ private:
         lua_pushinteger(L, lineOffset);
         lua_rawset(L, -3);
     }
-    void transformMacro(Macro_t *macro, str_list &out, bool exporting) {
+
+    void transformMacro(Macro_t* macro, str_list& out, bool exporting) {
         if (_scopes.size() > 1) {
             throw std::logic_error(_info.errorMessage("can not define macro outside the root block"sv, macro));
         }
@@ -4981,8 +6158,8 @@ private:
         str_list newArgs;
         if (argsDef) {
             for (auto def_ : argsDef->definitions.objects()) {
-                auto def = static_cast<FnArgDef_t *>(def_);
-                if (def->name.is<SelfName_t>()) {
+                auto def = static_cast<FnArgDef_t*>(def_);
+                if (def->name.is<SelfItem_t>()) {
                     throw std::logic_error(_info.errorMessage("self name is not supported for macro function argument"sv, def->name));
                 } else {
                     std::string defVal;
@@ -5044,17 +6221,18 @@ private:
         out.push_back(Empty);
     }
 #else
-    void transformMacro(Macro_t *macro, str_list &, bool) { throw std::logic_error(_info.errorMessage("macro feature not supported"sv, macro)); }
+    void transformMacro(Macro_t* macro, str_list&, bool) { throw std::logic_error(_info.errorMessage("macro feature not supported"sv, macro)); }
 #endif  // MEO_NO_MACRO
-    void transformReturn(Return_t *returnNode, str_list &out) {
+
+    void transformReturn(Return_t* returnNode, str_list& out) {
         if (!_enableReturn.top()) {
-            ast_node *target = returnNode->valueList.get();
+            ast_node* target = returnNode->valueList.get();
             if (!target) target = returnNode;
             throw std::logic_error(_info.errorMessage("can not mix use of return and export statements in module scope"sv, target));
         }
         if (auto valueList = returnNode->valueList.as<ExpListLow_t>()) {
             if (valueList->exprs.size() == 1) {
-                auto exp = static_cast<Exp_t *>(valueList->exprs.back());
+                auto exp = static_cast<Exp_t*>(valueList->exprs.back());
                 if (isPureBackcall(exp)) {
                     transformExp(exp, out, ExpUsage::Return);
                     return;
@@ -5068,37 +6246,37 @@ private:
                     auto value = simpleValue->value.get();
                     switch (value->getId()) {
                         case id<Comprehension_t>():
-                            transformComprehension(static_cast<Comprehension_t *>(value), out, ExpUsage::Return);
+                            transformComprehension(static_cast<Comprehension_t*>(value), out, ExpUsage::Return);
                             return;
                         case id<TblComprehension_t>():
-                            transformTblComprehension(static_cast<TblComprehension_t *>(value), out, ExpUsage::Return);
+                            transformTblComprehension(static_cast<TblComprehension_t*>(value), out, ExpUsage::Return);
                             return;
                         case id<With_t>():
-                            transformWith(static_cast<With_t *>(value), out, nullptr, true);
+                            transformWith(static_cast<With_t*>(value), out, nullptr, true);
                             return;
                         case id<ClassDecl_t>():
-                            transformClassDecl(static_cast<ClassDecl_t *>(value), out, ExpUsage::Return);
+                            transformClassDecl(static_cast<ClassDecl_t*>(value), out, ExpUsage::Return);
                             return;
                         case id<Do_t>():
-                            transformDo(static_cast<Do_t *>(value), out, ExpUsage::Return);
+                            transformDo(static_cast<Do_t*>(value), out, ExpUsage::Return);
                             return;
                         case id<Switch_t>():
-                            transformSwitch(static_cast<Switch_t *>(value), out, ExpUsage::Return);
+                            transformSwitch(static_cast<Switch_t*>(value), out, ExpUsage::Return);
                             return;
                         case id<While_t>():
-                            transformWhileInPlace(static_cast<While_t *>(value), out);
+                            transformWhileInPlace(static_cast<While_t*>(value), out);
                             return;
                         case id<For_t>():
-                            transformForInPlace(static_cast<For_t *>(value), out);
+                            transformForInPlace(static_cast<For_t*>(value), out);
                             return;
                         case id<ForEach_t>():
-                            transformForEachInPlace(static_cast<ForEach_t *>(value), out);
+                            transformForEachInPlace(static_cast<ForEach_t*>(value), out);
                             return;
                         case id<If_t>():
-                            transformIf(static_cast<If_t *>(value), out, ExpUsage::Return);
+                            transformIf(static_cast<If_t*>(value), out, ExpUsage::Return);
                             return;
                         case id<TableLit_t>(): {
-                            auto tableLit = static_cast<TableLit_t *>(value);
+                            auto tableLit = static_cast<TableLit_t*>(value);
                             if (hasSpreadExp(tableLit->values.objects())) {
                                 transformSpreadTable(tableLit->values.objects(), out, ExpUsage::Return);
                                 return;
@@ -5120,7 +6298,7 @@ private:
                 out.push_back(indent() + "return "s + temp.back() + nlr(returnNode));
             }
         } else if (auto tableBlock = returnNode->valueList.as<TableBlock_t>()) {
-            const auto &values = tableBlock->values.objects();
+            const auto& values = tableBlock->values.objects();
             if (hasSpreadExp(values)) {
                 transformSpreadTable(values, out, ExpUsage::Return);
             } else {
@@ -5131,7 +6309,8 @@ private:
             out.push_back(indent() + "return"s + nll(returnNode));
         }
     }
-    void transformFnArgsDef(FnArgsDef_t *argsDef, str_list &out) {
+
+    void transformFnArgsDef(FnArgsDef_t* argsDef, str_list& out) {
         if (!argsDef->defList) {
             out.push_back(Empty);
             out.push_back(Empty);
@@ -5142,7 +6321,8 @@ private:
             transform_outer_var_shadow(argsDef->shadowOption);
         }
     }
-    void transform_outer_var_shadow(outer_var_shadow_t *shadow) {
+
+    void transform_outer_var_shadow(OuterVarShadow_t* shadow) {
         markVarShadowed();
         if (shadow->varList) {
             for (auto name : shadow->varList->names.objects()) {
@@ -5150,7 +6330,8 @@ private:
             }
         }
     }
-    void transformFnArgDefList(FnArgDefList_t *argDefList, str_list &out) {
+
+    void transformFnArgDefList(FnArgDefList_t* argDefList, str_list& out) {
         auto x = argDefList;
         struct ArgItem {
             bool checkExistence = false;
@@ -5162,13 +6343,13 @@ private:
         std::string varNames;
         bool assignSelf = false;
         for (auto _def : argDefList->definitions.objects()) {
-            auto def = static_cast<FnArgDef_t *>(_def);
-            auto &arg = argItems.emplace_back();
+            auto def = static_cast<FnArgDef_t*>(_def);
+            auto& arg = argItems.emplace_back();
             switch (def->name->getId()) {
                 case id<Variable_t>():
                     arg.name = _parser.toString(def->name);
                     break;
-                case id<SelfName_t>(): {
+                case id<SelfItem_t>(): {
                     assignSelf = true;
                     if (def->op) {
                         if (def->defaultValue) {
@@ -5176,21 +6357,21 @@ private:
                         }
                         arg.checkExistence = true;
                     }
-                    auto selfName = static_cast<SelfName_t *>(def->name.get());
+                    auto selfName = static_cast<SelfItem_t*>(def->name.get());
                     switch (selfName->name->getId()) {
-                        case id<self_class_name_t>(): {
-                            auto clsName = static_cast<self_class_name_t *>(selfName->name.get());
+                        case id<SelfClassName_t>(): {
+                            auto clsName = static_cast<SelfClassName_t*>(selfName->name.get());
                             arg.name = _parser.toString(clsName->name);
                             arg.assignSelf = _parser.toString(clsName);
                             break;
                         }
-                        case id<self_name_t>(): {
-                            auto sfName = static_cast<self_name_t *>(selfName->name.get());
+                        case id<SelfName_t>(): {
+                            auto sfName = static_cast<SelfName_t*>(selfName->name.get());
                             arg.name = _parser.toString(sfName->name);
                             arg.assignSelf = _parser.toString(sfName);
                             break;
                         }
-                        case id<self_t>():
+                        case id<Self_t>():
                             arg.name = "self"sv;
                             if (def->op) throw std::logic_error(_info.errorMessage("can only check existence for assigning self field"sv, selfName->name));
                             break;
@@ -5201,7 +6382,7 @@ private:
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", def->name.get());
+                    MEO_E("AST node mismatch", def->name.get());
                     break;
             }
             forceAddToScope(arg.name);
@@ -5226,7 +6407,7 @@ private:
                 varNames.append(", "s + arg.name);
         }
         if (argDefList->varArg) {
-            auto &arg = argItems.emplace_back();
+            auto& arg = argItems.emplace_back();
             arg.name = "..."sv;
             if (varNames.empty())
                 varNames = arg.name;
@@ -5235,7 +6416,7 @@ private:
             _varArgs.top().hasVar = true;
         }
         if (assignSelf) {
-            for (const auto &item : argItems) {
+            for (const auto& item : argItems) {
                 if (item.assignSelf.empty()) continue;
                 if (item.checkExistence) {
                     auto stmt = toAst<Statement_t>(item.assignSelf + " = "s + item.name + " if "s + item.name + '?', x);
@@ -5249,12 +6430,13 @@ private:
         out.push_back(varNames);
         out.push_back(join(temp));
     }
-    void transformSelfName(SelfName_t *selfName, str_list &out, const ast_sel<false, Invoke_t, InvokeArgs_t> &invoke = {}) {
+
+    void transformSelfName(SelfItem_t* selfName, str_list& out, const ast_sel<false, Invoke_t, InvokeArgs_t>& invoke = {}) {
         auto x = selfName;
         auto name = selfName->name.get();
         switch (name->getId()) {
-            case id<self_class_name_t>(): {
-                auto clsName = static_cast<self_class_name_t *>(name);
+            case id<SelfClassName_t>(): {
+                auto clsName = static_cast<SelfClassName_t*>(name);
                 auto nameStr = _parser.toString(clsName->name);
                 if (LuaKeywords.find(nameStr) != LuaKeywords.end()) {
                     out.push_back("self.__class[\""s + nameStr + "\"]"s);
@@ -5271,11 +6453,11 @@ private:
                 }
                 break;
             }
-            case id<self_class_t>():
+            case id<SelfClass_t>():
                 out.push_back("self.__class"s);
                 break;
-            case id<self_name_t>(): {
-                auto sfName = static_cast<self_class_name_t *>(name);
+            case id<SelfName_t>(): {
+                auto sfName = static_cast<SelfClassName_t*>(name);
                 auto nameStr = _parser.toString(sfName->name);
                 if (LuaKeywords.find(nameStr) != LuaKeywords.end()) {
                     out.push_back("self[\""s + nameStr + "\"]"s);
@@ -5292,17 +6474,18 @@ private:
                 }
                 break;
             }
-            case id<self_t>():
+            case id<Self_t>():
                 out.push_back("self"s);
                 break;
             default:
-                SERROR("AST node mismatch", name);
+                MEO_E("AST node mismatch", name);
                 break;
         }
     }
-    bool transformChainEndWithEOP(const node_container &chainList, str_list &out, ExpUsage usage, ExpList_t *assignList) {
+
+    bool transformChainEndWithEOP(const node_container& chainList, str_list& out, ExpUsage usage, ExpList_t* assignList) {
         auto x = chainList.front();
-        if (ast_is<existential_op_t>(chainList.back())) {
+        if (ast_is<ExistentialOp_t>(chainList.back())) {
             auto parens = x->new_ptr<Parens_t>();
             {
                 auto chainValue = x->new_ptr<ChainValue_t>();
@@ -5343,12 +6526,13 @@ private:
         }
         return false;
     }
-    bool transformChainWithEOP(const node_container &chainList, str_list &out, ExpUsage usage, ExpList_t *assignList, bool optionalDestruct) {
-        auto opIt = std::find_if(chainList.begin(), chainList.end(), [](ast_node *node) { return ast_is<existential_op_t>(node); });
+
+    bool transformChainWithEOP(const node_container& chainList, str_list& out, ExpUsage usage, ExpList_t* assignList, bool optionalDestruct) {
+        auto opIt = std::find_if(chainList.begin(), chainList.end(), [](ast_node* node) { return ast_is<ExistentialOp_t>(node); });
         if (opIt != chainList.end()) {
             auto x = chainList.front();
             str_list temp;
-            std::string *funcStart = nullptr;
+            std::string* funcStart = nullptr;
             if (usage == ExpUsage::Closure) {
                 pushFunctionScope();
                 pushAnonVarArg();
@@ -5362,9 +6546,9 @@ private:
             BLOCK_START
             auto back = ast_cast<Callable_t>(partOne->items.back());
             BREAK_IF(!back);
-            auto selfName = ast_cast<SelfName_t>(back->item);
+            auto selfName = ast_cast<SelfItem_t>(back->item);
             BREAK_IF(!selfName);
-            if (auto sname = ast_cast<self_name_t>(selfName->name)) {
+            if (auto sname = ast_cast<SelfName_t>(selfName->name)) {
                 auto colonItem = x->new_ptr<ColonChainItem_t>();
                 colonItem->name.set(sname->name);
                 partOne->items.pop_back();
@@ -5372,7 +6556,7 @@ private:
                 partOne->items.push_back(colonItem);
                 break;
             }
-            if (auto cname = ast_cast<self_class_name_t>(selfName->name)) {
+            if (auto cname = ast_cast<SelfClassName_t>(selfName->name)) {
                 auto colonItem = x->new_ptr<ColonChainItem_t>();
                 colonItem->name.set(cname->name);
                 partOne->items.pop_back();
@@ -5434,7 +6618,7 @@ private:
                         if (auto invoke = ast_cast<Invoke_t>(*it)) {
                             invoke->args.push_front(toAst<Exp_t>(objVar, x));
                         } else {
-                            auto invokeArgs = static_cast<InvokeArgs_t *>(*it);
+                            auto invokeArgs = static_cast<InvokeArgs_t*>(*it);
                             invokeArgs->args.push_front(toAst<Exp_t>(objVar, x));
                         }
                     }
@@ -5515,11 +6699,12 @@ private:
         }
         return false;
     }
-    bool transformChainEndWithColonItem(const node_container &chainList, str_list &out, ExpUsage usage, ExpList_t *assignList) {
+
+    bool transformChainEndWithColonItem(const node_container& chainList, str_list& out, ExpUsage usage, ExpList_t* assignList) {
         if (ast_is<ColonChainItem_t>(chainList.back())) {
             auto x = chainList.front();
             str_list temp;
-            std::string *funcStart = nullptr;
+            std::string* funcStart = nullptr;
             switch (usage) {
                 case ExpUsage::Assignment:
                     temp.push_back(indent() + "do"s + nll(x));
@@ -5550,7 +6735,7 @@ private:
             for (auto it = chainList.begin(); it != end; ++it) {
                 baseChain->items.push_back(*it);
             }
-            auto colonChainItem = static_cast<ColonChainItem_t *>(chainList.back());
+            auto colonChainItem = static_cast<ColonChainItem_t*>(chainList.back());
             auto funcName = _parser.toString(colonChainItem->name);
             auto baseVar = getUnusedName("_base_"sv);
             auto fnVar = getUnusedName("_fn_"sv);
@@ -5614,8 +6799,9 @@ private:
         }
         return false;
     }
-    bool transformChainWithMetatable(const node_container &chainList, str_list &out, ExpUsage usage, ExpList_t *assignList) {
-        auto opIt = std::find_if(chainList.begin(), chainList.end(), [](ast_node *node) {
+
+    bool transformChainWithMetatable(const node_container& chainList, str_list& out, ExpUsage usage, ExpList_t* assignList) {
+        auto opIt = std::find_if(chainList.begin(), chainList.end(), [](ast_node* node) {
             if (auto colonChain = ast_cast<ColonChainItem_t>(node)) {
                 if (ast_is<Metamethod_t>(colonChain->name)) {
                     return true;
@@ -5647,7 +6833,7 @@ private:
         }
         switch ((*opIt)->getId()) {
             case id<ColonChainItem_t>(): {
-                auto colon = static_cast<ColonChainItem_t *>(*opIt);
+                auto colon = static_cast<ColonChainItem_t*>(*opIt);
                 auto meta = colon->name.to<Metamethod_t>();
                 switch (meta->item->getId()) {
                     case id<Name_t>(): {
@@ -5658,7 +6844,7 @@ private:
                     case id<String_t>():
                     case id<Exp_t>(): {
                         str_list temp;
-                        std::string *funcStart = nullptr;
+                        std::string* funcStart = nullptr;
                         if (usage == ExpUsage::Closure) {
                             pushFunctionScope();
                             pushAnonVarArg();
@@ -5735,13 +6921,13 @@ private:
                         return true;
                     }
                     default:
-                        SERROR("AST node mismatch", meta->item);
+                        MEO_E("AST node mismatch", meta->item);
                         break;
                 }
                 break;
             }
             case id<DotChainItem_t>(): {
-                auto dot = static_cast<DotChainItem_t *>(*opIt);
+                auto dot = static_cast<DotChainItem_t*>(*opIt);
                 if (dot->name.is<Metatable_t>()) break;
                 auto meta = dot->name.to<Metamethod_t>();
                 switch (meta->item->getId()) {
@@ -5754,12 +6940,12 @@ private:
                         chain->items.push_back(meta->item);
                         break;
                     case id<String_t>(): {
-                        auto str = static_cast<String_t *>(meta->item.get());
+                        auto str = static_cast<String_t*>(meta->item.get());
                         chain->items.push_back(newExp(str, x));
                         break;
                     }
                     default:
-                        SERROR("AST node mismatch", meta->item);
+                        MEO_E("AST node mismatch", meta->item);
                         break;
                 }
                 break;
@@ -5771,14 +6957,9 @@ private:
         transformChainValue(chain, out, usage, assignList);
         return true;
     }
-    void transformChainList(const node_container &chainList, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformChainList(const node_container& chainList, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         auto x = chainList.front();
-        if (chainList.size() > 1) {
-            auto callable = ast_cast<Callable_t>(x);
-            if (callable && callable->item.is<VarArg_t>()) {
-                throw std::logic_error(_info.errorMessage("can not access variadic arguments directly"sv, x));
-            }
-        }
         str_list temp;
         switch (x->getId()) {
             case id<DotChainItem_t>():
@@ -5795,24 +6976,24 @@ private:
             auto item = *it;
             switch (item->getId()) {
                 case id<Invoke_t>():
-                    transformInvoke(static_cast<Invoke_t *>(item), temp);
+                    transformInvoke(static_cast<Invoke_t*>(item), temp);
                     break;
                 case id<DotChainItem_t>():
-                    transformDotChainItem(static_cast<DotChainItem_t *>(item), temp);
+                    transformDotChainItem(static_cast<DotChainItem_t*>(item), temp);
                     break;
                 case id<ColonChainItem_t>(): {
-                    auto colonItem = static_cast<ColonChainItem_t *>(item);
+                    auto colonItem = static_cast<ColonChainItem_t*>(item);
                     auto current = it;
                     auto next = current;
                     ++next;
                     auto followItem = next != chainList.end() ? *next : nullptr;
                     if (current != chainList.begin()) {
                         --current;
-                        if (!ast_is<existential_op_t>(*current)) {
+                        if (!ast_is<ExistentialOp_t>(*current)) {
                             ++current;
                         }
                     }
-                    if (ast_is<existential_op_t>(followItem)) {
+                    if (ast_is<ExistentialOp_t>(followItem)) {
                         ++next;
                         followItem = next != chainList.end() ? *next : nullptr;
                         --next;
@@ -5853,14 +7034,14 @@ private:
                             auto name = _parser.toString(colonItem->name);
                             auto chainValue = x->new_ptr<ChainValue_t>();
                             chainValue->items.push_back(toAst<Callable_t>(callVar, x));
-                            if (ast_is<existential_op_t>(*current)) {
-                                chainValue->items.push_back(x->new_ptr<existential_op_t>());
+                            if (ast_is<ExistentialOp_t>(*current)) {
+                                chainValue->items.push_back(x->new_ptr<ExistentialOp_t>());
                             }
                             chainValue->items.push_back(toAst<Exp_t>('\"' + name + '\"', x));
                             if (auto invoke = ast_cast<Invoke_t>(followItem)) {
                                 invoke->args.push_front(toAst<Exp_t>(callVar, x));
                             } else {
-                                auto invokeArgs = static_cast<InvokeArgs_t *>(followItem);
+                                auto invokeArgs = static_cast<InvokeArgs_t*>(followItem);
                                 invokeArgs->args.push_front(toAst<Exp_t>(callVar, x));
                             }
                             for (auto i = next; i != chainList.end(); ++i) {
@@ -5913,7 +7094,7 @@ private:
                     break;
                 }
                 case id<Slice_t>():
-                    transformSlice(static_cast<Slice_t *>(item), temp);
+                    transformSlice(static_cast<Slice_t*>(item), temp);
                     break;
                 case id<Callable_t>(): {
                     auto next = it;
@@ -5923,25 +7104,25 @@ private:
                     if (ast_is<Invoke_t, InvokeArgs_t>(followItem)) {
                         invoke.set(followItem);
                     }
-                    transformCallable(static_cast<Callable_t *>(item), temp, invoke);
+                    transformCallable(static_cast<Callable_t*>(item), temp, invoke);
                     break;
                 }
                 case id<String_t>():
-                    transformString(static_cast<String_t *>(item), temp);
+                    transformString(static_cast<String_t*>(item), temp);
                     temp.back() = '(' + temp.back() + ')';
                     break;
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(item), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(item), temp, ExpUsage::Closure);
                     temp.back() = (temp.back().front() == '[' ? "[ "s : "["s) + temp.back() + ']';
                     break;
                 case id<InvokeArgs_t>():
-                    transformInvokeArgs(static_cast<InvokeArgs_t *>(item), temp);
+                    transformInvokeArgs(static_cast<InvokeArgs_t*>(item), temp);
                     break;
-                case id<table_appending_op_t>():
-                    transform_table_appending_op(static_cast<table_appending_op_t *>(item), temp);
+                case id<TableAppendingOp_t>():
+                    transform_table_appending_op(static_cast<TableAppendingOp_t*>(item), temp);
                     break;
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
         }
@@ -5953,14 +7134,15 @@ private:
                 out.push_back(indent() + "return "s + join(temp) + nll(x));
                 break;
             case ExpUsage::Assignment:
-                SERROR("invalid expression usage", x);
+                MEO_E("invalid expression usage", x);
                 break;
             default:
                 out.push_back(join(temp));
                 break;
         }
     }
-    void transformMacroInPlace(MacroInPlace_t *macroInPlace) {
+
+    void transformMacroInPlace(MacroInPlace_t* macroInPlace) {
 #ifdef MEO_NO_MACRO
         throw std::logic_error(_info.errorMessage("macro feature not supported"sv, macroInPlace));
 #else   // MEO_NO_MACRO
@@ -6008,8 +7190,9 @@ private:
         }
 #endif  // MEO_NO_MACRO
     }
+
 #ifndef MEO_NO_MACRO
-    std::string expandBuiltinMacro(const std::string &name, ast_node *x) {
+    std::string expandBuiltinMacro(const std::string& name, ast_node* x) {
         if (name == "LINE"sv) {
             return std::to_string(x->m_begin.m_line + _config.lineOffset);
         }
@@ -6018,8 +7201,9 @@ private:
         }
         return Empty;
     }
-    std::tuple<std::string, std::string, str_list> expandMacroStr(ChainValue_t *chainValue) {
-        const auto &chainList = chainValue->items.objects();
+
+    std::tuple<std::string, std::string, str_list> expandMacroStr(ChainValue_t* chainValue) {
+        const auto& chainList = chainValue->items.objects();
         auto x = ast_to<Callable_t>(chainList.front())->item.to<MacroName_t>();
         auto macroName = _parser.toString(x->name);
         if (!_useModule) {
@@ -6039,7 +7223,7 @@ private:
         }                    // cur macroFunc
         pushMeo("pcall"sv);  // cur macroFunc pcall
         lua_insert(L, -2);   // cur pcall macroFunc
-        const node_container *args = nullptr;
+        const node_container* args = nullptr;
         if (chainList.size() > 1) {
             auto item = *(++chainList.begin());
             if (auto invoke = ast_cast<Invoke_t>(item)) {
@@ -6071,10 +7255,10 @@ private:
                     // check whether arg is reassembled
                     // do some workaround for pipe expression
                     if (ast_is<Exp_t>(arg)) {
-                        auto exp = static_cast<Exp_t *>(arg);
+                        auto exp = static_cast<Exp_t*>(arg);
                         BLOCK_START
                         BREAK_IF(!exp->opValues.empty());
-                        auto chainValue = exp->getByPath<unary_exp_t, Value_t, ChainValue_t>();
+                        auto chainValue = exp->getByPath<UnaryExp_t, Value_t, ChainValue_t>();
                         BREAK_IF(!chainValue);
                         BREAK_IF(!isMacroChain(chainValue));
                         str = std::get<1>(expandMacroStr(chainValue));
@@ -6152,9 +7336,10 @@ private:
         Utils::replace(codes, "\r\n"sv, "\n"sv);
         return {type, codes, std::move(localVars)};
     }
-    std::tuple<ast_ptr<false, ast_node>, std::unique_ptr<input>, std::string, str_list> expandMacro(ChainValue_t *chainValue, ExpUsage usage, bool allowBlockMacroReturn) {
+
+    std::tuple<ast_ptr<false, ast_node>, std::unique_ptr<input>, std::string, str_list> expandMacro(ChainValue_t* chainValue, ExpUsage usage, bool allowBlockMacroReturn) {
         auto x = ast_to<Callable_t>(chainValue->items.front())->item.to<MacroName_t>();
-        const auto &chainList = chainValue->items.objects();
+        const auto& chainList = chainValue->items.objects();
         std::string type, codes;
         str_list localVars;
         std::tie(type, codes, localVars) = expandMacroStr(chainValue);
@@ -6210,7 +7395,7 @@ private:
                 }
                 int line = x->m_begin.m_line;
                 int col = x->m_begin.m_col;
-                info.node->traverse([&](ast_node *node) {
+                info.node->traverse([&](ast_node* node) {
                     node->m_begin.m_line = line;
                     node->m_end.m_line = line;
                     node->m_begin.m_col = col;
@@ -6253,13 +7438,13 @@ private:
                     auto block = blockEnd->block.get();
                     info.node.set(block);
                     for (auto stmt_ : block->statements.objects()) {
-                        auto stmt = static_cast<Statement_t *>(stmt_);
+                        auto stmt = static_cast<Statement_t*>(stmt_);
                         if (auto global = stmt->content.as<Global_t>()) {
-                            if (global->item.is<global_op_t>()) {
+                            if (global->item.is<GlobalOp_t>()) {
                                 throw std::logic_error(_info.errorMessage("can not insert global statement with wildcard operator from macro"sv, x));
                             }
                         } else if (auto local = stmt->content.as<Local_t>()) {
-                            if (local->item.is<local_flag_t>()) {
+                            if (local->item.is<LocalFlag_t>()) {
                                 throw std::logic_error(_info.errorMessage("can not insert local statement with wildcard operator from macro"sv, x));
                             }
                         }
@@ -6273,7 +7458,8 @@ private:
         }
     }
 #endif  // MEO_NO_MACRO
-    void transformChainValue(ChainValue_t *chainValue, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr, bool allowBlockMacroReturn = false, bool optionalDestruct = false) {
+
+    void transformChainValue(ChainValue_t* chainValue, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr, bool allowBlockMacroReturn = false, bool optionalDestruct = false) {
         if (isMacroChain(chainValue)) {
 #ifndef MEO_NO_MACRO
             ast_ptr<false, ast_node> node;
@@ -6284,7 +7470,7 @@ private:
             if (!node) {
                 out.push_back(luaCodes);
                 if (!localVars.empty()) {
-                    for (const auto &var : localVars) {
+                    for (const auto& var : localVars) {
                         addToScope(var);
                     }
                 }
@@ -6323,7 +7509,7 @@ private:
             throw std::logic_error(_info.errorMessage("macro feature not supported"sv, chainValue));
 #endif  // MEO_NO_MACRO
         }
-        const auto &chainList = chainValue->items.objects();
+        const auto& chainList = chainValue->items.objects();
         if (transformChainEndWithEOP(chainList, out, usage, assignList)) {
             return;
         }
@@ -6338,8 +7524,10 @@ private:
         }
         transformChainList(chainList, out, usage, assignList);
     }
-    void transformAssignableChain(AssignableChain_t *chain, str_list &out) { transformChainList(chain->items.objects(), out, ExpUsage::Closure); }
-    void transformDotChainItem(DotChainItem_t *dotChainItem, str_list &out) {
+
+    void transformAssignableChain(AssignableChain_t* chain, str_list& out) { transformChainList(chain->items.objects(), out, ExpUsage::Closure); }
+
+    void transformDotChainItem(DotChainItem_t* dotChainItem, str_list& out) {
         auto name = _parser.toString(dotChainItem->name);
         if (LuaKeywords.find(name) != LuaKeywords.end()) {
             out.push_back("[\""s + name + "\"]"s);
@@ -6347,39 +7535,44 @@ private:
             out.push_back('.' + name);
         }
     }
-    void transformColonChainItem(ColonChainItem_t *colonChainItem, str_list &out) {
+
+    void transformColonChainItem(ColonChainItem_t* colonChainItem, str_list& out) {
         auto name = _parser.toString(colonChainItem->name);
         out.push_back((colonChainItem->switchToDot ? '.' : ':') + name);
     }
-    void transformSlice(Slice_t *slice, str_list &) { throw std::logic_error(_info.errorMessage("slice syntax not supported here"sv, slice)); }
-    void transform_table_appending_op(table_appending_op_t *op, str_list &) { throw std::logic_error(_info.errorMessage("table appending syntax not supported here"sv, op)); }
-    void transformInvoke(Invoke_t *invoke, str_list &out) {
+
+    void transformSlice(Slice_t* slice, str_list&) { throw std::logic_error(_info.errorMessage("slice syntax not supported here"sv, slice)); }
+
+    void transform_table_appending_op(TableAppendingOp_t* op, str_list&) { throw std::logic_error(_info.errorMessage("table appending syntax not supported here"sv, op)); }
+
+    void transformInvoke(Invoke_t* invoke, str_list& out) {
         str_list temp;
         for (auto arg : invoke->args.objects()) {
             switch (arg->getId()) {
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(arg), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(arg), temp, ExpUsage::Closure);
                     break;
                 case id<SingleString_t>():
-                    transformSingleString(static_cast<SingleString_t *>(arg), temp);
+                    transformSingleString(static_cast<SingleString_t*>(arg), temp);
                     break;
                 case id<DoubleString_t>():
-                    transformDoubleString(static_cast<DoubleString_t *>(arg), temp);
+                    transformDoubleString(static_cast<DoubleString_t*>(arg), temp);
                     break;
                 case id<LuaString_t>():
-                    transformLuaString(static_cast<LuaString_t *>(arg), temp);
+                    transformLuaString(static_cast<LuaString_t*>(arg), temp);
                     break;
                 case id<TableLit_t>():
-                    transformTableLit(static_cast<TableLit_t *>(arg), temp);
+                    transformTableLit(static_cast<TableLit_t*>(arg), temp);
                     break;
                 default:
-                    SERROR("AST node mismatch", arg);
+                    MEO_E("AST node mismatch", arg);
                     break;
             }
         }
         out.push_back('(' + join(temp, ", "sv) + ')');
     }
-    void transform_unary_value(unary_value_t *unary_value, str_list &out) {
+
+    void transform_unary_value(UnaryValue_t* unary_value, str_list& out) {
         str_list temp;
         for (auto _op : unary_value->ops.objects()) {
             std::string op = _parser.toString(_op);
@@ -6391,9 +7584,10 @@ private:
         transformValue(unary_value->value, temp);
         out.push_back(join(temp));
     }
-    void transform_unary_exp(unary_exp_t *unary_exp, str_list &out) {
+
+    void transform_unary_exp(UnaryExp_t* unary_exp, str_list& out) {
         if (unary_exp->ops.empty() && unary_exp->expos.size() == 1) {
-            transformValue(static_cast<Value_t *>(unary_exp->expos.back()), out);
+            transformValue(static_cast<Value_t*>(unary_exp->expos.back()), out);
             return;
         }
         std::string unary_op;
@@ -6406,24 +7600,36 @@ private:
         }
         str_list temp;
         for (auto _value : unary_exp->expos.objects()) {
-            auto value = static_cast<Value_t *>(_value);
+            auto value = static_cast<Value_t*>(_value);
             transformValue(value, temp);
         }
         out.push_back(unary_op + join(temp, " ^ "sv));
     }
-    void transformVariable(Variable_t *name, str_list &out) { out.push_back(_parser.toString(name)); }
-    void transformNum(Num_t *num, str_list &out) {
+
+    void transformVariable(Variable_t* name, str_list& out) { out.push_back(_parser.toString(name)); }
+
+    void transformNum(Num_t* num, str_list& out) {
         std::string numStr = _parser.toString(num);
         numStr.erase(std::remove(numStr.begin(), numStr.end(), '_'), numStr.end());
         out.push_back(numStr);
     }
-    bool hasSpreadExp(const node_container &items) {
+
+    void transformVarArg(VarArg_t* varArg, str_list& out) {
+        if (_varArgs.empty() || !_varArgs.top().hasVar) {
+            throw std::logic_error(_info.errorMessage("cannot use '...' outside a vararg function near '...'"sv, varArg));
+        }
+        _varArgs.top().usedVar = true;
+        out.push_back("..."s);
+    }
+
+    bool hasSpreadExp(const node_container& items) {
         for (auto item : items) {
             if (ast_is<SpreadExp_t>(item)) return true;
         }
         return false;
     }
-    void transformSpreadTable(const node_container &values, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformSpreadTable(const node_container& values, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         auto x = values.front();
         switch (usage) {
             case ExpUsage::Closure:
@@ -6456,7 +7662,7 @@ private:
             auto item = *it;
             switch (item->getId()) {
                 case id<SpreadExp_t>(): {
-                    auto spread = static_cast<SpreadExp_t *>(item);
+                    auto spread = static_cast<SpreadExp_t*>(item);
                     std::string indexVar = getUnusedName("_idx_"sv);
                     std::string keyVar = getUnusedName("_key_"sv);
                     std::string valueVar = getUnusedName("_value_"sv);
@@ -6478,42 +7684,42 @@ private:
                     transformForEach(forEach, temp);
                     break;
                 }
-                case id<variable_pair_t>():
-                case id<variable_pair_def_t>(): {
-                    if (auto pair = ast_cast<variable_pair_def_t>(item)) {
+                case id<VariablePair_t>():
+                case id<VariablePairDef_t>(): {
+                    if (auto pair = ast_cast<VariablePairDef_t>(item)) {
                         if (pair->defVal) {
                             throw std::logic_error(_info.errorMessage("invalid default value here"sv, pair->defVal));
                         }
                         item = pair->pair.get();
                     }
-                    auto variablePair = static_cast<variable_pair_t *>(item);
+                    auto variablePair = static_cast<VariablePair_t*>(item);
                     auto nameStr = _parser.toString(variablePair->name);
                     auto assignment = toAst<ExpListAssign_t>(tableVar + '.' + nameStr + '=' + nameStr, item);
                     transformAssignment(assignment, temp);
                     break;
                 }
-                case id<normal_pair_t>():
-                case id<normal_pair_def_t>(): {
-                    if (auto pair = ast_cast<normal_pair_def_t>(item)) {
+                case id<NormalPair_t>():
+                case id<NormalPairDef_t>(): {
+                    if (auto pair = ast_cast<NormalPairDef_t>(item)) {
                         if (pair->defVal) {
                             throw std::logic_error(_info.errorMessage("invalid default value here"sv, pair->defVal));
                         }
                         item = pair->pair.get();
                     }
-                    auto normalPair = static_cast<normal_pair_t *>(item);
+                    auto normalPair = static_cast<NormalPair_t*>(item);
                     auto assignment = toAst<ExpListAssign_t>(tableVar + "=nil"s, item);
                     auto chainValue = singleValueFrom(ast_to<Exp_t>(assignment->expList->exprs.front()))->item.to<ChainValue_t>();
                     auto key = normalPair->key.get();
                     switch (key->getId()) {
                         case id<KeyName_t>(): {
-                            auto keyName = static_cast<KeyName_t *>(key);
+                            auto keyName = static_cast<KeyName_t*>(key);
                             ast_ptr<false, ast_node> chainItem;
                             if (auto name = keyName->name.as<Name_t>()) {
                                 auto dotItem = x->new_ptr<DotChainItem_t>();
                                 dotItem->name.set(name);
                                 chainItem = dotItem.get();
                             } else {
-                                auto selfName = keyName->name.to<SelfName_t>();
+                                auto selfName = keyName->name.to<SelfItem_t>();
                                 auto callable = x->new_ptr<Callable_t>();
                                 callable->item.set(selfName);
                                 auto chainValue = x->new_ptr<ChainValue_t>();
@@ -6536,7 +7742,7 @@ private:
                             break;
                         }
                         default:
-                            SERROR("AST node mismatch", key);
+                            MEO_E("AST node mismatch", key);
                             break;
                     }
                     auto assign = assignment->action.to<Assign_t>();
@@ -6546,9 +7752,9 @@ private:
                     break;
                 }
                 case id<Exp_t>():
-                case id<normal_def_t>(): {
+                case id<NormalDef_t>(): {
                     auto current = item;
-                    if (auto pair = ast_cast<normal_def_t>(item)) {
+                    if (auto pair = ast_cast<NormalDef_t>(item)) {
                         if (pair->defVal) {
                             throw std::logic_error(_info.errorMessage("invalid default value here"sv, pair->defVal));
                         }
@@ -6559,10 +7765,9 @@ private:
                     BREAK_IF(current != values.back());
                     auto value = singleValueFrom(item);
                     BREAK_IF(!value);
-                    auto chainValue = value->item.as<ChainValue_t>();
-                    BREAK_IF(!chainValue);
-                    BREAK_IF(chainValue->items.size() != 1);
-                    BREAK_IF((!chainValue->getByPath<Callable_t, VarArg_t>()));
+                    auto simpleValue = value->item.as<SimpleValue_t>();
+                    BREAK_IF(!simpleValue);
+                    BREAK_IF(!simpleValue->value.is<VarArg_t>());
                     auto indexVar = getUnusedName("_index_");
                     _buf << "for "sv << indexVar << "=1,select '#',...\n\t"sv << tableVar << "[]= select "sv << indexVar << ",..."sv;
                     transformFor(toAst<For_t>(clearBuf(), item), temp);
@@ -6578,7 +7783,7 @@ private:
                     break;
                 }
                 case id<TableBlockIndent_t>(): {
-                    auto tbIndent = static_cast<TableBlockIndent_t *>(item);
+                    auto tbIndent = static_cast<TableBlockIndent_t*>(item);
                     auto tableBlock = item->new_ptr<TableBlock_t>();
                     tableBlock->values.dup(tbIndent->values);
                     auto assignment = toAst<ExpListAssign_t>(tableVar + "[]=nil"s, item);
@@ -6596,29 +7801,29 @@ private:
                     transformAssignment(assignment, temp);
                     break;
                 }
-                case id<meta_variable_pair_t>():
-                case id<meta_variable_pair_def_t>(): {
-                    if (auto pair = ast_cast<meta_variable_pair_def_t>(item)) {
+                case id<MetaVariablePair_t>():
+                case id<MetaVariablePairDef_t>(): {
+                    if (auto pair = ast_cast<MetaVariablePairDef_t>(item)) {
                         if (pair->defVal) {
                             throw std::logic_error(_info.errorMessage("invalid default value here"sv, pair->defVal));
                         }
                         item = pair->pair.get();
                     }
-                    auto metaVarPair = static_cast<meta_variable_pair_t *>(item);
+                    auto metaVarPair = static_cast<MetaVariablePair_t*>(item);
                     auto nameStr = _parser.toString(metaVarPair->name);
                     auto assignment = toAst<ExpListAssign_t>(tableVar + ".<"s + nameStr + ">="s + nameStr, item);
                     transformAssignment(assignment, temp);
                     break;
                 }
-                case id<meta_normal_pair_t>():
-                case id<meta_normal_pair_def_t>(): {
-                    if (auto pair = ast_cast<meta_normal_pair_def_t>(item)) {
+                case id<MetaNormalPair_t>():
+                case id<MetaNormalPairDef_t>(): {
+                    if (auto pair = ast_cast<MetaNormalPairDef_t>(item)) {
                         if (pair->defVal) {
                             throw std::logic_error(_info.errorMessage("invalid default value here"sv, pair->defVal));
                         }
                         item = pair->pair.get();
                     }
-                    auto metaNormalPair = static_cast<meta_normal_pair_t *>(item);
+                    auto metaNormalPair = static_cast<MetaNormalPair_t*>(item);
                     auto assignment = toAst<ExpListAssign_t>(tableVar + "=nil"s, item);
                     auto chainValue = singleValueFrom(ast_to<Exp_t>(assignment->expList->exprs.front()))->item.to<ChainValue_t>();
                     auto key = metaNormalPair->key.get();
@@ -6641,7 +7846,7 @@ private:
                             chainValue->items.push_back(key);
                             break;
                         default:
-                            SERROR("AST node mismatch", key);
+                            MEO_E("AST node mismatch", key);
                             break;
                     }
                     auto assign = assignment->action.to<Assign_t>();
@@ -6651,7 +7856,7 @@ private:
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
         }
@@ -6688,7 +7893,8 @@ private:
                 break;
         }
     }
-    void transformTable(const node_container &values, str_list &out) {
+
+    void transformTable(const node_container& values, str_list& out) {
         if (values.empty()) {
             out.push_back("{ }"s);
             return;
@@ -6696,45 +7902,45 @@ private:
         auto x = values.front();
         str_list temp;
         incIndentOffset();
-        auto metatable = x->new_ptr<simple_table_t>();
+        auto metatable = x->new_ptr<SimpleTable_t>();
         ast_sel<false, Exp_t, TableBlock_t> metatableItem;
         for (auto value : values) {
             auto item = value;
             switch (item->getId()) {
-                case id<variable_pair_def_t>(): {
-                    auto pair = static_cast<variable_pair_def_t *>(item);
+                case id<VariablePairDef_t>(): {
+                    auto pair = static_cast<VariablePairDef_t*>(item);
                     if (pair->defVal) {
                         throw std::logic_error(_info.errorMessage("invalid default value"sv, pair->defVal));
                     }
                     item = pair->pair.get();
                     break;
                 }
-                case id<normal_pair_def_t>(): {
-                    auto pair = static_cast<normal_pair_def_t *>(item);
+                case id<NormalPairDef_t>(): {
+                    auto pair = static_cast<NormalPairDef_t*>(item);
                     if (pair->defVal) {
                         throw std::logic_error(_info.errorMessage("invalid default value"sv, pair->defVal));
                     }
                     item = pair->pair.get();
                     break;
                 }
-                case id<meta_variable_pair_def_t>(): {
-                    auto pair = static_cast<meta_variable_pair_def_t *>(item);
+                case id<MetaVariablePairDef_t>(): {
+                    auto pair = static_cast<MetaVariablePairDef_t*>(item);
                     if (pair->defVal) {
                         throw std::logic_error(_info.errorMessage("invalid default value"sv, pair->defVal));
                     }
                     item = pair->pair.get();
                     break;
                 }
-                case id<meta_normal_pair_def_t>(): {
-                    auto pair = static_cast<meta_normal_pair_def_t *>(item);
+                case id<MetaNormalPairDef_t>(): {
+                    auto pair = static_cast<MetaNormalPairDef_t*>(item);
                     if (pair->defVal) {
                         throw std::logic_error(_info.errorMessage("invalid default value"sv, pair->defVal));
                     }
                     item = pair->pair.get();
                     break;
                 }
-                case id<normal_def_t>(): {
-                    auto pair = static_cast<normal_def_t *>(item);
+                case id<NormalDef_t>(): {
+                    auto pair = static_cast<NormalDef_t*>(item);
                     if (pair->defVal) {
                         throw std::logic_error(_info.errorMessage("invalid default value"sv, pair->defVal));
                     }
@@ -6745,36 +7951,37 @@ private:
             bool isMetamethod = false;
             switch (item->getId()) {
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(item), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(item), temp, ExpUsage::Closure);
                     break;
-                case id<variable_pair_t>():
-                    transform_variable_pair(static_cast<variable_pair_t *>(item), temp);
+                case id<VariablePair_t>():
+                    transform_variable_pair(static_cast<VariablePair_t*>(item), temp);
                     break;
-                case id<normal_pair_t>():
-                    transform_normal_pair(static_cast<normal_pair_t *>(item), temp, false);
+                case id<NormalPair_t>():
+                    transform_normal_pair(static_cast<NormalPair_t*>(item), temp, false);
                     break;
                 case id<TableBlockIndent_t>():
-                    transformTableBlockIndent(static_cast<TableBlockIndent_t *>(item), temp);
+                    transformTableBlockIndent(static_cast<TableBlockIndent_t*>(item), temp);
                     break;
                 case id<TableBlock_t>():
-                    transformTableBlock(static_cast<TableBlock_t *>(item), temp);
+                    transformTableBlock(static_cast<TableBlock_t*>(item), temp);
                     break;
-                case id<meta_variable_pair_t>(): {
+                case id<MetaVariablePair_t>(): {
                     isMetamethod = true;
-                    auto mp = static_cast<meta_variable_pair_t *>(item);
+                    auto mp = static_cast<MetaVariablePair_t*>(item);
                     if (metatableItem) {
                         throw std::logic_error(_info.errorMessage("too many metatable declarations"sv, mp->name));
                     }
                     auto name = _parser.toString(mp->name);
+                    checkMetamethod(name, mp->name);
                     _buf << "__"sv << name << ':' << name;
-                    auto newPair = toAst<normal_pair_t>(clearBuf(), item);
+                    auto newPair = toAst<NormalPair_t>(clearBuf(), item);
                     metatable->pairs.push_back(newPair);
                     break;
                 }
-                case id<meta_normal_pair_t>(): {
+                case id<MetaNormalPair_t>(): {
                     isMetamethod = true;
-                    auto mp = static_cast<meta_normal_pair_t *>(item);
-                    auto newPair = item->new_ptr<normal_pair_t>();
+                    auto mp = static_cast<MetaNormalPair_t*>(item);
+                    auto newPair = item->new_ptr<NormalPair_t>();
                     if (mp->key) {
                         if (metatableItem) {
                             throw std::logic_error(_info.errorMessage("too many metatable declarations"sv, mp->key));
@@ -6782,6 +7989,7 @@ private:
                         switch (mp->key->getId()) {
                             case id<Name_t>(): {
                                 auto key = _parser.toString(mp->key);
+                                checkMetamethod(key, mp->key);
                                 _buf << "__"sv << key;
                                 auto newKey = toAst<KeyName_t>(clearBuf(), mp->key);
                                 newPair->key.set(newKey);
@@ -6791,12 +7999,12 @@ private:
                                 newPair->key.set(mp->key);
                                 break;
                             case id<String_t>(): {
-                                auto str = static_cast<String_t *>(mp->key.get());
+                                auto str = static_cast<String_t*>(mp->key.get());
                                 newPair->key.set(newExp(str, mp));
                                 break;
                             }
                             default:
-                                SERROR("AST node mismatch", mp->key);
+                                MEO_E("AST node mismatch", mp->key);
                                 break;
                         }
                         newPair->value.set(mp->value);
@@ -6810,7 +8018,7 @@ private:
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
             if (!isMetamethod) {
@@ -6839,10 +8047,10 @@ private:
             } else
                 switch (metatableItem->getId()) {
                     case id<Exp_t>():
-                        transformExp(static_cast<Exp_t *>(metatableItem.get()), tmp, ExpUsage::Closure);
+                        transformExp(static_cast<Exp_t*>(metatableItem.get()), tmp, ExpUsage::Closure);
                         break;
                     case id<TableBlock_t>():
-                        transformTableBlock(static_cast<TableBlock_t *>(metatableItem.get()), tmp);
+                        transformTableBlock(static_cast<TableBlock_t*>(metatableItem.get()), tmp);
                         break;
                 }
             tabStr += tmp.back();
@@ -6850,33 +8058,35 @@ private:
             out.push_back(tabStr);
         }
     }
-    void transformTableLit(TableLit_t *table, str_list &out) {
-        const auto &values = table->values.objects();
+
+    void transformTableLit(TableLit_t* table, str_list& out) {
+        const auto& values = table->values.objects();
         if (hasSpreadExp(values)) {
             transformSpreadTable(values, out, ExpUsage::Closure);
         } else {
             transformTable(values, out);
         }
     }
-    void transformCompCommon(Comprehension_t *comp, str_list &out) {
+
+    void transformCompCommon(Comprehension_t* comp, str_list& out) {
         str_list temp;
         auto x = comp;
         auto compInner = comp->forLoop.get();
         for (auto item : compInner->items.objects()) {
             switch (item->getId()) {
                 case id<CompForEach_t>():
-                    transformCompForEach(static_cast<CompForEach_t *>(item), temp);
+                    transformCompForEach(static_cast<CompForEach_t*>(item), temp);
                     break;
                 case id<CompFor_t>():
-                    transformCompFor(static_cast<CompFor_t *>(item), temp);
+                    transformCompFor(static_cast<CompFor_t*>(item), temp);
                     break;
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(item), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(item), temp, ExpUsage::Closure);
                     temp.back() = indent() + "if "s + temp.back() + " then"s + nll(item);
                     pushScope();
                     break;
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
         }
@@ -6900,7 +8110,8 @@ private:
         }
         out.push_back(clearBuf());
     }
-    void transformComprehension(Comprehension_t *comp, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformComprehension(Comprehension_t* comp, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         auto x = comp;
         switch (usage) {
             case ExpUsage::Closure:
@@ -6923,18 +8134,18 @@ private:
         for (auto item : compInner->items.objects()) {
             switch (item->getId()) {
                 case id<CompForEach_t>():
-                    transformCompForEach(static_cast<CompForEach_t *>(item), temp);
+                    transformCompForEach(static_cast<CompForEach_t*>(item), temp);
                     break;
                 case id<CompFor_t>():
-                    transformCompFor(static_cast<CompFor_t *>(item), temp);
+                    transformCompFor(static_cast<CompFor_t*>(item), temp);
                     break;
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(item), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(item), temp, ExpUsage::Closure);
                     temp.back() = indent() + "if "s + temp.back() + " then"s + nll(item);
                     pushScope();
                     break;
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
         }
@@ -6993,18 +8204,19 @@ private:
                 break;
         }
     }
-    bool transformForEachHead(AssignableNameList_t *nameList, ast_node *loopTarget, str_list &out, bool isStatement = false) {
+
+    bool transformForEachHead(AssignableNameList_t* nameList, ast_node* loopTarget, str_list& out, bool isStatement = false) {
         auto x = nameList;
         str_list temp;
         str_list vars;
         str_list varBefore, varAfter;
         bool extraScope = false;
-        std::list<std::pair<ast_node *, ast_ptr<false, ast_node>>> destructPairs;
+        std::list<std::pair<ast_node*, ast_ptr<false, ast_node>>> destructPairs;
         for (auto _item : nameList->items.objects()) {
-            auto item = static_cast<NameOrDestructure_t *>(_item)->item.get();
+            auto item = static_cast<NameOrDestructure_t*>(_item)->item.get();
             switch (item->getId()) {
                 case id<Variable_t>():
-                    transformVariable(static_cast<Variable_t *>(item), vars);
+                    transformVariable(static_cast<Variable_t*>(item), vars);
                     varAfter.push_back(vars.back());
                     break;
                 case id<TableLit_t>(): {
@@ -7015,13 +8227,13 @@ private:
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
         }
         switch (loopTarget->getId()) {
-            case id<star_exp_t>(): {
-                auto star_exp = static_cast<star_exp_t *>(loopTarget);
+            case id<StarExp_t>(): {
+                auto star_exp = static_cast<StarExp_t*>(loopTarget);
                 auto listVar = singleVariableFrom(star_exp->value, true);
                 if (!isLocal(listVar)) listVar.clear();
                 auto indexVar = getUnusedName("_index_"sv);
@@ -7119,26 +8331,26 @@ private:
                 break;
             }
             case id<Exp_t>():
-                transformExp(static_cast<Exp_t *>(loopTarget), temp, ExpUsage::Closure);
+                transformExp(static_cast<Exp_t*>(loopTarget), temp, ExpUsage::Closure);
                 _buf << indent() << "for "sv << join(vars, ", "sv) << " in "sv << temp.back() << " do"sv << nlr(loopTarget);
                 out.push_back(clearBuf());
                 break;
             case id<ExpList_t>():
-                transformExpList(static_cast<ExpList_t *>(loopTarget), temp);
+                transformExpList(static_cast<ExpList_t*>(loopTarget), temp);
                 _buf << indent() << "for "sv << join(vars, ", "sv) << " in "sv << temp.back() << " do"sv << nlr(loopTarget);
                 out.push_back(clearBuf());
                 break;
             default:
-                SERROR("AST node mismatch", loopTarget);
+                MEO_E("AST node mismatch", loopTarget);
                 break;
         }
-        for (auto &var : varBefore) addToScope(var);
+        for (auto& var : varBefore) addToScope(var);
         pushScope();
-        for (const auto &var : vars) forceAddToScope(var);
-        for (const auto &var : varAfter) addToScope(var);
+        for (const auto& var : vars) forceAddToScope(var);
+        for (const auto& var : varAfter) addToScope(var);
         if (!destructPairs.empty()) {
             temp.clear();
-            for (auto &pair : destructPairs) {
+            for (auto& pair : destructPairs) {
                 auto sValue = x->new_ptr<SimpleValue_t>();
                 sValue->value.set(pair.first);
                 auto exp = newExp(sValue, x);
@@ -7155,17 +8367,19 @@ private:
         }
         return extraScope;
     }
-    void transformCompForEach(CompForEach_t *comp, str_list &out) { transformForEachHead(comp->nameList, comp->loopValue, out); }
-    void transformInvokeArgs(InvokeArgs_t *invokeArgs, str_list &out) {
+
+    void transformCompForEach(CompForEach_t* comp, str_list& out) { transformForEachHead(comp->nameList, comp->loopValue, out); }
+
+    void transformInvokeArgs(InvokeArgs_t* invokeArgs, str_list& out) {
         if (invokeArgs->args.size() > 1) {
             /* merge all the key-value pairs into one table
-         from arguments in the end */
+             from arguments in the end */
             auto lastArg = invokeArgs->args.back();
-            _ast_list *lastTable = nullptr;
+            _ast_list* lastTable = nullptr;
             if (auto tableBlock = ast_cast<TableBlock_t>(lastArg)) {
                 lastTable = &tableBlock->values;
             } else if (auto value = singleValueFrom(lastArg)) {
-                if (auto simpleTable = ast_cast<simple_table_t>(value->item)) {
+                if (auto simpleTable = ast_cast<SimpleTable_t>(value->item)) {
                     lastTable = &simpleTable->pairs;
                 }
             }
@@ -7173,9 +8387,9 @@ private:
                 ast_ptr<false, ast_node> ref(lastArg);
                 invokeArgs->args.pop_back();
                 while (!invokeArgs->args.empty()) {
-                    if (Value_t *value = singleValueFrom(invokeArgs->args.back())) {
-                        if (auto tb = value->item.as<simple_table_t>()) {
-                            const auto &ps = tb->pairs.objects();
+                    if (Value_t* value = singleValueFrom(invokeArgs->args.back())) {
+                        if (auto tb = value->item.as<SimpleTable_t>()) {
+                            const auto& ps = tb->pairs.objects();
                             for (auto it = ps.rbegin(); it != ps.rend(); ++it) {
                                 lastTable->push_front(*it);
                             }
@@ -7192,19 +8406,20 @@ private:
         for (auto arg : invokeArgs->args.objects()) {
             switch (arg->getId()) {
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(arg), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(arg), temp, ExpUsage::Closure);
                     break;
                 case id<TableBlock_t>():
-                    transformTableBlock(static_cast<TableBlock_t *>(arg), temp);
+                    transformTableBlock(static_cast<TableBlock_t*>(arg), temp);
                     break;
                 default:
-                    SERROR("AST node mismatch", arg);
+                    MEO_E("AST node mismatch", arg);
                     break;
             }
         }
         out.push_back('(' + join(temp, ", "sv) + ')');
     }
-    void transformForHead(Variable_t *var, Exp_t *startVal, Exp_t *stopVal, for_step_value_t *stepVal, str_list &out) {
+
+    void transformForHead(Variable_t* var, Exp_t* startVal, Exp_t* stopVal, ForStepValue_t* stepVal, str_list& out) {
         str_list temp;
         std::string varName = _parser.toString(var);
         transformExp(startVal, temp, ExpUsage::Closure);
@@ -7215,19 +8430,21 @@ private:
             temp.emplace_back();
         }
         auto it = temp.begin();
-        const auto &start = *it;
-        const auto &stop = *(++it);
-        const auto &step = *(++it);
+        const auto& start = *it;
+        const auto& stop = *(++it);
+        const auto& step = *(++it);
         _buf << indent() << "for "sv << varName << " = "sv << start << ", "sv << stop << (step.empty() ? Empty : ", "s + step) << " do"sv << nll(var);
         pushScope();
         forceAddToScope(varName);
         out.push_back(clearBuf());
     }
-    void transformForHead(For_t *forNode, str_list &out) { transformForHead(forNode->varName, forNode->startValue, forNode->stopValue, forNode->stepValue, out); }
-    void transform_plain_body(ast_node *body, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformForHead(For_t* forNode, str_list& out) { transformForHead(forNode->varName, forNode->startValue, forNode->stopValue, forNode->stepValue, out); }
+
+    void transform_plain_body(ast_node* body, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         switch (body->getId()) {
             case id<Block_t>():
-                transformBlock(static_cast<Block_t *>(body), out, usage, assignList);
+                transformBlock(static_cast<Block_t*>(body), out, usage, assignList);
                 break;
             case id<Statement_t>(): {
                 auto newBlock = body->new_ptr<Block_t>();
@@ -7236,32 +8453,78 @@ private:
                 break;
             }
             default:
-                SERROR("AST node mismatch", body);
+                MEO_E("AST node mismatch", body);
                 break;
         }
     }
-    bool hasContinueStatement(ast_node *body) {
-        return traversal::Stop == body->traverse([&](ast_node *node) {
+
+    bool hasContinueStatement(ast_node* body) {
+        return traversal::Stop == body->traverse([&](ast_node* node) {
             if (auto stmt = ast_cast<Statement_t>(node)) {
                 if (stmt->content.is<BreakLoop_t>()) {
                     return _parser.toString(stmt->content) == "continue"sv ? traversal::Stop : traversal::Return;
-                } else if (expListFrom(stmt)) {
-                    return traversal::Continue;
+                } else if (auto expList = expListFrom(stmt)) {
+                    BLOCK_START
+                    auto value = singleValueFrom(expList);
+                    BREAK_IF(!value);
+                    auto simpleValue = value->item.as<SimpleValue_t>();
+                    BREAK_IF(!simpleValue);
+                    auto sVal = simpleValue->value.get();
+                    switch (sVal->getId()) {
+                        case id<With_t>(): {
+                            auto withNode = static_cast<With_t*>(sVal);
+                            if (hasContinueStatement(withNode->body)) {
+                                return traversal::Stop;
+                            }
+                            break;
+                        }
+                        case id<Do_t>(): {
+                            auto doNode = static_cast<Do_t*>(sVal);
+                            if (hasContinueStatement(doNode->body)) {
+                                return traversal::Stop;
+                            }
+                            break;
+                        }
+                        case id<If_t>(): {
+                            auto ifNode = static_cast<If_t*>(sVal);
+                            for (auto n : ifNode->nodes.objects()) {
+                                if (hasContinueStatement(n)) {
+                                    return traversal::Stop;
+                                }
+                            }
+                            break;
+                        }
+                        case id<Switch_t>(): {
+                            auto switchNode = static_cast<Switch_t*>(sVal);
+                            for (auto branch : switchNode->branches.objects()) {
+                                if (hasContinueStatement(static_cast<SwitchCase_t*>(branch)->body)) {
+                                    return traversal::Stop;
+                                }
+                            }
+                            if (switchNode->lastBranch) {
+                                if (hasContinueStatement(switchNode->lastBranch)) {
+                                    return traversal::Stop;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    BLOCK_END
                 }
-                return traversal::Return;
-            } else
+            } else {
                 switch (node->getId()) {
-                    case id<FunLit_t>():
-                    case id<Invoke_t>():
-                    case id<InvokeArgs_t>():
-                        return traversal::Return;
+                    case id<Body_t>():
+                    case id<Block_t>():
+                        return traversal::Continue;
                 }
-            return traversal::Continue;
+            }
+            return traversal::Return;
         });
     }
-    void addDoToLastLineReturn(ast_node *body) {
+
+    void addDoToLastLineReturn(ast_node* body) {
         if (auto block = ast_cast<Block_t>(body); body && !block->statements.empty()) {
-            auto last = static_cast<Statement_t *>(block->statements.back());
+            auto last = static_cast<Statement_t*>(block->statements.back());
             if (last->content.is<Return_t>()) {
                 auto doNode = last->new_ptr<Do_t>();
                 auto newBody = last->new_ptr<Body_t>();
@@ -7279,7 +8542,8 @@ private:
             }
         }
     }
-    void transformLoopBody(ast_node *body, str_list &out, const std::string &appendContent, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformLoopBody(ast_node* body, str_list& out, const std::string& appendContent, ExpUsage usage, ExpList_t* assignList = nullptr) {
         str_list temp;
         bool extraDo = false;
         bool withContinue = hasContinueStatement(body);
@@ -7289,7 +8553,7 @@ private:
             if (target < 502) {
                 if (auto block = ast_cast<Block_t>(body)) {
                     if (!block->statements.empty()) {
-                        auto stmt = static_cast<Statement_t *>(block->statements.back());
+                        auto stmt = static_cast<Statement_t*>(block->statements.back());
                         if (auto breakLoop = ast_cast<BreakLoop_t>(stmt->content)) {
                             extraDo = _parser.toString(breakLoop) == "break"sv;
                         }
@@ -7315,7 +8579,9 @@ private:
             }
             addDoToLastLineReturn(body);
         }
+        _enableBreakLoop.push(true);
         transform_plain_body(body, temp, usage, assignList);
+        _enableBreakLoop.pop();
         if (withContinue) {
             if (target < 502) {
                 if (extraDo) {
@@ -7345,7 +8611,8 @@ private:
         }
         out.push_back(join(temp));
     }
-    std::string transformRepeatBody(Repeat_t *repeatNode, str_list &out) {
+
+    std::string transformRepeatBody(Repeat_t* repeatNode, str_list& out) {
         str_list temp;
         bool extraDo = false;
         auto body = repeatNode->body->content.get();
@@ -7358,7 +8625,7 @@ private:
             if (target < 502) {
                 if (auto block = ast_cast<Block_t>(body)) {
                     if (!block->statements.empty()) {
-                        auto stmt = static_cast<Statement_t *>(block->statements.back());
+                        auto stmt = static_cast<Statement_t*>(block->statements.back());
                         if (auto breakLoop = ast_cast<BreakLoop_t>(stmt->content)) {
                             extraDo = _parser.toString(breakLoop) == "break"sv;
                         }
@@ -7393,7 +8660,9 @@ private:
             }
             addDoToLastLineReturn(body);
         }
+        _enableBreakLoop.push(true);
         transform_plain_body(body, temp, ExpUsage::Common);
+        _enableBreakLoop.pop();
         if (withContinue) {
             if (target < 502) {
                 transformAssignment(_continueVars.top().condAssign, temp);
@@ -7417,14 +8686,16 @@ private:
         out.push_back(join(temp));
         return conditionVar;
     }
-    void transformFor(For_t *forNode, str_list &out) {
+
+    void transformFor(For_t* forNode, str_list& out) {
         str_list temp;
         transformForHead(forNode, temp);
         transformLoopBody(forNode->body, temp, Empty, ExpUsage::Common);
         popScope();
         out.push_back(join(temp) + indent() + "end"s + nlr(forNode));
     }
-    std::string transformForInner(For_t *forNode, str_list &out) {
+
+    std::string transformForInner(For_t* forNode, str_list& out) {
         auto x = forNode;
         std::string accum = getUnusedName("_accum_"sv);
         addToScope(accum);
@@ -7441,11 +8712,12 @@ private:
         out.push_back(indent() + "end"s + nlr(forNode));
         return accum;
     }
-    void transformForClosure(For_t *forNode, str_list &out) {
+
+    void transformForClosure(For_t* forNode, str_list& out) {
         str_list temp;
         pushFunctionScope();
         pushAnonVarArg();
-        std::string &funcStart = temp.emplace_back();
+        std::string& funcStart = temp.emplace_back();
         pushScope();
         auto accum = transformForInner(forNode, temp);
         temp.push_back(indent() + "return "s + accum + nlr(forNode));
@@ -7456,7 +8728,8 @@ private:
         popFunctionScope();
         out.push_back(join(temp));
     }
-    void transformForInPlace(For_t *forNode, str_list &out, ExpList_t *assignExpList = nullptr) {
+
+    void transformForInPlace(For_t* forNode, str_list& out, ExpList_t* assignExpList = nullptr) {
         auto x = forNode;
         str_list temp;
         if (assignExpList) {
@@ -7480,7 +8753,8 @@ private:
         }
         out.push_back(join(temp));
     }
-    void checkOperatorAvailable(const std::string &op, ast_node *node) {
+
+    void checkOperatorAvailable(const std::string& op, ast_node* node) {
         if (op == "&"sv || op == "~"sv || op == "|"sv || op == ">>"sv || op == "<<"sv) {
             if (getLuaTarget(node) < 503) {
                 throw std::logic_error(_info.errorMessage("bitwise operator is not available when not targeting Lua version 5.3 or higher"sv, node));
@@ -7491,12 +8765,14 @@ private:
             }
         }
     }
-    void transformBinaryOperator(BinaryOperator_t *node, str_list &out) {
+
+    void transformBinaryOperator(BinaryOperator_t* node, str_list& out) {
         auto op = _parser.toString(node);
         checkOperatorAvailable(op, node);
         out.push_back(op == "!="sv ? "~="s : op);
     }
-    void transformForEach(ForEach_t *forEach, str_list &out) {
+
+    void transformForEach(ForEach_t* forEach, str_list& out) {
         str_list temp;
         bool extraScope = transformForEachHead(forEach->nameList, forEach->loopValue, temp, true);
         transformLoopBody(forEach->body, temp, Empty, ExpUsage::Common);
@@ -7507,7 +8783,8 @@ private:
             out.back().append(indent() + "end"s + nlr(forEach));
         }
     }
-    std::string transformForEachInner(ForEach_t *forEach, str_list &out) {
+
+    std::string transformForEachInner(ForEach_t* forEach, str_list& out) {
         auto x = forEach;
         std::string accum = getUnusedName("_accum_"sv);
         addToScope(accum);
@@ -7524,11 +8801,12 @@ private:
         out.push_back(indent() + "end"s + nlr(forEach));
         return accum;
     }
-    void transformForEachClosure(ForEach_t *forEach, str_list &out) {
+
+    void transformForEachClosure(ForEach_t* forEach, str_list& out) {
         str_list temp;
         pushFunctionScope();
         pushAnonVarArg();
-        std::string &funcStart = temp.emplace_back();
+        std::string& funcStart = temp.emplace_back();
         pushScope();
         auto accum = transformForEachInner(forEach, temp);
         temp.push_back(indent() + "return "s + accum + nlr(forEach));
@@ -7539,7 +8817,8 @@ private:
         popFunctionScope();
         out.push_back(join(temp));
     }
-    void transformForEachInPlace(ForEach_t *forEach, str_list &out, ExpList_t *assignExpList = nullptr) {
+
+    void transformForEachInPlace(ForEach_t* forEach, str_list& out, ExpList_t* assignExpList = nullptr) {
         auto x = forEach;
         str_list temp;
         if (assignExpList) {
@@ -7563,7 +8842,8 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transform_variable_pair(variable_pair_t *pair, str_list &out) {
+
+    void transform_variable_pair(VariablePair_t* pair, str_list& out) {
         auto name = _parser.toString(pair->name);
         if (_config.lintGlobalVariable && !isLocal(name)) {
             if (_globals.find(name) == _globals.end()) {
@@ -7572,67 +8852,69 @@ private:
         }
         out.push_back(name + " = "s + name);
     }
-    void transform_normal_pair(normal_pair_t *pair, str_list &out, bool assignClass) {
+
+    void transform_normal_pair(NormalPair_t* pair, str_list& out, bool assignClass) {
         auto key = pair->key.get();
         str_list temp;
         switch (key->getId()) {
             case id<KeyName_t>(): {
-                auto keyName = static_cast<KeyName_t *>(key);
+                auto keyName = static_cast<KeyName_t*>(key);
                 transformKeyName(keyName, temp);
-                if (keyName->name.is<SelfName_t>() && !assignClass) {
+                if (keyName->name.is<SelfItem_t>() && !assignClass) {
                     temp.back() = '[' + temp.back() + ']';
                 }
                 break;
             }
             case id<Exp_t>():
-                transformExp(static_cast<Exp_t *>(key), temp, ExpUsage::Closure);
+                transformExp(static_cast<Exp_t*>(key), temp, ExpUsage::Closure);
                 temp.back() = (temp.back().front() == '[' ? "[ "s : "["s) + temp.back() + ']';
                 break;
             case id<String_t>(): {
-                auto strNode = static_cast<String_t *>(key);
+                auto strNode = static_cast<String_t*>(key);
                 auto str = strNode->str.get();
                 switch (str->getId()) {
                     case id<DoubleString_t>():
-                        transformDoubleString(static_cast<DoubleString_t *>(str), temp);
+                        transformDoubleString(static_cast<DoubleString_t*>(str), temp);
                         temp.back() = '[' + temp.back() + ']';
                         break;
                     case id<SingleString_t>():
-                        transformSingleString(static_cast<SingleString_t *>(str), temp);
+                        transformSingleString(static_cast<SingleString_t*>(str), temp);
                         temp.back() = '[' + temp.back() + ']';
                         break;
                     case id<LuaString_t>():
-                        transformLuaString(static_cast<LuaString_t *>(str), temp);
+                        transformLuaString(static_cast<LuaString_t*>(str), temp);
                         temp.back() = "[ "s + temp.back() + ']';
                         break;
                     default:
-                        SERROR("AST node mismatch", str);
+                        MEO_E("AST node mismatch", str);
                         break;
                 }
                 break;
             }
             default:
-                SERROR("AST node mismatch", key);
+                MEO_E("AST node mismatch", key);
                 break;
         }
         auto value = pair->value.get();
         switch (value->getId()) {
             case id<Exp_t>():
-                transformExp(static_cast<Exp_t *>(value), temp, ExpUsage::Closure);
+                transformExp(static_cast<Exp_t*>(value), temp, ExpUsage::Closure);
                 break;
             case id<TableBlock_t>():
-                transformTableBlock(static_cast<TableBlock_t *>(value), temp);
+                transformTableBlock(static_cast<TableBlock_t*>(value), temp);
                 break;
             default:
-                SERROR("AST node mismatch", value);
+                MEO_E("AST node mismatch", value);
                 break;
         }
         out.push_back(temp.front() + " = "s + temp.back());
     }
-    void transformKeyName(KeyName_t *keyName, str_list &out) {
+
+    void transformKeyName(KeyName_t* keyName, str_list& out) {
         auto name = keyName->name.get();
         switch (name->getId()) {
-            case id<SelfName_t>():
-                transformSelfName(static_cast<SelfName_t *>(name), out);
+            case id<SelfItem_t>():
+                transformSelfName(static_cast<SelfItem_t*>(name), out);
                 break;
             case id<Name_t>(): {
                 auto nameStr = _parser.toString(name);
@@ -7644,28 +8926,31 @@ private:
                 break;
             }
             default:
-                SERROR("AST node mismatch", name);
+                MEO_E("AST node mismatch", name);
                 break;
         }
     }
-    void transformLuaString(LuaString_t *luaString, str_list &out) {
+
+    void transformLuaString(LuaString_t* luaString, str_list& out) {
         auto content = _parser.toString(luaString->content);
         Utils::replace(content, "\r\n"sv, "\n");
         out.push_back(_parser.toString(luaString->open) + content + _parser.toString(luaString->close));
     }
-    void transformSingleString(SingleString_t *singleString, str_list &out) {
+
+    void transformSingleString(SingleString_t* singleString, str_list& out) {
         auto str = _parser.toString(singleString);
         Utils::replace(str, "\r\n"sv, "\n");
         Utils::replace(str, "\n"sv, "\\n"sv);
         out.push_back(str);
     }
-    void transformDoubleString(DoubleString_t *doubleString, str_list &out) {
+
+    void transformDoubleString(DoubleString_t* doubleString, str_list& out) {
         str_list temp;
         for (auto _seg : doubleString->segments.objects()) {
-            auto seg = static_cast<double_string_content_t *>(_seg);
+            auto seg = static_cast<DoubleStringContent_t*>(_seg);
             auto content = seg->content.get();
             switch (content->getId()) {
-                case id<double_string_inner_t>(): {
+                case id<DoubleStringInner_t>(): {
                     auto str = _parser.toString(content);
                     Utils::replace(str, "\r\n"sv, "\n");
                     Utils::replace(str, "\n"sv, "\\n"sv);
@@ -7673,35 +8958,37 @@ private:
                     break;
                 }
                 case id<Exp_t>(): {
-                    transformExp(static_cast<Exp_t *>(content), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(content), temp, ExpUsage::Closure);
                     temp.back() = globalVar("tostring"sv, content) + '(' + temp.back() + ')';
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", content);
+                    MEO_E("AST node mismatch", content);
                     break;
             }
         }
         out.push_back(temp.empty() ? "\"\""s : join(temp, " .. "sv));
     }
-    void transformString(String_t *string, str_list &out) {
+
+    void transformString(String_t* string, str_list& out) {
         auto str = string->str.get();
         switch (str->getId()) {
             case id<SingleString_t>():
-                transformSingleString(static_cast<SingleString_t *>(str), out);
+                transformSingleString(static_cast<SingleString_t*>(str), out);
                 break;
             case id<DoubleString_t>():
-                transformDoubleString(static_cast<DoubleString_t *>(str), out);
+                transformDoubleString(static_cast<DoubleString_t*>(str), out);
                 break;
             case id<LuaString_t>():
-                transformLuaString(static_cast<LuaString_t *>(str), out);
+                transformLuaString(static_cast<LuaString_t*>(str), out);
                 break;
             default:
-                SERROR("AST node mismatch", str);
+                MEO_E("AST node mismatch", str);
                 break;
         }
     }
-    std::pair<std::string, bool> defineClassVariable(Assignable_t *assignable) {
+
+    std::pair<std::string, bool> defineClassVariable(Assignable_t* assignable) {
         if (auto variable = assignable->item.as<Variable_t>()) {
             auto name = _parser.toString(variable);
             if (addToScope(name)) {
@@ -7712,11 +8999,12 @@ private:
         }
         return {Empty, false};
     }
-    void transformClassDeclClosure(ClassDecl_t *classDecl, str_list &out) {
+
+    void transformClassDeclClosure(ClassDecl_t* classDecl, str_list& out) {
         str_list temp;
         pushFunctionScope();
         pushAnonVarArg();
-        std::string &funcStart = temp.emplace_back();
+        std::string& funcStart = temp.emplace_back();
         pushScope();
         transformClassDecl(classDecl, temp, ExpUsage::Return);
         popScope();
@@ -7726,7 +9014,8 @@ private:
         popFunctionScope();
         out.push_back(join(temp));
     }
-    void transformClassDecl(ClassDecl_t *classDecl, str_list &out, ExpUsage usage, ExpList_t *expList = nullptr) {
+
+    void transformClassDecl(ClassDecl_t* classDecl, str_list& out, ExpUsage usage, ExpList_t* expList = nullptr) {
         str_list temp;
         auto x = classDecl;
         auto body = classDecl->body.get();
@@ -7748,7 +9037,7 @@ private:
                     if (auto dotChain = ast_cast<DotChainItem_t>(chain->items.back())) {
                         className = '\"' + _parser.toString(dotChain->name) + '\"';
                     } else if (auto index = ast_cast<Exp_t>(chain->items.back())) {
-                        if (auto name = index->getByPath<unary_exp_t, Value_t, String_t>()) {
+                        if (auto name = index->getByPath<UnaryExp_t, Value_t, String_t>()) {
                             transformString(name, temp);
                             className = std::move(temp.back());
                             temp.pop_back();
@@ -7778,14 +9067,14 @@ private:
             str_list varDefs;
             for (auto item : body->contents.objects()) {
                 if (auto statement = ast_cast<Statement_t>(item)) {
-                    ClassDecl_t *clsDecl = nullptr;
+                    ClassDecl_t* clsDecl = nullptr;
                     if (auto assignment = assignmentFrom(statement)) {
                         auto names = transformAssignDefs(assignment->expList.get(), DefOp::Mark);
                         varDefs.insert(varDefs.end(), names.begin(), names.end());
                         auto info = extractDestructureInfo(assignment, true, false);
                         if (!info.destructures.empty()) {
-                            for (const auto &destruct : info.destructures)
-                                for (const auto &item : destruct.items)
+                            for (const auto& destruct : info.destructures)
+                                for (const auto& item : destruct.items)
                                     if (!item.targetVar.empty() && addToScope(item.targetVar)) varDefs.push_back(item.targetVar);
                         }
                         BLOCK_START
@@ -7833,13 +9122,13 @@ private:
             std::list<ClassMember> members;
             for (auto content : classDecl->body->contents.objects()) {
                 switch (content->getId()) {
-                    case id<class_member_list_t>(): {
-                        size_t inc = transform_class_member_list(static_cast<class_member_list_t *>(content), members, classVar);
+                    case id<ClassMemberList_t>(): {
+                        size_t inc = transform_class_member_list(static_cast<ClassMemberList_t*>(content), members, classVar);
                         auto it = members.end();
                         for (size_t i = 0; i < inc; ++i, --it)
                             ;
                         for (; it != members.end(); ++it) {
-                            auto &member = *it;
+                            auto& member = *it;
                             if (member.type == MemType::Property) {
                                 statements.push_back(indent() + member.item + nll(content));
                             } else {
@@ -7849,14 +9138,14 @@ private:
                         break;
                     }
                     case id<Statement_t>():
-                        transformStatement(static_cast<Statement_t *>(content), statements);
+                        transformStatement(static_cast<Statement_t*>(content), statements);
                         break;
                     default:
-                        SERROR("AST node mismatch", content);
+                        MEO_E("AST node mismatch", content);
                         break;
                 }
             }
-            for (auto &member : members) {
+            for (auto& member : members) {
                 switch (member.type) {
                     case MemType::Common:
                         commons.push_back((commons.empty() ? Empty : ',' + nll(member.node)) + member.item);
@@ -7990,25 +9279,28 @@ private:
         temp.push_back(indent() + "end"s + nlr(classDecl));
         out.push_back(join(temp));
     }
-    size_t transform_class_member_list(class_member_list_t *class_member_list, std::list<ClassMember> &out, const std::string &classVar) {
+
+    size_t transform_class_member_list(ClassMemberList_t* class_member_list, std::list<ClassMember>& out, const std::string& classVar) {
         str_list temp;
         size_t count = 0;
         for (auto keyValue : class_member_list->values.objects()) {
             MemType type = MemType::Common;
             ast_ptr<false, ast_node> ref;
             switch (keyValue->getId()) {
-                case id<meta_variable_pair_t>(): {
-                    auto mtPair = static_cast<meta_variable_pair_t *>(keyValue);
+                case id<MetaVariablePair_t>(): {
+                    auto mtPair = static_cast<MetaVariablePair_t*>(keyValue);
                     auto nameStr = _parser.toString(mtPair->name);
-                    ref.set(toAst<normal_pair_t>("__"s + nameStr + ':' + nameStr, keyValue));
+                    checkMetamethod(nameStr, mtPair->name);
+                    ref.set(toAst<NormalPair_t>("__"s + nameStr + ':' + nameStr, keyValue));
                     keyValue = ref.get();
                     break;
                 }
-                case id<meta_normal_pair_t>(): {
-                    auto mtPair = static_cast<meta_normal_pair_t *>(keyValue);
-                    auto normal_pair = keyValue->new_ptr<normal_pair_t>();
+                case id<MetaNormalPair_t>(): {
+                    auto mtPair = static_cast<MetaNormalPair_t*>(keyValue);
+                    auto normal_pair = keyValue->new_ptr<NormalPair_t>();
                     if (auto name = mtPair->key.as<Name_t>()) {
                         auto nameStr = _parser.toString(name);
+                        checkMetamethod(nameStr, name);
                         normal_pair->key.set(toAst<KeyName_t>("__"s + nameStr, keyValue));
                     } else if (auto str = mtPair->key.as<String_t>()) {
                         normal_pair->key.set(newExp(str, str));
@@ -8022,16 +9314,16 @@ private:
                 }
             }
             BLOCK_START
-            auto normal_pair = ast_cast<normal_pair_t>(keyValue);
+            auto normal_pair = ast_cast<NormalPair_t>(keyValue);
             BREAK_IF(!normal_pair);
             auto keyName = normal_pair->key.as<KeyName_t>();
             BREAK_IF(!keyName);
             std::string newSuperCall;
-            auto selfName = keyName->name.as<SelfName_t>();
-            if (selfName) {
+            auto selfItem = keyName->name.as<SelfItem_t>();
+            if (selfItem) {
                 type = MemType::Property;
-                auto name = ast_cast<self_name_t>(selfName->name);
-                if (!name) throw std::logic_error(_info.errorMessage("invalid class poperty name"sv, selfName->name));
+                auto name = ast_cast<SelfName_t>(selfItem->name);
+                if (!name) throw std::logic_error(_info.errorMessage("invalid class poperty name"sv, selfItem->name));
                 newSuperCall = classVar + ".__parent."s + _parser.toString(name->name);
             } else {
                 auto x = keyName;
@@ -8046,22 +9338,22 @@ private:
                     newSuperCall = classVar + ".__parent.__base."s + name;
                 }
             }
-            normal_pair->value->traverse([&](ast_node *node) {
+            normal_pair->value->traverse([&](ast_node* node) {
                 if (node->getId() == id<ClassDecl_t>()) return traversal::Return;
                 if (auto chainValue = ast_cast<ChainValue_t>(node)) {
                     if (auto callable = ast_cast<Callable_t>(chainValue->items.front())) {
                         auto var = callable->item.get();
                         if (_parser.toString(var) == "super"sv) {
-                            auto insertSelfToArguments = [&](ast_node *item) {
+                            auto insertSelfToArguments = [&](ast_node* item) {
                                 auto x = item;
                                 switch (item->getId()) {
                                     case id<InvokeArgs_t>(): {
-                                        auto invoke = static_cast<InvokeArgs_t *>(item);
+                                        auto invoke = static_cast<InvokeArgs_t*>(item);
                                         invoke->args.push_front(toAst<Exp_t>("self"sv, x));
                                         return true;
                                     }
                                     case id<Invoke_t>(): {
-                                        auto invoke = static_cast<Invoke_t *>(item);
+                                        auto invoke = static_cast<Invoke_t*>(item);
                                         invoke->args.push_front(toAst<Exp_t>("self"sv, x));
                                         return true;
                                     }
@@ -8069,7 +9361,7 @@ private:
                                         return false;
                                 }
                             };
-                            const auto &chainList = chainValue->items.objects();
+                            const auto& chainList = chainValue->items.objects();
                             if (chainList.size() >= 2) {
                                 auto it = chainList.begin();
                                 auto secondItem = *(++it);
@@ -8086,7 +9378,7 @@ private:
                             }
                             auto newChain = toAst<ChainValue_t>(newSuperCall, chainValue);
                             chainValue->items.pop_front();
-                            const auto &items = newChain->items.objects();
+                            const auto& items = newChain->items.objects();
                             for (auto it = items.rbegin(); it != items.rend(); ++it) {
                                 chainValue->items.push_front(*it);
                             }
@@ -8101,14 +9393,14 @@ private:
                 decIndentOffset();
             }
             switch (keyValue->getId()) {
-                case id<variable_pair_t>():
-                    transform_variable_pair(static_cast<variable_pair_t *>(keyValue), temp);
+                case id<VariablePair_t>():
+                    transform_variable_pair(static_cast<VariablePair_t*>(keyValue), temp);
                     break;
-                case id<normal_pair_t>():
-                    transform_normal_pair(static_cast<normal_pair_t *>(keyValue), temp, true);
+                case id<NormalPair_t>():
+                    transform_normal_pair(static_cast<NormalPair_t*>(keyValue), temp, true);
                     break;
                 default:
-                    SERROR("AST node mismatch", keyValue);
+                    MEO_E("AST node mismatch", keyValue);
                     break;
             }
             if (type == MemType::Property) {
@@ -8121,28 +9413,30 @@ private:
         }
         return count;
     }
-    void transformAssignable(Assignable_t *assignable, str_list &out) {
+
+    void transformAssignable(Assignable_t* assignable, str_list& out) {
         auto item = assignable->item.get();
         switch (item->getId()) {
             case id<AssignableChain_t>():
-                transformAssignableChain(static_cast<AssignableChain_t *>(item), out);
+                transformAssignableChain(static_cast<AssignableChain_t*>(item), out);
                 break;
             case id<Variable_t>():
-                transformVariable(static_cast<Variable_t *>(item), out);
+                transformVariable(static_cast<Variable_t*>(item), out);
                 break;
-            case id<SelfName_t>():
-                transformSelfName(static_cast<SelfName_t *>(item), out);
+            case id<SelfItem_t>():
+                transformSelfName(static_cast<SelfItem_t*>(item), out);
                 break;
             default:
-                SERROR("AST node mismatch", item);
+                MEO_E("AST node mismatch", item);
                 break;
         }
     }
-    void transformWithClosure(With_t *with, str_list &out) {
+
+    void transformWithClosure(With_t* with, str_list& out) {
         str_list temp;
         pushFunctionScope();
         pushAnonVarArg();
-        std::string &funcStart = temp.emplace_back();
+        std::string& funcStart = temp.emplace_back();
         pushScope();
         transformWith(with, temp, nullptr, true);
         popScope();
@@ -8152,7 +9446,8 @@ private:
         popFunctionScope();
         out.push_back(join(temp));
     }
-    void transformWith(With_t *with, str_list &out, ExpList_t *assignList = nullptr, bool returnValue = false) {
+
+    void transformWith(With_t* with, str_list& out, ExpList_t* assignList = nullptr, bool returnValue = false) {
         auto x = with;
         str_list temp;
         std::string withVar;
@@ -8225,9 +9520,9 @@ private:
         }
         if (!with->eop && !scoped && !returnValue) {
             pushScope();
-            scoped = traversal::Stop == with->body->traverse([&](ast_node *node) {
+            scoped = traversal::Stop == with->body->traverse([&](ast_node* node) {
                 if (auto statement = ast_cast<Statement_t>(node)) {
-                    ClassDecl_t *clsDecl = nullptr;
+                    ClassDecl_t* clsDecl = nullptr;
                     if (auto assignment = assignmentFrom(statement)) {
                         auto names = transformAssignDefs(assignment->expList.get(), DefOp::Get);
                         if (!names.empty()) {
@@ -8235,8 +9530,8 @@ private:
                         }
                         auto info = extractDestructureInfo(assignment, true, false);
                         if (!info.destructures.empty()) {
-                            for (const auto &destruct : info.destructures)
-                                for (const auto &item : destruct.items)
+                            for (const auto& destruct : info.destructures)
+                                for (const auto& item : destruct.items)
                                     if (!item.targetVar.empty() && !isDefined(item.targetVar)) return traversal::Stop;
                         }
                         BLOCK_START
@@ -8298,13 +9593,15 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transform_const_value(const_value_t *const_value, str_list &out) { out.push_back(_parser.toString(const_value)); }
-    void transformGlobal(Global_t *global, str_list &out) {
+
+    void transform_const_value(ConstValue_t* const_value, str_list& out) { out.push_back(_parser.toString(const_value)); }
+
+    void transformGlobal(Global_t* global, str_list& out) {
         auto x = global;
         auto item = global->item.get();
         switch (item->getId()) {
             case id<ClassDecl_t>(): {
-                auto classDecl = static_cast<ClassDecl_t *>(item);
+                auto classDecl = static_cast<ClassDecl_t*>(item);
                 if (classDecl->name && classDecl->name->item->getId() == id<Variable_t>()) {
                     markVarsGlobal(GlobalMode::Any);
                     addGlobalVar(_parser.toString(classDecl->name->item), classDecl->name->item);
@@ -8312,16 +9609,16 @@ private:
                 transformClassDecl(classDecl, out, ExpUsage::Common);
                 break;
             }
-            case id<global_op_t>():
+            case id<GlobalOp_t>():
                 if (_parser.toString(item) == "*"sv) {
                     markVarsGlobal(GlobalMode::Any);
                 } else {
                     markVarsGlobal(GlobalMode::Capital);
                 }
                 break;
-            case id<global_values_t>(): {
+            case id<GlobalValues_t>(): {
                 markVarsGlobal(GlobalMode::Any);
-                auto values = global->item.to<global_values_t>();
+                auto values = global->item.to<GlobalValues_t>();
                 if (values->valueList) {
                     auto expList = x->new_ptr<ExpList_t>();
                     for (auto name : values->nameList->names.objects()) {
@@ -8352,11 +9649,12 @@ private:
                 break;
             }
             default:
-                SERROR("AST node mismatch", item);
+                MEO_E("AST node mismatch", item);
                 break;
         }
     }
-    void transformExport(Export_t *exportNode, str_list &out) {
+
+    void transformExport(Export_t* exportNode, str_list& out) {
         auto x = exportNode;
         if (_scopes.size() > 1) {
             throw std::logic_error(_info.errorMessage("can not do module export outside the root block"sv, exportNode));
@@ -8367,8 +9665,8 @@ private:
                 throw std::logic_error(_info.errorMessage("left and right expressions must be matched in export statement"sv, x));
             }
             for (auto _exp : expList->exprs.objects()) {
-                auto exp = static_cast<Exp_t *>(_exp);
-                if (!variableFrom(exp) && !exp->getByPath<unary_exp_t, Value_t, SimpleValue_t, TableLit_t>() && !exp->getByPath<unary_exp_t, Value_t, simple_table_t>()) {
+                auto exp = static_cast<Exp_t*>(_exp);
+                if (!variableFrom(exp) && !exp->getByPath<UnaryExp_t, Value_t, SimpleValue_t, TableLit_t>() && !exp->getByPath<UnaryExp_t, Value_t, SimpleTable_t>()) {
                     throw std::logic_error(_info.errorMessage("left hand expressions must be variables in export statement"sv, x));
                 }
             }
@@ -8379,15 +9677,15 @@ private:
             str_list names = transformAssignDefs(expList, DefOp::Get);
             auto info = extractDestructureInfo(assignment, true, false);
             if (!info.destructures.empty()) {
-                for (const auto &destruct : info.destructures)
-                    for (const auto &item : destruct.items)
+                for (const auto& destruct : info.destructures)
+                    for (const auto& item : destruct.items)
                         if (!item.targetVar.empty()) names.push_back(item.targetVar);
             }
             if (_info.exportDefault) {
                 out.back().append(indent() + _info.moduleName + " = "s + names.back() + nlr(exportNode));
             } else {
                 str_list lefts, rights;
-                for (const auto &name : names) {
+                for (const auto& name : names) {
                     lefts.push_back(_info.moduleName + "[\""s + name + "\"]"s);
                     rights.push_back(name);
                 }
@@ -8411,7 +9709,7 @@ private:
                 auto assignList = toAst<ExpList_t>(_info.moduleName + "[#"s + _info.moduleName + "+1]"s, x);
                 assignment->expList.set(assignList);
                 for (auto exp : expList->exprs.objects()) {
-                    if (auto classDecl = exp->getByPath<unary_exp_t, Value_t, SimpleValue_t, ClassDecl_t>()) {
+                    if (auto classDecl = exp->getByPath<UnaryExp_t, Value_t, SimpleValue_t, ClassDecl_t>()) {
                         if (classDecl->name && classDecl->name->item->getId() == id<Variable_t>()) {
                             transformClassDecl(classDecl, temp, ExpUsage::Common);
                             auto name = _parser.toString(classDecl->name->item);
@@ -8433,8 +9731,10 @@ private:
             }
         }
     }
-    void transform_simple_table(simple_table_t *table, str_list &out) { transformTable(table->pairs.objects(), out); }
-    void transformTblComprehension(TblComprehension_t *comp, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transform_simple_table(SimpleTable_t* table, str_list& out) { transformTable(table->pairs.objects(), out); }
+
+    void transformTblComprehension(TblComprehension_t* comp, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         switch (usage) {
             case ExpUsage::Closure:
                 pushFunctionScope();
@@ -8456,18 +9756,18 @@ private:
         for (auto item : compInner->items.objects()) {
             switch (item->getId()) {
                 case id<CompForEach_t>():
-                    transformCompForEach(static_cast<CompForEach_t *>(item), temp);
+                    transformCompForEach(static_cast<CompForEach_t*>(item), temp);
                     break;
                 case id<CompFor_t>():
-                    transformCompFor(static_cast<CompFor_t *>(item), temp);
+                    transformCompFor(static_cast<CompFor_t*>(item), temp);
                     break;
                 case id<Exp_t>():
-                    transformExp(static_cast<Exp_t *>(item), temp, ExpUsage::Closure);
+                    transformExp(static_cast<Exp_t*>(item), temp, ExpUsage::Closure);
                     temp.back() = indent() + "if "s + temp.back() + " then"s + nll(item);
                     pushScope();
                     break;
                 default:
-                    SERROR("AST node mismatch", item);
+                    MEO_E("AST node mismatch", item);
                     break;
             }
         }
@@ -8524,19 +9824,23 @@ private:
                 break;
         }
     }
-    void transformCompFor(CompFor_t *comp, str_list &out) { transformForHead(comp->varName, comp->startValue, comp->stopValue, comp->stepValue, out); }
-    void transformTableBlockIndent(TableBlockIndent_t *table, str_list &out) { transformTable(table->values.objects(), out); }
-    void transformTableBlock(TableBlock_t *table, str_list &out) {
-        const auto &values = table->values.objects();
+
+    void transformCompFor(CompFor_t* comp, str_list& out) { transformForHead(comp->varName, comp->startValue, comp->stopValue, comp->stepValue, out); }
+
+    void transformTableBlockIndent(TableBlockIndent_t* table, str_list& out) { transformTable(table->values.objects(), out); }
+
+    void transformTableBlock(TableBlock_t* table, str_list& out) {
+        const auto& values = table->values.objects();
         if (hasSpreadExp(values)) {
             transformSpreadTable(values, out, ExpUsage::Closure);
         } else {
             transformTable(values, out);
         }
     }
-    void transformDo(Do_t *doNode, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformDo(Do_t* doNode, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         str_list temp;
-        std::string *funcStart = nullptr;
+        std::string* funcStart = nullptr;
         if (usage == ExpUsage::Closure) {
             pushFunctionScope();
             pushAnonVarArg();
@@ -8557,7 +9861,8 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transformTry(Try_t *tryNode, str_list &out, ExpUsage usage) {
+
+    void transformTry(Try_t* tryNode, str_list& out, ExpUsage usage) {
         auto x = tryNode;
         ast_ptr<true, Exp_t> errHandler;
         if (tryNode->catchBlock) {
@@ -8597,7 +9902,7 @@ private:
             BREAK_IF(!isChainValueCall(chainValue));
             ast_ptr<true, ast_node> last = chainValue->items.back();
             chainValue->items.pop_back();
-            _ast_list *args = nullptr;
+            _ast_list* args = nullptr;
             if (auto invoke = ast_cast<InvokeArgs_t>(last)) {
                 args = &invoke->args;
             } else {
@@ -8643,7 +9948,8 @@ private:
             out.back().append(nlr(x));
         }
     }
-    void transformImportFrom(ImportFrom_t *import, str_list &out) {
+
+    void transformImportFrom(ImportFrom_t* import, str_list& out) {
         str_list temp;
         auto x = import;
         auto objVar = singleVariableFrom(import->exp, true);
@@ -8663,7 +9969,7 @@ private:
         for (auto name : import->names.objects()) {
             switch (name->getId()) {
                 case id<Variable_t>(): {
-                    auto var = static_cast<Variable_t *>(name);
+                    auto var = static_cast<Variable_t*>(name);
                     {
                         auto callable = toAst<Callable_t>(objVar, x);
                         auto dotChainItem = x->new_ptr<DotChainItem_t>();
@@ -8682,8 +9988,8 @@ private:
                     expList->exprs.push_back(exp);
                     break;
                 }
-                case id<colon_import_name_t>(): {
-                    auto var = static_cast<colon_import_name_t *>(name)->name.get();
+                case id<ColonImportName_t>(): {
+                    auto var = static_cast<ColonImportName_t*>(name)->name.get();
                     {
                         auto nameNode = var->name.get();
                         auto callable = toAst<Callable_t>(objVar, x);
@@ -8704,7 +10010,7 @@ private:
                     break;
                 }
                 default:
-                    SERROR("AST node mismatch", name);
+                    MEO_E("AST node mismatch", name);
                     break;
             }
         }
@@ -8727,25 +10033,27 @@ private:
         }
         out.push_back(join(temp));
         auto vars = getAssignVars(assignment);
-        for (const auto &var : vars) {
+        for (const auto& var : vars) {
             markVarConst(var);
         }
     }
-    std::string moduleNameFrom(ImportLiteral_t *literal) {
+
+    std::string moduleNameFrom(ImportLiteral_t* literal) {
         auto name = _parser.toString(literal->inners.back());
         Utils::replace(name, "-"sv, "_"sv);
         Utils::replace(name, " "sv, "_"sv);
         return name;
     }
-    void transformImportAs(ImportAs_t *import, str_list &out) {
-        ast_node *x = import;
+
+    void transformImportAs(ImportAs_t* import, str_list& out) {
+        ast_node* x = import;
         if (!import->target) {
             auto name = moduleNameFrom(import->literal);
             import->target.set(toAst<Variable_t>(name, x));
         }
-        if (ast_is<import_all_macro_t, ImportTabLit_t>(import->target)) {
+        if (ast_is<ImportAllMacro_t, ImportTabLit_t>(import->target)) {
             x = import->target.get();
-            bool importAllMacro = import->target.is<import_all_macro_t>();
+            bool importAllMacro = import->target.is<ImportAllMacro_t>();
             std::list<std::pair<std::string, std::string>> macroPairs;
             auto newTab = x->new_ptr<ImportTabLit_t>();
             if (auto tabLit = import->target.as<ImportTabLit_t>()) {
@@ -8753,37 +10061,37 @@ private:
                     switch (item->getId()) {
 #ifdef MEO_NO_MACRO
                         case id<MacroName_t>():
-                        case id<macro_name_pair_t>():
-                        case id<import_all_macro_t>(): {
+                        case id<MacroNamePair_t>():
+                        case id<ImportAllMacro_t>(): {
                             throw std::logic_error(_info.errorMessage("macro feature not supported"sv, item));
                             break;
                         }
 #else   // MEO_NO_MACRO
                         case id<MacroName_t>(): {
-                            auto macroName = static_cast<MacroName_t *>(item);
+                            auto macroName = static_cast<MacroName_t*>(item);
                             auto name = _parser.toString(macroName->name);
                             macroPairs.emplace_back(name, name);
                             break;
                         }
-                        case id<macro_name_pair_t>(): {
-                            auto pair = static_cast<macro_name_pair_t *>(item);
+                        case id<MacroNamePair_t>(): {
+                            auto pair = static_cast<MacroNamePair_t*>(item);
                             macroPairs.emplace_back(_parser.toString(pair->key->name), _parser.toString(pair->value->name));
                             break;
                         }
-                        case id<import_all_macro_t>():
+                        case id<ImportAllMacro_t>():
                             if (importAllMacro) throw std::logic_error(_info.errorMessage("import all macro symbol duplicated"sv, item));
                             importAllMacro = true;
                             break;
 #endif  // MEO_NO_MACRO
-                        case id<variable_pair_t>():
-                        case id<normal_pair_t>():
-                        case id<meta_variable_pair_t>():
-                        case id<meta_normal_pair_t>():
+                        case id<VariablePair_t>():
+                        case id<NormalPair_t>():
+                        case id<MetaVariablePair_t>():
+                        case id<MetaNormalPair_t>():
                         case id<Exp_t>():
                             newTab->items.push_back(item);
                             break;
                         default:
-                            SERROR("AST node mismatch", item);
+                            MEO_E("AST node mismatch", item);
                             break;
                     }
                 }
@@ -8797,9 +10105,8 @@ private:
                 pushCurrentModule();          // cur
                 int top = lua_gettop(L) - 1;  // Lua state may be setup by pushCurrentModule()
                 DEFER(lua_settop(L, top));
-                pushMeo("find_modulepath"sv);  // cur find_modulepath
-                lua_pushlstring(L, moduleName.c_str(),
-                                moduleName.size());  // cur find_modulepath moduleName
+                pushMeo("find_modulepath"sv);                               // cur find_modulepath
+                lua_pushlstring(L, moduleName.c_str(), moduleName.size());  // cur find_modulepath moduleName
                 if (lua_pcall(L, 1, 2, 0) != 0) {
                     std::string err = lua_tostring(L, -1);
                     throw std::logic_error(_info.errorMessage("failed to resolve module path\n"s + err, x));
@@ -8820,9 +10127,8 @@ private:
                 std::string moduleFullName = lua_tostring(L, -1);
                 lua_pop(L, 1);  // cur
                 if (!isModuleLoaded(moduleFullName)) {
-                    pushMeo("read_file"sv);  // cur read_file
-                    lua_pushlstring(L, moduleFullName.c_str(),
-                                    moduleFullName.size());  // cur load_text moduleFullName
+                    pushMeo("read_file"sv);                                             // cur read_file
+                    lua_pushlstring(L, moduleFullName.c_str(), moduleFullName.size());  // cur load_text moduleFullName
                     if (lua_pcall(L, 1, 1, 0) != 0) {
                         std::string err = lua_tostring(L, -1);
                         throw std::logic_error(_info.errorMessage("failed to read module file\n"s + err, x));
@@ -8832,7 +10138,7 @@ private:
                     }  // cur text
                     std::string text = lua_tostring(L, -1);
                     auto compiler = MeoCompilerImpl(L, _luaOpen, false);
-                    MuConfig config;
+                    MeoConfig config;
                     config.lineOffset = 0;
                     config.lintGlobalVariable = false;
                     config.reserveLineNumber = false;
@@ -8854,7 +10160,7 @@ private:
                         lua_rawset(L, -5);          // cur[key] = value, cur mod key
                     }
                 }
-                for (const auto &pair : macroPairs) {
+                for (const auto& pair : macroPairs) {
                     lua_getfield(L, -1, pair.first.c_str());   // mod[first], cur mod val
                     lua_setfield(L, -3, pair.second.c_str());  // cur[second] = val, cur mod
                 }
@@ -8884,38 +10190,38 @@ private:
             auto tableLit = x->new_ptr<TableLit_t>();
             for (auto pair : tabLit->items.objects()) {
                 switch (pair->getId()) {
-                    case id<variable_pair_t>(): {
-                        auto pairDef = pair->new_ptr<variable_pair_def_t>();
+                    case id<VariablePair_t>(): {
+                        auto pairDef = pair->new_ptr<VariablePairDef_t>();
                         pairDef->pair.set(pair);
                         tableLit->values.push_back(pairDef);
                         break;
                     }
-                    case id<normal_pair_t>(): {
-                        auto pairDef = pair->new_ptr<normal_pair_def_t>();
+                    case id<NormalPair_t>(): {
+                        auto pairDef = pair->new_ptr<NormalPairDef_t>();
                         pairDef->pair.set(pair);
                         tableLit->values.push_back(pairDef);
                         break;
                     }
                     case id<Exp_t>(): {
-                        auto pairDef = pair->new_ptr<normal_def_t>();
+                        auto pairDef = pair->new_ptr<NormalDef_t>();
                         pairDef->item.set(pair);
                         tableLit->values.push_back(pairDef);
                         break;
                     }
-                    case id<meta_variable_pair_t>(): {
-                        auto pairDef = pair->new_ptr<meta_variable_pair_def_t>();
+                    case id<MetaVariablePair_t>(): {
+                        auto pairDef = pair->new_ptr<MetaVariablePairDef_t>();
                         pairDef->pair.set(pair);
                         tableLit->values.push_back(pairDef);
                         break;
                     }
-                    case id<meta_normal_pair_t>(): {
-                        auto pairDef = pair->new_ptr<meta_normal_pair_def_t>();
+                    case id<MetaNormalPair_t>(): {
+                        auto pairDef = pair->new_ptr<MetaNormalPairDef_t>();
                         pairDef->pair.set(pair);
                         tableLit->values.push_back(pairDef);
                         break;
                     }
                     default:
-                        SERROR("AST node mismatch", pair);
+                        MEO_E("AST node mismatch", pair);
                         break;
                 }
             }
@@ -8940,21 +10246,23 @@ private:
             markDestructureConst(assignment);
         }
     }
-    void transformImport(Import_t *import, str_list &out) {
+
+    void transformImport(Import_t* import, str_list& out) {
         auto content = import->content.get();
         switch (content->getId()) {
             case id<ImportAs_t>():
-                transformImportAs(static_cast<ImportAs_t *>(content), out);
+                transformImportAs(static_cast<ImportAs_t*>(content), out);
                 break;
             case id<ImportFrom_t>():
-                transformImportFrom(static_cast<ImportFrom_t *>(content), out);
+                transformImportFrom(static_cast<ImportFrom_t*>(content), out);
                 break;
             default:
-                SERROR("AST node mismatch", content);
+                MEO_E("AST node mismatch", content);
                 break;
         }
     }
-    void transformWhileInPlace(While_t *whileNode, str_list &out, ExpList_t *expList = nullptr) {
+
+    void transformWhileInPlace(While_t* whileNode, str_list& out, ExpList_t* expList = nullptr) {
         auto x = whileNode;
         str_list temp;
         if (expList) {
@@ -8992,12 +10300,13 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transformWhileClosure(While_t *whileNode, str_list &out) {
+
+    void transformWhileClosure(While_t* whileNode, str_list& out) {
         auto x = whileNode;
         str_list temp;
         pushFunctionScope();
         pushAnonVarArg();
-        std::string &funcStart = temp.emplace_back();
+        std::string& funcStart = temp.emplace_back();
         pushScope();
         auto accumVar = getUnusedName("_accum_"sv);
         addToScope(accumVar);
@@ -9022,7 +10331,8 @@ private:
         popFunctionScope();
         out.push_back(join(temp));
     }
-    void transformWhile(While_t *whileNode, str_list &out) {
+
+    void transformWhile(While_t* whileNode, str_list& out) {
         str_list temp;
         pushScope();
         bool isUntil = _parser.toString(whileNode->type) == "until"sv;
@@ -9034,7 +10344,8 @@ private:
         _buf << indent() << "end"sv << nlr(whileNode);
         out.push_back(clearBuf());
     }
-    void transformRepeat(Repeat_t *repeat, str_list &out) {
+
+    void transformRepeat(Repeat_t* repeat, str_list& out) {
         str_list temp;
         pushScope();
         auto condVar = transformRepeatBody(repeat, temp);
@@ -9049,10 +10360,11 @@ private:
         _buf << indent() << "until "sv << temp.back() << nlr(repeat);
         out.push_back(clearBuf());
     }
-    void transformSwitch(Switch_t *switchNode, str_list &out, ExpUsage usage, ExpList_t *assignList = nullptr) {
+
+    void transformSwitch(Switch_t* switchNode, str_list& out, ExpUsage usage, ExpList_t* assignList = nullptr) {
         auto x = switchNode;
         str_list temp;
-        std::string *funcStart = nullptr;
+        std::string* funcStart = nullptr;
         if (usage == ExpUsage::Closure) {
             pushFunctionScope();
             pushAnonVarArg();
@@ -9076,13 +10388,13 @@ private:
             assignment->action.set(assign);
             transformAssignment(assignment, temp);
         }
-        const auto &branches = switchNode->branches.objects();
+        const auto& branches = switchNode->branches.objects();
         int addScope = 0;
         bool firstBranch = true;
         std::string tabCheckVar;
         for (auto branch_ : branches) {
-            auto branch = static_cast<SwitchCase_t *>(branch_);
-            if (auto value = singleValueFrom(branch->valueList); value && (value->item.is<simple_table_t>() || value->getByPath<SimpleValue_t, TableLit_t>())) {
+            auto branch = static_cast<SwitchCase_t*>(branch_);
+            if (auto value = singleValueFrom(branch->valueList); value && (value->item.is<SimpleTable_t>() || value->getByPath<SimpleValue_t, TableLit_t>())) {
                 if (!firstBranch) {
                     temp.push_back(indent() + "else"s + nll(branch));
                     pushScope();
@@ -9108,12 +10420,12 @@ private:
                 }
                 temp.back().append(indent() + "if "s + tabCheckVar + " then"s + nll(branch));
                 pushScope();
-                auto assignment = assignmentFrom(static_cast<Exp_t *>(branch->valueList->exprs.front()), toAst<Exp_t>(objVar, branch), branch);
+                auto assignment = assignmentFrom(static_cast<Exp_t*>(branch->valueList->exprs.front()), toAst<Exp_t>(objVar, branch), branch);
                 auto info = extractDestructureInfo(assignment, true, false);
                 transformAssignment(assignment, temp, true);
                 str_list conds;
-                for (const auto &destruct : info.destructures) {
-                    for (const auto &item : destruct.items) {
+                for (const auto& destruct : info.destructures) {
+                    for (const auto& item : destruct.items) {
                         if (!item.defVal) {
                             transformExp(item.target, conds, ExpUsage::Closure);
                             conds.back().append(" ~= nil"s);
@@ -9146,9 +10458,9 @@ private:
                 temp.push_back(indent() + (firstBranch ? "if"s : "elseif"s));
                 firstBranch = false;
                 str_list tmp;
-                const auto &exprs = branch->valueList->exprs.objects();
+                const auto& exprs = branch->valueList->exprs.objects();
                 for (auto exp_ : exprs) {
-                    auto exp = static_cast<Exp_t *>(exp_);
+                    auto exp = static_cast<Exp_t*>(exp_);
                     transformExp(exp, tmp, ExpUsage::Closure);
                     if (!singleValueFrom(exp)) {
                         tmp.back() = '(' + tmp.back() + ')';
@@ -9190,14 +10502,15 @@ private:
         }
         out.push_back(join(temp));
     }
-    void transformLocalDef(Local_t *local, str_list &out) {
+
+    void transformLocalDef(Local_t* local, str_list& out) {
         if (!local->forceDecls.empty() || !local->decls.empty()) {
             str_list defs;
-            for (const auto &decl : local->forceDecls) {
+            for (const auto& decl : local->forceDecls) {
                 forceAddToScope(decl);
                 defs.push_back(decl);
             }
-            for (const auto &decl : local->decls) {
+            for (const auto& decl : local->decls) {
                 if (addToScope(decl)) {
                     defs.push_back(decl);
                 }
@@ -9208,15 +10521,16 @@ private:
             }
         }
     }
-    void transformLocal(Local_t *local, str_list &out) {
+
+    void transformLocal(Local_t* local, str_list& out) {
         str_list temp;
         if (!local->defined) {
             local->defined = true;
             transformLocalDef(local, temp);
         }
         switch (local->item->getId()) {
-            case id<local_values_t>(): {
-                auto values = static_cast<local_values_t *>(local->item.get());
+            case id<LocalValues_t>(): {
+                auto values = static_cast<LocalValues_t*>(local->item.get());
                 if (values->valueList) {
                     auto x = local;
                     auto expList = x->new_ptr<ExpList_t>();
@@ -9242,15 +10556,16 @@ private:
                 }
                 break;
             }
-            case id<local_flag_t>():
+            case id<LocalFlag_t>():
                 break;
             default:
-                SERROR("AST node mismatch", local->item);
+                MEO_E("AST node mismatch", local->item);
                 break;
         }
         out.push_back(join(temp));
     }
-    void transformLocalAttrib(LocalAttrib_t *localAttrib, str_list &out) {
+
+    void transformLocalAttrib(LocalAttrib_t* localAttrib, str_list& out) {
         auto x = localAttrib;
         if (x->leftList.size() < x->assign->values.size()) {
             auto num = x->leftList.size();
@@ -9277,7 +10592,7 @@ private:
                 auto item = *i;
                 auto value = item->new_ptr<Value_t>();
                 switch (item->getId()) {
-                    case id<simple_table_t>():
+                    case id<SimpleTable_t>():
                         value->item.set(item);
                         break;
                     case id<TableLit_t>(): {
@@ -9287,7 +10602,7 @@ private:
                         break;
                     }
                     default:
-                        SERROR("AST node mismatch", item);
+                        MEO_E("AST node mismatch", item);
                         break;
                 }
                 auto exp = newExp(value, item);
@@ -9306,22 +10621,22 @@ private:
             }
             if (getLuaTarget(x) >= 504) {
                 std::string attrib;
-                if (localAttrib->attrib.is<const_attrib_t>()) {
+                if (localAttrib->attrib.is<ConstAttrib_t>()) {
                     attrib = " <const>"s;
-                } else if (localAttrib->attrib.is<close_attrib_t>()) {
+                } else if (localAttrib->attrib.is<CloseAttrib_t>()) {
                     attrib = " <close>"s;
                 } else {
-                    SERROR("AST node mismatch", localAttrib->attrib);
+                    MEO_E("AST node mismatch", localAttrib->attrib);
                 }
-                for (auto &var : vars) {
+                for (auto& var : vars) {
                     markVarConst(var);
                     var.append(attrib);
                 }
             } else {
-                if (localAttrib->attrib.is<close_attrib_t>()) {
+                if (localAttrib->attrib.is<CloseAttrib_t>()) {
                     throw std::logic_error(_info.errorMessage("close attribute is not available when not targeting Lua version 5.4 or higher"sv, x));
                 }
-                for (auto &var : vars) {
+                for (auto& var : vars) {
                     markVarConst(var);
                 }
             }
@@ -9339,15 +10654,19 @@ private:
             markDestructureConst(assignment);
         }
     }
-    void transformBreakLoop(BreakLoop_t *breakLoop, str_list &out) {
+
+    void transformBreakLoop(BreakLoop_t* breakLoop, str_list& out) {
         auto keyword = _parser.toString(breakLoop);
+        if (_enableBreakLoop.empty() || !_enableBreakLoop.top()) {
+            throw std::logic_error(_info.errorMessage(keyword + " is not inside a loop"s, breakLoop));
+        }
         if (keyword == "break"sv) {
             out.push_back(indent() + keyword + nll(breakLoop));
             return;
         }
         if (_continueVars.empty()) throw std::logic_error(_info.errorMessage("continue is not inside a loop"sv, breakLoop));
         str_list temp;
-        auto &item = _continueVars.top();
+        auto& item = _continueVars.top();
         if (item.condAssign) {
             transformAssignment(item.condAssign, temp);
         }
@@ -9363,7 +10682,8 @@ private:
             out.push_back(join(temp));
         }
     }
-    void transformLabel(Label_t *label, str_list &out) {
+
+    void transformLabel(Label_t* label, str_list& out) {
         if (getLuaTarget(label) < 502) {
             throw std::logic_error(_info.errorMessage("label statement is not available when not targeting Lua version 5.2 or higher"sv, label));
         }
@@ -9376,14 +10696,15 @@ private:
         if (!_labels[currentScope]) {
             _labels[currentScope] = std::unordered_map<std::string, LabelNode>();
         }
-        auto &scope = _labels[currentScope].value();
+        auto& scope = _labels[currentScope].value();
         if (auto it = scope.find(labelStr); it != scope.end()) {
             throw std::logic_error(_info.errorMessage("label '"s + labelStr + "' already defined at line "s + std::to_string(it->second.line), label));
         }
         scope[labelStr] = {label->m_begin.m_line, static_cast<int>(_scopes.size())};
         out.push_back(indent() + "::"s + labelStr + "::"s + nll(label));
     }
-    void transformGoto(Goto_t *gotoNode, str_list &out) {
+
+    void transformGoto(Goto_t* gotoNode, str_list& out) {
         if (getLuaTarget(gotoNode) < 502) {
             throw std::logic_error(_info.errorMessage("goto statement is not available when not targeting Lua version 5.2 or higher"sv, gotoNode));
         }
@@ -9391,7 +10712,8 @@ private:
         gotos.push_back({gotoNode, labelStr, _gotoScopes.top(), static_cast<int>(_scopes.size())});
         out.push_back(indent() + "goto "s + labelStr + nll(gotoNode));
     }
-    void transformShortTabAppending(ShortTabAppending_t *tab, str_list &out) {
+
+    void transformShortTabAppending(ShortTabAppending_t* tab, str_list& out) {
         if (_withVars.empty()) {
             throw std::logic_error(_info.errorMessage("short table appending syntax must be called within a with block"sv, tab));
         }
@@ -9399,7 +10721,8 @@ private:
         assignment->action.set(tab->assign);
         transformAssignment(assignment, out);
     }
-    void transformChainAssign(ChainAssign_t *chainAssign, str_list &out) {
+
+    void transformChainAssign(ChainAssign_t* chainAssign, str_list& out) {
         auto x = chainAssign;
         auto value = chainAssign->assign->values.front();
         if (chainAssign->assign->values.size() != 1) {
@@ -9408,7 +10731,7 @@ private:
         str_list temp;
         bool constVal = false;
         if (auto simpleVal = simpleSingleValueFrom(value)) {
-            constVal = ast_is<const_value_t, Num_t>(simpleVal->value);
+            constVal = ast_is<ConstValue_t, Num_t>(simpleVal->value);
         }
         bool localVal = false;
         if (auto var = singleVariableFrom(value, false); isLocal(var)) {
@@ -9419,7 +10742,7 @@ private:
                 std::string var = singleVariableFrom(exp, false);
                 if (!var.empty()) {
                     str_list temp;
-                    transformAssignment(assignmentFrom(static_cast<Exp_t *>(exp), value, exp), temp);
+                    transformAssignment(assignmentFrom(static_cast<Exp_t*>(exp), value, exp), temp);
                     auto newChainAssign = x->new_ptr<ChainAssign_t>();
                     auto newAssign = x->new_ptr<Assign_t>();
                     newAssign->values.push_back(exp);
@@ -9437,7 +10760,7 @@ private:
         }
         if (constVal || localVal) {
             for (auto exp : chainAssign->exprs.objects()) {
-                transformAssignment(assignmentFrom(static_cast<Exp_t *>(exp), value, exp), temp);
+                transformAssignment(assignmentFrom(static_cast<Exp_t*>(exp), value, exp), temp);
             }
             out.push_back(join(temp));
             return;
@@ -9446,7 +10769,7 @@ private:
         auto newValue = toAst<Exp_t>(valName, value);
         ast_list<false, ExpListAssign_t> assignments;
         for (auto exp : chainAssign->exprs.objects()) {
-            auto assignment = assignmentFrom(static_cast<Exp_t *>(exp), newValue, exp);
+            auto assignment = assignmentFrom(static_cast<Exp_t*>(exp), newValue, exp);
             assignments.push_back(assignment.get());
             temp.push_back(getPreDefineLine(assignment));
         }
@@ -9454,18 +10777,20 @@ private:
         temp.push_back(indent() + "do"s + nll(x));
         pushScope();
         for (auto item : assignments.objects()) {
-            transformAssignment(static_cast<ExpListAssign_t *>(item), temp);
+            transformAssignment(static_cast<ExpListAssign_t*>(item), temp);
         }
         popScope();
         temp.push_back(indent() + "end"s + nll(x));
         out.push_back(join(temp));
     }
 };
+
 const std::string MeoCompilerImpl::Empty;
-MeoCompiler::MeoCompiler(void *sharedState, const std::function<void(void *)> &luaOpen, bool sameModule)
+
+MeoCompiler::MeoCompiler(void* sharedState, const std::function<void(void*)>& luaOpen, bool sameModule)
     :
 #ifndef MEO_NO_MACRO
-      _compiler(std::make_unique<MeoCompilerImpl>(static_cast<lua_State *>(sharedState), luaOpen, sameModule)) {
+      _compiler(std::make_unique<MeoCompilerImpl>(static_cast<lua_State*>(sharedState), luaOpen, sameModule)) {
 }
 #else
       _compiler(std::make_unique<MeoCompilerImpl>()) {
@@ -9474,8 +10799,9 @@ MeoCompiler::MeoCompiler(void *sharedState, const std::function<void(void *)> &l
     (void)sameModule;
 }
 #endif  // MEO_NO_MACRO
-MeoCompiler::~MeoCompiler() {}
-CompileInfo MeoCompiler::compile(std::string_view codes, const MuConfig &config) { return _compiler->compile(codes, config); }
-}  // namespace Meo
 
-#pragma endregion Compiler
+MeoCompiler::~MeoCompiler() {}
+
+CompileInfo MeoCompiler::compile(std::string_view codes, const MeoConfig& config) { return _compiler->compile(codes, config); }
+
+}  // namespace meo

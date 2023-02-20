@@ -44,7 +44,7 @@ add_packagepath(METADOT_RESLOC("data/assets/ui/imguicss"))
 -- runf("Script:tests/test_ffi.lua")
 -- runf("Script:tests/test_lz4.lua")
 -- runf("Script:tests/test_csv.lua")
--- runf("Script:tests/test_p1.lua")
+runf("Script:tests/test_p1.lua")
 -- runf("Script:tests/test_cs.lua")
 runf("Script:tests/test_string.lua")
 
