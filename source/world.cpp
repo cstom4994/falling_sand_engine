@@ -1997,7 +1997,7 @@ void World::tickCells() {
 
     auto func = [&](CellData *cur) {
         if (cur->temporary && cur->lifetime <= 0) {
-            cur->killCallback.invoke({});
+            cur->killCallback();
             delete cur;
             return true;
         }
@@ -2020,7 +2020,7 @@ void World::tickCells() {
         int ly = cur->y;
 
         if ((cur->x < 0 || (int)(cur->x) >= width || cur->y < 0 || (int)(cur->y) >= height)) {
-            cur->killCallback.invoke({});
+            cur->killCallback();
             return true;
         }
 
@@ -2039,7 +2039,7 @@ void World::tickCells() {
             cur->y += dvy;
 
             if ((cur->x < 0 || (int)(cur->x) >= width || cur->y < 0 || (int)(cur->y) >= height)) {
-                cur->killCallback.invoke({});
+                cur->killCallback();
                 return true;
             }
 
@@ -2062,7 +2062,7 @@ void World::tickCells() {
 
                 if (!isObject || cur->inObjectState == 2) {
                     if (cur->temporary) {
-                        cur->killCallback.invoke({});
+                        cur->killCallback();
                         delete cur;
                         return true;
                     }
@@ -2114,7 +2114,7 @@ void World::tickCells() {
                         }
 
                         if (succeeded) {
-                            cur->killCallback.invoke({});
+                            cur->killCallback();
                             delete cur;
                             return true;
                         } else {
@@ -2125,7 +2125,7 @@ void World::tickCells() {
                     } else {
                         tiles[(int)(lx) + (int)(ly)*width] = cur->tile;
                         dirty[(int)(lx) + (int)(ly)*width] = true;
-                        cur->killCallback.invoke({});
+                        cur->killCallback();
                         delete cur;
                         return true;
                     }
@@ -3260,7 +3260,6 @@ std::tuple<WorldEntity *, Player *> World::getHostPlayer() {
         pl = registry.find_component<Player>(player);
         pl_we = registry.find_component<WorldEntity>(player);
     } catch (...) {
-
     }
     return std::make_tuple(pl_we, pl);
 }

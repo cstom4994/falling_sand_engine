@@ -17,7 +17,6 @@
 #include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/profiler/profiler_lua.h"
 #include "engine/engine_funcwrap.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
@@ -207,7 +206,6 @@ static void InitLua(LuaCore *lc) {
     metadot_bind_cstructcore(lc->L);
     metadot_bind_cstructtest(lc->L);
     metadot_bind_uilayout(lc->L);
-    metadot_bind_profiler(lc->L);
 
     LoadImGuiBindings(lc->L);
 

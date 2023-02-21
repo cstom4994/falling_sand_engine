@@ -45,8 +45,8 @@ void UISystem::UIRendererInit() {
     global.uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    METADOT_NEW(C, global.uidata->imguiCore, ImGuiCore);
-    global.uidata->imguiCore->Init();
+    METADOT_NEW(C, global.uidata->imgui, ImGuiLayer);
+    global.uidata->imgui->Init();
 
     layout_init_context(&global.uidata->layoutContext);
 
@@ -98,7 +98,7 @@ void UISystem::UIRendererInit() {
 }
 
 void UISystem::UIRendererPostUpdate() {
-    global.uidata->imguiCore->NewFrame();
+    global.uidata->imgui->NewFrame();
 
     auto ctx = &global.uidata->layoutContext;
 
@@ -208,7 +208,7 @@ void UISystem::UIRendererDraw() {
     // METADOT_SCOPE_END(UIRendererDraw);
 }
 
-void UISystem::UIRendererDrawImGui() { global.uidata->imguiCore->Draw(); }
+void UISystem::UIRendererDrawImGui() { global.uidata->imgui->Draw(); }
 
 F32 BoxDistence(metadot_rect box, R_vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
@@ -217,7 +217,7 @@ F32 BoxDistence(metadot_rect box, R_vec2 A) {
 
 void UISystem::UIRendererUpdate() {
 
-    global.uidata->imguiCore->Update();
+    global.uidata->imgui->Update();
     auto &l = Scripting::GetSingletonPtr()->Lua->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
@@ -301,8 +301,8 @@ void UISystem::UIRendererUpdate() {
 }
 
 void UISystem::UIRendererFree() {
-    global.uidata->imguiCore->End();
-    METADOT_DELETE(C, global.uidata->imguiCore, ImGuiCore);
+    global.uidata->imgui->End();
+    METADOT_DELETE(C, global.uidata->imgui, ImGuiLayer);
 
     for (auto &&e : global.uidata->elementLists) {
         if (static_cast<bool>(e.second->texture)) DestroyTexture(e.second->texture);

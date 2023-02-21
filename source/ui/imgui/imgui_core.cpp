@@ -131,7 +131,7 @@ static int common_control_initialize() {
 
 #endif
 
-const ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
+const ImVec2 ImGuiLayer::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowPos(ImGui::GetMainViewport());
@@ -140,13 +140,13 @@ const ImVec2 ImGuiCore::GetNextWindowsPos(ImGuiWindowTags tag, ImVec2 pos) {
     return pos;
 }
 
-void (*ImGuiCore::RendererShutdownFunction)();
-void (*ImGuiCore::PlatformShutdownFunction)();
-void (*ImGuiCore::RendererNewFrameFunction)();
-void (*ImGuiCore::PlatformNewFrameFunction)();
-void (*ImGuiCore::RenderFunction)(ImDrawData *);
+void (*ImGuiLayer::RendererShutdownFunction)();
+void (*ImGuiLayer::PlatformShutdownFunction)();
+void (*ImGuiLayer::RendererNewFrameFunction)();
+void (*ImGuiLayer::PlatformNewFrameFunction)();
+void (*ImGuiLayer::RenderFunction)(ImDrawData *);
 
-ImGuiCore::ImGuiCore() {
+ImGuiLayer::ImGuiLayer() {
     RendererShutdownFunction = ImGui_ImplOpenGL3_Shutdown;
     PlatformShutdownFunction = ImGui_ImplSDL2_Shutdown;
     RendererNewFrameFunction = ImGui_ImplOpenGL3_NewFrame;
@@ -203,7 +203,7 @@ ImGUIIMMCommunication imguiIMMCommunication{};
 static void *ImGuiMalloc(size_t sz, void *user_data) { return gc_malloc(&gc, sz); }
 static void ImGuiFree(void *ptr, void *user_data) { gc_free(&gc, ptr); }
 
-void ImGuiCore::Init() {
+void ImGuiLayer::Init() {
 
     IMGUI_CHECKVERSION();
 
@@ -338,7 +338,7 @@ void ImGuiCore::Init() {
     firstRun = true;
 }
 
-void ImGuiCore::End() {
+void ImGuiLayer::End() {
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
@@ -346,13 +346,13 @@ void ImGuiCore::End() {
     ImGui::DestroyContext();
 }
 
-void ImGuiCore::NewFrame() {
+void ImGuiLayer::NewFrame() {
     RendererNewFrameFunction();
     PlatformNewFrameFunction();
     ImGui::NewFrame();
 }
 
-void ImGuiCore::Draw() {
+void ImGuiLayer::Draw() {
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
 
@@ -383,7 +383,7 @@ auto CollapsingHeader = [](const char *name) -> bool {
     return b;
 };
 
-void ImGuiCore::Update() {
+void ImGuiLayer::Update() {
 
     ImGuiIO &io = ImGui::GetIO();
 

@@ -90,7 +90,7 @@ typedef struct UIElement {
 // static_assert(sizeof(UIElement) == 176);
 
 typedef struct UIData {
-    ImGuiCore* imguiCore = nullptr;
+    ImGuiLayer* imgui = nullptr;
 
     // Layout caculate context
     layout_context layoutContext;

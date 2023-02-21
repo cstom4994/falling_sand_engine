@@ -293,7 +293,7 @@ void MainMenuUI__Draw(Game *game) {
     if (!gameUI.visible_mainmenu) return;
 
     ImGui::SetNextWindowSize(ImVec2(200, 240));
-    ImGui::SetNextWindowPos(global.uidata->imguiCore->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(global.uidata->imgui->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
@@ -763,7 +763,7 @@ void DebugDrawUI__Draw(Game *game) {
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
-    if (global.game->GameIsolate_.globaldef.ui_tweak) ImGui::SetNextWindowDockID(global.uidata->imguiCore->GetMainDockID(), ImGuiCond_FirstUseEver);
+    if (global.game->GameIsolate_.globaldef.ui_tweak) ImGui::SetNextWindowDockID(global.uidata->imgui->GetMainDockID(), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoResize)) {
         ImGui::End();
         return;

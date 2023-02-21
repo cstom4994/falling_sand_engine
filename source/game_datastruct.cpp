@@ -1221,7 +1221,6 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
         world->updateRigidBodyHitbox(r);
         // SDL_DestroyTexture(heldItem->texture);
     }
-    auto a = 7;
     heldItem = item;
 }
 

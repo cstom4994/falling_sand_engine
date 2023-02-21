@@ -25,7 +25,7 @@ enum ImGuiWindowTags {
 
 enum EditorTags { Editor_Code = 0, Editor_Markdown = 1 };
 
-class ImGuiCore {
+class ImGuiLayer {
 private:
     struct EditorView {
         EditorTags tags;
@@ -55,7 +55,7 @@ private:
     static void (*RenderFunction)(ImDrawData *);
 
 public:
-    ImGuiCore();
+    ImGuiLayer();
     void Init();
     void End();
     void NewFrame();

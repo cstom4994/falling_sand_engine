@@ -27,7 +27,7 @@ struct CellData {
     int lifetime = 0;
     int fadeTime = 60;
     U8 inObjectState = 0;
-    Meta::AnyFunction killCallback = []() {};
+    std::function<void()> killCallback = []() {};
 
     explicit CellData(MaterialInstance tile, F32 x, F32 y, F32 vx, F32 vy, F32 ax, F32 ay) : tile(std::move(tile)), x(x), y(y), vx(vx), vy(vy), ax(ax), ay(ay) {}
     CellData(const CellData& part) : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax), ay(part.ay) {}

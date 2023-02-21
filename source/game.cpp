@@ -1288,7 +1288,7 @@ void Game::updateFrameEarly() {
 
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
-            i3->vacuumCells = {};
+            // i3->vacuumCells = {};
             i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
             i3->texture = R_CopyImageFromSurface(i3->surface);
             i3->name = "初始物品";
@@ -2208,9 +2208,14 @@ void Game::tickChunkLoading() {
 
 void Game::tickPlayer() {
 
-    if (GameIsolate_.world->player) {
+    Player *pl = nullptr;
+    WorldEntity *pl_we = nullptr;
 
-        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
+    if (GameIsolate_.world->player) {
+        std::tie(pl_we, pl) = GameIsolate_.world->getHostPlayer();
+    }
+
+    if (GameIsolate_.world->player) {
 
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             if (pl_we->ground) {
@@ -2254,8 +2259,6 @@ void Game::tickPlayer() {
 
     if (GameIsolate_.world->player) {
 
-        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
-
         global.GameData_.desCamX = (F32)(-(mx - (Screen.windowWidth / 2)) / 4);
         global.GameData_.desCamY = (F32)(-(my - (Screen.windowHeight / 2)) / 4);
 
@@ -2269,9 +2272,6 @@ void Game::tickPlayer() {
     }
 
     if (GameIsolate_.world->player) {
-
-        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
 
         if (pl->heldItem) {
             if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
@@ -2330,7 +2330,15 @@ void Game::tickPlayer() {
 
                             pl->heldItem->vacuumCells.push_back(par);
 
-                            par->killCallback = [&]() {
+                            par->killCallback = [&par]() {
+                                
+                                Player *pl = nullptr;
+                                WorldEntity *pl_we = nullptr;
+
+                                if (global.game->GameIsolate_.world->player) {
+                                    std::tie(pl_we, pl) = global.game->GameIsolate_.world->getHostPlayer();
+                                }
+
                                 auto &v = pl->heldItem->vacuumCells;
                                 v.erase(std::remove(v.begin(), v.end(), par), v.end());
                             };
@@ -2383,7 +2391,14 @@ void Game::tickPlayer() {
 
                                             pl->heldItem->vacuumCells.push_back(cur);
 
-                                            cur->killCallback = [&]() {
+                                            cur->killCallback = [&cur]() {
+                                                Player *pl = nullptr;
+                                                WorldEntity *pl_we = nullptr;
+
+                                                if (global.game->GameIsolate_.world->player) {
+                                                    std::tie(pl_we, pl) = global.game->GameIsolate_.world->getHostPlayer();
+                                                }
+
                                                 auto &v = pl->heldItem->vacuumCells;
                                                 v.erase(std::remove(v.begin(), v.end(), cur), v.end());
                                             };

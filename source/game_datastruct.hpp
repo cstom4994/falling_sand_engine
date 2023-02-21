@@ -361,7 +361,9 @@ public:
     MetaEngine::vector<U16Point> fill;
     U16 capacity = 0;
 
-    MetaEngine::vector<CellData *> vacuumCells;
+    MetaEngine::vector<CellData *> vacuumCells = {};
+
+    Item(const Item &p) = default;
 
     Item();
     ~Item();
