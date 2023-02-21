@@ -135,16 +135,20 @@ int Game::init(int argc, char *argv[]) {
     METADOT_NEW_ARRAY(C, movingTiles, U16, global.GameData_.materials_count);
     METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
 
+    global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
+    global.audio.LoadEvent("event:/Music/Title", "title.ogg");
+
+
     // Play sound effects when the game starts
-    global.audioEngine.PlayEvent("event:/Music/Title");
-    global.audioEngine.Update();
+    global.audio.PlayEvent("event:/Music/Title");
+    // global.audioEngine.Update();
 
     // Initialize the world
     METADOT_INFO("Initializing world...");
     GameIsolate_.world = MetaEngine::CreateScope<World>();
     GameIsolate_.world->noSaveLoad = true;
     GameIsolate_.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audioEngine);
+                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio);
 
     {
         // set up main menu ui
@@ -680,7 +684,7 @@ int Game::run(int argc, char *argv[]) {
                                 }
 
                                 if (n > 0) {
-                                    global.audioEngine.PlayEvent("event:/Player/Impact");
+                                    global.audio.PlayEvent("event:/Player/Impact");
                                     b2PolygonShape s;
                                     s.SetAsBox(1, 1);
                                     RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (F32)x, (F32)y, 0, s, 1, (F32)0.3, tex);
@@ -799,7 +803,7 @@ int Game::run(int argc, char *argv[]) {
                                     }
 
                                     if (nTilesChanged > 0) {
-                                        global.audioEngine.PlayEvent("event:/Player/Impact");
+                                        global.audio.PlayEvent("event:/Player/Impact");
                                     }
 
                                     // GameIsolate_.world->setTile((int)(hx), (int)(hy), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffffffff));
@@ -1106,7 +1110,7 @@ int Game::exit() {
         GameIsolate_.world.reset();
     }
 
-    global.audioEngine.Shutdown();
+    global.audio.EndAudio();
     metadot_endwindow();
 
     EndEngine(0);
@@ -1323,12 +1327,12 @@ void Game::updateFrameEarly() {
         }
     }
 
-    global.audioEngine.Update();
+    // global.audioEngine.Update();
 
     if (state == LOADING) {
 
     } else {
-        global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
+        global.audio.SetEventParameter("event:/World/Sand", "Sand", 0);
         if (GameIsolate_.world->player) {
 
             auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
@@ -1353,7 +1357,7 @@ void Game::updateFrameEarly() {
                     pl->heldItem->texture = R_CopyImageFromSurface(pl->heldItem->surface);
                     R_SetImageFilter(pl->heldItem->texture, R_FILTER_NEAREST);
 
-                    global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 1);
+                    global.audio.SetEventParameter("event:/World/Sand", "Sand", 1);
 
                 } else {
                     // pick up fluid into container
@@ -1394,7 +1398,7 @@ void Game::updateFrameEarly() {
                     }
 
                     if (n > 0) {
-                        global.audioEngine.PlayEvent("event:/Player/Impact");
+                        global.audio.PlayEvent("event:/Player/Impact");
                     }
                 }
             }
@@ -2220,13 +2224,13 @@ void Game::tickPlayer() {
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             if (pl_we->ground) {
                 pl_we->vy = -4;
-                global.audioEngine.PlayEvent("event:/Player/Jump");
+                global.audio.PlayEvent("event:/Player/Jump");
             }
         }
 
         pl_we->vy += (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (pl_we->vy > -1 ? -0.8 : -0.35) : 0) + (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
-            global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
+            global.audio.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 CellData *p = new CellData(TilesCreateLava(), (F32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
                                            (F32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (F32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
@@ -2236,13 +2240,13 @@ void Game::tickPlayer() {
                 GameIsolate_.world->addCell(p);
             }
         } else {
-            global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 0);
+            global.audio.SetEventParameter("event:/Player/Fly", "Intensity", 0);
         }
 
         if (pl_we->vy > 0) {
-            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", (F32)(pl_we->vy / 12.0));
+            global.audio.SetEventParameter("event:/Player/Wind", "Wind", (F32)(pl_we->vy / 12.0));
         } else {
-            global.audioEngine.SetEventParameter("event:/Player/Wind", "Wind", 0);
+            global.audio.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
         pl_we->vx += (F32)((ControlSystem::PLAYER_LEFT->get() ? (pl_we->vx > 0 ? -0.4 : -0.2) : 0) + (ControlSystem::PLAYER_RIGHT->get() ? (pl_we->vx < 0 ? 0.4 : 0.2) : 0));
@@ -3508,7 +3512,7 @@ void Game::quitToMainMenu() {
     GameIsolate_.world = MetaEngine::CreateScope<World>();
     GameIsolate_.world->noSaveLoad = true;
     GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audioEngine, generator);
+                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio, generator);
 
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
@@ -3575,5 +3579,5 @@ void Game::updateMaterialSounds() {
     U16 waterCt = std::min(movingTiles[MaterialsList::WATER.id], (U16)5000);
     F32 water = (F32)waterCt / 3000;
     // METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
-    global.audioEngine.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
+    global.audio.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
 }

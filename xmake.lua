@@ -23,11 +23,6 @@ set_default(false)
 set_description("Toggle to enable unity build")
 option_end()
 
-option("build_audio")
-set_default(false)
-set_description("Toggle to enable audio module")
-option_end()
-
 if is_mode("debug") then
 	add_defines("DEBUG", "_DEBUG")
 	set_optimize("none")
@@ -133,15 +128,6 @@ elseif is_os("macosx") then
 	link_list = {}
 end
 
-if has_config("build_audio") then
-	add_defines("METADOT_BUILD_AUDIO")
-	if is_os("macosx") then
-		add_linkdirs("output")
-		add_rpathdirs("./")
-		add_rpathdirs("./output")
-	end
-end
-
 add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
@@ -209,10 +195,6 @@ do
 
 	add_headerfiles("source/**.h")
 	add_headerfiles("source/**.hpp")
-
-	if is_os("macosx") and has_config("build_audio") then
-		add_links("fmod", "fmodstudio")
-	end
 end
 
 -- target("TestFFI")

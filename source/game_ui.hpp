@@ -46,9 +46,6 @@ public:
     U8 DebugDrawUI__brushSize = 5;
 
     // OptionsUI
-#if defined(METADOT_BUILD_AUDIO)
-    std::map<std::string, FMOD::Studio::Bus *> OptionsUI__busMap = {};
-#endif
     int OptionsUI__item_current_idx = 0;
     bool OptionsUI__vsync = false;
     bool OptionsUI__minimizeOnFocus = false;

@@ -25,16 +25,9 @@ static void create_biome(std::string name, int id) {
     global.GameData_.biome_container.push_back(b);
 }
 
-static void audio_init() { global.audioEngine.Init(); }
-
-static void audio_load_bank(std::string name, unsigned int type) {
-#if defined(METADOT_BUILD_AUDIO)
-    global.audioEngine.LoadBank(METADOT_RESLOC(name.c_str()), type);
-#endif
-}
-
-static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(event); }
-static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
+// static void audio_load_bank(std::string name, unsigned int type) {}
+// static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(event); }
+// static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
 
 static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack); }
 static void textures_end() { EndTexture(global.game->GameIsolate_.texturepack); }
@@ -89,10 +82,9 @@ void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
     s_lua["textures_load"] = LuaWrapper::function(textures_load);
     s_lua["textures_init"] = LuaWrapper::function(textures_init);
     s_lua["textures_end"] = LuaWrapper::function(textures_end);
-    s_lua["audio_load_event"] = LuaWrapper::function(audio_load_event);
-    s_lua["audio_play_event"] = LuaWrapper::function(audio_play_event);
-    s_lua["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
-    s_lua["audio_init"] = LuaWrapper::function(audio_init);
+    // s_lua["audio_load_event"] = LuaWrapper::function(audio_load_event);
+    // s_lua["audio_play_event"] = LuaWrapper::function(audio_play_event);
+    // s_lua["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
     s_lua["create_biome"] = LuaWrapper::function(create_biome);
     s_lua["init_ecs"] = LuaWrapper::function(init_ecs);
 

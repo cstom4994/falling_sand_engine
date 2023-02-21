@@ -8,6 +8,7 @@
 #include "audio/sound.h"
 #include "core/const.h"
 #include "core/core.h"
+#include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/io/packer.h"
 #include "core/macros.h"
@@ -170,7 +171,7 @@ int metadot_initwindow() {
     metadot_gl_print_info();
 #endif
 
-    AudioEngineInit();
+    global.audio.InitAudio();
 
     // METADOT_INFO("Initializing InitFont...");
     // if (!Drawing::InitFont(&gl_context)) {
@@ -186,7 +187,7 @@ int metadot_initwindow() {
     // }
 
 #if defined(_WIN32)
-    SDL_SysWMinfo info{};
+            SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info)) {
         METADOT_ASSERT_E(IsWindow(info.info.win.window));
@@ -195,7 +196,7 @@ int metadot_initwindow() {
         global.HostData.wndh = NULL;
     }
 #elif defined(__linux)
-    global.HostData.wndh = 0;
+            global.HostData.wndh = 0;
 #elif defined(__APPLE__)
     // global.HostData.wndh = 0;
 #else

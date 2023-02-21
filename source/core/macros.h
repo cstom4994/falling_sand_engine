@@ -125,12 +125,6 @@
 #define METADOT_THREADLOCAL __declspec(thread)
 #endif
 
-#if defined(METADOT_BUILD_AUDIO)
-#define AUDIO_ENGINE 1
-#else
-#define AUDIO_ENGINE 0
-#endif
-
 #if defined(__cplusplus)
 #include <string>
 #if defined(__cpp_char8_t)

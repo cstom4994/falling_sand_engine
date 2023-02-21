@@ -67,7 +67,6 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     if (updateRigidBodyHitboxPool == nullptr) METADOT_NEW(C, updateRigidBodyHitboxPool, ThreadPool, 8);
 
     this->audioEngine = audioEngine;
-    audioEngine->LoadEvent("event:/World/Explode");
 
     newTemps = new I32[width * height];
 
