@@ -7,6 +7,7 @@
 #include "core/core.h"
 #include "core/global.hpp"
 #include "core/math/mathlib.hpp"
+#include "core/profiler/profiler.h"
 #include "engine/engine.h"
 #include "engine/engine_input.hpp"
 #include "engine/engine_platform.h"
@@ -50,45 +51,50 @@ void UISystem::UIRendererInit() {
     layout_init_context(&global.uidata->layoutContext);
 
     // Test element drawing
-    UIElement *testElement1 = new UIElement{.type = ElementType::windowElement,
-                                            .resizable = {true},
-                                            .x = 50,
-                                            .y = 50,
-                                            .w = 200,
-                                            .h = 200,
-                                            .state = 0,
-                                            .color = bgPanelColor,
-                                            .texture = LoadTexture("data/assets/ui/demo_background.png"),
-                                            .cclass = {.window = (UI_Window){}}};
+    auto testElement1 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
+                                                                   .resizable = {true},
+                                                                   .x = 50,
+                                                                   .y = 50,
+                                                                   .w = 200,
+                                                                   .h = 200,
+                                                                   .state = 0,
+                                                                   .color = bgPanelColor,
+                                                                   .texture = LoadTexture("data/assets/ui/demo_background.png"),
+                                                                   .cclass = {.window = {}}});
 
-    UIElement *testElement2 = new UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"};
-    UIElement *testElement3 = new UIElement{.type = ElementType::buttonElement,
-                                            .parent = testElement1,
-                                            .x = 20,
-                                            .y = 40,
-                                            .w = 20,
-                                            .h = 20,
-                                            .state = 0,
-                                            .color = {255, 0, 20, 255},
-                                            .text = "按钮捏",
-                                            .cclass = {.button = (UI_Button){.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}};
+    auto testElement2 =
+            MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"});
+    auto testElement3 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::buttonElement,
+                                                                   .parent = testElement1,
+                                                                   .x = 20,
+                                                                   .y = 40,
+                                                                   .w = 20,
+                                                                   .h = 20,
+                                                                   .state = 0,
+                                                                   .color = {255, 0, 20, 255},
+                                                                   .text = "按钮捏",
+                                                                   .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
 
-    UIElement *testElement4 = new UIElement{
-            .type = ElementType::progressBarElement,
-            .parent = testElement1,
-            .x = 20,
-            .y = 20,
-            .w = 45,
-            .h = 25,
-            .state = 0,
-            .color = {54, 54, 54, 255},
-            .text = "进度条",
-            .cclass = {.progressbar = (UI_ProgressBar){.bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}};
+    auto testElement4 = MetaEngine::CreateRef<UIElement>(
+            UIElement{.type = ElementType::progressBarElement,
+                      .parent = testElement1,
+                      .x = 20,
+                      .y = 20,
+                      .w = 45,
+                      .h = 25,
+                      .state = 0,
+                      .color = {54, 54, 54, 255},
+                      .text = "进度条",
+                      .cclass = {.progressbar = {.bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}});
+
+    auto testElement5 = MetaEngine::CreateRef<UIElement>(
+            UIElement{.type = ElementType::texturedRectangle, .parent = testElement1, .x = 40, .y = 20, .w = 100, .h = 50, .state = 0, .color = {}, .texture = LoadTexture("data/assets/ui/logo.png")});
 
     global.uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
     global.uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
     global.uidata->elementLists.insert(std::make_pair("testElement3", testElement3));
     global.uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
+    global.uidata->elementLists.insert(std::make_pair("testElement5", testElement5));
 }
 
 void UISystem::UIRendererPostUpdate() {
@@ -113,18 +119,23 @@ void UISystem::UIRendererPostUpdate() {
 
 void UISystem::UIRendererDraw() {
 
-    if (global.game->state == LOADING) return;
+    // METADOT_SCOPE_BEGIN(UIRendererDraw);
+
+    if (global.game->state == LOADING) {
+        // METADOT_SCOPE_END(UIRendererDraw);
+        return;
+    }
 
     auto ctx = &global.uidata->layoutContext;
 
     // Drawing element
     for (auto &&e : global.uidata->elementLists) {
 
-        if (!e.second->visible) return;
+        if (!e.second->visible) continue;
 
         int p_x, p_y;
         if (e.second->parent != nullptr) {
-            if (!e.second->parent->visible) return;
+            if (!e.second->parent->visible) continue;
             p_x = e.second->parent->x;
             p_y = e.second->parent->y;
             // METADOT_BUG("%s .parent %s", e.first.c_str(), e.second->parent->text.c_str());
@@ -193,6 +204,8 @@ void UISystem::UIRendererDraw() {
             }
         }
     }
+
+    // METADOT_SCOPE_END(UIRendererDraw);
 }
 
 void UISystem::UIRendererDrawImGui() { global.uidata->imguiCore->Draw(); }
@@ -214,8 +227,7 @@ void UISystem::UIRendererUpdate() {
     bool ImGuiOnControl = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
 
     // Mouse pos
-    int x, y;
-    metadot_get_mousepos(&x, &y);
+    int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
     for (auto &&e : global.uidata->elementLists) {
 
@@ -232,8 +244,9 @@ void UISystem::UIRendererUpdate() {
         metadot_rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (e.second->type == ElementType::windowElement) {
             // Resize window
-            if (e.second->resizable.resizable && BoxDistence(rect, {(float)x, (float)y}) < 0.0f && abs(y - e.second->y - e.second->h) < 20.0f && abs(x - e.second->x - e.second->w) < 20.0f) {
-                if (ControlSystem::lmouse && !ImGuiOnControl) {
+            if (e.second->resizable.resizing || (e.second->resizable.resizable && !e.second->movable.moving && BoxDistence(rect, {(float)x, (float)y}) < 0.0f &&
+                                                 abs(y - e.second->y - e.second->h) < 20.0f && abs(x - e.second->x - e.second->w) < 20.0f)) {
+                if (ControlSystem::lmouse_down && !ImGuiOnControl) {
                     if (!e.second->resizable.resizing) {
                         e.second->resizable.mx = x;
                         e.second->resizable.my = y;
@@ -249,8 +262,8 @@ void UISystem::UIRendererUpdate() {
                 continue;
             }
             // Move window
-            if (!e.second->resizable.resizing && BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
-                if (ControlSystem::lmouse && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
+            if (e.second->movable.moving || (!e.second->resizable.resizing && BoxDistence(rect, {(float)x, (float)y}) < 0.0f)) {
+                if (ControlSystem::lmouse_down && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
                     if (!e.second->movable.moving) {
                         e.second->movable.mx = x;
                         e.second->movable.my = y;
@@ -272,7 +285,7 @@ void UISystem::UIRendererUpdate() {
             // Pressed button
             if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
                 e.second->state = 1;
-                if (ControlSystem::lmouse && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
+                if (ControlSystem::lmouse_down && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
                     e.second->state = 2;
                     e.second->cclass.button.func();
                 }
@@ -293,7 +306,8 @@ void UISystem::UIRendererFree() {
 
     for (auto &&e : global.uidata->elementLists) {
         if (static_cast<bool>(e.second->texture)) DestroyTexture(e.second->texture);
-        if (static_cast<bool>(e.second)) delete e.second;
+        // if (static_cast<bool>(e.second)) delete e.second;
+        if (e.second.get()) e.second.reset();
     }
 
     delete global.uidata;
@@ -301,8 +315,7 @@ void UISystem::UIRendererFree() {
 
 bool UISystem::UIIsMouseOnControls() {
     // Mouse pos
-    int x, y;
-    metadot_get_mousepos(&x, &y);
+    int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
     for (auto &&e : global.uidata->elementLists) {
         metadot_rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};

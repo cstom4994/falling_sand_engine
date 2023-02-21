@@ -273,11 +273,6 @@ void MainMenuUI__RefreshWorlds(Game *game) {
 
 void MainMenuUI__Setup() {
 
-    Texture *logoSfc = LoadTexture("data/assets/ui/logo.png");
-    gameUI.MainMenuUI__title = R_CopyImageFromSurface(logoSfc->surface);
-    R_SetImageFilter(gameUI.MainMenuUI__title, R_FILTER_NEAREST);
-    DestroyTexture(logoSfc);
-
     // C_Surface *logoMT = LoadTexture("data/assets/ui/prev_materialtest.png");
     // materialTestWorld = R_CopyImageFromSurface(logoMT);
     // R_SetImageFilter(materialTestWorld, R_FILTER_NEAREST);
@@ -329,16 +324,16 @@ void MainMenuUI__DrawMainMenu(Game *game) {
 
     gameUI.MainMenuUI__pos = ImGui::GetWindowPos();
 
-    ImTextureID texId = (ImTextureID)R_GetTextureHandle(gameUI.MainMenuUI__title);
+    // ImTextureID texId = (ImTextureID)R_GetTextureHandle(gameUI.MainMenuUI__title);
 
-    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                // Top-left
-    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                // Lower-right
-    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
-    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+    // ImVec2 uv_min = ImVec2(0.0f, 0.0f);                // Top-left
+    // ImVec2 uv_max = ImVec2(1.0f, 1.0f);                // Lower-right
+    // ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // No tint
+    // ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
 
-    ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - gameUI.MainMenuUI__title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
-    ImGui::Image(texId, ImVec2(gameUI.MainMenuUI__title->w / 2, gameUI.MainMenuUI__title->h / 2), uv_min, uv_max, tint_col, border_col);
-    ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
+    // ImGui::SetCursorPos(ImVec2((ImGui::GetWindowSize().x - gameUI.MainMenuUI__title->w / 2) * 0.5f, ImGui::GetCursorPosY() + 10));
+    // ImGui::Image(texId, ImVec2(gameUI.MainMenuUI__title->w / 2, gameUI.MainMenuUI__title->h / 2), uv_min, uv_max, tint_col, border_col);
+    // ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
     if (ImGui::Button(LANG("ui_play"))) {
         LuaWrapper::LuaRef s = Scripting::GetSingletonPtr()->Lua->s_lua["game_datastruct"]["ui"];

@@ -29,7 +29,6 @@ public:
 
     // MainMenu
     bool MainMenuUI__setup = false;
-    R_Image *MainMenuUI__title = nullptr;
     bool MainMenuUI__connectButtonEnabled = false;
     ImVec2 MainMenuUI__pos = ImVec2(0, 0);
     std::vector<std::tuple<std::string, WorldMeta>> MainMenuUI__worlds = {};

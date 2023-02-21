@@ -161,7 +161,11 @@ struct ProfilerScoped {
 #define METADOT_CONCAT(_x, _y) METADOT_CONCAT2(_x, _y)
 
 #define METADOT_INIT() ProfilerInit()
-#define METADOT_SCOPE(x, ...) ProfilerScoped METADOT_CONCAT(profileScope, __LINE__)(__FILE__, __LINE__, x)
+#define METADOT_SCOPE_AUTO(x, ...) ProfilerScoped METADOT_CONCAT(profileScope, __LINE__)(__FILE__, __LINE__, x)
+#define METADOT_SCOPE_BEGIN(n, ...) \
+    uintptr_t profileid_##n;                    \
+    profileid_##n = ProfilerBeginScope(__FILE__, __LINE__, #n);
+#define METADOT_SCOPE_END(n) ProfilerEndScope(profileid_##n);
 #define METADOT_BEGIN_FRAME() ProfilerBeginFrame()
 #define METADOT_REGISTER_THREAD(n) ProfilerRegisterThread(n)
 #define METADOT_SHUTDOWN() ProfilerShutDown()

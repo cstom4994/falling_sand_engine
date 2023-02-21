@@ -34,9 +34,16 @@ KeyControl *ControlSystem::ZOOM_IN = nullptr;
 KeyControl *ControlSystem::ZOOM_OUT = nullptr;
 KeyControl *ControlSystem::PAUSE = nullptr;
 
-bool ControlSystem::lmouse = false;
-bool ControlSystem::mmouse = false;
-bool ControlSystem::rmouse = false;
+bool ControlSystem::lmouse_down = false;
+bool ControlSystem::mmouse_down = false;
+bool ControlSystem::rmouse_down = false;
+
+bool ControlSystem::lmouse_up = true;
+bool ControlSystem::mmouse_up = true;
+bool ControlSystem::rmouse_up = true;
+
+int ControlSystem::mouse_x = 0;
+int ControlSystem::mouse_y = 0;
 
 void ControlSystem::KeyEvent(C_KeyboardEvent event) {
     for (auto &v : keyControls) {

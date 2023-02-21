@@ -82,10 +82,10 @@ inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
     // Rounding
     // style.WindowPadding = ImVec2(4.0f, 4.0f);
     // style.FramePadding = ImVec2(6.0f, 4.0f);
-    style.WindowRounding = 10.0f;
-    style.ChildRounding = 4.0f;
-    style.FrameRounding = 4.0f;
-    style.GrabRounding = 4.0f;
+    // style.WindowRounding = 10.0f;
+    // style.ChildRounding = 4.0f;
+    // style.FrameRounding = 4.0f;
+    // style.GrabRounding = 4.0f;
 }
 
 extern void ShowAutoTestWindow();
@@ -531,8 +531,6 @@ CSTDTime | {6} | Nothing)";
                             MetaEngine::audio_set_pause(false);
                         }
                     }
-                    ImGui::SameLine();
-                    if (ImGui::Button("DBG")) METADOT_DBG(global.game->TexturePack_.pixels);
                     ImGui::SameLine();
                     if (ImGui::Button("StaticRefl")) {
 

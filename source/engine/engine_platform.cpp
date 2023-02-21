@@ -297,8 +297,6 @@ void metadot_set_minimize_onlostfocus(bool minimize) { SDL_SetHint(SDL_HINT_VIDE
 
 void metadot_set_windowtitle(const char *title) { SDL_SetWindowTitle(Core.window, win_title_server); }
 
-void metadot_get_mousepos(int *x, int *y) { SDL_GetMouseState(x, y); }
-
 char *metadot_clipboard_get() {
     char *text = SDL_GetClipboardText();
     return text;

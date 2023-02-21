@@ -26,8 +26,8 @@
 #include "engine/engine.h"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "game_utils/jsonwarp.h"
 #include "game_utils/cells.h"
+#include "game_utils/jsonwarp.h"
 #include "internal/builtin_box2d.h"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -3251,6 +3251,19 @@ void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
 bool World::isC2Ground(F32 x, F32 y) { return false; }
 
 bool World::isPlayerInWorld() { return player != 0; }
+
+std::tuple<WorldEntity *, Player *> World::getHostPlayer() {
+    Player *pl = nullptr;
+    WorldEntity *pl_we = nullptr;
+    if (player == 0) return std::make_tuple(pl_we, pl);
+    try {
+        pl = registry.find_component<Player>(player);
+        pl_we = registry.find_component<WorldEntity>(player);
+    } catch (...) {
+
+    }
+    return std::make_tuple(pl_we, pl);
+}
 
 RigidBody *World::physicsCheck(int x, int y) {
 

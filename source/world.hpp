@@ -174,6 +174,7 @@ public:
     void saveWorld();
     bool isC2Ground(F32 x, F32 y);
     bool isPlayerInWorld();
+    std::tuple<WorldEntity *, Player *> getHostPlayer();
 };
 
 #endif

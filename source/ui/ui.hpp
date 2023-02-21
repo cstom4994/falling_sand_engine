@@ -17,29 +17,35 @@
 #include "ui/imgui/imgui_impl.hpp"
 #include "ui/ui_layout.h"
 
-typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement } ElementType;
-
-typedef struct UIElementState_Button {
-    METAENGINE_Color hot_color;
-    void (*func)(void);
-} UI_Button;
-
-typedef struct UIElementState_Window {
-    layout_id layout_id;
-} UI_Window;
-
-typedef struct UIElementState_ProgressBar {
-    U8 bar_type;
-    F32 bar_current;
-    F32 bar_limit;
-    METAENGINE_Color bar_color;
-    METAENGINE_Color bar_text_color;
-} UI_ProgressBar;
+typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement } ElementType;
 
 typedef union UIElementClass {
-    UI_Button button;
-    UI_Window window;
-    UI_ProgressBar progressbar;
+    struct UIElementState_Button {
+        METAENGINE_Color hot_color;
+        void (*func)(void);
+    } button;
+
+    struct UIElementState_Window {
+        layout_id layout_id;
+    } window;
+
+    struct UIElementState_ProgressBar {
+        U8 bar_type;
+        F32 bar_current;
+        F32 bar_limit;
+        METAENGINE_Color bar_color;
+        METAENGINE_Color bar_text_color;
+    } progressbar;
+
+    struct UIElementState_ListBox {
+        U8 list_type;
+        layout_id layout_id;
+        char** list;
+        METAENGINE_Color list_bg_color;
+        METAENGINE_Color list_hover_color;
+        METAENGINE_Color list_text_color;
+    } listbox;
+
 } UIElementClass;
 
 typedef struct UIMovable {
@@ -61,7 +67,7 @@ typedef struct UIElement {
 
     bool visible = true;
 
-    UIElement* parent = nullptr;
+    MetaEngine::Ref<UIElement> parent;
 
     UIMovable movable;
     UIResizable resizable;
@@ -90,7 +96,7 @@ typedef struct UIData {
     layout_context layoutContext;
 
     // std::map<std::string, UIElement> elementLists = {};
-    phmap::btree_map<std::string, UIElement*> elementLists = {};
+    phmap::btree_map<std::string, MetaEngine::Ref<UIElement>> elementLists = {};
 } UIData;
 
 class UISystem : public IGameSystem {

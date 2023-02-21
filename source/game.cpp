@@ -37,8 +37,8 @@
 #include "game_resources.hpp"
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
-#include "game_utils/mdplot.h"
 #include "game_utils/cells.h"
+#include "game_utils/mdplot.h"
 #include "libs/imgui/imgui.h"
 #include "meta/meta.hpp"
 #include "reflectionflat.hpp"
@@ -421,7 +421,7 @@ int Game::run(int argc, char *argv[]) {
 
 #pragma region SDL_Input
 
-        METADOT_SCOPE("Loop");
+        METADOT_SCOPE_AUTO("Loop");
 
         // handle window events
         while (SDL_PollEvent(&windowEvent)) {
@@ -445,6 +445,10 @@ int Game::run(int argc, char *argv[]) {
             if (windowEvent.type == SDL_MOUSEWHEEL) {
 
             } else if (windowEvent.type == SDL_MOUSEMOTION) {
+
+                ControlSystem::mouse_x = windowEvent.motion.x;
+                ControlSystem::mouse_y = windowEvent.motion.y;
+
                 if (ControlSystem::DEBUG_DRAW->get() && !GameIsolate_.ui->UIIsMouseOnControls()) {
                     // draw material
 
@@ -480,7 +484,7 @@ int Game::run(int argc, char *argv[]) {
                     lastDrawMY = 0;
                 }
 
-                if (ControlSystem::mmouse && !GameIsolate_.ui->UIIsMouseOnControls()) {
+                if (ControlSystem::mmouse_down && !GameIsolate_.ui->UIIsMouseOnControls()) {
                     // erase material
 
                     // erase from world
@@ -569,12 +573,12 @@ int Game::run(int argc, char *argv[]) {
 
             if (windowEvent.type == SDL_MOUSEBUTTONDOWN) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    ControlSystem::lmouse = true;
+                    ControlSystem::lmouse_down = true;
+                    ControlSystem::lmouse_up = false;
 
                     if (GameIsolate_.world->player) {
 
-                        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                         if (!GameIsolate_.ui->UIIsMouseOnControls() && pl && pl->heldItem != NULL) {
                             if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
@@ -699,25 +703,26 @@ int Game::run(int argc, char *argv[]) {
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    ControlSystem::rmouse = true;
+                    ControlSystem::rmouse_down = true;
+                    ControlSystem::rmouse_up = false;
                     if (GameIsolate_.world->player) {
 
-                        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                         pl->startThrow = metadot_gettime();
                     }
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
-                    ControlSystem::mmouse = true;
+                    ControlSystem::mmouse_down = true;
+                    ControlSystem::mmouse_up = false;
                 }
             } else if (windowEvent.type == SDL_MOUSEBUTTONUP) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    ControlSystem::lmouse = false;
+                    ControlSystem::lmouse_down = false;
+                    ControlSystem::lmouse_up = true;
 
                     if (GameIsolate_.world->player) {
 
-                        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                         if (pl->heldItem) {
                             if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
@@ -806,7 +811,8 @@ int Game::run(int argc, char *argv[]) {
                         }
                     }
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    ControlSystem::rmouse = false;
+                    ControlSystem::rmouse_down = false;
+                    ControlSystem::rmouse_up = true;
                     // pick up / throw item
 
                     int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
@@ -846,8 +852,7 @@ int Game::run(int argc, char *argv[]) {
                         if (connect) {
                             if (GameIsolate_.world->player) {
 
-                                auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                                auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                                auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                                 pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur),
                                                   GameIsolate_.world.get());
@@ -865,15 +870,15 @@ int Game::run(int argc, char *argv[]) {
                     if (!swapped) {
                         if (GameIsolate_.world->player) {
 
-                            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                            auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                             pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), NULL, GameIsolate_.world.get());
                         }
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
-                    ControlSystem::mmouse = false;
+                    ControlSystem::mmouse_down = false;
+                    ControlSystem::rmouse_up = true;
                 }
             }
 
@@ -890,7 +895,7 @@ int Game::run(int argc, char *argv[]) {
 #pragma endregion SDL_Input
 
 #pragma region GameTick
-        METADOT_SCOPE("GameTick");
+        METADOT_SCOPE_AUTO("GameTick");
 
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
@@ -910,16 +915,16 @@ int Game::run(int argc, char *argv[]) {
 
 #pragma region Render
         // render
-        METADOT_SCOPE("Rendering");
+        METADOT_SCOPE_AUTO("Rendering");
 
         Render.target = Render.realTarget;
         R_Clear(Render.target);
 
-        METADOT_SCOPE("RenderEarly");
+        METADOT_SCOPE_AUTO("RenderEarly");
         renderEarly();
         Render.target = Render.realTarget;
 
-        METADOT_SCOPE("RenderLate");
+        METADOT_SCOPE_AUTO("RenderLate");
         renderLate();
         Render.target = Render.realTarget;
 
@@ -1258,8 +1263,7 @@ void Game::updateFrameEarly() {
     if (ControlSystem::DEBUG_TOGGLE_PLAYER->get()) {
         if (GameIsolate_.world->player) {
 
-            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+            auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
             global.GameData_.freeCamX = pl_we->x + pl_we->hw / 2.0f;
             global.GameData_.freeCamY = pl_we->y - pl_we->hh / 2.0f;
@@ -1327,11 +1331,10 @@ void Game::updateFrameEarly() {
         global.audioEngine.SetEventParameter("event:/World/Sand", "Sand", 0);
         if (GameIsolate_.world->player) {
 
-            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+            auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
             if (pl->heldItem != NULL && pl->heldItem->getFlag(ItemFlags::ItemFlags_Fluid_Container)) {
-                if (ControlSystem::lmouse && pl->heldItem->carry.size() > 0) {
+                if (ControlSystem::lmouse_down && pl->heldItem->carry.size() > 0) {
                     // shoot fluid from container
 
                     int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f));
@@ -1340,7 +1343,7 @@ void Game::updateFrameEarly() {
                     MaterialInstance mat = pl->heldItem->carry[pl->heldItem->carry.size() - 1];
                     pl->heldItem->carry.pop_back();
                     GameIsolate_.world->addCell(new CellData(mat, (F32)x, (F32)y, (F32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
-                                                                     (F32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (F32)0.1));
+                                                             (F32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (F32)0.1));
 
                     int i = (int)pl->heldItem->carry.size();
                     i = (int)((i / (F32)pl->heldItem->capacity) * pl->heldItem->fill.size());
@@ -1606,8 +1609,8 @@ void Game::tick() {
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND) {
-                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
-                                                                             (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
+                                                                     (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1615,8 +1618,8 @@ void Game::tick() {
                             cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (F32)0.98);
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3),
-                                                                             (F32)((rand() % 10 - 5) / 10.0f), (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
+                                                                     (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
@@ -1635,8 +1638,7 @@ void Game::tick() {
             GameIsolate_.world->tickEntities(TexturePack_.textureEntities->target);
 
             if (GameIsolate_.world->player) {
-                auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                 if (pl->holdtype == Hammer) {
                     int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
@@ -1700,7 +1702,6 @@ void Game::tick() {
 
             memset(cellPixels, 0, (size_t)GameIsolate_.world->width * GameIsolate_.world->height * 4);
 
-            
             GameIsolate_.world->renderCells((U8 **)&cellPixels);
             GameIsolate_.world->tickCells();
 
@@ -2209,8 +2210,7 @@ void Game::tickPlayer() {
 
     if (GameIsolate_.world->player) {
 
-        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             if (pl_we->ground) {
@@ -2224,8 +2224,8 @@ void Game::tickPlayer() {
             global.audioEngine.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 CellData *p = new CellData(TilesCreateLava(), (F32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
-                                                   (F32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (F32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
-                                                   (F32)((rand() % 10) / 10.0f + 1 + pl_we->vy / 2.0f), 0, (F32)0.025);
+                                           (F32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (F32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
+                                           (F32)((rand() % 10) / 10.0f + 1 + pl_we->vy / 2.0f), 0, (F32)0.025);
                 p->temporary = true;
                 p->lifetime = 120;
                 GameIsolate_.world->addCell(p);
@@ -2254,8 +2254,7 @@ void Game::tickPlayer() {
 
     if (GameIsolate_.world->player) {
 
-        auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-        auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+        auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
         global.GameData_.desCamX = (F32)(-(mx - (Screen.windowWidth / 2)) / 4);
         global.GameData_.desCamY = (F32)(-(my - (Screen.windowHeight / 2)) / 4);
@@ -2446,28 +2445,28 @@ void Game::tickPlayer() {
 
                 if (pl->heldItem->vacuumCells.size() > 0) {
                     pl->heldItem->vacuumCells.erase(std::remove_if(pl->heldItem->vacuumCells.begin(), pl->heldItem->vacuumCells.end(),
-                                                                       [&](CellData *cur) {
-                                                                           if (cur->lifetime <= 0) {
-                                                                               cur->targetForce = 0.45f;
-                                                                               cur->targetX = pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x;
-                                                                               cur->targetY = pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y;
-                                                                               cur->ax = 0;
-                                                                               cur->ay = 0.01f;
-                                                                           }
+                                                                   [&](CellData *cur) {
+                                                                       if (cur->lifetime <= 0) {
+                                                                           cur->targetForce = 0.45f;
+                                                                           cur->targetX = pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x;
+                                                                           cur->targetY = pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y;
+                                                                           cur->ax = 0;
+                                                                           cur->ay = 0.01f;
+                                                                       }
 
-                                                                           F32 tdx = cur->targetX - cur->x;
-                                                                           F32 tdy = cur->targetY - cur->y;
+                                                                       F32 tdx = cur->targetX - cur->x;
+                                                                       F32 tdy = cur->targetY - cur->y;
 
-                                                                           if (tdx * tdx + tdy * tdy < 10 * 10) {
-                                                                               cur->temporary = true;
-                                                                               cur->lifetime = 0;
-                                                                               // METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
-                                                                               return true;
-                                                                           }
+                                                                       if (tdx * tdx + tdy * tdy < 10 * 10) {
+                                                                           cur->temporary = true;
+                                                                           cur->lifetime = 0;
+                                                                           // METADOT_BUG("vacuum {}", cur->tile.mat->name.c_str());
+                                                                           return true;
+                                                                       }
 
-                                                                           return false;
-                                                                       }),
-                                                        pl->heldItem->vacuumCells.end());
+                                                                       return false;
+                                                                   }),
+                                                    pl->heldItem->vacuumCells.end());
                 }
             }
         }
@@ -2503,8 +2502,7 @@ void Game::updateFrameLate() {
         int nofsY;
 
         if (GameIsolate_.world->player) {
-            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+            auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
             if (Time.now - Time.lastTickTime <= Time.mspt) {
                 F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
@@ -2635,8 +2633,7 @@ void Game::renderEarly() {
                 GameIsolate_.world->Reg().process_event(e);
 
                 if (GameIsolate_.world->player) {
-                    auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                    auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                    auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                     if (pl->heldItem != NULL) {
                         if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
@@ -2670,7 +2667,7 @@ void Game::renderEarly() {
             }
         }
 
-        if (ControlSystem::mmouse) {
+        if (ControlSystem::mmouse_down) {
             int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
             int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
@@ -2857,8 +2854,7 @@ void Game::renderLate() {
             F32 lightTy;
 
             if (GameIsolate_.world->player) {
-                auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-                auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+                auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                 lightTx = (GameIsolate_.world->loadZone.x + pl_we->x + pl_we->hw / 2.0f) / (F32)GameIsolate_.world->width;
                 lightTy = (GameIsolate_.world->loadZone.y + pl_we->y + pl_we->hh / 2.0f) / (F32)GameIsolate_.world->height;
@@ -3289,8 +3285,7 @@ ReadyToMerge ({16})
         float pl_vy = 0.0f;
 
         if (GameIsolate_.world->player) {
-            auto pl = GameIsolate_.world->Reg().find_component<Player>(GameIsolate_.world->player);
-            auto pl_we = GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player);
+            auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
             pl_vx = pl_we->vx;
             pl_vy = pl_we->vy;
@@ -3483,9 +3478,8 @@ void Game::quitToMainMenu() {
     GameIsolate_.world->saveWorld();
 
     std::string worldName = "mainMenu";
-    char *wn = (char *)worldName.c_str();
 
-    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
+    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()));
     gameUI.visible_mainmenu = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -3494,7 +3488,7 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
+    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str());
 
     GameIsolate_.world = MetaEngine::CreateScope<World>();
     GameIsolate_.world->noSaveLoad = true;

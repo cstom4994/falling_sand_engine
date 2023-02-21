@@ -37,9 +37,16 @@ public:
 
 class ControlSystem {
 public:
-    static bool lmouse;
-    static bool mmouse;
-    static bool rmouse;
+    static bool lmouse_down;
+    static bool mmouse_down;
+    static bool rmouse_down;
+
+    static bool lmouse_up;
+    static bool mmouse_up;
+    static bool rmouse_up;
+
+    static int mouse_x;
+    static int mouse_y;
 
     static KeyControl *STATS_DISPLAY;
     static KeyControl *STATS_DISPLAY_DETAILED;

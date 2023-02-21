@@ -155,7 +155,7 @@ static FILE* run_addr2line(void** addresses, int num_addresses, char* tmp_buffer
 }
 #elif defined(__APPLE__) && defined(__MACH__)
 static FILE* run_addr2line(void** addresses, int num_addresses, char* tmp_buffer, size_t tmp_buf_len) {
-    size_t start = (size_t)snprintf(tmp_buffer, tmp_buf_len, "xcrun atos -p %u -l", getpid());
+    size_t start = (size_t)snprintf(tmp_buffer, tmp_buf_len, "xcrun atos -p %d -l", getpid());
     for (int i = 0; i < num_addresses; ++i) start += (size_t)snprintf(tmp_buffer + start, tmp_buf_len - start, " %p", addresses[i]);
 
     return popen(tmp_buffer, "r");
