@@ -163,21 +163,6 @@ do
 	add_files("source/libs/lz4/**.c")
 	add_files("source/libs/lua/host/**.c")
 	add_files("source/libs/lua/*.c")
-
-	add_files("source/libs/antlr4/**.cpp")
-end
-
-target("CppParser")
-do
-    set_kind("static")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-
-	add_deps("MetaDotLibs")
-
-    add_files("source/meta/ParserCpp14/**.cpp")
-    add_headerfiles("source/meta/ParserCpp14/**.h")
 end
 
 target("MetaDot")
@@ -195,7 +180,7 @@ do
 	add_defines(defines_list)
 
 	add_links(link_list)
-	add_deps("MetaDotLibs", "CppParser")
+	add_deps("MetaDotLibs")
 
 	add_files("source/*.c")
 	add_files("source/*.cpp")
@@ -228,28 +213,6 @@ do
 	if is_os("macosx") and has_config("build_audio") then
 		add_links("fmod", "fmodstudio")
 	end
-end
-
-target("AutoRefl")
-do
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("MetaDotLibs", "CppParser")
-    add_files("source/tools/autorefl/**.cpp")
-    add_headerfiles("source/tools/autorefl/**.h")
-end
-
-target("TestAntlr")
-do
-    set_kind("binary")
-    set_targetdir("./output")
-    add_includedirs(include_dir_list)
-    add_defines(defines_list)
-    add_deps("MetaDotLibs", "CppParser")
-    add_files("source/tests/test_antlr.cpp")
-    add_headerfiles("source/tests/**.h")
 end
 
 -- target("TestFFI")
