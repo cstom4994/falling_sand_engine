@@ -34,6 +34,7 @@
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/implot.h"
 #include "meta/meta.hpp"
+#include "npc.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/metadot_gl.h"
@@ -1532,6 +1533,29 @@ CSTDTime | {6} | Nothing)";
                 static bool play;
                 if (ImGui::BeginTabItem(CC("测试"))) {
                     if (ImGui::Button("调用回溯")) print_callstack();
+                    ImGui::SameLine();
+                    if (ImGui::Button("NPC")) {
+
+                        vec4 pl_transform{-global.game->GameIsolate_.world->loadZone.x + global.game->GameIsolate_.world->tickZone.x + global.game->GameIsolate_.world->tickZone.w / 2.0f,
+                                          -global.game->GameIsolate_.world->loadZone.y + global.game->GameIsolate_.world->tickZone.y + global.game->GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
+
+                        b2PolygonShape sh;
+                        sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
+                        RigidBody *rb = global.game->GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.pos.x + pl_transform.rect.x / 2.0f - 0.5,
+                                                                                       pl_transform.pos.y + pl_transform.rect.y / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+                        rb->body->SetGravityScale(0);
+                        rb->body->SetLinearDamping(0);
+                        rb->body->SetAngularDamping(0);
+
+                        auto npc = global.game->GameIsolate_.world->Reg().create_entity();
+                        MetaEngine::ECS::entity_filler(npc)
+                                .component<Controlable>()
+                                .component<WorldEntity>(true, pl_transform.pos.x, pl_transform.pos.y, 0.0f, 0.0f, (int)pl_transform.rect.x, (int)pl_transform.rect.y, rb, std::string("NPC"))
+                                .component<Bot>(1);
+
+                        auto npc_bot = global.game->GameIsolate_.world->Reg().find_component<Bot>(npc);
+                        // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3, global.game->GameIsolate_.world.get());
+                    }
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
                         play ^= true;

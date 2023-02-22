@@ -29,6 +29,7 @@
 #include "game_utils/cells.h"
 #include "game_utils/jsonwarp.h"
 #include "internal/builtin_box2d.h"
+#include "npc.hpp"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
@@ -152,7 +153,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     b2world = new b2World(gravity);
 
     struct gameplay_feature {};
-    registry.assign_feature<gameplay_feature>().add_system<ControableSystem>().add_system<WorldEntitySystem>();
+    registry.assign_feature<gameplay_feature>().add_system<ControableSystem>().add_system<NpcSystem>().add_system<WorldEntitySystem>();
 
     b2PolygonShape nothingShape;
     nothingShape.SetAsBox(0, 0);

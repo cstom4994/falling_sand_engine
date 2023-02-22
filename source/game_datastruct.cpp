@@ -1274,8 +1274,8 @@ void WorldEntitySystem::process(MetaEngine::ECS::registry &world, const entity_u
                         } else if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
                                    evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
                             evt.g->GameIsolate_.world->addCell(new CellData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - pl.vx),
-                                                                                    (F32)(wy - abs(pl.vy)), (F32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f),
-                                                                                    0, (F32)0.1));
+                                                                            (F32)(wy - abs(pl.vy)), (F32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0,
+                                                                            (F32)0.1));
                             evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;
                             evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
                             evt.g->GameIsolate_.world->dirty[wx + wy * evt.g->GameIsolate_.world->width] = true;
