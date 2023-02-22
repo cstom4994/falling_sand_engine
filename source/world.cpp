@@ -2227,7 +2227,7 @@ void World::tickObjects() {
 
     b2world->Step(timeStep, velocityIterations, positionIterations);
 
-    b2world->Step(timeStep, velocityIterations, positionIterations);
+    // b2world->Step(timeStep, velocityIterations, positionIterations);
 
     registry.for_each_component<WorldEntity>([this](MetaEngine::ECS::entity, WorldEntity &we) {
         /*cur->x = cur->rb->body->GetPosition().x + 0.5 - cur->hw / 2 - loadZone.x;

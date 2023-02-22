@@ -14,7 +14,7 @@
 #include "core/cpp/utils.hpp"
 #include "core/global.hpp"
 #include "core/io/datapackage.h"
-#include "engine/engine_platform.h"
+#include "core/platform.h"
 #include "libs/lz4/lz4.h"
 
 void ChunkInit(Chunk *_struct, int x, int y, char *worldName) {

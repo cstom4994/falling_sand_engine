@@ -9,7 +9,7 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "engine/engine_core.h"
-#include "engine/engine_platform.h"
+#include "core/platform.h"
 #include "game.hpp"
 #include "game_resources.hpp"
 

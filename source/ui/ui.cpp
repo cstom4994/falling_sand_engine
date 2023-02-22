@@ -9,8 +9,8 @@
 #include "core/math/mathlib.hpp"
 #include "core/profiler/profiler.h"
 #include "engine/engine.h"
-#include "engine/engine_input.hpp"
-#include "engine/engine_platform.h"
+#include "core/platform.h"
+#include "event/inputevent.hpp"
 #include "game.hpp"
 #include "game_resources.hpp"
 #include "renderer/gpu.hpp"
@@ -41,11 +41,11 @@ metadot_vec3 lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 void UISystem::UIRendererInit() {
     // UIData
     METADOT_INFO("Loading UIData");
-    global.uidata = new UIData;
+    global.game->GameIsolate_.ui->uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    METADOT_NEW(C, global.uidata->imgui, ImGuiLayer);
-    global.uidata->imgui->Init();
+    METADOT_NEW(C, global.game->GameIsolate_.ui->uidata->imgui, ImGuiLayer);
+    global.game->GameIsolate_.ui->uidata->imgui->Init();
 
     // Test element drawing
     auto testElement1 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
@@ -87,18 +87,18 @@ void UISystem::UIRendererInit() {
     auto testElement5 = MetaEngine::CreateRef<UIElement>(
             UIElement{.type = ElementType::texturedRectangle, .parent = testElement1, .x = 40, .y = 20, .w = 100, .h = 50, .state = 0, .color = {}, .texture = LoadTexture("data/assets/ui/logo.png")});
 
-    global.uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
-    global.uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
-    global.uidata->elementLists.insert(std::make_pair("testElement3", testElement3));
-    global.uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
-    global.uidata->elementLists.insert(std::make_pair("testElement5", testElement5));
+    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
+    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
+    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement3", testElement3));
+    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
+    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement5", testElement5));
 }
 
 void UISystem::UIRendererPostUpdate() {
-    global.uidata->imgui->NewFrame();
+    global.game->GameIsolate_.ui->uidata->imgui->NewFrame();
     // Update UI layout context
 
-    for (auto &&e : global.uidata->elementLists) {
+    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
         if (e.second->type == ElementType::windowElement) {
             // layout_set_behave(ctx, child, LAYOUT_FILL);
             // layout_insert(ctx, root, child);
@@ -116,7 +116,7 @@ void UISystem::UIRendererDraw() {
     }
 
     // Drawing element
-    for (auto &&e : global.uidata->elementLists) {
+    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
 
         if (!e.second->visible) continue;
 
@@ -195,7 +195,7 @@ void UISystem::UIRendererDraw() {
     // METADOT_SCOPE_END(UIRendererDraw);
 }
 
-void UISystem::UIRendererDrawImGui() { global.uidata->imgui->Draw(); }
+void UISystem::UIRendererDrawImGui() { global.game->GameIsolate_.ui->uidata->imgui->Draw(); }
 
 F32 BoxDistence(metadot_rect box, R_vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
@@ -204,7 +204,7 @@ F32 BoxDistence(metadot_rect box, R_vec2 A) {
 
 void UISystem::UIRendererUpdate() {
 
-    global.uidata->imgui->Update();
+    global.game->GameIsolate_.ui->uidata->imgui->Update();
     auto &l = Scripting::GetSingletonPtr()->Lua->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
@@ -216,7 +216,7 @@ void UISystem::UIRendererUpdate() {
     // Mouse pos
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
-    for (auto &&e : global.uidata->elementLists) {
+    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
 
         int p_x, p_y;
         if (e.second->parent != nullptr) {
@@ -259,8 +259,8 @@ void UISystem::UIRendererUpdate() {
                     // METADOT_INFO("window move %d %d", x, y);
                     e.second->x = e.second->movable.ox + (x - e.second->movable.mx);
                     e.second->y = e.second->movable.oy + (y - e.second->movable.my);
-                    // e.second->minRectX = (x - e.second->minRectX) + global.uidata->mouse_dx;
-                    // e.second->minRectY = (y - e.second->minRectY) + global.uidata->mouse_dy;
+                    // e.second->minRectX = (x - e.second->minRectX) + global.game->GameIsolate_.ui->uidata->mouse_dx;
+                    // e.second->minRectY = (y - e.second->minRectY) + global.game->GameIsolate_.ui->uidata->mouse_dy;
                 } else {
                     e.second->movable.moving = false;
                     e.second->movable.ox = e.second->x;
@@ -288,23 +288,23 @@ void UISystem::UIRendererUpdate() {
 }
 
 void UISystem::UIRendererFree() {
-    global.uidata->imgui->End();
-    METADOT_DELETE(C, global.uidata->imgui, ImGuiLayer);
+    global.game->GameIsolate_.ui->uidata->imgui->End();
+    METADOT_DELETE(C, global.game->GameIsolate_.ui->uidata->imgui, ImGuiLayer);
 
-    for (auto &&e : global.uidata->elementLists) {
+    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
         if (static_cast<bool>(e.second->texture)) DestroyTexture(e.second->texture);
         // if (static_cast<bool>(e.second)) delete e.second;
         if (e.second.get()) e.second.reset();
     }
 
-    delete global.uidata;
+    delete global.game->GameIsolate_.ui->uidata;
 }
 
 bool UISystem::UIIsMouseOnControls() {
     // Mouse pos
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
-    for (auto &&e : global.uidata->elementLists) {
+    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
         metadot_rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) return true;
     }

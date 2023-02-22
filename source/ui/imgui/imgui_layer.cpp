@@ -1641,7 +1641,7 @@ CSTDTime | {6} | Nothing)";
                         }
                     }
                     ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
-                    ImGui::Checkbox("UI", &global.uidata->elementLists["testElement1"]->visible);
+                    ImGui::Checkbox("UI", &global.game->GameIsolate_.ui->uidata->elementLists["testElement1"]->visible);
                     if (ImGui::Button("Meo")) {
                     }
                     ImGui::EndTabItem();

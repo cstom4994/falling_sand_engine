@@ -15,7 +15,7 @@
 #include "core/stl.h"
 #include "datapackage.h"
 #include "engine/engine.h"
-#include "engine/engine_platform.h"
+#include "core/platform.h"
 
 IMPLENGINE();
 

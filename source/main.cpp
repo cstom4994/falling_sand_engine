@@ -5,6 +5,6 @@
 #include "game.hpp"
 
 int main(int argc, char *argv[]) {
-    const auto game = std::make_unique<Game>(argc, argv);
+    const auto game = MetaEngine::CreateScope<Game>(argc, argv);
     return game->init(argc, argv);
 }

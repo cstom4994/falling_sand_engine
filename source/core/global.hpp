@@ -10,7 +10,7 @@
 #include "meta/meta.hpp"
 #include "core/core.hpp"
 #include "engine/engine.h"
-#include "engine/engine_platform.h"
+#include "core/platform.h"
 #include "core/io/filesystem.h"
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
@@ -24,7 +24,6 @@ class UIData;
 struct Global {
     Game *game = nullptr;
     GameData GameData_;
-    UIData *uidata = nullptr;
     Audio audio;
     I18N I18N;
 };

@@ -13,8 +13,8 @@
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
-#include "ui/imgui/imgui_layer.hpp"
 #include "ui/imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_layer.hpp"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement } ElementType;
 
@@ -96,6 +96,8 @@ typedef struct UIData {
 class UISystem : public IGameSystem {
 public:
     REGISTER_SYSTEM(UISystem)
+
+    UIData* uidata = nullptr;
 
     void Create() override;
     void Destory() override;

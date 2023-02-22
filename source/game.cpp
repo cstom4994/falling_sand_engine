@@ -28,7 +28,7 @@
 #include "core/sdl_wrapper.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
-#include "engine/engine_platform.h"
+#include "core/platform.h"
 #include "event/applicationevent.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -44,7 +44,6 @@
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/scripting.hpp"
-#include "ui/ttf.h"
 #include "world_generator.cpp"
 
 Global global;
