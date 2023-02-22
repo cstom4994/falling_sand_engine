@@ -99,9 +99,7 @@ void ChunkRead(Chunk *_struct) {
     if (dp) {
         int state = 0;
 
-        // METADOT_BUG("Datapack test result1: %s, %d, %d, %d", s1, i1, i2, i3);
-        // METADOT_BUG("Datapack test result2: %d, %d, %d, %d", i4, i5, i6, i7);
-        // METADOT_BUG("Datapack test result3: %d, %d, %d, %d", leveldata.sz, compressed_size, leveldata2.sz, compressed_size2);
+        // METADOT_BUG("Datapack test result: %d, %d, %d, %d", leveldata.sz, compressed_size, leveldata2.sz, compressed_size2);
 
         if (x != _struct->x || y != _struct->y)
             throw std::runtime_error("Wrong region block read sequence (" + std::to_string(x) + "," + std::to_string(y) + " should be " + std::to_string(_struct->x) + "," +

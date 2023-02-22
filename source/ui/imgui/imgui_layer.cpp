@@ -1686,15 +1686,15 @@ CSTDTime | {6} | Nothing)";
                     static bool check_rigidbody = false;
                     ImGui::Checkbox(CC("只查看刚体有效"), &check_rigidbody);
 
-                    static metadot_vec2 check_chunk = {1, 1};
+                    static vec2 check_chunk = {1, 1};
                     static Chunk *check_chunk_ptr = nullptr;
 
                     if (ImGui::BeginCombo("ChunkList", CC("选择检视区块..."))) {
                         for (auto &p1 : global.game->GameIsolate_.world->chunkCache)
                             for (auto &p2 : p1.second) {
                                 if (ImGui::Selectable(p2.second->pack_filename.c_str())) {
-                                    check_chunk.X = p2.second->x;
-                                    check_chunk.Y = p2.second->y;
+                                    check_chunk.x = p2.second->x;
+                                    check_chunk.y = p2.second->y;
                                     check_chunk_ptr = p2.second;
                                 }
                             }

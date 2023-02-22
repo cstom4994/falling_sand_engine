@@ -811,7 +811,7 @@ char *GetTrieElementAsString(Trie trie, const char *key, char *defaultValue) {
             return *data;                                                                                                         \
     }
 
-TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(metadot_vec3)
+TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(vec3)
 TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(double)
 TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(float)
 TRIE_TYPE_FUNCTION_TEMPLATE_MACRO(char)
@@ -923,31 +923,31 @@ F64 JSON_GetObjectDouble(cJSON *object, char *string, F64 defaultValue) {
         return defaultValue;
 }
 
-metadot_vec3 JSON_GetObjectVector3(cJSON *object, char *string, metadot_vec3 defaultValue) {
+vec3 JSON_GetObjectVector3(cJSON *object, char *string, vec3 defaultValue) {
 
     cJSON *arr = cJSON_GetObjectItem(object, string);
     if (!arr) return defaultValue;
 
-    metadot_vec3 v = VECTOR3_ZERO;
+    vec3 v = VECTOR3_ZERO;
 
     cJSON *item = cJSON_GetArrayItem(arr, 0);
-    if (item) v.X = item->valuedouble;
+    if (item) v.x = item->valuedouble;
 
     item = cJSON_GetArrayItem(arr, 1);
-    if (item) v.Y = item->valuedouble;
+    if (item) v.y = item->valuedouble;
 
     item = cJSON_GetArrayItem(arr, 2);
-    if (item) v.Z = item->valuedouble;
+    if (item) v.z = item->valuedouble;
 
     return v;
 }
 
-cJSON *JSON_CreateVector3(metadot_vec3 value) {
+cJSON *JSON_CreateVector3(vec3 value) {
 
     cJSON *v = cJSON_CreateArray();
-    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.X));
-    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.Y));
-    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.Z));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.x));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.y));
+    cJSON_AddItemToArray(v, cJSON_CreateNumber(value.z));
 
     return v;
 }
@@ -955,19 +955,19 @@ cJSON *JSON_CreateVector3(metadot_vec3 value) {
 // --------------- Lua stack manipulation functions ---------------
 
 // Creates an table with the xyz entries and populate with the vector values
-void Vector3ToTable(lua_State *L, metadot_vec3 vector) {
+void Vector3ToTable(lua_State *L, vec3 vector) {
 
     lua_newtable(L);
     lua_pushliteral(L, "x");      // x index
-    lua_pushnumber(L, vector.X);  // x value
+    lua_pushnumber(L, vector.x);  // x value
     lua_rawset(L, -3);            // Store x in table
 
     lua_pushliteral(L, "y");      // y index
-    lua_pushnumber(L, vector.Y);  // y value
+    lua_pushnumber(L, vector.y);  // y value
     lua_rawset(L, -3);            // Store y in table
 
     lua_pushliteral(L, "z");      // z index
-    lua_pushnumber(L, vector.Z);  // z value
+    lua_pushnumber(L, vector.z);  // z value
     lua_rawset(L, -3);            // Store z in table
 }
 

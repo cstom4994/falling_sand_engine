@@ -374,7 +374,7 @@ metadot_gl_ctx_t *metadot_gl_create_context(uint32_t w, uint32_t h, bool depth, 
         return NULL;
     }
 
-    metadot_gl_ctx_t *ctx = METADOT_GL_MALLOC(sizeof(metadot_gl_ctx_t), mem_ctx);
+    metadot_gl_ctx_t *ctx = (metadot_gl_ctx_t *)METADOT_GL_MALLOC(sizeof(metadot_gl_ctx_t), mem_ctx);
 
     if (!ctx) return NULL;
 
@@ -507,7 +507,7 @@ metadot_gl_shader_t *metadot_gl_create_shader(metadot_gl_ctx_t *ctx, const char 
         return NULL;
     }
 
-    metadot_gl_shader_t *shader = METADOT_GL_MALLOC(sizeof(metadot_gl_shader_t), ctx->mem_ctx);
+    metadot_gl_shader_t *shader = (metadot_gl_shader_t *)METADOT_GL_MALLOC(sizeof(metadot_gl_shader_t), ctx->mem_ctx);
 
     if (!shader) {
         metadot_gl_set_error(ctx, METADOT_GL_OUT_OF_MEMORY);
@@ -587,7 +587,7 @@ metadot_gl_texture_t *metadot_gl_create_texture(metadot_gl_ctx_t *ctx, bool targ
     }
 
     // Allocate texture
-    metadot_gl_texture_t *tex = METADOT_GL_MALLOC(sizeof(metadot_gl_texture_t), ctx->mem_ctx);
+    metadot_gl_texture_t *tex = (metadot_gl_texture_t *)METADOT_GL_MALLOC(sizeof(metadot_gl_texture_t), ctx->mem_ctx);
 
     if (!tex) {
         metadot_gl_set_error(ctx, METADOT_GL_OUT_OF_MEMORY);
@@ -926,7 +926,7 @@ metadot_gl_buffer_t *metadot_gl_create_buffer(metadot_gl_ctx_t *ctx, metadot_gl_
     METADOT_GL_ASSERT(ctx);
     METADOT_GL_ASSERT(vertices);
 
-    metadot_gl_buffer_t *buffer = METADOT_GL_MALLOC(sizeof(metadot_gl_buffer_t), ctx->mem_ctx);
+    metadot_gl_buffer_t *buffer = (metadot_gl_buffer_t *)METADOT_GL_MALLOC(sizeof(metadot_gl_buffer_t), ctx->mem_ctx);
 
     if (!buffer) {
         metadot_gl_set_error(ctx, METADOT_GL_OUT_OF_MEMORY);
@@ -1075,7 +1075,7 @@ void metadot_gl_reset_viewport(metadot_gl_ctx_t *ctx)  // TODO: get GL viewport?
     METADOT_GL_ASSERT(ctx);
 
     metadot_gl_state_t *state = metadot_gl_get_active_state(ctx);
-    state->viewport = (metadot_gl_viewport_t){0, 0, ctx->w, ctx->h};
+    state->viewport = (metadot_gl_viewport_t){0, 0, static_cast<int32_t>(ctx->w), static_cast<int32_t>(ctx->h)};
 }
 
 void metadot_gl_set_line_width(metadot_gl_ctx_t *ctx, float width) {

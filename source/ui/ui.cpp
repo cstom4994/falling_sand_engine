@@ -7,9 +7,9 @@
 #include "core/core.h"
 #include "core/global.hpp"
 #include "core/math/mathlib.hpp"
+#include "core/platform.h"
 #include "core/profiler/profiler.h"
 #include "engine/engine.h"
-#include "core/platform.h"
 #include "event/inputevent.hpp"
 #include "game.hpp"
 #include "game_resources.hpp"
@@ -21,22 +21,22 @@
 IMPLENGINE();
 
 // Color definitions
-metadot_vec3 bgPanelColor = {0.02, 0.02, 0.05};
-metadot_vec3 bgLightColor = {0.2, 0.2, 0.35};
-metadot_vec3 bgMediumColor = {0.1, 0.1, 0.15};
+vec3 bgPanelColor = {0.02, 0.02, 0.05};
+vec3 bgLightColor = {0.2, 0.2, 0.35};
+vec3 bgMediumColor = {0.1, 0.1, 0.15};
 
-metadot_vec3 fieldColor = {0.2, 0.2, 0.2};
-metadot_vec3 fieldEditingColor = {0.3, 0.3, 0.3};
-metadot_vec3 buttonOverColor = {0.3, 0.3, 0.4};
+vec3 fieldColor = {0.2, 0.2, 0.2};
+vec3 fieldEditingColor = {0.3, 0.3, 0.3};
+vec3 buttonOverColor = {0.3, 0.3, 0.4};
 
-metadot_vec3 scrollbarInactiveColor = {0.3, 0.3, 0.3};
-metadot_vec3 scrollbarOverColor = {0.5, 0.5, 0.5};
+vec3 scrollbarInactiveColor = {0.3, 0.3, 0.3};
+vec3 scrollbarOverColor = {0.5, 0.5, 0.5};
 
-metadot_vec3 menuTabColor = {0.05, 0.05, 0.10};
-metadot_vec3 menuActiveTabColor = {0.15, 0.15, 0.2};
+vec3 menuTabColor = {0.05, 0.05, 0.10};
+vec3 menuActiveTabColor = {0.15, 0.15, 0.2};
 
-metadot_vec3 brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
-metadot_vec3 lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
+vec3 brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
+vec3 lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 
 void UISystem::UIRendererInit() {
     // UIData
@@ -311,9 +311,9 @@ bool UISystem::UIIsMouseOnControls() {
     return false;
 }
 
-void UISystem::DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
-    metadot_vec3 min = {pos.X - size, pos.Y - size, 0};
-    metadot_vec3 max = {pos.X + size, pos.Y + size, 0};
+void UISystem::DrawPoint(vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
+    vec3 min = {pos.x - size, pos.y - size, 0};
+    vec3 max = {pos.x + size, pos.y + size, 0};
 
     if (texture) {
         // DrawRectangleTextured(min, max, texture, r, g, b);
@@ -322,7 +322,7 @@ void UISystem::DrawPoint(metadot_vec3 pos, float size, Texture *texture, U8 r, U
     }
 }
 
-void UISystem::DrawLine(metadot_vec3 min, metadot_vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.X, min.Y, max.X, max.Y, {r, g, b, 255}); }
+void UISystem::DrawLine(vec3 min, vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
 void UISystem::Create() { UIRendererInit(); }
 

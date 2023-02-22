@@ -24,11 +24,11 @@
 #include "core/io/filesystem.h"
 #include "core/macros.h"
 #include "core/math/mathlib.hpp"
+#include "core/platform.h"
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
-#include "core/platform.h"
 #include "event/applicationevent.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -131,7 +131,6 @@ int Game::init(int argc, char *argv[]) {
 
     global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
     global.audio.LoadEvent("event:/Music/Title", "title.ogg");
-
 
     // Play sound effects when the game starts
     global.audio.PlayEvent("event:/Music/Title");
@@ -1273,13 +1272,13 @@ void Game::updateFrameEarly() {
             GameIsolate_.world->player = 0;
         } else {
 
-            metadot_vec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
-                                      -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
+            vec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
+                              -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
 
             b2PolygonShape sh;
-            sh.SetAsBox(pl_transform.Elements[2] / 2.0f + 1, pl_transform.Elements[3] / 2.0f);
-            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.pos.X + pl_transform.rect.X / 2.0f - 0.5,
-                                                              pl_transform.pos.Y + pl_transform.rect.Y / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
+            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.pos.x + pl_transform.rect.x / 2.0f - 0.5,
+                                                              pl_transform.pos.y + pl_transform.rect.y / 2.0f - 0.5, 0, sh, 1, 1, NULL);
             rb->body->SetGravityScale(0);
             rb->body->SetLinearDamping(0);
             rb->body->SetAngularDamping(0);
@@ -1301,7 +1300,7 @@ void Game::updateFrameEarly() {
             auto player = GameIsolate_.world->Reg().create_entity();
             MetaEngine::ECS::entity_filler(player)
                     .component<Controlable>()
-                    .component<WorldEntity>(true, pl_transform.pos.X, pl_transform.pos.Y, 0.0f, 0.0f, (int)pl_transform.rect.X, (int)pl_transform.rect.Y, rb, std::string("玩家"))
+                    .component<WorldEntity>(true, pl_transform.pos.x, pl_transform.pos.y, 0.0f, 0.0f, (int)pl_transform.rect.x, (int)pl_transform.rect.y, rb, std::string("玩家"))
                     .component<Player>();
 
             auto pl = GameIsolate_.world->Reg().find_component<Player>(player);
@@ -2329,7 +2328,6 @@ void Game::tickPlayer() {
                             pl->heldItem->vacuumCells.push_back(par);
 
                             par->killCallback = [&par]() {
-                                
                                 Player *pl = nullptr;
                                 WorldEntity *pl_we = nullptr;
 
@@ -2337,8 +2335,10 @@ void Game::tickPlayer() {
                                     std::tie(pl_we, pl) = global.game->GameIsolate_.world->getHostPlayer();
                                 }
 
-                                auto &v = pl->heldItem->vacuumCells;
-                                v.erase(std::remove(v.begin(), v.end(), par), v.end());
+                                if (pl->holdtype != EnumPlayerHoldType::None) {
+                                    auto &v = pl->heldItem->vacuumCells;
+                                    v.erase(std::remove(v.begin(), v.end(), par), v.end());
+                                }
                             };
 
                             GameIsolate_.world->addCell(par);

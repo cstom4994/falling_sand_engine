@@ -8,7 +8,6 @@
 #define R_invalid_index (-1)
 
 typedef ptrdiff_t R_int;
-typedef int R_bool;
 
 #include "core/macros.h"
 
@@ -138,12 +137,12 @@ R_public METADOT_THREADLOCAL R_allocator R__global_allocator_for_dependencies;
 typedef struct R_io_callbacks {
     void *user_data;
     R_int (*file_size_proc)(void *user_data, const char *filename);
-    R_bool (*read_file_proc)(void *user_data, const char *filename, void *dst,
-                             R_int dst_size);  // Returns true if operation was successful
+    bool (*read_file_proc)(void *user_data, const char *filename, void *dst,
+                           R_int dst_size);  // Returns true if operation was successful
 } R_io_callbacks;
 
 R_public R_int R_libc_get_file_size(void *user_data, const char *filename);
-R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filename, void *dst, R_int dst_size);
+R_public bool R_libc_load_file_into_buffer(void *user_data, const char *filename, void *dst, R_int dst_size);
 #pragma endregion
 
 #pragma region error
@@ -205,14 +204,14 @@ typedef struct R_utf8_stats {
 typedef struct R_decoded_rune {
     R_rune codepoint;
     R_int bytes_processed;
-    R_bool valid;
+    bool valid;
 } R_decoded_rune;
 
 typedef struct R_decoded_string {
     R_rune *codepoints;
     R_int size;
     R_int invalid_bytes_count;
-    R_bool valid;
+    bool valid;
 } R_decoded_string;
 
 typedef struct R_str {
@@ -225,7 +224,7 @@ typedef struct R_strbuf {
     R_int size;
     R_int capacity;
     R_allocator allocator;
-    R_bool valid;
+    bool valid;
 } R_strbuf;
 
 #pragma region unicode
@@ -248,13 +247,13 @@ int R_to_digit(char c);
 char R_to_upper(char c);
 char R_to_lower(char c);
 
-R_bool R_is_ascii(char c);
-R_bool R_is_lower(char c);
-R_bool R_is_upper(char c);
-R_bool R_is_alpha(char c);
-R_bool R_is_digit(char c);
-R_bool R_is_alnum(char c);
-R_bool R_is_space(char c);
+bool R_is_ascii(char c);
+bool R_is_lower(char c);
+bool R_is_upper(char c);
+bool R_is_alpha(char c);
+bool R_is_digit(char c);
+bool R_is_alnum(char c);
+bool R_is_space(char c);
 #pragma endregion
 
 #pragma region strbuf
@@ -286,7 +285,7 @@ R_public void R_strbuf_free(R_strbuf *this_buf);
 #pragma endregion
 
 #pragma region str
-R_public R_bool R_str_valid(R_str src);
+R_public bool R_str_valid(R_str src);
 
 R_public R_int R_str_len(R_str src);
 
@@ -306,17 +305,17 @@ R_public R_str R_str_sub_b(R_str, R_int begin, R_int end);
 
 R_public int R_str_cmp(R_str a, R_str b);
 
-R_public R_bool R_str_match_prefix(R_str, R_str);
+R_public bool R_str_match_prefix(R_str, R_str);
 
-R_public R_bool R_str_match_suffix(R_str, R_str);
+R_public bool R_str_match_suffix(R_str, R_str);
 
-R_public R_bool R_str_match(R_str, R_str);
+R_public bool R_str_match(R_str, R_str);
 
 R_public R_int R_str_find_first(R_str haystack, R_str needle);
 
 R_public R_int R_str_find_last(R_str haystack, R_str needle);
 
-R_public R_bool R_str_contains(R_str, R_str);
+R_public bool R_str_contains(R_str, R_str);
 
 R_public R_utf8_char R_rune_to_utf8_char(R_rune src);
 
@@ -392,7 +391,7 @@ typedef struct R_ray {
 } R_ray;
 
 typedef struct R_ray_hit_info {
-    R_bool hit;       // Did the ray hit something?
+    bool hit;         // Did the ray hit something?
     float distance;   // Distance to nearest hit
     R_vec3 position;  // Position of nearest hit
     R_vec3 normal;    // Surface normal of hit
@@ -514,30 +513,30 @@ R_public R_quaternion R_quaternion_transform(R_quaternion q, R_mat mat);  // R_t
 
 #pragma region collision detection
 
-R_public R_bool R_rec_match(R_rec a, R_rec b);
-R_public R_bool R_check_collision_recs(R_rec rec1,
-                                       R_rec rec2);  // Check collision between two rectangles
-R_public R_bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2,
-                                          float radius2);                              // Check collision between two circles
-R_public R_bool R_check_collision_circle_rec(R_vec2 center, float radius, R_rec rec);  // Check collision between circle and rectangle
-R_public R_bool R_check_collision_point_rec(R_vec2 point,
-                                            R_rec rec);  // Check if point is inside rectangle
-R_public R_bool R_check_collision_point_circle(R_vec2 point, R_vec2 center,
-                                               float radius);  // Check if point is inside circle
-R_public R_bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2,
-                                                 R_vec2 p3);  // Check if point is inside a triangle
+R_public bool R_rec_match(R_rec a, R_rec b);
+R_public bool R_check_collision_recs(R_rec rec1,
+                                     R_rec rec2);  // Check collision between two rectangles
+R_public bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2,
+                                        float radius2);                              // Check collision between two circles
+R_public bool R_check_collision_circle_rec(R_vec2 center, float radius, R_rec rec);  // Check collision between circle and rectangle
+R_public bool R_check_collision_point_rec(R_vec2 point,
+                                          R_rec rec);  // Check if point is inside rectangle
+R_public bool R_check_collision_point_circle(R_vec2 point, R_vec2 center,
+                                             float radius);  // Check if point is inside circle
+R_public bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2,
+                                               R_vec2 p3);  // Check if point is inside a triangle
 
 R_public R_rec R_get_collision_rec(R_rec rec1, R_rec rec2);  // Get collision rectangle for two rectangles collision
 
-R_public R_bool R_check_collision_spheres(R_vec3 center_a, float radius_a, R_vec3 center_b,
-                                          float radius_b);                          // Detect collision between two spheres
-R_public R_bool R_check_collision_boxes(R_bounding_box box1, R_bounding_box box2);  // Detect collision between two bounding boxes
-R_public R_bool R_check_collision_box_sphere(R_bounding_box box, R_vec3 center,
-                                             float radius);                            // Detect collision between box and sphere
-R_public R_bool R_check_collision_ray_sphere(R_ray ray, R_vec3 center, float radius);  // Detect collision between ray and sphere
-R_public R_bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float radius,
-                                                R_vec3 *collision_point);  // Detect collision between ray and sphere, returns collision point
-R_public R_bool R_check_collision_ray_box(R_ray ray, R_bounding_box box);  // Detect collision between ray and box
+R_public bool R_check_collision_spheres(R_vec3 center_a, float radius_a, R_vec3 center_b,
+                                        float radius_b);                          // Detect collision between two spheres
+R_public bool R_check_collision_boxes(R_bounding_box box1, R_bounding_box box2);  // Detect collision between two bounding boxes
+R_public bool R_check_collision_box_sphere(R_bounding_box box, R_vec3 center,
+                                           float radius);                            // Detect collision between box and sphere
+R_public bool R_check_collision_ray_sphere(R_ray ray, R_vec3 center, float radius);  // Detect collision between ray and sphere
+R_public bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float radius,
+                                              R_vec3 *collision_point);  // Detect collision between ray and sphere, returns collision point
+R_public bool R_check_collision_ray_box(R_ray ray, R_bounding_box box);  // Detect collision between ray and box
 
 R_public R_ray_hit_info R_collision_ray_triangle(R_ray ray, R_vec3 p1, R_vec3 p2,
                                                  R_vec3 p3);  // Get collision info between ray and triangle

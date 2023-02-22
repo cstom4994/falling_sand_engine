@@ -79,9 +79,9 @@ R_public R_int R_libc_get_file_size(void *user_data, const char *filename) {
     return size;
 }
 
-R_public R_bool R_libc_load_file_into_buffer(void *user_data, const char *filename, void *dst, R_int dst_size) {
+R_public bool R_libc_load_file_into_buffer(void *user_data, const char *filename, void *dst, R_int dst_size) {
     ((void)user_data);
-    R_bool result = 0;
+    bool result = 0;
 
     FILE *file = fopen(filename, "rb");
     if (file != NULL) {
@@ -1221,8 +1221,8 @@ R_public R_quaternion R_quaternion_transform(R_quaternion q, R_mat mat) {
 #pragma region collision detection
 
 // Check if point is inside rectangle
-R_bool R_check_collision_point_rec(R_vec2 point, R_rec rec) {
-    R_bool collision = 0;
+bool R_check_collision_point_rec(R_vec2 point, R_rec rec) {
+    bool collision = 0;
 
     if ((point.x >= rec.x) && (point.x <= (rec.x + rec.width)) && (point.y >= rec.y) && (point.y <= (rec.y + rec.height))) collision = 1;
 
@@ -1230,11 +1230,11 @@ R_bool R_check_collision_point_rec(R_vec2 point, R_rec rec) {
 }
 
 // Check if point is inside circle
-R_bool R_check_collision_point_circle(R_vec2 point, R_vec2 center, float radius) { return R_check_collision_circles(point, 0, center, radius); }
+bool R_check_collision_point_circle(R_vec2 point, R_vec2 center, float radius) { return R_check_collision_circles(point, 0, center, radius); }
 
 // Check if point is inside a triangle defined by three points (p1, p2, p3)
-R_bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2, R_vec2 p3) {
-    R_bool collision = 0;
+bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2, R_vec2 p3) {
+    bool collision = 0;
 
     float alpha = ((p2.y - p3.y) * (point.x - p3.x) + (p3.x - p2.x) * (point.y - p3.y)) / ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
 
@@ -1248,8 +1248,8 @@ R_bool R_check_collision_point_triangle(R_vec2 point, R_vec2 p1, R_vec2 p2, R_ve
 }
 
 // Check collision between two rectangles
-R_bool R_check_collision_recs(R_rec rec1, R_rec rec2) {
-    R_bool collision = 0;
+bool R_check_collision_recs(R_rec rec1, R_rec rec2) {
+    bool collision = 0;
 
     if ((rec1.x < (rec2.x + rec2.width) && (rec1.x + rec1.width) > rec2.x) && (rec1.y < (rec2.y + rec2.height) && (rec1.y + rec1.height) > rec2.y)) collision = 1;
 
@@ -1257,8 +1257,8 @@ R_bool R_check_collision_recs(R_rec rec1, R_rec rec2) {
 }
 
 // Check collision between two circles
-R_bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2, float radius2) {
-    R_bool collision = 0;
+bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2, float radius2) {
+    bool collision = 0;
 
     float dx = center2.x - center1.x;  // X distance between centers
     float dy = center2.y - center1.y;  // Y distance between centers
@@ -1272,7 +1272,7 @@ R_bool R_check_collision_circles(R_vec2 center1, float radius1, R_vec2 center2, 
 
 // Check collision between circle and rectangle
 // NOTE: Reviewed version to take into account corner limit case
-R_bool R_check_collision_circle_rec(R_vec2 center, float radius, R_rec rec) {
+bool R_check_collision_circle_rec(R_vec2 center, float radius, R_rec rec) {
     int recCenterX = (int)(rec.x + rec.width / 2.0f);
     int recCenterY = (int)(rec.y + rec.height / 2.0f);
 
@@ -1349,8 +1349,8 @@ R_rec R_get_collision_rec(R_rec rec1, R_rec rec2) {
 }
 
 // Detect collision between two spheres
-R_public R_bool R_check_collision_spheres(R_vec3 center_a, float radius_a, R_vec3 center_b, float radius_b) {
-    R_bool collision = 0;
+R_public bool R_check_collision_spheres(R_vec3 center_a, float radius_a, R_vec3 center_b, float radius_b) {
+    bool collision = 0;
 
     // Simple way to check for collision, just checking distance between two points
     // Unfortunately, R_sqrtf() is a costly operation, so we avoid it with following solution
@@ -1370,8 +1370,8 @@ if (distance <= (radiusA + radiusB)) collision = 1;
 }
 
 // Detect collision between two boxes. Note: Boxes are defined by two points minimum and maximum
-R_public R_bool R_check_collision_boxes(R_bounding_box box1, R_bounding_box box2) {
-    R_bool collision = 1;
+R_public bool R_check_collision_boxes(R_bounding_box box1, R_bounding_box box2) {
+    bool collision = 1;
 
     if ((box1.max.x >= box2.min.x) && (box1.min.x <= box2.max.x)) {
         if ((box1.max.y < box2.min.y) || (box1.min.y > box2.max.y)) collision = 0;
@@ -1383,8 +1383,8 @@ R_public R_bool R_check_collision_boxes(R_bounding_box box1, R_bounding_box box2
 }
 
 // Detect collision between box and sphere
-R_public R_bool R_check_collision_box_sphere(R_bounding_box box, R_vec3 center, float radius) {
-    R_bool collision = 0;
+R_public bool R_check_collision_box_sphere(R_bounding_box box, R_vec3 center, float radius) {
+    bool collision = 0;
 
     float dmin = 0;
 
@@ -1409,8 +1409,8 @@ R_public R_bool R_check_collision_box_sphere(R_bounding_box box, R_vec3 center, 
 }
 
 // Detect collision between ray and sphere
-R_public R_bool R_check_collision_ray_sphere(R_ray ray, R_vec3 center, float radius) {
-    R_bool collision = 0;
+R_public bool R_check_collision_ray_sphere(R_ray ray, R_vec3 center, float radius) {
+    bool collision = 0;
 
     R_vec3 ray_sphere_pos = R_vec3_sub(center, ray.position);
     float distance = R_vec3_len(ray_sphere_pos);
@@ -1423,8 +1423,8 @@ R_public R_bool R_check_collision_ray_sphere(R_ray ray, R_vec3 center, float rad
 }
 
 // Detect collision between ray and sphere with extended parameters and collision point detection
-R_public R_bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float radius, R_vec3 *collision_point) {
-    R_bool collision = 0;
+R_public bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float radius, R_vec3 *collision_point) {
+    bool collision = 0;
 
     R_vec3 ray_sphere_pos = R_vec3_sub(center, ray.position);
     float distance = R_vec3_len(ray_sphere_pos);
@@ -1452,8 +1452,8 @@ R_public R_bool R_check_collision_ray_sphere_ex(R_ray ray, R_vec3 center, float 
 }
 
 // Detect collision between ray and bounding box
-R_public R_bool R_check_collision_ray_box(R_ray ray, R_bounding_box box) {
-    R_bool collision = 0;
+R_public bool R_check_collision_ray_box(R_ray ray, R_bounding_box box) {
+    bool collision = 0;
 
     float t[8];
     t[0] = (box.min.x - ray.position.x) / ray.direction.x;
@@ -1586,7 +1586,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
         const int code = src[0];
 
         // Codepoints after U+10ffff are invalid
-        const int valid = code > 0x10ffff;
+        const bool valid = code > 0x10ffff;
 
         return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 1, .valid = valid};
     } else if ((byte & 0xe0) == 0xc0) {
@@ -1610,7 +1610,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
             const int code = ((byte & 0x1f) << 6) | (byte1 & 0x3f);
 
             // Codepoints after U+10ffff are invalid
-            const int valid = code > 0x10ffff;
+            const bool valid = code > 0x10ffff;
 
             return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 2, .valid = valid};
         }
@@ -1648,7 +1648,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
             const int code = ((byte & 0xf) << 12) | ((byte1 & 0x3f) << 6) | (byte2 & 0x3f);
 
             // Codepoints after U+10ffff are invalid
-            const int valid = code > 0x10ffff;
+            const bool valid = code > 0x10ffff;
             return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 3, .valid = valid};
         }
     } else if ((byte & 0xf8) == 0xf0) {
@@ -1693,7 +1693,7 @@ R_public R_decoded_rune R_decode_utf8_char(const char *src, R_int size) {
             const int code = ((byte & 0x7) << 18) | ((byte1 & 0x3f) << 12) | ((byte2 & 0x3f) << 6) | (byte3 & 0x3f);
 
             // Codepoints after U+10ffff are invalid
-            const int valid = code > 0x10ffff;
+            const bool valid = code > 0x10ffff;
             return (R_decoded_rune){static_cast<R_rune>(valid ? RF_INVALID_CODEPOINT : code), .bytes_processed = 4, .valid = valid};
         }
     }
@@ -1830,38 +1830,38 @@ char R_to_lower(char c) {
     return result;
 }
 
-R_bool R_is_ascii(char c) {
-    R_bool result = 0;
+bool R_is_ascii(char c) {
+    bool result = 0;
     return result;
 }
 
-R_bool R_is_lower(char c) {
-    R_bool result = c >= 'a' && c <= 'z';
+bool R_is_lower(char c) {
+    bool result = c >= 'a' && c <= 'z';
     return result;
 }
 
-R_bool R_is_upper(char c) {
-    R_bool result = c >= 'A' && c <= 'Z';
+bool R_is_upper(char c) {
+    bool result = c >= 'A' && c <= 'Z';
     return result;
 }
 
-R_bool R_is_alpha(char c) {
-    R_bool result = R_is_lower(c) || R_is_upper(c);
+bool R_is_alpha(char c) {
+    bool result = R_is_lower(c) || R_is_upper(c);
     return result;
 }
 
-R_bool R_is_digit(char c) {
-    R_bool result = c >= '0' && c <= '9';
+bool R_is_digit(char c) {
+    bool result = c >= '0' && c <= '9';
     return result;
 }
 
-R_bool R_is_alnum(char c) {
-    R_bool result = R_is_alpha(c) && R_is_alnum(c);
+bool R_is_alnum(char c) {
+    bool result = R_is_alpha(c) && R_is_alnum(c);
     return result;
 }
 
-R_bool R_is_space(char c) {
-    R_bool result = c == ' ' || c == '\t';
+bool R_is_space(char c) {
+    bool result = c == ' ' || c == '\t';
     return result;
 }
 #pragma endregion
@@ -2009,7 +2009,7 @@ R_public void R_strbuf_free(R_strbuf *this_buf) {
 #pragma endregion
 
 #pragma region str
-R_public R_bool R_str_valid(R_str src) { return src.size != 0 && src.data; }
+R_public bool R_str_valid(R_str src) { return src.size != 0 && src.data; }
 
 R_public R_int R_str_len(R_str src) {
     R_utf8_stats stats = R_count_utf8_chars(src.data, src.size);
@@ -2110,19 +2110,19 @@ R_public int R_str_cmp(R_str a, R_str b) {
     return result;
 }
 
-R_public R_bool R_str_match(R_str a, R_str b) {
+R_public bool R_str_match(R_str a, R_str b) {
     if (a.size != b.size) return 0;
     int cmp = memcmp(a.data, b.data, a.size);
     return cmp == 0;
 }
 
-R_public R_bool R_str_match_prefix(R_str str, R_str prefix) {
+R_public bool R_str_match_prefix(R_str str, R_str prefix) {
     if (str.size < prefix.size) return 0;
     int cmp = memcmp(str.data, prefix.data, prefix.size);
     return cmp == 0;
 }
 
-R_public R_bool R_str_match_suffix(R_str str, R_str suffix) {
+R_public bool R_str_match_suffix(R_str str, R_str suffix) {
     if (str.size < suffix.size) return 0;
     R_int offset = str.size - suffix.size;
     int cmp = memcmp(str.data + offset, suffix.data, suffix.size);
@@ -2161,8 +2161,8 @@ R_public R_int R_str_find_last(R_str haystack, R_str needle) {
     return result;
 }
 
-R_public R_bool R_str_contains(R_str haystack, R_str needle) {
-    R_bool result = R_str_find_first(haystack, needle) != R_invalid_index;
+R_public bool R_str_contains(R_str haystack, R_str needle) {
+    bool result = R_str_find_first(haystack, needle) != R_invalid_index;
     return result;
 }
 

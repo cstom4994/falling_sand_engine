@@ -26,7 +26,7 @@ typedef struct R_RendererRegistration {
     void (*freeFn)(R_Renderer *);
 } R_RendererRegistration;
 
-static R_bool gpu_renderer_register_is_initialized = R_false;
+static bool gpu_renderer_register_is_initialized = R_false;
 
 static R_Renderer *gpu_renderer;
 static R_RendererRegistration gpu_renderer_register;
@@ -167,8 +167,8 @@ static Uint32 gpu_init_windowID = 0;
 static R_InitFlagEnum gpu_preinit_flags = R_DEFAULT_INIT_FLAGS;
 static R_InitFlagEnum gpu_required_features = 0;
 
-static R_bool gpu_initialized_SDL_core = R_false;
-static R_bool gpu_initialized_SDL = R_false;
+static bool gpu_initialized_SDL_core = R_false;
+static bool gpu_initialized_SDL = R_false;
 
 void R_SetCurrentRenderer(R_RendererID id) {
     gpu_current_renderer = R_GetRenderer(id);
@@ -182,13 +182,13 @@ void R_ResetRendererState(void) {
     gpu_current_renderer->impl->ResetRendererState(gpu_current_renderer);
 }
 
-void R_SetCoordinateMode(R_bool use_math_coords) {
+void R_SetCoordinateMode(bool use_math_coords) {
     if (gpu_current_renderer == NULL) return;
 
     gpu_current_renderer->coordinate_mode = use_math_coords;
 }
 
-R_bool R_GetCoordinateMode(void) {
+bool R_GetCoordinateMode(void) {
     if (gpu_current_renderer == NULL) return R_false;
 
     return gpu_current_renderer->coordinate_mode;
@@ -412,7 +412,7 @@ R_Target *R_InitRendererByID(R_RendererID renderer_request, Uint16 w, Uint16 h, 
     return screen;
 }
 
-R_bool R_IsFeatureEnabled(R_FeatureEnum feature) {
+bool R_IsFeatureEnabled(R_FeatureEnum feature) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
     return ((gpu_current_renderer->enabled_features & feature) == feature);
@@ -438,13 +438,13 @@ void R_MakeCurrent(R_Target *target, Uint32 windowID) {
     gpu_current_renderer->impl->MakeCurrent(gpu_current_renderer, target, windowID);
 }
 
-R_bool R_SetFullscreen(R_bool enable_fullscreen, R_bool use_desktop_resolution) {
+bool R_SetFullscreen(bool enable_fullscreen, bool use_desktop_resolution) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
     return gpu_current_renderer->impl->SetFullscreen(gpu_current_renderer, enable_fullscreen, use_desktop_resolution);
 }
 
-R_bool R_GetFullscreen(void) {
+bool R_GetFullscreen(void) {
     R_Target *target = R_GetContextTarget();
     if (target == NULL) return R_false;
     return (SDL_GetWindowFlags(SDL_GetWindowFromID(target->context->windowID)) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
@@ -457,23 +457,23 @@ R_Target *R_GetActiveTarget(void) {
     return context_target->context->active_target;
 }
 
-R_bool R_SetActiveTarget(R_Target *target) {
+bool R_SetActiveTarget(R_Target *target) {
     if (gpu_current_renderer == NULL) return R_false;
 
     return gpu_current_renderer->impl->SetActiveTarget(gpu_current_renderer, target);
 }
 
-R_bool R_AddDepthBuffer(R_Target *target) {
+bool R_AddDepthBuffer(R_Target *target) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || target == NULL) return R_false;
 
     return gpu_current_renderer->impl->AddDepthBuffer(gpu_current_renderer, target);
 }
 
-void R_SetDepthTest(R_Target *target, R_bool enable) {
+void R_SetDepthTest(R_Target *target, bool enable) {
     if (target != NULL) target->use_depth_test = enable;
 }
 
-void R_SetDepthWrite(R_Target *target, R_bool enable) {
+void R_SetDepthWrite(R_Target *target, bool enable) {
     if (target != NULL) target->use_depth_write = enable;
 }
 
@@ -481,7 +481,7 @@ void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation) {
     if (target != NULL) target->depth_function = compare_operation;
 }
 
-R_bool R_SetWindowResolution(Uint16 w, Uint16 h) {
+bool R_SetWindowResolution(Uint16 w, Uint16 h) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || w == 0 || h == 0) return R_false;
 
     return gpu_current_renderer->impl->SetWindowResolution(gpu_current_renderer, w, h);
@@ -763,13 +763,13 @@ R_Camera R_SetCamera(R_Target *target, R_Camera *cam) {
     return gpu_current_renderer->impl->SetCamera(gpu_current_renderer, target, cam);
 }
 
-void R_EnableCamera(R_Target *target, R_bool use_camera) {
+void R_EnableCamera(R_Target *target, bool use_camera) {
     if (target == NULL) return;
     // TODO: Flush here
     target->use_camera = use_camera;
 }
 
-R_bool R_IsCameraEnabled(R_Target *target) {
+bool R_IsCameraEnabled(R_Target *target) {
     if (target == NULL) return R_false;
     return target->use_camera;
 }
@@ -780,7 +780,7 @@ R_Image *R_CreateImage(Uint16 w, Uint16 h, R_FormatEnum format) {
     return gpu_current_renderer->impl->CreateImage(gpu_current_renderer, w, h, format);
 }
 
-R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, R_bool take_ownership) {
+R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, bool take_ownership) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
     return gpu_current_renderer->impl->CreateImageUsingTexture(gpu_current_renderer, handle, take_ownership);
@@ -810,7 +810,7 @@ void R_UpdateImageBytes(R_Image *image, const metadot_rect *image_rect, const un
     gpu_current_renderer->impl->UpdateImageBytes(gpu_current_renderer, image, image_rect, bytes, bytes_per_row);
 }
 
-R_bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect) {
+bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
     return gpu_current_renderer->impl->ReplaceImage(gpu_current_renderer, image, surface, surface_rect);
@@ -1141,8 +1141,8 @@ void R_UnsetClip(R_Target *target) {
 }
 
 /* Adapted from SDL_IntersectRect() */
-R_bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result) {
-    R_bool has_horiz_intersection = R_false;
+bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result) {
+    bool has_horiz_intersection = R_false;
     float Amin, Amax, Bmin, Bmax;
     metadot_rect intersection;
 
@@ -1180,7 +1180,7 @@ R_bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result) {
         return R_false;
 }
 
-R_bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result) {
+bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result) {
     if (target == NULL) return R_false;
 
     if (!target->use_clip_rect) {
@@ -1269,19 +1269,19 @@ void R_UnsetTargetColor(R_Target *target) {
     target->color = c;
 }
 
-R_bool R_GetBlending(R_Image *image) {
+bool R_GetBlending(R_Image *image) {
     if (image == NULL) return R_false;
 
     return image->use_blending;
 }
 
-void R_SetBlending(R_Image *image, R_bool enable) {
+void R_SetBlending(R_Image *image, bool enable) {
     if (image == NULL) return;
 
     image->use_blending = enable;
 }
 
-void R_SetShapeBlending(R_bool enable) {
+void R_SetShapeBlending(bool enable) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     gpu_current_renderer->current_context_target->context->shapes_use_blending = enable;
@@ -1538,7 +1538,7 @@ Uint32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source) {
     return gpu_current_renderer->impl->CompileShader(gpu_current_renderer, shader_type, shader_source);
 }
 
-R_bool R_LinkShaderProgram(Uint32 program_object) {
+bool R_LinkShaderProgram(Uint32 program_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
     return gpu_current_renderer->impl->LinkShaderProgram(gpu_current_renderer, program_object);
@@ -1599,7 +1599,7 @@ void R_DetachShader(Uint32 program_object, Uint32 shader_object) {
     gpu_current_renderer->impl->DetachShader(gpu_current_renderer, program_object, shader_object);
 }
 
-R_bool R_IsDefaultShaderProgram(Uint32 program_object) {
+bool R_IsDefaultShaderProgram(Uint32 program_object) {
     R_Context *context;
 
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
@@ -1632,7 +1632,7 @@ int R_GetAttributeLocation(Uint32 program_object, const char *attrib_name) {
     return gpu_current_renderer->impl->GetAttributeLocation(gpu_current_renderer, program_object, attrib_name);
 }
 
-R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, R_bool normalize, int stride_bytes, int offset_bytes) {
+R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes, int offset_bytes) {
     R_AttributeFormat f;
     f.is_per_sprite = R_false;
     f.num_elems_per_value = num_elems_per_vertex;
@@ -1756,7 +1756,7 @@ void R_GetUniformMatrixfv(Uint32 program_object, int location, float *values) {
     gpu_current_renderer->impl->GetUniformfv(gpu_current_renderer, program_object, location, values);
 }
 
-void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, R_bool transpose, float *values) {
+void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     gpu_current_renderer->impl->SetUniformMatrixfv(gpu_current_renderer, location, num_matrices, num_rows, num_columns, transpose, values);
@@ -1908,7 +1908,7 @@ void R_ClearMatrixStack(R_MatrixStack *stack) {
 void R_ResetProjection(R_Target *target) {
     if (target == NULL) return;
 
-    R_bool invert = (target->image != NULL);
+    bool invert = (target->image != NULL);
 
     // Set up default projection
     float *projection_matrix = R_GetTopMatrix(&target->projection_matrix);
@@ -2534,7 +2534,7 @@ void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, MET
     renderer->impl->Polygon(renderer, target, num_vertices, vertices, color);
 }
 
-void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, R_bool close_loop) {
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, bool close_loop) {
     CHECK_RENDERER();
     renderer->impl->Polyline(renderer, target, num_vertices, vertices, color, close_loop);
 }

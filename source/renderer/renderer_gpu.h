@@ -4,7 +4,7 @@
 #define _R_H__
 
 #include "core/core.h"
-#include "core/math/mathlib.h"
+#include "core/math/mathlib.hpp"
 // #include "game_utils/PixelColor.h"
 
 #include "libs/external/stb_image.h"
@@ -27,7 +27,7 @@
 
 #define METAENGINE_ALPHA_TRANSPARENT 0
 
-// Check for R_bool support
+// Check for bool support
 #ifdef __STDC_VERSION__
 #define R_HAVE_STDC 1
 #else
@@ -107,8 +107,8 @@ typedef struct METAENGINE_Color {
 #ifdef __cplusplus
     METAENGINE_Color() : r(255), g(255), b(255), a(255) {}
     METAENGINE_Color(U8 R, U8 G, U8 B, U8 A) : r(R), g(G), b(B), a(A) {}
-    METAENGINE_Color(metadot_vec3 &v3) : r(v3.R), g(v3.G), b(v3.B), a(255) {}
-    METAENGINE_Color(metadot_vec3 &v3, U8 A) : r(v3.R), g(v3.G), b(v3.B), a(A) {}
+    METAENGINE_Color(vec3 &v3) : r(v3.r), g(v3.g), b(v3.b), a(255) {}
+    METAENGINE_Color(vec3 &v3, U8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
 #endif
 } METAENGINE_Color;
 
@@ -257,10 +257,10 @@ typedef struct R_Image {
 
     int refcount;
 
-    R_bool using_virtual_resolution;
-    R_bool has_mipmaps;
-    R_bool use_blending;
-    R_bool is_alias;
+    bool using_virtual_resolution;
+    bool has_mipmaps;
+    bool use_blending;
+    bool is_alias;
 } R_Image;
 
 /*! \ingroup ImageControls
@@ -280,8 +280,8 @@ typedef struct R_Camera {
     float x, y, z;
     float angle;
     float zoom_x, zoom_y;
-    float z_near, z_far;         // z clipping planes
-    R_bool use_centered_origin;  // move rotation/scaling origin to the center of the camera's view
+    float z_near, z_far;       // z clipping planes
+    bool use_centered_origin;  // move rotation/scaling origin to the center of the camera's view
 
     R_PAD_7_TO_64
 } R_Camera;
@@ -358,9 +358,9 @@ typedef struct R_Context {
 
     void *data;
 
-    R_bool failed;
-    R_bool use_texturing;
-    R_bool shapes_use_blending;
+    bool failed;
+    bool use_texturing;
+    bool shapes_use_blending;
 
     R_PAD_5_TO_64
 } R_Context;
@@ -395,10 +395,10 @@ struct R_Target {
 
     R_Camera camera;
 
-    R_bool using_virtual_resolution;
-    R_bool use_clip_rect;
-    R_bool use_color;
-    R_bool use_camera;
+    bool using_virtual_resolution;
+    bool use_clip_rect;
+    bool use_color;
+    bool use_camera;
 
     R_ComparisonEnum depth_function;
 
@@ -406,9 +406,9 @@ struct R_Target {
     R_Context *context;
     int refcount;
 
-    R_bool use_depth_test;
-    R_bool use_depth_write;
-    R_bool is_alias;
+    bool use_depth_test;
+    bool use_depth_write;
+    bool is_alias;
 
     R_PAD_1_TO_64
 };
@@ -539,11 +539,11 @@ typedef enum { R_LANGUAGE_NONE = 0, R_LANGUAGE_ARB_ASSEMBLY = 1, R_LANGUAGE_GLSL
 /*! \ingroup ShaderInterface */
 typedef struct R_AttributeFormat {
     int num_elems_per_value;
-    R_TypeEnum type;       // R_TYPE_FLOAT, R_TYPE_INT, R_TYPE_UNSIGNED_INT, etc.
-    int stride_bytes;      // Number of bytes between two vertex specifications
-    int offset_bytes;      // Number of bytes to skip at the beginning of 'values'
-    R_bool is_per_sprite;  // Per-sprite values are expanded to 4 vertices
-    R_bool normalize;
+    R_TypeEnum type;     // R_TYPE_FLOAT, R_TYPE_INT, R_TYPE_UNSIGNED_INT, etc.
+    int stride_bytes;    // Number of bytes between two vertex specifications
+    int offset_bytes;    // Number of bytes to skip at the beginning of 'values'
+    bool is_per_sprite;  // Per-sprite values are expanded to 4 vertices
+    bool normalize;
 
     R_PAD_2_TO_32
 } R_AttributeFormat;
@@ -568,7 +568,7 @@ typedef struct R_AttributeSource {
     int per_vertex_storage_offset_bytes;
     int per_vertex_storage_size;  // Over 0 means that the per-vertex storage has been automatically allocated
     R_Attribute attribute;
-    R_bool enabled;
+    bool enabled;
 
     R_PAD_7_TO_64
 } R_AttributeSource;
@@ -623,7 +623,7 @@ struct R_Renderer {
     struct R_RendererImpl *impl;
 
     /*! 0 for inverted, 1 for mathematical */
-    R_bool coordinate_mode;
+    bool coordinate_mode;
 
     R_PAD_7_TO_64
 };
@@ -689,7 +689,7 @@ R_Target *R_InitRendererByID(R_RendererID renderer_request, U16 w, U16 h, R_Wind
  * \return 1 if all of the passed features are enabled/supported
  * \return 0 if any of the passed features are disabled/unsupported
  */
-R_bool R_IsFeatureEnabled(R_FeatureEnum feature);
+bool R_IsFeatureEnabled(R_FeatureEnum feature);
 
 /*! Clean up the renderer state. */
 void R_CloseCurrentRenderer(void);
@@ -749,9 +749,9 @@ void R_ResetRendererState(void);
 
 /*! Sets the coordinate mode for this renderer.  Target and image coordinates will be either "inverted" (0,0 is the upper left corner, y increases downward) or "mathematical" (0,0 is the bottom-left
  * corner, y increases upward). The default is inverted (0), as this is traditional for 2D graphics. \param inverted 0 is for inverted coordinates, 1 is for mathematical coordinates */
-void R_SetCoordinateMode(R_bool use_math_coords);
+void R_SetCoordinateMode(bool use_math_coords);
 
-R_bool R_GetCoordinateMode(void);
+bool R_GetCoordinateMode(void);
 
 /*! Sets the default image blitting anchor for newly created images.
  * \see R_SetAnchor
@@ -788,26 +788,26 @@ void R_MakeCurrent(R_Target *target, U32 windowID);
 
 /*! Change the actual size of the current context target's window.  This resets the virtual resolution and viewport of the context target.
  * Aside from direct resolution changes, this should also be called in response to SDL_WINDOWEVENT_RESIZED window events for resizable windows. */
-R_bool R_SetWindowResolution(U16 w, U16 h);
+bool R_SetWindowResolution(U16 w, U16 h);
 
 /*! Enable/disable fullscreen mode for the current context target's window.
  * On some platforms, this may destroy the renderer context and require that textures be reloaded.  Unfortunately, SDL does not provide a notification mechanism for this.
  * \param enable_fullscreen If true, make the application go fullscreen.  If false, make the application go to windowed mode.
  * \param use_desktop_resolution If true, lets the window change its resolution when it enters fullscreen mode (via SDL_WINDOW_FULLSCREEN_DESKTOP).
  * \return 0 if the new mode is windowed, 1 if the new mode is fullscreen.  */
-R_bool R_SetFullscreen(R_bool enable_fullscreen, R_bool use_desktop_resolution);
+bool R_SetFullscreen(bool enable_fullscreen, bool use_desktop_resolution);
 
 /*! Returns true if the current context target's window is in fullscreen mode. */
-R_bool R_GetFullscreen(void);
+bool R_GetFullscreen(void);
 
 /*! \return Returns the last active target. */
 R_Target *R_GetActiveTarget(void);
 
 /*! \return Sets the currently active target for matrix modification functions. */
-R_bool R_SetActiveTarget(R_Target *target);
+bool R_SetActiveTarget(R_Target *target);
 
 /*! Enables/disables alpha blending for shape rendering on the current window. */
-void R_SetShapeBlending(R_bool enable);
+void R_SetShapeBlending(bool enable);
 
 /*! Translates a blend preset into a blend mode. */
 R_BlendMode R_GetBlendModeFromPreset(R_BlendPresetEnum preset);
@@ -889,23 +889,23 @@ R_Camera R_GetCamera(R_Target *target);
 R_Camera R_SetCamera(R_Target *target, R_Camera *cam);
 
 /*! Enables or disables using the built-in camera matrix transforms. */
-void R_EnableCamera(R_Target *target, R_bool use_camera);
+void R_EnableCamera(R_Target *target, bool use_camera);
 
 /*! Returns 1 if the camera transforms are enabled, 0 otherwise. */
-R_bool R_IsCameraEnabled(R_Target *target);
+bool R_IsCameraEnabled(R_Target *target);
 
 /*! Attach a new depth buffer to the given target so that it can use depth testing.  Context targets automatically have a depth buffer already.
  *  If successful, also enables depth testing for this target.
  */
-R_bool R_AddDepthBuffer(R_Target *target);
+bool R_AddDepthBuffer(R_Target *target);
 
 /*! Enables or disables the depth test, which will skip drawing pixels/fragments behind other fragments.  Disabled by default.
  *  This has implications for alpha blending, where compositing might not work correctly depending on render order.
  */
-void R_SetDepthTest(R_Target *target, R_bool enable);
+void R_SetDepthTest(R_Target *target, bool enable);
 
 /*! Enables or disables writing the depth (effective view z-coordinate) of new pixels to the depth buffer.  Enabled by default, but you must call R_SetDepthTest() to use it. */
-void R_SetDepthWrite(R_Target *target, R_bool enable);
+void R_SetDepthWrite(R_Target *target, bool enable);
 
 /*! Sets the operation to perform when depth testing. */
 void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation);
@@ -923,12 +923,12 @@ metadot_rect R_SetClip(R_Target *target, I16 x, I16 y, U16 w, U16 h);
 void R_UnsetClip(R_Target *target);
 
 /*! Returns true if the given rects A and B overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the intersection. */
-R_bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result);
+bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result);
 
 /*! Returns true if the given target's clip rect and the given B rect overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the
  * intersection. If the target doesn't have a clip rect enabled, this uses the whole target area.
  */
-R_bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result);
+bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result);
 
 /*! Sets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has a cumulative effect with the image coloring functions.
@@ -970,7 +970,7 @@ void R_UnsetTargetColor(R_Target *target);
 R_Image *R_CreateImage(U16 w, U16 h, R_FormatEnum format);
 
 /*! Create a new image that uses the given native texture handle as the image texture. */
-R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, R_bool take_ownership);
+R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, bool take_ownership);
 
 /*! Creates an image that aliases the given image.  Aliases can be used to store image settings (e.g. modulation color) for easy switching.
  * R_FreeImage() frees the alias's memory, but does not affect the original. */
@@ -995,7 +995,7 @@ void R_UpdateImage(R_Image *image, const metadot_rect *image_rect, void *surface
 void R_UpdateImageBytes(R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row);
 
 /*! Update an image from surface data, replacing its underlying texture to allow for size changes.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-R_bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect);
+bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect);
 
 /*! Loads mipmaps for the given image, if supported by the renderer. */
 void R_GenerateMipmaps(R_Image *image);
@@ -1014,10 +1014,10 @@ void R_SetRGBA(R_Image *image, U8 r, U8 g, U8 b, U8 a);
 void R_UnsetColor(R_Image *image);
 
 /*! Gets the current alpha blending setting. */
-R_bool R_GetBlending(R_Image *image);
+bool R_GetBlending(R_Image *image);
 
 /*! Enables/disables alpha blending for the given image. */
-void R_SetBlending(R_Image *image, R_bool enable);
+void R_SetBlending(R_Image *image, bool enable);
 
 /*! Sets the blending component functions. */
 void R_SetBlendFunction(R_Image *image, R_BlendFuncEnum source_color, R_BlendFuncEnum dest_color, R_BlendFuncEnum source_alpha, R_BlendFuncEnum dest_alpha);
@@ -1571,7 +1571,7 @@ void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, MET
  * \param color The color of the shape to render
  * \param close_loop Make a closed polygon by drawing a line at the end back to the start point
  */
-void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, R_bool close_loop);
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, bool close_loop);
 
 /*! Renders a colored filled polygon.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1615,13 +1615,13 @@ void R_AttachShader(U32 program_object, U32 shader_object);
 void R_DetachShader(U32 program_object, U32 shader_object);
 
 /*! Links a shader program with any attached shader objects. */
-R_bool R_LinkShaderProgram(U32 program_object);
+bool R_LinkShaderProgram(U32 program_object);
 
 /*! \return The current shader program */
 U32 R_GetCurrentShaderProgram(void);
 
 /*! Returns 1 if the given shader program is a default shader for the current context, 0 otherwise. */
-R_bool R_IsDefaultShaderProgram(U32 program_object);
+bool R_IsDefaultShaderProgram(U32 program_object);
 
 /*! Activates the given shader program.  Passing NULL for 'block' will disable the built-in shader variables for custom shaders until a R_ShaderBlock is set again. */
 void R_ActivateShaderProgram(U32 program_object, R_ShaderBlock *block);
@@ -1636,7 +1636,7 @@ const char *R_GetShaderMessage(void);
 int R_GetAttributeLocation(U32 program_object, const char *attrib_name);
 
 /*! Returns a filled R_AttributeFormat object. */
-R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, R_bool normalize, int stride_bytes, int offset_bytes);
+R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes, int offset_bytes);
 
 /*! Returns a filled R_Attribute object. */
 R_Attribute R_MakeAttribute(int location, void *values, R_AttributeFormat format);
@@ -1693,7 +1693,7 @@ void R_SetUniformfv(int location, int num_elements_per_value, int num_values, fl
 void R_GetUniformMatrixfv(U32 program_object, int location, float *values);
 
 /*! Sets the value of the matrix uniform shader variable at the given location.  The size of the matrices sent is specified by num_rows and num_columns.  Rows and columns must be between 2 and 4. */
-void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, R_bool transpose, float *values);
+void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values);
 
 /*! Sets a constant-value shader attribute that will be used for each rendered vertex. */
 void R_SetAttributef(int location, float value);
@@ -1739,7 +1739,7 @@ typedef struct R_RendererImpl {
     R_Target *(*CreateTargetFromWindow)(R_Renderer *renderer, U32 windowID, R_Target *target);
 
     /*! \see R_SetActiveTarget() */
-    R_bool (*SetActiveTarget)(R_Renderer *renderer, R_Target *target);
+    bool (*SetActiveTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_CreateAliasTarget() */
     R_Target *(*CreateAliasTarget)(R_Renderer *renderer, R_Target *target);
@@ -1754,10 +1754,10 @@ typedef struct R_RendererImpl {
     void (*ResetRendererState)(R_Renderer *renderer);
 
     /*! \see R_AddDepthBuffer() */
-    R_bool (*AddDepthBuffer)(R_Renderer *renderer, R_Target *target);
+    bool (*AddDepthBuffer)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_SetWindowResolution() */
-    R_bool (*SetWindowResolution)(R_Renderer *renderer, U16 w, U16 h);
+    bool (*SetWindowResolution)(R_Renderer *renderer, U16 w, U16 h);
 
     /*! \see R_SetVirtualResolution() */
     void (*SetVirtualResolution)(R_Renderer *renderer, R_Target *target, U16 w, U16 h);
@@ -1769,7 +1769,7 @@ typedef struct R_RendererImpl {
     void (*Quit)(R_Renderer *renderer);
 
     /*! \see R_SetFullscreen() */
-    R_bool (*SetFullscreen)(R_Renderer *renderer, R_bool enable_fullscreen, R_bool use_desktop_resolution);
+    bool (*SetFullscreen)(R_Renderer *renderer, bool enable_fullscreen, bool use_desktop_resolution);
 
     /*! \see R_SetCamera() */
     R_Camera (*SetCamera)(R_Renderer *renderer, R_Target *target, R_Camera *cam);
@@ -1778,7 +1778,7 @@ typedef struct R_RendererImpl {
     R_Image *(*CreateImage)(R_Renderer *renderer, U16 w, U16 h, R_FormatEnum format);
 
     /*! \see R_CreateImageUsingTexture() */
-    R_Image *(*CreateImageUsingTexture)(R_Renderer *renderer, R_TextureHandle handle, R_bool take_ownership);
+    R_Image *(*CreateImageUsingTexture)(R_Renderer *renderer, R_TextureHandle handle, bool take_ownership);
 
     /*! \see R_CreateAliasImage() */
     R_Image *(*CreateAliasImage)(R_Renderer *renderer, R_Image *image);
@@ -1793,7 +1793,7 @@ typedef struct R_RendererImpl {
     void (*UpdateImageBytes)(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row);
 
     /*! \see R_ReplaceImage */
-    R_bool (*ReplaceImage)(R_Renderer *renderer, R_Image *image, void *surface, const metadot_rect *surface_rect);
+    bool (*ReplaceImage)(R_Renderer *renderer, R_Image *image, void *surface, const metadot_rect *surface_rect);
 
     /*! \see R_CopyImageFromSurface() */
     R_Image *(*CopyImageFromSurface)(R_Renderer *renderer, void *surface, const metadot_rect *surface_rect);
@@ -1886,7 +1886,7 @@ typedef struct R_RendererImpl {
     void (*DetachShader)(R_Renderer *renderer, U32 program_object, U32 shader_object);
 
     /*! \see R_LinkShaderProgram() */
-    R_bool (*LinkShaderProgram)(R_Renderer *renderer, U32 program_object);
+    bool (*LinkShaderProgram)(R_Renderer *renderer, U32 program_object);
 
     /*! \see R_ActivateShaderProgram() */
     void (*ActivateShaderProgram)(R_Renderer *renderer, U32 program_object, R_ShaderBlock *block);
@@ -1940,7 +1940,7 @@ typedef struct R_RendererImpl {
     void (*SetUniformfv)(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, float *values);
 
     /*! \see R_SetUniformMatrixfv() */
-    void (*SetUniformMatrixfv)(R_Renderer *renderer, int location, int num_matrices, int num_rows, int num_columns, R_bool transpose, float *values);
+    void (*SetUniformMatrixfv)(R_Renderer *renderer, int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values);
 
     /*! \see R_SetAttributef() */
     void (*SetAttributef)(R_Renderer *renderer, int location, float value);
@@ -2023,7 +2023,7 @@ typedef struct R_RendererImpl {
     void (*Polygon)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color);
 
     /*! \see R_Polyline() */
-    void (*Polyline)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, R_bool close_loop);
+    void (*Polyline)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, bool close_loop);
 
     /*! \see R_PolygonFilled() */
     void (*PolygonFilled)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color);

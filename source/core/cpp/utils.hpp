@@ -15,10 +15,10 @@
 #include <unordered_map>
 
 #include "core/alloc.hpp"
-#include "core/list.h"
 #include "core/const.h"
 #include "core/core.hpp"
-#include "core/math/mathlib.h"
+#include "core/list.h"
+#include "core/math/mathlib.hpp"
 // #include "scripting/lua/lua_wrapper.hpp"
 #include "libs/cJSON.h"
 // #include "sdl_wrapper.h"
@@ -482,7 +482,7 @@ struct String {
 
 long long metadot_gettime();
 double metadot_gettime_d();
-time_t metadot_gettime_mkgmtime(struct tm *unixdate);
+time_t metadot_gettime_mkgmtime(struct tm* unixdate);
 
 class Timer {
 public:
@@ -1032,7 +1032,7 @@ int re_match(const char* pattern, const char* text, int* matchlength);
 // Trie structures and interface
 
 // Add all supported types here, as 'Trie_type'
-typedef enum TrieType { Trie_None, Trie_Pointer, Trie_String, Trie_metadot_vec3, Trie_double, Trie_float, Trie_char, Trie_int } TrieType;
+typedef enum TrieType { Trie_None, Trie_Pointer, Trie_String, Trie_vec3, Trie_double, Trie_float, Trie_char, Trie_int } TrieType;
 
 // Structure used to retrieve all the data from the trie
 // Add all supported types inside the union, as 'type* typeValue'
@@ -1043,7 +1043,7 @@ typedef struct TrieElement {
     union {
         void* pointerValue;
         char* stringValue;
-        metadot_vec3* vector3Value;
+        vec3* vector3Value;
         F64* doubleValue;
         F32* floatValue;
         char* charValue;
@@ -1082,7 +1082,7 @@ char* GetTrieElementAsString(Trie trie, const char* key, char* defaultValue);
     void InsertTrie_##type(Trie* trie, const char* key, type value); \
     type GetTrieElementAs_##type(Trie trie, const char* key, type defaultValue);
 
-TRIE_TYPE_FUNCTION_HEADER_MACRO(metadot_vec3)
+TRIE_TYPE_FUNCTION_HEADER_MACRO(vec3)
 TRIE_TYPE_FUNCTION_HEADER_MACRO(F64)
 TRIE_TYPE_FUNCTION_HEADER_MACRO(F32)
 TRIE_TYPE_FUNCTION_HEADER_MACRO(char)
@@ -1096,10 +1096,10 @@ void FreeTrieElementsArray(TrieElement* elementsArray, int elementsCount);
 
 cJSON* OpenJSON(char path[], char name[]);
 F64 JSON_GetObjectDouble(cJSON* object, char* string, F64 defaultValue);
-metadot_vec3 JSON_GetObjectVector3(cJSON* object, char* string, metadot_vec3 defaultValue);
-cJSON* JSON_CreateVector3(metadot_vec3 value);
+vec3 JSON_GetObjectVector3(cJSON* object, char* string, vec3 defaultValue);
+cJSON* JSON_CreateVector3(vec3 value);
 
-void Vector3ToTable(lua_State* L, metadot_vec3 vector);
+void Vector3ToTable(lua_State* L, vec3 vector);
 
 int StringCompareEqual(char* stringA, char* stringB);
 int StringCompareEqualCaseInsensitive(char* stringA, char* stringB);

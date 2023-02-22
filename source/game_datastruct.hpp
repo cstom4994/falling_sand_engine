@@ -168,12 +168,12 @@ struct Material {
     bool interact = false;
     int *nInteractions = nullptr;
 
-    [[not_serialize]] MetaEngine::vector<MaterialInteraction> *interactions = nullptr;
+    MetaEngine::vector<MaterialInteraction> *interactions = nullptr;
 
     bool react = false;
     int nReactions = 0;
 
-    [[not_serialize]] MetaEngine::vector<MaterialInteraction> reactions;
+    MetaEngine::vector<MaterialInteraction> reactions;
 
     int slipperyness = 1;
 

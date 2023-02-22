@@ -19,7 +19,7 @@ F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { retur
 
 #pragma region NewMATH
 
-F32 NewMaths::vec22angle(metadot_vec2 v2) { return atan2f(v2.Y, v2.X); }
+F32 NewMaths::vec22angle(vec2 v2) { return atan2f(v2.y, v2.x); }
 
 F32 NewMaths::clamp(F32 input, F32 min, F32 max) {
     if (input < min)
@@ -236,63 +236,63 @@ static NewMaths::v2 rand_vector(F32 length) { return NewMaths::v2(NewMaths::rand
 
 // --------------- Vector Functions ---------------
 
-metadot_vec3 NewMaths::NormalizeVector(metadot_vec3 v) {
-    F32 l = sqrt((v.X * v.X) + (v.Y * v.Y) + (v.Z * v.Z));
+vec3 NewMaths::NormalizeVector(vec3 v) {
+    F32 l = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
     if (l == 0) return VECTOR3_ZERO;
 
-    v.X *= 1 / l;
-    v.Y *= 1 / l;
-    v.Z *= 1 / l;
+    v.x *= 1 / l;
+    v.y *= 1 / l;
+    v.z *= 1 / l;
     return v;
 }
 
-metadot_vec3 NewMaths::Add(metadot_vec3 a, metadot_vec3 b) {
-    a.X += b.X;
-    a.Y += b.Y;
-    a.Z += b.Z;
+vec3 NewMaths::Add(vec3 a, vec3 b) {
+    a.x += b.x;
+    a.y += b.y;
+    a.z += b.z;
     return a;
 }
 
-metadot_vec3 NewMaths::Subtract(metadot_vec3 a, metadot_vec3 b) {
-    a.X -= b.X;
-    a.Y -= b.Y;
-    a.Z -= b.Z;
+vec3 NewMaths::Subtract(vec3 a, vec3 b) {
+    a.x -= b.x;
+    a.y -= b.y;
+    a.z -= b.z;
     return a;
 }
 
-metadot_vec3 NewMaths::ScalarMult(metadot_vec3 v, F32 s) { return (metadot_vec3){v.X * s, v.Y * s, v.Z * s}; }
+vec3 NewMaths::ScalarMult(vec3 v, F32 s) { return (vec3){v.x * s, v.y * s, v.z * s}; }
 
-F64 NewMaths::Distance(metadot_vec3 a, metadot_vec3 b) {
-    metadot_vec3 AMinusB = Subtract(a, b);
+F64 NewMaths::Distance(vec3 a, vec3 b) {
+    vec3 AMinusB = Subtract(a, b);
     return sqrt(UTIL_dot(AMinusB, AMinusB));
 }
 
-metadot_vec3 NewMaths::VectorProjection(metadot_vec3 a, metadot_vec3 b) {
+vec3 NewMaths::VectorProjection(vec3 a, vec3 b) {
     // https://en.wikipedia.org/wiki/Vector_projection
-    metadot_vec3 normalizedB = NormalizeVector(b);
+    vec3 normalizedB = NormalizeVector(b);
     F64 a1 = UTIL_dot(a, normalizedB);
     return ScalarMult(normalizedB, a1);
 }
 
-metadot_vec3 NewMaths::Reflection(metadot_vec3 *v1, metadot_vec3 *v2) {
+vec3 NewMaths::Reflection(vec3 *v1, vec3 *v2) {
     F32 dotpr = UTIL_dot(*v2, *v1);
-    metadot_vec3 result;
-    result.X = v2->X * 2 * dotpr;
-    result.Y = v2->Y * 2 * dotpr;
-    result.Z = v2->Z * 2 * dotpr;
+    vec3 result;
+    result.x = v2->x * 2 * dotpr;
+    result.y = v2->y * 2 * dotpr;
+    result.z = v2->z * 2 * dotpr;
 
-    result.X = v1->X - result.X;
-    result.Y = v1->Y - result.Y;
-    result.Z = v1->Z - result.Z;
+    result.x = v1->x - result.x;
+    result.y = v1->y - result.y;
+    result.z = v1->z - result.z;
 
     return result;
 }
 
-metadot_vec3 NewMaths::RotatePoint(metadot_vec3 p, metadot_vec3 r, metadot_vec3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
+vec3 NewMaths::RotatePoint(vec3 p, vec3 r, vec3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
 
-F64 NewMaths::DistanceFromPointToLine2D(metadot_vec3 lP1, metadot_vec3 lP2, metadot_vec3 p) {
+F64 NewMaths::DistanceFromPointToLine2D(vec3 lP1, vec3 lP2, vec3 p) {
     // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-    return fabsf((lP2.Y - lP1.Y) * p.X - (lP2.X - lP1.X) * p.Y + lP2.X * lP1.Y - lP2.Y * lP1.X) / Distance(lP1, lP2);
+    return fabsf((lP2.y - lP1.y) * p.x - (lP2.x - lP1.x) * p.y + lP2.x * lP1.y - lP2.y * lP1.x) / Distance(lP1, lP2);
 }
 
 // --------------- Matrix3x3 type ---------------
@@ -322,28 +322,28 @@ NewMaths::Matrix3x3 NewMaths::Identity() {
 }
 
 // Based on the article: Extracting Euler Angles from a Rotation Matrix - Mike Day, Insomniac Games
-metadot_vec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
-    metadot_vec3 rotation = VECTOR3_ZERO;
-    rotation.X = atan2(m.m[1][2], m.m[2][2]);
+vec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
+    vec3 rotation = VECTOR3_ZERO;
+    rotation.x = atan2(m.m[1][2], m.m[2][2]);
 
     F32 c2 = sqrt(m.m[0][0] * m.m[0][0] + m.m[0][1] * m.m[0][1]);
-    rotation.Y = atan2(-m.m[0][2], c2);
+    rotation.y = atan2(-m.m[0][2], c2);
 
-    F32 s1 = sin(rotation.X);
-    F32 c1 = cos(rotation.X);
-    rotation.Z = atan2(s1 * m.m[2][0] - c1 * m.m[1][0], c1 * m.m[1][1] - s1 * m.m[2][1]);
+    F32 s1 = sin(rotation.x);
+    F32 c1 = cos(rotation.x);
+    rotation.z = atan2(s1 * m.m[2][0] - c1 * m.m[1][0], c1 * m.m[1][1] - s1 * m.m[2][1]);
 
     return ScalarMult(rotation, 180.0 / PI);
 }
 
-NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(metadot_vec3 rotation) {
+NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(vec3 rotation) {
 
-    F32 s1 = sin(rotation.X * PI / 180.0);
-    F32 c1 = cos(rotation.X * PI / 180.0);
-    F32 s2 = sin(rotation.Y * PI / 180.0);
-    F32 c2 = cos(rotation.Y * PI / 180.0);
-    F32 s3 = sin(rotation.Z * PI / 180.0);
-    F32 c3 = cos(rotation.Z * PI / 180.0);
+    F32 s1 = sin(rotation.x * PI / 180.0);
+    F32 c1 = cos(rotation.x * PI / 180.0);
+    F32 s2 = sin(rotation.y * PI / 180.0);
+    F32 c2 = cos(rotation.y * PI / 180.0);
+    F32 s3 = sin(rotation.z * PI / 180.0);
+    F32 c3 = cos(rotation.z * PI / 180.0);
 
     Matrix3x3 m = {{{c2 * c3, c2 * s3, -s2}, {s1 * s2 * c3 - c1 * s3, s1 * s2 * s3 + c1 * c3, s1 * c2}, {c1 * s2 * c3 + s1 * s3, c1 * s2 * s3 - s1 * c3, c1 * c2}}};
 
@@ -351,8 +351,8 @@ NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(metadot_vec3 rotation) {
 }
 
 // Vectors are interpreted as rows
-inline metadot_vec3 NewMaths::RotateVector(metadot_vec3 v, Matrix3x3 m) {
-    return (metadot_vec3){v.X * m.m[0][0] + v.Y * m.m[1][0] + v.Z * m.m[2][0], v.X * m.m[0][1] + v.Y * m.m[1][1] + v.Z * m.m[2][1], v.X * m.m[0][2] + v.Y * m.m[1][2] + v.Z * m.m[2][2]};
+inline vec3 NewMaths::RotateVector(vec3 v, Matrix3x3 m) {
+    return (vec3){v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
 }
 
 NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
