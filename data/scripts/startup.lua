@@ -38,15 +38,14 @@ f = load(codes)
 f()
 
 add_packagepath(METADOT_RESLOC("data/scripts/samples"))
-add_packagepath(METADOT_RESLOC("data/assets/ui/imguicss"))
 
 -- runf("Script:tests/test_lpeg.lua")
 -- runf("Script:tests/test_ffi.lua")
 -- runf("Script:tests/test_lz4.lua")
 -- runf("Script:tests/test_csv.lua")
-runf("Script:tests/test_p1.lua")
+-- runf("Script:tests/test_p1.lua")
 -- runf("Script:tests/test_cs.lua")
-runf("Script:tests/test_string.lua")
+-- runf("Script:tests/test_string.lua")
 
 function starts_with(str, start)
 	return str:sub(1, #start) == start

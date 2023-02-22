@@ -12,7 +12,7 @@
 #include "engine/engine_core.h"
 #include "engine/engine_meta.h"
 #include "engine/engine_platform.h"
-#include "engine/engine_render.h"
+#include "renderer/gpu.hpp"
 #include "util.h"
 
 #define IMPLENGINE()             \

@@ -289,7 +289,7 @@ void MainMenuUI__Draw(Game *game) {
     if (!gameUI.visible_mainmenu) return;
 
     ImGui::SetNextWindowSize(ImVec2(200, 240));
-    ImGui::SetNextWindowPos(global.uidata->imgui->GetNextWindowsPos(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(global.uidata->imgui->NextWindows(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;

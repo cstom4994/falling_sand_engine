@@ -18,6 +18,11 @@
 
 struct ShaderBase;
 
+typedef struct engine_render {
+    R_Target *realTarget;
+    R_Target *target;
+} engine_render;
+
 namespace MetaEngine {
 const char *GLEnumToString(GLenum e);
 

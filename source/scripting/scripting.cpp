@@ -205,7 +205,6 @@ static void InitLua(LuaCore *lc) {
     metadot_bind_lz4(lc->L);
     metadot_bind_cstructcore(lc->L);
     metadot_bind_cstructtest(lc->L);
-    metadot_bind_uilayout(lc->L);
 
     LoadImGuiBindings(lc->L);
 
@@ -268,7 +267,7 @@ void RunScriptFromFile(const char *filePath) {
         return;
     }
     result = metadot_debug_pcall(Scripting::GetSingletonPtr()->Lua->L, 0, LUA_MULTRET, 0);
-
+ 
     if (result != LUA_OK) {
         print_error(Scripting::GetSingletonPtr()->Lua->L);
     }

@@ -26,7 +26,6 @@
 #include "core/macros.h"
 #include "core/math/mathlib.hpp"
 #include "core/profiler/profiler.h"
-#include "core/profiler/profiler_imgui.hpp"
 #include "core/sdl_wrapper.h"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
