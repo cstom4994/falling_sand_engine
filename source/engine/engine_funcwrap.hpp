@@ -21,6 +21,5 @@ int metadot_bind_fs(lua_State *L);
 int metadot_bind_lz4(lua_State *L);
 int metadot_bind_cstructcore(lua_State *L);
 int metadot_bind_cstructtest(lua_State *L);
-int metadot_bind_uilayout(lua_State *L);
 
 #endif

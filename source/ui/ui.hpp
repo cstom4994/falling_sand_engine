@@ -15,7 +15,6 @@
 #include "renderer/renderer_opengl.h"
 #include "ui/imgui/imgui_core.hpp"
 #include "ui/imgui/imgui_impl.hpp"
-#include "ui/ui_layout.h"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement } ElementType;
 
@@ -26,7 +25,6 @@ typedef union UIElementClass {
     } button;
 
     struct UIElementState_Window {
-        layout_id layout_id;
     } window;
 
     struct UIElementState_ProgressBar {
@@ -39,7 +37,6 @@ typedef union UIElementClass {
 
     struct UIElementState_ListBox {
         U8 list_type;
-        layout_id layout_id;
         char** list;
         METAENGINE_Color list_bg_color;
         METAENGINE_Color list_hover_color;
@@ -91,9 +88,6 @@ typedef struct UIElement {
 
 typedef struct UIData {
     ImGuiLayer* imgui = nullptr;
-
-    // Layout caculate context
-    layout_context layoutContext;
 
     // std::map<std::string, UIElement> elementLists = {};
     phmap::btree_map<std::string, MetaEngine::Ref<UIElement>> elementLists = {};

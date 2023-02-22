@@ -17,7 +17,6 @@
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
 #include "renderer/renderer_utils.h"
-#include "ui/ui_layout.h"
 
 IMPLENGINE();
 
@@ -47,8 +46,6 @@ void UISystem::UIRendererInit() {
     METADOT_INFO("Loading ImGUI");
     METADOT_NEW(C, global.uidata->imgui, ImGuiLayer);
     global.uidata->imgui->Init();
-
-    layout_init_context(&global.uidata->layoutContext);
 
     // Test element drawing
     auto testElement1 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
@@ -99,22 +96,14 @@ void UISystem::UIRendererInit() {
 
 void UISystem::UIRendererPostUpdate() {
     global.uidata->imgui->NewFrame();
-
-    auto ctx = &global.uidata->layoutContext;
-
     // Update UI layout context
 
     for (auto &&e : global.uidata->elementLists) {
         if (e.second->type == ElementType::windowElement) {
-            e.second->cclass.window.layout_id = layout_item(ctx);
-
-            layout_set_size_xy(ctx, e.second->cclass.window.layout_id, e.second->w, e.second->h);
             // layout_set_behave(ctx, child, LAYOUT_FILL);
             // layout_insert(ctx, root, child);
         }
     }
-
-    layout_run_context(ctx);
 }
 
 void UISystem::UIRendererDraw() {
@@ -125,8 +114,6 @@ void UISystem::UIRendererDraw() {
         // METADOT_SCOPE_END(UIRendererDraw);
         return;
     }
-
-    auto ctx = &global.uidata->layoutContext;
 
     // Drawing element
     for (auto &&e : global.uidata->elementLists) {
@@ -175,11 +162,11 @@ void UISystem::UIRendererDraw() {
             }
         }
         if (e.second->type == ElementType::windowElement) {
-            layout_vec2 win_s = layout_get_size(ctx, e.second->cclass.window.layout_id);
+            // layout_vec2 win_s = layout_get_size(ctx, e.second->cclass.window.layout_id);
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                metadot_rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(win_s[0]), .h = (float)(win_s[1])};
+                metadot_rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(e.second->w), .h = (float)(e.second->h)};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
