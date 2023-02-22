@@ -8,7 +8,7 @@
 
 #include "core/core.h"
 #include "core/macros.h"
-#include "console.hpp"
+#include "core/cpp/command.hpp"
 #include "game_basic.hpp"
 
 METADOT_INLINE Command::ItemLog &operator<<(Command::ItemLog &log, ImVec4 &vec) {

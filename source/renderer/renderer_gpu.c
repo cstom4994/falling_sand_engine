@@ -12,7 +12,6 @@
 #include "core/macros.h"
 #include "core/sdl_wrapper.h"
 #include "libs/external/stb_image.h"
-#include "libs/external/stb_image_write.h"
 #include "renderer_gpu.h"
 
 #define RAD_PER_DEG 0.017453293f

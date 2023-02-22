@@ -2,10 +2,10 @@
 #include "gpu.hpp"
 
 #include "core/global.hpp"
-#include "engine/engine_shaders.hpp"
+#include "renderer/shaders.hpp"
 #include "game_shaders.hpp"
 #include "libs/imgui/imgui.h"
-#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_layer.hpp"
 
 engine_render Render;
 

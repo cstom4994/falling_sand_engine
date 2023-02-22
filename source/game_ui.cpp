@@ -19,7 +19,7 @@
 #include "libs/imgui/imgui.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
-#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_layer.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 #include "ui/ui.hpp"
 #include "world_generator.cpp"

@@ -4,7 +4,7 @@
 #define _METADOT_GAMESHADERS_HPP_
 
 #include "core/core.hpp"
-#include "engine/engine_shaders.hpp"
+#include "renderer/shaders.hpp"
 #include "game_datastruct.hpp"
 
 class WaterFlowPassShader : public ShaderBase {

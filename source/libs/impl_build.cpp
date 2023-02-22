@@ -8,7 +8,7 @@
 // #include "libs/external/stb_image_resize.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "libs/external/stb_truetype.h"
+#include "libs/imgui/imstb_truetype.h"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include "libs/external/stb_perlin.h"

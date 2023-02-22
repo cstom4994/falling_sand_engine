@@ -1,7 +1,7 @@
 #ifndef _METADOT_TTF_H_
 #define _METADOT_TTF_H_
 
-#include "libs/external/stb_truetype.h"
+#include "libs/imgui/imstb_truetype.h"
 
 typedef struct {
     stbtt_fontinfo font;

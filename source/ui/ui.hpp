@@ -13,7 +13,7 @@
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
-#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_layer.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement } ElementType;

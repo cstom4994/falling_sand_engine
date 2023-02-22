@@ -6,22 +6,87 @@
 #include <inttypes.h>
 
 #include <algorithm>
+#include <array>
 #include <regex>
 #include <string>
 #include <vector>
 
 #include "audio/audio.h"
 #include "core/alloc.hpp"
+#include "core/cpp/command.hpp"
 #include "core/debug.hpp"
 #include "core/macros.h"
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
+#include "game_datastruct.hpp"
 #include "libs/imgui/text_editor.h"
 #include "ui/imgui/imgui_impl.hpp"
 
 #define METADOT_DESIRED_FRAME_RATE 30.0f
 #define METADOT_MINIMUM_FRAME_RATE 20.0f
 #define METADOT_FLASHL_TIME_IN_MS 333.0f
+
+struct ImGuiSettingsHandler;
+class ImGuiConsole {
+public:
+    explicit ImGuiConsole(std::string c_name = "Console", size_t inputBufferSize = 256);
+
+    void Draw();
+
+    Command::System& System();
+
+protected:
+    Command::System m_ConsoleSystem;
+    size_t m_HistoryIndex;
+
+    std::string m_Buffer;
+    std::string m_ConsoleName;
+    ImGuiTextFilter m_TextFilter;
+    bool m_AutoScroll;
+    bool m_ColoredOutput;
+    bool m_ScrollToBottom;
+    bool m_FilterBar;
+    bool m_TimeStamps;
+
+    void InitIniSettings();
+    void DefaultSettings();
+    void RegisterConsoleCommands();
+
+    void MenuBar();
+    void FilterBar();
+    void InputBar();
+    void LogWindow();
+
+    static void HelpMaker(const char* desc);
+
+    F32 m_WindowAlpha;
+
+    enum COLOR_PALETTE {
+
+        COL_COMMAND = 0,
+        COL_LOG,
+        COL_WARNING,
+        COL_ERROR,
+        COL_INFO,
+
+        COL_TIMESTAMP,
+
+        COL_COUNT
+    };
+
+    std::array<ImVec4, COL_COUNT> m_ColorPalette;
+    static int InputCallback(ImGuiInputTextCallbackData* data);
+    bool m_WasPrevFrameTabCompletion = false;
+    std::vector<std::string> m_CmdSuggestions;
+    bool m_LoadedFromIni = false;
+
+    static void SettingsHandler_ClearALl(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
+    static void SettingsHandler_ReadInit(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
+    static void* SettingsHandler_ReadOpen(ImGuiContext* ctx, ImGuiSettingsHandler* handler, const char* name);
+    static void SettingsHandler_ReadLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* entry, const char* line);
+    static void SettingsHandler_ApplyAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
+    static void SettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf);
+};
 
 static const int s_maxLevelColors = 11;
 static const ImU32 s_levelColors[s_maxLevelColors] = {IM_COL32(90, 150, 110, 255), IM_COL32(80, 180, 115, 255),  IM_COL32(129, 195, 110, 255), IM_COL32(170, 190, 100, 255),
@@ -164,6 +229,7 @@ private:
     EditorView* view_editing = nullptr;
     ImGuiWidget::FileBrowser fileDialog;
     ImGuiID dockspace_id;
+    ImGuiConsole* console_imgui;
 
 private:
     static void (*RendererShutdownFunction)();

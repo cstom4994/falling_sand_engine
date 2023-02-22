@@ -5,7 +5,6 @@
 #include "core/macros.h"
 #include "core/sdl_wrapper.h"
 #include "libs/external/stb_image.h"
-#include "libs/external/stb_image_write.h"
 #include "renderer/metadot_gl.h"
 #include "renderer_gpu.h"  // For poor, dumb Intellisense
 

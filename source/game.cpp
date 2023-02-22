@@ -14,7 +14,6 @@
 #include <string_view>
 
 #include "background.hpp"
-#include "console.hpp"
 #include "core/const.h"
 #include "core/core.h"
 #include "core/core.hpp"
@@ -98,11 +97,8 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.gameplayscript = MetaEngine::CreateRef<GameplayScriptSystem>(2);
     GameIsolate_.systemList.push_back(GameIsolate_.gameplayscript);
 
-    GameIsolate_.ui = MetaEngine::CreateRef<UISystem>(3);
+    GameIsolate_.ui = MetaEngine::CreateRef<UISystem>(4);
     GameIsolate_.systemList.push_back(GameIsolate_.ui);
-
-    GameIsolate_.console = MetaEngine::CreateRef<ConsoleSystem>(4, SystemFlags::SystemFlags_ImGui);
-    GameIsolate_.systemList.push_back(GameIsolate_.console);
 
     GameIsolate_.shaderworker = MetaEngine::CreateRef<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
     GameIsolate_.systemList.push_back(GameIsolate_.shaderworker);

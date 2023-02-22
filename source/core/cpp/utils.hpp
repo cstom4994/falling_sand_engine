@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 #include "core/alloc.hpp"
-#include "core/c/list.h"
+#include "core/list.h"
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/math/mathlib.h"

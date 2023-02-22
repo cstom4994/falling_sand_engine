@@ -17,7 +17,6 @@
 
 #include "audio/audio.h"
 #include "background.hpp"
-#include "console.hpp"
 #include "core/const.h"
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
@@ -37,7 +36,7 @@
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/scripting.hpp"
-#include "ui/imgui/imgui_core.hpp"
+#include "ui/imgui/imgui_layer.hpp"
 #include "ui/ttf.h"
 #include "ui/ui.hpp"
 #include "world.hpp"
@@ -94,7 +93,6 @@ public:
         MetaEngine::Ref<BackgroundSystem> backgrounds;
         MetaEngine::Ref<GameplayScriptSystem> gameplayscript;
         MetaEngine::Ref<ShaderWorkerSystem> shaderworker;
-        MetaEngine::Ref<ConsoleSystem> console;
         MetaEngine::Ref<UISystem> ui;
 
         SystemList systemList = {};

@@ -8,8 +8,6 @@
 // #include "game_utils/PixelColor.h"
 
 #include "libs/external/stb_image.h"
-#include "libs/external/stb_rect_pack.h"
-#include "libs/external/stb_truetype.h"
 #include "metadot_gl.h"
 
 #ifndef _USE_MATH_DEFINES

@@ -168,8 +168,8 @@ public:
 #include <type_traits>
 #include <typeinfo>
 
-#include "internal/builtin_pfr.hpp"
-#define METAENGINE_GUI_STRUCT_TO_TUPLE BuiltinPFR::pfr::structure_tie
+#include "core/cpp/pfr.hpp"
+#define METAENGINE_GUI_STRUCT_TO_TUPLE MetaEngine::BuiltinPFR::pfr::structure_tie
 
 namespace ImGui {
 //		IMGUI::AUTO()
@@ -255,8 +255,8 @@ struct Auto_t {
 #endif
                 static_assert(
                         !std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
-                                BuiltinPFR::pfr::detail::is_aggregate_initializable_n<AnyType, BuiltinPFR::pfr::detail::detect_fields_count_dispatch<AnyType>(
-                                                                                                       BuiltinPFR::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
+                                MetaEngine::BuiltinPFR::pfr::detail::is_aggregate_initializable_n<AnyType, MetaEngine::BuiltinPFR::pfr::detail::detect_fields_count_dispatch<AnyType>(
+                                                                                                       MetaEngine::BuiltinPFR::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
                                                                                                        1L)>::value,  // If the above is not a constexpr expression, you are yousing an invalid type
                         "This type cannot be converted to a tuple.");
         auto tuple = METAENGINE_GUI_STRUCT_TO_TUPLE(anything);
