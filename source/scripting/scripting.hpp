@@ -8,9 +8,9 @@
 #include <string>
 
 #include "core/cpp/csingleton.h"
+#include "core/cpp/struct.hpp"
 #include "core/macros.h"
 #include "engine/engine.h"
-#include "libs/visitstruct.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
 
 struct lua_State;
@@ -42,7 +42,7 @@ struct test_visitor {
 
 template <typename T>
 void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
-    visit_struct::for_each(_struct, [&](const char *name, const auto &value) {
+    MetaEngine::Struct::for_each(_struct, [&](const char *name, const auto &value) {
         // METADOT_INFO("{} == {} ({})", name, value, typeid(value).name());
         struct_as(out, table_name, name, value);
     });
@@ -54,10 +54,10 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 // void LoadLuaConfig(const T &_struct, LuaWrapper::LuaTable *luat) {
 //     int idx = 0;
 //     test_visitor vis;
-//     visit_struct::apply_visitor(vis, _struct);
-//     visit_struct::for_each(_struct, [&](const char *name, const auto &value) {
-//         // (*visit_struct::get_pointer<idx>()) =
-//         //         (*luat)[name].get<decltype(visit_struct::get<idx>(_struct))>();
+//     MetaEngine::Struct::apply_visitor(vis, _struct);
+//     MetaEngine::Struct::for_each(_struct, [&](const char *name, const auto &value) {
+//         // (*MetaEngine::Struct::get_pointer<idx>()) =
+//         //         (*luat)[name].get<decltype(MetaEngine::Struct::get<idx>(_struct))>();
 //         // (*vis1.result[idx].first) = (*luat)[name].get<>();
 //     });
 // }

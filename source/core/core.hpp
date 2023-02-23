@@ -38,9 +38,7 @@
 #include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/macros.h"
-#include "libs/visitstruct.hpp"
-
-#define METADOT_STRUCT VISITABLE_STRUCT
+#include "core/cpp/struct.hpp"
 
 #define METADOT_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
 

@@ -3443,7 +3443,7 @@ bool WorldMeta::save(std::string worldFileName) {
     json metafile = json::object();
     json root = json::object();
 
-    visit_struct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
+    MetaEngine::Struct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
 
     // for (auto it = root.begin(); it != root.end(); ++it) {
     //     std::cout << it.key() << ":" << (*it).dump() << std::endl;

@@ -1312,7 +1312,7 @@ void ImGuiLayer::Init() {
 
         console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<I32>(""));
 
-        visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
+        MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
 
         // Register custom commands
         console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
@@ -1780,7 +1780,7 @@ CSTDTime | {6} | Nothing)";
 
                     ImGui::TableHeadersRow();
 
-                    // visit_struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
+                    // MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
                     // });
                     int i = 0;
 
@@ -1957,7 +1957,7 @@ CSTDTime | {6} | Nothing)";
                     }
                 };
 
-                visit_struct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
+                MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
 
                 ImGui::EndTable();
             }
