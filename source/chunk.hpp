@@ -10,6 +10,7 @@
 
 #include "core/const.h"
 #include "core/core.h"
+#include "core/cpp/property.hpp"
 #include "core/cpp/static_relfection.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -39,7 +40,10 @@ typedef struct Chunk {
 
     int x;
     int y;
-    bool hasMeta = false;
+    // bool hasMeta = false;
+
+    Property<bool> hasMeta;
+
     // in order for a chunk to execute phase generationPhase+1, all surrounding chunks must be at least generationPhase
     I8 generationPhase = 0;
     bool pleaseDelete = false;

@@ -53,7 +53,7 @@ void ChunkLoadMeta(Chunk *_struct) {
 
     if (dp) {
         _struct->generationPhase = phase;
-        _struct->hasMeta = true;
+        _struct->hasMeta.set_value(true);
         datapack_free(dp);
     } else {
     }
@@ -107,7 +107,7 @@ void ChunkRead(Chunk *_struct) {
 
         if (leveldata.sz != compressed_size || leveldata2.sz != compressed_size2) throw std::runtime_error("Unexpected block compression data");
 
-        _struct->hasMeta = true;
+        _struct->hasMeta.set_value(true);
         state = 1;
 
         // unsigned int content;

@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "core/cpp/property.hpp"
 #include "scripting/scripting.hpp"
 
 struct Biome;
@@ -66,6 +67,10 @@ public:
 };
 
 Biome *BiomeGet(std::string name);
+
+METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, Property<T>)
+ImGui::Auto(var.get_value());
+METAENGINE_GUI_DEFINE_END
 
 // class IGameObject {
 // public:
