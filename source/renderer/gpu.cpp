@@ -608,14 +608,14 @@ void DebugDraw::Create() {}
 
 void DebugDraw::Destroy() {}
 
-b2Vec2 DebugDraw::transform(const b2Vec2 &pt) {
+PVec2 DebugDraw::transform(const PVec2 &pt) {
     float x = ((pt.x) * scale + xOfs);
     float y = ((pt.y) * scale + yOfs);
-    return b2Vec2(x, y);
+    return PVec2(x, y);
 }
 
-void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color) {
-    b2Vec2 *verts = new b2Vec2[vertexCount];
+void DebugDraw::DrawPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color) {
+    PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
         verts[i] = transform(vertices[i]);
@@ -627,8 +627,8 @@ void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAE
     delete[] verts;
 }
 
-void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color) {
-    b2Vec2 *verts = new b2Vec2[vertexCount];
+void DebugDraw::DrawSolidPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color) {
+    PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
         verts[i] = transform(vertices[i]);
@@ -643,26 +643,26 @@ void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const 
     delete[] verts;
 }
 
-void DebugDraw::DrawCircle(const b2Vec2 &center, float radius, const METAENGINE_Color &color) {
-    b2Vec2 tr = transform(center);
+void DebugDraw::DrawCircle(const PVec2 &center, float radius, const METAENGINE_Color &color) {
+    PVec2 tr = transform(center);
     R_Circle(target, tr.x, tr.y, radius * scale, color);
 }
 
-void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const METAENGINE_Color &color) {
-    b2Vec2 tr = transform(center);
+void DebugDraw::DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const METAENGINE_Color &color) {
+    PVec2 tr = transform(center);
     R_CircleFilled(target, tr.x, tr.y, radius * scale, color);
 }
 
-void DebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const METAENGINE_Color &color) {
-    b2Vec2 tr1 = transform(p1);
-    b2Vec2 tr2 = transform(p2);
+void DebugDraw::DrawSegment(const PVec2 &p1, const PVec2 &p2, const METAENGINE_Color &color) {
+    PVec2 tr1 = transform(p1);
+    PVec2 tr2 = transform(p2);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, color);
 }
 
-void DebugDraw::DrawTransform(const b2Transform &xf) {
+void DebugDraw::DrawTransform(const PTransform &xf) {
     const float k_axisScale = 8.0f;
-    b2Vec2 p1 = xf.p, p2;
-    b2Vec2 tr1 = transform(p1), tr2;
+    PVec2 p1 = xf.p, p2;
+    PVec2 tr1 = transform(p1), tr2;
 
     p2 = p1 + k_axisScale * xf.q.GetXAxis();
     tr2 = transform(p2);
@@ -673,18 +673,18 @@ void DebugDraw::DrawTransform(const b2Transform &xf) {
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
 }
 
-void DebugDraw::DrawPoint(const b2Vec2 &p, float size, const METAENGINE_Color &color) {
-    b2Vec2 tr = transform(p);
+void DebugDraw::DrawPoint(const PVec2 &p, float size, const METAENGINE_Color &color) {
+    PVec2 tr = transform(p);
     R_CircleFilled(target, tr.x, tr.y, 2, color);
 }
 
 void DebugDraw::DrawString(int x, int y, const char *string, ...) {}
 
-void DebugDraw::DrawString(const b2Vec2 &p, const char *string, ...) {}
+void DebugDraw::DrawString(const PVec2 &p, const char *string, ...) {}
 
 void DebugDraw::DrawAABB(b2AABB *aabb, const METAENGINE_Color &color) {
-    b2Vec2 tr1 = transform(aabb->lowerBound);
-    b2Vec2 tr2 = transform(aabb->upperBound);
+    PVec2 tr1 = transform(aabb->lowerBound);
+    PVec2 tr2 = transform(aabb->upperBound);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, color);
     R_Line(target, tr2.x, tr1.y, tr2.x, tr2.y, color);
     R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, color);

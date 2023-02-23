@@ -108,17 +108,17 @@ public:
     void AppendFlags(U32 flags) { m_drawFlags |= flags; }
     void ClearFlags(U32 flags) { m_drawFlags &= ~flags; }
     
-    b2Vec2 transform(const b2Vec2 &pt);
+    PVec2 transform(const PVec2 &pt);
 
-    void DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
-    void DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
-    void DrawCircle(const b2Vec2 &center, float radius, const METAENGINE_Color &color);
-    void DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const METAENGINE_Color &color);
-    void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const METAENGINE_Color &color);
-    void DrawTransform(const b2Transform &xf);
-    void DrawPoint(const b2Vec2 &p, float size, const METAENGINE_Color &color);
+    void DrawPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
+    void DrawSolidPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
+    void DrawCircle(const PVec2 &center, float radius, const METAENGINE_Color &color);
+    void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const METAENGINE_Color &color);
+    void DrawSegment(const PVec2 &p1, const PVec2 &p2, const METAENGINE_Color &color);
+    void DrawTransform(const PTransform &xf);
+    void DrawPoint(const PVec2 &p, float size, const METAENGINE_Color &color);
     void DrawString(int x, int y, const char *string, ...);
-    void DrawString(const b2Vec2 &p, const char *string, ...);
+    void DrawString(const PVec2 &p, const char *string, ...);
     void DrawAABB(b2AABB *aabb, const METAENGINE_Color &color);
 };
 #endif

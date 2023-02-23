@@ -540,7 +540,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         std::for_each(result.begin(), result.end(), [&](TPPLPoly cur) {
             if ((cur[0].x == cur[1].x && cur[1].x == cur[2].x) || (cur[0].y == cur[1].y && cur[1].y == cur[2].y)) return;
 
-            b2Vec2 vec[3] = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
+            PVec2 vec[3] = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
 
             b2PolygonShape sh;
             sh.Set(vec, 3);
@@ -894,7 +894,7 @@ found : {};
             cur[0].y += 0.01f;
         }
 
-        MetaEngine::vector<b2Vec2> vec = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
+        MetaEngine::vector<PVec2> vec = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
 
         // worldTris.push_back(vec);
         b2PolygonShape sh;
@@ -2222,7 +2222,7 @@ void World::tickObjects() {
     I32 positionIterations = 2;
 
     registry.for_each_component<WorldEntity>([this](MetaEngine::ECS::entity, WorldEntity &we) {
-        we.rb->body->SetTransform(b2Vec2(we.x + loadZone.x + we.hw / 2 - 0.5, we.y + loadZone.y + we.hh / 2 - 1.5), 0);
+        we.rb->body->SetTransform(PVec2(we.x + loadZone.x + we.hw / 2 - 0.5, we.y + loadZone.y + we.hh / 2 - 1.5), 0);
         we.rb->body->SetLinearVelocity({(F32)(we.vx * 1.0), (F32)(we.vy * 1.0)});
     });
 

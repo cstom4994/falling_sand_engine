@@ -283,7 +283,7 @@ void b2Body::ResetMassData() {
     METADOT_ASSERT_E(m_type == b2_dynamicBody);
 
     // Accumulate mass over all fixtures.
-    b2Vec2 localCenter = b2Vec2_zero;
+    PVec2 localCenter = b2Vec2_zero;
     for (b2Fixture *f = m_fixtureList; f; f = f->m_next) {
         if (f->m_density == 0.0f) {
             continue;
@@ -314,7 +314,7 @@ void b2Body::ResetMassData() {
     }
 
     // Move center of mass.
-    b2Vec2 oldCenter = m_sweep.c;
+    PVec2 oldCenter = m_sweep.c;
     m_sweep.localCenter = localCenter;
     m_sweep.c0 = m_sweep.c = b2Mul(m_xf, m_sweep.localCenter);
 
@@ -350,7 +350,7 @@ void b2Body::SetMassData(const b2MassData *massData) {
     }
 
     // Move center of mass.
-    b2Vec2 oldCenter = m_sweep.c;
+    PVec2 oldCenter = m_sweep.c;
     m_sweep.localCenter = massData->center;
     m_sweep.c0 = m_sweep.c = b2Mul(m_xf, m_sweep.localCenter);
 
@@ -376,7 +376,7 @@ bool b2Body::ShouldCollide(const b2Body *other) const {
     return true;
 }
 
-void b2Body::SetTransform(const b2Vec2 &position, float angle) {
+void b2Body::SetTransform(const PVec2 &position, float angle) {
     METADOT_ASSERT_E(m_world->IsLocked() == false);
     if (m_world->IsLocked() == true) {
         return;
@@ -404,7 +404,7 @@ void b2Body::SynchronizeFixtures() {
     b2BroadPhase *broadPhase = &m_world->m_contactManager.m_broadPhase;
 
     if (m_flags & b2Body::e_awakeFlag) {
-        b2Transform xf1;
+        PTransform xf1;
         xf1.q.Set(m_sweep.a0);
         xf1.p = m_sweep.c0 - b2Mul(xf1.q, m_sweep.localCenter);
 
@@ -504,7 +504,7 @@ void b2Body::Dump() {
     b2Dump("}\n");
 }
 
-b2World::b2World(const b2Vec2 &gravity) {
+b2World::b2World(const PVec2 &gravity) {
     m_destructionListener = nullptr;
     m_debugDraw = nullptr;
 
@@ -1093,8 +1093,8 @@ void b2World::SolveTOI(const b2TimeStep &step) {
         b2Body *bA = fA->GetBody();
         b2Body *bB = fB->GetBody();
 
-        b2Sweep backup1 = bA->m_sweep;
-        b2Sweep backup2 = bB->m_sweep;
+        PSweep backup1 = bA->m_sweep;
+        PSweep backup2 = bB->m_sweep;
 
         bA->Advance(minAlpha);
         bB->Advance(minAlpha);
@@ -1163,7 +1163,7 @@ void b2World::SolveTOI(const b2TimeStep &step) {
                     }
 
                     // Tentatively advance the body to the TOI.
-                    b2Sweep backup = other->m_sweep;
+                    PSweep backup = other->m_sweep;
                     if ((other->m_flags & b2Body::e_islandFlag) == 0) {
                         other->Advance(minAlpha);
                     }
@@ -1337,7 +1337,7 @@ struct b2WorldRayCastWrapper {
 
         if (hit) {
             float fraction = output.fraction;
-            b2Vec2 point = (1.0f - fraction) * input.p1 + fraction * input.p2;
+            PVec2 point = (1.0f - fraction) * input.p1 + fraction * input.p2;
             return callback->ReportFixture(fixture, point, output.normal, fraction);
         }
 
@@ -1348,7 +1348,7 @@ struct b2WorldRayCastWrapper {
     b2RayCastCallback *callback;
 };
 
-void b2World::RayCast(b2RayCastCallback *callback, const b2Vec2 &point1, const b2Vec2 &point2) const {
+void b2World::RayCast(b2RayCastCallback *callback, const PVec2 &point1, const PVec2 &point2) const {
     b2WorldRayCastWrapper wrapper;
     wrapper.broadPhase = &m_contactManager.m_broadPhase;
     wrapper.callback = callback;
@@ -1359,22 +1359,22 @@ void b2World::RayCast(b2RayCastCallback *callback, const b2Vec2 &point1, const b
     m_contactManager.m_broadPhase.RayCast(&wrapper, input);
 }
 
-void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const METAENGINE_Color &color) {
+void b2World::DrawShape(b2Fixture *fixture, const PTransform &xf, const METAENGINE_Color &color) {
     switch (fixture->GetType()) {
         case b2Shape::e_circle: {
             b2CircleShape *circle = (b2CircleShape *)fixture->GetShape();
 
-            b2Vec2 center = b2Mul(xf, circle->m_p);
+            PVec2 center = b2Mul(xf, circle->m_p);
             float radius = circle->m_radius;
-            b2Vec2 axis = b2Mul(xf.q, b2Vec2(1.0f, 0.0f));
+            PVec2 axis = b2Mul(xf.q, PVec2(1.0f, 0.0f));
 
             m_debugDraw->DrawSolidCircle(center, radius, axis, color);
         } break;
 
         case b2Shape::e_edge: {
             b2EdgeShape *edge = (b2EdgeShape *)fixture->GetShape();
-            b2Vec2 v1 = b2Mul(xf, edge->m_vertex1);
-            b2Vec2 v2 = b2Mul(xf, edge->m_vertex2);
+            PVec2 v1 = b2Mul(xf, edge->m_vertex1);
+            PVec2 v2 = b2Mul(xf, edge->m_vertex2);
             m_debugDraw->DrawSegment(v1, v2, color);
 
             if (edge->m_oneSided == false) {
@@ -1386,11 +1386,11 @@ void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const METAENG
         case b2Shape::e_chain: {
             b2ChainShape *chain = (b2ChainShape *)fixture->GetShape();
             I32 count = chain->m_count;
-            const b2Vec2 *vertices = chain->m_vertices;
+            const PVec2 *vertices = chain->m_vertices;
 
-            b2Vec2 v1 = b2Mul(xf, vertices[0]);
+            PVec2 v1 = b2Mul(xf, vertices[0]);
             for (I32 i = 1; i < count; ++i) {
-                b2Vec2 v2 = b2Mul(xf, vertices[i]);
+                PVec2 v2 = b2Mul(xf, vertices[i]);
                 m_debugDraw->DrawSegment(v1, v2, color);
                 v1 = v2;
             }
@@ -1400,7 +1400,7 @@ void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const METAENG
             b2PolygonShape *poly = (b2PolygonShape *)fixture->GetShape();
             I32 vertexCount = poly->m_count;
             METADOT_ASSERT_E(vertexCount <= b2_maxPolygonVertices);
-            b2Vec2 vertices[b2_maxPolygonVertices];
+            PVec2 vertices[b2_maxPolygonVertices];
 
             for (I32 i = 0; i < vertexCount; ++i) {
                 vertices[i] = b2Mul(xf, poly->m_vertices[i]);
@@ -1423,7 +1423,7 @@ void b2World::DebugDraw() {
 
     if (flags & DebugDraw::e_shapeBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
-            const b2Transform &xf = b->GetTransform();
+            const PTransform &xf = b->GetTransform();
             for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
                 if (b->GetType() == b2_dynamicBody && b->m_mass == 0.0f) {
                     // Bad body
@@ -1456,8 +1456,8 @@ void b2World::DebugDraw() {
             b2Fixture *fixtureB = c->GetFixtureB();
             I32 indexA = c->GetChildIndexA();
             I32 indexB = c->GetChildIndexB();
-            b2Vec2 cA = fixtureA->GetAABB(indexA).GetCenter();
-            b2Vec2 cB = fixtureB->GetAABB(indexB).GetCenter();
+            PVec2 cA = fixtureA->GetAABB(indexA).GetCenter();
+            PVec2 cB = fixtureB->GetAABB(indexB).GetCenter();
 
             m_debugDraw->DrawSegment(cA, cB, color);
         }
@@ -1476,7 +1476,7 @@ void b2World::DebugDraw() {
                 for (I32 i = 0; i < f->m_proxyCount; ++i) {
                     b2FixtureProxy *proxy = f->m_proxies + i;
                     b2AABB aabb = bp->GetFatAABB(proxy->proxyId);
-                    b2Vec2 vs[4];
+                    PVec2 vs[4];
                     vs[0].Set(aabb.lowerBound.x, aabb.lowerBound.y);
                     vs[1].Set(aabb.upperBound.x, aabb.lowerBound.y);
                     vs[2].Set(aabb.upperBound.x, aabb.upperBound.y);
@@ -1490,7 +1490,7 @@ void b2World::DebugDraw() {
 
     if (flags & DebugDraw::e_centerOfMassBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
-            b2Transform xf = b->GetTransform();
+            PTransform xf = b->GetTransform();
             xf.p = b->GetWorldCenter();
             m_debugDraw->DrawTransform(xf);
         }
@@ -1505,7 +1505,7 @@ I32 b2World::GetTreeBalance() const { return m_contactManager.m_broadPhase.GetTr
 
 float b2World::GetTreeQuality() const { return m_contactManager.m_broadPhase.GetTreeQuality(); }
 
-void b2World::ShiftOrigin(const b2Vec2 &newOrigin) {
+void b2World::ShiftOrigin(const PVec2 &newOrigin) {
     METADOT_ASSERT_E(m_locked == false);
     if (m_locked) {
         return;
@@ -1610,7 +1610,7 @@ bool b2ContactFilter::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) {
 // Cdot = wB - wA
 // J = [0 0 -1 0 0 1]
 
-void b2WheelJointDef::Initialize(b2Body *bA, b2Body *bB, const b2Vec2 &anchor, const b2Vec2 &axis) {
+void b2WheelJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &anchor, const PVec2 &axis) {
     bodyA = bA;
     bodyB = bB;
     localAnchorA = bodyA->GetLocalPoint(anchor);
@@ -1665,22 +1665,22 @@ void b2WheelJoint::InitVelocityConstraints(const b2SolverData &data) {
     float mA = m_invMassA, mB = m_invMassB;
     float iA = m_invIA, iB = m_invIB;
 
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     // Compute the effective masses.
-    b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-    b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-    b2Vec2 d = cB + rB - cA - rA;
+    PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+    PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+    PVec2 d = cB + rB - cA - rA;
 
     // Point to line constraint
     {
@@ -1757,7 +1757,7 @@ void b2WheelJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_motorImpulse *= data.step.dtRatio;
 
         float axialImpulse = m_springImpulse + m_lowerImpulse - m_upperImpulse;
-        b2Vec2 P = m_impulse * m_ay + axialImpulse * m_ax;
+        PVec2 P = m_impulse * m_ay + axialImpulse * m_ax;
         float LA = m_impulse * m_sAy + axialImpulse * m_sAx + m_motorImpulse;
         float LB = m_impulse * m_sBy + axialImpulse * m_sBx + m_motorImpulse;
 
@@ -1784,9 +1784,9 @@ void b2WheelJoint::SolveVelocityConstraints(const b2SolverData &data) {
     float mA = m_invMassA, mB = m_invMassB;
     float iA = m_invIA, iB = m_invIB;
 
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     // Solve spring constraint
@@ -1795,7 +1795,7 @@ void b2WheelJoint::SolveVelocityConstraints(const b2SolverData &data) {
         float impulse = -m_springMass * (Cdot + m_bias + m_gamma * m_springImpulse);
         m_springImpulse += impulse;
 
-        b2Vec2 P = impulse * m_ax;
+        PVec2 P = impulse * m_ax;
         float LA = impulse * m_sAx;
         float LB = impulse * m_sBx;
 
@@ -1830,7 +1830,7 @@ void b2WheelJoint::SolveVelocityConstraints(const b2SolverData &data) {
             m_lowerImpulse = b2Max(m_lowerImpulse + impulse, 0.0f);
             impulse = m_lowerImpulse - oldImpulse;
 
-            b2Vec2 P = impulse * m_ax;
+            PVec2 P = impulse * m_ax;
             float LA = impulse * m_sAx;
             float LB = impulse * m_sBx;
 
@@ -1851,7 +1851,7 @@ void b2WheelJoint::SolveVelocityConstraints(const b2SolverData &data) {
             m_upperImpulse = b2Max(m_upperImpulse + impulse, 0.0f);
             impulse = m_upperImpulse - oldImpulse;
 
-            b2Vec2 P = impulse * m_ax;
+            PVec2 P = impulse * m_ax;
             float LA = impulse * m_sAx;
             float LB = impulse * m_sBx;
 
@@ -1868,7 +1868,7 @@ void b2WheelJoint::SolveVelocityConstraints(const b2SolverData &data) {
         float impulse = -m_mass * Cdot;
         m_impulse += impulse;
 
-        b2Vec2 P = impulse * m_ay;
+        PVec2 P = impulse * m_ay;
         float LA = impulse * m_sAy;
         float LB = impulse * m_sBy;
 
@@ -1886,21 +1886,21 @@ void b2WheelJoint::SolveVelocityConstraints(const b2SolverData &data) {
 }
 
 bool b2WheelJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
 
     float linearError = 0.0f;
 
     if (m_enableLimit) {
-        b2Rot qA(aA), qB(aB);
+        PRot qA(aA), qB(aB);
 
-        b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-        b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-        b2Vec2 d = (cB - cA) + rB - rA;
+        PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+        PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+        PVec2 d = (cB - cA) + rB - rA;
 
-        b2Vec2 ax = b2Mul(qA, m_localXAxisA);
+        PVec2 ax = b2Mul(qA, m_localXAxisA);
         float sAx = b2Cross(d + rA, m_ax);
         float sBx = b2Cross(rB, m_ax);
 
@@ -1922,7 +1922,7 @@ bool b2WheelJoint::SolvePositionConstraints(const b2SolverData &data) {
                 impulse = -C / invMass;
             }
 
-            b2Vec2 P = impulse * ax;
+            PVec2 P = impulse * ax;
             float LA = impulse * sAx;
             float LB = impulse * sBx;
 
@@ -1937,13 +1937,13 @@ bool b2WheelJoint::SolvePositionConstraints(const b2SolverData &data) {
 
     // Solve perpendicular constraint
     {
-        b2Rot qA(aA), qB(aB);
+        PRot qA(aA), qB(aB);
 
-        b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-        b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-        b2Vec2 d = (cB - cA) + rB - rA;
+        PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+        PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+        PVec2 d = (cB - cA) + rB - rA;
 
-        b2Vec2 ay = b2Mul(qA, m_localYAxisA);
+        PVec2 ay = b2Mul(qA, m_localYAxisA);
 
         float sAy = b2Cross(d + rA, ay);
         float sBy = b2Cross(rB, ay);
@@ -1957,7 +1957,7 @@ bool b2WheelJoint::SolvePositionConstraints(const b2SolverData &data) {
             impulse = -C / invMass;
         }
 
-        b2Vec2 P = impulse * ay;
+        PVec2 P = impulse * ay;
         float LA = impulse * sAy;
         float LB = impulse * sBy;
 
@@ -1977,11 +1977,11 @@ bool b2WheelJoint::SolvePositionConstraints(const b2SolverData &data) {
     return linearError <= b2_linearSlop;
 }
 
-b2Vec2 b2WheelJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2WheelJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2WheelJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2WheelJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2WheelJoint::GetReactionForce(float inv_dt) const { return inv_dt * (m_impulse * m_ay + (m_springImpulse + m_lowerImpulse - m_upperImpulse) * m_ax); }
+PVec2 b2WheelJoint::GetReactionForce(float inv_dt) const { return inv_dt * (m_impulse * m_ay + (m_springImpulse + m_lowerImpulse - m_upperImpulse) * m_ax); }
 
 float b2WheelJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_motorImpulse; }
 
@@ -1989,10 +1989,10 @@ float b2WheelJoint::GetJointTranslation() const {
     b2Body *bA = m_bodyA;
     b2Body *bB = m_bodyB;
 
-    b2Vec2 pA = bA->GetWorldPoint(m_localAnchorA);
-    b2Vec2 pB = bB->GetWorldPoint(m_localAnchorB);
-    b2Vec2 d = pB - pA;
-    b2Vec2 axis = bA->GetWorldVector(m_localXAxisA);
+    PVec2 pA = bA->GetWorldPoint(m_localAnchorA);
+    PVec2 pB = bB->GetWorldPoint(m_localAnchorB);
+    PVec2 d = pB - pA;
+    PVec2 axis = bA->GetWorldVector(m_localXAxisA);
 
     float translation = b2Dot(d, axis);
     return translation;
@@ -2002,15 +2002,15 @@ float b2WheelJoint::GetJointLinearSpeed() const {
     b2Body *bA = m_bodyA;
     b2Body *bB = m_bodyB;
 
-    b2Vec2 rA = b2Mul(bA->m_xf.q, m_localAnchorA - bA->m_sweep.localCenter);
-    b2Vec2 rB = b2Mul(bB->m_xf.q, m_localAnchorB - bB->m_sweep.localCenter);
-    b2Vec2 p1 = bA->m_sweep.c + rA;
-    b2Vec2 p2 = bB->m_sweep.c + rB;
-    b2Vec2 d = p2 - p1;
-    b2Vec2 axis = b2Mul(bA->m_xf.q, m_localXAxisA);
+    PVec2 rA = b2Mul(bA->m_xf.q, m_localAnchorA - bA->m_sweep.localCenter);
+    PVec2 rB = b2Mul(bB->m_xf.q, m_localAnchorB - bB->m_sweep.localCenter);
+    PVec2 p1 = bA->m_sweep.c + rA;
+    PVec2 p2 = bB->m_sweep.c + rB;
+    PVec2 d = p2 - p1;
+    PVec2 axis = b2Mul(bA->m_xf.q, m_localXAxisA);
 
-    b2Vec2 vA = bA->m_linearVelocity;
-    b2Vec2 vB = bB->m_linearVelocity;
+    PVec2 vA = bA->m_linearVelocity;
+    PVec2 vB = bB->m_linearVelocity;
     float wA = bA->m_angularVelocity;
     float wB = bB->m_angularVelocity;
 
@@ -2117,12 +2117,12 @@ void b2WheelJoint::Dump() {
 
 ///
 void b2WheelJoint::Draw(DebugDraw *draw) const {
-    const b2Transform &xfA = m_bodyA->GetTransform();
-    const b2Transform &xfB = m_bodyB->GetTransform();
-    b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
-    b2Vec2 pB = b2Mul(xfB, m_localAnchorB);
+    const PTransform &xfA = m_bodyA->GetTransform();
+    const PTransform &xfB = m_bodyB->GetTransform();
+    PVec2 pA = b2Mul(xfA, m_localAnchorA);
+    PVec2 pB = b2Mul(xfB, m_localAnchorB);
 
-    b2Vec2 axis = b2Mul(xfA.q, m_localXAxisA);
+    PVec2 axis = b2Mul(xfA.q, m_localXAxisA);
 
     METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
     METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
@@ -2133,9 +2133,9 @@ void b2WheelJoint::Draw(DebugDraw *draw) const {
     draw->DrawSegment(pA, pB, c5);
 
     if (m_enableLimit) {
-        b2Vec2 lower = pA + m_lowerTranslation * axis;
-        b2Vec2 upper = pA + m_upperTranslation * axis;
-        b2Vec2 perp = b2Mul(xfA.q, m_localYAxisA);
+        PVec2 lower = pA + m_lowerTranslation * axis;
+        PVec2 upper = pA + m_upperTranslation * axis;
+        PVec2 perp = b2Mul(xfA.q, m_localYAxisA);
         draw->DrawSegment(lower, upper, c1);
         draw->DrawSegment(lower - 0.5f * perp, lower + 0.5f * perp, c2);
         draw->DrawSegment(upper - 0.5f * perp, upper + 0.5f * perp, c3);
@@ -2161,7 +2161,7 @@ void b2WheelJoint::Draw(DebugDraw *draw) const {
 // J = [0 0 -1 0 0 1]
 // K = invI1 + invI2
 
-void b2WeldJointDef::Initialize(b2Body *bA, b2Body *bB, const b2Vec2 &anchor) {
+void b2WeldJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &anchor) {
     bodyA = bA;
     bodyB = bB;
     localAnchorA = bodyA->GetLocalPoint(anchor);
@@ -2190,14 +2190,14 @@ void b2WeldJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIB = m_bodyB->m_invI;
 
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     m_rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
     m_rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
@@ -2260,7 +2260,7 @@ void b2WeldJoint::InitVelocityConstraints(const b2SolverData &data) {
         // Scale impulses to support a variable time step.
         m_impulse *= data.step.dtRatio;
 
-        b2Vec2 P(m_impulse.x, m_impulse.y);
+        PVec2 P(m_impulse.x, m_impulse.y);
 
         vA -= mA * P;
         wA -= iA * (b2Cross(m_rA, P) + m_impulse.z);
@@ -2278,9 +2278,9 @@ void b2WeldJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2WeldJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     float mA = m_invMassA, mB = m_invMassB;
@@ -2295,13 +2295,13 @@ void b2WeldJoint::SolveVelocityConstraints(const b2SolverData &data) {
         wA -= iA * impulse2;
         wB += iB * impulse2;
 
-        b2Vec2 Cdot1 = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
+        PVec2 Cdot1 = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
 
-        b2Vec2 impulse1 = -b2Mul22(m_mass, Cdot1);
+        PVec2 impulse1 = -b2Mul22(m_mass, Cdot1);
         m_impulse.x += impulse1.x;
         m_impulse.y += impulse1.y;
 
-        b2Vec2 P = impulse1;
+        PVec2 P = impulse1;
 
         vA -= mA * P;
         wA -= iA * b2Cross(m_rA, P);
@@ -2309,14 +2309,14 @@ void b2WeldJoint::SolveVelocityConstraints(const b2SolverData &data) {
         vB += mB * P;
         wB += iB * b2Cross(m_rB, P);
     } else {
-        b2Vec2 Cdot1 = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
+        PVec2 Cdot1 = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
         float Cdot2 = wB - wA;
-        b2Vec3 Cdot(Cdot1.x, Cdot1.y, Cdot2);
+        PVec3 Cdot(Cdot1.x, Cdot1.y, Cdot2);
 
-        b2Vec3 impulse = -b2Mul(m_mass, Cdot);
+        PVec3 impulse = -b2Mul(m_mass, Cdot);
         m_impulse += impulse;
 
-        b2Vec2 P(impulse.x, impulse.y);
+        PVec2 P(impulse.x, impulse.y);
 
         vA -= mA * P;
         wA -= iA * (b2Cross(m_rA, P) + impulse.z);
@@ -2332,18 +2332,18 @@ void b2WeldJoint::SolveVelocityConstraints(const b2SolverData &data) {
 }
 
 bool b2WeldJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     float mA = m_invMassA, mB = m_invMassB;
     float iA = m_invIA, iB = m_invIB;
 
-    b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-    b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+    PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+    PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
 
     float positionError, angularError;
 
@@ -2359,12 +2359,12 @@ bool b2WeldJoint::SolvePositionConstraints(const b2SolverData &data) {
     K.ez.z = iA + iB;
 
     if (m_stiffness > 0.0f) {
-        b2Vec2 C1 = cB + rB - cA - rA;
+        PVec2 C1 = cB + rB - cA - rA;
 
         positionError = C1.Length();
         angularError = 0.0f;
 
-        b2Vec2 P = -K.Solve22(C1);
+        PVec2 P = -K.Solve22(C1);
 
         cA -= mA * P;
         aA -= iA * b2Cross(rA, P);
@@ -2372,23 +2372,23 @@ bool b2WeldJoint::SolvePositionConstraints(const b2SolverData &data) {
         cB += mB * P;
         aB += iB * b2Cross(rB, P);
     } else {
-        b2Vec2 C1 = cB + rB - cA - rA;
+        PVec2 C1 = cB + rB - cA - rA;
         float C2 = aB - aA - m_referenceAngle;
 
         positionError = C1.Length();
         angularError = b2Abs(C2);
 
-        b2Vec3 C(C1.x, C1.y, C2);
+        PVec3 C(C1.x, C1.y, C2);
 
-        b2Vec3 impulse;
+        PVec3 impulse;
         if (K.ez.z > 0.0f) {
             impulse = -K.Solve33(C);
         } else {
-            b2Vec2 impulse2 = -K.Solve22(C1);
+            PVec2 impulse2 = -K.Solve22(C1);
             impulse.Set(impulse2.x, impulse2.y, 0.0f);
         }
 
-        b2Vec2 P(impulse.x, impulse.y);
+        PVec2 P(impulse.x, impulse.y);
 
         cA -= mA * P;
         aA -= iA * (b2Cross(rA, P) + impulse.z);
@@ -2405,12 +2405,12 @@ bool b2WeldJoint::SolvePositionConstraints(const b2SolverData &data) {
     return positionError <= b2_linearSlop && angularError <= b2_angularSlop;
 }
 
-b2Vec2 b2WeldJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2WeldJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2WeldJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2WeldJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2WeldJoint::GetReactionForce(float inv_dt) const {
-    b2Vec2 P(m_impulse.x, m_impulse.y);
+PVec2 b2WeldJoint::GetReactionForce(float inv_dt) const {
+    PVec2 P(m_impulse.x, m_impulse.y);
     return inv_dt * P;
 }
 
@@ -2445,7 +2445,7 @@ void b2WeldJoint::Dump() {
 // J = [0 0 -1 0 0 1]
 // K = invI1 + invI2
 
-void b2RevoluteJointDef::Initialize(b2Body *bA, b2Body *bB, const b2Vec2 &anchor) {
+void b2RevoluteJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &anchor) {
     bodyA = bA;
     bodyB = bB;
     localAnchorA = bodyA->GetLocalPoint(anchor);
@@ -2485,14 +2485,14 @@ void b2RevoluteJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIB = m_bodyB->m_invI;
 
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     m_rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
     m_rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
@@ -2539,7 +2539,7 @@ void b2RevoluteJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_upperImpulse *= data.step.dtRatio;
 
         float axialImpulse = m_motorImpulse + m_lowerImpulse - m_upperImpulse;
-        b2Vec2 P(m_impulse.x, m_impulse.y);
+        PVec2 P(m_impulse.x, m_impulse.y);
 
         vA -= mA * P;
         wA -= iA * (b2Cross(m_rA, P) + axialImpulse);
@@ -2560,9 +2560,9 @@ void b2RevoluteJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2RevoluteJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     float mA = m_invMassA, mB = m_invMassB;
@@ -2615,8 +2615,8 @@ void b2RevoluteJoint::SolveVelocityConstraints(const b2SolverData &data) {
 
     // Solve point-to-point constraint
     {
-        b2Vec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
-        b2Vec2 impulse = m_K.Solve(-Cdot);
+        PVec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
+        PVec2 impulse = m_K.Solve(-Cdot);
 
         m_impulse.x += impulse.x;
         m_impulse.y += impulse.y;
@@ -2635,12 +2635,12 @@ void b2RevoluteJoint::SolveVelocityConstraints(const b2SolverData &data) {
 }
 
 bool b2RevoluteJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     float angularError = 0.0f;
     float positionError = 0.0f;
@@ -2673,22 +2673,22 @@ bool b2RevoluteJoint::SolvePositionConstraints(const b2SolverData &data) {
     {
         qA.Set(aA);
         qB.Set(aB);
-        b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-        b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+        PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+        PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
 
-        b2Vec2 C = cB + rB - cA - rA;
+        PVec2 C = cB + rB - cA - rA;
         positionError = C.Length();
 
         float mA = m_invMassA, mB = m_invMassB;
         float iA = m_invIA, iB = m_invIB;
 
-        b2Mat22 K;
+        PMat22 K;
         K.ex.x = mA + mB + iA * rA.y * rA.y + iB * rB.y * rB.y;
         K.ex.y = -iA * rA.x * rA.y - iB * rB.x * rB.y;
         K.ey.x = K.ex.y;
         K.ey.y = mA + mB + iA * rA.x * rA.x + iB * rB.x * rB.x;
 
-        b2Vec2 impulse = -K.Solve(C);
+        PVec2 impulse = -K.Solve(C);
 
         cA -= mA * impulse;
         aA -= iA * b2Cross(rA, impulse);
@@ -2705,12 +2705,12 @@ bool b2RevoluteJoint::SolvePositionConstraints(const b2SolverData &data) {
     return positionError <= b2_linearSlop && angularError <= b2_angularSlop;
 }
 
-b2Vec2 b2RevoluteJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2RevoluteJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2RevoluteJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2RevoluteJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2RevoluteJoint::GetReactionForce(float inv_dt) const {
-    b2Vec2 P(m_impulse.x, m_impulse.y);
+PVec2 b2RevoluteJoint::GetReactionForce(float inv_dt) const {
+    PVec2 P(m_impulse.x, m_impulse.y);
     return inv_dt * P;
 }
 
@@ -2807,10 +2807,10 @@ void b2RevoluteJoint::Dump() {
 
 ///
 void b2RevoluteJoint::Draw(DebugDraw *draw) const {
-    const b2Transform &xfA = m_bodyA->GetTransform();
-    const b2Transform &xfB = m_bodyB->GetTransform();
-    b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
-    b2Vec2 pB = b2Mul(xfB, m_localAnchorB);
+    const PTransform &xfA = m_bodyA->GetTransform();
+    const PTransform &xfB = m_bodyB->GetTransform();
+    PVec2 pA = b2Mul(xfA, m_localAnchorA);
+    PVec2 pB = b2Mul(xfB, m_localAnchorB);
 
     METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
     METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
@@ -2827,13 +2827,13 @@ void b2RevoluteJoint::Draw(DebugDraw *draw) const {
 
     const float L = 0.5f;
 
-    b2Vec2 r = L * b2Vec2(cosf(angle), sinf(angle));
+    PVec2 r = L * PVec2(cosf(angle), sinf(angle));
     draw->DrawSegment(pB, pB + r, c1);
     draw->DrawCircle(pB, L, c1);
 
     if (m_enableLimit) {
-        b2Vec2 rlo = L * b2Vec2(cosf(m_lowerAngle), sinf(m_lowerAngle));
-        b2Vec2 rhi = L * b2Vec2(cosf(m_upperAngle), sinf(m_upperAngle));
+        PVec2 rlo = L * PVec2(cosf(m_lowerAngle), sinf(m_lowerAngle));
+        PVec2 rhi = L * PVec2(cosf(m_upperAngle), sinf(m_upperAngle));
 
         draw->DrawSegment(pB, pB + rlo, c2);
         draw->DrawSegment(pB, pB + rhi, c3);
@@ -2857,16 +2857,16 @@ void b2RevoluteJoint::Draw(DebugDraw *draw) const {
 // K = J * invM * JT
 //   = invMass1 + invI1 * cross(r1, u1)^2 + ratio^2 * (invMass2 + invI2 * cross(r2, u2)^2)
 
-void b2PulleyJointDef::Initialize(b2Body *bA, b2Body *bB, const b2Vec2 &groundA, const b2Vec2 &groundB, const b2Vec2 &anchorA, const b2Vec2 &anchorB, float r) {
+void b2PulleyJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &groundA, const PVec2 &groundB, const PVec2 &anchorA, const PVec2 &anchorB, float r) {
     bodyA = bA;
     bodyB = bB;
     groundAnchorA = groundA;
     groundAnchorB = groundB;
     localAnchorA = bodyA->GetLocalPoint(anchorA);
     localAnchorB = bodyB->GetLocalPoint(anchorB);
-    b2Vec2 dA = anchorA - groundA;
+    PVec2 dA = anchorA - groundA;
     lengthA = dA.Length();
-    b2Vec2 dB = anchorB - groundB;
+    PVec2 dB = anchorB - groundB;
     lengthB = dB.Length();
     ratio = r;
     METADOT_ASSERT_E(ratio > b2_epsilon);
@@ -2899,17 +2899,17 @@ void b2PulleyJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIA = m_bodyA->m_invI;
     m_invIB = m_bodyB->m_invI;
 
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     m_rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
     m_rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
@@ -2951,8 +2951,8 @@ void b2PulleyJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_impulse *= data.step.dtRatio;
 
         // Warm starting.
-        b2Vec2 PA = -(m_impulse)*m_uA;
-        b2Vec2 PB = (-m_ratio * m_impulse) * m_uB;
+        PVec2 PA = -(m_impulse)*m_uA;
+        PVec2 PB = (-m_ratio * m_impulse) * m_uB;
 
         vA += m_invMassA * PA;
         wA += m_invIA * b2Cross(m_rA, PA);
@@ -2969,20 +2969,20 @@ void b2PulleyJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2PulleyJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Vec2 vpA = vA + b2Cross(wA, m_rA);
-    b2Vec2 vpB = vB + b2Cross(wB, m_rB);
+    PVec2 vpA = vA + b2Cross(wA, m_rA);
+    PVec2 vpB = vB + b2Cross(wB, m_rB);
 
     float Cdot = -b2Dot(m_uA, vpA) - m_ratio * b2Dot(m_uB, vpB);
     float impulse = -m_mass * Cdot;
     m_impulse += impulse;
 
-    b2Vec2 PA = -impulse * m_uA;
-    b2Vec2 PB = -m_ratio * impulse * m_uB;
+    PVec2 PA = -impulse * m_uA;
+    PVec2 PB = -m_ratio * impulse * m_uB;
     vA += m_invMassA * PA;
     wA += m_invIA * b2Cross(m_rA, PA);
     vB += m_invMassB * PB;
@@ -2995,19 +2995,19 @@ void b2PulleyJoint::SolveVelocityConstraints(const b2SolverData &data) {
 }
 
 bool b2PulleyJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
-    b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-    b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+    PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+    PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
 
     // Get the pulley axes.
-    b2Vec2 uA = cA + rA - m_groundAnchorA;
-    b2Vec2 uB = cB + rB - m_groundAnchorB;
+    PVec2 uA = cA + rA - m_groundAnchorA;
+    PVec2 uB = cB + rB - m_groundAnchorB;
 
     float lengthA = uA.Length();
     float lengthB = uB.Length();
@@ -3042,8 +3042,8 @@ bool b2PulleyJoint::SolvePositionConstraints(const b2SolverData &data) {
 
     float impulse = -mass * C;
 
-    b2Vec2 PA = -impulse * uA;
-    b2Vec2 PB = -m_ratio * impulse * uB;
+    PVec2 PA = -impulse * uA;
+    PVec2 PB = -m_ratio * impulse * uB;
 
     cA += m_invMassA * PA;
     aA += m_invIA * b2Cross(rA, PA);
@@ -3058,12 +3058,12 @@ bool b2PulleyJoint::SolvePositionConstraints(const b2SolverData &data) {
     return linearError < b2_linearSlop;
 }
 
-b2Vec2 b2PulleyJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2PulleyJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2PulleyJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2PulleyJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2PulleyJoint::GetReactionForce(float inv_dt) const {
-    b2Vec2 P = m_impulse * m_uB;
+PVec2 b2PulleyJoint::GetReactionForce(float inv_dt) const {
+    PVec2 P = m_impulse * m_uB;
     return inv_dt * P;
 }
 
@@ -3072,9 +3072,9 @@ float b2PulleyJoint::GetReactionTorque(float inv_dt) const {
     return 0.0f;
 }
 
-b2Vec2 b2PulleyJoint::GetGroundAnchorA() const { return m_groundAnchorA; }
+PVec2 b2PulleyJoint::GetGroundAnchorA() const { return m_groundAnchorA; }
 
-b2Vec2 b2PulleyJoint::GetGroundAnchorB() const { return m_groundAnchorB; }
+PVec2 b2PulleyJoint::GetGroundAnchorB() const { return m_groundAnchorB; }
 
 float b2PulleyJoint::GetLengthA() const { return m_lengthA; }
 
@@ -3083,16 +3083,16 @@ float b2PulleyJoint::GetLengthB() const { return m_lengthB; }
 float b2PulleyJoint::GetRatio() const { return m_ratio; }
 
 float b2PulleyJoint::GetCurrentLengthA() const {
-    b2Vec2 p = m_bodyA->GetWorldPoint(m_localAnchorA);
-    b2Vec2 s = m_groundAnchorA;
-    b2Vec2 d = p - s;
+    PVec2 p = m_bodyA->GetWorldPoint(m_localAnchorA);
+    PVec2 s = m_groundAnchorA;
+    PVec2 d = p - s;
     return d.Length();
 }
 
 float b2PulleyJoint::GetCurrentLengthB() const {
-    b2Vec2 p = m_bodyB->GetWorldPoint(m_localAnchorB);
-    b2Vec2 s = m_groundAnchorB;
-    b2Vec2 d = p - s;
+    PVec2 p = m_bodyB->GetWorldPoint(m_localAnchorB);
+    PVec2 s = m_groundAnchorB;
+    PVec2 d = p - s;
     return d.Length();
 }
 
@@ -3114,7 +3114,7 @@ void b2PulleyJoint::Dump() {
     b2Dump("  joints[%d] = m_world->CreateJoint(&jd);\n", m_index);
 }
 
-void b2PulleyJoint::ShiftOrigin(const b2Vec2 &newOrigin) {
+void b2PulleyJoint::ShiftOrigin(const PVec2 &newOrigin) {
     m_groundAnchorA -= newOrigin;
     m_groundAnchorB -= newOrigin;
 }
@@ -3164,7 +3164,7 @@ void b2PulleyJoint::ShiftOrigin(const b2Vec2 &newOrigin) {
 // s1 = cross(d + r1, u), s2 = cross(r2, u)
 // a1 = cross(d + r1, v), a2 = cross(r2, v)
 
-void b2PrismaticJointDef::Initialize(b2Body *bA, b2Body *bB, const b2Vec2 &anchor, const b2Vec2 &axis) {
+void b2PrismaticJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &anchor, const PVec2 &axis) {
     bodyA = bA;
     bodyB = bB;
     localAnchorA = bodyA->GetLocalPoint(anchor);
@@ -3212,22 +3212,22 @@ void b2PrismaticJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIA = m_bodyA->m_invI;
     m_invIB = m_bodyB->m_invI;
 
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     // Compute the effective masses.
-    b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-    b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-    b2Vec2 d = (cB - cA) + rB - rA;
+    PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+    PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+    PVec2 d = (cB - cA) + rB - rA;
 
     float mA = m_invMassA, mB = m_invMassB;
     float iA = m_invIA, iB = m_invIB;
@@ -3282,7 +3282,7 @@ void b2PrismaticJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_upperImpulse *= data.step.dtRatio;
 
         float axialImpulse = m_motorImpulse + m_lowerImpulse - m_upperImpulse;
-        b2Vec2 P = m_impulse.x * m_perp + axialImpulse * m_axis;
+        PVec2 P = m_impulse.x * m_perp + axialImpulse * m_axis;
         float LA = m_impulse.x * m_s1 + m_impulse.y + axialImpulse * m_a1;
         float LB = m_impulse.x * m_s2 + m_impulse.y + axialImpulse * m_a2;
 
@@ -3305,9 +3305,9 @@ void b2PrismaticJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2PrismaticJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     float mA = m_invMassA, mB = m_invMassB;
@@ -3322,7 +3322,7 @@ void b2PrismaticJoint::SolveVelocityConstraints(const b2SolverData &data) {
         m_motorImpulse = b2Clamp(m_motorImpulse + impulse, -maxImpulse, maxImpulse);
         impulse = m_motorImpulse - oldImpulse;
 
-        b2Vec2 P = impulse * m_axis;
+        PVec2 P = impulse * m_axis;
         float LA = impulse * m_a1;
         float LB = impulse * m_a2;
 
@@ -3342,7 +3342,7 @@ void b2PrismaticJoint::SolveVelocityConstraints(const b2SolverData &data) {
             m_lowerImpulse = b2Max(m_lowerImpulse + impulse, 0.0f);
             impulse = m_lowerImpulse - oldImpulse;
 
-            b2Vec2 P = impulse * m_axis;
+            PVec2 P = impulse * m_axis;
             float LA = impulse * m_a1;
             float LB = impulse * m_a2;
 
@@ -3363,7 +3363,7 @@ void b2PrismaticJoint::SolveVelocityConstraints(const b2SolverData &data) {
             m_upperImpulse = b2Max(m_upperImpulse + impulse, 0.0f);
             impulse = m_upperImpulse - oldImpulse;
 
-            b2Vec2 P = impulse * m_axis;
+            PVec2 P = impulse * m_axis;
             float LA = impulse * m_a1;
             float LB = impulse * m_a2;
 
@@ -3376,14 +3376,14 @@ void b2PrismaticJoint::SolveVelocityConstraints(const b2SolverData &data) {
 
     // Solve the prismatic constraint in block form.
     {
-        b2Vec2 Cdot;
+        PVec2 Cdot;
         Cdot.x = b2Dot(m_perp, vB - vA) + m_s2 * wB - m_s1 * wA;
         Cdot.y = wB - wA;
 
-        b2Vec2 df = m_K.Solve(-Cdot);
+        PVec2 df = m_K.Solve(-Cdot);
         m_impulse += df;
 
-        b2Vec2 P = df.x * m_perp;
+        PVec2 P = df.x * m_perp;
         float LA = df.x * m_s1 + df.y;
         float LB = df.x * m_s2 + df.y;
 
@@ -3408,31 +3408,31 @@ void b2PrismaticJoint::SolveVelocityConstraints(const b2SolverData &data) {
 // We could take the active state from the velocity solver.However, the joint might push past the limit when the velocity
 // solver indicates the limit is inactive.
 bool b2PrismaticJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     float mA = m_invMassA, mB = m_invMassB;
     float iA = m_invIA, iB = m_invIB;
 
     // Compute fresh Jacobians
-    b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-    b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-    b2Vec2 d = cB + rB - cA - rA;
+    PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+    PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+    PVec2 d = cB + rB - cA - rA;
 
-    b2Vec2 axis = b2Mul(qA, m_localXAxisA);
+    PVec2 axis = b2Mul(qA, m_localXAxisA);
     float a1 = b2Cross(d + rA, axis);
     float a2 = b2Cross(rB, axis);
-    b2Vec2 perp = b2Mul(qA, m_localYAxisA);
+    PVec2 perp = b2Mul(qA, m_localYAxisA);
 
     float s1 = b2Cross(d + rA, perp);
     float s2 = b2Cross(rB, perp);
 
-    b2Vec3 impulse;
-    b2Vec2 C1;
+    PVec3 impulse;
+    PVec2 C1;
     C1.x = b2Dot(perp, d);
     C1.y = aB - aA - m_referenceAngle;
 
@@ -3475,7 +3475,7 @@ bool b2PrismaticJoint::SolvePositionConstraints(const b2SolverData &data) {
         K.ey.Set(k12, k22, k23);
         K.ez.Set(k13, k23, k33);
 
-        b2Vec3 C;
+        PVec3 C;
         C.x = C1.x;
         C.y = C1.y;
         C.z = C2;
@@ -3489,17 +3489,17 @@ bool b2PrismaticJoint::SolvePositionConstraints(const b2SolverData &data) {
             k22 = 1.0f;
         }
 
-        b2Mat22 K;
+        PMat22 K;
         K.ex.Set(k11, k12);
         K.ey.Set(k12, k22);
 
-        b2Vec2 impulse1 = K.Solve(-C1);
+        PVec2 impulse1 = K.Solve(-C1);
         impulse.x = impulse1.x;
         impulse.y = impulse1.y;
         impulse.z = 0.0f;
     }
 
-    b2Vec2 P = impulse.x * perp + impulse.z * axis;
+    PVec2 P = impulse.x * perp + impulse.z * axis;
     float LA = impulse.x * s1 + impulse.y + impulse.z * a1;
     float LB = impulse.x * s2 + impulse.y + impulse.z * a2;
 
@@ -3516,19 +3516,19 @@ bool b2PrismaticJoint::SolvePositionConstraints(const b2SolverData &data) {
     return linearError <= b2_linearSlop && angularError <= b2_angularSlop;
 }
 
-b2Vec2 b2PrismaticJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2PrismaticJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2PrismaticJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2PrismaticJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2PrismaticJoint::GetReactionForce(float inv_dt) const { return inv_dt * (m_impulse.x * m_perp + (m_motorImpulse + m_lowerImpulse - m_upperImpulse) * m_axis); }
+PVec2 b2PrismaticJoint::GetReactionForce(float inv_dt) const { return inv_dt * (m_impulse.x * m_perp + (m_motorImpulse + m_lowerImpulse - m_upperImpulse) * m_axis); }
 
 float b2PrismaticJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_impulse.y; }
 
 float b2PrismaticJoint::GetJointTranslation() const {
-    b2Vec2 pA = m_bodyA->GetWorldPoint(m_localAnchorA);
-    b2Vec2 pB = m_bodyB->GetWorldPoint(m_localAnchorB);
-    b2Vec2 d = pB - pA;
-    b2Vec2 axis = m_bodyA->GetWorldVector(m_localXAxisA);
+    PVec2 pA = m_bodyA->GetWorldPoint(m_localAnchorA);
+    PVec2 pB = m_bodyB->GetWorldPoint(m_localAnchorB);
+    PVec2 d = pB - pA;
+    PVec2 axis = m_bodyA->GetWorldVector(m_localXAxisA);
 
     float translation = b2Dot(d, axis);
     return translation;
@@ -3538,15 +3538,15 @@ float b2PrismaticJoint::GetJointSpeed() const {
     b2Body *bA = m_bodyA;
     b2Body *bB = m_bodyB;
 
-    b2Vec2 rA = b2Mul(bA->m_xf.q, m_localAnchorA - bA->m_sweep.localCenter);
-    b2Vec2 rB = b2Mul(bB->m_xf.q, m_localAnchorB - bB->m_sweep.localCenter);
-    b2Vec2 p1 = bA->m_sweep.c + rA;
-    b2Vec2 p2 = bB->m_sweep.c + rB;
-    b2Vec2 d = p2 - p1;
-    b2Vec2 axis = b2Mul(bA->m_xf.q, m_localXAxisA);
+    PVec2 rA = b2Mul(bA->m_xf.q, m_localAnchorA - bA->m_sweep.localCenter);
+    PVec2 rB = b2Mul(bB->m_xf.q, m_localAnchorB - bB->m_sweep.localCenter);
+    PVec2 p1 = bA->m_sweep.c + rA;
+    PVec2 p2 = bB->m_sweep.c + rB;
+    PVec2 d = p2 - p1;
+    PVec2 axis = b2Mul(bA->m_xf.q, m_localXAxisA);
 
-    b2Vec2 vA = bA->m_linearVelocity;
-    b2Vec2 vB = bB->m_linearVelocity;
+    PVec2 vA = bA->m_linearVelocity;
+    PVec2 vB = bB->m_linearVelocity;
     float wA = bA->m_angularVelocity;
     float wB = bB->m_angularVelocity;
 
@@ -3634,12 +3634,12 @@ void b2PrismaticJoint::Dump() {
 }
 
 void b2PrismaticJoint::Draw(DebugDraw *draw) const {
-    const b2Transform &xfA = m_bodyA->GetTransform();
-    const b2Transform &xfB = m_bodyB->GetTransform();
-    b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
-    b2Vec2 pB = b2Mul(xfB, m_localAnchorB);
+    const PTransform &xfA = m_bodyA->GetTransform();
+    const PTransform &xfB = m_bodyB->GetTransform();
+    PVec2 pA = b2Mul(xfA, m_localAnchorA);
+    PVec2 pB = b2Mul(xfB, m_localAnchorB);
 
-    b2Vec2 axis = b2Mul(xfA.q, m_localXAxisA);
+    PVec2 axis = b2Mul(xfA.q, m_localXAxisA);
 
     METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
     METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
@@ -3650,9 +3650,9 @@ void b2PrismaticJoint::Draw(DebugDraw *draw) const {
     draw->DrawSegment(pA, pB, c5);
 
     if (m_enableLimit) {
-        b2Vec2 lower = pA + m_lowerTranslation * axis;
-        b2Vec2 upper = pA + m_upperTranslation * axis;
-        b2Vec2 perp = b2Mul(xfA.q, m_localYAxisA);
+        PVec2 lower = pA + m_lowerTranslation * axis;
+        PVec2 upper = pA + m_upperTranslation * axis;
+        PVec2 perp = b2Mul(xfA.q, m_localYAxisA);
         draw->DrawSegment(lower, upper, c1);
         draw->DrawSegment(lower - 0.5f * perp, lower + 0.5f * perp, c2);
         draw->DrawSegment(upper - 0.5f * perp, upper + 0.5f * perp, c3);
@@ -3679,7 +3679,7 @@ b2PolygonContact::b2PolygonContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
 }
 
-void b2PolygonContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2PolygonContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2CollidePolygons(manifold, (b2PolygonShape *)m_fixtureA->GetShape(), xfA, (b2PolygonShape *)m_fixtureB->GetShape(), xfB);
 }
 
@@ -3698,7 +3698,7 @@ b2PolygonAndCircleContact::b2PolygonAndCircleContact(b2Fixture *fixtureA, b2Fixt
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
-void b2PolygonAndCircleContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2PolygonAndCircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2CollidePolygonAndCircle(manifold, (b2PolygonShape *)m_fixtureA->GetShape(), xfA, (b2CircleShape *)m_fixtureB->GetShape(), xfB);
 }
 
@@ -3722,14 +3722,14 @@ b2MouseJoint::b2MouseJoint(const b2MouseJointDef *def) : b2Joint(def) {
     m_gamma = 0.0f;
 }
 
-void b2MouseJoint::SetTarget(const b2Vec2 &target) {
+void b2MouseJoint::SetTarget(const PVec2 &target) {
     if (target != m_targetA) {
         m_bodyB->SetAwake(true);
         m_targetA = target;
     }
 }
 
-const b2Vec2 &b2MouseJoint::GetTarget() const { return m_targetA; }
+const PVec2 &b2MouseJoint::GetTarget() const { return m_targetA; }
 
 void b2MouseJoint::SetMaxForce(float force) { m_maxForce = force; }
 
@@ -3741,12 +3741,12 @@ void b2MouseJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invMassB = m_bodyB->m_invMass;
     m_invIB = m_bodyB->m_invI;
 
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qB(aB);
+    PRot qB(aB);
 
     float d = m_damping;
     float k = m_stiffness;
@@ -3767,7 +3767,7 @@ void b2MouseJoint::InitVelocityConstraints(const b2SolverData &data) {
     // K    = [(1/m1 + 1/m2) * eye(2) - skew(r1) * invI1 * skew(r1) - skew(r2) * invI2 * skew(r2)]
     //      = [1/m1+1/m2     0    ] + invI1 * [r1.y*r1.y -r1.x*r1.y] + invI2 * [r1.y*r1.y -r1.x*r1.y]
     //        [    0     1/m1+1/m2]           [-r1.x*r1.y r1.x*r1.x]           [-r1.x*r1.y r1.x*r1.x]
-    b2Mat22 K;
+    PMat22 K;
     K.ex.x = m_invMassB + m_invIB * m_rB.y * m_rB.y + m_gamma;
     K.ex.y = -m_invIB * m_rB.x * m_rB.y;
     K.ey.x = K.ex.y;
@@ -3794,14 +3794,14 @@ void b2MouseJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2MouseJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     // Cdot = v + cross(w, r)
-    b2Vec2 Cdot = vB + b2Cross(wB, m_rB);
-    b2Vec2 impulse = b2Mul(m_mass, -(Cdot + m_C + m_gamma * m_impulse));
+    PVec2 Cdot = vB + b2Cross(wB, m_rB);
+    PVec2 impulse = b2Mul(m_mass, -(Cdot + m_C + m_gamma * m_impulse));
 
-    b2Vec2 oldImpulse = m_impulse;
+    PVec2 oldImpulse = m_impulse;
     m_impulse += impulse;
     float maxImpulse = data.step.dt * m_maxForce;
     if (m_impulse.LengthSquared() > maxImpulse * maxImpulse) {
@@ -3821,15 +3821,15 @@ bool b2MouseJoint::SolvePositionConstraints(const b2SolverData &data) {
     return true;
 }
 
-b2Vec2 b2MouseJoint::GetAnchorA() const { return m_targetA; }
+PVec2 b2MouseJoint::GetAnchorA() const { return m_targetA; }
 
-b2Vec2 b2MouseJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2MouseJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2MouseJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_impulse; }
+PVec2 b2MouseJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_impulse; }
 
 float b2MouseJoint::GetReactionTorque(float inv_dt) const { return inv_dt * 0.0f; }
 
-void b2MouseJoint::ShiftOrigin(const b2Vec2 &newOrigin) { m_targetA -= newOrigin; }
+void b2MouseJoint::ShiftOrigin(const PVec2 &newOrigin) { m_targetA -= newOrigin; }
 
 // Point-to-point constraint
 // Cdot = v2 - v1
@@ -3849,7 +3849,7 @@ void b2MouseJoint::ShiftOrigin(const b2Vec2 &newOrigin) { m_targetA -= newOrigin
 void b2MotorJointDef::Initialize(b2Body *bA, b2Body *bB) {
     bodyA = bA;
     bodyB = bB;
-    b2Vec2 xB = bodyB->GetPosition();
+    PVec2 xB = bodyB->GetPosition();
     linearOffset = bodyA->GetLocalPoint(xB);
 
     float angleA = bodyA->GetAngle();
@@ -3879,17 +3879,17 @@ void b2MotorJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIA = m_bodyA->m_invI;
     m_invIB = m_bodyB->m_invI;
 
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     // Compute the effective mass matrix.
     m_rA = b2Mul(qA, m_linearOffset - m_localCenterA);
@@ -3907,7 +3907,7 @@ void b2MotorJoint::InitVelocityConstraints(const b2SolverData &data) {
     float iA = m_invIA, iB = m_invIB;
 
     // Upper 2 by 2 of K for point to point
-    b2Mat22 K;
+    PMat22 K;
     K.ex.x = mA + mB + iA * m_rA.y * m_rA.y + iB * m_rB.y * m_rB.y;
     K.ex.y = -iA * m_rA.x * m_rA.y - iB * m_rB.x * m_rB.y;
     K.ey.x = K.ex.y;
@@ -3928,7 +3928,7 @@ void b2MotorJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_linearImpulse *= data.step.dtRatio;
         m_angularImpulse *= data.step.dtRatio;
 
-        b2Vec2 P(m_linearImpulse.x, m_linearImpulse.y);
+        PVec2 P(m_linearImpulse.x, m_linearImpulse.y);
         vA -= mA * P;
         wA -= iA * (b2Cross(m_rA, P) + m_angularImpulse);
         vB += mB * P;
@@ -3945,9 +3945,9 @@ void b2MotorJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2MotorJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     float mA = m_invMassA, mB = m_invMassB;
@@ -3972,10 +3972,10 @@ void b2MotorJoint::SolveVelocityConstraints(const b2SolverData &data) {
 
     // Solve linear friction
     {
-        b2Vec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA) + inv_h * m_correctionFactor * m_linearError;
+        PVec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA) + inv_h * m_correctionFactor * m_linearError;
 
-        b2Vec2 impulse = -b2Mul(m_linearMass, Cdot);
-        b2Vec2 oldImpulse = m_linearImpulse;
+        PVec2 impulse = -b2Mul(m_linearMass, Cdot);
+        PVec2 oldImpulse = m_linearImpulse;
         m_linearImpulse += impulse;
 
         float maxImpulse = h * m_maxForce;
@@ -4006,11 +4006,11 @@ bool b2MotorJoint::SolvePositionConstraints(const b2SolverData &data) {
     return true;
 }
 
-b2Vec2 b2MotorJoint::GetAnchorA() const { return m_bodyA->GetPosition(); }
+PVec2 b2MotorJoint::GetAnchorA() const { return m_bodyA->GetPosition(); }
 
-b2Vec2 b2MotorJoint::GetAnchorB() const { return m_bodyB->GetPosition(); }
+PVec2 b2MotorJoint::GetAnchorB() const { return m_bodyB->GetPosition(); }
 
-b2Vec2 b2MotorJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_linearImpulse; }
+PVec2 b2MotorJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_linearImpulse; }
 
 float b2MotorJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_angularImpulse; }
 
@@ -4035,7 +4035,7 @@ void b2MotorJoint::SetCorrectionFactor(float factor) {
 
 float b2MotorJoint::GetCorrectionFactor() const { return m_correctionFactor; }
 
-void b2MotorJoint::SetLinearOffset(const b2Vec2 &linearOffset) {
+void b2MotorJoint::SetLinearOffset(const PVec2 &linearOffset) {
     if (linearOffset.x != m_linearOffset.x || linearOffset.y != m_linearOffset.y) {
         m_bodyA->SetAwake(true);
         m_bodyB->SetAwake(true);
@@ -4043,7 +4043,7 @@ void b2MotorJoint::SetLinearOffset(const b2Vec2 &linearOffset) {
     }
 }
 
-const b2Vec2 &b2MotorJoint::GetLinearOffset() const { return m_linearOffset; }
+const PVec2 &b2MotorJoint::GetLinearOffset() const { return m_linearOffset; }
 
 void b2MotorJoint::SetAngularOffset(float angularOffset) {
     if (angularOffset != m_angularOffset) {
@@ -4243,12 +4243,12 @@ b2Joint::b2Joint(const b2JointDef *def) {
 bool b2Joint::IsEnabled() const { return m_bodyA->IsEnabled() && m_bodyB->IsEnabled(); }
 
 void b2Joint::Draw(DebugDraw *draw) const {
-    const b2Transform &xf1 = m_bodyA->GetTransform();
-    const b2Transform &xf2 = m_bodyB->GetTransform();
-    b2Vec2 x1 = xf1.p;
-    b2Vec2 x2 = xf2.p;
-    b2Vec2 p1 = GetAnchorA();
-    b2Vec2 p2 = GetAnchorB();
+    const PTransform &xf1 = m_bodyA->GetTransform();
+    const PTransform &xf2 = m_bodyB->GetTransform();
+    PVec2 x1 = xf1.p;
+    PVec2 x2 = xf2.p;
+    PVec2 p1 = GetAnchorA();
+    PVec2 p2 = GetAnchorB();
 
     METAENGINE_Color color(0.5f, 0.8f, 0.8f);
 
@@ -4259,8 +4259,8 @@ void b2Joint::Draw(DebugDraw *draw) const {
 
         case e_pulleyJoint: {
             b2PulleyJoint *pulley = (b2PulleyJoint *)this;
-            b2Vec2 s1 = pulley->GetGroundAnchorA();
-            b2Vec2 s2 = pulley->GetGroundAnchorB();
+            PVec2 s1 = pulley->GetGroundAnchorA();
+            PVec2 s2 = pulley->GetGroundAnchorB();
             draw->DrawSegment(s1, p1, color);
             draw->DrawSegment(s2, p2, color);
             draw->DrawSegment(s1, s2, color);
@@ -4430,7 +4430,7 @@ b2Island::~b2Island() {
     m_allocator->Free(m_bodies);
 }
 
-void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &gravity, bool allowSleep) {
+void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const PVec2 &gravity, bool allowSleep) {
     b2Timer timer;
 
     float h = step.dt;
@@ -4439,9 +4439,9 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
     for (I32 i = 0; i < m_bodyCount; ++i) {
         b2Body *b = m_bodies[i];
 
-        b2Vec2 c = b->m_sweep.c;
+        PVec2 c = b->m_sweep.c;
         float a = b->m_sweep.a;
-        b2Vec2 v = b->m_linearVelocity;
+        PVec2 v = b->m_linearVelocity;
         float w = b->m_angularVelocity;
 
         // Store positions for continuous collision.
@@ -4516,13 +4516,13 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const b2Vec2 &g
 
     // Integrate positions
     for (I32 i = 0; i < m_bodyCount; ++i) {
-        b2Vec2 c = m_positions[i].c;
+        PVec2 c = m_positions[i].c;
         float a = m_positions[i].a;
-        b2Vec2 v = m_velocities[i].v;
+        PVec2 v = m_velocities[i].v;
         float w = m_velocities[i].w;
 
         // Check for large velocities
-        b2Vec2 translation = h * v;
+        PVec2 translation = h * v;
         if (b2Dot(translation, translation) > b2_maxTranslationSquared) {
             float ratio = b2_maxTranslation / translation.Length();
             v *= ratio;
@@ -4692,13 +4692,13 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, I32 toiIndexA, I32 toiIndexB)
 
     // Integrate positions
     for (I32 i = 0; i < m_bodyCount; ++i) {
-        b2Vec2 c = m_positions[i].c;
+        PVec2 c = m_positions[i].c;
         float a = m_positions[i].a;
-        b2Vec2 v = m_velocities[i].v;
+        PVec2 v = m_velocities[i].v;
         float w = m_velocities[i].w;
 
         // Check for large velocities
-        b2Vec2 translation = h * v;
+        PVec2 translation = h * v;
         if (b2Dot(translation, translation) > b2_maxTranslationSquared) {
             float ratio = b2_maxTranslation / translation.Length();
             v *= ratio;
@@ -4792,9 +4792,9 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
     METADOT_ASSERT_E(m_bodyA->m_type == b2_dynamicBody);
 
     // Get geometry of joint1
-    b2Transform xfA = m_bodyA->m_xf;
+    PTransform xfA = m_bodyA->m_xf;
     float aA = m_bodyA->m_sweep.a;
-    b2Transform xfC = m_bodyC->m_xf;
+    PTransform xfC = m_bodyC->m_xf;
     float aC = m_bodyC->m_sweep.a;
 
     if (m_typeA == e_revoluteJoint) {
@@ -4815,8 +4815,8 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
         m_referenceAngleA = prismatic->m_referenceAngle;
         m_localAxisC = prismatic->m_localXAxisA;
 
-        b2Vec2 pC = m_localAnchorC;
-        b2Vec2 pA = b2MulT(xfC.q, b2Mul(xfA.q, m_localAnchorA) + (xfA.p - xfC.p));
+        PVec2 pC = m_localAnchorC;
+        PVec2 pA = b2MulT(xfC.q, b2Mul(xfA.q, m_localAnchorA) + (xfA.p - xfC.p));
         coordinateA = b2Dot(pA - pC, m_localAxisC);
 
         // position error is measured in meters
@@ -4830,9 +4830,9 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
     METADOT_ASSERT_E(m_bodyB->m_type == b2_dynamicBody);
 
     // Get geometry of joint2
-    b2Transform xfB = m_bodyB->m_xf;
+    PTransform xfB = m_bodyB->m_xf;
     float aB = m_bodyB->m_sweep.a;
-    b2Transform xfD = m_bodyD->m_xf;
+    PTransform xfD = m_bodyD->m_xf;
     float aD = m_bodyD->m_sweep.a;
 
     if (m_typeB == e_revoluteJoint) {
@@ -4850,8 +4850,8 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
         m_referenceAngleB = prismatic->m_referenceAngle;
         m_localAxisD = prismatic->m_localXAxisA;
 
-        b2Vec2 pD = m_localAnchorD;
-        b2Vec2 pB = b2MulT(xfD.q, b2Mul(xfB.q, m_localAnchorB) + (xfB.p - xfD.p));
+        PVec2 pD = m_localAnchorD;
+        PVec2 pB = b2MulT(xfD.q, b2Mul(xfB.q, m_localAnchorB) + (xfB.p - xfD.p));
         coordinateB = b2Dot(pB - pD, m_localAxisD);
     }
 
@@ -4881,22 +4881,22 @@ void b2GearJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_iD = m_bodyD->m_invI;
 
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     float aC = data.positions[m_indexC].a;
-    b2Vec2 vC = data.velocities[m_indexC].v;
+    PVec2 vC = data.velocities[m_indexC].v;
     float wC = data.velocities[m_indexC].w;
 
     float aD = data.positions[m_indexD].a;
-    b2Vec2 vD = data.velocities[m_indexD].v;
+    PVec2 vD = data.velocities[m_indexD].v;
     float wD = data.velocities[m_indexD].w;
 
-    b2Rot qA(aA), qB(aB), qC(aC), qD(aD);
+    PRot qA(aA), qB(aB), qC(aC), qD(aD);
 
     m_mass = 0.0f;
 
@@ -4906,9 +4906,9 @@ void b2GearJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_JwC = 1.0f;
         m_mass += m_iA + m_iC;
     } else {
-        b2Vec2 u = b2Mul(qC, m_localAxisC);
-        b2Vec2 rC = b2Mul(qC, m_localAnchorC - m_lcC);
-        b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_lcA);
+        PVec2 u = b2Mul(qC, m_localAxisC);
+        PVec2 rC = b2Mul(qC, m_localAnchorC - m_lcC);
+        PVec2 rA = b2Mul(qA, m_localAnchorA - m_lcA);
         m_JvAC = u;
         m_JwC = b2Cross(rC, u);
         m_JwA = b2Cross(rA, u);
@@ -4921,9 +4921,9 @@ void b2GearJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_JwD = m_ratio;
         m_mass += m_ratio * m_ratio * (m_iB + m_iD);
     } else {
-        b2Vec2 u = b2Mul(qD, m_localAxisD);
-        b2Vec2 rD = b2Mul(qD, m_localAnchorD - m_lcD);
-        b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_lcB);
+        PVec2 u = b2Mul(qD, m_localAxisD);
+        PVec2 rD = b2Mul(qD, m_localAnchorD - m_lcD);
+        PVec2 rB = b2Mul(qB, m_localAnchorB - m_lcB);
         m_JvBD = m_ratio * u;
         m_JwD = m_ratio * b2Cross(rD, u);
         m_JwB = m_ratio * b2Cross(rB, u);
@@ -4957,13 +4957,13 @@ void b2GearJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2GearJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
-    b2Vec2 vC = data.velocities[m_indexC].v;
+    PVec2 vC = data.velocities[m_indexC].v;
     float wC = data.velocities[m_indexC].w;
-    b2Vec2 vD = data.velocities[m_indexD].v;
+    PVec2 vD = data.velocities[m_indexD].v;
     float wD = data.velocities[m_indexD].w;
 
     float Cdot = b2Dot(m_JvAC, vA - vC) + b2Dot(m_JvBD, vB - vD);
@@ -4992,20 +4992,20 @@ void b2GearJoint::SolveVelocityConstraints(const b2SolverData &data) {
 }
 
 bool b2GearJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 cC = data.positions[m_indexC].c;
+    PVec2 cC = data.positions[m_indexC].c;
     float aC = data.positions[m_indexC].a;
-    b2Vec2 cD = data.positions[m_indexD].c;
+    PVec2 cD = data.positions[m_indexD].c;
     float aD = data.positions[m_indexD].a;
 
-    b2Rot qA(aA), qB(aB), qC(aC), qD(aD);
+    PRot qA(aA), qB(aB), qC(aC), qD(aD);
 
     float coordinateA, coordinateB;
 
-    b2Vec2 JvAC, JvBD;
+    PVec2 JvAC, JvBD;
     float JwA, JwB, JwC, JwD;
     float mass = 0.0f;
 
@@ -5017,16 +5017,16 @@ bool b2GearJoint::SolvePositionConstraints(const b2SolverData &data) {
 
         coordinateA = aA - aC - m_referenceAngleA;
     } else {
-        b2Vec2 u = b2Mul(qC, m_localAxisC);
-        b2Vec2 rC = b2Mul(qC, m_localAnchorC - m_lcC);
-        b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_lcA);
+        PVec2 u = b2Mul(qC, m_localAxisC);
+        PVec2 rC = b2Mul(qC, m_localAnchorC - m_lcC);
+        PVec2 rA = b2Mul(qA, m_localAnchorA - m_lcA);
         JvAC = u;
         JwC = b2Cross(rC, u);
         JwA = b2Cross(rA, u);
         mass += m_mC + m_mA + m_iC * JwC * JwC + m_iA * JwA * JwA;
 
-        b2Vec2 pC = m_localAnchorC - m_lcC;
-        b2Vec2 pA = b2MulT(qC, rA + (cA - cC));
+        PVec2 pC = m_localAnchorC - m_lcC;
+        PVec2 pA = b2MulT(qC, rA + (cA - cC));
         coordinateA = b2Dot(pA - pC, m_localAxisC);
     }
 
@@ -5038,16 +5038,16 @@ bool b2GearJoint::SolvePositionConstraints(const b2SolverData &data) {
 
         coordinateB = aB - aD - m_referenceAngleB;
     } else {
-        b2Vec2 u = b2Mul(qD, m_localAxisD);
-        b2Vec2 rD = b2Mul(qD, m_localAnchorD - m_lcD);
-        b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_lcB);
+        PVec2 u = b2Mul(qD, m_localAxisD);
+        PVec2 rD = b2Mul(qD, m_localAnchorD - m_lcD);
+        PVec2 rB = b2Mul(qB, m_localAnchorB - m_lcB);
         JvBD = m_ratio * u;
         JwD = m_ratio * b2Cross(rD, u);
         JwB = m_ratio * b2Cross(rB, u);
         mass += m_ratio * m_ratio * (m_mD + m_mB) + m_iD * JwD * JwD + m_iB * JwB * JwB;
 
-        b2Vec2 pD = m_localAnchorD - m_lcD;
-        b2Vec2 pB = b2MulT(qD, rB + (cB - cD));
+        PVec2 pD = m_localAnchorD - m_lcD;
+        PVec2 pB = b2MulT(qD, rB + (cB - cD));
         coordinateB = b2Dot(pB - pD, m_localAxisD);
     }
 
@@ -5083,12 +5083,12 @@ bool b2GearJoint::SolvePositionConstraints(const b2SolverData &data) {
     return false;
 }
 
-b2Vec2 b2GearJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2GearJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2GearJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2GearJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2GearJoint::GetReactionForce(float inv_dt) const {
-    b2Vec2 P = m_impulse * m_JvAC;
+PVec2 b2GearJoint::GetReactionForce(float inv_dt) const {
+    PVec2 P = m_impulse * m_JvAC;
     return inv_dt * P;
 }
 
@@ -5133,7 +5133,7 @@ void b2GearJoint::Dump() {
 // J = [0 0 -1 0 0 1]
 // K = invI1 + invI2
 
-void b2FrictionJointDef::Initialize(b2Body *bA, b2Body *bB, const b2Vec2 &anchor) {
+void b2FrictionJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &anchor) {
     bodyA = bA;
     bodyB = bB;
     localAnchorA = bodyA->GetLocalPoint(anchor);
@@ -5162,14 +5162,14 @@ void b2FrictionJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIB = m_bodyB->m_invI;
 
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     // Compute the effective mass matrix.
     m_rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
@@ -5187,7 +5187,7 @@ void b2FrictionJoint::InitVelocityConstraints(const b2SolverData &data) {
     float mA = m_invMassA, mB = m_invMassB;
     float iA = m_invIA, iB = m_invIB;
 
-    b2Mat22 K;
+    PMat22 K;
     K.ex.x = mA + mB + iA * m_rA.y * m_rA.y + iB * m_rB.y * m_rB.y;
     K.ex.y = -iA * m_rA.x * m_rA.y - iB * m_rB.x * m_rB.y;
     K.ey.x = K.ex.y;
@@ -5205,7 +5205,7 @@ void b2FrictionJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_linearImpulse *= data.step.dtRatio;
         m_angularImpulse *= data.step.dtRatio;
 
-        b2Vec2 P(m_linearImpulse.x, m_linearImpulse.y);
+        PVec2 P(m_linearImpulse.x, m_linearImpulse.y);
         vA -= mA * P;
         wA -= iA * (b2Cross(m_rA, P) + m_angularImpulse);
         vB += mB * P;
@@ -5222,9 +5222,9 @@ void b2FrictionJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2FrictionJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     float mA = m_invMassA, mB = m_invMassB;
@@ -5248,10 +5248,10 @@ void b2FrictionJoint::SolveVelocityConstraints(const b2SolverData &data) {
 
     // Solve linear friction
     {
-        b2Vec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
+        PVec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
 
-        b2Vec2 impulse = -b2Mul(m_linearMass, Cdot);
-        b2Vec2 oldImpulse = m_linearImpulse;
+        PVec2 impulse = -b2Mul(m_linearMass, Cdot);
+        PVec2 oldImpulse = m_linearImpulse;
         m_linearImpulse += impulse;
 
         float maxImpulse = h * m_maxForce;
@@ -5282,11 +5282,11 @@ bool b2FrictionJoint::SolvePositionConstraints(const b2SolverData &data) {
     return true;
 }
 
-b2Vec2 b2FrictionJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2FrictionJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2FrictionJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2FrictionJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2FrictionJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_linearImpulse; }
+PVec2 b2FrictionJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_linearImpulse; }
 
 float b2FrictionJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_angularImpulse; }
 
@@ -5398,7 +5398,7 @@ void b2Fixture::Destroy(b2BlockAllocator *allocator) {
     m_shape = nullptr;
 }
 
-void b2Fixture::CreateProxies(b2BroadPhase *broadPhase, const b2Transform &xf) {
+void b2Fixture::CreateProxies(b2BroadPhase *broadPhase, const PTransform &xf) {
     METADOT_ASSERT_E(m_proxyCount == 0);
 
     // Create proxies in the broad-phase.
@@ -5424,7 +5424,7 @@ void b2Fixture::DestroyProxies(b2BroadPhase *broadPhase) {
     m_proxyCount = 0;
 }
 
-void b2Fixture::Synchronize(b2BroadPhase *broadPhase, const b2Transform &transform1, const b2Transform &transform2) {
+void b2Fixture::Synchronize(b2BroadPhase *broadPhase, const PTransform &transform1, const PTransform &transform2) {
     if (m_proxyCount == 0) {
         return;
     }
@@ -5439,7 +5439,7 @@ void b2Fixture::Synchronize(b2BroadPhase *broadPhase, const b2Transform &transfo
 
         proxy->aabb.Combine(aabb1, aabb2);
 
-        b2Vec2 displacement = aabb2.GetCenter() - aabb1.GetCenter();
+        PVec2 displacement = aabb2.GetCenter() - aabb1.GetCenter();
 
         broadPhase->MoveProxy(proxy->proxyId, proxy->aabb, displacement);
     }
@@ -5566,7 +5566,7 @@ b2EdgeAndPolygonContact::b2EdgeAndPolygonContact(b2Fixture *fixtureA, b2Fixture 
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
 }
 
-void b2EdgeAndPolygonContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2EdgeAndPolygonContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2CollideEdgeAndPolygon(manifold, (b2EdgeShape *)m_fixtureA->GetShape(), xfA, (b2PolygonShape *)m_fixtureB->GetShape(), xfB);
 }
 
@@ -5585,7 +5585,7 @@ b2EdgeAndCircleContact::b2EdgeAndCircleContact(b2Fixture *fixtureA, b2Fixture *f
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
-void b2EdgeAndCircleContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2EdgeAndCircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2CollideEdgeAndCircle(manifold, (b2EdgeShape *)m_fixtureA->GetShape(), xfA, (b2CircleShape *)m_fixtureB->GetShape(), xfB);
 }
 
@@ -5604,12 +5604,12 @@ void b2EdgeAndCircleContact::Evaluate(b2Manifold *manifold, const b2Transform &x
 // K = J * invM * JT
 //   = invMass1 + invI1 * cross(r1, u)^2 + invMass2 + invI2 * cross(r2, u)^2
 
-void b2DistanceJointDef::Initialize(b2Body *b1, b2Body *b2, const b2Vec2 &anchor1, const b2Vec2 &anchor2) {
+void b2DistanceJointDef::Initialize(b2Body *b1, b2Body *b2, const PVec2 &anchor1, const PVec2 &anchor2) {
     bodyA = b1;
     bodyB = b2;
     localAnchorA = bodyA->GetLocalPoint(anchor1);
     localAnchorB = bodyB->GetLocalPoint(anchor2);
-    b2Vec2 d = anchor2 - anchor1;
+    PVec2 d = anchor2 - anchor1;
     length = b2Max(d.Length(), b2_linearSlop);
     minLength = length;
     maxLength = length;
@@ -5642,17 +5642,17 @@ void b2DistanceJoint::InitVelocityConstraints(const b2SolverData &data) {
     m_invIA = m_bodyA->m_invI;
     m_invIB = m_bodyB->m_invI;
 
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
 
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
     m_rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
     m_rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
@@ -5706,7 +5706,7 @@ void b2DistanceJoint::InitVelocityConstraints(const b2SolverData &data) {
         m_lowerImpulse *= data.step.dtRatio;
         m_upperImpulse *= data.step.dtRatio;
 
-        b2Vec2 P = (m_impulse + m_lowerImpulse - m_upperImpulse) * m_u;
+        PVec2 P = (m_impulse + m_lowerImpulse - m_upperImpulse) * m_u;
         vA -= m_invMassA * P;
         wA -= m_invIA * b2Cross(m_rA, P);
         vB += m_invMassB * P;
@@ -5722,22 +5722,22 @@ void b2DistanceJoint::InitVelocityConstraints(const b2SolverData &data) {
 }
 
 void b2DistanceJoint::SolveVelocityConstraints(const b2SolverData &data) {
-    b2Vec2 vA = data.velocities[m_indexA].v;
+    PVec2 vA = data.velocities[m_indexA].v;
     float wA = data.velocities[m_indexA].w;
-    b2Vec2 vB = data.velocities[m_indexB].v;
+    PVec2 vB = data.velocities[m_indexB].v;
     float wB = data.velocities[m_indexB].w;
 
     if (m_minLength < m_maxLength) {
         if (m_stiffness > 0.0f) {
             // Cdot = dot(u, v + cross(w, r))
-            b2Vec2 vpA = vA + b2Cross(wA, m_rA);
-            b2Vec2 vpB = vB + b2Cross(wB, m_rB);
+            PVec2 vpA = vA + b2Cross(wA, m_rA);
+            PVec2 vpB = vB + b2Cross(wB, m_rB);
             float Cdot = b2Dot(m_u, vpB - vpA);
 
             float impulse = -m_softMass * (Cdot + m_bias + m_gamma * m_impulse);
             m_impulse += impulse;
 
-            b2Vec2 P = impulse * m_u;
+            PVec2 P = impulse * m_u;
             vA -= m_invMassA * P;
             wA -= m_invIA * b2Cross(m_rA, P);
             vB += m_invMassB * P;
@@ -5749,15 +5749,15 @@ void b2DistanceJoint::SolveVelocityConstraints(const b2SolverData &data) {
             float C = m_currentLength - m_minLength;
             float bias = b2Max(0.0f, C) * data.step.inv_dt;
 
-            b2Vec2 vpA = vA + b2Cross(wA, m_rA);
-            b2Vec2 vpB = vB + b2Cross(wB, m_rB);
+            PVec2 vpA = vA + b2Cross(wA, m_rA);
+            PVec2 vpB = vB + b2Cross(wB, m_rB);
             float Cdot = b2Dot(m_u, vpB - vpA);
 
             float impulse = -m_mass * (Cdot + bias);
             float oldImpulse = m_lowerImpulse;
             m_lowerImpulse = b2Max(0.0f, m_lowerImpulse + impulse);
             impulse = m_lowerImpulse - oldImpulse;
-            b2Vec2 P = impulse * m_u;
+            PVec2 P = impulse * m_u;
 
             vA -= m_invMassA * P;
             wA -= m_invIA * b2Cross(m_rA, P);
@@ -5770,15 +5770,15 @@ void b2DistanceJoint::SolveVelocityConstraints(const b2SolverData &data) {
             float C = m_maxLength - m_currentLength;
             float bias = b2Max(0.0f, C) * data.step.inv_dt;
 
-            b2Vec2 vpA = vA + b2Cross(wA, m_rA);
-            b2Vec2 vpB = vB + b2Cross(wB, m_rB);
+            PVec2 vpA = vA + b2Cross(wA, m_rA);
+            PVec2 vpB = vB + b2Cross(wB, m_rB);
             float Cdot = b2Dot(m_u, vpA - vpB);
 
             float impulse = -m_mass * (Cdot + bias);
             float oldImpulse = m_upperImpulse;
             m_upperImpulse = b2Max(0.0f, m_upperImpulse + impulse);
             impulse = m_upperImpulse - oldImpulse;
-            b2Vec2 P = -impulse * m_u;
+            PVec2 P = -impulse * m_u;
 
             vA -= m_invMassA * P;
             wA -= m_invIA * b2Cross(m_rA, P);
@@ -5789,14 +5789,14 @@ void b2DistanceJoint::SolveVelocityConstraints(const b2SolverData &data) {
         // Equal limits
 
         // Cdot = dot(u, v + cross(w, r))
-        b2Vec2 vpA = vA + b2Cross(wA, m_rA);
-        b2Vec2 vpB = vB + b2Cross(wB, m_rB);
+        PVec2 vpA = vA + b2Cross(wA, m_rA);
+        PVec2 vpB = vB + b2Cross(wB, m_rB);
         float Cdot = b2Dot(m_u, vpB - vpA);
 
         float impulse = -m_mass * Cdot;
         m_impulse += impulse;
 
-        b2Vec2 P = impulse * m_u;
+        PVec2 P = impulse * m_u;
         vA -= m_invMassA * P;
         wA -= m_invIA * b2Cross(m_rA, P);
         vB += m_invMassB * P;
@@ -5810,16 +5810,16 @@ void b2DistanceJoint::SolveVelocityConstraints(const b2SolverData &data) {
 }
 
 bool b2DistanceJoint::SolvePositionConstraints(const b2SolverData &data) {
-    b2Vec2 cA = data.positions[m_indexA].c;
+    PVec2 cA = data.positions[m_indexA].c;
     float aA = data.positions[m_indexA].a;
-    b2Vec2 cB = data.positions[m_indexB].c;
+    PVec2 cB = data.positions[m_indexB].c;
     float aB = data.positions[m_indexB].a;
 
-    b2Rot qA(aA), qB(aB);
+    PRot qA(aA), qB(aB);
 
-    b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-    b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-    b2Vec2 u = cB + rB - cA - rA;
+    PVec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
+    PVec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
+    PVec2 u = cB + rB - cA - rA;
 
     float length = u.Normalize();
     float C;
@@ -5834,7 +5834,7 @@ bool b2DistanceJoint::SolvePositionConstraints(const b2SolverData &data) {
     }
 
     float impulse = -m_mass * C;
-    b2Vec2 P = impulse * u;
+    PVec2 P = impulse * u;
 
     cA -= m_invMassA * P;
     aA -= m_invIA * b2Cross(rA, P);
@@ -5849,12 +5849,12 @@ bool b2DistanceJoint::SolvePositionConstraints(const b2SolverData &data) {
     return b2Abs(C) < b2_linearSlop;
 }
 
-b2Vec2 b2DistanceJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
+PVec2 b2DistanceJoint::GetAnchorA() const { return m_bodyA->GetWorldPoint(m_localAnchorA); }
 
-b2Vec2 b2DistanceJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
+PVec2 b2DistanceJoint::GetAnchorB() const { return m_bodyB->GetWorldPoint(m_localAnchorB); }
 
-b2Vec2 b2DistanceJoint::GetReactionForce(float inv_dt) const {
-    b2Vec2 F = inv_dt * (m_impulse + m_lowerImpulse - m_upperImpulse) * m_u;
+PVec2 b2DistanceJoint::GetReactionForce(float inv_dt) const {
+    PVec2 F = inv_dt * (m_impulse + m_lowerImpulse - m_upperImpulse) * m_u;
     return F;
 }
 
@@ -5882,9 +5882,9 @@ float b2DistanceJoint::SetMaxLength(float maxLength) {
 }
 
 float b2DistanceJoint::GetCurrentLength() const {
-    b2Vec2 pA = m_bodyA->GetWorldPoint(m_localAnchorA);
-    b2Vec2 pB = m_bodyB->GetWorldPoint(m_localAnchorB);
-    b2Vec2 d = pB - pA;
+    PVec2 pA = m_bodyA->GetWorldPoint(m_localAnchorA);
+    PVec2 pB = m_bodyB->GetWorldPoint(m_localAnchorB);
+    PVec2 d = pB - pA;
     float length = d.Length();
     return length;
 }
@@ -5908,12 +5908,12 @@ void b2DistanceJoint::Dump() {
 }
 
 void b2DistanceJoint::Draw(DebugDraw *draw) const {
-    const b2Transform &xfA = m_bodyA->GetTransform();
-    const b2Transform &xfB = m_bodyB->GetTransform();
-    b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
-    b2Vec2 pB = b2Mul(xfB, m_localAnchorB);
+    const PTransform &xfA = m_bodyA->GetTransform();
+    const PTransform &xfB = m_bodyB->GetTransform();
+    PVec2 pA = b2Mul(xfA, m_localAnchorA);
+    PVec2 pB = b2Mul(xfB, m_localAnchorB);
 
-    b2Vec2 axis = pB - pA;
+    PVec2 axis = pB - pA;
     axis.Normalize();
 
     METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
@@ -5923,17 +5923,17 @@ void b2DistanceJoint::Draw(DebugDraw *draw) const {
 
     draw->DrawSegment(pA, pB, c4);
 
-    b2Vec2 pRest = pA + m_length * axis;
+    PVec2 pRest = pA + m_length * axis;
     draw->DrawPoint(pRest, 8.0f, c1);
 
     if (m_minLength != m_maxLength) {
         if (m_minLength > b2_linearSlop) {
-            b2Vec2 pMin = pA + m_minLength * axis;
+            PVec2 pMin = pA + m_minLength * axis;
             draw->DrawPoint(pMin, 4.0f, c2);
         }
 
         if (m_maxLength < FLT_MAX) {
-            b2Vec2 pMax = pA + m_maxLength * axis;
+            PVec2 pMax = pA + m_maxLength * axis;
             draw->DrawPoint(pMax, 4.0f, c3);
         }
     }
@@ -6062,8 +6062,8 @@ void b2Contact::Update(b2ContactListener *listener) {
 
     b2Body *bodyA = m_fixtureA->GetBody();
     b2Body *bodyB = m_fixtureB->GetBody();
-    const b2Transform &xfA = bodyA->GetTransform();
-    const b2Transform &xfB = bodyB->GetTransform();
+    const PTransform &xfA = bodyA->GetTransform();
+    const PTransform &xfB = bodyB->GetTransform();
 
     // Is this contact a sensor?
     if (sensor) {
@@ -6127,13 +6127,13 @@ void b2Contact::Update(b2ContactListener *listener) {
 bool g_blockSolve = true;
 
 struct b2ContactPositionConstraint {
-    b2Vec2 localPoints[b2_maxManifoldPoints];
-    b2Vec2 localNormal;
-    b2Vec2 localPoint;
+    PVec2 localPoints[b2_maxManifoldPoints];
+    PVec2 localNormal;
+    PVec2 localPoint;
     I32 indexA;
     I32 indexB;
     float invMassA, invMassB;
-    b2Vec2 localCenterA, localCenterB;
+    PVec2 localCenterA, localCenterB;
     float invIA, invIB;
     b2Manifold::Type type;
     float radiusA, radiusB;
@@ -6244,22 +6244,22 @@ void b2ContactSolver::InitializeVelocityConstraints() {
         float mB = vc->invMassB;
         float iA = vc->invIA;
         float iB = vc->invIB;
-        b2Vec2 localCenterA = pc->localCenterA;
-        b2Vec2 localCenterB = pc->localCenterB;
+        PVec2 localCenterA = pc->localCenterA;
+        PVec2 localCenterB = pc->localCenterB;
 
-        b2Vec2 cA = m_positions[indexA].c;
+        PVec2 cA = m_positions[indexA].c;
         float aA = m_positions[indexA].a;
-        b2Vec2 vA = m_velocities[indexA].v;
+        PVec2 vA = m_velocities[indexA].v;
         float wA = m_velocities[indexA].w;
 
-        b2Vec2 cB = m_positions[indexB].c;
+        PVec2 cB = m_positions[indexB].c;
         float aB = m_positions[indexB].a;
-        b2Vec2 vB = m_velocities[indexB].v;
+        PVec2 vB = m_velocities[indexB].v;
         float wB = m_velocities[indexB].w;
 
         METADOT_ASSERT_E(manifold->pointCount > 0);
 
-        b2Transform xfA, xfB;
+        PTransform xfA, xfB;
         xfA.q.Set(aA);
         xfB.q.Set(aB);
         xfA.p = cA - b2Mul(xfA.q, localCenterA);
@@ -6284,7 +6284,7 @@ void b2ContactSolver::InitializeVelocityConstraints() {
 
             vcp->normalMass = kNormal > 0.0f ? 1.0f / kNormal : 0.0f;
 
-            b2Vec2 tangent = b2Cross(vc->normal, 1.0f);
+            PVec2 tangent = b2Cross(vc->normal, 1.0f);
 
             float rtA = b2Cross(vcp->rA, tangent);
             float rtB = b2Cross(vcp->rB, tangent);
@@ -6344,17 +6344,17 @@ void b2ContactSolver::WarmStart() {
         float iB = vc->invIB;
         I32 pointCount = vc->pointCount;
 
-        b2Vec2 vA = m_velocities[indexA].v;
+        PVec2 vA = m_velocities[indexA].v;
         float wA = m_velocities[indexA].w;
-        b2Vec2 vB = m_velocities[indexB].v;
+        PVec2 vB = m_velocities[indexB].v;
         float wB = m_velocities[indexB].w;
 
-        b2Vec2 normal = vc->normal;
-        b2Vec2 tangent = b2Cross(normal, 1.0f);
+        PVec2 normal = vc->normal;
+        PVec2 tangent = b2Cross(normal, 1.0f);
 
         for (I32 j = 0; j < pointCount; ++j) {
             b2VelocityConstraintPoint *vcp = vc->points + j;
-            b2Vec2 P = vcp->normalImpulse * normal + vcp->tangentImpulse * tangent;
+            PVec2 P = vcp->normalImpulse * normal + vcp->tangentImpulse * tangent;
             wA -= iA * b2Cross(vcp->rA, P);
             vA -= mA * P;
             wB += iB * b2Cross(vcp->rB, P);
@@ -6380,13 +6380,13 @@ void b2ContactSolver::SolveVelocityConstraints() {
         float iB = vc->invIB;
         I32 pointCount = vc->pointCount;
 
-        b2Vec2 vA = m_velocities[indexA].v;
+        PVec2 vA = m_velocities[indexA].v;
         float wA = m_velocities[indexA].w;
-        b2Vec2 vB = m_velocities[indexB].v;
+        PVec2 vB = m_velocities[indexB].v;
         float wB = m_velocities[indexB].w;
 
-        b2Vec2 normal = vc->normal;
-        b2Vec2 tangent = b2Cross(normal, 1.0f);
+        PVec2 normal = vc->normal;
+        PVec2 tangent = b2Cross(normal, 1.0f);
         float friction = vc->friction;
 
         METADOT_ASSERT_E(pointCount == 1 || pointCount == 2);
@@ -6397,7 +6397,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
             b2VelocityConstraintPoint *vcp = vc->points + j;
 
             // Relative velocity at contact
-            b2Vec2 dv = vB + b2Cross(wB, vcp->rB) - vA - b2Cross(wA, vcp->rA);
+            PVec2 dv = vB + b2Cross(wB, vcp->rB) - vA - b2Cross(wA, vcp->rA);
 
             // Compute tangent force
             float vt = b2Dot(dv, tangent) - vc->tangentSpeed;
@@ -6410,7 +6410,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
             vcp->tangentImpulse = newImpulse;
 
             // Apply contact impulse
-            b2Vec2 P = lambda * tangent;
+            PVec2 P = lambda * tangent;
 
             vA -= mA * P;
             wA -= iA * b2Cross(vcp->rA, P);
@@ -6425,7 +6425,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
                 b2VelocityConstraintPoint *vcp = vc->points + j;
 
                 // Relative velocity at contact
-                b2Vec2 dv = vB + b2Cross(wB, vcp->rB) - vA - b2Cross(wA, vcp->rA);
+                PVec2 dv = vB + b2Cross(wB, vcp->rB) - vA - b2Cross(wA, vcp->rA);
 
                 // Compute normal impulse
                 float vn = b2Dot(dv, normal);
@@ -6437,7 +6437,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
                 vcp->normalImpulse = newImpulse;
 
                 // Apply contact impulse
-                b2Vec2 P = lambda * normal;
+                PVec2 P = lambda * normal;
                 vA -= mA * P;
                 wA -= iA * b2Cross(vcp->rA, P);
 
@@ -6481,18 +6481,18 @@ void b2ContactSolver::SolveVelocityConstraints() {
             b2VelocityConstraintPoint *cp1 = vc->points + 0;
             b2VelocityConstraintPoint *cp2 = vc->points + 1;
 
-            b2Vec2 a(cp1->normalImpulse, cp2->normalImpulse);
+            PVec2 a(cp1->normalImpulse, cp2->normalImpulse);
             METADOT_ASSERT_E(a.x >= 0.0f && a.y >= 0.0f);
 
             // Relative velocity at contact
-            b2Vec2 dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-            b2Vec2 dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
+            PVec2 dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
+            PVec2 dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
 
             // Compute normal velocity
             float vn1 = b2Dot(dv1, normal);
             float vn2 = b2Dot(dv2, normal);
 
-            b2Vec2 b;
+            PVec2 b;
             b.x = vn1 - cp1->velocityBias;
             b.y = vn2 - cp2->velocityBias;
 
@@ -6512,15 +6512,15 @@ void b2ContactSolver::SolveVelocityConstraints() {
                 //
                 // x = - inv(A) * b'
                 //
-                b2Vec2 x = -b2Mul(vc->normalMass, b);
+                PVec2 x = -b2Mul(vc->normalMass, b);
 
                 if (x.x >= 0.0f && x.y >= 0.0f) {
                     // Get the incremental impulse
-                    b2Vec2 d = x - a;
+                    PVec2 d = x - a;
 
                     // Apply incremental impulse
-                    b2Vec2 P1 = d.x * normal;
-                    b2Vec2 P2 = d.y * normal;
+                    PVec2 P1 = d.x * normal;
+                    PVec2 P2 = d.y * normal;
                     vA -= mA * (P1 + P2);
                     wA -= iA * (b2Cross(cp1->rA, P1) + b2Cross(cp2->rA, P2));
 
@@ -6558,11 +6558,11 @@ void b2ContactSolver::SolveVelocityConstraints() {
                 vn2 = vc->K.ex.y * x.x + b.y;
                 if (x.x >= 0.0f && vn2 >= 0.0f) {
                     // Get the incremental impulse
-                    b2Vec2 d = x - a;
+                    PVec2 d = x - a;
 
                     // Apply incremental impulse
-                    b2Vec2 P1 = d.x * normal;
-                    b2Vec2 P2 = d.y * normal;
+                    PVec2 P1 = d.x * normal;
+                    PVec2 P2 = d.y * normal;
                     vA -= mA * (P1 + P2);
                     wA -= iA * (b2Cross(cp1->rA, P1) + b2Cross(cp2->rA, P2));
 
@@ -6598,11 +6598,11 @@ void b2ContactSolver::SolveVelocityConstraints() {
 
                 if (x.y >= 0.0f && vn1 >= 0.0f) {
                     // Resubstitute for the incremental impulse
-                    b2Vec2 d = x - a;
+                    PVec2 d = x - a;
 
                     // Apply incremental impulse
-                    b2Vec2 P1 = d.x * normal;
-                    b2Vec2 P2 = d.y * normal;
+                    PVec2 P1 = d.x * normal;
+                    PVec2 P2 = d.y * normal;
                     vA -= mA * (P1 + P2);
                     wA -= iA * (b2Cross(cp1->rA, P1) + b2Cross(cp2->rA, P2));
 
@@ -6637,11 +6637,11 @@ void b2ContactSolver::SolveVelocityConstraints() {
 
                 if (vn1 >= 0.0f && vn2 >= 0.0f) {
                     // Resubstitute for the incremental impulse
-                    b2Vec2 d = x - a;
+                    PVec2 d = x - a;
 
                     // Apply incremental impulse
-                    b2Vec2 P1 = d.x * normal;
-                    b2Vec2 P2 = d.y * normal;
+                    PVec2 P1 = d.x * normal;
+                    PVec2 P2 = d.y * normal;
                     vA -= mA * (P1 + P2);
                     wA -= iA * (b2Cross(cp1->rA, P1) + b2Cross(cp2->rA, P2));
 
@@ -6680,13 +6680,13 @@ void b2ContactSolver::StoreImpulses() {
 }
 
 struct b2PositionSolverManifold {
-    void Initialize(b2ContactPositionConstraint *pc, const b2Transform &xfA, const b2Transform &xfB, I32 index) {
+    void Initialize(b2ContactPositionConstraint *pc, const PTransform &xfA, const PTransform &xfB, I32 index) {
         METADOT_ASSERT_E(pc->pointCount > 0);
 
         switch (pc->type) {
             case b2Manifold::e_circles: {
-                b2Vec2 pointA = b2Mul(xfA, pc->localPoint);
-                b2Vec2 pointB = b2Mul(xfB, pc->localPoints[0]);
+                PVec2 pointA = b2Mul(xfA, pc->localPoint);
+                PVec2 pointB = b2Mul(xfB, pc->localPoints[0]);
                 normal = pointB - pointA;
                 normal.Normalize();
                 point = 0.5f * (pointA + pointB);
@@ -6695,18 +6695,18 @@ struct b2PositionSolverManifold {
 
             case b2Manifold::e_faceA: {
                 normal = b2Mul(xfA.q, pc->localNormal);
-                b2Vec2 planePoint = b2Mul(xfA, pc->localPoint);
+                PVec2 planePoint = b2Mul(xfA, pc->localPoint);
 
-                b2Vec2 clipPoint = b2Mul(xfB, pc->localPoints[index]);
+                PVec2 clipPoint = b2Mul(xfB, pc->localPoints[index]);
                 separation = b2Dot(clipPoint - planePoint, normal) - pc->radiusA - pc->radiusB;
                 point = clipPoint;
             } break;
 
             case b2Manifold::e_faceB: {
                 normal = b2Mul(xfB.q, pc->localNormal);
-                b2Vec2 planePoint = b2Mul(xfB, pc->localPoint);
+                PVec2 planePoint = b2Mul(xfB, pc->localPoint);
 
-                b2Vec2 clipPoint = b2Mul(xfA, pc->localPoints[index]);
+                PVec2 clipPoint = b2Mul(xfA, pc->localPoints[index]);
                 separation = b2Dot(clipPoint - planePoint, normal) - pc->radiusA - pc->radiusB;
                 point = clipPoint;
 
@@ -6716,8 +6716,8 @@ struct b2PositionSolverManifold {
         }
     }
 
-    b2Vec2 normal;
-    b2Vec2 point;
+    PVec2 normal;
+    PVec2 point;
     float separation;
 };
 
@@ -6730,23 +6730,23 @@ bool b2ContactSolver::SolvePositionConstraints() {
 
         I32 indexA = pc->indexA;
         I32 indexB = pc->indexB;
-        b2Vec2 localCenterA = pc->localCenterA;
+        PVec2 localCenterA = pc->localCenterA;
         float mA = pc->invMassA;
         float iA = pc->invIA;
-        b2Vec2 localCenterB = pc->localCenterB;
+        PVec2 localCenterB = pc->localCenterB;
         float mB = pc->invMassB;
         float iB = pc->invIB;
         I32 pointCount = pc->pointCount;
 
-        b2Vec2 cA = m_positions[indexA].c;
+        PVec2 cA = m_positions[indexA].c;
         float aA = m_positions[indexA].a;
 
-        b2Vec2 cB = m_positions[indexB].c;
+        PVec2 cB = m_positions[indexB].c;
         float aB = m_positions[indexB].a;
 
         // Solve normal constraints
         for (I32 j = 0; j < pointCount; ++j) {
-            b2Transform xfA, xfB;
+            PTransform xfA, xfB;
             xfA.q.Set(aA);
             xfB.q.Set(aB);
             xfA.p = cA - b2Mul(xfA.q, localCenterA);
@@ -6754,13 +6754,13 @@ bool b2ContactSolver::SolvePositionConstraints() {
 
             b2PositionSolverManifold psm;
             psm.Initialize(pc, xfA, xfB, j);
-            b2Vec2 normal = psm.normal;
+            PVec2 normal = psm.normal;
 
-            b2Vec2 point = psm.point;
+            PVec2 point = psm.point;
             float separation = psm.separation;
 
-            b2Vec2 rA = point - cA;
-            b2Vec2 rB = point - cB;
+            PVec2 rA = point - cA;
+            PVec2 rB = point - cB;
 
             // Track max constraint error.
             minSeparation = b2Min(minSeparation, separation);
@@ -6776,7 +6776,7 @@ bool b2ContactSolver::SolvePositionConstraints() {
             // Compute normal impulse
             float impulse = K > 0.0f ? -C / K : 0.0f;
 
-            b2Vec2 P = impulse * normal;
+            PVec2 P = impulse * normal;
 
             cA -= mA * P;
             aA -= iA * b2Cross(rA, P);
@@ -6806,8 +6806,8 @@ bool b2ContactSolver::SolveTOIPositionConstraints(I32 toiIndexA, I32 toiIndexB) 
 
         I32 indexA = pc->indexA;
         I32 indexB = pc->indexB;
-        b2Vec2 localCenterA = pc->localCenterA;
-        b2Vec2 localCenterB = pc->localCenterB;
+        PVec2 localCenterA = pc->localCenterA;
+        PVec2 localCenterB = pc->localCenterB;
         I32 pointCount = pc->pointCount;
 
         float mA = 0.0f;
@@ -6824,15 +6824,15 @@ bool b2ContactSolver::SolveTOIPositionConstraints(I32 toiIndexA, I32 toiIndexB) 
             iB = pc->invIB;
         }
 
-        b2Vec2 cA = m_positions[indexA].c;
+        PVec2 cA = m_positions[indexA].c;
         float aA = m_positions[indexA].a;
 
-        b2Vec2 cB = m_positions[indexB].c;
+        PVec2 cB = m_positions[indexB].c;
         float aB = m_positions[indexB].a;
 
         // Solve normal constraints
         for (I32 j = 0; j < pointCount; ++j) {
-            b2Transform xfA, xfB;
+            PTransform xfA, xfB;
             xfA.q.Set(aA);
             xfB.q.Set(aB);
             xfA.p = cA - b2Mul(xfA.q, localCenterA);
@@ -6840,13 +6840,13 @@ bool b2ContactSolver::SolveTOIPositionConstraints(I32 toiIndexA, I32 toiIndexB) 
 
             b2PositionSolverManifold psm;
             psm.Initialize(pc, xfA, xfB, j);
-            b2Vec2 normal = psm.normal;
+            PVec2 normal = psm.normal;
 
-            b2Vec2 point = psm.point;
+            PVec2 point = psm.point;
             float separation = psm.separation;
 
-            b2Vec2 rA = point - cA;
-            b2Vec2 rB = point - cB;
+            PVec2 rA = point - cA;
+            PVec2 rB = point - cB;
 
             // Track max constraint error.
             minSeparation = b2Min(minSeparation, separation);
@@ -6862,7 +6862,7 @@ bool b2ContactSolver::SolveTOIPositionConstraints(I32 toiIndexA, I32 toiIndexB) 
             // Compute normal impulse
             float impulse = K > 0.0f ? -C / K : 0.0f;
 
-            b2Vec2 P = impulse * normal;
+            PVec2 P = impulse * normal;
 
             cA -= mA * P;
             aA -= iA * b2Cross(rA, P);
@@ -7130,7 +7130,7 @@ b2CircleContact::b2CircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b2C
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
-void b2CircleContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2CircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2CollideCircles(manifold, (b2CircleShape *)m_fixtureA->GetShape(), xfA, (b2CircleShape *)m_fixtureB->GetShape(), xfB);
 }
 
@@ -7149,7 +7149,7 @@ b2ChainAndPolygonContact::b2ChainAndPolygonContact(b2Fixture *fixtureA, I32 inde
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
 }
 
-void b2ChainAndPolygonContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2ChainAndPolygonContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2ChainShape *chain = (b2ChainShape *)m_fixtureA->GetShape();
     b2EdgeShape edge;
     chain->GetChildEdge(&edge, m_indexA);
@@ -7171,7 +7171,7 @@ b2ChainAndCircleContact::b2ChainAndCircleContact(b2Fixture *fixtureA, I32 indexA
     METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
-void b2ChainAndCircleContact::Evaluate(b2Manifold *manifold, const b2Transform &xfA, const b2Transform &xfB) {
+void b2ChainAndCircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
     b2ChainShape *chain = (b2ChainShape *)m_fixtureA->GetShape();
     b2EdgeShape edge;
     chain->GetChildEdge(&edge, m_indexA);
@@ -7227,10 +7227,10 @@ void b2Rope::Create(const b2RopeDef &def) {
     METADOT_ASSERT_E(def.count >= 3);
     m_position = def.position;
     m_count = def.count;
-    m_bindPositions = (b2Vec2 *)b2Alloc(m_count * sizeof(b2Vec2));
-    m_ps = (b2Vec2 *)b2Alloc(m_count * sizeof(b2Vec2));
-    m_p0s = (b2Vec2 *)b2Alloc(m_count * sizeof(b2Vec2));
-    m_vs = (b2Vec2 *)b2Alloc(m_count * sizeof(b2Vec2));
+    m_bindPositions = (PVec2 *)b2Alloc(m_count * sizeof(PVec2));
+    m_ps = (PVec2 *)b2Alloc(m_count * sizeof(PVec2));
+    m_p0s = (PVec2 *)b2Alloc(m_count * sizeof(PVec2));
+    m_vs = (PVec2 *)b2Alloc(m_count * sizeof(PVec2));
     m_invMasses = (float *)b2Alloc(m_count * sizeof(float));
 
     for (I32 i = 0; i < m_count; ++i) {
@@ -7256,8 +7256,8 @@ void b2Rope::Create(const b2RopeDef &def) {
     for (I32 i = 0; i < m_stretchCount; ++i) {
         b2RopeStretch &c = m_stretchConstraints[i];
 
-        b2Vec2 p1 = m_ps[i];
-        b2Vec2 p2 = m_ps[i + 1];
+        PVec2 p1 = m_ps[i];
+        PVec2 p2 = m_ps[i + 1];
 
         c.i1 = i;
         c.i2 = i + 1;
@@ -7272,9 +7272,9 @@ void b2Rope::Create(const b2RopeDef &def) {
     for (I32 i = 0; i < m_bendCount; ++i) {
         b2RopeBend &c = m_bendConstraints[i];
 
-        b2Vec2 p1 = m_ps[i];
-        b2Vec2 p2 = m_ps[i + 1];
-        b2Vec2 p3 = m_ps[i + 2];
+        PVec2 p1 = m_ps[i];
+        PVec2 p2 = m_ps[i + 1];
+        PVec2 p3 = m_ps[i + 2];
 
         c.i1 = i;
         c.i2 = i + 1;
@@ -7288,8 +7288,8 @@ void b2Rope::Create(const b2RopeDef &def) {
         c.lambda = 0.0f;
 
         // Pre-compute effective mass (TODO use flattened config)
-        b2Vec2 e1 = p2 - p1;
-        b2Vec2 e2 = p3 - p2;
+        PVec2 e1 = p2 - p1;
+        PVec2 e2 = p3 - p2;
         float L1sqr = e1.LengthSquared();
         float L2sqr = e2.LengthSquared();
 
@@ -7297,16 +7297,16 @@ void b2Rope::Create(const b2RopeDef &def) {
             continue;
         }
 
-        b2Vec2 Jd1 = (-1.0f / L1sqr) * e1.Skew();
-        b2Vec2 Jd2 = (1.0f / L2sqr) * e2.Skew();
+        PVec2 Jd1 = (-1.0f / L1sqr) * e1.Skew();
+        PVec2 Jd2 = (1.0f / L2sqr) * e2.Skew();
 
-        b2Vec2 J1 = -Jd1;
-        b2Vec2 J2 = Jd1 - Jd2;
-        b2Vec2 J3 = Jd2;
+        PVec2 J1 = -Jd1;
+        PVec2 J2 = Jd1 - Jd2;
+        PVec2 J3 = Jd2;
 
         c.invEffectiveMass = c.invMass1 * b2Dot(J1, J1) + c.invMass2 * b2Dot(J2, J2) + c.invMass3 * b2Dot(J3, J3);
 
-        b2Vec2 r = p3 - p1;
+        PVec2 r = p3 - p1;
 
         float rr = r.LengthSquared();
         if (rr == 0.0f) {
@@ -7375,7 +7375,7 @@ void b2Rope::SetTuning(const b2RopeTuning &tuning) {
     }
 }
 
-void b2Rope::Step(float dt, I32 iterations, const b2Vec2 &position) {
+void b2Rope::Step(float dt, I32 iterations, const PVec2 &position) {
     if (dt == 0.0) {
         return;
     }
@@ -7439,7 +7439,7 @@ void b2Rope::Step(float dt, I32 iterations, const b2Vec2 &position) {
     }
 }
 
-void b2Rope::Reset(const b2Vec2 &position) {
+void b2Rope::Reset(const PVec2 &position) {
     m_position = position;
 
     for (I32 i = 0; i < m_count; ++i) {
@@ -7463,10 +7463,10 @@ void b2Rope::SolveStretch_PBD() {
     for (I32 i = 0; i < m_stretchCount; ++i) {
         const b2RopeStretch &c = m_stretchConstraints[i];
 
-        b2Vec2 p1 = m_ps[c.i1];
-        b2Vec2 p2 = m_ps[c.i2];
+        PVec2 p1 = m_ps[c.i1];
+        PVec2 p2 = m_ps[c.i2];
 
-        b2Vec2 d = p2 - p1;
+        PVec2 d = p2 - p1;
         float L = d.Normalize();
 
         float sum = c.invMass1 + c.invMass2;
@@ -7491,17 +7491,17 @@ void b2Rope::SolveStretch_XPBD(float dt) {
     for (I32 i = 0; i < m_stretchCount; ++i) {
         b2RopeStretch &c = m_stretchConstraints[i];
 
-        b2Vec2 p1 = m_ps[c.i1];
-        b2Vec2 p2 = m_ps[c.i2];
+        PVec2 p1 = m_ps[c.i1];
+        PVec2 p2 = m_ps[c.i2];
 
-        b2Vec2 dp1 = p1 - m_p0s[c.i1];
-        b2Vec2 dp2 = p2 - m_p0s[c.i2];
+        PVec2 dp1 = p1 - m_p0s[c.i1];
+        PVec2 dp2 = p2 - m_p0s[c.i2];
 
-        b2Vec2 u = p2 - p1;
+        PVec2 u = p2 - p1;
         float L = u.Normalize();
 
-        b2Vec2 J1 = -u;
-        b2Vec2 J2 = u;
+        PVec2 J1 = -u;
+        PVec2 J2 = u;
 
         float sum = c.invMass1 + c.invMass2;
         if (sum == 0.0f) {
@@ -7536,12 +7536,12 @@ void b2Rope::SolveBend_PBD_Angle() {
     for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
-        b2Vec2 p1 = m_ps[c.i1];
-        b2Vec2 p2 = m_ps[c.i2];
-        b2Vec2 p3 = m_ps[c.i3];
+        PVec2 p1 = m_ps[c.i1];
+        PVec2 p2 = m_ps[c.i2];
+        PVec2 p3 = m_ps[c.i3];
 
-        b2Vec2 d1 = p2 - p1;
-        b2Vec2 d2 = p3 - p2;
+        PVec2 d1 = p2 - p1;
+        PVec2 d2 = p3 - p2;
         float a = b2Cross(d1, d2);
         float b = b2Dot(d1, d2);
 
@@ -7561,12 +7561,12 @@ void b2Rope::SolveBend_PBD_Angle() {
             continue;
         }
 
-        b2Vec2 Jd1 = (-1.0f / L1sqr) * d1.Skew();
-        b2Vec2 Jd2 = (1.0f / L2sqr) * d2.Skew();
+        PVec2 Jd1 = (-1.0f / L1sqr) * d1.Skew();
+        PVec2 Jd2 = (1.0f / L2sqr) * d2.Skew();
 
-        b2Vec2 J1 = -Jd1;
-        b2Vec2 J2 = Jd1 - Jd2;
-        b2Vec2 J3 = Jd2;
+        PVec2 J1 = -Jd1;
+        PVec2 J2 = Jd1 - Jd2;
+        PVec2 J3 = Jd2;
 
         float sum;
         if (m_tuning.fixedEffectiveMass) {
@@ -7597,16 +7597,16 @@ void b2Rope::SolveBend_XPBD_Angle(float dt) {
     for (I32 i = 0; i < m_bendCount; ++i) {
         b2RopeBend &c = m_bendConstraints[i];
 
-        b2Vec2 p1 = m_ps[c.i1];
-        b2Vec2 p2 = m_ps[c.i2];
-        b2Vec2 p3 = m_ps[c.i3];
+        PVec2 p1 = m_ps[c.i1];
+        PVec2 p2 = m_ps[c.i2];
+        PVec2 p3 = m_ps[c.i3];
 
-        b2Vec2 dp1 = p1 - m_p0s[c.i1];
-        b2Vec2 dp2 = p2 - m_p0s[c.i2];
-        b2Vec2 dp3 = p3 - m_p0s[c.i3];
+        PVec2 dp1 = p1 - m_p0s[c.i1];
+        PVec2 dp2 = p2 - m_p0s[c.i2];
+        PVec2 dp3 = p3 - m_p0s[c.i3];
 
-        b2Vec2 d1 = p2 - p1;
-        b2Vec2 d2 = p3 - p2;
+        PVec2 d1 = p2 - p1;
+        PVec2 d2 = p3 - p2;
 
         float L1sqr, L2sqr;
 
@@ -7627,12 +7627,12 @@ void b2Rope::SolveBend_XPBD_Angle(float dt) {
 
         float angle = b2Atan2(a, b);
 
-        b2Vec2 Jd1 = (-1.0f / L1sqr) * d1.Skew();
-        b2Vec2 Jd2 = (1.0f / L2sqr) * d2.Skew();
+        PVec2 Jd1 = (-1.0f / L1sqr) * d1.Skew();
+        PVec2 Jd2 = (1.0f / L2sqr) * d2.Skew();
 
-        b2Vec2 J1 = -Jd1;
-        b2Vec2 J2 = Jd1 - Jd2;
-        b2Vec2 J3 = Jd2;
+        PVec2 J1 = -Jd1;
+        PVec2 J2 = Jd1 - Jd2;
+        PVec2 J3 = Jd2;
 
         float sum;
         if (m_tuning.fixedEffectiveMass) {
@@ -7676,16 +7676,16 @@ void b2Rope::ApplyBendForces(float dt) {
     for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
-        b2Vec2 p1 = m_ps[c.i1];
-        b2Vec2 p2 = m_ps[c.i2];
-        b2Vec2 p3 = m_ps[c.i3];
+        PVec2 p1 = m_ps[c.i1];
+        PVec2 p2 = m_ps[c.i2];
+        PVec2 p3 = m_ps[c.i3];
 
-        b2Vec2 v1 = m_vs[c.i1];
-        b2Vec2 v2 = m_vs[c.i2];
-        b2Vec2 v3 = m_vs[c.i3];
+        PVec2 v1 = m_vs[c.i1];
+        PVec2 v2 = m_vs[c.i2];
+        PVec2 v3 = m_vs[c.i3];
 
-        b2Vec2 d1 = p2 - p1;
-        b2Vec2 d2 = p3 - p2;
+        PVec2 d1 = p2 - p1;
+        PVec2 d2 = p3 - p2;
 
         float L1sqr, L2sqr;
 
@@ -7706,12 +7706,12 @@ void b2Rope::ApplyBendForces(float dt) {
 
         float angle = b2Atan2(a, b);
 
-        b2Vec2 Jd1 = (-1.0f / L1sqr) * d1.Skew();
-        b2Vec2 Jd2 = (1.0f / L2sqr) * d2.Skew();
+        PVec2 Jd1 = (-1.0f / L1sqr) * d1.Skew();
+        PVec2 Jd2 = (1.0f / L2sqr) * d2.Skew();
 
-        b2Vec2 J1 = -Jd1;
-        b2Vec2 J2 = Jd1 - Jd2;
-        b2Vec2 J3 = Jd2;
+        PVec2 J1 = -Jd1;
+        PVec2 J2 = Jd1 - Jd2;
+        PVec2 J3 = Jd2;
 
         float sum;
         if (m_tuning.fixedEffectiveMass) {
@@ -7749,10 +7749,10 @@ void b2Rope::SolveBend_PBD_Distance() {
         I32 i1 = c.i1;
         I32 i2 = c.i3;
 
-        b2Vec2 p1 = m_ps[i1];
-        b2Vec2 p2 = m_ps[i2];
+        PVec2 p1 = m_ps[i1];
+        PVec2 p2 = m_ps[i2];
 
-        b2Vec2 d = p2 - p1;
+        PVec2 d = p2 - p1;
         float L = d.Normalize();
 
         float sum = c.invMass1 + c.invMass3;
@@ -7779,23 +7779,23 @@ void b2Rope::SolveBend_PBD_Height() {
     for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
-        b2Vec2 p1 = m_ps[c.i1];
-        b2Vec2 p2 = m_ps[c.i2];
-        b2Vec2 p3 = m_ps[c.i3];
+        PVec2 p1 = m_ps[c.i1];
+        PVec2 p2 = m_ps[c.i2];
+        PVec2 p3 = m_ps[c.i3];
 
         // Barycentric coordinates are held constant
-        b2Vec2 d = c.alpha1 * p1 + c.alpha2 * p3 - p2;
+        PVec2 d = c.alpha1 * p1 + c.alpha2 * p3 - p2;
         float dLen = d.Length();
 
         if (dLen == 0.0f) {
             continue;
         }
 
-        b2Vec2 dHat = (1.0f / dLen) * d;
+        PVec2 dHat = (1.0f / dLen) * d;
 
-        b2Vec2 J1 = c.alpha1 * dHat;
-        b2Vec2 J2 = -dHat;
-        b2Vec2 J3 = c.alpha2 * dHat;
+        PVec2 J1 = c.alpha1 * dHat;
+        PVec2 J2 = -dHat;
+        PVec2 J3 = c.alpha2 * dHat;
 
         float sum = c.invMass1 * c.alpha1 * c.alpha1 + c.invMass2 + c.invMass3 * c.alpha2 * c.alpha2;
 
@@ -7824,9 +7824,9 @@ void b2Rope::SolveBend_PBD_Triangle() {
     for (I32 i = 0; i < m_bendCount; ++i) {
         const b2RopeBend &c = m_bendConstraints[i];
 
-        b2Vec2 b0 = m_ps[c.i1];
-        b2Vec2 v = m_ps[c.i2];
-        b2Vec2 b1 = m_ps[c.i3];
+        PVec2 b0 = m_ps[c.i1];
+        PVec2 v = m_ps[c.i2];
+        PVec2 b1 = m_ps[c.i3];
 
         float wb0 = c.invMass1;
         float wv = c.invMass2;
@@ -7835,11 +7835,11 @@ void b2Rope::SolveBend_PBD_Triangle() {
         float W = wb0 + wb1 + 2.0f * wv;
         float invW = stiffness / W;
 
-        b2Vec2 d = v - (1.0f / 3.0f) * (b0 + v + b1);
+        PVec2 d = v - (1.0f / 3.0f) * (b0 + v + b1);
 
-        b2Vec2 db0 = 2.0f * wb0 * invW * d;
-        b2Vec2 dv = -4.0f * wv * invW * d;
-        b2Vec2 db1 = 2.0f * wb1 * invW * d;
+        PVec2 db0 = 2.0f * wb0 * invW * d;
+        PVec2 dv = -4.0f * wv * invW * d;
+        PVec2 db1 = 2.0f * wb1 * invW * d;
 
         b0 += db0;
         v += dv;
@@ -8040,16 +8040,16 @@ void b2BlockAllocator::Clear() {
     memset(m_freeLists, 0, sizeof(m_freeLists));
 }
 
-const b2Vec2 b2Vec2_zero(0.0f, 0.0f);
+const PVec2 b2Vec2_zero(0.0f, 0.0f);
 
 /// Solve A * x = b, where b is a column vector. This is more efficient
 /// than computing the inverse in one-shot cases.
-b2Vec3 b2Mat33::Solve33(const b2Vec3 &b) const {
+PVec3 b2Mat33::Solve33(const PVec3 &b) const {
     float det = b2Dot(ex, b2Cross(ey, ez));
     if (det != 0.0f) {
         det = 1.0f / det;
     }
-    b2Vec3 x;
+    PVec3 x;
     x.x = det * b2Dot(b, b2Cross(ey, ez));
     x.y = det * b2Dot(ex, b2Cross(b, ez));
     x.z = det * b2Dot(ex, b2Cross(ey, b));
@@ -8058,13 +8058,13 @@ b2Vec3 b2Mat33::Solve33(const b2Vec3 &b) const {
 
 /// Solve A * x = b, where b is a column vector. This is more efficient
 /// than computing the inverse in one-shot cases.
-b2Vec2 b2Mat33::Solve22(const b2Vec2 &b) const {
+PVec2 b2Mat33::Solve22(const PVec2 &b) const {
     float a11 = ex.x, a12 = ey.x, a21 = ex.y, a22 = ey.y;
     float det = a11 * a22 - a12 * a21;
     if (det != 0.0f) {
         det = 1.0f / det;
     }
-    b2Vec2 x;
+    PVec2 x;
     x.x = det * (a22 * b.x - a12 * b.y);
     x.y = det * (a11 * b.y - a21 * b.x);
     return x;
@@ -8285,7 +8285,7 @@ void b2ChainShape::Clear() {
     m_count = 0;
 }
 
-void b2ChainShape::CreateLoop(const b2Vec2 *vertices, I32 count) {
+void b2ChainShape::CreateLoop(const PVec2 *vertices, I32 count) {
     METADOT_ASSERT_E(m_vertices == nullptr && m_count == 0);
     METADOT_ASSERT_E(count >= 3);
     if (count < 3) {
@@ -8293,21 +8293,21 @@ void b2ChainShape::CreateLoop(const b2Vec2 *vertices, I32 count) {
     }
 
     for (I32 i = 1; i < count; ++i) {
-        b2Vec2 v1 = vertices[i - 1];
-        b2Vec2 v2 = vertices[i];
+        PVec2 v1 = vertices[i - 1];
+        PVec2 v2 = vertices[i];
         // If the code crashes here, it means your vertices are too close together.
         METADOT_ASSERT_E(b2DistanceSquared(v1, v2) > b2_linearSlop * b2_linearSlop);
     }
 
     m_count = count + 1;
-    m_vertices = (b2Vec2 *)b2Alloc(m_count * sizeof(b2Vec2));
-    memcpy(m_vertices, vertices, count * sizeof(b2Vec2));
+    m_vertices = (PVec2 *)b2Alloc(m_count * sizeof(PVec2));
+    memcpy(m_vertices, vertices, count * sizeof(PVec2));
     m_vertices[count] = m_vertices[0];
     m_prevVertex = m_vertices[m_count - 2];
     m_nextVertex = m_vertices[1];
 }
 
-void b2ChainShape::CreateChain(const b2Vec2 *vertices, I32 count, const b2Vec2 &prevVertex, const b2Vec2 &nextVertex) {
+void b2ChainShape::CreateChain(const PVec2 *vertices, I32 count, const PVec2 &prevVertex, const PVec2 &nextVertex) {
     METADOT_ASSERT_E(m_vertices == nullptr && m_count == 0);
     METADOT_ASSERT_E(count >= 2);
     for (I32 i = 1; i < count; ++i) {
@@ -8316,8 +8316,8 @@ void b2ChainShape::CreateChain(const b2Vec2 *vertices, I32 count, const b2Vec2 &
     }
 
     m_count = count;
-    m_vertices = (b2Vec2 *)b2Alloc(count * sizeof(b2Vec2));
-    memcpy(m_vertices, vertices, m_count * sizeof(b2Vec2));
+    m_vertices = (PVec2 *)b2Alloc(count * sizeof(PVec2));
+    memcpy(m_vertices, vertices, m_count * sizeof(PVec2));
 
     m_prevVertex = prevVertex;
     m_nextVertex = nextVertex;
@@ -8357,13 +8357,13 @@ void b2ChainShape::GetChildEdge(b2EdgeShape *edge, I32 index) const {
     }
 }
 
-bool b2ChainShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
+bool b2ChainShape::TestPoint(const PTransform &xf, const PVec2 &p) const {
     B2_NOT_USED(xf);
     B2_NOT_USED(p);
     return false;
 }
 
-bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &xf, I32 childIndex) const {
+bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const PTransform &xf, I32 childIndex) const {
     METADOT_ASSERT_E(childIndex < m_count);
 
     b2EdgeShape edgeShape;
@@ -8380,7 +8380,7 @@ bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
     return edgeShape.RayCast(output, input, xf, 0);
 }
 
-void b2ChainShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const {
+void b2ChainShape::ComputeAABB(b2AABB *aabb, const PTransform &xf, I32 childIndex) const {
     METADOT_ASSERT_E(childIndex < m_count);
 
     I32 i1 = childIndex;
@@ -8389,13 +8389,13 @@ void b2ChainShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childInd
         i2 = 0;
     }
 
-    b2Vec2 v1 = b2Mul(xf, m_vertices[i1]);
-    b2Vec2 v2 = b2Mul(xf, m_vertices[i2]);
+    PVec2 v1 = b2Mul(xf, m_vertices[i1]);
+    PVec2 v2 = b2Mul(xf, m_vertices[i2]);
 
-    b2Vec2 lower = b2Min(v1, v2);
-    b2Vec2 upper = b2Max(v1, v2);
+    PVec2 lower = b2Min(v1, v2);
+    PVec2 upper = b2Max(v1, v2);
 
-    b2Vec2 r(m_radius, m_radius);
+    PVec2 r(m_radius, m_radius);
     aabb->lowerBound = lower - r;
     aabb->upperBound = upper + r;
 }
@@ -8438,7 +8438,7 @@ void b2BroadPhase::DestroyProxy(I32 proxyId) {
     m_tree.DestroyProxy(proxyId);
 }
 
-void b2BroadPhase::MoveProxy(I32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement) {
+void b2BroadPhase::MoveProxy(I32 proxyId, const b2AABB &aabb, const PVec2 &displacement) {
     bool buffer = m_tree.MoveProxy(proxyId, aabb, displacement);
     if (buffer) {
         BufferMove(proxyId);
@@ -8506,9 +8506,9 @@ b2Shape *b2CircleShape::Clone(b2BlockAllocator *allocator) const {
 
 I32 b2CircleShape::GetChildCount() const { return 1; }
 
-bool b2CircleShape::TestPoint(const b2Transform &transform, const b2Vec2 &p) const {
-    b2Vec2 center = transform.p + b2Mul(transform.q, m_p);
-    b2Vec2 d = p - center;
+bool b2CircleShape::TestPoint(const PTransform &transform, const PVec2 &p) const {
+    PVec2 center = transform.p + b2Mul(transform.q, m_p);
+    PVec2 d = p - center;
     return b2Dot(d, d) <= m_radius * m_radius;
 }
 
@@ -8516,15 +8516,15 @@ bool b2CircleShape::TestPoint(const b2Transform &transform, const b2Vec2 &p) con
 // From Section 3.1.2
 // x = s + a * r
 // norm(x) = radius
-bool b2CircleShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &transform, I32 childIndex) const {
+bool b2CircleShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const PTransform &transform, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
-    b2Vec2 position = transform.p + b2Mul(transform.q, m_p);
-    b2Vec2 s = input.p1 - position;
+    PVec2 position = transform.p + b2Mul(transform.q, m_p);
+    PVec2 s = input.p1 - position;
     float b = b2Dot(s, s) - m_radius * m_radius;
 
     // Solve quadratic equation.
-    b2Vec2 r = input.p2 - input.p1;
+    PVec2 r = input.p2 - input.p1;
     float c = b2Dot(s, r);
     float rr = b2Dot(r, r);
     float sigma = c * c - rr * b;
@@ -8549,10 +8549,10 @@ bool b2CircleShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input
     return false;
 }
 
-void b2CircleShape::ComputeAABB(b2AABB *aabb, const b2Transform &transform, I32 childIndex) const {
+void b2CircleShape::ComputeAABB(b2AABB *aabb, const PTransform &transform, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
-    b2Vec2 p = transform.p + b2Mul(transform.q, m_p);
+    PVec2 p = transform.p + b2Mul(transform.q, m_p);
     aabb->lowerBound.Set(p.x - m_radius, p.y - m_radius);
     aabb->upperBound.Set(p.x + m_radius, p.y + m_radius);
 }
@@ -8565,13 +8565,13 @@ void b2CircleShape::ComputeMass(b2MassData *massData, float density) const {
     massData->I = massData->mass * (0.5f * m_radius * m_radius + b2Dot(m_p, m_p));
 }
 
-void b2CollideCircles(b2Manifold *manifold, const b2CircleShape *circleA, const b2Transform &xfA, const b2CircleShape *circleB, const b2Transform &xfB) {
+void b2CollideCircles(b2Manifold *manifold, const b2CircleShape *circleA, const PTransform &xfA, const b2CircleShape *circleB, const PTransform &xfB) {
     manifold->pointCount = 0;
 
-    b2Vec2 pA = b2Mul(xfA, circleA->m_p);
-    b2Vec2 pB = b2Mul(xfB, circleB->m_p);
+    PVec2 pA = b2Mul(xfA, circleA->m_p);
+    PVec2 pB = b2Mul(xfB, circleB->m_p);
 
-    b2Vec2 d = pB - pA;
+    PVec2 d = pB - pA;
     float distSqr = b2Dot(d, d);
     float rA = circleA->m_radius, rB = circleB->m_radius;
     float radius = rA + rB;
@@ -8588,20 +8588,20 @@ void b2CollideCircles(b2Manifold *manifold, const b2CircleShape *circleA, const 
     manifold->points[0].id.key = 0;
 }
 
-void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polygonA, const b2Transform &xfA, const b2CircleShape *circleB, const b2Transform &xfB) {
+void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polygonA, const PTransform &xfA, const b2CircleShape *circleB, const PTransform &xfB) {
     manifold->pointCount = 0;
 
     // Compute circle position in the frame of the polygon.
-    b2Vec2 c = b2Mul(xfB, circleB->m_p);
-    b2Vec2 cLocal = b2MulT(xfA, c);
+    PVec2 c = b2Mul(xfB, circleB->m_p);
+    PVec2 cLocal = b2MulT(xfA, c);
 
     // Find the min separating edge.
     I32 normalIndex = 0;
     float separation = -b2_maxFloat;
     float radius = polygonA->m_radius + circleB->m_radius;
     I32 vertexCount = polygonA->m_count;
-    const b2Vec2 *vertices = polygonA->m_vertices;
-    const b2Vec2 *normals = polygonA->m_normals;
+    const PVec2 *vertices = polygonA->m_vertices;
+    const PVec2 *normals = polygonA->m_normals;
 
     for (I32 i = 0; i < vertexCount; ++i) {
         float s = b2Dot(normals[i], cLocal - vertices[i]);
@@ -8620,8 +8620,8 @@ void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polyg
     // Vertices that subtend the incident face.
     I32 vertIndex1 = normalIndex;
     I32 vertIndex2 = vertIndex1 + 1 < vertexCount ? vertIndex1 + 1 : 0;
-    b2Vec2 v1 = vertices[vertIndex1];
-    b2Vec2 v2 = vertices[vertIndex2];
+    PVec2 v1 = vertices[vertIndex1];
+    PVec2 v2 = vertices[vertIndex2];
 
     // If the center is inside the polygon ...
     if (separation < b2_epsilon) {
@@ -8662,7 +8662,7 @@ void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polyg
         manifold->points[0].localPoint = circleB->m_p;
         manifold->points[0].id.key = 0;
     } else {
-        b2Vec2 faceCenter = 0.5f * (v1 + v2);
+        PVec2 faceCenter = 0.5f * (v1 + v2);
         float s = b2Dot(cLocal - faceCenter, normals[vertIndex1]);
         if (s > radius) {
             return;
@@ -8679,17 +8679,17 @@ void b2CollidePolygonAndCircle(b2Manifold *manifold, const b2PolygonShape *polyg
 
 // Compute contact points for edge versus circle.
 // This accounts for edge connectivity.
-void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, const b2Transform &xfA, const b2CircleShape *circleB, const b2Transform &xfB) {
+void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, const PTransform &xfA, const b2CircleShape *circleB, const PTransform &xfB) {
     manifold->pointCount = 0;
 
     // Compute circle in frame of edge
-    b2Vec2 Q = b2MulT(xfA, b2Mul(xfB, circleB->m_p));
+    PVec2 Q = b2MulT(xfA, b2Mul(xfB, circleB->m_p));
 
-    b2Vec2 A = edgeA->m_vertex1, B = edgeA->m_vertex2;
-    b2Vec2 e = B - A;
+    PVec2 A = edgeA->m_vertex1, B = edgeA->m_vertex2;
+    PVec2 e = B - A;
 
     // Normal points to the right for a CCW winding
-    b2Vec2 n(e.y, -e.x);
+    PVec2 n(e.y, -e.x);
     float offset = b2Dot(n, Q - A);
 
     bool oneSided = edgeA->m_oneSided;
@@ -8709,8 +8709,8 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
 
     // Region A
     if (v <= 0.0f) {
-        b2Vec2 P = A;
-        b2Vec2 d = Q - P;
+        PVec2 P = A;
+        PVec2 d = Q - P;
         float dd = b2Dot(d, d);
         if (dd > radius * radius) {
             return;
@@ -8718,9 +8718,9 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
 
         // Is there an edge connected to A?
         if (edgeA->m_oneSided) {
-            b2Vec2 A1 = edgeA->m_vertex0;
-            b2Vec2 B1 = A;
-            b2Vec2 e1 = B1 - A1;
+            PVec2 A1 = edgeA->m_vertex0;
+            PVec2 B1 = A;
+            PVec2 e1 = B1 - A1;
             float u1 = b2Dot(e1, B1 - Q);
 
             // Is the circle in Region AB of the previous edge?
@@ -8743,8 +8743,8 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
 
     // Region B
     if (u <= 0.0f) {
-        b2Vec2 P = B;
-        b2Vec2 d = Q - P;
+        PVec2 P = B;
+        PVec2 d = Q - P;
         float dd = b2Dot(d, d);
         if (dd > radius * radius) {
             return;
@@ -8752,9 +8752,9 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
 
         // Is there an edge connected to B?
         if (edgeA->m_oneSided) {
-            b2Vec2 B2 = edgeA->m_vertex3;
-            b2Vec2 A2 = B;
-            b2Vec2 e2 = B2 - A2;
+            PVec2 B2 = edgeA->m_vertex3;
+            PVec2 A2 = B;
+            PVec2 e2 = B2 - A2;
             float v2 = b2Dot(e2, Q - A2);
 
             // Is the circle in Region AB of the next edge?
@@ -8778,8 +8778,8 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
     // Region AB
     float den = b2Dot(e, e);
     METADOT_ASSERT_E(den > 0.0f);
-    b2Vec2 P = (1.0f / den) * (u * A + v * B);
-    b2Vec2 d = Q - P;
+    PVec2 P = (1.0f / den) * (u * A + v * B);
+    PVec2 d = Q - P;
     float dd = b2Dot(d, d);
     if (dd > radius * radius) {
         return;
@@ -8805,7 +8805,7 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
 struct b2EPAxis {
     enum Type { e_unknown, e_edgeA, e_edgeB };
 
-    b2Vec2 normal;
+    PVec2 normal;
     Type type;
     I32 index;
     float separation;
@@ -8813,32 +8813,32 @@ struct b2EPAxis {
 
 // This holds polygon B expressed in frame A.
 struct b2TempPolygon {
-    b2Vec2 vertices[b2_maxPolygonVertices];
-    b2Vec2 normals[b2_maxPolygonVertices];
+    PVec2 vertices[b2_maxPolygonVertices];
+    PVec2 normals[b2_maxPolygonVertices];
     I32 count;
 };
 
 // Reference face used for clipping
 struct b2ReferenceFace {
     I32 i1, i2;
-    b2Vec2 v1, v2;
-    b2Vec2 normal;
+    PVec2 v1, v2;
+    PVec2 normal;
 
-    b2Vec2 sideNormal1;
+    PVec2 sideNormal1;
     float sideOffset1;
 
-    b2Vec2 sideNormal2;
+    PVec2 sideNormal2;
     float sideOffset2;
 };
 
-static b2EPAxis b2ComputeEdgeSeparation(const b2TempPolygon &polygonB, const b2Vec2 &v1, const b2Vec2 &normal1) {
+static b2EPAxis b2ComputeEdgeSeparation(const b2TempPolygon &polygonB, const PVec2 &v1, const PVec2 &normal1) {
     b2EPAxis axis;
     axis.type = b2EPAxis::e_edgeA;
     axis.index = -1;
     axis.separation = -FLT_MAX;
     axis.normal.SetZero();
 
-    b2Vec2 axes[2] = {normal1, -normal1};
+    PVec2 axes[2] = {normal1, -normal1};
 
     // Find axis with least overlap (min-max problem)
     for (I32 j = 0; j < 2; ++j) {
@@ -8862,7 +8862,7 @@ static b2EPAxis b2ComputeEdgeSeparation(const b2TempPolygon &polygonB, const b2V
     return axis;
 }
 
-static b2EPAxis b2ComputePolygonSeparation(const b2TempPolygon &polygonB, const b2Vec2 &v1, const b2Vec2 &v2) {
+static b2EPAxis b2ComputePolygonSeparation(const b2TempPolygon &polygonB, const PVec2 &v1, const PVec2 &v2) {
     b2EPAxis axis;
     axis.type = b2EPAxis::e_unknown;
     axis.index = -1;
@@ -8870,7 +8870,7 @@ static b2EPAxis b2ComputePolygonSeparation(const b2TempPolygon &polygonB, const 
     axis.normal.SetZero();
 
     for (I32 i = 0; i < polygonB.count; ++i) {
-        b2Vec2 n = -polygonB.normals[i];
+        PVec2 n = -polygonB.normals[i];
 
         float s1 = b2Dot(n, polygonB.vertices[i] - v1);
         float s2 = b2Dot(n, polygonB.vertices[i] - v2);
@@ -8887,21 +8887,21 @@ static b2EPAxis b2ComputePolygonSeparation(const b2TempPolygon &polygonB, const 
     return axis;
 }
 
-void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, const b2Transform &xfA, const b2PolygonShape *polygonB, const b2Transform &xfB) {
+void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, const PTransform &xfA, const b2PolygonShape *polygonB, const PTransform &xfB) {
     manifold->pointCount = 0;
 
-    b2Transform xf = b2MulT(xfA, xfB);
+    PTransform xf = b2MulT(xfA, xfB);
 
-    b2Vec2 centroidB = b2Mul(xf, polygonB->m_centroid);
+    PVec2 centroidB = b2Mul(xf, polygonB->m_centroid);
 
-    b2Vec2 v1 = edgeA->m_vertex1;
-    b2Vec2 v2 = edgeA->m_vertex2;
+    PVec2 v1 = edgeA->m_vertex1;
+    PVec2 v2 = edgeA->m_vertex2;
 
-    b2Vec2 edge1 = v2 - v1;
+    PVec2 edge1 = v2 - v1;
     edge1.Normalize();
 
     // Normal points to the right for a CCW winding
-    b2Vec2 normal1(edge1.y, -edge1.x);
+    PVec2 normal1(edge1.y, -edge1.x);
     float offset1 = b2Dot(normal1, centroidB - v1);
 
     bool oneSided = edgeA->m_oneSided;
@@ -8944,14 +8944,14 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
         // Smooth collision
         // See https://box2d.org/posts/2020/06/ghost-collisions/
 
-        b2Vec2 edge0 = v1 - edgeA->m_vertex0;
+        PVec2 edge0 = v1 - edgeA->m_vertex0;
         edge0.Normalize();
-        b2Vec2 normal0(edge0.y, -edge0.x);
+        PVec2 normal0(edge0.y, -edge0.x);
         bool convex1 = b2Cross(edge0, edge1) >= 0.0f;
 
-        b2Vec2 edge2 = edgeA->m_vertex3 - v2;
+        PVec2 edge2 = edgeA->m_vertex3 - v2;
         edge2.Normalize();
-        b2Vec2 normal2(edge2.y, -edge2.x);
+        PVec2 normal2(edge2.y, -edge2.x);
         bool convex2 = b2Cross(edge1, edge2) >= 0.0f;
 
         const float sinTol = 0.1f;
@@ -9108,20 +9108,20 @@ void b2CollideEdgeAndPolygon(b2Manifold *manifold, const b2EdgeShape *edgeA, con
 }
 
 // Find the max separation between poly1 and poly2 using edge normals from poly1.
-static float b2FindMaxSeparation(I32 *edgeIndex, const b2PolygonShape *poly1, const b2Transform &xf1, const b2PolygonShape *poly2, const b2Transform &xf2) {
+static float b2FindMaxSeparation(I32 *edgeIndex, const b2PolygonShape *poly1, const PTransform &xf1, const b2PolygonShape *poly2, const PTransform &xf2) {
     I32 count1 = poly1->m_count;
     I32 count2 = poly2->m_count;
-    const b2Vec2 *n1s = poly1->m_normals;
-    const b2Vec2 *v1s = poly1->m_vertices;
-    const b2Vec2 *v2s = poly2->m_vertices;
-    b2Transform xf = b2MulT(xf2, xf1);
+    const PVec2 *n1s = poly1->m_normals;
+    const PVec2 *v1s = poly1->m_vertices;
+    const PVec2 *v2s = poly2->m_vertices;
+    PTransform xf = b2MulT(xf2, xf1);
 
     I32 bestIndex = 0;
     float maxSeparation = -b2_maxFloat;
     for (I32 i = 0; i < count1; ++i) {
         // Get poly1 normal in frame2.
-        b2Vec2 n = b2Mul(xf.q, n1s[i]);
-        b2Vec2 v1 = b2Mul(xf, v1s[i]);
+        PVec2 n = b2Mul(xf.q, n1s[i]);
+        PVec2 v1 = b2Mul(xf, v1s[i]);
 
         // Find deepest point for normal i.
         float si = b2_maxFloat;
@@ -9142,17 +9142,17 @@ static float b2FindMaxSeparation(I32 *edgeIndex, const b2PolygonShape *poly1, co
     return maxSeparation;
 }
 
-static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1, const b2Transform &xf1, I32 edge1, const b2PolygonShape *poly2, const b2Transform &xf2) {
-    const b2Vec2 *normals1 = poly1->m_normals;
+static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1, const PTransform &xf1, I32 edge1, const b2PolygonShape *poly2, const PTransform &xf2) {
+    const PVec2 *normals1 = poly1->m_normals;
 
     I32 count2 = poly2->m_count;
-    const b2Vec2 *vertices2 = poly2->m_vertices;
-    const b2Vec2 *normals2 = poly2->m_normals;
+    const PVec2 *vertices2 = poly2->m_vertices;
+    const PVec2 *normals2 = poly2->m_normals;
 
     METADOT_ASSERT_E(0 <= edge1 && edge1 < poly1->m_count);
 
     // Get the normal of the reference edge in poly2's frame.
-    b2Vec2 normal1 = b2MulT(xf2.q, b2Mul(xf1.q, normals1[edge1]));
+    PVec2 normal1 = b2MulT(xf2.q, b2Mul(xf1.q, normals1[edge1]));
 
     // Find the incident edge on poly2.
     I32 index = 0;
@@ -9189,7 +9189,7 @@ static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1, c
 // Clip
 
 // The normal points from 1 to 2
-void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const b2Transform &xfA, const b2PolygonShape *polyB, const b2Transform &xfB) {
+void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const PTransform &xfA, const b2PolygonShape *polyB, const PTransform &xfB) {
     manifold->pointCount = 0;
     float totalRadius = polyA->m_radius + polyB->m_radius;
 
@@ -9203,7 +9203,7 @@ void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const 
 
     const b2PolygonShape *poly1;  // reference polygon
     const b2PolygonShape *poly2;  // incident polygon
-    b2Transform xf1, xf2;
+    PTransform xf1, xf2;
     I32 edge1;  // reference edge
     U8 flip;
     const float k_tol = 0.1f * b2_linearSlop;
@@ -9230,22 +9230,22 @@ void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const 
     b2FindIncidentEdge(incidentEdge, poly1, xf1, edge1, poly2, xf2);
 
     I32 count1 = poly1->m_count;
-    const b2Vec2 *vertices1 = poly1->m_vertices;
+    const PVec2 *vertices1 = poly1->m_vertices;
 
     I32 iv1 = edge1;
     I32 iv2 = edge1 + 1 < count1 ? edge1 + 1 : 0;
 
-    b2Vec2 v11 = vertices1[iv1];
-    b2Vec2 v12 = vertices1[iv2];
+    PVec2 v11 = vertices1[iv1];
+    PVec2 v12 = vertices1[iv2];
 
-    b2Vec2 localTangent = v12 - v11;
+    PVec2 localTangent = v12 - v11;
     localTangent.Normalize();
 
-    b2Vec2 localNormal = b2Cross(localTangent, 1.0f);
-    b2Vec2 planePoint = 0.5f * (v11 + v12);
+    PVec2 localNormal = b2Cross(localTangent, 1.0f);
+    PVec2 planePoint = 0.5f * (v11 + v12);
 
-    b2Vec2 tangent = b2Mul(xf1.q, localTangent);
-    b2Vec2 normal = b2Cross(tangent, 1.0f);
+    PVec2 tangent = b2Mul(xf1.q, localTangent);
+    PVec2 normal = b2Cross(tangent, 1.0f);
 
     v11 = b2Mul(xf1, v11);
     v12 = b2Mul(xf1, v12);
@@ -9301,7 +9301,7 @@ void b2CollidePolygons(b2Manifold *manifold, const b2PolygonShape *polyA, const 
     manifold->pointCount = pointCount;
 }
 
-void b2WorldManifold::Initialize(const b2Manifold *manifold, const b2Transform &xfA, float radiusA, const b2Transform &xfB, float radiusB) {
+void b2WorldManifold::Initialize(const b2Manifold *manifold, const PTransform &xfA, float radiusA, const PTransform &xfB, float radiusB) {
     if (manifold->pointCount == 0) {
         return;
     }
@@ -9309,27 +9309,27 @@ void b2WorldManifold::Initialize(const b2Manifold *manifold, const b2Transform &
     switch (manifold->type) {
         case b2Manifold::e_circles: {
             normal.Set(1.0f, 0.0f);
-            b2Vec2 pointA = b2Mul(xfA, manifold->localPoint);
-            b2Vec2 pointB = b2Mul(xfB, manifold->points[0].localPoint);
+            PVec2 pointA = b2Mul(xfA, manifold->localPoint);
+            PVec2 pointB = b2Mul(xfB, manifold->points[0].localPoint);
             if (b2DistanceSquared(pointA, pointB) > b2_epsilon * b2_epsilon) {
                 normal = pointB - pointA;
                 normal.Normalize();
             }
 
-            b2Vec2 cA = pointA + radiusA * normal;
-            b2Vec2 cB = pointB - radiusB * normal;
+            PVec2 cA = pointA + radiusA * normal;
+            PVec2 cB = pointB - radiusB * normal;
             points[0] = 0.5f * (cA + cB);
             separations[0] = b2Dot(cB - cA, normal);
         } break;
 
         case b2Manifold::e_faceA: {
             normal = b2Mul(xfA.q, manifold->localNormal);
-            b2Vec2 planePoint = b2Mul(xfA, manifold->localPoint);
+            PVec2 planePoint = b2Mul(xfA, manifold->localPoint);
 
             for (I32 i = 0; i < manifold->pointCount; ++i) {
-                b2Vec2 clipPoint = b2Mul(xfB, manifold->points[i].localPoint);
-                b2Vec2 cA = clipPoint + (radiusA - b2Dot(clipPoint - planePoint, normal)) * normal;
-                b2Vec2 cB = clipPoint - radiusB * normal;
+                PVec2 clipPoint = b2Mul(xfB, manifold->points[i].localPoint);
+                PVec2 cA = clipPoint + (radiusA - b2Dot(clipPoint - planePoint, normal)) * normal;
+                PVec2 cB = clipPoint - radiusB * normal;
                 points[i] = 0.5f * (cA + cB);
                 separations[i] = b2Dot(cB - cA, normal);
             }
@@ -9337,12 +9337,12 @@ void b2WorldManifold::Initialize(const b2Manifold *manifold, const b2Transform &
 
         case b2Manifold::e_faceB: {
             normal = b2Mul(xfB.q, manifold->localNormal);
-            b2Vec2 planePoint = b2Mul(xfB, manifold->localPoint);
+            PVec2 planePoint = b2Mul(xfB, manifold->localPoint);
 
             for (I32 i = 0; i < manifold->pointCount; ++i) {
-                b2Vec2 clipPoint = b2Mul(xfA, manifold->points[i].localPoint);
-                b2Vec2 cB = clipPoint + (radiusB - b2Dot(clipPoint - planePoint, normal)) * normal;
-                b2Vec2 cA = clipPoint - radiusA * normal;
+                PVec2 clipPoint = b2Mul(xfA, manifold->points[i].localPoint);
+                PVec2 cB = clipPoint + (radiusB - b2Dot(clipPoint - planePoint, normal)) * normal;
+                PVec2 cA = clipPoint - radiusA * normal;
                 points[i] = 0.5f * (cA + cB);
                 separations[i] = b2Dot(cA - cB, normal);
             }
@@ -9393,11 +9393,11 @@ bool b2AABB::RayCast(b2RayCastOutput *output, const b2RayCastInput &input) const
     float tmin = -b2_maxFloat;
     float tmax = b2_maxFloat;
 
-    b2Vec2 p = input.p1;
-    b2Vec2 d = input.p2 - input.p1;
-    b2Vec2 absD = b2Abs(d);
+    PVec2 p = input.p1;
+    PVec2 d = input.p2 - input.p1;
+    PVec2 absD = b2Abs(d);
 
-    b2Vec2 normal;
+    PVec2 normal;
 
     for (I32 i = 0; i < 2; ++i) {
         if (absD(i) < b2_epsilon) {
@@ -9447,7 +9447,7 @@ bool b2AABB::RayCast(b2RayCastOutput *output, const b2RayCastInput &input) const
 }
 
 // Sutherland-Hodgman clipping.
-I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b2Vec2 &normal, float offset, I32 vertexIndexA) {
+I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const PVec2 &normal, float offset, I32 vertexIndexA) {
     // Start with no output points
     I32 count = 0;
 
@@ -9478,7 +9478,7 @@ I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const b
     return count;
 }
 
-bool b2TestOverlap(const b2Shape *shapeA, I32 indexA, const b2Shape *shapeB, I32 indexB, const b2Transform &xfA, const b2Transform &xfB) {
+bool b2TestOverlap(const b2Shape *shapeA, I32 indexA, const b2Shape *shapeB, I32 indexB, const PTransform &xfA, const PTransform &xfB) {
     b2DistanceInput input;
     input.proxyA.Set(shapeA, indexA);
     input.proxyB.Set(shapeB, indexB);
@@ -9543,23 +9543,23 @@ void b2DistanceProxy::Set(const b2Shape *shape, I32 index) {
     }
 }
 
-void b2DistanceProxy::Set(const b2Vec2 *vertices, I32 count, float radius) {
+void b2DistanceProxy::Set(const PVec2 *vertices, I32 count, float radius) {
     m_vertices = vertices;
     m_count = count;
     m_radius = radius;
 }
 
 struct b2SimplexVertex {
-    b2Vec2 wA;   // support point in proxyA
-    b2Vec2 wB;   // support point in proxyB
-    b2Vec2 w;    // wB - wA
+    PVec2 wA;   // support point in proxyA
+    PVec2 wB;   // support point in proxyB
+    PVec2 w;    // wB - wA
     float a;     // barycentric coordinate for closest point
     I32 indexA;  // wA index
     I32 indexB;  // wB index
 };
 
 struct b2Simplex {
-    void ReadCache(const b2SimplexCache *cache, const b2DistanceProxy *proxyA, const b2Transform &transformA, const b2DistanceProxy *proxyB, const b2Transform &transformB) {
+    void ReadCache(const b2SimplexCache *cache, const b2DistanceProxy *proxyA, const PTransform &transformA, const b2DistanceProxy *proxyB, const PTransform &transformB) {
         METADOT_ASSERT_E(cache->count <= 3);
 
         // Copy data from cache.
@@ -9569,8 +9569,8 @@ struct b2Simplex {
             b2SimplexVertex *v = vertices + i;
             v->indexA = cache->indexA[i];
             v->indexB = cache->indexB[i];
-            b2Vec2 wALocal = proxyA->GetVertex(v->indexA);
-            b2Vec2 wBLocal = proxyB->GetVertex(v->indexB);
+            PVec2 wALocal = proxyA->GetVertex(v->indexA);
+            PVec2 wBLocal = proxyB->GetVertex(v->indexB);
             v->wA = b2Mul(transformA, wALocal);
             v->wB = b2Mul(transformB, wBLocal);
             v->w = v->wB - v->wA;
@@ -9593,8 +9593,8 @@ struct b2Simplex {
             b2SimplexVertex *v = vertices + 0;
             v->indexA = 0;
             v->indexB = 0;
-            b2Vec2 wALocal = proxyA->GetVertex(0);
-            b2Vec2 wBLocal = proxyB->GetVertex(0);
+            PVec2 wALocal = proxyA->GetVertex(0);
+            PVec2 wBLocal = proxyB->GetVertex(0);
             v->wA = b2Mul(transformA, wALocal);
             v->wB = b2Mul(transformB, wBLocal);
             v->w = v->wB - v->wA;
@@ -9613,13 +9613,13 @@ struct b2Simplex {
         }
     }
 
-    b2Vec2 GetSearchDirection() const {
+    PVec2 GetSearchDirection() const {
         switch (m_count) {
             case 1:
                 return -m_v1.w;
 
             case 2: {
-                b2Vec2 e12 = m_v2.w - m_v1.w;
+                PVec2 e12 = m_v2.w - m_v1.w;
                 float sgn = b2Cross(e12, -m_v1.w);
                 if (sgn > 0.0f) {
                     // Origin is left of e12.
@@ -9636,7 +9636,7 @@ struct b2Simplex {
         }
     }
 
-    b2Vec2 GetClosestPoint() const {
+    PVec2 GetClosestPoint() const {
         switch (m_count) {
             case 0:
                 METADOT_ASSERT_E(false);
@@ -9657,7 +9657,7 @@ struct b2Simplex {
         }
     }
 
-    void GetWitnessPoints(b2Vec2 *pA, b2Vec2 *pB) const {
+    void GetWitnessPoints(PVec2 *pA, PVec2 *pB) const {
         switch (m_count) {
             case 0:
                 METADOT_ASSERT_E(false);
@@ -9736,9 +9736,9 @@ struct b2Simplex {
 // a1 = d12_1 / d12
 // a2 = d12_2 / d12
 void b2Simplex::Solve2() {
-    b2Vec2 w1 = m_v1.w;
-    b2Vec2 w2 = m_v2.w;
-    b2Vec2 e12 = w2 - w1;
+    PVec2 w1 = m_v1.w;
+    PVec2 w2 = m_v2.w;
+    PVec2 e12 = w2 - w1;
 
     // w1 region
     float d12_2 = -b2Dot(w1, e12);
@@ -9772,15 +9772,15 @@ void b2Simplex::Solve2() {
 // - edge points[1]-points[2]
 // - inside the triangle
 void b2Simplex::Solve3() {
-    b2Vec2 w1 = m_v1.w;
-    b2Vec2 w2 = m_v2.w;
-    b2Vec2 w3 = m_v3.w;
+    PVec2 w1 = m_v1.w;
+    PVec2 w2 = m_v2.w;
+    PVec2 w3 = m_v3.w;
 
     // Edge12
     // [1      1     ][a1] = [1]
     // [w1.e12 w2.e12][a2] = [0]
     // a3 = 0
-    b2Vec2 e12 = w2 - w1;
+    PVec2 e12 = w2 - w1;
     float w1e12 = b2Dot(w1, e12);
     float w2e12 = b2Dot(w2, e12);
     float d12_1 = w2e12;
@@ -9790,7 +9790,7 @@ void b2Simplex::Solve3() {
     // [1      1     ][a1] = [1]
     // [w1.e13 w3.e13][a3] = [0]
     // a2 = 0
-    b2Vec2 e13 = w3 - w1;
+    PVec2 e13 = w3 - w1;
     float w1e13 = b2Dot(w1, e13);
     float w3e13 = b2Dot(w3, e13);
     float d13_1 = w3e13;
@@ -9800,7 +9800,7 @@ void b2Simplex::Solve3() {
     // [1      1     ][a2] = [1]
     // [w2.e23 w3.e23][a3] = [0]
     // a1 = 0
-    b2Vec2 e23 = w3 - w2;
+    PVec2 e23 = w3 - w2;
     float w2e23 = b2Dot(w2, e23);
     float w3e23 = b2Dot(w3, e23);
     float d23_1 = w3e23;
@@ -9879,8 +9879,8 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
     const b2DistanceProxy *proxyA = &input->proxyA;
     const b2DistanceProxy *proxyB = &input->proxyB;
 
-    b2Transform transformA = input->transformA;
-    b2Transform transformB = input->transformB;
+    PTransform transformA = input->transformA;
+    PTransform transformB = input->transformB;
 
     // Initialize the simplex.
     b2Simplex simplex;
@@ -9927,7 +9927,7 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
         }
 
         // Get search direction.
-        b2Vec2 d = simplex.GetSearchDirection();
+        PVec2 d = simplex.GetSearchDirection();
 
         // Ensure the search direction is numerically fit.
         if (d.LengthSquared() < b2_epsilon * b2_epsilon) {
@@ -9984,7 +9984,7 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
     if (input->useRadii) {
         if (output->distance < b2_epsilon) {
             // Shapes are too close to safely compute normal
-            b2Vec2 p = 0.5f * (output->pointA + output->pointB);
+            PVec2 p = 0.5f * (output->pointA + output->pointB);
             output->pointA = p;
             output->pointB = p;
             output->distance = 0.0f;
@@ -9993,7 +9993,7 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
             // the points move smoothly.
             float rA = proxyA->m_radius;
             float rB = proxyB->m_radius;
-            b2Vec2 normal = output->pointB - output->pointA;
+            PVec2 normal = output->pointB - output->pointA;
             normal.Normalize();
             output->distance = b2Max(0.0f, output->distance - rA - rB);
             output->pointA += rA * normal;
@@ -10018,11 +10018,11 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
     float radiusB = b2Max(proxyB->m_radius, b2_polygonRadius);
     float radius = radiusA + radiusB;
 
-    b2Transform xfA = input->transformA;
-    b2Transform xfB = input->transformB;
+    PTransform xfA = input->transformA;
+    PTransform xfB = input->transformB;
 
-    b2Vec2 r = input->translationB;
-    b2Vec2 n(0.0f, 0.0f);
+    PVec2 r = input->translationB;
+    PVec2 n(0.0f, 0.0f);
     float lambda = 0.0f;
 
     // Initial simplex
@@ -10034,10 +10034,10 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
 
     // Get support point in -r direction
     I32 indexA = proxyA->GetSupport(b2MulT(xfA.q, -r));
-    b2Vec2 wA = b2Mul(xfA, proxyA->GetVertex(indexA));
+    PVec2 wA = b2Mul(xfA, proxyA->GetVertex(indexA));
     I32 indexB = proxyB->GetSupport(b2MulT(xfB.q, r));
-    b2Vec2 wB = b2Mul(xfB, proxyB->GetVertex(indexB));
-    b2Vec2 v = wA - wB;
+    PVec2 wB = b2Mul(xfB, proxyB->GetVertex(indexB));
+    PVec2 v = wA - wB;
 
     // Sigma is the target distance between polygons
     float sigma = b2Max(b2_polygonRadius, radius - b2_polygonRadius);
@@ -10056,7 +10056,7 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
         wA = b2Mul(xfA, proxyA->GetVertex(indexA));
         indexB = proxyB->GetSupport(b2MulT(xfB.q, v));
         wB = b2Mul(xfB, proxyB->GetVertex(indexB));
-        b2Vec2 p = wA - wB;
+        PVec2 p = wA - wB;
 
         // -v is a normal at p
         v.Normalize();
@@ -10126,7 +10126,7 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
     }
 
     // Prepare output.
-    b2Vec2 pointA, pointB;
+    PVec2 pointA, pointB;
     simplex.GetWitnessPoints(&pointB, &pointA);
 
     if (v.LengthSquared() > 0.0f) {
@@ -10220,7 +10220,7 @@ I32 b2DynamicTree::CreateProxy(const b2AABB &aabb, void *userData) {
     I32 proxyId = AllocateNode();
 
     // Fatten the aabb.
-    b2Vec2 r(b2_aabbExtension, b2_aabbExtension);
+    PVec2 r(b2_aabbExtension, b2_aabbExtension);
     m_nodes[proxyId].aabb.lowerBound = aabb.lowerBound - r;
     m_nodes[proxyId].aabb.upperBound = aabb.upperBound + r;
     m_nodes[proxyId].userData = userData;
@@ -10240,19 +10240,19 @@ void b2DynamicTree::DestroyProxy(I32 proxyId) {
     FreeNode(proxyId);
 }
 
-bool b2DynamicTree::MoveProxy(I32 proxyId, const b2AABB &aabb, const b2Vec2 &displacement) {
+bool b2DynamicTree::MoveProxy(I32 proxyId, const b2AABB &aabb, const PVec2 &displacement) {
     METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
 
     METADOT_ASSERT_E(m_nodes[proxyId].IsLeaf());
 
     // Extend AABB
     b2AABB fatAABB;
-    b2Vec2 r(b2_aabbExtension, b2_aabbExtension);
+    PVec2 r(b2_aabbExtension, b2_aabbExtension);
     fatAABB.lowerBound = aabb.lowerBound - r;
     fatAABB.upperBound = aabb.upperBound + r;
 
     // Predict AABB movement
-    b2Vec2 d = b2_aabbMultiplier * displacement;
+    PVec2 d = b2_aabbMultiplier * displacement;
 
     if (d.x < 0.0f) {
         fatAABB.lowerBound.x += d.x;
@@ -10806,7 +10806,7 @@ void b2DynamicTree::RebuildBottomUp() {
     Validate();
 }
 
-void b2DynamicTree::ShiftOrigin(const b2Vec2 &newOrigin) {
+void b2DynamicTree::ShiftOrigin(const PVec2 &newOrigin) {
     // Build array of leaves. Free the rest.
     for (I32 i = 0; i < m_nodeCapacity; ++i) {
         m_nodes[i].aabb.lowerBound -= newOrigin;
@@ -10814,7 +10814,7 @@ void b2DynamicTree::ShiftOrigin(const b2Vec2 &newOrigin) {
     }
 }
 
-void b2EdgeShape::SetOneSided(const b2Vec2 &v0, const b2Vec2 &v1, const b2Vec2 &v2, const b2Vec2 &v3) {
+void b2EdgeShape::SetOneSided(const PVec2 &v0, const PVec2 &v1, const PVec2 &v2, const PVec2 &v3) {
     m_vertex0 = v0;
     m_vertex1 = v1;
     m_vertex2 = v2;
@@ -10822,7 +10822,7 @@ void b2EdgeShape::SetOneSided(const b2Vec2 &v0, const b2Vec2 &v1, const b2Vec2 &
     m_oneSided = true;
 }
 
-void b2EdgeShape::SetTwoSided(const b2Vec2 &v1, const b2Vec2 &v2) {
+void b2EdgeShape::SetTwoSided(const PVec2 &v1, const PVec2 &v2) {
     m_vertex1 = v1;
     m_vertex2 = v2;
     m_oneSided = false;
@@ -10837,7 +10837,7 @@ b2Shape *b2EdgeShape::Clone(b2BlockAllocator *allocator) const {
 
 I32 b2EdgeShape::GetChildCount() const { return 1; }
 
-bool b2EdgeShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
+bool b2EdgeShape::TestPoint(const PTransform &xf, const PVec2 &p) const {
     B2_NOT_USED(xf);
     B2_NOT_USED(p);
     return false;
@@ -10847,20 +10847,20 @@ bool b2EdgeShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
 // v = v1 + s * e
 // p1 + t * d = v1 + s * e
 // s * e - t * d = p1 - v1
-bool b2EdgeShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &xf, I32 childIndex) const {
+bool b2EdgeShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const PTransform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     // Put the ray into the edge's frame of reference.
-    b2Vec2 p1 = b2MulT(xf.q, input.p1 - xf.p);
-    b2Vec2 p2 = b2MulT(xf.q, input.p2 - xf.p);
-    b2Vec2 d = p2 - p1;
+    PVec2 p1 = b2MulT(xf.q, input.p1 - xf.p);
+    PVec2 p2 = b2MulT(xf.q, input.p2 - xf.p);
+    PVec2 d = p2 - p1;
 
-    b2Vec2 v1 = m_vertex1;
-    b2Vec2 v2 = m_vertex2;
-    b2Vec2 e = v2 - v1;
+    PVec2 v1 = m_vertex1;
+    PVec2 v2 = m_vertex2;
+    PVec2 e = v2 - v1;
 
     // Normal points to the right, looking from v1 at v2
-    b2Vec2 normal(e.y, -e.x);
+    PVec2 normal(e.y, -e.x);
     normal.Normalize();
 
     // q = p1 + t * d
@@ -10882,11 +10882,11 @@ bool b2EdgeShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, 
         return false;
     }
 
-    b2Vec2 q = p1 + t * d;
+    PVec2 q = p1 + t * d;
 
     // q = v1 + s * r
     // s = dot(q - v1, r) / dot(r, r)
-    b2Vec2 r = v2 - v1;
+    PVec2 r = v2 - v1;
     float rr = b2Dot(r, r);
     if (rr == 0.0f) {
         return false;
@@ -10906,16 +10906,16 @@ bool b2EdgeShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, 
     return true;
 }
 
-void b2EdgeShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const {
+void b2EdgeShape::ComputeAABB(b2AABB *aabb, const PTransform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
-    b2Vec2 v1 = b2Mul(xf, m_vertex1);
-    b2Vec2 v2 = b2Mul(xf, m_vertex2);
+    PVec2 v1 = b2Mul(xf, m_vertex1);
+    PVec2 v2 = b2Mul(xf, m_vertex2);
 
-    b2Vec2 lower = b2Min(v1, v2);
-    b2Vec2 upper = b2Max(v1, v2);
+    PVec2 lower = b2Min(v1, v2);
+    PVec2 upper = b2Max(v1, v2);
 
-    b2Vec2 r(m_radius, m_radius);
+    PVec2 r(m_radius, m_radius);
     aabb->lowerBound = lower - r;
     aabb->upperBound = upper + r;
 }
@@ -10948,7 +10948,7 @@ void b2PolygonShape::SetAsBox(float hx, float hy) {
     m_centroid.SetZero();
 }
 
-void b2PolygonShape::SetAsBox(float hx, float hy, const b2Vec2 &center, float angle) {
+void b2PolygonShape::SetAsBox(float hx, float hy, const PVec2 &center, float angle) {
     m_count = 4;
     m_vertices[0].Set(-hx, -hy);
     m_vertices[1].Set(hx, -hy);
@@ -10960,7 +10960,7 @@ void b2PolygonShape::SetAsBox(float hx, float hy, const b2Vec2 &center, float an
     m_normals[3].Set(-1.0f, 0.0f);
     m_centroid = center;
 
-    b2Transform xf;
+    PTransform xf;
     xf.p = center;
     xf.q.Set(angle);
 
@@ -10973,26 +10973,26 @@ void b2PolygonShape::SetAsBox(float hx, float hy, const b2Vec2 &center, float an
 
 I32 b2PolygonShape::GetChildCount() const { return 1; }
 
-static b2Vec2 ComputeCentroid(const b2Vec2 *vs, I32 count) {
+static PVec2 ComputeCentroid(const PVec2 *vs, I32 count) {
     METADOT_ASSERT_E(count >= 3);
 
-    b2Vec2 c(0.0f, 0.0f);
+    PVec2 c(0.0f, 0.0f);
     float area = 0.0f;
 
     // Get a reference point for forming triangles.
     // Use the first vertex to reduce round-off errors.
-    b2Vec2 s = vs[0];
+    PVec2 s = vs[0];
 
     const float inv3 = 1.0f / 3.0f;
 
     for (I32 i = 0; i < count; ++i) {
         // Triangle vertices.
-        b2Vec2 p1 = vs[0] - s;
-        b2Vec2 p2 = vs[i] - s;
-        b2Vec2 p3 = i + 1 < count ? vs[i + 1] - s : vs[0] - s;
+        PVec2 p1 = vs[0] - s;
+        PVec2 p2 = vs[i] - s;
+        PVec2 p3 = i + 1 < count ? vs[i + 1] - s : vs[0] - s;
 
-        b2Vec2 e1 = p2 - p1;
-        b2Vec2 e2 = p3 - p1;
+        PVec2 e1 = p2 - p1;
+        PVec2 e2 = p3 - p1;
 
         float D = b2Cross(e1, e2);
 
@@ -11009,7 +11009,7 @@ static b2Vec2 ComputeCentroid(const b2Vec2 *vs, I32 count) {
     return c;
 }
 
-void b2PolygonShape::Set(const b2Vec2 *vertices, I32 count) {
+void b2PolygonShape::Set(const PVec2 *vertices, I32 count) {
     METADOT_ASSERT_E(3 <= count && count <= b2_maxPolygonVertices);
     if (count < 3) {
         SetAsBox(1.0f, 1.0f);
@@ -11019,10 +11019,10 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, I32 count) {
     I32 n = b2Min(count, b2_maxPolygonVertices);
 
     // Perform welding and copy vertices into local buffer.
-    b2Vec2 ps[b2_maxPolygonVertices];
+    PVec2 ps[b2_maxPolygonVertices];
     I32 tempCount = 0;
     for (I32 i = 0; i < n; ++i) {
-        b2Vec2 v = vertices[i];
+        PVec2 v = vertices[i];
 
         bool unique = true;
         for (I32 j = 0; j < tempCount; ++j) {
@@ -11074,8 +11074,8 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, I32 count) {
                 continue;
             }
 
-            b2Vec2 r = ps[ie] - ps[hull[m]];
-            b2Vec2 v = ps[j] - ps[hull[m]];
+            PVec2 r = ps[ie] - ps[hull[m]];
+            PVec2 v = ps[j] - ps[hull[m]];
             float c = b2Cross(r, v);
             if (c < 0.0f) {
                 ie = j;
@@ -11113,7 +11113,7 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, I32 count) {
     for (I32 i = 0; i < m; ++i) {
         I32 i1 = i;
         I32 i2 = i + 1 < m ? i + 1 : 0;
-        b2Vec2 edge = m_vertices[i2] - m_vertices[i1];
+        PVec2 edge = m_vertices[i2] - m_vertices[i1];
         METADOT_ASSERT_E(edge.LengthSquared() > b2_epsilon * b2_epsilon);
         m_normals[i] = b2Cross(edge, 1.0f);
         m_normals[i].Normalize();
@@ -11123,8 +11123,8 @@ void b2PolygonShape::Set(const b2Vec2 *vertices, I32 count) {
     m_centroid = ComputeCentroid(m_vertices, m);
 }
 
-bool b2PolygonShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
-    b2Vec2 pLocal = b2MulT(xf.q, p - xf.p);
+bool b2PolygonShape::TestPoint(const PTransform &xf, const PVec2 &p) const {
+    PVec2 pLocal = b2MulT(xf.q, p - xf.p);
 
     for (I32 i = 0; i < m_count; ++i) {
         float dot = b2Dot(m_normals[i], pLocal - m_vertices[i]);
@@ -11136,13 +11136,13 @@ bool b2PolygonShape::TestPoint(const b2Transform &xf, const b2Vec2 &p) const {
     return true;
 }
 
-bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const b2Transform &xf, I32 childIndex) const {
+bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const PTransform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
     // Put the ray into the polygon's frame of reference.
-    b2Vec2 p1 = b2MulT(xf.q, input.p1 - xf.p);
-    b2Vec2 p2 = b2MulT(xf.q, input.p2 - xf.p);
-    b2Vec2 d = p2 - p1;
+    PVec2 p1 = b2MulT(xf.q, input.p1 - xf.p);
+    PVec2 p2 = b2MulT(xf.q, input.p2 - xf.p);
+    PVec2 d = p2 - p1;
 
     float lower = 0.0f, upper = input.maxFraction;
 
@@ -11196,19 +11196,19 @@ bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &inpu
     return false;
 }
 
-void b2PolygonShape::ComputeAABB(b2AABB *aabb, const b2Transform &xf, I32 childIndex) const {
+void b2PolygonShape::ComputeAABB(b2AABB *aabb, const PTransform &xf, I32 childIndex) const {
     B2_NOT_USED(childIndex);
 
-    b2Vec2 lower = b2Mul(xf, m_vertices[0]);
-    b2Vec2 upper = lower;
+    PVec2 lower = b2Mul(xf, m_vertices[0]);
+    PVec2 upper = lower;
 
     for (I32 i = 1; i < m_count; ++i) {
-        b2Vec2 v = b2Mul(xf, m_vertices[i]);
+        PVec2 v = b2Mul(xf, m_vertices[i]);
         lower = b2Min(lower, v);
         upper = b2Max(upper, v);
     }
 
-    b2Vec2 r(m_radius, m_radius);
+    PVec2 r(m_radius, m_radius);
     aabb->lowerBound = lower - r;
     aabb->upperBound = upper + r;
 }
@@ -11240,20 +11240,20 @@ void b2PolygonShape::ComputeMass(b2MassData *massData, float density) const {
 
     METADOT_ASSERT_E(m_count >= 3);
 
-    b2Vec2 center(0.0f, 0.0f);
+    PVec2 center(0.0f, 0.0f);
     float area = 0.0f;
     float I = 0.0f;
 
     // Get a reference point for forming triangles.
     // Use the first vertex to reduce round-off errors.
-    b2Vec2 s = m_vertices[0];
+    PVec2 s = m_vertices[0];
 
     const float k_inv3 = 1.0f / 3.0f;
 
     for (I32 i = 0; i < m_count; ++i) {
         // Triangle vertices.
-        b2Vec2 e1 = m_vertices[i] - s;
-        b2Vec2 e2 = i + 1 < m_count ? m_vertices[i + 1] - s : m_vertices[0] - s;
+        PVec2 e1 = m_vertices[i] - s;
+        PVec2 e2 = i + 1 < m_count ? m_vertices[i + 1] - s : m_vertices[0] - s;
 
         float D = b2Cross(e1, e2);
 
@@ -11291,15 +11291,15 @@ bool b2PolygonShape::Validate() const {
     for (I32 i = 0; i < m_count; ++i) {
         I32 i1 = i;
         I32 i2 = i < m_count - 1 ? i1 + 1 : 0;
-        b2Vec2 p = m_vertices[i1];
-        b2Vec2 e = m_vertices[i2] - p;
+        PVec2 p = m_vertices[i1];
+        PVec2 e = m_vertices[i2] - p;
 
         for (I32 j = 0; j < m_count; ++j) {
             if (j == i1 || j == i2) {
                 continue;
             }
 
-            b2Vec2 v = m_vertices[j] - p;
+            PVec2 v = m_vertices[j] - p;
             float c = b2Cross(e, v);
             if (c < 0.0f) {
                 return false;
@@ -11320,7 +11320,7 @@ struct b2SeparationFunction {
 
     // TODO_ERIN might not need to return the separation
 
-    float Initialize(const b2SimplexCache *cache, const b2DistanceProxy *proxyA, const b2Sweep &sweepA, const b2DistanceProxy *proxyB, const b2Sweep &sweepB, float t1) {
+    float Initialize(const b2SimplexCache *cache, const b2DistanceProxy *proxyA, const PSweep &sweepA, const b2DistanceProxy *proxyB, const PSweep &sweepB, float t1) {
         m_proxyA = proxyA;
         m_proxyB = proxyB;
         I32 count = cache->count;
@@ -11329,34 +11329,34 @@ struct b2SeparationFunction {
         m_sweepA = sweepA;
         m_sweepB = sweepB;
 
-        b2Transform xfA, xfB;
+        PTransform xfA, xfB;
         m_sweepA.GetTransform(&xfA, t1);
         m_sweepB.GetTransform(&xfB, t1);
 
         if (count == 1) {
             m_type = e_points;
-            b2Vec2 localPointA = m_proxyA->GetVertex(cache->indexA[0]);
-            b2Vec2 localPointB = m_proxyB->GetVertex(cache->indexB[0]);
-            b2Vec2 pointA = b2Mul(xfA, localPointA);
-            b2Vec2 pointB = b2Mul(xfB, localPointB);
+            PVec2 localPointA = m_proxyA->GetVertex(cache->indexA[0]);
+            PVec2 localPointB = m_proxyB->GetVertex(cache->indexB[0]);
+            PVec2 pointA = b2Mul(xfA, localPointA);
+            PVec2 pointB = b2Mul(xfB, localPointB);
             m_axis = pointB - pointA;
             float s = m_axis.Normalize();
             return s;
         } else if (cache->indexA[0] == cache->indexA[1]) {
             // Two points on B and one on A.
             m_type = e_faceB;
-            b2Vec2 localPointB1 = proxyB->GetVertex(cache->indexB[0]);
-            b2Vec2 localPointB2 = proxyB->GetVertex(cache->indexB[1]);
+            PVec2 localPointB1 = proxyB->GetVertex(cache->indexB[0]);
+            PVec2 localPointB2 = proxyB->GetVertex(cache->indexB[1]);
 
             m_axis = b2Cross(localPointB2 - localPointB1, 1.0f);
             m_axis.Normalize();
-            b2Vec2 normal = b2Mul(xfB.q, m_axis);
+            PVec2 normal = b2Mul(xfB.q, m_axis);
 
             m_localPoint = 0.5f * (localPointB1 + localPointB2);
-            b2Vec2 pointB = b2Mul(xfB, m_localPoint);
+            PVec2 pointB = b2Mul(xfB, m_localPoint);
 
-            b2Vec2 localPointA = proxyA->GetVertex(cache->indexA[0]);
-            b2Vec2 pointA = b2Mul(xfA, localPointA);
+            PVec2 localPointA = proxyA->GetVertex(cache->indexA[0]);
+            PVec2 pointA = b2Mul(xfA, localPointA);
 
             float s = b2Dot(pointA - pointB, normal);
             if (s < 0.0f) {
@@ -11367,18 +11367,18 @@ struct b2SeparationFunction {
         } else {
             // Two points on A and one or two points on B.
             m_type = e_faceA;
-            b2Vec2 localPointA1 = m_proxyA->GetVertex(cache->indexA[0]);
-            b2Vec2 localPointA2 = m_proxyA->GetVertex(cache->indexA[1]);
+            PVec2 localPointA1 = m_proxyA->GetVertex(cache->indexA[0]);
+            PVec2 localPointA2 = m_proxyA->GetVertex(cache->indexA[1]);
 
             m_axis = b2Cross(localPointA2 - localPointA1, 1.0f);
             m_axis.Normalize();
-            b2Vec2 normal = b2Mul(xfA.q, m_axis);
+            PVec2 normal = b2Mul(xfA.q, m_axis);
 
             m_localPoint = 0.5f * (localPointA1 + localPointA2);
-            b2Vec2 pointA = b2Mul(xfA, m_localPoint);
+            PVec2 pointA = b2Mul(xfA, m_localPoint);
 
-            b2Vec2 localPointB = m_proxyB->GetVertex(cache->indexB[0]);
-            b2Vec2 pointB = b2Mul(xfB, localPointB);
+            PVec2 localPointB = m_proxyB->GetVertex(cache->indexB[0]);
+            PVec2 pointB = b2Mul(xfB, localPointB);
 
             float s = b2Dot(pointB - pointA, normal);
             if (s < 0.0f) {
@@ -11391,55 +11391,55 @@ struct b2SeparationFunction {
 
     //
     float FindMinSeparation(I32 *indexA, I32 *indexB, float t) const {
-        b2Transform xfA, xfB;
+        PTransform xfA, xfB;
         m_sweepA.GetTransform(&xfA, t);
         m_sweepB.GetTransform(&xfB, t);
 
         switch (m_type) {
             case e_points: {
-                b2Vec2 axisA = b2MulT(xfA.q, m_axis);
-                b2Vec2 axisB = b2MulT(xfB.q, -m_axis);
+                PVec2 axisA = b2MulT(xfA.q, m_axis);
+                PVec2 axisB = b2MulT(xfB.q, -m_axis);
 
                 *indexA = m_proxyA->GetSupport(axisA);
                 *indexB = m_proxyB->GetSupport(axisB);
 
-                b2Vec2 localPointA = m_proxyA->GetVertex(*indexA);
-                b2Vec2 localPointB = m_proxyB->GetVertex(*indexB);
+                PVec2 localPointA = m_proxyA->GetVertex(*indexA);
+                PVec2 localPointB = m_proxyB->GetVertex(*indexB);
 
-                b2Vec2 pointA = b2Mul(xfA, localPointA);
-                b2Vec2 pointB = b2Mul(xfB, localPointB);
+                PVec2 pointA = b2Mul(xfA, localPointA);
+                PVec2 pointB = b2Mul(xfB, localPointB);
 
                 float separation = b2Dot(pointB - pointA, m_axis);
                 return separation;
             }
 
             case e_faceA: {
-                b2Vec2 normal = b2Mul(xfA.q, m_axis);
-                b2Vec2 pointA = b2Mul(xfA, m_localPoint);
+                PVec2 normal = b2Mul(xfA.q, m_axis);
+                PVec2 pointA = b2Mul(xfA, m_localPoint);
 
-                b2Vec2 axisB = b2MulT(xfB.q, -normal);
+                PVec2 axisB = b2MulT(xfB.q, -normal);
 
                 *indexA = -1;
                 *indexB = m_proxyB->GetSupport(axisB);
 
-                b2Vec2 localPointB = m_proxyB->GetVertex(*indexB);
-                b2Vec2 pointB = b2Mul(xfB, localPointB);
+                PVec2 localPointB = m_proxyB->GetVertex(*indexB);
+                PVec2 pointB = b2Mul(xfB, localPointB);
 
                 float separation = b2Dot(pointB - pointA, normal);
                 return separation;
             }
 
             case e_faceB: {
-                b2Vec2 normal = b2Mul(xfB.q, m_axis);
-                b2Vec2 pointB = b2Mul(xfB, m_localPoint);
+                PVec2 normal = b2Mul(xfB.q, m_axis);
+                PVec2 pointB = b2Mul(xfB, m_localPoint);
 
-                b2Vec2 axisA = b2MulT(xfA.q, -normal);
+                PVec2 axisA = b2MulT(xfA.q, -normal);
 
                 *indexB = -1;
                 *indexA = m_proxyA->GetSupport(axisA);
 
-                b2Vec2 localPointA = m_proxyA->GetVertex(*indexA);
-                b2Vec2 pointA = b2Mul(xfA, localPointA);
+                PVec2 localPointA = m_proxyA->GetVertex(*indexA);
+                PVec2 pointA = b2Mul(xfA, localPointA);
 
                 float separation = b2Dot(pointA - pointB, normal);
                 return separation;
@@ -11455,39 +11455,39 @@ struct b2SeparationFunction {
 
     //
     float Evaluate(I32 indexA, I32 indexB, float t) const {
-        b2Transform xfA, xfB;
+        PTransform xfA, xfB;
         m_sweepA.GetTransform(&xfA, t);
         m_sweepB.GetTransform(&xfB, t);
 
         switch (m_type) {
             case e_points: {
-                b2Vec2 localPointA = m_proxyA->GetVertex(indexA);
-                b2Vec2 localPointB = m_proxyB->GetVertex(indexB);
+                PVec2 localPointA = m_proxyA->GetVertex(indexA);
+                PVec2 localPointB = m_proxyB->GetVertex(indexB);
 
-                b2Vec2 pointA = b2Mul(xfA, localPointA);
-                b2Vec2 pointB = b2Mul(xfB, localPointB);
+                PVec2 pointA = b2Mul(xfA, localPointA);
+                PVec2 pointB = b2Mul(xfB, localPointB);
                 float separation = b2Dot(pointB - pointA, m_axis);
 
                 return separation;
             }
 
             case e_faceA: {
-                b2Vec2 normal = b2Mul(xfA.q, m_axis);
-                b2Vec2 pointA = b2Mul(xfA, m_localPoint);
+                PVec2 normal = b2Mul(xfA.q, m_axis);
+                PVec2 pointA = b2Mul(xfA, m_localPoint);
 
-                b2Vec2 localPointB = m_proxyB->GetVertex(indexB);
-                b2Vec2 pointB = b2Mul(xfB, localPointB);
+                PVec2 localPointB = m_proxyB->GetVertex(indexB);
+                PVec2 pointB = b2Mul(xfB, localPointB);
 
                 float separation = b2Dot(pointB - pointA, normal);
                 return separation;
             }
 
             case e_faceB: {
-                b2Vec2 normal = b2Mul(xfB.q, m_axis);
-                b2Vec2 pointB = b2Mul(xfB, m_localPoint);
+                PVec2 normal = b2Mul(xfB.q, m_axis);
+                PVec2 pointB = b2Mul(xfB, m_localPoint);
 
-                b2Vec2 localPointA = m_proxyA->GetVertex(indexA);
-                b2Vec2 pointA = b2Mul(xfA, localPointA);
+                PVec2 localPointA = m_proxyA->GetVertex(indexA);
+                PVec2 pointA = b2Mul(xfA, localPointA);
 
                 float separation = b2Dot(pointA - pointB, normal);
                 return separation;
@@ -11501,10 +11501,10 @@ struct b2SeparationFunction {
 
     const b2DistanceProxy *m_proxyA;
     const b2DistanceProxy *m_proxyB;
-    b2Sweep m_sweepA, m_sweepB;
+    PSweep m_sweepA, m_sweepB;
     Type m_type;
-    b2Vec2 m_localPoint;
-    b2Vec2 m_axis;
+    PVec2 m_localPoint;
+    PVec2 m_axis;
 };
 
 // CCD via the local separating axis method. This seeks progression
@@ -11520,8 +11520,8 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
     const b2DistanceProxy *proxyA = &input->proxyA;
     const b2DistanceProxy *proxyB = &input->proxyB;
 
-    b2Sweep sweepA = input->sweepA;
-    b2Sweep sweepB = input->sweepB;
+    PSweep sweepA = input->sweepA;
+    PSweep sweepB = input->sweepB;
 
     // Large rotations can make the root finder fail, so we normalize the
     // sweep angles.
@@ -11550,7 +11550,7 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
     // The outer loop progressively attempts to compute new separating axes.
     // This loop terminates when an axis is repeated (no progress is made).
     for (;;) {
-        b2Transform xfA, xfB;
+        PTransform xfA, xfB;
         sweepA.GetTransform(&xfA, t1);
         sweepB.GetTransform(&xfB, t1);
 
