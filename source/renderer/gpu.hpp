@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "internal/builtin_box2d.h"
+#include "physics/box2d.h"
 #include "libs/imgui/imgui.h"
 #include "metadot_gl.h"
 #include "renderer/renderer_gpu.h"
@@ -28,8 +28,8 @@ const char *GLEnumToString(GLenum e);
 
 class Drawing {
 public:
-    static b2Vec2 rotate_point(float cx, float cy, float angle, b2Vec2 p);
-    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
+    static vec2 rotate_point(float cx, float cy, float angle, vec2 p);
+    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
     static U32 darkenColor(U32 col, float brightness);
     static void drawText(std::string text, METAENGINE_Color col, int x, int y);
     static void drawTextWithPlate(R_Target *target, std::string text, METAENGINE_Color col, int x, int y, METAENGINE_Color backcolor = {77, 77, 77, 140});
@@ -104,36 +104,22 @@ public:
     void Destroy();
 
     void SetFlags(U32 flags) { m_drawFlags = flags; }
-
     U32 GetFlags() const { return m_drawFlags; }
-
     void AppendFlags(U32 flags) { m_drawFlags |= flags; }
-
     void ClearFlags(U32 flags) { m_drawFlags &= ~flags; }
-
+    
     b2Vec2 transform(const b2Vec2 &pt);
 
-    METAENGINE_Color convertColor(const b2Color &color);
-
-    void DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color);
-
-    void DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color);
-
-    void DrawCircle(const b2Vec2 &center, float radius, const b2Color &color);
-
-    void DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const b2Color &color);
-
-    void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color);
-
+    void DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
+    void DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
+    void DrawCircle(const b2Vec2 &center, float radius, const METAENGINE_Color &color);
+    void DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const METAENGINE_Color &color);
+    void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const METAENGINE_Color &color);
     void DrawTransform(const b2Transform &xf);
-
-    void DrawPoint(const b2Vec2 &p, float size, const b2Color &color);
-
+    void DrawPoint(const b2Vec2 &p, float size, const METAENGINE_Color &color);
     void DrawString(int x, int y, const char *string, ...);
-
     void DrawString(const b2Vec2 &p, const char *string, ...);
-
-    void DrawAABB(b2AABB *aabb, const b2Color &color);
+    void DrawAABB(b2AABB *aabb, const METAENGINE_Color &color);
 };
 #endif
 

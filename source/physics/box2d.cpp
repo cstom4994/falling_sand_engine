@@ -3,30 +3,29 @@
 // Box2d code by Erin Catto licensed under the MIT License
 // https://github.com/erincatto/box2d
 
-/*
-MIT License
-Copyright (c) 2019 Erin Catto
+// MIT License
+// Copyright (c) 2022-2023 KaoruXun
+// Copyright (c) 2019 Erin Catto
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-#include "builtin_box2d.h"
+#include "box2d.h"
 
 #include <cstdio>
 #include <new>
@@ -1360,7 +1359,7 @@ void b2World::RayCast(b2RayCastCallback *callback, const b2Vec2 &point1, const b
     m_contactManager.m_broadPhase.RayCast(&wrapper, input);
 }
 
-void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const b2Color &color) {
+void b2World::DrawShape(b2Fixture *fixture, const b2Transform &xf, const METAENGINE_Color &color) {
     switch (fixture->GetType()) {
         case b2Shape::e_circle: {
             b2CircleShape *circle = (b2CircleShape *)fixture->GetShape();
@@ -1428,17 +1427,17 @@ void b2World::DebugDraw() {
             for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
                 if (b->GetType() == b2_dynamicBody && b->m_mass == 0.0f) {
                     // Bad body
-                    DrawShape(f, xf, b2Color(1.0f, 0.0f, 0.0f));
+                    DrawShape(f, xf, METAENGINE_Color(1.0f, 0.0f, 0.0f));
                 } else if (b->IsEnabled() == false) {
-                    DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.3f));
+                    DrawShape(f, xf, METAENGINE_Color(0.5f, 0.5f, 0.3f));
                 } else if (b->GetType() == b2_staticBody) {
-                    DrawShape(f, xf, b2Color(0.5f, 0.9f, 0.5f));
+                    DrawShape(f, xf, METAENGINE_Color(0.5f, 0.9f, 0.5f));
                 } else if (b->GetType() == b2_kinematicBody) {
-                    DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.9f));
+                    DrawShape(f, xf, METAENGINE_Color(0.5f, 0.5f, 0.9f));
                 } else if (b->IsAwake() == false) {
-                    DrawShape(f, xf, b2Color(0.6f, 0.6f, 0.6f));
+                    DrawShape(f, xf, METAENGINE_Color(0.6f, 0.6f, 0.6f));
                 } else {
-                    DrawShape(f, xf, b2Color(0.9f, 0.7f, 0.7f));
+                    DrawShape(f, xf, METAENGINE_Color(0.9f, 0.7f, 0.7f));
                 }
             }
         }
@@ -1451,7 +1450,7 @@ void b2World::DebugDraw() {
     }
 
     if (flags & DebugDraw::e_pairBit) {
-        b2Color color(0.3f, 0.9f, 0.9f);
+        METAENGINE_Color color(0.3f, 0.9f, 0.9f);
         for (b2Contact *c = m_contactManager.m_contactList; c; c = c->GetNext()) {
             b2Fixture *fixtureA = c->GetFixtureA();
             b2Fixture *fixtureB = c->GetFixtureB();
@@ -1465,7 +1464,7 @@ void b2World::DebugDraw() {
     }
 
     if (flags & DebugDraw::e_aabbBit) {
-        b2Color color(0.9f, 0.3f, 0.9f);
+        METAENGINE_Color color(0.9f, 0.3f, 0.9f);
         b2BroadPhase *bp = &m_contactManager.m_broadPhase;
 
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
@@ -2125,11 +2124,11 @@ void b2WheelJoint::Draw(DebugDraw *draw) const {
 
     b2Vec2 axis = b2Mul(xfA.q, m_localXAxisA);
 
-    b2Color c1(0.7f, 0.7f, 0.7f);
-    b2Color c2(0.3f, 0.9f, 0.3f);
-    b2Color c3(0.9f, 0.3f, 0.3f);
-    b2Color c4(0.3f, 0.3f, 0.9f);
-    b2Color c5(0.4f, 0.4f, 0.4f);
+    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
+    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
+    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
+    METAENGINE_Color c4(0.3f, 0.3f, 0.9f);
+    METAENGINE_Color c5(0.4f, 0.4f, 0.4f);
 
     draw->DrawSegment(pA, pB, c5);
 
@@ -2813,11 +2812,11 @@ void b2RevoluteJoint::Draw(DebugDraw *draw) const {
     b2Vec2 pA = b2Mul(xfA, m_localAnchorA);
     b2Vec2 pB = b2Mul(xfB, m_localAnchorB);
 
-    b2Color c1(0.7f, 0.7f, 0.7f);
-    b2Color c2(0.3f, 0.9f, 0.3f);
-    b2Color c3(0.9f, 0.3f, 0.3f);
-    b2Color c4(0.3f, 0.3f, 0.9f);
-    b2Color c5(0.4f, 0.4f, 0.4f);
+    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
+    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
+    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
+    METAENGINE_Color c4(0.3f, 0.3f, 0.9f);
+    METAENGINE_Color c5(0.4f, 0.4f, 0.4f);
 
     draw->DrawPoint(pA, 5.0f, c4);
     draw->DrawPoint(pB, 5.0f, c5);
@@ -2840,7 +2839,7 @@ void b2RevoluteJoint::Draw(DebugDraw *draw) const {
         draw->DrawSegment(pB, pB + rhi, c3);
     }
 
-    b2Color color(0.5f, 0.8f, 0.8f);
+    METAENGINE_Color color(0.5f, 0.8f, 0.8f);
     draw->DrawSegment(xfA.p, pA, color);
     draw->DrawSegment(pA, pB, color);
     draw->DrawSegment(xfB.p, pB, color);
@@ -3642,11 +3641,11 @@ void b2PrismaticJoint::Draw(DebugDraw *draw) const {
 
     b2Vec2 axis = b2Mul(xfA.q, m_localXAxisA);
 
-    b2Color c1(0.7f, 0.7f, 0.7f);
-    b2Color c2(0.3f, 0.9f, 0.3f);
-    b2Color c3(0.9f, 0.3f, 0.3f);
-    b2Color c4(0.3f, 0.3f, 0.9f);
-    b2Color c5(0.4f, 0.4f, 0.4f);
+    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
+    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
+    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
+    METAENGINE_Color c4(0.3f, 0.3f, 0.9f);
+    METAENGINE_Color c5(0.4f, 0.4f, 0.4f);
 
     draw->DrawSegment(pA, pB, c5);
 
@@ -4251,7 +4250,7 @@ void b2Joint::Draw(DebugDraw *draw) const {
     b2Vec2 p1 = GetAnchorA();
     b2Vec2 p2 = GetAnchorB();
 
-    b2Color color(0.5f, 0.8f, 0.8f);
+    METAENGINE_Color color(0.5f, 0.8f, 0.8f);
 
     switch (m_type) {
         case e_distanceJoint:
@@ -4268,7 +4267,7 @@ void b2Joint::Draw(DebugDraw *draw) const {
         } break;
 
         case e_mouseJoint: {
-            b2Color c;
+            METAENGINE_Color c;
             c.Set(0.0f, 1.0f, 0.0f);
             draw->DrawPoint(p1, 4.0f, c);
             draw->DrawPoint(p2, 4.0f, c);
@@ -5917,10 +5916,10 @@ void b2DistanceJoint::Draw(DebugDraw *draw) const {
     b2Vec2 axis = pB - pA;
     axis.Normalize();
 
-    b2Color c1(0.7f, 0.7f, 0.7f);
-    b2Color c2(0.3f, 0.9f, 0.3f);
-    b2Color c3(0.9f, 0.3f, 0.3f);
-    b2Color c4(0.4f, 0.4f, 0.4f);
+    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
+    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
+    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
+    METAENGINE_Color c4(0.4f, 0.4f, 0.4f);
 
     draw->DrawSegment(pA, pB, c4);
 
@@ -7853,18 +7852,18 @@ void b2Rope::SolveBend_PBD_Triangle() {
 }
 
 void b2Rope::Draw(DebugDraw *draw) const {
-    b2Color c(0.4f, 0.5f, 0.7f);
-    b2Color pg(0.1f, 0.8f, 0.1f);
-    b2Color pd(0.7f, 0.2f, 0.4f);
+    METAENGINE_Color c(0.4f, 0.5f, 0.7f);
+    METAENGINE_Color pg(0.1f, 0.8f, 0.1f);
+    METAENGINE_Color pd(0.7f, 0.2f, 0.4f);
 
     for (I32 i = 0; i < m_count - 1; ++i) {
         draw->DrawSegment(m_ps[i], m_ps[i + 1], c);
 
-        const b2Color &pc = m_invMasses[i] > 0.0f ? pd : pg;
+        const METAENGINE_Color &pc = m_invMasses[i] > 0.0f ? pd : pg;
         draw->DrawPoint(m_ps[i], 5.0f, pc);
     }
 
-    const b2Color &pc = m_invMasses[m_count - 1] > 0.0f ? pd : pg;
+    const METAENGINE_Color &pc = m_invMasses[m_count - 1] > 0.0f ? pd : pg;
     draw->DrawPoint(m_ps[m_count - 1], 5.0f, pc);
 }
 
@@ -8113,8 +8112,6 @@ void b2Mat33::GetSymInverse33(b2Mat33 *M) const {
     M->ez.y = M->ey.z;
     M->ez.z = det * (a11 * a22 - a12 * a12);
 }
-
-b2Version b2_version = {2, 4, 1};
 
 // Memory allocators. Modify these to use your own allocator.
 void *b2Alloc_Default(I32 size) { return malloc(size); }

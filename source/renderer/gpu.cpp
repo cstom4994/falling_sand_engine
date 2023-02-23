@@ -2,14 +2,14 @@
 #include "gpu.hpp"
 
 #include "core/global.hpp"
-#include "renderer/shaders.hpp"
 #include "game_shaders.hpp"
 #include "libs/imgui/imgui.h"
+#include "renderer/shaders.hpp"
 #include "ui/imgui/imgui_layer.hpp"
 
 engine_render Render;
 
-b2Vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, b2Vec2 p) {
+vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, vec2 p) {
     float s = sin(angle);
     float c = cos(angle);
 
@@ -22,14 +22,14 @@ b2Vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, b2Vec2
     float ynew = p.x * s + p.y * c;
 
     // translate point back:
-    return b2Vec2(xnew + cx, ynew + cy);
+    return vec2(xnew + cx, ynew + cy);
 }
 
-void MetaEngine::Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, b2Vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
+void MetaEngine::Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
-    b2Vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
+    vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
-        b2Vec2 rot = rotate_point(cx, cy, angle, verts[i]);
+        vec2 rot = rotate_point(cx, cy, angle, verts[i]);
         R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale, y + rot.y * scale, col);
         last = rot;
     }
@@ -614,9 +614,7 @@ b2Vec2 DebugDraw::transform(const b2Vec2 &pt) {
     return b2Vec2(x, y);
 }
 
-METAENGINE_Color DebugDraw::convertColor(const b2Color &color) { return {(U8)(color.r * 255), (U8)(color.g * 255), (U8)(color.b * 255), (U8)(color.a * 255)}; }
-
-void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color) {
+void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -624,12 +622,12 @@ void DebugDraw::DrawPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Col
     }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
-    R_Polygon(target, vertexCount, (float *)verts, convertColor(color));
+    R_Polygon(target, vertexCount, (float *)verts, color);
 
     delete[] verts;
 }
 
-void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const b2Color &color) {
+void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const METAENGINE_Color &color) {
     b2Vec2 *verts = new b2Vec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -637,28 +635,28 @@ void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, I32 vertexCount, const 
     }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
-    METAENGINE_Color c2 = convertColor(color);
+    METAENGINE_Color c2 = color;
     c2.a *= 0.25;
     R_PolygonFilled(target, vertexCount, (float *)verts, c2);
-    R_Polygon(target, vertexCount, (float *)verts, convertColor(color));
+    R_Polygon(target, vertexCount, (float *)verts, color);
 
     delete[] verts;
 }
 
-void DebugDraw::DrawCircle(const b2Vec2 &center, float radius, const b2Color &color) {
+void DebugDraw::DrawCircle(const b2Vec2 &center, float radius, const METAENGINE_Color &color) {
     b2Vec2 tr = transform(center);
-    R_Circle(target, tr.x, tr.y, radius * scale, convertColor(color));
+    R_Circle(target, tr.x, tr.y, radius * scale, color);
 }
 
-void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const b2Color &color) {
+void DebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const METAENGINE_Color &color) {
     b2Vec2 tr = transform(center);
-    R_CircleFilled(target, tr.x, tr.y, radius * scale, convertColor(color));
+    R_CircleFilled(target, tr.x, tr.y, radius * scale, color);
 }
 
-void DebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color) {
+void DebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const METAENGINE_Color &color) {
     b2Vec2 tr1 = transform(p1);
     b2Vec2 tr2 = transform(p2);
-    R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, convertColor(color));
+    R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, color);
 }
 
 void DebugDraw::DrawTransform(const b2Transform &xf) {
@@ -675,22 +673,22 @@ void DebugDraw::DrawTransform(const b2Transform &xf) {
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
 }
 
-void DebugDraw::DrawPoint(const b2Vec2 &p, float size, const b2Color &color) {
+void DebugDraw::DrawPoint(const b2Vec2 &p, float size, const METAENGINE_Color &color) {
     b2Vec2 tr = transform(p);
-    R_CircleFilled(target, tr.x, tr.y, 2, convertColor(color));
+    R_CircleFilled(target, tr.x, tr.y, 2, color);
 }
 
 void DebugDraw::DrawString(int x, int y, const char *string, ...) {}
 
 void DebugDraw::DrawString(const b2Vec2 &p, const char *string, ...) {}
 
-void DebugDraw::DrawAABB(b2AABB *aabb, const b2Color &color) {
+void DebugDraw::DrawAABB(b2AABB *aabb, const METAENGINE_Color &color) {
     b2Vec2 tr1 = transform(aabb->lowerBound);
     b2Vec2 tr2 = transform(aabb->upperBound);
-    R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, convertColor(color));
-    R_Line(target, tr2.x, tr1.y, tr2.x, tr2.y, convertColor(color));
-    R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, convertColor(color));
-    R_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, convertColor(color));
+    R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, color);
+    R_Line(target, tr2.x, tr1.y, tr2.x, tr2.y, color);
+    R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, color);
+    R_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, color);
 }
 
 namespace SurfaceBase {

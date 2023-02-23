@@ -17,7 +17,7 @@
 #include "game.hpp"
 #include "game_resources.hpp"
 #include "game_utils/cells.h"
-#include "internal/builtin_box2d.h"
+#include "physics/box2d.h"
 #include "reflectionflat.hpp"
 #include "renderer/renderer_utils.h"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -1182,7 +1182,7 @@ void Player::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     R_Rectangle(target, we->x + ofsX, we->y + ofsY, we->x + ofsX + we->hw, we->y + ofsY + we->hh, {0xff, 0xff, 0xff, 0xff});
 }
 
-b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p);
+vec2 rotate_point2(F32 cx, F32 cy, F32 angle, vec2 p);
 
 void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
     RigidBody *r;
@@ -1192,7 +1192,7 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
 
         F32 angle = holdAngle;
 
-        b2Vec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(F32)(heldItem->surface->w / 2.0), (F32)(heldItem->surface->h / 2.0)});
+        vec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(F32)(heldItem->surface->w / 2.0), (F32)(heldItem->surface->h / 2.0)});
 
         r = world->makeRigidBody(b2_dynamicBody, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
                                  we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
@@ -1230,7 +1230,7 @@ Player::~Player() {
     if (heldItem) delete heldItem;
 }
 
-b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p) {
+vec2 rotate_point2(F32 cx, F32 cy, F32 angle, vec2 p) {
     F32 s = sin(angle);
     F32 c = cos(angle);
 
@@ -1243,7 +1243,7 @@ b2Vec2 rotate_point2(F32 cx, F32 cy, F32 angle, b2Vec2 p) {
     F32 yn = p.x * s + p.y * c;
 
     // translate back
-    return b2Vec2(xn + cx, yn + cy);
+    return vec2(xn + cx, yn + cy);
 }
 
 void ControableSystem::process(MetaEngine::ECS::registry &world, const move_player_event &evt) {

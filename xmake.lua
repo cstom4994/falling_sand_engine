@@ -182,6 +182,7 @@ do
 	add_files("source/game_utils/**.cpp")
 	add_files("source/internal/**.c")
 	add_files("source/internal/**.cpp")
+	add_files("source/physics/**.cpp")
 	add_files("source/network/**.cpp")
 	add_files("source/audio/**.cpp")
 	add_files("source/meta/*.cpp")

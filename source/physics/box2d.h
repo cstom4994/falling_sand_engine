@@ -3,28 +3,29 @@
 // Box2d code by Erin Catto licensed under the MIT License
 // https://github.com/erincatto/box2d
 
-/*
-MIT License
-Copyright (c) 2019 Erin Catto
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// MIT License
+// Copyright (c) 2022-2023 KaoruXun
+// Copyright (c) 2019 Erin Catto
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 
 #ifndef BOX2D_H
 #define BOX2D_H
@@ -130,17 +131,6 @@ SOFTWARE.
 void b2OpenDump(const char *fileName);
 void b2Dump(const char *string, ...);
 void b2CloseDump();
-
-/// Version numbering scheme.
-/// See http://en.wikipedia.org/wiki/Software_versioning
-struct b2Version {
-    I32 major;     ///< significant changes
-    I32 minor;     ///< incremental changes
-    I32 revision;  ///< bug fixes
-};
-
-/// Current version.
-extern struct b2Version b2_version;
 
 struct DebugDraw;
 
@@ -820,30 +810,6 @@ inline void b2Sweep::Normalize() {
 }
 
 #pragma endregion MATH
-
-#pragma region DRAW
-
-/// Color for debug drawing. Each value has the range [0,1].
-struct b2Color {
-    b2Color() {}
-    b2Color(float rIn, float gIn, float bIn, float aIn = 1.0f) {
-        r = rIn;
-        g = gIn;
-        b = bIn;
-        a = aIn;
-    }
-
-    void Set(float rIn, float gIn, float bIn, float aIn = 1.0f) {
-        r = rIn;
-        g = gIn;
-        b = bIn;
-        a = aIn;
-    }
-
-    float r, g, b, a;
-};
-
-#pragma endregion DRAW
 
 #pragma region TIMER
 
@@ -4829,7 +4795,7 @@ public:
 
 struct b2AABB;
 struct b2BodyDef;
-struct b2Color;
+struct METAENGINE_Color;
 struct b2JointDef;
 class b2Body;
 class b2Fixture;
@@ -5015,7 +4981,7 @@ private:
     void Solve(const b2TimeStep &step);
     void SolveTOI(const b2TimeStep &step);
 
-    void DrawShape(b2Fixture *shape, const b2Transform &xf, const b2Color &color);
+    void DrawShape(b2Fixture *shape, const b2Transform &xf, const METAENGINE_Color &color);
 
     b2BlockAllocator m_blockAllocator;
     b2StackAllocator m_stackAllocator;

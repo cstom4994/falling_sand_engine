@@ -18,7 +18,7 @@
 #include "ecs/ecs.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "internal/builtin_box2d.h"
+#include "physics/box2d.h"
 #include "libs/parallel_hashmap/phmap.h"
 #include "renderer/renderer_gpu.h"
 
@@ -65,8 +65,8 @@ public:
         MetaEngine::vector<CellData *> cells;
         MetaEngine::vector<RigidBody *> rigidBodies;
         MetaEngine::vector<RigidBody *> worldRigidBodies;
-        MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldMeshes;
-        MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldTris;
+        MetaEngine::vector<MetaEngine::vector<vec2>> worldMeshes;
+        MetaEngine::vector<MetaEngine::vector<vec2>> worldTris;
 
         MetaEngine::vector<LoadChunkParams> toLoad;
         MetaEngine::vector<std::future<Chunk *>> readyToReadyToMerge;
@@ -74,7 +74,7 @@ public:
         MetaEngine::vector<Chunk *> readyToMerge;  // deque, but MetaEngine::vector should work
 
         MetaEngine::vector<PlacedStructure> structures;
-        MetaEngine::vector<b2Vec2> distributedPoints;
+        MetaEngine::vector<vec2> distributedPoints;
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         MetaEngine::vector<Populator *> populators;
 
@@ -125,7 +125,7 @@ public:
     C_Rect lastMeshZone{};
     C_Rect lastMeshLoadZone{};
 
-    b2Vec2 gravity{};
+    vec2 gravity{};
     b2World *b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
@@ -162,8 +162,8 @@ public:
     Biome *getBiomeAt(int x, int y);
     Biome *getBiomeAt(Chunk *ch, int x, int y);
     void addStructure(PlacedStructure str);
-    b2Vec2 getNearestPoint(F32 x, F32 y);
-    MetaEngine::vector<b2Vec2> getPointsWithin(F32 x, F32 y, F32 w, F32 h);
+    vec2 getNearestPoint(F32 x, F32 y);
+    MetaEngine::vector<vec2> getPointsWithin(F32 x, F32 y, F32 w, F32 h);
     Chunk *getChunk(int cx, int cy);
     void populateChunk(Chunk *ch, int phase, bool render);
     void tickEntities(R_Target *target);

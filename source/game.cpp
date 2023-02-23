@@ -1569,7 +1569,7 @@ void Game::tick() {
                 METAENGINE_Color col = {0xff, 0xff, 0x80, outlineAlpha};
                 R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);  // SDL_BLENDMODE_BLEND
                 for (auto &l : cur->outline) {
-                    b2Vec2 *vec = new b2Vec2[l.GetNumPoints()];
+                    vec2 *vec = new vec2[l.GetNumPoints()];
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(F32)l.GetPoint(j).x / Screen.gameScale, (F32)l.GetPoint(j).y / Screen.gameScale};
                     }

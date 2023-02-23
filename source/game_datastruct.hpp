@@ -16,7 +16,7 @@
 #include "core/sdl_wrapper.h"
 #include "ecs/ecs.hpp"
 #include "game_basic.hpp"
-#include "internal/builtin_box2d.h"
+#include "physics/box2d.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
 

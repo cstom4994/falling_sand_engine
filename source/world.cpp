@@ -28,7 +28,7 @@
 #include "game_resources.hpp"
 #include "game_utils/cells.h"
 #include "game_utils/jsonwarp.h"
-#include "internal/builtin_box2d.h"
+#include "physics/box2d.h"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -149,7 +149,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
         }
     }
 
-    gravity = b2Vec2(0, 20);
+    gravity = vec2(0, 20);
     b2world = new b2World(gravity);
 
     struct gameplay_feature {};
@@ -355,7 +355,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     F32 ynew = minX * s + minY * c;
 
     // translate point back:
-    rb->body->SetTransform(b2Vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
+    rb->body->SetTransform(vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
 
     // If it is a single pixel rigid body, it will be deconstructed.
     if (maxX == 1 || maxY == 1) return;
@@ -385,7 +385,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         }
     }
 
-    MetaEngine::vector<MetaEngine::vector<b2Vec2>> meshes = {};
+    MetaEngine::vector<MetaEngine::vector<vec2>> meshes = {};
 
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
@@ -449,7 +449,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         MarchingSquares::Result r = MarchingSquares::FindPerimeter(lookX, lookY, texture->w, texture->h, data);
         results.push_back(r);
 
-        MetaEngine::vector<b2Vec2> worldMesh;
+        MetaEngine::vector<vec2> worldMesh;
 
         F32 lastX = (F32)r.initialX;
         F32 lastY = (F32)r.initialY;
@@ -634,7 +634,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             C_Surface *sfc = polys2sSfcs[b];
 
             RigidBody *rbn = makeRigidBodyMulti(b2_dynamicBody, 0, 0, rb->body->GetAngle(), polys2, rb->body->GetFixtureList()[0].GetDensity(), rb->body->GetFixtureList()[0].GetFriction(), sfc);
-            rbn->body->SetTransform(b2Vec2(rb->body->GetPosition().x, rb->body->GetPosition().y), rb->body->GetAngle());
+            rbn->body->SetTransform(vec2(rb->body->GetPosition().x, rb->body->GetPosition().y), rb->body->GetAngle());
             rbn->body->SetLinearVelocity(rb->body->GetLinearVelocity());
             rbn->body->SetAngularVelocity(rb->body->GetAngularVelocity());
             rbn->outline = shapes;
@@ -736,7 +736,7 @@ found : {};
         }
     }
 
-    MetaEngine::vector<MetaEngine::vector<b2Vec2>> worldMeshes = {};
+    MetaEngine::vector<MetaEngine::vector<vec2>> worldMeshes = {};
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
     int inn = 0;
@@ -802,7 +802,7 @@ found : {};
 
         results.push_back(r);
 
-        MetaEngine::vector<b2Vec2> worldMesh;
+        MetaEngine::vector<vec2> worldMesh;
 
         F32 lastX = (F32)r.initialX;
         F32 lastY = (F32)r.initialY;
@@ -2546,7 +2546,7 @@ void World::tickChunks() {
 
             for (int i = 0; i < rigidBodies.size(); i++) {
                 RigidBody cur = *rigidBodies[i];
-                cur.body->SetTransform(b2Vec2(cur.body->GetPosition().x + changeX, cur.body->GetPosition().y + changeY), cur.body->GetAngle());
+                cur.body->SetTransform(vec2(cur.body->GetPosition().x + changeX, cur.body->GetPosition().y + changeY), cur.body->GetAngle());
             }
         }
 
@@ -2812,11 +2812,11 @@ void World::addStructure(PlacedStructure str) {
     }
 }
 
-b2Vec2 World::getNearestPoint(F32 x, F32 y) {
+vec2 World::getNearestPoint(F32 x, F32 y) {
     F32 xm = fmod(1 + fmod(x, 1), 1);
     F32 ym = fmod(1 + fmod(y, 1), 1);
     F32 closestDist = 100;
-    b2Vec2 closest;
+    vec2 closest;
     for (int i = 0; i < distributedPoints.size(); i++) {
         F32 dx = distributedPoints[i].x - xm;
         F32 dy = distributedPoints[i].y - ym;
@@ -2829,11 +2829,11 @@ b2Vec2 World::getNearestPoint(F32 x, F32 y) {
     return {closest.x + (x - xm), closest.y + (y - ym)};
 }
 
-MetaEngine::vector<b2Vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
+MetaEngine::vector<vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
     F32 xm = fmod(1 + fmod(x, 1), 1);
     F32 ym = fmod(1 + fmod(y, 1), 1);
 
-    MetaEngine::vector<b2Vec2> pts;
+    MetaEngine::vector<vec2> pts;
     for (F32 xo = floor(x) - 1; xo < ceil(x + w); xo++) {
         for (F32 yo = floor(y) - 1; yo < ceil(y + h); yo++) {
             for (int i = 0; i < distributedPoints.size(); i++) {
@@ -3166,7 +3166,7 @@ void World::tickEntities(R_Target *t) {
 
         // cur->render(t, loadZone.x, loadZone.y);
 
-        cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
+        cur->rb->body->SetTransform(vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
         cur->rb->body->SetLinearVelocity({cur->vx * 25, cur->vy * 25});
 
         return false;

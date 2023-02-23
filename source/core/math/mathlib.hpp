@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "core/cpp/vector.hpp"
-#include "internal/builtin_box2d.h"
+#include "physics/box2d.h"
 #include "libs/imgui/imgui.h"
 
 union vec2 {
@@ -29,6 +29,8 @@ union vec2 {
 
     vec2(){};
     vec2(float _x, float _y) { x = _x, y = _y; };
+
+    operator b2Vec2() const { return b2Vec2{x, y}; }
 
     inline float &operator[](size_t i) { return v[i]; };
 };
@@ -247,8 +249,8 @@ uint32_t pcg32_boundedrand_r(pcg32_random_t *rng, uint32_t bound);
 
 #pragma endregion PCG
 
-void simplify_section(const MetaEngine::vector<b2Vec2> &pts, F32 tolerance, size_t i, size_t j, MetaEngine::vector<bool> *mark_map, size_t omitted = 0);
-MetaEngine::vector<b2Vec2> simplify(const MetaEngine::vector<b2Vec2> &vertices, F32 tolerance);
+void simplify_section(const MetaEngine::vector<vec2> &pts, F32 tolerance, size_t i, size_t j, MetaEngine::vector<bool> *mark_map, size_t omitted = 0);
+MetaEngine::vector<vec2> simplify(const MetaEngine::vector<vec2> &vertices, F32 tolerance);
 F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2);
 
 //  * A simple implementation of the marching squares algorithm that can identify
@@ -263,7 +265,7 @@ namespace MarchingSquares {
 struct Direction {
     Direction() : x(0), y(0) {}
     Direction(int x, int y) : x(x), y(y) {}
-    Direction(b2Vec2 vec) : x(vec.x), y(vec.y) {}
+    Direction(vec2 vec) : x(vec.x), y(vec.y) {}
     int x;
     int y;
 };

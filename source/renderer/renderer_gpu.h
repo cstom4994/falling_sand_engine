@@ -107,8 +107,15 @@ typedef struct METAENGINE_Color {
 #ifdef __cplusplus
     METAENGINE_Color() : r(255), g(255), b(255), a(255) {}
     METAENGINE_Color(U8 R, U8 G, U8 B, U8 A) : r(R), g(G), b(B), a(A) {}
+    METAENGINE_Color(float R, float G, float B) : r(R * 255), g(G * 255), b(B * 255), a(255) {}
     METAENGINE_Color(vec3 &v3) : r(v3.r), g(v3.g), b(v3.b), a(255) {}
     METAENGINE_Color(vec3 &v3, U8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
+
+    void Set(float R, float G, float B) {
+        r = R * 255;
+        g = G * 255;
+        b = B * 255;
+    }
 #endif
 } METAENGINE_Color;
 
