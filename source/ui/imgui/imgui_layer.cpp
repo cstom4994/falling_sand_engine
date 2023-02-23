@@ -32,7 +32,6 @@
 #include "game_ui.hpp"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
-#include "libs/imgui/implot.h"
 #include "meta/meta.hpp"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
@@ -1175,7 +1174,6 @@ void ImGuiLayer::Init() {
     // ImGui::SetAllocatorFunctions(ImGuiMalloc, ImGuiFree);
 
     m_imgui = ImGui::CreateContext();
-    ImPlot::CreateContext();
 
     ImGuiIO &io = ImGui::GetIO();
 
@@ -1358,7 +1356,6 @@ void ImGuiLayer::End() {
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
-    ImPlot::DestroyContext();
     ImGui::DestroyContext();
 }
 
@@ -1449,7 +1446,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
     if (global.game->GameIsolate_.globaldef.draw_imgui_debug) {
         ImGui::ShowDemoWindow();
-        ImPlot::ShowDemoWindow();
     }
 
     auto cpos = editor.GetCursorPosition();

@@ -150,7 +150,6 @@ public:
             : mPreprocChar('#'), mAutoIndentation(true), mTokenize(nullptr), mCaseSensitive(true) {}
 
         static const LanguageDefinition &GLSL();
-        static const LanguageDefinition &C();
         static const LanguageDefinition &Lua();
     };
 
