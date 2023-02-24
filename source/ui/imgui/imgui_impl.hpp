@@ -38,7 +38,6 @@
 #endif
 
 #include "core/core.hpp"
-#include "core/cpp/vector.hpp"
 #include "libs/imgui/md4c.h"
 
 // Backend API

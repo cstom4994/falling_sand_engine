@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "core/cpp/vector.hpp"
 #include "libs/imgui/imgui.h"
 
 union vec2 {

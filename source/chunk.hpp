@@ -52,8 +52,8 @@ typedef struct Chunk {
     MaterialInstance *tiles = nullptr;
     MaterialInstance *layer2 = nullptr;
     U32 *background = nullptr;
-    MetaEngine::vector<Biome *> biomes = {nullptr};
-    MetaEngine::vector<b2PolygonShape> polys = {};
+    std::vector<Biome *> biomes = {nullptr};
+    std::vector<b2PolygonShape> polys = {};
     RigidBody *rb = nullptr;
 } Chunk;
 

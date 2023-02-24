@@ -335,34 +335,34 @@ void Game::createTexture() {
 
     auto init_pixels = [&]() {
         // create texture pixel buffers
-        TexturePack_.pixels = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixels = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixels_ar = &TexturePack_.pixels[0];
 
-        TexturePack_.pixelsLayer2 = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsLayer2 = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
 
-        TexturePack_.pixelsBackground = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsBackground = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-        TexturePack_.pixelsObjects = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsObjects = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
         TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-        TexturePack_.pixelsTemp = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsTemp = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
         TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-        TexturePack_.pixelsCells = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsCells = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
         TexturePack_.pixelsCells_ar = &TexturePack_.pixelsCells[0];
 
-        TexturePack_.pixelsLoading = MetaEngine::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsLoading = std::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
         TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
-        TexturePack_.pixelsFire = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsFire = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
-        TexturePack_.pixelsFlow = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsFlow = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
 
-        TexturePack_.pixelsEmission = MetaEngine::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsEmission = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
     };
 
@@ -518,7 +518,7 @@ int Game::run(int argc, char *argv[]) {
 
                     // erase from rigidbodies
                     // this copies the vector
-                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
+                    std::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
@@ -610,7 +610,7 @@ int Game::run(int argc, char *argv[]) {
                                 int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / Screen.gameScale);
                                 int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
-                                MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;  // copy
+                                std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;  // copy
                                 for (size_t i = 0; i < rbs.size(); i++) {
                                     RigidBody *cur = rbs[i];
 
@@ -743,7 +743,7 @@ int Game::run(int argc, char *argv[]) {
                                     int endInd = -1;
 
                                     int nSegments = 1 + len / 10;
-                                    MetaEngine::vector<std::tuple<int, int>> points = {};
+                                    std::vector<std::tuple<int, int>> points = {};
                                     for (int i = 0; i < nSegments; i++) {
                                         int sx = pl->hammerX + (int)((F32)(dx / nSegments) * (i + 1));
                                         int sy = pl->hammerY + (int)((F32)(dy / nSegments) * (i + 1));
@@ -816,7 +816,7 @@ int Game::run(int argc, char *argv[]) {
                     int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
                     bool swapped = false;
-                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
+                    std::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
 
@@ -953,7 +953,7 @@ int Game::run(int argc, char *argv[]) {
                 // Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
                 if (tile.mat->id == MaterialsList::GENERIC_AIR.id) {
-                    MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
+                    std::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
@@ -1082,7 +1082,7 @@ int Game::exit() {
     running = false;
 
     // release resources & shutdown
-    MetaEngine::vector<MetaEngine::Ref<IGameSystem>>::reverse_iterator backwardIterator;
+    std::vector<MetaEngine::Ref<IGameSystem>>::reverse_iterator backwardIterator;
     for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->Destory();
     }
@@ -1406,7 +1406,7 @@ void Game::updateFrameEarly() {
         F32 hoverDelta = 10.0 * Time.deltaTime / 1000.0;
 
         // this copies the vector
-        MetaEngine::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
+        std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
 
@@ -2085,7 +2085,7 @@ void Game::tickChunkLoading() {
 
             int delta = 4 * (subX + subY * GameIsolate_.world->width);
 
-            MetaEngine::vector<std::future<void>> results = {};
+            std::vector<std::future<void>> results = {};
             if (delta > 0) {
                 results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
                     std::rotate(&(TexturePack_.pixels_ar[0]), &(TexturePack_.pixels_ar[GameIsolate_.world->width * GameIsolate_.world->height * 4]) - delta,
@@ -2414,7 +2414,7 @@ void Game::tickPlayer() {
 
                         GameIsolate_.world->cells.erase(std::remove_if(GameIsolate_.world->cells.begin(), GameIsolate_.world->cells.end(), func), GameIsolate_.world->cells.end());
 
-                        MetaEngine::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
+                        std::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                         for (size_t i = 0; i < rbs->size(); i++) {
                             RigidBody *cur = (*rbs)[i];

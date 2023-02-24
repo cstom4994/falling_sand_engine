@@ -11,7 +11,6 @@
 #include "core/core.hpp"
 #include "core/cpp/static_relfection.hpp"
 #include "core/cpp/type.hpp"
-#include "core/cpp/vector.hpp"
 #include "core/math/mathlib.hpp"
 #include "core/sdl_wrapper.h"
 #include "ecs/ecs.hpp"
@@ -55,8 +54,8 @@ struct GameData {
     F32 freeCamX = 0;
     F32 freeCamY = 0;
 
-    static MetaEngine::vector<Biome *> biome_container;
-    static MetaEngine::vector<Material *> materials_container;
+    static std::vector<Biome *> biome_container;
+    static std::vector<Material *> materials_container;
     static I32 materials_count;
     static Material **materials_array;
 
@@ -168,12 +167,12 @@ struct Material {
     bool interact = false;
     int *nInteractions = nullptr;
 
-    MetaEngine::vector<MaterialInteraction> *interactions = nullptr;
+    std::vector<MaterialInteraction> *interactions = nullptr;
 
     bool react = false;
     int nReactions = 0;
 
-    MetaEngine::vector<MaterialInteraction> reactions;
+    std::vector<MaterialInteraction> reactions;
 
     int slipperyness = 1;
 
@@ -357,11 +356,11 @@ public:
     int pivotX = 0;
     int pivotY = 0;
     F32 breakSize = 16;
-    MetaEngine::vector<MaterialInstance> carry;
-    MetaEngine::vector<U16Point> fill;
+    std::vector<MaterialInstance> carry;
+    std::vector<U16Point> fill;
     U16 capacity = 0;
 
-    MetaEngine::vector<CellData *> vacuumCells = {};
+    std::vector<CellData *> vacuumCells = {};
 
     Item(const Item &p) = default;
 
@@ -464,69 +463,69 @@ METAENGINE_GUI_DEFINE_END
 
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;
-    virtual MetaEngine::vector<Populator *> getPopulators() = 0;
+    virtual std::vector<Populator *> getPopulators() = 0;
 };
 
 struct Populator {
     virtual int getPhase() = 0;
-    virtual MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) = 0;
+    virtual std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) = 0;
 };
 
 #pragma region Populators
 
 struct TestPhase1Populator : public Populator {
     int getPhase() { return 1; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct TestPhase2Populator : public Populator {
     int getPhase() { return 2; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct TestPhase3Populator : public Populator {
     int getPhase() { return 3; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct TestPhase4Populator : public Populator {
     int getPhase() { return 4; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct TestPhase5Populator : public Populator {
     int getPhase() { return 5; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct TestPhase6Populator : public Populator {
     int getPhase() { return 6; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct TestPhase0Populator : public Populator {
     int getPhase() { return 0; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
 };
 
 struct CavePopulator : public Populator {
     int getPhase() { return 0; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
 };
 
 struct CobblePopulator : public Populator {
     int getPhase() { return 1; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
 };
 
 struct OrePopulator : public Populator {
     int getPhase() { return 0; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
 };
 
 struct TreePopulator : public Populator {
     int getPhase() { return 1; }
-    MetaEngine::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
 };
 
 #pragma endregion Populators

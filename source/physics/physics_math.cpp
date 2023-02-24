@@ -1761,7 +1761,7 @@ int TPPLPartition::Triangulate_MONO(TPPLPoly *poly, TPPLPolyList *triangles) {
 
 #pragma endregion TPPL
 
-void simplify_section(const MetaEngine::vector<vec2> &pts, F32 tolerance, size_t i, size_t j, MetaEngine::vector<bool> *mark_map, size_t omitted) {
+void simplify_section(const std::vector<vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
     // make sure we always return 2 points
     if (pts.size() - omitted <= 2) return;
 
@@ -1794,12 +1794,12 @@ void simplify_section(const MetaEngine::vector<vec2> &pts, F32 tolerance, size_t
     }
 }
 
-MetaEngine::vector<vec2> simplify(const MetaEngine::vector<vec2> &vertices, F32 tolerance) {
-    MetaEngine::vector<bool> mark_map(vertices.size(), true);
+std::vector<vec2> simplify(const std::vector<vec2> &vertices, F32 tolerance) {
+    std::vector<bool> mark_map(vertices.size(), true);
 
     simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
 
-    MetaEngine::vector<vec2> result;
+    std::vector<vec2> result;
     for (size_t i = 0; i != vertices.size(); ++i) {
         if (mark_map[i]) {
             result.push_back(vertices[i]);

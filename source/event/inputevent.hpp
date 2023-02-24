@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "core/cpp/vector.hpp"
 #include "core/sdl_wrapper.h"
 
 enum EnumControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };
@@ -69,7 +68,7 @@ public:
     static KeyControl *ZOOM_OUT;
     static KeyControl *PAUSE;
 
-    static MetaEngine::vector<MetaEngine::Ref<KeyControl>> keyControls;
+    static std::vector<MetaEngine::Ref<KeyControl>> keyControls;
     static std::map<std::string, int> SDLKeymap;
 
     static bool initted;

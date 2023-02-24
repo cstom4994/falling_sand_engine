@@ -230,7 +230,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, F32 x, F32 y, F32 angle, b2Poly
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, MetaEngine::vector<b2PolygonShape> shape, F32 density, F32 friction, C_Surface *texture) {
+RigidBody *World::makeRigidBodyMulti(b2BodyType type, F32 x, F32 y, F32 angle, std::vector<b2PolygonShape> shape, F32 density, F32 friction, C_Surface *texture) {
 
     b2BodyDef bodyDef;
     bodyDef.type = type;
@@ -385,7 +385,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         }
     }
 
-    MetaEngine::vector<MetaEngine::vector<vec2>> meshes = {};
+    std::vector<std::vector<vec2>> meshes = {};
 
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
@@ -449,7 +449,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         MarchingSquares::Result r = MarchingSquares::FindPerimeter(lookX, lookY, texture->w, texture->h, data);
         results.push_back(r);
 
-        MetaEngine::vector<vec2> worldMesh;
+        std::vector<vec2> worldMesh;
 
         F32 lastX = (F32)r.initialX;
         F32 lastY = (F32)r.initialY;
@@ -513,9 +513,9 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     part.RemoveHoles(&shapes, &result2);
 
-    MetaEngine::vector<MetaEngine::vector<b2PolygonShape>> polys2s = {};
-    MetaEngine::vector<C_Surface *> polys2sSfcs = {};
-    MetaEngine::vector<bool> polys2sWeld = {};
+    std::vector<std::vector<b2PolygonShape>> polys2s = {};
+    std::vector<C_Surface *> polys2sSfcs = {};
+    std::vector<bool> polys2sWeld = {};
     for (auto it = result2.begin(); it != result2.end(); it++) {
         std::list<TPPLPoly> result;
 
@@ -534,7 +534,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         // Ps::MarchingSquares ms = Ps::MarchingSquares(texture);
         // worldMesh = ms.extract_simple(2);
 
-        MetaEngine::vector<b2PolygonShape> polys2;
+        std::vector<b2PolygonShape> polys2;
 
         int n = 0;
         std::for_each(result.begin(), result.end(), [&](TPPLPoly cur) {
@@ -558,7 +558,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     }
 
     if (polys2s.size() > 0) {
-        MetaEngine::vector<std::future<void>> poolResults = {};
+        std::vector<std::future<void>> poolResults = {};
 
         if (texture->w > 10) {
             int nThreads = updateRigidBodyHitboxPool->n_idle();
@@ -629,7 +629,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         }
 
         for (int b = 0; b < polys2s.size(); b++) {
-            MetaEngine::vector<b2PolygonShape> polys2 = polys2s[b];
+            std::vector<b2PolygonShape> polys2 = polys2s[b];
 
             C_Surface *sfc = polys2sSfcs[b];
 
@@ -736,7 +736,7 @@ found : {};
         }
     }
 
-    MetaEngine::vector<MetaEngine::vector<vec2>> worldMeshes = {};
+    std::vector<std::vector<vec2>> worldMeshes = {};
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
     int inn = 0;
@@ -802,7 +802,7 @@ found : {};
 
         results.push_back(r);
 
-        MetaEngine::vector<vec2> worldMesh;
+        std::vector<vec2> worldMesh;
 
         F32 lastX = (F32)r.initialX;
         F32 lastY = (F32)r.initialY;
@@ -894,7 +894,7 @@ found : {};
             cur[0].y += 0.01f;
         }
 
-        MetaEngine::vector<PVec2> vec = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
+        std::vector<PVec2> vec = {{(F32)cur[0].x, (F32)cur[0].y}, {(F32)cur[1].x, (F32)cur[1].y}, {(F32)cur[2].x, (F32)cur[2].y}};
 
         // worldTris.push_back(vec);
         b2PolygonShape sh;
@@ -1019,7 +1019,7 @@ void World::tick() {
             int chOfsY = 1 - ((tk % 4) / 2);  // 1 1 0 0
 
 #ifdef DO_MULTITHREADING
-            MetaEngine::vector<std::future<MetaEngine::vector<CellData *>>> results = {};
+            std::vector<std::future<std::vector<CellData *>>> results = {};
 #endif
 #ifdef DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
@@ -1034,7 +1034,7 @@ void World::tick() {
 
 #ifdef DO_MULTITHREADING
                     results.push_back(tickPool->push([&, cx, cy](int id) {
-                        MetaEngine::vector<CellData *> parts = {};
+                        std::vector<CellData *> parts = {};
 
 #else
 
@@ -1863,7 +1863,7 @@ void World::tick() {
 
             for (int i = 0; i < results.size(); i++) {
 
-                MetaEngine::vector<CellData *> pts = results[i].get();
+                std::vector<CellData *> pts = results[i].get();
 
                 cells.insert(cells.end(), pts.begin(), pts.end());
             }
@@ -2158,7 +2158,7 @@ void World::tickCells() {
 
 void World::tickObjectsMesh() {
 
-    MetaEngine::vector<RigidBody *> *rbs = &rigidBodies;
+    std::vector<RigidBody *> *rbs = &rigidBodies;
     for (int i = 0; i < rbs->size(); i++) {
         RigidBody *cur = (*rbs)[i];
         if (!static_cast<bool>(cur->surface)) {
@@ -2173,7 +2173,7 @@ void World::tickObjectsMesh() {
 
 void World::tickObjectBounds() {
 
-    MetaEngine::vector<RigidBody *> rbs = rigidBodies;
+    std::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
@@ -2190,7 +2190,7 @@ void World::tickObjects() {
     int maxX = 0;
     int maxY = 0;
 
-    MetaEngine::vector<RigidBody *> rbs = rigidBodies;
+    std::vector<RigidBody *> rbs = rigidBodies;
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
@@ -2290,7 +2290,7 @@ void World::frame() {
         // std::future<ChunkReadyToMerge> fut = ;
         // fut.wait();
         // readyToMerge.push_back(fut.get());
-        // MetaEngine::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
+        // std::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
 
         readyToReadyToMerge.push_back(loadChunkPool->push([&](int id) { return World::loadChunk(getChunk(para.x, para.y), para.populate, true); }));
         // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
@@ -2650,7 +2650,7 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
     // if (populate) {
     //	if (!ch.populated) {
     //		Populator pop;
-    //		MetaEngine::vector<PlacedStructure> structs = pop.apply(prop, ch, *this);
+    //		std::vector<PlacedStructure> structs = pop.apply(prop, ch, *this);
     //		ch.populated = true;
 
     //		/*for (int i = 0; i < structs.size(); i++) {
@@ -2831,11 +2831,11 @@ vec2 World::getNearestPoint(F32 x, F32 y) {
     return {closest.x + (x - xm), closest.y + (y - ym)};
 }
 
-MetaEngine::vector<vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
+std::vector<vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
     F32 xm = fmod(1 + fmod(x, 1), 1);
     F32 ym = fmod(1 + fmod(y, 1), 1);
 
-    MetaEngine::vector<vec2> pts;
+    std::vector<vec2> pts;
     for (F32 xo = floor(x) - 1; xo < ceil(x + w); xo++) {
         for (F32 yo = floor(y) - 1; yo < ceil(y + h); yo++) {
             for (int i = 0; i < distributedPoints.size(); i++) {
@@ -2904,7 +2904,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
 
     for (int i = 0; i < populators.size(); i++) {
         if (populators[i]->getPhase() == phase) {
-            MetaEngine::vector<PlacedStructure> strs = populators[i]->apply(ch->tiles, ch->layer2, chs, dirtyChunk, ax * CHUNK_W, ay * CHUNK_H, aw * CHUNK_W, ah * CHUNK_H, ch, this);
+            std::vector<PlacedStructure> strs = populators[i]->apply(ch->tiles, ch->layer2, chs, dirtyChunk, ax * CHUNK_W, ay * CHUNK_H, aw * CHUNK_W, ah * CHUNK_H, ch, this);
             for (int j = 0; j < strs.size(); j++) {
                 for (int tx = 0; tx < strs[j].base.w; tx++) {
                     for (int ty = 0; ty < strs[j].base.h; ty++) {
@@ -3236,7 +3236,7 @@ void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
     F32 tDeltaY = 1.0 / sin(angle);
 
     F32 manhattanDistance = abs(floor(ex) - floor(sx)) + abs(floor(ey) - floor(sy));
-    MetaEngine::vector<int> visited = {};
+    std::vector<int> visited = {};
     for (int t = 0; t <= manhattanDistance; ++t) {
         if (std::find(visited.begin(), visited.end(), x + y * width) == visited.end() && fn(x + y * width)) return;
         visited.push_back(x + y * width);
@@ -3370,7 +3370,7 @@ void World::saveWorld() {
 
     this->metadata.save(this->worldName);
 
-    MetaEngine::vector<std::future<void>> results = {};
+    std::vector<std::future<void>> results = {};
 
     for (auto &p : this->chunkCache) {
         if (p.first == INT_MIN) continue;

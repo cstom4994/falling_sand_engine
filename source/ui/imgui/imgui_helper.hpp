@@ -14,7 +14,6 @@
 #endif
 
 #include "core/core.hpp"
-#include "core/cpp/vector.hpp"
 #include "libs/imgui/md4c.h"
 
 #pragma region ImGuiError
@@ -720,21 +719,21 @@ METAENGINE_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (
 
 #pragma endregion
 
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, MetaEngine::vector<T>)
-if (ImGui::detail::AutoContainerValues<MetaEngine::vector<T>>("MetaEngineVector " + name, var)) {
-    ImGui::PushID(name.c_str());
-    ImGui::Indent();
-    ImGui::detail::AutoContainerPushBackButton(var);
-    if (!var.empty()) ImGui::SameLine();
-    ImGui::detail::AutoContainerPopBackButton(var);
-    ImGui::PopID();
-    ImGui::Unindent();
-}
-METAENGINE_GUI_DEFINE_END
+// METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
+// if (ImGui::detail::AutoContainerValues<std::vector<T>>("MetaEngineVector " + name, var)) {
+//     ImGui::PushID(name.c_str());
+//     ImGui::Indent();
+//     ImGui::detail::AutoContainerPushBackButton(var);
+//     if (!var.empty()) ImGui::SameLine();
+//     ImGui::detail::AutoContainerPopBackButton(var);
+//     ImGui::PopID();
+//     ImGui::Unindent();
+// }
+// METAENGINE_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const MetaEngine::vector<T>)
-ImGui::detail::AutoContainerValues<const MetaEngine::vector<T>>("MetaEngineVector " + name, var);
-METAENGINE_GUI_DEFINE_END
+// METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
+// ImGui::detail::AutoContainerValues<const std::vector<T>>("MetaEngineVector " + name, var);
+// METAENGINE_GUI_DEFINE_END
 
 #pragma endregion ImGuiAuto
 

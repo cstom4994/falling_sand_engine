@@ -46,7 +46,7 @@ enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 class Game {
 public:
     using EventCallbackFn = std::function<void(MetaEngine::Event &)>;
-    using SystemList = MetaEngine::vector<MetaEngine::Ref<IGameSystem>>;
+    using SystemList = std::vector<MetaEngine::Ref<IGameSystem>>;
 
 public:
     EnumGameState state = LOADING;
@@ -109,7 +109,7 @@ public:
         R_Image *backgroundImage = nullptr;
 
         R_Image *loadingTexture = nullptr;
-        MetaEngine::vector<U8> pixelsLoading;
+        std::vector<U8> pixelsLoading;
         U8 *pixelsLoading_ar = nullptr;
         int loadingScreenW = 0;
         int loadingScreenH = 0;
@@ -118,41 +118,41 @@ public:
         R_Image *lightingTexture = nullptr;
 
         R_Image *emissionTexture = nullptr;
-        MetaEngine::vector<U8> pixelsEmission;
+        std::vector<U8> pixelsEmission;
         U8 *pixelsEmission_ar = nullptr;
 
         R_Image *texture = nullptr;
-        MetaEngine::vector<U8> pixels;
+        std::vector<U8> pixels;
         U8 *pixels_ar = nullptr;
         R_Image *textureLayer2 = nullptr;
-        MetaEngine::vector<U8> pixelsLayer2;
+        std::vector<U8> pixelsLayer2;
         U8 *pixelsLayer2_ar = nullptr;
         R_Image *textureBackground = nullptr;
-        MetaEngine::vector<U8> pixelsBackground;
+        std::vector<U8> pixelsBackground;
         U8 *pixelsBackground_ar = nullptr;
         R_Image *textureObjects = nullptr;
         R_Image *textureObjectsLQ = nullptr;
-        MetaEngine::vector<U8> pixelsObjects;
+        std::vector<U8> pixelsObjects;
         U8 *pixelsObjects_ar = nullptr;
         R_Image *textureObjectsBack = nullptr;
         R_Image *textureCells = nullptr;
-        MetaEngine::vector<U8> pixelsCells;
+        std::vector<U8> pixelsCells;
         U8 *pixelsCells_ar = nullptr;
         R_Image *textureEntities = nullptr;
         R_Image *textureEntitiesLQ = nullptr;
 
         R_Image *textureFire = nullptr;
         R_Image *texture2Fire = nullptr;
-        MetaEngine::vector<U8> pixelsFire;
+        std::vector<U8> pixelsFire;
         U8 *pixelsFire_ar = nullptr;
 
         R_Image *textureFlowSpead = nullptr;
         R_Image *textureFlow = nullptr;
-        MetaEngine::vector<U8> pixelsFlow;
+        std::vector<U8> pixelsFlow;
         U8 *pixelsFlow_ar = nullptr;
 
         R_Image *temperatureMap = nullptr;
-        MetaEngine::vector<U8> pixelsTemp;
+        std::vector<U8> pixelsTemp;
         U8 *pixelsTemp_ar = nullptr;
     } TexturePack_;
 

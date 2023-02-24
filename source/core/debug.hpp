@@ -4,7 +4,6 @@
 #define _METADOT_DEBUGIMPL_HPP_
 
 #include "core/core.hpp"
-#include "core/cpp/vector.hpp"
 #include "core/macros.h"
 #include "ui/imgui/imgui_impl.hpp"
 
