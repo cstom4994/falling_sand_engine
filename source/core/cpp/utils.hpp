@@ -17,7 +17,7 @@
 #include "core/alloc.hpp"
 #include "core/const.h"
 #include "core/core.hpp"
-#include "core/list.h"
+#include "core/stl/list.h"
 #include "core/math/mathlib.hpp"
 // #include "scripting/lua/lua_wrapper.hpp"
 #include "libs/cJSON.h"

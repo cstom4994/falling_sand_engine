@@ -43,6 +43,6 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat);
 C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y);
 Texture *LoadAsepriteTexture(const char *path);
 Texture *LoadTextureData(const char *path);
-void RenderSprite(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip = nullptr);
+void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip = nullptr);
 
 #endif

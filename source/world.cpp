@@ -28,8 +28,8 @@
 #include "game_resources.hpp"
 #include "game_utils/cells.h"
 #include "game_utils/jsonwarp.h"
-#include "physics/box2d.h"
 #include "npc.hpp"
+#include "physics/box2d.h"
 #include "reflectionflat.hpp"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
@@ -88,7 +88,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     noise.SetSeed(RNG_Next(global.game->RNG));
     noise.SetNoiseType(FastNoise::Perlin);
 
-    auto ha = phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>>();
+    auto ha = std::map<int, std::unordered_map<int, Chunk *>>();
     // ha.set_deleted_key(INT_MAX);
     // ha.set_empty_key(INT_MIN);
     chunkCache = ha;
@@ -2313,7 +2313,7 @@ void World::frame() {
 
             readyToMerge.push_back(merge);
             if (!chunkCache.count(merge->x)) {
-                auto h = phmap::flat_hash_map<int, Chunk *>();
+                auto h = std::unordered_map<int, Chunk *>();
                 // h.set_deleted_key(INT_MAX);
                 // h.set_empty_key(INT_MIN);
                 chunkCache[merge->x] = h;
@@ -2567,7 +2567,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         }
 
         if (!chunkCache.count(ch->x)) {
-            auto h = phmap::flat_hash_map<int, Chunk *>();
+            auto h = std::unordered_map<int, Chunk *>();
             // h.set_deleted_key(INT_MAX);
             // h.set_empty_key(INT_MIN);
             chunkCache[ch->x] = h;
@@ -2583,7 +2583,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
                 Chunk *chb = getChunk(cx + x, y);  // load chunk at ~x y
                 if (chb->pleaseDelete) {
                     if (!chunkCache.count(chb->x)) {
-                        auto h = phmap::flat_hash_map<int, Chunk *>();
+                        auto h = std::unordered_map<int, Chunk *>();
                         // h.set_deleted_key(INT_MAX);
                         // h.set_empty_key(INT_MIN);
                         chunkCache[chb->x] = h;
@@ -2716,7 +2716,9 @@ void World::unloadChunk(Chunk *ch) {
     chunkSaveCache(ch);
     if (!noSaveLoad) writeChunkToDisk(ch);
 
-    chunkCache[ch->x].erase(ch->y);
+    if (chunkCache[ch->x].contains(ch->y)) {
+        chunkCache[ch->x].erase(ch->y);
+    }
     ChunkDelete(ch);
     /*delete data;
     delete layer2;*/

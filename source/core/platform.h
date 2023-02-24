@@ -6,7 +6,7 @@
 #include "core/core.h"
 #include "core/macros.h"
 #include "core/sdl_wrapper.h"
-#include "core/stl.h"
+#include "core/stl/stl.h"
 #include "renderer/renderer_utils.h"
 
 /*--------------------------------------------------------------------------

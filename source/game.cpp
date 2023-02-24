@@ -927,8 +927,8 @@ int Game::run(int argc, char *argv[]) {
 
         Scripting::GetSingletonPtr()->Update();
 
-        // metadot_rect rct{0, 0, 150, 150};
-        // RenderSprite(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
+        metadot_rect rct{0, 0, 150, 150};
+        RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         MetaEngine::Drawing::begin_3d(Render.target);
         // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);
@@ -2397,8 +2397,10 @@ void Game::tickPlayer() {
                                                     std::tie(pl_we, pl) = global.game->GameIsolate_.world->getHostPlayer();
                                                 }
 
-                                                auto &v = pl->heldItem->vacuumCells;
-                                                v.erase(std::remove(v.begin(), v.end(), cur), v.end());
+                                                if (pl->holdtype != EnumPlayerHoldType::None) {
+                                                    auto &v = pl->heldItem->vacuumCells;
+                                                    v.erase(std::remove(v.begin(), v.end(), cur), v.end());
+                                                }
                                             };
 
                                             return false;

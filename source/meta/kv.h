@@ -3,7 +3,7 @@
 #ifndef METADOT_KV_H
 #define METADOT_KV_H
 
-#include "core/stl.h"
+#include "core/stl/stl.h"
 
 //--------------------------------------------------------------------------------------------------
 // C API

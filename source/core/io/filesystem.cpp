@@ -12,7 +12,7 @@
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
 #include "core/platform.h"
-#include "core/stl.h"
+#include "core/stl/stl.h"
 #include "datapackage.h"
 #include "engine/engine.h"
 #include "core/platform.h"

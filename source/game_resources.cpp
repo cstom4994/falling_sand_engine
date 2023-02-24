@@ -189,7 +189,7 @@ Texture *LoadAsepriteTexture(const char *path) {
     return tex;
 }
 
-void RenderSprite(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip) {
+void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip) {
     metadot_rect dst;
     dst.x = x;
     dst.y = y;
@@ -197,7 +197,7 @@ void RenderSprite(Texture *tex, R_Target *target, int x, int y, metadot_rect *cl
         dst.w = clip->w;
         dst.h = clip->h;
     }
-    auto image = R_CopyImageFromSurface(tex->surface);
+    auto image = R_CopyImageFromSurfaceRect(tex->surface, clip);
     METADOT_ASSERT_E(image);
-    R_BlitRect(image, clip, target, &dst);
+    R_BlitRect(image, NULL, target, &dst);
 }

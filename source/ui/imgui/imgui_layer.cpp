@@ -25,7 +25,6 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/macros.h"
-#include "core/stl.h"
 #include "engine/engine.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"

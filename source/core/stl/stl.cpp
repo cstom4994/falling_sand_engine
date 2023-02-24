@@ -3,7 +3,7 @@
 #include "stl.h"
 
 #include "core/alloc.hpp"
-#include "sdl_wrapper.h"
+#include "core/sdl_wrapper.h"
 
 #define CUTE_SYNC_IMPLEMENTATION
 #ifdef METADOT_PLATFORM_WINDOWS

@@ -3099,8 +3099,8 @@ static R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const 
         R_PushErrorCode("R_CopyImageFromSurface", R_ERROR_NULL_ARGUMENT, "surface");
         return NULL;
     }
-    sw = surface_rect == NULL ? ((SDL_Surface *)surface)->w : ((SDL_Surface *)surface_rect)->w;
-    sh = surface_rect == NULL ? ((SDL_Surface *)surface)->h : ((SDL_Surface *)surface_rect)->h;
+    sw = surface_rect == NULL ? ((SDL_Surface *)surface)->w : surface_rect->w;
+    sh = surface_rect == NULL ? ((SDL_Surface *)surface)->h : surface_rect->h;
 
     if (((SDL_Surface *)surface)->w == 0 || ((SDL_Surface *)surface)->h == 0) {
         R_PushErrorCode("R_CopyImageFromSurface", R_ERROR_DATA_ERROR, "Surface has a zero dimension.");

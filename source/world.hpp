@@ -19,7 +19,6 @@
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "physics/box2d.h"
-#include "libs/parallel_hashmap/phmap.h"
 #include "renderer/renderer_gpu.h"
 
 class Populator;
@@ -75,7 +74,7 @@ public:
 
         MetaEngine::vector<PlacedStructure> structures;
         MetaEngine::vector<vec2> distributedPoints;
-        phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
+        std::map<int, std::unordered_map<int, Chunk *>> chunkCache;
         MetaEngine::vector<Populator *> populators;
 
         MetaEngine::ECS::entity_id player;

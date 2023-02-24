@@ -3,7 +3,7 @@
 #ifndef METADOT_NETWORKING_H
 #define METADOT_NETWORKING_H
 
-#include "core/stl.h"
+#include "core/stl/stl.h"
 #include "libs/cute/cute_net.h"
 
 //--------------------------------------------------------------------------------------------------
