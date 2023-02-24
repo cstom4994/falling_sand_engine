@@ -927,8 +927,8 @@ int Game::run(int argc, char *argv[]) {
 
         Scripting::GetSingletonPtr()->Update();
 
-        metadot_rect rct{0, 0, 150, 150};
-        RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
+        // metadot_rect rct{0, 0, 150, 150};
+        // RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         MetaEngine::Drawing::begin_3d(Render.target);
         // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);
@@ -1100,7 +1100,8 @@ int Game::exit() {
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool2, ThreadPool);
 
     if (GameIsolate_.world.get()) {
-        GameIsolate_.world.reset();
+        auto *p = GameIsolate_.world.release();
+        delete p;
     }
 
     global.audio.EndAudio();

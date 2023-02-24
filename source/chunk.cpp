@@ -2,8 +2,6 @@
 
 #include "chunk.hpp"
 
-#include <malloc/_malloc.h>
-
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -64,13 +62,10 @@ void ChunkLoadMeta(Chunk *_struct) {
     if (leveldata2.addr) free(leveldata2.addr);
 }
 
-// MaterialInstanceData* Chunk::readBuf = (MaterialInstanceData*)malloc(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData));
-
 void ChunkRead(Chunk *_struct) {
-    // use malloc here instead of new so it doesn't call the constructor
-    MaterialInstance *tiles = (MaterialInstance *)malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
+    MaterialInstance *tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
     if (tiles == NULL) throw std::runtime_error("Failed to allocate memory for Chunk tiles array.");
-    MaterialInstance *layer2 = (MaterialInstance *)malloc(CHUNK_W * CHUNK_H * sizeof(MaterialInstance));
+    MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     if (layer2 == NULL) throw std::runtime_error("Failed to allocate memory for Chunk layer2 array.");
     // MaterialInstance *tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
     // MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];

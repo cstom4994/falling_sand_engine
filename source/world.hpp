@@ -13,6 +13,7 @@
 #include "chunk.hpp"
 #include "core/const.h"
 #include "core/macros.h"
+#include "core/stl/map.h"
 #include "core/threadpool.hpp"
 #include "ecs/ecs.hpp"
 #include "game_basic.hpp"
@@ -49,6 +50,14 @@ struct WorldMeta {
 };
 METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
 
+class WorldSystem {
+public:
+    static ThreadPool *tickPool;
+    static ThreadPool *tickVisitedPool;
+    static ThreadPool *updateRigidBodyHitboxPool;
+    static ThreadPool *loadChunkPool;
+};
+
 class World {
 public:
     std::string worldName = "";
@@ -73,7 +82,7 @@ public:
 
         std::vector<PlacedStructure> structures;
         std::vector<vec2> distributedPoints;
-        std::map<int, std::unordered_map<int, Chunk *>> chunkCache;
+        phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         std::vector<Populator *> populators;
 
         MetaEngine::ECS::entity_id player;
@@ -100,10 +109,6 @@ public:
     U16 width = 0;
     U16 height = 0;
     int tickCt = 0;
-    static ThreadPool *tickPool;
-    static ThreadPool *tickVisitedPool;
-    static ThreadPool *updateRigidBodyHitboxPool;
-    static ThreadPool *loadChunkPool;
 
     R_Image *fireTex = nullptr;
     bool *tickVisited1 = nullptr;

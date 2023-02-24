@@ -35,10 +35,10 @@
 #include "scripting/scripting.hpp"
 #include "world_generator.cpp"
 
-ThreadPool *World::tickPool = nullptr;
-ThreadPool *World::tickVisitedPool = nullptr;
-ThreadPool *World::updateRigidBodyHitboxPool = nullptr;
-ThreadPool *World::loadChunkPool = nullptr;
+ThreadPool *WorldSystem::tickPool = nullptr;
+ThreadPool *WorldSystem::tickVisitedPool = nullptr;
+ThreadPool *WorldSystem::updateRigidBodyHitboxPool = nullptr;
+ThreadPool *WorldSystem::loadChunkPool = nullptr;
 
 template <typename R>
 bool is_ready(std::future<R> const &f) {
@@ -59,13 +59,10 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     width = w;
     height = h;
 
-    if (tickPool == nullptr) METADOT_NEW(C, tickPool, ThreadPool, 6);
-
-    if (loadChunkPool == nullptr) METADOT_NEW(C, loadChunkPool, ThreadPool, 8);
-
-    if (tickVisitedPool == nullptr) METADOT_NEW(C, tickVisitedPool, ThreadPool, 1);
-
-    if (updateRigidBodyHitboxPool == nullptr) METADOT_NEW(C, updateRigidBodyHitboxPool, ThreadPool, 8);
+    if (WorldSystem::tickPool == nullptr) METADOT_NEW(C, WorldSystem::tickPool, ThreadPool, 16);
+    if (WorldSystem::loadChunkPool == nullptr) METADOT_NEW(C, WorldSystem::loadChunkPool, ThreadPool, 16);
+    if (WorldSystem::tickVisitedPool == nullptr) METADOT_NEW(C, WorldSystem::tickVisitedPool, ThreadPool, 16);
+    if (WorldSystem::updateRigidBodyHitboxPool == nullptr) METADOT_NEW(C, WorldSystem::updateRigidBodyHitboxPool, ThreadPool, 16);
 
     this->audioEngine = audioEngine;
 
@@ -88,7 +85,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
     noise.SetSeed(RNG_Next(global.game->RNG));
     noise.SetNoiseType(FastNoise::Perlin);
 
-    auto ha = std::map<int, std::unordered_map<int, Chunk *>>();
+    auto ha = phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>>();
     // ha.set_deleted_key(INT_MAX);
     // ha.set_empty_key(INT_MIN);
     chunkCache = ha;
@@ -561,12 +558,12 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         std::vector<std::future<void>> poolResults = {};
 
         if (texture->w > 10) {
-            int nThreads = updateRigidBodyHitboxPool->n_idle();
+            int nThreads = WorldSystem::updateRigidBodyHitboxPool->n_idle();
             int div = texture->w / nThreads;
             int rem = texture->w % nThreads;
 
             for (int thr = 0; thr < nThreads; thr++) {
-                poolResults.push_back(updateRigidBodyHitboxPool->push([&, thr, div, rem](int id) {
+                poolResults.push_back(WorldSystem::updateRigidBodyHitboxPool->push([&, thr, div, rem](int id) {
                     int stx = thr * div;
                     int enx = stx + div + (thr == nThreads - 1 ? rem : 0);
 
@@ -1023,7 +1020,7 @@ void World::tick() {
 #endif
 #ifdef DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
-            std::future<void> tickVisitedDone = tickVisitedPool->push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
+            std::future<void> tickVisitedDone = WorldSystem::tickVisitedPool->push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
 #else
             bool *tickVisited = tickVisited1;
             memset(tickVisited1, false, width * height);
@@ -1033,7 +1030,7 @@ void World::tick() {
                 for (int cy = tickZone.y + chOfsY * CHUNK_H; cy < (tickZone.y + tickZone.h); cy += CHUNK_H * 2) {
 
 #ifdef DO_MULTITHREADING
-                    results.push_back(tickPool->push([&, cx, cy](int id) {
+                    results.push_back(WorldSystem::tickPool->push([&, cx, cy](int id) {
                         std::vector<CellData *> parts = {};
 
 #else
@@ -2292,7 +2289,7 @@ void World::frame() {
         // readyToMerge.push_back(fut.get());
         // std::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
 
-        readyToReadyToMerge.push_back(loadChunkPool->push([&](int id) { return World::loadChunk(getChunk(para.x, para.y), para.populate, true); }));
+        readyToReadyToMerge.push_back(WorldSystem::loadChunkPool->push([&](int id) { return World::loadChunk(getChunk(para.x, para.y), para.populate, true); }));
         // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
 
         // std::thread t(&World::loadChunk, this, para.x, para.y, para.populate);
@@ -2313,7 +2310,7 @@ void World::frame() {
 
             readyToMerge.push_back(merge);
             if (!chunkCache.count(merge->x)) {
-                auto h = std::unordered_map<int, Chunk *>();
+                auto h = phmap::flat_hash_map<int, Chunk *>();
                 // h.set_deleted_key(INT_MAX);
                 // h.set_empty_key(INT_MIN);
                 chunkCache[merge->x] = h;
@@ -2567,7 +2564,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         }
 
         if (!chunkCache.count(ch->x)) {
-            auto h = std::unordered_map<int, Chunk *>();
+            auto h = phmap::flat_hash_map<int, Chunk *>();
             // h.set_deleted_key(INT_MAX);
             // h.set_empty_key(INT_MIN);
             chunkCache[ch->x] = h;
@@ -2583,7 +2580,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
                 Chunk *chb = getChunk(cx + x, y);  // load chunk at ~x y
                 if (chb->pleaseDelete) {
                     if (!chunkCache.count(chb->x)) {
-                        auto h = std::unordered_map<int, Chunk *>();
+                        auto h = phmap::flat_hash_map<int, Chunk *>();
                         // h.set_deleted_key(INT_MAX);
                         // h.set_empty_key(INT_MIN);
                         chunkCache[chb->x] = h;
@@ -2609,7 +2606,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         needToTickGeneration = true;
         */
 
-        readyToReadyToMerge.push_back(loadChunkPool->push([&, ch](int id) { return World::loadChunk(ch, populate, render); }));
+        readyToReadyToMerge.push_back(WorldSystem::loadChunkPool->push([&, ch](int id) { return World::loadChunk(ch, populate, render); }));
 
         // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, ch, populate, render));
     }
@@ -3478,10 +3475,10 @@ World::~World() {
     }
     cells.clear();
 
-    tickPool->clear_queue();
-    loadChunkPool->clear_queue();
-    tickVisitedPool->clear_queue();
-    updateRigidBodyHitboxPool->clear_queue();
+    WorldSystem::tickPool->clear_queue();
+    WorldSystem::loadChunkPool->clear_queue();
+    WorldSystem::tickVisitedPool->clear_queue();
+    WorldSystem::updateRigidBodyHitboxPool->clear_queue();
 
     // tickPool->stop(false);
     // delete tickPool;
@@ -3535,6 +3532,10 @@ World::~World() {
 
     for (auto &v : chunkCache) {
         for (auto &v2 : v.second) {
+            if (abs(v2.first) >= 128) {
+                METADOT_ERROR("Abnormal chunk delete %d", v2.first);
+                continue;
+            }
             ChunkDelete(v2.second);
         }
         v.second.clear();
