@@ -20,8 +20,7 @@
 #include <string.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #include "libs/lua/host/lauxlib.h"
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
@@ -39,9 +38,11 @@ extern "C"
 #else
 #include <dlfcn.h>
 #include <errno.h>
-#include <sys/mman.h>
 #include <unistd.h>
+
 #endif
+
+#include "libs/external/mman.h"
 
 #define HAVE_LONG_DOUBLE
 
@@ -66,16 +67,12 @@ struct jit;
 
 EXTERN_C EXPORT int luaopen_ffi(lua_State *L);
 
-static int lua_absindex2(lua_State *L, int idx) {
-    return (LUA_REGISTRYINDEX <= idx && idx < 0) ? lua_gettop(L) + idx + 1 : idx;
-}
+static int lua_absindex2(lua_State *L, int idx) { return (LUA_REGISTRYINDEX <= idx && idx < 0) ? lua_gettop(L) + idx + 1 : idx; }
 /* use our own version of lua_absindex such that lua_absindex(L, 0) == 0 */
 #define lua_absindex(L, idx) lua_absindex2(L, idx)
 
 #if LUA_VERSION_NUM == 501
-static void lua_callk(lua_State *L, int nargs, int nresults, int ctx, lua_CFunction k) {
-    lua_call(L, nargs, nresults);
-}
+static void lua_callk(lua_State *L, int nargs, int nresults, int ctx, lua_CFunction k) { lua_call(L, nargs, nresults); }
 /*
 ** set functions from list 'l' into table at top - 'nup'; each
 ** function gets the 'nup' elements at the top as upvalues.
@@ -96,7 +93,9 @@ static void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup) {
 #define lua_getuservalue lua_getfenv
 #define lua_rawlen lua_objlen
 static char *luaL_prepbuffsize(luaL_Buffer *B, size_t sz) {
-    if (sz > LUAL_BUFFERSIZE) { luaL_error(B->L, "string too long"); }
+    if (sz > LUAL_BUFFERSIZE) {
+        luaL_error(B->L, "string too long");
+    }
     return luaL_prepbuffer(B);
 }
 #elif LUA_VERSION_NUM >= 503
@@ -114,8 +113,7 @@ static void(lua_remove)(lua_State *L, int idx) { lua_remove(L, idx); }
 #define OS_LINUX
 #elif defined __FreeBSD__ || defined __OpenBSD__ || defined __NetBSD__
 #define OS_BSD
-#elif defined unix || defined __unix__ || defined __unix || defined _POSIX_VERSION ||              \
-        defined _XOPEN_VERSION
+#elif defined unix || defined __unix__ || defined __unix || defined _POSIX_VERSION || defined _XOPEN_VERSION
 #define OS_POSIX
 #endif
 
@@ -124,8 +122,7 @@ static void(lua_remove)(lua_State *L, int idx) { lua_remove(L, idx); }
 #define ARCH_X86
 #elif defined __amd64__ || defined _M_X64
 #define ARCH_X64
-#elif defined __arm__ || defined __ARM__ || defined ARM || defined __ARM || defined __arm ||       \
-        defined __aarch64__
+#elif defined __arm__ || defined __ARM__ || defined ARM || defined __ARM || defined __arm || defined __aarch64__
 #define ARCH_ARM
 #elif defined __powerpc64__
 #define ARCH_PPC64
@@ -154,16 +151,16 @@ static void *DoLoadLibraryA(const char *name) {
 #define LIB_FORMAT_1 "%s.dll"
 #define AllocPage(size) VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)
 #define FreePage(data, size) VirtualFree(data, 0, MEM_RELEASE)
-#define EnableExecute(data, size)                                                                  \
-    do {                                                                                           \
-        DWORD old;                                                                                 \
-        VirtualProtect(data, size, PAGE_EXECUTE, &old);                                            \
-        FlushInstructionCache(GetCurrentProcess(), data, size);                                    \
+#define EnableExecute(data, size)                               \
+    do {                                                        \
+        DWORD old;                                              \
+        VirtualProtect(data, size, PAGE_EXECUTE, &old);         \
+        FlushInstructionCache(GetCurrentProcess(), data, size); \
     } while (0)
-#define EnableWrite(data, size)                                                                    \
-    do {                                                                                           \
-        DWORD old;                                                                                 \
-        VirtualProtect(data, size, PAGE_READWRITE, &old);                                          \
+#define EnableWrite(data, size)                           \
+    do {                                                  \
+        DWORD old;                                        \
+        VirtualProtect(data, size, PAGE_READWRITE, &old); \
     } while (0)
 
 #else
@@ -188,23 +185,20 @@ static void *DoLoadLibraryA(const char *name) {
 
 struct token;
 
-struct parser
-{
+struct parser {
     int line;
     const char *next;
     const char *prev;
     unsigned align_mask;
 };
 
-struct page
-{
+struct page {
     size_t size;
     size_t off;
     size_t freed;
 };
 
-struct jit
-{
+struct jit {
     lua_State *L;
     int32_t last_errno;
     dasm_State *ctx;
@@ -217,8 +211,8 @@ struct jit
     void *kernel32_dll;
 };
 
-#define ALIGN_DOWN(PTR, MASK) (((uintptr_t) (PTR)) & (~((uintptr_t) (MASK))))
-#define ALIGN_UP(PTR, MASK) ((((uintptr_t) (PTR)) + ((uintptr_t) (MASK))) & (~((uintptr_t) (MASK))))
+#define ALIGN_DOWN(PTR, MASK) (((uintptr_t)(PTR)) & (~((uintptr_t)(MASK))))
+#define ALIGN_UP(PTR, MASK) ((((uintptr_t)(PTR)) + ((uintptr_t)(MASK))) & (~((uintptr_t)(MASK))))
 
 /* struct cdata/struct ctype */
 
@@ -293,13 +287,13 @@ enum {
     FUNCTION_PTR_TYPE,
 };
 
-#define IS_CHAR_UNSIGNED (((char) -1) > 0)
+#define IS_CHAR_UNSIGNED (((char)-1) > 0)
 #define IS_COMPLEX(type) ((type) == COMPLEX_FLOAT_TYPE || (type) == COMPLEX_DOUBLE_TYPE)
 
 #define POINTER_BITS 2
 #define POINTER_MAX ((1 << POINTER_BITS) - 1)
 
-#define ALIGNOF(S) ((int) ((char *) &S.v - (char *) &S - 1))
+#define ALIGNOF(S) ((int)((char *)&S.v - (char *)&S - 1))
 
 /* Note: if adding a new member that is associated with a struct/union
  * definition then it needs to be copied over in ctype.c:set_defined for when
@@ -308,14 +302,12 @@ enum {
  * Since this is used as a header for every ctype and cdata, and we create a
  * ton of them on the stack, we try and minimise its size.
  */
-struct ctype
-{
+struct ctype {
     size_t base_size; /* size of the base type in bytes */
 
     union {
         /* valid if is_bitfield */
-        struct
-        {
+        struct {
             /* size of bitfield in bits */
             unsigned bit_size : 7;
             /* offset within the current byte between 0-63 */
@@ -330,13 +322,10 @@ struct ctype
         size_t variable_increment;
     };
     size_t offset;
-    unsigned align_mask : 4; /* as (align bytes - 1) eg 7 gives 8 byte alignment */
-    unsigned pointers
-        : POINTER_BITS; /* number of dereferences to get to the base type including +1 for arrays */
-    unsigned const_mask
-        : POINTER_MAX +
-          1; /* const pointer mask, LSB is current pointer, +1 for the whether the base type is const */
-    unsigned type : 5; /* value given by type enum above */
+    unsigned align_mask : 4;               /* as (align bytes - 1) eg 7 gives 8 byte alignment */
+    unsigned pointers : POINTER_BITS;      /* number of dereferences to get to the base type including +1 for arrays */
+    unsigned const_mask : POINTER_MAX + 1; /* const pointer mask, LSB is current pointer, +1 for the whether the base type is const */
+    unsigned type : 5;                     /* value given by type enum above */
     unsigned is_reference : 1;
     unsigned is_array : 1;
     unsigned is_defined : 1;
@@ -344,11 +333,9 @@ struct ctype
     unsigned has_member_name : 1;
     unsigned calling_convention : 2;
     unsigned has_var_arg : 1;
-    unsigned
-            is_variable_array : 1; /* set for variable array types where we don't know the variable size yet */
+    unsigned is_variable_array : 1; /* set for variable array types where we don't know the variable size yet */
     unsigned is_variable_struct : 1;
-    unsigned
-            variable_size_known : 1; /* used for variable structs after we know the variable size */
+    unsigned variable_size_known : 1; /* used for variable structs after we know the variable size */
     unsigned is_bitfield : 1;
     unsigned has_bitfield : 1;
     unsigned is_jitted : 1;
@@ -359,8 +346,7 @@ struct ctype
 #ifdef _MSC_VER
 __declspec(align(16))
 #endif
-        struct cdata
-{
+        struct cdata {
     const struct ctype type
 #ifdef __GNUC__
             __attribute__((aligned(16)))
@@ -376,13 +362,11 @@ typedef float complex complex_float;
 static complex_double mk_complex_double(double real, double imag) { return real + imag * 1i; }
 static complex_double mk_complex_float(double real, double imag) { return real + imag * 1i; }
 #else
-typedef struct
-{
+typedef struct {
     double real, imag;
 } complex_double;
 
-typedef struct
-{
+typedef struct {
     float real, imag;
 } complex_float;
 
@@ -413,8 +397,7 @@ void *check_cdata(lua_State *L, int idx, struct ctype *ct);
 size_t ctype_size(lua_State *L, const struct ctype *ct);
 
 int parse_type(lua_State *L, struct parser *P, struct ctype *type);
-void parse_argument(lua_State *L, struct parser *P, int ct_usr, struct ctype *type,
-                    struct token *name, struct parser *asmname);
+void parse_argument(lua_State *L, struct parser *P, int ct_usr, struct ctype *type, struct token *name, struct parser *asmname);
 void push_type_name(lua_State *L, int usr, const struct ctype *ct);
 
 int push_user_mt(lua_State *L, int ct_usr, const struct ctype *ct);
@@ -449,7 +432,6 @@ complex_float check_complex_float(lua_State *L, int idx);
 void unpack_varargs_stack(lua_State *L, int first, int last, char *to);
 void unpack_varargs_reg(lua_State *L, int first, int last, char *to);
 
-void unpack_varargs_stack_skip(lua_State *L, int first, int last, int ints_to_skip,
-                               int floats_to_skip, char *to);
+void unpack_varargs_stack_skip(lua_State *L, int first, int last, int ints_to_skip, int floats_to_skip, char *to);
 void unpack_varargs_float(lua_State *L, int first, int last, int max, char *to);
 void unpack_varargs_int(lua_State *L, int first, int last, int max, char *to);

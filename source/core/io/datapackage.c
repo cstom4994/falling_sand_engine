@@ -32,11 +32,7 @@ typedef unsigned __int64 uint64_t;
 #define S_ISREG(mode) (((mode)&S_IFMT) == S_IFREG)
 #endif
 
-#if (defined __CYGWIN__ || defined __MINGW32__ || defined _WIN32)
-#include "Libs/external/mman.h"
-#else
-#include <sys/mman.h> /* mmap */
-#endif
+#include "libs/external/mman.h"
 
 #define DATAPACK_GATHER_BUFLEN 8192
 #define DATAPACK_MAGIC "yzx"

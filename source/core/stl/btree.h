@@ -62,7 +62,6 @@
 #include <type_traits>
 
 #include "map_base.h"
-#include "phmap_fwd_decl.h"
 
 #if PHMAP_HAVE_STD_STRING_VIEW
 #include <string_view>

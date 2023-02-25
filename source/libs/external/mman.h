@@ -2,6 +2,8 @@
 #ifndef _MMAN_H_
 #define _MMAN_H_
 
+#if (defined __CYGWIN__ || defined __MINGW32__ || defined _WIN32)
+
 /* Protections */
 #define PROT_NONE 0x00  /* no permissions */
 #define PROT_READ 0x01  /* pages can be read */
@@ -49,5 +51,9 @@ int munmap(void *addr, int len);
  * Synchronize a mapped region
  */
 int msync(char *addr, int len, int flags);
+
+#else
+#include <sys/mman.h> /* mmap */
+#endif
 
 #endif /* _MMAN_H_ */

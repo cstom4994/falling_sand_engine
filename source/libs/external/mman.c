@@ -1,11 +1,12 @@
-#include <stdlib.h>
-#include <windows.h>
-#ifdef _WIN32
-#include <io.h>
-#endif
-#include <errno.h>
 
 #include "mman.h"
+
+#ifdef _WIN32
+
+#include <stdlib.h>
+#include <windows.h>
+#include <io.h>
+#include <errno.h>
 
 static const char id[] = "$Id: tpl.c 107 2007-04-20 17:11:29Z thanson $";
 
@@ -163,3 +164,5 @@ int msync(char *addr, int len, int flags) {
     /* Success */
     return 0;
 }
+
+#endif
