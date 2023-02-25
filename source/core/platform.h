@@ -59,7 +59,7 @@
 #endif
 
 #ifdef METADOT_PLATFORM_WINDOWS
-#define getFullPath(a, b) GetFullPathName(a, MAX_PATH, b, NULL)
+#define getFullPath(a, b) GetFullPathName((LPCWSTR)a, MAX_PATH, (LPWSTR)b, NULL)
 #define rmdir(a) _rmdir(a)
 #define PATH_SEPARATOR '\\'
 #else

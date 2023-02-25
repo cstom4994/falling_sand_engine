@@ -31,7 +31,8 @@
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
-extern int LoadImGuiBindings(lua_State *l);
+extern void LoadImGuiBindings(lua_State *l);
+
 extern "C" {
 extern int luaopen_meo(lua_State *L);
 }

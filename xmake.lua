@@ -150,6 +150,7 @@ do
 	add_files("source/libs/lz4/**.c")
 	add_files("source/libs/lua/host/**.c")
 	add_files("source/libs/lua/*.c")
+	add_files("source/libs/external/*.c")
 end
 
 target("MetaDot")

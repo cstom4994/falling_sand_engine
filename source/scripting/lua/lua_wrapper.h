@@ -7,6 +7,10 @@
 #include "libs/lua/host/lua.h"
 #include "libs/lua/host/lualib.h"
 
+#ifdef METADOT_PLATFORM_WINDOWS
+#define strerror_r(errno, buf, len) strerror_s(buf, len, errno)
+#endif
+
 struct LuaMemBlock {
     void *ptr;
     size_t size;

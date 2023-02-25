@@ -1051,8 +1051,6 @@ inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
     // style.GrabRounding = 4.0f;
 }
 
-extern void ShowAutoTestWindow();
-
 #if defined(_METADOT_IMM32)
 
 #if defined(_WIN32)
@@ -1666,7 +1664,7 @@ CSTDTime | {6} | Nothing)";
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {
-                    ShowAutoTestWindow();
+                    //ShowAutoTestWindow();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();

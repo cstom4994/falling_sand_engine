@@ -4,6 +4,10 @@
 
 #include "game.hpp"
 
+#ifdef main
+#undef main
+#endif
+
 int main(int argc, char *argv[]) {
     const auto game = MetaEngine::CreateScope<Game>(argc, argv);
     return game->init(argc, argv);

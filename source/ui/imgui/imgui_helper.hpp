@@ -127,9 +127,6 @@ namespace ImGui {
 template <typename AnyType>
 void Auto(AnyType &anything, const std::string &name = std::string());
 
-//		Test function showcasing all the features of ImGui::Auto()
-void ShowAutoTestWindow();
-
 //		HELPER FUNCTIONS
 //		================
 

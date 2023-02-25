@@ -8,7 +8,8 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "Libs/external/queue.h"
+#include "libs/external/queue.h"
+#include "libs/external/strings.h"
 
 #pragma region lua_safe_alloc
 
@@ -2520,7 +2521,7 @@ int luacs_newarraytype(lua_State *L, const char *tname, enum luacstruct_type _ty
     lua_setfield(L, LUA_REGISTRYINDEX, metaname);
     memcpy(cat->metaname, metaname, MINIMUM(sizeof(metaname), sizeof(cat->metaname)));
 
-    cat->typename = index(cat->metaname, '.') + 1;
+    cat->typename = (char*)index(cat->metaname, '.') + 1;
     if ((ret = luaL_newmetatable(L, METANAME_LUACARRAYTYPE)) != 0) {
         lua_pushcfunction(L, luacs_arraytype__gc);
         lua_setfield(L, -2, "__gc");
@@ -3598,7 +3599,7 @@ int luacs_newenum0(lua_State *L, const char *ename, size_t valwidth) {
     memcpy(ce->metaname, metaname, MINIMUM(sizeof(metaname), sizeof(ce->metaname)));
 
     ce->valwidth = valwidth;
-    ce->enumname = index(ce->metaname, '.') + 1;
+    ce->enumname = (char*)index(ce->metaname, '.') + 1;
     SPLAY_INIT(&ce->labels);
     SPLAY_INIT(&ce->values);
     if ((ret = luaL_newmetatable(L, METANAME_LUACSENUM)) != 0) {

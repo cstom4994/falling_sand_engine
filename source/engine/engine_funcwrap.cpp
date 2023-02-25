@@ -897,7 +897,7 @@ static int fsGetAttr(lua_State *L) {
     }
 
 #ifdef __WINDOWS__
-    unsigned long attr = GetFileAttributes(filePath);
+    unsigned long attr = GetFileAttributes((LPCWSTR)filePath);
 
     if (attr == INVALID_FILE_ATTRIBUTES) {
         lua_pushinteger(L, 0b11111111);
@@ -947,7 +947,7 @@ static int fsList(lua_State *L) {
     // Specify a file mask. *.* = We want everything!
     sprintf(sPath, "%s\\*.*", filePath);
 
-    if ((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE) {
+    if ((hFind = FindFirstFile((LPCWSTR)sPath, &fdFile)) == INVALID_HANDLE_VALUE) {
         return 0;
     }
 
@@ -969,9 +969,9 @@ static int fsList(lua_State *L) {
     do {
         // Build up our file path using the passed in
 
-        if (strcmp(fdFile.cFileName, ".") != 0 && strcmp(fdFile.cFileName, "..") != 0) {
+        if (strcmp((char *)fdFile.cFileName, ".") != 0 && strcmp((char *)fdFile.cFileName, "..") != 0) {
             lua_pushinteger(L, i);
-            lua_pushstring(L, fdFile.cFileName);
+            lua_pushstring(L, (char *)fdFile.cFileName);
             lua_rawset(L, -3);
             i++;
         }
