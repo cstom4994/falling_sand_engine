@@ -157,9 +157,29 @@ static int R_GetTextureAttr(R_Image *image, const char *attr) {
     return 0;
 }
 
-void print_error(lua_State *state) {
+void print_error(lua_State *state, int result) {
     const char *message = lua_tostring(state, -1);
     METADOT_ERROR("LuaScript ERROR:\n  %s", (message ? message : "no message"));
+
+    if (result != 0) {
+        switch (result) {
+            case LUA_ERRRUN:
+                METADOT_ERROR("Lua Runtime error");
+                break;
+            case LUA_ERRSYNTAX:
+                METADOT_ERROR("Lua syntax error");
+                break;
+            case LUA_ERRMEM:
+                METADOT_ERROR("Lua was unable to allocate the required memory");
+                break;
+            case LUA_ERRFILE:
+                METADOT_ERROR("Lua was unable to find boot file");
+                break;
+            default:
+                METADOT_ERROR("Unknown lua error: %d", result);
+        }
+    }
+
     lua_pop(state, 1);
 }
 
@@ -268,11 +288,97 @@ void RunScriptFromFile(const char *filePath) {
         return;
     }
     result = metadot_debug_pcall(Scripting::GetSingletonPtr()->Lua->L, 0, LUA_MULTRET, 0);
- 
+
     if (result != LUA_OK) {
         print_error(Scripting::GetSingletonPtr()->Lua->L);
     }
 }
+
+static const luaL_Reg lj_lib_load[] = {{"", luaopen_base},
+                                       {LUA_TABLIBNAME, luaopen_table},
+                                       {LUA_OSLIBNAME, luaopen_os},
+                                       {LUA_STRLIBNAME, luaopen_string},
+                                       {LUA_MATHLIBNAME, luaopen_math},
+                                       {LUA_DBLIBNAME, luaopen_debug},
+#ifndef __EMSCRIPTEN__
+                                       {LUA_LOADLIBNAME, luaopen_package},
+#else
+                                       {LUA_COLIBNAME, luaopen_coroutine},
+                                       {LUA_BITLIBNAME, luaopen_bit32},
+#endif
+                                       {nullptr, nullptr}};
+
+lua_State *createConfigInstance(const char *filename) {
+    lua_State *state = luaL_newstate();
+
+    // Meh, io is probably safe
+    luaL_openlibs(state);
+
+    lua_State *L = lua_newthread(state);
+
+    int result = luaL_loadfile(L, filename);
+
+    if (result != 0) {
+        L = lua_newthread(state);  // To clear out failed load
+
+        // std::string appPath = SDL_GetPrefPath("metadot", "app");
+        // luaL_loadfile(L, (appPath + filename).c_str());
+    }
+
+    return L;
+}
+
+lua_State *createLuaInstance(const char *filename, const char *innerFilename) {
+    lua_State *state = luaL_newstate();
+
+    // Make standard libraries available in the Lua object
+    const luaL_Reg *lib;
+#ifdef __EMSCRIPTEN__
+    for (lib = lj_lib_load; lib->func; lib++) {
+        luaL_requiref(state, lib->name, lib->func, 1);
+        lua_pop(state, 1); /* remove lib */
+    }
+#else
+    for (lib = lj_lib_load; lib->func; lib++) {
+        lua_pushcfunction(state, lib->func);
+        lua_pushstring(state, lib->name);
+        lua_call(state, 1, 0);
+    }
+#endif
+
+    // #ifndef __EMSCRIPTEN__
+    //     luaL_findtable(state, LUA_REGISTRYINDEX, "_PRELOAD", sizeof(lj_lib_preload) / sizeof(lj_lib_preload[0]) - 1);
+    //     for (lib = lj_lib_preload; lib->func; lib++) {
+    //         lua_pushcfunction(state, lib->func);
+    //         lua_setfield(state, -2, lib->name);
+    //     }
+    //     lua_pop(state, 1);
+    // #endif
+
+    lua_State *thread = lua_newthread(state);
+
+    int result;
+
+    std::ifstream bootFile(filename);
+    std::string fileContents;
+
+    bootFile.seekg(0, std::ios::end);
+    fileContents.reserve(static_cast<unsigned long long int>(bootFile.tellg()));
+    bootFile.seekg(0, std::ios::beg);
+
+    fileContents.assign((std::istreambuf_iterator<char>(bootFile)), std::istreambuf_iterator<char>());
+
+    result = luaL_loadbuffer(thread, fileContents.data(), fileContents.length(), innerFilename);
+
+    if (result != 0) {
+        print_error(thread, result);
+        return nullptr;
+    }
+
+    return thread;
+}
+
+void shutdownInstance(lua_State *L) { lua_close(L); }
 
 static void UpdateLua(LuaCore *_struct) {
     // todo store lua bytecode version instead (dont load it every tick)

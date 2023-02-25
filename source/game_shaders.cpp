@@ -2,7 +2,21 @@
 
 #include "game_shaders.hpp"
 
+#include "engine/engine.h"
+
+IMPLENGINE();
+
 #pragma region Shaders
+
+void CrtShader::Update(int w, int h) {
+    float res[] = {static_cast<float>(w), static_cast<float>(h)};
+
+    int res_loc = R_GetUniformLocation(this->shader, "resolution");
+    int crteffect_loc = R_GetUniformLocation(this->shader, "crteffect");
+
+    R_SetUniformfv(res_loc, 2, 1, &res[0]);
+    R_SetUniformi(crteffect_loc, this->enable);
+}
 
 void WaterFlowPassShader::Update(int w, int h) {
     int res_loc = R_GetUniformLocation(this->shader, "resolution");
@@ -177,6 +191,7 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
 
 void ShaderWorkerSystem::Create() {
 
+    this->crtShader = new CrtShader;
     this->waterShader = new WaterShader;
     this->waterFlowPassShader = new WaterFlowPassShader;
     this->newLightingShader = new NewLightingShader;
@@ -185,6 +200,8 @@ void ShaderWorkerSystem::Create() {
     this->blurShader = new BlurShader;
     this->untexturedShader = new UntexturedShader;
 
+    this->crtShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
+    this->crtShader->fragment_shader_file = METADOT_RESLOC("data/shaders/crt.frag");
     this->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
     this->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
     this->waterFlowPassShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
@@ -212,8 +229,11 @@ void ShaderWorkerSystem::Create() {
     this->newLightingShader->insideCur = 0.0f;
     this->newLightingShader->insideDes = 0.0f;
 
+    this->crtShader->enable = true;
+
     glGenBuffers(1, &this->untexturedShader->VBO);
 
+    this->crtShader->Init();
     this->waterShader->Init();
     this->waterFlowPassShader->Init();
     this->newLightingShader->Init();
@@ -232,6 +252,7 @@ void ShaderWorkerSystem::Create() {
     }
 
 void ShaderWorkerSystem::Destory() {
+    SAFEUNLOADSHADER(crtShader);
     SAFEUNLOADSHADER(waterShader);
     SAFEUNLOADSHADER(waterFlowPassShader);
     SAFEUNLOADSHADER(newLightingShader);

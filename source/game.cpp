@@ -2852,7 +2852,12 @@ void Game::renderLate() {
         R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
-        if (GameIsolate_.globaldef.draw_shaders) GameIsolate_.shaderworker->newLightingShader->Activate();
+        if (GameIsolate_.globaldef.draw_shaders) {
+            GameIsolate_.shaderworker->newLightingShader->Activate();
+            // GameIsolate_.shaderworker->crtShader->Activate();
+        }
+
+        // GameIsolate_.shaderworker->crtShader->Update(GameIsolate_.world->width, GameIsolate_.world->height);
 
         // I use this to only rerender the lighting when a parameter changes or N times per second anyway
         // Doing this massively reduces the GPU load of the shader

@@ -4,8 +4,15 @@
 #define _METADOT_GAMESHADERS_HPP_
 
 #include "core/core.hpp"
-#include "renderer/shaders.hpp"
 #include "game_datastruct.hpp"
+#include "renderer/shaders.hpp"
+
+class CrtShader : public ShaderBase {
+public:
+    bool enable;
+
+    void Update(int w, int h);
+};
 
 class WaterFlowPassShader : public ShaderBase {
 public:
@@ -68,6 +75,7 @@ public:
 
 class ShaderWorkerSystem : public IGameSystem {
 public:
+    CrtShader *crtShader = nullptr;
     WaterShader *waterShader = nullptr;
     WaterFlowPassShader *waterFlowPassShader = nullptr;
     NewLightingShader *newLightingShader = nullptr;
