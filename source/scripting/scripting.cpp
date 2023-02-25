@@ -37,6 +37,8 @@ extern "C" {
 extern int luaopen_meo(lua_State *L);
 }
 
+IMPLENGINE();
+
 struct MyStruct {
     void (*func1)(std::string);
     void (*func2)(std::string);
@@ -237,6 +239,8 @@ static void InitLua(LuaCore *lc) {
 
     lc->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
     lc->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
+    lc->s_lua["GetWindowH"] = LuaWrapper::function([]() { return Screen.windowHeight; });
+    lc->s_lua["GetWindowW"] = LuaWrapper::function([]() { return Screen.windowWidth; });
 
     REGISTER_LUAFUNC(SDL_FreeSurface);
     REGISTER_LUAFUNC(R_SetImageFilter);
@@ -430,6 +434,13 @@ void Scripting::End() {
 void Scripting::Update() {
     METADOT_ASSERT_E(Lua);
     UpdateLua(Lua);
+}
+
+void Scripting::UpdateRender() {
+    METADOT_ASSERT_E(Lua);
+    auto &luawrap = Lua->s_lua;
+    auto OnRender = luawrap["OnRender"];
+    OnRender();
 }
 
 void Scripting::UpdateTick() {

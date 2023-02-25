@@ -35,10 +35,6 @@ public:
     static U32 darkenColor(U32 col, float brightness);
     static void drawText(std::string text, METAENGINE_Color col, int x, int y);
     static void drawTextWithPlate(R_Target *target, std::string text, METAENGINE_Color col, int x, int y, METAENGINE_Color backcolor = {77, 77, 77, 140});
-
-    static void draw_spinning_triangle(R_Target *screen, ShaderBase *shader);
-    static void end_3d(R_Target *screen);
-    static void begin_3d(R_Target *screen);
 };
 
 namespace Detail {

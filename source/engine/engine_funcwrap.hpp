@@ -6,8 +6,7 @@
 struct lua_State;
 
 #define DEFAULT_SCALE 2
-#define SCRN_WIDTH 280
-#define SCRN_HEIGHT 160
+
 #define COLOR_LIMIT 16
 #define INIT_COLORS                                                                                                                                                                       \
     {                                                                                                                                                                                     \

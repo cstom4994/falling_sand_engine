@@ -55,69 +55,6 @@ void MetaEngine::Drawing::drawTextWithPlate(R_Target *target, std::string text, 
     drawText(text, col, x, y);
 }
 
-void MetaEngine::Drawing::begin_3d(R_Target *screen) {
-    R_FlushBlitBuffer();
-
-    R_MatrixMode(screen, R_MODEL);
-    R_PushMatrix();
-    R_LoadIdentity();
-    R_MatrixMode(screen, R_VIEW);
-    R_PushMatrix();
-    R_LoadIdentity();
-    R_MatrixMode(screen, R_PROJECTION);
-    R_PushMatrix();
-    R_LoadIdentity();
-}
-
-void MetaEngine::Drawing::end_3d(R_Target *screen) {
-    R_ResetRendererState();
-
-    R_MatrixMode(screen, R_MODEL);
-    R_PopMatrix();
-    R_MatrixMode(screen, R_VIEW);
-    R_PopMatrix();
-    R_MatrixMode(screen, R_PROJECTION);
-    R_PopMatrix();
-}
-
-void MetaEngine::Drawing::draw_spinning_triangle(R_Target *screen, ShaderBase *shader) {
-    GLfloat gldata[21];
-    float mvp[16];
-    float t = SDL_GetTicks() / 1000.0f;
-
-    R_Rotate(100 * t, 0, 0.707, 0.707);
-    R_Rotate(20 * t, 0.707, 0.707, 0);
-
-    gldata[0] = 0;
-    gldata[1] = 0.2f;
-    gldata[2] = 0;
-
-    gldata[3] = 1.0f;
-    gldata[4] = 0.0f;
-    gldata[5] = 0.0f;
-    gldata[6] = 1.0f;
-
-    gldata[7] = -0.2f;
-    gldata[8] = -0.2f;
-    gldata[9] = 0;
-
-    gldata[10] = 0.0f;
-    gldata[11] = 1.0f;
-    gldata[12] = 0.0f;
-    gldata[13] = 1.0f;
-
-    gldata[14] = 0.2f;
-    gldata[15] = -0.2f;
-    gldata[16] = 0;
-    gldata[17] = 0.0f;
-    gldata[18] = 0.0f;
-    gldata[19] = 1.0f;
-    gldata[20] = 1.0f;
-
-    ((UntexturedShader *)shader)->Activate();
-    ((UntexturedShader *)shader)->Update(mvp, gldata);
-}
-
 #define R_TO_STRING_GENERATOR(x) \
     case x:                      \
         return #x;               \

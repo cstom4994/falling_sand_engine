@@ -68,25 +68,25 @@ int drawY = 0;
 int lastWindowX = 0;
 int lastWindowY = 0;
 
-void assessWindow() {
-    int winW = 0;
-    int winH = 0;
-    SDL_GetWindowSize(Core.window, &winW, &winH);
+// void assessWindow() {
+//     int winW = 0;
+//     int winH = 0;
+//     SDL_GetWindowSize(Core.window, &winW, &winH);
 
-    int candidateOne = winH / SCRN_HEIGHT;
-    int candidateTwo = winW / SCRN_WIDTH;
+//     int candidateOne = winH / SCRN_HEIGHT;
+//     int candidateTwo = winW / SCRN_WIDTH;
 
-    if (winW != 0 && winH != 0) {
-        pixelScale = (candidateOne > candidateTwo) ? candidateTwo : candidateOne;
-        windowWidth = winW;
-        windowHeight = winH;
+//     if (winW != 0 && winH != 0) {
+//         pixelScale = (candidateOne > candidateTwo) ? candidateTwo : candidateOne;
+//         windowWidth = winW;
+//         windowHeight = winH;
 
-        drawX = (windowWidth - pixelScale * SCRN_WIDTH) / 2;
-        drawY = (windowHeight - pixelScale * SCRN_HEIGHT) / 2;
+//         drawX = (windowWidth - pixelScale * SCRN_WIDTH) / 2;
+//         drawY = (windowHeight - pixelScale * SCRN_HEIGHT) / 2;
 
-        R_SetWindowResolution(winW, winH);
-    }
-}
+//         R_SetWindowResolution(winW, winH);
+//     }
+// }
 
 char *appPath = nullptr;
 char *scriptsPath;
@@ -756,15 +756,15 @@ static int gpu_pop(lua_State *L) {
 }
 
 static int gpu_set_fullscreen(lua_State *L) {
-    auto fsc = static_cast<bool>(lua_toboolean(L, 1));
-    if (!R_SetFullscreen(fsc, true)) {
-        TestData::pixelScale = TestData::setPixelScale;
-        R_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH, TestData::pixelScale * SCRN_HEIGHT);
+    // auto fsc = static_cast<bool>(lua_toboolean(L, 1));
+    // if (!R_SetFullscreen(fsc, true)) {
+    //     TestData::pixelScale = TestData::setPixelScale;
+    //     R_SetWindowResolution(TestData::pixelScale * SCRN_WIDTH, TestData::pixelScale * SCRN_HEIGHT);
 
-        SDL_SetWindowPosition(Core.window, TestData::lastWindowX, TestData::lastWindowY);
-    }
+    //     SDL_SetWindowPosition(Core.window, TestData::lastWindowX, TestData::lastWindowY);
+    // }
 
-    TestData::assessWindow();
+    // TestData::assessWindow();
 
     return 0;
 }
@@ -804,10 +804,6 @@ int metadot_bind_gpu(lua_State *L) {
     translateStack = new int[32];
 
     metadot_load(L, gpuLib, engine_funcs_name_gpu);
-    lua_pushnumber(L, SCRN_WIDTH);
-    lua_setfield(L, -2, "width");
-    lua_pushnumber(L, SCRN_HEIGHT);
-    lua_setfield(L, -2, "height");
 
     return 1;
 }

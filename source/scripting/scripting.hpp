@@ -88,6 +88,7 @@ public:
     void Init();
     void End();
     void Update();
+    void UpdateRender();
     void UpdateTick();
 
 private:

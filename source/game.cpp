@@ -898,6 +898,7 @@ int Game::run(int argc, char *argv[]) {
 
         while (Time.now - Time.lastTickTime > (1000.0f / Time.maxTps)) {
             Scripting::GetSingletonPtr()->UpdateTick();
+            Scripting::GetSingletonPtr()->Update();
             if (GameIsolate_.globaldef.tick_world) {
                 tick();
             }
@@ -925,14 +926,10 @@ int Game::run(int argc, char *argv[]) {
         renderLate();
         Render.target = Render.realTarget;
 
-        Scripting::GetSingletonPtr()->Update();
+        Scripting::GetSingletonPtr()->UpdateRender();
 
         // metadot_rect rct{0, 0, 150, 150};
         // RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
-
-        MetaEngine::Drawing::begin_3d(Render.target);
-        // MetaEngine::Drawing::draw_spinning_triangle(Render.target, GameIsolate_.shaderworker->untexturedShader);
-        MetaEngine::Drawing::end_3d(Render.target);
 
         // Update UI
         GameIsolate_.ui->UIRendererUpdate();
