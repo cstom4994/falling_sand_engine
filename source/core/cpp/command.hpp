@@ -11,6 +11,10 @@
 #include "core/cpp/utils.hpp"
 #include "core/macros.h"
 
+#ifdef METADOT_PLATFORM_WINDOWS
+#undef ERROR
+#endif
+
 #pragma region Command
 
 // Hack form https://github.com/rmxbalanque/csys

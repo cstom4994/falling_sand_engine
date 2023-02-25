@@ -16,7 +16,6 @@
 #include "renderer/gpu.hpp"
 #include "renderer/renderer_gpu.h"
 #include "renderer/renderer_opengl.h"
-#include "renderer/renderer_utils.h"
 
 IMPLENGINE();
 
@@ -197,7 +196,7 @@ void UISystem::UIRendererDraw() {
 
 void UISystem::UIRendererDrawImGui() { global.game->GameIsolate_.ui->uidata->imgui->Draw(); }
 
-F32 BoxDistence(metadot_rect box, R_vec2 A) {
+F32 BoxDistence(metadot_rect box, vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }

@@ -21,6 +21,11 @@ bool InitFilesystem();
 
 #define METADOT_RESLOC(x) x
 
+#ifdef METADOT_PLATFORM_WINDOWS
+#define S_ISREG(m) (((m)&0170000) == (0100000))
+#define S_ISDIR(m) (((m)&0170000) == (0040000))  
+#endif
+
 inline R_bool FUtil_exists(const char* path) {
     struct stat buffer;
     return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));

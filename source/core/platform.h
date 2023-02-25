@@ -7,7 +7,6 @@
 #include "core/macros.h"
 #include "core/sdl_wrapper.h"
 #include "core/stl/stl.h"
-#include "renderer/renderer_utils.h"
 
 /*--------------------------------------------------------------------------
  * Platform specific headers
@@ -100,6 +99,18 @@ static inline uint64_t getThreadID() {
 // Thread Local Storage(TLS)
 // msvc: https://learn.microsoft.com/en-us/cpp/parallel/thread-local-storage-tls
 
+#ifdef METADOT_PLATFORM_WINDOWS
+
+static inline uint32_t tlsAllocate() { return (uint32_t)TlsAlloc(); }
+
+static inline void tlsSetValue(uint32_t _handle, void* _value) { TlsSetValue(_handle, _value); }
+
+static inline void* tlsGetValue(uint32_t _handle) { return TlsGetValue(_handle); }
+
+static inline void tlsFree(uint32_t _handle) { TlsFree(_handle); }
+
+#else
+
 static inline pthread_key_t tlsAllocate() {
     pthread_key_t handle;
     pthread_key_create(&handle, NULL);
@@ -111,6 +122,8 @@ static inline void tlsSetValue(pthread_key_t _handle, void* _value) { pthread_se
 static inline void* tlsGetValue(pthread_key_t _handle) { return pthread_getspecific(_handle); }
 
 static inline void tlsFree(pthread_key_t _handle) { pthread_key_delete(_handle); }
+
+#endif
 
 namespace MetaEngine {
 

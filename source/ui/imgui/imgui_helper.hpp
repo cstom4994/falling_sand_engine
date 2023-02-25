@@ -1245,7 +1245,7 @@ public:
 
 #if defined(_WIN32)
 
-#include "sdl_wrapper.h"
+#include "core/sdl_wrapper.h"
 
 template <>
 inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
@@ -1565,13 +1565,13 @@ inline void ImGuiWidget::FileBrowser::Display() {
 
     // display elements in pwd
 
-#ifdef _WIN32
+#ifdef METADOT_PLATFORM_WINDOWS
     char currentDrive = static_cast<char>(pwd_.c_str()[0]);
     char driveStr[] = {currentDrive, ':', '\0'};
 
-    PushItemWidth(4 * GetFontSize());
-    if (BeginCombo("##select_drive", driveStr)) {
-        ScopeGuard guard([&] { EndCombo(); });
+    ImGui::PushItemWidth(4 * ImGui::GetFontSize());
+    if (ImGui::BeginCombo("##select_drive", driveStr)) {
+        ScopeGuard guard([&] { ImGui::EndCombo(); });
 
         for (int i = 0; i < 26; ++i) {
             if (!(drives_ & (1 << i))) {
@@ -1582,15 +1582,15 @@ inline void ImGuiWidget::FileBrowser::Display() {
             char selectableStr[] = {driveCh, ':', '\0'};
             bool selected = currentDrive == driveCh;
 
-            if (Selectable(selectableStr, selected) && !selected) {
+            if (ImGui::Selectable(selectableStr, selected) && !selected) {
                 char newPwd[] = {driveCh, ':', '\\', '\0'};
                 SetPwd(newPwd);
             }
         }
     }
-    PopItemWidth();
+    ImGui::PopItemWidth();
 
-    SameLine();
+    ImGui::SameLine();
 #endif
 
     int secIdx = 0, newPwdLastSecIdx = -1;

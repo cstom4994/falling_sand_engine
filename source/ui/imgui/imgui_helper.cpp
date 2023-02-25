@@ -670,8 +670,8 @@ void ImGuiMarkdown::soft_break() { ImGui::NewLine(); }
 #include <algorithm>
 #include <cassert>
 
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "libs/imgui/imgui.h"
+#include "libs/imgui/imgui_internal.h"
 
 #pragma comment(linker, \
                 "\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
@@ -1489,6 +1489,8 @@ void ImGuiWidget::PlotFlame(const char *label, void (*values_getter)(float *star
 #include <vector>
 #endif
 
+#if 0
+
 void ShowAutoTestWindow() {
 
     auto myCollapsingHeader = [](const char *name) -> bool {
@@ -1902,3 +1904,5 @@ Container data, large structs and tuples are hidden by default.
         ImGui::Unindent();
     }
 }
+
+#endif

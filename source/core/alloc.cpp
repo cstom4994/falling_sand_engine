@@ -67,11 +67,11 @@ void operator delete(void *ptr, size_t size, const std::nothrow_t &) throw() {
     return std::free(ptr);
 }
 
-void *operator new(size_t size, size_t alignment) noexcept(false) {
-    g_AllocationMetrics.TotalAllocated += size;
-
-    return std::aligned_alloc(alignment, size);
-}
+//void *operator new(size_t size, size_t alignment) noexcept(false) {
+//    g_AllocationMetrics.TotalAllocated += size;
+//
+//    return std::aligned_alloc(alignment, size);
+//}
 
 void operator delete(void *ptr, size_t size, size_t alignment) throw() {
     g_AllocationMetrics.TotalFree += size;
@@ -79,11 +79,11 @@ void operator delete(void *ptr, size_t size, size_t alignment) throw() {
     return std::free(ptr);
 }
 
-void *operator new(size_t size, size_t alignment, const std::nothrow_t &) throw() {
-    g_AllocationMetrics.TotalAllocated += size;
-
-    return std::aligned_alloc(alignment, size);
-}
+//void *operator new(size_t size, size_t alignment, const std::nothrow_t &) throw() {
+//    g_AllocationMetrics.TotalAllocated += size;
+//
+//    return std::aligned_alloc(alignment, size);
+//}
 
 void operator delete(void *ptr, size_t size, size_t alignment, const std::nothrow_t &) throw() {
     g_AllocationMetrics.TotalFree += size;
@@ -115,11 +115,11 @@ void operator delete[](void *ptr, size_t size, const std::nothrow_t &) throw() {
     return std::free(ptr);
 }
 
-void *operator new[](size_t size, size_t alignment) noexcept(false) {
-    g_AllocationMetrics.TotalAllocated += size;
-
-    return std::aligned_alloc(alignment, size);
-}
+//void *operator new[](size_t size, size_t alignment) noexcept(false) {
+//    g_AllocationMetrics.TotalAllocated += size;
+//
+//    return std::aligned_alloc(alignment, size);
+//}
 
 void operator delete[](void *ptr, size_t size, size_t alignment) throw() {
     g_AllocationMetrics.TotalFree += size;
@@ -127,11 +127,11 @@ void operator delete[](void *ptr, size_t size, size_t alignment) throw() {
     return std::free(ptr);
 }
 
-void *operator new[](size_t size, size_t alignment, const std::nothrow_t &) throw() {
-    g_AllocationMetrics.TotalAllocated += size;
-
-    return std::aligned_alloc(alignment, size);
-}
+//void *operator new[](size_t size, size_t alignment, const std::nothrow_t &) throw() {
+//    g_AllocationMetrics.TotalAllocated += size;
+//
+//    return std::aligned_alloc(alignment, size);
+//}
 
 void operator delete[](void *ptr, size_t size, size_t alignment, const std::nothrow_t &) throw() {
     g_AllocationMetrics.TotalFree += size;
@@ -156,6 +156,7 @@ void operator delete[](void *ptr, size_t size, size_t alignment, const std::noth
  * Tested on: Microsoft (R) C/C++ Optimizing Compiler Version 19.24.28314 for x86
  */
 #if defined(_MSC_VER)
+#include <intrin.h>
 #define __builtin_frame_address(x) ((void)(x), _AddressOfReturnAddress())
 #endif
 

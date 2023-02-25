@@ -481,7 +481,7 @@ void MainMenuUI__inputChanged(std::string text, Game *game) {
 
 void MainMenuUI__reset(Game *game) {
 #ifdef _WIN32
-    strcpy_s(worldNameBuf, "New World");
+    strcpy_s(gameUI.MainMenuUI__worldNameBuf, "New World");
 #else
     strcpy(gameUI.MainMenuUI__worldNameBuf, "New World");
 #endif

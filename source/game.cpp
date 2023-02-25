@@ -126,7 +126,7 @@ int Game::init(int argc, char *argv[]) {
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
-    METADOT_NEW_ARRAY(C, movingTiles, U16, global.GameData_.materials_count);
+    movingTiles = new U16[global.GameData_.materials_count];
     METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
 
     global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
@@ -403,7 +403,7 @@ int Game::run(int argc, char *argv[]) {
     global.GameData_.ofsY = (global.GameData_.ofsY - Screen.windowHeight / 2) / 2 * 3 + Screen.windowHeight / 2;
 
     InitFPS();
-    METADOT_NEW_ARRAY(C, objectDelete, U8, GameIsolate_.world->width * GameIsolate_.world->height);
+    objectDelete = new U8[GameIsolate_.world->width * GameIsolate_.world->height];
 
     fadeInStart = metadot_gettime();
     fadeInLength = 250;
@@ -1091,10 +1091,10 @@ int Game::exit() {
 
     ReleaseGameData();
 
-    METADOT_DELETE(C, objectDelete, U8);
+    delete[] objectDelete;
 
     METADOT_DELETE(C, debugDraw, DebugDraw);
-    METADOT_DELETE(C, movingTiles, U16);
+    delete[] movingTiles;
 
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
     METADOT_DELETE(C, GameIsolate_.updateDirtyPool2, ThreadPool);

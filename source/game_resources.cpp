@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-#include "SDL_surface.h"
+#include "core/sdl_wrapper.h"
 #include "core/alloc.hpp"
 #include "core/core.h"
 #include "core/io/filesystem.h"

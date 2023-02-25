@@ -29,10 +29,10 @@
 #endif
 
 #define ToSDLColor(_c) \
-    (SDL_Color) { _c.r, _c.g, _c.b, _c.a }
+    SDL_Color { _c.r, _c.g, _c.b, _c.a }
 
 #define ToEngineColor(_c) \
-    (METAENGINE_Color) { _c.r, _c.g, _c.b, _c.a }
+    METAENGINE_Color { _c.r, _c.g, _c.b, _c.a }
 
 #define R_CONTEXT_DATA ContextData_OpenGL_3
 #define R_IMAGE_DATA ImageData_OpenGL_3

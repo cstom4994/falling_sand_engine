@@ -19,7 +19,6 @@
 #include "game_utils/cells.h"
 #include "physics/box2d.h"
 #include "reflectionflat.hpp"
-#include "renderer/renderer_utils.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "world.hpp"
 

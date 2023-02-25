@@ -6,9 +6,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/cdefs.h>
-#include <sys/queue.h>
 #include <sys/types.h>
+
+#include "Libs/external/queue.h"
 
 #pragma region lua_safe_alloc
 
@@ -225,7 +225,7 @@ void luaA_open(lua_State *L) {
     luaA_conversion(L, const char *, luaA_push_const_char_ptr, luaA_to_const_char_ptr);
     luaA_conversion(L, void *, luaA_push_void_ptr, luaA_to_void_ptr);
 
-    luaA_conversion_push(L, void, luaA_push_void);
+    luaA_conversion_push_type(L, luaA_type_add(L, "void", 1), luaA_push_void); // sizeof(void) is 1 on gcc
 }
 
 void luaA_close(lua_State *L) {
@@ -608,7 +608,7 @@ int luaA_struct_push_member_offset_type(lua_State *L, luaA_Type type, size_t off
             lua_getfield(L, -1, "type");
             luaA_Type stype = lua_tointeger(L, -1);
             lua_pop(L, 4);
-            return luaA_push_type(L, stype, c_in + offset);
+            return luaA_push_type(L, stype, (char*)c_in + offset);
         }
 
         lua_pop(L, 3);
@@ -639,7 +639,7 @@ int luaA_struct_push_member_name_type(lua_State *L, luaA_Type type, const char *
             lua_getfield(L, -1, "offset");
             size_t offset = lua_tointeger(L, -1);
             lua_pop(L, 4);
-            return luaA_push_type(L, stype, c_in + offset);
+            return luaA_push_type(L, stype, (char *)c_in + offset);
         }
 
         lua_pop(L, 3);
@@ -668,7 +668,7 @@ void luaA_struct_to_member_offset_type(lua_State *L, luaA_Type type, size_t offs
             lua_getfield(L, -1, "type");
             luaA_Type stype = lua_tointeger(L, -1);
             lua_pop(L, 4);
-            luaA_to_type(L, stype, c_out + offset, index);
+            luaA_to_type(L, stype, (char *)c_out + offset, index);
             return;
         }
 
@@ -700,7 +700,7 @@ void luaA_struct_to_member_name_type(lua_State *L, luaA_Type type, const char *m
             lua_getfield(L, -1, "offset");
             size_t offset = lua_tointeger(L, -1);
             lua_pop(L, 4);
-            luaA_to_type(L, stype, c_out + offset, index);
+            luaA_to_type(L, stype, (char *)c_out + offset, index);
             return;
         }
 
@@ -1269,8 +1269,8 @@ static int luaA_call_entry(lua_State *L) {
     lua_Integer arg_ptr = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
-    void *ret_data = ret_stack + ret_ptr;
-    void *arg_data = arg_stack + arg_ptr;
+    void *ret_data = (char *)ret_stack + ret_ptr;
+    void *arg_data = (char *)arg_stack + arg_ptr;
 
     /* If fixed allocation exhausted use heap instead */
 
@@ -1323,7 +1323,7 @@ static int luaA_call_entry(lua_State *L) {
         luaA_Type arg_type = lua_tointeger(L, -1);
         lua_pop(L, 1);
         luaA_to_type(L, arg_type, arg_pos, -arg_num + i - 2);
-        arg_pos += luaA_typesize(L, arg_type);
+        arg_pos = (char*)arg_pos + luaA_typesize(L, arg_type);
     }
 
     lua_pop(L, 1);
@@ -2063,7 +2063,6 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #define LUACS_VERSION "1"
 
@@ -2160,7 +2159,7 @@ struct luacstruct_field {
 struct luacobject {
     enum luacstruct_type type;
     struct luacstruct *cs;
-    caddr_t ptr;
+    void* ptr;
     size_t size;
     int nmemb;
     int typref;
@@ -2275,7 +2274,7 @@ int luacs_newstruct0(lua_State *L, const char *tname, const char *supertname) {
     lua_setfield(L, LUA_REGISTRYINDEX, metaname);
     memcpy(cs->metaname, metaname, MINIMUM(sizeof(metaname), sizeof(cs->metaname)));
 
-    cs->typename = index(cs->metaname, '.') + 1;
+    cs->typename = (char*)index(cs->metaname, '.') + 1;
     SPLAY_INIT(&cs->fields);
     TAILQ_INIT(&cs->sorted);
 
@@ -2570,7 +2569,7 @@ int luacs_newarray0(lua_State *L, enum luacstruct_type _type, int typidx, size_t
         obj->ptr = ptr;
     } else {
         obj = lua_newuserdata(L, sizeof(struct luacobject) + size * nmemb);
-        obj->ptr = (caddr_t)(obj + 1);
+        obj->ptr = (void *)(obj + 1);
     }
     obj->type = _type;
     obj->size = size;
@@ -2642,9 +2641,9 @@ int luacs_array__index(lua_State *L) {
         case LUACS_TOBJREF:
         case LUACS_TOBJENT:
             if (obj->type == LUACS_TOBJENT)
-                ptr = obj->ptr + regeon.off;
+                ptr = (char *)obj->ptr + regeon.off;
             else
-                ptr = *(void **)(obj->ptr + regeon.off);
+                ptr = *(void **)((char *)obj->ptr + regeon.off);
             if (ptr == NULL)
                 lua_pushnil(L);
             else {
@@ -2667,7 +2666,7 @@ int luacs_array__index(lua_State *L) {
             lua_remove(L, -2);
             break;
         case LUACS_TARRAY:
-            ptr = obj->ptr + regeon.off;
+            ptr = (char *)obj->ptr + regeon.off;
             if (ptr == NULL)
                 lua_pushnil(L);
             else {
@@ -2679,7 +2678,7 @@ int luacs_array__index(lua_State *L) {
                     cat = luaL_checkudata(L, -1, METANAME_LUACARRAYTYPE);
                     lua_pop(L, 1);
                     if (cat->typref != 0) luacs_getref(L, cat->typref);
-                    luacs_newarray0(L, cat->type, cat->typref, (cat->typref != 0) ? -1 : 0, cat->nmemb, cat->flags, obj->ptr + regeon.off);
+                    luacs_newarray0(L, cat->type, cat->typref, (cat->typref != 0) ? -1 : 0, cat->nmemb, cat->flags, (char *)obj->ptr + regeon.off);
                     if (cat->typref != 0) lua_remove(L, -2);
                     lua_pushvalue(L, -1);
                     lua_rawseti(L, -3, idx);
@@ -2746,7 +2745,7 @@ int luacs_array__newindex(lua_State *L) {
                 lua_pushvalue(L, 3);
                 lua_call(L, 2, 0);
             } else {
-                *(void **)(obj->ptr + regeon.off) = ano ? ano->ptr : NULL;
+                *(void **)((char *)obj->ptr + regeon.off) = ano ? ano->ptr : NULL;
                 /* use the same object */
                 luacs_getref(L, obj->tblref);
                 lua_pushvalue(L, 3);
@@ -2814,7 +2813,7 @@ int luacs_array_copy(lua_State *L) {
             luacs_getref(L, l->tblref);
             for (idx = 1; idx <= l->nmemb; idx++) {
                 /* use the same pointer */
-                *(void **)(l->ptr + (idx - 1) * l->size) = *(void **)(r->ptr + (idx - 1) * r->size);
+                *(void **)((char *)l->ptr + (idx - 1) * l->size) = *(void **)((char *)r->ptr + (idx - 1) * r->size);
 
                 lua_pushcfunction(L, luacs_array__index);
                 lua_pushvalue(L, 2);
@@ -2946,7 +2945,7 @@ int luacs_newobject0(lua_State *L, void *ptr) {
     } else {
         TAILQ_FOREACH(field, &cs->sorted, queue) { objsiz = MAXIMUM(objsiz, field->regeon.off + (field->nmemb == 0 ? 1 : field->nmemb) * field->regeon.size); }
         obj = lua_newuserdata(L, sizeof(struct luacobject) + objsiz);
-        obj->ptr = (caddr_t)(obj + 1);
+        obj->ptr = (void *)(obj + 1);
     }
     obj->cs = cs;
     lua_pushvalue(L, -2);
@@ -3108,9 +3107,9 @@ int luacs_object__get(lua_State *L, struct luacobject *obj, struct luacstruct_fi
         case LUACS_TOBJREF:
         case LUACS_TOBJENT:
             if (field->type == LUACS_TOBJENT)
-                ptr = obj->ptr + field->regeon.off;
+                ptr = (char *)obj->ptr + field->regeon.off;
             else
-                ptr = *(void **)(obj->ptr + field->regeon.off);
+                ptr = *(void **)((char *)obj->ptr + field->regeon.off);
             if (ptr == NULL)
                 lua_pushnil(L);
             else {
@@ -3123,7 +3122,7 @@ int luacs_object__get(lua_State *L, struct luacobject *obj, struct luacstruct_fi
                 else { /* has a cache */
                     cache = luaL_checkudata(L, -1, METANAME_LUACSTRUCTOBJ);
                     /* cached reference may be staled */
-                    if (field->type == LUACS_TOBJREF && cache->ptr != *(void **)(obj->ptr + field->regeon.off)) {
+                    if (field->type == LUACS_TOBJREF && cache->ptr != *(void **)((char *)obj->ptr + field->regeon.off)) {
                         lua_pop(L, 1);
                         lua_pushnil(L);
                         lua_setfield(L, -2, field->fieldname);
@@ -3152,7 +3151,7 @@ int luacs_object__get(lua_State *L, struct luacobject *obj, struct luacstruct_fi
             if (lua_isnil(L, -1)) {
                 lua_pop(L, 1);
                 if (field->regeon.typref != 0) luacs_getref(L, field->regeon.typref);
-                luacs_newarray0(L, field->regeon.type, (field->regeon.typref != 0) ? -1 : 0, field->regeon.size, field->nmemb, field->flags, obj->ptr + field->regeon.off);
+                luacs_newarray0(L, field->regeon.type, (field->regeon.typref != 0) ? -1 : 0, field->regeon.size, field->nmemb, field->flags, (char *)obj->ptr + field->regeon.off);
                 if (field->regeon.typref != 0) lua_remove(L, -2);
                 lua_pushvalue(L, -1);
                 lua_setfield(L, -3, field->fieldname);
@@ -3212,7 +3211,7 @@ int luacs_object__newindex(lua_State *L) {
                     lua_pushvalue(L, 3);
                     lua_call(L, 2, 0);
                 } else {
-                    *(void **)(obj->ptr + field->regeon.off) = ano != NULL ? ano->ptr : NULL;
+                    *(void **)((char *)obj->ptr + field->regeon.off) = ano != NULL ? ano->ptr : NULL;
                     /* use the same object */
                     luacs_getref(L, obj->tblref);
                     lua_pushvalue(L, 3);
@@ -3258,7 +3257,7 @@ int luacs_object_copy(lua_State *L) {
 
     TAILQ_FOREACH(field, &l->cs->sorted, queue) {
         if (field->regeon.size > 0)
-            memcpy((caddr_t)l->ptr + field->regeon.off, (caddr_t)r->ptr + field->regeon.off, field->regeon.size);
+            memcpy((char *)l->ptr + field->regeon.off, (char *)r->ptr + field->regeon.off, field->regeon.size);
         else if (field->regeon.type == LUACS_TOBJREF || field->regeon.type == LUACS_TOBJENT || field->regeon.type == LUACS_TEXTREF) {
             /* l[fieldname] = r[fieldname] */
             lua_getfield(L, 2, field->fieldname);
@@ -3340,10 +3339,10 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
 
     switch (regeon->type) {
         case LUACS_TINT8:
-            lua_pushinteger(L, *(int8_t *)(obj->ptr + regeon->off));
+            lua_pushinteger(L, *(int8_t *)((char *)obj->ptr + regeon->off));
             break;
         case LUACS_TINT16:
-            ival = *(int16_t *)(obj->ptr + regeon->off);
+            ival = *(int16_t *)((char *)obj->ptr + regeon->off);
             if ((regeon->flags & LUACS_FENDIAN) == 0)
                 lua_pushinteger(L, ival);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
@@ -3352,7 +3351,7 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
                 lua_pushinteger(L, le16toh(ival));
             break;
         case LUACS_TINT32:
-            ival = *(int32_t *)(obj->ptr + regeon->off);
+            ival = *(int32_t *)((char *)obj->ptr + regeon->off);
             if ((regeon->flags & LUACS_FENDIAN) == 0)
                 lua_pushinteger(L, ival);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
@@ -3361,7 +3360,7 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
                 lua_pushinteger(L, le32toh(ival));
             break;
         case LUACS_TINT64:
-            ival = *(int64_t *)(obj->ptr + regeon->off);
+            ival = *(int64_t *)((char *)obj->ptr + regeon->off);
             if ((regeon->flags & LUACS_FENDIAN) == 0)
                 lua_pushinteger(L, ival);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
@@ -3370,10 +3369,10 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
                 lua_pushinteger(L, le64toh(ival));
             break;
         case LUACS_TUINT8:
-            lua_pushinteger(L, *(uint8_t *)(obj->ptr + regeon->off));
+            lua_pushinteger(L, *(uint8_t *)((char *)obj->ptr + regeon->off));
             break;
         case LUACS_TUINT16:
-            uval = *(uint16_t *)(obj->ptr + regeon->off);
+            uval = *(uint16_t *)((char *)obj->ptr + regeon->off);
             if ((regeon->flags & LUACS_FENDIAN) == 0)
                 lua_pushinteger(L, uval);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
@@ -3382,7 +3381,7 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
                 lua_pushinteger(L, le16toh(uval));
             break;
         case LUACS_TUINT32:
-            uval = *(uint32_t *)(obj->ptr + regeon->off);
+            uval = *(uint32_t *)((char *)obj->ptr + regeon->off);
             if ((regeon->flags & LUACS_FENDIAN) == 0)
                 lua_pushinteger(L, uval);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
@@ -3391,7 +3390,7 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
                 lua_pushinteger(L, le32toh(uval));
             break;
         case LUACS_TUINT64:
-            uval = *(uint64_t *)(obj->ptr + regeon->off);
+            uval = *(uint64_t *)((char *)obj->ptr + regeon->off);
             if ((regeon->flags & LUACS_FENDIAN) == 0)
                 lua_pushinteger(L, uval);
             else if ((regeon->flags & LUACS_FENDIANBIG) != 0)
@@ -3400,13 +3399,13 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
                 lua_pushinteger(L, le64toh(uval));
             break;
         case LUACS_TBOOL:
-            lua_pushboolean(L, *(bool *)(obj->ptr + regeon->off));
+            lua_pushboolean(L, *(bool *)((char *)obj->ptr + regeon->off));
             break;
         case LUACS_TSTRING:
-            lua_pushstring(L, (const char *)(obj->ptr + regeon->off));
+            lua_pushstring(L, (const char *)((char *)obj->ptr + regeon->off));
             break;
         case LUACS_TSTRPTR:
-            lua_pushstring(L, *(const char **)(obj->ptr + regeon->off));
+            lua_pushstring(L, *(const char **)((char *)obj->ptr + regeon->off));
             break;
         case LUACS_TENUM: {
             intmax_t value;
@@ -3414,16 +3413,16 @@ int luacs_pushregeon(lua_State *L, struct luacobject *obj, struct luacregeon *re
             struct luacenum *ce;
             switch (regeon->size) {
                 case 1:
-                    value = *(int8_t *)(obj->ptr + regeon->off);
+                    value = *(int8_t *)((char *)obj->ptr + regeon->off);
                     break;
                 case 2:
-                    value = *(int16_t *)(obj->ptr + regeon->off);
+                    value = *(int16_t *)((char *)obj->ptr + regeon->off);
                     break;
                 case 4:
-                    value = *(int32_t *)(obj->ptr + regeon->off);
+                    value = *(int32_t *)((char *)obj->ptr + regeon->off);
                     break;
                 case 8:
-                    value = *(int64_t *)(obj->ptr + regeon->off);
+                    value = *(int64_t *)((char *)obj->ptr + regeon->off);
                     break;
                 default:
                     luaL_error(L, "%s: obj is broken", __func__);
@@ -3460,10 +3459,10 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
 
     switch (regeon->type) {
         case LUACS_TINT8:
-            *(int8_t *)(obj->ptr + regeon->off) = lua_tointeger(L, absidx);
+            *(int8_t *)((char *)obj->ptr + regeon->off) = lua_tointeger(L, absidx);
             break;
         case LUACS_TUINT8:
-            *(uint8_t *)(obj->ptr + regeon->off) = lua_tointeger(L, absidx);
+            *(uint8_t *)((char *)obj->ptr + regeon->off) = lua_tointeger(L, absidx);
             break;
         case LUACS_TINT16:
             ival = lua_tointeger(L, absidx);
@@ -3471,7 +3470,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 ival = htobe16(ival);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 ival = htole16(ival);
-            *(int16_t *)(obj->ptr + regeon->off) = ival;
+            *(int16_t *)((char *)obj->ptr + regeon->off) = ival;
             break;
         case LUACS_TUINT16:
             uval = lua_tointeger(L, absidx);
@@ -3479,7 +3478,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 uval = htobe16(uval);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 uval = htole16(uval);
-            *(uint16_t *)(obj->ptr + regeon->off) = uval;
+            *(uint16_t *)((char *)obj->ptr + regeon->off) = uval;
             break;
         case LUACS_TINT32:
             ival = lua_tointeger(L, absidx);
@@ -3487,7 +3486,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 ival = htobe32(ival);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 ival = htole32(ival);
-            *(int32_t *)(obj->ptr + regeon->off) = ival;
+            *(int32_t *)((char *)obj->ptr + regeon->off) = ival;
             break;
         case LUACS_TUINT32:
             uval = lua_tointeger(L, absidx);
@@ -3495,7 +3494,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 uval = htobe32(uval);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 uval = htole32(uval);
-            *(uint32_t *)(obj->ptr + regeon->off) = uval;
+            *(uint32_t *)((char *)obj->ptr + regeon->off) = uval;
             break;
         case LUACS_TINT64:
             ival = lua_tointeger(L, absidx);
@@ -3503,7 +3502,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 ival = htobe64(ival);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 ival = htole64(ival);
-            *(int64_t *)(obj->ptr + regeon->off) = ival;
+            *(int64_t *)((char *)obj->ptr + regeon->off) = ival;
             break;
         case LUACS_TUINT64:
             uval = lua_tointeger(L, absidx);
@@ -3511,10 +3510,10 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 uval = htobe64(uval);
             else if ((regeon->flags & LUACS_FENDIANLITTLE) != 0)
                 uval = htole64(uval);
-            *(uint64_t *)(obj->ptr + regeon->off) = uval;
+            *(uint64_t *)((char *)obj->ptr + regeon->off) = uval;
             break;
         case LUACS_TBOOL:
-            *(bool *)(obj->ptr + regeon->off) = lua_toboolean(L, absidx);
+            *(bool *)((char *)obj->ptr + regeon->off) = lua_toboolean(L, absidx);
             break;
         case LUACS_TENUM: {
             struct luacenum *ce;
@@ -3544,7 +3543,7 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
                 abort();
             }
 
-            ptr = obj->ptr + regeon->off;
+            ptr = (char *)obj->ptr + regeon->off;
             switch (regeon->size) {
                 case 1:
                     *(int8_t *)(ptr) = value;
@@ -3565,8 +3564,8 @@ void luacs_pullregeon(lua_State *L, struct luacobject *obj, struct luacregeon *r
             luaL_checkstring(L, absidx);
             siz = lua_rawlen(L, absidx);
             luaL_argcheck(L, siz < regeon->size, absidx, "too long");
-            memcpy(obj->ptr + regeon->off, lua_tostring(L, absidx), MINIMUM(siz, regeon->size));
-            if (regeon->type == LUACS_TSTRING) *(char *)(obj->ptr + regeon->off + regeon->size - 1) = '\0';
+            memcpy((char *)obj->ptr + regeon->off, lua_tostring(L, absidx), MINIMUM(siz, regeon->size));
+            if (regeon->type == LUACS_TSTRING) *(char *)((char *)obj->ptr + regeon->off + regeon->size - 1) = '\0';
             break;
         case LUACS_TOBJREF:
         case LUACS_TOBJENT:

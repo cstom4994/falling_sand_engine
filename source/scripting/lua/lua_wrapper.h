@@ -807,7 +807,6 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/cdefs.h>
 
 enum luacstruct_type {
     LUACS_TINT8,
@@ -836,7 +835,6 @@ enum luacstruct_type {
 #define LUACS_FENDIANLITTLE 0x04
 #define LUACS_FENDIAN (LUACS_FENDIANBIG | LUACS_FENDIANLITTLE)
 
-__BEGIN_DECLS
 int luacs_newstruct0(lua_State *, const char *, const char *);
 int luacs_declare_method(lua_State *, const char *, int (*)(lua_State *));
 int luacs_declare_const(lua_State *, const char *, int);
@@ -853,7 +851,6 @@ int luacs_enum_declare_value(lua_State *, const char *, intmax_t);
 int luacs_checkenumval(lua_State *, int, const char *);
 int luacs_newarray(lua_State *, enum luacstruct_type, const char *, size_t, int, unsigned, void *);
 int luacs_newarraytype(lua_State *, const char *, enum luacstruct_type, const char *, size_t, int, unsigned);
-__END_DECLS
 
 #define luacs_newstruct(_L, _typename)                   \
     do {                                                 \

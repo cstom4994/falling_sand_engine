@@ -68,7 +68,7 @@ if is_os("windows") then
 		"/wd4002",
 		"/utf-8",
 		"/Zc:__cplusplus",
-		"/Za"
+		"/permissive"
 	)
 
 	add_cxflags("/bigobj")
@@ -119,6 +119,8 @@ elseif is_os("macosx") then
 	-- add_mxflags("-fno-objc-arc", {force = true})
 	-- add_frameworks("CoreFoundation", "Cocoa", "IOKit", "Metal", "MetalKit", "QuartzCore", "AudioToolBox", {public = true})
 
+	add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
+
 	if is_arch("arm.*") then
 		add_defines("__METADOT_ARCH_ARM")
 	elseif is_arch("x86_64", "i386") then
@@ -128,7 +130,6 @@ elseif is_os("macosx") then
 	link_list = {}
 end
 
-add_cxflags("-fstrict-aliasing", "-fomit-frame-pointer", "-Wmicrosoft-cast", "-fpermissive", "-Wunqualified-std-cast-call", "-ffp-contract=on", "-fno-fast-math")
 
 include_dir_list = {
 	"source",

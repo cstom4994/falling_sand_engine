@@ -17,6 +17,11 @@
 #include "core/core.hpp"
 #include "libs/imgui/imgui.h"
 
+#ifdef METADOT_PLATFORM_WIN32
+#undef far
+#undef near
+#endif
+
 union vec2 {
     float v[2] = {};
     struct {
@@ -117,15 +122,15 @@ typedef struct metadot_rect {
 typedef signed int metadot_bool;
 
 #define VECTOR3_ZERO \
-    (vec3) { 0.0f, 0.0f, 0.0f }
+    vec3 { 0.0f, 0.0f, 0.0f }
 #define VECTOR3_FORWARD \
-    (vec3) { 1.0f, 0.0f, 0.0f }
+    vec3 { 1.0f, 0.0f, 0.0f }
 #define VECTOR3_UP \
-    (vec3) { 0.0f, 0.0f, 1.0f }
+    vec3 { 0.0f, 0.0f, 1.0f }
 #define VECTOR3_DOWN \
-    (vec3) { 0.0f, 0.0f, -1.0f }
+    vec3 { 0.0f, 0.0f, -1.0f }
 #define VECTOR3_LEFT \
-    (vec3) { 0.0f, 1.0f, 0.0f }
+    vec3 { 0.0f, 1.0f, 0.0f }
 
 #define INT_INFINITY 0x3f3f3f3f
 
@@ -556,7 +561,7 @@ inline float Round(float value) {
         value -= 0.5f;
     else
         value += 0.5f;
-    return floor(value);
+    return std::floor(value);
 }
 
 inline double Round(double value) {
@@ -564,7 +569,7 @@ inline double Round(double value) {
         value -= 0.5;
     else
         value += 0.5;
-    return floor(value);
+    return std::floor(value);
 }
 
 //=============================================================================
@@ -3816,5 +3821,10 @@ inline mat4 quaternion_to_mat4(const quaternion &q) {
 }
 
 #pragma endregion liner
+
+#ifdef METADOT_PLATFORM_WIN32
+#define far
+#define near
+#endif
 
 #endif

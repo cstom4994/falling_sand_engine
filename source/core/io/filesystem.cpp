@@ -27,7 +27,7 @@ bool InitFilesystem() {
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
-            Core.gamepath = currentDir;
+            Core.gamepath = currentDir.string();
             // s_DataPath = currentDir / "Data";
             METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), metadot_fs_getExecutableFolderPath());
 
@@ -61,7 +61,7 @@ bool InitFilesystem() {
 }
 
 const char* metadot_fs_getExecutableFolderPath() {
-    const char* out = std::filesystem::current_path().c_str();
+    const char* out = std::filesystem::current_path().string().c_str();
     return out;
 }
 

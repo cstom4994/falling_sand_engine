@@ -1,6 +1,8 @@
 
 #include "sound.h"
 
+#include "core/macros.h"
+
 #undef STB_VORBIS_HEADER_ONLY
 #include "libs/external/stb_vorbis.c"
 
@@ -146,7 +148,7 @@
 #elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
 
 #ifndef SDL_h_
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #endif
 #ifndef _WIN32
 #include <alloca.h>
@@ -262,11 +264,12 @@ cs__m128i cs_mm_packs_epi32(cs__m128i a, cs__m128i b) {
 
 #else  // METAENGINE_SOUND_SCALAR_MODE
 
-// TODO Fix on ARM
+#ifdef __METADOT_ARCH_ARM
 #include "libs/sse2neon.h"
-
-// #include <emmintrin.h>
-// #include <xmmintrin.h>
+#else
+#include <emmintrin.h>
+#include <xmmintrin.h>
+#endif
 
 #define cs__m128 __m128
 #define cs__m128i __m128i

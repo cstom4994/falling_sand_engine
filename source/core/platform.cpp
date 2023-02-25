@@ -16,7 +16,6 @@
 #include "engine/engine.h"
 #include "renderer/metadot_gl.h"
 #include "renderer/renderer_gpu.h"
-#include "renderer/renderer_utils.h"
 
 IMPLENGINE();
 
@@ -187,13 +186,13 @@ int metadot_initwindow() {
     // }
 
 #if defined(_WIN32)
-            SDL_SysWMinfo info{};
+    SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(window, &info)) {
+    if (SDL_GetWindowWMInfo(Core.window, &info)) {
         METADOT_ASSERT_E(IsWindow(info.info.win.window));
-        global.HostData.wndh = info.info.win.window;
+        //Core.wndh = info.info.win.window;
     } else {
-        global.HostData.wndh = NULL;
+        //Core.wndh = NULL;
     }
 #elif defined(__linux)
             global.HostData.wndh = 0;
@@ -270,16 +269,16 @@ void metadot_set_windowflash(engine_windowflashaction action, int count, int per
 
     // pretty sure these flags are supposed to work but they all seem to do the same thing on my machine so idk
     switch (action) {
-        case WindowFlashAction::START:
+        case engine_windowflashaction::START:
             flash.dwFlags = FLASHW_ALL;
             break;
-        case WindowFlashAction::START_COUNT:
+        case engine_windowflashaction::START_COUNT:
             flash.dwFlags = FLASHW_ALL | FLASHW_TIMER;
             break;
-        case WindowFlashAction::START_UNTIL_FG:
+        case engine_windowflashaction::START_UNTIL_FG:
             flash.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG;
             break;
-        case WindowFlashAction::STOP:
+        case engine_windowflashaction::STOP:
             flash.dwFlags = FLASHW_STOP;
             break;
     }

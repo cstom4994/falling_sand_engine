@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 #include "core/const.h"
 #include "libs/cJSON.h"
@@ -39,6 +40,8 @@ public:
     Json(unsigned int n) : json_(cJSON_CreateNumber(n)) {}
 
     Json(long n) : json_(cJSON_CreateNumber(n)) {}
+
+    Json(long long n) : json_(cJSON_CreateNumber(n)) {}
 
     Json(double n) : json_(cJSON_CreateNumber(n)) {}
 

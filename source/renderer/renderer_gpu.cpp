@@ -61,7 +61,7 @@ void gpu_register_built_in_renderers(void) {
     // Depending on OS X version, it might only support core GL 3.3 or 3.2
     R_RegisterRenderer(R_MakeRendererID("OpenGL 3", R_GL_VERSION_MAJOR, R_GL_VERSION_MINOR), &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
 #else
-    R_RegisterRenderer(R_MakeRendererID("OpenGL 3", R_RENDERER_OPENGL_3, 3, 0), &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
+    R_RegisterRenderer(R_MakeRendererID("OpenGL 3", R_GL_VERSION_MAJOR, 3), &R_CreateRenderer_OpenGL_3, &R_FreeRenderer_OpenGL_3);
 #endif
 }
 

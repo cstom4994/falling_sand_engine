@@ -5,7 +5,8 @@
 #define METADOT_DBG_CALLSTACK_UNIX
 #endif
 
-#include <string.h>
+#include <cstring>
+#include <cstdio>
 
 #if defined(METADOT_DBG_CALLSTACK_UNIX) || defined(_MSC_VER)
 typedef struct {
@@ -289,27 +290,27 @@ static HMODULE callstack_symbols_find_dbghelp() {
     DWORD module_path_len;
     char module_path[4096];
 
-    module_path_len = GetModuleFileName((HMODULE)0, module_path, sizeof(module_path));
+    module_path_len = GetModuleFileName((HMODULE)0, (LPWSTR)module_path, sizeof(module_path));
     if (module_path_len > 0) {
         char* slash = strrchr(module_path, '\\');
         if (slash) *(slash + 1) = '\0';
         strncat(module_path, "dbghelp.dll", sizeof(module_path) - strlen(module_path) - 1);
 
-        mod = LoadLibrary(module_path);
+        mod = LoadLibrary((LPWSTR)module_path);
         if (mod) return mod;
     }
 
     // ... try to find dbghelp.dll in the current working directory ...
-    module_path_len = GetCurrentDirectory(sizeof(module_path), module_path);
+    module_path_len = GetCurrentDirectory(sizeof(module_path), (LPWSTR)module_path);
     if (module_path_len > 0) {
         strncat(module_path, "\\dbghelp.dll", sizeof(module_path) - strlen(module_path) - 1);
 
-        mod = LoadLibrary(module_path);
+        mod = LoadLibrary((LPWSTR)module_path);
         if (mod) return mod;
     }
 
     // ... fallback to the "normal" search-paths ...
-    return LoadLibrary("dbghelp.dll");
+    return LoadLibrary(L"dbghelp.dll");
 }
 
 static void callstack_symbols_build_search_path(char* search_path, int length) {
@@ -325,7 +326,7 @@ static void callstack_symbols_build_search_path(char* search_path, int length) {
 
     search_path[0] = '\0';
 
-    mod = GetModuleFileName((HMODULE)0, search_path, length);
+    mod = GetModuleFileName((HMODULE)0, (LPWSTR)search_path, length);
     if (mod > 0) {
         char* slash = strrchr(search_path, '\\');
         if (slash) *slash = '\0';
@@ -338,13 +339,13 @@ static void callstack_symbols_build_search_path(char* search_path, int length) {
         strncat(search_path, ".", length);
     }
 
-    mod = GetEnvironmentVariable("_NT_SYMBOL_PATH", env_var, sizeof(env_var));
+    mod = GetEnvironmentVariable(L"_NT_SYMBOL_PATH", (LPWSTR)env_var, sizeof(env_var));
     if (mod > 0 && mod < sizeof(env_var)) {
         if (search_path[0] != '\0') strncat(search_path, ";", length);
         strncat(search_path, env_var, length);
     }
 
-    mod = GetEnvironmentVariable("_NT_ALTERNATE_SYMBOL_PATH", env_var, sizeof(env_var));
+    mod = GetEnvironmentVariable(L"_NT_ALTERNATE_SYMBOL_PATH", (LPWSTR)env_var, sizeof(env_var));
     if (mod > 0 && mod < sizeof(env_var)) {
         if (search_path[0] != '\0') strncat(search_path, ";", length);
         strncat(search_path, env_var, length);
@@ -369,7 +370,7 @@ static int callstack_symbols_initialize() {
         // ... symbols fetched ok ...
         if (dbghelp.SymInitialize && dbghelp.SymFromAddr && dbghelp.SymGetLineFromAddr64 && dbghelp.SymSetOptions) {
             // ... enable debug-output if needed ...
-            if (GetEnvironmentVariable("DBGTOOLS_SYMBOL_DEBUG_OUTPUT", 0, 0) > 0) dbghelp.SymSetOptions(SYMOPT_DEBUG);
+            if (GetEnvironmentVariable(L"DBGTOOLS_SYMBOL_DEBUG_OUTPUT", 0, 0) > 0) dbghelp.SymSetOptions(SYMOPT_DEBUG);
 
             // ... generate the same search-paths for pdbs as default, just add our executable directory as well ...
             char search_path[4096];

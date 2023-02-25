@@ -194,13 +194,13 @@ void MarkdownPlot::parser(std::string test) {
     unsigned parser_flags = MD_DIALECT_GITHUB;
     unsigned renderer_flags = 0;
 
-    MD_RENDERER renderer = {.enter_block = enter_block_callback,
+    MD_RENDERER renderer = {.flags = parser_flags,
+                            .enter_block = enter_block_callback,
                             .leave_block = leave_block_callback,
                             .enter_span = enter_span_callback,
                             .leave_span = leave_span_callback,
                             .text = text_callback,
-                            .debug_log = debug_log_callback,
-                            .flags = parser_flags};
+                            .debug_log = debug_log_callback};
 
     UserdataPayload userdata{"userdata payload"};
     MD_RENDER_HTML render = {process_output, (void *)&userdata, renderer_flags};

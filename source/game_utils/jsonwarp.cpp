@@ -164,7 +164,7 @@ Rpc::~Rpc() {}
 
 void Rpc::registerSender(RpcSender *sender) { sender_ = sender; }
 
-void Rpc::registerHandler(const std::string &name, rpc_handler_t handler) { handlers_[name] = handler; }
+void Rpc::registerHandler(const std::string &name, MetaEngine::Json::rpc_handler_t handler) { handlers_[name] = handler; }
 
 Json Rpc::handleRequest(Json &req) {
     Response response;

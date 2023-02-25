@@ -13,7 +13,7 @@
 #include "engine/engine_meta.h"
 #include "core/platform.h"
 #include "renderer/gpu.hpp"
-#include "util.h"
+#include "core/cpp/utils.hpp"
 
 #define IMPLENGINE()             \
     extern engine_core Core;     \

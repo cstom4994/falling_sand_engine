@@ -16,6 +16,8 @@
 #include "metadot_gl.h"
 #include "renderer/renderer_gpu.h"
 
+#define R_GET_PIXEL(surface, x, y) *((U32 *)((U8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(U32))))
+
 struct ShaderBase;
 
 typedef struct engine_render {

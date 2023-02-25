@@ -260,7 +260,7 @@ vec3 NewMaths::Subtract(vec3 a, vec3 b) {
     return a;
 }
 
-vec3 NewMaths::ScalarMult(vec3 v, F32 s) { return (vec3){v.x * s, v.y * s, v.z * s}; }
+vec3 NewMaths::ScalarMult(vec3 v, F32 s) { return vec3 {v.x * s, v.y * s, v.z * s}; }
 
 F64 NewMaths::Distance(vec3 a, vec3 b) {
     vec3 AMinusB = Subtract(a, b);
@@ -352,7 +352,7 @@ NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(vec3 rotation) {
 
 // Vectors are interpreted as rows
 inline vec3 NewMaths::RotateVector(vec3 v, Matrix3x3 m) {
-    return (vec3){v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
+    return vec3 {v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
 }
 
 NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
@@ -369,9 +369,9 @@ NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
     }
 
     return r;
-}
+} 
 
-NewMaths::Matrix4x4 NewMaths::Identity4x4() { return (Matrix4x4){{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
+NewMaths::Matrix4x4 NewMaths::Identity4x4() { return Matrix4x4 {{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
 
 NewMaths::Matrix4x4 NewMaths::GetProjectionMatrix(F32 rightPlane, F32 leftPlane, F32 topPlane, F32 bottomPlane, F32 nearPlane, F32 farPlane) {
     Matrix4x4 matrix = {{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};

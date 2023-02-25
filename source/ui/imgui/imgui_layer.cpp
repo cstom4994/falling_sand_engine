@@ -1230,7 +1230,7 @@ void ImGuiLayer::Init() {
 
 #if defined(_METADOT_IMM32)
     common_control_initialize();
-    VERIFY(imguiIMMCommunication.subclassify(window));
+    VERIFY(imguiIMMCommunication.subclassify(Core.window));
 #endif
 
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());

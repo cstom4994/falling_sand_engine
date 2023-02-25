@@ -1067,7 +1067,7 @@ void metadot_gl_set_viewport(metadot_gl_ctx_t *ctx, int32_t x, int32_t y, int32_
     METADOT_GL_ASSERT(ctx);
 
     metadot_gl_state_t *state = metadot_gl_get_active_state(ctx);
-    state->viewport = (metadot_gl_viewport_t){x, y, w, h};
+    state->viewport = metadot_gl_viewport_t {x, y, w, h};
 }
 
 void metadot_gl_reset_viewport(metadot_gl_ctx_t *ctx)  // TODO: get GL viewport?
@@ -1075,7 +1075,7 @@ void metadot_gl_reset_viewport(metadot_gl_ctx_t *ctx)  // TODO: get GL viewport?
     METADOT_GL_ASSERT(ctx);
 
     metadot_gl_state_t *state = metadot_gl_get_active_state(ctx);
-    state->viewport = (metadot_gl_viewport_t){0, 0, static_cast<int32_t>(ctx->w), static_cast<int32_t>(ctx->h)};
+    state->viewport = metadot_gl_viewport_t {0, 0, static_cast<int32_t>(ctx->w), static_cast<int32_t>(ctx->h)};
 }
 
 void metadot_gl_set_line_width(metadot_gl_ctx_t *ctx, float width) {
@@ -1307,7 +1307,7 @@ void metadot_gl_set_a2f(metadot_gl_shader_t *shader, const char *name, const met
 
     if (!uniform) return;
 
-    float values[2 * count];
+    float *values = new float[2 * count];
 
     metadot_gl_size_t i, j;
 
@@ -1317,6 +1317,8 @@ void metadot_gl_set_a2f(metadot_gl_shader_t *shader, const char *name, const met
     }
 
     METADOT_GL_CHECK(glUniform2fv(uniform->location, count, values));
+
+    delete[] values;
 }
 
 void metadot_gl_set_a3f(metadot_gl_shader_t *shader, const char *name, const metadot_gl_v3f_t *vec, metadot_gl_size_t count) {
@@ -1329,7 +1331,7 @@ void metadot_gl_set_a3f(metadot_gl_shader_t *shader, const char *name, const met
 
     if (!uniform) return;
 
-    float values[3 * count];
+    float *values = new float[3 * count];
 
     metadot_gl_size_t i, j;
 
@@ -1340,6 +1342,8 @@ void metadot_gl_set_a3f(metadot_gl_shader_t *shader, const char *name, const met
     }
 
     METADOT_GL_CHECK(glUniform3fv(uniform->location, count, values));
+
+    delete[] values;
 }
 
 void metadot_gl_set_a4f(metadot_gl_shader_t *shader, const char *name, const metadot_gl_v4f_t *vec, metadot_gl_size_t count) {
@@ -1352,7 +1356,7 @@ void metadot_gl_set_a4f(metadot_gl_shader_t *shader, const char *name, const met
 
     if (!uniform) return;
 
-    float values[4 * count];
+    float *values = new float[4 * count];
 
     metadot_gl_size_t i, j;
 
@@ -1364,6 +1368,8 @@ void metadot_gl_set_a4f(metadot_gl_shader_t *shader, const char *name, const met
     }
 
     METADOT_GL_CHECK(glUniform4fv(uniform->location, count, values));
+
+    delete[] values;
 }
 
 void metadot_gl_set_m2(metadot_gl_shader_t *shader, const char *name, const metadot_gl_m2_t matrix) {
