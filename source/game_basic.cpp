@@ -31,7 +31,6 @@ static void create_biome(std::string name, int id) {
 static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack); }
 static void textures_end() { EndTexture(global.game->GameIsolate_.texturepack); }
 static void textures_load(std::string name, std::string path) {}
-static void materials_init() { InitMaterials(); }
 static void controls_init() { ControlSystem::InitKey(); }
 
 static void init_ecs() {
@@ -77,7 +76,9 @@ void GameplayScriptSystem::Reload() {}
 
 void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
     s_lua["controls_init"] = LuaWrapper::function(controls_init);
-    s_lua["materials_init"] = LuaWrapper::function(materials_init);
+    s_lua["materials_init"] = LuaWrapper::function(InitMaterials);
+    s_lua["materials_register"] = LuaWrapper::function(RegisterMaterial);
+    s_lua["materials_push"] = LuaWrapper::function(PushMaterials);
     s_lua["textures_load"] = LuaWrapper::function(textures_load);
     s_lua["textures_init"] = LuaWrapper::function(textures_init);
     s_lua["textures_end"] = LuaWrapper::function(textures_end);

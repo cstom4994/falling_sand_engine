@@ -155,7 +155,7 @@ void ChunkRead(Chunk *_struct) {
             tiles[i].color = readBuf[i].color;
             tiles[i].temperature = readBuf[i].temperature;
             tiles[i].mat = global.GameData_.materials_array[readBuf[i].index];
-            tiles[i].id = MaterialInstance::_curID++;
+            // tiles[i].id = MaterialInstance::_curID++;
             // tiles[i].color = readBuf[i].color;
             // tiles[i].temperature = readBuf[i].temperature;
             // tiles[i] = MaterialInstance(Materials::MATERIALS_ARRAY[buf[i].index], buf[i].color, buf[i].temperature);
@@ -163,7 +163,7 @@ void ChunkRead(Chunk *_struct) {
             layer2[i].color = readBuf[i + CHUNK_W * CHUNK_H].color;
             layer2[i].temperature = readBuf[i + CHUNK_W * CHUNK_H].temperature;
             layer2[i].mat = global.GameData_.materials_array[readBuf[CHUNK_W * CHUNK_H + i].index];
-            layer2[i].id = MaterialInstance::_curID++;
+            // layer2[i].id = MaterialInstance::_curID++;
             // layer2[i].color = readBuf[CHUNK_W * CHUNK_H + i].color;
             // layer2[i].temperature = readBuf[CHUNK_W * CHUNK_H + i].temperature;
             // layer2[i] = MaterialInstance(Materials::MATERIALS_ARRAY[buf[CHUNK_W * CHUNK_H + i].index], buf[CHUNK_W * CHUNK_H + i].color, buf[CHUNK_W * CHUNK_H + i].temperature);

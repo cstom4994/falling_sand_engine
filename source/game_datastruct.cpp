@@ -35,7 +35,7 @@ void ReleaseGameData() {
 
 #pragma region Material
 
-Material::Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color) {
+Material::Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color) {
     this->name = name;
     this->index_name = index_name;
     this->id = id;
@@ -49,31 +49,20 @@ Material::Material(int id, std::string name, std::string index_name, int physics
     this->color = color;
 }
 
-// REFLECT_CLASS(Material);
-// CLASS_META_DATA(META_DATA_DESCRIPTION, "Material data");
-// REFLECT_MEMBER(name);
-// REFLECT_MEMBER(index_name);
-// REFLECT_MEMBER(id);
-// REFLECT_MEMBER(physicsType);
-// REFLECT_MEMBER(alpha);
-// REFLECT_MEMBER(density);
-// REFLECT_MEMBER(iterations);
-// REFLECT_MEMBER(emit);
-// REFLECT_MEMBER(emitColor);
-// REFLECT_MEMBER(color);
-// REFLECT_MEMBER(addTemp);
-// REFLECT_MEMBER(conductionSelf);
-// REFLECT_MEMBER(conductionOther);
-// REFLECT_MEMBER(interact);
-// REFLECT_MEMBER(nInteractions);
-// REFLECT_MEMBER(interactions);
-// REFLECT_MEMBER(react);
-// REFLECT_MEMBER(nReactions);
-// REFLECT_MEMBER(reactions);
-// REFLECT_MEMBER(slipperyness);
-// REFLECT_END(Material);
-
 #pragma region MATERIALSLIST
+
+std::unordered_map<int, Material> MaterialsList::ScriptableMaterials;
+
+struct ScriptableMaterialsId {
+    int id;
+    const char *index_name;
+};
+
+const struct ScriptableMaterialsId ScriptableMaterialsId[] = {{1001, "TEST_SAND"},
+                                                              {1002, "TEST_TEXTURED_SAND"},
+                                                              {1003, "TEST_LIQUID"},
+
+                                                              {0xffff, "Unkown"}};
 
 #define INITMATERIAL(_index, _id, _name, _physics, _s, _a, _d, _i, _e, _c) Material MaterialsList::_index = Material(_id, _name, #_index, _physics, _s, _a, _d, _i, _e, _c)
 
@@ -87,11 +76,6 @@ INITMATERIAL(GENERIC_PASSABLE, GameData::materials_count++, "_PASSABLE", Physics
 INITMATERIAL(GENERIC_OBJECT, GameData::materials_count++, "_OBJECT", PhysicsType::OBJECT, 0, 255, 1000.0, 0, 0, 0);
 
 #undef INITMATERIAL
-
-// Test materials
-Material MaterialsList::TEST_SAND = Material(GameData::materials_count++, "Test Sand", "TEST_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
-Material MaterialsList::TEST_TEXTURED_SAND = Material(GameData::materials_count++, "Test Textured Sand", "TEST_TEXTURED_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
-Material MaterialsList::TEST_LIQUID = Material(GameData::materials_count++, "Test Liquid", "TEST_LIQUID", PhysicsType::SOUP, 0, 255, 1.5, 4, 0, 0);
 
 // Game contents
 Material MaterialsList::STONE = Material(GameData::materials_count++, "Stone", "STONE", PhysicsType::SOLID, 0, 1, 0);
@@ -127,6 +111,8 @@ Material MaterialsList::FLAT_COBBLE_DIRT = Material(GameData::materials_count++,
 
 #pragma endregion MATERIALSLIST
 
+#define REGISTER(_m) global.GameData_.materials_container.insert(global.GameData_.materials_container.begin() + _m.id, &_m)
+
 void InitMaterials() {
 
     MaterialsList::GENERIC_AIR.conductionSelf = 0.8;
@@ -148,8 +134,6 @@ void InitMaterials() {
     MaterialsList::GOLD_MOLTEN.conductionSelf = 1.0;
     MaterialsList::GOLD_MOLTEN.conductionOther = 1.0;
 
-#define REGISTER(_m) global.GameData_.materials_container.insert(global.GameData_.materials_container.begin() + _m.id, &_m)
-
     REGISTER(MaterialsList::GENERIC_AIR);
     REGISTER(MaterialsList::GENERIC_SOLID);
     REGISTER(MaterialsList::GENERIC_SAND);
@@ -157,9 +141,6 @@ void InitMaterials() {
     REGISTER(MaterialsList::GENERIC_GAS);
     REGISTER(MaterialsList::GENERIC_PASSABLE);
     REGISTER(MaterialsList::GENERIC_OBJECT);
-    REGISTER(MaterialsList::TEST_SAND);
-    REGISTER(MaterialsList::TEST_TEXTURED_SAND);
-    REGISTER(MaterialsList::TEST_LIQUID);
     REGISTER(MaterialsList::STONE);
     REGISTER(MaterialsList::GRASS);
     REGISTER(MaterialsList::DIRT);
@@ -201,7 +182,7 @@ void InitMaterials() {
         } else if (type == PhysicsType::GAS) {
             dens = 3 + (rand() % 1000) / 1000.0;
         }
-        randMats[i] = Material(GameData::materials_count++, buff, buff, type, 10, type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens, rand() % 4 + 1, 0, 0, rgb);
+        randMats[i] = Material(GameData::materials_count++, buff, buff, (PhysicsType)type, 10, type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens, rand() % 4 + 1, 0, 0, rgb);
         REGISTER(randMats[i]);
     }
 
@@ -274,24 +255,40 @@ void InitMaterials() {
     GameData::materials_container[MaterialsList::GOLD_MOLTEN.id]->nReactions = 1;
     GameData::materials_container[MaterialsList::GOLD_MOLTEN.id]->reactions.push_back({REACT_TEMPERATURE_BELOW, 128, MaterialsList::GOLD_SOLID.id});
 
-    global.GameData_.materials_array = GameData::materials_container.data();
+    // Test materials
+    MaterialsList::ScriptableMaterials.insert(std::make_pair(1001, Material(GameData::materials_count++, "Test Sand", "TEST_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0)));
+    MaterialsList::ScriptableMaterials.insert(std::make_pair(1002, Material(GameData::materials_count++, "Test Textured Sand", "TEST_TEXTURED_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0)));
+    MaterialsList::ScriptableMaterials.insert(std::make_pair(1003, Material(GameData::materials_count++, "Test Liquid", "TEST_LIQUID", PhysicsType::SOUP, 0, 255, 1.5, 4, 0, 0)));
 
-#undef REGISTER
+    REGISTER(MaterialsList::ScriptableMaterials[1001]);
+    REGISTER(MaterialsList::ScriptableMaterials[1002]);
+    REGISTER(MaterialsList::ScriptableMaterials[1003]);
 
     // Just test
     // MetaEngine::StaticRefl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
 }
 
-int MaterialInstance::_curID = 1;
+void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color) {
+    MaterialsList::ScriptableMaterials.insert(
+            std::make_pair(s_id, Material(GameData::materials_count++, name, index_name, (PhysicsType)physicsType, slipperyness, alpha, density, iterations, emit, emitColor, color)));
+    REGISTER(MaterialsList::ScriptableMaterials[s_id]);
+}
+
+void PushMaterials() {
+    for (auto &[id, m] : MaterialsList::ScriptableMaterials) {
+        m.is_scriptable = true;
+    }
+    global.GameData_.materials_array = GameData::materials_container.data();
+}
+
+#undef REGISTER
 
 MaterialInstance::MaterialInstance(Material *mat, U32 color, I32 temperature) {
-    this->id = _curID++;
+    // this->id = _curID++;
     this->mat = mat;
     this->color = color;
     this->temperature = temperature;
 }
-
-bool MaterialInstance::operator==(const MaterialInstance &other) { return this->id == other.id; }
 
 MaterialInstance Tiles_NOTHING = MaterialInstance(&MaterialsList::GENERIC_AIR, 0x000000);
 MaterialInstance Tiles_TEST_SOLID = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000);
@@ -304,7 +301,7 @@ MaterialInstance TilesCreateTestSand() {
     U32 rgb = 220;
     rgb = (rgb << 8) + 155 + rand() % 30;
     rgb = (rgb << 8) + 100;
-    return MaterialInstance(&MaterialsList::TEST_SAND, rgb);
+    return MaterialInstance(&MaterialsList::ScriptableMaterials[1001], rgb);
 }
 
 MaterialInstance TilesCreateTestTexturedSand(int x, int y) {
@@ -314,14 +311,14 @@ MaterialInstance TilesCreateTestTexturedSand(int x, int y) {
     int ty = y % tex->h;
 
     U32 rgb = R_GET_PIXEL(tex, tx, ty);
-    return MaterialInstance(&MaterialsList::TEST_TEXTURED_SAND, rgb);
+    return MaterialInstance(&MaterialsList::ScriptableMaterials[1002], rgb);
 }
 
 MaterialInstance TilesCreateTestLiquid() {
     U32 rgb = 0;
     rgb = (rgb << 8) + 0;
     rgb = (rgb << 8) + 255;
-    return MaterialInstance(&MaterialsList::TEST_LIQUID, rgb);
+    return MaterialInstance(&MaterialsList::ScriptableMaterials[1003], rgb);
 }
 
 MaterialInstance TilesCreateStone(int x, int y) {
@@ -475,11 +472,11 @@ MaterialInstance TilesCreateFire() {
 }
 
 MaterialInstance TilesCreate(Material *mat, int x, int y) {
-    if (mat->id == MaterialsList::TEST_SAND.id) {
+    if (mat->id == MaterialsList::ScriptableMaterials[1001].id) {
         return TilesCreateTestSand();
-    } else if (mat->id == MaterialsList::TEST_TEXTURED_SAND.id) {
+    } else if (mat->id == MaterialsList::ScriptableMaterials[1002].id) {
         return TilesCreateTestTexturedSand(x, y);
-    } else if (mat->id == MaterialsList::TEST_LIQUID.id) {
+    } else if (mat->id == MaterialsList::ScriptableMaterials[1003].id) {
         return TilesCreateTestLiquid();
     } else if (mat->id == MaterialsList::STONE.id) {
         return TilesCreateStone(x, y);
@@ -552,6 +549,22 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
     }
 
     return MaterialInstance(mat, mat->color);
+}
+
+MaterialInstance TilesCreate(int id, int x, int y) {
+    for (auto &[i, m] : MaterialsList::ScriptableMaterials) {
+        if (i == id) {
+            C_Surface *tex = global.game->GameIsolate_.texturepack->flatCobbleDirt->surface;
+
+            int tx = (tex->w + (x % tex->w)) % tex->w;
+            int ty = (tex->h + (y % tex->h)) % tex->h;
+
+            U32 rgb = R_GET_PIXEL(tex, tx, ty);
+
+            return MaterialInstance(&m, rgb);
+        }
+    }
+    return TilesCreateStone(x, y);
 }
 
 #pragma endregion Material

@@ -164,6 +164,8 @@ struct Material {
     F32 conductionSelf = 1.0;
     F32 conductionOther = 1.0;
 
+    bool is_scriptable = false;
+
     bool interact = false;
     int *nInteractions = nullptr;
 
@@ -176,14 +178,14 @@ struct Material {
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
-    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor)
-        : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff){};
-    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations)
-        : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, 0, 0){};
-    Material(int id, std::string name, std::string index_name, int physicsType, int slipperyness, F32 density, int iterations)
-        : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations){};
-    Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0){};
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor)
+        : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff) {}
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations)
+        : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, 0, 0) {}
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, F32 density, int iterations)
+        : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations) {}
+    Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0) {}
 };
 
 template <>
@@ -193,6 +195,7 @@ struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
             Field{TSTR("name"), &Material::name},
             Field{TSTR("index_name"), &Material::index_name},
             Field{TSTR("id"), &Material::id},
+            Field{TSTR("is_scriptable"), &Material::is_scriptable},
             Field{TSTR("physicsType"), &Material::physicsType},
             Field{TSTR("alpha"), &Material::alpha},
             Field{TSTR("density"), &Material::density},
@@ -221,6 +224,7 @@ MetaEngine::StaticRefl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, aut
 METAENGINE_GUI_DEFINE_END
 
 struct MaterialsList {
+    static std::unordered_map<int, Material> ScriptableMaterials;
     static Material GENERIC_AIR;
     static Material GENERIC_SOLID;
     static Material GENERIC_SAND;
@@ -228,9 +232,6 @@ struct MaterialsList {
     static Material GENERIC_GAS;
     static Material GENERIC_PASSABLE;
     static Material GENERIC_OBJECT;
-    static Material TEST_SAND;
-    static Material TEST_TEXTURED_SAND;
-    static Material TEST_LIQUID;
     static Material STONE;
     static Material GRASS;
     static Material DIRT;
@@ -255,11 +256,11 @@ struct MaterialsList {
 };
 
 void InitMaterials();
+void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
+void PushMaterials();
 
 class MaterialInstance {
 public:
-    static int _curID;
-
     Material *mat;
     U32 color;
     I32 temperature;
@@ -272,7 +273,7 @@ public:
     MaterialInstance(Material *mat, U32 color, I32 temperature);
     MaterialInstance(Material *mat, U32 color) : MaterialInstance(mat, color, 0){};
     MaterialInstance() : MaterialInstance(&MaterialsList::GENERIC_AIR, 0x000000, 0){};
-    bool operator==(const MaterialInstance &other);
+    inline bool operator==(const MaterialInstance &other) { return this->mat->id == other.mat->id; }
 };
 
 template <>
@@ -313,6 +314,7 @@ MaterialInstance TilesCreateObsidian(int x, int y);
 MaterialInstance TilesCreateSteam();
 MaterialInstance TilesCreateFire();
 MaterialInstance TilesCreate(Material *mat, int x, int y);
+MaterialInstance TilesCreate(int id, int x, int y);
 
 #pragma endregion Material
 

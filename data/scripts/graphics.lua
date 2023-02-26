@@ -31,8 +31,6 @@ InitGraphics = function()
     --     test.textures_load(t, path);
     -- }
 
-    materials_init();
-
     logoSfc = LoadTextureData("data/assets/ui/logo.png")
     title = R_CopyImageFromSurface(GetSurfaceFromTexture(logoSfc))
     R_SetImageFilter(title, 0)

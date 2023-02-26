@@ -88,112 +88,6 @@ time_t metadot_gettime_mkgmtime(struct tm *unixdate) {
     return fakeUnixtime - nOffSet * 3600;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-Timer::Timer() : myOffSet(GetTime()), myPause(false), myPauseTime(0), myLastUpdate(0) { METADOT_ASSERT_E(sizeof(I64) == 8); }
-
-//.............................................................................
-
-Timer::~Timer() {}
-
-///////////////////////////////////////////////////////////////////////////////
-
-Timer &Timer::operator=(const Timer &other) {
-    // BUGBUG	Does not work because the myBaseTimer might be different from
-    //			the one where these where copied
-    myOffSet = other.myOffSet;
-    myPause = other.myPause;
-    myPauseTime = other.myPauseTime;
-    myLastUpdate = other.myLastUpdate;
-
-    return *this;
-}
-
-//=============================================================================
-
-Timer Timer::operator-(const Timer &other) { return (Timer(*this) -= (other)); }
-
-//=============================================================================
-
-Timer Timer::operator-(Timer::Ticks time) { return (Timer(*this) -= (time)); }
-
-//=============================================================================
-
-Timer &Timer::operator-=(const Timer &other) { return operator-=(other.GetTime()); }
-
-//=============================================================================
-
-Timer &Timer::operator-=(Timer::Ticks time) {
-    myOffSet += time;
-    myPauseTime -= time;
-    return *this;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void Timer::SetTime(Timer::Ticks time) {
-    myOffSet = (I64)GetTime() - (I64)time;
-    myPauseTime = time;
-}
-
-//=============================================================================
-
-Timer::Ticks Timer::GetTime() const {
-    if (myPause) {
-        if (myPauseTime < 0) return 0;
-
-        return (Timer::Ticks)myPauseTime;
-    }
-
-    if ((unsigned)myOffSet > GetTime()) return 0;
-
-    return (GetTime() - (Timer::Ticks)myOffSet);
-}
-
-//.............................................................................
-
-float Timer::GetSeconds() const { return ((float)GetTime() / 1000.0f); }
-
-//.............................................................................
-
-Timer::Ticks Timer::GetDerivate() const { return (GetTime() - myLastUpdate); }
-
-//.............................................................................
-
-float Timer::GetDerivateSeconds() const { return ((float)GetDerivate() / 1000.0f); }
-
-//.............................................................................
-
-void Timer::Updated() { myLastUpdate = GetTime(); }
-
-//.............................................................................
-
-void Timer::Pause() {
-    if (myPause == false) {
-        myPauseTime = GetTime();
-        myPause = true;
-    }
-}
-
-//.............................................................................
-
-void Timer::Resume() {
-    if (myPause == true) {
-        myPause = false;
-        SetTime((Timer::Ticks)myPauseTime);
-        // myOffSet += ( GetTime() - myPauseTime );
-    }
-}
-
-//.............................................................................
-
-void Timer::Reset() {
-    // myPause = false;
-    myPauseTime = 0;
-    myOffSet = GetTime();
-    myLastUpdate = 0;
-}
-
 namespace SUtil {
 const int *utf8toCodePointsArray(const char *c, int *length) {
     // todo use something better than std::vector
@@ -620,4 +514,28 @@ int StringCompareEqualCaseInsensitive(char *stringA, char *stringB) {
 
     // Check if B ends in the same point as A, if not B contains A, but is longer than A
     return isEqual ? (stringB[i] == '\0' ? 1 : 0) : 0;
+}
+
+void Timer::start() {
+    m_StartTime = std::chrono::steady_clock::now();
+    m_bRunning = true;
+}
+
+double Timer::elapsedMilliseconds() {
+    std::chrono::time_point<std::chrono::steady_clock> endTime;
+
+    if (m_bRunning) {
+        endTime = std::chrono::steady_clock::now();
+    } else {
+        endTime = m_EndTime;
+    }
+
+    return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - m_StartTime).count();
+}
+
+double Timer::elapsedSeconds() { return elapsedMilliseconds() / 1000.0; }
+
+void Timer::stop() {
+    m_EndTime = std::chrono::steady_clock::now();
+    m_bRunning = false;
 }

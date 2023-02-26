@@ -61,6 +61,10 @@ OnGameEngineLoad = function()
     InitECS()
     InitFont()
     controls_init()
+
+    materials_init()
+    materials_push()
+    
     OnEntitiesTypeLoad()
 end
 

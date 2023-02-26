@@ -486,60 +486,15 @@ time_t metadot_gettime_mkgmtime(struct tm* unixdate);
 
 class Timer {
 public:
-    typedef U32 Ticks;
+    void start();
+    void stop();
+    double elapsedMilliseconds();
+    double elapsedSeconds();
 
-    Timer();
-    virtual ~Timer();
-
-    virtual Timer& operator=(const Timer& other);
-    virtual Timer operator-(const Timer& other);
-    virtual Timer operator-(Ticks time);
-    virtual Timer& operator-=(const Timer& other);
-    virtual Timer& operator-=(Ticks time);
-
-    //! Returns the time in ms (int)
-    virtual Ticks GetTime() const;
-
-    //! Returns the time in seconds (float)
-    virtual float GetSeconds() const;
-
-    //! Returns a time the time step, between the moment now and the last
-    //! time Updated was called
-    //! returns ms ( int )
-    /*!
-        This is useful in some
-    */
-    virtual Ticks GetDerivate() const;
-
-    //! Returns the same thing as GetDerivate \sa GetDerivate()
-    virtual float GetDerivateSeconds() const;
-
-    //! called to reset the last updated, used with
-    //! GetDerivate() and GetDerivateInSeconds()
-    //! \sa GetDerivate()
-    //! \sa GetDerivateInSeconds()
-    virtual void Updated();
-
-    //! Pauses the timer, so nothing is runnning
-    virtual void Pause();
-
-    //! Resumes the timer from a pause
-    virtual void Resume();
-
-    //! Resets the timer, starting from 0 ms
-    virtual void Reset();
-
-    //! Sets the time to the given time
-    virtual void SetTime(Ticks time);
-
-    //! tells us if something is paused
-    virtual bool IsPaused() const { return myPause; }
-
-protected:
-    I64 myOffSet;
-    I64 myPauseTime;
-    bool myPause;
-    Ticks myLastUpdate;
+private:
+    std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
+    std::chrono::time_point<std::chrono::steady_clock> m_EndTime;
+    bool m_bRunning = false;
 };
 
 namespace SUtil {

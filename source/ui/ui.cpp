@@ -248,7 +248,10 @@ void UISystem::UIRendererUpdate() {
     // Mouse pos
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
-    auto clear_state = [&]() { uidata->oninput = nullptr; };
+    auto clear_state = [&]() {
+        uidata->oninput = nullptr;
+        uidata->onmoving = nullptr;
+    };
 
     for (auto &&e : uidata->elementLists) {
 
@@ -355,6 +358,9 @@ bool UISystem::UIRendererInput(C_KeyboardEvent event) {
             // TODO fix Chinese input
             // uidata->oninput->text = uidata->oninput->text.substr(0, uidata->oninput->text.length() - (SUtil::is_chinese_c(uidata->oninput->text.back()) ? 2 : 1));
             uidata->oninput->text = uidata->oninput->text.substr(0, uidata->oninput->text.length() - 1);
+            return true;
+        } else if (event.keysym.sym == SDLK_ESCAPE) {
+            uidata->oninput = nullptr;
             return true;
         }
         uidata->oninput->text += ControlSystem::SDLKeyToString(event.keysym.sym);

@@ -98,6 +98,7 @@ typedef struct UIData {
     std::map<std::string, MetaEngine::Ref<UIElement>> elementLists = {};
 
     UIElement* oninput = nullptr;
+    UIElement* onmoving = nullptr;
 } UIData;
 
 class UISystem : public IGameSystem {
