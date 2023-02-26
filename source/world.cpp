@@ -35,15 +35,9 @@
 #include "scripting/scripting.hpp"
 #include "world_generator.cpp"
 
-ThreadPool *WorldSystem::tickPool = nullptr;
-ThreadPool *WorldSystem::tickVisitedPool = nullptr;
-ThreadPool *WorldSystem::updateRigidBodyHitboxPool = nullptr;
-ThreadPool *WorldSystem::loadChunkPool = nullptr;
-
-template <typename R>
-bool is_ready(std::future<R> const &f) {
-    return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
-}
+MetaEngine::ThreadPool WorldSystem::tickPool(16);
+MetaEngine::ThreadPool WorldSystem::tickVisitedPool(16);
+MetaEngine::ThreadPool WorldSystem::updateRigidBodyHitboxPool(16);
 
 void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
 
@@ -58,11 +52,6 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
 
     width = w;
     height = h;
-
-    if (WorldSystem::tickPool == nullptr) METADOT_NEW(C, WorldSystem::tickPool, ThreadPool, 16);
-    if (WorldSystem::loadChunkPool == nullptr) METADOT_NEW(C, WorldSystem::loadChunkPool, ThreadPool, 16);
-    if (WorldSystem::tickVisitedPool == nullptr) METADOT_NEW(C, WorldSystem::tickVisitedPool, ThreadPool, 16);
-    if (WorldSystem::updateRigidBodyHitboxPool == nullptr) METADOT_NEW(C, WorldSystem::updateRigidBodyHitboxPool, ThreadPool, 16);
 
     this->audioEngine = audioEngine;
 
@@ -558,12 +547,12 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         std::vector<std::future<void>> poolResults = {};
 
         if (texture->w > 10) {
-            int nThreads = WorldSystem::updateRigidBodyHitboxPool->n_idle();
+            int nThreads = WorldSystem::updateRigidBodyHitboxPool.n_idle();
             int div = texture->w / nThreads;
             int rem = texture->w % nThreads;
 
             for (int thr = 0; thr < nThreads; thr++) {
-                poolResults.push_back(WorldSystem::updateRigidBodyHitboxPool->push([&, thr, div, rem](int id) {
+                poolResults.push_back(WorldSystem::updateRigidBodyHitboxPool.push([&, thr, div, rem](int id) {
                     int stx = thr * div;
                     int enx = stx + div + (thr == nThreads - 1 ? rem : 0);
 
@@ -1020,7 +1009,7 @@ void World::tick() {
 #endif
 #ifdef DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
-            std::future<void> tickVisitedDone = WorldSystem::tickVisitedPool->push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
+            std::future<void> tickVisitedDone = WorldSystem::tickVisitedPool.push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
 #else
             bool *tickVisited = tickVisited1;
             memset(tickVisited1, false, width * height);
@@ -1030,7 +1019,7 @@ void World::tick() {
                 for (int cy = tickZone.y + chOfsY * CHUNK_H; cy < (tickZone.y + tickZone.h); cy += CHUNK_H * 2) {
 
 #ifdef DO_MULTITHREADING
-                    results.push_back(WorldSystem::tickPool->push([&, cx, cy](int id) {
+                    results.push_back(WorldSystem::tickPool.push([&, cx, cy](int id) {
                         std::vector<CellData *> parts = {};
 
 #else
@@ -2202,8 +2191,8 @@ void World::tickObjects() {
         }
 
         // if (cur->needsUpdate) {
-        //	updateRigidBodyHitbox(cur);
-        //	//continue;
+        // 	updateRigidBodyHitbox(cur);
+        // 	//continue;
         // }
     }
 
@@ -2289,8 +2278,7 @@ void World::frame() {
         // readyToMerge.push_back(fut.get());
         // std::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
 
-        readyToReadyToMerge.push_back(WorldSystem::loadChunkPool->push([&](int id) { return World::loadChunk(getChunk(para.x, para.y), para.populate, true); }));
-        // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
+        readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
 
         // std::thread t(&World::loadChunk, this, para.x, para.y, para.populate);
         // t.join();
@@ -2298,7 +2286,7 @@ void World::frame() {
     }
 
     for (int i = 0; i < readyToReadyToMerge.size(); i++) {
-        if (is_ready(readyToReadyToMerge[i])) {
+        if (MetaEngine::future_is_ready(readyToReadyToMerge[i])) {
             Chunk *merge = readyToReadyToMerge[i].get();
 
             for (int j = 0; j < readyToMerge.size(); j++) {
@@ -2606,9 +2594,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         needToTickGeneration = true;
         */
 
-        readyToReadyToMerge.push_back(WorldSystem::loadChunkPool->push([&, ch](int id) { return World::loadChunk(ch, populate, render); }));
-
-        // readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, ch, populate, render));
+        readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, ch, populate, render));
     }
 
     for (int x = 0; x < CHUNK_W; x++) {
@@ -3475,15 +3461,12 @@ World::~World() {
     }
     cells.clear();
 
-    WorldSystem::tickPool->clear_queue();
-    WorldSystem::loadChunkPool->clear_queue();
-    WorldSystem::tickVisitedPool->clear_queue();
-    WorldSystem::updateRigidBodyHitboxPool->clear_queue();
+    WorldSystem::tickPool.clear_queue();
+    WorldSystem::tickVisitedPool.clear_queue();
+    WorldSystem::updateRigidBodyHitboxPool.clear_queue();
 
     // tickPool->stop(false);
     // delete tickPool;
-    // loadChunkPool->stop(false);
-    // delete loadChunkPool;
     // tickVisitedPool->stop(false);
     // delete tickVisitedPool;
     // updateRigidBodyHitboxPool->stop(false);

@@ -52,10 +52,9 @@ METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
 
 class WorldSystem {
 public:
-    static ThreadPool *tickPool;
-    static ThreadPool *tickVisitedPool;
-    static ThreadPool *updateRigidBodyHitboxPool;
-    static ThreadPool *loadChunkPool;
+    static MetaEngine::ThreadPool tickPool;
+    static MetaEngine::ThreadPool tickVisitedPool;
+    static MetaEngine::ThreadPool updateRigidBodyHitboxPool;
 };
 
 class World {

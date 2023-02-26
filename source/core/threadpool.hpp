@@ -13,11 +13,15 @@
 #include <thread>
 #include <vector>
 
-namespace {
+namespace MetaEngine {
 
-namespace ThreadPoolDetail {
+template <typename R>
+bool future_is_ready(std::future<R> const &f) {
+    return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+}
+
 template <typename T>
-class Queue {
+class ThreadPoolQueue {
 public:
     bool push(T const &value) {
         std::unique_lock<std::mutex> lock(this->mutex);
@@ -41,7 +45,6 @@ private:
     std::queue<T> q;
     std::mutex mutex;
 };
-}  // namespace ThreadPoolDetail
 
 class ThreadPool {
 
@@ -203,7 +206,7 @@ private:
 
     std::vector<std::unique_ptr<std::thread>> threads;
     std::vector<std::shared_ptr<std::atomic<bool>>> flags;
-    ThreadPoolDetail::Queue<std::function<void(int id)> *> q;
+    ThreadPoolQueue<std::function<void(int id)> *> q;
     std::atomic<bool> isDone;
     std::atomic<bool> isStop;
     std::atomic<int> nWaiting;
@@ -212,6 +215,6 @@ private:
     std::condition_variable cv;
 };
 
-}  // namespace
+}  // namespace MetaEngine
 
 #endif

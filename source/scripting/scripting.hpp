@@ -82,8 +82,8 @@ class Scripting : public MetaEngine::CSingleton<Scripting> {
 public:
     LuaCore *Lua;
 
-    Scripting(){};
-    ~Scripting(){};
+    Scripting() { METADOT_BUG("Scriptin CSingleton Init"); };
+    ~Scripting() { METADOT_BUG("Scriptin CSingleton End"); };
 
     void Init();
     void End();

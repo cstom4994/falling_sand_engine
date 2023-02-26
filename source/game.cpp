@@ -169,8 +169,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    METADOT_NEW(C, GameIsolate_.updateDirtyPool, ThreadPool, 4);
-    METADOT_NEW(C, GameIsolate_.updateDirtyPool2, ThreadPool, 2);
+    METADOT_NEW(C, GameIsolate_.updateDirtyPool, MetaEngine::ThreadPool, 4);
+    METADOT_NEW(C, GameIsolate_.updateDirtyPool2, MetaEngine::ThreadPool, 2);
 
     return this->run(argc, argv);
 }

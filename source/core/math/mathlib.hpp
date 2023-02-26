@@ -154,6 +154,9 @@ constexpr T pi = T(3.1415926535897932385L);
 #pragma region NewMATH
 
 namespace NewMaths {
+
+constexpr std::size_t hash_combine(std::size_t l, std::size_t r) noexcept { return l ^ (r + 0x9e3779b9 + (l << 6) + (l >> 2)); }
+
 F32 vec22angle(vec2 v2);
 F32 clamp(F32 input, F32 min, F32 max);
 int rand_range(int min, int max);

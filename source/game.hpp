@@ -101,8 +101,8 @@ public:
         MetaEngine::Scope<World> world;
         TexturePack *texturepack = nullptr;
 
-        ThreadPool *updateDirtyPool = nullptr;
-        ThreadPool *updateDirtyPool2 = nullptr;
+        MetaEngine::ThreadPool *updateDirtyPool = nullptr;
+        MetaEngine::ThreadPool *updateDirtyPool2 = nullptr;
     } GameIsolate_;
 
     struct {

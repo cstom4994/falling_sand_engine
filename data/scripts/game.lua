@@ -16,6 +16,8 @@ require("ecs")
 
 r3d = require("common.r3d")
 
+local gd = game_datastruct
+
 local cubeMesh = { { 0.0, 0.0, 0.0,
                      1.0, 0.0, 0.0,
                      0.0, 0.0, 1.0, 2 },
@@ -80,13 +82,6 @@ OnGameLoad = function(game)
     create_biome("FOREST", 11)
 end
 
--- function OnGameEngineLoad() {
---     test.load_script("data/scripts/graphics.js");
---     test.load_script("data/scripts/audio.js");
-
---     test.controls_init();
--- }
-
 -- function OnImGuiUpdate() {
 --     const runImGui = () => {
 --         try {
@@ -107,29 +102,31 @@ end
 
 OnRender = function()
 
-    local currentDemo = 2
-    local rotationScale = 0.03
-    local xRotation, yRotation = 0, 0.5
-    local cameraDistance = 10
-    local cameraDistanceScale = 0.2
+    if gd.render.test == 1 then
+        local currentDemo = 2
+        local rotationScale = 0.03
+        local xRotation, yRotation = 0, 0.5
+        local cameraDistance = 10
+        local cameraDistanceScale = 0.2
 
-    local curTime = os.clock()
-    local triangles = {}
+        local curTime = os.clock()
+        local triangles = {}
 
-    for i = 1, 10 do
-        local cube = r3d.cloneTs(cubeMesh)
-        r3d.translateTs(cube, -0.5, -0.5, -0.5)
-        r3d.rotateTs(cube, curTime * 0.2, curTime * 1.0, curTime * 1.0)
-        r3d.translateTs(cube, (i - 5) *  1.5, math.sin(curTime + i), 0)
-        r3d.concatTs(triangles, cube, true)
+        for i = 1, 10 do
+            local cube = r3d.cloneTs(cubeMesh)
+            r3d.translateTs(cube, -0.5, -0.5, -0.5)
+            r3d.rotateTs(cube, curTime * 0.2, curTime * 1.0, curTime * 1.0)
+            r3d.translateTs(cube, (i - 5) *  1.5, math.sin(curTime + i), 0)
+            r3d.concatTs(triangles, cube, true)
+        end
+
+        r3d.rotateTs(triangles, 0, 0, xRotation)
+        r3d.rotateTs(triangles, yRotation + math.pi / 2, 0, 0)
+        r3d.translateTs(triangles, 0, 0, cameraDistance)
+    
+        -- gpu.clear(0)
+        r3d.drawTs(triangles)
     end
-
-    r3d.rotateTs(triangles, 0, 0, xRotation)
-    r3d.rotateTs(triangles, yRotation + math.pi / 2, 0, 0)
-    r3d.translateTs(triangles, 0, 0, cameraDistance)
-  
-    -- gpu.clear(0)
-    r3d.drawTs(triangles)
 
 end
 
