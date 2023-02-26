@@ -54,6 +54,29 @@ local M = {
 	end,
 }
 
+local defaults = { indent = "\t", eol="\n", assign=" = ", }
+
+-- for inline use indent="" eol=" " assign="="
+local function internal_mini_dump(t, lvl, cfg)
+	lvl = lvl or 0
+	if type(t) == "table" then
+		local r={}
+		r[#r+1]="{"
+		lvl=lvl+1
+		for k,v in pairs(t) do
+			r[#r+1]= (cfg.indent or ""):rep(lvl).."["..internal_mini_dump(k,lvl,cfg).."]"..(cfg.assign or "=")..internal_mini_dump(v,lvl,cfg)..","
+		end
+		lvl=lvl-1
+		r[#r+1]=(cfg.indent or ""):rep(lvl).."}"
+		return table.concat(r, (cfg.eol or ""))
+	end
+	if type(t) == "string" then
+		--return ("%q"):format(t)
+		return '"'..t:gsub("[\"\\]", function(cap) return "\\"..cap end)..'"'
+	end
+	return tostring(t)
+end
+
 local function doublequote_dump_string(s, nonprintable_pat, nonprintable_names)
 	nonprintable_pat = nonprintable_pat or "[%z\1-\31\127-\255]"
 	nonprintable_names = nonprintable_names or {["\0"]="0", ["\a"]="a", ["\b"]="b", ["\t"]="t", ["\n"]="n", ["\v"]="v", ["\f"]="f", ["\r"]="r",}
@@ -71,7 +94,7 @@ end
 local insert = assert(table.insert)
 local concat = assert(table.concat)
 
-local function internal_tprint(t, lvl, cfg)
+local function internal_dump(t, lvl, cfg)
 	lvl = lvl or 0
 	cfg = cfg or {}
 
@@ -111,7 +134,7 @@ local function internal_tprint(t, lvl, cfg)
 					--	foo="FOO",
 					--	AST: `Pair{ `String{ "foo" }, `String{ "FOO" } }
 				else
-					line = "["..internal_tprint(k,lvl,cfg).."]"..assign
+					line = "["..internal_dump(k,lvl,cfg).."]"..assign
 					--	["foo"]="FOO",
 					--	AST: `Pair{ `String{ "foo" }, `String{ "FOO" } }
 					-- or
@@ -119,7 +142,7 @@ local function internal_tprint(t, lvl, cfg)
 					--	AST: `Pair{ `Number{ 1 }, `Id{ "one" } }
 				end
 				-- the content value
-				insert(r, (indent):rep(lvl) .. line .. internal_tprint(v,lvl,cfg))
+				insert(r, (indent):rep(lvl) .. line .. internal_dump(v,lvl,cfg))
 			end
 		end
 		lvl=lvl-1 -- dedent
@@ -141,7 +164,7 @@ local function internal_tprint(t, lvl, cfg)
 	end
 	return tostring(t)
 end
-local function pub_tprint(t, cfg)
+local function pub_dump(t, cfg)
 	local inline
 	if type(cfg)=="table" then
 		inline = cfg.inline
@@ -157,7 +180,13 @@ local function pub_tprint(t, cfg)
 	end
 	cfg = setmetatable(cfg, {__index=M})
 	cfg.seen = cfg.seen or {}
-	return internal_tprint(t, nil, cfg)
+	return internal_dump(t, nil, cfg)
 end
---return setmetatable(M, {__call=function(_, ...) return pub_tprint(...) end})
-return pub_tprint
+
+local function mini_dump(t, cfg)
+	cfg = cfg or {}
+	setmetatable(cfg, {__index=defaults})
+	return internal_mini_dump(t, nil, cfg)
+end
+
+return pub_dump

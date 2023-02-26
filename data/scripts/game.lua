@@ -100,6 +100,10 @@ OnGameTickUpdate = function()
     -- world:update()
 end
 
+OnUpdate = function()
+    -- world:update()
+end
+
 OnRender = function()
 
     if gd.render.test == 1 then

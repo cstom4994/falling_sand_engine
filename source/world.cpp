@@ -45,10 +45,12 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
 
     this->worldName = worldPath;
 
-    std::filesystem::create_directories(worldPath);
-    if (!noSaveLoad) std::filesystem::create_directories(worldPath + "/chunks");
+    if (!noSaveLoad) {
+        std::filesystem::create_directories(worldPath);
+        std::filesystem::create_directories(worldPath + "/chunks");
+    }
 
-    metadata = WorldMeta::loadWorldMeta(this->worldName);
+    metadata = WorldMeta::loadWorldMeta(this->worldName, noSaveLoad);
 
     width = w;
     height = h;
@@ -1405,7 +1407,7 @@ void World::tick() {
                                     tiles[index] = tile;
 
                                     // active[index] = true;
-                                    MaterialInstance belowTile = tiles[(x)+(y + 1) * width];
+                                    MaterialInstance belowTile = tiles[(x) + (y + 1) * width];
                                     int below = belowTile.mat->physicsType;
 
                                     // if(tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < global.GameData_.materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
@@ -3370,47 +3372,45 @@ void World::saveWorld() {
     }
 }
 
-WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName) {
+WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
 
     WorldMeta meta = WorldMeta();
 
-    // auto L = Scripts::GetSingletonPtr()->LuaCoreCpp;
-
-    char *metaFilePath = new char[255];
-    snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
-
-    if (!FUtil_exists(METADOT_RESLOC(metaFilePath))) {
-        meta.save(worldFileName);
-    }
-
-    // L->s_lua.dofile(metaFilePath);
-    // LuaWrapper::LuaFunction LoadWorldMeta = L->s_lua["LoadWorldMeta"];
-    // LuaWrapper::LuaTable luat = LoadWorldMeta();
-
     using json = MetaEngine::Json::Json;
 
-    json metafile = json::parse(metadot_fs_readfilestring(metaFilePath));
+    if (!noSaveLoad) {
 
-    if (!metafile.empty()) {
+        char *metaFilePath = new char[255];
+        snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
 
-        json root = metafile["metadata"];
+        if (!FUtil_exists(METADOT_RESLOC(metaFilePath))) {
+            meta.save(worldFileName);
+        }
+
+        json metafile = json::parse(metadot_fs_readfilestring(metaFilePath));
+
+        if (!metafile.empty()) {
+
+            json root = metafile["metadata"];
+
+            meta.worldName = root["worldName"].to<std::string>();
+            meta.lastOpenedVersion = root["lastOpenedVersion"].to<std::string>();
+            meta.lastOpenedTime = root["lastOpenedTime"].to<int>();
+
+            METADOT_INFO("Load World (%s %s %d)", meta.worldName.c_str(), meta.lastOpenedVersion.c_str(), meta.lastOpenedTime);
+        } else {
+            METADOT_BUG("FP WAS NULL");
+        }
+
+        delete[] metaFilePath;
+    } else {
+        json root;
+        root = root["metadata"];
 
         meta.worldName = root["worldName"].to<std::string>();
         meta.lastOpenedVersion = root["lastOpenedVersion"].to<std::string>();
         meta.lastOpenedTime = root["lastOpenedTime"].to<int>();
-
-        // LoadLuaConfig((&meta), luat, worldName);
-        // LoadLuaConfig((&meta), luat, lastOpenedVersion);
-        // LoadLuaConfig((&meta), luat, lastOpenedTime);
-
-        // LoadLuaConfig(meta, &a);
-
-        METADOT_INFO("Load World (%s %s %d)", meta.worldName.c_str(), meta.lastOpenedVersion.c_str(), meta.lastOpenedTime);
-    } else {
-        METADOT_BUG("FP WAS NULL");
     }
-
-    delete[] metaFilePath;
 
     return meta;
 }

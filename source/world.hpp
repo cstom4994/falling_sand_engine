@@ -45,7 +45,8 @@ struct WorldMeta {
     std::string lastOpenedVersion;
     time_t lastOpenedTime = 0;
 
-    static WorldMeta loadWorldMeta(std::string worldFileName);
+    static WorldMeta loadWorldMeta(std::string worldFileName, bool noSaveLoad = false);
+    
     bool save(std::string worldFileName);
 };
 METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);

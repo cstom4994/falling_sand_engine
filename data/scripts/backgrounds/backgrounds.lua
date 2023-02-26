@@ -1,4 +1,5 @@
 local cstruct = require("common.cstruct")
+local dump = require("common.dump")
 
 local backgroundlayer_cstruct = [[
 
@@ -28,10 +29,11 @@ OnBackgroundLoad = function()
     }
 
     local TEST_ROOM = {
-        -- { name = "data/assets/backgrounds/TestRoom/testTile.png", p1 = 0.125, p2 = 0.125, x1 = 0, x2 = 0 },
+        { name = "data/assets/backgrounds/TestRoom/testTile.png", p1 = 0.125, p2 = 0.125, x1 = 0, x2 = 0 },
     }
 
-    -- 0x7EAFCB
-    NewBackgroundObject("TEST_OVERWORLD", 8302539, TEST_OVERWORLD)
+    NewBackgroundObject("TEST_OVERWORLD", 8302539, TEST_OVERWORLD) -- 0x7EAFCB
     NewBackgroundObject("TEST_ROOM", tonumber("AAAAAA", 16), TEST_ROOM)
+
+    print(dump(TEST_OVERWORLD))
 end

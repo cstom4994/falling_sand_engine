@@ -132,8 +132,7 @@ end
 
 
 include_dir_list = {
-	"source",
-	"source/libs/antlr4"
+	"source"
 }
 
 defines_list = {}
@@ -170,7 +169,7 @@ do
 	add_links(link_list)
 	add_deps("MetaDotLibs")
 
-	add_files("source/*.c")
+	-- add_files("source/*.c")
 	add_files("source/*.cpp")
 
 	if is_os("macosx") then
@@ -180,18 +179,13 @@ do
 	add_files("source/core/**.c")
 	add_files("source/core/**.cpp")
 	add_files("source/event/**.cpp")
-	add_files("source/ecs/**.cpp")
 	add_files("source/game_utils/**.cpp")
 	add_files("source/internal/**.c")
-	add_files("source/internal/**.cpp")
 	add_files("source/physics/**.cpp")
-	add_files("source/network/**.cpp")
 	add_files("source/audio/**.cpp")
 	add_files("source/meta/*.cpp")
-	add_files("source/ui/**.c")
 	add_files("source/ui/**.cpp")
 	add_files("source/engine/**.cpp")
-	add_files("source/renderer/**.c")
 	add_files("source/renderer/**.cpp")
 	add_files("source/scripting/**.c")
 	add_files("source/scripting/**.cpp")

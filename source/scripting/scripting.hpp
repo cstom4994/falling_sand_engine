@@ -74,9 +74,6 @@ struct LuaCore {
 void print_error(lua_State *state, int result = 0);
 void RunScriptInConsole(const char *c);
 void RunScriptFromFile(const char *filePath);
-lua_State *createConfigInstance(const char *filename);
-lua_State *createLuaInstance(const char *filename, const char *innerFilename);
-void shutdownInstance(lua_State *L);
 
 class Scripting : public MetaEngine::CSingleton<Scripting> {
 public:
