@@ -17,8 +17,8 @@
 #include "core/alloc.hpp"
 #include "core/const.h"
 #include "core/core.hpp"
-#include "core/stl/list.h"
 #include "core/math/mathlib.hpp"
+#include "core/stl/list.h"
 // #include "scripting/lua/lua_wrapper.hpp"
 #include "libs/cJSON.h"
 // #include "sdl_wrapper.h"
@@ -551,6 +551,14 @@ inline std::string ws2s(const std::wstring& wstr) {
     std::wstring_convert<convert_typeX, wchar_t> converterX;
 
     return converterX.to_bytes(wstr);
+}
+
+inline bool is_chinese_c(const char str) { return str & 0x80; }
+
+inline bool is_chinese_str(const std::string& str) {
+    for (int i = 0; i < str.length(); i++)
+        if (is_chinese_c(str[i])) return true;
+    return false;
 }
 
 inline bool equals(const char* a, const char* c) { return strcmp(a, c) == 0; }

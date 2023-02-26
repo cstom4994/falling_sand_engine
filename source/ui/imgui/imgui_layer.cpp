@@ -1335,11 +1335,7 @@ void ImGuiLayer::Init() {
 
         console_imgui->System().RegisterVariable("tps", Time.maxTps, Command::Arg<U32>(""));
 
-        console_imgui->System().Log(Command::ItemType::INFO) << "Welcome to the console!" << Command::endl;
-        console_imgui->System().Log(Command::ItemType::INFO) << "The following variables have been exposed to the console:" << Command::endl << Command::endl;
-        console_imgui->System().Log(Command::ItemType::INFO) << "\tbackground_color - set: [int int int int]" << Command::endl;
-        console_imgui->System().Log(Command::ItemType::INFO) << Command::endl << "Try running the following command:" << Command::endl;
-        console_imgui->System().Log(Command::ItemType::INFO) << "\tset background_color [255 0 0 255]" << Command::endl << Command::endl;
+        console_imgui->System().Log(Command::ItemType::INFO) << "游戏控制终端" << Command::endl;
     };
 
     create_console();

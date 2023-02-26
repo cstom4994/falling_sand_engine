@@ -7,7 +7,9 @@
 #include <string>
 
 #include "core/cpp/stl.hpp"
+#include "core/global.hpp"
 #include "core/sdl_wrapper.h"
+#include "game.hpp"
 
 std::vector<MetaEngine::Ref<KeyControl>> ControlSystem::keyControls = {};
 std::map<std::string, int> ControlSystem::SDLKeymap = {};
@@ -46,6 +48,9 @@ int ControlSystem::mouse_x = 0;
 int ControlSystem::mouse_y = 0;
 
 void ControlSystem::KeyEvent(C_KeyboardEvent event) {
+
+    if (global.game->GameIsolate_.ui->UIRendererInput(event)) return;
+
     for (auto &v : keyControls) {
         if (v->key == event.keysym.sym) {
 

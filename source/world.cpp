@@ -1404,11 +1404,9 @@ void World::tick() {
 
                                     tiles[index] = tile;
 
-                                    // OLD:
-
                                     // active[index] = true;
-                                    // MaterialInstance belowTile = tiles[(x)+(y + 1) * width];
-                                    // int below = belowTile.mat->physicsType;
+                                    MaterialInstance belowTile = tiles[(x)+(y + 1) * width];
+                                    int below = belowTile.mat->physicsType;
 
                                     // if(tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < global.GameData_.materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
                                     //     for(int i = 0; i < tile.mat->nInteractions[belowTile.mat->id]; i++) {
@@ -1463,25 +1461,25 @@ void World::tick() {
                                     //     if(react) continue;
                                     // }
 
-                                    ///*if (tile.mat->id == Materials::WATER.id && belowTile.mat->id == Materials::LAVA.id) {
-                                    //    tiles[index] = TilesCreateSteam();
-                                    //    dirty[index] = true;
-                                    //    tiles[(x)+(y + 1) * width] = TilesCreateObsidian(x, y + 1);
-                                    //    dirty[(x)+(y + 1) * width] = true;
-                                    //    tickVisited[(x)+(y + 1) * width] = true;
+                                    if (tile.mat->id == MaterialsList::WATER.id && belowTile.mat->id == MaterialsList::LAVA.id) {
+                                        tiles[index] = TilesCreateSteam();
+                                        dirty[index] = true;
+                                        tiles[(x) + (y + 1) * width] = TilesCreateObsidian(x, y + 1);
+                                        dirty[(x) + (y + 1) * width] = true;
+                                        tickVisited[(x) + (y + 1) * width] = true;
 
-                                    //    for (int xx = -1; xx <= 1; xx++) {
-                                    //        for (int yy = 0; yy <= 2; yy++) {
-                                    //            if (tiles[(x + xx) + (y + yy) * width].mat->id == Materials::LAVA.id) {
-                                    //                tiles[(x + xx) + (y + yy) * width] = TilesCreateObsidian(x + xx, y + yy);
-                                    //                dirty[(x + xx) + (y + yy) * width] = true;
-                                    //                tickVisited[(x + xx) + (y + yy) * width] = true;
-                                    //            }
-                                    //        }
-                                    //    }
+                                        for (int xx = -1; xx <= 1; xx++) {
+                                            for (int yy = 0; yy <= 2; yy++) {
+                                                if (tiles[(x + xx) + (y + yy) * width].mat->id == MaterialsList::LAVA.id) {
+                                                    tiles[(x + xx) + (y + yy) * width] = TilesCreateObsidian(x + xx, y + yy);
+                                                    dirty[(x + xx) + (y + yy) * width] = true;
+                                                    tickVisited[(x + xx) + (y + yy) * width] = true;
+                                                }
+                                            }
+                                        }
 
-                                    //    continue;
-                                    //}*/
+                                        continue;
+                                    }
 
                                     // bool canMoveBelow = (below == PhysicsType::AIR || (below != PhysicsType::SOLID && belowTile.mat->density < tile.mat->density));
                                     // if(!canMoveBelow) continue;

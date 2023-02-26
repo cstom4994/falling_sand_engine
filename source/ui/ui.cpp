@@ -20,31 +20,31 @@
 IMPLENGINE();
 
 // Color definitions
-vec3 bgPanelColor = {0.02, 0.02, 0.05};
-vec3 bgLightColor = {0.2, 0.2, 0.35};
-vec3 bgMediumColor = {0.1, 0.1, 0.15};
+METAENGINE_Color bgPanelColor = {0.02, 0.02, 0.05};
+METAENGINE_Color bgLightColor = {0.2, 0.2, 0.35};
+METAENGINE_Color bgMediumColor = {0.1, 0.1, 0.15};
 
-vec3 fieldColor = {0.2, 0.2, 0.2};
-vec3 fieldEditingColor = {0.3, 0.3, 0.3};
-vec3 buttonOverColor = {0.3, 0.3, 0.4};
+METAENGINE_Color fieldColor = {0.2, 0.2, 0.2};
+METAENGINE_Color fieldEditingColor = {0.3, 0.3, 0.3};
+METAENGINE_Color buttonOverColor = {0.3, 0.3, 0.4};
 
-vec3 scrollbarInactiveColor = {0.3, 0.3, 0.3};
-vec3 scrollbarOverColor = {0.5, 0.5, 0.5};
+METAENGINE_Color scrollbarInactiveColor = {0.3, 0.3, 0.3};
+METAENGINE_Color scrollbarOverColor = {0.5, 0.5, 0.5};
 
-vec3 menuTabColor = {0.05, 0.05, 0.10};
-vec3 menuActiveTabColor = {0.15, 0.15, 0.2};
+METAENGINE_Color menuTabColor = {0.05, 0.05, 0.10};
+METAENGINE_Color menuActiveTabColor = {0.15, 0.15, 0.2};
 
-vec3 brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
-vec3 lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
+METAENGINE_Color brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
+METAENGINE_Color lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 
 void UISystem::UIRendererInit() {
     // UIData
     METADOT_INFO("Loading UIData");
-    global.game->GameIsolate_.ui->uidata = new UIData;
+    uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    METADOT_NEW(C, global.game->GameIsolate_.ui->uidata->imgui, ImGuiLayer);
-    global.game->GameIsolate_.ui->uidata->imgui->Init();
+    uidata->imgui = MetaEngine::CreateRef<ImGuiLayer>();
+    uidata->imgui->Init();
 
     // Test element drawing
     auto testElement1 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
@@ -86,18 +86,42 @@ void UISystem::UIRendererInit() {
     auto testElement5 = MetaEngine::CreateRef<UIElement>(
             UIElement{.type = ElementType::texturedRectangle, .parent = testElement1, .x = 40, .y = 20, .w = 100, .h = 50, .state = 0, .color = {}, .texture = LoadTexture("data/assets/ui/logo.png")});
 
-    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
-    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
-    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement3", testElement3));
-    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
-    global.game->GameIsolate_.ui->uidata->elementLists.insert(std::make_pair("testElement5", testElement5));
+    auto testElement6 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::inputBoxElement,
+                                                                   .parent = testElement1,
+                                                                   .x = 40,
+                                                                   .y = 80,
+                                                                   .w = 60,
+                                                                   .h = 20,
+                                                                   .state = 0,
+                                                                   .color = {54, 54, 54, 255},
+                                                                   .text = "编辑框1",
+                                                                   .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
+
+    auto testElement7 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::inputBoxElement,
+                                                                   .parent = testElement1,
+                                                                   .x = 40,
+                                                                   .y = 105,
+                                                                   .w = 60,
+                                                                   .h = 20,
+                                                                   .state = 0,
+                                                                   .color = {54, 54, 54, 255},
+                                                                   .text = "编辑框2",
+                                                                   .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
+
+    uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
+    uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
+    uidata->elementLists.insert(std::make_pair("testElement3", testElement3));
+    uidata->elementLists.insert(std::make_pair("testElement4", testElement4));
+    uidata->elementLists.insert(std::make_pair("testElement5", testElement5));
+    uidata->elementLists.insert(std::make_pair("testElement6", testElement6));
+    uidata->elementLists.insert(std::make_pair("testElement7", testElement7));
 }
 
 void UISystem::UIRendererPostUpdate() {
-    global.game->GameIsolate_.ui->uidata->imgui->NewFrame();
+    uidata->imgui->NewFrame();
     // Update UI layout context
 
-    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
+    for (auto &&e : uidata->elementLists) {
         if (e.second->type == ElementType::windowElement) {
             // layout_set_behave(ctx, child, LAYOUT_FILL);
             // layout_insert(ctx, root, child);
@@ -115,7 +139,7 @@ void UISystem::UIRendererDraw() {
     }
 
     // Drawing element
-    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
+    for (auto &&e : uidata->elementLists) {
 
         if (!e.second->visible) continue;
 
@@ -176,8 +200,17 @@ void UISystem::UIRendererDraw() {
                 MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
             }
         }
-        if (e.second->type == ElementType::textElement) {
+        if (e.second->type == ElementType::textElement || e.second->type == ElementType::inputBoxElement) {
             MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
+        }
+        if (e.second->type == ElementType::inputBoxElement) {
+            R_Rectangle(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
+
+            if (e.second.get() == uidata->oninput) {
+                int slen = ImGui::CalcTextSize(e.second->text.c_str()).x + 2;
+                R_RectangleFilled(Render.target, p_x + e.second->x + slen, p_y + e.second->y + 2, p_x + e.second->x + slen + 2, p_y + e.second->y + e.second->h - 4,
+                                  e.second->cclass.inputbox.bg_color);
+            }
         }
 
         if (Img) R_FreeImage(Img);
@@ -194,7 +227,7 @@ void UISystem::UIRendererDraw() {
     // METADOT_SCOPE_END(UIRendererDraw);
 }
 
-void UISystem::UIRendererDrawImGui() { global.game->GameIsolate_.ui->uidata->imgui->Draw(); }
+void UISystem::UIRendererDrawImGui() { uidata->imgui->Draw(); }
 
 F32 BoxDistence(metadot_rect box, vec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
@@ -203,7 +236,7 @@ F32 BoxDistence(metadot_rect box, vec2 A) {
 
 void UISystem::UIRendererUpdate() {
 
-    global.game->GameIsolate_.ui->uidata->imgui->Update();
+    uidata->imgui->Update();
     auto &l = Scripting::GetSingletonPtr()->Lua->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
@@ -215,7 +248,9 @@ void UISystem::UIRendererUpdate() {
     // Mouse pos
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
-    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
+    auto clear_state = [&]() { uidata->oninput = nullptr; };
+
+    for (auto &&e : uidata->elementLists) {
 
         int p_x, p_y;
         if (e.second->parent != nullptr) {
@@ -240,6 +275,7 @@ void UISystem::UIRendererUpdate() {
                     }
                     e.second->w = e.second->resizable.ow + (x - e.second->resizable.mx);
                     e.second->h = e.second->resizable.oh + (y - e.second->resizable.my);
+                    clear_state();
                 } else {
                     e.second->resizable.resizing = false;
                     e.second->resizable.ow = e.second->w;
@@ -260,6 +296,7 @@ void UISystem::UIRendererUpdate() {
                     e.second->y = e.second->movable.oy + (y - e.second->movable.my);
                     // e.second->minRectX = (x - e.second->minRectX) + global.game->GameIsolate_.ui->uidata->mouse_dx;
                     // e.second->minRectY = (y - e.second->minRectY) + global.game->GameIsolate_.ui->uidata->mouse_dy;
+                    clear_state();
                 } else {
                     e.second->movable.moving = false;
                     e.second->movable.ox = e.second->x;
@@ -274,6 +311,7 @@ void UISystem::UIRendererUpdate() {
                 if (ControlSystem::lmouse_down && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
                     e.second->state = 2;
                     e.second->cclass.button.func();
+                    clear_state();
                 }
             } else {
                 e.second->state = 0;
@@ -283,27 +321,53 @@ void UISystem::UIRendererUpdate() {
             // Test haha
             e.second->cclass.progressbar.bar_current = (e.second->cclass.progressbar.bar_current < e.second->cclass.progressbar.bar_limit) ? e.second->cclass.progressbar.bar_current + 1 : 0;
         }
+        if (e.second->type == ElementType::inputBoxElement) {
+            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
+                e.second->state = 1;
+                if (ControlSystem::lmouse_down && !ImGuiOnControl) {
+                    e.second->state = 2;
+                    uidata->oninput = e.second.get();
+                }
+            } else {
+                e.second->state = 0;
+            }
+        }
     }
 }
 
 void UISystem::UIRendererFree() {
-    global.game->GameIsolate_.ui->uidata->imgui->End();
-    METADOT_DELETE(C, global.game->GameIsolate_.ui->uidata->imgui, ImGuiLayer);
+    uidata->imgui->End();
+    uidata->imgui.reset();
 
-    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
+    for (auto &&e : uidata->elementLists) {
         if (static_cast<bool>(e.second->texture)) DestroyTexture(e.second->texture);
         // if (static_cast<bool>(e.second)) delete e.second;
         if (e.second.get()) e.second.reset();
     }
 
-    delete global.game->GameIsolate_.ui->uidata;
+    delete uidata;
+}
+
+bool UISystem::UIRendererInput(C_KeyboardEvent event) {
+    if (event.type != SDL_KEYDOWN) return false;
+    if (uidata->oninput != nullptr) {
+        if (event.keysym.sym == SDLK_BACKSPACE) {
+            // TODO fix Chinese input
+            // uidata->oninput->text = uidata->oninput->text.substr(0, uidata->oninput->text.length() - (SUtil::is_chinese_c(uidata->oninput->text.back()) ? 2 : 1));
+            uidata->oninput->text = uidata->oninput->text.substr(0, uidata->oninput->text.length() - 1);
+            return true;
+        }
+        uidata->oninput->text += ControlSystem::SDLKeyToString(event.keysym.sym);
+        return true;
+    }
+    return false;
 }
 
 bool UISystem::UIIsMouseOnControls() {
     // Mouse pos
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
-    for (auto &&e : global.game->GameIsolate_.ui->uidata->elementLists) {
+    for (auto &&e : uidata->elementLists) {
         metadot_rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) return true;
     }

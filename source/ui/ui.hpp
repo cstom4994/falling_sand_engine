@@ -16,7 +16,7 @@
 #include "ui/imgui/imgui_impl.hpp"
 #include "ui/imgui/imgui_layer.hpp"
 
-typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement } ElementType;
+typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement, inputBoxElement } ElementType;
 
 typedef union UIElementClass {
     struct UIElementState_Button {
@@ -42,6 +42,11 @@ typedef union UIElementClass {
         METAENGINE_Color list_hover_color;
         METAENGINE_Color list_text_color;
     } listbox;
+
+    struct UIElementState_InputBox {
+        METAENGINE_Color bg_color;
+        METAENGINE_Color text_color;
+    } inputbox;
 
 } UIElementClass;
 
@@ -87,10 +92,12 @@ typedef struct UIElement {
 // static_assert(sizeof(UIElement) == 176);
 
 typedef struct UIData {
-    ImGuiLayer* imgui = nullptr;
+    MetaEngine::Ref<ImGuiLayer> imgui;
 
     // std::map<std::string, UIElement> elementLists = {};
     std::map<std::string, MetaEngine::Ref<UIElement>> elementLists = {};
+
+    UIElement* oninput = nullptr;
 } UIData;
 
 class UISystem : public IGameSystem {
@@ -110,6 +117,7 @@ public:
     void UIRendererDraw();
     void UIRendererDrawImGui();
     void UIRendererFree();
+    bool UIRendererInput(C_KeyboardEvent event);
 
     bool UIIsMouseOnControls();
 
