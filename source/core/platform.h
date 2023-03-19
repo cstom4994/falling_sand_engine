@@ -83,6 +83,8 @@
 
 #define FS_LINE_INCR 256
 
+typedef void *(*metadot_gl_loader_fn)(const char *name);
+
 /*--------------------------------------------------------------------------*/
 static inline uint64_t getThreadID() {
 #if defined(METADOT_PLATFORM_WINDOWS)

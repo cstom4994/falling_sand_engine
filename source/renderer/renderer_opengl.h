@@ -16,7 +16,7 @@
 #define _WINGDI_H
 #endif
 
-#include "metadot_gl.h"
+#include "libs/glad/glad.h"
 
 #if defined(GL_EXT_bgr) && !defined(GL_BGR)
 #define GL_BGR GL_BGR_EXT

@@ -4,6 +4,7 @@
 
 // #include "Poro/utils/../config/cengtypes.h"
 #include "core/math/mathlib.hpp"
+#include "core/sdl_wrapper.h"
 
 namespace MetaEngine {
 
@@ -92,6 +93,10 @@ bool operator>=( const CRect< T >& other ) const;
     CRect<T> operator-(const CRect<T> &other) const { return CRect<T>(this->x - other.x, this->y - other.y, w - other.w, h - other.h); }
 
     CRect<T> operator*(float t) const { return CRect<T>(this->x * t, this->y * t, w * t, h * t); }
+
+    //-------------------------------------------------------------------------
+
+    C_Rect operator()(const CRect<T> &f) { return {f.x, f.y, f.w, f.h}; }
 
     //-------------------------------------------------------------------------
 

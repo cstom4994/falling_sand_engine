@@ -47,6 +47,9 @@ static const int GameTick = 4;
 
 #define JRPC_VERSION "2.0"
 
+#define RAD_PER_DEG 0.017453293f
+#define DEG_PER_RAD 57.2957795f
+
 static const int VERSION_MAJOR = METADOT_VERSION_MAJOR;
 static const int VERSION_MINOR = METADOT_VERSION_MINOR;
 static const int VERSION_REV = METADOT_VERSION_BUILD;

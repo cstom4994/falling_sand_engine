@@ -12,6 +12,7 @@
 #include "audio/audio.h"
 #include "chunk.hpp"
 #include "core/const.h"
+#include "core/cpp/2dhandle.h"
 #include "core/macros.h"
 #include "core/stl/map.h"
 #include "core/threadpool.hpp"
@@ -46,7 +47,7 @@ struct WorldMeta {
     time_t lastOpenedTime = 0;
 
     static WorldMeta loadWorldMeta(std::string worldFileName, bool noSaveLoad = false);
-    
+
     bool save(std::string worldFileName);
 };
 METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
@@ -121,12 +122,12 @@ public:
     bool *lastActive = nullptr;
     bool *layer2Dirty = nullptr;
     bool *backgroundDirty = nullptr;
-    C_Rect loadZone{};
-    C_Rect lastLoadZone{};
-    C_Rect tickZone{};
-    C_Rect meshZone{};
-    C_Rect lastMeshZone{};
-    C_Rect lastMeshLoadZone{};
+    MetaEngine::CRect<int> loadZone;
+    MetaEngine::CRect<int> lastLoadZone{};
+    MetaEngine::CRect<int> tickZone{};
+    MetaEngine::CRect<int> meshZone{};
+    MetaEngine::CRect<int> lastMeshZone{};
+    MetaEngine::CRect<int> lastMeshLoadZone{};
 
     vec2 gravity{};
     b2World *b2world = nullptr;

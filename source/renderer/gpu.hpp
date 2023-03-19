@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "physics/box2d.h"
+#include "libs/glad/glad.h"
 #include "libs/imgui/imgui.h"
-#include "metadot_gl.h"
+#include "physics/box2d.h"
 #include "renderer/renderer_gpu.h"
 
 #define R_GET_PIXEL(surface, x, y) *((U32 *)((U8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(U32))))
@@ -105,7 +105,7 @@ public:
     U32 GetFlags() const { return m_drawFlags; }
     void AppendFlags(U32 flags) { m_drawFlags |= flags; }
     void ClearFlags(U32 flags) { m_drawFlags &= ~flags; }
-    
+
     PVec2 transform(const PVec2 &pt);
 
     void DrawPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);

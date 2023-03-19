@@ -8,14 +8,14 @@
 // #include "game_utils/PixelColor.h"
 
 #include "libs/external/stb_image.h"
-#include "metadot_gl.h"
+#include "libs/glad/glad.h"
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES  // So M_PI and company get defined on MSVC when we include math.h
 #endif
-#include <math.h>  // Must be included before SDL.h, otherwise both try to define M_PI and we get a warning
-#include <stdarg.h>
-#include <stdio.h>
+#include <cmath>  // Must be included before SDL.h, otherwise both try to define M_PI and we get a warning
+#include <cstdarg>
+#include <cstdio>
 
 // For now, SDL2 can only create opengl context successfully with 3.2 on macos
 #define R_GL_VERSION_MAJOR 3

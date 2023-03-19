@@ -16,69 +16,6 @@
 #include "core/core.hpp"
 #include "libs/imgui/md4c.h"
 
-#pragma region ImGuiError
-
-namespace ImGui {
-
-static std::string format(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    char smallBuffer[1024];
-    size_t size = vsnprintf(smallBuffer, sizeof smallBuffer, format, args);
-    va_end(args);
-
-    if (size < 1024) return std::string(smallBuffer);
-
-    char *buffer = (char *)ImGui::MemAlloc(size + 1);
-
-    va_start(args, format);
-    vsnprintf(buffer, size + 1, format, args);
-    va_end(args);
-    return std::string(buffer);
-}
-
-#ifndef IMGUICSS_LOG_ERROR
-#define IMGUICSS_LOG_ERROR(desc, file, line) std::cout << desc << " " << file << ":" << line << "\n";
-#endif
-
-#if defined(IMGUICSS_NO_EXCEPTIONS)
-#if defined(IMGUICSS_LOG_ERROR)
-#define IMGUICSS_EXCEPTION(cls, ...) IMGUICSS_LOG_ERROR(format(__VA_ARGS__), __FILE__, __LINE__)
-#else
-#define IMGUICSS_EXCEPTION(cls, ...)
-#endif
-#else
-#define IMGUICSS_EXCEPTION(cls, ...) throw cls(ImGui::format(__VA_ARGS__))
-#endif
-
-/**
- * Style related errors
- */
-class StyleError : public std::runtime_error {
-public:
-    StyleError(const std::string &detailedMessage) : runtime_error("Style error: " + detailedMessage) {}
-};
-
-/**
- * Raised when script execution fails
- */
-class ScriptError : public std::runtime_error {
-public:
-    ScriptError(const std::string &detailedMessage) : runtime_error("Script execution error: " + detailedMessage) {}
-};
-
-/**
- * Element creation failure (incorrect arguments, missing required arguments)
- */
-class ElementError : public std::runtime_error {
-public:
-    ElementError(const std::string &detailedMessage) : runtime_error("Element build error: " + detailedMessage) {}
-};
-
-}  // namespace ImGui
-
-#pragma endregion ImGuiError
-
 #pragma region ImGuiAuto
 
 #include <string>

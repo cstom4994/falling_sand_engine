@@ -737,11 +737,6 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
     this->y = y;
 }
 
-// #include "Populator.hpp"
-// #include "Textures.hpp"
-// #include <string>
-// #include "structures.hpp"
-
 // std::vector<PlacedStructure> Populator::apply(MaterialInstance* tiles, Chunk ch, World world){
 
 // 	for (int x = 0; x < CHUNK_W; x++) {

@@ -35,7 +35,7 @@
 #include "npc.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
-#include "renderer/metadot_gl.h"
+#include "libs/glad/glad.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"

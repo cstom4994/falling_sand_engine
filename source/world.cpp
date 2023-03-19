@@ -982,11 +982,11 @@ F32 CalculateVerticalFlowValue(F32 remainingLiquid, F32 destLiquid) {
 
 void World::tick() {
 
-    // TODO: what if we only check tiles that were marked as dirty last tick?
+// TODO: what if we only check tiles that were marked as dirty last tick?
 
-    // #define DEBUG_FRICTION
+// #define DEBUG_FRICTION
+// #define DO_REVERSE
 #define DO_MULTITHREADING
-    // #define DO_REVERSE
 
 #ifdef DO_MULTITHREADING
     bool whichTickVisited = false;

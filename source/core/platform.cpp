@@ -1,7 +1,6 @@
 
 #include "core/platform.h"
 
-
 #include <string.h>
 
 #include "audio/audio.h"
@@ -14,7 +13,7 @@
 #include "core/macros.h"
 #include "core/sdl_wrapper.h"
 #include "engine/engine.h"
-#include "renderer/metadot_gl.h"
+#include "libs/glad/glad.h"
 #include "renderer/renderer_gpu.h"
 
 IMPLENGINE();
@@ -107,6 +106,14 @@ int ParseRunArgs(int argc, char *argv[]) {
     return METADOT_OK;
 }
 
+void metadot_gl_get_max_texture_size(int *w, int *h) {
+    int max_size = 0;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+
+    if (w) *w = max_size;
+    if (h) *h = max_size;
+}
+
 int metadot_initwindow() {
 
     // init sdl
@@ -161,13 +168,41 @@ int metadot_initwindow() {
 
     SDL_GL_MakeCurrent(Core.window, Core.glContext);
 
+    auto metadot_gl_global_init = [](metadot_gl_loader_fn loader_fp) {
+        if (NULL == loader_fp) {
+            if (!gladLoadGL()) {
+                METADOT_ERROR("GLAD GL3 loader failed");
+                return -1;
+            }
+        } else {
+            if (!gladLoadGLLoader((GLADloadproc)loader_fp)) {
+                METADOT_ERROR("GLAD GL3 loader failed");
+                return -1;
+            }
+        }
+        return 0;
+    };
+
     if (metadot_gl_global_init(NULL) == -1) {
         METADOT_ERROR("Failed to initialize OpenGL loader!");
         return METADOT_FAILED;
     }
 
 #ifdef METADOT_DEBUG
-    metadot_gl_print_info();
+    const unsigned char *vendor = glGetString(GL_VENDOR);
+    const unsigned char *renderer = glGetString(GL_RENDERER);
+    const unsigned char *gl_version = glGetString(GL_VERSION);
+    const unsigned char *glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+    int tex_w, tex_h;
+    metadot_gl_get_max_texture_size(&tex_w, &tex_h);
+
+    METADOT_INFO("OpenGL info:");
+    METADOT_INFO("Vendor: %s", vendor);
+    METADOT_INFO("Renderer: %s", renderer);
+    METADOT_INFO("GL Version: %s", gl_version);
+    METADOT_INFO("GLSL Version: %s", glsl_version);
+    METADOT_INFO("Max texture size: %ix%i", tex_w, tex_h);
 #endif
 
     global.audio.InitAudio();
@@ -190,12 +225,12 @@ int metadot_initwindow() {
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(Core.window, &info)) {
         METADOT_ASSERT_E(IsWindow(info.info.win.window));
-        //Core.wndh = info.info.win.window;
+        // Core.wndh = info.info.win.window;
     } else {
-        //Core.wndh = NULL;
+        // Core.wndh = NULL;
     }
 #elif defined(__linux)
-            global.HostData.wndh = 0;
+    global.HostData.wndh = 0;
 #elif defined(__APPLE__)
     // global.HostData.wndh = 0;
 #else

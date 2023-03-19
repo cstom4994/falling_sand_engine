@@ -48,6 +48,7 @@ void UISystem::UIRendererInit() {
 
     // Test element drawing
     auto testElement1 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
+                                                                   .visible = false,
                                                                    .resizable = {true},
                                                                    .x = 50,
                                                                    .y = 50,
@@ -115,6 +116,32 @@ void UISystem::UIRendererInit() {
     uidata->elementLists.insert(std::make_pair("testElement5", testElement5));
     uidata->elementLists.insert(std::make_pair("testElement6", testElement6));
     uidata->elementLists.insert(std::make_pair("testElement7", testElement7));
+
+    auto window_menu = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
+                                                                  .visible = false,
+                                                                  .resizable = {true},
+                                                                  .x = 150,
+                                                                  .y = 150,
+                                                                  .w = 200,
+                                                                  .h = 200,
+                                                                  .state = 0,
+                                                                  .color = bgPanelColor,
+                                                                  .texture = LoadTexture("data/assets/ui/demo_background.png"),
+                                                                  .cclass = {.window = {}}});
+
+    auto button_play = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::buttonElement,
+                                                                  .parent = window_menu,
+                                                                  .x = 20,
+                                                                  .y = 40,
+                                                                  .w = 20,
+                                                                  .h = 20,
+                                                                  .state = 0,
+                                                                  .color = {255, 0, 20, 255},
+                                                                  .text = "按钮捏",
+                                                                  .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
+
+    uidata->elementLists.insert(std::make_pair("window_menu", window_menu));
+    uidata->elementLists.insert(std::make_pair("button_play", button_play));
 }
 
 void UISystem::UIRendererPostUpdate() {
@@ -267,6 +294,15 @@ void UISystem::UIRendererUpdate() {
 
         metadot_rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (e.second->type == ElementType::windowElement) {
+            // Focus window
+            if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
+                // if (!ImGuiOnControl) {
+                //     e.second->state = 1;
+                // } else {
+                //     e.second->state = 0;
+                // }
+            }
+
             // Resize window
             if (e.second->resizable.resizing || (e.second->resizable.resizable && !e.second->movable.moving && BoxDistence(rect, {(float)x, (float)y}) < 0.0f &&
                                                  abs(y - e.second->y - e.second->h) < 20.0f && abs(x - e.second->x - e.second->w) < 20.0f)) {
@@ -287,23 +323,28 @@ void UISystem::UIRendererUpdate() {
                 continue;
             }
             // Move window
-            if (e.second->movable.moving || (!e.second->resizable.resizing && BoxDistence(rect, {(float)x, (float)y}) < 0.0f)) {
+            if (e.second->movable.moving ||
+                (uidata->onmoving == ((bool)uidata->onmoving ? e.second.get() : nullptr) && !e.second->resizable.resizing && BoxDistence(rect, {(float)x, (float)y}) < 0.0f)) {
                 if (ControlSystem::lmouse_down && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
                     if (!e.second->movable.moving) {
                         e.second->movable.mx = x;
                         e.second->movable.my = y;
                         e.second->movable.moving = true;
+                        uidata->onmoving = e.second.get();
                     }
                     // METADOT_INFO("window move %d %d", x, y);
                     e.second->x = e.second->movable.ox + (x - e.second->movable.mx);
                     e.second->y = e.second->movable.oy + (y - e.second->movable.my);
                     // e.second->minRectX = (x - e.second->minRectX) + global.game->GameIsolate_.ui->uidata->mouse_dx;
                     // e.second->minRectY = (y - e.second->minRectY) + global.game->GameIsolate_.ui->uidata->mouse_dy;
-                    clear_state();
+
+                    uidata->oninput = nullptr;
                 } else {
                     e.second->movable.moving = false;
                     e.second->movable.ox = e.second->x;
                     e.second->movable.oy = e.second->y;
+
+                    uidata->onmoving = nullptr;
                 }
             }
         }
