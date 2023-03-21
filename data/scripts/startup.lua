@@ -20,23 +20,6 @@ METADOT_INFO(i18n("loaded_vec"))
 
 content = i18n("welcome")
 
-local meo = require("meo")
-local codes, err, globals = meo.to_lua(
-	[[
-f = ->
-  print "hello meo"
-f!
-]],
-	{
-		implicit_return_root = true,
-		reserve_line_number = true,
-		lint_global = true,
-	}
-)
-
-f = load(codes)
-f()
-
 add_packagepath(METADOT_RESLOC("data/scripts/samples"))
 
 -- runf("Script:tests/test_lpeg.lua")

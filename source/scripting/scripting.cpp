@@ -33,10 +33,6 @@ void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::end
 
 extern void LoadImGuiBindings(lua_State *l);
 
-extern "C" {
-extern int luaopen_meo(lua_State *L);
-}
-
 IMPLENGINE();
 
 struct MyStruct {
@@ -231,7 +227,6 @@ static void InitLua(LuaCore *lc) {
     LoadImGuiBindings(lc->L);
 
     metadot_preload_auto(lc->L, luaopen_ffi, "ffi");
-    metadot_preload_auto(lc->L, luaopen_meo, "meo");
     metadot_preload_auto(lc->L, luaopen_lpeg, "lpeg");
 
 #define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)

@@ -4,13 +4,15 @@ add_rules("plugin.vsxmake.autoupdate")
 
 set_policy("check.auto_ignore_flags", true)
 
-set_languages("c17", "c++20")
+set_languages("c17", "c++latest")
 
 add_rules("mode.debug", "mode.release")
 
 if is_os("windows") then
-	add_requires("vcpkg::sdl2")
-	add_packages("vcpkg::sdl2")
+	add_requires("libsdl")
+	add_packages("libsdl")
+	-- add_requires("vcpkg::sdl2")
+	-- add_packages("vcpkg::sdl2")
 	-- add_requires("vcpkg::pthreads")
 	-- add_packages("vcpkg::pthreads")
 else
@@ -37,7 +39,7 @@ set_exceptions("cxx", "objc")
 
 if is_os("windows") then
 	set_arch("x64")
-	set_toolchains("clang-cl")
+	-- set_toolchains("clang-cl")
 
 	add_defines("_WINDOWS")
 	add_defines("UNICODE")
@@ -162,7 +164,7 @@ do
 		add_rules("c++.unity_build", { batchsize = 0 })
 	end
 	set_kind("binary")
-	set_targetdir("./output")
+	set_targetdir("output")
 	add_includedirs(include_dir_list)
 	add_defines(defines_list)
 
