@@ -79,13 +79,6 @@ protected:
     bool m_WasPrevFrameTabCompletion = false;
     std::vector<std::string> m_CmdSuggestions;
     bool m_LoadedFromIni = false;
-
-    static void SettingsHandler_ClearALl(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
-    static void SettingsHandler_ReadInit(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
-    static void* SettingsHandler_ReadOpen(ImGuiContext* ctx, ImGuiSettingsHandler* handler, const char* name);
-    static void SettingsHandler_ReadLine(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* entry, const char* line);
-    static void SettingsHandler_ApplyAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
-    static void SettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf);
 };
 
 static const int s_maxLevelColors = 11;

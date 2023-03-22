@@ -31,9 +31,6 @@ inline R_bool FUtil_exists(const char* path) {
     return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));
 }
 
-// folder path of current executable
-const char* metadot_fs_getExecutableFolderPath();
-
 inline const char* FUtil_GetFileName(const char* path) {
     int len = strlen(path);
     int flag = 0;

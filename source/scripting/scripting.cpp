@@ -253,13 +253,13 @@ static void InitLua(LuaCore *lc) {
     lc->s_lua.dostring(MetaEngine::Format("package.path = "
                                           "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
                                           "?/?.lua;' .. package.path",
-                                          METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath()),
+                                          METADOT_RESLOC("data/scripts"), metadot_path_normalize(std::filesystem::current_path().string().c_str())),
                        lc->s_lua.globalTable());
 
     lc->s_lua.dostring(MetaEngine::Format("package.cpath = "
                                           "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
                                           "?/?.{2};' .. package.cpath",
-                                          METADOT_RESLOC("data/scripts"), metadot_fs_getExecutableFolderPath(), "dylib"),
+                                          METADOT_RESLOC("data/scripts"), metadot_path_normalize(std::filesystem::current_path().string().c_str()), "dll"),
                        lc->s_lua.globalTable());
 
     RunScriptFromFile("data/scripts/startup.lua");

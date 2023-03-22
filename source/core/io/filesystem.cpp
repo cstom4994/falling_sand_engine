@@ -21,15 +21,15 @@ IMPLENGINE();
 
 bool InitFilesystem() {
 
-    auto currentDir = std::filesystem::path(metadot_fs_getExecutableFolderPath());
+    auto currentDir = std::filesystem::path(std::filesystem::current_path());
 
 #if 1
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
-            Core.gamepath = currentDir.string();
+            Core.gamepath = metadot_path_normalize(currentDir.string().c_str());
             // s_DataPath = currentDir / "Data";
-            METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), metadot_fs_getExecutableFolderPath());
+            METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), std::filesystem::current_path().string().c_str());
 
             // if (metadot_is_error(err)) {
             //     METADOT_ASSERT_E(0);
@@ -58,11 +58,6 @@ bool InitFilesystem() {
     }
 
 #endif
-}
-
-const char* metadot_fs_getExecutableFolderPath() {
-    const char* out = std::filesystem::current_path().string().c_str();
-    return out;
 }
 
 // Char pointer get form futil_readfilestring must be gc_free manually

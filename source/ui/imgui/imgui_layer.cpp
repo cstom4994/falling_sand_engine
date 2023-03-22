@@ -127,17 +127,17 @@ void ImGuiConsole::InitIniSettings() {
     ImGuiContext &g = *ImGui::GetCurrentContext();
 
     if (g.Initialized && !g.SettingsLoaded && !m_LoadedFromIni) {
-        ImGuiSettingsHandler console_ini_handler;
-        console_ini_handler.TypeName = "Console";
-        console_ini_handler.TypeHash = ImHashStr("Console");
-        console_ini_handler.ClearAllFn = SettingsHandler_ClearALl;
-        console_ini_handler.ApplyAllFn = SettingsHandler_ApplyAll;
-        console_ini_handler.ReadInitFn = SettingsHandler_ReadInit;
-        console_ini_handler.ReadOpenFn = SettingsHandler_ReadOpen;
-        console_ini_handler.ReadLineFn = SettingsHandler_ReadLine;
-        console_ini_handler.WriteAllFn = SettingsHandler_WriteAll;
-        console_ini_handler.UserData = this;
-        g.SettingsHandlers.push_back(console_ini_handler);
+        // ImGuiSettingsHandler console_ini_handler;
+        // console_ini_handler.TypeName = "Console";
+        // console_ini_handler.TypeHash = ImHashStr("Console");
+        // console_ini_handler.ClearAllFn = SettingsHandler_ClearALl;
+        // console_ini_handler.ApplyAllFn = SettingsHandler_ApplyAll;
+        // console_ini_handler.ReadInitFn = SettingsHandler_ReadInit;
+        // console_ini_handler.ReadOpenFn = SettingsHandler_ReadOpen;
+        // console_ini_handler.ReadLineFn = SettingsHandler_ReadLine;
+        // console_ini_handler.WriteAllFn = SettingsHandler_WriteAll;
+        // console_ini_handler.UserData = this;
+        // g.SettingsHandlers.push_back(console_ini_handler);
     }
 }
 
@@ -425,84 +425,6 @@ int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
             break;
     }
     return 0;
-}
-
-void ImGuiConsole::SettingsHandler_ClearALl(ImGuiContext *ctx, ImGuiSettingsHandler *handler) {}
-
-void ImGuiConsole::SettingsHandler_ReadInit(ImGuiContext *ctx, ImGuiSettingsHandler *handler) {}
-
-void *ImGuiConsole::SettingsHandler_ReadOpen(ImGuiContext *ctx, ImGuiSettingsHandler *handler, const char *name) {
-    if (!handler->UserData) return nullptr;
-
-    auto console = static_cast<ImGuiConsole *>(handler->UserData);
-
-    if (strcmp(name, console->m_ConsoleName.c_str()) != 0) return nullptr;
-    return (void *)1;
-}
-
-void ImGuiConsole::SettingsHandler_ReadLine(ImGuiContext *ctx, ImGuiSettingsHandler *handler, void *entry, const char *line) {
-    if (!handler->UserData) return;
-
-    auto console = static_cast<ImGuiConsole *>(handler->UserData);
-
-    console->m_LoadedFromIni = true;
-
-#pragma warning(push)
-#pragma warning(disable : 4996)
-
-#define INI_CONSOLE_LOAD_COLOR(type) \
-    (std::sscanf(line, #type "=%i,%i,%i,%i", &r, &g, &b, &a) == 4) { console->m_ColorPalette[type] = ImColor(r, g, b, a); }
-#define INI_CONSOLE_LOAD_FLOAT(var) \
-    (std::sscanf(line, #var "=%f", &f) == 1) { console->var = f; }
-#define INI_CONSOLE_LOAD_BOOL(var) \
-    (std::sscanf(line, #var "=%i", &b) == 1) { console->var = b == 1; }
-
-    F32 f;
-    int r, g, b, a;
-
-    if INI_CONSOLE_LOAD_COLOR (COL_COMMAND)
-        else if INI_CONSOLE_LOAD_COLOR (COL_LOG) else if INI_CONSOLE_LOAD_COLOR (COL_WARNING) else if INI_CONSOLE_LOAD_COLOR (COL_ERROR) else if INI_CONSOLE_LOAD_COLOR (
-                COL_INFO) else if INI_CONSOLE_LOAD_COLOR (COL_TIMESTAMP) else if INI_CONSOLE_LOAD_FLOAT (m_WindowAlpha)
-
-                else if INI_CONSOLE_LOAD_BOOL (m_AutoScroll) else if INI_CONSOLE_LOAD_BOOL (m_ScrollToBottom) else if INI_CONSOLE_LOAD_BOOL (m_ColoredOutput) else if INI_CONSOLE_LOAD_BOOL (
-                        m_FilterBar) else if INI_CONSOLE_LOAD_BOOL (m_TimeStamps)
-
-#pragma warning(pop)
-}
-
-void ImGuiConsole::SettingsHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler) {
-    if (!handler->UserData) return;
-}
-
-void ImGuiConsole::SettingsHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf) {
-    if (!handler->UserData) return;
-
-    auto console = static_cast<ImGuiConsole *>(handler->UserData);
-
-#define INI_CONSOLE_SAVE_COLOR(type)                                                                                                                                               \
-    buf->appendf(#type "=%i,%i,%i,%i\n", (int)(console->m_ColorPalette[type].x * 255), (int)(console->m_ColorPalette[type].y * 255), (int)(console->m_ColorPalette[type].z * 255), \
-                 (int)(console->m_ColorPalette[type].w * 255))
-
-#define INI_CONSOLE_SAVE_FLOAT(var) buf->appendf(#var "=%.3f\n", console->var)
-#define INI_CONSOLE_SAVE_BOOL(var) buf->appendf(#var "=%i\n", console->var)
-
-    buf->appendf("[%s][%s]\n", handler->TypeName, console->m_ConsoleName.data());
-
-    INI_CONSOLE_SAVE_BOOL(m_AutoScroll);
-    INI_CONSOLE_SAVE_BOOL(m_ScrollToBottom);
-    INI_CONSOLE_SAVE_BOOL(m_ColoredOutput);
-    INI_CONSOLE_SAVE_BOOL(m_FilterBar);
-    INI_CONSOLE_SAVE_BOOL(m_TimeStamps);
-
-    INI_CONSOLE_SAVE_FLOAT(m_WindowAlpha);
-    INI_CONSOLE_SAVE_COLOR(COL_COMMAND);
-    INI_CONSOLE_SAVE_COLOR(COL_LOG);
-    INI_CONSOLE_SAVE_COLOR(COL_WARNING);
-    INI_CONSOLE_SAVE_COLOR(COL_ERROR);
-    INI_CONSOLE_SAVE_COLOR(COL_INFO);
-    INI_CONSOLE_SAVE_COLOR(COL_TIMESTAMP);
-
-    buf->append("\n");
 }
 
 void ProfilerDrawFrameNavigation(FrameInfo *_infos, uint32_t _numInfos) {
