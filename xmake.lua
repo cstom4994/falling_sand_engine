@@ -1,6 +1,7 @@
 set_project("MetaDot")
 
 add_rules("plugin.vsxmake.autoupdate")
+-- add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
 set_policy("check.auto_ignore_flags", true)
 

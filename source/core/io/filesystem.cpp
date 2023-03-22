@@ -262,3 +262,10 @@ std::vector<char> fs_read_entire_file_to_memory(const char* path, size_t &size) 
         return std::vector<char>();
     }
 }
+
+std::string normalizePath(const std::string& messyPath) {
+    std::filesystem::path path(messyPath);
+    std::filesystem::path canonicalPath = std::filesystem::weakly_canonical(path);
+    std::string npath = canonicalPath.make_preferred().string();
+    return npath;
+}

@@ -5,6 +5,7 @@
 
 #include <cstring>
 #include <string_view>
+#include <filesystem>
 
 #include "core/core.hpp"
 #include "core/macros.h"
@@ -145,5 +146,6 @@ char* METADOT_CDECL metadot_path_normalize(const char* path);
 #endif  // __cplusplus
 
 std::vector<char> fs_read_entire_file_to_memory(const char* path, size_t& size);
+std::string normalizePath(const std::string& messyPath);
 
 #endif

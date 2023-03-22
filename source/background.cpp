@@ -73,6 +73,8 @@ void BackgroundSystem::Create() {
     this->RegisterLua(L);
 
     L["OnBackgroundLoad"]();
+
+    
 }
 
 void BackgroundSystem::Destory() {

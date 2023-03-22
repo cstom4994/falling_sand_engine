@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <string_view>
 
 #include "core/core.h"
 #include "core/macros.h"
