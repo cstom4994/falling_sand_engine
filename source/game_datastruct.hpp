@@ -10,7 +10,7 @@
 
 #include "core/core.hpp"
 #include "core/cpp/type.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/sdl_wrapper.h"
 #include "ecs/ecs.hpp"
 #include "game_basic.hpp"
@@ -60,7 +60,7 @@ struct GameData {
     static Material **materials_array;
 
     struct {
-        std::unordered_map<std::string, Meta::AnyFunction> Functions;
+        std::unordered_map<std::string, ME::meta::any_function> Functions;
     } HostData;
 };
 

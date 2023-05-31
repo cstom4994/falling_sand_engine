@@ -32,7 +32,7 @@ bool InitFilesystem() {
             METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), std::filesystem::current_path().string().c_str());
 
             // if (metadot_is_error(err)) {
-            //     METADOT_ASSERT_E(0);
+            //     ME_ASSERT_E(0);
             // } else if (true) {
             //     // Put the base directory (the path to the exe) onto the file system search path.
             //     // ME_fs_mount(Core.gamepath.c_str(), "", true);

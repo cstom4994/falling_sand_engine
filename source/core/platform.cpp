@@ -9,14 +9,13 @@
 #include "core/core.h"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/io/packer.h"
+#include "core/io/packer.hpp"
 #include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "libs/glad/glad.h"
 #include "memory.h"
 #include "renderer/renderer_gpu.h"
-#include "core/io/filesystem.h"
 
 IMPLENGINE();
 
@@ -31,10 +30,10 @@ int ParseRunArgs(int argc, char *argv[]) {
                     return METADOT_FAILED;
                 }
 
-                pack_result result = packFiles(argv[2], argc - 3, (const char **)argv + 3, true);
+                ME_pack_result result = ME_pack_files(argv[2], argc - 3, (const char **)argv + 3, true);
 
                 if (result != SUCCESS_PACK_RESULT) {
-                    printf("\nError: %s.\n", packResultToString(result));
+                    printf("\nError: %s.\n", pack_result_to_string(result));
                     return METADOT_FAILED;
                 }
 
@@ -46,10 +45,10 @@ int ParseRunArgs(int argc, char *argv[]) {
                     return METADOT_FAILED;
                 }
 
-                pack_result result = unpackFiles(argv[2], true);
+                ME_pack_result result = ME_unpack_files(argv[2], true);
 
                 if (result != SUCCESS_PACK_RESULT) {
-                    printf("\nError: %s.\n", packResultToString(result));
+                    printf("\nError: %s.\n", pack_result_to_string(result));
                     return METADOT_FAILED;
                 }
                 return RUNNER_EXIT;
@@ -66,10 +65,10 @@ int ParseRunArgs(int argc, char *argv[]) {
                 bool isLittleEndian;
                 uint64_t itemCount;
 
-                pack_result result = getPackInfo(argv[2], &majorVersion, &minorVersion, &patchVersion, &isLittleEndian, &itemCount);
+                ME_pack_result result = ME_get_pack_info(argv[2], &majorVersion, &minorVersion, &patchVersion, &isLittleEndian, &itemCount);
 
                 if (result != SUCCESS_PACK_RESULT) {
-                    printf("\nError: %s.\n", packResultToString(result));
+                    printf("\nError: %s.\n", pack_result_to_string(result));
                     return METADOT_FAILED;
                 }
 
@@ -80,22 +79,22 @@ int ParseRunArgs(int argc, char *argv[]) {
                        " Item count: %llu.\n\n",
                        PACK_VERSION_MAJOR, PACK_VERSION_MINOR, PACK_VERSION_PATCH, majorVersion, minorVersion, patchVersion, isLittleEndian ? "true" : "false", (long long unsigned int)itemCount);
 
-                pack_reader packReader;
+                ME_pack_reader packReader;
 
-                result = createFilePackReader(argv[2], 0, false, &packReader);
+                result = ME_create_file_pack_reader(argv[2], 0, false, &packReader);
 
                 if (result != SUCCESS_PACK_RESULT) {
-                    printf("\nError: %s.\n", packResultToString(result));
+                    printf("\nError: %s.\n", pack_result_to_string(result));
                     return METADOT_FAILED;
                 }
 
-                itemCount = getPackItemCount(packReader);
+                itemCount = ME_get_pack_item_count(packReader);
 
                 for (uint64_t i = 0; i < itemCount; ++i) {
                     printf("Item %llu:\n"
                            " Path: %s.\n"
                            " Size: %u.\n",
-                           (long long unsigned int)i, getPackItemPath(packReader, i), getPackItemDataSize(packReader, i));
+                           (long long unsigned int)i, ME_get_pack_item_path(packReader, i), ME_get_pack_item_data_size(packReader, i));
                     fflush(stdout);
                 }
 
@@ -226,7 +225,7 @@ int metadot_initwindow() {
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(Core.window, &info)) {
-        METADOT_ASSERT_E(IsWindow(info.info.win.window));
+        ME_ASSERT_E(IsWindow(info.info.win.window));
         // Core.wndh = info.info.win.window;
     } else {
         // Core.wndh = NULL;
@@ -380,7 +379,7 @@ char *ME_fs_readfilestring(const char *path) {
             size_t newLen = fread(source, sizeof(char), bufsize, fp);
             if (ferror(fp) != 0) {
                 fputs("Error reading file", stderr);
-                //ME_ERROR("Error reading file %s", METADOT_RESLOC(path));
+                // ME_ERROR("Error reading file %s", METADOT_RESLOC(path));
             } else {
                 source[newLen++] = '\0'; /* Just to be safe. */
             }

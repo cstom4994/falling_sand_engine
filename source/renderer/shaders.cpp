@@ -3,6 +3,7 @@
 #include "shaders.hpp"
 
 #include "core/core.hpp"
+#include "core/utility.hpp"
 
 U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum thisype, const char *filename) {
 

@@ -1,63 +1,66 @@
 
-#include "packer.h"
+#include "packer.hpp"
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 
-#include "io.h"
+#include "core/core.h"
+#include "core/platform.h"
+#include "core/utility.hpp"
 #include "libs/lz4/lz4.h"
 
 typedef struct pack_item {
     pack_iteminfo info;
-    char* path;
+    char *path;
 } pack_item;
 
-struct packreader_t {
-    FILE* file;
-    uint64_t itemCount;
-    pack_item* items;
-    uint8_t* dataBuffer;
-    uint8_t* zipBuffer;
-    uint32_t dataSize;
-    uint32_t zipSize;
+struct ME_packreader_t {
+    FILE *file;
+    u64 itemCount;
+    pack_item *items;
+    u8 *dataBuffer;
+    u8 *zipBuffer;
+    u32 dataSize;
+    u32 zipSize;
     pack_item searchItem;
 };
 
-inline static void destroyPackItems(uint64_t itemCount, pack_item* items) {
+ME_PRIVATE(void) destroy_pack_items(u64 itemCount, pack_item *items) {
     assert(itemCount == 0 || (itemCount > 0 && items));
 
-    for (uint64_t i = 0; i < itemCount; i++) free(items[i].path);
+    for (u64 i = 0; i < itemCount; i++) free(items[i].path);
     free(items);
 }
-inline static pack_result createPackItems(FILE* packFile, uint64_t itemCount, pack_item** _items) {
+
+ME_PRIVATE(ME_pack_result) create_pack_items(FILE *packFile, u64 itemCount, pack_item **_items) {
     assert(packFile);
     assert(itemCount > 0);
     assert(_items);
 
-    pack_item* items = malloc(itemCount * sizeof(pack_item));
+    pack_item *items = (pack_item *)malloc(itemCount * sizeof(pack_item));
 
     if (!items) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-    for (uint64_t i = 0; i < itemCount; i++) {
+    for (u64 i = 0; i < itemCount; i++) {
         pack_iteminfo info;
 
         size_t result = fread(&info, sizeof(pack_iteminfo), 1, packFile);
 
         if (result != 1) {
-            destroyPackItems(i, items);
+            destroy_pack_items(i, items);
             return FAILED_TO_READ_FILE_PACK_RESULT;
         }
 
         if (info.dataSize == 0 || info.pathSize == 0) {
-            destroyPackItems(i, items);
+            destroy_pack_items(i, items);
             return BAD_DATA_SIZE_PACK_RESULT;
         }
 
-        char* path = malloc((info.pathSize + 1) * sizeof(char));
+        char *path = (char *)malloc((info.pathSize + 1) * sizeof(char));
 
         if (!path) {
-            destroyPackItems(i, items);
+            destroy_pack_items(i, items);
             return FAILED_TO_ALLOCATE_PACK_RESULT;
         }
 
@@ -66,7 +69,7 @@ inline static pack_result createPackItems(FILE* packFile, uint64_t itemCount, pa
         path[info.pathSize] = 0;
 
         if (result != info.pathSize) {
-            destroyPackItems(i, items);
+            destroy_pack_items(i, items);
             return FAILED_TO_READ_FILE_PACK_RESULT;
         }
 
@@ -75,11 +78,11 @@ inline static pack_result createPackItems(FILE* packFile, uint64_t itemCount, pa
         int seekResult = seekFile(packFile, fileOffset, SEEK_CUR);
 
         if (seekResult != 0) {
-            destroyPackItems(i, items);
+            destroy_pack_items(i, items);
             return FAILED_TO_SEEK_FILE_PACK_RESULT;
         }
 
-        pack_item* item = &items[i];
+        pack_item *item = &items[i];
         item->info = info;
         item->path = path;
     }
@@ -87,58 +90,26 @@ inline static pack_result createPackItems(FILE* packFile, uint64_t itemCount, pa
     *_items = items;
     return SUCCESS_PACK_RESULT;
 }
-pack_result createFilePackReader(const char* filePath, uint32_t dataBufferCapacity, bool isResourcesDirectory, pack_reader* packReader) {
-    assert(filePath);
-    assert(packReader);
 
-    pack_reader pack = calloc(1, sizeof(packreader_t));
+ME_pack_result ME_create_file_pack_reader(const char *filePath, u32 dataBufferCapacity, bool isResourcesDirectory, ME_pack_reader *pack_reader) {
+    assert(filePath);
+    assert(pack_reader);
+
+    ME_pack_reader pack = (ME_pack_reader)calloc(1, sizeof(ME_packreader_t));
 
     if (!pack) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
     pack->zipBuffer = NULL;
     pack->zipSize = 0;
 
-    char* path;
+    char *path;
 
-#if __APPLE__
-    if (isResourcesDirectory) {
-        const char* resourcesDirectory = getResourcesDirectory();
+    path = (char *)filePath;
 
-        if (!resourcesDirectory) {
-            destroyPackReader(pack);
-            return FAILED_TO_GET_DIRECTORY_PACK_RESULT;
-        }
-
-        size_t filePathLength = strlen(filePath);
-        size_t resourcesPathLength = strlen(resourcesDirectory);
-        size_t pathLength = filePathLength + resourcesPathLength + 2;
-
-        path = malloc(pathLength * sizeof(char));
-
-        if (!path) {
-            destroyPackReader(pack);
-            return FAILED_TO_ALLOCATE_PACK_RESULT;
-        }
-
-        memcpy(path, resourcesDirectory, resourcesPathLength * sizeof(char));
-        path[resourcesPathLength] = '/';
-        memcpy(path + resourcesPathLength + 1, filePath, filePathLength * sizeof(char));
-        path[resourcesPathLength + filePathLength + 1] = '\0';
-    } else {
-        path = (char*)filePath;
-    }
-#else
-    path = (char*)filePath;
-#endif
-
-    FILE* file = openFile(path, "rb");
-
-#if __APPLE__
-    if (isResourcesDirectory) free(path);
-#endif
+    FILE *file = openFile(path, "rb");
 
     if (!file) {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         return FAILED_TO_OPEN_FILE_PACK_RESULT;
     }
 
@@ -149,47 +120,47 @@ pack_result createFilePackReader(const char* filePath, uint32_t dataBufferCapaci
     size_t result = fread(header, sizeof(char), PACK_HEADER_SIZE, file);
 
     if (result != PACK_HEADER_SIZE) {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         return FAILED_TO_READ_FILE_PACK_RESULT;
     }
 
     if (header[0] != 'P' || header[1] != 'A' || header[2] != 'C' || header[3] != 'K') {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         return BAD_FILE_TYPE_PACK_RESULT;
     }
 
     if (header[4] != PACK_VERSION_MAJOR || header[5] != PACK_VERSION_MINOR) {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         return BAD_FILE_VERSION_PACK_RESULT;
     }
 
     // Skipping PATCH version check
 
-    if (header[7] != !PACK_LITTLE_ENDIAN) {
-        destroyPackReader(pack);
+    if (header[7] != !ME_LITTLE_ENDIAN) {
+        ME_destroy_pack_reader(pack);
         return BAD_FILE_ENDIANNESS_PACK_RESULT;
     }
 
-    uint64_t itemCount;
+    u64 itemCount;
 
-    result = fread(&itemCount, sizeof(uint64_t), 1, file);
+    result = fread(&itemCount, sizeof(u64), 1, file);
 
     if (result != 1) {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         return FAILED_TO_READ_FILE_PACK_RESULT;
     }
 
     if (itemCount == 0) {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         return BAD_DATA_SIZE_PACK_RESULT;
     }
 
-    pack_item* items;
+    pack_item *items;
 
-    pack_result packResult = createPackItems(file, itemCount, &items);
+    ME_pack_result packResult = create_pack_items(file, itemCount, &items);
 
     if (packResult != SUCCESS_PACK_RESULT) {
-        destroyPackReader(pack);
+        ME_destroy_pack_reader(pack);
         ;
         return packResult;
     }
@@ -197,13 +168,13 @@ pack_result createFilePackReader(const char* filePath, uint32_t dataBufferCapaci
     pack->itemCount = itemCount;
     pack->items = items;
 
-    uint8_t* dataBuffer;
+    u8 *dataBuffer;
 
     if (dataBufferCapacity > 0) {
-        dataBuffer = malloc(dataBufferCapacity * sizeof(uint8_t));
+        dataBuffer = (u8 *)malloc(dataBufferCapacity * sizeof(u8));
 
         if (!dataBuffer) {
-            destroyPackReader(pack);
+            ME_destroy_pack_reader(pack);
             return FAILED_TO_ALLOCATE_PACK_RESULT;
         }
     } else {
@@ -213,30 +184,30 @@ pack_result createFilePackReader(const char* filePath, uint32_t dataBufferCapaci
     pack->dataBuffer = dataBuffer;
     pack->dataSize = dataBufferCapacity;
 
-    *packReader = pack;
+    *pack_reader = pack;
     return SUCCESS_PACK_RESULT;
 }
-void destroyPackReader(pack_reader packReader) {
-    if (!packReader) return;
+void ME_destroy_pack_reader(ME_pack_reader pack_reader) {
+    if (!pack_reader) return;
 
-    free(packReader->dataBuffer);
-    free(packReader->zipBuffer);
-    destroyPackItems(packReader->itemCount, packReader->items);
-    if (packReader->file) closeFile(packReader->file);
-    free(packReader);
+    free(pack_reader->dataBuffer);
+    free(pack_reader->zipBuffer);
+    destroy_pack_items(pack_reader->itemCount, pack_reader->items);
+    if (pack_reader->file) closeFile(pack_reader->file);
+    free(pack_reader);
 }
 
-uint64_t getPackItemCount(pack_reader packReader) {
-    assert(packReader);
-    return packReader->itemCount;
+u64 ME_get_pack_item_count(ME_pack_reader pack_reader) {
+    assert(pack_reader);
+    return pack_reader->itemCount;
 }
 
-static int comparePackItems(const void* _a, const void* _b) {
+ME_PRIVATE(int) ME_compare_pack_items(const void *_a, const void *_b) {
     // NOTE: a and b should not be NULL!
     // Skipping here assertions for debug build speed.
 
-    const pack_item* a = _a;
-    const pack_item* b = _b;
+    const pack_item *a = (pack_item *)_a;
+    const pack_item *b = (pack_item *)_b;
 
     int difference = (int)a->info.pathSize - (int)b->info.pathSize;
 
@@ -244,87 +215,88 @@ static int comparePackItems(const void* _a, const void* _b) {
 
     return memcmp(a->path, b->path, a->info.pathSize * sizeof(char));
 }
-bool getPackItemIndex(pack_reader packReader, const char* path, uint64_t* index) {
-    assert(packReader);
+
+bool ME_get_pack_item_index(ME_pack_reader pack_reader, const char *path, u64 *index) {
+    assert(pack_reader);
     assert(path);
     assert(index);
     assert(strlen(path) <= UINT8_MAX);
 
-    pack_item* searchItem = &packReader->searchItem;
+    pack_item *searchItem = &pack_reader->searchItem;
 
-    searchItem->info.pathSize = (uint8_t)strlen(path);
-    searchItem->path = (char*)path;
+    searchItem->info.pathSize = (u8)strlen(path);
+    searchItem->path = (char *)path;
 
-    pack_item* item = bsearch(searchItem, packReader->items, packReader->itemCount, sizeof(pack_item), comparePackItems);
+    pack_item *item = (pack_item *)bsearch(searchItem, pack_reader->items, pack_reader->itemCount, sizeof(pack_item), ME_compare_pack_items);
 
     if (!item) return false;
 
-    *index = item - packReader->items;
+    *index = item - pack_reader->items;
     return true;
 }
 
-uint32_t getPackItemDataSize(pack_reader packReader, uint64_t index) {
-    assert(packReader);
-    assert(index < packReader->itemCount);
-    return packReader->items[index].info.dataSize;
+u32 ME_get_pack_item_data_size(ME_pack_reader pack_reader, u64 index) {
+    assert(pack_reader);
+    assert(index < pack_reader->itemCount);
+    return pack_reader->items[index].info.dataSize;
 }
 
-const char* getPackItemPath(pack_reader packReader, uint64_t index) {
-    assert(packReader);
-    assert(index < packReader->itemCount);
-    return packReader->items[index].path;
+const char *ME_get_pack_item_path(ME_pack_reader pack_reader, u64 index) {
+    assert(pack_reader);
+    assert(index < pack_reader->itemCount);
+    return pack_reader->items[index].path;
 }
 
-pack_result readPackItemData(pack_reader packReader, uint64_t index, const uint8_t** data, uint32_t* size) {
-    assert(packReader);
-    assert(index < packReader->itemCount);
+ME_pack_result ME_read_pack_item_data(ME_pack_reader pack_reader, u64 index, const u8 **data, u32 *size) {
+    assert(pack_reader);
+    assert(index < pack_reader->itemCount);
     assert(data);
     assert(size);
 
-    pack_iteminfo info = packReader->items[index].info;
-    uint8_t* dataBuffer = packReader->dataBuffer;
+    pack_iteminfo info = pack_reader->items[index].info;
+    u8 *dataBuffer = pack_reader->dataBuffer;
 
     if (dataBuffer) {
-        if (info.dataSize > packReader->dataSize) {
-            dataBuffer = realloc(dataBuffer, info.dataSize * sizeof(uint8_t));
+        if (info.dataSize > pack_reader->dataSize) {
+            dataBuffer = (u8 *)realloc(dataBuffer, info.dataSize * sizeof(u8));
 
             if (!dataBuffer) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-            packReader->dataBuffer = dataBuffer;
-            packReader->dataSize = info.dataSize;
+            pack_reader->dataBuffer = dataBuffer;
+            pack_reader->dataSize = info.dataSize;
         }
     } else {
-        dataBuffer = malloc(info.dataSize * sizeof(uint8_t));
+        dataBuffer = (u8 *)malloc(info.dataSize * sizeof(u8));
 
         if (!dataBuffer) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-        packReader->dataBuffer = dataBuffer;
-        packReader->dataSize = info.dataSize;
+        pack_reader->dataBuffer = dataBuffer;
+        pack_reader->dataSize = info.dataSize;
     }
 
-    uint8_t* zipBuffer = packReader->zipBuffer;
+    u8 *zipBuffer = pack_reader->zipBuffer;
 
     if (zipBuffer) {
-        if (info.zipSize > packReader->zipSize) {
-            zipBuffer = realloc(zipBuffer, info.zipSize * sizeof(uint8_t));
+        if (info.zipSize > pack_reader->zipSize) {
+            zipBuffer = (u8 *)realloc(zipBuffer, info.zipSize * sizeof(u8));
 
             if (!zipBuffer) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-            packReader->zipBuffer = zipBuffer;
-            packReader->zipSize = info.zipSize;
+            pack_reader->zipBuffer = zipBuffer;
+            pack_reader->zipSize = info.zipSize;
         }
     } else {
         if (info.zipSize > 0) {
-            zipBuffer = malloc(info.zipSize * sizeof(uint8_t));
+            zipBuffer = (u8 *)malloc(info.zipSize * sizeof(u8));
 
             if (!zipBuffer) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-            packReader->zipBuffer = zipBuffer;
-            packReader->zipSize = info.zipSize;
+            pack_reader->zipBuffer = zipBuffer;
+            pack_reader->zipSize = info.zipSize;
         }
     }
 
-    FILE* file = packReader->file;
+    FILE *file = pack_reader->file;
 
     int64_t fileOffset = (int64_t)(info.fileOffset + sizeof(pack_iteminfo) + info.pathSize);
 
@@ -333,17 +305,19 @@ pack_result readPackItemData(pack_reader packReader, uint64_t index, const uint8
     if (seekResult != 0) return FAILED_TO_SEEK_FILE_PACK_RESULT;
 
     if (info.zipSize > 0) {
-        size_t result = fread(zipBuffer, sizeof(uint8_t), info.zipSize, file);
+        size_t result = fread(zipBuffer, sizeof(u8), info.zipSize, file);
 
         if (result != info.zipSize) return FAILED_TO_READ_FILE_PACK_RESULT;
 
-        const int decompressed_size = LZ4_decompress_safe(zipBuffer, dataBuffer, info.zipSize, info.dataSize);
+        result = LZ4_decompress_safe((char *)zipBuffer, (char *)dataBuffer, info.zipSize, info.dataSize);
 
-        if (decompressed_size < 0 || result != info.dataSize) {
+        METADOT_BUG("[Assets] LZ4_decompress_safe ", result, " ", info.dataSize);
+
+        if (result < 0 || result != info.dataSize) {
             return FAILED_TO_DECOMPRESS_PACK_RESULT;
         }
     } else {
-        size_t result = fread(dataBuffer, sizeof(uint8_t), info.dataSize, file);
+        size_t result = fread(dataBuffer, sizeof(u8), info.dataSize, file);
 
         if (result != info.dataSize) return FAILED_TO_READ_FILE_PACK_RESULT;
     }
@@ -353,102 +327,102 @@ pack_result readPackItemData(pack_reader packReader, uint64_t index, const uint8
     return SUCCESS_PACK_RESULT;
 }
 
-pack_result readPackPathItemData(pack_reader packReader, const char* path, const uint8_t** data, uint32_t* size) {
-    assert(packReader);
+ME_pack_result ME_read_pack_path_item_data(ME_pack_reader pack_reader, const char *path, const u8 **data, u32 *size) {
+    assert(pack_reader);
     assert(path);
     assert(data);
     assert(size);
     assert(strlen(path) <= UINT8_MAX);
 
-    uint64_t index;
+    u64 index;
 
-    if (!getPackItemIndex(packReader, path, &index)) {
+    if (!ME_get_pack_item_index(pack_reader, path, &index)) {
         return FAILED_TO_GET_ITEM_PACK_RESULT;
     }
 
-    return readPackItemData(packReader, index, data, size);
+    return ME_read_pack_item_data(pack_reader, index, data, size);
 }
 
-void freePackReaderBuffers(pack_reader packReader) {
-    assert(packReader);
-    free(packReader->dataBuffer);
-    free(packReader->zipBuffer);
-    packReader->dataBuffer = NULL;
-    packReader->zipBuffer = NULL;
+void ME_free_pack_reader_buffers(ME_pack_reader pack_reader) {
+    assert(pack_reader);
+    free(pack_reader->dataBuffer);
+    free(pack_reader->zipBuffer);
+    pack_reader->dataBuffer = NULL;
+    pack_reader->zipBuffer = NULL;
 }
 
-inline static void removePackItemFiles(uint64_t itemCount, pack_item* packItems) {
+ME_PRIVATE(void) ME_removePackItemFiles(u64 itemCount, pack_item *packItems) {
     assert(itemCount == 0 || (itemCount > 0 && packItems));
 
-    for (uint64_t i = 0; i < itemCount; i++) remove(packItems[i].path);
+    for (u64 i = 0; i < itemCount; i++) remove(packItems[i].path);
 }
-pack_result unpackFiles(const char* filePath, bool printProgress) {
+
+ME_pack_result ME_unpack_files(const char *filePath, bool printProgress) {
     assert(filePath);
 
-    pack_reader packReader;
+    ME_pack_reader pack_reader;
 
-    pack_result packResult = createFilePackReader(filePath, 0, false, &packReader);
+    ME_pack_result packResult = ME_create_file_pack_reader(filePath, 0, false, &pack_reader);
 
     if (packResult != SUCCESS_PACK_RESULT) return packResult;
 
-    uint64_t totalRawSize = 0, totalZipSize = 0;
+    u64 totalRawSize = 0, totalZipSize = 0;
 
-    uint64_t itemCount = packReader->itemCount;
-    pack_item* items = packReader->items;
+    u64 itemCount = pack_reader->itemCount;
+    pack_item *items = pack_reader->items;
 
-    for (uint64_t i = 0; i < itemCount; i++) {
-        pack_item* item = &items[i];
+    for (u64 i = 0; i < itemCount; i++) {
+        pack_item *item = &items[i];
 
         if (printProgress) {
-            printf("Unpacking \"%s\" file. ", item->path);
-            fflush(stdout);
+            METADOT_BUG("Unpacking ", item->path);
         }
 
-        const uint8_t* dataBuffer;
-        uint32_t dataSize;
+        const u8 *dataBuffer;
+        u32 dataSize;
 
-        packResult = readPackItemData(packReader, i, &dataBuffer, &dataSize);
+        packResult = ME_read_pack_item_data(pack_reader, i, &dataBuffer, &dataSize);
 
         if (packResult != SUCCESS_PACK_RESULT) {
-            removePackItemFiles(i, items);
-            destroyPackReader(packReader);
+            ME_removePackItemFiles(i, items);
+            ME_destroy_pack_reader(pack_reader);
             return packResult;
         }
 
-        uint8_t pathSize = item->info.pathSize;
+        u8 pathSize = item->info.pathSize;
 
         char itemPath[UINT8_MAX + 1];
 
         memcpy(itemPath, item->path, pathSize * sizeof(char));
         itemPath[pathSize] = 0;
 
-        for (uint8_t j = 0; j < pathSize; j++) {
+        for (u8 j = 0; j < pathSize; j++) {
             if (itemPath[j] == '/' || itemPath[j] == '\\') {
                 itemPath[j] = '-';
             }
         }
 
-        FILE* itemFile = openFile(itemPath, "wb");
+        FILE *itemFile = openFile(itemPath, "wb");
 
         if (!itemFile) {
-            removePackItemFiles(i, items);
-            destroyPackReader(packReader);
+            ME_removePackItemFiles(i, items);
+            ME_destroy_pack_reader(pack_reader);
             return FAILED_TO_OPEN_FILE_PACK_RESULT;
         }
 
-        size_t result = fwrite(dataBuffer, sizeof(uint8_t), dataSize, itemFile);
+        size_t result = fwrite(dataBuffer, sizeof(u8), dataSize, itemFile);
 
         closeFile(itemFile);
 
         if (result != dataSize) {
-            removePackItemFiles(i, items);
-            destroyPackReader(packReader);
+            ME_removePackItemFiles(i, items);
+            ME_destroy_pack_reader(pack_reader);
             return FAILED_TO_OPEN_FILE_PACK_RESULT;
         }
 
         if (printProgress) {
-            uint32_t rawFileSize = item->info.dataSize;
-            uint32_t zipFileSize = item->info.zipSize > 0 ? item->info.zipSize : item->info.dataSize;
+            u32 rawFileSize = item->info.dataSize;
+            u32 zipFileSize = item->info.zipSize > 0 ? item->info.zipSize : item->info.dataSize;
 
             totalRawSize += rawFileSize;
             totalZipSize += zipFileSize;
@@ -460,7 +434,7 @@ pack_result unpackFiles(const char* filePath, bool printProgress) {
         }
     }
 
-    destroyPackReader(packReader);
+    ME_destroy_pack_reader(pack_reader);
 
     if (printProgress) {
         printf("Unpacked %llu files. (%llu/%llu bytes)\n", (long long unsigned int)itemCount, (long long unsigned int)totalRawSize, (long long unsigned int)totalZipSize);
@@ -469,28 +443,28 @@ pack_result unpackFiles(const char* filePath, bool printProgress) {
     return SUCCESS_PACK_RESULT;
 }
 
-inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, char** itemPaths, bool printProgress) {
+ME_PRIVATE(ME_pack_result) ME_write_pack_items(FILE *packFile, u64 itemCount, char **itemPaths, bool printProgress) {
     assert(packFile);
     assert(itemCount > 0);
     assert(itemPaths);
 
-    uint32_t bufferSize = 1;
+    u32 bufferSize = 1;
 
-    uint8_t* itemData = malloc(sizeof(uint8_t));
+    u8 *itemData = (u8 *)malloc(sizeof(u8));
 
     if (!itemData) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-    uint8_t* zipData = malloc(sizeof(uint8_t));
+    u8 *zipData = (u8 *)malloc(sizeof(u8));
 
     if (!zipData) {
         free(itemData);
         return FAILED_TO_ALLOCATE_PACK_RESULT;
     }
 
-    uint64_t totalZipSize = 0, totalRawSize = 0;
+    u64 totalZipSize = 0, totalRawSize = 0;
 
-    for (uint64_t i = 0; i < itemCount; i++) {
-        char* itemPath = itemPaths[i];
+    for (u64 i = 0; i < itemCount; i++) {
+        char *itemPath = itemPaths[i];
 
         if (printProgress) {
             printf("Packing \"%s\" file. ", itemPath);
@@ -505,7 +479,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
             return BAD_DATA_SIZE_PACK_RESULT;
         }
 
-        FILE* itemFile = openFile(itemPath, "rb");
+        FILE *itemFile = openFile(itemPath, "rb");
 
         if (!itemFile) {
             free(zipData);
@@ -522,7 +496,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
             return FAILED_TO_SEEK_FILE_PACK_RESULT;
         }
 
-        uint64_t itemSize = (uint64_t)tellFile(itemFile);
+        u64 itemSize = (u64)tellFile(itemFile);
 
         if (itemSize == 0 || itemSize > UINT32_MAX) {
             closeFile(itemFile);
@@ -541,7 +515,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
         }
 
         if (itemSize > bufferSize) {
-            uint8_t* newBuffer = realloc(itemData, itemSize * sizeof(uint8_t));
+            u8 *newBuffer = (u8 *)realloc(itemData, itemSize * sizeof(u8));
 
             if (!newBuffer) {
                 closeFile(itemFile);
@@ -552,7 +526,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
 
             itemData = newBuffer;
 
-            newBuffer = realloc(zipData, itemSize * sizeof(uint8_t));
+            newBuffer = (u8 *)realloc(zipData, itemSize * sizeof(u8));
 
             if (!newBuffer) {
                 closeFile(itemFile);
@@ -564,7 +538,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
             zipData = newBuffer;
         }
 
-        size_t result = fread(itemData, sizeof(uint8_t), itemSize, itemFile);
+        size_t result = fread(itemData, sizeof(u8), itemSize, itemFile);
 
         closeFile(itemFile);
 
@@ -580,7 +554,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
 
             const int max_dst_size = LZ4_compressBound(itemSize);
 
-            zipSize = LZ4_compress_fast(itemData, zipData, itemSize, max_dst_size, 10);
+            zipSize = LZ4_compress_fast((char *)itemData, (char *)zipData, itemSize, max_dst_size, 10);
 
             if (zipSize <= 0 || zipSize >= itemSize) {
                 zipSize = 0;
@@ -592,10 +566,10 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
         int64_t fileOffset = tellFile(packFile);
 
         pack_iteminfo info = {
-                (uint32_t)zipSize,
-                (uint32_t)itemSize,
-                (uint64_t)fileOffset,
-                (uint8_t)pathSize,
+                (u32)zipSize,
+                (u32)itemSize,
+                (u64)fileOffset,
+                (u8)pathSize,
         };
 
         result = fwrite(&info, sizeof(pack_iteminfo), 1, packFile);
@@ -615,7 +589,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
         }
 
         if (zipSize > 0) {
-            result = fwrite(zipData, sizeof(uint8_t), zipSize, packFile);
+            result = fwrite(zipData, sizeof(u8), zipSize, packFile);
 
             if (result != zipSize) {
                 free(zipData);
@@ -623,7 +597,7 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
                 return FAILED_TO_WRITE_FILE_PACK_RESULT;
             }
         } else {
-            result = fwrite(itemData, sizeof(uint8_t), itemSize, packFile);
+            result = fwrite(itemData, sizeof(u8), itemSize, packFile);
 
             if (result != itemSize) {
                 free(zipData);
@@ -633,8 +607,8 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
         }
 
         if (printProgress) {
-            uint32_t zipFileSize = zipSize > 0 ? (uint32_t)zipSize : (uint32_t)itemSize;
-            uint32_t rawFileSize = (uint32_t)itemSize;
+            u32 zipFileSize = zipSize > 0 ? (u32)zipSize : (u32)itemSize;
+            u32 rawFileSize = (u32)itemSize;
 
             totalZipSize += zipFileSize;
             totalRawSize += rawFileSize;
@@ -656,45 +630,47 @@ inline static pack_result writePackItems(FILE* packFile, uint64_t itemCount, cha
 
     return SUCCESS_PACK_RESULT;
 }
-static int comparePackItemPaths(const void* _a, const void* _b) {
+
+ME_PRIVATE(int) ME_comparePackItemPaths(const void *_a, const void *_b) {
     // NOTE: a and b should not be NULL!
     // Skipping here assertions for debug build speed.
 
-    char* a = *(char**)_a;
-    char* b = *(char**)_b;
-    uint8_t al = (uint8_t)strlen(a);
-    uint8_t bl = (uint8_t)strlen(b);
+    char *a = *(char **)_a;
+    char *b = *(char **)_b;
+    u8 al = (u8)strlen(a);
+    u8 bl = (u8)strlen(b);
 
     int difference = al - bl;
 
     if (difference != 0) return difference;
 
-    return memcmp(a, b, al * sizeof(uint8_t));
+    return memcmp(a, b, al * sizeof(u8));
 }
-pack_result packFiles(const char* filePath, uint64_t fileCount, const char** filePaths, bool printProgress) {
+
+ME_pack_result ME_pack_files(const char *filePath, u64 fileCount, const char **filePaths, bool printProgress) {
     assert(filePath);
     assert(fileCount > 0);
     assert(filePaths);
 
-    char** itemPaths = malloc(fileCount * sizeof(char*));
+    char **itemPaths = (char **)malloc(fileCount * sizeof(char *));
 
     if (!itemPaths) return FAILED_TO_ALLOCATE_PACK_RESULT;
 
-    uint64_t itemCount = 0;
+    u64 itemCount = 0;
 
-    for (uint64_t i = 0; i < fileCount; i++) {
+    for (u64 i = 0; i < fileCount; i++) {
         bool alreadyAdded = false;
 
-        for (uint64_t j = 0; j < itemCount; j++) {
+        for (u64 j = 0; j < itemCount; j++) {
             if (i != j && strcmp(filePaths[i], itemPaths[j]) == 0) alreadyAdded = true;
         }
 
-        if (!alreadyAdded) itemPaths[itemCount++] = (char*)filePaths[i];
+        if (!alreadyAdded) itemPaths[itemCount++] = (char *)filePaths[i];
     }
 
-    qsort(itemPaths, itemCount, sizeof(char*), comparePackItemPaths);
+    qsort(itemPaths, itemCount, sizeof(char *), ME_comparePackItemPaths);
 
-    FILE* packFile = openFile(filePath, "wb");
+    FILE *packFile = openFile(filePath, "wb");
 
     if (!packFile) {
         free(itemPaths);
@@ -702,7 +678,7 @@ pack_result packFiles(const char* filePath, uint64_t fileCount, const char** fil
     }
 
     char header[PACK_HEADER_SIZE] = {
-            'P', 'A', 'C', 'K', PACK_VERSION_MAJOR, PACK_VERSION_MINOR, PACK_VERSION_PATCH, !PACK_LITTLE_ENDIAN,
+            'P', 'A', 'C', 'K', PACK_VERSION_MAJOR, PACK_VERSION_MINOR, PACK_VERSION_PATCH, !ME_LITTLE_ENDIAN,
     };
 
     size_t writeResult = fwrite(header, sizeof(char), PACK_HEADER_SIZE, packFile);
@@ -714,7 +690,7 @@ pack_result packFiles(const char* filePath, uint64_t fileCount, const char** fil
         return FAILED_TO_WRITE_FILE_PACK_RESULT;
     }
 
-    writeResult = fwrite(&itemCount, sizeof(uint64_t), 1, packFile);
+    writeResult = fwrite(&itemCount, sizeof(u64), 1, packFile);
 
     if (writeResult != 1) {
         free(itemPaths);
@@ -723,7 +699,7 @@ pack_result packFiles(const char* filePath, uint64_t fileCount, const char** fil
         return FAILED_TO_WRITE_FILE_PACK_RESULT;
     }
 
-    pack_result packResult = writePackItems(packFile, itemCount, itemPaths, printProgress);
+    ME_pack_result packResult = ME_write_pack_items(packFile, itemCount, itemPaths, printProgress);
 
     free(itemPaths);
     closeFile(packFile);
@@ -736,7 +712,7 @@ pack_result packFiles(const char* filePath, uint64_t fileCount, const char** fil
     return SUCCESS_PACK_RESULT;
 }
 
-void getPackLibraryVersion(uint8_t* majorVersion, uint8_t* minorVersion, uint8_t* patchVersion) {
+void ME_get_pack_library_version(u8 *majorVersion, u8 *minorVersion, u8 *patchVersion) {
     assert(majorVersion);
     assert(minorVersion);
     assert(patchVersion);
@@ -746,7 +722,7 @@ void getPackLibraryVersion(uint8_t* majorVersion, uint8_t* minorVersion, uint8_t
     *patchVersion = PACK_VERSION_PATCH;
 }
 
-pack_result getPackInfo(const char* filePath, uint8_t* majorVersion, uint8_t* minorVersion, uint8_t* patchVersion, bool* isLittleEndian, uint64_t* _itemCount) {
+ME_pack_result ME_get_pack_info(const char *filePath, u8 *majorVersion, u8 *minorVersion, u8 *patchVersion, bool *isLittleEndian, u64 *_itemCount) {
     assert(filePath);
     assert(majorVersion);
     assert(minorVersion);
@@ -754,7 +730,7 @@ pack_result getPackInfo(const char* filePath, uint8_t* majorVersion, uint8_t* mi
     assert(isLittleEndian);
     assert(_itemCount);
 
-    FILE* file = openFile(filePath, "rb");
+    FILE *file = openFile(filePath, "rb");
 
     if (!file) return FAILED_TO_OPEN_FILE_PACK_RESULT;
 
@@ -772,9 +748,9 @@ pack_result getPackInfo(const char* filePath, uint8_t* majorVersion, uint8_t* mi
         return BAD_FILE_TYPE_PACK_RESULT;
     }
 
-    uint64_t itemCount;
+    u64 itemCount;
 
-    result = fread(&itemCount, sizeof(uint64_t), 1, file);
+    result = fread(&itemCount, sizeof(u64), 1, file);
 
     closeFile(file);
 

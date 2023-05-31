@@ -61,7 +61,7 @@ void NewBackgroundObject(std::string name, U32 solid, LuaWrapper::LuaRef table) 
 void BackgroundSystem::Push(std::string name, BackgroundObject *bg) { m_backgrounds.insert(std::make_pair(name, bg)); }
 
 BackgroundObject *BackgroundSystem::Get(std::string name) {
-    METADOT_ASSERT(m_backgrounds[name], "background is not exist");
+    ME_ASSERT(m_backgrounds[name], "background is not exist");
     return m_backgrounds[name];
 }
 

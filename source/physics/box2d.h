@@ -1620,7 +1620,7 @@ inline b2Fixture *b2Fixture::GetNext() { return m_next; }
 inline const b2Fixture *b2Fixture::GetNext() const { return m_next; }
 
 inline void b2Fixture::SetDensity(float density) {
-    METADOT_ASSERT_E(b2IsValid(density) && density >= 0.0f);
+    ME_ASSERT_E(b2IsValid(density) && density >= 0.0f);
     m_density = density;
 }
 
@@ -1645,7 +1645,7 @@ inline bool b2Fixture::RayCast(b2RayCastOutput *output, const b2RayCastInput &in
 inline void b2Fixture::GetMassData(b2MassData *massData) const { m_shape->ComputeMass(massData, m_density); }
 
 inline const b2AABB &b2Fixture::GetAABB(I32 childIndex) const {
-    METADOT_ASSERT_E(0 <= childIndex && childIndex < m_proxyCount);
+    ME_ASSERT_E(0 <= childIndex && childIndex < m_proxyCount);
     return m_proxies[childIndex].aabb;
 }
 
@@ -3533,7 +3533,7 @@ public:
     }
 
     T Pop() {
-        METADOT_ASSERT_E(m_count > 0);
+        ME_ASSERT_E(m_count > 0);
         --m_count;
         return m_stack[m_count];
     }
@@ -3678,22 +3678,22 @@ private:
 };
 
 inline void *b2DynamicTree::GetUserData(I32 proxyId) const {
-    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
+    ME_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].userData;
 }
 
 inline bool b2DynamicTree::WasMoved(I32 proxyId) const {
-    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
+    ME_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].moved;
 }
 
 inline void b2DynamicTree::ClearMoved(I32 proxyId) {
-    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
+    ME_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     m_nodes[proxyId].moved = false;
 }
 
 inline const b2AABB &b2DynamicTree::GetFatAABB(I32 proxyId) const {
-    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
+    ME_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
     return m_nodes[proxyId].aabb;
 }
 
@@ -3729,7 +3729,7 @@ inline void b2DynamicTree::RayCast(T *callback, const b2RayCastInput &input) con
     PVec2 p1 = input.p1;
     PVec2 p2 = input.p2;
     PVec2 r = p2 - p1;
-    METADOT_ASSERT_E(r.LengthSquared() > 0.0f);
+    ME_ASSERT_E(r.LengthSquared() > 0.0f);
     r.Normalize();
 
     // v is perpendicular to the segment.
@@ -4503,19 +4503,19 @@ public:
     void SolveTOI(const b2TimeStep &subStep, I32 toiIndexA, I32 toiIndexB);
 
     void Add(b2Body *body) {
-        METADOT_ASSERT_E(m_bodyCount < m_bodyCapacity);
+        ME_ASSERT_E(m_bodyCount < m_bodyCapacity);
         body->m_islandIndex = m_bodyCount;
         m_bodies[m_bodyCount] = body;
         ++m_bodyCount;
     }
 
     void Add(b2Contact *contact) {
-        METADOT_ASSERT_E(m_contactCount < m_contactCapacity);
+        ME_ASSERT_E(m_contactCount < m_contactCapacity);
         m_contacts[m_contactCount++] = contact;
     }
 
     void Add(b2Joint *joint) {
-        METADOT_ASSERT_E(m_jointCount < m_jointCapacity);
+        ME_ASSERT_E(m_jointCount < m_jointCapacity);
         m_joints[m_jointCount++] = joint;
     }
 
@@ -4754,7 +4754,7 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input);
 inline I32 b2DistanceProxy::GetVertexCount() const { return m_count; }
 
 inline const PVec2 &b2DistanceProxy::GetVertex(I32 index) const {
-    METADOT_ASSERT_E(0 <= index && index < m_count);
+    ME_ASSERT_E(0 <= index && index < m_count);
     return m_vertices[index];
 }
 

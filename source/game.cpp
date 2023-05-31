@@ -23,7 +23,7 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/macros.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/platform.h"
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
@@ -40,7 +40,7 @@
 #include "game_utils/mdplot.h"
 #include "libs/glad/glad.h"
 #include "libs/imgui/imgui.h"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/renderer_gpu.h"
@@ -84,7 +84,7 @@ int Game::init(int argc, char *argv[]) {
     METADOT_INFO("Starting game...");
 
     // Initialization of ECSSystem and Engine
-    if (InitEngine(InitCppReflection)) return METADOT_FAILED;
+    if (InitEngine(init_reflection)) return METADOT_FAILED;
 
     // Load splash screen
     DrawSplash();
@@ -1150,7 +1150,7 @@ void Game::updateFrameEarly() {
 
     if (ControlSystem::DEBUG_RIGID->get()) {
         for (auto &cur : GameIsolate_.world->rigidBodies) {
-            METADOT_ASSERT_E(cur);
+            ME_ASSERT_E(cur);
             if (cur->body->IsEnabled()) {
                 F32 s = sin(cur->body->GetAngle());
                 F32 c = cos(cur->body->GetAngle());
@@ -1408,7 +1408,7 @@ void Game::updateFrameEarly() {
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
 
-            METADOT_ASSERT_E(cur);
+            ME_ASSERT_E(cur);
 
             if (swapped) {
                 cur->hover = (F32)std::fmax(0, cur->hover - hoverDelta);
@@ -1727,7 +1727,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->matWidth; tx++) {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
-                    METADOT_ASSERT_E(rmat.mat);
+                    ME_ASSERT_E(rmat.mat);
                     if (rmat.mat->id == MaterialsList::GENERIC_AIR.id) continue;
 
                     // rotate point

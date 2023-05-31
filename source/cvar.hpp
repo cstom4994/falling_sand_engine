@@ -3,7 +3,7 @@
 #define _METADOT_CVAR_HPP_
 
 #include "core/core.hpp"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 
 struct GlobalDEF {
     bool draw_frame_graph;

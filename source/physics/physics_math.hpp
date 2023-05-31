@@ -11,7 +11,7 @@
 #include <set>
 
 #include "core/core.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 
 #define B2_NOT_USED(x) ((void)(x))
 
@@ -573,7 +573,7 @@ inline void PSweep::GetTransform(PTransform *xf, float beta) const {
 }
 
 inline void PSweep::Advance(float alpha) {
-    METADOT_ASSERT_E(alpha0 < 1.0f);
+    ME_ASSERT_E(alpha0 < 1.0f);
     float beta = (alpha - alpha0) / (1.0f - alpha0);
     c0 += beta * (c - c0);
     a0 += beta * (a - a0);

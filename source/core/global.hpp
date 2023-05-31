@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include "audio/audio.h"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 #include "core/core.hpp"
 #include "engine/engine.h"
 #include "core/platform.h"

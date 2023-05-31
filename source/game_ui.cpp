@@ -33,7 +33,7 @@ GameUI::GameUI gameUI;
 
 void I18N::Init() {
     auto L = Scripting::GetSingletonPtr()->Lua;
-    METADOT_ASSERT(L, "Can't load I18N when luacore is invaild");
+    ME_ASSERT(L, "Can't load I18N when luacore is invaild");
 
     Load("zh");
 }
@@ -286,7 +286,7 @@ void MainMenuUI__Setup() {
 
 void MainMenuUI__Draw(Game *game) {
 
-    METADOT_ASSERT_E(game);
+    ME_ASSERT_E(game);
 
     if (!gameUI.visible_mainmenu) return;
 

@@ -4,7 +4,7 @@
 #define _R_H__
 
 #include "core/core.h"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 // #include "game_utils/PixelColor.h"
 
 #include "libs/external/stb_image.h"
@@ -104,7 +104,7 @@ typedef struct METAENGINE_Color {
     U8 g;
     U8 b;
     U8 a;
-#ifdef __cplusplus
+
     METAENGINE_Color() : r(255), g(255), b(255), a(255) {}
     METAENGINE_Color(U8 R, U8 G, U8 B, U8 A) : r(R), g(G), b(B), a(A) {}
     METAENGINE_Color(float R, float G, float B) : r(R * 255), g(G * 255), b(B * 255), a(255) {}
@@ -116,7 +116,7 @@ typedef struct METAENGINE_Color {
         g = G * 255;
         b = B * 255;
     }
-#endif
+
 } METAENGINE_Color;
 
 typedef struct R_Renderer R_Renderer;

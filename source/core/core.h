@@ -47,28 +47,6 @@ typedef struct Pixel {
     U8 a;
 } Pixel;
 
-//--------------------------------------------------------------------------------------------------------------------------------//
-// LOGGING FUNCTIONS
-
-#if defined(METADOT_DEBUG)
-#define METADOT_BUG(...) log_debug(__VA_ARGS__)
-#else
-#define METADOT_BUG(...)
-#endif
-// #define METADOT_TRACE(...) log_trace(__VA_ARGS__)
-// #define METADOT_INFO(...) log_info(__VA_ARGS__)
-// #define METADOT_WARN(...) log_warn(__VA_ARGS__)
-// #define METADOT_ERROR(...) log_error(__VA_ARGS__)
-#define METADOT_TRACE(...)
-#define METADOT_INFO(...)
-#define METADOT_WARN(...)
-#define METADOT_ERROR(...)
-#define METADOT_LOG_SCOPE_FUNCTION(_c)
-#define METADOT_LOG_SCOPE_F(...)
-
-#define METADOT_ASSERT(x, _c) assert(x)
-#define METADOT_ASSERT_E(x) assert(x)
-
 #pragma region endian_h
 
 // MetaDot endian

@@ -134,8 +134,8 @@ public:
     virtual ~CDefaultHandleFactory() {}
 
     virtual TBaseClass *GetPointer(int handle) {
-        METADOT_ASSERT_E(handle >= 0);
-        METADOT_ASSERT_E(handle < (int)mGameObjects.size());
+        ME_ASSERT_E(handle >= 0);
+        ME_ASSERT_E(handle < (int)mGameObjects.size());
         return mGameObjects[handle];
     }
 
@@ -173,12 +173,12 @@ public:
     // checks against NULL
 
     bool operator==(int i) const {
-        METADOT_ASSERT_E(i == 0);
+        ME_ASSERT_E(i == 0);
         return IsNull();
     }
 
     bool operator!=(int i) const {
-        METADOT_ASSERT_E(i == 0);
+        ME_ASSERT_E(i == 0);
         return !IsNull();
     }
 
@@ -204,9 +204,9 @@ public:
     //=========================================================================
 
     T *Get() const {
-        // METADOT_ASSERT_E( impl );
+        // ME_ASSERT_E( impl );
         if (mHandleManager) {
-            METADOT_ASSERT_E(dynamic_cast<T *>(mHandleManager->GetPointer(mHandle)));
+            ME_ASSERT_E(dynamic_cast<T *>(mHandleManager->GetPointer(mHandle)));
             return dynamic_cast<T *>(mHandleManager->GetPointer(mHandle));
         } else {
             return 0;
@@ -244,7 +244,7 @@ public:
     template <class TypeCastTo>
     CHandlePtr<TypeCastTo, THandle, TFactory> CastTo() {
         // insures that we can cast to that type
-        METADOT_ASSERT_E(dynamic_cast<TypeCastTo *>(Get()));
+        ME_ASSERT_E(dynamic_cast<TypeCastTo *>(Get()));
 
         CHandlePtr<TypeCastTo, THandle, TFactory> result;
         result.SetImpl(mHandleManager, mHandle);

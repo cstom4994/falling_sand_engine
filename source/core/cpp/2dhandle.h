@@ -3,7 +3,7 @@
 #define INC_CRECT_H
 
 // #include "Poro/utils/../config/cengtypes.h"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/sdl_wrapper.h"
 
 namespace MetaEngine {

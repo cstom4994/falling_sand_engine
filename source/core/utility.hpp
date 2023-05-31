@@ -276,14 +276,17 @@ static_assert(sizeof(int) == sizeof(MoveOnly<int>));
 // LOGGING FUNCTIONS
 
 #if defined(ME_DEBUG)
-#define ME_BUG(...) ME::logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__);
+#define METADOT_BUG(...) ME::logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__);
 #else
-#define ME_BUG(...)
+#define METADOT_BUG(...)
 #endif
-#define ME_TRACE(...) ME::logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__);
-#define ME_INFO(...) ME::logger::log(ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__);
-#define ME_WARN(...) ME::logger::log(ME::ME_LOG_TYPE_WARNING, __VA_ARGS__);
-#define ME_ERROR(...) ME::logger::log(ME::ME_LOG_TYPE_ERROR, __VA_ARGS__);
+#define METADOT_TRACE(...) ME::logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__);
+#define METADOT_INFO(...) ME::logger::log(ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__);
+#define METADOT_WARN(...) ME::logger::log(ME::ME_LOG_TYPE_WARNING, __VA_ARGS__);
+#define METADOT_ERROR(...) ME::logger::log(ME::ME_LOG_TYPE_ERROR, __VA_ARGS__);
+
+#define METADOT_LOG_SCOPE_FUNCTION(...)
+#define METADOT_LOG_SCOPE_F(...)
 
 template <typename... Args>
 bool DebugCheck(const bool succeeded, const char *failMessage, Args... args) {

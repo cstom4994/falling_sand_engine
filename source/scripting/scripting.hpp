@@ -10,6 +10,7 @@
 #include "core/cpp/csingleton.h"
 #include "core/cpp/struct.hpp"
 #include "core/macros.hpp"
+#include "core/utility.hpp"
 #include "engine/engine.h"
 #include "scripting/lua/lua_wrapper.hpp"
 

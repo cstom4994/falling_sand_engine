@@ -31,7 +31,7 @@
 #include "libs/glad/glad.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 #include "meta/static_relfection.hpp"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
@@ -1004,7 +1004,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             dockspace_id = ImGui::GetID("MyDockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         } else {
-            METADOT_ASSERT_E(0);
+            ME_ASSERT_E(0);
         }
         ImGui::End();
 
@@ -1094,7 +1094,7 @@ CSTDTime | {6} | Nothing)";
                         play ^= true;
                         static METAENGINE_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
                         if (play) {
-                            METADOT_ASSERT_E(test_audio);
+                            ME_ASSERT_E(test_audio);
                             // metadot_music_play(test_audio, 0.f);
                             // metadot_audio_destroy(test_audio);
                             METAENGINE_Result err;

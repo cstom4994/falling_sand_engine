@@ -21,10 +21,10 @@ using namespace MetaEngine;
 
 void* metadot_agrow(const void* a, int new_size, size_t element_size) {
     METAENGINE_ACANARY(a);
-    METADOT_ASSERT_E(acap(a) <= (SIZE_MAX - 1) / 2);
+    ME_ASSERT_E(acap(a) <= (SIZE_MAX - 1) / 2);
     int new_capacity = std::max(2 * acap(a), std::max(new_size, 16));
-    METADOT_ASSERT_E(new_size <= new_capacity);
-    METADOT_ASSERT_E(new_capacity <= (SIZE_MAX - sizeof(METAENGINE_Ahdr)) / element_size);
+    ME_ASSERT_E(new_size <= new_capacity);
+    ME_ASSERT_E(new_capacity <= (SIZE_MAX - sizeof(METAENGINE_Ahdr)) / element_size);
     size_t total_size = sizeof(METAENGINE_Ahdr) + new_capacity * element_size;
     METAENGINE_Ahdr* hdr;
     if (a) {
@@ -120,7 +120,7 @@ char* metadot_sfmt_append(char* s, const char* fmt, ...) {
         va_start(args, fmt);
         int new_capacity = scap(s) - scount(s);
         n = 1 + vsnprintf(s + slen(s), new_capacity, fmt, args);
-        METADOT_ASSERT_E(n <= new_capacity);
+        ME_ASSERT_E(n <= new_capacity);
         va_end(args);
     }
     alen(s) += n - 1;
@@ -152,7 +152,7 @@ char* metadot_svfmt_append(char* s, const char* fmt, va_list args) {
         afit(s, n + slen(s));
         int new_capacity = scap(s) - scount(s);
         n = 1 + vsnprintf(s + slen(s), new_capacity, fmt, args);
-        METADOT_ASSERT_E(n <= new_capacity);
+        ME_ASSERT_E(n <= new_capacity);
     }
     alen(s) += n - 1;
     return s;
@@ -321,7 +321,7 @@ int metadot_slast_index_of(const char* s, char c) {
 static uint64_t s_stoint(const char* s) {
     char* end;
     uint64_t result = METAENGINE_STRTOLL(s, &end, 10);
-    METADOT_ASSERT_E(end == s + METAENGINE_STRLEN(s));
+    ME_ASSERT_E(end == s + METAENGINE_STRLEN(s));
     return result;
 }
 
@@ -332,7 +332,7 @@ uint64_t metadot_stouint(const char* s) { return s_stoint(s); }
 static double s_stod(const char* s) {
     char* end;
     double result = METAENGINE_STRTOD(s, &end);
-    METADOT_ASSERT_E(end == s + METAENGINE_STRLEN(s));
+    ME_ASSERT_E(end == s + METAENGINE_STRLEN(s));
     return result;
 }
 
@@ -345,7 +345,7 @@ uint64_t metadot_stohex(const char* s) {
     if (!METAENGINE_STRNCMP(s, "0x", 2)) s += 2;
     char* end;
     uint64_t result = METAENGINE_STRTOLL(s, &end, 16);
-    METADOT_ASSERT_E(end == s + METAENGINE_STRLEN(s));
+    ME_ASSERT_E(end == s + METAENGINE_STRLEN(s));
     return result;
 }
 
@@ -443,7 +443,7 @@ static intern_table_t* s_inst() {
             metadot_destroy_rw_lock(&inst->lock);
             METAENGINE_FW_FREE(inst);
             inst = (intern_table_t*)metadot_atomic_ptr_get((void**)&g_intern_table);
-            METADOT_ASSERT_E(inst);
+            ME_ASSERT_E(inst);
         }
     }
     return inst;
@@ -478,7 +478,7 @@ const char* metadot_sintern_range(const char* start, const char* end) {
 
     // String is not yet interned, create a new allocation for it.
     // We write-lock the data structure, this will wait for all readers to flush.
-    METADOT_ASSERT_E(!intern || intern->cookie == METAENGINE_INTERN_COOKIE);
+    ME_ASSERT_E(!intern || intern->cookie == METAENGINE_INTERN_COOKIE);
     intern_t* list = intern;
     table->write_lock();
     intern = (intern_t*)arena_alloc(&table->arena, sizeof(intern_t) + len + 1);
@@ -626,7 +626,7 @@ static ME_INLINE void* s_get_item(const METAENGINE_Hhdr* table, int index) {
 }
 
 void* metadot_hashtable_make_impl(int key_size, int item_size, int capacity) {
-    METADOT_ASSERT_E(capacity);
+    ME_ASSERT_E(capacity);
 
     METAENGINE_Hhdr* table = (METAENGINE_Hhdr*)METAENGINE_FW_CALLOC(sizeof(METAENGINE_Hhdr) + (capacity + 1) * item_size);
     table->cookie = METAENGINE_HCOOKIE;
@@ -680,7 +680,7 @@ static int s_find_slot(const METAENGINE_Hhdr* table, uint32_t hash, const void* 
             uint32_t slot_hash = table->slots[slot].key_hash;
             int slot_base = (int)(slot_hash % slot_capacity);
             if (slot_base == base_slot) {
-                METADOT_ASSERT_E(base_count > 0);
+                ME_ASSERT_E(base_count > 0);
                 --base_count;
                 const void* slot_key = s_get_key(table, table->slots[slot].item_index);
                 if (slot_hash == hash && s_keys_equal(table, slot_key, key)) {
@@ -702,7 +702,7 @@ static void s_expand_slots(METAENGINE_Hhdr* table) {
     uint32_t slot_capacity = (uint32_t)table->slot_capacity;
 
     table->slots = (METAENGINE_Hslot*)METAENGINE_FW_CALLOC(table->slot_capacity * sizeof(METAENGINE_Hslot));
-    METADOT_ASSERT_E(table->slots);
+    ME_ASSERT_E(table->slots);
     for (int i = 0; i < table->slot_capacity; ++i) {
         table->slots[i].item_index = -1;
     }
@@ -739,7 +739,7 @@ static METAENGINE_Hhdr* s_expand_items(METAENGINE_Hhdr* table) {
 
 void* metadot_hashtable_insert_impl2(METAENGINE_Hhdr* table, const void* key, const void* item) {
     uint32_t hash = (uint32_t)fnv1a(key, table->key_size);
-    METADOT_ASSERT_E(s_find_slot(table, hash, key) < 0);
+    ME_ASSERT_E(s_find_slot(table, hash, key) < 0);
 
     if (table->count >= (table->slot_capacity - table->slot_capacity / 3)) {
         s_expand_slots(table);
@@ -773,8 +773,8 @@ void* metadot_hashtable_insert_impl2(METAENGINE_Hhdr* table, const void* key, co
         item = (void*)((uintptr_t)(table + 1));
     }
 
-    METADOT_ASSERT_E(table->count < table->item_capacity);
-    METADOT_ASSERT_E(table->slots[slot].item_index < 0 && (hash % slot_capacity) == (uint32_t)base_slot);
+    ME_ASSERT_E(table->count < table->item_capacity);
+    ME_ASSERT_E(table->slots[slot].item_index < 0 && (hash % slot_capacity) == (uint32_t)base_slot);
     table->slots[slot].key_hash = hash;
     table->slots[slot].item_index = table->count;
     ++table->slots[base_slot].base_count;
@@ -796,7 +796,7 @@ void* metadot_hashtable_insert_impl(METAENGINE_Hhdr* table, uint64_t key) { retu
 void metadot_hashtable_remove_impl2(METAENGINE_Hhdr* table, const void* key) {
     uint32_t hash = (uint32_t)fnv1a(key, table->key_size);
     int slot = s_find_slot(table, hash, key);
-    METADOT_ASSERT_E(slot >= 0);
+    ME_ASSERT_E(slot >= 0);
 
     int base_slot = (int)(hash % (uint32_t)table->slot_capacity);
     int index = table->slots[slot].item_index;
@@ -960,7 +960,7 @@ uint32_t metadot_handle_allocator_get_index(METAENGINE_HandleTable* table, METAE
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();
     uint32_t table_index = s_table_index(handle);
     uint64_t generation = handle & 0xFFFF;
-    METADOT_ASSERT_E(m_handles[table_index].data.generation == generation);
+    ME_ASSERT_E(m_handles[table_index].data.generation == generation);
     return m_handles[table_index].data.user_index;
 }
 
@@ -968,7 +968,7 @@ uint16_t metadot_handle_allocator_get_type(METAENGINE_HandleTable* table, METAEN
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();
     uint32_t table_index = s_table_index(handle);
     uint64_t generation = handle & 0xFFFF;
-    METADOT_ASSERT_E(m_handles[table_index].data.generation == generation);
+    ME_ASSERT_E(m_handles[table_index].data.generation == generation);
     return m_handles[table_index].data.user_type;
 }
 
@@ -976,7 +976,7 @@ bool metadot_handle_allocator_is_active(METAENGINE_HandleTable* table, METAENGIN
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();
     uint32_t table_index = s_table_index(handle);
     uint64_t generation = handle & 0xFFFF;
-    METADOT_ASSERT_E(m_handles[table_index].data.generation == generation);
+    ME_ASSERT_E(m_handles[table_index].data.generation == generation);
     return m_handles[table_index].data.active;
 }
 
@@ -984,7 +984,7 @@ void metadot_handle_allocator_activate(METAENGINE_HandleTable* table, METAENGINE
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();
     uint32_t table_index = s_table_index(handle);
     uint64_t generation = handle & 0xFFFF;
-    METADOT_ASSERT_E(m_handles[table_index].data.generation == generation);
+    ME_ASSERT_E(m_handles[table_index].data.generation == generation);
     m_handles[table_index].data.active = true;
 }
 
@@ -992,7 +992,7 @@ void metadot_handle_allocator_deactivate(METAENGINE_HandleTable* table, METAENGI
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();
     uint32_t table_index = s_table_index(handle);
     uint64_t generation = handle & 0xFFFF;
-    METADOT_ASSERT_E(m_handles[table_index].data.generation == generation);
+    ME_ASSERT_E(m_handles[table_index].data.generation == generation);
     m_handles[table_index].data.active = false;
 }
 
@@ -1000,7 +1000,7 @@ void metadot_handle_allocator_update_index(METAENGINE_HandleTable* table, METAEN
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();
     uint32_t table_index = s_table_index(handle);
     uint64_t generation = handle & 0xFFFF;
-    METADOT_ASSERT_E(m_handles[table_index].data.generation == generation);
+    ME_ASSERT_E(m_handles[table_index].data.generation == generation);
     m_handles[table_index].data.user_index = index;
 }
 
@@ -1165,10 +1165,10 @@ METAENGINE_Result metadot_base64_encode(void* dst, size_t dst_size, const void* 
         uint32_t c = (bits & 0xFC0) >> 6;
         uint32_t d = (bits & 0x3F);
         in += 3;
-        METADOT_ASSERT_E(a < 64);
-        METADOT_ASSERT_E(b < 64);
-        METADOT_ASSERT_E(c < 64);
-        METADOT_ASSERT_E(d < 64);
+        ME_ASSERT_E(a < 64);
+        ME_ASSERT_E(b < 64);
+        ME_ASSERT_E(c < 64);
+        ME_ASSERT_E(d < 64);
         *out++ = s_6bits_to_base64[a];
         *out++ = s_6bits_to_base64[b];
         *out++ = s_6bits_to_base64[c];
@@ -1181,9 +1181,9 @@ METAENGINE_Result metadot_base64_encode(void* dst, size_t dst_size, const void* 
             uint32_t a = (bits & 0xFC00) >> 10;
             uint32_t b = (bits & 0x3F0) >> 4;
             uint32_t c = (bits & 0xF) << 2;
-            METADOT_ASSERT_E(a < 64);
-            METADOT_ASSERT_E(b < 64);
-            METADOT_ASSERT_E(c < 64);
+            ME_ASSERT_E(a < 64);
+            ME_ASSERT_E(b < 64);
+            ME_ASSERT_E(c < 64);
             *out++ = s_6bits_to_base64[a];
             *out++ = s_6bits_to_base64[b];
             *out++ = s_6bits_to_base64[c];
@@ -1194,8 +1194,8 @@ METAENGINE_Result metadot_base64_encode(void* dst, size_t dst_size, const void* 
             uint32_t bits = ((uint32_t)in[0]);
             uint32_t a = (bits & 0xFC) >> 2;
             uint32_t b = (bits & 0x3) << 4;
-            METADOT_ASSERT_E(a < 64);
-            METADOT_ASSERT_E(b < 64);
+            ME_ASSERT_E(a < 64);
+            ME_ASSERT_E(b < 64);
             *out++ = s_6bits_to_base64[a];
             *out++ = s_6bits_to_base64[b];
             in += 1;
@@ -1206,7 +1206,7 @@ METAENGINE_Result metadot_base64_encode(void* dst, size_t dst_size, const void* 
         *out++ = '=';
     }
 
-    METADOT_ASSERT_E((int)(out - (uint8_t*)dst) == out_size);
+    ME_ASSERT_E((int)(out - (uint8_t*)dst) == out_size);
 
     return metadot_result_success();
 }
@@ -1283,7 +1283,7 @@ METAENGINE_Result metadot_base64_decode(void* dst, size_t dst_size, const void* 
         } break;
     }
 
-    METADOT_ASSERT_E((int)(out + pads - (uint8_t*)dst) == METADOT_BASE64_DECODED_SIZE(src_size));
+    ME_ASSERT_E((int)(out + pads - (uint8_t*)dst) == METADOT_BASE64_DECODED_SIZE(src_size));
 
     return metadot_result_success();
 }

@@ -329,7 +329,9 @@ struct cute_rw_lock_t {
 
 #if defined(CUTE_SYNC_SDL)
 #elif defined(CUTE_SYNC_WINDOWS)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 // To use GetThreadId and other methods we must require Windows Vista minimum.
 #if _WIN32_WINNT < 0x0600
 #undef _WIN32_WINNT

@@ -664,12 +664,12 @@ char *gc_strdup(GarbageCollector *gc, const char *s) {
 #pragma region engine_framework
 
 void *metadot_aligned_alloc(size_t size, int alignment) {
-    METADOT_ASSERT_E(alignment <= 256);
+    ME_ASSERT_E(alignment <= 256);
     void *p = METAENGINE_FW_ALLOC(size + alignment);
     if (!p) return NULL;
     size_t offset = (size_t)p & (alignment - 1);
     p = METAENGINE_ALIGN_FORWARD_PTR((char *)p + 1, alignment);
-    METADOT_ASSERT_E(!(((size_t)p) & (alignment - 1)));
+    ME_ASSERT_E(!(((size_t)p) & (alignment - 1)));
     *((char *)p - 1) = (char)(alignment - offset);
     return p;
 }
@@ -689,7 +689,7 @@ void metadot_arena_init(METAENGINE_Arena *arena, int alignment, int block_size) 
 }
 
 void *metadot_arena_alloc(METAENGINE_Arena *arena, size_t size) {
-    METADOT_ASSERT_E((int)size < arena->block_size);
+    ME_ASSERT_E((int)size < arena->block_size);
     if (size > (size_t)(arena->end - arena->ptr)) {
         arena->ptr = (char *)metadot_aligned_alloc(arena->block_size, arena->alignment);
         arena->end = arena->ptr + arena->block_size;
@@ -697,8 +697,8 @@ void *metadot_arena_alloc(METAENGINE_Arena *arena, size_t size) {
     }
     void *result = arena->ptr;
     arena->ptr = (char *)METAENGINE_ALIGN_FORWARD_PTR(arena->ptr + size, arena->alignment);
-    METADOT_ASSERT_E(!(((size_t)(arena->ptr)) & (arena->alignment - 1)));
-    METADOT_ASSERT_E(arena->ptr <= arena->end);
+    ME_ASSERT_E(!(((size_t)(arena->ptr)) & (arena->alignment - 1)));
+    ME_ASSERT_E(arena->ptr <= arena->end);
     return result;
 }
 
@@ -755,7 +755,7 @@ METAENGINE_MemoryPool *metadot_make_memory_pool(int element_size, int element_co
 void metadot_destroy_memory_pool(METAENGINE_MemoryPool *pool) {
     if (pool->overflow_count) {
         // Attempted to destroy pool without freeing all overflow allocations.
-        METADOT_ASSERT_E(pool->overflow_count == 0);
+        ME_ASSERT_E(pool->overflow_count == 0);
     }
     METAENGINE_FW_FREE(pool);
 }
@@ -792,7 +792,7 @@ void metadot_memory_pool_free(METAENGINE_MemoryPool *pool, void *element) {
         pool->free_list = element;
     } else {
         // Tried to free something that definitely didn't come from this pool.
-        METADOT_ASSERT_E(false);
+        ME_ASSERT_E(false);
     }
 }
 

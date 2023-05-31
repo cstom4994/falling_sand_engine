@@ -15,7 +15,7 @@
 #include "core/macros.hpp"
 #include "libs/lua/lua.hpp"
 #include "lua_wrapper_pp.hpp"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -114,7 +114,7 @@ struct IsSupportedClass<T, std::void_t<typename ClassTraits<T>::ThisClass, typen
 
 template <class T>
 struct GetAmountOfPrivateDataFields
-    : std::integral_constant<std::size_t, Meta::StructMemberCount<typename ClassTraits<T>::PrivateData>::value + GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value> {};
+    : std::integral_constant<std::size_t, ME::meta::StructMemberCount<typename ClassTraits<T>::PrivateData>::value + GetAmountOfPrivateDataFields<typename ClassTraits<T>::BaseClass>::value> {};
 template <>
 struct GetAmountOfPrivateDataFields<void> : std::integral_constant<std::size_t, 0> {};
 

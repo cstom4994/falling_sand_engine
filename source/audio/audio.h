@@ -11,7 +11,7 @@
 
 #include "core/core.h"
 #include "core/macros.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "engine/engine.h"
 
 //--------------------------------------------------------------------------------------------------

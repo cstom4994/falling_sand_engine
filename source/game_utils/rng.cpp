@@ -3,7 +3,7 @@
 #include "rng.h"
 
 #include "core/cpp/utils.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/utility.hpp"
 
 RNG* RNG_Create() {

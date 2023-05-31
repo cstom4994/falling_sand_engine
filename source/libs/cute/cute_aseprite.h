@@ -1117,7 +1117,7 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
             }
 
             uint32_t size_read = (uint32_t)(s->in - chunk_start);
-            METADOT_ASSERT_E(size_read == chunk_size);
+            ME_ASSERT_E(size_read == chunk_size);
         }
     }
 

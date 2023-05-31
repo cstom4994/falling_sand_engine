@@ -33,7 +33,7 @@
 #include "game_utils/rng.h"
 #include "physics/box2d.h"
 // #include "libs/parallel_hashmap/phmap.h"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/scripting.hpp"
 #include "ui/imgui/imgui_layer.hpp"
@@ -85,7 +85,7 @@ public:
     I32 fadeOutWaitFrames = 0;
     I64 fadeOutStart = 0;
     I64 fadeOutLength = 0;
-    Meta::AnyFunction fadeOutCallback = []() {};
+    ME::meta::any_function fadeOutCallback = []() {};
 
     EventCallbackFn EventCallback;
 

@@ -13,7 +13,7 @@
 #include "core/stl/stl.h"
 
 // #define FUTIL_ASSERT_EXIST(stringPath)                                                             \
-//     METADOT_ASSERT(FUtil_exists(METADOT_RESLOC(stringPath)),                                       \
+//     ME_ASSERT(FUtil_exists(METADOT_RESLOC(stringPath)),                                       \
 //                    ("%s", MetaEngine::Format("FILE: {0} does not exist", stringPath)))
 
 #define FUTIL_ASSERT_EXIST(stringPath)

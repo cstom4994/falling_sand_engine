@@ -1,24 +1,124 @@
-#ifndef REFLECT_H
-#define REFLECT_H
+#ifndef ME_REFLECT_H
+#define ME_REFLECT_H
+
+#include <algorithm>
 #include <array>
+#include <cstddef>
 #include <deque>
 #include <forward_list>
+#include <functional>
+#include <iostream>
 #include <list>
 #include <map>
 #include <memory>
 #include <queue>
 #include <set>
 #include <stack>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "core/core.hpp"
+#include "core/basic_types.h"
+#include "core/core.h"
+#include "core/cpp/templatelist.hpp"
+#include "meta/static_relfection.hpp"
+
+#define meta_offset(T, E) ((size_t)(&(((T *)(0))->E)))
+#define meta_to_str(T) ((const char *)#T)
+
+typedef enum meta_property_type {
+    META_PROPERTY_TYPE_U8 = 0x00,
+    META_PROPERTY_TYPE_U16,
+    META_PROPERTY_TYPE_U32,
+    META_PROPERTY_TYPE_U64,
+    META_PROPERTY_TYPE_S8,
+    META_PROPERTY_TYPE_S16,
+    META_PROPERTY_TYPE_S32,
+    META_PROPERTY_TYPE_S64,
+    META_PROPERTY_TYPE_F32,
+    META_PROPERTY_TYPE_F64,
+    META_PROPERTY_TYPE_SIZE_T,
+    META_PROPERTY_TYPE_STR,
+    META_PROPERTY_TYPE_COUNT
+} meta_property_type;
+
+typedef struct meta_property_type_info_t {
+    const char *name;  // Display name
+    u32 id;            // Matches up to property type, used for lookups and switch statements
+} meta_property_type_info_t;
+
+extern meta_property_type_info_t _meta_property_type_info_decl_impl(const char *name, u32 id);
+
+#define meta_property_type_info_decl(T, PROP_TYPE) _meta_property_type_info_decl_impl(meta_to_str(T), (PROP_TYPE))
+
+#define META_PROPERTY_TYPE_INFO_U8 meta_property_type_info_decl(u8, META_PROPERTY_TYPE_U8)
+#define META_PROPERTY_TYPE_INFO_S8 meta_property_type_info_decl(i8, META_PROPERTY_TYPE_S8)
+#define META_PROPERTY_TYPE_INFO_U16 meta_property_type_info_decl(u16, META_PROPERTY_TYPE_U16)
+#define META_PROPERTY_TYPE_INFO_S16 meta_property_type_info_decl(i16, META_PROPERTY_TYPE_S16)
+#define META_PROPERTY_TYPE_INFO_U32 meta_property_type_info_decl(u32, META_PROPERTY_TYPE_U32)
+#define META_PROPERTY_TYPE_INFO_S32 meta_property_type_info_decl(i32, META_PROPERTY_TYPE_S32)
+#define META_PROPERTY_TYPE_INFO_U64 meta_property_type_info_decl(u64, META_PROPERTY_TYPE_U64)
+#define META_PROPERTY_TYPE_INFO_S64 meta_property_type_info_decl(i64, META_PROPERTY_TYPE_S64)
+#define META_PROPERTY_TYPE_INFO_F32 meta_property_type_info_decl(f32, META_PROPERTY_TYPE_F32)
+#define META_PROPERTY_TYPE_INFO_F64 meta_property_type_info_decl(f64, META_PROPERTY_TYPE_F64)
+
+#define META_PROPERTY_TYPE_INFO_SIZE_T meta_property_type_info_decl(size_t, META_PROPERTY_TYPE_SIZE_T)
+#define META_PROPERTY_TYPE_INFO_STR meta_property_type_info_decl(char *, META_PROPERTY_TYPE_STR)
+
+typedef struct meta_property_t {
+    const char *name;                // Display name of field
+    size_t offset;                   // Offset in bytes to struct
+    meta_property_type_info_t type;  // Type info
+} meta_property_t;
+
+extern meta_property_t _meta_property_impl(const char *name, size_t offset, meta_property_type_info_t type);
+
+#define meta_property(CLS, FIELD, TYPE) _meta_property_impl(meta_to_str(FIELD), meta_offset(CLS, FIELD), TYPE)
+
+typedef struct meta_class_t {
+    const char *name;             // Display name
+    u32 property_count;           // Count of all properties in list
+    meta_property_t *properties;  // List of all properties
+} meta_class_t;
+
+typedef struct meta_registry_t {
+    struct {
+        u64 key;
+        meta_class_t value;
+    } *classes;
+} meta_registry_t;
+
+typedef struct meta_class_decl_t {
+    meta_property_t *properties;  // Array of properties
+    size_t size;                  // Size of array in bytes
+} meta_class_decl_t;
+
+// Functions
+extern meta_registry_t meta_registry_new();
+extern void meta_registry_free(meta_registry_t *meta);
+extern u64 _meta_registry_register_class_impl(meta_registry_t *meta, const char *name, const meta_class_decl_t *decl);
+extern meta_class_t *_meta_class_getp_impl(meta_registry_t *meta, const char *name);
+
+#define meta_registry_register_class(META, T, DECL) _meta_registry_register_class_impl((META), meta_to_str(T), (DECL))
+
+#define meta_registry_class_get(META, T) _meta_class_getp_impl(META, meta_to_str(T))
+
+#define meta_registry_getvp(OBJ, T, PROP) ((T *)((u8 *)(OBJ) + (PROP)->offset))
+
+#define meta_registry_getv(OBJ, T, PROP) (*((T *)((u8 *)(OBJ) + (PROP)->offset)))
+
+typedef struct c_meta {
+    // cJSON *cjson;
+} c_meta;
+
+#pragma region DR
 
 #ifndef enum_t
 /// enum_t "enum type (scoped)" assumes the property of enum classes that encloses the enum values within a particular scope
@@ -743,7 +843,7 @@ static constexpr void Append(Iterable &iterable, Element &element) {
 }
 
 template <typename Iterable>
-static constexpr bool IsEmpty(const Iterable &iterable) {
+static constexpr bool IterIsEmpty(const Iterable &iterable) {
     if constexpr (std::is_array<Iterable>::value)
         return std::extent<Iterable>::value == 0;
     else
@@ -1637,7 +1737,7 @@ constexpr inline void map_default(To &to, const From &from) {
                     if constexpr (std::is_same_v<From, To>)
                         to = from;  // Share shared pointer
                     else {
-                        to = MetaEngine::CreateRef<ToDereferenced>();
+                        to = ME::create_ref<ToDereferenced>();
                         ObjectMapper::map(*to, *from);
                     }
                 } else if constexpr (std::is_same_v<std::unique_ptr<ToDereferenced>, To>) {
@@ -1645,7 +1745,7 @@ constexpr inline void map_default(To &to, const From &from) {
                     ObjectMapper::map(*to, *from);
                 }
             } else if constexpr (std::is_same_v<std::shared_ptr<ToDereferenced>, To>) {
-                to = MetaEngine::CreateRef<ToDereferenced>();
+                to = ME::create_ref<ToDereferenced>();
                 ObjectMapper::map(*to, from);
             } else if constexpr (std::is_same_v<std::unique_ptr<ToDereferenced>, To>) {
                 to = std::make_unique<ToDereferenced>();
@@ -1803,5 +1903,750 @@ using GetDefaultMapping = ExtendedTypeSupport::if_void_t<
         ExtendedTypeSupport::if_void_t<typename GetMappingFromNotes<FieldNotes>::type, ExtendedTypeSupport::if_void_t<typename GetTags<T>::DefaultMapping, typename GetMappingByClassNote<T>::type>>>;
 }  // namespace Annotations
 };  // namespace ObjectMapper
+
+#pragma endregion DR
+
+#pragma region ME::meta
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    ME_CREFLECT_TYPES_STRUCT = 1,
+    ME_CREFLECT_TYPES_STRING = 2,
+    ME_CREFLECT_TYPES_INTEGER = 3,
+    ME_CREFLECT_TYPES_FLOAT = 4,
+    ME_CREFLECT_TYPES_DOUBLE = 5,
+    ME_CREFLECT_TYPES_POINTER = 6
+} ME_CREFLECT_Types;
+
+struct _ME_CREFLECT_FieldInfo {
+    const char *field_type;
+    const char *field_name;
+    size_t size;
+    size_t offset;
+    int is_signed;
+    int array_size;
+    ME_CREFLECT_Types data_type;
+};
+
+typedef struct _ME_CREFLECT_FieldInfo ME_CREFLECT_FieldInfo;
+
+struct _ME_CREFLECT_TypeInfo {
+    const char *name;
+    size_t fields_count;
+    size_t size;
+    size_t packed_size;
+    ME_CREFLECT_FieldInfo *fields;
+};
+
+typedef struct _ME_CREFLECT_TypeInfo ME_CREFLECT_TypeInfo;
+
+#define ME_CREFLECT_EXPAND_(X) X
+#define ME_CREFLECT_EXPAND_VA_(...) __VA_ARGS__
+#define ME_CREFLECT_FOREACH_1_(FNC, USER_DATA, ARG) FNC(ARG, USER_DATA)
+#define ME_CREFLECT_FOREACH_2_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_1_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_3_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_2_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_4_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_3_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_5_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_4_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_6_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_5_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_7_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_6_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_8_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_7_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_9_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                  \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_8_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_10_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_9_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_11_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_10_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_12_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_11_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_13_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_12_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_14_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_13_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_15_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_14_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_16_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_15_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_17_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_16_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_18_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_17_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_19_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_18_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_20_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_19_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_21_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_20_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_22_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_21_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_23_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_22_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_24_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_23_(FNC, USER_DATA, __VA_ARGS__))
+#define ME_CREFLECT_FOREACH_25_(FNC, USER_DATA, ARG, ...) \
+    FNC(ARG, USER_DATA)                                   \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_FOREACH_24_(FNC, USER_DATA, __VA_ARGS__))
+
+#define ME_CREFLECT_OVERRIDE_4(_1, _2, _3, _4, FNC, ...) FNC
+#define ME_CREFLECT_OVERRIDE_4_PLACEHOLDER 1, 2, 3, 4
+#define ME_CREFLECT_OVERRIDE_5(_1, _2, _3, _4, _5, FNC, ...) FNC
+#define ME_CREFLECT_OVERRIDE_5_PLACEHOLDER ME_CREFLECT_OVERRIDE_4_PLACEHOLDER, 5
+#define ME_CREFLECT_OVERRIDE_14(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, FNC, ...) FNC
+#define ME_CREFLECT_OVERRIDE_14_PLACEHOLDER ME_CREFLECT_OVERRIDE_5_PLACEHOLDER, 6, 7, 8, 9, 10, 11, 12, 13, 14
+#define ME_CREFLECT_OVERRIDE_20(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, FNC, ...) FNC
+#define ME_CREFLECT_OVERRIDE_20_PLACEHOLDER ME_CREFLECT_OVERRIDE_14_PLACEHOLDER, 15, 16, 17, 18, 19, 20
+#define ME_CREFLECT_OVERRIDE_25(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, FNC, ...) FNC
+#define ME_CREFLECT_OVERRIDE_25_PLACEHOLDER ME_CREFLECT_OVERRIDE_20_PLACEHOLDER, 21, 22, 23, 24, 25
+
+#define ME_CREFLECT_FOREACH(FNC, USER_DATA, ...)                                                                                                                                                      \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_OVERRIDE_25(__VA_ARGS__, ME_CREFLECT_FOREACH_25_, ME_CREFLECT_FOREACH_24_, ME_CREFLECT_FOREACH_23_, ME_CREFLECT_FOREACH_22_, ME_CREFLECT_FOREACH_21_,             \
+                                                ME_CREFLECT_FOREACH_20_, ME_CREFLECT_FOREACH_19_, ME_CREFLECT_FOREACH_18_, ME_CREFLECT_FOREACH_17_, ME_CREFLECT_FOREACH_16_, ME_CREFLECT_FOREACH_15_, \
+                                                ME_CREFLECT_FOREACH_14_, ME_CREFLECT_FOREACH_13_, ME_CREFLECT_FOREACH_12_, ME_CREFLECT_FOREACH_11_, ME_CREFLECT_FOREACH_10_, ME_CREFLECT_FOREACH_9_,  \
+                                                ME_CREFLECT_FOREACH_8_, ME_CREFLECT_FOREACH_7_, ME_CREFLECT_FOREACH_6_, ME_CREFLECT_FOREACH_5_, ME_CREFLECT_FOREACH_4_, ME_CREFLECT_FOREACH_3_,       \
+                                                ME_CREFLECT_FOREACH_2_, ME_CREFLECT_FOREACH_1_)(FNC, USER_DATA, __VA_ARGS__))
+
+#define ME_CREFLECT_DECLARE_SIMPLE_FIELD_(IGNORE, TYPE, FIELD_NAME) TYPE FIELD_NAME;
+#define ME_CREFLECT_DECLARE_ARRAY_FIELD_(IGNORE, TYPE, FIELD_NAME, ARRAY_SIZE) TYPE FIELD_NAME[ARRAY_SIZE];
+
+#define ME_CREFLECT_DECLARE_FIELD_(...) \
+    ME_CREFLECT_EXPAND_(ME_CREFLECT_OVERRIDE_4(__VA_ARGS__, ME_CREFLECT_DECLARE_ARRAY_FIELD_, ME_CREFLECT_DECLARE_SIMPLE_FIELD_, ME_CREFLECT_OVERRIDE_4_PLACEHOLDER)(__VA_ARGS__))
+
+#define ME_CREFLECT_DECLARE_FIELD(X, USER_DATA) ME_CREFLECT_DECLARE_FIELD_ X
+
+#define ME_CREFLECT_SIZEOF_(IGNORE, C_TYPE, ...) +sizeof(C_TYPE)
+#define ME_CREFLECT_SIZEOF(X, USER_DATA) ME_CREFLECT_SIZEOF_ X
+
+#define ME_CREFLECT_SUM(...) +1
+
+#define ME_CREFLECT_IS_TYPE_SIGNED_(C_TYPE) (C_TYPE) - 1 < (C_TYPE)1
+#define ME_CREFLECT_IS_SIGNED_STRUCT(C_TYPE) 0
+#define ME_CREFLECT_IS_SIGNED_STRING(C_TYPE) ME_CREFLECT_IS_TYPE_SIGNED_(C_TYPE)
+#define ME_CREFLECT_IS_SIGNED_INTEGER(C_TYPE) ME_CREFLECT_IS_TYPE_SIGNED_(C_TYPE)
+#define ME_CREFLECT_IS_SIGNED_FLOAT(C_TYPE) ME_CREFLECT_IS_TYPE_SIGNED_(C_TYPE)
+#define ME_CREFLECT_IS_SIGNED_DOUBLE(C_TYPE) ME_CREFLECT_IS_TYPE_SIGNED_(C_TYPE)
+#define ME_CREFLECT_IS_SIGNED_POINTER(C_TYPE) 0
+
+#define ME_CREFLECT_IS_SIGNED_(DATA_TYPE, CTYPE) ME_CREFLECT_IS_SIGNED_##DATA_TYPE(CTYPE)
+
+#define ME_CREFLECT_ARRAY_FIELD_INFO_(TYPE_NAME, DATA_TYPE, C_TYPE, FIELD_NAME, ARRAY_SIZE) \
+#C_TYPE, #FIELD_NAME, sizeof(C_TYPE) * ARRAY_SIZE, offsetof(TYPE_NAME, FIELD_NAME), ME_CREFLECT_IS_SIGNED_(DATA_TYPE, C_TYPE), ARRAY_SIZE, ME_CREFLECT_TYPES_##DATA_TYPE
+
+#define ME_CREFLECT_SIMPLE_FIELD_INFO_(TYPE_NAME, DATA_TYPE, C_TYPE, FIELD_NAME) \
+#C_TYPE, #FIELD_NAME, sizeof(C_TYPE), offsetof(TYPE_NAME, FIELD_NAME), ME_CREFLECT_IS_SIGNED_(DATA_TYPE, C_TYPE), -1, ME_CREFLECT_TYPES_##DATA_TYPE
+
+#define ME_CREFLECT_FIELD_INFO_(...) \
+    {ME_CREFLECT_EXPAND_(ME_CREFLECT_OVERRIDE_5(__VA_ARGS__, ME_CREFLECT_ARRAY_FIELD_INFO_, ME_CREFLECT_SIMPLE_FIELD_INFO_, ME_CREFLECT_OVERRIDE_5_PLACEHOLDER)(__VA_ARGS__))},
+
+#define ME_CREFLECT_FIELD_INFO(X, USER_DATA) ME_CREFLECT_FIELD_INFO_(USER_DATA, ME_CREFLECT_EXPAND_VA_ X)
+
+#ifdef ME_CREFLECT_IMPL
+
+#define ME_CREFLECT_DEFINE_GET_METHOD(TYPE_NAME, ...)                                                                                                                                          \
+    ME_CREFLECT_TypeInfo *ME_creflect_get_##TYPE_NAME##_type_info(void) {                                                                                                                      \
+        static ME_CREFLECT_FieldInfo fields_info[ME_CREFLECT_FOREACH(ME_CREFLECT_SUM, 0, __VA_ARGS__)] = {ME_CREFLECT_FOREACH(ME_CREFLECT_FIELD_INFO, TYPE_NAME, __VA_ARGS__)};                \
+        static ME_CREFLECT_TypeInfo type_info = {#TYPE_NAME, ME_CREFLECT_FOREACH(ME_CREFLECT_SUM, 0, __VA_ARGS__), sizeof(TYPE_NAME), ME_CREFLECT_FOREACH(ME_CREFLECT_SIZEOF, 0, __VA_ARGS__), \
+                                                 fields_info};                                                                                                                                 \
+        return &type_info;                                                                                                                                                                     \
+    }
+
+#else
+
+#define ME_CREFLECT_DEFINE_GET_METHOD(TYPE_NAME, ...)
+
+#endif
+
+#define ME_CREFLECT_DEFINE_STRUCT(TYPE_NAME, ...)                        \
+    typedef struct {                                                     \
+        ME_CREFLECT_FOREACH(ME_CREFLECT_DECLARE_FIELD, 0, __VA_ARGS__)   \
+    } TYPE_NAME;                                                         \
+    ME_CREFLECT_TypeInfo *ME_creflect_get_##TYPE_NAME##_type_info(void); \
+    ME_CREFLECT_DEFINE_GET_METHOD(TYPE_NAME, __VA_ARGS__)
+
+#ifdef __cplusplus
+}
+#endif
+
+namespace IamAfuckingNamespace {
+int func1(float f, char c);
+void func2(void);
+void func_log_info(std::string info);
+}  // namespace IamAfuckingNamespace
+
+void init_reflection();
+
+#pragma region AnyFunction
+
+namespace ME::meta {
+
+// https://stackoverflow.com/questions/26107041/how-can-i-determine-the-return-type-of-a-c11-member-function
+
+template <typename T>
+struct return_type;
+template <typename R, typename... Args>
+struct return_type<R (*)(Args...)> {
+    using type = R;
+};
+template <typename R, typename C, typename... Args>
+struct return_type<R (C::*)(Args...)> {
+    using type = R;
+};
+template <typename R, typename C, typename... Args>
+struct return_type<R (C::*)(Args...) const> {
+    using type = R;
+};
+template <typename R, typename C, typename... Args>
+struct return_type<R (C::*)(Args...) volatile> {
+    using type = R;
+};
+template <typename R, typename C, typename... Args>
+struct return_type<R (C::*)(Args...) const volatile> {
+    using type = R;
+};
+template <typename T>
+using return_type_t = typename return_type<T>::type;
+
+struct any_function {
+public:
+    struct type {
+        const std::type_info *info;
+        bool is_lvalue_reference, is_rvalue_reference;
+        bool is_const, is_volatile;
+        bool operator==(const type &r) const {
+            return info == r.info && is_lvalue_reference == r.is_lvalue_reference && is_rvalue_reference == r.is_rvalue_reference && is_const == r.is_const && is_volatile == r.is_volatile;
+        }
+        bool operator!=(const type &r) const { return !(*this == r); }
+        template <class T>
+        static type capture() {
+            return {&typeid(T), std::is_lvalue_reference<T>::value, std::is_rvalue_reference<T>::value, std::is_const<typename std::remove_reference<T>::type>::value,
+                    std::is_volatile<typename std::remove_reference<T>::type>::value};
+        }
+    };
+
+    class result {
+        struct result_base {
+            virtual ~result_base() {}
+            virtual std::unique_ptr<result_base> clone() const = 0;
+            virtual type get_type() const = 0;
+            virtual void *get_address() = 0;
+        };
+        template <class T>
+        struct typed_result : result_base {
+            T x;
+            typed_result(T x) : x(get((void *)&x, tag<T>{})) {}
+            std::unique_ptr<result_base> clone() const { return std::unique_ptr<typed_result>(new typed_result(get((void *)&x, tag<T>{}))); }
+            type get_type() const { return type::capture<T>(); }
+            void *get_address() { return (void *)&x; }
+        };
+        std::unique_ptr<result_base> p;
+
+    public:
+        result() {}
+        result(result &&r) : p(move(r.p)) {}
+        result(const result &r) { *this = r; }
+        result &operator=(result &&r) {
+            p.swap(r.p);
+            return *this;
+        }
+        result &operator=(const result &r) {
+            p = r.p ? r.p->clone() : nullptr;
+            return *this;
+        }
+
+        type get_type() const { return p ? p->get_type() : type::capture<void>(); }
+        void *get_address() { return p ? p->get_address() : nullptr; }
+        template <class T>
+        T get_value() {
+            ME_ASSERT_E(get_type() == type::capture<T>());
+            return get(p->get_address(), tag<T>{});
+        }
+
+        template <class T>
+        static result capture(T x) {
+            result r;
+            r.p.reset(new typed_result<T>(static_cast<T>(x)));
+            return r;
+        }
+    };
+    any_function() : result_type{} {}
+    any_function(std::nullptr_t) : result_type{} {}
+    template <class R, class... A>
+    any_function(R (*p)(A...)) : any_function(p, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    template <class R, class... A>
+    any_function(std::function<R(A...)> f) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    template <class F>
+    any_function(F f) : any_function(f, &F::operator()) {}
+
+    explicit operator bool() const { return static_cast<bool>(func); }
+    const std::vector<type> &get_parameter_types() const { return parameter_types; }
+    const type &get_result_type() const { return result_type; }
+    result invoke(void *const args[]) const { return func(args); }
+    result invoke(std::initializer_list<void *> args) const { return invoke(args.begin()); }
+
+private:
+    template <class... T>
+    struct tag {};
+    template <std::size_t... IS>
+    struct indices {};
+    template <std::size_t N, std::size_t... IS>
+    struct build_indices : build_indices<N - 1, N - 1, IS...> {};
+    template <std::size_t... IS>
+    struct build_indices<0, IS...> : indices<IS...> {};
+
+    template <class T>
+    static T get(void *arg, tag<T>) {
+        return *reinterpret_cast<T *>(arg);
+    }
+    template <class T>
+    static T &get(void *arg, tag<T &>) {
+        return *reinterpret_cast<T *>(arg);
+    }
+    template <class T>
+    static T &&get(void *arg, tag<T &&>) {
+        return std::move(*reinterpret_cast<T *>(arg));
+    }
+    template <class F, class R, class... A, size_t... I>
+    any_function(F f, tag<R>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<R>()) {
+        func = [f](void *const args[]) mutable { return result::capture<R>(f(get(args[I], tag<A>{})...)); };
+    }
+    template <class F, class... A, size_t... I>
+    any_function(F f, tag<void>, tag<A...>, indices<I...>) : parameter_types({type::capture<A>()...}), result_type(type::capture<void>()) {
+        func = [f](void *const args[]) mutable { return f(get(args[I], tag<A>{})...), result{}; };
+    }
+    template <class F, class R>
+    any_function(F f, tag<R>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<R>()) {
+        func = [f](void *const args[]) mutable { return result::capture<R>(f()); };
+    }
+    template <class F>
+    any_function(F f, tag<void>, tag<>, indices<>) : parameter_types({}), result_type(type::capture<void>()) {
+        func = [f](void *const args[]) mutable { return f(), result{}; };
+    }
+    template <class F, class R, class... A>
+    any_function(F f, R (F::*p)(A...)) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+    template <class F, class R, class... A>
+    any_function(F f, R (F::*p)(A...) const) : any_function(f, tag<R>{}, tag<A...>{}, build_indices<sizeof...(A)>{}) {}
+
+    std::function<result(void *const *)> func;
+    std::vector<type> parameter_types;
+    type result_type;
+};
+
+}  // namespace ME::meta
+
+#pragma endregion AnyFunction
+
+namespace tmp {
+
+// type list
+template <typename... TS>
+struct typelist {
+    static constexpr auto size = sizeof...(TS);
+};
+
+template <typename T>
+struct is_typelist : std::false_type {};
+
+template <typename... TS>
+struct is_typelist<typelist<TS...>> : std::true_type {};
+
+// basic operations
+template <typename T, typename TL>
+struct push_back;
+template <typename T, typename TL>
+struct push_front;
+template <typename TL>
+struct pop_front;
+template <typename TL, size_t I>
+struct at;
+
+template <typename T, typename... TS>
+struct push_back<T, typelist<TS...>> {
+    using type = typelist<TS..., T>;
+};
+
+template <typename T, typename... TS>
+struct push_front<T, typelist<TS...>> {
+    using type = typelist<T, TS...>;
+};
+
+template <typename T, typename... TS>
+struct pop_front<typelist<T, TS...>> {
+    using type = typelist<TS...>;
+};
+
+template <typename T, typename... TS>
+struct at<typelist<T, TS...>, 0> {
+    using type = T;
+};
+
+template <typename T, typename... TS, size_t I>
+struct at<typelist<T, TS...>, I> {
+    ME_STATIC_ASSERT(I < (1 + sizeof...(TS)), "Out of bounds access");
+    using type = typename at<typelist<TS...>, I - 1>::type;
+};
+
+// 'filter'
+template <typename TL, template <typename> class PRED>
+struct filter;
+
+template <template <typename> class PRED>
+struct filter<typelist<>, PRED> {
+    using type = typelist<>;
+};
+
+template <typename T, typename... TS, template <typename> class PRED>
+struct filter<typelist<T, TS...>, PRED> {
+    using remaining = typename filter<typelist<TS...>, PRED>::type;
+    using type = typename std::conditional<PRED<T>::value, typename push_front<T, remaining>::type, remaining>::type;
+};
+
+// 'max' given a template binary predicate
+template <typename TL, template <typename, typename> class PRED>
+struct max;
+
+template <typename T, template <typename, typename> class PRED>
+struct max<typelist<T>, PRED> {
+    using type = T;
+};
+
+template <typename... TS, template <typename, typename> class PRED>
+struct max<typelist<TS...>, PRED> {
+    using first = typename at<typelist<TS...>, 0>::type;
+    using remaining_max = typename max<typename pop_front<typelist<TS...>>::type, PRED>::type;
+    using type = typename std::conditional<PRED<first, remaining_max>::value, first, remaining_max>::type;
+};
+
+// 'find_ancestors'
+namespace impl {
+
+template <typename SRCLIST, typename DESTLIST>
+struct find_ancestors {
+
+    template <typename B>
+    using negation = typename std::integral_constant<bool, !bool(B::value)>::type;
+
+    template <typename T, typename U>
+    using cmp = typename std::is_base_of<T, U>::type;
+    using most_ancient = typename max<SRCLIST, cmp>::type;
+
+    template <typename T>
+    using not_most_ancient = typename negation<std::is_same<most_ancient, T>>::type;
+
+    using type = typename find_ancestors<typename filter<SRCLIST, not_most_ancient>::type, typename push_back<most_ancient, DESTLIST>::type>::type;
+};
+
+template <typename DESTLIST>
+struct find_ancestors<typelist<>, DESTLIST> {
+    using type = DESTLIST;
+};
+
+}  // namespace impl
+
+template <typename TL, typename T>
+struct find_ancestors {
+    ME_STATIC_ASSERT(is_typelist<TL>::value, "The first parameter is not a typelist");
+
+    template <typename U>
+    using base_of_T = typename std::is_base_of<U, T>::type;
+    using src_list = typename filter<TL, base_of_T>::type;
+    using type = typename impl::find_ancestors<src_list, typelist<>>::type;
+};
+
+}  // namespace tmp
+
+using namespace tmp;
+
+template <typename TL>
+struct hierarchy_iterator {
+    ME_STATIC_ASSERT(is_typelist<TL>::value, "Not a typelist");
+    inline static void exec(void *_p) {
+        using target_t = typename pop_front<TL>::type;
+        if (auto ptr = static_cast<target_t *>(_p)) {
+            printf("%s\n", typeid(typename at<TL, 0>::type).name());
+            // LOG(INFO) << "hierarchy_iterator : " << typeid(typename at<TL, 0>::type).name();
+            hierarchy_iterator<target_t>::exec(_p);
+        }
+    }
+};
+
+template <>
+struct hierarchy_iterator<typelist<>> {
+    inline static void exec(void *) {}
+};
+
+namespace ME::meta {
+
+namespace detail {
+// 构造一个可以隐式转换为任意类型的类型
+template <class T>
+struct any_converter {
+    // 不能convert至自身
+    template <class U, class = typename std::enable_if<!std::is_same<typename std::decay<T>::type, typename std::decay<U>::type>::value>::type>
+    operator U() const noexcept;
+};
+
+template <class T, std::size_t I>
+struct any_converter_tagged : any_converter<T> {};
+
+// 判断T是否可以使用Args...进行聚合初始化：T{ std::declval<Args>()... }
+template <class T, class... Args>
+constexpr auto is_aggregate_constructible_impl(T &&, Args &&...args) -> decltype(T{{args}...}, std::true_type());
+// 多加一个重载可以去掉讨厌的clang warning
+template <class T, class Arg>
+constexpr auto is_aggregate_constructible_impl(T &&, Arg &&args) -> decltype(T{args}, std::true_type());
+// 这个函数千万别改成模板函数否则会死机的！
+constexpr auto is_aggregate_constructible_impl(...) -> std::false_type;
+
+template <class T, class... Args>
+struct is_aggregate_constructible : decltype(is_aggregate_constructible_impl(std::declval<T>(), std::declval<Args>()...)) {};
+
+template <class T, class Seq>
+struct is_aggregate_constructible_with_n_args;
+template <class T, std::size_t... I>
+struct is_aggregate_constructible_with_n_args<T, std::index_sequence<I...>> : is_aggregate_constructible<T, any_converter_tagged<T, I>...> {};
+// 这里添加一个元函数是用来支持沙雕GCC的，不知道为什么GCC里面变长模板参数不能作为嵌套的实参展开……
+template <class T, std::size_t N>
+struct is_aggregate_constructible_with_n_args_ex : is_aggregate_constructible_with_n_args<T, std::make_index_sequence<N>> {};
+
+// （原）线性查找法
+template <class T, class Seq = std::make_index_sequence<sizeof(T)>>
+struct struct_member_count_impl1;
+template <class T, std::size_t... I>
+struct struct_member_count_impl1<T, std::index_sequence<I...>> : std::integral_constant<std::size_t, (... + !!(is_aggregate_constructible_with_n_args_ex<T, I + 1>::value))> {};
+
+template <class B, class T, class U>
+struct lazy_conditional : lazy_conditional<typename B::type, T, U> {};
+template <class T, class U>
+struct lazy_conditional<std::true_type, T, U> : T {};
+template <class T, class U>
+struct lazy_conditional<std::false_type, T, U> : U {};
+
+// 二分查找法
+template <class T, class Seq = std::index_sequence<0>>
+struct struct_member_count_impl2;
+template <class T, std::size_t... I>
+struct struct_member_count_impl2<T, std::index_sequence<I...>>
+    : lazy_conditional<std::conjunction<is_aggregate_constructible_with_n_args_ex<T, I + 1>...>, struct_member_count_impl2<T, std::index_sequence<I..., (I + sizeof...(I))...>>,
+                       std::integral_constant<std::size_t, (... + !!(is_aggregate_constructible_with_n_args_ex<T, I + 1>::value))>>::type {};
+
+}  // namespace detail
+
+template <class T>
+struct StructMemberCount : detail::struct_member_count_impl2<T> {};
+
+#include "enum_pp.hpp"
+
+namespace detail {
+
+#define APPLYER_DEF(N)                                                                          \
+    template <class T, class ApplyFunc>                                                         \
+    auto StructApply_impl(T &&my_struct, ApplyFunc f, std::integral_constant<std::size_t, N>) { \
+        auto &&[ENUM_PARAMS(x, N)] = std::forward<T>(my_struct);                                \
+        return std::invoke(f, ENUM_PARAMS(x, N));                                               \
+    }
+
+ENUM_FOR_EACH(APPLYER_DEF, 128)
+#undef APPLYER_DEF
+}  // namespace detail
+
+// StructApply : 把结构体解包为变长参数调用可调用对象f
+template <class T, class ApplyFunc>
+auto struct_apply(T &&my_struct, ApplyFunc f) {
+    return detail::StructApply_impl(std::forward<T>(my_struct), f, StructMemberCount<typename std::decay<T>::type>());
+}
+
+// StructTransformMeta : 把结构体各成员的类型作为变长参数调用元函数MetaFunc
+template <class T, template <class...> class MetaFunc>
+struct StructTransformMeta {
+    struct FakeApplyer {
+        template <class... Args>
+        auto operator()(Args... args) -> MetaFunc<decltype(args)...>;
+    };
+    using type = decltype(struct_apply(std::declval<T>(), FakeApplyer()));
+};
+}  // namespace ME::meta
+
+namespace reflect {
+
+//--------------------------------------------------------
+// Base class of all type descriptors
+//--------------------------------------------------------
+
+struct TypeDescriptor {
+    const char *name;
+    size_t size;
+
+    TypeDescriptor(const char *name, size_t size) : name{name}, size{size} {}
+    virtual ~TypeDescriptor() {}
+    virtual std::string getFullName() const { return name; }
+    virtual void dump(const void *obj, int indentLevel = 0) const = 0;
+};
+
+//--------------------------------------------------------
+// Finding type descriptors
+//--------------------------------------------------------
+
+// Declare the function template that handles primitive types such as int, std::string, etc.:
+template <typename T>
+TypeDescriptor *getPrimitiveDescriptor();
+
+// A helper class to find TypeDescriptors in different ways:
+struct DefaultResolver {
+    template <typename T>
+    static char func(decltype(&T::Reflection));
+    template <typename T>
+    static int func(...);
+    template <typename T>
+    struct IsReflected {
+        enum { value = (sizeof(func<T>(nullptr)) == sizeof(char)) };
+    };
+
+    // This version is called if T has a static member named "Reflection":
+    template <typename T, typename std::enable_if<IsReflected<T>::value, int>::type = 0>
+    static TypeDescriptor *get() {
+        return &T::Reflection;
+    }
+
+    // This version is called otherwise:
+    template <typename T, typename std::enable_if<!IsReflected<T>::value, int>::type = 0>
+    static TypeDescriptor *get() {
+        return getPrimitiveDescriptor<T>();
+    }
+};
+
+// This is the primary class template for finding all TypeDescriptors:
+template <typename T>
+struct TypeResolver {
+    static TypeDescriptor *get() { return DefaultResolver::get<T>(); }
+};
+
+//--------------------------------------------------------
+// Type descriptors for user-defined structs/classes
+//--------------------------------------------------------
+
+struct TypeDescriptor_Struct : TypeDescriptor {
+    struct Member {
+        const char *name;
+        size_t offset;
+        TypeDescriptor *type;
+    };
+
+    std::vector<Member> members;
+
+    TypeDescriptor_Struct(void (*init)(TypeDescriptor_Struct *)) : TypeDescriptor{nullptr, 0} { init(this); }
+    TypeDescriptor_Struct(const char *name, size_t size, const std::initializer_list<Member> &init) : TypeDescriptor{nullptr, 0}, members{init} {}
+    virtual void dump(const void *obj, int indentLevel) const override {
+        std::cout << name << " {" << std::endl;
+        for (const Member &member : members) {
+            std::cout << std::string(4 * (indentLevel + 1), ' ') << member.name << " = ";
+            member.type->dump((char *)obj + member.offset, indentLevel + 1);
+            std::cout << std::endl;
+        }
+        std::cout << std::string(4 * indentLevel, ' ') << "}";
+    }
+};
+
+#define REFLECT_STRUCT()                              \
+    friend struct reflect::DefaultResolver;           \
+    static reflect::TypeDescriptor_Struct Reflection; \
+    static void initReflection(reflect::TypeDescriptor_Struct *);
+
+#define REFLECT_STRUCT_BEGIN(type)                                         \
+    reflect::TypeDescriptor_Struct type::Reflection{type::initReflection}; \
+    void type::initReflection(reflect::TypeDescriptor_Struct *typeDesc) {  \
+        using T = type;                                                    \
+        typeDesc->name = #type;                                            \
+        typeDesc->size = sizeof(T);                                        \
+        typeDesc->members = {
+
+#define REFLECT_STRUCT_MEMBER(name) {#name, offsetof(T, name), reflect::TypeResolver<decltype(T::name)>::get()},
+
+#define REFLECT_STRUCT_END() \
+    }                        \
+    ;                        \
+    }
+
+//--------------------------------------------------------
+// Type descriptors for std::vector
+//--------------------------------------------------------
+
+struct TypeDescriptor_StdVector : TypeDescriptor {
+    TypeDescriptor *itemType;
+    size_t (*getSize)(const void *);
+    const void *(*getItem)(const void *, size_t);
+
+    template <typename ItemType>
+    TypeDescriptor_StdVector(ItemType *) : TypeDescriptor{"std::vector<>", sizeof(std::vector<ItemType>)}, itemType{TypeResolver<ItemType>::get()} {
+        getSize = [](const void *vecPtr) -> size_t {
+            const auto &vec = *(const std::vector<ItemType> *)vecPtr;
+            return vec.size();
+        };
+        getItem = [](const void *vecPtr, size_t index) -> const void * {
+            const auto &vec = *(const std::vector<ItemType> *)vecPtr;
+            return &vec[index];
+        };
+    }
+    virtual std::string getFullName() const override { return std::string("std::vector<") + itemType->getFullName() + ">"; }
+    virtual void dump(const void *obj, int indentLevel) const override {
+        size_t numItems = getSize(obj);
+        std::cout << getFullName();
+        if (numItems == 0) {
+            std::cout << "{}";
+        } else {
+            std::cout << "{" << std::endl;
+            for (size_t index = 0; index < numItems; index++) {
+                std::cout << std::string(4 * (indentLevel + 1), ' ') << "[" << index << "] ";
+                itemType->dump(getItem(obj, index), indentLevel + 1);
+                std::cout << std::endl;
+            }
+            std::cout << std::string(4 * indentLevel, ' ') << "}";
+        }
+    }
+};
+
+// Partially specialize TypeResolver<> for std::vectors:
+template <typename T>
+class TypeResolver<std::vector<T>> {
+public:
+    static TypeDescriptor *get() {
+        static TypeDescriptor_StdVector typeDesc{(T *)nullptr};
+        return &typeDesc;
+    }
+};
+
+}  // namespace reflect
+
+#pragma endregion ME::meta
 
 #endif

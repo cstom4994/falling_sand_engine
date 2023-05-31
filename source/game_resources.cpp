@@ -19,7 +19,7 @@
 IMPLENGINE();
 
 void InitTexture(TexturePack *tex) {
-    METADOT_ASSERT_E(tex);
+    ME_ASSERT_E(tex);
 
     tex->testTexture = LoadTexture("data/assets/textures/test.png");
     tex->dirt1Texture = LoadTexture("data/assets/textures/testDirt.png");
@@ -41,7 +41,7 @@ void InitTexture(TexturePack *tex) {
 }
 
 void EndTexture(TexturePack *tex) {
-    METADOT_ASSERT_E(tex);
+    ME_ASSERT_E(tex);
 
     DestroyTexture(tex->testTexture);
     DestroyTexture(tex->dirt1Texture);
@@ -70,7 +70,7 @@ Texture *CreateTexture(C_Surface *surface) {
 }
 
 void DestroyTexture(Texture *tex) {
-    METADOT_ASSERT_E(tex);
+    ME_ASSERT_E(tex);
     if (tex->surface) SDL_FreeSurface(tex->surface);
     delete tex;
 }
@@ -122,7 +122,7 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
     loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
     loadedSurface = SDL_ConvertSurfaceFormat(loadedSurface, pixelFormat, 0);
 
-    METADOT_ASSERT_E(loadedSurface);
+    ME_ASSERT_E(loadedSurface);
 
     Texture *tex = CreateTexture(loadedSurface);
 
@@ -198,6 +198,6 @@ void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, metadot_rec
         dst.h = clip->h;
     }
     auto image = R_CopyImageFromSurfaceRect(tex->surface, clip);
-    METADOT_ASSERT_E(image);
+    ME_ASSERT_E(image);
     R_BlitRect(image, NULL, target, &dst);
 }

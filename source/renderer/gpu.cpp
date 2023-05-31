@@ -301,8 +301,8 @@ void MetaEngine::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
 float MetaEngine::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeight() * 16; }
 
 void MetaEngine::IntrospectShader(const char *label, GLuint program) {
-    METADOT_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
-    METADOT_ASSERT(glIsProgram(program), ("The program: {} is not a valid shader program", program));
+    ME_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
+    ME_ASSERT(glIsProgram(program), ("The program: {} is not a valid shader program", program));
 
     ImGui::PushID(label);
     if (ImGui::CollapsingHeader(label)) {
@@ -373,8 +373,8 @@ void MetaEngine::IntrospectShader(const char *label, GLuint program) {
 }
 
 void MetaEngine::IntrospectVertexArray(const char *label, GLuint vao) {
-    METADOT_ASSERT(label != nullptr, ("The label supplied with VAO: %u is nullptr", vao));
-    METADOT_ASSERT(glIsVertexArray(vao), ("The VAO: %u is not a valid vertex array object", vao));
+    ME_ASSERT(label != nullptr, ("The label supplied with VAO: %u is nullptr", vao));
+    ME_ASSERT(glIsVertexArray(vao), ("The VAO: %u is not a valid vertex array object", vao));
 
     ImGui::PushID(label);
     if (ImGui::CollapsingHeader(label)) {

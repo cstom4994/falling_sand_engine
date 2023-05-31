@@ -188,7 +188,7 @@ public:
     const ImVec2 NextWindows(ImGuiWindowTags tag, ImVec2 pos);
     const ImGuiID GetMainDockID() { return dockspace_id; }
     const ImGuiContext* getImGuiCtx() {
-        METADOT_ASSERT(m_imgui, "Miss ImGuiContext");
+        ME_ASSERT(m_imgui, "Miss ImGuiContext");
         return m_imgui;
     }
 };

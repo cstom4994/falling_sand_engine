@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "core/core.h"
+#include "core/utility.hpp"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_internal.h"
 

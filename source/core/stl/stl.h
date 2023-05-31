@@ -152,9 +152,9 @@
  *
  *     int* a = NULL;
  *     apush(a, 5);
- *     METADOT_ASSERT_E(alen(a) == 1);
+ *     ME_ASSERT_E(alen(a) == 1);
  *     alen(a)--;
- *     METADOT_ASSERT_E(alen(a) == 0);
+ *     ME_ASSERT_E(alen(a) == 0);
  *     afree(a);
  */
 #define alen(a) metadot_array_len(a)
@@ -166,7 +166,7 @@
  *
  *     int* a = NULL;
  *     apush(a, 5);
- *     METADOT_ASSERT_E(asize(a) == 1);
+ *     ME_ASSERT_E(asize(a) == 1);
  *     afree(a);
  */
 #define asize(a) metadot_array_size(a)
@@ -178,7 +178,7 @@
  *
  *     int* a = NULL;
  *     apush(a, 5);
- *     METADOT_ASSERT_E(acount(a) == 1);
+ *     ME_ASSERT_E(acount(a) == 1);
  *     afree(a);
  */
 #define acount(a) metadot_array_count(a)
@@ -207,9 +207,9 @@
  *     int* a = NULL;
  *     apush(a, 5);
  *     apush(a, 13);
- *     METADOT_ASSERT_E(a[0] == 5);
- *     METADOT_ASSERT_E(a[1] == 13);
- *     METADOT_ASSERT_E(asize(a) == 2);
+ *     ME_ASSERT_E(a[0] == 5);
+ *     ME_ASSERT_E(a[1] == 13);
+ *     ME_ASSERT_E(asize(a) == 2);
  *     afree(a);
  */
 #define apush(a, ...) metadot_array_push(a, (__VA_ARGS__))
@@ -288,7 +288,7 @@
 
 #define METAENGINE_AHDR(a) ((METAENGINE_Ahdr*)a - 1)
 #define METAENGINE_ACOOKIE 0xE6F7E359
-#define METAENGINE_ACANARY(a) ((a) ? METADOT_ASSERT_E(METAENGINE_AHDR(a)->cookie == METAENGINE_ACOOKIE) : (void)0)  // Detects buffer underruns.
+#define METAENGINE_ACANARY(a) ((a) ? ME_ASSERT_E(METAENGINE_AHDR(a)->cookie == METAENGINE_ACOOKIE) : (void)0)  // Detects buffer underruns.
 
 // *Hidden* array header.
 typedef struct METAENGINE_Ahdr {
@@ -456,7 +456,7 @@ T& Array<T>::add(T&& item) {
 
 template <typename T>
 T Array<T>::pop() {
-    METADOT_ASSERT_E(!empty());
+    ME_ASSERT_E(!empty());
     T* slot = m_ptr + alen(m_ptr) - 1;
     T val = std::move(apop(m_ptr));
     slot->~T();
@@ -465,7 +465,7 @@ T Array<T>::pop() {
 
 template <typename T>
 void Array<T>::unordered_remove(int index) {
-    METADOT_ASSERT_E(index >= 0 && index < asize(m_ptr));
+    ME_ASSERT_E(index >= 0 && index < asize(m_ptr));
     T* slot = m_ptr + index;
     slot->~T();
     m_ptr[index] = m_ptr[--alen(m_ptr)];
@@ -483,7 +483,7 @@ void Array<T>::ensure_capacity(int num_elements) {
 
 template <typename T>
 void Array<T>::set_count(int count) {
-    METADOT_ASSERT_E(count < acap(m_ptr) || !count);
+    ME_ASSERT_E(count < acap(m_ptr) || !count);
     afit(m_ptr, count);
     if (asize(m_ptr) > count) {
         for (int i = count; i < asize(m_ptr); ++i) {
@@ -570,13 +570,13 @@ const T* Array<T>::end() const {
 
 template <typename T>
 T& Array<T>::operator[](int index) {
-    METADOT_ASSERT_E(index >= 0 && index < count());
+    ME_ASSERT_E(index >= 0 && index < count());
     return m_ptr[index];
 }
 
 template <typename T>
 const T& Array<T>::operator[](int index) const {
-    METADOT_ASSERT_E(index >= 0 && index < count());
+    ME_ASSERT_E(index >= 0 && index < count());
     return m_ptr[index];
 }
 
@@ -592,13 +592,13 @@ const T* Array<T>::data() const {
 
 template <typename T>
 T* Array<T>::operator+(int index) {
-    METADOT_ASSERT_E(index >= 0 && index < count());
+    ME_ASSERT_E(index >= 0 && index < count());
     return m_ptr + index;
 }
 
 template <typename T>
 const T* Array<T>::operator+(int index) const {
-    METADOT_ASSERT_E(index >= 0 && index < count());
+    ME_ASSERT_E(index >= 0 && index < count());
     return m_ptr + index;
 }
 
@@ -684,9 +684,9 @@ extern "C" {
  *
  *     char* s = NULL;
  *     spush(s, 'a');
- *     METADOT_ASSERT_E(string_size(s) == 1);
+ *     ME_ASSERT_E(string_size(s) == 1);
  *     string_size(s)--;
- *     METADOT_ASSERT_E(string_size(a) == 0);
+ *     ME_ASSERT_E(string_size(a) == 0);
  *     sfree(string_size);
  */
 #define string_size(s) metadot_string_size(s)
@@ -1493,9 +1493,9 @@ private:
 
     ME_INLINE void s_static() {
         sstatic(m_str, u.m_buffer, sizeof(u.m_buffer));
-        METADOT_ASSERT_E(slen(m_str) == 0);
+        ME_ASSERT_E(slen(m_str) == 0);
     }
-    ME_INLINE void s_chki(int i) const { METADOT_ASSERT_E(i >= 0 && i < string_size(m_str)); }
+    ME_INLINE void s_chki(int i) const { ME_ASSERT_E(i >= 0 && i < string_size(m_str)); }
 };
 
 ME_INLINE String operator+(const String& a, const String& b) {
@@ -1733,8 +1733,8 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *     htbl int* table = NULL;
  *     hset(table, 0, 5);
  *     hset(table, 1, 12);
- *     METADOT_ASSERT_E(hget(table, 0) == 5);
- *     METADOT_ASSERT_E(hget(table, 1) == 12);
+ *     ME_ASSERT_E(hget(table, 0) == 5);
+ *     ME_ASSERT_E(hget(table, 1) == 12);
  *     hfree(table);
  */
 #define hset(h, k, ...) metadot_hashtable_set(h, k, (__VA_ARGS__))
@@ -1753,8 +1753,8 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *     htbl int* table = NULL;
  *     hadd(table, 0, 5);
  *     hadd(table, 1, 12);
- *     METADOT_ASSERT_E(hget(table, 0) == 5);
- *     METADOT_ASSERT_E(hget(table, 1) == 12);
+ *     ME_ASSERT_E(hget(table, 0) == 5);
+ *     ME_ASSERT_E(hget(table, 1) == 12);
  *     hfree(table);
  */
 #define hadd(h, k, ...) metadot_hashtable_add(h, k, (__VA_ARGS__))
@@ -1775,8 +1775,8 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *     htbl v2* table = NULL;
  *     hadd(table, 10, V2(-1, 1));
  *     v2 v = hget(table, 10);
- *     METADOT_ASSERT_E(v.x == -1);
- *     METADOT_ASSERT_E(v.y == 1);
+ *     ME_ASSERT_E(v.x == -1);
+ *     ME_ASSERT_E(v.y == 1);
  *     hfree(table);
  */
 #define hget(h, k) metadot_hashtable_get(h, k)
@@ -1797,8 +1797,8 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *     htbl v2* table = NULL;
  *     hadd(table, 10, V2(-1, 1));
  *     v2 v = hfind(table, 10);
- *     METADOT_ASSERT_E(v.x == -1);
- *     METADOT_ASSERT_E(v.y == 1);
+ *     ME_ASSERT_E(v.x == -1);
+ *     ME_ASSERT_E(v.y == 1);
  *     hfree(table);
  */
 #define hfind(h, k) metadot_hashtable_find(h, k)
@@ -1815,9 +1815,9 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *     htbl v2* table = NULL;
  *     hadd(table, 10, V2(-1, 1));
  *     v2* v = hget_ptr(table, 10);
- *     METADOT_ASSERT_E(v);
- *     METADOT_ASSERT_E(v->x == -1);
- *     METADOT_ASSERT_E(v->y == 1);
+ *     ME_ASSERT_E(v);
+ *     ME_ASSERT_E(v->x == -1);
+ *     ME_ASSERT_E(v->y == 1);
  *     hfree(table);
  */
 #define hget_ptr(h, k) metadot_hashtable_get_ptr(h, k)
@@ -1834,9 +1834,9 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *     htbl v2* table = NULL;
  *     hadd(table, 10, V2(-1, 1));
  *     v2* v = hfind_ptr(table, 10);
- *     METADOT_ASSERT_E(v);
- *     METADOT_ASSERT_E(v->x == -1);
- *     METADOT_ASSERT_E(v->y == 1);
+ *     ME_ASSERT_E(v);
+ *     ME_ASSERT_E(v->x == -1);
+ *     ME_ASSERT_E(v->y == 1);
  *     hfree(table);
  */
 #define hfind_ptr(h, k) metadot_hashtable_find_ptr(h, k)
@@ -1852,7 +1852,7 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
  *
  *     htbl v2* table = NULL;
  *     hadd(table, 10, V2(-1, 1));
- *     METADOT_ASSERT_E(hhas(table, 10));
+ *     ME_ASSERT_E(hhas(table, 10));
  *     hfree(table);
  */
 #define hhas(h, k) metadot_hashtable_has(h, k)
@@ -1993,7 +1993,7 @@ ME_INLINE void message_box(MessageBoxType type, const char* title, const char* t
 
 #define METAENGINE_HHDR(h) (((METAENGINE_Hhdr*)(h - 1) - 1))                                                      // Converts pointer from the user-array to table header.
 #define METAENGINE_HCOOKIE 0xE6F7E359                                                                             // Magic number used for sanity/type checks.
-#define METAENGINE_HCANARY(h) (h ? METADOT_ASSERT_E(METAENGINE_HHDR(h)->cookie == METAENGINE_HCOOKIE) : (void)0)  // Sanity/type check.
+#define METAENGINE_HCANARY(h) (h ? ME_ASSERT_E(METAENGINE_HHDR(h)->cookie == METAENGINE_HCOOKIE) : (void)0)  // Sanity/type check.
 
 #ifdef __cplusplus
 extern "C" {

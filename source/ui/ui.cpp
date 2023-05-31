@@ -6,7 +6,7 @@
 
 #include "core/core.h"
 #include "core/global.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/platform.h"
 #include "core/profiler/profiler.h"
 #include "engine/engine.h"

@@ -13,7 +13,7 @@
 #include "core/cpp/property.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 #include "meta/static_relfection.hpp"
 #include "reflectionflat.hpp"
 

@@ -34,12 +34,12 @@
 #include "renderer/gpu.hpp"
 
 b2Body::b2Body(const b2BodyDef *bd, b2World *world) {
-    METADOT_ASSERT_E(bd->position.IsValid());
-    METADOT_ASSERT_E(bd->linearVelocity.IsValid());
-    METADOT_ASSERT_E(b2IsValid(bd->angle));
-    METADOT_ASSERT_E(b2IsValid(bd->angularVelocity));
-    METADOT_ASSERT_E(b2IsValid(bd->angularDamping) && bd->angularDamping >= 0.0f);
-    METADOT_ASSERT_E(b2IsValid(bd->linearDamping) && bd->linearDamping >= 0.0f);
+    ME_ASSERT_E(bd->position.IsValid());
+    ME_ASSERT_E(bd->linearVelocity.IsValid());
+    ME_ASSERT_E(b2IsValid(bd->angle));
+    ME_ASSERT_E(b2IsValid(bd->angularVelocity));
+    ME_ASSERT_E(b2IsValid(bd->angularDamping) && bd->angularDamping >= 0.0f);
+    ME_ASSERT_E(b2IsValid(bd->linearDamping) && bd->linearDamping >= 0.0f);
 
     m_flags = 0;
 
@@ -107,7 +107,7 @@ b2Body::~b2Body() {
 }
 
 void b2Body::SetType(b2BodyType type) {
-    METADOT_ASSERT_E(m_world->IsLocked() == false);
+    ME_ASSERT_E(m_world->IsLocked() == false);
     if (m_world->IsLocked() == true) {
         return;
     }
@@ -154,7 +154,7 @@ void b2Body::SetType(b2BodyType type) {
 }
 
 b2Fixture *b2Body::CreateFixture(const b2FixtureDef *def) {
-    METADOT_ASSERT_E(m_world->IsLocked() == false);
+    ME_ASSERT_E(m_world->IsLocked() == false);
     if (m_world->IsLocked() == true) {
         return nullptr;
     }
@@ -201,15 +201,15 @@ void b2Body::DestroyFixture(b2Fixture *fixture) {
         return;
     }
 
-    METADOT_ASSERT_E(m_world->IsLocked() == false);
+    ME_ASSERT_E(m_world->IsLocked() == false);
     if (m_world->IsLocked() == true) {
         return;
     }
 
-    METADOT_ASSERT_E(fixture->m_body == this);
+    ME_ASSERT_E(fixture->m_body == this);
 
     // Remove the fixture from this body's singly linked list.
-    METADOT_ASSERT_E(m_fixtureCount > 0);
+    ME_ASSERT_E(m_fixtureCount > 0);
     b2Fixture **node = &m_fixtureList;
     bool found = false;
     while (*node != nullptr) {
@@ -223,7 +223,7 @@ void b2Body::DestroyFixture(b2Fixture *fixture) {
     }
 
     // You tried to remove a shape that is not attached to this body.
-    METADOT_ASSERT_E(found);
+    ME_ASSERT_E(found);
 
     const float density = fixture->m_density;
 
@@ -280,7 +280,7 @@ void b2Body::ResetMassData() {
         return;
     }
 
-    METADOT_ASSERT_E(m_type == b2_dynamicBody);
+    ME_ASSERT_E(m_type == b2_dynamicBody);
 
     // Accumulate mass over all fixtures.
     PVec2 localCenter = b2Vec2_zero;
@@ -305,7 +305,7 @@ void b2Body::ResetMassData() {
     if (m_I > 0.0f && (m_flags & e_fixedRotationFlag) == 0) {
         // Center the inertia about the center of mass.
         m_I -= m_mass * b2Dot(localCenter, localCenter);
-        METADOT_ASSERT_E(m_I > 0.0f);
+        ME_ASSERT_E(m_I > 0.0f);
         m_invI = 1.0f / m_I;
 
     } else {
@@ -323,7 +323,7 @@ void b2Body::ResetMassData() {
 }
 
 void b2Body::SetMassData(const b2MassData *massData) {
-    METADOT_ASSERT_E(m_world->IsLocked() == false);
+    ME_ASSERT_E(m_world->IsLocked() == false);
     if (m_world->IsLocked() == true) {
         return;
     }
@@ -345,7 +345,7 @@ void b2Body::SetMassData(const b2MassData *massData) {
 
     if (massData->I > 0.0f && (m_flags & b2Body::e_fixedRotationFlag) == 0) {
         m_I = massData->I - m_mass * b2Dot(massData->center, massData->center);
-        METADOT_ASSERT_E(m_I > 0.0f);
+        ME_ASSERT_E(m_I > 0.0f);
         m_invI = 1.0f / m_I;
     }
 
@@ -377,7 +377,7 @@ bool b2Body::ShouldCollide(const b2Body *other) const {
 }
 
 void b2Body::SetTransform(const PVec2 &position, float angle) {
-    METADOT_ASSERT_E(m_world->IsLocked() == false);
+    ME_ASSERT_E(m_world->IsLocked() == false);
     if (m_world->IsLocked() == true) {
         return;
     }
@@ -419,7 +419,7 @@ void b2Body::SynchronizeFixtures() {
 }
 
 void b2Body::SetEnabled(bool flag) {
-    METADOT_ASSERT_E(m_world->IsLocked() == false);
+    ME_ASSERT_E(m_world->IsLocked() == false);
 
     if (flag == IsEnabled()) {
         return;
@@ -561,7 +561,7 @@ void b2World::SetContactListener(b2ContactListener *listener) { m_contactManager
 void b2World::SetDebugDraw(class DebugDraw *debugDraw) { m_debugDraw = debugDraw; }
 
 b2Body *b2World::CreateBody(const b2BodyDef *def) {
-    METADOT_ASSERT_E(IsLocked() == false);
+    ME_ASSERT_E(IsLocked() == false);
     if (IsLocked()) {
         return nullptr;
     }
@@ -582,8 +582,8 @@ b2Body *b2World::CreateBody(const b2BodyDef *def) {
 }
 
 void b2World::DestroyBody(b2Body *b) {
-    METADOT_ASSERT_E(m_bodyCount > 0);
-    METADOT_ASSERT_E(IsLocked() == false);
+    ME_ASSERT_E(m_bodyCount > 0);
+    ME_ASSERT_E(IsLocked() == false);
     if (IsLocked()) {
         return;
     }
@@ -653,7 +653,7 @@ void b2World::DestroyBody(b2Body *b) {
 }
 
 b2Joint *b2World::CreateJoint(const b2JointDef *def) {
-    METADOT_ASSERT_E(IsLocked() == false);
+    ME_ASSERT_E(IsLocked() == false);
     if (IsLocked()) {
         return nullptr;
     }
@@ -707,7 +707,7 @@ b2Joint *b2World::CreateJoint(const b2JointDef *def) {
 }
 
 void b2World::DestroyJoint(b2Joint *j) {
-    METADOT_ASSERT_E(IsLocked() == false);
+    ME_ASSERT_E(IsLocked() == false);
     if (IsLocked()) {
         return;
     }
@@ -769,7 +769,7 @@ void b2World::DestroyJoint(b2Joint *j) {
 
     b2Joint::Destroy(j, &m_blockAllocator);
 
-    METADOT_ASSERT_E(m_jointCount > 0);
+    ME_ASSERT_E(m_jointCount > 0);
     --m_jointCount;
 
     // If the joint prevents collisions, then flag any contacts for filtering.
@@ -848,7 +848,7 @@ void b2World::Solve(const b2TimeStep &step) {
         while (stackCount > 0) {
             // Grab the next body off the stack and add it to the island.
             b2Body *b = stack[--stackCount];
-            METADOT_ASSERT_E(b->IsEnabled() == true);
+            ME_ASSERT_E(b->IsEnabled() == true);
             island.Add(b);
 
             // To keep islands as small as possible, we don't
@@ -891,7 +891,7 @@ void b2World::Solve(const b2TimeStep &step) {
                     continue;
                 }
 
-                METADOT_ASSERT_E(stackCount < stackSize);
+                ME_ASSERT_E(stackCount < stackSize);
                 stack[stackCount++] = other;
                 other->m_flags |= b2Body::e_islandFlag;
             }
@@ -916,7 +916,7 @@ void b2World::Solve(const b2TimeStep &step) {
                     continue;
                 }
 
-                METADOT_ASSERT_E(stackCount < stackSize);
+                ME_ASSERT_E(stackCount < stackSize);
                 stack[stackCount++] = other;
                 other->m_flags |= b2Body::e_islandFlag;
             }
@@ -1016,7 +1016,7 @@ void b2World::SolveTOI(const b2TimeStep &step) {
 
                 b2BodyType typeA = bA->m_type;
                 b2BodyType typeB = bB->m_type;
-                METADOT_ASSERT_E(typeA == b2_dynamicBody || typeB == b2_dynamicBody);
+                ME_ASSERT_E(typeA == b2_dynamicBody || typeB == b2_dynamicBody);
 
                 bool activeA = bA->IsAwake() && typeA != b2_staticBody;
                 bool activeB = bB->IsAwake() && typeB != b2_staticBody;
@@ -1046,7 +1046,7 @@ void b2World::SolveTOI(const b2TimeStep &step) {
                     bB->m_sweep.Advance(alpha0);
                 }
 
-                METADOT_ASSERT_E(alpha0 < 1.0f);
+                ME_ASSERT_E(alpha0 < 1.0f);
 
                 I32 indexA = c->GetChildIndexA();
                 I32 indexB = c->GetChildIndexB();
@@ -1399,7 +1399,7 @@ void b2World::DrawShape(b2Fixture *fixture, const PTransform &xf, const METAENGI
         case b2Shape::e_polygon: {
             b2PolygonShape *poly = (b2PolygonShape *)fixture->GetShape();
             I32 vertexCount = poly->m_count;
-            METADOT_ASSERT_E(vertexCount <= b2_maxPolygonVertices);
+            ME_ASSERT_E(vertexCount <= b2_maxPolygonVertices);
             PVec2 vertices[b2_maxPolygonVertices];
 
             for (I32 i = 0; i < vertexCount; ++i) {
@@ -1506,7 +1506,7 @@ I32 b2World::GetTreeBalance() const { return m_contactManager.m_broadPhase.GetTr
 float b2World::GetTreeQuality() const { return m_contactManager.m_broadPhase.GetTreeQuality(); }
 
 void b2World::ShiftOrigin(const PVec2 &newOrigin) {
-    METADOT_ASSERT_E(m_locked == false);
+    ME_ASSERT_E(m_locked == false);
     if (m_locked) {
         return;
     }
@@ -2047,7 +2047,7 @@ float b2WheelJoint::GetLowerLimit() const { return m_lowerTranslation; }
 float b2WheelJoint::GetUpperLimit() const { return m_upperTranslation; }
 
 void b2WheelJoint::SetLimits(float lower, float upper) {
-    METADOT_ASSERT_E(lower <= upper);
+    ME_ASSERT_E(lower <= upper);
     if (lower != m_lowerTranslation || upper != m_upperTranslation) {
         m_bodyA->SetAwake(true);
         m_bodyB->SetAwake(true);
@@ -2773,7 +2773,7 @@ float b2RevoluteJoint::GetLowerLimit() const { return m_lowerAngle; }
 float b2RevoluteJoint::GetUpperLimit() const { return m_upperAngle; }
 
 void b2RevoluteJoint::SetLimits(float lower, float upper) {
-    METADOT_ASSERT_E(lower <= upper);
+    ME_ASSERT_E(lower <= upper);
 
     if (lower != m_lowerAngle || upper != m_upperAngle) {
         m_bodyA->SetAwake(true);
@@ -2869,7 +2869,7 @@ void b2PulleyJointDef::Initialize(b2Body *bA, b2Body *bB, const PVec2 &groundA, 
     PVec2 dB = anchorB - groundB;
     lengthB = dB.Length();
     ratio = r;
-    METADOT_ASSERT_E(ratio > b2_epsilon);
+    ME_ASSERT_E(ratio > b2_epsilon);
 }
 
 b2PulleyJoint::b2PulleyJoint(const b2PulleyJointDef *def) : b2Joint(def) {
@@ -2881,7 +2881,7 @@ b2PulleyJoint::b2PulleyJoint(const b2PulleyJointDef *def) : b2Joint(def) {
     m_lengthA = def->lengthA;
     m_lengthB = def->lengthB;
 
-    METADOT_ASSERT_E(def->ratio != 0.0f);
+    ME_ASSERT_E(def->ratio != 0.0f);
     m_ratio = def->ratio;
 
     m_constant = def->lengthA + m_ratio * def->lengthB;
@@ -3190,7 +3190,7 @@ b2PrismaticJoint::b2PrismaticJoint(const b2PrismaticJointDef *def) : b2Joint(def
     m_lowerTranslation = def->lowerTranslation;
     m_upperTranslation = def->upperTranslation;
 
-    METADOT_ASSERT_E(m_lowerTranslation <= m_upperTranslation);
+    ME_ASSERT_E(m_lowerTranslation <= m_upperTranslation);
 
     m_maxMotorForce = def->maxMotorForce;
     m_motorSpeed = def->motorSpeed;
@@ -3571,7 +3571,7 @@ float b2PrismaticJoint::GetLowerLimit() const { return m_lowerTranslation; }
 float b2PrismaticJoint::GetUpperLimit() const { return m_upperTranslation; }
 
 void b2PrismaticJoint::SetLimits(float lower, float upper) {
-    METADOT_ASSERT_E(lower <= upper);
+    ME_ASSERT_E(lower <= upper);
     if (lower != m_lowerTranslation || upper != m_upperTranslation) {
         m_bodyA->SetAwake(true);
         m_bodyB->SetAwake(true);
@@ -3675,8 +3675,8 @@ void b2PolygonContact::Destroy(b2Contact *contact, b2BlockAllocator *allocator) 
 }
 
 b2PolygonContact::b2PolygonContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b2Contact(fixtureA, 0, fixtureB, 0) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_polygon);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_polygon);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
 }
 
 void b2PolygonContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -3694,8 +3694,8 @@ void b2PolygonAndCircleContact::Destroy(b2Contact *contact, b2BlockAllocator *al
 }
 
 b2PolygonAndCircleContact::b2PolygonAndCircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b2Contact(fixtureA, 0, fixtureB, 0) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_polygon);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_polygon);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
 void b2PolygonAndCircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -4015,21 +4015,21 @@ PVec2 b2MotorJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_lin
 float b2MotorJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_angularImpulse; }
 
 void b2MotorJoint::SetMaxForce(float force) {
-    METADOT_ASSERT_E(b2IsValid(force) && force >= 0.0f);
+    ME_ASSERT_E(b2IsValid(force) && force >= 0.0f);
     m_maxForce = force;
 }
 
 float b2MotorJoint::GetMaxForce() const { return m_maxForce; }
 
 void b2MotorJoint::SetMaxTorque(float torque) {
-    METADOT_ASSERT_E(b2IsValid(torque) && torque >= 0.0f);
+    ME_ASSERT_E(b2IsValid(torque) && torque >= 0.0f);
     m_maxTorque = torque;
 }
 
 float b2MotorJoint::GetMaxTorque() const { return m_maxTorque; }
 
 void b2MotorJoint::SetCorrectionFactor(float factor) {
-    METADOT_ASSERT_E(b2IsValid(factor) && 0.0f <= factor && factor <= 1.0f);
+    ME_ASSERT_E(b2IsValid(factor) && 0.0f <= factor && factor <= 1.0f);
     m_correctionFactor = factor;
 }
 
@@ -4160,7 +4160,7 @@ b2Joint *b2Joint::Create(const b2JointDef *def, b2BlockAllocator *allocator) {
         } break;
 
         default:
-            METADOT_ASSERT_E(false);
+            ME_ASSERT_E(false);
             break;
     }
 
@@ -4211,13 +4211,13 @@ void b2Joint::Destroy(b2Joint *joint, b2BlockAllocator *allocator) {
             break;
 
         default:
-            METADOT_ASSERT_E(false);
+            ME_ASSERT_E(false);
             break;
     }
 }
 
 b2Joint::b2Joint(const b2JointDef *def) {
-    METADOT_ASSERT_E(def->bodyA != def->bodyB);
+    ME_ASSERT_E(def->bodyA != def->bodyB);
 
     m_type = def->type;
     m_prev = nullptr;
@@ -4608,8 +4608,8 @@ void b2Island::Solve(b2Profile *profile, const b2TimeStep &step, const PVec2 &gr
 }
 
 void b2Island::SolveTOI(const b2TimeStep &subStep, I32 toiIndexA, I32 toiIndexB) {
-    METADOT_ASSERT_E(toiIndexA < m_bodyCount);
-    METADOT_ASSERT_E(toiIndexB < m_bodyCount);
+    ME_ASSERT_E(toiIndexA < m_bodyCount);
+    ME_ASSERT_E(toiIndexB < m_bodyCount);
 
     // Initialize the body state.
     for (I32 i = 0; i < m_bodyCount; ++i) {
@@ -4638,36 +4638,36 @@ void b2Island::SolveTOI(const b2TimeStep &subStep, I32 toiIndexA, I32 toiIndexB)
     }
 
 #if 0
-	// Is the new position really safe?
-	for (I32 i = 0; i < m_contactCount; ++i)
-	{
-		b2Contact* c = m_contacts[i];
-		b2Fixture* fA = c->GetFixtureA();
-		b2Fixture* fB = c->GetFixtureB();
+    // Is the new position really safe?
+    for (I32 i = 0; i < m_contactCount; ++i)
+    {
+        b2Contact* c = m_contacts[i];
+        b2Fixture* fA = c->GetFixtureA();
+        b2Fixture* fB = c->GetFixtureB();
 
-		b2Body* bA = fA->GetBody();
-		b2Body* bB = fB->GetBody();
+        b2Body* bA = fA->GetBody();
+        b2Body* bB = fB->GetBody();
 
-		I32 indexA = c->GetChildIndexA();
-		I32 indexB = c->GetChildIndexB();
+        I32 indexA = c->GetChildIndexA();
+        I32 indexB = c->GetChildIndexB();
 
-		b2DistanceInput input;
-		input.proxyA.Set(fA->GetShape(), indexA);
-		input.proxyB.Set(fB->GetShape(), indexB);
-		input.transformA = bA->GetTransform();
-		input.transformB = bB->GetTransform();
-		input.useRadii = false;
+        b2DistanceInput input;
+        input.proxyA.Set(fA->GetShape(), indexA);
+        input.proxyB.Set(fB->GetShape(), indexB);
+        input.transformA = bA->GetTransform();
+        input.transformB = bB->GetTransform();
+        input.useRadii = false;
 
-		b2DistanceOutput output;
-		b2SimplexCache cache;
-		cache.count = 0;
-		b2Distance(&output, &cache, &input);
+        b2DistanceOutput output;
+        b2SimplexCache cache;
+        cache.count = 0;
+        b2Distance(&output, &cache, &input);
 
-		if (output.distance == 0 || cache.count == 3)
-		{
-			cache.count += 0;
-		}
-	}
+        if (output.distance == 0 || cache.count == 3)
+        {
+            cache.count += 0;
+        }
+    }
 #endif
 
     // Leap of faith to new safe state.
@@ -4778,8 +4778,8 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
     m_typeA = m_joint1->GetType();
     m_typeB = m_joint2->GetType();
 
-    METADOT_ASSERT_E(m_typeA == e_revoluteJoint || m_typeA == e_prismaticJoint);
-    METADOT_ASSERT_E(m_typeB == e_revoluteJoint || m_typeB == e_prismaticJoint);
+    ME_ASSERT_E(m_typeA == e_revoluteJoint || m_typeA == e_prismaticJoint);
+    ME_ASSERT_E(m_typeB == e_revoluteJoint || m_typeB == e_prismaticJoint);
 
     float coordinateA, coordinateB;
 
@@ -4789,7 +4789,7 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
     m_bodyA = m_joint1->GetBodyB();
 
     // Body B on joint1 must be dynamic
-    METADOT_ASSERT_E(m_bodyA->m_type == b2_dynamicBody);
+    ME_ASSERT_E(m_bodyA->m_type == b2_dynamicBody);
 
     // Get geometry of joint1
     PTransform xfA = m_bodyA->m_xf;
@@ -4827,7 +4827,7 @@ b2GearJoint::b2GearJoint(const b2GearJointDef *def) : b2Joint(def) {
     m_bodyB = m_joint2->GetBodyB();
 
     // Body B on joint2 must be dynamic
-    METADOT_ASSERT_E(m_bodyB->m_type == b2_dynamicBody);
+    ME_ASSERT_E(m_bodyB->m_type == b2_dynamicBody);
 
     // Get geometry of joint2
     PTransform xfB = m_bodyB->m_xf;
@@ -5098,7 +5098,7 @@ float b2GearJoint::GetReactionTorque(float inv_dt) const {
 }
 
 void b2GearJoint::SetRatio(float ratio) {
-    METADOT_ASSERT_E(b2IsValid(ratio));
+    ME_ASSERT_E(b2IsValid(ratio));
     m_ratio = ratio;
 }
 
@@ -5291,14 +5291,14 @@ PVec2 b2FrictionJoint::GetReactionForce(float inv_dt) const { return inv_dt * m_
 float b2FrictionJoint::GetReactionTorque(float inv_dt) const { return inv_dt * m_angularImpulse; }
 
 void b2FrictionJoint::SetMaxForce(float force) {
-    METADOT_ASSERT_E(b2IsValid(force) && force >= 0.0f);
+    ME_ASSERT_E(b2IsValid(force) && force >= 0.0f);
     m_maxForce = force;
 }
 
 float b2FrictionJoint::GetMaxForce() const { return m_maxForce; }
 
 void b2FrictionJoint::SetMaxTorque(float torque) {
-    METADOT_ASSERT_E(b2IsValid(torque) && torque >= 0.0f);
+    ME_ASSERT_E(b2IsValid(torque) && torque >= 0.0f);
     m_maxTorque = torque;
 }
 
@@ -5357,7 +5357,7 @@ void b2Fixture::Create(b2BlockAllocator *allocator, b2Body *body, const b2Fixtur
 
 void b2Fixture::Destroy(b2BlockAllocator *allocator) {
     // The proxies must be destroyed before calling this.
-    METADOT_ASSERT_E(m_proxyCount == 0);
+    ME_ASSERT_E(m_proxyCount == 0);
 
     // Free the proxy array.
     I32 childCount = m_shape->GetChildCount();
@@ -5391,7 +5391,7 @@ void b2Fixture::Destroy(b2BlockAllocator *allocator) {
         } break;
 
         default:
-            METADOT_ASSERT_E(false);
+            ME_ASSERT_E(false);
             break;
     }
 
@@ -5399,7 +5399,7 @@ void b2Fixture::Destroy(b2BlockAllocator *allocator) {
 }
 
 void b2Fixture::CreateProxies(b2BroadPhase *broadPhase, const PTransform &xf) {
-    METADOT_ASSERT_E(m_proxyCount == 0);
+    ME_ASSERT_E(m_proxyCount == 0);
 
     // Create proxies in the broad-phase.
     m_proxyCount = m_shape->GetChildCount();
@@ -5562,8 +5562,8 @@ void b2EdgeAndPolygonContact::Destroy(b2Contact *contact, b2BlockAllocator *allo
 }
 
 b2EdgeAndPolygonContact::b2EdgeAndPolygonContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b2Contact(fixtureA, 0, fixtureB, 0) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_edge);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_edge);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
 }
 
 void b2EdgeAndPolygonContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -5581,8 +5581,8 @@ void b2EdgeAndCircleContact::Destroy(b2Contact *contact, b2BlockAllocator *alloc
 }
 
 b2EdgeAndCircleContact::b2EdgeAndCircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b2Contact(fixtureA, 0, fixtureB, 0) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_edge);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_edge);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
 void b2EdgeAndCircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -5953,8 +5953,8 @@ void b2Contact::InitializeRegisters() {
 }
 
 void b2Contact::AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *destoryFcn, b2Shape::Type type1, b2Shape::Type type2) {
-    METADOT_ASSERT_E(0 <= type1 && type1 < b2Shape::e_typeCount);
-    METADOT_ASSERT_E(0 <= type2 && type2 < b2Shape::e_typeCount);
+    ME_ASSERT_E(0 <= type1 && type1 < b2Shape::e_typeCount);
+    ME_ASSERT_E(0 <= type2 && type2 < b2Shape::e_typeCount);
 
     s_registers[type1][type2].createFcn = createFcn;
     s_registers[type1][type2].destroyFcn = destoryFcn;
@@ -5976,8 +5976,8 @@ b2Contact *b2Contact::Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixture
     b2Shape::Type type1 = fixtureA->GetType();
     b2Shape::Type type2 = fixtureB->GetType();
 
-    METADOT_ASSERT_E(0 <= type1 && type1 < b2Shape::e_typeCount);
-    METADOT_ASSERT_E(0 <= type2 && type2 < b2Shape::e_typeCount);
+    ME_ASSERT_E(0 <= type1 && type1 < b2Shape::e_typeCount);
+    ME_ASSERT_E(0 <= type2 && type2 < b2Shape::e_typeCount);
 
     b2ContactCreateFcn *createFcn = s_registers[type1][type2].createFcn;
     if (createFcn) {
@@ -5992,7 +5992,7 @@ b2Contact *b2Contact::Create(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixture
 }
 
 void b2Contact::Destroy(b2Contact *contact, b2BlockAllocator *allocator) {
-    METADOT_ASSERT_E(s_initialized == true);
+    ME_ASSERT_E(s_initialized == true);
 
     b2Fixture *fixtureA = contact->m_fixtureA;
     b2Fixture *fixtureB = contact->m_fixtureB;
@@ -6005,8 +6005,8 @@ void b2Contact::Destroy(b2Contact *contact, b2BlockAllocator *allocator) {
     b2Shape::Type typeA = fixtureA->GetType();
     b2Shape::Type typeB = fixtureB->GetType();
 
-    METADOT_ASSERT_E(0 <= typeA && typeA < b2Shape::e_typeCount);
-    METADOT_ASSERT_E(0 <= typeB && typeB < b2Shape::e_typeCount);
+    ME_ASSERT_E(0 <= typeA && typeA < b2Shape::e_typeCount);
+    ME_ASSERT_E(0 <= typeB && typeB < b2Shape::e_typeCount);
 
     b2ContactDestroyFcn *destroyFcn = s_registers[typeA][typeB].destroyFcn;
     destroyFcn(contact, allocator);
@@ -6165,7 +6165,7 @@ b2ContactSolver::b2ContactSolver(b2ContactSolverDef *def) {
         b2Manifold *manifold = contact->GetManifold();
 
         I32 pointCount = manifold->pointCount;
-        METADOT_ASSERT_E(pointCount > 0);
+        ME_ASSERT_E(pointCount > 0);
 
         b2ContactVelocityConstraint *vc = m_velocityConstraints + i;
         vc->friction = contact->m_friction;
@@ -6257,7 +6257,7 @@ void b2ContactSolver::InitializeVelocityConstraints() {
         PVec2 vB = m_velocities[indexB].v;
         float wB = m_velocities[indexB].w;
 
-        METADOT_ASSERT_E(manifold->pointCount > 0);
+        ME_ASSERT_E(manifold->pointCount > 0);
 
         PTransform xfA, xfB;
         xfA.q.Set(aA);
@@ -6389,7 +6389,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
         PVec2 tangent = b2Cross(normal, 1.0f);
         float friction = vc->friction;
 
-        METADOT_ASSERT_E(pointCount == 1 || pointCount == 2);
+        ME_ASSERT_E(pointCount == 1 || pointCount == 2);
 
         // Solve tangent constraints first because non-penetration is more important
         // than friction.
@@ -6482,7 +6482,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
             b2VelocityConstraintPoint *cp2 = vc->points + 1;
 
             PVec2 a(cp1->normalImpulse, cp2->normalImpulse);
-            METADOT_ASSERT_E(a.x >= 0.0f && a.y >= 0.0f);
+            ME_ASSERT_E(a.x >= 0.0f && a.y >= 0.0f);
 
             // Relative velocity at contact
             PVec2 dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
@@ -6540,8 +6540,8 @@ void b2ContactSolver::SolveVelocityConstraints() {
                     vn1 = b2Dot(dv1, normal);
                     vn2 = b2Dot(dv2, normal);
 
-                    METADOT_ASSERT_E(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-                    METADOT_ASSERT_E(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
+                    ME_ASSERT_E(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
+                    ME_ASSERT_E(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
 #endif
                     break;
                 }
@@ -6580,7 +6580,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
                     // Compute normal velocity
                     vn1 = b2Dot(dv1, normal);
 
-                    METADOT_ASSERT_E(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
+                    ME_ASSERT_E(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
 #endif
                     break;
                 }
@@ -6620,7 +6620,7 @@ void b2ContactSolver::SolveVelocityConstraints() {
                     // Compute normal velocity
                     vn2 = b2Dot(dv2, normal);
 
-                    METADOT_ASSERT_E(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
+                    ME_ASSERT_E(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
 #endif
                     break;
                 }
@@ -6681,7 +6681,7 @@ void b2ContactSolver::StoreImpulses() {
 
 struct b2PositionSolverManifold {
     void Initialize(b2ContactPositionConstraint *pc, const PTransform &xfA, const PTransform &xfB, I32 index) {
-        METADOT_ASSERT_E(pc->pointCount > 0);
+        ME_ASSERT_E(pc->pointCount > 0);
 
         switch (pc->type) {
             case b2Manifold::e_circles: {
@@ -7126,8 +7126,8 @@ void b2CircleContact::Destroy(b2Contact *contact, b2BlockAllocator *allocator) {
 }
 
 b2CircleContact::b2CircleContact(b2Fixture *fixtureA, b2Fixture *fixtureB) : b2Contact(fixtureA, 0, fixtureB, 0) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_circle);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_circle);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
 void b2CircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -7145,8 +7145,8 @@ void b2ChainAndPolygonContact::Destroy(b2Contact *contact, b2BlockAllocator *all
 }
 
 b2ChainAndPolygonContact::b2ChainAndPolygonContact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB) : b2Contact(fixtureA, indexA, fixtureB, indexB) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_chain);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_chain);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_polygon);
 }
 
 void b2ChainAndPolygonContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -7167,8 +7167,8 @@ void b2ChainAndCircleContact::Destroy(b2Contact *contact, b2BlockAllocator *allo
 }
 
 b2ChainAndCircleContact::b2ChainAndCircleContact(b2Fixture *fixtureA, I32 indexA, b2Fixture *fixtureB, I32 indexB) : b2Contact(fixtureA, indexA, fixtureB, indexB) {
-    METADOT_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_chain);
-    METADOT_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
+    ME_ASSERT_E(m_fixtureA->GetType() == b2Shape::e_chain);
+    ME_ASSERT_E(m_fixtureB->GetType() == b2Shape::e_circle);
 }
 
 void b2ChainAndCircleContact::Evaluate(b2Manifold *manifold, const PTransform &xfA, const PTransform &xfB) {
@@ -7224,7 +7224,7 @@ b2Rope::~b2Rope() {
 }
 
 void b2Rope::Create(const b2RopeDef &def) {
-    METADOT_ASSERT_E(def.count >= 3);
+    ME_ASSERT_E(def.count >= 3);
     m_position = def.position;
     m_count = def.count;
     m_bindPositions = (PVec2 *)b2Alloc(m_count * sizeof(PVec2));
@@ -7486,7 +7486,7 @@ void b2Rope::SolveStretch_PBD() {
 }
 
 void b2Rope::SolveStretch_XPBD(float dt) {
-    METADOT_ASSERT_E(dt > 0.0f);
+    ME_ASSERT_E(dt > 0.0f);
 
     for (I32 i = 0; i < m_stretchCount; ++i) {
         b2RopeStretch &c = m_stretchConstraints[i];
@@ -7592,7 +7592,7 @@ void b2Rope::SolveBend_PBD_Angle() {
 }
 
 void b2Rope::SolveBend_XPBD_Angle(float dt) {
-    METADOT_ASSERT_E(dt > 0.0f);
+    ME_ASSERT_E(dt > 0.0f);
 
     for (I32 i = 0; i < m_bendCount; ++i) {
         b2RopeBend &c = m_bendConstraints[i];
@@ -7895,7 +7895,7 @@ struct b2SizeMap {
         I32 j = 0;
         values[0] = 0;
         for (I32 i = 1; i <= b2_maxBlockSize; ++i) {
-            METADOT_ASSERT_E(j < b2_blockSizeCount);
+            ME_ASSERT_E(j < b2_blockSizeCount);
             if (i <= b2_blockSizes[j]) {
                 values[i] = (U8)j;
             } else {
@@ -7920,7 +7920,7 @@ struct b2Block {
 };
 
 b2BlockAllocator::b2BlockAllocator() {
-    METADOT_ASSERT_E(b2_blockSizeCount < UCHAR_MAX);
+    ME_ASSERT_E(b2_blockSizeCount < UCHAR_MAX);
 
     m_chunkSpace = b2_chunkArrayIncrement;
     m_chunkCount = 0;
@@ -7943,14 +7943,14 @@ void *b2BlockAllocator::Allocate(I32 size) {
         return nullptr;
     }
 
-    METADOT_ASSERT_E(0 < size);
+    ME_ASSERT_E(0 < size);
 
     if (size > b2_maxBlockSize) {
         return b2Alloc(size);
     }
 
     I32 index = b2_sizeMap.values[size];
-    METADOT_ASSERT_E(0 <= index && index < b2_blockSizeCount);
+    ME_ASSERT_E(0 <= index && index < b2_blockSizeCount);
 
     if (m_freeLists[index]) {
         b2Block *block = m_freeLists[index];
@@ -7974,7 +7974,7 @@ void *b2BlockAllocator::Allocate(I32 size) {
         I32 blockSize = b2_blockSizes[index];
         chunk->blockSize = blockSize;
         I32 blockCount = b2_chunkSize / blockSize;
-        METADOT_ASSERT_E(blockCount * blockSize <= b2_chunkSize);
+        ME_ASSERT_E(blockCount * blockSize <= b2_chunkSize);
         for (I32 i = 0; i < blockCount - 1; ++i) {
             b2Block *block = (b2Block *)((I8 *)chunk->blocks + blockSize * i);
             b2Block *next = (b2Block *)((I8 *)chunk->blocks + blockSize * (i + 1));
@@ -7995,7 +7995,7 @@ void b2BlockAllocator::Free(void *p, I32 size) {
         return;
     }
 
-    METADOT_ASSERT_E(0 < size);
+    ME_ASSERT_E(0 < size);
 
     if (size > b2_maxBlockSize) {
         b2Free(p);
@@ -8003,7 +8003,7 @@ void b2BlockAllocator::Free(void *p, I32 size) {
     }
 
     I32 index = b2_sizeMap.values[size];
-    METADOT_ASSERT_E(0 <= index && index < b2_blockSizeCount);
+    ME_ASSERT_E(0 <= index && index < b2_blockSizeCount);
 
 #if defined(_DEBUG)
     // Verify the memory address and size is valid.
@@ -8012,7 +8012,7 @@ void b2BlockAllocator::Free(void *p, I32 size) {
     for (I32 i = 0; i < m_chunkCount; ++i) {
         b2Chunk *chunk = m_chunks + i;
         if (chunk->blockSize != blockSize) {
-            METADOT_ASSERT_E((I8 *)p + blockSize <= (I8 *)chunk->blocks || (I8 *)chunk->blocks + b2_chunkSize <= (I8 *)p);
+            ME_ASSERT_E((I8 *)p + blockSize <= (I8 *)chunk->blocks || (I8 *)chunk->blocks + b2_chunkSize <= (I8 *)p);
         } else {
             if ((I8 *)chunk->blocks <= (I8 *)p && (I8 *)p + blockSize <= (I8 *)chunk->blocks + b2_chunkSize) {
                 found = true;
@@ -8020,7 +8020,7 @@ void b2BlockAllocator::Free(void *p, I32 size) {
         }
     }
 
-    METADOT_ASSERT_E(found);
+    ME_ASSERT_E(found);
 
     memset(p, 0xfd, blockSize);
 #endif
@@ -8124,7 +8124,7 @@ void b2Log_Default(const char *string, va_list args) { vprintf(string, args); }
 FILE *b2_dumpFile = nullptr;
 
 void b2OpenDump(const char *fileName) {
-    METADOT_ASSERT_E(b2_dumpFile == nullptr);
+    ME_ASSERT_E(b2_dumpFile == nullptr);
     b2_dumpFile = fopen(fileName, "w");
 }
 
@@ -8152,12 +8152,12 @@ b2StackAllocator::b2StackAllocator() {
 }
 
 b2StackAllocator::~b2StackAllocator() {
-    METADOT_ASSERT_E(m_index == 0);
-    METADOT_ASSERT_E(m_entryCount == 0);
+    ME_ASSERT_E(m_index == 0);
+    ME_ASSERT_E(m_entryCount == 0);
 }
 
 void *b2StackAllocator::Allocate(I32 size) {
-    METADOT_ASSERT_E(m_entryCount < b2_maxStackEntries);
+    ME_ASSERT_E(m_entryCount < b2_maxStackEntries);
 
     b2StackEntry *entry = m_entries + m_entryCount;
     entry->size = size;
@@ -8178,9 +8178,9 @@ void *b2StackAllocator::Allocate(I32 size) {
 }
 
 void b2StackAllocator::Free(void *p) {
-    METADOT_ASSERT_E(m_entryCount > 0);
+    ME_ASSERT_E(m_entryCount > 0);
     b2StackEntry *entry = m_entries + m_entryCount - 1;
-    METADOT_ASSERT_E(p == entry->data);
+    ME_ASSERT_E(p == entry->data);
     if (entry->usedMalloc) {
         b2Free(p);
     } else {
@@ -8286,8 +8286,8 @@ void b2ChainShape::Clear() {
 }
 
 void b2ChainShape::CreateLoop(const PVec2 *vertices, I32 count) {
-    METADOT_ASSERT_E(m_vertices == nullptr && m_count == 0);
-    METADOT_ASSERT_E(count >= 3);
+    ME_ASSERT_E(m_vertices == nullptr && m_count == 0);
+    ME_ASSERT_E(count >= 3);
     if (count < 3) {
         return;
     }
@@ -8296,7 +8296,7 @@ void b2ChainShape::CreateLoop(const PVec2 *vertices, I32 count) {
         PVec2 v1 = vertices[i - 1];
         PVec2 v2 = vertices[i];
         // If the code crashes here, it means your vertices are too close together.
-        METADOT_ASSERT_E(b2DistanceSquared(v1, v2) > b2_linearSlop * b2_linearSlop);
+        ME_ASSERT_E(b2DistanceSquared(v1, v2) > b2_linearSlop * b2_linearSlop);
     }
 
     m_count = count + 1;
@@ -8308,11 +8308,11 @@ void b2ChainShape::CreateLoop(const PVec2 *vertices, I32 count) {
 }
 
 void b2ChainShape::CreateChain(const PVec2 *vertices, I32 count, const PVec2 &prevVertex, const PVec2 &nextVertex) {
-    METADOT_ASSERT_E(m_vertices == nullptr && m_count == 0);
-    METADOT_ASSERT_E(count >= 2);
+    ME_ASSERT_E(m_vertices == nullptr && m_count == 0);
+    ME_ASSERT_E(count >= 2);
     for (I32 i = 1; i < count; ++i) {
         // If the code crashes here, it means your vertices are too close together.
-        METADOT_ASSERT_E(b2DistanceSquared(vertices[i - 1], vertices[i]) > b2_linearSlop * b2_linearSlop);
+        ME_ASSERT_E(b2DistanceSquared(vertices[i - 1], vertices[i]) > b2_linearSlop * b2_linearSlop);
     }
 
     m_count = count;
@@ -8336,7 +8336,7 @@ I32 b2ChainShape::GetChildCount() const {
 }
 
 void b2ChainShape::GetChildEdge(b2EdgeShape *edge, I32 index) const {
-    METADOT_ASSERT_E(0 <= index && index < m_count - 1);
+    ME_ASSERT_E(0 <= index && index < m_count - 1);
     edge->m_type = b2Shape::e_edge;
     edge->m_radius = m_radius;
 
@@ -8364,7 +8364,7 @@ bool b2ChainShape::TestPoint(const PTransform &xf, const PVec2 &p) const {
 }
 
 bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input, const PTransform &xf, I32 childIndex) const {
-    METADOT_ASSERT_E(childIndex < m_count);
+    ME_ASSERT_E(childIndex < m_count);
 
     b2EdgeShape edgeShape;
 
@@ -8381,7 +8381,7 @@ bool b2ChainShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &input,
 }
 
 void b2ChainShape::ComputeAABB(b2AABB *aabb, const PTransform &xf, I32 childIndex) const {
-    METADOT_ASSERT_E(childIndex < m_count);
+    ME_ASSERT_E(childIndex < m_count);
 
     I32 i1 = childIndex;
     I32 i2 = childIndex + 1;
@@ -8777,7 +8777,7 @@ void b2CollideEdgeAndCircle(b2Manifold *manifold, const b2EdgeShape *edgeA, cons
 
     // Region AB
     float den = b2Dot(e, e);
-    METADOT_ASSERT_E(den > 0.0f);
+    ME_ASSERT_E(den > 0.0f);
     PVec2 P = (1.0f / den) * (u * A + v * B);
     PVec2 d = Q - P;
     float dd = b2Dot(d, d);
@@ -9149,7 +9149,7 @@ static void b2FindIncidentEdge(b2ClipVertex c[2], const b2PolygonShape *poly1, c
     const PVec2 *vertices2 = poly2->m_vertices;
     const PVec2 *normals2 = poly2->m_normals;
 
-    METADOT_ASSERT_E(0 <= edge1 && edge1 < poly1->m_count);
+    ME_ASSERT_E(0 <= edge1 && edge1 < poly1->m_count);
 
     // Get the normal of the reference edge in poly2's frame.
     PVec2 normal1 = b2MulT(xf2.q, b2Mul(xf1.q, normals1[edge1]));
@@ -9472,7 +9472,7 @@ I32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2], const P
         vOut[count].id.cf.typeB = b2ContactFeature::e_face;
         ++count;
 
-        METADOT_ASSERT_E(count == 2);
+        ME_ASSERT_E(count == 2);
     }
 
     return count;
@@ -9517,7 +9517,7 @@ void b2DistanceProxy::Set(const b2Shape *shape, I32 index) {
 
         case b2Shape::e_chain: {
             const b2ChainShape *chain = static_cast<const b2ChainShape *>(shape);
-            METADOT_ASSERT_E(0 <= index && index < chain->m_count);
+            ME_ASSERT_E(0 <= index && index < chain->m_count);
 
             m_buffer[0] = chain->m_vertices[index];
             if (index + 1 < chain->m_count) {
@@ -9539,7 +9539,7 @@ void b2DistanceProxy::Set(const b2Shape *shape, I32 index) {
         } break;
 
         default:
-            METADOT_ASSERT_E(false);
+            ME_ASSERT_E(false);
     }
 }
 
@@ -9560,7 +9560,7 @@ struct b2SimplexVertex {
 
 struct b2Simplex {
     void ReadCache(const b2SimplexCache *cache, const b2DistanceProxy *proxyA, const PTransform &transformA, const b2DistanceProxy *proxyB, const PTransform &transformB) {
-        METADOT_ASSERT_E(cache->count <= 3);
+        ME_ASSERT_E(cache->count <= 3);
 
         // Copy data from cache.
         m_count = cache->count;
@@ -9631,7 +9631,7 @@ struct b2Simplex {
             }
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 return b2Vec2_zero;
         }
     }
@@ -9639,7 +9639,7 @@ struct b2Simplex {
     PVec2 GetClosestPoint() const {
         switch (m_count) {
             case 0:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 return b2Vec2_zero;
 
             case 1:
@@ -9652,7 +9652,7 @@ struct b2Simplex {
                 return b2Vec2_zero;
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 return b2Vec2_zero;
         }
     }
@@ -9660,7 +9660,7 @@ struct b2Simplex {
     void GetWitnessPoints(PVec2 *pA, PVec2 *pB) const {
         switch (m_count) {
             case 0:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 break;
 
             case 1:
@@ -9679,7 +9679,7 @@ struct b2Simplex {
                 break;
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 break;
         }
     }
@@ -9687,7 +9687,7 @@ struct b2Simplex {
     float GetMetric() const {
         switch (m_count) {
             case 0:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 return 0.0f;
 
             case 1:
@@ -9700,7 +9700,7 @@ struct b2Simplex {
                 return b2Cross(m_v2.w - m_v1.w, m_v3.w - m_v1.w);
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 return 0.0f;
         }
     }
@@ -9918,7 +9918,7 @@ void b2Distance(b2DistanceOutput *output, b2SimplexCache *cache, const b2Distanc
                 break;
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
         }
 
         // If we have 3 points, then the origin is in the corresponding triangle.
@@ -10047,7 +10047,7 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
     const I32 k_maxIters = 20;
     I32 iter = 0;
     while (iter < k_maxIters && v.Length() - sigma > tolerance) {
-        METADOT_ASSERT_E(simplex.m_count < 3);
+        ME_ASSERT_E(simplex.m_count < 3);
 
         output->iterations += 1;
 
@@ -10104,7 +10104,7 @@ bool b2ShapeCast(b2ShapeCastOutput *output, const b2ShapeCastInput *input) {
                 break;
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
         }
 
         // If we have 3 points, then the origin is in the corresponding triangle.
@@ -10170,7 +10170,7 @@ b2DynamicTree::~b2DynamicTree() {
 I32 b2DynamicTree::AllocateNode() {
     // Expand the node pool as needed.
     if (m_freeList == b2_nullNode) {
-        METADOT_ASSERT_E(m_nodeCount == m_nodeCapacity);
+        ME_ASSERT_E(m_nodeCount == m_nodeCapacity);
 
         // The free list is empty. Rebuild a bigger pool.
         b2TreeNode *oldNodes = m_nodes;
@@ -10205,8 +10205,8 @@ I32 b2DynamicTree::AllocateNode() {
 
 // Return a node to the pool.
 void b2DynamicTree::FreeNode(I32 nodeId) {
-    METADOT_ASSERT_E(0 <= nodeId && nodeId < m_nodeCapacity);
-    METADOT_ASSERT_E(0 < m_nodeCount);
+    ME_ASSERT_E(0 <= nodeId && nodeId < m_nodeCapacity);
+    ME_ASSERT_E(0 < m_nodeCount);
     m_nodes[nodeId].next = m_freeList;
     m_nodes[nodeId].height = -1;
     m_freeList = nodeId;
@@ -10233,17 +10233,17 @@ I32 b2DynamicTree::CreateProxy(const b2AABB &aabb, void *userData) {
 }
 
 void b2DynamicTree::DestroyProxy(I32 proxyId) {
-    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
-    METADOT_ASSERT_E(m_nodes[proxyId].IsLeaf());
+    ME_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
+    ME_ASSERT_E(m_nodes[proxyId].IsLeaf());
 
     RemoveLeaf(proxyId);
     FreeNode(proxyId);
 }
 
 bool b2DynamicTree::MoveProxy(I32 proxyId, const b2AABB &aabb, const PVec2 &displacement) {
-    METADOT_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
+    ME_ASSERT_E(0 <= proxyId && proxyId < m_nodeCapacity);
 
-    METADOT_ASSERT_E(m_nodes[proxyId].IsLeaf());
+    ME_ASSERT_E(m_nodes[proxyId].IsLeaf());
 
     // Extend AABB
     b2AABB fatAABB;
@@ -10403,8 +10403,8 @@ void b2DynamicTree::InsertLeaf(I32 leaf) {
         I32 child1 = m_nodes[index].child1;
         I32 child2 = m_nodes[index].child2;
 
-        METADOT_ASSERT_E(child1 != b2_nullNode);
-        METADOT_ASSERT_E(child2 != b2_nullNode);
+        ME_ASSERT_E(child1 != b2_nullNode);
+        ME_ASSERT_E(child2 != b2_nullNode);
 
         m_nodes[index].height = 1 + b2Max(m_nodes[child1].height, m_nodes[child2].height);
         m_nodes[index].aabb.Combine(m_nodes[child1].aabb, m_nodes[child2].aabb);
@@ -10465,7 +10465,7 @@ void b2DynamicTree::RemoveLeaf(I32 leaf) {
 // Perform a left or right rotation if node A is imbalanced.
 // Returns the new root index.
 I32 b2DynamicTree::Balance(I32 iA) {
-    METADOT_ASSERT_E(iA != b2_nullNode);
+    ME_ASSERT_E(iA != b2_nullNode);
 
     b2TreeNode *A = m_nodes + iA;
     if (A->IsLeaf() || A->height < 2) {
@@ -10474,8 +10474,8 @@ I32 b2DynamicTree::Balance(I32 iA) {
 
     I32 iB = A->child1;
     I32 iC = A->child2;
-    METADOT_ASSERT_E(0 <= iB && iB < m_nodeCapacity);
-    METADOT_ASSERT_E(0 <= iC && iC < m_nodeCapacity);
+    ME_ASSERT_E(0 <= iB && iB < m_nodeCapacity);
+    ME_ASSERT_E(0 <= iC && iC < m_nodeCapacity);
 
     b2TreeNode *B = m_nodes + iB;
     b2TreeNode *C = m_nodes + iC;
@@ -10488,8 +10488,8 @@ I32 b2DynamicTree::Balance(I32 iA) {
         I32 iG = C->child2;
         b2TreeNode *F = m_nodes + iF;
         b2TreeNode *G = m_nodes + iG;
-        METADOT_ASSERT_E(0 <= iF && iF < m_nodeCapacity);
-        METADOT_ASSERT_E(0 <= iG && iG < m_nodeCapacity);
+        ME_ASSERT_E(0 <= iF && iF < m_nodeCapacity);
+        ME_ASSERT_E(0 <= iG && iG < m_nodeCapacity);
 
         // Swap A and C
         C->child1 = iA;
@@ -10501,7 +10501,7 @@ I32 b2DynamicTree::Balance(I32 iA) {
             if (m_nodes[C->parent].child1 == iA) {
                 m_nodes[C->parent].child1 = iC;
             } else {
-                METADOT_ASSERT_E(m_nodes[C->parent].child2 == iA);
+                ME_ASSERT_E(m_nodes[C->parent].child2 == iA);
                 m_nodes[C->parent].child2 = iC;
             }
         } else {
@@ -10538,8 +10538,8 @@ I32 b2DynamicTree::Balance(I32 iA) {
         I32 iE = B->child2;
         b2TreeNode *D = m_nodes + iD;
         b2TreeNode *E = m_nodes + iE;
-        METADOT_ASSERT_E(0 <= iD && iD < m_nodeCapacity);
-        METADOT_ASSERT_E(0 <= iE && iE < m_nodeCapacity);
+        ME_ASSERT_E(0 <= iD && iD < m_nodeCapacity);
+        ME_ASSERT_E(0 <= iE && iE < m_nodeCapacity);
 
         // Swap A and B
         B->child1 = iA;
@@ -10551,7 +10551,7 @@ I32 b2DynamicTree::Balance(I32 iA) {
             if (m_nodes[B->parent].child1 == iA) {
                 m_nodes[B->parent].child1 = iB;
             } else {
-                METADOT_ASSERT_E(m_nodes[B->parent].child2 == iA);
+                ME_ASSERT_E(m_nodes[B->parent].child2 == iA);
                 m_nodes[B->parent].child2 = iB;
             }
         } else {
@@ -10618,7 +10618,7 @@ float b2DynamicTree::GetAreaRatio() const {
 
 // Compute the height of a sub-tree.
 I32 b2DynamicTree::ComputeHeight(I32 nodeId) const {
-    METADOT_ASSERT_E(0 <= nodeId && nodeId < m_nodeCapacity);
+    ME_ASSERT_E(0 <= nodeId && nodeId < m_nodeCapacity);
     b2TreeNode *node = m_nodes + nodeId;
 
     if (node->IsLeaf()) {
@@ -10641,7 +10641,7 @@ void b2DynamicTree::ValidateStructure(I32 index) const {
     }
 
     if (index == m_root) {
-        METADOT_ASSERT_E(m_nodes[index].parent == b2_nullNode);
+        ME_ASSERT_E(m_nodes[index].parent == b2_nullNode);
     }
 
     const b2TreeNode *node = m_nodes + index;
@@ -10650,17 +10650,17 @@ void b2DynamicTree::ValidateStructure(I32 index) const {
     I32 child2 = node->child2;
 
     if (node->IsLeaf()) {
-        METADOT_ASSERT_E(child1 == b2_nullNode);
-        METADOT_ASSERT_E(child2 == b2_nullNode);
-        METADOT_ASSERT_E(node->height == 0);
+        ME_ASSERT_E(child1 == b2_nullNode);
+        ME_ASSERT_E(child2 == b2_nullNode);
+        ME_ASSERT_E(node->height == 0);
         return;
     }
 
-    METADOT_ASSERT_E(0 <= child1 && child1 < m_nodeCapacity);
-    METADOT_ASSERT_E(0 <= child2 && child2 < m_nodeCapacity);
+    ME_ASSERT_E(0 <= child1 && child1 < m_nodeCapacity);
+    ME_ASSERT_E(0 <= child2 && child2 < m_nodeCapacity);
 
-    METADOT_ASSERT_E(m_nodes[child1].parent == index);
-    METADOT_ASSERT_E(m_nodes[child2].parent == index);
+    ME_ASSERT_E(m_nodes[child1].parent == index);
+    ME_ASSERT_E(m_nodes[child2].parent == index);
 
     ValidateStructure(child1);
     ValidateStructure(child2);
@@ -10677,26 +10677,26 @@ void b2DynamicTree::ValidateMetrics(I32 index) const {
     I32 child2 = node->child2;
 
     if (node->IsLeaf()) {
-        METADOT_ASSERT_E(child1 == b2_nullNode);
-        METADOT_ASSERT_E(child2 == b2_nullNode);
-        METADOT_ASSERT_E(node->height == 0);
+        ME_ASSERT_E(child1 == b2_nullNode);
+        ME_ASSERT_E(child2 == b2_nullNode);
+        ME_ASSERT_E(node->height == 0);
         return;
     }
 
-    METADOT_ASSERT_E(0 <= child1 && child1 < m_nodeCapacity);
-    METADOT_ASSERT_E(0 <= child2 && child2 < m_nodeCapacity);
+    ME_ASSERT_E(0 <= child1 && child1 < m_nodeCapacity);
+    ME_ASSERT_E(0 <= child2 && child2 < m_nodeCapacity);
 
     I32 height1 = m_nodes[child1].height;
     I32 height2 = m_nodes[child2].height;
     I32 height;
     height = 1 + b2Max(height1, height2);
-    METADOT_ASSERT_E(node->height == height);
+    ME_ASSERT_E(node->height == height);
 
     b2AABB aabb;
     aabb.Combine(m_nodes[child1].aabb, m_nodes[child2].aabb);
 
-    METADOT_ASSERT_E(aabb.lowerBound == node->aabb.lowerBound);
-    METADOT_ASSERT_E(aabb.upperBound == node->aabb.upperBound);
+    ME_ASSERT_E(aabb.lowerBound == node->aabb.lowerBound);
+    ME_ASSERT_E(aabb.upperBound == node->aabb.upperBound);
 
     ValidateMetrics(child1);
     ValidateMetrics(child2);
@@ -10710,14 +10710,14 @@ void b2DynamicTree::Validate() const {
     I32 freeCount = 0;
     I32 freeIndex = m_freeList;
     while (freeIndex != b2_nullNode) {
-        METADOT_ASSERT_E(0 <= freeIndex && freeIndex < m_nodeCapacity);
+        ME_ASSERT_E(0 <= freeIndex && freeIndex < m_nodeCapacity);
         freeIndex = m_nodes[freeIndex].next;
         ++freeCount;
     }
 
-    METADOT_ASSERT_E(GetHeight() == ComputeHeight());
+    ME_ASSERT_E(GetHeight() == ComputeHeight());
 
-    METADOT_ASSERT_E(m_nodeCount + freeCount == m_nodeCapacity);
+    ME_ASSERT_E(m_nodeCount + freeCount == m_nodeCapacity);
 #endif
 }
 
@@ -10729,7 +10729,7 @@ I32 b2DynamicTree::GetMaxBalance() const {
             continue;
         }
 
-        METADOT_ASSERT_E(node->IsLeaf() == false);
+        ME_ASSERT_E(node->IsLeaf() == false);
 
         I32 child1 = node->child1;
         I32 child2 = node->child2;
@@ -10974,7 +10974,7 @@ void b2PolygonShape::SetAsBox(float hx, float hy, const PVec2 &center, float ang
 I32 b2PolygonShape::GetChildCount() const { return 1; }
 
 static PVec2 ComputeCentroid(const PVec2 *vs, I32 count) {
-    METADOT_ASSERT_E(count >= 3);
+    ME_ASSERT_E(count >= 3);
 
     PVec2 c(0.0f, 0.0f);
     float area = 0.0f;
@@ -11004,13 +11004,13 @@ static PVec2 ComputeCentroid(const PVec2 *vs, I32 count) {
     }
 
     // Centroid
-    METADOT_ASSERT_E(area > b2_epsilon);
+    ME_ASSERT_E(area > b2_epsilon);
     c = (1.0f / area) * c + s;
     return c;
 }
 
 void b2PolygonShape::Set(const PVec2 *vertices, I32 count) {
-    METADOT_ASSERT_E(3 <= count && count <= b2_maxPolygonVertices);
+    ME_ASSERT_E(3 <= count && count <= b2_maxPolygonVertices);
     if (count < 3) {
         SetAsBox(1.0f, 1.0f);
         return;
@@ -11040,7 +11040,7 @@ void b2PolygonShape::Set(const PVec2 *vertices, I32 count) {
     n = tempCount;
     if (n < 3) {
         // Polygon is degenerate.
-        METADOT_ASSERT_E(false);
+        ME_ASSERT_E(false);
         SetAsBox(1.0f, 1.0f);
         return;
     }
@@ -11064,7 +11064,7 @@ void b2PolygonShape::Set(const PVec2 *vertices, I32 count) {
     I32 ih = i0;
 
     for (;;) {
-        METADOT_ASSERT_E(m < b2_maxPolygonVertices);
+        ME_ASSERT_E(m < b2_maxPolygonVertices);
         hull[m] = ih;
 
         I32 ie = 0;
@@ -11097,7 +11097,7 @@ void b2PolygonShape::Set(const PVec2 *vertices, I32 count) {
 
     if (m < 3) {
         // Polygon is degenerate.
-        METADOT_ASSERT_E(false);
+        ME_ASSERT_E(false);
         SetAsBox(1.0f, 1.0f);
         return;
     }
@@ -11114,7 +11114,7 @@ void b2PolygonShape::Set(const PVec2 *vertices, I32 count) {
         I32 i1 = i;
         I32 i2 = i + 1 < m ? i + 1 : 0;
         PVec2 edge = m_vertices[i2] - m_vertices[i1];
-        METADOT_ASSERT_E(edge.LengthSquared() > b2_epsilon * b2_epsilon);
+        ME_ASSERT_E(edge.LengthSquared() > b2_epsilon * b2_epsilon);
         m_normals[i] = b2Cross(edge, 1.0f);
         m_normals[i].Normalize();
     }
@@ -11185,7 +11185,7 @@ bool b2PolygonShape::RayCast(b2RayCastOutput *output, const b2RayCastInput &inpu
         }
     }
 
-    METADOT_ASSERT_E(0.0f <= lower && lower <= input.maxFraction);
+    ME_ASSERT_E(0.0f <= lower && lower <= input.maxFraction);
 
     if (index >= 0) {
         output->fraction = lower;
@@ -11238,7 +11238,7 @@ void b2PolygonShape::ComputeMass(b2MassData *massData, float density) const {
     //
     // The rest of the derivation is handled by computer algebra.
 
-    METADOT_ASSERT_E(m_count >= 3);
+    ME_ASSERT_E(m_count >= 3);
 
     PVec2 center(0.0f, 0.0f);
     float area = 0.0f;
@@ -11276,7 +11276,7 @@ void b2PolygonShape::ComputeMass(b2MassData *massData, float density) const {
     massData->mass = density * area;
 
     // Center of mass
-    METADOT_ASSERT_E(area > b2_epsilon);
+    ME_ASSERT_E(area > b2_epsilon);
     center *= 1.0f / area;
     massData->center = center + s;
 
@@ -11324,7 +11324,7 @@ struct b2SeparationFunction {
         m_proxyA = proxyA;
         m_proxyB = proxyB;
         I32 count = cache->count;
-        METADOT_ASSERT_E(0 < count && count < 3);
+        ME_ASSERT_E(0 < count && count < 3);
 
         m_sweepA = sweepA;
         m_sweepB = sweepB;
@@ -11446,7 +11446,7 @@ struct b2SeparationFunction {
             }
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 *indexA = -1;
                 *indexB = -1;
                 return 0.0f;
@@ -11494,7 +11494,7 @@ struct b2SeparationFunction {
             }
 
             default:
-                METADOT_ASSERT_E(false);
+                ME_ASSERT_E(false);
                 return 0.0f;
         }
     }
@@ -11533,7 +11533,7 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
     float totalRadius = proxyA->m_radius + proxyB->m_radius;
     float target = b2Max(b2_linearSlop, totalRadius - 3.0f * b2_linearSlop);
     float tolerance = 0.25f * b2_linearSlop;
-    METADOT_ASSERT_E(target > tolerance);
+    ME_ASSERT_E(target > tolerance);
 
     float t1 = 0.0f;
     const I32 k_maxIterations = 20;  // TODO_ERIN b2Settings
@@ -11580,29 +11580,29 @@ void b2TimeOfImpact(b2TOIOutput *output, const b2TOIInput *input) {
         b2SeparationFunction fcn;
         fcn.Initialize(&cache, proxyA, sweepA, proxyB, sweepB, t1);
 #if 0
-		// Dump the curve seen by the root finder
-		{
-			const I32 N = 100;
-			float dx = 1.0f / N;
-			float xs[N+1];
-			float fs[N+1];
+        // Dump the curve seen by the root finder
+        {
+            const I32 N = 100;
+            float dx = 1.0f / N;
+            float xs[N+1];
+            float fs[N+1];
 
-			float x = 0.0f;
+            float x = 0.0f;
 
-			for (I32 i = 0; i <= N; ++i)
-			{
-				sweepA.GetTransform(&xfA, x);
-				sweepB.GetTransform(&xfB, x);
-				float f = fcn.Evaluate(xfA, xfB) - target;
+            for (I32 i = 0; i <= N; ++i)
+            {
+                sweepA.GetTransform(&xfA, x);
+                sweepB.GetTransform(&xfB, x);
+                float f = fcn.Evaluate(xfA, xfB) - target;
 
-				printf("%g %g\n", x, f);
+                printf("%g %g\n", x, f);
 
-				xs[i] = x;
-				fs[i] = f;
+                xs[i] = x;
+                fs[i] = f;
 
-				x += dx;
-			}
-		}
+                x += dx;
+            }
+        }
 #endif
 
         // Compute the TOI on the separating axis. We do this by successively

@@ -1,6 +1,6 @@
-// Copyright(c) 2022-2023, KaoruXun All rights reserved.
+// Copyright(c) 2023, KaoruXun All rights reserved.
 
-#include "meta.hpp"
+#include "reflection.hpp"
 
 #include <chrono>
 #include <functional>
@@ -8,10 +8,132 @@
 #include <map>
 #include <string>
 
-#include "core/core.hpp"
-#include "core/debug.hpp"
-#include "meta/json.h"
-#include "meta/reflect.hpp"
+#include "core/core.h"
+#include "core/dbgtools.h"
+#include "core/memory.h"
+#include "core/utility.hpp"
+
+//#define STB_DS_IMPLEMENTATION
+#include "libs/external/stb_ds.h"
+
+meta_registry_t meta_registry_new() {
+    meta_registry_t meta = {0};
+    return meta;
+}
+
+void meta_registry_free(meta_registry_t *meta) {
+    // Handle in a little bit
+}
+
+u64 _meta_registry_register_class_impl(meta_registry_t *meta, const char *name, const meta_class_decl_t *decl) {
+    meta_class_t cls = {0};
+
+    // Make value for pair
+    u32 ct = decl->size / sizeof(meta_property_t);
+    cls.name = name;
+    cls.property_count = ct;
+    cls.properties = (meta_property_t *)ME_MALLOC(decl->size);
+    memcpy(cls.properties, decl->properties, decl->size);
+
+    // Make key for pair
+    // Hash our name into a 64-bit identifier
+    u64 id = (u64)stbds_hash_string((char *)name, 0);
+
+    // Insert key/value pair into our hash table
+    hmput(meta->classes, id, cls);
+    return id;
+}
+
+meta_property_t _meta_property_impl(const char *name, size_t offset, meta_property_type_info_t type) {
+    meta_property_t mp = {0};
+    mp.name = name;
+    mp.offset = offset;
+    mp.type = type;
+    return mp;
+}
+
+meta_property_type_info_t _meta_property_type_info_decl_impl(const char *name, u32 id) {
+    meta_property_type_info_t info = {0};
+    info.name = name;
+    info.id = id;
+    return info;
+}
+
+meta_class_t *_meta_class_getp_impl(meta_registry_t *meta, const char *name) {
+    u64 id = (u64)stbds_hash_string((char *)name, 0);
+    return (&hmgetp(meta->classes, id)->value);
+}
+
+typedef struct other_thing_t {
+    i32 s_val;
+} other_thing_t;
+
+#define META_PROPERTY_TYPE_OBJ (META_PROPERTY_TYPE_COUNT + 1)
+#define META_PROPERTY_TYPE_INFO_OBJ meta_property_type_info_decl(other_thing_t, META_PROPERTY_TYPE_OBJ)
+
+typedef struct thing_t {
+    u32 u_val;
+    f32 f_val;
+    const char *name;
+    other_thing_t o_val;
+} thing_t;
+
+void print_obj(meta_registry_t *meta, void *obj, meta_class_t *cls) {
+    for (u32 i = 0; i < cls->property_count; ++i) {
+        meta_property_t *prop = &cls->properties[i];
+
+        switch (prop->type.id) {
+            case META_PROPERTY_TYPE_U32: {
+                u32 *v = meta_registry_getvp(obj, u32, prop);
+                printf("%s (%s): %zu\n", prop->name, prop->type.name, *v);
+            } break;
+
+            case META_PROPERTY_TYPE_S32: {
+                i32 *v = meta_registry_getvp(obj, i32, prop);
+                printf("%s (%s): %d\n", prop->name, prop->type.name, *v);
+            } break;
+
+            case META_PROPERTY_TYPE_F32: {
+                f32 *v = meta_registry_getvp(obj, f32, prop);
+                printf("%s (%s): %.2f\n", prop->name, prop->type.name, *v);
+            } break;
+
+            case META_PROPERTY_TYPE_STR: {
+                const char *v = meta_registry_getv(obj, const char *, prop);
+                printf("%s (%s): %s\n", prop->name, prop->type.name, v);
+            } break;
+
+            case META_PROPERTY_TYPE_OBJ: {
+                printf("%s (%s):\n", prop->name, prop->type.name);
+                const other_thing_t *v = meta_registry_getvp(obj, other_thing_t, prop);
+                const meta_class_t *clz = meta_registry_class_get(meta, other_thing_t);
+                print_obj(meta, (void *)v, (meta_class_t *)clz);
+            } break;
+        }
+    }
+}
+
+i32 test() {
+    meta_registry_t meta = meta_registry_new();
+
+    thing_t thing = {.u_val = 42069, .f_val = 3.145f, .name = "THING", .o_val = other_thing_t{.s_val = -380}};
+
+    // thing_t registry
+    meta_property_t mp1[] = {meta_property(thing_t, u_val, META_PROPERTY_TYPE_INFO_U32), meta_property(thing_t, f_val, META_PROPERTY_TYPE_INFO_F32),
+                             meta_property(thing_t, name, META_PROPERTY_TYPE_INFO_STR), meta_property(thing_t, o_val, META_PROPERTY_TYPE_INFO_OBJ)};
+    meta_class_decl_t cd1 = {.properties = mp1, .size = 4 * sizeof(meta_property_t)};
+    meta_registry_register_class(&meta, thing_t, &cd1);
+
+    // other_thing_t registry
+    meta_property_t mp2[] = {meta_property(other_thing_t, s_val, META_PROPERTY_TYPE_INFO_S32)};
+    meta_class_decl_t cd2 = {.properties = mp2, .size = 1 * sizeof(meta_property_t)};
+    meta_registry_register_class(&meta, other_thing_t, &cd2);
+
+    meta_class_t *cls = meta_registry_class_get(&meta, thing_t);
+    print_obj(&meta, &thing, cls);
+
+    return 0;
+}
 
 namespace reflect {
 
@@ -88,12 +210,12 @@ void func2(void) { std::cout << "func2()" << std::endl; }
 void func_log_info(std::string info) { METADOT_INFO(info.c_str()); }
 }  // namespace IamAfuckingNamespace
 
-#define RETURNTYPE(fc) MetaEngine::return_type_t<decltype(&fc)>
+#define RETURNTYPE(fc) ME::return_type_t<decltype(&fc)>
 
-auto fuckme() -> void {
+auto TEST() -> void {
     // std::map<std::string, std::function<double(double)>> func_map;
 
-    Meta::AnyFunction f{&TestRefleaction};
+    ME::meta::any_function f{&TestRefleaction};
 
     METADOT_INFO(f.get_result_type().info->name());
 
@@ -111,7 +233,7 @@ public:
     REFLECT(ReflTestClass, f1, f2, a1)
 };
 
-void InitCppReflection() {
+void init_reflection() {
     // test_reflection();
 
     ReflTestClass testclass;
@@ -165,63 +287,3 @@ void InitCppReflection() {
             std::cout << field.name << ": " << value << std::endl;
     });
 }
-
-namespace MetaEngine {
-auto tedtH() -> void {
-
-    /*
-    =================================================================
-                                        F
-                                       / \
-         A                            H   \
-        / \                          / \   \
-       B   C                        I   J   G
-      /   / \                        \ /   / \
-     T   D   E                        K   L   Z
-    ================================================================= */
-    class A {};
-    class F {};
-    class B : public A {};
-    class G : public F {};
-    class C : public A {};
-    class L : public G {};
-    class T : public B {};
-    class Z : public G {};
-    class D : public C {};
-    class H : public F {};
-    class E : public C {};
-    class I : public H {};
-    class J : public H {};
-    class K : public I, public J {};
-    // =================================
-
-    using namespace std;
-
-    // using REGISTRY = typelist<I, C, Z, G, D, F, L, C, I, A, T, B, J, K, H, E, E>;
-    using REGISTRY = typelist<A, B, C, D, E, F, G, H, I, J, K, L, T>;
-    using D_ANCESTORS = find_ancestors<REGISTRY, D>::type;
-    using T_ANCESTORS = find_ancestors<REGISTRY, T>::type;
-    using K_ANCESTORS = find_ancestors<REGISTRY, K>::type;
-    using D_EXPECTED = typelist<A, C, D>;
-    using K_EXPECTED = typelist<F, H, J, I, K>;
-
-    static_assert(is_same<D_ANCESTORS, D_EXPECTED>::value, "Ancestor of D test failed");
-    static_assert(is_same<K_ANCESTORS, K_EXPECTED>::value, "Ancestor of K test failed");
-
-    D d_instance;
-    printf("The hierarchy tree of class D is:\n");
-    hierarchy_iterator<D_ANCESTORS>::exec(&d_instance);
-    printf("\n\n");
-
-    T t_instance;
-    printf("The hierarchy tree of class T is:\n");
-    hierarchy_iterator<T_ANCESTORS>::exec(&t_instance);
-    printf("\n\n");
-
-    K k_instance;
-    printf("The hierarchy tree of class K is:\n");
-    hierarchy_iterator<K_ANCESTORS>::exec(&k_instance);
-    printf("\n\n");
-}
-
-}  // namespace MetaEngine

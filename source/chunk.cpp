@@ -16,14 +16,14 @@
 #include "libs/lz4/lz4.h"
 
 void ChunkInit(Chunk *_struct, int x, int y, char *worldName) {
-    METADOT_ASSERT_E(_struct);
+    ME_ASSERT_E(_struct);
     _struct->x = x;
     _struct->y = y;
     _struct->pack_filename = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".pack");
 }
 
 void ChunkDelete(Chunk *_struct) {
-    METADOT_ASSERT_E(_struct);
+    ME_ASSERT_E(_struct);
     if (_struct->tiles) delete[] _struct->tiles;
     if (_struct->layer2) delete[] _struct->layer2;
     if (_struct->background) delete[] _struct->background;

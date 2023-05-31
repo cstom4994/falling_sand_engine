@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "renderer/gpu.hpp"

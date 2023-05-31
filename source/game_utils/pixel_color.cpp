@@ -1,6 +1,6 @@
 #include "pixel_color.h"
 
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/sdl_wrapper.h"
 
 namespace MetaEngine {

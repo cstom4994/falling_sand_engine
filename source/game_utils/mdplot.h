@@ -4,6 +4,7 @@
 #define _METADOT_MDPLOT_H_
 
 #include "core/core.hpp"
+#include "core/utility.hpp"
 #include "libs/imgui/md4c.h"
 
 #define MDPLOT_PARSER_TEST(...) METADOT_BUG(__VA_ARGS__)

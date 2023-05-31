@@ -53,7 +53,7 @@ void Audio::InitAudio() {
         cs_spawn_mix_thread();
         // app->spawned_mix_thread = true;
     } else {
-        METADOT_ASSERT_E(false);
+        ME_ASSERT_E(false);
     }
 }
 

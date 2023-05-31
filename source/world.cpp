@@ -21,7 +21,7 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/macros.hpp"
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
 #include "game_datastruct.hpp"
@@ -325,7 +325,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             rb->surface = sf;
             texture = rb->surface;
         } else {
-            METADOT_ASSERT_E(0);
+            ME_ASSERT_E(0);
         }
     } else {
         return;

@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include "core/math/mathlib.hpp"
+#include "core/mathlib.hpp"
 #include "ecs_impl.hpp"
 
 namespace MetaEngine::ECS {

@@ -24,7 +24,7 @@
 #include "internal/builtin_lpeg.h"
 // #include "libs/lua/ffi.h"
 #include "core/utility.hpp"
-#include "meta/meta.hpp"
+#include "meta/reflection.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "ui/imgui/imgui_impl.hpp"
@@ -52,7 +52,7 @@ auto f = [](auto &...args) { (..., As(args)); };
 static void bindBasic() {
 
     MyStruct myStruct;
-    Meta::StructApply(myStruct, f);
+    ME::meta::struct_apply(myStruct, f);
 }
 
 static std::string proxy_print(lua_State *L) {
@@ -100,7 +100,7 @@ static int catch_panic(lua_State *L) {
 static int metadot_run_lua_file_script(lua_State *L) {
     std::string string = lua_tostring(L, 1);
     auto &LuaCore = Scripting::GetSingletonPtr()->Lua->s_lua;
-    METADOT_ASSERT_E(&LuaCore);
+    ME_ASSERT_E(&LuaCore);
     if (ME_str_starts_with(string, "Script:")) ME_str_replace_with(string, "Script:", METADOT_RESLOC("data/scripts/"));
     RunScriptFromFile(string.c_str());
     return 0;
@@ -142,7 +142,7 @@ static int ls(lua_State *L) {
 
 static void add_packagepath(const char *p) {
     auto &s_lua = Scripting::GetSingletonPtr()->Lua->s_lua;
-    METADOT_ASSERT_E(&s_lua);
+    ME_ASSERT_E(&s_lua);
     s_lua.dostring(MetaEngine::Format("package.path = "
                                       "'{0}/?.lua;' .. package.path",
                                       p),
@@ -152,7 +152,7 @@ static void add_packagepath(const char *p) {
 static int R_GetTextureAttr(R_Image *image, const char *attr) {
     if (strcmp(attr, "w")) return image->w;
     if (strcmp(attr, "h")) return image->h;
-    METADOT_ASSERT_E(0);
+    ME_ASSERT_E(0);
     return 0;
 }
 
@@ -327,7 +327,7 @@ void Scripting::End() {
 }
 
 void Scripting::Update() {
-    METADOT_ASSERT_E(Lua);
+    ME_ASSERT_E(Lua);
     // luaL_loadstring(_struct->L, s_couroutineFileSrc.c_str());
     // if (metadot_debug_pcall(_struct->L, 0, LUA_MULTRET, 0) != LUA_OK) {
     //     print_error(_struct->L);
@@ -339,14 +339,14 @@ void Scripting::Update() {
 }
 
 void Scripting::UpdateRender() {
-    METADOT_ASSERT_E(Lua);
+    ME_ASSERT_E(Lua);
     auto &luawrap = Lua->s_lua;
     auto OnRender = luawrap["OnRender"];
     OnRender();
 }
 
 void Scripting::UpdateTick() {
-    METADOT_ASSERT_E(Lua);
+    ME_ASSERT_E(Lua);
     auto &luawrap = Lua->s_lua;
     auto OnGameTickUpdate = luawrap["OnGameTickUpdate"];
     OnGameTickUpdate();
